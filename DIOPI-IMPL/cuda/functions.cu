@@ -49,7 +49,7 @@ void vecAdd(const void* a, const void* b, void* c, const int numel)
     }
 }
 
-extern "C" diopiError_t add(diopiContextHandle_t ctx, diopiTensorHandle_t* out,
+extern "C" diopiError_t add(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         const diopiTensorHandle_t input, const diopiTensorHandle_t other)
 {
     diopiDevice_t       device;
@@ -66,16 +66,13 @@ extern "C" diopiError_t add(diopiContextHandle_t ctx, diopiTensorHandle_t* out,
     diopiGetTensorShape(input, &shape);
     diopiGetTensorStride(input, &stride);
 
-    if (*out == NULL) {
-        diopiRequireTensor(ctx, out, &shape, &stride, dtype, device);
-    }
-    void* input_tensor_data_ptr;
-    diopiGetTensorData(input, &input_tensor_data_ptr);
-    void* other_tensor_data_ptr;
-    diopiGetTensorData(other, &other_tensor_data_ptr);
+    const void* input_tensor_data_ptr;
+    diopiGetTensorDataConst(input, &input_tensor_data_ptr);
+    const void* other_tensor_data_ptr;
+    diopiGetTensorDataConst(other, &other_tensor_data_ptr);
 
     void* out_tensor_data_ptr;
-    diopiGetTensorData(*out, &out_tensor_data_ptr);
+    diopiGetTensorData(out, &out_tensor_data_ptr);
 
     int blockSize = 256;
     int gridSize  = (numel + blockSize - 1) / blockSize;
