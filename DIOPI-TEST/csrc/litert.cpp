@@ -15,9 +15,7 @@
 #include <set>
 
 
-#if defined(__cplusplus)
 extern "C" {
-#endif
 
 static int32_t DIOPIRT_LOG_LEVEL = 0;
 
@@ -421,15 +419,13 @@ public:
     }
 };
 
-DIOPI_API diopiError_t diopiCreateContext(diopiContextHandle_t* ctx)
-{
+DIOPI_API diopiError_t diopiCreateContext(diopiContextHandle_t* ctx) {
     *ctx = new diopiContext();
     diopi_log("create a Context instance: %16p", *ctx);
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiDestoryContext(diopiContextHandle_t ctx)
-{
+DIOPI_API diopiError_t diopiDestoryContext(diopiContextHandle_t ctx) {
     diopi_log("destroy a Context instance: %16p", ctx);
     delete ctx;
     return diopiSuccess;
@@ -457,8 +453,7 @@ DIOPI_API diopiError_t diopiDestoryTensor(diopiContextHandle_t ctx, diopiTensorH
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiInit()
-{
+DIOPI_API diopiError_t diopiInit() {
     static int32_t inited = 0;
     if (inited) {
         return diopiSuccess;
@@ -476,8 +471,7 @@ DIOPI_API diopiError_t diopiInit()
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiFinalize()
-{
+DIOPI_API diopiError_t diopiFinalize() {
     static int32_t finalized = 0;
     if (finalized) {
         return diopiSuccess;
@@ -487,8 +481,7 @@ DIOPI_API diopiError_t diopiFinalize()
     return diopiSuccess;
 }
 
-diopiError_t diopiGetStream(diopiContextHandle_t ctx, diopiStreamHandle_t* stream)
-{
+diopiError_t diopiGetStream(diopiContextHandle_t ctx, diopiStreamHandle_t* stream) {
     if (stream_create_func == NULL) {
         diopi_err("stream create function is not registered!\n");
         return diopiNoRegisteredStreamCreateFunction;
@@ -497,36 +490,23 @@ diopiError_t diopiGetStream(diopiContextHandle_t ctx, diopiStreamHandle_t* strea
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiTransferTensorToDevice(diopiContextHandle_t      ctx,
-                                                   const diopiTensorHandle_t cpu_tensor,
-                                                   diopiTensorHandle_t*      device_tensor,
-                                                   const int32_t             sync) {
-    diopiSize_t shape  = cpu_tensor->shape();
-    diopiSize_t stride = cpu_tensor->stride();
-    diopiRequireTensor(ctx, device_tensor, &shape, &stride, cpu_tensor->dtype(), diopi_device);
+DIOPI_API diopiError_t _diopiTensorCopyHostToDevice(diopiContextHandle_t      ctx,
+                                                    const diopiTensorHandle_t cpu_tensor,
+                                                    diopiTensorHandle_t       device_tensor) {
     diopiStreamHandle_t stream;
     diopiGetStream(ctx, &stream);
-    memcpy_h2d_async_func(stream, (*device_tensor)->data(), cpu_tensor->data(),
-                                    cpu_tensor->nbytes());
-    if (sync) {
-        synchronize_stream_func(stream);
-    }
+    memcpy_h2d_async_func(stream, device_tensor->data(), cpu_tensor->data(), cpu_tensor->nbytes());
+    synchronize_stream_func(stream);
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiTransferTensorToHost(diopiContextHandle_t      ctx,
-                                                 const diopiTensorHandle_t device_tensor,
-                                                 diopiTensorHandle_t*      cpu_tensor,
-                                                 const int32_t             sync) {
-    diopiSize_t shape   = device_tensor->shape();
-    diopiSize_t stride  = device_tensor->stride();
-    diopiRequireTensor(ctx, cpu_tensor, &shape, &stride, device_tensor->dtype(), diopi_host);
+DIOPI_API diopiError_t _diopiTensorCopyDeviceToHost(diopiContextHandle_t      ctx,
+                                                    const diopiTensorHandle_t device_tensor,
+                                                    diopiTensorHandle_t       cpu_tensor) {
     diopiStreamHandle_t stream;
     diopiGetStream(ctx, &stream);
-    memcpy_d2h_async_func(stream, (*cpu_tensor)->data(), device_tensor->data(), device_tensor->nbytes());
-    if (sync) {
-        synchronize_stream_func(stream);
-    }
+    memcpy_d2h_async_func(stream, cpu_tensor->data(), device_tensor->data(), device_tensor->nbytes());
+    synchronize_stream_func(stream);
     return diopiSuccess;
 }
 
@@ -557,99 +537,83 @@ void print_tensor_elem(diopiTensorHandle_t tensor) {
             pos.data[dim] = (tempIndex / stride.data[dim]) % shape.data[dim];
             index += pos.data[dim] * stride.data[dim];
         }
-        {
-            size_t brackets = 0;
-            size_t i        = 0;
-            for (i = 0; i < shape_len; i++) {
-                size_t j = 0;
-                for (j = i; j < shape_len; j++) {
-                    if (pos.data[j] != 0) {
-                        break;
-                    }
-                    if (j == shape_len - 1) {
-                        brackets++;
-                    }
+        size_t brackets = 0;
+        for (size_t i = 0; i < shape_len; i++) {
+            size_t j = 0;
+            for (j = i; j < shape_len; j++) {
+                if (pos.data[j] != 0) {
+                    break;
                 }
-            }
-            if (brackets < shape_len) {
-                printf("\t");
-            }
-            {
-                for (i = 1; i < shape_len - brackets; i++) {
-                    printf(" ");
+                if (j == shape_len - 1) {
+                    brackets++;
                 }
-            }
-            for (i = 0; i < brackets; i++) {
-                printf("[");
             }
         }
-        {
-            const void* tensor_data;
-            diopiGetTensorDataConst(tensor, &tensor_data);
-            if (dtype == diopi_dtype_int32) {
-                const int32_t* data = (int32_t*)tensor_data;
-                printf("%-8d", data[index]);
-            }
-            else if (dtype == diopi_dtype_uint32) {
-                const uint32_t* data = (uint32_t*)tensor_data;
-                printf("%-8u", data[index]);
-            }
-            if (dtype == diopi_dtype_int16) {
-                const int16_t* data = (int16_t*)tensor_data;
-                printf("%-8d", (int32_t)data[index]);
-            }
-            else if (dtype == diopi_dtype_uint16) {
-                const uint16_t* data = (uint16_t*)tensor_data;
-                printf("%-8d", (int32_t)data[index]);
-            }
-            if (dtype == diopi_dtype_int8) {
-                const int8_t* data = (int8_t*)tensor_data;
-                printf("%-8d", (int32_t)data[index]);
-            }
-            else if (dtype == diopi_dtype_uint8) {
-                const uint8_t* data = (uint8_t*)tensor_data;
-                printf("%-8d", (int32_t)data[index]);
-            }
-            else if (dtype == diopi_dtype_float32) {
-                const float* data = (float*)tensor_data;
-                printf("%-6.6f", data[index]);
-            }
-            else if (dtype == diopi_dtype_float64) {
-                const double* data = (double*)tensor_data;
-                printf("%-12.8lf", data[index]);
-            }
-            else if (dtype == diopi_dtype_bool) {
-                const char* data = (char*)tensor_data;
-                printf("%s", data[index] ? "true" : "false");
-            }
-
-
-            if (pos.data[shape_len - 1] != (shape.data[shape_len - 1]) - 1) {
-                printf(",");
-            }
+        if (brackets < shape_len) {
+            printf("\t");
         }
-        {
-            size_t brackets = 0;
-            size_t i        = 0;
-            size_t j        = 0;
-            for (i = 0; i < shape_len; i++) {
-                for (j = i; j < shape_len; j++) {
-                    if (pos.data[j] != shape.data[j] - 1) {
-                        break;
-                    }
-                    if (j == shape_len - 1) {
-                        brackets++;
-                    }
+        for (size_t i = 1; i < shape_len - brackets; i++) {
+            printf(" ");
+        }
+        for (size_t i = 0; i < brackets; i++) {
+            printf("[");
+        }
+
+        const void* tensor_data;
+        diopiGetTensorDataConst(tensor, &tensor_data);
+        if (dtype == diopi_dtype_int32) {
+            const int32_t* data = (int32_t*)tensor_data;
+            printf("%-8d", data[index]);
+        } else if (dtype == diopi_dtype_uint32) {
+            const uint32_t* data = (uint32_t*)tensor_data;
+            printf("%-8u", data[index]);
+        }
+        if (dtype == diopi_dtype_int16) {
+            const int16_t* data = (int16_t*)tensor_data;
+            printf("%-8d", (int32_t)data[index]);
+        } else if (dtype == diopi_dtype_uint16) {
+            const uint16_t* data = (uint16_t*)tensor_data;
+            printf("%-8d", (int32_t)data[index]);
+        }
+        if (dtype == diopi_dtype_int8) {
+            const int8_t* data = (int8_t*)tensor_data;
+            printf("%-8d", (int32_t)data[index]);
+        } else if (dtype == diopi_dtype_uint8) {
+            const uint8_t* data = (uint8_t*)tensor_data;
+            printf("%-8d", (int32_t)data[index]);
+        } else if (dtype == diopi_dtype_float32) {
+            const float* data = (float*)tensor_data;
+            printf("%-6.6f", data[index]);
+        } else if (dtype == diopi_dtype_float64) {
+            const double* data = (double*)tensor_data;
+            printf("%-12.8lf", data[index]);
+        } else if (dtype == diopi_dtype_bool) {
+            const char* data = (char*)tensor_data;
+            printf("%s", data[index] ? "true" : "false");
+        }
+
+        if (pos.data[shape_len - 1] != (shape.data[shape_len - 1]) - 1) {
+            printf(",");
+        }
+
+        brackets = 0;
+        for (size_t i = 0; i < shape_len; i++) {
+            for (size_t j = i; j < shape_len; j++) {
+                if (pos.data[j] != shape.data[j] - 1) {
+                    break;
+                }
+                if (j == shape_len - 1) {
+                    brackets++;
                 }
             }
-            for (i = 0; i < brackets; i++) {
-                printf("]");
-                if (i == brackets - 1) {
-                    if (index <= elemnu - shape.data[shape_len - 1]) {
-                        printf(",\n");
-                        if (brackets >= 2) {
-                            printf("\n");
-                        }
+        }
+        for (size_t i = 0; i < brackets; i++) {
+            printf("]");
+            if (i == brackets - 1) {
+                if (index <= elemnu - shape.data[shape_len - 1]) {
+                    printf(",\n");
+                    if (brackets >= 2) {
+                        printf("\n");
                     }
                 }
             }
@@ -685,46 +649,39 @@ DIOPI_API diopiError_t diopiDumpTensor(diopiContextHandle_t ctx, const diopiTens
         print_tensor_elem(tensor);
     } else {
         diopiTensorHandle_t cpu_tensor;
-        const int32_t       sync = 1;
-        diopiTransferTensorToHost(ctx, tensor, &cpu_tensor, sync);
+        diopiRequireTensor(ctx, &cpu_tensor, &shape, &stride, dtype, diopi_host);
+        diopiStreamHandle_t stream;
+        diopiGetStream(ctx, &stream);
+        memcpy_d2h_async_func(stream, cpu_tensor->data(), tensor->data(), tensor->nbytes());
+        synchronize_stream_func(stream);
+
         print_tensor_elem(cpu_tensor);
         diopiDestoryTensor(ctx, cpu_tensor);
     }
 
     if (nbytes > 0) {
-        {
-            printf(",\n\tshape:[");
-            int64_t i = 0;
-            for (i = 0; i < shape.len; i++) {
-                printf("%d", (int)shape.data[i]);
-                if (i < shape.len - 1) {
-                    printf(",");
-                }
+        printf(",\n\tshape:[");
+        int64_t i = 0;
+        for (i = 0; i < shape.len; i++) {
+            printf("%d", (int)shape.data[i]);
+            if (i < shape.len - 1) {
+                printf(",");
             }
-            printf("]");
         }
+        printf("]");
 
-        {
-            printf(",stride:[");
-            int64_t i = 0;
-            for (i = 0; i < stride.len; i++) {
-                printf("%lld", stride.data[i]);
-                if (i < stride.len - 1) {
-                    printf(",");
-                }
+        printf(", stride:[");
+        for (i = 0; i < stride.len; i++) {
+            printf("%lld", stride.data[i]);
+            if (i < stride.len - 1) {
+                printf(",");
             }
-            printf("]");
         }
-        {
-            printf(",nbytes=%lld", nbytes);
-            printf(",numel=%lld", numel);
-        }
-        {
-            printf(",dtype=%s", diopi_dtype_to_str(dtype));
-        }
-        {
-            printf(",device=%s", device_to_str(device));
-        }
+        printf("]");
+        printf(", nbytes=%lld", nbytes);
+        printf(", numel=%lld", numel);
+        printf(", dtype=%s", diopi_dtype_to_str(dtype));
+        printf(", device=%s", device_to_str(device));
     }
 
     printf(")\n");
@@ -733,7 +690,4 @@ DIOPI_API diopiError_t diopiDumpTensor(diopiContextHandle_t ctx, const diopiTens
 }
 
 
-#if defined(__cplusplus)
 }
-#endif
-

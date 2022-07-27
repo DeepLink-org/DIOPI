@@ -72,35 +72,27 @@ def get_last_error():
 class Tensor:
     def __init__(
         self,
-        size=None,
-        dtype=None,
+        size,
+        dtype,
         device=device("host"),
         stride=None,
-        tensor_handle=None,
         context_handle=default_context.get_handle(),
     ):
         self.tensor_handle = TensorHandle()
         self.context_handle = context_handle
-        if size is not None:
-            assert size is not None
-            assert device is not None
-            assert dtype is not None
-            assert isinstance(size, (tuple, list))
-            assert isinstance(device, Device)
-            assert isinstance(dtype, Dtype)
 
-            diopirt_lib.diopiRequireTensor(
-                self.context_handle,
-                byref(self.tensor_handle),
-                byref(Sizes(tuple(size))),
-                None,
-                dtype.value,
-                device.value,
-            )
-        elif tensor_handle is not None:
-            self.tensor_handle = tensor_handle
+        assert isinstance(size, (tuple, list))
+        assert isinstance(device, Device)
+        assert isinstance(dtype, Dtype)
 
-        self.update_member_property()
+        diopirt_lib.diopiRequireTensor(
+            self.context_handle,
+            byref(self.tensor_handle),
+            byref(Sizes(tuple(size))),
+            None if stride is None else byref(Sizes(tuple(stride))),
+            dtype.value,
+            device.value,
+        )
 
     def __del__(self):
         diopirt_lib.diopiDestoryTensor(self.context_handle, self.tensor_handle)
@@ -110,13 +102,12 @@ class Tensor:
             self.context_handle, self.tensor_handle), throw_exception=False)
         return ""
 
-    def update_member_property(self):
-        self.size()
-        self.stride()
-        self.numel()
-        self.get_device()
-        self.get_dtype()
-        self.data_ptr()
+    def raw_like(self, device=None):
+        size = self.size()
+        stride = self.stride()
+        dtype = self.get_dtype()
+        target_device = self.get_device() if device is None else device
+        return Tensor(size=size, dtype=dtype, device=target_device, stride=stride, context_handle=self.context_handle)
 
     def numel(self):
         numel = c_uint64()
