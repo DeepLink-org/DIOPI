@@ -9,7 +9,7 @@ class Device(Enum):
     AIChip = 1
 
 
-def device(dev):
+def device(dev : str) -> Device:
     if dev == "cpu" or dev == "host":
         return Device(0)
     else:

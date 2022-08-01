@@ -15,22 +15,27 @@ from ctypes import (
 from enum import Enum, unique
 
 
-@unique
-class Dtype(Enum):
-    int8 = 0
-    uint8 = 1
-    int16 = 2
-    uint16 = 3
-    int32 = 4
-    uint32 = 5
-    int64 = 6
-    uint64 = 7
+class Dtype(object):
+    int8    = 0
+    uint8   = 1
+    int16   = 2
+    uint16  = 3
+    int32   = 4
+    uint32  = 5
+    int64   = 6
+    uint64  = 7
     float16 = 8
     float32 = 9
     float64 = 10
-    bool = 11
+    bool    = 11
     bfloat16 = 12
     tfloat32 = 13
+
+    all_types = [float16, float32, float64, int32, int64]
+    float_types = [float16, float32, float64]
+    float_no_half_types = [float32, float64]
+    int_types = [int32, int64]
+    default = all_types
 
 
 def dtype_to_ctype(dtype):
