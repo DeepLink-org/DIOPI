@@ -15,7 +15,7 @@ from ctypes import (
 from enum import Enum, unique
 
 
-class Dtype(object):
+class Dtype(Enum):
     int8    = 0
     uint8   = 1
     int16   = 2

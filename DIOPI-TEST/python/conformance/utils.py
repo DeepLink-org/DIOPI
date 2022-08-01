@@ -4,7 +4,7 @@ import logging
 
 
 default_vals = dict()
-default_vals['log_level'] = 0
+default_vals['log_level'] = 1
 default_vals['test_case_paras'] = dict()
 
 
