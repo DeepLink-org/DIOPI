@@ -233,8 +233,6 @@ def gen_tensor(arg, case_v):
             logger.error(e, exc_info=True)
             logger.error(arg)
             sys.exit()
-    if value is not None:
-        value = value.numpy()
     return value
 
 

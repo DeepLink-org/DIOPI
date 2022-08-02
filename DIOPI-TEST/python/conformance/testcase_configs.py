@@ -5,7 +5,7 @@ from .dtype import Dtype
 configs = {
     'batch_norm': dict(
         name=["batch_norm"],
-        dtype=[Dtype.float32, Dtype.float64],
+        dtype=[Dtype.float32],
         atol=1e-5,
         call_para=dict(
             args=[

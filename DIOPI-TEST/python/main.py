@@ -1,6 +1,7 @@
 import sys
 import conformance as cf
 from conformance import functions as F
+from conformance import gen_outputs
 
 
 def cuda_test():
@@ -19,8 +20,10 @@ def generate_inputs():
 
 
 if __name__ == "__main__":
-    opt = sys.argv[1] if len(sys.argv) > 1 else "gen"
-    if opt == "gen":
+    opt = sys.argv[1] if len(sys.argv) > 1 else "gen_input"
+    if opt == "gen_input":
         generate_inputs()
+    elif opt == "gen_output":
+        gen_outputs.generate()
     else:
         cuda_test()
