@@ -44,6 +44,33 @@ def from_numpy_dtype(dtype : np.dtype) -> Dtype:
         return Dtype.float32
 
 
+def to_numpy_dtype(dtype : Dtype) -> np.dtype:
+    if dtype == Dtype.int8:
+        return np.int8
+    elif dtype == Dtype.int16:
+        return np.int16
+    elif dtype == Dtype.int32:
+        return np.int32
+    elif dtype == Dtype.int64:
+        return np.int64
+    elif dtype == Dtype.uint8:
+        return np.uint8
+    elif dtype == Dtype.uint16:
+        return np.uint16
+    elif dtype == Dtype.uint32:
+        return np.uint32
+    elif dtype == Dtype.uint64:
+        return np.uint64
+    elif dtype == Dtype.float16:
+        return np.float16
+    elif dtype == Dtype.float64:
+        return np.float64
+    elif dtype == Dtype.bool:
+        return np.bool_
+    else:
+        return np.float32
+
+
 diopirt_lib = cdll.LoadLibrary("../lib/libdiopirt.so")
 diopirt_lib.diopiInit()
 
@@ -138,7 +165,7 @@ class Tensor:
         return Tensor(size=size, dtype=dtype, device=target_device, stride=stride, context_handle=self.context_handle)
 
     def numel(self):
-        numel = c_uint64()
+        numel = c_int64()
         diopirt_lib.diopiGetTensorNumel(self.tensor_handle, byref(numel))
         return numel.value
 
@@ -159,6 +186,11 @@ class Tensor:
             stride.append(cstride.data[i])
         self.strides = tuple(stride)
         return self.strides
+
+    def itemsize(self):
+        itemsize = c_int64()
+        diopirt_lib.diopiGetTensorElemSize(self.tensor_handle, byref(itemsize))
+        return itemsize.value
 
     def get_device(self):
         device = c_int32()
@@ -188,3 +220,12 @@ class Tensor:
         tr = Tensor(size=darray.shape, dtype=dtype, device=device, stride=stride)
         diopirt_lib._diopiTensorCopyFromBuffer(tr.context_handle, c_void_p(darray.ctypes.data), tr.tensor_handle)
         return tr
+
+    def numpy(self) -> np.ndarray:
+        dtype = to_numpy_dtype(self.get_dtype())
+        itemsize = self.itemsize()
+        stride = self.stride()
+        strides = [int(stride[i]*itemsize) for i in range(len(stride))]
+        darray = np.ndarray(shape=self.size(), dtype=dtype, strides=strides)
+        diopirt_lib._diopiTensorCopyToBuffer(self.context_handle, self.tensor_handle, c_void_p(darray.ctypes.data))
+        return darray
