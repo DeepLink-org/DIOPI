@@ -1,5 +1,6 @@
 from ctypes import cdll, byref, Structure, POINTER, cast
 from .dtype import *
+import numpy as np
 import atexit
 
 
@@ -14,6 +15,33 @@ def device(dev : str) -> Device:
         return Device(0)
     else:
         return Device(1)
+
+
+def from_numpy_dtype(dtype : np.dtype) -> Dtype:
+    if dtype == np.int8:
+        return Dtype.int8
+    elif dtype == np.int16:
+        return Dtype.int16
+    elif dtype == np.int32:
+        return Dtype.int32
+    elif dtype == np.int64:
+        return Dtype.int64
+    elif dtype == np.uint8:
+        return Dtype.uint8
+    elif dtype == np.uint16:
+        return Dtype.uint16
+    elif dtype == np.uint32:
+        return Dtype.uint32
+    elif dtype == np.uint64:
+        return Dtype.uint64
+    elif dtype == np.float16:
+        return Dtype.float16
+    elif dtype == np.float64:
+        return Dtype.float64
+    elif dtype == np.bool_:
+        return Dtype.bool
+    else:
+        return Dtype.float32
 
 
 diopirt_lib = cdll.LoadLibrary("../lib/libdiopirt.so")
@@ -149,3 +177,14 @@ class Tensor:
         diopirt_lib.diopiGetTensorData(self.tensor_handle, byref(ptr))
         self.c_buf = cast(ptr, POINTER(dtype_to_ctype(self.dtype)))
         return ptr.value
+
+    @staticmethod
+    def from_numpy(darray, device=device("device")):
+        if not isinstance(darray, (np.generic, np.ndarray)):
+            raise TypeError("expected np.ndarray (got {})".format(type(darray)))
+
+        dtype = from_numpy_dtype(darray.dtype)
+        stride = [int(darray.strides[i]/darray.itemsize) for i in range(len(darray.strides))]
+        tr = Tensor(size=darray.shape, dtype=dtype, device=device, stride=stride)
+        diopirt_lib._diopiTensorCopyFromBuffer(tr.context_handle, c_void_p(darray.ctypes.data), tr.tensor_handle)
+        return tr

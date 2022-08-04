@@ -7,6 +7,7 @@ from functools import partial
 from .utils import logger
 from .dtype import Dtype
 from .testcase_parse import Genfunc, dict_elem_length
+from .gen_outputs import inputs_dir_path
 
 
 def _to_torch_dtype(val : Dtype):
@@ -298,18 +299,17 @@ class GenData(object):
         cases = self.case_collection.test_cases
         num = 0
         cfgs = {}
-        dir_path = "data/inputs"
         for case_k, case_v in cases.items():
             logger.debug(f"generating {case_k} ...")
             paras_comb, related_paras_comb, call_paras_args_comb = combinate_args(case_v)
             case_vs = generate_testcases(paras_comb, related_paras_comb,
                                          call_paras_args_comb, case_v)
             num += len(case_vs)
-            gen_and_save_data(dir_path, case_k, case_vs, cfgs)
+            gen_and_save_data(inputs_dir_path, case_k, case_vs, cfgs)
             logger.debug("done")
         self.gen_num = num
 
-        with open(os.path.join(dir_path, "cfgs.pth"), "wb") as cfg_file:
+        with open(os.path.join(inputs_dir_path, "cfgs.pth"), "wb") as cfg_file:
             pickle.dump(cfgs, cfg_file)
 
         logger.info(f"gen_num: {self.gen_num}")

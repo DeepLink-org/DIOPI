@@ -510,6 +510,20 @@ DIOPI_API diopiError_t _diopiTensorCopyDeviceToHost(diopiContextHandle_t      ct
     return diopiSuccess;
 }
 
+DIOPI_API diopiError_t _diopiTensorCopyFromBuffer(diopiContextHandle_t  ctx,
+                                                  const void*           src,
+                                                  diopiTensorHandle_t   tensor) {
+    if (tensor->device() == diopi_device) {
+        diopiStreamHandle_t stream;
+        diopiGetStream(ctx, &stream);
+        memcpy_h2d_async_func(stream, tensor->data(), src, tensor->nbytes());
+        synchronize_stream_func(stream);
+    } else {
+        std::memcpy(tensor->data(), src, tensor->nbytes());
+    }
+    return diopiSuccess;
+}
+
 void print_tensor_elem(diopiTensorHandle_t tensor) {
     int64_t elemnu;
     diopiGetTensorNumel(tensor, &elemnu);
