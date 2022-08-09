@@ -1,7 +1,8 @@
 import sys
 import conformance as cf
 from conformance import functions as F
-from conformance import gen_outputs
+from conformance import gen_outputs, testcase_run
+import numpy as np
 
 
 def cuda_test():
@@ -9,6 +10,12 @@ def cuda_test():
     x.fill_(10)
     z = F.add(x, x)
     print(x, z)
+    print('numpy value:\n', z.numpy())
+
+    a = np.array([[1, 2.1], [3, 5.0]], dtype=np.float32)
+    print(a)
+    b = cf.Tensor.from_numpy(a)
+    print(b)
 
 
 def generate_inputs():
@@ -25,5 +32,7 @@ if __name__ == "__main__":
         generate_inputs()
     elif opt == "gen_output":
         gen_outputs.generate()
+    elif opt == "run":
+        testcase_run.run()
     else:
         cuda_test()
