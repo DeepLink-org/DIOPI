@@ -9,7 +9,7 @@ from .litert import Tensor
 from .gen_outputs import load_testcases, inputs_dir_path, outputs_dir_path
 
 
-def convert_tensors(function_paras: dict, cfg: dict, half_cast_double: bool):
+def convert_tensors(function_paras: dict):
     import torch
     for para in function_paras["kwargs"].keys():
         if isinstance(function_paras['kwargs'][para], torch.Tensor):
@@ -19,32 +19,6 @@ def convert_tensors(function_paras: dict, cfg: dict, half_cast_double: bool):
         if isinstance(function_paras["kargs"][i_para], torch.Tensor):
             tr = function_paras['kargs'][i_para].numpy()
             function_paras['kwargs'][para] = Tensor.from_numpy(tr)
-
-    i_kargs = 0
-    for arg in cfg["call_para"]["args"]:
-        if "dtype" in arg.keys():
-            if arg["dtype"] == Dtype.float16:
-                dtype = Dtype.float64 if half_cast_double else Dtype.float16
-                if len(arg['gen_num_range']) != 2:
-                    name = arg["ins"]
-                    value = function_paras["kwargs"][name]
-                    function_paras["kwargs"][name] = \
-                        value.to(Dtype.float16).to(dtype) if value is not None else None
-                else:
-                    # not rename
-                    if 'seq_name' not in cfg['call_para']:
-                        for i_kargs in range(len(function_paras['kargs'])):
-                            value = function_paras['kargs'][i_kargs]
-                            function_paras['kargs'][i_kargs] = \
-                                value.to(Dtype.float16).to(dtype) if value is not None else None
-                            i_kargs += 1
-                    else:
-                        # has been renamed
-                        name = cfg['call_para']['seq_name']
-                        list_v = function_paras['kwargs'][name]
-                        for i in range(len(list_v)):
-                            list_v[i] = list_v[i].to(Dtype.float16).to(dtype) \
-                                if list_v[i] is not None else None
 
 
 def verify(cfg : dict, tensor1 : np.ndarray, tensor2 : np.ndarray):
@@ -62,7 +36,7 @@ def run():
 
             op_name  = data["cfg"]["name"]
             fn_paras = data["function_paras"]
-            convert_tensors(fn_paras, data["cfg"], False)
+            convert_tensors(fn_paras)
             kargs    = fn_paras['kargs']
             kwargs   = fn_paras['kwargs']
 

@@ -1,5 +1,6 @@
-from . import *
+from .litert import Tensor, device_impl_lib
 from .utils import raw_like
+from .dtype import check_return_value
 from ctypes import c_float, byref
 
 

@@ -7,7 +7,9 @@ from functools import partial
 from .utils import logger
 from .dtype import Dtype
 from .testcase_parse import Genfunc, dict_elem_length
-from .gen_outputs import inputs_dir_path
+
+
+inputs_dir_path = "data/inputs"
 
 
 def _to_torch_dtype(val : Dtype):
