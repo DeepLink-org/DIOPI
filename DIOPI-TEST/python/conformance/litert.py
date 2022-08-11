@@ -36,12 +36,14 @@ def from_numpy_dtype(dtype : np.dtype) -> Dtype:
         return Dtype.uint64
     elif dtype == np.float16:
         return Dtype.float16
+    elif dtype == np.float32:
+        return Dtype.float32
     elif dtype == np.float64:
         return Dtype.float64
     elif dtype == np.bool_:
         return Dtype.bool
     else:
-        return Dtype.float32
+        return None
 
 
 def to_numpy_dtype(dtype : Dtype) -> np.dtype:
@@ -63,6 +65,8 @@ def to_numpy_dtype(dtype : Dtype) -> np.dtype:
         return np.uint64
     elif dtype == Dtype.float16:
         return np.float16
+    elif dtype == Dtype.float32:
+        return np.float32
     elif dtype == Dtype.float64:
         return np.float64
     elif dtype == Dtype.bool:
