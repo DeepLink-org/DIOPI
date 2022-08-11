@@ -1,9 +1,9 @@
 import os
 import pickle
+import numpy as np
 import torch
 
 from .utils import logger
-from .dtype import Dtype
 from .gen_inputs import inputs_dir_path
 
 
@@ -26,11 +26,13 @@ def load_testcases() -> list:
 
 def transfer_tensor_to_device(function_paras: dict):
     for para in function_paras["kwargs"].keys():
-        if isinstance(function_paras['kwargs'][para], torch.Tensor):
-            function_paras['kwargs'][para] = function_paras['kwargs'][para].cuda()
+        if isinstance(function_paras['kwargs'][para], np.ndarray):
+            tensor = torch.from_numpy(function_paras['kwargs'][para])
+            function_paras['kwargs'][para] = tensor.cuda()
     for i_para in range(len(function_paras["kargs"])):
-        if isinstance(function_paras["kargs"][i_para], torch.Tensor):
-            function_paras['kargs'][i_para] = function_paras['kargs'][i_para].cuda()
+        if isinstance(function_paras["kargs"][i_para], np.ndarray):
+            tensor = torch.from_numpy(function_paras['kargs'][i_para])
+            function_paras['kargs'][i_para] = tensor.cuda()
 
 
 def generate():
@@ -56,6 +58,15 @@ def generate():
 
         if outputs is not None:
             with open(os.path.join(outputs_dir_path, fname), "wb") as file_outputs:
-                pickle.dump(outputs, file_outputs)
+                if isinstance(outputs, torch.Tensor):
+                    outputs_numpy = outputs.cpu().numpy()
+                elif isinstance(outputs, (list, tuple)):
+                    outputs_numpy = []
+                    for i in range(len(outputs)):
+                        if isinstance(outputs[i], torch.Tensor):
+                            outputs_numpy.append(outputs[i].cpu().numpy())
+                        else:
+                            outputs_numpy.append(outputs[i])
+                pickle.dump(outputs_numpy, file_outputs)
 
             logger.info(f"generate outputs for {op_name}")

@@ -2,56 +2,14 @@ import os
 import sys
 import copy
 import pickle
-from functools import partial
+import numpy as np
 
+from .litert import to_numpy_dtype
 from .utils import logger
-from .dtype import Dtype
 from .testcase_parse import Genfunc, dict_elem_length
 
 
 inputs_dir_path = "data/inputs"
-
-
-def _to_torch_dtype(val : Dtype):
-    import torch
-    if val == Dtype.float16:
-        return torch.float16
-    elif val == Dtype.float32:
-        return torch.float32
-    elif val == Dtype.float64:
-        return torch.float64
-    elif val == Dtype.int8:
-        return torch.int8
-    elif val == Dtype.int16:
-        return torch.int16
-    elif val == Dtype.int32:
-        return torch.int32
-    elif val == Dtype.int64:
-        return torch.int64
-    elif val == Dtype.uint8:
-        return torch.uint8
-    elif val == Dtype.bool:
-        return torch.bool
-    else:
-        return torch.float32
-
-
-def _to_torch_func(val : Genfunc):
-    import torch
-    if val == Genfunc.randn:
-        return torch.randn
-    elif val == Genfunc.rand:
-        return torch.rand
-    elif val == Genfunc.ones:
-        return torch.ones
-    elif val == Genfunc.zeros:
-        return torch.zeros
-    elif val == Genfunc.mask:
-        return partial(torch.randint, high=2)
-    elif val == Genfunc.empty:
-        return torch.empty
-    else:
-        return torch.randn
 
 
 def num_of_tensor(obj: dict):
@@ -218,24 +176,40 @@ def delete_fn(case_v):
     return case_v
 
 
-def gen_tensor(arg, case_v):
-    import torch
+def gen_tensor(arg: dict) -> np.ndarray:
     if "value" in arg.keys():
-        value = torch.tensor(arg["value"], device=torch.device("cpu"))
-    else:
-        gen_f = _to_torch_func(arg["gen_fn"])
-        try:
-            if arg["shape"] is None:
-                value = None
-            else:
-                dtype = _to_torch_dtype(arg["dtype"])
-                # if arg["dtype"] == Dtype.float16:
-                #     dtype = Dtype.float32
-                value = gen_f(size=arg["shape"], dtype=dtype, device=torch.device("cpu"))
-        except BaseException as e:
-            logger.error(e, exc_info=True)
-            logger.error(arg)
-            sys.exit()
+        dtype = to_numpy_dtype(arg.get("dtype", None))
+        value = np.array(arg["value"], dtype=dtype)
+        return value
+
+    if arg["shape"] is None:
+        return None
+
+    try:
+        shape  = arg["shape"]
+        gen_fn = arg["gen_fn"]
+        dtype  = to_numpy_dtype(arg["dtype"])
+
+        if gen_fn == Genfunc.randn:
+            value = np.random.randn(*shape).astype(dtype)
+        elif gen_fn == Genfunc.rand:
+            value = np.random.rand(*shape).astype(dtype)
+        elif gen_fn == Genfunc.ones:
+            value = np.ones(shape, dtype=dtype)
+        elif gen_fn == Genfunc.zeros:
+            value = np.zeros(shape, dtype=dtype)
+        elif gen_fn == Genfunc.mask:
+            value = np.random.randint(low=0, high=2, size=shape, dtype=dtype)
+        elif gen_fn == Genfunc.empty:
+            value = np.empty(shape, dtype=dtype)
+        else:
+            value = np.random.randn(*shape).astype(dtype)
+
+    except BaseException as e:
+        logger.error(e, exc_info=True)
+        logger.error(arg)
+        sys.exit()
+
     return value
 
 
@@ -258,14 +232,14 @@ def gen_and_save_data(dir_path: str, case_k: str, case_vs: list, cfgs: dict):
             name = arg["ins"]
             # length of gen_num_range must be 2, otherwise ignore gen_num_range
             if len(arg["gen_num_range"]) != 2:
-                value = gen_tensor(arg, case_v)
+                value = gen_tensor(arg)
                 function_paras["kwargs"][name] = value
             else:
-                tensors_num = random.randint(arg['gen_num_range'][0],
-                                             arg['gen_num_range'][1])
+                tensors_num = np.random.randint(arg['gen_num_range'][0],
+                                                arg['gen_num_range'][1])
                 arg.setdefault("tensors_num", tensors_num)
                 for j in range(tensors_num):
-                    value = gen_tensor(arg, case_v)
+                    value = gen_tensor(arg)
                     function_paras["kargs"].append(value)
         # tie all the function_paras in a list named seq_name
         if case_v["call_para"]["seq_name"] != "":

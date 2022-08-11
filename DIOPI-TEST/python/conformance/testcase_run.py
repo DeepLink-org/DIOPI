@@ -47,12 +47,12 @@ def run():
                 with open(os.path.join(outputs_dir_path, fname), "rb") as file_outputs:
                     outputs_reference = pickle.load(file_outputs)
                     if isinstance(outputs, Tensor):
-                        verify(data["cfg"], outputs.numpy(), outputs_reference.numpy())
+                        verify(data["cfg"], outputs.numpy(), outputs_reference)
                     elif isinstance(outputs, (list, tuple)):
                         assert isinstance(outputs_reference, (list, tuple))
                         assert len(outputs) == len(outputs_reference)
                         for i in range(len(outputs)):
                             if isinstance(outputs[i], Tensor):
-                                verify(data["cfg"], outputs[i].numpy(), outputs_reference[i].numpy())
+                                verify(data["cfg"], outputs[i].numpy(), outputs_reference[i])
             except:
                 logger.info(f"run {op_name} failed")

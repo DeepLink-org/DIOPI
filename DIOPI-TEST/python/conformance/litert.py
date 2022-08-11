@@ -68,7 +68,7 @@ def to_numpy_dtype(dtype : Dtype) -> np.dtype:
     elif dtype == Dtype.bool:
         return np.bool_
     else:
-        return np.float32
+        return None
 
 
 diopirt_lib = cdll.LoadLibrary("../lib/libdiopirt.so")
