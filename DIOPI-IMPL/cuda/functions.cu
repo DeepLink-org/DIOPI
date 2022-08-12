@@ -47,12 +47,12 @@
 
 
 template<typename T> __global__
-void vecAdd(const void* a, const void* b, void* c, const int numel)
+void vecAdd(const void *a, const void *b, void *c, const int numel)
 {
     int      id = blockIdx.x * blockDim.x + threadIdx.x;
-    const T* A  = static_cast<const T*>(a);
-    const T* B  = static_cast<const T*>(b);
-    T*       C  = static_cast<T*>(c);
+    const T *A  = static_cast<const T*>(a);
+    const T *B  = static_cast<const T*>(b);
+    T *C  = static_cast<T*>(c);
     if (id < numel) {
         C[id] = A[id] + B[id];
     }
@@ -75,10 +75,10 @@ extern "C" diopiError_t add(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 
 
 template<typename T> __global__
-void vecFill(void* a, const T value, const int numel)
+void vecFill(void *a, const T value, const int numel)
 {
     int id = blockIdx.x * blockDim.x + threadIdx.x;
-    T*  A  = static_cast<T*>(a);
+    T *A  = static_cast<T*>(a);
     if (id < numel) {
         A[id] = value;
     }

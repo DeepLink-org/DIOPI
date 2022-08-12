@@ -12,6 +12,13 @@
 #include <cuda_runtime.h>
 
 
+#define DIOPI_CALL(Expr){                                                               \
+    if( diopiSuccess != Expr ){                                                         \
+        return Expr;                                                                    \
+    }}
+
+extern "C" void set_error_string(const char *err);
+
 namespace impl {
 
 namespace cuda {
@@ -24,7 +31,7 @@ struct DataType<diopiTensorHandle_t> {
     using type = void*;
 
     static void* data(diopiTensorHandle_t& tensor) {
-        void* data;
+        void *data;
         diopiGetTensorData(&tensor, &data);
         return data;
     }
@@ -35,7 +42,7 @@ struct DataType<const diopiTensorHandle_t> {
     using type = const void*;
 
     static const void* data(const diopiTensorHandle_t& tensor) {
-        const void* data;
+        const void *data;
         diopiGetTensorDataConst(&tensor, &data);
         return data;
     }
@@ -57,11 +64,11 @@ public:
         return dtype;
     }
 
-    const diopiSize_t& shape() const {
+    const diopiSize_t& shape(){
         diopiGetTensorShape(tensor_, &shape_);
         return shape_;
     }
-    const diopiSize_t& stride() const {
+    const diopiSize_t& stride(){
         diopiGetTensorStride(tensor_, &stride_);
         return stride_;
     }
