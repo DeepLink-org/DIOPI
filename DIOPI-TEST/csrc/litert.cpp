@@ -331,13 +331,13 @@ diopiTensor::diopiTensor(const diopiSize_t* size, const diopiSize_t* stride, con
 
 diopiTensor::~diopiTensor() {}
 
-DIOPI_API diopiError_t diopiGetTensorData(diopiTensorHandle_t th, void** pptr) {
-    *pptr = th->data();
+DIOPI_API diopiError_t diopiGetTensorData(diopiTensorHandle_t* th, void** pptr) {
+    *pptr = (*th)->data();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiGetTensorDataConst(const diopiTensorHandle_t th, const void** pptr) {
-    *pptr = th->data();
+DIOPI_API diopiError_t diopiGetTensorDataConst(const diopiTensorHandle_t* th, const void** pptr) {
+    *pptr = (*th)->data();
     return diopiSuccess;
 }
 
@@ -588,7 +588,7 @@ void print_tensor_elem(diopiTensorHandle_t tensor) {
         }
 
         const void* tensor_data;
-        diopiGetTensorDataConst(tensor, &tensor_data);
+        diopiGetTensorDataConst(&tensor, &tensor_data);
         if (dtype == diopi_dtype_int32) {
             const int32_t* data = (int32_t*)tensor_data;
             printf("%-8d", data[index]);
@@ -659,14 +659,14 @@ DIOPI_API diopiError_t diopiDumpTensor(diopiContextHandle_t ctx, const diopiTens
     int64_t       elemsize;
     diopiDtype_t  dtype;
     diopiDevice_t device;
-    void*         data_ptr;
+    const void*   data_ptr;
     diopiGetTensorShape(tensor, &shape);
     diopiGetTensorStride(tensor, &stride);
     diopiGetTensorNumel(tensor, &numel);
     diopiGetTensorElemSize(tensor, &elemsize);
     diopiGetTensorDtype(tensor, &dtype);
     diopiGetTensorDevice(tensor, &device);
-    diopiGetTensorData(tensor, &data_ptr);
+    diopiGetTensorDataConst(&tensor, &data_ptr);
     if ((dtype == diopi_dtype_bfloat16) || (dtype == diopi_dtype_float16) ||
         (dtype == diopi_dtype_tfloat32)) {
         return diopiDtypeNotSupported;
