@@ -54,7 +54,7 @@ else()
     message(FATAL_ERROR "Not found CUDNN.")
 endif()
 
-set(IMPL_SRC conform_test.cpp functions.cu)
+set(IMPL_SRC conform_test.cpp functions.cpp functions.cu)
 
 cuda_add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")

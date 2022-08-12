@@ -1,14 +1,20 @@
+/**************************************************************************************************
+ * Copyright (c) 2022, SenseTime Inc.
+ * License
+ * Author
+ *
+ *************************************************************************************************/
 #include <diopi/diopirt.h>
 #include <diopi_register.h>
-
-#include <cstdio>
 #include <cuda_runtime.h>
 
+#include <cstdio>
+#include <mutex>
 
-#if defined(__cplusplus)
+#include "helper.hpp"
+
+
 extern "C" {
-#endif   // __cplusplus__
-
 
 #define CALL_CUDA(Expr)   {                                                         \
     cudaError_t ret = Expr;                                                         \
@@ -75,10 +81,22 @@ int32_t cuda_memcpy_d2d_async(diopiStreamHandle_t stream_handle,
     return diopiSuccess;
 }
 
+static char strLastError[4096] = {0};
+static char strLastErrorOther[2048] = {0};
+static std::mutex mtxLastError;
+
+void set_error_string(const char *err) {
+    std::lock_guard<std::mutex> lock(mtxLastError);
+    sprintf(strLastErrorOther, "%s", err);
+}
+
 const char* cuda_get_last_error_string()
 {
     cudaError_t error = cudaGetLastError();
-    return cudaGetErrorString(error);
+    std::lock_guard<std::mutex> lock(mtxLastError);
+    sprintf(strLastError, "cuda error: %s; other error: %s",
+            cudaGetErrorString(error), strLastErrorOther);
+    return strLastError;
 }
 
 int32_t initLibrary()
@@ -101,7 +119,4 @@ int32_t finalizeLibrary()
     return diopiSuccess;
 }
 
-
-#if defined(__cplusplus)
-}
-#endif   // __cplusplus__
+}  // extern "C"

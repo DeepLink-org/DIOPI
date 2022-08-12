@@ -6,16 +6,20 @@ import numpy as np
 
 
 def cuda_test():
-    x = cf.Tensor(size=(2, 3, 5), dtype=cf.int32, device=cf.device("device"))
+    x = cf.Tensor(size=(2, 3, 5), dtype=cf.float32, device=cf.device("device"))
     x.fill_(10)
     z = F.add(x, x)
     print(x, z)
     print('numpy value:\n', z.numpy())
 
-    a = np.array([[1, 2.1], [3, 5.0]], dtype=np.float32)
+    a = np.array([[-1, 2.1], [3, 5.0]], dtype=np.float32)
     print(a)
     b = cf.Tensor.from_numpy(a)
     print(b)
+    c = F.relu(b)
+    print(c)
+    w = F.softmax(z, 0)
+    print(z, w)
 
 
 def generate_inputs():
