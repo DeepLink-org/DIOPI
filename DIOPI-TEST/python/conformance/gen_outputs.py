@@ -35,12 +35,15 @@ def transfer_tensor_to_device(function_paras: dict):
             function_paras['kargs'][i_para] = tensor.cuda()
 
 
-def generate():
+def generate(opname):
     testcases = load_testcases()
     for fname in iter(testcases):
         outputs = None
         with open(os.path.join(inputs_dir_path, fname), "rb") as file_inputs:
             data = pickle.load(file_inputs)
+
+            op_name = data["cfg"]["name"]
+            if opname not in ['all', op_name]: continue
 
             module = "torch.nn.functional"
             if "interface" in data["cfg"].keys():
@@ -52,7 +55,6 @@ def generate():
             kargs    = fn_paras['kargs']
             kwargs   = fn_paras['kwargs']
 
-            op_name = data["cfg"]["name"]
             op_call = f"{module}.{op_name}(*kargs, **kwargs)"
             outputs = eval(op_call)
 

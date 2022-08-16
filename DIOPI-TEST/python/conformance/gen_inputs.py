@@ -271,11 +271,12 @@ class GenData(object):
         self.case_collection = case_collection
         self.gen_num = 0
 
-    def generate(self, tag=None):
+    def generate(self, opname, tag=None):
         cases = self.case_collection.test_cases
         num = 0
         cfgs = {}
         for case_k, case_v in cases.items():
+            if opname not in ['all', case_v['name']]: continue
             logger.debug(f"generating {case_k} ...")
             paras_comb, related_paras_comb, call_paras_args_comb = combinate_args(case_v)
             case_vs = generate_testcases(paras_comb, related_paras_comb,
