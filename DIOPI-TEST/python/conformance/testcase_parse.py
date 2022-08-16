@@ -12,7 +12,8 @@ class Genfunc(object):
     zeros   = 3
     mask    = 4
     empty   = 5
-    default = 6
+    randint = 6
+    default = 7
 
     # @staticmethod
     # def target(size, dtype, device, requires_grad=False):
@@ -279,7 +280,6 @@ def delete_key_if_exist(case_v, key):
 
 def check_and_set(case_v, key, default_v):
     for item in case_v["call_para"]["args"]:
-        #if "value" not in item.keys():
         if key not in item.keys():
             if key not in case_v["call_para"].keys():
                 if key not in case_v.keys():
