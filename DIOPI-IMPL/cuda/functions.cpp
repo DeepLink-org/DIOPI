@@ -87,7 +87,7 @@ static diopiError_t prepareTensorDesc(diopiDtype_t type, const diopiSize_t shape
     }
 
     DIOPI_CALLCUDNN(cudnnSetTensorNdDescriptor(desc,
-        cudnnType, 4, shapeArray.data(), strideArray.data()));
+        cudnnType, size, shapeArray.data(), strideArray.data()));
 
     return diopiSuccess;
 
