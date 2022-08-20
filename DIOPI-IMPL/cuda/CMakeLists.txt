@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.8)
+cmake_minimum_required(VERSION 3.4)
 project(cuda_impl)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -21,7 +21,7 @@ if (CUDA_FOUND)
             set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11")
         endif()
 
-        # include(cmake/CUDAComputeArch.cmake)
+        include(cmake/CUDAComputeArch.cmake)
         set(ARCH_HINTS)
         if (CUDA_ARCH_AUTO)
             LIST(APPEND ARCH_HINTS Auto)

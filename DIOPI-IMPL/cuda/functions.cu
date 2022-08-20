@@ -38,8 +38,7 @@
     }                                                                                            \
     else if (diopi_dtype_bool == dtype) {                                                        \
         fun<bool><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                              \
-    }                                                                                            \
-    else {                                                                                       \
+    } else {                                                                                     \
         fprintf(stderr, "%s:%s: %s<%s %d><<<%d,%d>>>(%s)", __FILE__, __FUNCTION__, #fun, #dtype, \
                 dtype, gridSize, blockSize, #__VA_ARGS__);                                       \
         return diopiDtypeNotSupported;                                                           \
@@ -75,12 +74,12 @@ extern "C" diopiError_t add(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 
 
 template<typename T> __global__
-void vecFill(void *a, const T value, const int numel)
+void vecFill(void *a, const float value, const int numel)
 {
     int id = blockIdx.x * blockDim.x + threadIdx.x;
-    T *A  = static_cast<T*>(a);
+    T* A = static_cast<T*>(a);
     if (id < numel) {
-        A[id] = value;
+        A[id] = static_cast<T>(value);
     }
 }
 
