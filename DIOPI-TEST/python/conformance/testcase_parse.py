@@ -283,7 +283,7 @@ def check_and_set(case_v, key, default_v):
         if key not in item.keys():
             if key not in case_v["call_para"].keys():
                 if key not in case_v.keys():
-                    item[key] = [default_v]
+                    item[key] = default_v
                 else:
                     item[key] = case_v[key]
             else:

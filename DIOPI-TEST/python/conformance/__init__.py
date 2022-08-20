@@ -1,9 +1,11 @@
 from .litert import Tensor, device, TensorHandle, Context, Dtype
 from .litert import check_return_value, get_last_error
+from .litert import from_numpy_dtype, to_numpy_dtype
 from .litert import diopirt_lib, device_impl_lib
 from .testcase_configs import configs
 from .testcase_parse import CaseCollection
-from .gen_inputs import GenData
+from .gen_inputs import GenInputData
+from .gen_outputs import GenOutputData
 
 
 int8 = Dtype.int8
@@ -27,7 +29,8 @@ __all__ = [
     'diopirt_lib',
     'device_impl_lib',
     'CaseCollection',
-    'GenData',
+    'GenInputData',
+    'GenOutputData',
     'configs',
     'Tensor',
     'device',
@@ -36,4 +39,6 @@ __all__ = [
     'TensorHandle',
     'get_last_error',
     'check_return_value',
+    'from_numpy_dtype',
+    'to_numpy_dtype',
 ]

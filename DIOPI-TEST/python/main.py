@@ -2,12 +2,12 @@ import argparse
 import numpy as np
 import conformance as cf
 from conformance import functions as F
-from conformance import gen_outputs, testcase_run
+from conformance import testcase_run
 
 
 def cuda_test():
     print("test constructing a cf Tensor and fill it with a value")
-    x = cf.Tensor(size=(2, 3, 5), dtype=cf.float32, device=cf.device("device"))
+    x = cf.Tensor(size=(2, 3, 5), dtype=cf.float32)
     x.fill_(10)
     z = F.add(x, x)
     print(x, z)
@@ -24,14 +24,6 @@ def cuda_test():
     print(z, w)
 
 
-def generate_inputs(opname):
-    case_collection = cf.CaseCollection(
-        configs=cf.configs
-    )
-    gen_data = cf.GenData(case_collection)
-    gen_data.generate(opname)
-
-
 def parse_args():
     parser = argparse.ArgumentParser(description='Conformance Test for DIOPI')
     parser.add_argument('--mode', type=str, default='test',
@@ -45,9 +37,12 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     if args.mode == 'gen_input':
-        generate_inputs(args.fn)
+        case_collection = cf.CaseCollection(configs=cf.configs)
+        gen_data = cf.GenInputData(case_collection)
+        gen_data.run(args.fn)
     elif args.mode == 'gen_output':
-        gen_outputs.generate(args.fn)
+        gen_data = cf.GenOutputData()
+        gen_data.run(args.fn)
     elif args.mode == 'run':
         testcase_run.run(args.fn)
     else:

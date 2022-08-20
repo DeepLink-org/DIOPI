@@ -1,4 +1,5 @@
-from ctypes import cdll, byref, Structure, POINTER, cast
+import os
+from ctypes import cdll, byref, Structure, POINTER
 from .dtype import *
 import numpy as np
 import atexit
@@ -74,11 +75,11 @@ def to_numpy_dtype(dtype : Dtype) -> np.dtype:
     else:
         return None
 
-
-diopirt_lib = cdll.LoadLibrary("../lib/libdiopirt.so")
+_cur_dir = os.path.dirname(os.path.abspath(__file__))
+diopirt_lib = cdll.LoadLibrary(os.path.join(_cur_dir, "../../lib/libdiopirt.so"))
 diopirt_lib.diopiInit()
 
-device_impl_lib = cdll.LoadLibrary("../lib/libdevice_impl.so")
+device_impl_lib = cdll.LoadLibrary(os.path.join(_cur_dir, "../../lib/libdevice_impl.so"))
 device_impl_lib.initLibrary()
 
 
@@ -99,10 +100,10 @@ class Context:
 
     def __init__(self):
         self.context_handle = ContextHandle()
-        self.__class__._c_lib.diopiCreateContext(byref(self.context_handle))
+        self.__class__._c_lib._diopiCreateContext(byref(self.context_handle))
 
     def __del__(self):
-        self.__class__._c_lib.diopiDestoryContext(self.context_handle)
+        self.__class__._c_lib._diopiDestroyContext(self.context_handle)
 
     def get_handle(self):
         return self.context_handle
@@ -133,7 +134,6 @@ class Tensor:
         self,
         size,
         dtype,
-        device=device("host"),
         stride=None,
         context_handle=default_context.get_handle(),
     ):
@@ -141,7 +141,6 @@ class Tensor:
         self.context_handle = context_handle
 
         assert isinstance(size, (tuple, list))
-        assert isinstance(device, Device)
         assert isinstance(dtype, Dtype)
 
         diopirt_lib.diopiRequireTensor(
@@ -150,23 +149,23 @@ class Tensor:
             byref(Sizes(tuple(size))),
             None if stride is None else byref(Sizes(tuple(stride))),
             dtype.value,
-            device.value,
+            Device.AIChip.value
         )
 
     def __del__(self):
-        diopirt_lib.diopiDestoryTensor(self.context_handle, self.tensor_handle)
+        diopirt_lib._diopiDestoryTensor(self.context_handle, self.tensor_handle)
 
     def __str__(self):
-        check_return_value(diopirt_lib.diopiDumpTensor(
-            self.context_handle, self.tensor_handle), throw_exception=False)
-        return ""
+        array = self.numpy()
+        string = f"{array.__str__()}\n"
+        string += f"{self.get_dtype()}, shape:{self.size()}, stride:{self.stride()}, numel:{self.numel()}\n"
+        return string
 
-    def raw_like(self, device=None):
+    def raw_like(self):
         size = self.size()
         stride = self.stride()
         dtype = self.get_dtype()
-        target_device = self.get_device() if device is None else device
-        return Tensor(size=size, dtype=dtype, device=target_device, stride=stride, context_handle=self.context_handle)
+        return Tensor(size=size, dtype=dtype, stride=stride, context_handle=self.context_handle)
 
     def numel(self):
         numel = c_int64()
@@ -208,20 +207,14 @@ class Tensor:
         self.dtype = Dtype(dtype.value)
         return self.dtype
 
-    def data_ptr(self):
-        ptr = c_void_p()
-        diopirt_lib.diopiGetTensorData(self.tensor_handle, byref(ptr))
-        self.c_buf = cast(ptr, POINTER(dtype_to_ctype(self.dtype)))
-        return ptr.value
-
     @staticmethod
-    def from_numpy(darray, device=device("device")):
+    def from_numpy(darray):
         if not isinstance(darray, (np.generic, np.ndarray)):
             raise TypeError("expected np.ndarray (got {})".format(type(darray)))
 
         dtype = from_numpy_dtype(darray.dtype)
         stride = [int(darray.strides[i]/darray.itemsize) for i in range(len(darray.strides))]
-        tr = Tensor(size=darray.shape, dtype=dtype, device=device, stride=stride)
+        tr = Tensor(size=darray.shape, dtype=dtype, stride=stride)
         diopirt_lib._diopiTensorCopyFromBuffer(tr.context_handle, c_void_p(darray.ctypes.data), tr.tensor_handle)
         return tr
 

@@ -9,7 +9,8 @@ from .utils import logger
 from .testcase_parse import Genfunc, dict_elem_length
 
 
-inputs_dir_path = "data/inputs"
+_cur_dir = os.path.dirname(os.path.abspath(__file__))
+inputs_dir_path = os.path.join(_cur_dir, "../data/inputs")
 
 
 def num_of_tensor(obj: dict):
@@ -274,12 +275,19 @@ def gen_and_save_data(dir_path: str, case_k: str, case_vs: list, cfgs: dict):
         i += 1
 
 
-class GenData(object):
+class GenInputData(object):
+    r'''
+    Generate input data for all functions by using testcases' configs
+    '''
+
     def __init__(self, case_collection):
         self.case_collection = case_collection
         self.gen_num = 0
 
-    def generate(self, opname, tag=None):
+    def run(self, opname):
+        if not os.path.exists(inputs_dir_path):
+            os.makedirs(inputs_dir_path)
+
         cases = self.case_collection.test_cases
         num = 0
         cfgs = {}
@@ -294,7 +302,7 @@ class GenData(object):
             logger.debug("done")
         self.gen_num = num
 
-        with open(os.path.join(inputs_dir_path, "cfgs.pth"), "wb") as cfg_file:
+        with open(os.path.join(inputs_dir_path, "testcases.cfg"), "wb") as cfg_file:
             pickle.dump(cfgs, cfg_file)
 
         logger.info(f"gen_num: {self.gen_num}")

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.8)
+cmake_minimum_required(VERSION 3.4)
 project(diopi_conformance_test)
 
 option(USE_CXX "Whether to use cxx impl, or use c impl" ON)
