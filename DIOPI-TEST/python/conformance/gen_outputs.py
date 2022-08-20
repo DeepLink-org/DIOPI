@@ -31,6 +31,12 @@ def transfer_tensor_to_device(function_paras: dict):
         if isinstance(function_paras['kwargs'][para], np.ndarray):
             tensor = torch.from_numpy(function_paras['kwargs'][para])
             function_paras['kwargs'][para] = tensor.cuda()
+        if para == "tensors":
+            tensors = function_paras['kwargs'][para]
+            for idx, ele in enumerate(tensors):
+                 tensors[idx] = torch.from_numpy(ele).cuda()
+            function_paras['kwargs'][para] = tensors
+                
     for i_para in range(len(function_paras["kargs"])):
         if isinstance(function_paras["kargs"][i_para], np.ndarray):
             tensor = torch.from_numpy(function_paras['kargs'][i_para])

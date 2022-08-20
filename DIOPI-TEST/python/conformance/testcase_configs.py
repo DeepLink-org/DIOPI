@@ -10,23 +10,22 @@ configs = {
         call_para=dict(
             args=[
                 {
-                    "shape": ((2, 5, 3, 5), (3, 4, 3), (2, 3)),
+                    "shape": ((2, 8, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["running_mean"],
-                    "shape": ((5, ), (4, ), (3, )),
+                    "shape": ((8, ), (64, ), (96, ), (16, )),
                     "gen_fn": Genfunc.zeros,
                 },
                 {
                     "ins": ["running_var"],
-                    "value": [[1.0, 1.0, 1.0, 1.0, 1.0],
-                              [1.0, 1.0, 1.0, 1.0],
-                              [1.0, 1.0, 1.0]],
+                    "shape": ((8, ), (64, ), (96, ), (16, )),
+                    "gen_fn": Genfunc.ones,
                 },
                 {
                     "ins": ["weight", "bias"],
-                    "shape": ((5, ), (4, ), (3, )),
+                    "shape": ((8, ), (64, ), (96, ), (16, )),
                     "gen_fn": Genfunc.randn,
                 },
             ]
@@ -38,22 +37,25 @@ configs = {
         atol=1e-5,
         rtol=1e-4,
         dtype=[Dtype.float32, Dtype.float16],
-        para=dict(
-            stride=[2, ],
+        related_para=dict(
+            stride=[2, 1, 1],
+            padding=[0, 12, 0],
+            dilation=[1, 12, 1],
+            groups=[1, 2048, 1],
         ),
         call_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": ((2, 3, 16, 16),),
+                    "shape": ((2, 256, 200, 304), (2, 2048, 64, 64), (2, 2048, 1, 1)),
                 },
                 {
                     "ins": ["weight"],
-                    "shape": ((6, 3, 2, 2),),
+                    "shape": ((12, 256, 1, 1), (2048, 1, 3, 3), (512, 2048, 1, 1)),
                 },
                 {
                     "ins": ["bias"],
-                    "shape": ((6, ), None, (6,)),
+                    "shape": ((12, ), None, None),
                 },
             ]
         ),
@@ -64,30 +66,26 @@ configs = {
         dtype=[Dtype.float32],
         atol=1e-5,
         para=dict(
-            eps=[1e-6, 2e-6],
+            eps=[1e-5, 1e-12],
         ),
         related_para=dict(
-            normalized_shape=[(5, 3, 5), (4, 3), (3,), (3,),
-                              [5, 3, 5], [4, 3], [3], [3]],
+            normalized_shape=[(5, 3, 5), (128, ), (64, )],
         ),
         call_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": ((2, 5, 3, 5), (3, 4, 3), (2, 3), (3, 3),
-                              (2, 5, 3, 5), (3, 4, 3), (2, 3), (3, 3)),
+                    "shape": ((2, 5, 3, 5), (2, 3136, 128), (2, 64)),
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["weight"],
-                    "shape": (None, None, (3, ), (3,),
-                              None, None, (3, ), (3,)),
+                    "shape": (None, (128, ), (64, )),
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["bias"],
-                    "shape": (None, (4, 3), None, (3,),
-                              None, (4, 3), None, (3,)),
+                    "shape": (None, (128, ), (64, )),
                     "gen_fn": Genfunc.randn,
                 },
             ]
@@ -98,29 +96,13 @@ configs = {
         name=["relu"],
         atol=1e-4,
         rtol=1e-5,
+        is_inplace=True,
         call_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((16, 7), (64, 28, 28),
-                              (16, 3, 14, 14), (64, 3, 7, 28, 28)),
-                    "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'relu_': dict(
-        name=["relu_"],
-        atol=1e-4,
-        rtol=1e-5,
-        call_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((16, 7), (64, 28, 28),
-                              (16, 3, 14, 14), (64, 3, 7, 28, 28)),
+                    "shape": ((2, 4096), (64, 28, 28),
+                              (32, 64, 112, 112), (64, 3, 7, 28, 28)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -133,15 +115,15 @@ configs = {
         para=dict(
             kernel_size=[(2, 2)],
             stride=[1, (1, 2)],
-            padding=[(1, 1)],
+            padding=[(1, 1), 0],
             ceil_mode=[True, False],
             count_include_pad=[True, False],
-            divisor_override=[None, 1, 2]
+            divisor_override=[None, 1, 2],
         ),
         call_para=dict(
             args=[
                 {
-                    "shape": ((3, 16, 22, 15), (2, 16, 10, 9), (3, 4, 10)),
+                    "shape": ((2, 1024, 14, 14), (256, 28, 28)),
                     "dtype": [Dtype.float32, Dtype.float64],
                 },
             ]
@@ -151,19 +133,21 @@ configs = {
     'max_pool2d': dict(
         name=["max_pool2d"],
         related_para=dict(
-            kernel_size=[(2, 2), (1, 2), 1, 3],
-            stride=[(2, 1), 2, (3, 4), 2],
-            dilation=[3, (2, 1), (2, 4), 2],
-            ceil_mode=[False, True, True, True],
+            kernel_size=[3, (2, 1), (2, 2), 3],
+            stride=[2, (2, 1), (2, 1), 2],
+            padding=[1, 0, (0, 1), 0],
+            dilation=[1, 1, 1, 2],
+            ceil_mode=[False, True, False, True],
+            return_indices=[False, False, False, True],
         ),
         call_para=dict(
             gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((5, 8, 6, 9),
-                              (4, 4, 8, 9),
-                              (3, 4, 5, 7),
+                    "shape": ((2, 64, 352, 528),
+                              (2, 256, 12, 40),
+                              (2, 512, 4, 26),
                               (3, 4, 10)),
                     "dtype": [Dtype.float16, Dtype.float32],
                 },
@@ -176,7 +160,7 @@ configs = {
         atol=1e-5,
         rtol=1e-4,
         para=dict(
-            output_size=[2, (2, 3), (None, 3), (3, 4)],
+            output_size=[(1, 1), 2, (None, 3), (3, 4)],
         ),
         call_para=dict(
             gen_fn=Genfunc.randn,
@@ -184,7 +168,7 @@ configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((2, 3, 10, 10), (4, 8, 10, 15)),
+                    "shape": ((2, 2048, 8, 6), (2, 144, 65, 65)),
                     "dtype": [Dtype.float32],
                 },
             ]
@@ -204,7 +188,7 @@ configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((2, 3, 10, 10), (4, 8, 10, 15)),
+                    "shape": ((2, 144, 33, 33), (2, 16, 130, 130)),
                     "dtype": [Dtype.float32],
                 },
             ]
@@ -217,7 +201,7 @@ configs = {
         rtol=1e-4,
         dtype=[Dtype.float32],
         para=dict(
-            reduction=['mean'],
+            reduction=['mean', 'none'],
         ),
         call_para=dict(
             gen_fn=Genfunc.randn,
@@ -225,23 +209,23 @@ configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((4, 4),
-                              (5, 8, 20),
+                    "shape": ((72,), (2, 11856),
+                              (2, 741, 80),
                               (4, 4, 16, 20)),
                 },
                 {
                     "ins": ['target'],
                     "requires_grad": [False],
-                    "shape": ((4, 4),
-                              (5, 8, 20),
+                    "shape": ((72,), (2, 11856),
+                              (2, 741, 80),
                               (4, 4, 16, 20)),
                 },
                 {
                     "ins": ['weight'],
                     "requires_grad": [False],
-                    "shape": ((4, 4),
-                              (5, 8, 20),
-                              (4, 4, 16, 20)),
+                    "shape": ((72,), (2, 11856),
+                              (2, 741, 80),
+                              None),
                 },
             ],
         ),
@@ -253,34 +237,16 @@ configs = {
               'log', 'log2', 'log10','neg', 'round', 'sign',
               'sin', 'sinh', 'sqrt', 'tan', 'tanh'],
         interface=['torch'],
+        is_inplace=True,
         dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
         call_para=dict(
             gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((5, 8, 20),
-                              (4, 4, 16, 20),
-                              (4, 4, 16, 2, 20)),
-                },
-            ],
-        ),
-    ),
-
-    'pointwise_op_inp': dict(
-        name=['abs_', 'acos_', 'asin_', 'atan_', 'ceil_', 'cos_',
-              'cosh_', 'exp_', 'erf_', 'erfc_',  'sign_', 'expm1_',
-              'floor_', 'log_', 'log2_', 'log10_', 'neg_', 'round_',
-              'sin_', 'sinh_', 'sqrt_', 'tan_', 'tanh_'],
-        dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
-        interface=['tensor'],
-        call_para=dict(
-            gen_fn=Genfunc.randn,
-            args=[
-                {
-                    "shape": ((5, 8, 20),
-                              (4, 4, 16, 20),
-                              (4, 4, 16, 2, 20)),
+                    "shape": ((1, ), (1024,), (364800, 4), (2, 128, 3072),
+                              (256, 128, 3, 3),
+                              (2, 31, 512, 6, 40)),
                 },
             ],
         ),
@@ -288,35 +254,16 @@ configs = {
 
     'sigmoid': dict(
         name=["sigmoid"],
+        interface=['torch'],
         call_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((16, 7), (64, 28, 28),
-                              (16, 14, 14), (64, 7, 28, 28)),
+                    "shape": ((182400,), (20267, 80), (8, 200, 304),
+                             (32, 16, 1, 1), (16, 32, 130, 130)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'pow_float_number': dict(
-        name=['pow'],
-        interface=['torch'],
-        para=dict(
-           exponent=[0.1, 2.0],
-        ),
-        dtype=[Dtype.float32],
-        call_para=dict(
-            gen_fn=Genfunc.randn,
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((5, 8, 20),
-                              (4, 4, 16, 20),
-                              (4, 4, 16, 2, 20)),
                 },
             ],
         ),
@@ -332,39 +279,37 @@ configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((3, 4, 1, 6), (2, 4, 1, 6),
-                              (5, 8, 20),
-                              (4, 4, 16, 20),
-                              (4, 4, 16, 2, 20)),
+                    "shape": ((1, ), (20267, 80),
+                              (2, 128, 3072),
+                              (2, 512, 38, 38)),
                 },
                 {
                     "ins": ['exponent'],
                     "requires_grad": [True],
-                    "shape": ((4, 5, 6), (1, 5, 6),
-                              (5, 8, 20),
-                              (4, 4, 16, 20),
-                              (4, 4, 16, 2, 20)),
+                    "shape": ((1, ), (20267, 80),
+                              (2, 128, 3072),
+                              (2, 512, 38, 38)),
                 },
             ],
         ),
     ),
 
-    'pow_int_number': dict(
+    'pow_float_number': dict(
         name=['pow'],
         interface=['torch'],
         para=dict(
-           exponent=[2, 3],
+           exponent=[2, 3, 4, 0.2],
         ),
         call_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "requires_grad": [False],
-                    "shape": ((3, 3),
-                              (4, 4),
-                              (5, 5)),
-                    "dtype": [Dtype.int32],
-                    "gen_fn": dict(fn=Genfunc.randint, high=4),
+                    "shape": ((1, ), (20267, 80),
+                              (2, 128, 3072),
+                              (2, 512, 38, 38)),
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
                 }
             ],
         ),
@@ -378,9 +323,8 @@ configs = {
                 {
                     "ins": ['input', 'exponent'],
                     "requires_grad": [False, False],
-                    "shape": ((3, 3),
-                              (4, 4),
-                              (5, 5)),
+                    "shape": ((125, 1), (70, 1, 2),
+                              (4, 256, 16, 16)),
                     "dtype": [Dtype.int32],
                     "gen_fn": dict(fn=Genfunc.randint, high=4),
                 }
@@ -399,41 +343,35 @@ configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((5, 8, 20),
-                              (4, 4, 16, 20),
-                              (4, 4, 16, 2, 20)),
+                    "shape": ((1024, ), (384, 128),
+                              (128, 64, 3, 3),
+                              (2, 32, 130, 130)),
                 },
                 {
                     "ins": ['other'],
-                    "shape": ((5, 8, 20),
-                              (4, 4, 16, 20),
-                              (4, 4, 16, 2, 20)),
+                    "shape": ((1024, ), (384, 128),
+                              (1, ), (2, 32, 1, 1)),
                 },
             ],
         ),
     ),
 
-    'pointwise_binary_with_alpha': dict(
-        name=['add', 'rsub'],
-        para=dict(
-            alpha=[-2, 2.0, 4],
-        ),
+    'pointwise_binary_scalar': dict(
+        name=['add', 'rsub', 'mul', 'div', 'eq', 
+              'ne', 'le',  'lt', 'gt', 'ge'],
         interface=['torch'],
         dtype=[Dtype.float32],
+        para=dict(
+            other=[-1, 0.028, 2],
+        ),
         call_para=dict(
             gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((5, 8, 20),
-                              (4, 4, 16, 20),
-                              (4, 4, 16, 2, 20)),
-                },
-                {
-                    "ins": ['other'],
-                    "shape": ((5, 8, 20),
-                              (4, 4, 16, 20),
-                              (4, 4, 16, 2, 20)),
+                    "shape": ((1024, ), (384, 128),
+                              (128, 64, 3, 3),
+                              (2, 32, 130, 130)),
                 },
             ],
         ),
@@ -453,9 +391,9 @@ configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((5, 8, 20),
-                              (4, 4, 16, 20),
-                              (4, 4, 16, 2, 20)),
+                    "shape": ((1024, ), (384, 128),
+                              (128, 64, 3, 3),
+                              (2, 32, 130, 130)),
                 },
             ],
         ),
@@ -473,12 +411,12 @@ configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((10, 3, 4), (3, 2, 4), (9, 5, 5)),
+                    "shape": ((16, 726, 32), (16, 100, 100), (9, 5, 5)),
                 },
                 {
                     "ins": ['mat2'],
                     "requires_grad": [True],
-                    "shape": ((10, 4, 5), (3, 4, 2), (9, 5, 10)),
+                    "shape": ((16, 32, 726), (16, 100, 32), (9, 5, 10)),
                 },
             ],
         ),
@@ -491,7 +429,7 @@ configs = {
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            value=[1, 2, 5, 15, 0.5, 3.5],
+            value=[0.001, -0.01, 2],
         ),
         call_para=dict(
             gen_fn=Genfunc.randn,
@@ -500,17 +438,17 @@ configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((1, 3), (10, 3, 5), (4, 1, 1)),
+                    "shape": ((128, ), (576, 192), (64, 3, 3, 3), (10, 3, 5), (4, 1, 1)),
                 },
                 {
                     "ins": ["tensor1"],
                     "requires_grad": [True],
-                    "shape": ((3, 1), (10, 3, 1), (1, 5)),
+                    "shape": ((128, ), (576, 192), (64, 3, 3, 3), (10, 3, 1), (1, 5)),
                 },
                 {
                     "ins": ["tensor2"],
                     "requires_grad": [True],
-                    "shape": ((1, 3), (10, 1, 5), (4, 5, 1)),
+                    "shape": ((128, ), (576, 192), (64, 3, 3, 3), (10, 1, 5), (4, 5, 1)),
                 },
             ],
         ),
@@ -528,16 +466,14 @@ configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((2,), (6, 3), (5,), (3, 4),
-                              (3, 3, 5), (3, 3, 4, 4), (5, 5, 6, 7),
-                              (3, 3, 5), (1, 3, 5)),
+                    "shape": ((128, 49, 128), (5,), (128, 4, 49, 32),
+                              (2, 1, 3136, 3136), (2, 784, 64), (2, 31, 6, 40, 512)),
                 },
                 {
                     "ins": ['other'],
                     "requires_grad": [True],
-                    "shape": ((2, 2), (3,), (5,), (4, 3),
-                              (5, 3), (3, 3, 4, 3), (5, 5, 7, 6),
-                              (1, 5, 3), (3, 5, 3)),
+                    "shape": ((128, 384), (5,), (128, 4, 32, 49),
+                              (2, 1, 3136, 64), (2, 64, 784), (512, 1)),
                 },
             ],
         ),
@@ -546,73 +482,28 @@ configs = {
     'clamp': dict(
         name=['clamp'],
         interface=['torch'],
+        is_inplace=True,
         atol=1e-4,
         rtol=1e-5,
-        para=dict(
-            min=[-2.0, -1.2, 0, 2],
-            max=[2.3, 3.2, 5.4, 6],
+        related_para=dict(
+            min=[None, -4.13, 1, 1e-12],
+            max=[4.13, 26, None, 1199],
         ),
         call_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((3, 5),
-                              (6, 7, 8),
-                              (4, 6, 10, 9)),
+                    "shape": ((182, ), (384, 128),
+                              (1, 242991, 2),
+                              (2, 4, 100, 152)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
             ],
         ),
     ),
-
-    'clamp_max': dict(
-        name=["clamp_max"],
-        interface=['torch'],
-        atol=1e-4,
-        rtol=1e-5,
-        para=dict(
-            max=[2.3, 3.2, 5.4, 6],
-        ),
-        call_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "requires_grad": [True],
-                    "shape": ((3, 5),
-                              (6, 7, 8),
-                              (4, 6, 10, 9)),
-                    "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'clamp_min': dict(
-        name=["clamp_min"],
-        interface=['torch'],
-        atol=1e-4,
-        rtol=1e-5,
-        para=dict(
-            min=[-2.0, -1.2, 0, 2],
-        ),
-        call_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "requires_grad": [True],
-                    "shape": ((3, 5),
-                              (6, 7, 8),
-                              (4, 6, 10, 9)),
-                    "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
+  
     'reduce_op': dict(
         name=['mean', 'std', 'sum', 'var', 'min'],
         interface=['torch'],
@@ -623,9 +514,8 @@ configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((3, 5, 6), (2, 4, 9), (5, 8, 7),
-                              (6, 7, 8, 9), (3, 5, 7, 9), (1, 3, 6, 8),
-                              (4, 6, 10, 9, 8), (2, 3, 5, 8, 9)),
+                    "shape": ((64, ), (169, 4), (17100, 2), (1, 1, 384),
+                              (4, 133, 128, 128), (2, 64, 3, 3, 3)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -636,9 +526,9 @@ configs = {
     'reduce_partial_op': dict(
         name=['mean', 'sum'],
         interface=['torch'],
-        para=dict(
-            dim=[0, 1, 2, [0, 1], [-1, 0]],
-            keepdim=[True, False]
+        related_para=dict(
+            dim=[0, 1, [0, 1], 2, [-1, 0], 3],
+            keepdim=[True, False, True, False, True, False],
         ),
         atol=1e-4,
         rtol=1e-5,
@@ -647,9 +537,8 @@ configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((3, 5, 6), (2, 4, 9), (5, 8, 7),
-                              (6, 7, 8, 9), (3, 5, 7, 9), (1, 3, 6, 8),
-                              (4, 6, 10, 9, 8), (2, 3, 5, 8, 9)),
+                    "shape": ((64, ), (169, 4), (17100, 2), (1, 1, 384),
+                              (4, 133, 128, 128), (2, 64, 3, 3, 3)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -660,10 +549,10 @@ configs = {
     'reduce_partial_op_1': dict(
         name=['std', 'var'],
         interface=['torch'],
-        para=dict(
-            dim=[0, 1, 2, [0, 1], [-1, 0]],
-            keepdim=[True, False],
-            unbiased=[True, False],
+        related_para=dict(
+            dim=[0, 1, [0, 1], 2, [-1, 0], 3],
+            keepdim=[True, False, True, False, True, False],
+            unbiased=[True, False, True, False, True, False],
         ),
         atol=1e-4,
         rtol=1e-5,
@@ -672,9 +561,8 @@ configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((3, 5, 6), (2, 4, 9), (5, 8, 7),
-                              (6, 7, 8, 9), (3, 5, 7, 9), (1, 3, 6, 8),
-                              (4, 6, 10, 9, 8), (2, 3, 5, 8, 9)),
+                    "shape": ((64, ), (169, 4), (17100, 2), (1, 1, 384),
+                              (4, 133, 128, 128), (2, 64, 3, 3, 3)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -705,7 +593,7 @@ configs = {
     'mse_loss': dict(
         name=["mse_loss"],
         para=dict(
-            reduction=['mean'],
+            reduction=['mean', 'none'],
         ),
         dtype=[Dtype.float32],
         call_para=dict(
@@ -714,11 +602,11 @@ configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((3, 5, 6), (3, 5, 6, 6)),
+                    "shape": ((2, 11856, 2), (16, 2, 2964, 2)),
                 },
                 {
                     "ins": ['target'],
-                    "shape": ((3, 5, 6), (3, 5, 6, 6)),
+                    "shape": ((2, 11856, 2), (16, 2, 2964, 2)),
                 },
             ],
         ),
@@ -727,7 +615,7 @@ configs = {
     'cross_entropy': dict(
         name=["cross_entropy"],
         para=dict(
-            reduction=['mean'],
+            reduction=['mean', 'none'],
             #label_smoothing=[0.0, 0.5],
         ),
         dtype=[Dtype.float32],
@@ -737,7 +625,7 @@ configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((3, 5, 6), (3, 5, 6, 6)),
+                    "shape": ((1024, 81), (3, 5, 6, 6)),
                 },
                 {
                     "ins": ['weight'],
@@ -746,7 +634,7 @@ configs = {
                 },
                 {
                     "ins": ['target'],
-                    "shape": ((3, 6), (3, 6, 6)),
+                    "shape": ((1024, ), (3, 6, 6)),
                     "gen_fn": dict(fn=Genfunc.randint, low=0, high=5),
                     "dtype": [Dtype.int64],
 
@@ -785,7 +673,7 @@ configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((5, 3), (16, 8), (16, 4, 4), (4, 4, 14, 14)),
+                    "shape": ((5, 3), (16, 8), (1, 800, 1216), (4, 4, 14, 14)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                     "gen_fn": Genfunc.randn
                 },
@@ -840,7 +728,24 @@ configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((5, 8, 20),
+                    "shape": ((1482, ), (5, 8, 20),
+                              (4, 4, 16, 20),
+                              (4, 4, 16, 2, 20)),
+                },
+            ],
+        ),
+    ),
+
+    'nonzero': dict(
+        name=["nonzero"],
+        interface=['torch'],
+        dtype=[Dtype.bool],
+        call_para=dict(
+            gen_fn=Genfunc.mask,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1482, ), (5, 8, 20),
                               (4, 4, 16, 20),
                               (4, 4, 16, 2, 20)),
                 },
@@ -852,22 +757,25 @@ configs = {
         name=["linear"],
         atol=1e-4,
         saved_args=['weight', 'bias'],
-        para=dict(
-            bias=[None]
-        ),
         call_para=dict(
             gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((97, 20), (103, 217, 20), (1, 20)),
+                    "shape": ((2, 512), (128, 49, 128), (6, 2, 100, 256),
+                              (2, 31, 6, 40, 512)),
                     "dtype": [Dtype.float16, Dtype.float32],
                 },
                 {
                     "ins": ['weight'],
                     "requires_grad": [True],
-                    "shape": ((15, 20), (15, 20), (15, 20)),
+                    "shape": ((10, 512), (384, 128), (81, 256), (1, 512)),
+                    "dtype": [Dtype.float16, Dtype.float32],
+                },
+                {
+                    "ins": ['bias'],
+                    "shape": ((10, ), None, (81, ), (1,)),
                     "dtype": [Dtype.float16, Dtype.float32],
                 },
             ]
@@ -876,12 +784,14 @@ configs = {
 
     'log_softmax': dict(
         name=["log_softmax"],
+        related_para=dict(
+            dim=[-1, 1, 0],
+        ),
         call_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((16, 7), (64, 28, 28),
-                              (16, 14, 14), (64, 7, 28, 28)),
+                    "shape": ((78, 24), (2, 92, 29), (2, 150, 512, 512)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -894,13 +804,13 @@ configs = {
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            dim=[1, 0],
+            dim=[-1, 1, 0],
         ),
         call_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((16, 1025), (1025, 1025)),
+                    "shape": ((2, 128, 24), (8, 16, 49, 49)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -932,8 +842,8 @@ configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((16, 7), (64, 28, 28),
-                              (16, 14, 14), (64, 7, 28, 28)),
+                    "shape": ((741, ), (16, 7),
+                              (8, 200, 304), (2, 9, 80, 80)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -970,14 +880,14 @@ configs = {
             args=[
                 {
                     "requires_grad": [False],
-                    "shape": ((), (2, ), (2, 3), (2, 3, 4)),
+                    "shape": ((), (2, ), (2, 30), (2, 3, 4)),
                     "dtype": [Dtype.int64],
                     "gen_fn": dict(fn=Genfunc.randint, high=10),
                 },
                 {
                     "ins": ["weight"],
                     "requires_grad": [True],
-                    "shape": ((10, 3), (10, 2), (20, 3), (20, 2)),
+                    "shape": ((10, 3), (10, 2), (93, 512), (20, 2)),
                     "gen_fn": Genfunc.randn,
                     "dtype": [Dtype.float32],
                 },
@@ -1027,13 +937,13 @@ configs = {
    'one_hot': dict(
         name=["one_hot"],
         para=dict(
-            num_classes=[-1, 6],
+            num_classes=[-1, 80],
         ),
         call_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((6, ), (6, 8, ), (64, 7, 28,)),
+                    "shape": ((2, ), (6, 8, ), (64, 7, 28,)),
                     "dtype": [Dtype.int64],
                     "gen_fn": dict(fn=Genfunc.randint, high=6),
                 },
@@ -1041,50 +951,75 @@ configs = {
         ),
     ),
 
-    # 'join': dict(
-    #     name=['cat', 'stack'],
-    #     interface=['torch'],
-    #     atol=1e-4,
-    #     rtol=1e-5,
-    #     para=dict(
-    #         dim=[-1, 0, 1],
-    #     ),
-    #     call_para=dict(
-    #         args=[
-    #             {
-    #                 "ins": ['tensor'],
-    #                 "requires_grad": [True],
-    #                 "shape": ((2, 3),
-    #                           (3, 4, 5),
-    #                           (4, 5, 6, 7)),
-    #                 "dtype": [Dtype.float32],
-    #                 "gen_fn": Genfunc.randn,
-    #                 "genrange": [2, 5]
-    #             },
-    #         ],
-    #         seq_name='tensors',
-    #     ),
-    # ),
-
-    'split': dict(
-        name=["split"],
+    'join': dict(
+        name=['cat', 'stack'],
         interface=['torch'],
         atol=1e-4,
         rtol=1e-5,
-        para=dict(
-            split_size_or_sections=[1, 2, 3],
-            dim=[0, 1, 2]
+        related_para=dict(
+            dim=[-1, 1, 0, 2, 1, 1],
         ),
         call_para=dict(
             args=[
                 {
                     "ins": ['tensor'],
                     "requires_grad": [True],
-                    "shape": ((3, 5, 6),
-                              (6, 7, 8, 9),
+                    "shape": ((3, ), (512, 4),
+                              (0, 50, 76), (2, 31, 512),
+                              (2, 512, 8, 8), (1, 64, 4, 56, 56)),
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                    "gen_num_range": [2, 5]
+                },
+            ],
+            seq_name='tensors',
+        ),
+    ),
+
+    'split': dict(
+        name=["split"],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-5,
+        related_para=dict(
+            split_size_or_sections=[[1, 1, 1, 1], [15200, 3800, 950, 247, 70], 3],
+            dim=[-1, 0, 1]
+        ),
+        call_para=dict(
+            args=[
+                {
+                    "ins": ['tensor'],
+                    "requires_grad": [True],
+                    "shape": ((1, 4),
+                              (20267, ),
                               (4, 6, 10, 9, 8)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+        requires_backward=[0],
+    ),
+
+    'split_bool': dict(
+        name=["split"],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-5,
+        related_para=dict(
+            split_size_or_sections=[[1, 1, 1, 1], [15200, 3800, 950, 247, 70], 3],
+            dim=[-1, 0, 1]
+        ),
+        call_para=dict(
+            args=[
+                {
+                    "ins": ['tensor'],
+                    "requires_grad": [True],
+                    "shape": ((1, 4),
+                              (20267, ),
+                              (4, 6, 10, 9, 8)),
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask,
                 },
             ],
         ),
@@ -1119,9 +1054,9 @@ configs = {
     'sort': dict(
         name=["sort"],
         interface=['torch'],
-        para=dict(
+        related_para=dict(
             dim=[-1, 0, 1],
-            descending=[True, False],
+            descending=[True, False, False],
         ),
         dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
         call_para=dict(
@@ -1129,7 +1064,7 @@ configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((5, 8, 20),
+                    "shape": ((11400, ),
                               (4, 4, 16, 20),
                               (4, 4, 16, 2, 20)),
                 },
@@ -1141,11 +1076,11 @@ configs = {
     'topk_nonzero': dict(
         name=['topk'],
         interface=['torch'],
-        para=dict(
-            k=[1, 2, 3],
+        related_para=dict(
+            k=[9, 12, 1, 3],
             dim=[-1, 0, 1, 2],
-            largest=[True, False],
-            sorted=[True, False],
+            largest=[True, False, False, False],
+            sorted=[True, False, False, False],
         ),
         call_para=dict(
             dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
@@ -1154,8 +1089,8 @@ configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((3, 4, 4),
-                              (5, 4, 6)),
+                    "shape": ((8723, ), (1024, 81),
+                              (5, 4, 6), (2, 2, 64, 64)),
                 },
             ],
         ),
@@ -1178,7 +1113,7 @@ configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": [(1,)],
+                    "shape": ((1, ), ),
                 },
             ],
         ),
@@ -1188,9 +1123,9 @@ configs = {
     'transpose': dict(
         name=['transpose'],
         interface=['torch'],
-        para=dict(
-            dim0=[0, 1],
-            dim1=[2, 3],
+        related_para=dict(
+            dim0=[1, -2],
+            dim1=[2, -1],
         ),
         call_para=dict(
             gen_fn=Genfunc.randn,
@@ -1199,8 +1134,8 @@ configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((3, 4, 4, 3),
-                              (5, 4, 6, 3, 6)),
+                    "shape": ((2, 1536, 950),
+                              (660, 6, 49, 32)),
                 },
             ],
         ),
@@ -1214,7 +1149,7 @@ configs = {
                 {
                     "ins": ['condition'],
                     "requires_grad": [False],
-                    "shape": [(3, ), (3, 5), (4, 5, 6)],
+                    "shape": [(1024, ), (1482, 4), (4, 5, 6)],
                     "dtype": [Dtype.uint8, Dtype.bool],
                     "gen_fn": Genfunc.mask
                 },
@@ -1222,7 +1157,7 @@ configs = {
                     "ins": ['input', 'other'],
                     "requires_grad": [True, True],
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
-                    "shape": [(3, ), (3, 5), (4, 5, 6)],
+                    "shape": [(1024, ), (1482, 4), (4, 5, 6)],
                     "gen_fn": Genfunc.randn
                 },
             ],
@@ -1237,7 +1172,7 @@ configs = {
                 {
                     "ins": ['condition'],
                     "requires_grad": [False],
-                    "shape": [(3, ), (3, 5), (4, 5, 6)],
+                    "shape": [(1024, ), (1482, 4), (4, 5, 6)],
                     "dtype": [Dtype.uint8, Dtype.bool],
                     "gen_fn": Genfunc.mask
                 },
@@ -1277,35 +1212,18 @@ configs = {
         ),
     ),
 
-    'tanh': dict(
-        name=["tanh"],
-        atol=1e-4,
-        call_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((16, 7), (64, 28, 28),
-                              (16, 14, 14), (64, 7, 28, 28),
-                              (4, 1, 16, 16, 16)),
-                    "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
     'dropout': dict(
         name=["dropout"],
         atol=1e-4,
-        para=dict(
-            p=[0.1, 0.5, 1.0],
+        related_para=dict(
+            p=[0.5, 0, 0.1, 0.4],
         ),
         call_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((16, 7), (16, 14, 14), (64, 7, 28, 28),
-                              (4, 1, 16, 16, 16)),
+                    "shape": ((2, 4096), (32, 49, 256), (2, 16, 64, 64),
+                              (1, 2304, 1, 1, 1)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -1322,7 +1240,7 @@ configs = {
                 {
                     "ins": ['input'],
                     "shape": ((16, 7), (64, 28, 28),
-                              (16, 3, 14, 14), (64, 3, 7, 28, 28)),
+                              (2, 32, 112, 112), (64, 3, 7, 28, 28)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -1334,15 +1252,16 @@ configs = {
         name=["leaky_relu"],
         atol=1e-4,
         rtol=1e-5,
+        is_inplace=True,
         para=dict(
-            negative_slope=[0.01, 0.1, 1, 10]
+            negative_slope=[0.01, 0.1, 10]
         ),
         call_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "shape": ((16, 7), (64, 28, 28),
-                              (16, 3, 14, 14), (64, 3, 7, 28, 28)),
+                              (2, 32, 208, 304), (64, 3, 7, 28, 28)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -1350,23 +1269,4 @@ configs = {
         ),
     ),
 
-    'leaky_relu_': dict(
-        name=["leaky_relu_"],
-        atol=1e-4,
-        rtol=1e-5,
-        para=dict(
-            negative_slope=[0.01, 0.1, 1, 10]
-        ),
-        call_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((16, 7), (64, 28, 28),
-                              (16, 3, 14, 14), (64, 3, 7, 28, 28)),
-                    "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
 }
