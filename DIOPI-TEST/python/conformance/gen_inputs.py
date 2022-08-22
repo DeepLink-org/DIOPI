@@ -11,6 +11,7 @@ from .testcase_parse import Genfunc, dict_elem_length
 
 _cur_dir = os.path.dirname(os.path.abspath(__file__))
 inputs_dir_path = os.path.join(_cur_dir, "../data/inputs")
+outputs_dir_path = os.path.join(_cur_dir, "../data/outputs")
 
 
 def num_of_tensor(obj: dict):
@@ -275,6 +276,20 @@ def gen_and_save_data(dir_path: str, case_k: str, case_vs: list, cfgs: dict):
         i += 1
 
 
+def load_testcases() -> list:
+    testcases = []
+    with open(os.path.join(inputs_dir_path, "testcases.cfg"), "rb") as file_cfgs:
+        try:
+            cfgs = pickle.load(file_cfgs)
+        finally:
+            for k, _ in cfgs.items():
+                testcases.append(k)
+    if len(testcases) == 0:
+        logger.info("No test cases found")
+
+    return testcases
+
+
 class GenInputData(object):
     r'''
     Generate input data for all functions by using testcases' configs
@@ -293,7 +308,7 @@ class GenInputData(object):
         cfgs = {}
         for case_k, case_v in cases.items():
             if opname not in ['all', case_v['name']]: continue
-            logger.debug(f"generating {case_k} ...")
+            logger.debug(f"generating input(s) for {case_k} ...")
             paras_comb, related_paras_comb, call_paras_args_comb = combinate_args(case_v)
             case_vs = generate_testcases(paras_comb, related_paras_comb,
                                          call_paras_args_comb, case_v)

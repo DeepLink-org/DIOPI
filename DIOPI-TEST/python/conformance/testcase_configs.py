@@ -94,8 +94,6 @@ configs = {
 
     'relu': dict(
         name=["relu"],
-        atol=1e-4,
-        rtol=1e-5,
         is_inplace=True,
         call_para=dict(
             args=[

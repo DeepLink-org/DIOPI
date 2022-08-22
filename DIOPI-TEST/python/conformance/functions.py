@@ -4,6 +4,13 @@ from .dtype import check_return_value
 from ctypes import c_float, c_int64, c_int32, byref
 
 
+class FunctionNotImplementedError(AttributeError):
+
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+
 def add(input, other, out=None) -> Tensor:
     if out is None:
         out = raw_like(input)
@@ -55,12 +62,16 @@ def relu(input, inplace=False):
     Applies the rectified linear unit function element-wise. See
     :class:`~torch.nn.ReLU` for more details.
     """
+    try:
+        relu_func = device_impl_lib.diopiRelu
+    except AttributeError as e:
+        raise FunctionNotImplementedError(e.args)
+
     if inplace:
         out = input
     else:
         out = raw_like(input)
 
-    ret = device_impl_lib.diopiRelu(input.context_handle, out.tensor_handle,
-                                    input.tensor_handle)
+    ret = relu_func(input.context_handle, out.tensor_handle, input.tensor_handle)
     check_return_value(ret)
     return out

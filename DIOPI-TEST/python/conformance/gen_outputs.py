@@ -2,31 +2,13 @@ import os
 import sys
 import pickle
 import numpy as np
-import torch
 
 from .utils import logger
-from .gen_inputs import inputs_dir_path
-
-
-_cur_dir = os.path.dirname(os.path.abspath(__file__))
-outputs_dir_path = os.path.join(_cur_dir, "../data/outputs")
-
-
-def load_testcases() -> list:
-    testcases = []
-    with open(os.path.join(inputs_dir_path, "testcases.cfg"), "rb") as file_cfgs:
-        try:
-            cfgs = pickle.load(file_cfgs)
-        finally:
-            for k, _ in cfgs.items():
-                testcases.append(k)
-    if len(testcases) == 0:
-        logger.info("No test cases found")
-
-    return testcases
+from .gen_inputs import inputs_dir_path, outputs_dir_path, load_testcases
 
 
 def transfer_tensor_to_device(function_paras: dict):
+    import torch
     for para in function_paras["kwargs"].keys():
         if isinstance(function_paras['kwargs'][para], np.ndarray):
             tensor = torch.from_numpy(function_paras['kwargs'][para])
@@ -36,7 +18,7 @@ def transfer_tensor_to_device(function_paras: dict):
             for idx, ele in enumerate(tensors):
                  tensors[idx] = torch.from_numpy(ele).cuda()
             function_paras['kwargs'][para] = tensors
-                
+
     for i_para in range(len(function_paras["kargs"])):
         if isinstance(function_paras["kargs"][i_para], np.ndarray):
             tensor = torch.from_numpy(function_paras['kargs'][i_para])
@@ -49,6 +31,7 @@ class GenOutputData(object):
     '''
 
     def run(self, opname):
+        import torch
         if not os.path.exists(inputs_dir_path):
             logger.error("input data is not generated!")
             sys.exit(0)
@@ -56,6 +39,8 @@ class GenOutputData(object):
         if not os.path.exists(outputs_dir_path):
             os.makedirs(outputs_dir_path)
 
+        num_total = 0
+        op_name_last = ""
         testcases = load_testcases()
         for fname in iter(testcases):
             outputs = None
@@ -64,6 +49,9 @@ class GenOutputData(object):
 
                 op_name = data["cfg"]["name"]
                 if opname not in ['all', op_name]: continue
+                if op_name_last != op_name:
+                    op_name_last = op_name
+                    logger.debug(f"generating output(s) for {op_name} ...")
 
                 module = "torch.nn.functional"
                 if "interface" in data["cfg"].keys():
@@ -90,5 +78,7 @@ class GenOutputData(object):
                             else:
                                 outputs_numpy.append(outputs[i])
                     pickle.dump(outputs_numpy, file_outputs)
+                    num_total += 1
 
-                logger.info(f"generate outputs for {op_name}")
+        logger.info(f"gen_num: {num_total}")
+        logger.info(f"generate output data done!")
