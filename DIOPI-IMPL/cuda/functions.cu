@@ -83,7 +83,7 @@ void vecFill(void *a, const float value, const int numel)
     }
 }
 
-extern "C" diopiError_t fill(diopiContextHandle_t ctx, diopiTensorHandle_t tensor, const float value)
+extern "C" diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t tensor, const float value)
 {
     auto stream = impl::cuda::getStream(ctx);
     auto tr = impl::cuda::makeTensor(tensor);
