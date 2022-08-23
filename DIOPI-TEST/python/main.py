@@ -1,33 +1,14 @@
+import subprocess
 import argparse
-import numpy as np
+import shlex
 import conformance as cf
-from conformance import functions as F
 from conformance import testcase_run
-
-
-def cuda_test():
-    print("test constructing a cf Tensor and fill it with a value")
-    x = cf.Tensor(size=(2, 3, 5), dtype=cf.float32)
-    x.fill_(10)
-    z = F.add(x, x)
-    print(x, z)
-
-    print("test constrcting a cf Tensor from a numpy ndarray")
-    a = np.array([[-1, 2.1], [3, 5.0]], dtype=np.float32)
-    b = cf.Tensor.from_numpy(a)
-    print(a, b)
-
-    print("test functions relu & softmax on CUDA device")
-    c = F.relu(b)
-    print(c)
-    w = F.softmax(z, 0)
-    print(z, w)
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Conformance Test for DIOPI')
     parser.add_argument('--mode', type=str, default='test',
-        help='running mode, available options: gen_input, gen_output, run & test')
+        help='running mode, available options: gen_input, gen_output, run & utest')
     parser.add_argument('--fn', type=str, default='all',
         help='the name of the function for which the test will run')
     args = parser.parse_args()
@@ -45,5 +26,8 @@ if __name__ == "__main__":
         gen_data.run(args.fn)
     elif args.mode == 'run':
         testcase_run.run(args.fn)
+    elif args.mode == 'utest':
+        call = f"python3 -m pytest -vx tests"
+        subprocess.call(shlex.split(call))  # nosec
     else:
-        cuda_test()
+        print("available options for mode: gen_input, gen_output, run & utest")

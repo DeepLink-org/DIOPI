@@ -1,6 +1,8 @@
 import os
-from ctypes import cdll, byref, Structure, POINTER
-from .dtype import *
+from enum import Enum, unique
+from ctypes import (cdll, byref, Structure, POINTER)
+from ctypes import (c_void_p, c_char_p, c_int64, c_int32)
+from .dtype import Dtype
 import numpy as np
 import atexit
 
@@ -11,14 +13,14 @@ class Device(Enum):
     AIChip = 1
 
 
-def device(dev : str) -> Device:
+def device(dev: str) -> Device:
     if dev == "cpu" or dev == "host":
         return Device(0)
     else:
         return Device(1)
 
 
-def from_numpy_dtype(dtype : np.dtype) -> Dtype:
+def from_numpy_dtype(dtype: np.dtype) -> Dtype:
     if dtype == np.int8:
         return Dtype.int8
     elif dtype == np.int16:
@@ -47,7 +49,7 @@ def from_numpy_dtype(dtype : np.dtype) -> Dtype:
         return None
 
 
-def to_numpy_dtype(dtype : Dtype) -> np.dtype:
+def to_numpy_dtype(dtype: Dtype) -> np.dtype:
     if dtype == Dtype.int8:
         return np.int8
     elif dtype == Dtype.int16:
@@ -75,6 +77,7 @@ def to_numpy_dtype(dtype : Dtype) -> np.dtype:
     else:
         return None
 
+
 _cur_dir = os.path.dirname(os.path.abspath(__file__))
 diopirt_lib = cdll.LoadLibrary(os.path.join(_cur_dir, "../../lib/libdiopirt.so"))
 diopirt_lib.diopiInit()
@@ -91,8 +94,16 @@ def on_litert_exit():
 atexit.register(on_litert_exit)
 
 
-TensorHandle = c_void_p
+def get_last_error():
+    last_error_str = c_char_p()
+    diopirt_lib._getLastErrorString(byref(last_error_str))
+    if last_error_str.value is not None:
+        last_error_str = str(last_error_str.value, encoding="utf-8")
+    return last_error_str
+
+
 ContextHandle = c_void_p
+TensorHandle = c_void_p
 
 
 class Context:
@@ -117,16 +128,7 @@ class Sizes(Structure):
 
     def __init__(self, shape=()):
         self.carray = (c_int64 * len(shape))(*shape)
-        carray = (c_int64 * len(shape))(*shape)
         super().__init__(self.carray, len(shape))
-
-
-def get_last_error():
-    last_error_str = c_char_p()
-    diopirt_lib._getLastErrorString(byref(last_error_str))
-    if last_error_str.value is not None:
-        last_error_str = str(last_error_str.value, encoding="utf-8")
-    return last_error_str
 
 
 class Tensor:

@@ -1,7 +1,8 @@
-from .litert import Tensor, device, TensorHandle, Context, Dtype
-from .litert import check_return_value, get_last_error
+from .litert import Tensor, Context, Dtype, Device
+from .litert import get_last_error, device
 from .litert import from_numpy_dtype, to_numpy_dtype
 from .litert import diopirt_lib, device_impl_lib
+from .utils import check_return_value
 from .testcase_configs import configs
 from .testcase_parse import CaseCollection
 from .gen_inputs import GenInputData
@@ -35,10 +36,14 @@ __all__ = [
     'Tensor',
     'device',
     'Dtype',
+    'Device',
     'Context',
-    'TensorHandle',
     'get_last_error',
     'check_return_value',
     'from_numpy_dtype',
     'to_numpy_dtype',
 ]
+
+
+def raw_like(tensor) -> Tensor:
+    return tensor.raw_like()

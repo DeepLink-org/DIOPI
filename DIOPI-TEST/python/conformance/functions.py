@@ -1,14 +1,21 @@
+from . import raw_like, check_return_value
 from .litert import Tensor, device_impl_lib
-from .utils import raw_like
-from .dtype import check_return_value
-from ctypes import c_float, c_int64, c_int32, byref
+from .utils import FunctionNotImplementedError
+from ctypes import c_float, c_int64, c_int32
 
 
-class FunctionNotImplementedError(AttributeError):
+def fill(tensor, value):
+    r"""
+    Fill a Tensor with a specific value
+    """
+    try:
+        fill_func = device_impl_lib.diopiFill
+    except AttributeError as e:
+        raise FunctionNotImplementedError(e.args)
 
-    def __init__(self, *args: object) -> None:
-        super().__init__(*args)
-
+    ret = fill_func(tensor.context_handle, tensor.tensor_handle, c_float(value))
+    check_return_value(ret)
+    return tensor
 
 
 def add(input, other, out=None) -> Tensor:
@@ -43,14 +50,21 @@ def softmax(input, dim, dtype=None):
           is performed. This is useful for preventing data type overflows. Default: None.
 
     """
-    if dim == None: dim = 0
-    if input.numel() == 0: return input
+    try:
+        softmax_func = device_impl_lib.diopiSoftmax
+    except AttributeError as e:
+        raise FunctionNotImplementedError(e.args)
+
+    if dim is None:
+        dim = 0
+    if input.numel() == 0:
+        return input
     out = raw_like(input)
     if dtype is None:
         dtype = input.get_dtype()
 
-    ret = device_impl_lib.diopiSoftmax(input.context_handle, out.tensor_handle,
-                              input.tensor_handle, c_int64(dim), c_int32(dtype.value))
+    ret = softmax_func(input.context_handle, out.tensor_handle,
+                       input.tensor_handle, c_int64(dim), c_int32(dtype.value))
     check_return_value(ret)
     return out
 

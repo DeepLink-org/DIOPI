@@ -192,19 +192,27 @@ void _getLastErrorString(const char** strErr) {
 
 int32_t itemsize(const diopiDtype_t dtype)
 {
-    if ((dtype == diopi_dtype_int32) || (dtype == diopi_dtype_uint32) ||
-        (dtype == diopi_dtype_float32) || (dtype == diopi_dtype_tfloat32)) {
+    switch (dtype)
+    {
+    case diopi_dtype_int32:
+    case diopi_dtype_uint32:
+    case diopi_dtype_float32:
+    case diopi_dtype_tfloat32:
         return 4;
-    } else if ((dtype == diopi_dtype_int64) || (dtype == diopi_dtype_uint64) ||
-        (dtype == diopi_dtype_float64)) {
+    case diopi_dtype_int64:
+    case diopi_dtype_uint64:
+    case diopi_dtype_float64:
         return 8;
-    } else if ((dtype == diopi_dtype_int16) || (dtype == diopi_dtype_uint16) ||
-        (dtype == diopi_dtype_float16) || (dtype == diopi_dtype_bfloat16)) {
+    case diopi_dtype_int16:
+    case diopi_dtype_uint16:
+    case diopi_dtype_float16:
+    case diopi_dtype_bfloat16:
         return 2;
-    } else if ((dtype == diopi_dtype_int8) || (dtype == diopi_dtype_uint8) ||
-        (dtype == diopi_dtype_bool)) {
+    case diopi_dtype_int8:
+    case diopi_dtype_uint8:
+    case diopi_dtype_bool:
         return 1;
-    } else {
+    default:
         assert(0);
     }
     return 0;

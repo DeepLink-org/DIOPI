@@ -17,7 +17,7 @@ def convert_input_tensors(function_paras: dict):
             function_paras['kwargs'][para] = Tensor.from_numpy(function_paras['kargs'][i_para])
 
 
-def allclose(cfg : dict, tensor1 : np.ndarray, tensor2 : np.ndarray) -> bool:
+def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray) -> bool:
     rtol = cfg.get('rtol', 1e-5)
     atol = cfg.get('atol', 1e-8)
     return np.allclose(tensor1, tensor2, rtol, atol, True)
@@ -30,12 +30,13 @@ def run(opname):
         with open(os.path.join(inputs_dir_path, fname), "rb") as file_inputs:
             data = pickle.load(file_inputs)
             op_name = data["cfg"]["name"]
-            if opname not in ['all', op_name]: continue
+            if opname not in ['all', op_name]:
+                continue
 
             fn_paras = data["function_paras"]
             convert_input_tensors(fn_paras)
-            kargs    = fn_paras['kargs']
-            kwargs   = fn_paras['kwargs']
+            kargs = fn_paras['kargs']
+            kwargs = fn_paras['kwargs']
 
             op_calls = []
             op_calls.append(f"F.{op_name}(*kargs, **kwargs)")
@@ -63,6 +64,6 @@ def run(opname):
                         else:
                             logger.info(f"run {op_name} failed")
                 except F.FunctionNotImplementedError as e:
-                    logger.info(f"function {op_name} is not implemented")
+                    logger.info(f"function {op_name} is not implemented, {e}")
                 except Exception as e:
                     logger.info(f"run {op_name} failed with exception {e}")

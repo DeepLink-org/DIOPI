@@ -1,6 +1,4 @@
 from ctypes import (
-    c_void_p,
-    c_char_p,
     c_int64,
     c_uint64,
     c_int32,
@@ -12,22 +10,22 @@ from ctypes import (
     c_float,
     c_double,
 )
-from enum import Enum, unique
+from enum import Enum
 
 
 class Dtype(Enum):
-    int8    = 0
-    uint8   = 1
-    int16   = 2
-    uint16  = 3
-    int32   = 4
-    uint32  = 5
-    int64   = 6
-    uint64  = 7
+    int8 = 0
+    uint8 = 1
+    int16 = 2
+    uint16 = 3
+    int32 = 4
+    uint32 = 5
+    int64 = 6
+    uint64 = 7
     float16 = 8
     float32 = 9
     float64 = 10
-    bool    = 11
+    bool = 11
     bfloat16 = 12
     tfloat32 = 13
 
@@ -59,17 +57,3 @@ def dtype_to_ctype(dtype):
         return c_int64
     if dtype == Dtype.uint64:
         return c_uint64
-
-
-def check_return_value(returncode, throw_exception=True):
-    if returncode == 0:
-        return
-    elif returncode == 1000:
-        error_info = f"returncode {returncode}: dtype is not supported."
-        if throw_exception:
-            assert returncode == 0, error_info
-        else:
-            print(error_info)
-            return
-
-    assert returncode == 0, f"returncode :{returncode}"

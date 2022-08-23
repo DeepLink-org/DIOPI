@@ -188,7 +188,7 @@ def gen_tensor(arg: dict) -> np.ndarray:
         return None
 
     try:
-        shape  = arg["shape"]
+        shape = arg["shape"]
         if isinstance(arg["gen_fn"], int):
             gen_fn = arg["gen_fn"]
         else:
@@ -196,7 +196,7 @@ def gen_tensor(arg: dict) -> np.ndarray:
             assert(gen_fn == Genfunc.randint), "only randint needs args"
             low = arg["gen_fn"].get("low", 0)
             high = arg["gen_fn"].get("high", 10)
-        dtype  = to_numpy_dtype(arg["dtype"])
+        dtype = to_numpy_dtype(arg["dtype"])
 
         if gen_fn == Genfunc.randn:
             value = np.random.randn(*shape).astype(dtype)
@@ -307,7 +307,8 @@ class GenInputData(object):
         num = 0
         cfgs = {}
         for case_k, case_v in cases.items():
-            if opname not in ['all', case_v['name']]: continue
+            if opname not in ['all', case_v['name']]:
+                continue
             logger.debug(f"generating input(s) for {case_k} ...")
             paras_comb, related_paras_comb, call_paras_args_comb = combinate_args(case_v)
             case_vs = generate_testcases(paras_comb, related_paras_comb,
@@ -321,5 +322,4 @@ class GenInputData(object):
             pickle.dump(cfgs, cfg_file)
 
         logger.info(f"gen_num: {self.gen_num}")
-        logger.info(f"generate input data done!")
-
+        logger.info("generate input data done!")

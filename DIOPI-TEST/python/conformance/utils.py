@@ -1,5 +1,3 @@
-from . import *
-from ctypes import c_float, byref
 import logging
 
 
@@ -33,14 +31,22 @@ class Logger(object):
 logger = Logger(default_vals['log_level']).get_loger()
 
 
-def raw_like(tensor) -> Tensor:
-    return tensor.raw_like()
+class DiopiException(Exception):
+
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
 
 
-def fill(tensor, value):
-    error_code = device_impl_lib.fill(tensor.context_handle, tensor.tensor_handle, c_float(value))
-    check_return_value(error_code)
-    return tensor
+class FunctionNotImplementedError(DiopiException):
+
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
 
 
-Tensor.fill_ = fill
+def check_return_value(returncode, throw_exception=True):
+    if 0 != returncode:
+        error_info = f"returncode {returncode}"
+        if throw_exception:
+            raise DiopiException(errcode=returncode, info=error_info)
+        else:
+            logger.info(error_info)

@@ -6,12 +6,12 @@ from .dtype import Dtype
 
 
 class Genfunc(object):
-    randn   = 0
-    rand    = 1
-    ones    = 2
-    zeros   = 3
-    mask    = 4
-    empty   = 5
+    randn = 0
+    rand = 1
+    ones = 2
+    zeros = 3
+    mask = 4
+    empty = 5
     randint = 6
     default = 7
 
