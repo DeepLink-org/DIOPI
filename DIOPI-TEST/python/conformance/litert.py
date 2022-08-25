@@ -155,19 +155,22 @@ class Tensor:
         )
 
     def __del__(self):
-        diopirt_lib._diopiDestoryTensor(self.context_handle, self.tensor_handle)
+        diopirt_lib._diopiDestoryTensor(self.context_handle,
+                                        self.tensor_handle)
 
     def __str__(self):
         array = self.numpy()
         string = f"{array.__str__()}\n"
-        string += f"{self.get_dtype()}, shape:{self.size()}, stride:{self.stride()}, numel:{self.numel()}\n"
+        string += f"{self.get_dtype()}, shape:{self.size()},\
+                     stride:{self.stride()}, numel:{self.numel()}\n"
         return string
 
     def raw_like(self):
         size = self.size()
         stride = self.stride()
         dtype = self.get_dtype()
-        return Tensor(size=size, dtype=dtype, stride=stride, context_handle=self.context_handle)
+        return Tensor(size=size, dtype=dtype, stride=stride,
+                      context_handle=self.context_handle)
 
     def numel(self):
         numel = c_int64()
@@ -212,12 +215,15 @@ class Tensor:
     @staticmethod
     def from_numpy(darray):
         if not isinstance(darray, (np.generic, np.ndarray)):
-            raise TypeError("expected np.ndarray (got {})".format(type(darray)))
+            raise TypeError(f"expected np.ndarray (got {type(darray)})")
 
         dtype = from_numpy_dtype(darray.dtype)
-        stride = [int(darray.strides[i]/darray.itemsize) for i in range(len(darray.strides))]
+        stride = [int(darray.strides[i]/darray.itemsize)
+                  for i in range(len(darray.strides))]
         tr = Tensor(size=darray.shape, dtype=dtype, stride=stride)
-        diopirt_lib._diopiTensorCopyFromBuffer(tr.context_handle, c_void_p(darray.ctypes.data), tr.tensor_handle)
+        diopirt_lib._diopiTensorCopyFromBuffer(tr.context_handle,
+                                               c_void_p(darray.ctypes.data),
+                                               tr.tensor_handle)
         return tr
 
     def numpy(self) -> np.ndarray:
@@ -226,5 +232,7 @@ class Tensor:
         stride = self.stride()
         strides = [int(stride[i]*itemsize) for i in range(len(stride))]
         darray = np.ndarray(shape=self.size(), dtype=dtype, strides=strides)
-        diopirt_lib._diopiTensorCopyToBuffer(self.context_handle, self.tensor_handle, c_void_p(darray.ctypes.data))
+        diopirt_lib._diopiTensorCopyToBuffer(self.context_handle,
+                                             self.tensor_handle,
+                                             c_void_p(darray.ctypes.data))
         return darray

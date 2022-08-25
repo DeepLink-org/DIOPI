@@ -15,11 +15,6 @@ class Genfunc(object):
     randint = 6
     default = 7
 
-    # @staticmethod
-    # def target(size, dtype, device, requires_grad=False):
-    #     return torch.ones(size=size, dtype=dtype, device=device).masked_fill_(
-    #         Genfunc.mask(size=size, dtype=torch.uint8, device=device), -1)
-
     @staticmethod
     def load(file_path):
         with open(file_path, 'rb') as pkl_f:

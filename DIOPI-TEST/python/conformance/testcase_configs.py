@@ -232,7 +232,7 @@ configs = {
     'pointwise_op': dict(
         name=['abs', 'acos', 'asin', 'atan', 'ceil', 'cos',
               'cosh', 'erf', 'erfc', 'exp', 'expm1', 'floor',
-              'log', 'log2', 'log10','neg', 'round', 'sign',
+              'log', 'log2', 'log10', 'neg', 'round', 'sign',
               'sin', 'sinh', 'sqrt', 'tan', 'tanh'],
         interface=['torch'],
         is_inplace=True,
@@ -259,7 +259,7 @@ configs = {
                     "ins": ['input'],
                     "requires_grad": [True],
                     "shape": ((182400,), (20267, 80), (8, 200, 304),
-                             (32, 16, 1, 1), (16, 32, 130, 130)),
+                              (32, 16, 1, 1), (16, 32, 130, 130)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -355,7 +355,7 @@ configs = {
     ),
 
     'pointwise_binary_scalar': dict(
-        name=['add', 'rsub', 'mul', 'div', 'eq', 
+        name=['add', 'rsub', 'mul', 'div', 'eq',
               'ne', 'le',  'lt', 'gt', 'ge'],
         interface=['torch'],
         dtype=[Dtype.float32],
@@ -501,7 +501,7 @@ configs = {
             ],
         ),
     ),
-  
+
     'reduce_op': dict(
         name=['mean', 'std', 'sum', 'var', 'min'],
         interface=['torch'],
@@ -614,7 +614,7 @@ configs = {
         name=["cross_entropy"],
         para=dict(
             reduction=['mean', 'none'],
-            #label_smoothing=[0.0, 0.5],
+            # label_smoothing=[0.0, 0.5],
         ),
         dtype=[Dtype.float32],
         call_para=dict(
@@ -639,7 +639,7 @@ configs = {
                 },
             ],
         ),
-    ), 
+    ),
 
     'select': dict(
         name=["select"],
@@ -734,7 +734,7 @@ configs = {
         ),
     ),
 
-    'nonzero': dict(
+    'nonzero_bool': dict(
         name=["nonzero"],
         interface=['torch'],
         dtype=[Dtype.bool],
@@ -833,22 +833,6 @@ configs = {
         ),
     ),
 
-
-    'sigmoid': dict(
-        name=["sigmoid"],
-        call_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((741, ), (16, 7),
-                              (8, 200, 304), (2, 9, 80, 80)),
-                    "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
     'softsign': dict(
         name=["softsign"],
         atol=1e-4,
@@ -899,7 +883,7 @@ configs = {
         para=dict(
             max_norm=[1.0, 5],
             norm_type=[2.0, 3.0],
-            #error_if_nonfinite=[True, False], #1.7 not support
+            # error_if_nonfinite=[True, False], # 1.7 not support
         ),
         call_para=dict(
             args=[
@@ -913,7 +897,7 @@ configs = {
         ),
     ),
 
-   'tril': dict(
+    'tril': dict(
         name=["tril"],
         interface=["torch"],
         para=dict(
@@ -924,7 +908,7 @@ configs = {
                 {
                     "ins": ['input'],
                     "shape": ((6, 7), (6, 8, 8),
-                             (64, 7, 28, 28)),
+                              (64, 7, 28, 28)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -932,7 +916,7 @@ configs = {
         ),
     ),
 
-   'one_hot': dict(
+    'one_hot': dict(
         name=["one_hot"],
         para=dict(
             num_classes=[-1, 80],
@@ -1095,7 +1079,7 @@ configs = {
         requires_backward=[0],
     ),
 
-   'topk_zero': dict(
+    'topk_zero': dict(
         name=['topk'],
         interface=['torch'],
         para=dict(
