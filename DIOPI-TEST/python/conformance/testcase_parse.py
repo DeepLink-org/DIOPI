@@ -64,12 +64,6 @@ def _must_exist(domain, dict_obj, keys: list):
         assert key in dict_obj.keys(), err % key
 
 
-def _must_not_exist(domain, dict_obj, keys: list):
-    err = f"key %s should not set in {domain}"
-    for key in keys:
-        assert key not in dict_obj.keys(), err % key
-
-
 def dict_elem_length(dict_obj):
     if dict_obj == {} or dict_obj is None:
         return 0
@@ -306,7 +300,7 @@ def format_cfg(cases):
         if "skip_if" not in case_v.keys():
             case_v["skip_if"] = ""
         if "saved_args" not in case_v.keys():
-            case_v["saved_args"] = []
+            case_v["saved_args"] = {}
         # set default value of ins with ["input"] and
         # requires_grad with False
         for item in case_v["call_para"]["args"]:
@@ -361,4 +355,3 @@ class CaseCollection(object):
         self.preprocess_and_check()
         self.test_cases, self.case_num = normalize_cases(self.test_cases)
 
-        # logger.info(f"case num: {self.case_num}")

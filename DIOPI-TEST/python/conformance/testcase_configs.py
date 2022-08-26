@@ -177,6 +177,9 @@ configs = {
         name=["adaptive_max_pool2d"],
         atol=1e-5,
         rtol=1e-4,
+        do_backward=True,
+        requires_backward=[0],
+        saved_args=dict(indices=1),
         para=dict(
             output_size=[2, (2, 3), (1, 3), (3, 4)],
         ),
@@ -627,7 +630,6 @@ configs = {
                 },
                 {
                     "ins": ['weight'],
-                    "requires_grad": [True],
                     "shape": (None, (5,)),
                 },
                 {
@@ -754,7 +756,6 @@ configs = {
     'linear': dict(
         name=["linear"],
         atol=1e-4,
-        saved_args=['weight', 'bias'],
         call_para=dict(
             gen_fn=Genfunc.randn,
             args=[
@@ -996,7 +997,6 @@ configs = {
             args=[
                 {
                     "ins": ['tensor'],
-                    "requires_grad": [True],
                     "shape": ((1, 4),
                               (20267, ),
                               (4, 6, 10, 9, 8)),

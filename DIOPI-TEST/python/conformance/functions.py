@@ -1,16 +1,15 @@
-from . import raw_like, check_return_value
+from . import Dtype, raw_like, check_return_value
 from .litert import Sizes, Scalar, Tensor, device_impl_lib
 from .utils import FunctionNotImplementedError
-from .dtype import Dtype
 from ctypes import c_float, c_int64, c_int32, byref
 
 
 def check_funtions(fn_name):
     try:
-        func = eval(f"device_impl_lib.{fn_name}")
+        c_func = eval(f"device_impl_lib.{fn_name}")
     except AttributeError as e:
         raise FunctionNotImplementedError(e.args)
-    return func
+    return c_func
 
 
 def broadcast_out_size(size1, size2):
@@ -35,6 +34,12 @@ def fill(tensor, value):
     ret = func(tensor.context_handle, tensor.tensor_handle, c_float(value))
     check_return_value(ret)
     return tensor
+
+
+def ones_like(tensor):
+    new_tensor = raw_like(tensor)
+    fill(new_tensor, 1)
+    return new_tensor
 
 
 def unary_op(input, inplace, call) -> Tensor:

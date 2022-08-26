@@ -4,7 +4,7 @@ import copy
 import pickle
 import numpy as np
 
-from .litert import to_numpy_dtype
+from . import to_numpy_dtype
 from .utils import logger
 from .testcase_parse import Genfunc, dict_elem_length
 
@@ -225,7 +225,8 @@ def gen_tensor(arg: dict) -> np.ndarray:
 
 def gen_and_save_data(dir_path: str, case_k: str, case_vs: list, cfgs: dict):
     construct_paras = {}
-    function_paras = {"kargs": [], "kwargs": {}}
+    function_paras = {"kwargs": {}, "requires_grad": {}}
+    tensor_list = []
     i = 0
 
     for case_v in case_vs:
@@ -244,22 +245,23 @@ def gen_and_save_data(dir_path: str, case_k: str, case_vs: list, cfgs: dict):
             if len(arg["gen_num_range"]) != 2:
                 value = gen_tensor(arg)
                 function_paras["kwargs"][name] = value
+                function_paras["requires_grad"][name] = arg["requires_grad"]
             else:
                 tensors_num = np.random.randint(arg['gen_num_range'][0],
                                                 arg['gen_num_range'][1])
                 arg.setdefault("tensors_num", tensors_num)
                 for j in range(tensors_num):
                     value = gen_tensor(arg)
-                    function_paras["kargs"].append(value)
+                    tensor_list.append(value)
+                assert(case_v["call_para"]["seq_name"] != ""), "need a name the list of tensors"
         # tie all the function_paras in a list named seq_name
         if case_v["call_para"]["seq_name"] != "":
             name = case_v["call_para"]["seq_name"]
             new_list = []
-            for j in function_paras["kargs"]:
+            for j in tensor_list:
                 new_list.append(j)
             for j in function_paras["kwargs"].values():
                 new_list.append(j)
-            function_paras["kargs"] = []
             function_paras["kwargs"][name] = new_list
 
         cfg = delete_fn(copy.deepcopy(case_v))
@@ -271,19 +273,23 @@ def gen_and_save_data(dir_path: str, case_k: str, case_vs: list, cfgs: dict):
         with open(os.path.join(dir_path, file_name), "wb") as file:
             pickle.dump(info, file)
 
-        function_paras["kargs"] = []
+        tensor_list = []
         function_paras['kwargs'] = {}
+        function_paras["requires_grad"] = {}
         i += 1
 
 
 def load_testcases() -> list:
     testcases = []
-    with open(os.path.join(inputs_dir_path, "testcases.cfg"), "rb") as file_cfgs:
-        try:
-            cfgs = pickle.load(file_cfgs)
-        finally:
-            for k, _ in cfgs.items():
-                testcases.append(k)
+    try:
+        file_cfgs = open(os.path.join(inputs_dir_path, "testcases.cfg"), "rb")
+        cfgs = pickle.load(file_cfgs)
+    except Exception as e:
+        file_cfgs.close()
+        logger.error("failed to load file testcases.cfg, caused by {e}")
+    else:
+        for k, _ in cfgs.items():
+            testcases.append(k)
     if len(testcases) == 0:
         logger.info("No test cases found")
 
