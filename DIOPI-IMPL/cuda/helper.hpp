@@ -12,8 +12,8 @@
 #include <cuda_runtime.h>
 
 
-#define DIOPI_CALL(Expr){                                                               \
-    if( diopiSuccess != Expr ){                                                         \
+#define DIOPI_CALL(Expr) {                                                              \
+    if (diopiSuccess != Expr) {                                                         \
         return Expr;                                                                    \
     }}
 
@@ -23,7 +23,7 @@ namespace impl {
 
 namespace cuda {
 
-template<typename T>
+template<typename TensorType>
 struct DataType;
 
 template<>
@@ -48,10 +48,10 @@ struct DataType<const diopiTensorHandle_t> {
     }
 };
 
-template<typename T>
+template<typename TensorType>
 class DiopiTensor final {
 public:
-    explicit DiopiTensor(T& tensor) : tensor_(tensor) {}
+    explicit DiopiTensor(TensorType& tensor) : tensor_(tensor) {}
 
     diopiDevice_t device() const {
         diopiDevice_t device;
@@ -64,11 +64,11 @@ public:
         return dtype;
     }
 
-    const diopiSize_t& shape(){
+    const diopiSize_t& shape() {
         diopiGetTensorShape(tensor_, &shape_);
         return shape_;
     }
-    const diopiSize_t& stride(){
+    const diopiSize_t& stride() {
         diopiGetTensorStride(tensor_, &stride_);
         return stride_;
     }
@@ -84,20 +84,34 @@ public:
         return elemsize;
     }
 
-    typename DataType<T>::type data() {
-        return DataType<T>::data(tensor_);
+    typename DataType<TensorType>::type data() {
+        return DataType<TensorType>::data(tensor_);
     }
 
 protected:
-    T& tensor_;
+    TensorType tensor_;
 
     diopiSize_t shape_;
     diopiSize_t stride_;
 };
 
-template<typename T>
-auto makeTensor(T& tensor) -> DiopiTensor<T> {
-    return DiopiTensor<T>(tensor);
+template<typename TensorType>
+auto makeTensor(TensorType& tensor) -> DiopiTensor<TensorType> {
+    return DiopiTensor<TensorType>(tensor);
+}
+
+inline DiopiTensor<diopiTensorHandle_t> requiresTensor(
+        diopiContextHandle_t ctx, const diopiSize_t& size, diopiDtype_t dtype) {
+    diopiTensorHandle_t tensor;
+    diopiRequireTensor(ctx, &tensor, &size, nullptr, dtype, diopi_device);
+    return makeTensor(tensor);
+}
+
+inline DiopiTensor<diopiTensorHandle_t> requiresBuffer(
+        diopiContextHandle_t ctx, int64_t num_bytes) {
+    diopiTensorHandle_t tensor;
+    diopiRequireBuffer(ctx, &tensor, num_bytes, diopi_device);
+    return makeTensor(tensor);
 }
 
 inline cudaStream_t getStream(diopiContextHandle_t ctx) {
