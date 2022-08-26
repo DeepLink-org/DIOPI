@@ -1,9 +1,19 @@
 import logging
 
 
-default_vals = dict()
+default_vals = dict(
+    test_case_paras=dict(
+        atol=1e-8,
+        rtol=1e-5,
+        atol_half=1e-4,
+        rtol_half=5e-3,
+        memory_format="NCHW",
+        fp16_exact_match=False,
+        train=True,
+    ),
+    log_level="DEBUG"  # NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICA
+)
 default_vals['log_level'] = 1
-default_vals['test_case_paras'] = dict()
 
 
 class Logger(object):

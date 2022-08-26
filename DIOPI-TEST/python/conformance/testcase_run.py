@@ -12,9 +12,6 @@ def convert_input_tensors(function_paras: dict):
     for para in function_paras["kwargs"].keys():
         if isinstance(function_paras['kwargs'][para], np.ndarray):
             function_paras['kwargs'][para] = Tensor.from_numpy(function_paras['kwargs'][para])
-    for i_para in range(len(function_paras["kargs"])):
-        if isinstance(function_paras["kargs"][i_para], np.ndarray):
-            function_paras['kwargs'][para] = Tensor.from_numpy(function_paras['kargs'][i_para])
 
 
 def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray) -> bool:
@@ -35,13 +32,12 @@ def run(opname):
 
             fn_paras = data["function_paras"]
             convert_input_tensors(fn_paras)
-            kargs = fn_paras['kargs']
             kwargs = fn_paras['kwargs']
 
             op_calls = []
-            op_calls.append(f"F.{op_name}(*kargs, **kwargs)")
+            op_calls.append(f"F.{op_name}(**kwargs)")
             if data["cfg"].get("is_inplace", False):
-                op_calls.append(f"F.{op_name}(*kargs, **kwargs, inplace=True)")
+                op_calls.append(f"F.{op_name}(**kwargs, inplace=True)")
 
             for op_call in op_calls:
                 try:

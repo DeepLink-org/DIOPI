@@ -1,5 +1,5 @@
 from . import raw_like, check_return_value
-from .litert import Sizes, Tensor, device_impl_lib
+from .litert import Sizes, Scalar, Tensor, device_impl_lib
 from .utils import FunctionNotImplementedError
 from .dtype import Dtype
 from ctypes import c_float, c_int64, c_int32, byref
@@ -11,6 +11,20 @@ def check_funtions(fn_name):
     except AttributeError as e:
         raise FunctionNotImplementedError(e.args)
     return func
+
+
+def broadcast_out_size(size1, size2):
+    sizeO = size1 if len(size1) > len(size2) else size2
+    length = len(size2) if len(size1) > len(size2) else len(size1)
+    idx = -1
+    while length > 0:
+        assert size1[idx] == size2[idx] or size1[idx] == 1 or size2[idx] == 1,\
+            "size1 and size2 must be broadcastable"
+        sizeO[idx] = size1[idx] if size2[idx] == 1 else size2[idx]
+        idx -= 1
+        length -= 1
+
+    return sizeO
 
 
 def fill(tensor, value):
@@ -61,33 +75,29 @@ def binary_op_scalar(input, other, inplace, call, alpha=None) -> Tensor:
     if inplace:
         out = input
     else:
-        out = raw_like(input)
+        if not isinstance(other, Tensor):
+            out = raw_like(input)
+        else:
+            sizeI = input.size()
+            sizeO = other.size()
+            outsize = broadcast_out_size(list(sizeI), list(sizeO))
+            out = Tensor(outsize, input.get_dtype())
         args = args + "out.tensor_handle, "
 
-    if isinstance(other, Tensor):
+    if not isinstance(other, Tensor):
         call = call + "Scalar"
-        args = args + "input.tensor_handle, other"
+        other = Scalar(input.get_dtype(), other)
+        args = args + "input.tensor_handle, byref(other)"
     else:
         args = args + "input.tensor_handle, other.tensor_handle"\
 
     if alpha is not None:
-        args = args + ", alpha"
+        alpha = Scalar(input.get_dtype(), alpha)
+        args = args + ", byref(alpha)"
 
     func = check_funtions(call)
-    ret = func(eval(f'{args}'))
+    ret = eval(f'func({args})')
 
-    check_return_value(ret)
-    return out
-
-
-def add(input, other, out=None) -> Tensor:
-    if out is None:
-        out = raw_like(input)
-    else:
-        assert isinstance(out, Tensor)
-
-    ret = device_impl_lib.add(input.context_handle, out.tensor_handle,
-                              input.tensor_handle, other.tensor_handle)
     check_return_value(ret)
     return out
 
@@ -175,8 +185,8 @@ def erf(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, 'diopiErf')
 
 
-# def add(input, other, alpha=1.0, inplace=False) -> Tensor:
-#   return binary_op_scalar(input, other, inplace, 'diopiAdd', alpha=alpha)
+def add(input, other, alpha=1, inplace=False) -> Tensor:
+    return binary_op_scalar(input, other, inplace, 'diopiAdd', alpha=alpha)
 
 
 def sub(input, other, alpha=1.0, inplace=False) -> Tensor:
@@ -220,6 +230,7 @@ def logical_or(input, other, inplace=False) -> Tensor:
 
 
 def leaky_relu(input, negative_slope=0.01, inplace=False) -> Tensor:
+    negative_slope = byref(Scalar(Dtype.float64, negative_slope))
     if inplace:
         out = input
         func = check_funtions("diopiLeakyReLuInp")
@@ -261,6 +272,7 @@ def addcmul(input, tensor1, tensor2, value=1) -> Tensor:
     assert(tensor2.get_dtype() in types), 'tensor2 must be float/double tensor'
 
     out = raw_like(input)
+    value = byref(Scalar(input.get_dtype(), value))
 
     func = check_funtions("diopiAddcmul")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
@@ -320,6 +332,8 @@ def clamp(input, min, max, inplace=False) -> Tensor:
     else:
         assert(~isinstance(max, Tensor)), 'min and max must have same type'
         call = call + 'Scalar'
+        min = byref(Scalar(input.get_dtype(), min))
+        max = byref(Scalar(input.get_dtype(), max))
         args = args + "input.tensor_handle, min, max"
 
     func = check_funtions(call)
@@ -342,6 +356,7 @@ def clamp_min(input, min, inplace=False) -> Tensor:
         args = args + "input.tensor_handle, min.tensor_handle"
     else:
         call = call + 'Scalar'
+        min = byref(Scalar(input.get_dtype(), min))
         args = args + "input.tensor_handle, min"
 
     func = check_funtions(call)
@@ -364,6 +379,7 @@ def clamp_max(input, max, inplace=False) -> Tensor:
         args = args + "input.tensor_handle, max.tensor_handle"
     else:
         call = call + 'Scalar'
+        max = byref(Scalar(input.get_dtype(), max))
         args = args + "input.tensor_handle, max"
 
     func = check_funtions(call)
@@ -945,33 +961,28 @@ def split(tensor, split_size_or_sections, dim=0):
     return outs
 
 
-def broadcast_out_size(size1, size2):
-    sizeO = size1 if len(size1) > len(size2) else size2
-    length = len(size2) if len(size1) > len(size2) else len(size1)
-    idx = -1
-    while length > 0:
-        assert size1[idx] == size2[idx] or size1[idx] == 1 or size2[idx] == 1,\
-            "size1 and size2 must be broadcastable"
-        sizeO[idx] = size1[idx] if size2[idx] == 1 else size2[idx]
-        idx -= 1
-        length -= 1
-
-    return sizeO
-
-
 def pow(input, exponent) -> Tensor:
     if not isinstance(input, Tensor):
         assert isinstance(exponent, Tensor),\
             "exponent must be tensor when input is scalar"
         func = check_funtions("diopiPowScalar")
+        # todo: return type = input type or float ?
         out = raw_like(exponent)
+        if isinstance(input, int):
+            input = byref(Scalar(Dtype.int64, input))
+        else:
+            input = byref(Scalar(Dtype.float64, input))
         ret = func(exponent.context_handle, out.tensor_handle, input, exponent.tensor_handle)
     elif not isinstance(exponent, Tensor):
         assert isinstance(input, Tensor),\
             "input must be tensor when exponent is scalar"
         func = check_funtions("diopiPow")
         out = raw_like(input)
-        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle)
+        if isinstance(exponent, int):
+            exponent = byref(Scalar(Dtype.int64, exponent))
+        else:
+            exponent = byref(Scalar(Dtype.float64, exponent))
+        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, exponent)
     else:
         sizeI = input.size()
         sizeE = exponent.size()

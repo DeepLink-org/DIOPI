@@ -359,8 +359,8 @@ configs = {
               'ne', 'le',  'lt', 'gt', 'ge'],
         interface=['torch'],
         dtype=[Dtype.float32],
-        para=dict(
-            other=[-1, 0.028, 2],
+        related_para=dict(
+            other=[-1, 0.028, 2, 1.0],
         ),
         call_para=dict(
             gen_fn=Genfunc.randn,

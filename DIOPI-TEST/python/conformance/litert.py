@@ -1,7 +1,7 @@
 import os
 from enum import Enum, unique
-from ctypes import (cdll, byref, Structure, POINTER)
-from ctypes import (c_void_p, c_char_p, c_int64, c_int32)
+from ctypes import (cdll, byref, Structure, Union, POINTER)
+from ctypes import (c_void_p, c_char_p, c_int64, c_int32, c_double)
 from .dtype import Dtype
 import numpy as np
 import atexit
@@ -129,6 +129,22 @@ class Sizes(Structure):
     def __init__(self, shape=()):
         self.carray = (c_int64 * len(shape))(*shape)
         super().__init__(self.carray, len(shape))
+
+
+class ScalarUnion(Union):
+    _fields_ = [("fval", c_double), ("ival", c_int64)]
+
+
+class Scalar(Structure):
+    _fields_ = [("stype", c_int32), ("val", ScalarUnion)]
+
+    def __init__(self, dtype, value):
+        self.stype = dtype.value
+        if dtype in [Dtype.float16, Dtype.float32, Dtype.float64]:
+            self.val.fval = value
+        else:
+            self.val.ival = value
+        super().__init__(dtype.value, self.val)
 
 
 class Tensor:
