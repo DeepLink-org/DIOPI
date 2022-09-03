@@ -302,6 +302,8 @@ public:
         return stride;
     }
 
+    bool reset_shape(const diopiSize_t* size);
+
     diopiDtype_t  dtype() const { return dtype_; }
     diopiDevice_t device() const { return device_; }
     int64_t       numel() const { return numel_; }
@@ -309,6 +311,7 @@ public:
     void*       data() { return storage_->data(); }
     const void* data() const { return storage_->data(); }
     int64_t     nbytes() const { return storage_->nbytes(); }
+
 };
 
 diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride,
@@ -338,6 +341,24 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride,
     } else {
         storage_ = std::make_shared<Storage>(device_malloc, device_free, nbytes);
     }
+}
+
+bool diopiTensor::reset_shape(const diopiSize_t* size) {
+    int64_t numel = 1;
+    for (int64_t i = 0; i < size->len; ++i) {
+        numel *= size->data[i];
+    }
+    if (numel != numel_) return false;
+
+    shape_.resize(size->len);
+    stride_.resize(size->len);
+    int64_t stride_temp = 1;
+    for (int64_t i = size->len - 1; i >= 0; --i) {
+        shape_[i] = size->data[i];
+        stride_[i] = stride_temp;
+        stride_temp *= size->data[i];
+    }
+    return true;
 }
 
 diopiTensor::~diopiTensor() {}
@@ -379,6 +400,13 @@ DIOPI_API diopiError_t diopiGetTensorNumel(const diopiTensorHandle_t th, int64_t
 
 DIOPI_API diopiError_t diopiGetTensorElemSize(const diopiTensorHandle_t th, int64_t* elem_size) {
     *elem_size = itemsize(th->dtype());
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t _diopiTensorResetShape(const diopiTensorHandle_t th, const diopiSize_t* size) {
+    if (!th->reset_shape(size)) {
+        return diopiErrorOccurred;
+    }
     return diopiSuccess;
 }
 

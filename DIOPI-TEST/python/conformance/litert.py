@@ -202,14 +202,17 @@ class Tensor:
         self.shape = tuple(shape)
         return self.shape
 
+    def shape(self):
+        return self.size()
+
     def stride(self):
         cstride = Sizes()
         diopirt_lib.diopiGetTensorStride(self.tensor_handle, byref(cstride))
         stride = []
         for i in range(cstride.len):
             stride.append(cstride.data[i])
-        self.strides = tuple(stride)
-        return self.strides
+        self.stride = tuple(stride)
+        return self.stride
 
     def itemsize(self):
         itemsize = c_int64()
@@ -227,6 +230,10 @@ class Tensor:
         diopirt_lib.diopiGetTensorDtype(self.tensor_handle, byref(dtype))
         self.dtype = Dtype(dtype.value)
         return self.dtype
+
+    def reset_shape(self, shape):
+        assert isinstance(shape, (tuple, list))
+        diopirt_lib._diopiTensorResetShape(self.tensor_handle, byref(Sizes(tuple(shape))))
 
     @staticmethod
     def from_numpy(darray):

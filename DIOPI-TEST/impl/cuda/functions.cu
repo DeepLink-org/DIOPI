@@ -130,7 +130,7 @@ void computeStride(const diopiSize_t& size1, const diopiSize_t& size2, diopiSize
 }
 
 extern "C" diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-        const diopiTensorHandle_t input, const diopiTensorHandle_t other, const Scalar alpha)
+        const diopiTensorHandle_t input, const diopiTensorHandle_t other, const Scalar* alpha)
 {
     auto stream  = impl::cuda::getStream(ctx);
     auto trInput = impl::cuda::makeTensor(input);
@@ -175,7 +175,7 @@ extern "C" diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t o
 }
 
 extern "C" diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-        const diopiTensorHandle_t input, const Scalar other, const Scalar alpha)
+        const diopiTensorHandle_t input, const Scalar* other, const Scalar* alpha)
 {
     auto stream  = impl::cuda::getStream(ctx);
     auto trInput = impl::cuda::makeTensor(input);

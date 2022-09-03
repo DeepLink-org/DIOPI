@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 
 from . import functions as F
-from .utils import logger
+from .utils import logger, FunctionNotImplementedError
 from .litert import Tensor
 from .gen_inputs import inputs_dir_path, outputs_dir_path, load_testcases
 from .gen_outputs import grad_kv
@@ -74,7 +74,7 @@ def run(opname):
                             logger.info(f"run {op_name} succeed")
                         else:
                             logger.info(f"run {op_name} failed")
-                except F.FunctionNotImplementedError as e:
+                except FunctionNotImplementedError as e:
                     logger.info(f"function {op_name} is not implemented, {e}")
                 except Exception as e:
                     logger.info(f"run {op_name} failed with exception {e}")

@@ -1,4 +1,5 @@
 import logging
+from .litert import Tensor, device_impl_lib
 
 
 default_vals = dict(
@@ -16,7 +17,7 @@ default_vals = dict(
 default_vals['log_level'] = 1
 
 
-class Logger(object):
+class Log(object):
     def __init__(self, level):
         self.logger = logging.getLogger("conformance test suite")
         self.logger.setLevel(level)
@@ -34,11 +35,11 @@ class Logger(object):
         # add ch to logger
         self.logger.addHandler(ch)
 
-    def get_loger(self):
+    def get_logger(self):
         return self.logger
 
 
-logger = Logger(default_vals['log_level']).get_loger()
+logger = Log(default_vals['log_level']).get_logger()
 
 
 class DiopiException(Exception):
@@ -53,10 +54,27 @@ class FunctionNotImplementedError(DiopiException):
         super().__init__(*args)
 
 
-def check_return_value(returncode, throw_exception=True):
+def check_returncode(returncode, throw_exception=True):
     if 0 != returncode:
         error_info = f"returncode {returncode}"
         if throw_exception:
             raise DiopiException(errcode=returncode, info=error_info)
         else:
             logger.info(error_info)
+
+
+def check_function(fn_name):
+    try:
+        func = eval(f"device_impl_lib.{fn_name}")
+    except AttributeError as e:
+        raise FunctionNotImplementedError(e.args)
+    return func
+
+
+def squeeze(input: Tensor):
+    size = input.size()
+    new_size = []
+    for i in len(size):
+        if size[i] != 1:
+            new_size.append(size[i])
+    input.reset_shape(new_size)

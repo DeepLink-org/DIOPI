@@ -1,15 +1,7 @@
-from . import Dtype, raw_like, check_return_value
-from .litert import Sizes, Scalar, Tensor, device_impl_lib
-from .utils import FunctionNotImplementedError
 from ctypes import c_float, c_int64, c_int32, byref
-
-
-def check_funtions(fn_name):
-    try:
-        c_func = eval(f"device_impl_lib.{fn_name}")
-    except AttributeError as e:
-        raise FunctionNotImplementedError(e.args)
-    return c_func
+from .litert import Sizes, Scalar, Tensor, device_impl_lib
+from .utils import check_returncode, check_function, squeeze
+from . import Dtype, raw_like
 
 
 def broadcast_out_size(size1, size2):
@@ -30,9 +22,9 @@ def fill(tensor, value):
     r"""
     Fill a Tensor with a specific value
     """
-    func = check_funtions("diopiFill")
+    func = check_function("diopiFill")
     ret = func(tensor.context_handle, tensor.tensor_handle, c_float(value))
-    check_return_value(ret)
+    check_returncode(ret)
     return tensor
 
 
@@ -46,15 +38,15 @@ def unary_op(input, inplace, call) -> Tensor:
     if inplace:
         out = input
         call = call + "Inp"
-        func = check_funtions(call)
+        func = check_function(call)
         ret = func(input.context_handle, input.tensor_handle)
     else:
         out = raw_like(input)
-        func = check_funtions(call)
+        func = check_function(call)
         ret = func(input.context_handle, out.tensor_handle,
                    input.tensor_handle)
 
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -62,16 +54,16 @@ def binary_op(input, other, inplace, call) -> Tensor:
     if inplace:
         out = input
         call = call + "Inp"
-        func = check_funtions(call)
+        func = check_function(call)
         ret = func(input.context_handle, input.tensor_handle,
                    other.tensor_handle)
     else:
         out = raw_like(input)
-        func = check_funtions(call)
+        func = check_function(call)
         ret = func(input.context_handle, out.tensor_handle,
                    input.tensor_handle, other.tensor_handle)
 
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -100,10 +92,10 @@ def binary_op_scalar(input, other, inplace, call, alpha=None) -> Tensor:
         alpha = Scalar(input.get_dtype(), alpha)
         args = args + ", byref(alpha)"
 
-    func = check_funtions(call)
+    func = check_function(call)
     ret = eval(f'func({args})')
 
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -119,10 +111,10 @@ def softmax(input, dim, dtype=None):
         dtype = input.get_dtype()
     out = raw_like(input)
 
-    func = check_funtions('diopiSoftmax')
+    func = check_function('diopiSoftmax')
     ret = func(input.context_handle, out.tensor_handle,
                input.tensor_handle, c_int64(dim), c_int32(dtype.value))
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -238,16 +230,16 @@ def leaky_relu(input, negative_slope=0.01, inplace=False) -> Tensor:
     negative_slope = byref(Scalar(Dtype.float64, negative_slope))
     if inplace:
         out = input
-        func = check_funtions("diopiLeakyReLuInp")
+        func = check_function("diopiLeakyReLuInp")
         ret = func(input.context_handle,
                    out.tensor_handle, input.tensor_handle, negative_slope)
     else:
         out = raw_like(input)
-        func = check_funtions("diopiLeakyReLu")
+        func = check_function("diopiLeakyReLu")
         ret = func(input.context_handle,
                    out.tensor_handle, input.tensor_handle, negative_slope)
 
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -263,10 +255,10 @@ def bmm(input, mat2) -> Tensor:
     size_out[2] = size2[2]
     out = Tensor(size_out, input.get_dtype())
 
-    func = check_funtions("diopiBmm")
+    func = check_function("diopiBmm")
     ret = func(input.context_handle, out.tensor_handle,
                input.tensor_handle, mat2.tensor_handle)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -279,10 +271,10 @@ def addcmul(input, tensor1, tensor2, value=1) -> Tensor:
     out = raw_like(input)
     value = byref(Scalar(input.get_dtype(), value))
 
-    func = check_funtions("diopiAddcmul")
+    func = check_function("diopiAddcmul")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                tensor1.tensor_handle, tensor1.tensor_handle, value)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -312,10 +304,10 @@ def matmul(input, other) -> Tensor:
             sizeI[-3] = sizeI[-3] if sizeI[-3] == 1 else sizeO[-3]
         out = Tensor(sizeI, input.get_dtype())
 
-    func = check_funtions("diopiMatmul")
+    func = check_function("diopiMatmul")
     ret = func(input.context_handle, out.tensor_handle,
                input.tensor_handle, other.tensor_handle)
-    check_return_value(ret)
+    check_returncode(ret)
 
     # out.squeeze()
     return out
@@ -341,9 +333,9 @@ def clamp(input, min, max, inplace=False) -> Tensor:
         max = byref(Scalar(input.get_dtype(), max))
         args = args + "input.tensor_handle, min, max"
 
-    func = check_funtions(call)
+    func = check_function(call)
     ret = func(eval(f'{args}'))
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -364,9 +356,9 @@ def clamp_min(input, min, inplace=False) -> Tensor:
         min = byref(Scalar(input.get_dtype(), min))
         args = args + "input.tensor_handle, min"
 
-    func = check_funtions(call)
+    func = check_function(call)
     ret = func(eval(f'{args}'))
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -387,9 +379,9 @@ def clamp_max(input, max, inplace=False) -> Tensor:
         max = byref(Scalar(input.get_dtype(), max))
         args = args + "input.tensor_handle, max"
 
-    func = check_funtions(call)
+    func = check_function(call)
     ret = func(eval(f'{args}'))
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -399,28 +391,28 @@ def mean(input, dim=None, keepdim=False, dtype=None) -> Tensor:
     """
     assert(isinstance(dim, [None, int, list])), "dim should be int or list"
 
-    size1 = input.size()
+    sizeI = input.size()
     if dim is None:
-        for i in len(size1):
-            size1[i] = 1
+        for i in len(sizeI):
+            sizeI[i] = 1
     elif isinstance(dim, list):
         for i in dim:
-            size1[i] = 1
+            sizeI[i] = 1
     else:
-        size1[dim] = 1
+        sizeI[dim] = 1
 
     if dtype is None:
         dtype = input.get_dtype()
 
     dim1 = Sizes(tuple(dim))
-    out = Tensor(size1, input.get_dtype())
-    func = check_funtions("diopiMean")
+    out = Tensor(sizeI, input.get_dtype())
+    func = check_function("diopiMean")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               dim1, keepdim, c_int32(dtype.value))
-    check_return_value(ret)
+               dim1, c_int32(dtype.value))
+    check_returncode(ret)
 
-    # if ~keepdim:
-    #     out.squeeze()
+    if ~keepdim:
+        squeeze(out)
     return out
 
 
@@ -430,25 +422,25 @@ def std(input, unbiased=False, dim=None, keepdim=False) -> Tensor:
     """
     assert(isinstance(dim, [None, int, list])), "dim should be int or list"
 
-    size1 = input.size()
+    sizeI = input.size()
     if dim is None:
-        for i in len(size1):
-            size1[i] = 1
+        for i in len(sizeI):
+            sizeI[i] = 1
     elif isinstance(dim, list):
         for i in dim:
-            size1[i] = 1
+            sizeI[i] = 1
     else:
-        size1[dim] = 1
+        sizeI[dim] = 1
 
     dim1 = Sizes(tuple(dim))
-    out = Tensor(size1, input.get_dtype())
-    func = check_funtions("diopiStd")
+    out = Tensor(sizeI, input.get_dtype())
+    func = check_function("diopiStd")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               dim1, unbiased, keepdim)
-    check_return_value(ret)
+               dim1, unbiased)
+    check_returncode(ret)
 
-    # if ~keepdim:
-    #     out.squeeze()
+    if ~keepdim:
+        squeeze(out)
     return out
 
 
@@ -458,26 +450,26 @@ def min(input, dim=None, keepdim=False) -> Tensor:
     """
     assert(isinstance(dim, [None, int])), "dim should be int"
 
-    size1 = input.size()
+    sizeI = input.size()
     if dim is None:
-        for i in len(size1):
-            size1[i] = 1
+        for i in len(sizeI):
+            sizeI[i] = 1
         dim = -1
     elif isinstance(dim, list):
         for i in dim:
-            size1[i] = 1
+            sizeI[i] = 1
     else:
-        size1[dim] = 1
+        sizeI[dim] = 1
 
-    out = Tensor(size1, input.get_dtype())
-    indices = Tensor(size1, Dtype.int64)
-    func = check_funtions("diopiMin")
+    out = Tensor(sizeI, input.get_dtype())
+    indices = Tensor(sizeI, Dtype.int64)
+    func = check_function("diopiMin")
     ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
-               input.tensor_handle, dim, keepdim)
-    check_return_value(ret)
+               input.tensor_handle, dim)
+    check_returncode(ret)
 
-    # if ~keepdim:
-    #     out.squeeze()
+    if ~keepdim:
+        squeeze(out)
     return out
 
 
@@ -516,11 +508,11 @@ def binary_cross_entropy_with_logits(input, target, weight=None,
         out = Tensor((1,), input.get_dtype())
 
     reduction_mode = convert_reduction(reduction)
-    func = check_funtions("diopiBCEWithLogits")
+    func = check_function("diopiBCEWithLogits")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                target.tensor_handle, weight.tensor_handle,
                pos_weight.tensor_handle, reduction_mode)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -543,11 +535,11 @@ def cross_entropy(input, target, weight=None, ignore_index=- 100,
         out = Tensor((1,), input.get_dtype())
 
     reduction_mode = convert_reduction(reduction)
-    func = check_funtions("diopiCrossEntropyLoss")
+    func = check_function("diopiCrossEntropyLoss")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                target.tensor_handle, weight.tensor_handle, reduction_mode,
                ignore_index, label_smoothing)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -563,10 +555,10 @@ def mse_loss(input, target, reduction='mean'):
         out = Tensor((1,), input.get_dtype())
 
     reduction_mode = convert_reduction(reduction)
-    func = check_funtions("diopiMSELoss")
+    func = check_function("diopiMSELoss")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                target.tensor_handle, reduction_mode)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -602,11 +594,11 @@ def conv2d(input, weight, bias=None, stride=1,
     padding = Sizes(tuple(padding))
     dilation = Sizes(tuple(dilation))
     out = Tensor(sizeO, input.get_dtype())
-    func = check_funtions("diopiConvolution2d")
+    func = check_function("diopiConvolution2d")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                weight.tensor_handle, bias.tensor_handle, stride, padding,
                dilation, groups)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -636,11 +628,11 @@ def avg_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False,
     kernel_size = Sizes(tuple(kernel_size))
     out = Tensor(sizeO, input.get_dtype())
 
-    func = check_funtions("diopiAvgPool2d")
+    func = check_function("diopiAvgPool2d")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                kernel_size, stride, padding, ceil_mode, count_include_pad,
                byref(divisor_override))
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -673,17 +665,17 @@ def max_pool2d(input, kernel_size, stride=None, padding=0, dilation=1,
     dilation = Sizes(tuple(dilation))
     out = Tensor(sizeO, input.get_dtype())
     if not return_indices:
-        func = check_funtions("diopiMaxPool2d")
+        func = check_function("diopiMaxPool2d")
         ret = func(input.context_handle, out.tensor_handle,
                    input.tensor_handle, kernel_size,
                    stride, padding, dilation, ceil_mode)
     else:
-        func = check_funtions("diopiMaxPool2dWithIndices")
+        func = check_function("diopiMaxPool2dWithIndices")
         indices = Tensor(sizeO, Dtype.int64)
         ret = func(input.context_handle, out.tensor_handle,
                    indices.tensor_handle, input.tensor_handle,
                    kernel_size, stride, padding, dilation, ceil_mode)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -706,10 +698,10 @@ def adaptive_avg_pool2d(input, output_size):
     out = Tensor(sizeO, input.get_dtype())
     output_size = Sizes(tuple(output_size))
 
-    func = check_funtions("diopiAaptiveAvgPool2d")
+    func = check_function("diopiAaptiveAvgPool2d")
     ret = func(input.context_handle, out.tensor_handle,
                input.tensor_handle, output_size)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -732,14 +724,16 @@ def adaptive_max_pool2d(input, output_size, return_indices=False):
     out = Tensor(sizeO, input.get_dtype())
     output_size = Sizes(tuple(output_size))
 
-    func = check_funtions("diopiAaptiveMaxPool2d")
     if return_indices:
+        func = check_function("diopiAaptiveMaxPool2dWithIndices")
         indices = Tensor(sizeO, Dtype.int64)
+        ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
+                   input.tensor_handle, output_size)
     else:
-        indices = Tensor((), Dtype.int64)
-    ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
-               input.tensor_handle, output_size)
-    check_return_value(ret)
+        func = check_function("diopiAaptiveMaxPool2d")
+        ret = func(input.context_handle, out.tensor_handle,
+                   input.tensor_handle, output_size)
+    check_returncode(ret)
     return out
 
 
@@ -754,9 +748,9 @@ def dropout(input, p=0.5, training=True, inplace=False):
         args = args + 'out.tensor_handle, '
 
     args = args + "input.tensor_handle, p, train"
-    func = check_funtions(call)
+    func = check_function(call)
     ret = func(eval(f'{args}'))
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -765,10 +759,10 @@ def index_select(input, dim, index) -> Tensor:
     sizeI[dim] = index.numel()
     out = Tensor(sizeI, input.get_dtype())
 
-    func = check_funtions("diopiIndexSelect")
+    func = check_function("diopiIndexSelect")
     ret = func(input.context_handle, out.tensor_handle,
                input.tensor_handle, dim, index.tensor_handle)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -777,10 +771,10 @@ def select(input, dim, index) -> Tensor:
     sizeI[dim] = 1
     out = Tensor(sizeI, input.get_dtype())
 
-    func = check_funtions("diopiSelect")
+    func = check_function("diopiSelect")
     ret = func(input.context_handle, out.tensor_handle,
                input.tensor_handle, dim, index)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -789,20 +783,20 @@ def masked_scatter(input, mask, source) -> Tensor:
         "mask must be bool tensor"
     out = raw_like(input)
 
-    func = check_funtions("MaskedScatter")
+    func = check_function("MaskedScatter")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                mask.tensor_handle, source.tensor_handle)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
 def nonzero(input):
-    # todo: pytorch(1.12) has argument 'as_tuple' to return multiple 1d tensor
+    # note: pytorch(1.12) has argument 'as_tuple' to return multiple 1d tensor
     out = Tensor((), Dtype.int64)
-    func = check_funtions("diopiNonzero")
+    func = check_function("diopiNonzero")
     ret = func(input.context_handle, byref(out.tensor_handle),
                input.tensor_handle)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -818,33 +812,49 @@ def linear(input, weight, bias=None) -> Tensor:
     sizeW = weight.size()
     sizeI[-1] = sizeW[-2] if len(sizeW) == 2 else 1
     out = Tensor(sizeI, input.get_dtype())
-    func = check_funtions("diopiLinear")
+    func = check_function("diopiLinear")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                weight.tensor_handle, bias.tensor_handle)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
 def embedding(input, weight, padding_idx=None, max_norm=None, norm_type=2.0,
               scale_grad_by_freq=False, sparse=False):
+    if padding_idx is not None:
+        if padding_idx > 0:
+            assert padding_idx < weight.size()[0], (
+                'Padding_idx must be within num_embeddings')
+        elif padding_idx < 0:
+            assert padding_idx >= -weight.size()[0], (
+                'Padding_idx must be within num_beddings')
+    else:
+        padding_idx = -1
+
+    if max_norm is not None:
+        func = check_function("diopiEmbeddingRenorm_")
+        ret = func(weight.context_handle, weight.tensor_handle, input.tesor_handle, max_norm, norm_type)
+        check_returncode(ret)
+
     sizeI = list(input.size())
     sizeW = weight.size()
     sizeI.append(sizeW[-1])
-    # todo: add max_norm and norm_type in function declaration
     out = Tensor(sizeI, weight.get_dtype())
-    func = check_funtions("diopiEmbedding")
+
+    # note: scale_grad_by_freq and sparse are useless during forward phase
+    func = check_function("diopiEmbedding")
     ret = func(input.context_handle, out.tensor_handle, weight.tensor_handle,
                input.tensor_handle, padding_idx, scale_grad_by_freq, sparse)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
 def tril(input, diagonal=0) -> Tensor:
     out = raw_like(input)
-    func = check_funtions("diopiTril")
+    func = check_function("diopiTril")
     ret = func(input.context_handle, out.tensor_handle,
                input.tensor_handle, diagonal)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -859,10 +869,10 @@ def cat(tensors, dim=0) -> Tensor:
 
     sizeI[dim] = sum
     out = Tensor(sizeI, tensors[0].get_dtype())
-    func = check_funtions("diopiCat")
+    func = check_function("diopiCat")
     ret = func(input.context_handle, out.tensor_handle,
                byref(c_tensors), insNum, dim)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -877,10 +887,10 @@ def stack(tensors, dim=0) -> Tensor:
 
     sizeI[dim] = sum
     out = Tensor(sizeI, tensors[0].get_dtype())
-    func = check_funtions("diopiStack")
+    func = check_function("diopiStack")
     ret = func(input.context_handle, out.tensor_handle,
                byref(c_tensors), insNum, dim)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -889,10 +899,10 @@ def sort(input, dim=- 1, descending=False, stable=False):
     sizeI = input.size()
     indices = Tensor(sizeI, Dtype.int64)
 
-    func = check_funtions("diopiSort")
+    func = check_function("diopiSort")
     ret = func(input.context_handle, vals.tensor_handle, indices.tensor_handle,
                input.tensor_handle, dim, descending, byref(stable))
-    check_return_value(ret)
+    check_returncode(ret)
     return vals, indices
 
 
@@ -902,11 +912,11 @@ def topk(input, k, dim=-1, largest=True, sorted=True):
     values = Tensor(sizeI, input.get_dtype())
     indices = Tensor(sizeI, Dtype.int64)
 
-    func = check_funtions("diopiTopk")
+    func = check_function("diopiTopk")
     ret = func(input.context_handle, values.tensor_handle,
                indices.tensor_handle, input.tensor_handle,
                k, dim, largest, sorted)
-    check_return_value(ret)
+    check_returncode(ret)
     return values, indices
 
 
@@ -917,22 +927,25 @@ def transpose(input, dim0, dim1) -> Tensor:
     sizeI[dim1] = tmp
     out = Tensor(sizeI, input.get_dtype())
 
-    func = check_funtions("diopiTranspose")
+    func = check_function("diopiTranspose")
     ret = func(input.context_handle, out.tensor_handle,
                input.tensor_handle, dim0, dim1)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
 def one_hot(tensor, num_classes=- 1):
     sizeI = tensor.size()
+    # todo: there is not max implementaion for now
+    if num_classes == -1:
+        num_classes = max(tensor).numpy()[0]
+
     sizeI += (num_classes, )
-    # todo: create out with case num_classes=-1
     out = Tensor(sizeI, Dtype.int64)
-    func = check_funtions("diopiOneHot")
+    func = check_function("diopiOneHot")
     ret = func(input.context_handle, out.tensor_handle,
                tensor.tensor_handle, num_classes)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -959,10 +972,10 @@ def split(tensor, split_size_or_sections, dim=0):
     splitSizes = Sizes(splitSizes)
     assert sum == 0,\
         "split_size_or_sections should be compatible with tensor shape"
-    func = check_funtions("diopiSplitWithSizes")
+    func = check_function("diopiSplitWithSizes")
     ret = func(input.context_handle, byref(outs), idx,
                tensor.tensor_handle, byref(splitSizes), dim)
-    check_return_value(ret)
+    check_returncode(ret)
     return outs
 
 
@@ -970,7 +983,7 @@ def pow(input, exponent) -> Tensor:
     if not isinstance(input, Tensor):
         assert isinstance(exponent, Tensor),\
             "exponent must be tensor when input is scalar"
-        func = check_funtions("diopiPowScalar")
+        func = check_function("diopiPowScalar")
         # todo: return type = input type or float ?
         out = raw_like(exponent)
         if isinstance(input, int):
@@ -981,7 +994,7 @@ def pow(input, exponent) -> Tensor:
     elif not isinstance(exponent, Tensor):
         assert isinstance(input, Tensor),\
             "input must be tensor when exponent is scalar"
-        func = check_funtions("diopiPow")
+        func = check_function("diopiPow")
         out = raw_like(input)
         if isinstance(exponent, int):
             exponent = byref(Scalar(Dtype.int64, exponent))
@@ -993,11 +1006,11 @@ def pow(input, exponent) -> Tensor:
         sizeE = exponent.size()
         sizeO = broadcast_out_size(sizeI, sizeE)
         out = Tensor(sizeO, input.get_dtype())
-        # todo : add function definition for this case
-        func = check_funtions("diopiPowTensor")
+
+        func = check_function("diopiPowTensor")
         ret = func(input.context_handle, out.tensor_handle,
                    input.tensor_handle, exponent.tensor_handle)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
