@@ -129,4 +129,6 @@ cmake-build-*/
 #.core file
 core.*
 
-
+# project saved file
+*.pth
+*.cfg

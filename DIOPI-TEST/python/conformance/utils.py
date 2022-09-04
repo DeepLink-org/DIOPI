@@ -1,9 +1,9 @@
 import logging
-from .litert import Tensor, device_impl_lib
+from . import diopi_rt
 
 
-default_vals = dict(
-    test_case_paras=dict(
+default_cfg_dict = dict(
+    default_option = dict(
         atol=1e-8,
         rtol=1e-5,
         atol_half=1e-4,
@@ -14,7 +14,7 @@ default_vals = dict(
     ),
     log_level="DEBUG"  # NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICA
 )
-default_vals['log_level'] = 1
+default_cfg_dict['log_level'] = 1
 
 
 class Log(object):
@@ -39,7 +39,7 @@ class Log(object):
         return self.logger
 
 
-logger = Log(default_vals['log_level']).get_logger()
+logger = Log(default_cfg_dict['log_level']).get_logger()
 
 
 class DiopiException(Exception):
@@ -65,13 +65,13 @@ def check_returncode(returncode, throw_exception=True):
 
 def check_function(fn_name):
     try:
-        func = eval(f"device_impl_lib.{fn_name}")
+        func = eval(f"diopi_rt.device_impl_lib.{fn_name}")
     except AttributeError as e:
         raise FunctionNotImplementedError(e.args)
     return func
 
 
-def squeeze(input: Tensor):
+def squeeze(input: diopi_rt.Tensor):
     size = input.size()
     new_size = []
     for i in len(size):

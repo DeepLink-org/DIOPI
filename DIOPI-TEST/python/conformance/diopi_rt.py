@@ -86,12 +86,12 @@ device_impl_lib = cdll.LoadLibrary(os.path.join(_cur_dir, "../../lib/libdevice_i
 device_impl_lib.initLibrary()
 
 
-def on_litert_exit():
+def on_diopi_rt_exit():
     device_impl_lib.finalizeLibrary()
     diopirt_lib.diopiFinalize()
 
 
-atexit.register(on_litert_exit)
+atexit.register(on_diopi_rt_exit)
 
 
 def get_last_error():
@@ -259,3 +259,7 @@ class Tensor:
                                              self.tensor_handle,
                                              c_void_p(darray.ctypes.data))
         return darray
+
+
+def raw_like(tensor) -> Tensor:
+    return tensor.raw_like()

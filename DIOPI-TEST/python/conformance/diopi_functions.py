@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from ctypes import c_float, c_int64, c_int32, c_void_p, byref
-from .litert import Sizes, Scalar, Tensor, device_impl_lib
+from .diopi_rt import Sizes, Scalar, Tensor, device_impl_lib
 from .utils import check_returncode, check_function, squeeze
 from . import Dtype, raw_like
 

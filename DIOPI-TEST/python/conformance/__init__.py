@@ -1,11 +1,12 @@
-from .litert import Tensor, Context, Dtype, Device
-from .litert import get_last_error, device
-from .litert import from_numpy_dtype, to_numpy_dtype
-from .litert import diopirt_lib, device_impl_lib
-from .testcase_configs import configs
-from .testcase_parse import CaseCollection
-from .gen_inputs import GenInputData
-from .gen_outputs import GenOutputData
+from .diopi_rt import Tensor, Context, Dtype, Device, raw_like
+from .diopi_rt import get_last_error, device
+from .diopi_rt import from_numpy_dtype, to_numpy_dtype
+from .diopi_rt import diopirt_lib, device_impl_lib
+from .diopi_configs import diopi_configs
+from .config import Config
+from .gen_input import GenInputData
+from .gen_output import GenOutputData
+from .conformance_test import ConformanceTest
 
 
 int8 = Dtype.int8
@@ -28,20 +29,19 @@ bool = Dtype.bool
 __all__ = [
     'diopirt_lib',
     'device_impl_lib',
-    'CaseCollection',
+    'Config',
     'GenInputData',
     'GenOutputData',
-    'configs',
+    'diopi_configs',
     'Tensor',
     'device',
     'Dtype',
     'Device',
     'Context',
+    'raw_like',
     'get_last_error',
     'from_numpy_dtype',
     'to_numpy_dtype',
+    'ConformanceTest',
 ]
 
-
-def raw_like(tensor) -> Tensor:
-    return tensor.raw_like()

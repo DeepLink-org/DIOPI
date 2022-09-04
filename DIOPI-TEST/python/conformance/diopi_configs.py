@@ -1,8 +1,8 @@
 # from functools import partial
-from .testcase_parse import Genfunc
+from .config import Genfunc
 from .dtype import Dtype
 
-configs = {
+diopi_configs = {
     'batch_norm': dict(
         name=["batch_norm"],
         dtype=[Dtype.float32],
