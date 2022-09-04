@@ -1146,22 +1146,6 @@ configs = {
         ),
     ),
 
-    'where_1': dict(
-        name=['where'],
-        interface=['torch'],
-        call_para=dict(
-            args=[
-                {
-                    "ins": ['condition'],
-                    "requires_grad": [False],
-                    "shape": [(1024, ), (1482, 4), (4, 5, 6)],
-                    "dtype": [Dtype.uint8, Dtype.bool],
-                    "gen_fn": Genfunc.mask
-                },
-            ],
-        ),
-    ),
-
     'where_2': dict(
         name=['where'],
         interface=['torch'],
