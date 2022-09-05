@@ -1,6 +1,6 @@
 /**
  * @file functions.cpp
- * @author fengsibo@sensetime.com
+ * @author your name (you@domain.com)
  * @brief 
  * @version 0.1
  * @date 2022-09-05
@@ -12,6 +12,7 @@
 #include <diopi/functions.h>
 #include <iostream>
 
+<<<<<<< HEAD
 #include "helper.hpp"
 
 extern "C" diopiError_t diopiRelu(diopiContextHandle_t ctx,
@@ -63,3 +64,14 @@ extern "C" diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle
     const diopiTensorHandle_t input, int64_t dim, diopiDtype_t dtype) {
 
 }
+=======
+#include <torch/torch.h>
+
+extern "C" diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input)
+{
+    torch::Tensor tensor = torch::rand({2, 3});
+    namespace F = torch::nn::functional;
+    F::relu(tensor, F::ReLUFuncOptions().inplace(true));
+    std::cout << tensor << std::endl;
+}
+>>>>>>> 2b42d4e (init lib torch)
