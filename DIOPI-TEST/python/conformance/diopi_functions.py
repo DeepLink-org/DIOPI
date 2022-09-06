@@ -1,9 +1,11 @@
 # -*- coding: UTF-8 -*-
+import math
+
 from ctypes import c_float, c_int64, c_int32, c_void_p, byref
 from .diopi_rt import Sizes, Scalar, Tensor, device_impl_lib
 from .utils import check_returncode, check_function, squeeze
 from . import Dtype, raw_like
-import math
+from collections import namedtuple
 
 
 def broadcast_out_size(size1, size2):
@@ -18,6 +20,28 @@ def broadcast_out_size(size1, size2):
         length -= 1
 
     return sizeO
+
+
+def reduce_op_process(input, dim=None, keepdim=False, dtype=None):
+    sizeI = list(input.size())
+    if dim is None:
+        for i in range(0, len(sizeI)):
+            sizeI[i] = 1
+        dim = []
+    elif isinstance(dim, list):
+        for i in dim:
+            sizeI[i] = 1
+    else:
+        sizeI[dim] = 1
+        dim = [dim]
+
+    if dtype is None:
+        dtype = input.get_dtype()
+
+    out = Tensor(sizeI, dtype)
+    if ~keepdim:
+        squeeze(out)
+    return dim, out
 
 
 def fill(tensor, value):
@@ -117,7 +141,7 @@ def softmax(input, dim, dtype=None):
             \text{Softmax}(x_{i}) = \frac{\exp(x_i)}{\sum_j \exp(x_j)}
     参数
         - *input* ( **Tensor** ) : 输入张量
-        - *dim* ( **number** ) : 对输入张量应用softmax函数的维度 (使得沿着该维度的元素和为 **1**)
+        - *dim* ( **number** ) : 对输入张量应用 *softmax* 函数的维度 (使得沿着该维度的元素和为 **1**)
         - *dtype* ( **Dtype**, 可选) : 期望的返回值数据类型，如果指定，输入张量将会提前转换为 *dtype* 类型以防止数值溢出。
     C API
         :guilabel:`diopiSoftmax`
@@ -614,7 +638,7 @@ def bmm(input, mat2) -> Tensor:
 def addcmul(input, tensor1, tensor2, value=1) -> Tensor:
     r"""
     释义
-        执行 *tensor1* 与 *tensor2* 的元素乘法，将结果乘以标量值 *value* 后再加至输入张量 *input* :
+        执行 *tensor1* 与 *tensor2* 的逐元素乘法，将结果乘以标量值 *value* 后再加至输入张量 *input* :
 
         .. math::
             \text { out }_{i}=\text { input }_{i}+\text { value } \times \text { tensor }_{i} \times \operatorname{tensor}_{i}
@@ -626,17 +650,17 @@ def addcmul(input, tensor1, tensor2, value=1) -> Tensor:
     C API
         :guilabel:`diopiAddcmul`
     """
-    types = (Dtype.float32, Dtype.float64)
-    assert(input.get_dtype() in types), 'input must be float/double tensor'
-    assert(tensor1.get_dtype() in types), 'tensor1 must be float/double tensor'
-    assert(tensor2.get_dtype() in types), 'tensor2 must be float/double tensor'
-
-    out = raw_like(input)
+    size1 = list(tensor1.size())
+    size2 = list(tensor2.size())
+    sizeI = list(input.size())
+    sizeO = broadcast_out_size(size1, size2)
+    sizeO = broadcast_out_size(sizeI, sizeO)
+    out = Tensor(sizeO, input.get_dtype())
     value = byref(Scalar(input.get_dtype(), value))
 
     func = check_function("diopiAddcmul")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               tensor1.tensor_handle, tensor1.tensor_handle, value)
+               tensor1.tensor_handle, tensor2.tensor_handle, value)
     check_returncode(ret)
     return out
 
@@ -807,40 +831,21 @@ def mean(input, dim=None, keepdim=False, dtype=None) -> Tensor:
         如果 *keepdim* 为 ``True``, 则除了在维度 *dim* 上，输出张量大小与输入张量相同。输出张量在维度 *dim* 上大小为1。
     参数
         - *input* ( **Tensor** ) : 输入张量
-        - *dim* ( **number** ) : 进行归约的维度
+        - *dim* ( **int** 或者 **list(int)** ) : 进行归约的维度
         - *keepdim* ( **bool** ) : 结果是否保留原有维度
-        - *dtype* ( **Dtype**, 可选) : 返回值的数据类型
+        - *dtype* ( **Dtype**, 可选) : 输出的数据类型
     C API
         :guilabel:`diopiMean`
     """
     assert isinstance(dim, (int, list)) or dim is None,\
-         "dim should be int or list or None"
+        "dim should be int or list or None"
 
-    sizeI = list(input.size())
-    if dim is None:
-        dim = []
-        for i in range(0, len(sizeI)):
-            sizeI[i] = 1
-            dim.append(i)
-    elif isinstance(dim, list):
-        for i in dim:
-            sizeI[i] = 1
-    else:
-        sizeI[dim] = 1
-        dim = [dim]
-        
-    if dtype is None:
-        dtype = input.get_dtype()
-
-    dim1 = Sizes(tuple(dim))
-    out = Tensor(sizeI, input.get_dtype())
+    dim, out = reduce_op_process(input, dim, keepdim, dtype)
     func = check_function("diopiMean")
+    dim1 = Sizes(tuple(dim))
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                dim1, c_int32(dtype.value))
     check_returncode(ret)
-
-    if ~keepdim:
-        squeeze(out)
     return out
 
 
@@ -852,36 +857,20 @@ def std(input, unbiased=False, dim=None, keepdim=False) -> Tensor:
     参数
         - *input* ( **Tensor** ) : 输入张量
         - *unbiased* ( **bool** ) : 是否使用Bessel校正
-        - *dim* ( **number** 或者 **tuple** ) : 进行归约的维度
+        - *dim* ( **int** 或者 **list(int)** ) : 进行归约的维度
         - *keepdim* ( **bool** ) : 结果是否保留原有维度
     C API
         :guilabel:`diopiStd`
     """
     assert isinstance(dim, (int, list)) or dim is None,\
-         "dim should be int or list or None"
+        "dim should be int or list or None"
 
-    sizeI = list(input.size())
-    if dim is None:
-        dim = []
-        for i in range(0, len(sizeI)):
-            sizeI[i] = 1
-            dim.append(i)
-    elif isinstance(dim, list):
-        for i in dim:
-            sizeI[i] = 1
-    else:
-        sizeI[dim] = 1
-        dim = [dim]
-
+    dim, out = reduce_op_process(input, dim, keepdim)
     dim1 = Sizes(tuple(dim))
-    out = Tensor(sizeI, input.get_dtype())
     func = check_function("diopiStd")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                dim1, unbiased)
     check_returncode(ret)
-
-    if ~keepdim:
-        squeeze(out)
     return out
 
 
@@ -893,26 +882,23 @@ def min(input, dim=0, keepdim=False) -> Tensor:
         如果 *keepdim* 为 ``True``, 则除了在维度 *dim* 上，输出张量大小与输入张量相同。输出张量在维度 *dim* 上大小为1。
     参数
         - *input* ( **Tensor** ) : 输入张量
-        - *dim* ( **number** ) : 进行归约的维度, 
+        - *dim* ( **int** ) : 进行归约的维度
         - *keepdim* ( **bool** ) : 结果是否保留原有维度
     C API
         :guilabel:`diopiMin`
     """
     assert isinstance(dim, int), "dim should be int"
 
-    sizeI = list(input.size())
-    sizeI[dim] = 1
-    out = Tensor(sizeI, input.get_dtype())
-    indices = Tensor(sizeI, Dtype.int64)
+    dim, out = reduce_op_process(input, dim, keepdim)
+    indices = Tensor(out.size(), Dtype.int64)
     func = check_function("diopiMin")
 
     ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
                input.tensor_handle, dim)
     check_returncode(ret)
-
-    if ~keepdim:
-        squeeze(out)
-    return out
+    Res = namedtuple('Res', ['values', 'indices'])
+    output = Res(out, indices)
+    return output
 
 
 def convert_reduction(name):
@@ -1176,7 +1162,7 @@ def conv2d(input, weight, bias=None, stride=1,
     for i in range(-2, 0):
         # equivalent kernel size
         sizeW[i] += (sizeW[i] - 1) * (dilation[i] - 1)
-        sizeO.append(int((sizeI[i] - sizeW[i] + 2*padding[i])/stride[i]) + 1) #floor
+        sizeO.append(int((sizeI[i] - sizeW[i] + 2*padding[i])/stride[i]) + 1)
 
     stride = Sizes(tuple(stride))
     padding = Sizes(tuple(padding))
@@ -2031,5 +2017,368 @@ def batch_norm(input, running_mean, running_var, weight=None, bias=None,
     ret = func(input.context_handle, save_mean.tensor_handle, save_invstd.tensor_handle,
                input.tensor_handle, weight, bias, running_mean, running_var, training,
                momentum, eps)
+    check_returncode(ret)
+    return out
+
+
+def log_softmax(input, dim, dtype=None):
+    r"""
+    释义
+        对输入张量逐元素进行 *softmax* 操作之后再计算其对数值。相应公式如下:
+
+        .. math::
+            \text{LogSoftmax}(x_{i}) = \log\left(\frac{\exp(x_i) }{ \sum_j \exp(x_j)} \right)
+
+        使用 *log_softmax* 函数比分别使用 *log* 和 *softmax* 更快更稳定。
+    参数
+        - *input* ( **Tensor** ) : 输入张量
+        - *dim* ( **number** ) : 对输入张量应用 *log_softmax* 函数的维度
+        - *dtype* ( **Dtype**, 可选) : 期望的返回值数据类型，如果指定，输入张量将会提前转换为 *dtype* 类型以防止数值溢出。
+    C API
+        :guilabel:`diopiLogSoftmax`
+    """
+    if dim is None:
+        dim = 0
+    if input.numel() == 0:
+        return input
+    if dtype is None:
+        dtype = input.get_dtype()
+    out = raw_like(input)
+
+    func = check_function('diopiLogSoftmax')
+    ret = func(input.context_handle, out.tensor_handle,
+               input.tensor_handle, c_int64(dim), c_int32(dtype.value))
+    check_returncode(ret)
+    return out
+
+
+def hardtanh(input, min_val=- 1.0, max_val=1.0, inplace=False) -> Tensor:
+    r"""
+    释义
+        对输入 *input* 张量逐元素做如下变换:
+
+        .. math::
+            \text{HardTanh}(x) = \begin{cases}
+                \text{max_val} & \text{ if } x > \text{ max_val } \\
+                \text{min_val} & \text{ if } x < \text{ min_val } \\
+                x & \text{ otherwise } \\
+            \end{cases}
+    参数
+        - *input* ( **Tensor** ): 输入张量
+        - *min_val* ( **number** ): 线性范围的下限，默认值为 -1
+        - *max_val* ( **number** ): 线性范围的上限，默认值为 1
+        - *inplace* ( **bool** ) : 是否覆盖原数据
+    C API
+        :guilabel:`diopiHardtanh` :guilabel:`diopiHardtanhInp`
+    """
+    call = "diopiHardtanh"
+    min_val = byref(Scalar(input.get_dtype(), min_val))
+    max_val = byref(Scalar(input.get_dtype(), max_val))
+    if inplace:
+        out = input
+        call = call + "Inp"
+        func = check_function(call)
+        ret = func(input.context_handle, input.tensor_handle, min_val, max_val)
+    else:
+        out = raw_like(input)
+        func = check_function(call)
+        ret = func(input.context_handle, out.tensor_handle,
+                   input.tensor_handle, min_val, max_val)
+
+    check_returncode(ret)
+    return out
+
+
+def threshold(input, threshold, value, inplace=False) -> Tensor:
+    r"""
+    释义
+        对输入 *input* 张量逐元素做如下变换:
+
+        .. math::
+            y =\begin{cases}
+            x, &\text{ if } x > \text{threshold} \\
+            \text{value}, &\text{ otherwise }
+            \end{cases}
+    参数
+        - *input* ( **Tensor** ): 输入张量
+        - *threshold* ( **number** ): 阈值
+        - *value* ( **number** ): 填充值
+        - *inplace* ( **bool** ) : 是否覆盖原数据
+    C API
+        :guilabel:`diopiThreshold` :guilabel:`diopiThresholdInp`
+    """
+    call = "diopiThreshold"
+    threshold = byref(Scalar(input.get_dtype(), threshold))
+    value = byref(Scalar(input.get_dtype(), value))
+    if inplace:
+        out = input
+        call = call + "Inp"
+        func = check_function(call)
+        ret = func(input.context_handle, input.tensor_handle, threshold, value)
+    else:
+        out = raw_like(input)
+        func = check_function(call)
+        ret = func(input.context_handle, out.tensor_handle,
+                   input.tensor_handle, threshold, value)
+
+    check_returncode(ret)
+    return out
+
+
+def gelu(input, approximate='none') -> Tensor:
+    r"""
+    释义
+        对输入张量逐元素应用如下变换:
+
+        如果 *approximate* 等于 ``none``:
+
+        .. math::
+            \text { GRELU  }(x)= x \times \Phi(x)
+
+        其中 :math:`\Phi(x)` 是高斯分布的累积分布函数。
+
+        如果 *approximate* 等于 ``tanh``, 将做以下近似估计:
+
+        .. math::
+            \text { GRELU  }(x)=  0.5 * x * (1 + \text{Tanh}(sqrt(2 / \pi) * (x + 0.044715 * x^3)))
+    参数
+        - *input* ( **Tensor** ) : 输入张量
+        - *approximate* ( **string** ) : 是否采用近似估计
+    C API
+        :guilabel:`diopiGelu`
+    """
+    assert isinstance(approximate, str),\
+        "approximate must be a string."
+    out = raw_like(input)
+    func = check_function("diopiGelu")
+
+    ret = func(input.context_handle, out.tensor_handle,
+               input.tensor_handle, byref(approximate))
+
+    check_returncode(ret)
+    return out
+
+
+def addcdiv(input, tensor1, tensor2, value=1) -> Tensor:
+    r"""
+    释义
+        执行 *tensor1* 与 *tensor2* 的逐元素除法，将结果乘以标量值 *value* 后再加至输入张量 *input* :
+
+        .. math::
+            \text{out}_i = \text{input}_i + \text{value} \times \frac{\text{tensor1}_i}{\text{tensor2}_i}
+    参数
+        - *input* ( **Tensor** ) : 输入张量
+        - *tensor1* ( **Tensor** ) : 用来做分子的张量
+        - *tensor2* ( **Tensor** ) : 用来做分母的张量
+        - *value* ( **number** ) : 张量相除结果的缩放因子，默认值为 1
+    C API
+        :guilabel:`diopiAddcdiv`
+    """
+    size1 = list(tensor1.size())
+    size2 = list(tensor2.size())
+    sizeI = list(input.size())
+    sizeO = broadcast_out_size(size1, size2)
+    sizeO = broadcast_out_size(sizeI, sizeO)
+    out = Tensor(sizeO, input.get_dtype())
+    value = byref(Scalar(input.get_dtype(), value))
+
+    func = check_function("diopiAddcdiv")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
+               tensor1.tensor_handle, tensor2.tensor_handle, value)
+    check_returncode(ret)
+    return out
+
+
+def addmm(input, mat1, mat2, beta=1, alpha=1) -> Tensor:
+    r"""
+    释义
+        执行 *mat1* 与 *mat2* 的矩阵乘法，将结果乘以标量值 *alpha* 后再加至输入张量 *beta* x *input*。
+
+        如果 *mat1* 形状为 :math:`(n \times m)`, *mat2* 形状为 :math:`(m \times p)`, 那么 *input* 必须能和一个
+        形状为 :math:`(n \times p)` 的张量可广播，输出张量形状为 :math:`(n \times p)`。
+
+        .. math::
+            \text{out} = \beta\ \text{input} + \alpha\ (\text{mat1}_i \mathbin{@} \text{mat2}_i)
+
+        如果输入张量为浮点型数据， 缩放因子 *alpha* 和 *beta* 必须是实数，否则，应为整数。
+    参数
+        - *input* ( **Tensor** ) : 输入张量
+        - *mat1* ( **Tensor** ) : 矩阵乘法的第一个张量
+        - *mat2* ( **Tensor** ) : 矩阵乘法的第二个张量
+        - *alpha* ( **number**，可选 ) : *input* 的缩放因子，默认值为 1
+        - *beta* ( **number**，可选 ) : 张量相乘结果的缩放因子，默认值为 1
+    C API
+        :guilabel:`diopiAddmm`
+    """
+    size1 = list(mat1.size())
+    size2 = mat2.size()
+    size1[-1] = size2[-1]
+    sizeI = list(input.size())
+    sizeO = broadcast_out_size(sizeI, size1)
+    out = Tensor(sizeO, input.get_dtype())
+    alpha = byref(Scalar(input.get_dtype(), alpha))
+    beta = byref(Scalar(input.get_dtype(), beta))
+
+    func = check_function("diopiAddmm")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
+               mat1.tensor_handle, mat2.tensor_handle, beta, alpha)
+    check_returncode(ret)
+    return out
+
+
+def sum(input, dim=None, keepdim=False, dtype=None) -> Tensor:
+    r"""
+    释义
+        返回给定维度 *dim* 中输入张量的每一行的和。 如果 *dim* 是维度列表，则对所有维度进行归约。
+
+        如果 *keepdim* 为 ``True``, 则除了在维度 *dim* 上，输出张量大小与输入张量相同。输出张量在维度 *dim* 上大小为1。
+    参数
+        - *input* ( **Tensor** ) : 输入张量
+        - *dim* ( **int** ) : 进行归约的维度
+        - *keepdim* ( **bool** ) : 结果是否保留原有维度
+        - *dtype* ( **Dtype**, 可选) : 输出数据类型
+    C API
+        :guilabel:`diopiSum`
+    """
+    assert isinstance(dim, (int, list)) or dim is None,\
+        "dim should be int or list"
+    func = check_function("diopiSum")
+    dim, out = reduce_op_process(input, dim, keepdim, dtype)
+    dim1 = Sizes(tuple(dim))
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
+               dim1, c_int32(dtype.value))
+    check_returncode(ret)
+    return out
+
+
+def max(input, dim, keepdim=False):
+    r"""
+    释义
+        返回给定维度 *dim* 中输入张量的每一行的最大值。 如果 *dim* 是维度列表, 则对所有维度进行归约。
+
+        如果 *keepdim* 为 ``True``, 则除了在维度 *dim* 上，输出张量大小与输入张量相同。输出张量在维度 *dim* 上大小为1。
+    参数
+        - *input* ( **Tensor** ) : 输入张量
+        - *dim* ( **int** ) : 进行归约的维度
+        - *keepdim* ( **bool** ) : 结果是否保留原有维度
+    C API
+        :guilabel:`diopiMax`
+    """
+    assert isinstance(dim, int), "dim should be int"
+    dim, out = reduce_op_process(input, dim, keepdim)
+    indices = Tensor(out.size(), Dtype.int64)
+    func = check_function("diopiMax")
+    ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
+               input.tensor_handle, dim)
+    check_returncode(ret)
+    Res = namedtuple('Res', ['values', 'indices'])
+    output = Res(out, indices)
+    return output
+
+
+def any(input, dim, keepdim=False) -> Tensor:
+    r"""
+    释义
+        判定输入张量在给定维度 *dim* 上的每一行是否有任一元素为 True。
+
+        如果 *keepdim* 为 ``True``, 则除了在维度 *dim* 上，输出张量大小与输入张量相同。输出张量在维度 *dim* 上大小为1。
+    参数
+        - *input* ( **Tensor** ) : 输入张量
+        - *dim* ( **int** ) : 进行归约的维度
+        - *keepdim* ( **bool** ) : 结果是否保留原有维度
+    C API
+        :guilabel:`diopiAny`
+    """
+    assert isinstance(dim, int), "dim should be int"
+    dim, out = reduce_op_process(input, dim, keepdim, Dtype.bool)
+    func = check_function("diopiAny")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim)
+    check_returncode(ret)
+    return out
+
+
+def all(input, dim, keepdim=False) -> Tensor:
+    r"""
+    释义
+        判定输入张量在给定维度 *dim* 上的每一行是否所有元素均为 True。
+
+        如果 *keepdim* 为 ``True``, 则除了在维度 *dim* 上，输出张量大小与输入张量相同。输出张量在维度 *dim* 上大小为1。
+    参数
+        - *input* ( **Tensor** ) : 输入张量
+        - *dim* ( **int** ) : 进行归约的维度
+        - *keepdim* ( **bool** ) : 结果是否保留原有维度
+    C API
+        :guilabel:`diopiAll`
+    """
+    assert isinstance(dim, int), "dim should be int"
+    dim, out = reduce_op_process(input, dim, keepdim, Dtype.bool)
+    func = check_function("diopiAll")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim)
+    check_returncode(ret)
+    return out
+
+
+def nll_loss(input, target, weight=None, ignore_index=-100, reduction='mean'):
+    r"""
+    释义
+        负对数似然损失。常用于 *C* 类训练分类任务。
+
+        当 *reduction* 为 *none* 时, 其损失计算方式如下:
+
+        .. math::
+            \ell(x, y) = L = \{l_1,\dots,l_N\}^\top, \quad
+
+        .. math::
+            l_n = - w_{y_n} x_{n,y_n}, \quad
+            w_{c} = \text{weight}[c] \cdot 1\{c \not= \text{ignore_index}\},
+
+        其中 :math:`x` 表示输入, :math:`y` 表示目标，:math:`w` 是权重, :math:`C` 是类别数量，:math:`N` 等于输入大小除以类别总数。
+
+        此外, 若 *reduction* 不为 *none* , 则:
+
+        .. math::
+            \ell(x, y) = \begin{cases}
+                \sum_{n=1}^N \frac{1}{\sum_{n=1}^N w_{y_n}} l_n, &
+                \text{if reduction} = \text{`mean';}\\
+                \sum_{n=1}^N l_n,  &
+                \text{if reduction} = \text{`sum'.}
+            \end{cases}
+    参数
+        - *input* ( **Tensor** ) : 输入张量, 一般为对数概率
+        - *target* ( **Tensor** ) : 目标张量, 表示类别索引，值范围为 :math:`[0, C)`
+        - *weight* ( **Tensor**, 可选) : 对每个类别手动设置的调整权重, 若非空则其大小为 *C*
+        - *ignore_index* ( **int**, 可选) : 指定一个被忽略且不影响输入梯度的目标值, 当目标包含类别索引时才能使用该参数, 默认值为 -100
+        - *reduction* ( **string** , 可选) : 损失归约方式, 可以为 *none* , *sum* 或者 *mean*。
+          其中 ``none`` : 不使用任何归约, ``mean`` : 输出的和除以输出的元素个数, 即求均值, ``sum`` : 输出求和。 其默认值为 *mean*
+    形状
+        - *input* : 形状为 :math:`(N, C)` 或者 :math:`(N, C, d_1, d_2, ..., d_K)` 其中 :math:`K \geq 1`
+          表示 K-维损失
+        - *target* : 形状为 :math:`(N)` 或者 :math:`(N, d_1, d_2, ..., d_K)` 其中 :math:`K \geq 1`
+          表示 K-维损失。值范围为 :math:`[0, C)`
+        - 输出 : 如果 *reduction* 为 *none*, 和 *target* 形状相同。否则为标量
+
+        其中, N 表示批大小， C 表示类别数量
+    C API
+        :guilabel:`diopiNLLLoss`
+    """
+    assert reduction in ['mean', 'sum', 'none'], \
+        'reduction must be one of (mean, sum, none)'
+
+    if weight is not None:
+        assert isinstance(weight, Tensor), \
+            'weigth must be a Tensor'
+        weight = weight.tensor_handle
+    else:
+        weight = c_void_p()
+
+    if reduction == 'none':
+        out = raw_like(target)
+    else:
+        out = Tensor((1,), input.get_dtype())
+
+    reduction_mode = convert_reduction(reduction)
+    func = check_function("diopiNLLLoss")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
+               target.tensor_handle, weight, reduction_mode, ignore_index)
     check_returncode(ret)
     return out

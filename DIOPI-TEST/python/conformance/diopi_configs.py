@@ -1,4 +1,3 @@
-# from functools import partial
 from .config import Genfunc
 from .dtype import Dtype
 
@@ -101,6 +100,70 @@ diopi_configs = {
                     "ins": ['input'],
                     "shape": ((2, 4096), (64, 28, 28),
                               (32, 64, 112, 112), (64, 3, 7, 28, 28)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'hardtanh': dict(
+        name=["hardtanh"],
+        is_inplace=True,
+        para=dict(
+            min_val=[0.0],
+            max_val=[6.0],
+        ),
+        call_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 4096), (64, 28, 28),
+                              (2, 96, 56, 56), (64, 3, 7, 28, 28)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'threshold': dict(
+        name=["threshold"],
+        is_inplace=True,
+        related_para=dict(
+            threshold=[0, 2.0, 3.1, 4.7],
+            value=[-5.34, 0.0, 33, 12.4],
+        ),
+        call_para=dict(
+            genfunc=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((64, ),
+                              (64, 28, 28),
+                              (2, 144, 28, 28),
+                              (64, 3, 7, 28, 28)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
+                },
+            ]
+        ),
+    ),
+
+    'gelu': dict(
+        name=['gelu'],
+        atol=1e-4,
+        rtol=1e-5,
+        para=dict(
+            # approximate=['none', 'tanh'], # todo: pytroch 1.12
+        ),
+        call_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((16, 7), (64, 28, 28),
+                              (16, 3, 14, 14), (64, 3, 7, 28, 28)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -253,7 +316,7 @@ diopi_configs = {
         ),
     ),
 
-    'pointwise_op': dict(
+    'sign': dict(
         name=['sign'],
         interface=['torch'],
         dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
@@ -441,13 +504,45 @@ diopi_configs = {
         outs=['out'],
     ),
 
+    'addmm': dict(
+        name=["addmm"],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-5,
+        related_para=dict(
+            alpha=[0.001, -0.01, 1],
+            beta=[0.001, -0.01, 1],
+        ),
+        call_para=dict(
+            gen_fn=Genfunc.randn,
+            dtype=[Dtype.float32, Dtype.float64],
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((10, ), (768, ), (400,)),
+                },
+                {
+                    "ins": ["mat1"],
+                    "requires_grad": [True],
+                    "shape": ((2, 2048), (2, 768), (1, 2304)),
+                },
+                {
+                    "ins": ["mat2"],
+                    "requires_grad": [True],
+                    "shape": ((2048, 10), (768, 768), (2304, 400)),
+                },
+            ],
+        ),
+    ),
+
     'addcmul': dict(
         name=["addcmul"],
         interface=['torch'],
         atol=1e-4,
         rtol=1e-5,
-        para=dict(
-            value=[0.001, -0.01, 2],
+        related_para=dict(
+            value=[0.001, -0.01, 2, 1, 1],
         ),
         call_para=dict(
             gen_fn=Genfunc.randn,
@@ -467,6 +562,37 @@ diopi_configs = {
                     "ins": ["tensor2"],
                     "requires_grad": [True],
                     "shape": ((128, ), (576, 192), (64, 3, 3, 3), (10, 1, 5), (4, 5, 1)),
+                },
+            ],
+        ),
+    ),
+
+    'addcdiv': dict(
+        name=["addcdiv"],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-5,
+        related_para=dict(
+            value=[-0.001, -0.01, 2, -1e-5, 1],
+        ),
+        call_para=dict(
+            gen_fn=Genfunc.randn,
+            dtype=[Dtype.float32, Dtype.float64],
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((64, ), (93, 512), (256, 256, 2, 2), (10, 3, 5), (4, 1, 1)),
+                },
+                {
+                    "ins": ["tensor1"],
+                    "requires_grad": [True],
+                    "shape": ((64, ), (93, 512), (256, 256, 2, 2), (10, 3, 1), (1, 5)),
+                },
+                {
+                    "ins": ["tensor2"],
+                    "requires_grad": [True],
+                    "shape": ((64, ), (93, 512), (256, 256, 2, 2), (10, 1, 5), (4, 5, 1)),
                 },
             ],
         ),
@@ -523,7 +649,7 @@ diopi_configs = {
     ),
 
     'reduce_op': dict(
-        name=['mean', 'std', 'sum', 'var', 'min'],
+        name=['mean', 'std', 'sum', 'var'],
         interface=['torch'],
         atol=1e-4,
         rtol=1e-5,
@@ -588,6 +714,51 @@ diopi_configs = {
         ),
     ),
 
+    'reduce_partial_op_2': dict(
+        name=['min', 'max'],
+        interface=['torch'],
+        related_para=dict(
+            dim=[0, 1, 1, 2, -1, 3],
+            keepdim=[True, False, True, False, True, False],
+        ),
+        atol=1e-4,
+        rtol=1e-5,
+        call_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((64, ), (169, 4), (17100, 2), (1, 1, 384),
+                              (4, 133, 128, 128), (2, 64, 3, 3, 3)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'reduce_partial_op_3': dict(
+        name=['any', 'all'],
+        interface=['torch'],
+        related_para=dict(
+            dim=[0, 1, 0, 2, -1, 3],
+            keepdim=[True, False, True, False, True, False],
+        ),
+        atol=1e-4,
+        rtol=1e-5,
+        call_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((64, ), (169, 4), (17100, 2), (1, 1, 384),
+                              (4, 133, 128, 128), (2, 64, 3, 3, 3)),
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask,
+                },
+            ],
+        ),
+    ),
+
     'soft_margin_loss': dict(
         name=["soft_margin_loss"],
         para=dict(
@@ -625,6 +796,40 @@ diopi_configs = {
                 {
                     "ins": ['target'],
                     "shape": ((2, 11856, 2), (16, 2, 2964, 2)),
+                },
+            ],
+        ),
+    ),
+
+    'nll_loss': dict(
+        name=["nll_loss"],
+        atol=1e-4,
+        rtol=1e-5,
+        related_para=dict(
+            reduction=['none', 'mean', 'sum'],
+            ignore_index=[-100, 92, 255],
+        ),
+        call_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((200, 81), (2, 92, 29), (2, 150, 512, 512)),
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ['target'],
+                    "requires_grad": [False],
+                    "shape": ((200, ), (2, 29), (2, 512, 512)),
+                    "dtype": [Dtype.int64],
+                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=80),
+                },
+                {
+                    "ins": ['weight'],
+                    "shape": ((81, ), (92, ), None),
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.ones,
                 },
             ],
         ),

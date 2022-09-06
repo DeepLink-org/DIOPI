@@ -3,7 +3,7 @@ from . import diopi_rt
 
 
 default_cfg_dict = dict(
-    default_option = dict(
+    default_option=dict(
         atol=1e-8,
         rtol=1e-5,
         atol_half=1e-4,
@@ -74,7 +74,7 @@ def check_function(fn_name):
 def squeeze(input: diopi_rt.Tensor):
     size = input.size()
     new_size = []
-    for i in len(size):
+    for i in range(0, len(size)):
         if size[i] != 1:
             new_size.append(size[i])
     input.reset_shape(new_size)

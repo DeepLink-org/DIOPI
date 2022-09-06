@@ -94,7 +94,7 @@ static diopiError_t prepareTensorDesc(diopiDtype_t type, const diopiSize_t shape
 }
 
 extern "C" diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-                                     const diopiTensorHandle_t input, int64_t dim, ScalarType dtype)
+                                     const diopiTensorHandle_t input, int64_t dim, diopiDtype_t dtype)
 {
     cudnnHandle_t handle(nullptr);
     cudnnTensorDescriptor_t desc(nullptr);
