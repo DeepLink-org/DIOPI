@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.4)
 project(torch_cpp_impl)
 
-set(CMAKE_PREFIX_PATH "/mnt/cache/share/platform/env/miniconda3.7/envs/pt1.7v1/lib/python3.7/site-packages/torch/")
-message(${CMAKE_PREFIX_PATH})
 find_package(Torch REQUIRED)
 if (Torch_FOUND)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -std=c++14 -fPIC")

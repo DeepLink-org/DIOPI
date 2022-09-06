@@ -8,8 +8,13 @@
 
 #include <diopi/diopirt.h>
 
+using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
 
-caffe2::TypeMeta getATensorType(diopiDtype_t dt) {
+namespace impl {
+
+namespace aten {
+
+caffe2::TypeMeta getATenType(diopiDtype_t dt) {
     switch (dt) {
     case diopi_dtype_bool:
         return caffe2::TypeMeta::Make<bool>();
@@ -41,7 +46,7 @@ caffe2::TypeMeta getATensorType(diopiDtype_t dt) {
     }
 }
 
-c10::DeviceType getATensorDevice(diopiDevice_t device) {
+c10::DeviceType getATenDevice(diopiDevice_t device) {
     if (device == diopi_host) {
         return c10::DeviceType::CPU;
     } else if (device == diopi_device) {
@@ -71,10 +76,10 @@ at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes,
 at::Tensor buildAtTensor(diopiTensorHandle_t tensor) {
     diopiDtype_t dtype;
     diopiGetTensorDtype(tensor, &dtype);
-    caffe2::TypeMeta atType = getATensorType(dtype);
+    caffe2::TypeMeta atType = getATenType(dtype);
     diopiDevice_t device;
     diopiGetTensorDevice(tensor, &device);
-    c10::DeviceType atDevice = getATensorDevice(device);
+    c10::DeviceType atDevice = getATenDevice(device);
 
     void* data = nullptr;
     diopiGetTensorData(&tensor, &data);
@@ -111,6 +116,10 @@ at::Scalar buildAtScalar(const diopiTensorHandle_t input, const diopiScalar_t* s
     }
 }
 
+at::IntArrayRef buildAtIntArray(diopiSize_t size) {
+    return at::IntArrayRef(size.data, size.len);
+}
+
 void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiTensorHandle_t out) {
     // TODO(fengsibo): add device and nbytes check
     void* src = atOut.data_ptr();
@@ -120,31 +129,27 @@ void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiT
     cudaMemcpy(dst, src, nbytes, cudaMemcpyDeviceToDevice);
 }
 
-template<size_t N, typename TupleT>
-struct TupleToList {
-    static void copy(diopiContextHandle_t ctx, const TupleT& aouts,
-            std::vector<diopiTensorHandle_t>& outs, size_t idx) {
-        auto& aout = std::get<N>(aouts);
-        if (aout.defined()) {
-            updateATen2Tensor(ctx, aout, outs[idx]);
-            --idx;
-        }
-        TupleToList<N - 1, TupleT>::copy(ctx, aouts, outs, idx);
-    }
-
-    static void count(const TupleT& aouts, size_t& cnt) {
-        auto& t = std::get<N>(aouts);
-        if (t.defined()) ++cnt;
-        TupleToList<N - 1, TupleT>::count(aouts, cnt);
+template<typename TupleT, std::size_t N>
+struct UpdateTupleATen {
+    static void update(diopiContextHandle_t ctx, TupleT& atOuts,
+            diopi_tensor_list& outs) {
+        UpdateTupleATen<TupleT, N - 1>::update(ctx, atOuts, outs);
+        updateATen2Tensor(ctx, std::get<N - 1>(atOuts), outs.at(N - 1));
     }
 };
 
 template<typename TupleT>
-void updateATen2Tensor(diopiContextHandle_t ctx, TupleT& atOuts, std::vector<diopiTensorHandle_t>& out) {
+struct UpdateTupleATen<TupleT, 1> {
+    static void update(diopiContextHandle_t ctx, TupleT& atOuts,
+            std::vector<diopiTensorHandle_t>& outs) {
+        updateATen2Tensor(ctx, std::get<0>(atOuts), outs.at(0));
+    }
+};
+
+template<typename TupleT>
+void updateATen2Tensor(diopiContextHandle_t ctx, TupleT& atOuts, diopi_tensor_list& outs) {
     constexpr size_t tupleSize = std::tuple_size<TupleT>::value;
-    size_t count = 0;
-    std::cout << tupleSize << std::endl;
-    // TupleToList<tupleSize - 1, TupleT>::count(atOuts, count);
+    UpdateTupleATen<TupleT, tupleSize>::update(ctx, atOuts, outs);
 }
 
 template<typename Func, typename ...Args>
@@ -154,14 +159,18 @@ void invokeATenFuncRet(diopiContextHandle_t ctx, Func func, diopiTensorHandle_t 
 }
 
 template<typename Func, typename ...Args>
-void invokeATenFuncRet(diopiContextHandle_t ctx, Func func, std::vector<diopiTensorHandle_t>& outs, Args&&... args) {
+void invokeATenFuncRet(diopiContextHandle_t ctx, Func func, diopi_tensor_list& outs, Args&&... args) {
     auto atOuts = func(std::forward<Args>(args)...);
     updateATen2Tensor(ctx, atOuts, outs);
 }
 
 template<typename Func, typename ...Args>
 void invokeATenFuncInp(diopiContextHandle_t ctx, Func func, Args&&... args) {
-    at::Tensor atOut = func(std::forward<Args>(args)...);
+    func(std::forward<Args>(args)...);
 }
+
+}  // namespace aten
+
+}  // namespace impl
 
 #endif

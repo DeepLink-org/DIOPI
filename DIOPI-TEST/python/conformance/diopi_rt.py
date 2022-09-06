@@ -211,8 +211,8 @@ class Tensor:
         stride = []
         for i in range(cstride.len):
             stride.append(cstride.data[i])
-        self.stride = tuple(stride)
-        return self.stride
+        self.strides = tuple(stride)
+        return self.strides
 
     def itemsize(self):
         itemsize = c_int64()

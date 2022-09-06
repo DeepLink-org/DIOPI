@@ -1294,14 +1294,16 @@ def max_pool2d(input, kernel_size, stride=None, padding=0, dilation=1,
         ret = func(input.context_handle, out.tensor_handle,
                    input.tensor_handle, kernel_size,
                    stride, padding, dilation, ceil_mode)
+        check_returncode(ret)
+        return out
     else:
         func = check_function("diopiMaxPool2dWithIndices")
         indices = Tensor(sizeO, Dtype.int64)
         ret = func(input.context_handle, out.tensor_handle,
                    indices.tensor_handle, input.tensor_handle,
                    kernel_size, stride, padding, dilation, ceil_mode)
-    check_returncode(ret)
-    return out
+        check_returncode(ret)
+        return out, indices
 
 
 def adaptive_avg_pool2d(input, output_size):

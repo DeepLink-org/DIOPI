@@ -37,7 +37,7 @@ def compare_with_gen_output(output, cfg, output_reference):
         for i in range(len(output)):
             if isinstance(output[i], Tensor):
                 passed &= allclose(cfg, output[i].numpy(), output_reference[i])
-            if ~passed:
+            if not passed:
                 return False
     elif isinstance(output, dict):
         assert isinstance(output_reference, dict)
