@@ -14,6 +14,12 @@ def convert_input_tensors(function_paras: dict):
         if isinstance(function_paras['kwargs'][para], np.ndarray):
             function_paras['kwargs'][para] = Tensor.from_numpy(function_paras['kwargs'][para])
 
+        if para == "tensors":
+            tensors = function_paras['kwargs'][para]
+            for idx, ele in enumerate(tensors):
+                tensors[idx] = Tensor.from_numpy(ele)
+            function_paras['kwargs'][para] = tensors
+
 
 def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray) -> bool:
     rtol = cfg.get('rtol', 1e-5)
@@ -64,6 +70,12 @@ class ConformanceTest(object):
             convert_input_tensors(function_paras)
             kwargs = function_paras['kwargs']
 
+            try:
+                func = eval(f"F.{cfg_func_name}")
+            except AttributeError as e:
+                logger.error(f"function {cfg_func_name} 's python interface is not implemented, {e}")
+                continue
+
             func_call_list = []
             func_call_list.append(f"F.{cfg_func_name}(**kwargs)")
             if data["cfg"].get("is_inplace", False):
@@ -83,7 +95,7 @@ class ConformanceTest(object):
                 except Exception as e:
                     logger.error(f"run {cfg_func_name} failed with exception: {e}")
 
-            if "do_backward" in data["cfg"].keys():
+            if "do_backward" in data["cfg"].keys() and output is not None: 
                 saved_pth = saved_pth.split(".pth")[0] + "_backward.pth"
                 if not isinstance(output, (list, tuple)):
                     output = [output]

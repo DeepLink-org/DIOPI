@@ -235,10 +235,27 @@ diopi_configs = {
     'pointwise_op': dict(
         name=['abs', 'acos', 'asin', 'atan', 'ceil', 'cos',
               'cosh', 'erf', 'erfc', 'exp', 'expm1', 'floor',
-              'log', 'log2', 'log10', 'neg', 'round', 'sign',
+              'log', 'log2', 'log10', 'neg', 'round',
               'sin', 'sinh', 'sqrt', 'tan', 'tanh'],
         interface=['torch'],
         is_inplace=True,
+        dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
+        call_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1, ), (1024,), (364800, 4), (2, 128, 3072),
+                              (256, 128, 3, 3),
+                              (2, 31, 512, 6, 40)),
+                },
+            ],
+        ),
+    ),
+
+    'pointwise_op': dict(
+        name=['sign'],
+        interface=['torch'],
         dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
         call_para=dict(
             gen_fn=Genfunc.randn,

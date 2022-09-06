@@ -3,6 +3,7 @@ from ctypes import c_float, c_int64, c_int32, c_void_p, byref
 from .diopi_rt import Sizes, Scalar, Tensor, device_impl_lib
 from .utils import check_returncode, check_function, squeeze
 from . import Dtype, raw_like
+import math
 
 
 def broadcast_out_size(size1, size2):
@@ -592,7 +593,7 @@ def bmm(input, mat2) -> Tensor:
     C API
         :guilabel:`diopiBmm`
     """
-    size1 = input.size()
+    size1 = list(input.size())
     assert(len(size1) == 3), 'input must be 3d tensor'
     size2 = mat2.size()
     assert(len(size2) == 3), 'mat2 must be 3d tensor'
@@ -625,7 +626,7 @@ def addcmul(input, tensor1, tensor2, value=1) -> Tensor:
     C API
         :guilabel:`diopiAddcmul`
     """
-    types = Dtype.float_no_half_types
+    types = (Dtype.float32, Dtype.float64)
     assert(input.get_dtype() in types), 'input must be float/double tensor'
     assert(tensor1.get_dtype() in types), 'tensor1 must be float/double tensor'
     assert(tensor2.get_dtype() in types), 'tensor2 must be float/double tensor'
@@ -666,8 +667,8 @@ def matmul(input, other) -> Tensor:
     """
     # tocheck: the shape of out tensor
     out = raw_like(input)
-    sizeI = input.size()
-    sizeO = other.size()
+    sizeI = list(input.size())
+    sizeO = list(other.size())
 
     # vector x vector
     if len(sizeI) == 1 and len(sizeO) == 1:
@@ -800,29 +801,34 @@ def clamp_max(input, max, inplace=False) -> Tensor:
 def mean(input, dim=None, keepdim=False, dtype=None) -> Tensor:
     r"""
     释义
-        返回给定维度 *dim* 中输入张量的每一行的平均值。 如果 *dim* 是维度列表，则对所有维度进行归约。
+        返回给定维度 *dim* 中输入张量的每一行的平均值。 如果 *dim* 是维度列表，则对列表中所有维度进行归约。
+        如果 *dim* 等于 ``None``，将对所有元素计算平均值。
 
         如果 *keepdim* 为 ``True``, 则除了在维度 *dim* 上，输出张量大小与输入张量相同。输出张量在维度 *dim* 上大小为1。
     参数
         - *input* ( **Tensor** ) : 输入张量
         - *dim* ( **number** ) : 进行归约的维度
         - *keepdim* ( **bool** ) : 结果是否保留原有维度
-        - *dtype* ( **Dtype**, 可选) : 数据类型
+        - *dtype* ( **Dtype**, 可选) : 返回值的数据类型
     C API
         :guilabel:`diopiMean`
     """
-    assert(isinstance(dim, [None, int, list])), "dim should be int or list"
+    assert isinstance(dim, (int, list)) or dim is None,\
+         "dim should be int or list or None"
 
-    sizeI = input.size()
+    sizeI = list(input.size())
     if dim is None:
-        for i in len(sizeI):
+        dim = []
+        for i in range(0, len(sizeI)):
             sizeI[i] = 1
+            dim.append(i)
     elif isinstance(dim, list):
         for i in dim:
             sizeI[i] = 1
     else:
         sizeI[dim] = 1
-
+        dim = [dim]
+        
     if dtype is None:
         dtype = input.get_dtype()
 
@@ -842,6 +848,7 @@ def std(input, unbiased=False, dim=None, keepdim=False) -> Tensor:
     r"""
     释义
         如果 *unbiased* 为 ``True``，则将使用 *Bessel* 校正。 否则，将直接计算样本偏差，而不进行任何校正。
+        如果 *dim* 等于 ``None``，将对所有元素计算标准差。
     参数
         - *input* ( **Tensor** ) : 输入张量
         - *unbiased* ( **bool** ) : 是否使用Bessel校正
@@ -850,17 +857,21 @@ def std(input, unbiased=False, dim=None, keepdim=False) -> Tensor:
     C API
         :guilabel:`diopiStd`
     """
-    assert(isinstance(dim, [None, int, list])), "dim should be int or list"
+    assert isinstance(dim, (int, list)) or dim is None,\
+         "dim should be int or list or None"
 
-    sizeI = input.size()
+    sizeI = list(input.size())
     if dim is None:
-        for i in len(sizeI):
+        dim = []
+        for i in range(0, len(sizeI)):
             sizeI[i] = 1
+            dim.append(i)
     elif isinstance(dim, list):
         for i in dim:
             sizeI[i] = 1
     else:
         sizeI[dim] = 1
+        dim = [dim]
 
     dim1 = Sizes(tuple(dim))
     out = Tensor(sizeI, input.get_dtype())
@@ -874,7 +885,7 @@ def std(input, unbiased=False, dim=None, keepdim=False) -> Tensor:
     return out
 
 
-def min(input, dim=None, keepdim=False) -> Tensor:
+def min(input, dim=0, keepdim=False) -> Tensor:
     r"""
     释义
         返回给定维度 *dim* 中输入张量的每一行的最小值。 如果 *dim* 是维度列表, 则对所有维度进行归约。
@@ -882,27 +893,19 @@ def min(input, dim=None, keepdim=False) -> Tensor:
         如果 *keepdim* 为 ``True``, 则除了在维度 *dim* 上，输出张量大小与输入张量相同。输出张量在维度 *dim* 上大小为1。
     参数
         - *input* ( **Tensor** ) : 输入张量
-        - *dim* ( **number** ) : 进行归约的维度
+        - *dim* ( **number** ) : 进行归约的维度, 
         - *keepdim* ( **bool** ) : 结果是否保留原有维度
     C API
         :guilabel:`diopiMin`
     """
-    assert(isinstance(dim, [None, int])), "dim should be int"
+    assert isinstance(dim, int), "dim should be int"
 
-    sizeI = input.size()
-    if dim is None:
-        for i in len(sizeI):
-            sizeI[i] = 1
-        dim = -1
-    elif isinstance(dim, list):
-        for i in dim:
-            sizeI[i] = 1
-    else:
-        sizeI[dim] = 1
-
+    sizeI = list(input.size())
+    sizeI[dim] = 1
     out = Tensor(sizeI, input.get_dtype())
     indices = Tensor(sizeI, Dtype.int64)
     func = check_function("diopiMin")
+
     ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
                input.tensor_handle, dim)
     check_returncode(ret)
@@ -965,7 +968,7 @@ def binary_cross_entropy_with_logits(input, target, weight=None,
     C API
         :guilabel:`diopiBCEWithLogits`
     """
-    assert input.shape == target.shape, \
+    assert input.size() == target.size(), \
         'target shape must be the same as input shape'
     assert reduction in ['mean', 'sum', 'none'], \
         'reduction must be one of (mean, sum, none)'
@@ -1055,8 +1058,6 @@ def cross_entropy(input, target, weight=None, ignore_index=- 100,
     C API
         :guilabel:`diopiCrossEntropyLoss`
     """
-    assert input.shape == target.shape, \
-        'target shape must be the same as input shape'
     assert reduction in ['mean', 'sum', 'none'], \
         'reduction must be one of (mean, sum, none)'
 
@@ -1068,7 +1069,7 @@ def cross_entropy(input, target, weight=None, ignore_index=- 100,
         weight = c_void_p()
 
     if reduction == 'none':
-        out = raw_like(input)
+        out = raw_like(target)
     else:
         out = Tensor((1,), input.get_dtype())
 
@@ -1109,7 +1110,7 @@ def mse_loss(input, target, reduction='mean'):
     C API
         :guilabel:`diopiMSELoss`
     """
-    assert input.shape == target.shape, \
+    assert input.shape() == target.shape(), \
         'target shape must be the same as input shape'
     assert reduction in ['mean', 'sum', 'none'], \
         'reduction must be one of (mean, sum, none)'
@@ -1158,7 +1159,7 @@ def conv2d(input, weight, bias=None, stride=1,
         bias = c_void_p()
 
     sizeI = input.size()
-    sizeW = weight.size()
+    sizeW = list(weight.size())
     assert len(sizeI) == 4 and len(sizeW) == 4,\
         'input and weight must be 4d tensors'
 
@@ -1175,11 +1176,12 @@ def conv2d(input, weight, bias=None, stride=1,
     for i in range(-2, 0):
         # equivalent kernel size
         sizeW[i] += (sizeW[i] - 1) * (dilation[i] - 1)
-        sizeO.append((sizeI[i] - sizeW[i] + 2*padding[i])/stride[i] + 1)
+        sizeO.append(int((sizeI[i] - sizeW[i] + 2*padding[i])/stride[i]) + 1) #floor
 
     stride = Sizes(tuple(stride))
     padding = Sizes(tuple(padding))
     dilation = Sizes(tuple(dilation))
+
     out = Tensor(sizeO, input.get_dtype())
     func = check_function("diopiConvolution2d")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
@@ -1226,7 +1228,10 @@ def avg_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False,
         padding = (padding, padding)
 
     for i in range(-2, 0):
-        sizeO.append((sizeI[i] - kernel_size[i] + 2*padding[i])/stride[i] + 1)
+        if ceil_mode:
+            sizeO.append(math.ceil((sizeI[i] - kernel_size[i] + 2*padding[i])/stride[i]) + 1)
+        else:
+            sizeO.append(math.floor((sizeI[i] - kernel_size[i] + 2*padding[i])/stride[i]) + 1)
 
     stride = Sizes(tuple(stride))
     padding = Sizes(tuple(padding))
@@ -1288,7 +1293,10 @@ def max_pool2d(input, kernel_size, stride=None, padding=0, dilation=1,
         dilation = (dilation, dilation)
 
     for i in range(-2, 0):
-        sizeO.append((sizeI[i] - kernel_size[i] + 2*padding[i])/stride[i] + 1)
+        if ceil_mode:
+            sizeO.append(math.ceil((sizeI[i] - kernel_size[i] + 2*padding[i])/stride[i]) + 1)
+        else:
+            sizeO.append(math.floor((sizeI[i] - kernel_size[i] + 2*padding[i])/stride[i]) + 1)
 
     stride = Sizes(tuple(stride))
     padding = Sizes(tuple(padding))
@@ -1339,10 +1347,11 @@ def adaptive_avg_pool2d(input, output_size):
         output_size = (output_size, output_size)
 
     for i in range(-2, 0):
-        sizeO.append(output_size[i])
+        if output_size[i] is None:
+            sizeO.append(sizeI[i])
 
     out = Tensor(sizeO, input.get_dtype())
-    output_size = Sizes(tuple(output_size))
+    output_size = Sizes((sizeO[-2], sizeO[-1]))
 
     func = check_function("diopiAaptiveAvgPool2d")
     ret = func(input.context_handle, out.tensor_handle,
@@ -1441,7 +1450,7 @@ def index_select(input, dim, index) -> Tensor:
     C API
         :guilabel:`diopiIndexSelect`
     """
-    sizeI = input.size()
+    sizeI = list(input.size())
     sizeI[dim] = index.numel()
     out = Tensor(sizeI, input.get_dtype())
 
@@ -1463,11 +1472,11 @@ def select(input, dim, index) -> Tensor:
     C API
         :guilabel:`diopiSelect` :guilabel:`diopiSelectCopy`
     """
-    sizeI = input.size()
+    sizeI = list(input.size())
     sizeI[dim] = 1
     out = Tensor(sizeI, input.get_dtype())
 
-    func = check_funtions("diopiSelectCopy")
+    func = check_function("diopiSelectCopy")
     ret = func(input.context_handle, out.tensor_handle,
                input.tensor_handle, dim, index)
     check_returncode(ret)
@@ -1490,7 +1499,7 @@ def masked_scatter(input, mask, source) -> Tensor:
         "mask must be bool tensor"
     out = raw_like(input)
 
-    func = check_funtions("MaskedScatter")
+    func = check_function("MaskedScatter")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                mask.tensor_handle, source.tensor_handle)
     check_returncode(ret)
@@ -1537,8 +1546,8 @@ def linear(input, weight, bias=None) -> Tensor:
     else:
         bias = c_void_p()
 
-    sizeI = input.size()
-    sizeW = weight.size()
+    sizeI = list(input.size())
+    sizeW = list(weight.size())
     sizeI[-1] = sizeW[-2] if len(sizeW) == 2 else 1
     out = Tensor(sizeI, input.get_dtype())
     func = check_function("diopiLinear")
@@ -1623,11 +1632,13 @@ def cat(tensors, dim=0) -> Tensor:
     C API
         :guilabel:`diopiCat`
     """
+    assert isinstance(tensors, (list, tuple)),\
+        "tensors must be a list or tuple"
     insNum = len(tensors)
     sum = 0
     c_tensors = []
     for tensor in tensors:
-        sizeI = tensor.size()
+        sizeI = list(tensor.size())
         sum += sizeI[dim]
         c_tensors.append(tensor.tensor_handle)
 
@@ -1652,8 +1663,10 @@ def stack(tensors, dim=0) -> Tensor:
     C API
         :guilabel:`diopiStack`
     """
+    assert isinstance(tensors, (list, tuple)),\
+        "tensors must be a list or tuple"
     insNum = len(tensors)
-    sizeI = tensors[0].size()
+    sizeI = list(tensors[0].size())
     sum = insNum * sizeI[dim]
 
     c_tensors = []
@@ -1723,7 +1736,7 @@ def topk(input, k, dim=-1, largest=True, sorted=True):
     C API
         :guilabel:`diopiTopk`
     """
-    sizeI = input.size()
+    sizeI = list(input.size())
     sizeI[dim] = k
     values = Tensor(sizeI, input.get_dtype())
     indices = Tensor(sizeI, Dtype.int64)
@@ -1749,7 +1762,7 @@ def transpose(input, dim0, dim1) -> Tensor:
     C API
         :guilabel:`diopiTranspose`
     """
-    sizeI = input.size()
+    sizeI = list(input.size())
     tmp = sizeI[dim0]
     sizeI[dim0] = sizeI[dim1]
     sizeI[dim1] = tmp
@@ -1762,26 +1775,26 @@ def transpose(input, dim0, dim1) -> Tensor:
     return out
 
 
-def one_hot(tensor, num_classes=- 1):
+def one_hot(input, num_classes=- 1):
     r"""
     释义
         对于输入形状为 *(\#)* 的长整型张量，将返回形状为 (\#, num_classes) 的张量。
         返回张量在最后一个维度上和输入类别值对应位置的值为1, 其余均为0。
     参数
-        - *tensor* ( **LongTensor** ) : 任何形状的类别值
+        - *input* ( **LongTensor** ) : 任何形状的类别值
         - *num_classes* ( **int** ) :  类别的总数。如果设为 ``-1``, 类别的总数将会被推断为输入张量的最大类别值加上1
     返回值
         比输入多一个维度的长整型张量, 在输入类别值对应的位置值为1, 其余为0。
     C API
         :guilabel:`diopiOneHot`
     """
-    sizeI = tensor.size()
+    sizeI = input.size()
     sizeI += (num_classes, )
     # todo: create out with case num_classes=-1
     out = Tensor(sizeI, Dtype.int64)
     func = check_function("diopiOneHot")
     ret = func(input.context_handle, out.tensor_handle,
-               tensor.tensor_handle, num_classes)
+               input.tensor_handle, num_classes)
     check_returncode(ret)
     return out
 
@@ -1803,9 +1816,9 @@ def split(tensor, split_size_or_sections, dim=0):
     C API
         :guilabel:`diopiSplitWithSizes`
     """
-    assert isinstance(split_size_or_sections, [int, list]),\
+    assert isinstance(split_size_or_sections, (int, list)),\
         "split_size_or_sections must be int or list"
-    sizeI = tensor.size()
+    sizeI = list(tensor.size())
     sum = sizeI[dim]
     outs = []
     idx = 0
@@ -1877,8 +1890,8 @@ def pow(input, exponent) -> Tensor:
             exponent = byref(Scalar(Dtype.float64, exponent))
         ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, exponent)
     else:
-        sizeI = input.size()
-        sizeE = exponent.size()
+        sizeI = list(input.size())
+        sizeE = list(exponent.size())
         sizeO = broadcast_out_size(sizeI, sizeE)
         out = Tensor(sizeO, input.get_dtype())
 
@@ -1889,39 +1902,39 @@ def pow(input, exponent) -> Tensor:
     return out
 
 
-def where(condition, x, y) -> Tensor:
+def where(condition, input, other) -> Tensor:
     # todo: add scalar version for pytorch 1.12
     r"""
     释义
-        依据条件 *condition* 返回包含 *x* 或者 *y* 元素的张量 *output* ，其大小由 *condition* 、 *x* 及 *y* 广播得到:
+        依据条件 *condition* 返回包含 *input* 或者 *other* 元素的张量 *output* ，其大小由 *condition* 、 *input* 及 *other* 广播得到:
 
         .. math::
             \text { out }_{i}=\left\{\begin{array}{ll}
-            \mathbf{x}_{i} & \text { if condition } \\
-            \mathbf{y}_{i} & \text { otherwise }
+            \mathbf{input}_{i} & \text { if condition } \\
+            \mathbf{other}_{i} & \text { otherwise }
             \end{array}\right.
     参数
         - *condition* ( **Tensor** ) : bool 类型张量，对应位置为 true，则返回 x 的元素或值，否则返回 y 的元素或值
-        - *x* ( **Tensor** 或者 **Scalar** ) : 备选张量
-        - *y* ( **Tensor** 或者 **Scalar** ) : 备选张量
+        - *input* ( **Tensor** 或者 **Scalar** ) : 备选张量
+        - *other* ( **Tensor** 或者 **Scalar** ) : 备选张量
     C API
         :guilabel:`diopiWhere`
     """
-    assert(condition.get_dtype() == Dtype.bool),\
+    assert(condition.get_dtype() in (Dtype.bool, Dtype.uint8)),\
         "condition must be a bool tensor"
-    sizeX = x.size()
-    sizeY = y.size()
-    sizeC = condition.size()
+    sizeX = list(input.size())
+    sizeY = list(other.size())
+    sizeC = list(condition.size())
     sizeO = broadcast_out_size(sizeX, sizeY)
     sizeO = broadcast_out_size(sizeC, sizeO)
-    assert (x.get_dtype() == y.get_dtype()),\
-        " x and y shoule be the same type "
-    out = Tensor(sizeO, x.get_dtype())
+    assert (input.get_dtype() == other.get_dtype()),\
+        " input and other shoule be the same type "
+    out = Tensor(sizeO, input.get_dtype())
 
-    func = check_funtions("diopiWhere")
-    ret = func(x.context_handle, out.tensor_handle, condition.tensor_handle,
-               x.tensor_handle, y.tensor_handle)
-    check_return_value(ret)
+    func = check_function("diopiWhere")
+    ret = func(input.context_handle, out.tensor_handle, condition.tensor_handle,
+               input.tensor_handle, other.tensor_handle)
+    check_returncode(ret)
     return out
 
 
@@ -1939,9 +1952,9 @@ def clip_grad_norm_(parameters, max_norm, norm_type=2.0, error_if_nonfinite=Fals
     C API
         :guilabel:`diopiClipGradNorm`
     """
-    assert(isinstance(max_norm, [int, float])),\
+    assert(isinstance(max_norm, (int, float))),\
         "max_norm must be a int or float"
-    assert(isinstance(norm_type, [int, float])),\
+    assert(isinstance(norm_type, (int, float))),\
         "norm_type must be a int or float"
 
     if isinstance(parameters, Tensor):
@@ -1953,10 +1966,10 @@ def clip_grad_norm_(parameters, max_norm, norm_type=2.0, error_if_nonfinite=Fals
         parametersNum = len(parameters)
     out = 0.0
 
-    func = check_funtions("diopiClipGradNorm")
+    func = check_function("diopiClipGradNorm")
     ret = func(input.context_handle, byref(out), byref(parameters), parametersNum,
                max_norm, norm_type, error_if_nonfinite)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
 
 
@@ -2004,7 +2017,7 @@ def batch_norm(input, running_mean, running_var, weight=None, bias=None,
     else:
         bias = bias.tensor_handle
 
-    func = check_funtions("diopiBatchNorm")
+    func = check_function("diopiBatchNorm")
     if training:
         assert(running_mean is None and running_var is None),\
             "if trainging, running_mean and running_var are useless"
@@ -2018,5 +2031,5 @@ def batch_norm(input, running_mean, running_var, weight=None, bias=None,
     ret = func(input.context_handle, save_mean.tensor_handle, save_invstd.tensor_handle,
                input.tensor_handle, weight, bias, running_mean, running_var, training,
                momentum, eps)
-    check_return_value(ret)
+    check_returncode(ret)
     return out
