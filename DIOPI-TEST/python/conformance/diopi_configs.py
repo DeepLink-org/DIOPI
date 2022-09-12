@@ -1542,4 +1542,57 @@ diopi_configs = {
             ],
         ),
     ),
+
+    'slice': dict(
+        name=["slice_op"],
+        interface=["CustomizedTest"],
+        dtype=[Dtype.float32, Dtype.float64],
+        related_para=dict(
+            index=(slice(0, 3, 1), slice(0, 3, 1), slice(0, 4, 2), slice(-3, -2, 1)),
+            dim=[0, 1, 2, 0],
+        ),
+        call_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((7, ), (128, 3, 3), (2, 3, 224, 224), (3, 2, 6, 197, 64)),
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'index': dict(
+        name=["index"],
+        interface=["CustomizedTest"],
+        # input[idx1,idx2,idx3] input[...,idx3] input[idx,...,idx3]
+        call_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((128, 2, 2), (2, 3, 224, 224), (3, 2, 6, 197, 64)),
+                    "gen_fn": Genfunc.randn,
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+                {
+                    "ins": ['idx1'],
+                    "shape": ((1, ), None, (1, )),
+                    "gen_fn": dict(fn=Genfunc.randint, high=3),
+                    "dtype": [Dtype.int64],
+                },
+                {
+                    "ins": ['idx2'],
+                    "shape": ((2, ), None, None),
+                    "gen_fn": dict(fn=Genfunc.randint, high=2),
+                    "dtype": [Dtype.int64],
+                },
+                {
+                    "ins": ['idx3'],
+                    "shape": ((2, ), (224, 224), (64, )),
+                    "gen_fn": Genfunc.mask,
+                    "dtype": [Dtype.bool],
+                },
+            ],
+        ),
+    ),
 }

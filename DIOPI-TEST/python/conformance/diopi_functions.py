@@ -2529,3 +2529,44 @@ def roi_align(input, boxes, output_size, spatial_scale=1.0, sampling_ratio=-1, a
                output_size[-1], sampling_ratio, aligned)
     check_returncode(ret)
     return out
+
+
+def slice_op(input, dim, index) -> Tensor:
+    sizeI = list(input.size())
+    num = int((index.stop - index.start)/index.step)
+    sizeI[dim] = num
+    out = Tensor(sizeI, input.get_dtype())
+
+    func = check_function("diopiSlice")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
+               dim, index.start, index.stop, index.step)
+
+    check_returncode(ret)
+    return out
+
+
+def index(input, **kwargs) -> Tensor:
+    new_args = []
+    hasEllipsis = False
+    once = True
+    for ele in kwargs.values():
+        if ele is None:
+            hasEllipsis = True
+        else:
+            if hasEllipsis and once:
+                once = False
+                sizeI = input.size()
+                sizeE = ele.size()
+                length = len(sizeI) - len(sizeE) - len(new_args)
+                for i in range(length):
+                    tmp = Tensor((), ele.get_dtype())
+                    new_args.append(tmp.tensor_handle)
+            new_args.append(ele.tensor_handle)
+
+    out = Tensor((1, ), input.get_dtype())
+    func = check_function("diopiIndex")
+
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
+               byref(new_args), len(new_args))
+    check_returncode(ret)
+    return out

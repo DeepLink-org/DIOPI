@@ -7,6 +7,27 @@ from .utils import logger
 from .gen_input import inputs_dir_path, outputs_dir_path, get_saved_pth_list
 
 
+class CustomizedTest(object):
+    def slice_op(input, dim, index):
+        import torch
+        size = len(input.size())
+        slice_args = [True for i in range(size)]
+        slice_args[dim] = index
+        return torch.Tensor.__getitem__(input, slice_args)
+
+    def index(input, **kwargs):
+        import torch
+        new_args = []
+        for ele in kwargs.values():
+            if ele is None:
+                hasEllipsis = True
+                if hasEllipsis and Ellipsis not in new_args:
+                    new_args.append(...)
+            else:
+                new_args.append(ele)
+        return torch.Tensor.__getitem__(input, new_args)
+
+
 def transfer_tensor_to_device(function_paras: dict):
     import torch
     for para in function_paras["kwargs"].keys():
