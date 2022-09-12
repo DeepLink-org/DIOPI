@@ -1,6 +1,5 @@
 import copy
 import pickle
-from tkinter.tix import Tree
 
 from .utils import default_cfg_dict
 from .dtype import Dtype
@@ -24,7 +23,7 @@ class Genfunc(object):
 
 
 def _must_be_the_type(cfg_path: str, cfg_dict: dict, required_type, cfg_keys: list) -> None:
-# def _must_be_the_type(cfg_dict: dict, cfg_keys: list, cfg_path: str, required_type) -> None:
+    # def _must_be_the_type(cfg_dict: dict, cfg_keys: list, cfg_path: str, required_type) -> None:
     if isinstance(required_type, (list, tuple)):
         types_str = ""
         for i in required_type:
@@ -76,11 +75,13 @@ def dict_elem_length(dict_obj):
     keys = list(dict_obj.keys())
     return len(dict_obj[keys[0]])
 
+
 def check_dtype_not_nested_list_or_tuple(domain, dtype_obj):
     assert isinstance(dtype_obj, (list, tuple))
     for dt in dtype_obj:
         assert not isinstance(dt, (list, tuple)), \
             f"{domain} should not be nested list or tuple"
+
 
 def check_configs_format(cfgs_dict: dict):
     for case_k, case_v in cfgs_dict.items():
@@ -306,4 +307,3 @@ class Config(object):
         append_default_cfg_options(cfgs_dict)
         format_cfg(cfgs_dict)
         return cfgs_dict
-

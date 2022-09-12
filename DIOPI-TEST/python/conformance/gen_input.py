@@ -1,5 +1,3 @@
-import configparser
-import logging
 import os
 import sys
 import copy
@@ -16,7 +14,6 @@ _cur_dir = os.path.dirname(os.path.abspath(__file__))
 inputs_dir_path = os.path.join(_cur_dir, "../data/inputs")
 outputs_dir_path = os.path.join(_cur_dir, "../data/outputs")
 cfg_file_name = "test_config.cfg"
-
 
 
 def expand_para(para_dict: dict, key_idx: int, paras_list: list):
@@ -108,7 +105,7 @@ def expand_call_para(args_list, call_paras_list):
     args0_dict = tmp_args_list[0]
     assert "shape" in args0_dict or "value" in args0_dict
     num = len(args0_dict["shape"]) if "shape" in args0_dict else len(args0_dict["value"])
-    
+
     for j in range(num):
         args_ins_expand_list = copy.deepcopy(tmp_args_list)
         for i in range(len(tmp_args_list)):
@@ -181,6 +178,7 @@ def delete_if_gen_fn_in_call_para(cfg_dict):
         if "gen_fn" in arg.keys():
             arg.pop("gen_fn")
 
+
 def delete_fn(cfg_dict):
     for arg in cfg_dict["call_para"]["args"]:
         if "gen_fn" in arg.keys():
@@ -217,7 +215,7 @@ def gen_tensor(arg: dict) -> np.ndarray:
         elif gen_fn == Genfunc.zeros:
             value = np.zeros(shape, dtype=dtype)
         elif gen_fn == Genfunc.mask:
-            value = np.random.randint(low=0, high=2, size=shape, dtype=dtype)
+            value = np.random.randint(low=0, high=2, size=shape).astype(dtype)
         elif gen_fn == Genfunc.randint:
             value = np.random.randint(low=low, high=high, size=shape, dtype=dtype)
         elif gen_fn == Genfunc.empty:
@@ -318,7 +316,6 @@ class GenInputData(object):
             cfg_expand_list = expand_cfg_by_all_options(configs[cfg_name])
             cfg_counter += len(cfg_expand_list)
             gen_and_dump_data(inputs_dir_path, cfg_name, cfg_expand_list, cfg_save_dict)
-
 
         with open(os.path.join(inputs_dir_path, cfg_file_name), "wb") as f:
             pickle.dump(cfg_save_dict, f)

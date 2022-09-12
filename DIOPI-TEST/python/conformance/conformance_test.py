@@ -47,6 +47,8 @@ def compare_with_gen_output(output, cfg, output_reference):
                 passed = passed and allclose(cfg, v.numpy(), output_reference[k])
             if ~passed:
                 return False
+    else:
+        return False
     return passed
 
 
@@ -95,7 +97,7 @@ class ConformanceTest(object):
                 except Exception as e:
                     logger.error(f"run {cfg_func_name} failed with exception: {e}")
 
-            if "do_backward" in data["cfg"].keys() and output is not None: 
+            if "do_backward" in data["cfg"].keys() and output is not None:
                 saved_pth = saved_pth.split(".pth")[0] + "_backward.pth"
                 if not isinstance(output, (list, tuple)):
                     output = [output]

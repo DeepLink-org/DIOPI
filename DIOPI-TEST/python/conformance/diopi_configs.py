@@ -64,10 +64,8 @@ diopi_configs = {
         name=["layer_norm"],
         dtype=[Dtype.float32],
         atol=1e-5,
-        para=dict(
-            eps=[1e-5, 1e-12],
-        ),
         related_para=dict(
+            eps=[1e-5, 1e-5, 1e-12],
             normalized_shape=[(5, 3, 5), (128, ), (64, )],
         ),
         call_para=dict(
@@ -173,13 +171,13 @@ diopi_configs = {
 
     'avg_pool2d': dict(
         name=["avg_pool2d"],
-        para=dict(
-            kernel_size=[(2, 2)],
+        related_para=dict(
+            kernel_size=[(2, 2), 3],
             stride=[1, (1, 2)],
             padding=[(1, 1), 0],
             ceil_mode=[True, False],
             count_include_pad=[True, False],
-            divisor_override=[None, 1, 2],
+            divisor_override=[None, 2],
         ),
         call_para=dict(
             args=[
@@ -264,8 +262,8 @@ diopi_configs = {
         atol=1e-3,
         rtol=1e-4,
         dtype=[Dtype.float32],
-        para=dict(
-            reduction=['mean', 'none'],
+        related_para=dict(
+            reduction=['mean', 'none', 'sum', 'mean'],
         ),
         call_para=dict(
             gen_fn=Genfunc.randn,
@@ -378,7 +376,7 @@ diopi_configs = {
     'pow_float_number': dict(
         name=['pow'],
         interface=['torch'],
-        para=dict(
+        related_para=dict(
            exponent=[2, 3, 4, 0.2],
         ),
         call_para=dict(
@@ -460,9 +458,9 @@ diopi_configs = {
 
     'pointwise_binary_constant_with_alpha_and_no_contiguous': dict(
         name=['add', 'rsub'],
-        para=dict(
-            alpha=[-2, 2.0, 4],
-            other=[-2, 2.0, 4],
+        related_para=dict(
+            alpha=[-2, 2.0, 4, 1],
+            other=[-2, 2.0, 4, 1],
         ),
         no_contiguous=[True],
         interface=['torch'],
@@ -781,7 +779,7 @@ diopi_configs = {
 
     'mse_loss': dict(
         name=["mse_loss"],
-        para=dict(
+        related_para=dict(
             reduction=['mean', 'none'],
         ),
         dtype=[Dtype.float32],
@@ -837,7 +835,7 @@ diopi_configs = {
 
     'cross_entropy': dict(
         name=["cross_entropy"],
-        para=dict(
+        related_para=dict(
             reduction=['mean', 'none'],
             # label_smoothing=[0.0, 0.5],
         ),
@@ -868,9 +866,9 @@ diopi_configs = {
     'select': dict(
         name=["select"],
         interface=['torch'],
-        para=dict(
-            dim=[-2, -1, 0, 1],
-            index=[0, 1, 2],
+        related_para=dict(
+            dim=[-2, 1],
+            index=[0, 2],
         ),
         call_para=dict(
             gen_fn=Genfunc.randn,
@@ -1024,14 +1022,14 @@ diopi_configs = {
         name=["softmax"],
         atol=1e-4,
         rtol=1e-5,
-        para=dict(
+        related_para=dict(
             dim=[-1, 1, 0],
         ),
         call_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((2, 128, 24), (8, 16, 49, 49)),
+                    "shape": ((2, 24), (2, 128, 24), (8, 16, 49, 49)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -1074,12 +1072,12 @@ diopi_configs = {
 
     'embedding': dict(
         name=["embedding"],
-        para=dict(
-            padding_idx=[None, 0],
-            max_norm=[None, 1.0],
-            norm_type=[2.0, 3.0],
-            scale_grad_by_freq=[False, True],
-            sparse=[False],
+        related_para=dict(
+            padding_idx=[None, 0, None, 0],
+            max_norm=[None, 1.0, None, 1.0],
+            norm_type=[2.0, 1.0, 2.0, 3.0],
+            scale_grad_by_freq=[False, True, False, True],
+            sparse=[False, False, False, False],
         ),
         call_para=dict(
             args=[
@@ -1103,9 +1101,9 @@ diopi_configs = {
     'clip_grad_norm': dict(
         name=["clip_grad_norm_"],
         interface=["torch.nn.utils"],
-        para=dict(
-            max_norm=[1.0, 5],
-            norm_type=[2.0, 3.0],
+        related_para=dict(
+            max_norm=[1.0, 5, 2.0, 10],
+            norm_type=[2.0, 3.0, 2.0, 2.0],
             # error_if_nonfinite=[True, False], # 1.7 not support
         ),
         call_para=dict(
@@ -1123,7 +1121,7 @@ diopi_configs = {
     'tril': dict(
         name=["tril"],
         interface=["torch"],
-        para=dict(
+        related_para=dict(
             diagonal=[0, -1, 1],
         ),
         call_para=dict(
@@ -1141,8 +1139,8 @@ diopi_configs = {
 
     'one_hot': dict(
         name=["one_hot"],
-        para=dict(
-            num_classes=[-1, 80],
+        related_para=dict(
+            num_classes=[-1, -1, 80],
         ),
         call_para=dict(
             args=[
@@ -1441,8 +1439,8 @@ diopi_configs = {
         atol=1e-4,
         rtol=1e-5,
         is_inplace=True,
-        para=dict(
-            negative_slope=[0.01, 0.1, 10]
+        related_para=dict(
+            negative_slope=[0.01, 0.1, 10, 1]
         ),
         call_para=dict(
             args=[
@@ -1457,4 +1455,91 @@ diopi_configs = {
         ),
     ),
 
+    'sigmoid_focal_loss': dict(
+        name=["sigmoid_focal_loss"],
+        interface=["torchvision.ops"],
+        dtype=[Dtype.float32, Dtype.float64],
+        related_para=dict(
+            alpha=[0.25, 0.1, 0.9],
+            gamma=[2, 0.1, 10],
+            reduction=["mean", "sum", "none"],
+        ),
+        call_para=dict(
+            args=[
+                {
+                    "ins": ['inputs'],
+                    "shape": ((16, 7), (2, 11856, 2), (16, 2, 2964, 2)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ['targets'],
+                    "shape": ((16, 7), (2, 11856, 2), (16, 2, 2964, 2)),
+                    "gen_fn": Genfunc.mask,
+                },
+            ],
+        ),
+    ),
+
+    'nms': dict(
+        name=["nms"],
+        interface=["torchvision.ops"],
+        dtype=[Dtype.float32, Dtype.float64],
+        para=dict(
+            iou_threshold=[0.3],
+        ),
+        call_para=dict(
+            args=[
+                {
+                    "ins": ['boxes'],
+                    "value": ([[2.4112, 0.7486, 2.4551, 2.7486],
+                              [0.7486, 1.3544, 1.1294, 2.3544],
+                              [1.4551, 0.1294, 1.6724, 1.3294],
+                              [1.4959, 0.1086, 2.778335, 3.22],
+                              [0.107706, 2.948, 2.1256, 4.525],
+                              [2.7735, 2.12506, 7.0556, 8.995]],
+
+                              [[1.5, 2.2, 2.77, 3.2],
+                              [2.5, 5.9, 10.6, 14.55]],),
+                },
+                {
+                    "ins": ['scores'],
+                    "shape": ((6, ), (2, )),
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'roi_align': dict(
+        name=["roi_align"],
+        interface=["torchvision.ops"],
+        dtype=[Dtype.float32, Dtype.float64],
+        related_para=dict(
+            output_size=[(5, 6), 3],
+            spatial_scale=[0.8, 1.0],
+            sampling_ratio=[1, -1],
+            aligned=[True, False],
+        ),
+        call_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((6, 3, 32, 32), (2, 3, 16, 16)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ['boxes'],
+                    "value": ([[1, 2.4112, 0.7486, 2.4551, 2.7486],
+                              [0, 0.7486, 1.3544, 1.1294, 2.3544],
+                              [2, 1.4551, 0.1294, 1.6724, 1.3294],
+                              [5, 1.4959, 0.1086, 2.778335, 3.22],
+                              [2, 0.107706, 2.948, 2.1256, 4.525],
+                              [4, 2.7735, 2.12506, 7.0556, 8.995]],
+
+                              [[0, 1.5, 2.2, 2.77, 3.2],
+                              [1, 2.5, 5.9, 10.6, 14.55]],),
+                },
+            ],
+        ),
+    ),
 }

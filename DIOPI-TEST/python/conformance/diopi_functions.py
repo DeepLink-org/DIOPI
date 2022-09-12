@@ -1388,6 +1388,8 @@ def adaptive_max_pool2d(input, output_size, return_indices=False):
         indices = Tensor(sizeO, Dtype.int64)
         ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
                    input.tensor_handle, output_size)
+        check_returncode(ret)
+        return out, indices
     else:
         func = check_function("diopiAaptiveMaxPool2d")
         ret = func(input.context_handle, out.tensor_handle,
@@ -1776,10 +1778,16 @@ def one_hot(input, num_classes=- 1):
     C API
         :guilabel:`diopiOneHot`
     """
+    assert num_classes == -1 or num_classes > 0,\
+        "num_classes must be -1 or >0"
     sizeI = input.size()
-    sizeI += (num_classes, )
-    # todo: create out with case num_classes=-1
-    out = Tensor(sizeI, Dtype.int64)
+    # todo: can not have the shape of output, out should be a pointer
+    if num_classes == -1:
+        out = Tensor((1, ), Dtype.int64)
+    else:
+        sizeI += (num_classes, )
+        out = Tensor(sizeI, Dtype.int64)
+
     func = check_function("diopiOneHot")
     ret = func(input.context_handle, out.tensor_handle,
                input.tensor_handle, num_classes)
@@ -2382,5 +2390,142 @@ def nll_loss(input, target, weight=None, ignore_index=-100, reduction='mean'):
     func = check_function("diopiNLLLoss")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                target.tensor_handle, weight, reduction_mode, ignore_index)
+    check_returncode(ret)
+    return out
+
+
+def sigmoid_focal_loss(inputs, targets, alpha=0.25, gamma=2, reduction='none') -> Tensor:
+    r"""
+    Original implementation from https://github.com/facebookresearch/fvcore/blob/master/fvcore/nn/focal_loss.py .
+    Loss used in RetinaNet for dense detection: https://arxiv.org/abs/1708.02002.
+
+    Args:
+        inputs: A float tensor of arbitrary shape.
+                The predictions for each example.
+        targets: A float tensor with the same shape as inputs. Stores the binary
+                classification label for each element in inputs
+                (0 for the negative class and 1 for the positive class).
+        alpha: (optional) Weighting factor in range (0,1) to balance
+                positive vs negative examples or -1 for ignore. Default = 0.25
+        gamma: Exponent of the modulating factor (1 - p_t) to
+               balance easy vs hard examples.
+        reduction: 'none' | 'mean' | 'sum'
+                 'none': No reduction will be applied to the output.
+                 'mean': The output will be averaged.
+                 'sum': The output will be summed.
+    Returns:
+        Loss tensor with the reduction option applied.
+    """
+    assert inputs.size() == targets.size(), \
+        'target shape must be the same as input shape'
+    assert reduction in ['mean', 'sum', 'none'], \
+        'reduction must be one of (mean, sum, none)'
+
+    if reduction == 'none':
+        out = raw_like(inputs)
+    else:
+        out = Tensor((1,), inputs.get_dtype())
+
+    reduction_mode = convert_reduction(reduction)
+    func = check_function("diopiSigmoidFocalLoss")
+    ret = func(inputs.context_handle, out.tensor_handle, inputs.tensor_handle,
+               targets.tensor_handle, alpha, gamma, reduction_mode)
+    check_returncode(ret)
+    return out
+
+
+def nms(boxes, scores, iou_threshold) -> Tensor:
+    r"""
+    Performs non-maximum suppression (NMS) on the boxes according
+    to their intersection-over-union (IoU).
+
+    NMS iteratively removes lower scoring boxes which have an
+    IoU greater than iou_threshold with another (higher scoring)
+    box.
+
+    If multiple boxes have the exact same score and satisfy the IoU
+    criterion with respect to a reference box, the selected box is
+    not guaranteed to be the same between CPU and GPU. This is similar
+    to the behavior of argsort in PyTorch when repeated values are present.
+    Args:
+        boxes (Tensor[N, 4])): boxes to perform NMS on. They
+            are expected to be in ``(x1, y1, x2, y2)`` format with ``0 <= x1 < x2`` and
+            ``0 <= y1 < y2``.
+        scores (Tensor[N]): scores for each one of the boxes
+        iou_threshold (float): discards all overlapping boxes with IoU > iou_threshold
+
+    Returns:
+        Tensor: int64 tensor with the indices of the elements that have been kept
+        by NMS, sorted in decreasing order of scores
+    """
+    # todo: can not have the shape of output, out should be a pointer
+    size_boxes = boxes.size()
+    assert len(size_boxes) == 2 and size_boxes[1] == 4,\
+        "boxes must be a tensor of shape (N,4)"
+
+    size_scores = scores.size()
+    assert len(size_scores) == 1 and size_scores[0] == size_boxes[0],\
+        "boxes must be a tensor of shape (N)"
+
+    out = Tensor((1,), Dtype.int64)
+    func = check_function("diopiNms")
+    ret = func(boxes.context_handle, byref(out.tensor_handle), boxes.tensor_handle,
+               scores.tensor_handle, iou_threshold)
+    check_returncode(ret)
+    return out
+
+
+def roi_align(input, boxes, output_size, spatial_scale=1.0, sampling_ratio=-1, aligned=False) -> Tensor:
+    r"""
+    Performs Region of Interest (RoI) Align operator with average pooling, as described in Mask R-CNN.
+
+    Args:
+        input (Tensor[N, C, H, W]): The input tensor, i.e. a batch with ``N`` elements. Each element
+            contains ``C`` feature maps of dimensions ``H x W``.
+            If the tensor is quantized, we expect a batch size of ``N == 1``.
+        boxes (Tensor[K, 5] or List[Tensor[L, 4]]): the box coordinates in (x1, y1, x2, y2)
+            format where the regions will be taken from.
+            The coordinate must satisfy ``0 <= x1 < x2`` and ``0 <= y1 < y2``.
+            If a single Tensor is passed, then the first column should
+            contain the index of the corresponding element in the batch, i.e. a number in ``[0, N - 1]``.
+            If a list of Tensors is passed, then each Tensor will correspond to the boxes for an element i
+            in the batch.
+        output_size (int or Tuple[int, int]): the size of the output (in bins or pixels) after the pooling
+            is performed, as (height, width).
+        spatial_scale (float): a scaling factor that maps the input coordinates to
+            the box coordinates. Default: 1.0
+        sampling_ratio (int): number of sampling points in the interpolation grid
+            used to compute the output value of each pooled output bin. If > 0,
+            then exactly ``sampling_ratio x sampling_ratio`` sampling points per bin are used. If
+            <= 0, then an adaptive number of grid points are used (computed as
+            ``ceil(roi_width / output_width)``, and likewise for height). Default: -1
+        aligned (bool): If False, use the legacy implementation.
+            If True, pixel shift the box coordinates it by -0.5 for a better alignment with the two
+            neighboring pixel indices. This version is used in Detectron2
+
+    Returns:
+        Tensor[K, C, output_size[0], output_size[1]]: The pooled RoIs.
+    """
+    # todo: boxes can only be a tensor due to functions.h
+    if isinstance(boxes, Tensor):
+        size_boxes = boxes.size()
+        assert len(size_boxes) == 2 and size_boxes[1] == 5,\
+            "boxes should be a tensor of shape (N,5)"
+    elif isinstance(boxes, list):
+        size_boxes = boxes[0].size()
+        assert len(size_boxes) == 2 and size_boxes[1] == 4,\
+            "boxes should be a list of tensor of shape (N,4)"
+
+    sizeI = list(input.size())
+    if isinstance(output_size, int):
+        output_size = (output_size, output_size)
+    sizeI[-1] = output_size[-1]
+    sizeI[-2] = output_size[-2]
+
+    out = Tensor(sizeI, input.get_dtype())
+    func = check_function("diopiRoiAlign")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
+               boxes.tensor_handle, spatial_scale, output_size[-2],
+               output_size[-1], sampling_ratio, aligned)
     check_returncode(ret)
     return out

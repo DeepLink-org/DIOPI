@@ -178,12 +178,12 @@ class Tensor:
         array = self.numpy()
         string = f"{array.__str__()}\n"
         string += f"{self.get_dtype()}, shape:{self.size()},\
-                     stride:{self.stride()}, numel:{self.numel()}\n"
+                     stride:{self.get_stride()}, numel:{self.numel()}\n"
         return string
 
     def raw_like(self):
         size = self.size()
-        stride = self.stride()
+        stride = self.get_stride()
         dtype = self.get_dtype()
         return Tensor(size=size, dtype=dtype, stride=stride,
                       context_handle=self.context_handle)
@@ -205,7 +205,7 @@ class Tensor:
     def shape(self):
         return self.size()
 
-    def stride(self):
+    def get_stride(self):
         cstride = Sizes()
         diopirt_lib.diopiGetTensorStride(self.tensor_handle, byref(cstride))
         stride = []
@@ -252,7 +252,7 @@ class Tensor:
     def numpy(self) -> np.ndarray:
         dtype = to_numpy_dtype(self.get_dtype())
         itemsize = self.itemsize()
-        stride = self.stride()
+        stride = self.get_stride()
         strides = [int(stride[i]*itemsize) for i in range(len(stride))]
         darray = np.ndarray(shape=self.size(), dtype=dtype, strides=strides)
         diopirt_lib._diopiTensorCopyToBuffer(self.context_handle,

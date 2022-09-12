@@ -67,6 +67,7 @@ class GenOutputData(object):
     @staticmethod
     def run(func_name):
         import torch
+        import torchvision
         if not os.path.exists(inputs_dir_path):
             logger.error("input data is not generated!")
             sys.exit(0)
