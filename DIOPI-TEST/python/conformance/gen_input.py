@@ -16,28 +16,7 @@ outputs_dir_path = os.path.join(_cur_dir, "../data/outputs")
 cfg_file_name = "test_config.cfg"
 
 
-def expand_para(para_dict: dict, key_idx: int, paras_list: list):
-    r'''
-    dict(a1=[1,2], a2=[11,22])
-    ====>
-    [
-        dict(a1=1, a2=11),
-        dict(a1=1, a2=22),
-        dict(a1=2, a2=11),
-        dict(a1=2, a2=22),
-    ]
-    '''
-    if key_idx >= len(para_dict):
-        paras_list.append(para_dict)
-    else:
-        keys = list(para_dict.keys())
-        for i in para_dict[keys[key_idx]]:
-            tmp_para_dict = copy.deepcopy(para_dict)
-            tmp_para_dict[keys[key_idx]] = i
-            expand_para(tmp_para_dict, key_idx + 1, paras_list)
-
-
-def expand_related_para(para_dict: dict, related_paras_list: list):
+def expand_para(para_dict: dict, paras_list: list):
     r'''
     dict(a = [1,2], b = [11,22])
     --->
@@ -48,10 +27,10 @@ def expand_related_para(para_dict: dict, related_paras_list: list):
         tmp_para_dict = {}
         for k, v in para_dict.items():
             tmp_para_dict[k] = copy.deepcopy(v[i])
-        related_paras_list.append(tmp_para_dict)
+        paras_list.append(tmp_para_dict)
 
 
-def expand_call_para(args_list, call_paras_list):
+def expand_tensor_para(args_list, tensor_paras_list):
     r'''
     [
         dict(
@@ -115,72 +94,65 @@ def expand_call_para(args_list, call_paras_list):
             elif "shape" in tmp_args_list[i].keys():
                 args_ins_expand_list[i]["shape"] = copy.deepcopy(
                     tmp_args_list[i]["shape"][j])
-        call_paras_list.append(args_ins_expand_list)
+        tensor_paras_list.append(args_ins_expand_list)
 
 
 def expand_cfg_by_para(cfg_dict: dict):
     paras_list = []
-    related_paras_list = []
-    call_paras_list = []
+    tensor_paras_list = []
 
-    expand_para(cfg_dict["para"], 0, paras_list)
-    expand_related_para(cfg_dict["related_para"], related_paras_list)
-    expand_call_para(cfg_dict["call_para"]["args"], call_paras_list)
-    return paras_list, related_paras_list, call_paras_list
+    expand_para(cfg_dict["para"], paras_list)
+    expand_tensor_para(cfg_dict["tensor_para"]["args"], tensor_paras_list)
+    return paras_list, tensor_paras_list
 
 
-def expand_cfg_all(paras_list, related_paras_list, call_paras_list, cfg_dict) -> list:
+def expand_cfg_all(paras_list, tensor_paras_list, cfg_dict) -> list:
     cfg_expand_list = []
-    for para in paras_list:
-        if len(call_paras_list) != 0:
-            arg_dtype_num = 0
-            for arg in cfg_dict["call_para"]["args"]:
-                if arg.get("dtype") is not None:
-                    arg_dtype_num = len(arg["dtype"])
-                    break
+    if len(tensor_paras_list) != 0:
+        arg_dtype_num = 0
+        for arg in cfg_dict["tensor_para"]["args"]:
+            if arg.get("dtype") is not None:
+                arg_dtype_num = len(arg["dtype"])
+                break
 
-            if arg_dtype_num != 0:
-                for i in range(arg_dtype_num):
-                    for j in range(len(call_paras_list)):
-                        tmp_cfg_dict = copy.deepcopy(cfg_dict)
-                        tmp_cfg_dict["para"] = copy.deepcopy(para)
-                        tmp_cfg_dict["call_para"]["args"] = copy.deepcopy(
-                            call_paras_list[j])
-                        if len(related_paras_list) != 0:
-                            tmp_cfg_dict["related_para"] = copy.deepcopy(
-                                related_paras_list[j])
-                        for arg in tmp_cfg_dict["call_para"]["args"]:
-                            if arg.get("dtype") is not None:
-                                arg["dtype"] = copy.deepcopy(arg["dtype"][i])
-                        cfg_expand_list.append(tmp_cfg_dict)
-            # dtype does not exit in args, so do not take dtype into account
-            else:
-                for i in range(len(call_paras_list)):
+        if arg_dtype_num != 0:
+            for i in range(arg_dtype_num):
+                for j in range(len(tensor_paras_list)):
                     tmp_cfg_dict = copy.deepcopy(cfg_dict)
-                    tmp_cfg_dict["para"] = copy.deepcopy(para)
-                    tmp_cfg_dict["call_para"]["args"] = copy.deepcopy(
-                        call_paras_list[i])
-                    if len(related_paras_list) != 0:
-                        tmp_cfg_dict["related_para"] = copy.deepcopy(
-                            related_paras_list[i])
+                    tmp_cfg_dict["tensor_para"]["args"] = copy.deepcopy(
+                        tensor_paras_list[j])
+                    if len(paras_list) != 0:
+                        tmp_cfg_dict["para"] = copy.deepcopy(
+                            paras_list[j])
+                    for arg in tmp_cfg_dict["tensor_para"]["args"]:
+                        if arg.get("dtype") is not None:
+                            arg["dtype"] = copy.deepcopy(arg["dtype"][i])
                     cfg_expand_list.append(tmp_cfg_dict)
+        # dtype does not exit in args, so do not take dtype into account
+        else:
+            for i in range(len(tensor_paras_list)):
+                tmp_cfg_dict = copy.deepcopy(cfg_dict)
+                tmp_cfg_dict["para"] = copy.deepcopy(paras_list[i])
+                tmp_cfg_dict["tensor_para"]["args"] = copy.deepcopy(
+                    tensor_paras_list[i])
+                cfg_expand_list.append(tmp_cfg_dict)
     return cfg_expand_list
 
 
 def expand_cfg_by_all_options(cfg_dict: dict) -> list:
-    paras_list, related_paras_list, call_paras_list = expand_cfg_by_para(cfg_dict)
-    cfg_expand_list = expand_cfg_all(paras_list, related_paras_list, call_paras_list, cfg_dict)
+    paras_list, tensor_paras_list = expand_cfg_by_para(cfg_dict)
+    cfg_expand_list = expand_cfg_all(paras_list, tensor_paras_list, cfg_dict)
     return cfg_expand_list
 
 
-def delete_if_gen_fn_in_call_para(cfg_dict):
-    for arg in cfg_dict["call_para"]["args"]:
+def delete_if_gen_fn_in_tensor_para(cfg_dict):
+    for arg in cfg_dict["tensor_para"]["args"]:
         if "gen_fn" in arg.keys():
             arg.pop("gen_fn")
 
 
 def delete_fn(cfg_dict):
-    for arg in cfg_dict["call_para"]["args"]:
+    for arg in cfg_dict["tensor_para"]["args"]:
         if "gen_fn" in arg.keys():
             arg.pop("gen_fn")
     return cfg_dict
@@ -239,15 +211,12 @@ def gen_and_dump_data(dir_path: str, cfg_name: str, cfg_expand_list: list, cfg_s
 
     for cfg_dict in cfg_expand_list:
         para_dict = cfg_dict["para"]
-        related_para_dict = cfg_dict["related_para"]
-        call_para_args_list = cfg_dict["call_para"]["args"]
+        tensor_para_args_list = cfg_dict["tensor_para"]["args"]
 
         for k in para_dict:
             construct_paras[k] = para_dict[k]
-        for k in related_para_dict:
-            construct_paras[k] = related_para_dict[k]
 
-        for arg in call_para_args_list:
+        for arg in tensor_para_args_list:
             name = arg["ins"]
             # length of gen_num_range must be 2, otherwise ignore gen_num_range
             if len(arg["gen_num_range"]) != 2:
@@ -261,10 +230,10 @@ def gen_and_dump_data(dir_path: str, cfg_name: str, cfg_expand_list: list, cfg_s
                 for _ in range(tensors_num):
                     value = gen_tensor(arg)
                     tensor_list.append(value)
-                assert(cfg_dict["call_para"]["seq_name"] != ""), "need a name the list of tensors"
+                assert(cfg_dict["tensor_para"]["seq_name"] != ""), "need a name the list of tensors"
         # tie all the function_paras in a list named seq_name
-        if cfg_dict["call_para"]["seq_name"] != "":
-            name = cfg_dict["call_para"]["seq_name"]
+        if cfg_dict["tensor_para"]["seq_name"] != "":
+            name = cfg_dict["tensor_para"]["seq_name"]
             new_list = []
             for j in tensor_list:
                 new_list.append(j)
@@ -272,7 +241,7 @@ def gen_and_dump_data(dir_path: str, cfg_name: str, cfg_expand_list: list, cfg_s
                 new_list.append(j)
             function_paras["kwargs"][name] = new_list
 
-        delete_if_gen_fn_in_call_para(cfg_dict)
+        delete_if_gen_fn_in_tensor_para(cfg_dict)
         # cfg_dict = delete_fn(copy.deepcopy(cfg_dict))
 
         file_name = f"{cfg_name}_{i}.pth"

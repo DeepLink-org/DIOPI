@@ -92,26 +92,20 @@ def check_configs_format(cfgs_dict: dict):
         _must_exist(domain, case_v, ['name'])
         _must_be_the_type(domain, case_v, list, ['name', 'arch'])
 
-        if "para" in case_v.keys():
-            _must_be_the_type(domain, case_v, dict, ['para'])
-            dict_obj = case_v["para"]
-            _must_be_the_type(domain+".para", dict_obj, (list, tuple),
-                              [i for i in dict_obj.keys() if i != "gen_fn"])
-
-        if "call_para" in case_v.keys():
-            _must_be_the_type(domain, case_v, dict, ['call_para'])
+        if "tensor_para" in case_v.keys():
+            _must_be_the_type(domain, case_v, dict, ['tensor_para'])
             if "dtype" in case_v.keys():
                 _must_be_the_type(domain, case_v, list, ["dtype"])
                 check_dtype_not_nested_list_or_tuple(f"{domain}.dtype",
                                                      case_v["dtype"])
 
-            _must_exist(domain + ".call_para", case_v["call_para"], ["args"])
-            _must_be_the_type(domain + ".call_para", case_v["call_para"],
+            _must_exist(domain + ".tensor_para", case_v["tensor_para"], ["args"])
+            _must_be_the_type(domain + ".tensor_para", case_v["tensor_para"],
                               (list, tuple), ['args'])
-            domain_tmp = domain + ".call_para.args"
-            dict_obj = case_v["call_para"]["args"]
+            domain_tmp = domain + ".tensor_para.args"
+            dict_obj = case_v["tensor_para"]["args"]
 
-            for arg in case_v["call_para"]['args']:
+            for arg in case_v["tensor_para"]['args']:
                 _must_be_the_type(domain_tmp, arg, (list, tuple),
                                   [i for i in arg.keys() if i != "gen_fn"])
                 if "gen_num_range" in arg.keys():
@@ -122,26 +116,26 @@ def check_configs_format(cfgs_dict: dict):
                         check_dtype_not_nested_list_or_tuple(
                             f"{domain_tmp}.{arg_k}.dtype", arg_v)
 
-        if "related_para" in case_v.keys():
-            _must_be_the_type(domain, case_v, dict, ['related_para'])
-            dict_obj = case_v["related_para"]
-            _must_be_the_type(domain+".related_para", dict_obj, (list, tuple),
+        if "para" in case_v.keys():
+            _must_be_the_type(domain, case_v, dict, ['para'])
+            dict_obj = case_v["para"]
+            _must_be_the_type(domain+".para", dict_obj, (list, tuple),
                               [i for i in dict_obj.keys() if i != "gen_fn"])
 
-        # checking the length associated with related_para
+        # checking the length associated with para
         length = 0
-        if "related_para" in case_v.keys():
-            domain_tmp = domain+".related_para"
-            length = dict_elem_length(case_v["related_para"])
-            for related_para_k, related_para_v in \
-                    case_v["related_para"].items():
-                assert length == len(related_para_v), \
-                    "the length of " + domain_tmp + "." + related_para_k + \
+        if "para" in case_v.keys():
+            domain_tmp = domain+".para"
+            length = dict_elem_length(case_v["para"])
+            for para_k, para_v in \
+                    case_v["para"].items():
+                assert length == len(para_v), \
+                    "the length of " + domain_tmp + "." + para_k + \
                     "should equal " + str(length)
-            if "call_para" in case_v.keys():
-                if "args" in case_v["call_para"]:
-                    args: list = case_v["call_para"]["args"]
-                    domain_tmp0 = domain_tmp + "call_para.args"
+            if "tensor_para" in case_v.keys():
+                if "args" in case_v["tensor_para"]:
+                    args: list = case_v["tensor_para"]["args"]
+                    domain_tmp0 = domain_tmp + "tensor_para.args"
                     for arg in args:
                         if "shape" in arg.keys():
                             assert length == len(arg["shape"]), \
@@ -234,48 +228,46 @@ def check_and_expand_in_args(domain, args: dict, key):
 def delete_key_if_exist(case_v, key):
     if key in case_v.keys():
         case_v.pop(key)
-    if "call_para" in case_v.keys():
-        if key in case_v["call_para"].keys():
-            case_v["call_para"].pop(key)
+    if "tensor_para" in case_v.keys():
+        if key in case_v["tensor_para"].keys():
+            case_v["tensor_para"].pop(key)
 
 
 def check_and_set(case_v, key, default_v):
-    for item in case_v["call_para"]["args"]:
+    for item in case_v["tensor_para"]["args"]:
         if key not in item.keys():
-            if key not in case_v["call_para"].keys():
+            if key not in case_v["tensor_para"].keys():
                 if key not in case_v.keys():
                     item[key] = default_v
                 else:
                     item[key] = case_v[key]
             else:
-                item[key] = case_v["call_para"][key]
+                item[key] = case_v["tensor_para"][key]
 
 
 def format_cfg(cases):
     for case_k, case_v in cases.items():
-        # set [] for defalut para, call_para, related_para, pytorch
+        # set [] for defalut para, tensor_para, para, pytorch
         # if "pytorch" not in case_v.keys():
         #     case_v["pytorch"] = pt.default
-        if "call_para" not in case_v.keys():
-            case_v["call_para"] = {}
-        if "args" not in case_v["call_para"].keys():
-            case_v["call_para"]["args"] = []
-        if "seq_name" not in case_v["call_para"].keys():
-            case_v["call_para"]["seq_name"] = ""
+        if "tensor_para" not in case_v.keys():
+            case_v["tensor_para"] = {}
+        if "args" not in case_v["tensor_para"].keys():
+            case_v["tensor_para"]["args"] = []
+        if "seq_name" not in case_v["tensor_para"].keys():
+            case_v["tensor_para"]["seq_name"] = ""
 
         if "requires_backward" not in case_v:
             case_v["requires_backward"] = []
         if "para" not in case_v.keys():
             case_v["para"] = {}
-        if "related_para" not in case_v.keys():
-            case_v["related_para"] = {}
         if "skip_if" not in case_v.keys():
             case_v["skip_if"] = ""
         if "saved_args" not in case_v.keys():
             case_v["saved_args"] = {}
         # set default value of ins with ["input"] and
         # requires_grad with False
-        for item in case_v["call_para"]["args"]:
+        for item in case_v["tensor_para"]["args"]:
             if "ins" not in item.keys():
                 item["ins"] = ["input"]
             if "requires_grad" not in item.keys():
@@ -287,9 +279,9 @@ def format_cfg(cases):
         check_and_set(case_v, "dtype", Dtype.default)
         check_and_set(case_v, "gen_fn", Genfunc.default)
 
-        domain = f"{case_k}.call_para.args"
-        check_and_expand_in_args(domain, case_v["call_para"]["args"], "dtype")
-        check_and_expand_in_args(domain, case_v["call_para"]["args"], "shape")
+        domain = f"{case_k}.tensor_para.args"
+        check_and_expand_in_args(domain, case_v["tensor_para"]["args"], "dtype")
+        check_and_expand_in_args(domain, case_v["tensor_para"]["args"], "shape")
         # delete the keys dtype and gen_fn which are not in the right positions
         delete_key_if_exist(case_v, "dtype")
         delete_key_if_exist(case_v, "gen_fn")
