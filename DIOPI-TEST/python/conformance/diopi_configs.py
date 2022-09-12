@@ -1594,4 +1594,31 @@ diopi_configs = {
             ],
         ),
     ),
+
+    'sgd': dict(
+        name=["sgd"],
+        interface=["CustomizedTest"],
+        para=dict(
+            nesterov=[False, True],
+            lr=[0.1, 0.1],
+            momentum=[0.01, 0.01],
+            weight_decay=[0, 0.1],
+            dampening=[0.1, 0],
+        ),
+        tensor_para=dict(
+            dtype=[Dtype.float32, Dtype.float16],
+            args=[
+                {
+                    "ins": ['param', 'param_grad'],
+                    "shape": [(2, 3, 16), (4, 32, 7, 7)],
+                    "gen_fn": Genfunc.rand,
+                },
+                {
+                    "ins": ['buf'],
+                    "shape": [(2, 3, 16), (4, 32, 7, 7)],
+                    "gen_fn": Genfunc.zeros,
+                },
+            ]
+        ),
+    ),
 }

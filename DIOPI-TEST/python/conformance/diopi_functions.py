@@ -482,6 +482,20 @@ def ge(input, other) -> Tensor:
     return binary_op_scalar(input, other, False, 'diopiGe')
 
 
+def gt(input, other) -> Tensor:
+    r"""
+    释义
+        张量比较, 逐元素计算 :math:`\text{input} \ge \text{other}`。
+        *other* 可以是一个数字或张量，如为张量，其形状和 *input* 须可广播。
+    参数
+        - *input* ( **Tensor** ) : 输入张量
+        - *other* ( **Tensor**  或者 **float** ) : 比较值, 可以是张量或数值
+    C API
+        :guilabel:`diopiGt` :guilabel:`diopiGtScalar`
+    """
+    return binary_op_scalar(input, other, False, 'diopiGt')
+
+
 def le(input, other) -> Tensor:
     r"""
     释义
@@ -1124,7 +1138,7 @@ def conv2d(input, weight, bias=None, stride=1,
             \text{out}(N_i, C_{\text{out}_j}) = \text{bias}(C_{\text{out}_j}) +
             \sum_{k = 0}^{C_{\text{in}} - 1} \text{weight}(C_{\text{out}_j}, k) \star \text{input}(N_i, k)
 
-        其中 :math:`\star` 表示2D卷机操作， N表示批大小，C表示通道数， H和W分别表示输入像素的宽度和高度
+        其中 :math:`\star` 表示2D卷积操作， N表示批大小，C表示通道数， H和W分别表示输入像素的宽度和高度
     参数
         - *input* ( **Tensor** ) : 输入张量，其形状为 :math:`(\text{minibatch}, \text{in_channels}, iH, iW)`
         - *weight* ( **Tensor** ) : 卷积核，其形状为 :math:`(\text{out_channels}, \text{in_channels/groups}, kH, kW)`
@@ -2570,3 +2584,12 @@ def index(input, **kwargs) -> Tensor:
                byref(new_args), len(new_args))
     check_returncode(ret)
     return out
+
+
+def sgd(param, param_grad, buf, lr, momentum=0, dampening=0, weight_decay=0, nesterov=False):
+    # buf, param_grad are mutable
+    func = check_function("diopiSGD")
+    ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle,
+               buf.tensor_handle, lr, momentum, dampening, weight_decay, nesterov)
+    check_returncode(ret)
+    return param, buf
