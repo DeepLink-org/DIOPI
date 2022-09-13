@@ -169,7 +169,7 @@ diopi_configs = {
 
     'avg_pool2d': dict(
         name=["avg_pool2d"],
-        related_para=dict(
+        para=dict(
             kernel_size=[(2, 2), 3],
             stride=[1, (1, 2)],
             padding=[(1, 1), 0],
@@ -261,7 +261,7 @@ diopi_configs = {
         atol=1e-3,
         rtol=1e-4,
         dtype=[Dtype.float32],
-        related_para=dict(
+        para=dict(
             reduction=['mean', 'none', 'sum', 'mean'],
         ),
         tensor_para=dict(
@@ -375,7 +375,7 @@ diopi_configs = {
     'pow_float_number': dict(
         name=['pow'],
         interface=['torch'],
-        related_para=dict(
+        para=dict(
            exponent=[2, 3, 4, 0.2],
         ),
         tensor_para=dict(
@@ -457,7 +457,7 @@ diopi_configs = {
 
     'pointwise_binary_constant_with_alpha_and_no_contiguous': dict(
         name=['add', 'rsub'],
-        related_para=dict(
+        para=dict(
             alpha=[-2, 2.0, 4, 1],
             other=[-2, 2.0, 4, 1],
         ),
@@ -778,7 +778,7 @@ diopi_configs = {
 
     'mse_loss': dict(
         name=["mse_loss"],
-        related_para=dict(
+        para=dict(
             reduction=['mean', 'none'],
         ),
         dtype=[Dtype.float32],
@@ -834,7 +834,7 @@ diopi_configs = {
 
     'cross_entropy': dict(
         name=["cross_entropy"],
-        related_para=dict(
+        para=dict(
             reduction=['mean', 'none'],
             # label_smoothing=[0.0, 0.5],
         ),
@@ -865,7 +865,7 @@ diopi_configs = {
     'select': dict(
         name=["select"],
         interface=['torch'],
-        related_para=dict(
+        para=dict(
             dim=[-2, 1],
             index=[0, 2],
         ),
@@ -1021,7 +1021,7 @@ diopi_configs = {
         name=["softmax"],
         atol=1e-4,
         rtol=1e-5,
-        related_para=dict(
+        para=dict(
             dim=[-1, 1, 0],
         ),
         tensor_para=dict(
@@ -1071,7 +1071,7 @@ diopi_configs = {
 
     'embedding': dict(
         name=["embedding"],
-        related_para=dict(
+        para=dict(
             padding_idx=[None, 0, None, 0],
             max_norm=[None, 1.0, None, 1.0],
             norm_type=[2.0, 1.0, 2.0, 3.0],
@@ -1100,7 +1100,7 @@ diopi_configs = {
     'clip_grad_norm': dict(
         name=["clip_grad_norm_"],
         interface=["torch.nn.utils"],
-        related_para=dict(
+        para=dict(
             max_norm=[1.0, 5, 2.0, 10],
             norm_type=[2.0, 3.0, 2.0, 2.0],
             # error_if_nonfinite=[True, False], # 1.7 not support
@@ -1120,7 +1120,7 @@ diopi_configs = {
     'tril': dict(
         name=["tril"],
         interface=["torch"],
-        related_para=dict(
+        para=dict(
             diagonal=[0, -1, 1],
         ),
         tensor_para=dict(
@@ -1138,7 +1138,7 @@ diopi_configs = {
 
     'one_hot': dict(
         name=["one_hot"],
-        related_para=dict(
+        para=dict(
             num_classes=[-1, -1, 80],
         ),
         tensor_para=dict(
@@ -1438,7 +1438,7 @@ diopi_configs = {
         atol=1e-4,
         rtol=1e-5,
         is_inplace=True,
-        related_para=dict(
+        para=dict(
             negative_slope=[0.01, 0.1, 10, 1]
         ),
         tensor_para=dict(
