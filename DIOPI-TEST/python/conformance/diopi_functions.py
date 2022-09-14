@@ -601,12 +601,12 @@ def leaky_relu(input, negative_slope=0.01, inplace=False) -> Tensor:
     negative_slope = byref(Scalar(Dtype.float64, negative_slope))
     if inplace:
         out = input
-        func = check_function("diopiLeakyReLuInp")
+        func = check_function("diopiLeakyReluInp")
         ret = func(input.context_handle,
                    out.tensor_handle, input.tensor_handle, negative_slope)
     else:
         out = raw_like(input)
-        func = check_function("diopiLeakyReLu")
+        func = check_function("diopiLeakyRelu")
         ret = func(input.context_handle,
                    out.tensor_handle, input.tensor_handle, negative_slope)
 

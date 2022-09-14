@@ -13,20 +13,24 @@
 
 #include "helper.hpp"
 
-extern "C" diopiError_t diopiRelu(diopiContextHandle_t ctx,
+#if defined(__cplusplus)
+extern "C" {
+#endif // __cplusplus
+
+diopiError_t diopiRelu(diopiContextHandle_t ctx,
         diopiTensorHandle_t out, const diopiTensorHandle_t input) {
     at::Tensor atInput = impl::aten::buildAtTensor(input);
     impl::aten::invokeATenFuncRet(ctx, at::relu, out, atInput);
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     at::Tensor atInput = impl::aten::buildAtTensor(input);
     impl::aten::invokeATenFuncInp(ctx, at::relu_, atInput);
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiLeakyRelu(diopiContextHandle_t ctx,
+diopiError_t diopiLeakyRelu(diopiContextHandle_t ctx,
         diopiTensorHandle_t out, const diopiTensorHandle_t input,
         const diopiScalar_t* negative_slope) {
     at::Tensor atInput = impl::aten::buildAtTensor(input);
@@ -35,15 +39,17 @@ extern "C" diopiError_t diopiLeakyRelu(diopiContextHandle_t ctx,
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiLeakyReluInp(diopiContextHandle_t ctx,
+diopiError_t diopiLeakyReluInp(diopiContextHandle_t ctx,
         diopiTensorHandle_t input, const diopiScalar_t* negative_slope) {
     at::Tensor atInput = impl::aten::buildAtTensor(input);
     at::Scalar atSlope = impl::aten::buildAtScalar(input, negative_slope);
+    std::cout << atInput << std::endl;
     impl::aten::invokeATenFuncInp(ctx, at::leaky_relu_, atInput, atSlope);
+    std::cout << atInput << std::endl;
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         const diopiTensorHandle_t input, diopiSize_t kernel_size, diopiSize_t stride,
         diopiSize_t padding, diopiSize_t dilation, bool ceil_mode) {
     at::Tensor atInput = impl::aten::buildAtTensor(input);
@@ -57,7 +63,7 @@ extern "C" diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHand
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         diopiTensorHandle_t indices, const diopiTensorHandle_t input, diopiSize_t kernel_size,
         diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceil_mode) {
     at::Tensor atInput = impl::aten::buildAtTensor(input);
@@ -71,3 +77,30 @@ extern "C" diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diop
         atInput, atKernelSize, atStride, atPadding, atDilation, atCeilMode);
     return diopiSuccess;
 }
+
+diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, const diopiTensorHandle_t other, diopiRoundMode_t rounding_mode) {
+    at::Tensor atInput = impl::aten::buildAtTensor(input);
+    at::Tensor atOther = impl::aten::buildAtTensor(other);
+    impl::aten::invokeATenFuncRet
+        <at::Tensor (*)(at::Tensor const&, at::Tensor const&)>
+        (ctx, at::div, out, atInput, atOther);
+    return diopiSuccess;
+}
+
+diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, const diopiScalar_t* other, diopiRoundMode_t rounding_mode) {
+    '''
+        rounding_mode: used in pytorch >= 1.8
+    '''
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atOther = impl::aten::buildAtScalar(input, other);
+    impl::aten::invokeATenFuncRet
+        <at::Tensor (*)(at::Tensor const&, c10::Scalar)>
+        (ctx, at::div, out, atInput, atOther);
+    return diopiSuccess;
+}
+
+#if defined(__cplusplus)
+}
+#endif // __cplusplus
