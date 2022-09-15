@@ -43,9 +43,7 @@ diopiError_t diopiLeakyReluInp(diopiContextHandle_t ctx,
         diopiTensorHandle_t input, const diopiScalar_t* negative_slope) {
     at::Tensor atInput = impl::aten::buildAtTensor(input);
     at::Scalar atSlope = impl::aten::buildAtScalar(input, negative_slope);
-    std::cout << atInput << std::endl;
     impl::aten::invokeATenFuncInp(ctx, at::leaky_relu_, atInput, atSlope);
-    std::cout << atInput << std::endl;
     return diopiSuccess;
 }
 
@@ -115,7 +113,65 @@ diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     auto atStride = impl::aten::buildAtIntArray(stride);
     auto atPadding = impl::aten::buildAtIntArray(padding);
     auto atDilation = impl::aten::buildAtIntArray(dilation);
-    impl::aten::invokeATenFuncRet(ctx, at::conv2d, out, atInput, atWeight, atBias, atStride, atPadding, atDilation, groups);
+    impl::aten::invokeATenFuncRet(ctx, at::conv2d, out,
+        atInput, atWeight, atBias, atStride, atPadding, atDilation, groups);
+    return diopiSuccess;
+}
+
+diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t* tensors, int64_t numTensors, int64_t dim) {
+    auto tensorList = impl::aten::buildAtTensorList(tensors, numTensors);
+    impl::aten::invokeATenFuncRet(ctx, at::stack, out, tensorList, dim);
+    return diopiSuccess;
+}
+
+/**
+ * @brief 
+ * 
+ * @param stable supported in pytorch>=1.8.0
+ * @return diopiError_t 
+ */
+diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, diopiTensorHandle_t indices,
+        const diopiTensorHandle_t input, int64_t dim, bool descending, const bool* stable) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    diopi_tensor_list vecOut = {values, indices};
+    impl::aten::invokeATenFuncRet
+        <std::tuple<at::Tensor, at::Tensor> (*)(at::Tensor const &, int64_t, bool)>
+        (ctx, at::sort, vecOut, atInput, dim, descending);
+    return diopiSuccess;
+}
+
+diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, diopiTensorHandle_t indices,
+        const diopiTensorHandle_t input, int64_t k, int64_t dim, bool largest, bool sorted) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    diopi_tensor_list vecOut = {values, indices};
+    impl::aten::invokeATenFuncRet(ctx, at::topk, vecOut, atInput, k, dim, largest, sorted);
+    return diopiSuccess;
+}
+
+diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, int64_t dim0, int64_t dim1) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    impl::aten::invokeATenFuncRet<at::Tensor (*)(at::Tensor const&, int64_t, int64_t)>
+        (ctx, at::transpose, out, atInput, dim0, dim1);
+    return diopiSuccess;
+}
+
+diopiError_t diopiOneHot(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, int64_t numClasses) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    impl::aten::invokeATenFuncRet(ctx, at::one_hot, out, atInput, numClasses);
+    return diopiSuccess;
+}
+
+diopiError_t diopiWhere(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t condition,
+        const diopiTensorHandle_t input, const diopiTensorHandle_t other) {
+    auto atCondition = impl::aten::buildAtTensor(condition);
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atOther = impl::aten::buildAtTensor(other);
+    impl::aten::invokeATenFuncRet
+        <at::Tensor (*)(at::Tensor const&, at::Tensor const&, at::Tensor const&)>
+        (ctx, at::where, out, atCondition, atInput, atOther);
     return diopiSuccess;
 }
 

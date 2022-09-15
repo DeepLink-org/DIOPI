@@ -122,6 +122,14 @@ at::IntArrayRef buildAtIntArray(diopiSize_t size) {
     return at::IntArrayRef(size.data, size.len);
 }
 
+at::TensorList buildAtTensorList(const diopiTensorHandle_t* tensors, int64_t numTensors) {
+    std::vector<at::Tensor> vecAtTensor;
+    for (size_t i = 0; i < numTensors; ++i) {
+        vecAtTensor.emplace_back(buildAtTensor(tensors[i]));
+    }
+    return vecAtTensor;
+}
+
 void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiTensorHandle_t out) {
     // TODO(fengsibo): add device and nbytes check
     void* src = atOut.data_ptr();

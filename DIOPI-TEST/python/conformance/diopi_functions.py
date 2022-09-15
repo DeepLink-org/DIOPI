@@ -6,6 +6,7 @@ from .diopi_rt import Sizes, Scalar, Tensor, device_impl_lib
 from .utils import check_returncode, check_function, squeeze
 from . import Dtype, raw_like
 from collections import namedtuple
+import numpy as np
 
 
 def broadcast_out_size(size1, size2):
@@ -1680,8 +1681,8 @@ def stack(tensors, dim=0) -> Tensor:
     sizeI[dim] = sum
     out = Tensor(sizeI, tensors[0].get_dtype())
     func = check_function("diopiStack")
-    ret = func(input.context_handle, out.tensor_handle,
-               byref(c_tensors), insNum, dim)
+    ret = func(tensors[0].context_handle, out.tensor_handle,
+               c_tensors, insNum, dim)
     check_returncode(ret)
     return out
 
@@ -1713,7 +1714,7 @@ def sort(input, dim=- 1, descending=False, stable=False):
 
     func = check_function("diopiSort")
     ret = func(input.context_handle, vals.tensor_handle, indices.tensor_handle,
-               input.tensor_handle, dim, descending, byref(stable))
+               input.tensor_handle, dim, descending, stable)
     check_returncode(ret)
     return vals, indices
 
@@ -1767,10 +1768,10 @@ def transpose(input, dim0, dim1) -> Tensor:
         :guilabel:`diopiTranspose`
     """
     sizeI = list(input.size())
-    tmp = sizeI[dim0]
-    sizeI[dim0] = sizeI[dim1]
-    sizeI[dim1] = tmp
-    out = Tensor(sizeI, input.get_dtype())
+    sizeI[dim0], sizeI[dim1] = sizeI[dim1], sizeI[dim0]
+    strideI = list(input.get_stride())
+    strideI[dim0], strideI[dim1] = strideI[dim1], strideI[dim0]
+    out = Tensor(sizeI, input.get_dtype(), strideI)
 
     func = check_function("diopiTranspose")
     ret = func(input.context_handle, out.tensor_handle,
@@ -1794,10 +1795,12 @@ def one_hot(input, num_classes=- 1):
     """
     assert num_classes == -1 or num_classes > 0,\
         "num_classes must be -1 or >0"
+
     sizeI = input.size()
     # todo: can not have the shape of output, out should be a pointer
     if num_classes == -1:
-        out = Tensor((1, ), Dtype.int64)
+        sizeI += (np.max(input.numpy()) + 1, )
+        out = Tensor(sizeI, Dtype.int64)
     else:
         sizeI += (num_classes, )
         out = Tensor(sizeI, Dtype.int64)
