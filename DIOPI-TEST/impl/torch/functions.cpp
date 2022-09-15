@@ -106,6 +106,19 @@ diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     return diopiSuccess;
 }
 
+diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
+        const diopiTensorHandle_t weight, const diopiTensorHandle_t bias, diopiSize_t stride,
+        diopiSize_t padding, diopiSize_t dilation, int64_t groups) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atWeight = impl::aten::buildAtTensor(weight);
+    auto atBias = impl::aten::buildAtTensor(bias);
+    auto atStride = impl::aten::buildAtIntArray(stride);
+    auto atPadding = impl::aten::buildAtIntArray(padding);
+    auto atDilation = impl::aten::buildAtIntArray(dilation);
+    impl::aten::invokeATenFuncRet(ctx, at::conv2d, out, atInput, atWeight, atBias, atStride, atPadding, atDilation, groups);
+    return diopiSuccess;
+}
+
 #if defined(__cplusplus)
 }
 #endif // __cplusplus

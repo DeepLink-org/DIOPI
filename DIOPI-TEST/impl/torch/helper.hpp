@@ -74,6 +74,8 @@ at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes,
 }
 
 at::Tensor buildAtTensor(diopiTensorHandle_t tensor) {
+    if (tensor == nullptr) return at::Tensor();
+
     diopiDtype_t dtype;
     diopiGetTensorDtype(tensor, &dtype);
     caffe2::TypeMeta atType = getATenType(dtype);
