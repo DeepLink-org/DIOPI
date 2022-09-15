@@ -78,6 +78,10 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     return diopiSuccess;
 }
 
+/**
+ * @brief
+ * @param rounding_mode supported in pytorch>=1.8
+ */
 diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         const diopiTensorHandle_t input, const diopiTensorHandle_t other, diopiRoundMode_t rounding_mode) {
     at::Tensor atInput = impl::aten::buildAtTensor(input);
@@ -88,11 +92,12 @@ diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     return diopiSuccess;
 }
 
+/**
+ * @brief 
+ * @param rounding_mode supported in pytorch>=1.8.0
+ */
 diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         const diopiTensorHandle_t input, const diopiScalar_t* other, diopiRoundMode_t rounding_mode) {
-    '''
-        rounding_mode: used in pytorch >= 1.8
-    '''
     auto atInput = impl::aten::buildAtTensor(input);
     auto atOther = impl::aten::buildAtScalar(input, other);
     impl::aten::invokeATenFuncRet
