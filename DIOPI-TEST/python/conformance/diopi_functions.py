@@ -40,7 +40,7 @@ def reduce_op_process(input, dim=None, keepdim=False, dtype=None):
         dtype = input.get_dtype()
 
     out = Tensor(sizeI, dtype)
-    if ~keepdim:
+    if not keepdim:
         squeeze(out)
     return dim, out
 
@@ -2294,8 +2294,13 @@ def max(input, dim, keepdim=False):
         :guilabel:`diopiMax`
     """
     assert isinstance(dim, int), "dim should be int"
-    dim, out = reduce_op_process(input, dim, keepdim)
+    sizeI = list(input.size())
+    if keepdim:
+        sizeI[dim] = 1
+    del sizeI[dim]
+    out = Tensor(sizeI, input.get_dtype())
     indices = Tensor(out.size(), Dtype.int64)
+
     func = check_function("diopiMax")
     ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
                input.tensor_handle, dim)
@@ -2319,7 +2324,12 @@ def any(input, dim, keepdim=False) -> Tensor:
         :guilabel:`diopiAny`
     """
     assert isinstance(dim, int), "dim should be int"
-    dim, out = reduce_op_process(input, dim, keepdim, Dtype.bool)
+    sizeI = list(input.size())
+    if keepdim:
+        sizeI[dim] = 1
+    del sizeI[dim]
+    out = Tensor(sizeI, input.get_dtype())
+
     func = check_function("diopiAny")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim)
     check_returncode(ret)
@@ -2340,7 +2350,10 @@ def all(input, dim, keepdim=False) -> Tensor:
         :guilabel:`diopiAll`
     """
     assert isinstance(dim, int), "dim should be int"
-    dim, out = reduce_op_process(input, dim, keepdim, Dtype.bool)
+    sizeI = list(input.size())
+    if keepdim:
+        sizeI[dim] = 1
+    del sizeI[dim]
     func = check_function("diopiAll")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim)
     check_returncode(ret)

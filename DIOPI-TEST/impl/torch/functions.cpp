@@ -120,6 +120,63 @@ diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     return diopiSuccess;
 }
 
+diopiError_t diopiMax(diopiContextHandle_t ctx, diopiTensorHandle_t max, diopiTensorHandle_t max_indices,
+        const diopiTensorHandle_t input, int64_t dim) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atOuts = at::max(atInput, dim);
+    diopi_tensor_list outs = {max, max_indices};
+    impl::aten::updateATen2Tensor(ctx, atOuts, outs); 
+    return diopiSuccess;
+}
+
+diopiError_t diopiAny(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, int64_t dim) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atOut = at::any(atInput, dim);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiAll(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, int64_t dim) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atOut = at::all(atInput, dim);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, int64_t dim, diopiDtype_t dtype) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atOut = at::softmax(atInput, dim);  // TODO(fengsibo@sensetime.com): use default type instead
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, int64_t dim, diopiDtype_t dtype) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atOut = at::log_softmax(atInput, dim);  // TODO(fengsibo@sensetime.com): use default type instead
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, const diopiTensorHandle_t** indices, int64_t nums) {
+    // TODO(fengsibo@sensetime.com)
+    auto atInput = impl::aten::buildAtTensor(input);
+
+}
+
+diopiError_t diopiIndexSelect(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, int64_t dim, const diopiTensorHandle_t index) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atIndex = impl::aten::buildAtTensor(index);
+    auto atOut = at::index_select(atInput, dim, atIndex);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
 // diopiError_t diopiSelectCopy(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 //         const diopiTensorHandle_t input, int64_t dim, int64_t index) {
 //     auto atInput = impl::aten::buildAtTensor(input);
