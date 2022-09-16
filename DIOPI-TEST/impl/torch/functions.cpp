@@ -120,6 +120,30 @@ diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     return diopiSuccess;
 }
 
+// diopiError_t diopiSelectCopy(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+//         const diopiTensorHandle_t input, int64_t dim, int64_t index) {
+//     auto atInput = impl::aten::buildAtTensor(input);
+//     impl::aten::invokeATenFuncRet
+//         <at::Tensor (*)(at::Tensor const &, int64_t, int64_t)>(ctx, at::select, out, atInput, dim, index);
+//     return diopiSuccess;
+// }
+
+diopiError_t diopiSlice(diopiContextHandle_t ctx, diopiTensorHandle_t null_out,
+        const diopiTensorHandle_t input, int64_t dim, int64_t start, int64_t end, int64_t step) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    impl::aten::invokeATenFuncRet(ctx, at::slice, null_out, atInput, dim, start, end, step);
+    return diopiSuccess;
+}
+
+diopiError_t diopiMaskedScatter(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, const diopiTensorHandle_t mask, const diopiTensorHandle_t source) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atMask = impl::aten::buildAtTensor(mask);
+    auto atSource = impl::aten::buildAtTensor(source);
+    impl::aten::invokeATenFuncRet(ctx, at::masked_scatter, out, atInput, atMask, atSource);
+    return diopiSuccess;
+}
+
 diopiError_t diopiNonzero(diopiContextHandle_t ctx,
         diopiTensorHandle_t* out, const diopiTensorHandle_t input) {
     auto atInput = impl::aten::buildAtTensor(input);
@@ -149,23 +173,23 @@ diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, cons
     
 // }
 
-diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-        const diopiTensorHandle_t w, const diopiTensorHandle_t dw,
-        float lr, float momentum, float dampening, float weightDecay, bool nesterov) {
-    auto atW = impl::aten::buildAtTensor(w);
-    auto atDw = impl::aten::buildAtTensor(dw);
-    std::vector<at::Tensor> params = {atW, atDw};
+// diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+//         const diopiTensorHandle_t w, const diopiTensorHandle_t dw,
+//         float lr, float momentum, float dampening, float weightDecay, bool nesterov) {
+//     auto atW = impl::aten::buildAtTensor(w);
+//     auto atDw = impl::aten::buildAtTensor(dw);
+//     std::vector<at::Tensor> params = {atW, atDw};
 
-    torch::optim::SGD sgd(
-          params,
-          torch::optim::SGDOptions(lr)
-            .momentum(momentum)
-            .nesterov(nesterov)
-            .weight_decay(weightDecay));
-    auto atOut = sgd.step();
-    impl::aten::updateATen2Tensor(ctx, atOut, out);
-    return diopiSuccess;
-}
+//     torch::optim::SGD sgd(
+//           params,
+//           torch::optim::SGDOptions(lr)
+//             .momentum(momentum)
+//             .nesterov(nesterov)
+//             .weight_decay(weightDecay));
+//     auto atOut = sgd.step();
+//     impl::aten::updateATen2Tensor(ctx, atOut, out);
+//     return diopiSuccess;
+// }
 
 diopiError_t diopiClipGradNorm(diopiContextHandle_t ctx, double* out, diopiTensorHandle_t* parameters,
         int64_t parametersNum, double maxNorm, double normType, bool errorIfNonfinite) {

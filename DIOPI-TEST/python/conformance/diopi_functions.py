@@ -1478,8 +1478,10 @@ def select(input, dim, index) -> Tensor:
         :guilabel:`diopiSelect` :guilabel:`diopiSelectCopy`
     """
     sizeI = list(input.size())
-    sizeI[dim] = 1
-    out = Tensor(sizeI, input.get_dtype())
+    del sizeI[dim]
+    strideI = list(input.get_stride())
+    del strideI[dim]
+    out = Tensor(sizeI, input.get_dtype(), strideI)
 
     func = check_function("diopiSelectCopy")
     ret = func(input.context_handle, out.tensor_handle,
@@ -1504,7 +1506,7 @@ def masked_scatter(input, mask, source) -> Tensor:
         "mask must be bool tensor"
     out = raw_like(input)
 
-    func = check_function("MaskedScatter")
+    func = check_function("diopiMaskedScatter")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                mask.tensor_handle, source.tensor_handle)
     check_returncode(ret)
