@@ -2591,8 +2591,8 @@ def index(input, **kwargs) -> Tensor:
 
 def sgd(param, param_grad, buf, lr, momentum=0, dampening=0, weight_decay=0, nesterov=False):
     # buf, param_grad are mutable
-    func = check_function("diopiSGD")
-    ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle,
-               buf.tensor_handle, lr, momentum, dampening, weight_decay, nesterov)
+    func = check_function("diopiSgd")
+    ret = func(param.context_handle, buf.tensor_handle, param.tensor_handle, param_grad.tensor_handle,
+        lr, momentum, dampening, weight_decay, nesterov)
     check_returncode(ret)
     return param, buf
