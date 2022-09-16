@@ -10,6 +10,8 @@
  */
 
 #include <diopi/functions.h>
+#include <torch/nn.h>
+#include <torch/optim.h>
 
 #include "helper.hpp"
 
@@ -115,6 +117,77 @@ diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     auto atDilation = impl::aten::buildAtIntArray(dilation);
     impl::aten::invokeATenFuncRet(ctx, at::conv2d, out,
         atInput, atWeight, atBias, atStride, atPadding, atDilation, groups);
+    return diopiSuccess;
+}
+
+diopiError_t diopiNonzero(diopiContextHandle_t ctx,
+        diopiTensorHandle_t* out, const diopiTensorHandle_t input) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atOut = at::nonzero(atInput);
+    at::IntArrayRef atSize = atOut.sizes();
+    at::IntArrayRef atStride = atOut.strides();
+    diopiSize_t size(const_cast<int64_t*>(atStride.data()), atStride.size());
+    diopiSize_t stride(const_cast<int64_t*>(atStride.data()), atStride.size());
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(*out, &dtype);
+    diopiRequireTensor(ctx, out, &size, &stride, dtype, diopi_device);
+    impl::aten::updateATen2Tensor(ctx, atOut, *out);
+}
+
+diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
+        const diopiTensorHandle_t weight, const diopiTensorHandle_t bias) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atWeight = impl::aten::buildAtTensor(weight);
+    auto atBias = impl::aten::buildAtTensor(bias);
+    impl::aten::invokeATenFuncRet(ctx, at::linear, out, atInput, atWeight, atBias);
+    return diopiSuccess;
+}
+
+// diopiError_t diopiRoiAlign(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
+//         const diopiTensorHandle_t rois, double spatialScale, int64_t pooledHeight,
+//         int64_t pooledWidth, int64_t samplingRatio, bool aligned) {
+    
+// }
+
+diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t w, const diopiTensorHandle_t dw,
+        float lr, float momentum, float dampening, float weightDecay, bool nesterov) {
+    auto atW = impl::aten::buildAtTensor(w);
+    auto atDw = impl::aten::buildAtTensor(dw);
+    std::vector<at::Tensor> params = {atW, atDw};
+
+    torch::optim::SGD sgd(
+          params,
+          torch::optim::SGDOptions(lr)
+            .momentum(momentum)
+            .nesterov(nesterov)
+            .weight_decay(weightDecay));
+    auto atOut = sgd.step();
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiClipGradNorm(diopiContextHandle_t ctx, double* out, diopiTensorHandle_t* parameters,
+        int64_t parametersNum, double maxNorm, double normType, bool errorIfNonfinite) {
+    auto tensorList = impl::aten::buildAtTensorList(parameters, parametersNum);
+    *out = torch::nn::utils::clip_grad_norm_(tensorList, maxNorm, normType);
+    return diopiSuccess;
+}
+
+diopiError_t diopiEmbeddingRenorm_(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t indices, double max_norm, double norm_type) {
+    auto atSelf = impl::aten::buildAtTensor(out);
+    auto atIndices = impl::aten::buildAtTensor(indices);
+    impl::aten::invokeATenFuncRet(
+        ctx, at::embedding_renorm_, out, atSelf, atIndices, max_norm, norm_type);
+    return diopiSuccess;
+}
+
+diopiError_t diopiEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t weight,
+        const diopiTensorHandle_t indices, int64_t paddingIdx, bool scaleGradByFreq, bool sparse) {
+    auto atWeight = impl::aten::buildAtTensor(weight);
+    auto atIndices = impl::aten::buildAtTensor(indices);
+    impl::aten::invokeATenFuncRet(ctx, at::embedding, out, atWeight, atIndices, paddingIdx, scaleGradByFreq, sparse);
     return diopiSuccess;
 }
 
