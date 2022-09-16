@@ -118,6 +118,10 @@ at::Scalar buildAtScalar(const diopiTensorHandle_t input, const diopiScalar_t* s
     }
 }
 
+at::IntArrayRef buildAtIntArray(const diopiSize_t* size) {
+    return at::IntArrayRef(size->data, size->len);
+}
+
 at::IntArrayRef buildAtIntArray(diopiSize_t size) {
     return at::IntArrayRef(size.data, size.len);
 }
@@ -160,6 +164,12 @@ template<typename TupleT>
 void updateATen2Tensor(diopiContextHandle_t ctx, TupleT& atOuts, diopi_tensor_list& outs) {
     constexpr size_t tupleSize = std::tuple_size<TupleT>::value;
     UpdateTupleATen<TupleT, tupleSize>::update(ctx, atOuts, outs);
+}
+
+void updateATen2Tensor(diopiContextHandle_t ctx, std::vector<at::Tensor>& atOuts, diopi_tensor_list& outs) {
+    for (size_t i = 0; i < atOuts.size(); ++i) {
+        updateATen2Tensor(ctx, atOuts.at(i), outs.at(i));
+    }
 }
 
 template<typename Func, typename ...Args>
