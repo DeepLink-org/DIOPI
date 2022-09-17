@@ -646,7 +646,7 @@ diopi_configs = {
     ),
 
     'reduce_op': dict(
-        name=['mean', 'std', 'sum', 'var'],
+        name=['mean', 'sum'],
         interface=['torch'],
         atol=1e-4,
         rtol=1e-5,

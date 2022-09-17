@@ -120,6 +120,44 @@ diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     return diopiSuccess;
 }
 
+// NOTE(fengsibo@sensetime.com): add int, short, bool test case
+diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, diopiSize_t dim, diopiDtype_t dtype) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atDim = impl::aten::buildAtIntArray(dim);
+    auto atOut = at::mean(atInput, atDim);  // TODO(fengsibo@sensetime.com): use default type instead
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
+// NOTE(fengsibo@sensetime.com): add int, short, bool test case
+diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, diopiSize_t dim, diopiDtype_t dtype) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atDim = impl::aten::buildAtIntArray(dim);
+    auto atOut = at::sum(atInput, atDim);  // TODO(fengsibo@sensetime.com): use default type instead
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, diopiSize_t dim, bool unbiased) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atDim = impl::aten::buildAtIntArray(dim);
+    auto atOut = at::std(atInput, atDim, unbiased);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiMin(diopiContextHandle_t ctx, diopiTensorHandle_t min, diopiTensorHandle_t min_indices,
+        const diopiTensorHandle_t input, int64_t dim) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atOuts = at::min(atInput, dim);
+    diopi_tensor_list outs = {min, min_indices};
+    impl::aten::updateATen2Tensor(ctx, atOuts, outs); 
+    return diopiSuccess;
+}
+
 diopiError_t diopiMax(diopiContextHandle_t ctx, diopiTensorHandle_t max, diopiTensorHandle_t max_indices,
         const diopiTensorHandle_t input, int64_t dim) {
     auto atInput = impl::aten::buildAtTensor(input);
@@ -284,6 +322,7 @@ diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     auto tensorList = impl::aten::buildAtTensorList(tensors, insNum);
     impl::aten::invokeATenFuncRet
         <at::Tensor (*)(at::TensorList, int64_t)>(ctx, at::cat, out, tensorList, dim);
+    return diopiSuccess;
 }
 
 diopiError_t diopiSplitWithSizes(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, int64_t outsNum,

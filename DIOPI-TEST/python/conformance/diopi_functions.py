@@ -1,8 +1,8 @@
 # -*- coding: UTF-8 -*-
 import math
 
-from ctypes import c_float, c_int64, c_int32, c_void_p, byref
-from .diopi_runtime import Sizes, Scalar, Tensor, TensorHandle
+from ctypes import c_float, c_int64, c_int32, c_void_p, byref, pointer
+from .diopi_rt import Sizes, Scalar, Tensor, device_impl_lib
 from .utils import check_returncode, check_function, squeeze
 from . import Dtype, raw_like
 from collections import namedtuple
@@ -597,7 +597,7 @@ def leaky_relu(input, negative_slope=0.01, inplace=False) -> Tensor:
         - *negative_slope* ( **float** ) : 负斜率控制因子
         - *inplace* ( **bool** ) : 是否覆盖原数据
     C API
-        :guilabel:`diopiLeakyRelu` :guilabel:`diopiLeakyReluInp`
+        :guilabel:`diopiLeakyReLu` :guilabel:`diopiLeakyReLuInp`
     """
     negative_slope = byref(Scalar(Dtype.float64, negative_slope))
     if inplace:
@@ -858,13 +858,15 @@ def mean(input, dim=None, keepdim=False, dtype=None) -> Tensor:
     dim, out = reduce_op_process(input, dim, keepdim, dtype)
     func = check_function("diopiMean")
     dim1 = Sizes(tuple(dim))
+    if dtype is None:
+        dtype = input.get_dtype()
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                dim1, c_int32(dtype.value))
     check_returncode(ret)
     return out
 
 
-def std(input, unbiased=False, dim=None, keepdim=False) -> Tensor:
+def std(input, unbiased, dim=None, keepdim=False) -> Tensor:
     r"""
     释义
         如果 *unbiased* 为 ``True``，则将使用 *Bessel* 校正。 否则，将直接计算样本偏差，而不进行任何校正。
@@ -904,7 +906,12 @@ def min(input, dim=0, keepdim=False) -> Tensor:
     """
     assert isinstance(dim, int), "dim should be int"
 
-    dim, out = reduce_op_process(input, dim, keepdim)
+    sizeI = list(input.size())
+    if keepdim:
+        sizeI[dim] = 1
+    else:
+        del sizeI[dim]
+    out = Tensor(sizeI, input.get_dtype())
     indices = Tensor(out.size(), Dtype.int64)
     func = check_function("diopiMin")
 
@@ -1525,12 +1532,11 @@ def nonzero(input):
     C API
         :guilabel:`diopiNonzero`
     """
-    out_tensor_handle = TensorHandle()
+    out = Tensor((), Dtype.int64)
     func = check_function("diopiNonzero")
-    ret = func(input.context_handle, byref(out_tensor_handle),
+    ret = func(input.context_handle, byref(out.tensor_handle),
                input.tensor_handle)
     check_returncode(ret)
-    out = Tensor.from_handle(out_tensor_handle)
     return out
 
 
@@ -1649,12 +1655,13 @@ def cat(tensors, dim=0) -> Tensor:
         sizeI = list(tensor.size())
         sum += sizeI[dim]
         c_tensors.append(tensor.tensor_handle)
+    c_tensors = (c_void_p * insNum)(*c_tensors)
 
     sizeI[dim] = sum
     out = Tensor(sizeI, tensors[0].get_dtype())
     func = check_function("diopiCat")
-    ret = func(input.context_handle, out.tensor_handle,
-               byref(c_tensors), insNum, dim)
+    ret = func(tensors[0].context_handle, out.tensor_handle,
+               pointer(c_tensors), insNum, dim)
     check_returncode(ret)
     return out
 
@@ -1674,18 +1681,19 @@ def stack(tensors, dim=0) -> Tensor:
     assert isinstance(tensors, (list, tuple)),\
         "tensors must be a list or tuple"
     insNum = len(tensors)
+    outNum = insNum + 1
     sizeI = list(tensors[0].size())
-    sum = insNum * sizeI[dim]
+    if dim < 0:
+        dim += outNum + dim
+    sizeI.insert(dim, insNum)
 
-    c_tensors = []
-    for tensor in tensors:
-        c_tensors.append(tensor.tensor_handle)
+    c_tensors = [t.tensor_handle for t in tensors]
+    c_tensors = (c_void_p * insNum)(*c_tensors)
 
-    sizeI[dim] = sum
     out = Tensor(sizeI, tensors[0].get_dtype())
     func = check_function("diopiStack")
     ret = func(tensors[0].context_handle, out.tensor_handle,
-               c_tensors, insNum, dim)
+               pointer(c_tensors), insNum, dim)
     check_returncode(ret)
     return out
 
@@ -1855,7 +1863,7 @@ def split(tensor, split_size_or_sections, dim=0):
     assert sum == 0,\
         "split_size_or_sections should be compatible with tensor shape"
     func = check_function("diopiSplitWithSizes")
-    ret = func(input.context_handle, byref(outs), idx,
+    ret = func(tensor.context_handle, byref(outs), idx,
                tensor.tensor_handle, byref(splitSizes), dim)
     check_returncode(ret)
     return outs
@@ -2275,6 +2283,8 @@ def sum(input, dim=None, keepdim=False, dtype=None) -> Tensor:
     func = check_function("diopiSum")
     dim, out = reduce_op_process(input, dim, keepdim, dtype)
     dim1 = Sizes(tuple(dim))
+    if dtype is None:
+        dtype = input.get_dtype()
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                dim1, c_int32(dtype.value))
     check_returncode(ret)
@@ -2298,7 +2308,8 @@ def max(input, dim, keepdim=False):
     sizeI = list(input.size())
     if keepdim:
         sizeI[dim] = 1
-    del sizeI[dim]
+    else:
+        del sizeI[dim]
     out = Tensor(sizeI, input.get_dtype())
     indices = Tensor(out.size(), Dtype.int64)
 
@@ -2328,7 +2339,8 @@ def any(input, dim, keepdim=False) -> Tensor:
     sizeI = list(input.size())
     if keepdim:
         sizeI[dim] = 1
-    del sizeI[dim]
+    else:
+        del sizeI[dim]
     out = Tensor(sizeI, input.get_dtype())
 
     func = check_function("diopiAny")
@@ -2354,7 +2366,8 @@ def all(input, dim, keepdim=False) -> Tensor:
     sizeI = list(input.size())
     if keepdim:
         sizeI[dim] = 1
-    del sizeI[dim]
+    else:
+        del sizeI[dim]
     func = check_function("diopiAll")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim)
     check_returncode(ret)
