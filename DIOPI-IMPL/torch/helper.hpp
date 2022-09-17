@@ -42,7 +42,30 @@ caffe2::TypeMeta getATenType(diopiDtype_t dt) {
     case diopi_dtype_bfloat16:
         return caffe2::TypeMeta::Make<at::BFloat16>();
     default:
-        std::fprintf(stderr, "Dtype not supported");
+        std::fprintf(stderr, "Not supported diopi dtype");
+    }
+}
+
+diopiDtype_t getDIOPITensorType(at::Tensor& input) {
+    switch(input.scalar_type()) {
+    case at::ScalarType::Char:
+        return diopi_dtype_bool;
+    case at::ScalarType::Byte:
+        return diopi_dtype_uint8;
+    case at::ScalarType::Short:
+        return diopi_dtype_int16;
+    case at::ScalarType::Int:
+        return diopi_dtype_int32;
+    case at::ScalarType::Long:
+        return diopi_dtype_int64;
+    case at::ScalarType::Half:
+        return diopi_dtype_float16;
+    case at::ScalarType::Float:
+        return diopi_dtype_float32;
+    case at::ScalarType::Double:
+        return diopi_dtype_float64;
+    default:
+        std::fprintf(stderr, "Not supported at::Tensor dtype");
     }
 }
 
@@ -52,7 +75,7 @@ c10::DeviceType getATenDevice(diopiDevice_t device) {
     } else if (device == diopi_device) {
         return c10::DeviceType::CUDA;
     } else {
-        std::fprintf(stderr, "Device not supported");
+        std::fprintf(stderr, "Not supported device type");
     }
 }
 
@@ -187,6 +210,16 @@ void invokeATenFuncRet(diopiContextHandle_t ctx, Func func, diopi_tensor_list& o
 template<typename Func, typename ...Args>
 void invokeATenFuncInp(diopiContextHandle_t ctx, Func func, Args&&... args) {
     func(std::forward<Args>(args)...);
+}
+
+void buildDIOPITensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
+    at::IntArrayRef atSize = input.sizes();
+    at::IntArrayRef atStride = input.strides();
+    diopiSize_t size(const_cast<int64_t*>(atSize.data()), atSize.size());
+    diopiSize_t stride(const_cast<int64_t*>(atStride.data()), atStride.size());
+    diopiDtype_t dtype = getDIOPITensorType(input);
+    diopiRequireTensor(ctx, out, &size, &stride, dtype, diopi_device);
+    updateATen2Tensor(ctx, input, *out);
 }
 
 }  // namespace aten
