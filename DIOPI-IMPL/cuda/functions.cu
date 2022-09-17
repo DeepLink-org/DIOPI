@@ -46,25 +46,25 @@
     }
 
 template<typename T> __global__
-void vecAdd(const void *a, const void *b, void *c, const int numel, const T alpha)
+void vecAdd(const void* a, const void* b, void* c, const int numel, const T alpha)
 {
-    int      id = blockIdx.x * blockDim.x + threadIdx.x;
-    const T *A  = static_cast<const T*>(a);
-    const T *B  = static_cast<const T*>(b);
-    T *C  = static_cast<T*>(c);
+    int id = blockIdx.x * blockDim.x + threadIdx.x;
+    const T* A = static_cast<const T*>(a);
+    const T* B = static_cast<const T*>(b);
+    T* C = static_cast<T*>(c);
     if (id < numel) {
         C[id] = A[id] + alpha * B[id];
     }
 }
 
 template<typename T> __global__
-void vecAddBroadcast(const void *a, const void *b, void *c, const int numel, const T alpha,
-        const int64_t *stride1, const int64_t *stride2, const int64_t *outStride, const int len)
+void vecAddBroadcast(const void* a, const void* b, void* c, const int numel, const T alpha,
+        const int64_t* stride1, const int64_t* stride2, const int64_t* outStride, const int len)
 {
-    int      id = blockIdx.x * blockDim.x + threadIdx.x;
-    const T *A  = static_cast<const T*>(a);
-    const T *B  = static_cast<const T*>(b);
-    T *C  = static_cast<T*>(c);
+    int id = blockIdx.x * blockDim.x + threadIdx.x;
+    const T* A = static_cast<const T*>(a);
+    const T* B = static_cast<const T*>(b);
+    T* C = static_cast<T*>(c);
     int size = id;
     size_t idxA = 0;
     size_t idxB = 0;
@@ -80,11 +80,11 @@ void vecAddBroadcast(const void *a, const void *b, void *c, const int numel, con
 }
 
 template<typename T> __global__
-void vecAddScalar(const void *a, const T b, void *c, const int numel, const T alpha)
+void vecAddScalar(const void* a, const T b, void* c, const int numel, const T alpha)
 {
-    int      id = blockIdx.x * blockDim.x + threadIdx.x;
-    const T *A  = static_cast<const T*>(a);
-    T *C  = static_cast<T*>(c);
+    int id = blockIdx.x * blockDim.x + threadIdx.x;
+    const T* A = static_cast<const T*>(a);
+    T* C = static_cast<T*>(c);
     if (id < numel) {
         C[id] = A[id] + alpha * b;
     }
@@ -109,22 +109,22 @@ void computeStride(const diopiSize_t& size1, const diopiSize_t& size2, diopiSize
     int length = size1.len;
     int len = outSize.len;
     int64_t stride = 1;
-    for (int i = 0; i < len; i++) {
+    for (int i = 0; i < len; ++i) {
         stride1[i] = 0;
         stride2[i] = 0;
     }
     for (int i = 1; i < length + 1; ++i) {
-        if (size1.data[length-i] == outSize.data[len -i]) {
+        if (size1.data[length - i] == outSize.data[len - i]) {
             stride1[len - i] = stride;
-            stride *=  outSize.data[len -i];
+            stride *= outSize.data[len - i];
         }
     }
     length = size2.len;
     stride = 1;
-    for (int i = 1; i < length + 1; i++) {
-        if (size2.data[length-i] == outSize.data[len -i]) {
+    for (int i = 1; i < length + 1; ++i) {
+        if (size2.data[length - i] == outSize.data[len - i]) {
             stride2[len - i] = stride;
-            stride *=  outSize.data[len -i];
+            stride *= outSize.data[len - i];
         }
     }
 }
@@ -197,7 +197,7 @@ extern "C" diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHand
 }
 
 template<typename T> __global__
-void vecFill(void *a, const float value, const int numel)
+void vecFill(void* a, const float value, const int numel)
 {
     int id = blockIdx.x * blockDim.x + threadIdx.x;
     T* A = static_cast<T*>(a);
