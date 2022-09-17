@@ -120,11 +120,41 @@ diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     return diopiSuccess;
 }
 
-// DIOPI_API diopiError_t diopiBmm(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-//                                 const diopiTensorHandle_t input, const diopiTensorHandle_t mat2);
+/**
+ * @brief 
+ * 
+ * @param ignore_index supported in torch >= 1.10.0
+ * @param label_smoothing supported in torch >= 1.10.0
+ */
+diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, const diopiTensorHandle_t target, const diopiTensorHandle_t weight,
+        int64_t reduction, int64_t ignore_index, double label_smoothing) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atTarget = impl::aten::buildAtTensor(target);
+    auto atWeight = impl::aten::buildAtTensor(weight);
+    auto atReduction = impl::aten::getEntropyReduction(reduction);
+    auto atOut = torch::nn::functional(atInput, atTarget, atWeight, ignore_index, atReduction, label_smoothing);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
 
-// DIOPI_API diopiError_t diopiAddcmul(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
-//                                     const diopiTensorHandle_t tensor1, const diopiTensorHandle_t tensor2, const diopiScalar_t* value);
+diopiError_t diopiBmm(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, const diopiTensorHandle_t mat2) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atMat2= impl::aten::buildAtTensor(mat2);
+    impl::aten::invokeATenFuncRet(ctx, at::bmm, out, atInput, atMat2);
+    return diopiSuccess;
+}
+
+diopiError_t diopiAddcmul(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
+        const diopiTensorHandle_t tensor1, const diopiTensorHandle_t tensor2, const diopiScalar_t* value) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atTensor1 = impl::aten::buildAtTensor(tensor1);
+    auto atTensor2 = impl::aten::buildAtTensor(tensor2);
+    auto atValue = impl::aten::buildAtScalar(input, value);
+    impl::aten::invokeATenFuncRet(ctx, at::addcmul, out, atInput, atTensor1, atTensor2, atValue);
+    return diopiSuccess;
+}
 
 diopiError_t diopiMatmul(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         const diopiTensorHandle_t input, const diopiTensorHandle_t other) {
@@ -134,8 +164,15 @@ diopiError_t diopiMatmul(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     return diopiSuccess;
 }
 
-// DIOPI_API diopiError_t diopiAddcdiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
-//                                     const diopiTensorHandle_t tensor1, const diopiTensorHandle_t tensor2, const diopiScalar_t* value);
+diopiError_t diopiAddcdiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
+        const diopiTensorHandle_t tensor1, const diopiTensorHandle_t tensor2, const diopiScalar_t* value) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atTensor1 = impl::aten::buildAtTensor(tensor1);
+    auto atTensor2 = impl::aten::buildAtTensor(tensor2);
+    auto atValue = impl::aten::buildAtScalar(input, value);
+    impl::aten::invokeATenFuncRet(ctx, at::addcdiv, out, atInput, atTensor1, atTensor2, atValue);
+    return diopiSuccess;
+}
 
 // CAFFE2_API Tensor addmm(const Tensor & self, const Tensor & mat1, const Tensor & mat2, Scalar beta=1, Scalar alpha=1);
 diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t out,
