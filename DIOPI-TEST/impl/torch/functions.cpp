@@ -243,14 +243,15 @@ diopiError_t diopiNonzero(diopiContextHandle_t ctx,
         diopiTensorHandle_t* out, const diopiTensorHandle_t input) {
     auto atInput = impl::aten::buildAtTensor(input);
     auto atOut = at::nonzero(atInput);
+
     at::IntArrayRef atSize = atOut.sizes();
     at::IntArrayRef atStride = atOut.strides();
-    diopiSize_t size(const_cast<int64_t*>(atStride.data()), atStride.size());
+    diopiSize_t size(const_cast<int64_t*>(atSize.data()), atSize.size());
     diopiSize_t stride(const_cast<int64_t*>(atStride.data()), atStride.size());
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(*out, &dtype);
+    diopiDtype_t dtype = diopi_dtype_int64;
     diopiRequireTensor(ctx, out, &size, &stride, dtype, diopi_device);
     impl::aten::updateATen2Tensor(ctx, atOut, *out);
+    return diopiSuccess;
 }
 
 diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
