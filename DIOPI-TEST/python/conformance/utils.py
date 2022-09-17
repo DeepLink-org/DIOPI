@@ -1,5 +1,6 @@
 import logging
 from . import diopi_runtime
+from .diopi_runtime import device_impl_lib
 
 
 default_cfg_dict = dict(

@@ -154,21 +154,32 @@ class Tensor:
         dtype,
         stride=None,
         context_handle=default_context.get_handle(),
+        tensor_handle=None,
     ):
-        self.tensor_handle = TensorHandle()
-        self.context_handle = context_handle
+        if tensor_handle is not None and size is None:
+            self.tensor_handle = tensor_handle
+            self.context_handle = context_handle
+        else:
+            self.tensor_handle = TensorHandle()
+            self.context_handle = context_handle
 
-        assert isinstance(size, (tuple, list))
-        assert isinstance(dtype, Dtype)
+            assert isinstance(size, (tuple, list))
+            assert isinstance(dtype, Dtype)
 
-        diopirt_lib.diopiRequireTensor(
-            self.context_handle,
-            byref(self.tensor_handle),
-            byref(Sizes(tuple(size))),
-            None if stride is None else byref(Sizes(tuple(stride))),
-            dtype.value,
-            Device.AIChip.value
-        )
+            diopirt_lib.diopiRequireTensor(
+                self.context_handle,
+                byref(self.tensor_handle),
+                byref(Sizes(tuple(size))),
+                None if stride is None else byref(Sizes(tuple(stride))),
+                dtype.value,
+                Device.AIChip.value
+            )
+
+    @classmethod
+    def from_handle(cls, tensor_handle):
+        ctx_handle = ContextHandle()
+        diopirt_lib._diopiTensorGetCtxHandle(tensor_handle, byref(ctx_handle))
+        return cls(size=None, dtype=None, context_handle=ctx_handle, tensor_handle=tensor_handle)
 
     def __del__(self):
         diopirt_lib._diopiDestoryTensor(self.context_handle,
@@ -235,15 +246,15 @@ class Tensor:
         assert isinstance(shape, (tuple, list))
         diopirt_lib._diopiTensorResetShape(self.tensor_handle, byref(Sizes(tuple(shape))))
 
-    @staticmethod
-    def from_numpy(darray):
+    @classmethod
+    def from_numpy(cls, darray):
         if not isinstance(darray, (np.generic, np.ndarray)):
             raise TypeError(f"expected np.ndarray (got {type(darray)})")
 
         dtype = from_numpy_dtype(darray.dtype)
         stride = [int(darray.strides[i]/darray.itemsize)
                   for i in range(len(darray.strides))]
-        tr = Tensor(size=darray.shape, dtype=dtype, stride=stride)
+        tr = cls(size=darray.shape, dtype=dtype, stride=stride)
         diopirt_lib._diopiTensorCopyFromBuffer(tr.context_handle,
                                                c_void_p(darray.ctypes.data),
                                                tr.tensor_handle)

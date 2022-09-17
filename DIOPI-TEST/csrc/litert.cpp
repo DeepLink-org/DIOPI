@@ -284,10 +284,11 @@ private:
     diopiDevice_t            device_;
     int64_t                  numel_;
     std::shared_ptr<Storage> storage_;
+    diopiContextHandle_t     context_;
 
 public:
     diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride,
-                const diopiDtype_t dtype, const diopiDevice_t device);
+                diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context);
     ~diopiTensor();
 
     diopiSize_t shape() {
@@ -310,10 +311,12 @@ public:
     const void* data() const { return storage_->data(); }
     int64_t     nbytes() const { return storage_->nbytes(); }
 
+    diopiContextHandle_t get_ctx() const { return context_; }
+
 };
 
 diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride,
-                         const diopiDtype_t dtype, const diopiDevice_t device) {
+                         diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context) {
     assert(shape);
     dtype_  = dtype;
     device_ = device;
@@ -339,6 +342,7 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride,
     } else {
         storage_ = std::make_shared<Storage>(device_malloc, device_free, nbytes);
     }
+    context_ = context;
 }
 
 bool diopiTensor::reset_shape(const diopiSize_t* size) {
@@ -408,6 +412,10 @@ DIOPI_API diopiError_t _diopiTensorResetShape(const diopiTensorHandle_t th, cons
     return diopiSuccess;
 }
 
+DIOPI_API diopiError_t _diopiTensorGetCtxHandle(const diopiTensorHandle_t th, diopiContextHandle_t* ctx) {
+    *ctx = th->get_ctx();
+    return diopiSuccess;
+}
 
 struct diopiContext {
 private:
@@ -442,7 +450,7 @@ public:
 
     diopiTensorHandle_t createTensor(const diopiSize_t* size, const diopiSize_t* stride,
                                      const diopiDtype_t dtype, const diopiDevice_t dev) {
-        diopiTensorHandle_t tensor = new diopiTensor(size, stride, dtype, dev);
+        diopiTensorHandle_t tensor = new diopiTensor(size, stride, dtype, dev, this);
         setTensors_.insert(tensor);
         return tensor;
     }

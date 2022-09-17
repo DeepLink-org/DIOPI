@@ -2,7 +2,7 @@
 import math
 
 from ctypes import c_float, c_int64, c_int32, c_void_p, byref
-from .diopi_runtime import Sizes, Scalar, Tensor, device_impl_lib
+from .diopi_runtime import Sizes, Scalar, Tensor, TensorHandle
 from .utils import check_returncode, check_function, squeeze
 from . import Dtype, raw_like
 from collections import namedtuple
@@ -1525,11 +1525,12 @@ def nonzero(input):
     C API
         :guilabel:`diopiNonzero`
     """
-    out = Tensor((), Dtype.int64)
+    out_tensor_handle = TensorHandle()
     func = check_function("diopiNonzero")
-    ret = func(input.context_handle, byref(out.tensor_handle),
+    ret = func(input.context_handle, byref(out_tensor_handle),
                input.tensor_handle)
     check_returncode(ret)
+    out = Tensor.from_handle(out_tensor_handle)
     return out
 
 
