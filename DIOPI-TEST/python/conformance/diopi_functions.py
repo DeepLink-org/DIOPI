@@ -2,7 +2,7 @@
 import math
 
 from ctypes import c_float, c_int64, c_int32, c_void_p, byref, pointer
-from .diopi_rt import Sizes, Scalar, Tensor, device_impl_lib
+from .diopi_runtime import Sizes, Scalar, Tensor, TensorHandle
 from .utils import check_returncode, check_function, squeeze
 from . import Dtype, raw_like
 from collections import namedtuple
@@ -597,7 +597,7 @@ def leaky_relu(input, negative_slope=0.01, inplace=False) -> Tensor:
         - *negative_slope* ( **float** ) : 负斜率控制因子
         - *inplace* ( **bool** ) : 是否覆盖原数据
     C API
-        :guilabel:`diopiLeakyReLu` :guilabel:`diopiLeakyReLuInp`
+        :guilabel:`diopiLeakyRelu` :guilabel:`diopiLeakyReluInp`
     """
     negative_slope = byref(Scalar(Dtype.float64, negative_slope))
     if inplace:
@@ -1532,11 +1532,12 @@ def nonzero(input):
     C API
         :guilabel:`diopiNonzero`
     """
-    out = Tensor((), Dtype.int64)
+    out_tensor_handle = TensorHandle()
     func = check_function("diopiNonzero")
-    ret = func(input.context_handle, byref(out.tensor_handle),
+    ret = func(input.context_handle, byref(out_tensor_handle),
                input.tensor_handle)
     check_returncode(ret)
+    out = Tensor.from_handle(out_tensor_handle)
     return out
 
 
