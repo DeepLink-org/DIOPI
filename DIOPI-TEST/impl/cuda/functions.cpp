@@ -103,12 +103,12 @@ protected:
 template<typename T, cudnnStatus_t(*fnCreate)(T*), cudnnStatus_t(*fnDestroy)(T)>
 class CudnnResourceGuard final {
 public:
-    explicit CudnnResourceGuard() {
-        fnCreate(&resource_);
+    CudnnResourceGuard() {
+        DIOPI_CHECKCUDNN(fnCreate(&resource_));
     }
 
     ~CudnnResourceGuard() {
-        fnDestroy(resource_);
+        DIOPI_CHECKCUDNN(fnDestroy(resource_));
     }
 
     T& get() {
@@ -116,7 +116,7 @@ public:
     }
 
 protected:
-    T resource_;
+    T resource_ {0};
 };
 
 diopiError_t setTensorDesc(diopiDtype_t type, const diopiSize_t& shape,
@@ -129,11 +129,11 @@ diopiError_t setTensorDesc(diopiDtype_t type, const diopiSize_t& shape,
     std::vector<int> shapeArray(size);
     std::vector<int> strideArray(size);
 
-    for (int i = 0; i < len; i++) {
+    for (int i = 0; i < len; ++i) {
         shapeArray[i] = shape.data[i];
         strideArray[i] = stride.data[i];
     }
-    for (int i = len; i < 4; i++) {
+    for (int i = len; i < 4; ++i) {
         shapeArray[i] = 1;
         strideArray[i] = 1;
     }
@@ -151,7 +151,7 @@ diopiError_t setTensorDesc(diopiDtype_t type, const diopiSize_t& shape,
 extern "C" diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out,
                                      const diopiTensorHandle_t input, int64_t dim, diopiDtype_t dtype)
 {
-    if (dim >= 2) {
+    if (dim > 1) {
         printf("unkown dim error dim=%d at %s:%s", dim, __FILE__, __LINE__);
         return diopiErrorOccurred;
     }
@@ -173,8 +173,8 @@ extern "C" diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle
         shape[0] = 1;
         stride[0] = oldStride.data[0];
         for (int i = 0; i < oldShape.len; ++i) {
-            shape[i+1] = oldShape.data[i];
-            stride[i+1] = oldStride.data[i];
+            shape[i + 1] = oldShape.data[i];
+            stride[i + 1] = oldStride.data[i];
         }
         newShape.data = shape.data();
         newShape.len = len;

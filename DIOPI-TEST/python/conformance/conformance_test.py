@@ -4,9 +4,9 @@ import numpy as np
 
 from . import diopi_functions as F
 from .utils import logger, FunctionNotImplementedError
-from .diopi_rt import Tensor
-from .gen_input import inputs_dir_path, outputs_dir_path, get_saved_pth_list
-from .gen_output import get_name_and_data_for_grad
+from .diopi_runtime import Tensor
+from .gen_data import inputs_dir_path, outputs_dir_path
+from .gen_data import get_saved_pth_list, get_name_and_data_for_grad
 
 
 def convert_input_tensors(function_paras: dict):
@@ -61,8 +61,19 @@ class ConformanceTest(object):
         saved_pth_list = get_saved_pth_list()
         for saved_pth in saved_pth_list:
             output = None
-            with open(os.path.join(inputs_dir_path, saved_pth), "rb") as f:
+            input_abs_path = os.path.join(inputs_dir_path, saved_pth)
+            if not os.path.exists(input_abs_path):
+                logger.error(f"FileNotFound: No benchmark input data '{saved_pth}' was generated" \
+                    f" (No such file or directory: {input_abs_path})")
+                continue
+            try:
+                f = open(input_abs_path, "rb")
                 data = pickle.load(f)
+            except Exception as e:
+                logger.error(f"Failed: {e}")
+                continue
+            else:
+                f.close()
 
             cfg_func_name = data["cfg"]["name"]
             if func_name not in ['all', cfg_func_name]:
@@ -72,30 +83,40 @@ class ConformanceTest(object):
             convert_input_tensors(function_paras)
             kwargs = function_paras['kwargs']
 
-            try:
-                func = eval(f"F.{cfg_func_name}")
-            except AttributeError as e:
-                logger.error(f"function {cfg_func_name} 's python interface is not implemented, {e}")
-                continue
-
             func_call_list = []
             func_call_list.append(f"F.{cfg_func_name}(**kwargs)")
             if data["cfg"].get("is_inplace", False):
                 func_call_list.append(f"F.{cfg_func_name}(**kwargs, inplace=True)")
 
             for func_call in func_call_list:
-                with open(os.path.join(outputs_dir_path, saved_pth), "rb") as f:
+                output_abs_path = os.path.join(outputs_dir_path, saved_pth)
+                if not os.path.exists(output_abs_path):
+                    logger.error(f"FileNotFound: No benchmark output data '{saved_pth}' was generated " \
+                        f"(No such file or directory: {output_abs_path})")
+                    continue
+                try:
+                    f = open(output_abs_path, "rb")
                     output_reference = pickle.load(f)
+                except Exception as e:
+                    logger.error(f"Failed: {e}")
+                    continue
+                else:
+                    f.close()
 
                 try:
                     output = eval(func_call)
                     passed = compare_with_gen_output(output, data['cfg'], output_reference)
-                    logger.info(f"run {cfg_func_name} succeed") \
-                        if passed else logger.error(f"run {cfg_func_name} failed")
+                    logger.info(f"Run diopi_functions.{cfg_func_name} succeed") \
+                        if passed else logger.error(f"Run diopi_functions.{cfg_func_name} failed")
                 except FunctionNotImplementedError as e:
-                    logger.error(f"function {cfg_func_name} is not implemented, {e}")
+                    logger.error(f"NotImplemented: {e}")
+                    continue
+                except AttributeError as e:
+                    logger.error(f"AttributeError: {e}")
+                    continue
                 except Exception as e:
-                    logger.error(f"run {cfg_func_name} failed with exception: {e}")
+                    logger.error(f"Failed: {e}")
+                    continue
 
             if "do_backward" in data["cfg"].keys() and output is not None:
                 saved_pth = saved_pth.split(".pth")[0] + "_backward.pth"

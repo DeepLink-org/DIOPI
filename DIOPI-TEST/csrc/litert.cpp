@@ -107,7 +107,6 @@ static int32_t fake_memcpy_h2d_async_func(diopiStreamHandle_t stream, void* dst,
 static memcpy_h2d_async_func_t memcpy_h2d_async_func = fake_memcpy_h2d_async_func;
 DIOPI_API diopiError_t diopiRegisterMemcpyH2DAsyncFunc(memcpy_h2d_async_func_t f)
 {
-    diopi_log("memcpy_h2d_async_func_t:%16p", f);
     memcpy_h2d_async_func = f;
     return diopiSuccess;
 }
@@ -122,7 +121,6 @@ static int32_t fake_memcpy_d2h_async_func(diopiStreamHandle_t stream, void* dst,
 static memcpy_d2h_async_func_t memcpy_d2h_async_func = fake_memcpy_d2h_async_func;
 DIOPI_API diopiError_t diopiRegisterMemcpyD2HAsyncFunc(memcpy_d2h_async_func_t f)
 {
-    diopi_log("memcpy_d2h_async_func_t: %16p", f);
     memcpy_d2h_async_func = f;
     return diopiSuccess;
 }
@@ -528,9 +526,9 @@ DIOPI_API diopiError_t diopiFinalize() {
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t _diopiTensorCopyFromBuffer(diopiContextHandle_t  ctx,
-                                                  const void*           src,
-                                                  diopiTensorHandle_t   tensor) {
+DIOPI_API diopiError_t _diopiTensorCopyFromBuffer(diopiContextHandle_t ctx,
+                                                  const void*          src,
+                                                  diopiTensorHandle_t  tensor) {
     if (tensor->device() == diopi_device) {
         diopiStreamHandle_t stream;
         diopiGetStream(ctx, &stream);
@@ -542,9 +540,9 @@ DIOPI_API diopiError_t _diopiTensorCopyFromBuffer(diopiContextHandle_t  ctx,
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t _diopiTensorCopyToBuffer(diopiContextHandle_t        ctx,
-                                                const diopiTensorHandle_t   tensor,
-                                                void*                       dst) {
+DIOPI_API diopiError_t _diopiTensorCopyToBuffer(diopiContextHandle_t      ctx,
+                                                const diopiTensorHandle_t tensor,
+                                                void*                     dst) {
     if (tensor->device() == diopi_device) {
         diopiStreamHandle_t stream;
         diopiGetStream(ctx, &stream);

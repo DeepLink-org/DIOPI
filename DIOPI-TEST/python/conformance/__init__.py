@@ -1,11 +1,10 @@
-from .diopi_rt import Tensor, Context, Dtype, Device, raw_like
-from .diopi_rt import get_last_error, device
-from .diopi_rt import from_numpy_dtype, to_numpy_dtype
-from .diopi_rt import diopirt_lib, device_impl_lib
+from .diopi_runtime import Tensor, Context, Dtype, Device, raw_like
+from .diopi_runtime import get_last_error, device
+from .diopi_runtime import from_numpy_dtype, to_numpy_dtype
+from .diopi_runtime import diopirt_lib, device_impl_lib
 from .diopi_configs import diopi_configs
 from .config import Config
-from .gen_input import GenInputData
-from .gen_output import GenOutputData
+from .gen_data import GenInputData, GenOutputData
 from .conformance_test import ConformanceTest
 
 

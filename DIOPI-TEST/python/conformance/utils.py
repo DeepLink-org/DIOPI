@@ -1,5 +1,5 @@
 import logging
-from . import diopi_rt
+from . import diopi_runtime
 
 
 default_cfg_dict = dict(
@@ -19,7 +19,7 @@ default_cfg_dict['log_level'] = 1
 
 class Log(object):
     def __init__(self, level):
-        self.logger = logging.getLogger("conformance test suite")
+        self.logger = logging.getLogger("ConformanceTest")
         self.logger.setLevel(level)
         # create console handler and set level to debug
         ch = logging.StreamHandler()
@@ -27,7 +27,7 @@ class Log(object):
 
         # create formatter
         formatter = logging.Formatter(
-            '%(asctime)s-%(name)s-%(levelname)s- %(message)s')
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
         # add formatter to ch
         ch.setFormatter(formatter)
@@ -65,13 +65,13 @@ def check_returncode(returncode, throw_exception=True):
 
 def check_function(fn_name):
     try:
-        func = eval(f"diopi_rt.device_impl_lib.{fn_name}")
+        func = eval(f"diopi_runtime.device_impl_lib.{fn_name}")
     except AttributeError as e:
         raise FunctionNotImplementedError(e.args)
     return func
 
 
-def squeeze(input: diopi_rt.Tensor):
+def squeeze(input: diopi_runtime.Tensor):
     size = input.size()
     new_size = []
     for i in range(0, len(size)):
