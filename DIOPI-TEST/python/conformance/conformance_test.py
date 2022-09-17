@@ -45,10 +45,16 @@ def compare_with_gen_output(output, cfg, output_reference):
         for k, v in output.items():
             if isinstance(v, Tensor):
                 passed = passed and allclose(cfg, v.numpy(), output_reference[k])
-            if ~passed:
+            if not passed:
                 return False
+    elif isinstance(output, (int, float)):
+        assert isinstance(output_reference, np.ndarray), "output_reference should be type numpy.array"
+        output = np.array(output)
+        assert output.shape == output_reference.shape, "output and output_reference should be same shape"
+        passed = passed and allclose(cfg, output, output_reference)
     else:
         return False
+
     return passed
 
 

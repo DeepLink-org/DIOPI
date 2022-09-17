@@ -120,6 +120,37 @@ diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     return diopiSuccess;
 }
 
+// DIOPI_API diopiError_t diopiBmm(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+//                                 const diopiTensorHandle_t input, const diopiTensorHandle_t mat2);
+
+// DIOPI_API diopiError_t diopiAddcmul(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
+//                                     const diopiTensorHandle_t tensor1, const diopiTensorHandle_t tensor2, const diopiScalar_t* value);
+
+diopiError_t diopiMatmul(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, const diopiTensorHandle_t other) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atOther = impl::aten::buildAtTensor(other);
+    impl::aten::invokeATenFuncRet(ctx, at::matmul, out, atInput, atOther);
+    return diopiSuccess;
+}
+
+// DIOPI_API diopiError_t diopiAddcdiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
+//                                     const diopiTensorHandle_t tensor1, const diopiTensorHandle_t tensor2, const diopiScalar_t* value);
+
+// CAFFE2_API Tensor addmm(const Tensor & self, const Tensor & mat1, const Tensor & mat2, Scalar beta=1, Scalar alpha=1);
+diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, const diopiTensorHandle_t mat1, 
+        const diopiTensorHandle_t mat2, const diopiScalar_t* beta, const diopiScalar_t* alpha) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atMax1 = impl::aten::buildAtTensor(mat1);
+    auto atMax2 = impl::aten::buildAtTensor(mat2);
+    auto atBeta = impl::aten::buildAtScalar(input, beta);
+    auto atAlpha = impl::aten::buildAtScalar(input, alpha);
+    impl::aten::invokeATenFuncRet(
+        ctx, at::addmm, out, atInput, atMax1, atMax2, atBeta, atAlpha);
+    return diopiSuccess;
+}
+
 // NOTE(fengsibo@sensetime.com): add int, short, bool test case
 diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         const diopiTensorHandle_t input, diopiSize_t dim, diopiDtype_t dtype) {
@@ -199,13 +230,6 @@ diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     return diopiSuccess;
 }
 
-diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-        const diopiTensorHandle_t input, const diopiTensorHandle_t** indices, int64_t nums) {
-    // TODO(fengsibo@sensetime.com)
-    auto atInput = impl::aten::buildAtTensor(input);
-
-}
-
 diopiError_t diopiIndexSelect(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         const diopiTensorHandle_t input, int64_t dim, const diopiTensorHandle_t index) {
     auto atInput = impl::aten::buildAtTensor(input);
@@ -243,14 +267,7 @@ diopiError_t diopiNonzero(diopiContextHandle_t ctx,
         diopiTensorHandle_t* out, const diopiTensorHandle_t input) {
     auto atInput = impl::aten::buildAtTensor(input);
     auto atOut = at::nonzero(atInput);
-
-    at::IntArrayRef atSize = atOut.sizes();
-    at::IntArrayRef atStride = atOut.strides();
-    diopiSize_t size(const_cast<int64_t*>(atSize.data()), atSize.size());
-    diopiSize_t stride(const_cast<int64_t*>(atStride.data()), atStride.size());
-    diopiDtype_t dtype = diopi_dtype_int64;
-    diopiRequireTensor(ctx, out, &size, &stride, dtype, diopi_device);
-    impl::aten::updateATen2Tensor(ctx, atOut, *out);
+    impl::aten::buildDIOPITensor(ctx, atOut, out);
     return diopiSuccess;
 }
 
@@ -269,24 +286,29 @@ diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, cons
     
 // }
 
-// diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-//         const diopiTensorHandle_t w, const diopiTensorHandle_t dw,
-//         float lr, float momentum, float dampening, float weightDecay, bool nesterov) {
-//     auto atW = impl::aten::buildAtTensor(w);
-//     auto atDw = impl::aten::buildAtTensor(dw);
-//     std::vector<at::Tensor> params = {atW, atDw};
+// TODO(fengsibo@sensetime.com) not implement
+diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t w, const diopiTensorHandle_t dw,
+        double learningrate, double momentum, double dampening, double weightDecay, bool nesterov) {
+    auto atW = impl::aten::buildAtTensor(w);
+    auto atDw = impl::aten::buildAtTensor(dw);
+    std::vector<at::Tensor> params = {atW, atDw};
 
-//     torch::optim::SGD sgd(
-//           params,
-//           torch::optim::SGDOptions(lr)
-//             .momentum(momentum)
-//             .nesterov(nesterov)
-//             .weight_decay(weightDecay));
-//     auto atOut = sgd.step();
-//     impl::aten::updateATen2Tensor(ctx, atOut, out);
-//     return diopiSuccess;
-// }
+    torch::optim::SGD sgd(
+        params,
+        torch::optim::SGDOptions(learningrate)
+        .momentum(momentum)
+        .nesterov(nesterov)
+        .weight_decay(weightDecay));
+    sgd.step();
+    return diopiSuccess;
+}
 
+/**
+ * @brief 
+ * @param errorIfNonfinite supported in pytorch ?
+ * @return diopiError_t 
+ */
 diopiError_t diopiClipGradNorm(diopiContextHandle_t ctx, double* out, diopiTensorHandle_t* parameters,
         int64_t parametersNum, double maxNorm, double normType, bool errorIfNonfinite) {
     auto tensorList = impl::aten::buildAtTensorList(parameters, parametersNum);

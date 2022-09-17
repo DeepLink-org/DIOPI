@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import math
 
-from ctypes import c_float, c_int64, c_int32, c_void_p, byref, pointer
+from ctypes import c_float, c_double, c_int64, c_int32, c_bool, c_void_p, byref, pointer
 from .diopi_runtime import Sizes, Scalar, Tensor, TensorHandle
 from .utils import check_returncode, check_function, squeeze
 from . import Dtype, raw_like
@@ -1534,7 +1534,7 @@ def nonzero(input):
     """
     out_tensor_handle = TensorHandle()
     func = check_function("diopiNonzero")
-    ret = func(input.context_handle, byref(out_tensor_handle),
+    ret = func(input.context_handle, pointer(out_tensor_handle),
                input.tensor_handle)
     check_returncode(ret)
     out = Tensor.from_handle(out_tensor_handle)
@@ -1984,18 +1984,23 @@ def clip_grad_norm_(parameters, max_norm, norm_type=2.0, error_if_nonfinite=Fals
 
     if isinstance(parameters, Tensor):
         input = parameters
-        parameters = [parameters]
+        parameters = [parameters.tensor_handle]
+        parameters = (c_void_p * 1)(*parameters)
         parametersNum = 1
     else:
         input = parameters[0]
         parametersNum = len(parameters)
-    out = 0.0
+        parameters = [p.tensor_handle for p in parameters]
+        parameters = (c_void_p * parametersNum)(*parameters)
+
+    out = c_double(0.0)
 
     func = check_function("diopiClipGradNorm")
-    ret = func(input.context_handle, byref(out), byref(parameters), parametersNum,
+    func.argtypes = (c_void_p, type(pointer(out)), type(pointer(parameters)), c_int64, c_double, c_double, c_bool)
+    ret = func(input.context_handle, pointer(out), pointer(parameters), parametersNum,
                max_norm, norm_type, error_if_nonfinite)
     check_returncode(ret)
-    return out
+    return out.value
 
 
 def batch_norm(input, running_mean, running_var, weight=None, bias=None,
@@ -2622,6 +2627,8 @@ def index(input, **kwargs) -> Tensor:
 def sgd(param, param_grad, buf, lr, momentum=0, dampening=0, weight_decay=0, nesterov=False):
     # buf, param_grad are mutable
     func = check_function("diopiSgd")
+    func.argtypes = (c_void_p, c_void_p, c_void_p, c_void_p, \
+        c_double, c_double, c_double, c_double, c_bool)
     ret = func(param.context_handle, buf.tensor_handle, param.tensor_handle, param_grad.tensor_handle,
         lr, momentum, dampening, weight_decay, nesterov)
     check_returncode(ret)
