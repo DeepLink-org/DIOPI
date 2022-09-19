@@ -132,9 +132,9 @@ diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx, diopiTensorHandle_t
     auto atInput = impl::aten::buildAtTensor(input);
     auto atTarget = impl::aten::buildAtTensor(target);
     auto atWeight = impl::aten::buildAtTensor(weight);
-    auto atReduction = impl::aten::getEntropyReduction(reduction);
-    auto atOut = torch::nn::functional(atInput, atTarget, atWeight, ignore_index, atReduction, label_smoothing);
-    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    // auto atReduction = impl::aten::getEntropyReduction(reduction);
+    // auto atOut = torch::nn::functional(atInput, atTarget, atWeight, ignore_index, atReduction, label_smoothing);
+    // impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
 }
 
@@ -323,23 +323,23 @@ diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, cons
     
 // }
 
-// TODO(fengsibo@sensetime.com) not implement
-diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-        const diopiTensorHandle_t w, const diopiTensorHandle_t dw,
-        double learningrate, double momentum, double dampening, double weightDecay, bool nesterov) {
-    auto atW = impl::aten::buildAtTensor(w);
-    auto atDw = impl::aten::buildAtTensor(dw);
-    std::vector<at::Tensor> params = {atW, atDw};
+// // TODO(fengsibo@sensetime.com) not implement
+// diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+//         const diopiTensorHandle_t w, const diopiTensorHandle_t dw,
+//         double learningrate, double momentum, double dampening, double weightDecay, bool nesterov) {
+//     auto atW = impl::aten::buildAtTensor(w);
+//     auto atDw = impl::aten::buildAtTensor(dw);
+//     std::vector<at::Tensor> params = {atW, atDw};
 
-    torch::optim::SGD sgd(
-        params,
-        torch::optim::SGDOptions(learningrate)
-        .momentum(momentum)
-        .nesterov(nesterov)
-        .weight_decay(weightDecay));
-    sgd.step();
-    return diopiSuccess;
-}
+//     torch::optim::SGD sgd(
+//         params,
+//         torch::optim::SGDOptions(learningrate)
+//         .momentum(momentum)
+//         .nesterov(nesterov)
+//         .weight_decay(weightDecay));
+//     sgd.step();
+//     return diopiSuccess;
+// }
 
 /**
  * @brief 
