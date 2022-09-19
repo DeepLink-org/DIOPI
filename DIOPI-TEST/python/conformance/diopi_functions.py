@@ -572,7 +572,7 @@ def logical_and(input, other) -> Tensor:
     C API
         :guilabel:`diopiBitwiseAnd` :guilabel:`diopiBitwiseAndScalar`
     """
-    # return binary_op_scalar(input, other, False, 'diopiBitwiseAnd', dtype=Dtype.bool)
+    return binary_op_scalar(input, other, False, 'diopiBitwiseAnd', dtype=Dtype.bool)
 
 
 def logical_or(input, other) -> Tensor:
@@ -585,7 +585,7 @@ def logical_or(input, other) -> Tensor:
     C API
         :guilabel:`diopiBitwiseOr` :guilabel:`diopiBitwiseOrScalar`
     """
-    # return binary_op_scalar(input, other, False, 'diopiBitwiseOr', dtype=Dtype.bool)
+    return binary_op_scalar(input, other, False, 'diopiBitwiseOr', dtype=Dtype.bool)
 
 
 def leaky_relu(input, negative_slope=0.01, inplace=False) -> Tensor:

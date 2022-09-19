@@ -141,6 +141,17 @@ at::Scalar buildAtScalar(const diopiTensorHandle_t input, const diopiScalar_t* s
     }
 }
 
+at::Scalar buildAtScalar(const diopiScalar_t* scalar) {
+    diopiDtype_t dtype = scalar->stype;
+    if (dtype <= 7) {
+        return scalar->ival;
+    } else if (dtype <= 11) {
+        return scalar->fval;
+    } else {
+        std::fprintf(stderr, "Dtype not supported");
+    }
+}
+
 at::IntArrayRef buildAtIntArray(const diopiSize_t* size) {
     return at::IntArrayRef(size->data, size->len);
 }

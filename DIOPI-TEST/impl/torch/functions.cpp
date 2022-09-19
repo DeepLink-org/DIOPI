@@ -642,7 +642,7 @@ diopiError_t diopiPowScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 diopiError_t diopiPow(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         const diopiTensorHandle_t input, const diopiScalar_t* exponent) {
     at::Tensor atInput = impl::aten::buildAtTensor(input);
-    at::Scalar atExponent = impl::aten::buildAtScalar(input, exponent);
+    at::Scalar atExponent = impl::aten::buildAtScalar(exponent);
     at::Tensor atOut = at::pow(atInput, atExponent);
     impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
@@ -825,8 +825,10 @@ diopiError_t diopiNeScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 
 diopiError_t diopiBitwiseAnd(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
         const diopiTensorHandle_t input, const diopiTensorHandle_t other) {
-    at::Tensor atInput = impl::aten::buildAtTensor(input);
-    at::Tensor atOther = impl::aten::buildAtTensor(other);
+    at::Tensor atTmpInput = impl::aten::buildAtTensor(input);
+    at::Tensor atTmpOther = impl::aten::buildAtTensor(other);
+    at::Tensor atInput = atTmpInput.to(at::ScalarType::Bool);
+    at::Tensor atOther = atTmpOther.to(at::ScalarType::Bool);
     at::Tensor atOut = at::bitwise_and(atInput, atOther);
     impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
@@ -835,9 +837,10 @@ diopiError_t diopiBitwiseAnd(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 
 diopiError_t diopiBitwiseAndScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
         const diopiTensorHandle_t input, const diopiScalar_t* other) {
-    at::Tensor atInput = impl::aten::buildAtTensor(input);
-    at::Scalar atOther = impl::aten::buildAtScalar(input, other);
-    // todo: cast input to bool
+    at::Tensor atTmpInput = impl::aten::buildAtTensor(input);
+    at::Scalar atTmpOther = impl::aten::buildAtScalar(input, other);
+    at::Scalar atOther = atTmpOther.to<bool>();
+    at::Tensor atInput = atTmpInput.to(at::ScalarType::Bool);
     at::Tensor atOut = at::bitwise_and(atInput, atOther);
     impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
@@ -845,8 +848,10 @@ diopiError_t diopiBitwiseAndScalar(diopiContextHandle_t ctx, diopiTensorHandle_t
 
 diopiError_t diopiBitwiseOr(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
         const diopiTensorHandle_t input, const diopiTensorHandle_t other) {
-    at::Tensor atInput = impl::aten::buildAtTensor(input);
-    at::Tensor atOther = impl::aten::buildAtTensor(other);
+    at::Tensor atTmpInput = impl::aten::buildAtTensor(input);
+    at::Tensor atTmpOther = impl::aten::buildAtTensor(other);
+    at::Tensor atInput = atTmpInput.to(at::ScalarType::Bool);
+    at::Tensor atOther = atTmpOther.to(at::ScalarType::Bool);
     at::Tensor atOut = at::bitwise_or(atInput, atOther);
     impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
@@ -854,8 +859,10 @@ diopiError_t diopiBitwiseOr(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 
 diopiError_t diopiBitwiseOrScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
         const diopiTensorHandle_t input, const diopiScalar_t* other) {
-    at::Tensor atInput = impl::aten::buildAtTensor(input);
-    at::Scalar atOther = impl::aten::buildAtScalar(input, other);
+    at::Tensor atTmpInput = impl::aten::buildAtTensor(input);
+    at::Scalar atTmpOther = impl::aten::buildAtScalar(input, other);
+    at::Scalar atOther = atTmpOther.to<bool>();
+    at::Tensor atInput = atTmpInput.to(at::ScalarType::Bool);
     at::Tensor atOut = at::bitwise_or(atInput, atOther);
     impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
@@ -870,7 +877,7 @@ diopiError_t diopiClampInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t i
     return diopiSuccess;
 }
 
-// pytorch 1.7 don't support
+// todo: pytorch 1.7 don't support Tensor min and tensor max
 diopiError_t diopiClampInp(diopiContextHandle_t ctx, diopiTensorHandle_t input,
         const diopiTensorHandle_t min, const diopiTensorHandle_t max) {
     at::Tensor atInput = impl::aten::buildAtTensor(input);
