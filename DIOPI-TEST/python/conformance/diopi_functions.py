@@ -100,18 +100,21 @@ def binary_op(input, other, inplace, call) -> Tensor:
     return out
 
 
-def binary_op_scalar(input, other, inplace, call, alpha=None) -> Tensor:
+def binary_op_scalar(input, other, inplace, call, alpha=None, dtype=None) -> Tensor:
     args = "input.context_handle, "
+    if dtype is None:
+        dtype = input.get_dtype()
+
     if inplace:
         out = input
     else:
+        sizeI = input.size()
         if not isinstance(other, Tensor):
-            out = raw_like(input)
+            out = Tensor(sizeI, dtype)
         else:
-            sizeI = input.size()
             sizeO = other.size()
             outsize = broadcast_out_size(list(sizeI), list(sizeO))
-            out = Tensor(outsize, input.get_dtype())
+            out = Tensor(outsize, dtype)
         args = args + "out.tensor_handle, "
 
     if not isinstance(other, Tensor):
@@ -450,7 +453,7 @@ def eq(input, other) -> Tensor:
     C API
         :guilabel:`diopiEq` :guilabel:`diopiEqScalar`
     """
-    return binary_op_scalar(input, other, False, 'diopiEq')
+    return binary_op_scalar(input, other, False, 'diopiEq', dtype=Dtype.bool)
 
 
 def ne(input, other) -> Tensor:
@@ -466,7 +469,7 @@ def ne(input, other) -> Tensor:
     C API
         :guilabel:`diopiNe` :guilabel:`diopiNeScalar`
     """
-    return binary_op_scalar(input, other, False, 'diopiNe')
+    return binary_op_scalar(input, other, False, 'diopiNe', dtype=Dtype.bool)
 
 
 def ge(input, other) -> Tensor:
@@ -480,7 +483,7 @@ def ge(input, other) -> Tensor:
     C API
         :guilabel:`diopiGe` :guilabel:`diopiGeScalar`
     """
-    return binary_op_scalar(input, other, False, 'diopiGe')
+    return binary_op_scalar(input, other, False, 'diopiGe', dtype=Dtype.bool)
 
 
 def gt(input, other) -> Tensor:
@@ -494,7 +497,7 @@ def gt(input, other) -> Tensor:
     C API
         :guilabel:`diopiGt` :guilabel:`diopiGtScalar`
     """
-    return binary_op_scalar(input, other, False, 'diopiGt')
+    return binary_op_scalar(input, other, False, 'diopiGt', dtype=Dtype.bool)
 
 
 def le(input, other) -> Tensor:
@@ -508,7 +511,7 @@ def le(input, other) -> Tensor:
     C API
         :guilabel:`diopiLe` :guilabel:`diopiLeScalar`
     """
-    return binary_op_scalar(input, other, False, 'diopiLe')
+    return binary_op_scalar(input, other, False, 'diopiLe', dtype=Dtype.bool)
 
 
 def lt(input, other) -> Tensor:
@@ -522,7 +525,7 @@ def lt(input, other) -> Tensor:
     C API
         :guilabel:`diopiLt` :guilabel:`diopiLtScalar`
     """
-    return binary_op_scalar(input, other, False, 'diopiLt')
+    return binary_op_scalar(input, other, False, 'diopiLt', dtype=Dtype.bool)
 
 
 def mul(input, other) -> Tensor:
@@ -569,7 +572,7 @@ def logical_and(input, other) -> Tensor:
     C API
         :guilabel:`diopiBitwiseAnd` :guilabel:`diopiBitwiseAndScalar`
     """
-    return binary_op_scalar(input, other, False, 'diopiBitwiseAnd')
+    # return binary_op_scalar(input, other, False, 'diopiBitwiseAnd', dtype=Dtype.bool)
 
 
 def logical_or(input, other) -> Tensor:
@@ -582,7 +585,7 @@ def logical_or(input, other) -> Tensor:
     C API
         :guilabel:`diopiBitwiseOr` :guilabel:`diopiBitwiseOrScalar`
     """
-    return binary_op_scalar(input, other, False, 'diopiBitwiseOr')
+    # return binary_op_scalar(input, other, False, 'diopiBitwiseOr', dtype=Dtype.bool)
 
 
 def leaky_relu(input, negative_slope=0.01, inplace=False) -> Tensor:
@@ -786,7 +789,7 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
         args = args + "input.tensor_handle, min, max"
 
     func = check_function(call)
-    ret = func(eval(f'{args}'))
+    ret = eval(f'func({args})')
     check_returncode(ret)
     return out
 
@@ -809,7 +812,7 @@ def clamp_min(input, min, inplace=False) -> Tensor:
         args = args + "input.tensor_handle, min"
 
     func = check_function(call)
-    ret = func(eval(f'{args}'))
+    ret = eval(f'func({args})')
     check_returncode(ret)
     return out
 
@@ -832,7 +835,7 @@ def clamp_max(input, max, inplace=False) -> Tensor:
         args = args + "input.tensor_handle, max"
 
     func = check_function(call)
-    ret = func(eval(f'{args}'))
+    ret = eval(f'func({args})')
     check_returncode(ret)
     return out
 
@@ -2343,13 +2346,7 @@ def any(input, dim, keepdim=False) -> Tensor:
         :guilabel:`diopiAny`
     """
     assert isinstance(dim, int), "dim should be int"
-    sizeI = list(input.size())
-    if keepdim:
-        sizeI[dim] = 1
-    else:
-        del sizeI[dim]
-    out = Tensor(sizeI, input.get_dtype())
-
+    _, out = reduce_op_process(input, dim, keepdim, dtype=Dtype.bool)
     func = check_function("diopiAny")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim)
     check_returncode(ret)
@@ -2370,11 +2367,7 @@ def all(input, dim, keepdim=False) -> Tensor:
         :guilabel:`diopiAll`
     """
     assert isinstance(dim, int), "dim should be int"
-    sizeI = list(input.size())
-    if keepdim:
-        sizeI[dim] = 1
-    else:
-        del sizeI[dim]
+    _, out = reduce_op_process(input, dim, keepdim, dtype=Dtype.bool)
     func = check_function("diopiAll")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim)
     check_returncode(ret)
