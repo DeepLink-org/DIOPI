@@ -60,35 +60,6 @@ diopi_configs = {
         ),
     ),
 
-    'layer_norm': dict(
-        name=["layer_norm"],
-        dtype=[Dtype.float32],
-        atol=1e-5,
-        para=dict(
-            eps=[1e-5, 1e-5, 1e-12],
-            normalized_shape=[(5, 3, 5), (128, ), (64, )],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": ((2, 5, 3, 5), (2, 3136, 128), (2, 64)),
-                    "gen_fn": Genfunc.randn,
-                },
-                {
-                    "ins": ["weight"],
-                    "shape": (None, (128, ), (64, )),
-                    "gen_fn": Genfunc.randn,
-                },
-                {
-                    "ins": ["bias"],
-                    "shape": (None, (128, ), (64, )),
-                    "gen_fn": Genfunc.randn,
-                },
-            ]
-        )
-    ),
-
     'relu': dict(
         name=["relu"],
         is_inplace=True,
@@ -293,10 +264,9 @@ diopi_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['abs', 'acos', 'asin', 'atan', 'ceil', 'cos',
-              'cosh', 'erf', 'erfc', 'exp', 'expm1', 'floor',
-              'log', 'log2', 'log10', 'neg', 'round',
-              'sin', 'sinh', 'sqrt', 'tan', 'tanh'],
+        name=['abs', 'cos', 'erf', 'exp', 'floor',
+              'log', 'log2', 'log10', 'neg', 'sin', 
+              'sqrt', 'tanh'],
         interface=['torch'],
         is_inplace=True,
         dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
@@ -411,9 +381,8 @@ diopi_configs = {
     ),
 
     'pointwise_binary': dict(
-        name=['add', 'rsub', 'mul', 'div', 'atan2',
-              'eq', 'ne', 'le', 'lt', 'gt', 'ge',
-              'logical_and', 'logical_or'],
+        name=['add', 'mul', 'div', 'eq', 'ne', 'le', 'lt',
+              'gt', 'ge', 'logical_and', 'logical_or'],
         interface=['torch'],
         dtype=[Dtype.float32],
         tensor_para=dict(
@@ -435,7 +404,7 @@ diopi_configs = {
     ),
 
     'pointwise_binary_scalar': dict(
-        name=['add', 'rsub', 'mul', 'div', 'eq',
+        name=['add', 'mul', 'div', 'eq',
               'ne', 'le',  'lt', 'gt', 'ge'],
         interface=['torch'],
         dtype=[Dtype.float32],
@@ -456,7 +425,7 @@ diopi_configs = {
     ),
 
     'pointwise_binary_constant_with_alpha_and_no_contiguous': dict(
-        name=['add', 'rsub'],
+        name=['add'],
         para=dict(
             alpha=[-2, 2.0, 4, 1],
             other=[-2, 2.0, 4, 1],
@@ -688,7 +657,7 @@ diopi_configs = {
     ),
 
     'reduce_partial_op_1': dict(
-        name=['std', 'var'],
+        name=['std'],
         interface=['torch'],
         para=dict(
             dim=[0, 1, [0, 1], 2, [-1, 0], 3],
@@ -751,26 +720,6 @@ diopi_configs = {
                               (4, 133, 128, 128), (2, 64, 3, 3, 3)),
                     "dtype": [Dtype.bool],
                     "gen_fn": Genfunc.mask,
-                },
-            ],
-        ),
-    ),
-
-    'soft_margin_loss': dict(
-        name=["soft_margin_loss"],
-        para=dict(
-            reduction=['mean'],
-        ),
-        dtype=[Dtype.float32],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "value": [[1, 1.5, 2, 2.5, 3]]
-                },
-                {
-                    "ins": ['target'],
-                    "value": [[1.0, 1.0, -1.0, -1.0, 1.0]],
                 },
             ],
         ),
@@ -1036,39 +985,6 @@ diopi_configs = {
         ),
     ),
 
-    'soft_min': dict(
-        name=["softmin"],
-        atol=1e-4,
-        rtol=1e-5,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((16, 7), (64, 28, 28),
-                              (16, 14, 14), (64, 7, 28, 28)),
-                    "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'softsign': dict(
-        name=["softsign"],
-        atol=1e-4,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((16, 7), (64, 28, 28),
-                              (16, 14, 14), (64, 7, 28, 28)),
-                    "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
     'embedding': dict(
         name=["embedding"],
         para=dict(
@@ -1221,31 +1137,6 @@ diopi_configs = {
                               (4, 6, 10, 9, 8)),
                     "dtype": [Dtype.bool],
                     "gen_fn": Genfunc.mask,
-                },
-            ],
-        ),
-        requires_backward=[0],
-    ),
-
-    'split_with_sizes': dict(
-        name=["split_with_sizes"],
-        interface=['torch'],
-        atol=1e-4,
-        rtol=1e-5,
-        para=dict(
-            split_sizes=[[1, 2], [2, 2, 3], [5, 5]],
-            dim=[0, 1, 2]
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "requires_grad": [True],
-                    "shape": ((3, 5, 6),
-                              (6, 7, 8, 9),
-                              (4, 6, 10, 9, 8)),
-                    "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
                 },
             ],
         ),
@@ -1416,23 +1307,6 @@ diopi_configs = {
         ),
     ),
 
-    'relu6': dict(
-        name=["relu6"],
-        atol=1e-4,
-        rtol=1e-5,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((16, 7), (64, 28, 28),
-                              (2, 32, 112, 112), (64, 3, 7, 28, 28)),
-                    "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
     'leaky_relu': dict(
         name=["leaky_relu"],
         atol=1e-4,
@@ -1581,7 +1455,7 @@ diopi_configs = {
                 },
                 {
                     "ins": ['idx2'],
-                    "shape": ((2, ), None, None),
+                    "shape": ((1, ), None, None),
                     "gen_fn": dict(fn=Genfunc.randint, high=2),
                     "dtype": [Dtype.int64],
                 },
