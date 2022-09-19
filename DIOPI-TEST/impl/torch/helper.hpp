@@ -8,6 +8,14 @@
 
 #include <diopi/diopirt.h>
 
+#define TORCH_MM_VERSION (TORCH_VERSION_MAJOR * 1000 + TORCH_VERSION_MINOR * 10)
+#define TORCH_1_7_MM_VERSION 1070
+#define TORCH_1_8_MM_VERSION 1080
+#define TORCH_1_9_MM_VERSION 1090
+#define TORCH_1_10_MM_VERSION 1100
+#define TORCH_1_11_MM_VERSION 1110
+#define TORCH_1_12_MM_VERSION 1120
+
 using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
 
 namespace impl {
@@ -129,18 +137,6 @@ at::Tensor buildAtTensor(diopiTensorHandle_t tensor) {
     }
 }
 
-at::Scalar buildAtScalar(const diopiTensorHandle_t input, const diopiScalar_t* scalar) {
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(input, &dtype);
-    if (dtype <= 7) {
-        return scalar->ival;
-    } else if (dtype <= 11) {
-        return scalar->fval;
-    } else {
-        std::fprintf(stderr, "Dtype not supported");
-    }
-}
-
 at::Scalar buildAtScalar(const diopiScalar_t* scalar) {
     diopiDtype_t dtype = scalar->stype;
     if (dtype <= 7) {
@@ -231,6 +227,16 @@ void buildDIOPITensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHa
     diopiDtype_t dtype = getDIOPITensorType(input);
     diopiRequireTensor(ctx, out, &size, &stride, dtype, diopi_device);
     updateATen2Tensor(ctx, input, *out);
+}
+
+c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding_mode) {
+    switch(rounding_mode) {
+    case (RoundModeNone): return "";
+    case (RoundModeTrunc): return "trunc";
+    case (RoundModeFloor): return "floor";
+    case (RoundModeEND): return "";
+    default: std::fprintf(stderr, "Not supported diopi round mode");
+    }
 }
 
 }  // namespace aten
