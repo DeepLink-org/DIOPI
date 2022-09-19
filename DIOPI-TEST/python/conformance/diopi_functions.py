@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import math
 
-from ctypes import c_float, c_double, c_int64, c_int32, c_bool, c_void_p, byref, pointer, c_wchar_p
+from ctypes import c_float, c_double, c_int64, c_int32, c_bool, c_void_p, byref, pointer
 from .diopi_runtime import Sizes, Scalar, Tensor, TensorHandle
 from .utils import check_returncode, check_function, squeeze
 from . import Dtype, raw_like
@@ -1249,10 +1249,16 @@ def avg_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False,
     kernel_size = Sizes(tuple(kernel_size))
     out = Tensor(sizeO, input.get_dtype())
 
+    if divisor_override is None:
+        divisor_override = c_void_p()
+    else:
+        divisor_override = c_int64(divisor_override)
+        divisor_override = byref(divisor_override)
+
     func = check_function("diopiAvgPool2d")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                kernel_size, stride, padding, ceil_mode, count_include_pad,
-               byref(divisor_override))
+               divisor_override)
     check_returncode(ret)
     return out
 
@@ -1362,11 +1368,14 @@ def adaptive_avg_pool2d(input, output_size):
     for i in range(-2, 0):
         if output_size[i] is None:
             sizeO.append(sizeI[i])
+        else:
+            sizeO.append(output_size[i])
+
 
     out = Tensor(sizeO, input.get_dtype())
     output_size = Sizes((sizeO[-2], sizeO[-1]))
 
-    func = check_function("diopiAaptiveAvgPool2d")
+    func = check_function("diopiAdaptiveAvgPool2d")
     ret = func(input.context_handle, out.tensor_handle,
                input.tensor_handle, output_size)
     check_returncode(ret)
@@ -1403,20 +1412,23 @@ def adaptive_max_pool2d(input, output_size, return_indices=False):
         output_size = (output_size, output_size)
 
     for i in range(-2, 0):
-        sizeO.append(output_size[i])
+        if output_size[i] is None:
+            sizeO.append(sizeI[i])
+        else:
+            sizeO.append(output_size[i])
 
     out = Tensor(sizeO, input.get_dtype())
     output_size = Sizes(tuple(output_size))
 
     if return_indices:
-        func = check_function("diopiAaptiveMaxPool2dWithIndices")
+        func = check_function("diopiAdaptiveMaxPool2dWithIndices")
         indices = Tensor(sizeO, Dtype.int64)
         ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
                    input.tensor_handle, output_size)
         check_returncode(ret)
         return out, indices
     else:
-        func = check_function("diopiAaptiveMaxPool2d")
+        func = check_function("diopiAdaptiveMaxPool2d")
         ret = func(input.context_handle, out.tensor_handle,
                    input.tensor_handle, output_size)
     check_returncode(ret)
@@ -1436,8 +1448,9 @@ def dropout(input, p=0.5, training=True, inplace=False):
     C API
         :guilabel:`diopiDropout` :guilabel:`diopiDropoutInp`
     """
-    call = "Dropout"
+    call = "diopiDropout"
     args = 'input.context_handle, '
+
     if inplace:
         out = input
         call = call + 'Inp'
@@ -1445,11 +1458,28 @@ def dropout(input, p=0.5, training=True, inplace=False):
         out = raw_like(input)
         args = args + 'out.tensor_handle, '
 
-    args = args + "input.tensor_handle, p, train"
+    args = args + "input.tensor_handle, c_double(p), training"
     func = check_function(call)
-    ret = func(eval(f'{args}'))
+    ret = eval(f'func({args})')
     check_returncode(ret)
     return out
+
+
+def test_dropout(input, p=0.5, training=True, inplace=False):
+    input_numpy = input.numpy()
+    out = dropout(input, p, training, inplace)
+    out_numpy = out.numpy()
+
+    # compute ratio
+    real_ratio = np.sum(out_numpy == 0) / out.numel()
+
+    # check data
+    remains = out_numpy[out_numpy != 0]
+    ref = input_numpy[out_numpy != 0]
+    assert np.allclose(remains, ref / (1 - p), 1e-3),\
+        "failed to execute dropout"
+
+    return real_ratio
 
 
 def index_select(input, dim, index) -> Tensor:
@@ -2009,7 +2039,6 @@ def clip_grad_norm_(parameters, max_norm, norm_type=2.0, error_if_nonfinite=Fals
 
 def batch_norm(input, running_mean, running_var, weight=None, bias=None,
                training=False, momentum=0.1, eps=1e-05) -> Tensor:
-    # todo: momentum is useless in C API
     r"""
     释义
         对输入张量 *input* 的每个特征通道 *channel* 做批量标准化，其操作描述如下:
@@ -2062,12 +2091,9 @@ def batch_norm(input, running_mean, running_var, weight=None, bias=None,
         running_var = running_var.tensor_handle
 
     out = raw_like(input)
-    func.argtypes = (c_void_p, c_void_p, c_void_p, c_void_p, 
-                     c_void_p, c_void_p, c_void_p, c_void_p,
-                     c_bool, c_double, c_double)
-    ret = func(input.context_handle, save_mean.tensor_handle, save_invstd.tensor_handle,
+    ret = func(input.context_handle, out.tensor_handle, save_mean.tensor_handle, save_invstd.tensor_handle,
                input.tensor_handle, weight, bias, running_mean, running_var, training,
-               momentum, eps)
+               c_double(momentum), c_double(eps))
     check_returncode(ret)
     return out
 
@@ -2204,7 +2230,7 @@ def gelu(input, approximate='none') -> Tensor:
     func = check_function("diopiGelu")
 
     ret = func(input.context_handle, out.tensor_handle,
-               input.tensor_handle, c_wchar_p(approximate))
+               input.tensor_handle, byref(approximate))
 
     check_returncode(ret)
     return out
@@ -2478,7 +2504,7 @@ def sigmoid_focal_loss(inputs, targets, alpha=0.25, gamma=2, reduction='none') -
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiSigmoidFocalLoss")
     ret = func(inputs.context_handle, out.tensor_handle, inputs.tensor_handle,
-               targets.tensor_handle, alpha, gamma, reduction_mode)
+               targets.tensor_handle, c_float(alpha), c_float(gamma), reduction_mode)
     check_returncode(ret)
     return out
 
@@ -2630,3 +2656,15 @@ def sgd(param, param_grad, buf, lr, momentum=0, dampening=0, weight_decay=0, nes
         lr, momentum, dampening, weight_decay, nesterov)
     check_returncode(ret)
     return param, buf
+
+
+def adaptive_max_pool2d_backward(input, grad_outputs, indices, **kwargs) -> Tensor:
+    grad_input = raw_like(input)
+    assert len(grad_outputs) == 1,\
+        "only input needs do backward"
+    func = check_function("diopiAdaptiveMaxPool2dBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle, indices.tensor_handle)
+    check_returncode(ret)
+    return {"input" : grad_input}
+     

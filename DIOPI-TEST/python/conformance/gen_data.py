@@ -323,6 +323,8 @@ class CustomizedTest(object):
         optimizer.step()
         return param, buf
 
+    def test_dropout(input, p=0.5, training=True, inplace=False):
+        return p
 
 def transfer_tensor_to_device(function_paras: dict):
     import torch
@@ -371,6 +373,8 @@ def to_numpy(tensors):
             else:
                 tmp = {k : v}
             ndarrays.update(tmp)
+    elif isinstance(tensors, (int, float)):
+        ndarrays = np.array(tensors)
     else:
         ndarrays = None
 

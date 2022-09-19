@@ -1290,8 +1290,10 @@ diopi_configs = {
     ),
 
     'dropout': dict(
-        name=["dropout"],
-        atol=1e-4,
+        name=["test_dropout"],
+        interface=["CustomizedTest"],
+        atol=2e-2,
+        is_inplace=True,
         para=dict(
             p=[0.5, 0, 0.1, 0.4],
         ),
