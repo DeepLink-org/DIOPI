@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import math
 
-from ctypes import c_float, c_double, c_int64, c_int32, c_bool, c_void_p, byref, pointer
+from ctypes import c_float, c_double, c_int64, c_int32, c_bool, c_void_p, byref, pointer, c_wchar_p
 from .diopi_runtime import Sizes, Scalar, Tensor, TensorHandle
 from .utils import check_returncode, check_function, squeeze
 from . import Dtype, raw_like
@@ -1409,14 +1409,14 @@ def adaptive_max_pool2d(input, output_size, return_indices=False):
     output_size = Sizes(tuple(output_size))
 
     if return_indices:
-        func = check_function("diopiAdaptiveMaxPool2dWithIndices")
+        func = check_function("diopiAaptiveMaxPool2dWithIndices")
         indices = Tensor(sizeO, Dtype.int64)
         ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
                    input.tensor_handle, output_size)
         check_returncode(ret)
         return out, indices
     else:
-        func = check_function("diopiAdaptiveMaxPool2d")
+        func = check_function("diopiAaptiveMaxPool2d")
         ret = func(input.context_handle, out.tensor_handle,
                    input.tensor_handle, output_size)
     check_returncode(ret)
@@ -2036,7 +2036,7 @@ def batch_norm(input, running_mean, running_var, weight=None, bias=None,
         :guilabel:`diopiBatchNorm`
     """
     save_mean = mean(input, 1)
-    tmp = sqrt(std(input, 1) + eps)
+    tmp = sqrt(add(std(input, 1), eps))
     tmp_1 = Tensor((1,), input.get_dtype())
     fill(tmp_1, 1)
     save_invstd = div(tmp_1, tmp)
@@ -2062,6 +2062,9 @@ def batch_norm(input, running_mean, running_var, weight=None, bias=None,
         running_var = running_var.tensor_handle
 
     out = raw_like(input)
+    func.argtypes = (c_void_p, c_void_p, c_void_p, c_void_p, 
+                     c_void_p, c_void_p, c_void_p, c_void_p,
+                     c_bool, c_double, c_double)
     ret = func(input.context_handle, save_mean.tensor_handle, save_invstd.tensor_handle,
                input.tensor_handle, weight, bias, running_mean, running_var, training,
                momentum, eps)
@@ -2201,7 +2204,7 @@ def gelu(input, approximate='none') -> Tensor:
     func = check_function("diopiGelu")
 
     ret = func(input.context_handle, out.tensor_handle,
-               input.tensor_handle, byref(approximate))
+               input.tensor_handle, c_wchar_p(approximate))
 
     check_returncode(ret)
     return out
@@ -2627,15 +2630,3 @@ def sgd(param, param_grad, buf, lr, momentum=0, dampening=0, weight_decay=0, nes
         lr, momentum, dampening, weight_decay, nesterov)
     check_returncode(ret)
     return param, buf
-
-
-def adaptive_max_pool2d_backward(input, grad_outputs, indices, **kwargs) -> Tensor:
-    grad_input = raw_like(input)
-    assert len(grad_outputs) == 1,\
-        "only input needs do backward"
-    func = check_function("diopiAdaptiveMaxPool2dBackward")
-    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
-               input.tensor_handle, indices.tensor_handle)
-    check_returncode(ret)
-    return {"input" : grad_input}
-     
