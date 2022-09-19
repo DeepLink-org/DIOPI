@@ -982,6 +982,33 @@ diopiError_t diopiFill(diopiContextHandle_t ctx,
     return diopiSuccess;
 }
 
+diopiError_t diopiAdaptiveMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, diopiSize_t output_size) {
+    at::Tensor atInput = impl::aten::buildAtTensor(input);
+    auto atOutSize = impl::aten::buildAtIntArray(output_size);
+    auto atOuts = at::adaptive_max_pool2d(atInput, atOutSize);
+    impl::aten::updateATen2Tensor(ctx, std::get<0>(atOuts), out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiAdaptiveMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        diopiTensorHandle_t indices, const diopiTensorHandle_t input, diopiSize_t output_size) {
+    at::Tensor atInput = impl::aten::buildAtTensor(input);
+    auto atOutSize = impl::aten::buildAtIntArray(output_size);
+    diopi_tensor_list vecOut = {out, indices};
+    impl::aten::invokeATenFuncRet(ctx, at::adaptive_max_pool2d, vecOut, atInput, atOutSize);
+    return diopiSuccess;
+}
+
+diopiError_t diopiAdaptiveMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input,
+        const diopiTensorHandle_t grad_output, const diopiTensorHandle_t input, const diopiTensorHandle_t indices) {
+    at::Tensor atInput = impl::aten::buildAtTensor(input);
+    at::Tensor atGradOutput = impl::aten::buildAtTensor(grad_output);
+    at::Tensor atIndices = impl::aten::buildAtTensor(indices);
+    impl::aten::invokeATenFuncRet(ctx, at::adaptive_max_pool2d_backward, grad_input, atGradOutput, atInput, atIndices);
+    return diopiSuccess;
+}
+
 #if defined(__cplusplus)
 }
 #endif // __cplusplus
