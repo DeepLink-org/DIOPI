@@ -125,7 +125,7 @@ class ConformanceTest(object):
                     continue
 
             if "do_backward" in data["cfg"].keys() and output is not None:
-                saved_pth = saved_pth.split(".pth")[0] + "_backward.pth"
+                saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
                 if not isinstance(output, (list, tuple)):
                     output = [output]
 
@@ -141,11 +141,11 @@ class ConformanceTest(object):
                     for k, v in data["cfg"]['saved_args'].items():
                         backward_para[k] = output[v]
 
-                    function_paras.update(backward_para)
+                    function_paras['kwargs'].update(backward_para)
                     kwargs = function_paras['kwargs']
                     grad_input = eval(f"F.{cfg_func_name}_backward(**kwargs)")
 
-                    with open(os.path.join(outputs_dir_path, saved_pth), "rb") as f:
+                    with open(os.path.join(outputs_dir_path, saved_backward_pth), "rb") as f:
                         output_reference = pickle.load(f)
 
                     passed = compare_with_gen_output(grad_input, data['cfg'], output_reference)

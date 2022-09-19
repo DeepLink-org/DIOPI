@@ -213,6 +213,7 @@ diopi_configs = {
         saved_args=dict(indices=1),
         para=dict(
             output_size=[2, (1, 3), (3, 4)],
+            return_indices=[True, True, True]
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,

@@ -1409,14 +1409,14 @@ def adaptive_max_pool2d(input, output_size, return_indices=False):
     output_size = Sizes(tuple(output_size))
 
     if return_indices:
-        func = check_function("diopiAaptiveMaxPool2dWithIndices")
+        func = check_function("diopiAdaptiveMaxPool2dWithIndices")
         indices = Tensor(sizeO, Dtype.int64)
         ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
                    input.tensor_handle, output_size)
         check_returncode(ret)
         return out, indices
     else:
-        func = check_function("diopiAaptiveMaxPool2d")
+        func = check_function("diopiAdaptiveMaxPool2d")
         ret = func(input.context_handle, out.tensor_handle,
                    input.tensor_handle, output_size)
     check_returncode(ret)
@@ -2627,3 +2627,15 @@ def sgd(param, param_grad, buf, lr, momentum=0, dampening=0, weight_decay=0, nes
         lr, momentum, dampening, weight_decay, nesterov)
     check_returncode(ret)
     return param, buf
+
+
+def adaptive_max_pool2d_backward(input, grad_outputs, indices, **kwargs) -> Tensor:
+    grad_input = raw_like(input)
+    assert len(grad_outputs) == 1,\
+        "only input needs do backward"
+    func = check_function("diopiAdaptiveMaxPool2dBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle, indices.tensor_handle)
+    check_returncode(ret)
+    return {"input" : grad_input}
+     

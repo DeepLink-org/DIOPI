@@ -367,9 +367,10 @@ def to_numpy(tensors):
         ndarrays = {}
         for k, v in tensors.items():
             if isinstance(v, torch.Tensor):
-                ndarrays.update(k=v.detach().cpu().numpy())
+                tmp = {k : v.detach().cpu().numpy()}
             else:
-                ndarrays.update(k=v)
+                tmp = {k : v}
+            ndarrays.update(tmp)
     else:
         ndarrays = None
 
@@ -431,7 +432,7 @@ class GenOutputData(object):
                 continue
 
             if "do_backward" in data["cfg"].keys():
-                saved_pth = saved_pth.split(".pth")[0] + "_backward.pth"
+                saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
                 if not isinstance(outputs, (list, tuple)):
                     outputs = [outputs]
 
@@ -447,7 +448,7 @@ class GenOutputData(object):
                         outputs_for_backward, inputs_for_grad, grad_outputs, allow_unused=True)
                     saved_grads = {k: v for k, v in zip(inputs_name_for_grad, grads)}
 
-                with open(os.path.join(outputs_dir_path, saved_pth), "wb") as f:
+                with open(os.path.join(outputs_dir_path, saved_backward_pth), "wb") as f:
                     pickle.dump(to_numpy(saved_grads), f)
 
                 logger_str = f"{logger_str} and backward"
