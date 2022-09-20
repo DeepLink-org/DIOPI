@@ -818,7 +818,7 @@ def clamp_min(input, min, inplace=False) -> Tensor:
 
 
 def clamp_max(input, max, inplace=False) -> Tensor:
-    call = "ClampMax"
+    call = "diopiClampMax"
     args = "input.context_handle, "
     if inplace:
         out = input

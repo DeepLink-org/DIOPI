@@ -893,16 +893,6 @@ diopiError_t diopiClampInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t i
     return diopiSuccess;
 }
 
-// todo: pytorch 1.7 don't support Tensor min and tensor max
-diopiError_t diopiClampInp(diopiContextHandle_t ctx, diopiTensorHandle_t input,
-        const diopiTensorHandle_t min, const diopiTensorHandle_t max) {
-    at::Tensor atInput = impl::aten::buildAtTensor(input);
-    at::Tensor atMin = impl::aten::buildAtTensor(min);
-    at::Tensor atMax = impl::aten::buildAtTensor(max);
-    //at::clamp_(atInput, atMin, atMax);
-    return diopiSuccess;
-}
-
 diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
         diopiTensorHandle_t input, const diopiScalar_t* min, const diopiScalar_t* max) {
     at::Tensor atInput = impl::aten::buildAtTensor(input);
@@ -913,29 +903,11 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     return diopiSuccess;
 }
 
-diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
-        diopiTensorHandle_t input, const diopiTensorHandle_t min, const diopiTensorHandle_t max) {
-    at::Tensor atInput = impl::aten::buildAtTensor(input);
-    at::Tensor atMin = impl::aten::buildAtTensor(min);
-    at::Tensor atMax = impl::aten::buildAtTensor(max);
-    //at::Tensor atOut = at::clamp(atInput, atMin, atMax);
-    //impl::aten::updateATen2Tensor(ctx, atOut, out);
-    return diopiSuccess;
-}
-
 diopiError_t diopiClampMaxInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input,
         const diopiScalar_t* max) {
     at::Tensor atInput = impl::aten::buildAtTensor(input);
     at::Scalar atMax = impl::aten::buildAtScalar(max);
-    at::clamp_(atInput, atMax);
-    return diopiSuccess;
-}
-
-diopiError_t diopiClampMaxInp(diopiContextHandle_t ctx, diopiTensorHandle_t input,
-        const diopiTensorHandle_t max) {
-    at::Tensor atInput = impl::aten::buildAtTensor(input);
-    at::Tensor atMax = impl::aten::buildAtTensor(max);
-    //at::clamp_(atInput, atMax);
+    at::clamp_max_(atInput, atMax);
     return diopiSuccess;
 }
 
@@ -943,8 +915,36 @@ diopiError_t diopiClampMaxScalar(diopiContextHandle_t ctx, diopiTensorHandle_t o
         diopiTensorHandle_t input, const diopiScalar_t* max) {
     at::Tensor atInput = impl::aten::buildAtTensor(input);
     at::Scalar atMax = impl::aten::buildAtScalar(max);
-    at::Tensor atOut = at::clamp(atInput, atMax);
+    at::Tensor atOut = at::clamp_max(atInput, atMax);
     impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
+#if TORCH_MM_VERSION > 1100
+diopiError_t diopiClampInp(diopiContextHandle_t ctx, diopiTensorHandle_t input,
+        const diopiTensorHandle_t min, const diopiTensorHandle_t max) {
+    at::Tensor atInput = impl::aten::buildAtTensor(input);
+    at::Tensor atMin = impl::aten::buildAtTensor(min);
+    at::Tensor atMax = impl::aten::buildAtTensor(max);
+    at::clamp_(atInput, atMin, atMax);
+    return diopiSuccess;
+}
+
+diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
+        diopiTensorHandle_t input, const diopiTensorHandle_t min, const diopiTensorHandle_t max) {
+    at::Tensor atInput = impl::aten::buildAtTensor(input);
+    at::Tensor atMin = impl::aten::buildAtTensor(min);
+    at::Tensor atMax = impl::aten::buildAtTensor(max);
+    at::Tensor atOut = at::clamp(atInput, atMin, atMax);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiClampMaxInp(diopiContextHandle_t ctx, diopiTensorHandle_t input,
+        const diopiTensorHandle_t max) {
+    at::Tensor atInput = impl::aten::buildAtTensor(input);
+    at::Tensor atMax = impl::aten::buildAtTensor(max);
+    at::clamp_max_(atInput, atMax);
     return diopiSuccess;
 }
 
@@ -952,10 +952,28 @@ diopiError_t diopiClampMax(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         diopiTensorHandle_t input, const diopiTensorHandle_t max) {
     at::Tensor atInput = impl::aten::buildAtTensor(input);
     at::Tensor atMax = impl::aten::buildAtTensor(max);
-    //at::Tensor atOut = at::clamp(atInput, atMax);
-    //impl::aten::updateATen2Tensor(ctx, atOut, out);
+    at::Tensor atOut = at::clamp_max(atInput, atMax);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
 }
+
+diopiError_t diopiClampMinInp(diopiContextHandle_t ctx, diopiTensorHandle_t input,
+        const diopiTensorHandle_t min) {
+    at::Tensor atInput = impl::aten::buildAtTensor(input);
+    at::Tensor atMin = impl::aten::buildAtTensor(min);
+    at::clamp_(atInput, atMin);
+    return diopiSuccess;
+}
+
+diopiError_t diopiClampMin(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
+        diopiTensorHandle_t input, const diopiTensorHandle_t min) {
+    at::Tensor atInput = impl::aten::buildAtTensor(input);
+    at::Tensor atMin = impl::aten::buildAtTensor(min);
+    at::Tensor atOut = at::clamp(atInput, atMin);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+#endif
 
 diopiError_t diopiClampMinInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input,
         const diopiScalar_t* min) {
@@ -965,29 +983,12 @@ diopiError_t diopiClampMinInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_
     return diopiSuccess;
 }
 
-diopiError_t diopiClampMinInp(diopiContextHandle_t ctx, diopiTensorHandle_t input,
-        const diopiTensorHandle_t min) {
-    at::Tensor atInput = impl::aten::buildAtTensor(input);
-    at::Tensor atMin = impl::aten::buildAtTensor(min);
-    //at::clamp_(atInput, atMin);
-    return diopiSuccess;
-}
-
 diopiError_t diopiClampMinScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
         diopiTensorHandle_t input, const diopiScalar_t* min) {
     at::Tensor atInput = impl::aten::buildAtTensor(input);
     at::Scalar atMin = impl::aten::buildAtScalar(min);
     at::Tensor atOut = at::clamp(atInput, atMin);
     impl::aten::updateATen2Tensor(ctx, atOut, out);
-    return diopiSuccess;
-}
-
-diopiError_t diopiClampMin(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
-        diopiTensorHandle_t input, const diopiTensorHandle_t min) {
-    at::Tensor atInput = impl::aten::buildAtTensor(input);
-    at::Tensor atMin = impl::aten::buildAtTensor(min);
-    //at::Tensor atOut = at::clamp(atInput, atMin);
-    //impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
 }
 
