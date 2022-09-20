@@ -391,7 +391,7 @@ diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 }
 
 diopiError_t diopiSplitWithSizes(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, int64_t outsNum,
-        const diopiTensorHandle_t input, const diopiSize_t* splitSizes, int64_t dim) {
+        const diopiTensorHandle_t input, const diopiSize_t splitSizes, int64_t dim) {
     auto atInput = impl::aten::buildAtTensor(input);
     auto atSizes = impl::aten::buildAtIntArray(splitSizes);
     diopi_tensor_list vecOut;
