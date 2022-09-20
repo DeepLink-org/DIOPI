@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import math
 
-from ctypes import c_float, c_double, c_int64, c_int32, c_bool, c_void_p, byref, pointer, c_wchar_p, c_char_p
+from ctypes import c_float, c_double, c_int64, c_int32, c_bool, c_void_p, byref, pointer
 from .diopi_runtime import Sizes, Scalar, Tensor, TensorHandle
 from .utils import check_returncode, check_function, squeeze
 from . import Dtype, raw_like
@@ -546,7 +546,7 @@ def mul(input, other) -> Tensor:
     return binary_op_scalar(input, other, False, 'diopiMul')
 
 
-def div(input, other) -> Tensor:
+def div(input, other, rounding_mode=None) -> Tensor:
     r"""
     释义
         张量除, 输入张量 *input* 每个元素都除以 *other* 中与之对应的元素:
@@ -556,10 +556,31 @@ def div(input, other) -> Tensor:
     参数
         - *input* ( **Tensor** ) : 被除数
         - *other* ( **Tensor**  或者 **number** ) : 除数
+        - *rounding_mode* ( **str**, 可选): 应用于结果的舍入类型, ``None`` : 默认行为，不执行舍入，如果 *input* 和 *other* 都是整数类型，
+          则将输入提升为默认标量类型; ``trunc`` : 将除法结果向零舍入; ``floor`` : 向下舍入除法的结果
     C API
         :guilabel:`diopiDiv` :guilabel:`diopiDivScalar`
     """
-    return binary_op_scalar(input, other, False, 'diopiDiv')
+    call = "diopiDiv"
+    args = "input.context_handle, out.tensor_handle, input.tensor_handle, "
+    sizeI = input.size()
+    rounding_mode = convert_round_mode(rounding_mode)
+    if not isinstance(other, Tensor):
+        out = Tensor(sizeI, input.get_dtype())
+        call = call + "Scalar"
+        other = Scalar(input.get_dtype(), other)
+        args = args + "byref(other)"
+    else:
+        sizeO = other.size()
+        outsize = broadcast_out_size(list(sizeI), list(sizeO))
+        out = Tensor(outsize, input.get_dtype())
+        args = args + "other.tensor_handle"
+
+    func = check_function(call)
+    ret = eval(f'func({args}, rounding_mode)')
+
+    check_returncode(ret)
+    return out
 
 
 def logical_and(input, other) -> Tensor:
@@ -607,7 +628,7 @@ def leaky_relu(input, negative_slope=0.01, inplace=False) -> Tensor:
         out = input
         func = check_function("diopiLeakyReluInp")
         ret = func(input.context_handle,
-                   out.tensor_handle, input.tensor_handle, negative_slope)
+                   input.tensor_handle, negative_slope)
     else:
         out = raw_like(input)
         func = check_function("diopiLeakyRelu")
@@ -636,11 +657,11 @@ def bmm(input, mat2) -> Tensor:
         :guilabel:`diopiBmm`
     """
     size1 = list(input.size())
-    assert(len(size1) == 3), 'input must be 3d tensor'
+    assert (len(size1) == 3), 'input must be 3d tensor'
     size2 = mat2.size()
-    assert(len(size2) == 3), 'mat2 must be 3d tensor'
-    assert(size1[0] == size2[0]), 'invalid args'
-    assert(size1[2] == size2[1]), 'invalid args'
+    assert (len(size2) == 3), 'mat2 must be 3d tensor'
+    assert (size1[0] == size2[0]), 'invalid args'
+    assert (size1[2] == size2[1]), 'invalid args'
 
     size_out = size1
     size_out[2] = size2[2]
@@ -779,10 +800,10 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
         args = args + "out.tensor_handle, "
 
     if isinstance(min, Tensor):
-        assert(isinstance(max, Tensor)), 'min and max must have same type'
+        assert (isinstance(max, Tensor)), 'min and max must have same type'
         args += "input.tensor_handle, min.tensor_handle, max.tensor_handle"
     else:
-        assert(~isinstance(max, Tensor)), 'min and max must have same type'
+        assert (~isinstance(max, Tensor)), 'min and max must have same type'
         call = call + 'Scalar'
         min = byref(Scalar(input.get_dtype(), min))
         max = byref(Scalar(input.get_dtype(), max))
@@ -818,7 +839,7 @@ def clamp_min(input, min, inplace=False) -> Tensor:
 
 
 def clamp_max(input, max, inplace=False) -> Tensor:
-    call = "ClampMax"
+    call = "diopiClampMax"
     args = "input.context_handle, "
     if inplace:
         out = input
@@ -934,6 +955,16 @@ def convert_reduction(name):
     if name == "sum":
         return 2
     return 3
+
+
+def convert_round_mode(name):
+    if name is None:
+        return 0
+    if name == 'trunc':
+        return 1
+    if name == "floor":
+        return 2
+    return 4
 
 
 def binary_cross_entropy_with_logits(input, target, weight=None,
@@ -1080,7 +1111,7 @@ def cross_entropy(input, target, weight=None, ignore_index=- 100,
         weight = c_void_p()
 
     if reduction == 'none':
-        out = raw_like(target)
+        out = Tensor(target.size(), input.get_dtype())
     else:
         out = Tensor((1,), input.get_dtype())
 
@@ -1088,7 +1119,7 @@ def cross_entropy(input, target, weight=None, ignore_index=- 100,
     func = check_function("diopiCrossEntropyLoss")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                target.tensor_handle, weight, reduction_mode,
-               ignore_index, label_smoothing)
+               ignore_index, c_double(label_smoothing))
     check_returncode(ret)
     return out
 
@@ -1249,10 +1280,16 @@ def avg_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False,
     kernel_size = Sizes(tuple(kernel_size))
     out = Tensor(sizeO, input.get_dtype())
 
+    if divisor_override is None:
+        divisor_override = c_void_p()
+    else:
+        divisor_override = c_int64(divisor_override)
+        divisor_override = byref(divisor_override)
+
     func = check_function("diopiAvgPool2d")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                kernel_size, stride, padding, ceil_mode, count_include_pad,
-               byref(divisor_override))
+               divisor_override)
     check_returncode(ret)
     return out
 
@@ -1366,11 +1403,13 @@ def adaptive_avg_pool2d(input, output_size):
     for i in range(-2, 0):
         if output_size[i] is None:
             sizeO.append(sizeI[i])
+        else:
+            sizeO.append(output_size[i])
 
     out = Tensor(sizeO, input.get_dtype())
     output_size = Sizes((sizeO[-2], sizeO[-1]))
 
-    func = check_function("diopiAaptiveAvgPool2d")
+    func = check_function("diopiAdaptiveAvgPool2d")
     ret = func(input.context_handle, out.tensor_handle,
                input.tensor_handle, output_size)
     check_returncode(ret)
@@ -1407,20 +1446,23 @@ def adaptive_max_pool2d(input, output_size, return_indices=False):
         output_size = (output_size, output_size)
 
     for i in range(-2, 0):
-        sizeO.append(output_size[i])
+        if output_size[i] is None:
+            sizeO.append(sizeI[i])
+        else:
+            sizeO.append(output_size[i])
 
     out = Tensor(sizeO, input.get_dtype())
     output_size = Sizes(tuple(output_size))
 
     if return_indices:
-        func = check_function("diopiAaptiveMaxPool2dWithIndices")
+        func = check_function("diopiAdaptiveMaxPool2dWithIndices")
         indices = Tensor(sizeO, Dtype.int64)
         ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
                    input.tensor_handle, output_size)
         check_returncode(ret)
         return out, indices
     else:
-        func = check_function("diopiAaptiveMaxPool2d")
+        func = check_function("diopiAdaptiveMaxPool2d")
         ret = func(input.context_handle, out.tensor_handle,
                    input.tensor_handle, output_size)
     check_returncode(ret)
@@ -1440,8 +1482,9 @@ def dropout(input, p=0.5, training=True, inplace=False):
     C API
         :guilabel:`diopiDropout` :guilabel:`diopiDropoutInp`
     """
-    call = "Dropout"
+    call = "diopiDropout"
     args = 'input.context_handle, '
+
     if inplace:
         out = input
         call = call + 'Inp'
@@ -1449,11 +1492,28 @@ def dropout(input, p=0.5, training=True, inplace=False):
         out = raw_like(input)
         args = args + 'out.tensor_handle, '
 
-    args = args + "input.tensor_handle, p, train"
+    args = args + "input.tensor_handle, c_double(p), training"
     func = check_function(call)
-    ret = func(eval(f'{args}'))
+    ret = eval(f'func({args})')
     check_returncode(ret)
     return out
+
+
+def test_dropout(input, p=0.5, training=True, inplace=False):
+    input_numpy = input.numpy()
+    out = dropout(input, p, training, inplace)
+    out_numpy = out.numpy()
+
+    # compute ratio
+    real_ratio = np.sum(out_numpy == 0) / out.numel()
+
+    # check data
+    remains = out_numpy[out_numpy != 0]
+    ref = input_numpy[out_numpy != 0]
+    assert np.allclose(remains, ref / (1 - p), 1e-3),\
+        "failed to execute dropout"
+
+    return real_ratio
 
 
 def index_select(input, dim, index) -> Tensor:
@@ -1489,17 +1549,15 @@ def select(input, dim, index) -> Tensor:
         - *dim* ( **int** ) : 取索引数据所在的维度
         - *index* ( **int** ) : 索引下标
     C API
-        :guilabel:`diopiSelect` :guilabel:`diopiSelectCopy`
+        :guilabel:`diopiSelect`
     """
     sizeI = list(input.size())
     del sizeI[dim]
-    strideI = list(input.get_stride())
-    del strideI[dim]
-    out = Tensor(sizeI, input.get_dtype(), strideI)
+    out = Tensor(sizeI, input.get_dtype())
 
-    func = check_function("diopiSelectCopy")
+    func = check_function("diopiSelect")
     ret = func(input.context_handle, out.tensor_handle,
-               input.tensor_handle, dim, index)
+               input.tensor_handle, c_int64(dim), c_int64(index))
     check_returncode(ret)
     return out
 
@@ -1609,11 +1667,17 @@ def embedding(input, weight, padding_idx=None, max_norm=None, norm_type=2.0,
     sizeI.append(sizeW[-1])
     out = Tensor(sizeI, weight.get_dtype())
 
+    if max_norm is not None:
+        func2 = check_function("diopiEmbeddingRenorm_")
+        ret2 = func2(input.context_handle, weight.tensor_handle, input.tensor_handle, c_double(max_norm), c_double(norm_type))
+        check_returncode(ret2)
+
     # note: scale_grad_by_freq and sparse are useless during forward phase
     func = check_function("diopiEmbedding")
     ret = func(input.context_handle, out.tensor_handle, weight.tensor_handle,
                input.tensor_handle, padding_idx, scale_grad_by_freq, sparse)
     check_returncode(ret)
+
     return out
 
 
@@ -1865,15 +1929,20 @@ def split(tensor, split_size_or_sections, dim=0):
         idx += 1
         sum -= sizeI[dim]
         splitSizes += (sizeI[dim], )
-        out = Tensor(sizeI, Dtype.int64)
+        out = Tensor(sizeI, tensor.get_dtype())
         outs.append(out)
 
+    c_outs = []
+    for i in range(idx):
+        c_outs.append(outs[i].tensor_handle)
+
+    c_outs = (c_void_p * idx)(*c_outs)
     splitSizes = Sizes(splitSizes)
     assert sum == 0,\
         "split_size_or_sections should be compatible with tensor shape"
     func = check_function("diopiSplitWithSizes")
-    ret = func(tensor.context_handle, byref(outs), idx,
-               tensor.tensor_handle, byref(splitSizes), dim)
+    ret = func(tensor.context_handle, pointer(c_outs), c_int64(idx),
+               tensor.tensor_handle, splitSizes, c_int64(dim))
     check_returncode(ret)
     return outs
 
@@ -1953,7 +2022,7 @@ def where(condition, input, other) -> Tensor:
     C API
         :guilabel:`diopiWhere`
     """
-    assert(condition.get_dtype() in (Dtype.bool, Dtype.uint8)),\
+    assert (condition.get_dtype() in (Dtype.bool, Dtype.uint8)),\
         "condition must be a bool tensor"
     sizeX = list(input.size())
     sizeY = list(other.size())
@@ -1985,9 +2054,9 @@ def clip_grad_norm_(parameters, max_norm, norm_type=2.0, error_if_nonfinite=Fals
     C API
         :guilabel:`diopiClipGradNorm`
     """
-    assert(isinstance(max_norm, (int, float))),\
+    assert (isinstance(max_norm, (int, float))),\
         "max_norm must be a int or float"
-    assert(isinstance(norm_type, (int, float))),\
+    assert (isinstance(norm_type, (int, float))),\
         "norm_type must be a int or float"
 
     if isinstance(parameters, Tensor):
@@ -2013,7 +2082,6 @@ def clip_grad_norm_(parameters, max_norm, norm_type=2.0, error_if_nonfinite=Fals
 
 def batch_norm(input, running_mean, running_var, weight=None, bias=None,
                training=False, momentum=0.1, eps=1e-05) -> Tensor:
-    # todo: momentum is useless in C API
     r"""
     释义
         对输入张量 *input* 的每个特征通道 *channel* 做批量标准化，其操作描述如下:
@@ -2057,7 +2125,7 @@ def batch_norm(input, running_mean, running_var, weight=None, bias=None,
 
     func = check_function("diopiBatchNorm")
     if training:
-        assert(running_mean is None and running_var is None),\
+        assert (running_mean is None and running_var is None),\
             "if trainging, running_mean and running_var are useless"
         running_mean = c_void_p()
         running_var = c_void_p()
@@ -2066,9 +2134,9 @@ def batch_norm(input, running_mean, running_var, weight=None, bias=None,
         running_var = running_var.tensor_handle
 
     out = raw_like(input)
-    ret = func(input.context_handle, save_mean.tensor_handle, save_invstd.tensor_handle,
+    ret = func(input.context_handle, out.tensor_handle, save_mean.tensor_handle, save_invstd.tensor_handle,
                input.tensor_handle, weight, bias, running_mean, running_var, training,
-               momentum, eps)
+               c_double(momentum), c_double(eps))
     check_returncode(ret)
     return out
 
@@ -2205,7 +2273,7 @@ def gelu(input, approximate='none') -> Tensor:
     func = check_function("diopiGelu")
 
     ret = func(input.context_handle, out.tensor_handle,
-               input.tensor_handle,approximate.encode('UTF-8'))
+               input.tensor_handle, approximate.encode('UTF-8'))
 
     check_returncode(ret)
     return out
@@ -2479,7 +2547,7 @@ def sigmoid_focal_loss(inputs, targets, alpha=0.25, gamma=2, reduction='none') -
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiSigmoidFocalLoss")
     ret = func(inputs.context_handle, out.tensor_handle, inputs.tensor_handle,
-               targets.tensor_handle, alpha, gamma, reduction_mode)
+               targets.tensor_handle, c_float(alpha), c_float(gamma), reduction_mode)
     check_returncode(ret)
     return out
 
@@ -2517,10 +2585,11 @@ def nms(boxes, scores, iou_threshold) -> Tensor:
     assert len(size_scores) == 1 and size_scores[0] == size_boxes[0],\
         "boxes must be a tensor of shape (N)"
 
-    out = Tensor((1,), Dtype.int64)
+    out_tensor_handle = TensorHandle()
     func = check_function("diopiNms")
-    ret = func(boxes.context_handle, byref(out.tensor_handle), boxes.tensor_handle,
-               scores.tensor_handle, iou_threshold)
+    ret = func(boxes.context_handle, pointer(out_tensor_handle), boxes.tensor_handle,
+               scores.tensor_handle, c_double(iou_threshold))
+    out = Tensor.from_handle(out_tensor_handle)
     check_returncode(ret)
     return out
 
@@ -2575,7 +2644,7 @@ def roi_align(input, boxes, output_size, spatial_scale=1.0, sampling_ratio=-1, a
     out = Tensor(sizeI, input.get_dtype())
     func = check_function("diopiRoiAlign")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               boxes.tensor_handle, spatial_scale, output_size[-2],
+               boxes.tensor_handle, c_double(spatial_scale), output_size[-2],
                output_size[-1], sampling_ratio, aligned)
     check_returncode(ret)
     return out
@@ -2583,13 +2652,13 @@ def roi_align(input, boxes, output_size, spatial_scale=1.0, sampling_ratio=-1, a
 
 def slice_op(input, dim, index) -> Tensor:
     sizeI = list(input.size())
-    num = int((index.stop - index.start)/index.step)
+    num = int((index.stop - index.start + index.step - 1)/index.step)
     sizeI[dim] = num
     out = Tensor(sizeI, input.get_dtype())
 
     func = check_function("diopiSlice")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               dim, index.start, index.stop, index.step)
+               dim, c_int64(index.start), c_int64(index.stop), c_int64(index.step))
 
     check_returncode(ret)
     return out
@@ -2609,15 +2678,19 @@ def index(input, **kwargs) -> Tensor:
                 sizeE = ele.size()
                 length = len(sizeI) - len(sizeE) - len(new_args)
                 for i in range(length):
-                    tmp = Tensor((), ele.get_dtype())
-                    new_args.append(tmp.tensor_handle)
+                    tmp = c_void_p()
+                    new_args.append(tmp.value)
+
             new_args.append(ele.tensor_handle)
 
-    out = Tensor((1, ), input.get_dtype())
-    func = check_function("diopiIndex")
+    nums = len(new_args)
+    c_indices = (c_void_p * nums)(*new_args)
 
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               byref(new_args), len(new_args))
+    out_tensor_handle = TensorHandle()
+    func = check_function("diopiIndex")
+    ret = func(input.context_handle, pointer(out_tensor_handle), input.tensor_handle,
+               pointer(c_indices), c_int64(nums))
+    out = Tensor.from_handle(out_tensor_handle)
     check_returncode(ret)
     return out
 
@@ -2625,9 +2698,18 @@ def index(input, **kwargs) -> Tensor:
 def sgd(param, param_grad, buf, lr, momentum=0, dampening=0, weight_decay=0, nesterov=False):
     # buf, param_grad are mutable
     func = check_function("diopiSgd")
-    func.argtypes = (c_void_p, c_void_p, c_void_p, c_void_p, \
-        c_double, c_double, c_double, c_double, c_bool)
-    ret = func(param.context_handle, buf.tensor_handle, param.tensor_handle, param_grad.tensor_handle,
-        lr, momentum, dampening, weight_decay, nesterov)
+    ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle, buf.tensor_handle,
+               c_double(lr), c_double(momentum), c_double(dampening), c_double(weight_decay), nesterov)
     check_returncode(ret)
     return param, buf
+
+
+def adaptive_max_pool2d_backward(input, grad_outputs, indices, **kwargs) -> Tensor:
+    grad_input = raw_like(input)
+    assert len(grad_outputs) == 1,\
+        "only input needs do backward"
+    func = check_function("diopiAdaptiveMaxPool2dBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle, indices.tensor_handle)
+    check_returncode(ret)
+    return {"input": grad_input}

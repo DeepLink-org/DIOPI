@@ -266,7 +266,7 @@ diopi_configs = {
 
     'pointwise_op': dict(
         name=['abs', 'cos', 'erf', 'exp', 'floor',
-              'log', 'log2', 'log10', 'neg', 'sin', 
+              'log', 'log2', 'log10', 'neg', 'sin',
               'sqrt', 'tanh'],
         interface=['torch'],
         is_inplace=True,

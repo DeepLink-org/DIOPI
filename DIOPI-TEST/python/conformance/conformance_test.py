@@ -69,8 +69,8 @@ class ConformanceTest(object):
             output = None
             input_abs_path = os.path.join(inputs_dir_path, saved_pth)
             if not os.path.exists(input_abs_path):
-                logger.error(f"FileNotFound: No benchmark input data '{saved_pth}' was generated" \
-                    f" (No such file or directory: {input_abs_path})")
+                logger.error(f"FileNotFound: No benchmark input data '{saved_pth}' was generated"
+                             f" (No such file or directory: {input_abs_path})")
                 continue
             try:
                 f = open(input_abs_path, "rb")
@@ -97,8 +97,8 @@ class ConformanceTest(object):
             for func_call in func_call_list:
                 output_abs_path = os.path.join(outputs_dir_path, saved_pth)
                 if not os.path.exists(output_abs_path):
-                    logger.error(f"FileNotFound: No benchmark output data '{saved_pth}' was generated " \
-                        f"(No such file or directory: {output_abs_path})")
+                    logger.error(f"FileNotFound: No benchmark output data '{saved_pth}' was generated "
+                                 f"(No such file or directory: {output_abs_path})")
                     continue
                 try:
                     f = open(output_abs_path, "rb")

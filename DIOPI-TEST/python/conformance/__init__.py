@@ -43,4 +43,3 @@ __all__ = [
     'to_numpy_dtype',
     'ConformanceTest',
 ]
-
