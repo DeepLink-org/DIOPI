@@ -296,13 +296,6 @@ diopiError_t diopiIndexSelect(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 //     return diopiSuccess;
 // }
 
-diopiError_t diopiSlice(diopiContextHandle_t ctx, diopiTensorHandle_t null_out,
-        const diopiTensorHandle_t input, int64_t dim, int64_t start, int64_t end, int64_t step) {
-    auto atInput = impl::aten::buildAtTensor(input);
-    impl::aten::invokeATenFuncRet(ctx, at::slice, null_out, atInput, dim, start, end, step);
-    return diopiSuccess;
-}
-
 diopiError_t diopiMaskedScatter(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         const diopiTensorHandle_t input, const diopiTensorHandle_t mask, const diopiTensorHandle_t source) {
     auto atInput = impl::aten::buildAtTensor(input);
@@ -1039,6 +1032,32 @@ diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t out,
                        const diopiTensorHandle_t input, const char* approximate) {
     auto atInput = impl::aten::buildAtTensor(input);
     impl::aten::invokeATenFuncRet(ctx, at::gelu, out, atInput);
+    return diopiSuccess;
+}
+
+diopiError_t diopiSlice(diopiContextHandle_t ctx, diopiTensorHandle_t null_out, const diopiTensorHandle_t input,
+        int64_t dim, int64_t start, int64_t end, int64_t step) {
+    at::Tensor atInput = impl::aten::buildAtTensor(input);
+    at::Tensor atOut = at::slice(atInput, dim, start, end, step).contiguous();
+    impl::aten::updateATen2Tensor(ctx, atOut, null_out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, const diopiTensorHandle_t input,
+        const diopiTensorHandle_t* indices, int64_t nums) {
+    at::Tensor atInput = impl::aten::buildAtTensor(input);
+    c10::List<c10::optional<at::Tensor>> vecIdx;
+    vecIdx.reserve(nums);
+    for (int i = 0; i < nums; ++i) {
+        if ( indices[i] == nullptr ){
+            vecIdx.emplace_back(c10::nullopt);
+        } else {
+            at::Tensor atIndex = impl::aten::buildAtTensor(indices[i]);
+            vecIdx.emplace_back(atIndex);
+        }
+    }
+    at::Tensor atOut = at::index(atInput, vecIdx).contiguous();
+    impl::aten::buildDIOPITensor(ctx, atOut, out);
     return diopiSuccess;
 }
 
