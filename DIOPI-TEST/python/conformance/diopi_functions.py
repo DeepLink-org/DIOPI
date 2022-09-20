@@ -1006,7 +1006,7 @@ def binary_cross_entropy_with_logits(input, target, weight=None,
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiBCEWithLogits")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               target.tensor_handle, weight, pos_weight, reduction_mode)
+               target.tensor_handle, weight, pos_weight, c_int64(reduction_mode))
     check_returncode(ret)
     return out
 
