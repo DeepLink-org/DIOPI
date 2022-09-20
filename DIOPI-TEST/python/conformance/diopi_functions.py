@@ -628,7 +628,7 @@ def leaky_relu(input, negative_slope=0.01, inplace=False) -> Tensor:
         out = input
         func = check_function("diopiLeakyReluInp")
         ret = func(input.context_handle,
-                   out.tensor_handle, input.tensor_handle, negative_slope)
+                   input.tensor_handle, negative_slope)
     else:
         out = raw_like(input)
         func = check_function("diopiLeakyRelu")
@@ -1111,7 +1111,7 @@ def cross_entropy(input, target, weight=None, ignore_index=- 100,
         weight = c_void_p()
 
     if reduction == 'none':
-        out = raw_like(target)
+        out = Tensor(target.size(), input.get_dtype())
     else:
         out = Tensor((1,), input.get_dtype())
 
@@ -1119,7 +1119,7 @@ def cross_entropy(input, target, weight=None, ignore_index=- 100,
     func = check_function("diopiCrossEntropyLoss")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                target.tensor_handle, weight, reduction_mode,
-               ignore_index, label_smoothing)
+               ignore_index, c_double(label_smoothing))
     check_returncode(ret)
     return out
 
@@ -1634,11 +1634,17 @@ def embedding(input, weight, padding_idx=None, max_norm=None, norm_type=2.0,
     sizeI.append(sizeW[-1])
     out = Tensor(sizeI, weight.get_dtype())
 
+    if max_norm is not None:
+        func2 = check_function("diopiEmbeddingRenorm_")
+        ret2 = func2(input.context_handle, weight.tensor_handle, input.tensor_handle, c_double(max_norm), c_double(norm_type))
+        check_returncode(ret2)
+
     # note: scale_grad_by_freq and sparse are useless during forward phase
     func = check_function("diopiEmbedding")
     ret = func(input.context_handle, out.tensor_handle, weight.tensor_handle,
                input.tensor_handle, padding_idx, scale_grad_by_freq, sparse)
     check_returncode(ret)
+
     return out
 
 
@@ -2546,10 +2552,11 @@ def nms(boxes, scores, iou_threshold) -> Tensor:
     assert len(size_scores) == 1 and size_scores[0] == size_boxes[0],\
         "boxes must be a tensor of shape (N)"
 
-    out = Tensor((1,), Dtype.int64)
+    out_tensor_handle = TensorHandle()
     func = check_function("diopiNms")
-    ret = func(boxes.context_handle, byref(out.tensor_handle), boxes.tensor_handle,
-               scores.tensor_handle, iou_threshold)
+    ret = func(boxes.context_handle, pointer(out_tensor_handle), boxes.tensor_handle,
+               scores.tensor_handle, c_double(iou_threshold))
+    out = Tensor.from_handle(out_tensor_handle)
     check_returncode(ret)
     return out
 
@@ -2604,7 +2611,7 @@ def roi_align(input, boxes, output_size, spatial_scale=1.0, sampling_ratio=-1, a
     out = Tensor(sizeI, input.get_dtype())
     func = check_function("diopiRoiAlign")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               boxes.tensor_handle, spatial_scale, output_size[-2],
+               boxes.tensor_handle, c_double(spatial_scale), output_size[-2],
                output_size[-1], sampling_ratio, aligned)
     check_returncode(ret)
     return out
@@ -2658,9 +2665,7 @@ def index(input, **kwargs) -> Tensor:
 def sgd(param, param_grad, buf, lr, momentum=0, dampening=0, weight_decay=0, nesterov=False):
     # buf, param_grad are mutable
     func = check_function("diopiSgd")
-    func.argtypes = (c_void_p, c_void_p, c_void_p, c_void_p, \
-        c_double, c_double, c_double, c_double, c_bool)
-    ret = func(param.context_handle, buf.tensor_handle, param.tensor_handle, param_grad.tensor_handle,
-        lr, momentum, dampening, weight_decay, nesterov)
+    ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle, buf.tensor_handle,
+        c_double(lr), c_double(momentum), c_double(dampening), c_double(weight_decay), nesterov)
     check_returncode(ret)
     return param, buf
