@@ -2582,13 +2582,13 @@ def roi_align(input, boxes, output_size, spatial_scale=1.0, sampling_ratio=-1, a
 
 def slice_op(input, dim, index) -> Tensor:
     sizeI = list(input.size())
-    num = int((index.stop - index.start)/index.step)
+    num = int((index.stop - index.start + index.step - 1)/index.step)
     sizeI[dim] = num
     out = Tensor(sizeI, input.get_dtype())
 
     func = check_function("diopiSlice")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               dim, index.start, index.stop, index.step)
+               dim, c_int64(index.start), c_int64(index.stop), c_int64(index.step))
 
     check_returncode(ret)
     return out
@@ -2608,15 +2608,19 @@ def index(input, **kwargs) -> Tensor:
                 sizeE = ele.size()
                 length = len(sizeI) - len(sizeE) - len(new_args)
                 for i in range(length):
-                    tmp = Tensor((), ele.get_dtype())
-                    new_args.append(tmp.tensor_handle)
+                    tmp = c_void_p()
+                    new_args.append(tmp.value)
+
             new_args.append(ele.tensor_handle)
 
-    out = Tensor((1, ), input.get_dtype())
-    func = check_function("diopiIndex")
+    nums = len(new_args)
+    c_indices = (c_void_p * nums)(*new_args)
 
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               byref(new_args), len(new_args))
+    out_tensor_handle = TensorHandle()
+    func = check_function("diopiIndex")
+    ret = func(input.context_handle, pointer(out_tensor_handle), input.tensor_handle,
+               pointer(c_indices), c_int64(nums))
+    out = Tensor.from_handle(out_tensor_handle)
     check_returncode(ret)
     return out
 

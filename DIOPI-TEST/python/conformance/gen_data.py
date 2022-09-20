@@ -297,8 +297,10 @@ class GenInputData(object):
 class CustomizedTest(object):
     def slice_op(input, dim, index):
         import torch
-        size = len(input.size())
-        slice_args = [True for i in range(size)]
+        sizeI = input.size()
+        slice_args = []
+        for i in range(len(sizeI)):
+            slice_args.append(slice(0, sizeI[i], 1))
         slice_args[dim] = index
         return torch.Tensor.__getitem__(input, slice_args)
 
