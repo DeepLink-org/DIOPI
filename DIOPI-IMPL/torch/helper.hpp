@@ -16,6 +16,30 @@
 #define TORCH_1_11_MM_VERSION 1110
 #define TORCH_1_12_MM_VERSION 1120
 
+#define LOG_LINE_INFO(f) f << __FILE__ << ":" << __LINE__ << ": "; 
+
+void logError(){std::cerr << std::endl;}
+
+template<typename First, typename ...Rest>
+void logError(First&& first, Rest&& ...rest) {
+    std::cerr << std::forward<First>(first);
+    logError(std::forward<Rest>(rest)...);
+}
+
+#define ATEN_NOT_SUPPORTED() \
+    LOG_LINE_INFO(std::cerr) \
+    logError("NotImplementError: function ", __FUNCTION__, " is not implemented for torch version ", \
+        TORCH_VERSION);
+
+#define ATEN_NOT_IMPLEMENT() \
+    LOG_LINE_INFO(std::cerr) \
+    logError("NotImplementError: function ", __FUNCTION__, " is not implemented for torch version ", \
+        TORCH_VERSION);
+
+#define NOT_SUPPORTED(str) \
+    LOG_LINE_INFO(std::cerr) \
+    logError("NotSupported: ", str, ", ", __FILE__, ":", __LINE__);
+
 using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
 
 namespace impl {
@@ -50,7 +74,7 @@ caffe2::TypeMeta getATenType(diopiDtype_t dt) {
     case diopi_dtype_bfloat16:
         return caffe2::TypeMeta::Make<at::BFloat16>();
     default:
-        std::fprintf(stderr, "Not supported diopi dtype");
+        NOT_SUPPORTED("dipio dytpe");
     }
 }
 
@@ -73,7 +97,7 @@ diopiDtype_t getDIOPITensorType(at::Tensor& input) {
     case at::ScalarType::Double:
         return diopi_dtype_float64;
     default:
-        std::fprintf(stderr, "Not supported at::Tensor dtype");
+        NOT_SUPPORTED("at::Tensor dtype");
     }
 }
 
@@ -83,7 +107,7 @@ c10::DeviceType getATenDevice(diopiDevice_t device) {
     } else if (device == diopi_device) {
         return c10::DeviceType::CUDA;
     } else {
-        std::fprintf(stderr, "Not supported device type");
+        NOT_SUPPORTED("device dtype");
     }
 }
 
@@ -137,15 +161,16 @@ at::Tensor buildAtTensor(diopiTensorHandle_t tensor) {
     }
 }
 
-at::Scalar buildAtScalar(const diopiScalar_t* scalar) {
-    diopiDtype_t dtype = scalar->stype;
-    if (dtype <= 7) {
-        return scalar->ival;
-    } else if (dtype <= 11) {
-        return scalar->fval;
-    } else {
-        std::fprintf(stderr, "Dtype not supported");
-    }
+inline bool isInt(const diopiScalar_t* scalar) {
+    return scalar->stype <= 7;
+}
+
+inline bool isFloat(const diopiScalar_t* scalar) {
+    return scalar->stype > 7;
+}
+
+inline at::Scalar buildAtScalar(const diopiScalar_t* scalar) {
+    return isInt(scalar) ? scalar->ival : scalar->fval;
 }
 
 at::IntArrayRef buildAtIntArray(const diopiSize_t* size) {
@@ -235,7 +260,7 @@ c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding_mode) 
     case (RoundModeTrunc): return "trunc";
     case (RoundModeFloor): return "floor";
     case (RoundModeEND): return "";
-    default: std::fprintf(stderr, "Not supported diopi round mode");
+    default: NOT_SUPPORTED("diopi round mode");
     }
 }
 

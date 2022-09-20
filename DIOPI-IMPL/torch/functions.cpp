@@ -14,6 +14,7 @@
 #include <torch/optim.h>
 
 #include "helper.hpp"
+#include "vision_kernel.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -144,9 +145,16 @@ diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx, diopiTensorHandle_t
     auto atInput = impl::aten::buildAtTensor(input);
     auto atTarget = impl::aten::buildAtTensor(target);
     auto atWeight = impl::aten::buildAtTensor(weight);
-    // auto atReduction = impl::aten::getEntropyReduction(reduction);
-    // auto atOut = torch::nn::functional(atInput, atTarget, atWeight, ignore_index, atReduction, label_smoothing);
-    // impl::aten::updateATen2Tensor(ctx, atOut, out);
+#if TORCH_MM_VERSION >= TORCH_1_10_MM_VERSION
+    auto atOut = at::cross_entropy_loss(atInput, atTarget, atWeight, reduction, ignore_index, label_smoothing);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+#elif TORCH_MM_VERSION == TORCH_1_9_MM_VERSION
+    NOT_SUPPORTED("param label_smoothing in torch 1.9")
+    auto atOut = at::cross_entropy_loss(atInput, atTarget, atWeight, reduction, ignore_index);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+#else
+    ATEN_NOT_IMPLEMENT();
+#endif
     return diopiSuccess;
 }
 
@@ -305,6 +313,14 @@ diopiError_t diopiMaskedScatter(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     return diopiSuccess;
 }
 
+diopiError_t diopiNms(diopiContextHandle_t ctx, diopiTensorHandle_t* out, const diopiTensorHandle_t dets,
+        const diopiTensorHandle_t scores, double iouThreshold) {
+    auto atDets = impl::aten::buildAtTensor(dets);
+    auto atScores = impl::aten::buildAtTensor(scores);
+    auto atOut = vision::ops::nms_kernel(atDets, atScores, iouThreshold);
+    impl::aten::buildDIOPITensor(ctx, atOut, out);
+}
+
 diopiError_t diopiNonzero(diopiContextHandle_t ctx,
         diopiTensorHandle_t* out, const diopiTensorHandle_t input) {
     auto atInput = impl::aten::buildAtTensor(input);
@@ -322,29 +338,47 @@ diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, cons
     return diopiSuccess;
 }
 
-// diopiError_t diopiRoiAlign(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
-//         const diopiTensorHandle_t rois, double spatialScale, int64_t pooledHeight,
-//         int64_t pooledWidth, int64_t samplingRatio, bool aligned) {
+diopiError_t diopiRoiAlign(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
+        const diopiTensorHandle_t rois, double spatialScale, int64_t pooledHeight,
+        int64_t pooledWidth, int64_t samplingRatio, bool aligned) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atRois = impl::aten::buildAtTensor(rois);
+    auto atOut = vision::ops::roi_align_forward_kernel(atInput, atRois, spatialScale,
+        pooledHeight, pooledWidth, samplingRatio, aligned);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+}
+
+diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTensorHandle_t dw, diopiTensorHandle_t buf,
+        double learningrate, double momentum, double dampening, double weightDecay, bool nesterov) {
+    auto atW = impl::aten::buildAtTensor(w);
+    auto atDw = impl::aten::buildAtTensor(dw);
+    auto atBuf = impl::aten::buildAtTensor(buf);
     
-// }
+    atW.requires_grad_(true);
+    atW.mutable_grad() = atDw;
 
-// // TODO(fengsibo@sensetime.com) not implement
-// diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-//         const diopiTensorHandle_t w, const diopiTensorHandle_t dw,
-//         double learningrate, double momentum, double dampening, double weightDecay, bool nesterov) {
-//     auto atW = impl::aten::buildAtTensor(w);
-//     auto atDw = impl::aten::buildAtTensor(dw);
-//     std::vector<at::Tensor> params = {atW, atDw};
+    // Implementation in pytorch v1.10.2 sgd.cpp.
+    auto& p = atW;
+    auto d_p = p.grad().data();
+    if (weightDecay != 0) {
+        d_p = d_p.add(p.data(), weightDecay);
+    }
+    if (momentum != 0) {
+        atBuf.mul_(momentum).add_(d_p, 1 - dampening);
+        if (nesterov) {
+          d_p = d_p.add(atBuf, momentum);
+        } else {
+          d_p = atBuf;
+        }
+    }
+    p.data().add_(d_p, -1 * learningrate);
 
-//     torch::optim::SGD sgd(
-//         params,
-//         torch::optim::SGDOptions(learningrate)
-//         .momentum(momentum)
-//         .nesterov(nesterov)
-//         .weight_decay(weightDecay));
-//     sgd.step();
-//     return diopiSuccess;
-// }
+    impl::aten::updateATen2Tensor(ctx, atW, w);
+    impl::aten::updateATen2Tensor(ctx, atDw, dw);
+    impl::aten::updateATen2Tensor(ctx, atBuf, buf);
+
+    return diopiSuccess;
+}
 
 /**
  * @brief 
@@ -358,12 +392,11 @@ diopiError_t diopiClipGradNorm(diopiContextHandle_t ctx, double* out, diopiTenso
     return diopiSuccess;
 }
 
-diopiError_t diopiEmbeddingRenorm_(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-        const diopiTensorHandle_t indices, double max_norm, double norm_type) {
-    auto atSelf = impl::aten::buildAtTensor(out);
+diopiError_t diopiEmbeddingRenorm_(diopiContextHandle_t ctx,
+        diopiTensorHandle_t self, const diopiTensorHandle_t indices, double max_norm, double norm_type) {
+    auto atSelf = impl::aten::buildAtTensor(self);
     auto atIndices = impl::aten::buildAtTensor(indices);
-    impl::aten::invokeATenFuncRet(
-        ctx, at::embedding_renorm_, out, atSelf, atIndices, max_norm, norm_type);
+    at::embedding_renorm_(atSelf, atIndices, max_norm, norm_type);
     return diopiSuccess;
 }
 
