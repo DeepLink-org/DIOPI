@@ -1927,9 +1927,13 @@ def split(tensor, split_size_or_sections, dim=0):
         sum -= sizeI[dim]
         splitSizes += (sizeI[dim], )
         out = Tensor(sizeI, tensor.get_dtype())
-        outs.append(out.tensor_handle)
+        outs.append(out)
 
-    c_outs = (c_void_p * idx)(*outs)
+    c_outs = []
+    for i in range(idx):
+        c_outs.append(outs[i].tensor_handle)
+
+    c_outs = (c_void_p * idx)(*c_outs)
     splitSizes = Sizes(splitSizes)
     assert sum == 0,\
         "split_size_or_sections should be compatible with tensor shape"
