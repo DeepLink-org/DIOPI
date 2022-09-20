@@ -1079,6 +1079,87 @@ diopiError_t diopiCrossNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out
     return diopiSuccess;
 }
 
+
+diopiError_t diopiHardtanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
+                           const diopiScalar_t* min_val, const diopiScalar_t* max_val) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atMin = impl::aten::buildAtScalar(min_val);
+    auto atMax = impl::aten::buildAtScalar(max_val);
+    impl::aten::invokeATenFuncRet(ctx, at::hardtanh, out, atInput, atMin, atMax);
+    return diopiSuccess;
+}
+
+diopiError_t diopiHardtanhInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* min_val, 
+                              const diopiScalar_t* max_val) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atMin = impl::aten::buildAtScalar(min_val);
+    auto atMax = impl::aten::buildAtScalar(max_val);
+    impl::aten::invokeATenFuncInp(ctx, at::hardtanh_, atInput, atMin, atMax);
+    return diopiSuccess;
+}
+
+diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
+                                     const diopiScalar_t* threshold, const diopiScalar_t* value) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atThreshold = impl::aten::buildAtScalar(threshold);
+    auto atValue = impl::aten::buildAtScalar(value);
+    impl::aten::invokeATenFuncRet(ctx, at::threshold, out, atInput, atThreshold, atValue);
+    return diopiSuccess;
+}
+diopiError_t diopiThresholdInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* threshold,
+                               const diopiScalar_t* value) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    auto atThreshold = impl::aten::buildAtScalar(threshold);
+    auto atValue = impl::aten::buildAtScalar(value);
+    impl::aten::invokeATenFuncInp(ctx, at::threshold_, atInput, atThreshold, atValue);
+    return diopiSuccess;
+}
+
+diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
+                       const diopiTensorHandle_t input, const char* approximate) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    impl::aten::invokeATenFuncRet(ctx, at::gelu, out, atInput);
+    return diopiSuccess;
+}
+
+diopiError_t diopiCrossNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
+                               const diopiTensorHandle_t input, const diopiTensorHandle_t target, 
+                               const diopiTensorHandle_t weight, int64_t reduction, int64_t ignore_index) {
+    auto buildAtInput = impl::aten::buildAtTensor(input);
+    auto buildAtTarget = impl::aten::buildAtTensor(target);
+    auto atWeight = impl::aten::buildAtTensor(weight);
+    auto atInput = buildAtInput;
+    auto atTarget = buildAtTarget;
+    if(buildAtInput.dim() > 2){
+        auto channel = buildAtInput.size(1);
+        int64_t totalSize = 1;
+        for(int i=0; i<buildAtInput.dim(); ++i){
+            totalSize *= buildAtInput.size(i);
+        }
+        std::vector<int64_t> toShape {channel, totalSize/channel};
+        at::IntArrayRef intArrayShape = impl::aten::buildAtIntArray(diopiSize_t(toShape.data(), toShape.size()));
+        atInput = buildAtInput.transpose(0, 1).reshape(intArrayShape).transpose(0, 1);
+    }
+    if(buildAtTarget.dim() > 1){
+        int64_t totalSize = 1;
+        for(int i=0; i<buildAtTarget.dim(); ++i){
+            totalSize *= buildAtTarget.size(i);
+        }
+        atTarget = buildAtTarget.reshape(totalSize);
+    }
+    auto atOut = at::nll_loss(atInput, atTarget, atWeight, reduction, ignore_index);
+    if(reduction == at::Reduction::None && buildAtTarget.dim() > 1){
+        std::vector<int64_t> toShape;
+        for(int i=0; i<buildAtTarget.dim(); ++i){
+            toShape.push_back(buildAtTarget.size(i));
+        }
+        at::IntArrayRef intArrayShape = impl::aten::buildAtIntArray(diopiSize_t(toShape.data(), toShape.size()));
+        atOut = atOut.reshape(intArrayShape);
+    }
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
 #if defined(__cplusplus)
 }
 #endif // __cplusplus
