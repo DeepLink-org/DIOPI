@@ -12,6 +12,7 @@
 #include <diopi/functions.h>
 #include <torch/nn.h>
 #include <torch/optim.h>
+#include <iostream>
 
 #include "helper.hpp"
 #include "vision_kernel.h"
@@ -427,11 +428,10 @@ diopiError_t diopiSplitWithSizes(diopiContextHandle_t ctx, diopiTensorHandle_t* 
         const diopiTensorHandle_t input, const diopiSize_t splitSizes, int64_t dim) {
     auto atInput = impl::aten::buildAtTensor(input);
     auto atSizes = impl::aten::buildAtIntArray(splitSizes);
-    diopi_tensor_list vecOut;
-    for (size_t i = 0; i < outsNum; ++i) {
-        vecOut.emplace_back(outs[i]);
+    auto atOuts = at::split_with_sizes(atInput, atSizes, dim);
+    for (int i = 0; i < outsNum; ++i) {
+        impl::aten::updateATen2Tensor(ctx, atOuts[i].contiguous(), outs[i]);
     }
-    impl::aten::invokeATenFuncRet(ctx, at::split_with_sizes, vecOut, atInput, atSizes, dim);
     return diopiSuccess;
 }
 
