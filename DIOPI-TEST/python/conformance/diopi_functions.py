@@ -1304,16 +1304,20 @@ def max_pool2d(input, kernel_size, stride=None, padding=0, dilation=1,
         dilation = (dilation, dilation)
 
     for i in range(-2, 0):
+        tmp_ker_size = kernel_size[i] + (kernel_size[i] - 1) * (dilation[i] - 1)
+        tmp_size = (sizeI[i] - tmp_ker_size + 2*padding[i])/stride[i] + 1
+        tmp_size = tmp_size if tmp_size > 1 else 1
         if ceil_mode:
-            sizeO.append(math.ceil((sizeI[i] - kernel_size[i] + 2*padding[i])/stride[i]) + 1)
+            sizeO.append(math.ceil(tmp_size))
         else:
-            sizeO.append(math.floor((sizeI[i] - kernel_size[i] + 2*padding[i])/stride[i]) + 1)
+            sizeO.append(math.floor(tmp_size))
 
     stride = Sizes(tuple(stride))
     padding = Sizes(tuple(padding))
     kernel_size = Sizes(tuple(kernel_size))
     dilation = Sizes(tuple(dilation))
     out = Tensor(sizeO, input.get_dtype())
+
     if not return_indices:
         func = check_function("diopiMaxPool2d")
         ret = func(input.context_handle, out.tensor_handle,
