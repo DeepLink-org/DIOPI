@@ -1890,15 +1890,16 @@ def split(tensor, split_size_or_sections, dim=0):
         idx += 1
         sum -= sizeI[dim]
         splitSizes += (sizeI[dim], )
-        out = Tensor(sizeI, Dtype.int64)
-        outs.append(out)
+        out = Tensor(sizeI, tensor.get_dtype())
+        outs.append(out.tensor_handle)
 
+    c_outs = (c_void_p * idx)(*outs)
     splitSizes = Sizes(splitSizes)
     assert sum == 0,\
         "split_size_or_sections should be compatible with tensor shape"
     func = check_function("diopiSplitWithSizes")
-    ret = func(tensor.context_handle, byref(outs), idx,
-               tensor.tensor_handle, byref(splitSizes), dim)
+    ret = func(tensor.context_handle, pointer(c_outs), c_int64(idx),
+               tensor.tensor_handle, splitSizes, c_int64(dim))
     check_returncode(ret)
     return outs
 
