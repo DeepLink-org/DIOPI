@@ -1485,17 +1485,15 @@ def select(input, dim, index) -> Tensor:
         - *dim* ( **int** ) : 取索引数据所在的维度
         - *index* ( **int** ) : 索引下标
     C API
-        :guilabel:`diopiSelect` :guilabel:`diopiSelectCopy`
+        :guilabel:`diopiSelect`
     """
     sizeI = list(input.size())
     del sizeI[dim]
-    strideI = list(input.get_stride())
-    del strideI[dim]
-    out = Tensor(sizeI, input.get_dtype(), strideI)
+    out = Tensor(sizeI, input.get_dtype())
 
-    func = check_function("diopiSelectCopy")
+    func = check_function("diopiSelect")
     ret = func(input.context_handle, out.tensor_handle,
-               input.tensor_handle, dim, index)
+               input.tensor_handle, c_int64(dim), c_int64(index))
     check_returncode(ret)
     return out
 

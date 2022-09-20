@@ -288,13 +288,13 @@ diopiError_t diopiIndexSelect(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     return diopiSuccess;
 }
 
-// diopiError_t diopiSelectCopy(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-//         const diopiTensorHandle_t input, int64_t dim, int64_t index) {
-//     auto atInput = impl::aten::buildAtTensor(input);
-//     impl::aten::invokeATenFuncRet
-//         <at::Tensor (*)(at::Tensor const &, int64_t, int64_t)>(ctx, at::select, out, atInput, dim, index);
-//     return diopiSuccess;
-// }
+diopiError_t diopiSelect(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, int64_t dim, int64_t index) {
+    auto atInput = impl::aten::buildAtTensor(input);
+    at::Tensor atOut = at::select(atInput, dim, index).contiguous();
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
 
 diopiError_t diopiMaskedScatter(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         const diopiTensorHandle_t input, const diopiTensorHandle_t mask, const diopiTensorHandle_t source) {
