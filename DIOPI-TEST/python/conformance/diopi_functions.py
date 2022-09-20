@@ -546,7 +546,7 @@ def mul(input, other) -> Tensor:
     return binary_op_scalar(input, other, False, 'diopiMul')
 
 
-def div(input, other) -> Tensor:
+def div(input, other, rounding_mode=None) -> Tensor:
     r"""
     释义
         张量除, 输入张量 *input* 每个元素都除以 *other* 中与之对应的元素:
@@ -556,10 +556,31 @@ def div(input, other) -> Tensor:
     参数
         - *input* ( **Tensor** ) : 被除数
         - *other* ( **Tensor**  或者 **number** ) : 除数
+        - *rounding_mode* ( **str**, 可选): 应用于结果的舍入类型, ``None`` : 默认行为，不执行舍入，如果 *input* 和 *other* 都是整数类型，
+          则将输入提升为默认标量类型; ``trunc`` : 将除法结果向零舍入; ``floor`` : 向下舍入除法的结果
     C API
         :guilabel:`diopiDiv` :guilabel:`diopiDivScalar`
     """
-    return binary_op_scalar(input, other, False, 'diopiDiv')
+    call = "diopiDiv"
+    args = "input.context_handle, out.tensor_handle, input.tensor_handle, "
+    sizeI = input.size()
+    rounding_mode = convert_round_mode(rounding_mode)
+    if not isinstance(other, Tensor):
+        out = Tensor(sizeI, input.get_dtype())
+        call = call + "Scalar"
+        other = Scalar(input.get_dtype(), other)
+        args = args + "byref(other)"
+    else:
+        sizeO = other.size()
+        outsize = broadcast_out_size(list(sizeI), list(sizeO))
+        out = Tensor(outsize, input.get_dtype())
+        args = args + "other.tensor_handle"
+
+    func = check_function(call)
+    ret = eval(f'func({args}, rounding_mode)')
+
+    check_returncode(ret)
+    return out
 
 
 def logical_and(input, other) -> Tensor:
@@ -934,6 +955,16 @@ def convert_reduction(name):
     if name == "sum":
         return 2
     return 3
+
+
+def convert_round_mode(name):
+    if name is None:
+        return 0
+    if name == 'trunc':
+        return 1
+    if name == "floor":
+        return 2
+    return 4
 
 
 def binary_cross_entropy_with_logits(input, target, weight=None,
