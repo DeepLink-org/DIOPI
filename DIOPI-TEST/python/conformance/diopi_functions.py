@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import math
 
-from ctypes import c_float, c_double, c_int64, c_int32, c_bool, c_void_p, byref, pointer
+from ctypes import c_float, c_double, c_int64, c_int32, c_bool, c_void_p, byref, pointer, c_wchar_p, c_char_p
 from .diopi_runtime import Sizes, Scalar, Tensor, TensorHandle
 from .utils import check_returncode, check_function, squeeze
 from . import Dtype, raw_like
@@ -657,11 +657,11 @@ def bmm(input, mat2) -> Tensor:
         :guilabel:`diopiBmm`
     """
     size1 = list(input.size())
-    assert (len(size1) == 3), 'input must be 3d tensor'
+    assert(len(size1) == 3), 'input must be 3d tensor'
     size2 = mat2.size()
-    assert (len(size2) == 3), 'mat2 must be 3d tensor'
-    assert (size1[0] == size2[0]), 'invalid args'
-    assert (size1[2] == size2[1]), 'invalid args'
+    assert(len(size2) == 3), 'mat2 must be 3d tensor'
+    assert(size1[0] == size2[0]), 'invalid args'
+    assert(size1[2] == size2[1]), 'invalid args'
 
     size_out = size1
     size_out[2] = size2[2]
@@ -800,10 +800,10 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
         args = args + "out.tensor_handle, "
 
     if isinstance(min, Tensor):
-        assert (isinstance(max, Tensor)), 'min and max must have same type'
+        assert(isinstance(max, Tensor)), 'min and max must have same type'
         args += "input.tensor_handle, min.tensor_handle, max.tensor_handle"
     else:
-        assert (~isinstance(max, Tensor)), 'min and max must have same type'
+        assert(~isinstance(max, Tensor)), 'min and max must have same type'
         call = call + 'Scalar'
         min = byref(Scalar(input.get_dtype(), min))
         max = byref(Scalar(input.get_dtype(), max))
@@ -1037,7 +1037,7 @@ def binary_cross_entropy_with_logits(input, target, weight=None,
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiBCEWithLogits")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               target.tensor_handle, weight, pos_weight, c_int64(reduction_mode))
+               target.tensor_handle, weight, pos_weight, reduction_mode)
     check_returncode(ret)
     return out
 
@@ -1341,20 +1341,16 @@ def max_pool2d(input, kernel_size, stride=None, padding=0, dilation=1,
         dilation = (dilation, dilation)
 
     for i in range(-2, 0):
-        tmp_ker_size = kernel_size[i] + (kernel_size[i] - 1) * (dilation[i] - 1)
-        tmp_size = (sizeI[i] - tmp_ker_size + 2*padding[i])/stride[i] + 1
-        tmp_size = tmp_size if tmp_size > 1 else 1
         if ceil_mode:
-            sizeO.append(math.ceil(tmp_size))
+            sizeO.append(math.ceil((sizeI[i] - kernel_size[i] + 2*padding[i])/stride[i]) + 1)
         else:
-            sizeO.append(math.floor(tmp_size))
+            sizeO.append(math.floor((sizeI[i] - kernel_size[i] + 2*padding[i])/stride[i]) + 1)
 
     stride = Sizes(tuple(stride))
     padding = Sizes(tuple(padding))
     kernel_size = Sizes(tuple(kernel_size))
     dilation = Sizes(tuple(dilation))
     out = Tensor(sizeO, input.get_dtype())
-
     if not return_indices:
         func = check_function("diopiMaxPool2d")
         ret = func(input.context_handle, out.tensor_handle,
@@ -1405,6 +1401,7 @@ def adaptive_avg_pool2d(input, output_size):
             sizeO.append(sizeI[i])
         else:
             sizeO.append(output_size[i])
+
 
     out = Tensor(sizeO, input.get_dtype())
     output_size = Sizes((sizeO[-2], sizeO[-1]))
@@ -1930,13 +1927,9 @@ def split(tensor, split_size_or_sections, dim=0):
         sum -= sizeI[dim]
         splitSizes += (sizeI[dim], )
         out = Tensor(sizeI, tensor.get_dtype())
-        outs.append(out)
+        outs.append(out.tensor_handle)
 
-    c_outs = []
-    for i in range(idx):
-        c_outs.append(outs[i].tensor_handle)
-
-    c_outs = (c_void_p * idx)(*c_outs)
+    c_outs = (c_void_p * idx)(*outs)
     splitSizes = Sizes(splitSizes)
     assert sum == 0,\
         "split_size_or_sections should be compatible with tensor shape"
@@ -2022,7 +2015,7 @@ def where(condition, input, other) -> Tensor:
     C API
         :guilabel:`diopiWhere`
     """
-    assert (condition.get_dtype() in (Dtype.bool, Dtype.uint8)),\
+    assert(condition.get_dtype() in (Dtype.bool, Dtype.uint8)),\
         "condition must be a bool tensor"
     sizeX = list(input.size())
     sizeY = list(other.size())
@@ -2054,9 +2047,9 @@ def clip_grad_norm_(parameters, max_norm, norm_type=2.0, error_if_nonfinite=Fals
     C API
         :guilabel:`diopiClipGradNorm`
     """
-    assert (isinstance(max_norm, (int, float))),\
+    assert(isinstance(max_norm, (int, float))),\
         "max_norm must be a int or float"
-    assert (isinstance(norm_type, (int, float))),\
+    assert(isinstance(norm_type, (int, float))),\
         "norm_type must be a int or float"
 
     if isinstance(parameters, Tensor):
@@ -2125,7 +2118,7 @@ def batch_norm(input, running_mean, running_var, weight=None, bias=None,
 
     func = check_function("diopiBatchNorm")
     if training:
-        assert (running_mean is None and running_var is None),\
+        assert(running_mean is None and running_var is None),\
             "if trainging, running_mean and running_var are useless"
         running_mean = c_void_p()
         running_var = c_void_p()
@@ -2273,7 +2266,7 @@ def gelu(input, approximate='none') -> Tensor:
     func = check_function("diopiGelu")
 
     ret = func(input.context_handle, out.tensor_handle,
-               input.tensor_handle, approximate.encode('UTF-8'))
+               input.tensor_handle,approximate.encode('UTF-8'))
 
     check_returncode(ret)
     return out
@@ -2699,7 +2692,7 @@ def sgd(param, param_grad, buf, lr, momentum=0, dampening=0, weight_decay=0, nes
     # buf, param_grad are mutable
     func = check_function("diopiSgd")
     ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle, buf.tensor_handle,
-               c_double(lr), c_double(momentum), c_double(dampening), c_double(weight_decay), nesterov)
+        c_double(lr), c_double(momentum), c_double(dampening), c_double(weight_decay), nesterov)
     check_returncode(ret)
     return param, buf
 
@@ -2712,4 +2705,5 @@ def adaptive_max_pool2d_backward(input, grad_outputs, indices, **kwargs) -> Tens
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
                input.tensor_handle, indices.tensor_handle)
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input" : grad_input}
+     
