@@ -38,7 +38,7 @@ void logError(First&& first, Rest&& ...rest) {
 
 #define NOT_SUPPORTED(str) \
     LOG_LINE_INFO() \
-    logError("NotSupported: ", str, ", ", __FILE__, ":", __LINE__);
+    logError("NotSupported: ", (str), ", ", __FILE__, ":", __LINE__);
 
 using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
 
@@ -244,7 +244,7 @@ void invokeATenFuncInp(diopiContextHandle_t ctx, Func func, Args&&... args) {
     func(std::forward<Args>(args)...);
 }
 
-void buildDIOPITensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
+void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
     at::IntArrayRef atSize = input.sizes();
     at::IntArrayRef atStride = input.strides();
     diopiSize_t size(const_cast<int64_t*>(atSize.data()), atSize.size());

@@ -316,14 +316,14 @@ diopiError_t diopiNms(diopiContextHandle_t ctx, diopiTensorHandle_t* out, const 
     auto atDets = impl::aten::buildATen(dets);
     auto atScores = impl::aten::buildATen(scores);
     auto atOut = vision::ops::nms_kernel(atDets, atScores, iouThreshold);
-    impl::aten::buildDIOPITensor(ctx, atOut, out);
+    impl::aten::buildDiopiTensor(ctx, atOut, out);
 }
 
 diopiError_t diopiNonzero(diopiContextHandle_t ctx,
         diopiTensorHandle_t* out, const diopiTensorHandle_t input) {
     auto atInput = impl::aten::buildATen(input);
     auto atOut = at::nonzero(atInput);
-    impl::aten::buildDIOPITensor(ctx, atOut, out);
+    impl::aten::buildDiopiTensor(ctx, atOut, out);
     return diopiSuccess;
 }
 
@@ -944,7 +944,7 @@ diopiError_t diopiClampMaxScalar(diopiContextHandle_t ctx, diopiTensorHandle_t o
     return diopiSuccess;
 }
 
-#if TORCH_MM_VERSION > 1100
+#if TORCH_MM_VERSION > TORCH_1_9_MM_VERSION
 diopiError_t diopiClampInp(diopiContextHandle_t ctx, diopiTensorHandle_t input,
         const diopiTensorHandle_t min, const diopiTensorHandle_t max) {
     at::Tensor atInput = impl::aten::buildATen(input);
@@ -1066,18 +1066,14 @@ diopiError_t diopiAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, c
     at::IntArrayRef atKernelSize = impl::aten::buildAtIntArray(kernel_size);
     at::IntArrayRef atStride = impl::aten::buildAtIntArray(stride);
     at::IntArrayRef atPadding = impl::aten::buildAtIntArray(padding);
-    bool atCeilMode = ceil_mode;
-    if (divisor_override == nullptr) {
-        impl::aten::invokeATenFuncRet(ctx, at::avg_pool2d, out, atInput, atKernelSize, atStride,
-            atPadding, atCeilMode, count_include_pad, c10::nullopt);
-    } else {
-        impl::aten::invokeATenFuncRet(ctx, at::avg_pool2d, out, atInput, atKernelSize, atStride,
-            atPadding, atCeilMode, count_include_pad, *divisor_override);
-    }
+    c10::optional<int64_t> atDivisorOverride = divisor_override ? c10::optional<int64_t>(*divisor_override) : c10::nullopt;
+    impl::aten::invokeATenFuncRet(ctx, at::avg_pool2d, out, atInput, atKernelSize, atStride,
+            atPadding, ceil_mode, count_include_pad, atDivisorOverride);
     return diopiSuccess;
 }
 
-diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input, double p, bool train) {
+diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, double p, bool train) {
     at::Tensor atInput = impl::aten::buildATen(input);
     impl::aten::invokeATenFuncRet(ctx, at::dropout, out, atInput, p, train);
     return diopiSuccess;
@@ -1108,13 +1104,14 @@ diopiError_t diopiSigmoidFocalLoss(diopiContextHandle_t ctx, diopiTensorHandle_t
     at::Tensor atRes = -atTarget * atTerm1 * alpha - (1 - atTarget) * atTerm2 * (1- alpha);
     if (reduction == 0) {
         impl::aten::updateATen2Tensor(ctx, atRes, out);
-    }else if (reduction == 1) {
+    } else if (reduction == 1) {
         at::Tensor atOut = at::mean(atRes);
         impl::aten::updateATen2Tensor(ctx, atOut, out);
-    }else if (reduction == 2) {
+    } else if (reduction == 2) {
         at::Tensor atOut = at::sum(atRes);
         impl::aten::updateATen2Tensor(ctx, atOut, out);
-    }else {
+    } else {
+        NOT_SUPPORTED("sigmoid reduction type");
         return diopiErrorOccurred;
     }
     return diopiSuccess;
@@ -1130,8 +1127,8 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     at::Tensor atRunningMean = impl::aten::buildATen(running_mean);
     at::Tensor atRunningVar = impl::aten::buildATen(running_var);
     bool cudnn_enabled = true;
-    impl::aten::invokeATenFuncRet(ctx, at::batch_norm, out, atInput, atWeight, atBias, atRunningMean,
-            atRunningVar, training, momentum, eps, cudnn_enabled);
+    impl::aten::invokeATenFuncRet(ctx, at::batch_norm, out, atInput, atWeight, atBias,
+        atRunningMean, atRunningVar, training, momentum, eps, cudnn_enabled);
     return diopiSuccess;
 }
 
@@ -1148,8 +1145,8 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, cons
     at::Tensor atInput = impl::aten::buildATen(input);
     c10::List<c10::optional<at::Tensor>> vecIdx;
     vecIdx.reserve(nums);
-    for (int i = 0; i < nums; ++i) {
-        if ( indices[i] == nullptr ){
+    for (size_t i = 0; i < nums; ++i) {
+        if (indices[i] == nullptr) {
             vecIdx.emplace_back(c10::nullopt);
         } else {
             at::Tensor atIndex = impl::aten::buildATen(indices[i]);
@@ -1157,7 +1154,7 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, cons
         }
     }
     at::Tensor atOut = at::index(atInput, vecIdx).contiguous();
-    impl::aten::buildDIOPITensor(ctx, atOut, out);
+    impl::aten::buildDiopiTensor(ctx, atOut, out);
     return diopiSuccess;
 }
 
@@ -1180,7 +1177,7 @@ diopiError_t diopiHardtanhInp(diopiContextHandle_t ctx, diopiTensorHandle_t inpu
 }
 
 diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
-                                     const diopiScalar_t* threshold, const diopiScalar_t* value) {
+                            const diopiScalar_t* threshold, const diopiScalar_t* value) {
     auto atInput = impl::aten::buildATen(input);
     auto atThreshold = impl::aten::buildAtScalar(threshold);
     auto atValue = impl::aten::buildAtScalar(value);
@@ -1209,27 +1206,29 @@ diopiError_t diopiCrossNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out
     auto atInput = impl::aten::buildATen(input);
     auto atTarget = impl::aten::buildATen(target);
     auto atWeight = impl::aten::buildATen(weight);
-    if(atInput.dim() > 2){
+    if (atInput.dim() > 2) {
         auto channel = atInput.size(1);
         int64_t totalSize = 1;
-        for(int i=0; i<atInput.dim(); ++i){
+        for (size_t i = 0; i < atInput.dim(); ++i) {
             totalSize *= atInput.size(i);
         }
-        std::vector<int64_t> toShape {channel, totalSize/channel};
+        std::vector<int64_t> toShape {channel, totalSize / channel};
         at::IntArrayRef intArrayShape = impl::aten::buildAtIntArray(diopiSize_t(toShape.data(), toShape.size()));
         atInput = atInput.transpose(0, 1).reshape(intArrayShape).transpose(0, 1);
     }
-    if(atTarget.dim() > 1){
+
+    if (atTarget.dim() > 1) {
         int64_t totalSize = 1;
-        for(int i=0; i<atTarget.dim(); ++i){
+        for (size_t i = 0; i < atTarget.dim(); ++i) {
             totalSize *= atTarget.size(i);
         }
         atTarget = atTarget.reshape(totalSize);
     }
+
     auto atOut = at::nll_loss(atInput, atTarget, atWeight, reduction, ignore_index);
-    if(reduction == at::Reduction::None && atTarget.dim() > 1){
+    if (reduction == at::Reduction::None && atTarget.dim() > 1) {
         std::vector<int64_t> toShape;
-        for(int i=0; i<atTarget.dim(); ++i){
+        for (size_t i = 0; i < atTarget.dim(); ++i) {
             toShape.push_back(atTarget.size(i));
         }
         at::IntArrayRef intArrayShape = impl::aten::buildAtIntArray(diopiSize_t(toShape.data(), toShape.size()));
