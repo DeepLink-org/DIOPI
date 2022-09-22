@@ -693,7 +693,6 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((64, ), (169, 4), (17100, 2), (1, 1, 384),
                               (4, 133, 128, 128), (2, 64, 3, 3, 3)),
                     "dtype": [Dtype.float32, Dtype.float64],
