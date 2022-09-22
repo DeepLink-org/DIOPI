@@ -1796,6 +1796,8 @@ def sort(input, dim=- 1, descending=False, stable=False):
     sizeI = input.size()
     indices = Tensor(sizeI, Dtype.int64)
 
+    stable = c_void_p() if stable is None else pointer(c_bool(stable))
+
     func = check_function("diopiSort")
     ret = func(input.context_handle, vals.tensor_handle, indices.tensor_handle,
                input.tensor_handle, dim, descending, stable)
