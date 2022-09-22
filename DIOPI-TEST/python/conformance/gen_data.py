@@ -291,7 +291,11 @@ class GenInputData(object):
             pickle.dump(cfg_save_dict, f)
 
         logger.info(f"Generate test cases number: {cfg_counter}")
-        logger.info("Generate benchmark input data done!")
+        if cfg_counter == 0:
+            logger.warn(f"No benchmark input data is generated, \"--fname {func_name}\" may not be in the diopi-config, " \
+                f"check the arguments --fname")
+        else:
+            logger.info("Generate benchmark input data done!")
 
 
 class CustomizedTest(object):
@@ -471,4 +475,8 @@ class GenOutputData(object):
                     gen_counter += 1
 
         logger.info(f"Generate test cases number: {gen_counter}")
-        logger.info("Generate benchmark output and backward data done!")
+        if gen_counter == 0:
+            logger.warn(f"No benchmark output data is generated, \"--fname {func_name}\" may not be in the diopi-config, " \
+                f"check the arguments --fname")
+        else:
+            logger.info("Generate benchmark output and backward data done!")
