@@ -208,7 +208,6 @@ diopi_configs = {
         name=["adaptive_max_pool2d"],
         atol=1e-5,
         rtol=1e-4,
-        do_backward=True,
         requires_backward=[0],
         saved_args=dict(indices=1),
         para=dict(
@@ -266,7 +265,7 @@ diopi_configs = {
 
     'pointwise_op': dict(
         name=['abs', 'cos', 'erf', 'exp', 'floor',
-              'log', 'log2', 'log10', 'neg', 'sin',
+              'log', 'log2', 'log10', 'neg', 'sin', 
               'sqrt', 'tanh'],
         interface=['torch'],
         is_inplace=True,

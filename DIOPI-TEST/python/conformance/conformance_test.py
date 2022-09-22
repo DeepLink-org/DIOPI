@@ -124,7 +124,7 @@ class ConformanceTest(object):
                     logger.error(f"Failed: {e}")
                     continue
 
-            if "do_backward" in data["cfg"].keys() and output is not None:
+            if function_paras["requires_grad"]:
                 saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
                 if not isinstance(output, (list, tuple)):
                     output = [output]

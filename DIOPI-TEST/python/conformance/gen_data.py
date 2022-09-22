@@ -222,7 +222,8 @@ def gen_and_dump_data(dir_path: str, cfg_name: str, cfg_expand_list: list, cfg_s
             if len(arg["gen_num_range"]) != 2:
                 value = gen_tensor(arg)
                 function_paras["kwargs"][name] = value
-                function_paras["requires_grad"][name] = arg["requires_grad"]
+                if arg["requires_grad"] == [True]:
+                    function_paras["requires_grad"][name] = arg["requires_grad"]
             else:
                 tensors_num = np.random.randint(arg['gen_num_range'][0],
                                                 arg['gen_num_range'][1])
@@ -338,7 +339,8 @@ def transfer_tensor_to_device(function_paras: dict):
     for para in function_paras["kwargs"].keys():
         if isinstance(function_paras['kwargs'][para], np.ndarray):
             tensor = torch.from_numpy(function_paras['kwargs'][para])
-            if function_paras["requires_grad"][para] == [True]:
+            if para in function_paras["requires_grad"].keys()\
+                    and function_paras["requires_grad"][para] == [True]:
                 tensor.requires_grad = True
             function_paras['kwargs'][para] = tensor.cuda()
 
@@ -442,7 +444,7 @@ class GenOutputData(object):
                 logger.error(f"Failed to execute function {func_call}, caused by {e}")
                 continue
 
-            if "do_backward" in data["cfg"].keys():
+            if function_paras["requires_grad"]:
                 saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
                 if not isinstance(outputs, (list, tuple)):
                     outputs = [outputs]
