@@ -1175,28 +1175,6 @@ diopiError_t diopiBCEWithLogits(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     return diopiSuccess;
 }
 
-diopiError_t diopiBCEWithLogits(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
-        const diopiTensorHandle_t target, const diopiTensorHandle_t weight,
-        const diopiTensorHandle_t pos_weight, int64_t reduction) {
-    at::Tensor atInput = impl::aten::buildAtTensor(input);
-    at::Tensor atTarget = impl::aten::buildAtTensor(target);
-    c10::optional<at::Tensor> atWeight;
-    c10::optional<at::Tensor> atPosWeight;
-    if (weight == nullptr) {
-        atWeight = c10::nullopt;
-    } else {
-        atWeight = impl::aten::buildAtTensor(weight);
-    }
-    if (pos_weight == nullptr) {
-        atPosWeight = c10::nullopt;
-    } else {
-        atPosWeight = impl::aten::buildAtTensor(pos_weight);
-    } 
-    impl::aten::invokeATenFuncRet(ctx, at::binary_cross_entropy_with_logits, out, atInput, atTarget, atWeight,
-            atPosWeight, reduction);
-    return diopiSuccess;
-}
-
 diopiError_t diopiHardtanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
                            const diopiScalar_t* min_val, const diopiScalar_t* max_val) {
     auto atInput = impl::aten::buildATen(input);
