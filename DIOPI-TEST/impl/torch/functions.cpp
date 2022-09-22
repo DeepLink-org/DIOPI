@@ -1,13 +1,3 @@
-/**
- * @file functions.cpp
- * @author fengsibo@sensetime.com
- * @brief 
- * @version 0.1
- * @date 2022-09-05
- * 
- * @copyright Copyright (c) 2022
- * 
- */
 
 #include <diopi/functions.h>
 #include <torch/nn.h>
@@ -207,22 +197,22 @@ diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     return diopiSuccess;
 }
 
-// NOTE(fengsibo@sensetime.com): add int, short, bool test case
+// NOTE(fengsibo): add int, short, bool test case
 diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         const diopiTensorHandle_t input, diopiSize_t dim, diopiDtype_t dtype) {
     auto atInput = impl::aten::buildATen(input);
     auto atDim = impl::aten::buildAtIntArray(dim);
-    auto atOut = at::mean(atInput, atDim);  // TODO(fengsibo@sensetime.com): use default type instead
+    auto atOut = at::mean(atInput, atDim);  // TODO(fengsibo): use default type instead
     impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
 }
 
-// NOTE(fengsibo@sensetime.com): add int, short, bool test case
+// NOTE(fengsibo): add int, short, bool test case
 diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         const diopiTensorHandle_t input, diopiSize_t dim, diopiDtype_t dtype) {
     auto atInput = impl::aten::buildATen(input);
     auto atDim = impl::aten::buildAtIntArray(dim);
-    auto atOut = at::sum(atInput, atDim);  // TODO(fengsibo@sensetime.com): use default type instead
+    auto atOut = at::sum(atInput, atDim);  // TODO(fengsibo): use default type instead
     impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
 }
@@ -273,7 +263,7 @@ diopiError_t diopiAll(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         const diopiTensorHandle_t input, int64_t dim, diopiDtype_t dtype) {
     auto atInput = impl::aten::buildATen(input);
-    auto atOut = at::softmax(atInput, dim);  // TODO(fengsibo@sensetime.com): use default type instead
+    auto atOut = at::softmax(atInput, dim);  // TODO(fengsibo): use default type instead
     impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
 }
@@ -281,7 +271,7 @@ diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         const diopiTensorHandle_t input, int64_t dim, diopiDtype_t dtype) {
     auto atInput = impl::aten::buildATen(input);
-    auto atOut = at::log_softmax(atInput, dim);  // TODO(fengsibo@sensetime.com): use default type instead
+    auto atOut = at::log_softmax(atInput, dim);  // TODO(fengsibo): use default type instead
     impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
 }

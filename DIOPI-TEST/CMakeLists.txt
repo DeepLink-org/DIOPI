@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.4)
 project(diopi_conformance_test)
 
 option(USE_CXX "Whether to use cxx impl, or use c impl" ON)
+option(IMPL_CUDA "Whether to compile impl/cuda" ON)
+option(IMPL_TORCH "Whether to compile impl/torch" OFF)
 
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/diopirt/include")
 include_directories(include)
@@ -23,5 +25,12 @@ endif()
 set_target_properties(${DIOPIRT} PROPERTIES SUFFIX ".so")
 
 set(DEVICEIMPL device_impl)
-# add_subdirectory(impl/cuda)
-add_subdirectory(impl/torch)
+
+if (IMPL_CUDA)
+    add_subdirectory(impl/cuda)
+elseif (IMPL_TORCH)
+    add_subdirectory(impl/torch)
+else()
+    message("no impl module compile")
+endif()
+
