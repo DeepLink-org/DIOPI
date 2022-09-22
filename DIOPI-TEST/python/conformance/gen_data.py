@@ -173,7 +173,7 @@ def gen_tensor(arg: dict) -> np.ndarray:
             gen_fn = arg["gen_fn"]
         else:
             gen_fn = arg["gen_fn"]["fn"]
-            assert (gen_fn == Genfunc.randint), "only randint needs args"
+            assert(gen_fn == Genfunc.randint), "only randint needs args"
             low = arg["gen_fn"].get("low", 0)
             high = arg["gen_fn"].get("high", 10)
         dtype = to_numpy_dtype(arg["dtype"])
@@ -230,7 +230,7 @@ def gen_and_dump_data(dir_path: str, cfg_name: str, cfg_expand_list: list, cfg_s
                 for _ in range(tensors_num):
                     value = gen_tensor(arg)
                     tensor_list.append(value)
-                assert (cfg_dict["tensor_para"]["seq_name"] != ""), "need a name the list of tensors"
+                assert(cfg_dict["tensor_para"]["seq_name"] != ""), "need a name the list of tensors"
         # tie all the function_paras in a list named seq_name
         if cfg_dict["tensor_para"]["seq_name"] != "":
             name = cfg_dict["tensor_para"]["seq_name"]
@@ -291,20 +291,14 @@ class GenInputData(object):
             pickle.dump(cfg_save_dict, f)
 
         logger.info(f"Generate test cases number: {cfg_counter}")
-        if cfg_counter == 0:
-            logger.warn(f"No benchmark input data is generated, \"--fname {func_name}\" may not be in the diopi-config, " \
-                f"check the arguments --fname")
-        else:
-            logger.info("Generate benchmark input data done!")
+        logger.info("Generate benchmark input data done!")
 
 
 class CustomizedTest(object):
     def slice_op(input, dim, index):
         import torch
-        sizeI = input.size()
-        slice_args = []
-        for i in range(len(sizeI)):
-            slice_args.append(slice(0, sizeI[i], 1))
+        size = len(input.size())
+        slice_args = [True for i in range(size)]
         slice_args[dim] = index
         return torch.Tensor.__getitem__(input, slice_args)
 
@@ -331,7 +325,6 @@ class CustomizedTest(object):
 
     def test_dropout(input, p=0.5, training=True, inplace=False):
         return p
-
 
 def transfer_tensor_to_device(function_paras: dict):
     import torch
@@ -376,9 +369,9 @@ def to_numpy(tensors):
         ndarrays = {}
         for k, v in tensors.items():
             if isinstance(v, torch.Tensor):
-                tmp = {k: v.detach().cpu().numpy()}
+                tmp = {k : v.detach().cpu().numpy()}
             else:
-                tmp = {k: v}
+                tmp = {k : v}
             ndarrays.update(tmp)
     elif isinstance(tensors, (int, float)):
         ndarrays = np.array(tensors)
@@ -410,8 +403,8 @@ class GenOutputData(object):
         for saved_pth in saved_pth_list:
             input_abs_path = os.path.join(inputs_dir_path, saved_pth)
             if not os.path.exists(input_abs_path):
-                logger.error(f"FileNotFound: No benchmark input data '{saved_pth}' was generated "
-                             f"(No such file or directory: {input_abs_path})")
+                logger.error(f"FileNotFound: No benchmark input data '{saved_pth}' was generated " \
+                    f"(No such file or directory: {input_abs_path})")
                 continue
             try:
                 f = open(input_abs_path, "rb")
@@ -475,8 +468,4 @@ class GenOutputData(object):
                     gen_counter += 1
 
         logger.info(f"Generate test cases number: {gen_counter}")
-        if gen_counter == 0:
-            logger.warn(f"No benchmark output data is generated, \"--fname {func_name}\" may not be in the diopi-config, " \
-                f"check the arguments --fname")
-        else:
-            logger.info("Generate benchmark output and backward data done!")
+        logger.info("Generate benchmark output and backward data done!")
