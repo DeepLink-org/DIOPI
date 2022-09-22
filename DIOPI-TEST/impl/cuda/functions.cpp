@@ -53,7 +53,7 @@ static diopiError_t convertType(cudnnDataType_t *cudnnType, diopiDtype_t type) {
     case diopi_dtype_float64:
         *cudnnType = CUDNN_DATA_DOUBLE;
         break;
-#if CUDNN_VESION > 1100
+#if CUDNN_VERSION >= 8400
     case diopi_dtype_bool:
         *cudnnType = CUDNN_DATA_BOOLEAN;
         break;
@@ -63,7 +63,7 @@ static diopiError_t convertType(cudnnDataType_t *cudnnType, diopiDtype_t type) {
     case diopi_dtype_int64:
         *cudnnType = CUDNN_DATA_INT64;
         break;
-#endif  // CUDNN_VESION > 1100
+#endif  // CUDNN_VERSION >= 8400
     default:
         char strLastError[2048] = {0};
         sprintf(strLastError, "unkown diopitype error %d at %s:%s", type, __FILE__, __LINE__);

@@ -13,8 +13,9 @@
 
 
 #define DIOPI_CALL(Expr) {                                                              \
-    if (diopiSuccess != Expr) {                                                         \
-        return Expr;                                                                    \
+    diopiError_t ret = Expr;                                                            \
+    if (diopiSuccess != ret) {                                                          \
+        return ret;                                                                     \
     }}
 
 extern "C" void set_error_string(const char *err);
