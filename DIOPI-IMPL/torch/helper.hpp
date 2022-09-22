@@ -16,7 +16,7 @@
 #define TORCH_1_11_MM_VERSION 1110
 #define TORCH_1_12_MM_VERSION 1120
 
-#define LOG_LINE_INFO(f) f << __FILE__ << ":" << __LINE__ << ": "; 
+#define LOG_LINE_INFO() std::cerr << __FILE__ << ":" << __LINE__ << ": "; 
 
 void logError(){std::cerr << std::endl;}
 
@@ -27,17 +27,17 @@ void logError(First&& first, Rest&& ...rest) {
 }
 
 #define ATEN_NOT_SUPPORTED() \
-    LOG_LINE_INFO(std::cerr) \
+    LOG_LINE_INFO() \
     logError("NotImplementError: function ", __FUNCTION__, " is not implemented for torch version ", \
         TORCH_VERSION);
 
 #define ATEN_NOT_IMPLEMENT() \
-    LOG_LINE_INFO(std::cerr) \
+    LOG_LINE_INFO() \
     logError("NotImplementError: function ", __FUNCTION__, " is not implemented for torch version ", \
         TORCH_VERSION);
 
 #define NOT_SUPPORTED(str) \
-    LOG_LINE_INFO(std::cerr) \
+    LOG_LINE_INFO() \
     logError("NotSupported: ", str, ", ", __FILE__, ":", __LINE__);
 
 using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
@@ -97,7 +97,7 @@ diopiDtype_t getDIOPITensorType(at::Tensor& input) {
     case at::ScalarType::Double:
         return diopi_dtype_float64;
     default:
-        NOT_SUPPORTED("at::Tensor dtype");
+        NOT_SUPPORTED("aten dtype");
     }
 }
 
@@ -128,7 +128,7 @@ at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes,
     return at::empty({0}, options).set_(storage, 0, sizes, strides);
 }
 
-at::Tensor buildAtTensor(diopiTensorHandle_t tensor) {
+at::Tensor buildATen(diopiTensorHandle_t tensor) {
     if (tensor == nullptr) return at::Tensor();
 
     diopiDtype_t dtype;
@@ -181,10 +181,10 @@ at::IntArrayRef buildAtIntArray(diopiSize_t size) {
     return at::IntArrayRef(size.data, size.len);
 }
 
-decltype(auto) buildAtTensorList(const diopiTensorHandle_t* tensors, int64_t numTensors) {
+decltype(auto) buildATenList(const diopiTensorHandle_t* tensors, int64_t numTensors) {
     std::vector<at::Tensor> vecAtTensor;
     for (size_t i = 0; i < numTensors; ++i) {
-        vecAtTensor.emplace_back(buildAtTensor(tensors[i]));
+        vecAtTensor.emplace_back(buildATen(tensors[i]));
     }
     return vecAtTensor;
 }
