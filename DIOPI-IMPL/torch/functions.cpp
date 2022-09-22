@@ -444,17 +444,18 @@ diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 }
 
 diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, diopiTensorHandle_t indices,
-        const diopiTensorHandle_t input, int64_t dim, bool descending, const bool stable) {
+        const diopiTensorHandle_t input, int64_t dim, bool descending, const bool* stable) {
     auto atInput = impl::aten::buildATen(input);
     diopi_tensor_list vecOut = {values, indices};
-#if TORCH_MM_VERSION < TORCH_1_9_MM_VERSION
+#if TORCH_MM_VERSION <= TORCH_1_8_MM_VERSION
     impl::aten::invokeATenFuncRet
         <std::tuple<at::Tensor, at::Tensor> (*)(at::Tensor const &, int64_t, bool)>
         (ctx, at::sort, vecOut, atInput, dim, descending);
 #else
+    c10::optional<bool> atStable = stable ? c10::optional<bool>(*stable) : c10::nullopt;
     impl::aten::invokeATenFuncRet
         <std::tuple<at::Tensor, at::Tensor> (*)(at::Tensor const &, c10::optional<bool>, int64_t, bool)>
-        (ctx, at::sort, vecOut, atInput, stable, dim, descending);
+        (ctx, at::sort, vecOut, atInput, atStable, dim, descending);
 #endif
     return diopiSuccess;
 }
@@ -1059,7 +1060,7 @@ diopiError_t diopiAdaptiveMaxPool2dBackward(diopiContextHandle_t ctx, diopiTenso
 
 diopiError_t diopiAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
         diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding, bool ceil_mode,
-        bool count_include_pad, int64_t* divisor_override) {
+        bool count_include_pad, const int64_t* divisor_override) {
     at::Tensor atInput = impl::aten::buildATen(input);
     at::IntArrayRef atKernelSize = impl::aten::buildAtIntArray(kernel_size);
     at::IntArrayRef atStride = impl::aten::buildAtIntArray(stride);
