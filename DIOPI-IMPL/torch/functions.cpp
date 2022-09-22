@@ -12,6 +12,7 @@
 #include <diopi/functions.h>
 #include <torch/nn.h>
 #include <torch/optim.h>
+#include <iostream>
 
 #include "helper.hpp"
 #include "vision_kernel.h"
@@ -1169,6 +1170,28 @@ diopiError_t diopiBCEWithLogits(diopiContextHandle_t ctx, diopiTensorHandle_t ou
         ? c10::optional<at::Tensor>(impl::aten::buildATen(pos_weight))
         : c10::nullopt;
 
+    impl::aten::invokeATenFuncRet(ctx, at::binary_cross_entropy_with_logits, out, atInput, atTarget, atWeight,
+            atPosWeight, reduction);
+    return diopiSuccess;
+}
+
+diopiError_t diopiBCEWithLogits(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
+        const diopiTensorHandle_t target, const diopiTensorHandle_t weight,
+        const diopiTensorHandle_t pos_weight, int64_t reduction) {
+    at::Tensor atInput = impl::aten::buildAtTensor(input);
+    at::Tensor atTarget = impl::aten::buildAtTensor(target);
+    c10::optional<at::Tensor> atWeight;
+    c10::optional<at::Tensor> atPosWeight;
+    if (weight == nullptr) {
+        atWeight = c10::nullopt;
+    } else {
+        atWeight = impl::aten::buildAtTensor(weight);
+    }
+    if (pos_weight == nullptr) {
+        atPosWeight = c10::nullopt;
+    } else {
+        atPosWeight = impl::aten::buildAtTensor(pos_weight);
+    } 
     impl::aten::invokeATenFuncRet(ctx, at::binary_cross_entropy_with_logits, out, atInput, atTarget, atWeight,
             atPosWeight, reduction);
     return diopiSuccess;
