@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+from bdb import checkfuncname
 import math
 
 from ctypes import c_float, c_double, c_int64, c_int32, c_bool, c_void_p, byref, pointer
@@ -1469,3 +1470,109 @@ def adaptive_max_pool2d_backward(input, grad_outputs, indices, **kwargs) -> Tens
                input.tensor_handle, indices.tensor_handle)
     check_returncode(ret)
     return {"input": grad_input}
+
+def adaptive_avg_pool2d_backward(input, grad_outputs, **kwargs) -> Tensor:
+    grad_input = raw_like(input)
+    assert len(grad_outputs) == 1,\
+        "only input needs do backward"
+    func = check_function("diopiAdaptiveAvgPool2dBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle)
+    check_returncode(ret)
+    return {"input": grad_input}
+
+def leaky_relu_backward(input, grad_outputs, negative_slope=0.01, input_is_result=False, **kwargs) -> Tensor:
+    grad_input = raw_like(input)
+    negative_slope = byref(Scalar(Dtype.float64, negative_slope))
+    assert len(grad_outputs) == 1,\
+        "only input needs do backward"
+    func = check_function("diopiLeakyReluBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle, negative_slope, input_is_result)
+    check_returncode(ret)
+    return {"input": grad_input}
+
+def hardtanh_backward(input, grad_outputs, min_val=-1.0, max_val=1.0, **kwargs) -> Tensor:
+    grad_input = raw_like(input)
+    min_val = byref(Scalar(input.get_dtype(), min_val))
+    max_val = byref(Scalar(input.get_dtype(), max_val))
+    assert len(grad_outputs) == 1,\
+        "only input needs do backward"
+    func = check_function("diopiHardtanhBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle, min_val, max_val)
+    check_returncode(ret)
+    return {"input": grad_input}
+
+def gelu_backward(input, grad_outputs, **kwargs) -> Tensor:
+    grad_input = raw_like(input)
+    assert len(grad_outputs) == 1, \
+        "only input needs do backward"
+    func = check_function("diopiGeluBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle)
+    check_returncode(ret)
+    return {"input": grad_input}
+
+def avg_pool2d_backward(input, grad_outputs, kernel_size, stride=None, padding=0, ceil_mode=False,
+               count_include_pad=True, divisor_override=None, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, \
+        "only input needs do backward"
+    grad_input = raw_like(input)
+    if isinstance(kernel_size, int):
+        kernel_size = (kernel_size, kernel_size)
+    if isinstance(stride, int):
+        stride = (stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding)
+    stride = Sizes(tuple(stride))
+    padding = Sizes(tuple(padding))
+    kernel_size = Sizes(tuple(kernel_size))
+    if divisor_override is None:
+        divisor_override = c_void_p()
+    else:
+        divisor_override = byref(c_int64(divisor_override))
+    func = check_function("diopiAvgPool2dBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override)
+    check_returncode(ret)
+    return {"input": grad_input}
+
+def mse_loss_backward(input, grad_outputs, target, reduction='mean', **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, \
+        "only input needs do backward"
+    grad_input = raw_like(input)
+    reduction_mode = convert_reduction(reduction)
+    func = check_function("diopiMSELossBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle, target.tensor_handle, reduction_mode)
+    check_returncode(ret)
+    return {"input": grad_input}
+
+def unary_op_backward(input, grad_outputs, call) -> Tensor:
+    assert len(grad_outputs) == 1, \
+        "only input needs do backward"
+    grad_input = raw_like(input)
+    func = check_function(call)
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle)
+    check_returncode(ret)
+    return {"input": grad_input}
+
+def tanh_backward(input, grad_outputs, **kwargs) -> Tensor:
+    return unary_op_backward(input, grad_outputs, "diopiTanhBackward")
+
+def index_select_backward(input, grad_outputs, dim, index,  **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, \
+        "only input needs do backward"
+    grad_input = raw_like(input)
+    inputSize = input.size()
+    inputSize = Sizes(tuple(inputSize))
+    func = check_function("diopiIndexSelectBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+            inputSize, dim, index.tensor_handle)
+    check_returncode(ret)
+    return {"input": grad_input}
+
+    
+

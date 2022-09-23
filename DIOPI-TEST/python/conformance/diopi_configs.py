@@ -87,6 +87,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
+                    "requires_grad": [True],
                     "shape": ((2, 4096), (64, 28, 28),
                               (2, 96, 56, 56), (64, 3, 7, 28, 28)),
                     "dtype": [Dtype.float32, Dtype.float64],
@@ -151,6 +152,8 @@ diopi_configs = {
         tensor_para=dict(
             args=[
                 {
+                    "ins": ['input'],
+                    "requires_grad": [True],
                     "shape": ((2, 1024, 14, 14), (256, 28, 28)),
                     "dtype": [Dtype.float32, Dtype.float64],
                 },
@@ -275,6 +278,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
+                    "requires_grad": [True],
                     "shape": ((1, ), (1024,), (364800, 4), (2, 128, 3072),
                               (256, 128, 3, 3),
                               (2, 31, 512, 6, 40)),
@@ -1320,6 +1324,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
+                    "requires_grad": [True],
                     "shape": ((16, 7), (64, 28, 28),
                               (2, 32, 208, 304), (64, 3, 7, 28, 28)),
                     "dtype": [Dtype.float32, Dtype.float64],
