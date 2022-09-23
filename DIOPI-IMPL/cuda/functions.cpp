@@ -17,20 +17,16 @@
 #define DIOPI_CALLCUDNN(Expr) {                                                         \
         ::cudnnStatus_t ret = Expr;                                                     \
         if (CUDNN_STATUS_SUCCESS != ret) {                                              \
-            char strLastError[2048] = {0};                                              \
-            sprintf(strLastError, "cudnn error %d : %s at %s:%s",                       \
+            impl::cuda::set_last_error_string("cudnn error %d : %s at %s:%s",           \
                     ret, cudnnGetErrorString(ret), __FILE__, __LINE__);                 \
-            set_error_string(strLastError);                                             \
             return diopiErrorOccurred;                                                  \
         }}                                                                              \
 
 #define DIOPI_CHECKCUDNN(Expr) {                                                        \
         ::cudnnStatus_t ret = Expr;                                                     \
         if (CUDNN_STATUS_SUCCESS != ret) {                                              \
-            char strLastError[2048] = {0};                                              \
-            sprintf(strLastError, "cudnn error %d : %s at %s:%s",                       \
+            impl::cuda::set_last_error_string("cudnn error %d : %s at %s:%s",           \
                     ret, cudnnGetErrorString(ret), __FILE__, __LINE__);                 \
-            set_error_string(strLastError);                                             \
         }}                                                                              \
 
 static diopiError_t convertType(cudnnDataType_t *cudnnType, diopiDtype_t type) {
@@ -65,9 +61,7 @@ static diopiError_t convertType(cudnnDataType_t *cudnnType, diopiDtype_t type) {
         break;
 #endif  // CUDNN_VERSION >= 8400
     default:
-        char strLastError[2048] = {0};
-        sprintf(strLastError, "unkown diopitype error %d at %s:%s", type, __FILE__, __LINE__);
-        set_error_string(strLastError);
+        impl::cuda::set_last_error_string("unkown diopitype error %d at %s:%s", type, __FILE__, __LINE__);
         return diopiDtypeNotSupported;
     }
     return diopiSuccess;
@@ -152,7 +146,7 @@ extern "C" diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle
                                      const diopiTensorHandle_t input, int64_t dim, diopiDtype_t dtype)
 {
     if (dim > 1) {
-        printf("unkown dim error dim=%d at %s:%s", dim, __FILE__, __LINE__);
+        impl::cuda::set_last_error_string("unkown dim error dim=%d at %s:%s", dim, __FILE__, __LINE__);
         return diopiErrorOccurred;
     }
 
