@@ -18,7 +18,6 @@
         return ret;                                                                     \
     }}
 
-extern "C" void set_error_string(const char *err);
 
 namespace impl {
 
@@ -119,6 +118,15 @@ inline cudaStream_t getStream(diopiContextHandle_t ctx) {
     diopiStreamHandle_t stream_handle;
     diopiGetStream(ctx, &stream_handle);
     return static_cast<cudaStream_t>(stream_handle);
+}
+
+void _set_last_error_string(const char *err);
+
+template<typename...Types>
+void set_last_error_string(const char* szFmt, Types&&...args) {
+    char szBuf[4096] = {0};
+    sprintf(szBuf, szFmt, std::forward<Types>(args)...);
+    _set_last_error_string(szBuf);
 }
 
 }  // namespace cuda

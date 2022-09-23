@@ -18,45 +18,33 @@
 #
 
 # This list will be used for CUDA_ARCH_NAME = All option
-set(CUDA_KNOWN_GPU_ARCHITECTURES  "Kepler" "Maxwell")
+set(CUDA_KNOWN_GPU_ARCHITECTURES  "Pascal")
 
 # This list will be used for CUDA_ARCH_NAME = Common option (enabled by default)
-set(CUDA_COMMON_GPU_ARCHITECTURES "3.0" "3.5" "5.0")
+set(CUDA_COMMON_GPU_ARCHITECTURES "6.0" "6.1")
 
-if (NOT (CUDA_VERSION VERSION_LESS "7.0"))
-    list(APPEND CUDA_KNOWN_GPU_ARCHITECTURES "Kepler+Tegra" "Kepler+Tesla" "Maxwell+Tegra")
-    list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "5.2")
-    if (NOT (CUDA_VERSION VERSION_LESS "8.0"))
-        list(APPEND CUDA_KNOWN_GPU_ARCHITECTURES "Pascal")
-        list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "6.0" "6.1")
-        if (NOT (CUDA_VERSION VERSION_LESS "9.0"))
-            list(APPEND CUDA_KNOWN_GPU_ARCHITECTURES "Volta")
-            list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "7.0")
-            if (NOT (CUDA_VERSION VERSION_LESS "10.0"))
-                list(APPEND CUDA_KNOWN_GPU_ARCHITECTURES "Turing")
-                list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "7.5")
-                if (NOT (CUDA_VERSION VERSION_LESS "11.0"))
-                    list(APPEND CUDA_KNOWN_GPU_ARCHITECTURES "Ampere")
-                    # https://forums.developer.nvidia.com/t/nvcc-fatal-unsupported-gpu-architecture-compute-86/161424
-                    if(NOT (CUDA_VERSION VERSION_LESS "11.2"))
-                        list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "8.0" "8.6+PTX")
-                    else()
-                        list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "8.0+PTX")
-                    endif()
-                else()
-                    list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "7.5+PTX")
-                endif()
+if (NOT (CUDA_VERSION VERSION_LESS "9.0"))
+    list(APPEND CUDA_KNOWN_GPU_ARCHITECTURES "Volta")
+    list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "7.0")
+    if (NOT (CUDA_VERSION VERSION_LESS "10.0"))
+        list(APPEND CUDA_KNOWN_GPU_ARCHITECTURES "Turing")
+        list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "7.5")
+        if (NOT (CUDA_VERSION VERSION_LESS "11.0"))
+            list(APPEND CUDA_KNOWN_GPU_ARCHITECTURES "Ampere")
+            # https://forums.developer.nvidia.com/t/nvcc-fatal-unsupported-gpu-architecture-compute-86/161424
+            if(NOT (CUDA_VERSION VERSION_LESS "11.2"))
+                list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "8.0" "8.6+PTX")
             else()
-                list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "7.0+PTX")
+                list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "8.0+PTX")
             endif()
         else()
-            list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "6.1+PTX")
+            list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "7.5+PTX")
         endif()
     else()
-        list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "5.2+PTX")
+        list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "7.0+PTX")
     endif()
 else()
-    list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "5.0+PTX")
+    list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "6.1+PTX")
 endif()
 
 
@@ -130,7 +118,7 @@ endfunction()
 ################################################################################################
 # Function for selecting GPU arch flags for nvcc based on CUDA architectures from parameter list
 # Usage:
-#   CUDA_SELECT_NVCC_ARCH_FLAGS(out_variable 
+#   CUDA_SELECT_NVCC_ARCH_FLAGS(out_variable
 #       option flags: ONE OF "All/Common/Auto" and HalfFilter or not, HalfFilter means filter-out
 #           arch which not support Half-precision
 #       Direct: direct list of CUDA compute archs, mutually exclusive with options
