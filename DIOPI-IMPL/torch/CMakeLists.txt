@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.4)
 project(torch_cpp_impl)
 
-find_package(Torch REQUIRED)
+find_package(Torch 1.10 EXACT REQUIRED)
 if (Torch_FOUND)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -std=c++14 -fPIC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
@@ -13,7 +13,7 @@ if (Torch_FOUND)
     add_definitions(-DTORCH_VERSION=${Torch_VERSION})
     message(STATUS "Found Torch Version: ${Torch_VERSION}")
 else()
-    message(FATAL_ERROR "No libtorch found")
+    message(FATAL_ERROR "Libtorch version 1.10 is required, no suitable version was found")
 endif()
 
 set(IMPL_SRC
@@ -28,4 +28,3 @@ set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
 target_link_libraries(${DEVICEIMPL} ${DIOPIRT})
 target_link_libraries(${DEVICEIMPL} ${CUDA_LIBRARIES})
 target_link_libraries(${DEVICEIMPL} ${TORCH_LIBRARIES})
-# target_link_libraries(${DEVICEIMPL} ${CU_KERNEL_LIB})

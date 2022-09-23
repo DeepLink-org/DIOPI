@@ -5,15 +5,16 @@
 Impl/libtorch 模块使用 [PyTorch C++ API](https://pytorch.org/cppdocs/) 实现了一致性测试套件中的算子声明，大部分 API 来自于 ATen 提供的算子库，部分算子参考了 Pytorch 内部和 [vision](https://github.com/pytorch/vision) 中的实现。
 
 ## 开始
-使用之前请确保 CUDA 和 PyTorch 已经成功安装在环境中，版本建议 `pytorch == 1.10`
+使用之前请确保 CUDA 和 PyTorch 已经成功安装在环境中，当前适配版本 `pytorch == 1.10`
 
 ### i. 编译
 因为使用到了 PyTorch C++ API，因此这里使用当前环境中的 libtorch 库调用 ATen
 ```bash
-cmake .. -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` -DIMPL_CUDA=OFF -DIMPL_TORCH=ON
+cmake .. -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` -DIMPL_CUDA=OFF -DIMPL_OPT=TORCH
 
 make -j4
 ```
+或在测试套件根目录运行脚本 `sh scripts/build_impl.sh torch` 编译
 
 ### ii. 运行与测试
 ```python3
