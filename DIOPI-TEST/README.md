@@ -7,7 +7,9 @@
 
 主要模块：
 - [DIOPI 运行时](csrc)：支持了运行时函数的接口，驱动芯片对算子进行运算。
-- [DIOPI 算子实现](impl/cuda)：提供了 CUDA 接入一致性测试套件的算子开发示例。
+- DIOPI 算子实现：提供了接入一致性测试套件的算子开发示例。
+    + [impl/cuda](impl/cuda)：使用 CUDA 和 cuDNN 实现了算子接口。
+    + [impl/torch](impl/torch)：使用 PyTorch C++ API 实现了算子接口。
 - [算子测试](python/main.py)：
     + 自定义测例配置：套件提供了描述算子测例的配置文件，方便用户自定义扩展测例。
     + 生成基准数据：套件可以根据配置文件生成算子测例的基准输入和输出数据。
@@ -27,10 +29,12 @@ git submodule update --init
 ```bash
 mkdir -p build && cd build
 
-cmake .. -DCUDA_ARCH_AUTO=ON
+cmake .. -DCUDA_ARCH_AUTO=ON -DIMPL_OPT=CUDA
 
 make -j4
 ```
+同时项目中提供了编译脚本 `sh scripts/build_impl.sh cuda`，可以直接运行进行编译。
+
 
 ### iii. 测试
 第一步生成基准输入和输出数据，第二步验证适配的算子的正确性。

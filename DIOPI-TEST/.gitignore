@@ -3,9 +3,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# scripts
-/*.sh
-
 # C extensions
 *.so
 
@@ -17,7 +14,6 @@ __pycache__/
 .Python
 env/
 build/
-build*
 develop-eggs/
 dist/
 downloads/

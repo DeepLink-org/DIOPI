@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.4)
 project(diopi_conformance_test)
 
 option(USE_CXX "Whether to use cxx impl, or use c impl" ON)
-option(IMPL_CUDA "Whether to compile impl/cuda" ON)
-option(IMPL_TORCH "Whether to compile impl/torch" OFF)
 
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/diopirt/include")
 include_directories(include)
@@ -26,11 +24,14 @@ set_target_properties(${DIOPIRT} PROPERTIES SUFFIX ".so")
 
 set(DEVICEIMPL device_impl)
 
-if (IMPL_CUDA)
+list(APPEND IMPL_CUDA "CUDA" "cuda")
+list(APPEND IMPL_TORCH "TORCH" "LIBTORCH" "ATEN" "PYTORCH" "torch" "libtorch" "aten" "pytorch" "PyTorch")
+
+if (${IMPL_OPT} IN_LIST IMPL_CUDA)
     add_subdirectory(impl/cuda)
-elseif (IMPL_TORCH)
+elseif (${IMPL_OPT} IN_LIST IMPL_TORCH)
     add_subdirectory(impl/torch)
 else()
-    message("no impl module compile")
+    message(WARNING "No implementation module is compiled, cmake requires option -DIMPL_OPT=CUDA or TORCH")
 endif()
 
