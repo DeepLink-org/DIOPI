@@ -3,6 +3,8 @@ from bdb import checkfuncname
 import math
 
 from ctypes import c_float, c_double, c_int64, c_int32, c_bool, c_void_p, byref, pointer
+import re
+from tabnanny import check
 from .diopi_runtime import Sizes, Scalar, Tensor, TensorHandle
 from .utils import check_returncode, check_function, squeeze
 from . import Dtype, raw_like
@@ -1574,5 +1576,55 @@ def index_select_backward(input, grad_outputs, dim, index,  **kwargs) -> Tensor:
     check_returncode(ret)
     return {"input": grad_input}
 
-    
+def select_backward(input, grad_outputs, dim, index, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, \
+        "only input needs do backward"
+    grad_input = raw_like(input)
+    inputSize = input.size()
+    inputSize = Sizes(tuple(inputSize))
+    func = check_function("diopiSelectBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               inputSize,  c_int64(dim), c_int64(index))
+    check_returncode(ret)
+    return {"input": grad_input}
 
+def softmax_backward(input, grad_outputs, output, dim, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, \
+        "only input needs do backward"
+    grad_input = raw_like(input)
+    func = check_function("diopiSoftmaxBackwardData")
+    ret  = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+                output.tensor_handle, dim, input.tensor_handle)
+    check_returncode(ret)
+    return {"input": grad_input}
+
+def log_softmax_backward(input, grad_outputs, output, dim, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, \
+        "only input needs do backward"
+    grad_input = raw_like(input)
+    func = check_function("diopiLogSoftmaxBackwardData")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               output.tensor_handle, dim, input.tensor_handle)
+    check_returncode(ret)
+    return {"input": grad_input}
+
+def sigmoid_backward(input, grad_outputs, output, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, \
+        "only input need do backward"
+    grad_input = raw_like(input)
+    func = check_function("diopiSigmoidBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               output.tensor_handle)
+    check_returncode(ret)
+    return {"input": grad_input}
+
+def threshold_backward(input, grad_outputs, threshold, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, \
+        "only input need do backward"
+    grad_input = raw_like(input)
+    threshold = byref(Scalar(input.get_dtype(), threshold))
+    func = check_function("diopiThresholdBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle, threshold)
+    check_returncode(ret)
+    return {"input": grad_input}

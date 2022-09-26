@@ -124,30 +124,30 @@ class ConformanceTest(object):
                     logger.error(f"Failed: {e}")
                     continue
 
-            if function_paras["requires_grad"]:
-                saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
-                if not isinstance(output, (list, tuple)):
-                    output = [output]
+                if function_paras["requires_grad"] and "inplace=True" not in func_call:
+                    saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
+                    if not isinstance(output, (list, tuple)):
+                        output = [output]
 
-                requires_backward = data["cfg"]["requires_backward"]
-                outputs_for_backward = output if len(requires_backward) == 0 \
-                    else [output[i] for i in requires_backward]
+                    requires_backward = data["cfg"]["requires_backward"]
+                    outputs_for_backward = output if len(requires_backward) == 0 \
+                        else [output[i] for i in requires_backward]
 
-                _, inputs_for_grad = get_name_and_data_for_grad(function_paras)
-                backward_para = {}
-                if len(inputs_for_grad) != 0:
-                    grad_outputs = [F.ones_like(i) for i in outputs_for_backward]
-                    backward_para["grad_outputs"] = grad_outputs
-                    for k, v in data["cfg"]['saved_args'].items():
-                        backward_para[k] = output[v]
+                    _, inputs_for_grad = get_name_and_data_for_grad(function_paras)
+                    backward_para = {}
+                    if len(inputs_for_grad) != 0:
+                        grad_outputs = [F.ones_like(i) for i in outputs_for_backward]
+                        backward_para["grad_outputs"] = grad_outputs
+                        for k, v in data["cfg"]['saved_args'].items():
+                            backward_para[k] = output[v]
 
-                    function_paras['kwargs'].update(backward_para)
-                    kwargs = function_paras['kwargs']
-                    grad_input = eval(f"F.{cfg_func_name}_backward(**kwargs)")
+                        # function_paras['kwargs'].update(backward_para)
+                        # kwargs = function_paras['kwargs']
+                        grad_input = eval(f"F.{cfg_func_name}_backward(**kwargs, **backward_para)")
 
-                    with open(os.path.join(outputs_dir_path, saved_backward_pth), "rb") as f:
-                        output_reference = pickle.load(f)
+                        with open(os.path.join(outputs_dir_path, saved_backward_pth), "rb") as f:
+                            output_reference = pickle.load(f)
 
-                    passed = compare_with_gen_output(grad_input, data['cfg'], output_reference)
-                    logger.info(f"run {cfg_func_name} backward succeed") \
-                        if passed else logger.error(f"run {cfg_func_name} backward failed")
+                        passed = compare_with_gen_output(grad_input, data['cfg'], output_reference)
+                        logger.info(f"run {cfg_func_name} backward succeed") \
+                            if passed else logger.error(f"run {cfg_func_name} backward failed")

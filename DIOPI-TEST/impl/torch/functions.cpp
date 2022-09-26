@@ -1323,4 +1323,47 @@ diopiError_t diopiIndexSelectBackward(diopiContextHandle_t ctx, diopiTensorHandl
     return diopiSuccess;
 }
 
+diopiError_t diopiSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input,
+                                 const diopiTensorHandle_t grad_output, diopiSize_t input_sizes, int64_t dim, int64_t index) {
+    auto atGradOutput = impl::aten::buildATen(grad_output);
+    at::IntArrayRef atInputSize = impl::aten::buildAtIntArray(input_sizes);
+    impl::aten::invokeATenFuncRet(ctx, at::select_backward, grad_input, atGradOutput, atInputSize, dim, index);
+    return diopiSuccess;
+}
+
+diopiError_t diopiSoftmaxBackwardData(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
+                                      const diopiTensorHandle_t output, int64_t dim, diopiTensorHandle_t input) {
+    auto atGradOutput = impl::aten::buildATen(grad_output);
+    auto atOutput = impl::aten::buildATen(output);
+    auto atInput = impl::aten::buildATen(input);
+    impl::aten::invokeATenFuncRet(ctx, at::_softmax_backward_data, grad_input, atGradOutput, atOutput, dim, atInput);
+    return diopiSuccess;
+}                                      
+
+diopiError_t diopiLogSoftmaxBackwardData(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
+                                         const diopiTensorHandle_t output, int64_t dim, diopiTensorHandle_t input) {
+    auto atGradOutput = impl::aten::buildATen(grad_output);
+    auto atOutput = impl::aten::buildATen(output);
+    auto atInput = impl::aten::buildATen(input);
+    impl::aten::invokeATenFuncRet(ctx, at::_log_softmax_backward_data, grad_input, atGradOutput, atOutput, dim, atInput);
+    return diopiSuccess;
+}
+
+diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input,
+                                  const diopiTensorHandle_t grad_output, const diopiTensorHandle_t output) {
+    auto atGradOutput = impl::aten::buildATen(grad_output);
+    auto atOutput = impl::aten::buildATen(output);
+    impl::aten::invokeATenFuncRet(ctx, at::sigmoid_backward, grad_input, atGradOutput, atOutput);
+    return diopiSuccess;
+}
+
+diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
+                                    const diopiTensorHandle_t input, const diopiScalar_t* threshold) {
+    auto atGradOutput = impl::aten::buildATen(grad_output);
+    auto atInput = impl::aten::buildATen(input);
+    auto atThreshold = impl::aten::buildAtScalar(threshold);
+    impl::aten::invokeATenFuncRet(ctx, at::threshold_backward, grad_input, atGradOutput, atInput, atThreshold);
+    return diopiSuccess;
+}
+
 }  // extern "C"

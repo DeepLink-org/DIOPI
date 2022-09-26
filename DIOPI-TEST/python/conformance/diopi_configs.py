@@ -307,6 +307,7 @@ diopi_configs = {
     'sigmoid': dict(
         name=["sigmoid"],
         interface=['torch'],
+        saved_args=dict(output=0),
         tensor_para=dict(
             args=[
                 {
@@ -954,6 +955,7 @@ diopi_configs = {
 
     'log_softmax': dict(
         name=["log_softmax"],
+        saved_args=dict(output=0),
         para=dict(
             dim=[-1, 1, 0],
         ),
@@ -961,6 +963,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
+                    "requires_grad": [True],
                     "shape": ((78, 24), (2, 92, 29), (2, 150, 512, 512)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
@@ -973,6 +976,7 @@ diopi_configs = {
         name=["softmax"],
         atol=1e-4,
         rtol=1e-5,
+        saved_args=dict(output=0),
         para=dict(
             dim=[-1, 1, 0],
         ),
@@ -980,6 +984,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
+                    "requires_grad": [True],
                     "shape": ((2, 24), (2, 128, 24), (8, 16, 49, 49)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
