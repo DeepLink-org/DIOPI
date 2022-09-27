@@ -1473,6 +1473,8 @@ diopi_configs = {
     'sgd': dict(
         name=["sgd"],
         interface=["CustomizedTest"],
+        atol_half=1e-4,
+        rtol_half=1e-3,
         para=dict(
             nesterov=[False, True],
             lr=[0.1, 0.1],

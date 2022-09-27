@@ -22,8 +22,8 @@ def convert_input_tensors(function_paras: dict):
 
 
 def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray) -> bool:
-    rtol = cfg.get('rtol', 1e-5)
-    atol = cfg.get('atol', 1e-8)
+    rtol = cfg.get('rtol_half', 1e-5) if tensor1.dtype == np.float16 else cfg.get('rtol', 1e-5)
+    atol = cfg.get('atol_half', 1e-8) if tensor1.dtype == np.float16 else cfg.get('atol', 1e-8)
     return np.allclose(tensor1, tensor2, rtol, atol, True)
 
 
