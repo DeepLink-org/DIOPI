@@ -1473,6 +1473,7 @@ def adaptive_max_pool2d_backward(input, grad_outputs, indices, **kwargs) -> Tens
     check_returncode(ret)
     return {"input": grad_input}
 
+
 def adaptive_avg_pool2d_backward(input, grad_outputs, **kwargs) -> Tensor:
     grad_input = raw_like(input)
     assert len(grad_outputs) == 1,\
@@ -1482,6 +1483,7 @@ def adaptive_avg_pool2d_backward(input, grad_outputs, **kwargs) -> Tensor:
                input.tensor_handle)
     check_returncode(ret)
     return {"input": grad_input}
+
 
 def leaky_relu_backward(input, grad_outputs, negative_slope=0.01, input_is_result=False, **kwargs) -> Tensor:
     grad_input = raw_like(input)
@@ -1493,6 +1495,7 @@ def leaky_relu_backward(input, grad_outputs, negative_slope=0.01, input_is_resul
                input.tensor_handle, negative_slope, input_is_result)
     check_returncode(ret)
     return {"input": grad_input}
+
 
 def hardtanh_backward(input, grad_outputs, min_val=-1.0, max_val=1.0, **kwargs) -> Tensor:
     grad_input = raw_like(input)
@@ -1506,6 +1509,7 @@ def hardtanh_backward(input, grad_outputs, min_val=-1.0, max_val=1.0, **kwargs) 
     check_returncode(ret)
     return {"input": grad_input}
 
+
 def gelu_backward(input, grad_outputs, **kwargs) -> Tensor:
     grad_input = raw_like(input)
     assert len(grad_outputs) == 1, \
@@ -1515,6 +1519,7 @@ def gelu_backward(input, grad_outputs, **kwargs) -> Tensor:
                input.tensor_handle)
     check_returncode(ret)
     return {"input": grad_input}
+
 
 def avg_pool2d_backward(input, grad_outputs, kernel_size, stride=None, padding=0, ceil_mode=False,
                count_include_pad=True, divisor_override=None, **kwargs) -> Tensor:
@@ -1540,6 +1545,7 @@ def avg_pool2d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
     check_returncode(ret)
     return {"input": grad_input}
 
+
 def mse_loss_backward(input, grad_outputs, target, reduction='mean', **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, \
         "only input needs do backward"
@@ -1551,6 +1557,7 @@ def mse_loss_backward(input, grad_outputs, target, reduction='mean', **kwargs) -
     check_returncode(ret)
     return {"input": grad_input}
 
+
 def unary_op_backward(input, grad_outputs, call) -> Tensor:
     assert len(grad_outputs) == 1, \
         "only input needs do backward"
@@ -1561,8 +1568,10 @@ def unary_op_backward(input, grad_outputs, call) -> Tensor:
     check_returncode(ret)
     return {"input": grad_input}
 
+
 def tanh_backward(input, grad_outputs, **kwargs) -> Tensor:
     return unary_op_backward(input, grad_outputs, "diopiTanhBackward")
+
 
 def index_select_backward(input, grad_outputs, dim, index,  **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, \
@@ -1576,6 +1585,7 @@ def index_select_backward(input, grad_outputs, dim, index,  **kwargs) -> Tensor:
     check_returncode(ret)
     return {"input": grad_input}
 
+
 def select_backward(input, grad_outputs, dim, index, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, \
         "only input needs do backward"
@@ -1588,6 +1598,7 @@ def select_backward(input, grad_outputs, dim, index, **kwargs) -> Tensor:
     check_returncode(ret)
     return {"input": grad_input}
 
+
 def softmax_backward(input, grad_outputs, output, dim, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, \
         "only input needs do backward"
@@ -1597,6 +1608,7 @@ def softmax_backward(input, grad_outputs, output, dim, **kwargs) -> Tensor:
                 output.tensor_handle, dim, input.tensor_handle)
     check_returncode(ret)
     return {"input": grad_input}
+
 
 def log_softmax_backward(input, grad_outputs, output, dim, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, \
@@ -1608,6 +1620,7 @@ def log_softmax_backward(input, grad_outputs, output, dim, **kwargs) -> Tensor:
     check_returncode(ret)
     return {"input": grad_input}
 
+
 def sigmoid_backward(input, grad_outputs, output, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, \
         "only input need do backward"
@@ -1617,6 +1630,7 @@ def sigmoid_backward(input, grad_outputs, output, **kwargs) -> Tensor:
                output.tensor_handle)
     check_returncode(ret)
     return {"input": grad_input}
+
 
 def threshold_backward(input, grad_outputs, threshold, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, \
