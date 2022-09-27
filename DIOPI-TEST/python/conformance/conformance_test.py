@@ -46,6 +46,7 @@ def compare_with_gen_output(output, cfg, output_reference):
             if isinstance(v, Tensor):
                 passed = passed and allclose(cfg, v.numpy(), output_reference[k])
             if not passed:
+                print(v.numpy()[0], output_reference[k][0])
                 return False
     elif isinstance(output, (int, float)):
         assert isinstance(output_reference, np.ndarray), "output_reference should be type numpy.array"
@@ -141,8 +142,6 @@ class ConformanceTest(object):
                         for k, v in data["cfg"]['saved_args'].items():
                             backward_para[k] = output[v]
 
-                        # function_paras['kwargs'].update(backward_para)
-                        # kwargs = function_paras['kwargs']
                         grad_input = eval(f"F.{cfg_func_name}_backward(**kwargs, **backward_para)")
 
                         with open(os.path.join(outputs_dir_path, saved_backward_pth), "rb") as f:

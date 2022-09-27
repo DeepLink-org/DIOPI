@@ -33,8 +33,8 @@ diopi_configs = {
 
     'conv_2d': dict(
         name=["conv2d"],
-        atol=1e-5,
-        rtol=1e-4,
+        atol=1e-4,
+        rtol=1e-3 ,
         dtype=[Dtype.float32, Dtype.float16],
         para=dict(
             stride=[2, 1, 1],
@@ -46,14 +46,17 @@ diopi_configs = {
             args=[
                 {
                     "ins": ["input"],
+                    "requires_grad": [True],
                     "shape": ((2, 256, 200, 304), (2, 2048, 64, 64), (2, 2048, 1, 1)),
                 },
                 {
                     "ins": ["weight"],
+                    "requires_grad": [True],
                     "shape": ((12, 256, 1, 1), (2048, 1, 3, 3), (512, 2048, 1, 1)),
                 },
                 {
                     "ins": ["bias"],
+                    "requires_grad": [True],
                     "shape": ((12, ), None, None),
                 },
             ]
@@ -268,7 +271,7 @@ diopi_configs = {
 
     'pointwise_op': dict(
         name=['abs', 'cos', 'erf', 'exp', 'floor',
-              'log', 'log2', 'log10', 'neg', 'sin', 
+              'log', 'log2', 'log10', 'neg', 'sin',
               'sqrt', 'tanh'],
         interface=['torch'],
         is_inplace=True,
@@ -1005,7 +1008,7 @@ diopi_configs = {
         tensor_para=dict(
             args=[
                 {
-                    "requires_grad": [False],
+                    "ins": ["input"],
                     "shape": ((), (2, ), (2, 30), (2, 3, 4)),
                     "dtype": [Dtype.int64],
                     "gen_fn": dict(fn=Genfunc.randint, high=10),
@@ -1352,6 +1355,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['inputs'],
+                    "requires_grad": [True],
                     "shape": ((16, 7), (2, 11856, 2), (16, 2, 2964, 2)),
                     "gen_fn": Genfunc.randn,
                 },
@@ -1408,6 +1412,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
+                    "requires_grad": [True],
                     "shape": ((6, 3, 32, 32), (2, 3, 16, 16)),
                     "gen_fn": Genfunc.randn,
                 },
@@ -1439,6 +1444,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
+                    "requires_grad": [True],
                     "shape": ((7, ), (128, 3, 3), (2, 3, 224, 224), (3, 2, 6, 197, 64)),
                     "gen_fn": Genfunc.randn,
                 },
@@ -1455,6 +1461,7 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((128, 2, 2), (2, 3, 224, 224), (3, 2, 6, 197, 64)),
+                    "requires_grad": [True],
                     "gen_fn": Genfunc.randn,
                     "dtype": [Dtype.float32, Dtype.float64],
                 },

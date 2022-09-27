@@ -222,7 +222,7 @@ def gen_and_dump_data(dir_path: str, cfg_name: str, cfg_expand_list: list, cfg_s
             if len(arg["gen_num_range"]) != 2:
                 value = gen_tensor(arg)
                 function_paras["kwargs"][name] = value
-                if arg["requires_grad"] == [True]:
+                if arg["requires_grad"] == [True] and arg["shape"] is not None:
                     function_paras["requires_grad"][name] = arg["requires_grad"]
             else:
                 tensors_num = np.random.randint(arg['gen_num_range'][0],
