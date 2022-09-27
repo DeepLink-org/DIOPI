@@ -74,7 +74,7 @@ caffe2::TypeMeta getATenType(diopiDtype_t dt) {
     case diopi_dtype_bfloat16:
         return caffe2::TypeMeta::Make<at::BFloat16>();
     default:
-        NOT_SUPPORTED("dipio dytpe");
+        NOT_SUPPORTED("diopi dytpe");
     }
 }
 
