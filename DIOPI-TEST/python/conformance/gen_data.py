@@ -265,6 +265,22 @@ def get_saved_pth_list() -> list:
     return [k for k in cfg_dict]
 
 
+def get_data_from_file(data_path, test_path, name=""):
+    if not os.path.exists(data_path):
+        logger.error(f"FileNotFound: No benchmark {name} data '{test_path}' was generated"
+                     f" (No such file or directory: {data_path})")
+        return None
+    try:
+        f = open(data_path, "rb")
+        data = pickle.load(f)
+    except Exception as e:
+        logger.error(f"Failed: {e}")
+        return None
+    else:
+        f.close()
+    return data
+
+
 class GenInputData(object):
     r'''
     Generate input data for all functions by using diopi_configs
@@ -410,25 +426,16 @@ class GenOutputData(object):
         func_name_list = []  # make the info log once
         saved_pth_list = get_saved_pth_list()
         for saved_pth in saved_pth_list:
-            input_abs_path = os.path.join(inputs_dir_path, saved_pth)
-            if not os.path.exists(input_abs_path):
-                logger.error(f"FileNotFound: No benchmark input data '{saved_pth}' was generated "
-                             f"(No such file or directory: {input_abs_path})")
-                continue
-            try:
-                f = open(input_abs_path, "rb")
-                data = pickle.load(f)
-            except Exception as e:
-                logger.error(f"Failed: {e}")
-                continue
-            else:
-                f.close()
-
-            cfg_func_name = data["cfg"]["name"]
+            cfg_func_name = saved_pth.split("::")[1].rsplit("_", 1)[0]
             if func_name not in ['all', cfg_func_name]:
                 continue
-            logger_str = "output"
 
+            input_abs_path = os.path.join(inputs_dir_path, saved_pth)
+            data = get_data_from_file(input_abs_path, saved_pth, "input")
+            if data is None:
+                continue
+
+            logger_str = "output"
             module = "torch.nn.functional"
             if "interface" in data["cfg"].keys():
                 module = data["cfg"]["interface"][0]
