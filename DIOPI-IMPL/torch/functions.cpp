@@ -1307,7 +1307,7 @@ diopiError_t diopiMSELossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
 }
 
 diopiError_t diopiTanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input,
-                  const diopiTensorHandle_t grad_output, const diopiTensorHandle_t input) {
+                               const diopiTensorHandle_t grad_output, const diopiTensorHandle_t input) {
     auto atGradOutput = impl::aten::buildATen(grad_output);
     auto atInput = impl::aten::buildATen(input);
     impl::aten::invokeATenFuncRet(ctx, at::tanh_backward, grad_input, atGradOutput, atInput);
