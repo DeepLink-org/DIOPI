@@ -46,7 +46,7 @@ def compare_with_gen_output(output, cfg, output_reference):
             if isinstance(v, Tensor):
                 passed = passed and allclose(cfg, v.numpy(), output_reference[k])
             if not passed:
-                print(v.numpy()[0], output_reference[k][0])
+                # print(v.numpy()[0], output_reference[k][0])
                 return False
     elif isinstance(output, (int, float)):
         assert isinstance(output_reference, np.ndarray), "output_reference should be type numpy.array"
@@ -136,17 +136,27 @@ class ConformanceTest(object):
 
                     _, inputs_for_grad = get_name_and_data_for_grad(function_paras)
                     backward_para = {}
-                    if len(inputs_for_grad) != 0:
-                        grad_outputs = [F.ones_like(i) for i in outputs_for_backward]
-                        backward_para["grad_outputs"] = grad_outputs
-                        for k, v in data["cfg"]['saved_args'].items():
-                            backward_para[k] = output[v]
+                    if len(inputs_for_grad) == 0:
+                        continue
+                    grad_outputs = [F.ones_like(i) for i in outputs_for_backward]
+                    backward_para["grad_outputs"] = grad_outputs
+                    for k, v in data["cfg"]['saved_args'].items():
+                        backward_para[k] = output[v]
 
+                    with open(os.path.join(outputs_dir_path, saved_backward_pth), "rb") as f:
+                        output_reference = pickle.load(f)
+
+                    try:
                         grad_input = eval(f"F.{cfg_func_name}_backward(**kwargs, **backward_para)")
-
-                        with open(os.path.join(outputs_dir_path, saved_backward_pth), "rb") as f:
-                            output_reference = pickle.load(f)
-
                         passed = compare_with_gen_output(grad_input, data['cfg'], output_reference)
-                        logger.info(f"run {cfg_func_name} backward succeed") \
-                            if passed else logger.error(f"run {cfg_func_name} backward failed")
+                        logger.info(f"Run diopi_functions.{cfg_func_name}_backward succeed") \
+                            if passed else logger.error(f"Run diopi_functions.{cfg_func_name}_backward failed")
+                    except FunctionNotImplementedError as e:
+                        logger.error(f"NotImplemented: {e}")
+                        continue
+                    except AttributeError as e:
+                        logger.error(f"AttributeError: {e}")
+                        continue
+                    except Exception as e:
+                        logger.error(f"Failed: {e}")
+                        continue

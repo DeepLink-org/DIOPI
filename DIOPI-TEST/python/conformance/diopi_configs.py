@@ -272,9 +272,28 @@ diopi_configs = {
     'pointwise_op': dict(
         name=['abs', 'cos', 'erf', 'exp', 'floor',
               'log', 'log2', 'log10', 'neg', 'sin',
-              'sqrt', 'tanh'],
+              'sqrt'],
         interface=['torch'],
         is_inplace=True,
+        dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1, ), (1024,), (364800, 4), (2, 128, 3072),
+                              (256, 128, 3, 3),
+                              (2, 31, 512, 6, 40)),
+                },
+            ],
+        ),
+    ),
+
+    'tanh': dict(
+        name=['tanh'],
+        interface=['torch'],
+        is_inplace=True,
+        saved_args=dict(output=0),
         dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -334,14 +353,12 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((1, ), (20267, 80),
                               (2, 128, 3072),
                               (2, 512, 38, 38)),
                 },
                 {
                     "ins": ['exponent'],
-                    "requires_grad": [True],
                     "shape": ((1, ), (20267, 80),
                               (2, 128, 3072),
                               (2, 512, 38, 38)),
@@ -360,7 +377,6 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [False],
                     "shape": ((1, ), (20267, 80),
                               (2, 128, 3072),
                               (2, 512, 38, 38)),
@@ -378,7 +394,6 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input', 'exponent'],
-                    "requires_grad": [False, False],
                     "shape": ((125, 1), (70, 1, 2),
                               (4, 256, 16, 16)),
                     "dtype": [Dtype.int32],
@@ -465,17 +480,14 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((16, 726, 32), (16, 100, 100), (9, 5, 5)),
                 },
                 {
                     "ins": ['mat2'],
-                    "requires_grad": [True],
                     "shape": ((16, 32, 726), (16, 100, 32), (9, 5, 10)),
                 },
             ],
         ),
-        outs=['out'],
     ),
 
     'addmm': dict(
@@ -493,17 +505,14 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((10, ), (768, ), (400,)),
                 },
                 {
                     "ins": ["mat1"],
-                    "requires_grad": [True],
                     "shape": ((2, 2048), (2, 768), (1, 2304)),
                 },
                 {
                     "ins": ["mat2"],
-                    "requires_grad": [True],
                     "shape": ((2048, 10), (768, 768), (2304, 400)),
                 },
             ],
@@ -524,17 +533,14 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((128, ), (576, 192), (64, 3, 3, 3), (10, 3, 5), (4, 1, 1)),
                 },
                 {
                     "ins": ["tensor1"],
-                    "requires_grad": [True],
                     "shape": ((128, ), (576, 192), (64, 3, 3, 3), (10, 3, 1), (1, 5)),
                 },
                 {
                     "ins": ["tensor2"],
-                    "requires_grad": [True],
                     "shape": ((128, ), (576, 192), (64, 3, 3, 3), (10, 1, 5), (4, 5, 1)),
                 },
             ],
@@ -555,17 +561,14 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((64, ), (93, 512), (256, 256, 2, 2), (10, 3, 5), (4, 1, 1)),
                 },
                 {
                     "ins": ["tensor1"],
-                    "requires_grad": [True],
                     "shape": ((64, ), (93, 512), (256, 256, 2, 2), (10, 3, 1), (1, 5)),
                 },
                 {
                     "ins": ["tensor2"],
-                    "requires_grad": [True],
                     "shape": ((64, ), (93, 512), (256, 256, 2, 2), (10, 1, 5), (4, 5, 1)),
                 },
             ],
@@ -583,13 +586,11 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((128, 49, 128), (5,), (128, 4, 49, 32),
                               (2, 1, 3136, 3136), (2, 784, 64), (2, 31, 6, 40, 512)),
                 },
                 {
                     "ins": ['other'],
-                    "requires_grad": [True],
                     "shape": ((128, 384), (5,), (128, 4, 32, 49),
                               (2, 1, 3136, 64), (2, 64, 784), (512, 1)),
                 },
@@ -611,7 +612,6 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((182, ), (384, 128),
                               (1, 242991, 2),
                               (2, 4, 100, 152)),
@@ -631,7 +631,6 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((64, ), (169, 4), (17100, 2), (1, 1, 384),
                               (4, 133, 128, 128), (2, 64, 3, 3, 3)),
                     "dtype": [Dtype.float32, Dtype.float64],
@@ -654,7 +653,6 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((64, ), (169, 4), (17100, 2), (1, 1, 384),
                               (4, 133, 128, 128), (2, 64, 3, 3, 3)),
                     "dtype": [Dtype.float32, Dtype.float64],
@@ -678,7 +676,6 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((64, ), (169, 4), (17100, 2), (1, 1, 384),
                               (4, 133, 128, 128), (2, 64, 3, 3, 3)),
                     "dtype": [Dtype.float32, Dtype.float64],
@@ -870,21 +867,18 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((16,), (12, 13), (12, 13, 14), (12, 13, 14, 16)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ['mask'],
-                    "requires_grad": [False],
                     "shape": ((16,), (12, 13), (12, 13, 14), (12, 13, 14, 1)),
                     "dtype": [Dtype.bool],
                     "gen_fn": Genfunc.mask
                 },
                 {
                     "ins": ['source'],
-                    "requires_grad": [True],
                     "shape": ((16,), (12, 13), (12, 13, 14), (12, 13, 14, 16)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn
@@ -936,14 +930,12 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((2, 512), (128, 49, 128), (6, 2, 100, 256),
                               (2, 31, 6, 40, 512)),
                     "dtype": [Dtype.float16, Dtype.float32],
                 },
                 {
                     "ins": ['weight'],
-                    "requires_grad": [True],
                     "shape": ((10, 512), (384, 128), (81, 256), (1, 512)),
                     "dtype": [Dtype.float16, Dtype.float32],
                 },
@@ -1118,7 +1110,6 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['tensor'],
-                    "requires_grad": [True],
                     "shape": ((1, 4),
                               (20267, ),
                               (4, 6, 10, 9, 8)),
@@ -1191,7 +1182,6 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((8723, ), (1024, 81),
                               (5, 4, 6), (2, 2, 64, 64)),
                 },
@@ -1215,7 +1205,6 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((1, ), (1, )),
                 },
             ],
@@ -1236,7 +1225,6 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((2, 1536, 950),
                               (660, 6, 49, 32)),
                 },
@@ -1251,14 +1239,12 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['condition'],
-                    "requires_grad": [False],
                     "shape": [(1024, ), (1482, 4), (4, 5, 6)],
                     "dtype": [Dtype.uint8, Dtype.bool],
                     "gen_fn": Genfunc.mask
                 },
                 {
                     "ins": ['input', 'other'],
-                    "requires_grad": [True, True],
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                     "shape": [(1024, ), (1482, 4), (4, 5, 6)],
                     "gen_fn": Genfunc.randn
@@ -1274,7 +1260,6 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['condition'],
-                    "requires_grad": [False],
                     "shape": [(1, ), (3, ), (3, ), (1, 445), (3, 5), (4, ),
                               (3, 4, 5), (3, )],
                     "dtype": [Dtype.uint8, Dtype.bool],
@@ -1282,7 +1267,6 @@ diopi_configs = {
                 },
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "dtype": [Dtype.float32, Dtype.float64],
                     "shape": [(1, ), (1, ), (3, ), (1, 445), (3, 5), (1, ), (4, 5),
                               (5, 4, 3)],
@@ -1290,7 +1274,6 @@ diopi_configs = {
                 },
                 {
                     "ins": ['other'],
-                    "requires_grad": [True],
                     "dtype": [Dtype.float32, Dtype.float64],
                     "shape": [(1, ), (1, ), (1, ), (1, ), (1, ), (4, ), (5, ), (4, 3)],
                     "gen_fn": Genfunc.randn
