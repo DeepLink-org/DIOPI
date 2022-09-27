@@ -1,10 +1,7 @@
 # -*- coding: UTF-8 -*-
-from bdb import checkfuncname
 import math
 
 from ctypes import c_float, c_double, c_int64, c_int32, c_bool, c_void_p, byref, pointer
-import re
-from tabnanny import check
 from .diopi_runtime import Sizes, Scalar, Tensor, TensorHandle
 from .utils import check_returncode, check_function, squeeze
 from . import Dtype, raw_like
@@ -1592,7 +1589,7 @@ def roi_align_backward(input, grad_outputs, boxes, output_size, spatial_scale=1.
 
 
 def conv2d_backward(input, grad_outputs, weight, bias=None, stride=1,
-           padding=0, dilation=1, groups=1, **kwargs) -> Tensor:
+                    padding=0, dilation=1, groups=1, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     sizeI = input.size()
     sizeW = weight.size()
@@ -1660,7 +1657,7 @@ def gelu_backward(input, grad_outputs, approximate='none', **kwargs) -> Tensor:
 
 
 def avg_pool2d_backward(input, grad_outputs, kernel_size, stride=None, padding=0, ceil_mode=False,
-               count_include_pad=True, divisor_override=None, **kwargs) -> Tensor:
+                        count_include_pad=True, divisor_override=None, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
     if isinstance(kernel_size, int):
@@ -1730,7 +1727,7 @@ def index_select_backward(input, grad_outputs, dim, index,  **kwargs) -> Tensor:
 
     func = check_function("diopiIndexSelectBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
-            inputSize, c_int64(dim), index.tensor_handle)
+               inputSize, c_int64(dim), index.tensor_handle)
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -1752,8 +1749,8 @@ def softmax_backward(input, grad_outputs, output, dim, **kwargs) -> Tensor:
     grad_input = raw_like(input)
 
     func = check_function("diopiSoftmaxBackwardData")
-    ret  = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
-                output.tensor_handle, dim, c_int32(input.get_dtype().value))
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               output.tensor_handle, dim, c_int32(input.get_dtype().value))
     check_returncode(ret)
     return {"input": grad_input}
 

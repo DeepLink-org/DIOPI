@@ -34,7 +34,7 @@ diopi_configs = {
     'conv_2d': dict(
         name=["conv2d"],
         atol=1e-4,
-        rtol=1e-3 ,
+        rtol=1e-3,
         dtype=[Dtype.float32, Dtype.float16],
         para=dict(
             stride=[2, 1, 1],
