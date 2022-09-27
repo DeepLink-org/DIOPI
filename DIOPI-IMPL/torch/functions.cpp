@@ -1368,7 +1368,7 @@ diopiError_t diopiHardtanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t
 }
 
 diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
-                               const diopiTensorHandle_t input) {
+                               const diopiTensorHandle_t input, const char* approximate) {
     auto atGradOutput = impl::aten::buildATen(grad_output);
     auto atInput = impl::aten::buildATen(input);
     impl::aten::invokeATenFuncRet(ctx, at::gelu_backward, grad_input, atGradOutput, atInput);
@@ -1425,20 +1425,20 @@ diopiError_t diopiSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
 }
 
 diopiError_t diopiSoftmaxBackwardData(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
-                                      const diopiTensorHandle_t output, int64_t dim, diopiTensorHandle_t input) {
+                                      const diopiTensorHandle_t output, int64_t dim, diopiDtype_t input_dtype) {
     auto atGradOutput = impl::aten::buildATen(grad_output);
     auto atOutput = impl::aten::buildATen(output);
-    auto atInput = impl::aten::buildATen(input);
-    impl::aten::invokeATenFuncRet(ctx, at::_softmax_backward_data, grad_input, atGradOutput, atOutput, dim, atInput);
+    // TODO(huqingqing): use default type instead
+    impl::aten::invokeATenFuncRet(ctx, at::_softmax_backward_data, grad_input, atGradOutput, atOutput, dim, atOutput);
     return diopiSuccess;
-}                                      
+}
 
 diopiError_t diopiLogSoftmaxBackwardData(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
-                                         const diopiTensorHandle_t output, int64_t dim, diopiTensorHandle_t input) {
+                                         const diopiTensorHandle_t output, int64_t dim, diopiDtype_t input_dtype) {
     auto atGradOutput = impl::aten::buildATen(grad_output);
     auto atOutput = impl::aten::buildATen(output);
-    auto atInput = impl::aten::buildATen(input);
-    impl::aten::invokeATenFuncRet(ctx, at::_log_softmax_backward_data, grad_input, atGradOutput, atOutput, dim, atInput);
+    // TODO(huqingqing): use default type instead
+    impl::aten::invokeATenFuncRet(ctx, at::_log_softmax_backward_data, grad_input, atGradOutput, atOutput, dim, atOutput);
     return diopiSuccess;
 }
 
