@@ -1825,12 +1825,10 @@ def nll_loss_backward(input, grad_outputs, target, weight=None, ignore_index=-10
     assert len(grad_outputs) == 1, "only input need do backward"
     grad_input = raw_like(input)
 
-    total_weight = Tensor((1,), input.get_dtype())
-    fill(total_weight, 0)
     if weight is not None:
         assert isinstance(weight, Tensor), \
             'weigth must be a Tensor'
-        total_weight = sum(weight)
+        # total_weight = sum(weight)
         weight = weight.tensor_handle
     else:
         weight = c_void_p()
@@ -1839,6 +1837,33 @@ def nll_loss_backward(input, grad_outputs, target, weight=None, ignore_index=-10
 
     func = check_function("diopiCrossNLLLossBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
-               input.tensor_handle, target.tensor_handle, weight, c_int64(reduction_mode), c_int64(ignore_index), total_weight.tensor_handle)
+               input.tensor_handle, target.tensor_handle, weight, c_int64(reduction_mode), c_int64(ignore_index))
+    check_returncode(ret)
+    return {"input": grad_input}
+
+def max_pool2d_backward(input, grad_outputs, indices, kernel_size, stride=None, padding=0, dilation=1,
+               ceil_mode=False, **kwargs ) -> Tensor:
+    assert len(grad_outputs) == 1, "only input need do backward"
+    grad_input = raw_like(input)
+    sizeI = input.size()
+    assert len(sizeI) == 4 or len(sizeI) == 3, 'input must be 3d or 4d tensors'
+
+    if isinstance(kernel_size, int):
+        kernel_size = (kernel_size, kernel_size)
+    if isinstance(stride, int):
+        stride = (stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding)
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation)
+
+    stride = Sizes(tuple(stride))
+    padding = Sizes(tuple(padding))
+    kernel_size = Sizes(tuple(kernel_size))
+    dilation = Sizes(tuple(dilation))
+
+    func = check_function("diopiMaxPool2dBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle, kernel_size, stride, padding, dilation, ceil_mode, indices.tensor_handle)
     check_returncode(ret)
     return {"input": grad_input}
