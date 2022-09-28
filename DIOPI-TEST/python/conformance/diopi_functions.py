@@ -1778,12 +1778,67 @@ def sigmoid_backward(input, grad_outputs, output, **kwargs) -> Tensor:
 
 
 def threshold_backward(input, grad_outputs, threshold, **kwargs) -> Tensor:
-    assert len(grad_outputs) == 1, "only 1 input need do backward"
+    assert len(grad_outputs) == 1, "only input need do backward"
     grad_input = raw_like(input)
     threshold = byref(Scalar(input.get_dtype(), threshold))
 
     func = check_function("diopiThresholdBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
                input.tensor_handle, threshold)
+    check_returncode(ret)
+    return {"input": grad_input}
+
+
+def binary_cross_entropy_with_logits_backward(input, grad_outputs, target, weight=None,
+                                     reduction='mean', pos_weight=None, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, "only input need backward"
+    assert input.size() == target.size(), \
+        'target shape must be the same as input shape'
+    assert reduction in ['mean', 'sum', 'none'], \
+        'reduction must be one of (mean, sum, none)'
+
+    if pos_weight is not None:
+        assert isinstance(pos_weight, Tensor), \
+            'pos_weigth must be a Tensor'
+        pos_weight = pos_weight.tensor_handle
+    else:
+        # represent pos_weight = None by pass a nullptr
+        pos_weight = c_void_p()
+
+    if weight is not None:
+        assert isinstance(weight, Tensor), \
+            'weigth must be a Tensor'
+        weight = weight.tensor_handle
+    else:
+        weight = c_void_p()
+
+    grad_input = raw_like(input)
+    reduction_mode = convert_reduction(reduction)
+    func = check_function("diopiBCEWithLogitsBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle, 
+               input.tensor_handle, target.tensor_handle, weight, pos_weight, c_int64(reduction_mode))
+    check_returncode(ret)
+    return {"input": grad_input}
+
+
+def nll_loss_backward(input, grad_outputs, target, weight=None, ignore_index=-100, reduction='mean', **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, "only input need do backward"
+    grad_input = raw_like(input)
+
+    total_weight = Tensor((1,), input.get_dtype())
+    fill(total_weight, 0)
+    if weight is not None:
+        assert isinstance(weight, Tensor), \
+            'weigth must be a Tensor'
+        total_weight = sum(weight)
+        weight = weight.tensor_handle
+    else:
+        weight = c_void_p()
+
+    reduction_mode = convert_reduction(reduction)
+
+    func = check_function("diopiCrossNLLLossBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle, target.tensor_handle, weight, c_int64(reduction_mode), c_int64(ignore_index), total_weight.tensor_handle)
     check_returncode(ret)
     return {"input": grad_input}

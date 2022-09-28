@@ -777,6 +777,7 @@ diopi_configs = {
                 },
                 {
                     "ins": ['weight'],
+                    "requires_grad": [False],
                     "shape": ((81, ), (92, ), None),
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.ones,
