@@ -1216,35 +1216,30 @@ diopiError_t diopiCrossNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out
     auto atInput = impl::aten::buildATen(input);
     auto atTarget = impl::aten::buildATen(target);
     auto atWeight = impl::aten::buildATen(weight);
-    if (atInput.dim() > 2) {
-        auto channel = atInput.size(1);
-        int64_t totalSize = 1;
-        for (size_t i = 0; i < atInput.dim(); ++i) {
-            totalSize *= atInput.size(i);
+    auto dim = atInput.dim();
+    assert(dim > 1);
+    if (dim == 2) {
+        impl::aten::invokeATenFuncRet(ctx, at::nll_loss, out, atInput, atTarget, atWeight, reduction, ignore_index);
+    } else if (dim == 4) {
+        impl::aten::invokeATenFuncRet(ctx, at::nll_loss2d, out, atInput, atTarget, atWeight, reduction, ignore_index);
+    } else {
+        auto n = atInput.size(0);
+        auto c = atInput.size(1);
+        int64_t inputLastSize = 1;
+        int64_t targetLastSize = 1;
+        for (int i = 2; i < atInput.dim(); ++i) {
+            inputLastSize *= atInput.size(i);
         }
-        std::vector<int64_t> toShape {channel, totalSize / channel};
-        at::IntArrayRef intArrayShape = impl::aten::buildAtIntArray(diopiSize_t(toShape.data(), toShape.size()));
-        atInput = atInput.transpose(0, 1).reshape(intArrayShape).transpose(0, 1);
-    }
-
-    if (atTarget.dim() > 1) {
-        int64_t totalSize = 1;
-        for (size_t i = 0; i < atTarget.dim(); ++i) {
-            totalSize *= atTarget.size(i);
+        for (int i = 1; i < atTarget.dim(); ++i) {
+            targetLastSize *= atTarget.size(i);
         }
-        atTarget = atTarget.reshape(totalSize);
+        std::vector<int64_t> inputShape = {n, c, 1, inputLastSize};
+        std::vector<int64_t> targetShape = {n, 1, targetLastSize};
+        atInput = atInput.reshape(inputShape);
+        atTarget = atTarget.reshape(targetShape);
+        auto atOut = at::nll_loss2d(atInput, atTarget, atWeight, reduction, ignore_index);
+        impl::aten::updateATen2Tensor(ctx, atOut, out);
     }
-
-    auto atOut = at::nll_loss(atInput, atTarget, atWeight, reduction, ignore_index);
-    if(reduction == at::Reduction::None && atTarget.dim() > 1){
-        std::vector<int64_t> toShape;
-        for (size_t i = 0; i < atTarget.dim(); ++i) {
-            toShape.push_back(atTarget.size(i));
-        }
-        at::IntArrayRef intArrayShape = impl::aten::buildAtIntArray(diopiSize_t(toShape.data(), toShape.size()));
-        atOut = atOut.reshape(intArrayShape);
-    }
-    impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
 }
 
@@ -1456,6 +1451,62 @@ diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     auto atInput = impl::aten::buildATen(input);
     auto atThreshold = impl::aten::buildAtScalar(threshold);
     impl::aten::invokeATenFuncRet(ctx, at::threshold_backward, grad_input, atGradOutput, atInput, atThreshold);
+    return diopiSuccess;
+}
+
+diopiError_t diopiBCEWithLogitsBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
+                                                  const diopiTensorHandle_t input, const diopiTensorHandle_t target, const diopiTensorHandle_t weight,
+                                                  const diopiTensorHandle_t pos_weight, int64_t reduction) {
+    auto atGradOutput = impl::aten::buildATen(grad_output);
+    auto atInput = impl::aten::buildATen(input);
+    auto atTarget = impl::aten::buildATen(target);
+    c10::optional<at::Tensor> atWeight = weight
+        ? c10::optional<at::Tensor>(impl::aten::buildATen(weight))
+        : c10::nullopt;
+    c10::optional<at::Tensor> atPosWeight = pos_weight
+        ? c10::optional<at::Tensor>(impl::aten::buildATen(pos_weight))
+        : c10::nullopt;
+
+    impl::aten::invokeATenFuncRet(ctx, at::binary_cross_entropy_with_logits_backward, grad_input, atGradOutput, atInput, atTarget, atWeight,
+                                  atPosWeight, reduction);
+    return diopiSuccess;
+                                                  }
+
+diopiError_t diopiCrossNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
+                                       const diopiTensorHandle_t input, const diopiTensorHandle_t target, const diopiTensorHandle_t weight,
+                                       int64_t reduction, int64_t ignore_index, const diopiTensorHandle_t total_weight) {
+    auto atGradOutput = impl::aten::buildATen(grad_output);
+    auto atInput = impl::aten::buildATen(input);
+    auto atTarget = impl::aten::buildATen(target);
+    auto atWeight = impl::aten::buildATen(weight);
+    auto atTotalWeight = impl::aten::buildATen(total_weight);
+    
+    auto dim = atInput.dim();
+    assert(dim > 1);
+    if (dim == 2) {
+        impl::aten::invokeATenFuncRet(ctx, at::nll_loss_backward, grad_input, atGradOutput, atInput, atTarget, atWeight, reduction,
+                                      ignore_index, atTotalWeight);
+    } else if (dim == 4) {
+        impl::aten::invokeATenFuncRet(ctx, at::nll_loss2d_backward, grad_input, atGradOutput, atInput, atTarget, atWeight, reduction,
+                                      ignore_index, atTotalWeight);
+    } else {
+        auto n = atInput.size(0);
+        auto c = atInput.size(1);
+        int64_t inputLastSize = 1;
+        int64_t targetLastSize = 1;
+        for (int i = 2; i < atInput.dim(); ++i) {
+            inputLastSize *= atInput.size(i);
+        }
+        for (int i = 1; i < atTarget.dim(); ++i) {
+            targetLastSize *= atTarget.size(i);
+        }
+        std::vector<int64_t> inputShape = {n, c, 1, inputLastSize};
+        std::vector<int64_t> targetShape = {n, 1, targetLastSize};
+        atInput = atInput.reshape(inputShape);
+        atTarget = atTarget.reshape(targetShape);
+        auto atGradInput = at::nll_loss2d_backward(atGradOutput, atInput, atTarget, atWeight, reduction, ignore_index, atTotalWeight);
+        impl::aten::updateATen2Tensor(ctx, atGradInput, grad_input);
+    }
     return diopiSuccess;
 }
 
