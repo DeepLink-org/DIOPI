@@ -1528,4 +1528,34 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     return diopiSuccess;
 }
 
+diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
+        diopiTensorHandle_t grad3, const diopiTensorHandle_t grad_output, const diopiTensorHandle_t input, const diopiTensorHandle_t weight,
+        const diopiTensorHandle_t running_mean, const diopiTensorHandle_t running_var, diopiTensorHandle_t save_mean, 
+        diopiTensorHandle_t save_invstd, double eps) {
+    auto atGradOutput = impl::aten::buildATen(grad_output);
+    auto atInput = impl::aten::buildATen(input);
+    auto atWeight = impl::aten::buildATen(weight);
+    c10::optional<at::Tensor> atRunningMean = running_mean
+        ? c10::optional<at::Tensor>(impl::aten::buildATen(running_mean))
+        : c10::nullopt;
+    c10::optional<at::Tensor> atRunningVar = running_var
+        ? c10::optional<at::Tensor>(impl::aten::buildATen(running_var))
+        : c10::nullopt;
+    c10::optional<at::Tensor> atSaveMean = save_mean
+        ? c10::optional<at::Tensor>(impl::aten::buildATen(save_mean))
+        : c10::nullopt;
+    c10::optional<at::Tensor> atSaveVar = save_invstd
+        ? c10::optional<at::Tensor>(impl::aten::buildATen(save_invstd))
+        : c10::nullopt;
+    auto reserve = at::empty({0}, atInput.options().dtype(at::kByte));
+    diopi_tensor_list vecOut = {grad_input, grad_weight, grad3};
+    // impl::aten::invokeATenFuncRet(ctx, at::cudnn_batch_norm_backward, vecOut, atInput, atGradOutput,  atWeight, atRunningMean,
+    //                               atRunningVar, atSaveMean, atSaveVar, eps, reserve);
+    auto atOut = at::cudnn_batch_norm_backward(atInput, atGradOutput,  atWeight, atRunningMean, atRunningVar, atSaveMean, atSaveVar, eps, reserve);
+    impl::aten::updateATen2Tensor(ctx, std::get<0>(atOut), grad_input);
+    impl::aten::updateATen2Tensor(ctx, std::get<1>(atOut), grad_weight);
+    impl::aten::updateATen2Tensor(ctx, std::get<2>(atOut), grad3);
+    return diopiSuccess;
+}
+
 }  // extern "C"
