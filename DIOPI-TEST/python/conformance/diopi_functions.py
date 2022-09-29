@@ -2,6 +2,7 @@
 import math
 
 from ctypes import c_float, c_double, c_int64, c_int32, c_bool, c_void_p, byref, pointer
+import re
 from .diopi_runtime import Sizes, Scalar, Tensor, TensorHandle
 from .utils import check_returncode, check_function, squeeze
 from . import Dtype, raw_like
@@ -1767,7 +1768,7 @@ def log_softmax_backward(input, grad_outputs, output, dim, **kwargs) -> Tensor:
 
 
 def sigmoid_backward(input, grad_outputs, output, **kwargs) -> Tensor:
-    assert len(grad_outputs) == 1, "only input need do backward"
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
 
     func = check_function("diopiSigmoidBackward")
@@ -1778,7 +1779,7 @@ def sigmoid_backward(input, grad_outputs, output, **kwargs) -> Tensor:
 
 
 def threshold_backward(input, grad_outputs, threshold, **kwargs) -> Tensor:
-    assert len(grad_outputs) == 1, "only input need do backward"
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
     threshold = byref(Scalar(input.get_dtype(), threshold))
 
@@ -1791,7 +1792,7 @@ def threshold_backward(input, grad_outputs, threshold, **kwargs) -> Tensor:
 
 def binary_cross_entropy_with_logits_backward(input, grad_outputs, target, weight=None,
                                      reduction='mean', pos_weight=None, **kwargs) -> Tensor:
-    assert len(grad_outputs) == 1, "only input need backward"
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     assert input.size() == target.size(), \
         'target shape must be the same as input shape'
     assert reduction in ['mean', 'sum', 'none'], \
@@ -1822,7 +1823,7 @@ def binary_cross_entropy_with_logits_backward(input, grad_outputs, target, weigh
 
 
 def nll_loss_backward(input, grad_outputs, target, weight=None, ignore_index=-100, reduction='mean', **kwargs) -> Tensor:
-    assert len(grad_outputs) == 1, "only input need do backward"
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
 
     if weight is not None:
@@ -1843,7 +1844,7 @@ def nll_loss_backward(input, grad_outputs, target, weight=None, ignore_index=-10
 
 def max_pool2d_backward(input, grad_outputs, indices, kernel_size, stride=None, padding=0, dilation=1,
                ceil_mode=False, **kwargs ) -> Tensor:
-    assert len(grad_outputs) == 1, "only input need do backward"
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
     sizeI = input.size()
     assert len(sizeI) == 4 or len(sizeI) == 3, 'input must be 3d or 4d tensors'
@@ -1867,3 +1868,43 @@ def max_pool2d_backward(input, grad_outputs, indices, kernel_size, stride=None, 
                input.tensor_handle, kernel_size, stride, padding, dilation, ceil_mode, indices.tensor_handle)
     check_returncode(ret)
     return {"input": grad_input}
+
+
+def batch_norm_backward(input, grad_outputs, running_mean, running_var, weight=None, training=False,
+                        bias=None, eps=1e-05, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    dim = len(list(input.size()))
+    dim = [0] + [i for i in range(2,dim)]
+    save_mean = mean(input, dim)
+    tmp = sqrt(add(std(input, False, dim=dim), eps))
+    tmp_1 = Tensor((1,), input.get_dtype())
+    fill(tmp_1, 1)
+    save_invstd = div(tmp_1, tmp)
+    grad_input = raw_like(input)
+    grad_weight = raw_like(weight)
+    grad_bias = raw_like(bias)
+
+    if weight is None:
+        weight = c_void_p()
+    else:
+        weight = weight.tensor_handle
+
+    if training:
+        assert (running_mean is None and running_var is None),\
+            "if trainging, running_mean and running_var are useless"
+        running_mean = c_void_p()
+        running_var = c_void_p()
+    else:
+        running_mean = running_mean.tensor_handle
+        running_var = running_var.tensor_handle
+
+    
+    out = {"input": grad_input, "weight": grad_weight, "bias": grad_bias}
+    
+    func = check_function("diopiBatchNormBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_weight.tensor_handle, grad_bias.tensor_handle,
+               grad_outputs[0].tensor_handle, input.tensor_handle, weight, running_mean, running_var, save_mean.tensor_handle, 
+               save_invstd.tensor_handle, c_double(eps))
+    check_returncode(ret)
+    return out
+    

@@ -9,6 +9,7 @@ diopi_configs = {
         tensor_para=dict(
             args=[
                 {
+                    "requires_grad": [True],
                     "shape": ((2, 8, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
                     "gen_fn": Genfunc.randn,
                 },
@@ -24,6 +25,7 @@ diopi_configs = {
                 },
                 {
                     "ins": ["weight", "bias"],
+                    "requires_grad": [True],
                     "shape": ((8, ), (64, ), (96, ), (16, )),
                     "gen_fn": Genfunc.randn,
                 },
