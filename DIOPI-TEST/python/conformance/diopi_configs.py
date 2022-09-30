@@ -8,23 +8,23 @@ diopi_configs = {
         atol=1e-5,
         para=dict(
             training=[False, False, True, True],
-        )
+        ),
         tensor_para=dict(
             args=[
                 {
-                    "requires_grad": [True],
+                    "ins": ["input"],
                     "shape": ((2, 8, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
                     "requires_grad": [True],
                     "gen_fn": Genfunc.rand,
                 },
                 {
                     "ins": ["running_mean"],
-                    "shape": ((8, ), (64, ), (96, ), (16, )),
+                    "shape": ((8, ), (64, ), None, (16, )),
                     "gen_fn": Genfunc.zeros,
                 },
                 {
                     "ins": ["running_var"],
-                    "shape": ((8, ), (64, ), (96, ), (16, )),
+                    "shape": ((8, ), (64, ), None, (16, )),
                     "gen_fn": Genfunc.ones,
                 },
                 {

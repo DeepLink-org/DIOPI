@@ -1143,33 +1143,26 @@ def clip_grad_norm_(parameters, max_norm, norm_type=2.0, error_if_nonfinite=Fals
 
 def batch_norm(input, running_mean, running_var, weight=None, bias=None,
                training=False, momentum=0.1, eps=1e-05) -> Tensor:
-    save_mean = mean(input, 1)
-    tmp = sqrt(add(std(input, False, 1), eps))
+    dim = len(list(input.size()))
+    dim = [0] + [i for i in range(2,dim)]
+    save_mean = mean(input, dim)
+    # todo: add var function
+    tmp = sqrt(add(pow(std(input, False, dim=dim), 2), eps))
     tmp_1 = Tensor((1,), input.get_dtype())
     fill(tmp_1, 1)
     save_invstd = div(tmp_1, tmp)
 
-    if weight is None:
-        weight = c_void_p()
-    else:
-        weight = weight.tensor_handle
+    weight = c_void_p() if weight is None else weight.tensor_handle
+    bias = c_void_p() if bias is None else bias.tensor_handle
 
-    if bias is None:
-        bias = c_void_p()
-    else:
-        bias = bias.tensor_handle
-
-    func = check_function("diopiBatchNorm")
-    if training:
-        assert (running_mean is None and running_var is None),\
-            "if trainging, running_mean and running_var are useless"
-        running_mean = c_void_p()
-        running_var = c_void_p()
-    else:
-        running_mean = running_mean.tensor_handle
-        running_var = running_var.tensor_handle
+    if not training:
+        assert (running_mean is not None and running_var is not None),\
+            "if not trainging, running_mean and running_var must be defined"
+    running_mean = c_void_p() if running_mean is None else running_mean.tensor_handle
+    running_var = c_void_p() if running_var is None else running_var.tensor_handle
 
     out = raw_like(input)
+    func = check_function("diopiBatchNorm")
     ret = func(input.context_handle, out.tensor_handle, save_mean.tensor_handle, save_invstd.tensor_handle,
                input.tensor_handle, weight, bias, running_mean, running_var, training,
                c_double(momentum), c_double(eps))
@@ -1876,27 +1869,24 @@ def batch_norm_backward(input, grad_outputs, running_mean, running_var, weight=N
     dim = len(list(input.size()))
     dim = [0] + [i for i in range(2,dim)]
     save_mean = mean(input, dim)
-    tmp = sqrt(add(std(input, False, dim=dim), eps))
+    # todo: should use save_mean and save_var in the forward phase
+    tmp = sqrt(add(pow(std(input, False, dim), 2), eps))
     tmp_1 = Tensor((1,), input.get_dtype())
     fill(tmp_1, 1)
     save_invstd = div(tmp_1, tmp)
+
     grad_input = raw_like(input)
     grad_weight = raw_like(weight)
     grad_bias = raw_like(bias)
 
-    if weight is None:
-        weight = c_void_p()
-    else:
-        weight = weight.tensor_handle
+    weight = c_void_p() if weight is None else weight.tensor_handle
+    bias = c_void_p() if bias is None else bias.tensor_handle
 
-    if training:
-        assert (running_mean is None and running_var is None),\
-            "if trainging, running_mean and running_var are useless"
-        running_mean = c_void_p()
-        running_var = c_void_p()
-    else:
-        running_mean = running_mean.tensor_handle
-        running_var = running_var.tensor_handle
+    if not training:
+        assert (running_mean is not None and running_var is not None),\
+            "if not trainging, running_mean and running_var must be defined"
+    running_mean = c_void_p() if running_mean is None else running_mean.tensor_handle
+    running_var = c_void_p() if running_var is None else running_var.tensor_handle
 
     
     out = {"input": grad_input, "weight": grad_weight, "bias": grad_bias}
@@ -1904,7 +1894,7 @@ def batch_norm_backward(input, grad_outputs, running_mean, running_var, weight=N
     func = check_function("diopiBatchNormBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_weight.tensor_handle, grad_bias.tensor_handle,
                grad_outputs[0].tensor_handle, input.tensor_handle, weight, running_mean, running_var, save_mean.tensor_handle, 
-               save_invstd.tensor_handle, c_double(eps))
+               save_invstd.tensor_handle, c_bool(training), c_double(eps))
     check_returncode(ret)
     return out
     

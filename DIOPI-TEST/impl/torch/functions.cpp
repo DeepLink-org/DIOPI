@@ -1531,7 +1531,7 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
         diopiTensorHandle_t grad3, const diopiTensorHandle_t grad_output, const diopiTensorHandle_t input, const diopiTensorHandle_t weight,
         const diopiTensorHandle_t running_mean, const diopiTensorHandle_t running_var, diopiTensorHandle_t save_mean, 
-        diopiTensorHandle_t save_invstd, double eps) {
+        diopiTensorHandle_t save_invstd, bool training, double eps) {
     auto atGradOutput = impl::aten::buildATen(grad_output);
     auto atInput = impl::aten::buildATen(input);
     auto atWeight = impl::aten::buildATen(weight);
@@ -1549,9 +1549,11 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
         : c10::nullopt;
     auto reserve = at::empty({0}, atInput.options().dtype(at::kByte));
     diopi_tensor_list vecOut = {grad_input, grad_weight, grad3};
+    auto grad_input_mask = std::array<bool, 3>{true, true, true};
     // impl::aten::invokeATenFuncRet(ctx, at::cudnn_batch_norm_backward, vecOut, atInput, atGradOutput,  atWeight, atRunningMean,
     //                               atRunningVar, atSaveMean, atSaveVar, eps, reserve);
-    auto atOut = at::cudnn_batch_norm_backward(atInput, atGradOutput,  atWeight, atRunningMean, atRunningVar, atSaveMean, atSaveVar, eps, reserve);
+    auto atOut = at::native_batch_norm_backward(atGradOutput, atInput, atWeight, atRunningMean,  atRunningVar, atSaveMean, 
+        atSaveVar, training, eps, grad_input_mask);
     impl::aten::updateATen2Tensor(ctx, std::get<0>(atOut), grad_input);
     impl::aten::updateATen2Tensor(ctx, std::get<1>(atOut), grad_weight);
     impl::aten::updateATen2Tensor(ctx, std::get<2>(atOut), grad3);

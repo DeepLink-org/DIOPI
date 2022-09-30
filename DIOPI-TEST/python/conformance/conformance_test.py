@@ -46,6 +46,7 @@ def compare_with_gen_output(output, cfg, output_reference):
             if isinstance(v, Tensor):
                 passed = passed and allclose(cfg, v.numpy(), output_reference[k])
             if not passed:
+                # print(k, "faild:", v.numpy()[0], output_reference[k][0])
                 return False
     elif isinstance(output, (int, float)):
         assert isinstance(output_reference, np.ndarray), "output_reference should be type numpy.array"
@@ -123,6 +124,7 @@ class ConformanceTest(object):
 
                     try:
                         grad_input = eval(f"F.{cfg_func_name}_backward(**kwargs, **backward_para)")
+                        # import pdb;pdb.set_trace()
                         passed = compare_with_gen_output(grad_input, data['cfg'], backward_out_reference)
                         logger.info(f"Run diopi_functions.{cfg_func_name}_backward succeed") \
                             if passed else logger.error(f"Run diopi_functions.{cfg_func_name}_backward failed")
