@@ -561,8 +561,8 @@ def cross_entropy(input, target, weight=None, ignore_index=- 100,
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiCrossEntropyLoss")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               target.tensor_handle, weight, reduction_mode,
-               ignore_index, c_double(label_smoothing))
+               target.tensor_handle, weight, c_int64(reduction_mode),
+               c_int64(ignore_index), c_double(label_smoothing))
     check_returncode(ret)
     return out
 
@@ -1144,7 +1144,7 @@ def clip_grad_norm_(parameters, max_norm, norm_type=2.0, error_if_nonfinite=Fals
 def batch_norm(input, running_mean, running_var, weight=None, bias=None,
                training=False, momentum=0.1, eps=1e-05) -> Tensor:
     save_mean = mean(input, 1)
-    tmp = sqrt(add(std(input, 1), eps))
+    tmp = sqrt(add(std(input, False, 1), eps))
     tmp_1 = Tensor((1,), input.get_dtype())
     fill(tmp_1, 1)
     save_invstd = div(tmp_1, tmp)

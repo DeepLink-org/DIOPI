@@ -6,12 +6,16 @@ diopi_configs = {
         name=["batch_norm"],
         dtype=[Dtype.float32],
         atol=1e-5,
+        para=dict(
+            training=[False, False, True, True],
+        )
         tensor_para=dict(
             args=[
                 {
                     "requires_grad": [True],
                     "shape": ((2, 8, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
-                    "gen_fn": Genfunc.randn,
+                    "requires_grad": [True],
+                    "gen_fn": Genfunc.rand,
                 },
                 {
                     "ins": ["running_mean"],
@@ -820,7 +824,8 @@ diopi_configs = {
         name=["cross_entropy"],
         para=dict(
             reduction=['mean', 'none'],
-            # label_smoothing=[0.0, 0.5],
+            ignore_index=[0, -100],
+            label_smoothing=[0.0, 0.5],
         ),
         dtype=[Dtype.float32],
         tensor_para=dict(
@@ -841,6 +846,33 @@ diopi_configs = {
                     "gen_fn": dict(fn=Genfunc.randint, low=0, high=5),
                     "dtype": [Dtype.int64],
 
+                },
+            ],
+        ),
+    ),
+
+    'cross_entropy_prob_target': dict(
+        name=["cross_entropy"],
+        para=dict(
+            reduction=['sum'],
+            label_smoothing=[0.1],
+        ),
+        dtype=[Dtype.float32],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((3, 5, 6, 6), ),
+                },
+                {
+                    "ins": ['weight'],
+                    "shape": ((5,), ),
+                },
+                {
+                    "ins": ['target'],
+                    "shape": ((3, 5, 6, 6), ),
                 },
             ],
         ),
