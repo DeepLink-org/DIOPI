@@ -1142,15 +1142,11 @@ def clip_grad_norm_(parameters, max_norm, norm_type=2.0, error_if_nonfinite=Fals
 
 
 def batch_norm(input, running_mean, running_var, weight=None, bias=None,
-               training=False, momentum=0.1, eps=1e-05) -> Tensor:
+               training=False, momentum=0.1, eps=1e-05, backward=False) -> Tensor:
     dim = len(list(input.size()))
     dim = [0] + [i for i in range(2,dim)]
-    save_mean = mean(input, dim)
-    # todo: add var function
-    tmp = sqrt(add(pow(std(input, False, dim=dim), 2), eps))
-    tmp_1 = Tensor((1,), input.get_dtype())
-    fill(tmp_1, 1)
-    save_invstd = div(tmp_1, tmp)
+    _, save_mean = reduce_op_process(input, dim)
+    save_invstd = raw_like(save_mean)
 
     weight = c_void_p() if weight is None else weight.tensor_handle
     bias = c_void_p() if bias is None else bias.tensor_handle
@@ -1167,6 +1163,8 @@ def batch_norm(input, running_mean, running_var, weight=None, bias=None,
                input.tensor_handle, weight, bias, running_mean, running_var, training,
                c_double(momentum), c_double(eps))
     check_returncode(ret)
+    if backward:
+        return save_mean, save_invstd
     return out
 
 
@@ -1866,14 +1864,7 @@ def max_pool2d_backward(input, grad_outputs, indices, kernel_size, stride=None, 
 def batch_norm_backward(input, grad_outputs, running_mean, running_var, weight=None, training=False,
                         bias=None, eps=1e-05, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
-    dim = len(list(input.size()))
-    dim = [0] + [i for i in range(2,dim)]
-    save_mean = mean(input, dim)
-    # todo: should use save_mean and save_var in the forward phase
-    tmp = sqrt(add(pow(std(input, False, dim), 2), eps))
-    tmp_1 = Tensor((1,), input.get_dtype())
-    fill(tmp_1, 1)
-    save_invstd = div(tmp_1, tmp)
+    save_mean, save_invstd = batch_norm(input, running_mean, running_var, weight, bias, training, 0.1, eps, backward=True)
 
     grad_input = raw_like(input)
     grad_weight = raw_like(weight)

@@ -1118,9 +1118,9 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     at::Tensor atBias = impl::aten::buildATen(bias);
     at::Tensor atRunningMean = impl::aten::buildATen(running_mean);
     at::Tensor atRunningVar = impl::aten::buildATen(running_var);
-    bool cudnn_enabled = true;
-    impl::aten::invokeATenFuncRet(ctx, at::batch_norm, out, atInput, atWeight, atBias,
-        atRunningMean, atRunningVar, training, momentum, eps, cudnn_enabled);
+    diopi_tensor_list vecOut = {out, save_mean, save_invstd};
+    impl::aten::invokeATenFuncRet(ctx, at::native_batch_norm, vecOut, atInput, atWeight, atBias,
+        atRunningMean, atRunningVar, training, momentum, eps);
     return diopiSuccess;
 }
 

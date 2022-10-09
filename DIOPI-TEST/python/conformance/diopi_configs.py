@@ -15,7 +15,7 @@ diopi_configs = {
                     "ins": ["input"],
                     "shape": ((2, 8, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
                     "requires_grad": [True],
-                    "gen_fn": Genfunc.rand,
+                    "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["running_mean"],
