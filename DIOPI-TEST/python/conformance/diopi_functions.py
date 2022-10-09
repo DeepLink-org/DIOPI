@@ -2,7 +2,6 @@
 import math
 
 from ctypes import c_float, c_double, c_int64, c_int32, c_bool, c_void_p, byref, pointer
-import re
 from .diopi_runtime import Sizes, Scalar, Tensor, TensorHandle
 from .utils import check_returncode, check_function, squeeze
 from . import Dtype, raw_like

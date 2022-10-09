@@ -804,14 +804,12 @@ diopi_configs = {
                 },
                 {
                     "ins": ['target'],
-                    "requires_grad": [False],
                     "shape": ((200, ), (2, 29), (2, 512, 512)),
                     "dtype": [Dtype.int64],
                     "gen_fn": dict(fn=Genfunc.randint, low=0, high=80),
                 },
                 {
                     "ins": ['weight'],
-                    "requires_grad": [False],
                     "shape": ((81, ), (92, ), None),
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.ones,
@@ -833,7 +831,6 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((1024, 81), (3, 5, 6, 6)),
                 },
                 {
@@ -863,7 +860,6 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((3, 5, 6, 6), ),
                 },
                 {
