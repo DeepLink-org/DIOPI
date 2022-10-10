@@ -415,8 +415,6 @@ class CustomizedTest(object):
                                          weight_decay=weight_decay)
         return param, param_grad
         
-    
-    
     def unfold(input, dimension, size, step):
         return input.unfold(dimension, size, step)
 
