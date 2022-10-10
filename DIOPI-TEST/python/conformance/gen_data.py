@@ -349,6 +349,77 @@ class CustomizedTest(object):
     def test_dropout(input, p=0.5, training=True, inplace=False):
         return p
 
+    def adam(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,  beta1, beta2, eps, weight_decay, amsgrad, maximize):
+        import torch
+
+        params_with_grad = [param]
+        grads = [param_grad]
+        exp_avgs = [exp_avg]
+        exp_avg_sqs = [exp_avg_sq]
+        max_exp_avg_sqs = [max_exp_avg_sq]
+        state_steps = [1]
+        
+        torch.optim._functional.adam(params_with_grad,
+                                      grads,
+                                      exp_avgs,
+                                      exp_avg_sqs,
+                                      max_exp_avg_sqs,
+                                      state_steps,
+                                      amsgrad=amsgrad,
+                                      beta1=beta1,
+                                      beta2=beta2,
+                                      lr=lr,
+                                      weight_decay=weight_decay,
+                                      eps=eps)
+        return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
+
+    def adamw(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,  beta1, beta2, eps, weight_decay, amsgrad, maximize):
+        import torch
+
+        params_with_grad = [param]
+        grads = [param_grad]
+        exp_avgs = [exp_avg]
+        exp_avg_sqs = [exp_avg_sq]
+        max_exp_avg_sqs = [max_exp_avg_sq]
+        state_steps = [1]
+        
+        torch.optim._functional.adamw(params_with_grad,
+                                      grads,
+                                      exp_avgs,
+                                      exp_avg_sqs,
+                                      max_exp_avg_sqs,
+                                      state_steps,
+                                      amsgrad=amsgrad,
+                                      beta1=beta1,
+                                      beta2=beta2,
+                                      lr=lr,
+                                      weight_decay=weight_decay,
+                                      eps=eps)
+        return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
+
+    def adadelta(param, param_grad, square_avg, acc_delta, lr, rho, eps, weight_decay):
+        import torch
+
+        params_with_grad = [param]
+        grads = [param_grad]
+        square_avgs = [square_avg]
+        acc_deltas = [acc_delta]
+
+        torch.optim._functional.adadelta(params_with_grad,
+                                         grads,
+                                         square_avgs,
+                                         acc_deltas,
+                                         lr=lr,
+                                         rho=rho,
+                                         eps=eps,
+                                         weight_decay=weight_decay)
+        return param, param_grad
+        
+    
+    
+    def unfold(input, dimension, size, step):
+        return input.unfold(dimension, size, step)
+
 
 def transfer_tensor_to_device(function_paras: dict):
     import torch
