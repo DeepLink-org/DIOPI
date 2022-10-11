@@ -287,18 +287,23 @@ diopi_configs = {
                 },
                 {
                     "ins": ['target'],
-                    "requires_grad": [False],
                     "shape": ((72,), (2, 11856),
                               (2, 741, 80),
                               (4, 4, 16, 20)),
                 },
                 {
                     "ins": ['weight'],
-                    "requires_grad": [False],
                     "shape": ((72,), (2, 11856),
                               (2, 741, 80),
                               None),
                 },
+                {
+                    "ins": ['pos_weight'],
+                    "shape": ((72,), None, (80, ), None),
+                    "gen_fn": dict(fn=Genfunc.randint, high=4),
+                    "dtype": [Dtype.int64],
+                },
+    
             ],
         ),
     ),
@@ -651,6 +656,35 @@ diopi_configs = {
                               (2, 4, 100, 152)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'clamp_tensor': dict(
+        name=['clamp'],
+        interface=['torch'],
+        is_inplace=True,
+        atol=1e-4,
+        rtol=1e-5,
+        tensor_para=dict(
+            dtype=[Dtype.float32, Dtype.float64],
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((182, ), (384, 128),
+                              (1, 242991, 2),
+                              (2, 4, 100, 152)),
+                },
+                {
+                    "ins": ['min'],
+                    "shape": ((182, ), (384, 1),
+                              None, (2, 4, 100, 152)),
+                },
+                {
+                    "ins": ['max'],
+                    "shape": (None, (384, 128), (1, 1, 2), None),
                 },
             ],
         ),
