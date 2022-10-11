@@ -2098,7 +2098,6 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": [(3, 1), (3, 1), (3, 1), (3, 1)],
                     "gen_fn": Genfunc.randn,
                     "dtype": [Dtype.float32],
