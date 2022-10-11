@@ -1926,6 +1926,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
+                    "requires_grad": [True],
                     "shape": ((9, 6, 6, 8, 6),
                               (4, 6, 8, 9, 12),
                               (6, 9, 8, 10, 7)),
@@ -2147,6 +2148,7 @@ diopi_configs = {
         name=['pad'],
         para=dict(
             pad=[(0, 3), (0, 1, 0, 1), (1, 1, 1, 1), (0, 193, 0, 128)],
+            # 'reflect' 'replicate' 'circular' not support torch 1.10
             mode=['constant', 'constant', 'constant', 'constant'],
             value=[100, 0, -1, 1]
         ),
