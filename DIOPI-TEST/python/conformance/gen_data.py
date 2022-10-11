@@ -418,6 +418,16 @@ class CustomizedTest(object):
     def unfold(input, dimension, size, step):
         return input.unfold(dimension, size, step)
 
+    def expand(input, size):
+        return input.expand(size)
+    
+    def linspace(input, start, end, step):
+        import torch
+        return torch.linspace(start, end, step)
+
+    def index_put(input, indices1, indices2, values, accumulate):
+        import torch
+        return torch.index_put(input, (indices1, indices2), values, accumulate)
 
 def transfer_tensor_to_device(function_paras: dict):
     import torch
