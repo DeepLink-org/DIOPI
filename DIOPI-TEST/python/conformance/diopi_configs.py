@@ -1376,9 +1376,8 @@ diopi_configs = {
     ),
 
     'dropout': dict(
-        name=["test_dropout"],
-        interface=["CustomizedTest"],
-        atol=2e-2,
+        name=["dropout"],
+        no_output_ref=True,
         is_inplace=True,
         para=dict(
             p=[0.5, 0, 0.1, 0.4],
@@ -1701,7 +1700,7 @@ diopi_configs = {
 
     'unfold': dict(
         name=["unfold"],
-        interface=['CustomizedTest'],
+        interface=['torch.Tensor'],
         atol=1e-4,
         rtol=1e-5,
         para=dict(
@@ -2091,7 +2090,7 @@ diopi_configs = {
 
     'expand': dict(
         name=['expand'],
-        interface=['CustomizedTest'],
+        interface=['torch.Tensor'],
         para=dict(
             size=[(3, 4), (-1, 4), (3, -1), (3, 3, 5)],
         ),
@@ -2109,20 +2108,11 @@ diopi_configs = {
 
     'linspace': dict(
         name=['linspace'],
-        interface=['CustomizedTest'],
+        interface=['torch'],
         para=dict(
             start=[0, 0, -1, -1, -1, -1, -1, -1],
             end=[0.5, 0.0, 1, 1, 1, 1, 1, 1],
-            step=[24, 23, 152, 100, 76, 50, 38, 25],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "shape": [(0, ), (0, ), (0, ), (0, ), (0, ), (0, ), (0, ), (0, )],
-                    "gen_fn": Genfunc.randn,
-                    "dtype": [Dtype.float32],
-                },
-            ],
+            steps=[24, 23, 152, 100, 76, 50, 38, 25],
         ),
     ),
 
@@ -2245,7 +2235,6 @@ diopi_configs = {
                     "ins": ['input'],
                     "shape": ((0,), (252,), (2, 256), (4, 64, 128)),
                     "dtype": [Dtype.int64, Dtype.float32, Dtype.float64],
-                    "gen_fn": dict(fn=Genfunc.randint, high=4),
                 },
             ],
         ),
