@@ -265,6 +265,8 @@ def format_cfg(cases):
             case_v["skip_if"] = ""
         if "saved_args" not in case_v.keys():
             case_v["saved_args"] = {}
+        if "interface" not in case_v.keys():
+            case_v["interface"] = []
         # set default value of ins with ["input"] and
         # requires_grad with False
         for item in case_v["tensor_para"]["args"]:

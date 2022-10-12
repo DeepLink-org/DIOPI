@@ -805,23 +805,6 @@ def dropout(input, p=0.5, training=True, inplace=False):
     return out
 
 
-def test_dropout(input, p=0.5, training=True, inplace=False):
-    input_numpy = input.numpy()
-    out = dropout(input, p, training, inplace)
-    out_numpy = out.numpy()
-
-    # compute ratio
-    real_ratio = np.sum(out_numpy == 0) / out.numel()
-
-    # check data
-    remains = out_numpy[out_numpy != 0]
-    ref = input_numpy[out_numpy != 0]
-    assert np.allclose(remains, ref / (1 - p), 1e-3),\
-        "failed to execute dropout"
-
-    return real_ratio
-
-
 def index_select(input, dim, index) -> Tensor:
     sizeI = list(input.size())
     sizeI[dim] = index.numel()

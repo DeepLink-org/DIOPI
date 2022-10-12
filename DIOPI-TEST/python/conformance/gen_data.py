@@ -136,6 +136,12 @@ def expand_cfg_all(paras_list, tensor_paras_list, cfg_dict) -> list:
                 tmp_cfg_dict["tensor_para"]["args"] = copy.deepcopy(
                     tensor_paras_list[i])
                 cfg_expand_list.append(tmp_cfg_dict)
+    elif len(paras_list) != 0:
+        for i in range(len(paras_list)):
+            tmp_cfg_dict = copy.deepcopy(cfg_dict)
+            tmp_cfg_dict["para"] = copy.deepcopy(paras_list[i])
+            cfg_expand_list.append(tmp_cfg_dict)
+
     return cfg_expand_list
 
 
@@ -307,7 +313,7 @@ class GenInputData(object):
         with open(os.path.join(inputs_dir_path, cfg_file_name), "wb") as f:
             pickle.dump(cfg_save_dict, f)
 
-        logger.info(f"Generate test cases number: {cfg_counter}")
+        logger.info(f"Generate test cases number for input data: {cfg_counter}")
         if cfg_counter == 0:
             logger.warn(f"No benchmark input data is generated, \"--fname {func_name}\" may not be in the diopi-config, " \
                 f"check the arguments --fname")
@@ -345,9 +351,6 @@ class CustomizedTest(object):
         optimizer.state[param]['momentum_buffer'] = buf
         optimizer.step()
         return param, buf
-
-    def test_dropout(input, p=0.5, training=True, inplace=False):
-        return p
 
     def adam(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,  beta1, beta2, eps, weight_decay, amsgrad, maximize):
         import torch
@@ -414,16 +417,6 @@ class CustomizedTest(object):
                                          eps=eps,
                                          weight_decay=weight_decay)
         return param, param_grad
-        
-    def unfold(input, dimension, size, step):
-        return input.unfold(dimension, size, step)
-
-    def expand(input, size):
-        return input.expand(size)
-    
-    def linspace(input, start, end, step):
-        import torch
-        return torch.linspace(start, end, step)
 
     def index_put(input, indices1, indices2, values, accumulate):
         import torch
@@ -511,17 +504,18 @@ class GenOutputData(object):
 
             input_abs_path = os.path.join(inputs_dir_path, saved_pth)
             data = get_data_from_file(input_abs_path, saved_pth, "input")
-            if data is None:
+            if data is None or "no_output_ref" in data['cfg']:
                 continue
 
             logger_str = "output"
-            module = "torch.nn.functional"
-            if "interface" in data["cfg"].keys():
-                module = data["cfg"]["interface"][0]
-
+            module = data["cfg"]["interface"][0] if data["cfg"]['interface'] else "torch.nn.functional"
             function_paras = data["function_paras"]
             transfer_tensor_to_device(function_paras)
             kwargs = function_paras['kwargs']
+            if module == "torch.Tensor":
+                input = kwargs['input']
+                module = "input"
+                del kwargs['input']
             func_call = f"{module}.{cfg_func_name}(**kwargs)"
 
             try:
@@ -562,9 +556,9 @@ class GenOutputData(object):
                     pickle.dump(to_numpy(outputs), f)
                     gen_counter += 1
 
-        logger.info(f"Generate test cases number: {gen_counter}")
+        logger.info(f"Generate test cases number for output data: {gen_counter}")
         if gen_counter == 0:
-            logger.warn(f"No benchmark output data is generated, \"--fname {func_name}\" may not be in the diopi-config, " \
-                f"check the arguments --fname")
+            logger.info(f"No benchmark output data is generated, \"--fname {func_name}\" may not be in the diopi-config, " \
+                f"or \"{func_name}\" doesn't need output data")
         else:
             logger.info("Generate benchmark output and backward data done!")

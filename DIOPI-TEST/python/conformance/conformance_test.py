@@ -59,6 +59,25 @@ def compare_with_gen_output(output, cfg, output_reference):
     return passed
 
 
+class ManualTest(object):
+    def test_dropout(input, p=0.5, training=True, inplace=False):
+        input_numpy = input.numpy()
+        out = F.dropout(input, p, training, inplace)
+        out_numpy = out.numpy()
+
+        # compute ratio
+        real_ratio = np.sum(out_numpy == 0) / out.numel()
+
+        # check data
+        remains = out_numpy[out_numpy != 0]
+        ref = input_numpy[out_numpy != 0]
+        assert np.allclose(remains, ref / (1 - p), 1e-3),\
+            "failed to execute dropout"
+
+        assert np.abs(real_ratio - p) < 2e-2,\
+            "failed to execute dropout"
+
+
 class ConformanceTest(object):
     r'''
     Run all functions by using input, then compare_with_gen_output with saved output
@@ -74,23 +93,30 @@ class ConformanceTest(object):
             input_abs_path = os.path.join(inputs_dir_path, saved_pth)
             output_abs_path = os.path.join(outputs_dir_path, saved_pth)
             data = get_data_from_file(input_abs_path, saved_pth, "input")
-            output_reference = get_data_from_file(output_abs_path, saved_pth, "output")
-            if data is None or output_reference is None:
+            if data is None:
                 continue
+
+            need_output = False if "no_output_ref" in data['cfg'] else True
+            module = "F" if need_output else "ManualTest"
+            if need_output:
+                output_reference = get_data_from_file(output_abs_path, saved_pth, "output")
+                if output_reference is None:
+                    continue
+            else:
+                cfg_func_name = "test_" + cfg_func_name
 
             function_paras = data["function_paras"]
             convert_input_tensors(function_paras)
             kwargs = function_paras['kwargs']
-
             func_call_list = []
-            func_call_list.append(f"F.{cfg_func_name}(**kwargs)")
+            func_call_list.append(f"{module}.{cfg_func_name}(**kwargs)")
             if data["cfg"].get("is_inplace", False):
-                func_call_list.append(f"F.{cfg_func_name}(**kwargs, inplace=True)")
+                func_call_list.append(f"{module}.{cfg_func_name}(**kwargs, inplace=True)")
 
             for func_call in func_call_list:
                 try:
                     output = eval(func_call)
-                    passed = compare_with_gen_output(output, data['cfg'], output_reference)
+                    passed = compare_with_gen_output(output, data['cfg'], output_reference) if need_output else True
                     logger.info(f"Run diopi_functions.{cfg_func_name} succeed") \
                         if passed else logger.error(f"Run diopi_functions.{cfg_func_name} failed")
                 except FunctionNotImplementedError as e:
