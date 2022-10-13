@@ -1616,6 +1616,35 @@ diopi_configs = {
         ),
     ),
 
+    'masked_fill_scalar': dict(
+        name=["masked_fill"],
+        interface=["torch"],
+        is_inplace=True,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1,), (64,), (4, 49), (1276, 49, 49), (2, 8, 726, 726), (2, 31, 6, 40, 1)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ['mask'],
+                    "shape": ((1,), (64,), (4, 49), (1276, 49, 49), (2, 1, 1, 726), (2, 31, 6, 40, 1)),
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask
+                },
+                {
+                    "ins": ['value'],
+                    # masked_fill_ only supports a 0-dimensional value tensor
+                    "shape": (( ), ( ), ( ), ( ), ( ), ( )),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.ones
+                },
+            ],
+        ),
+    ),
+
     'reciprocal': dict(
         name=["reciprocal"],
         interface=['torch'],
@@ -1645,6 +1674,7 @@ diopi_configs = {
             beta1=[0.9, 0.8],
             beta2=[0.99, 0.88],
             eps=[1e-08, 1e-09],
+            step=[1, 4],
             weight_decay=[0, 0.1],
             amsgrad=[False, True],
             maximize=[False, False],
@@ -1671,8 +1701,9 @@ diopi_configs = {
         atol=1e-5,
         para=dict(
             stride=[1, 2, 1, 2],
-            padding=[0, (1,), 0, (1,)],
+            padding=[0, 1, 0, 1],
             output_padding=[0, 1, 0, 1],
+            groups=[1, 8, 1, 1],
             dilation=[1, 2, 1, 2],
         ),
         tensor_para=dict(
@@ -1745,13 +1776,16 @@ diopi_configs = {
     'cdist': dict(
         name=['cdist'],
         interface=['torch'],
+        saved_args=dict(output=0),
         para=dict(
             p=[1, 2],
+            compute_mode=['use_mm_for_euclid_dist', 'donot_use_mm_for_euclid_dist']
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['x1'],
+                    "requires_grad": [True],
                     "shape": ((100, 4), (2, 256, 256)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
