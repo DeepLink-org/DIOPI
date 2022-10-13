@@ -118,6 +118,7 @@ class ManualTest(object):
         if end is not None:
             assert (out_numpy <= end -1).all(),\
                 "failed to execute random"
+
 class ConformanceTest(object):
     r'''
     Run all functions by using input, then compare_with_gen_output with saved output
