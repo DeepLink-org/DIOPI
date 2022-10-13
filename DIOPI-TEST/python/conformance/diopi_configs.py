@@ -1666,6 +1666,8 @@ diopi_configs = {
     'adam': dict(
         name=['adam', 'adamw'],
         interface=["CustomizedTest"],
+        atol=1e-4,
+        rtol=1e-3,
         atol_half=1e-4,
         rtol_half=1e-3,
         
@@ -1680,7 +1682,7 @@ diopi_configs = {
             maximize=[False, False],
         ),
         tensor_para=dict(
-            dtype=[Dtype.float32, Dtype.float16],
+            dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
             args=[
                 {
                     "ins": ['param', 'param_grad'],
@@ -1820,6 +1822,7 @@ diopi_configs = {
         interface=["torch"],
         para=dict(
             dim=[-1, 0, 1, None],
+            keepdim=[True, False, True, False],
         ),
         tensor_para=dict(
             args=[
