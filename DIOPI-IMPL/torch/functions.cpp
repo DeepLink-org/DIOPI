@@ -1561,6 +1561,60 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     return diopiSuccess;
 }
 
+diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiScalar_t* start,
+        const diopiScalar_t* end, const diopiScalar_t* step) {
+    auto atOut = impl::aten::buildATen(out);
+    auto atStart = impl::aten::buildAtScalar(start);
+    auto atEnd = impl::aten::buildAtScalar(end);
+    auto atStep = impl::aten::buildAtScalar(step);
+    auto atOutput = at::arange_out(atOut, atStart, atEnd, atStep);
+    impl::aten::updateATen2Tensor(ctx, atOutput, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, int64_t n, int64_t idx) {
+    auto atOut = impl::aten::buildATen(out);
+    at::Device device("cuda");
+    auto atOutput = at::randperm(n, device);
+    impl::aten::updateATen2Tensor(ctx, atOutput, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to, int64_t idx) {
+    auto atOut = impl::aten::buildATen(inout);
+    auto atOutput = at::native::uniform_(atOut, from, to, c10::nullopt);
+    return diopiSuccess;
+}
+
+diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t from, const int64_t* to, int64_t idx) {
+    auto atOut = impl::aten::buildATen(inout);
+    if (to==nullptr) {
+        auto atOutput = at::native::random_(atOut, from, c10::nullopt, c10::nullopt);
+    } else {
+        auto atOutput = at::native::random_(atOut, from, *to, c10::nullopt);
+    }
+    return diopiSuccess;
+}
+
+diopiError_t diopiBernoulliInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t idx) {
+    auto atOut = impl::aten::buildATen(inout);
+    auto atOutput = at::bernoulli(atOut, c10::nullopt);
+    return diopiSuccess;
+}
+
+diopiError_t diopiBernoulli(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input, int64_t idx) {
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = impl::aten::buildATen(out);
+    auto atOutput = at::bernoulli_out(atOut, atInput, c10::nullopt);
+    return diopiSuccess;
+}
+
+diopiError_t diopiBernoulliScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, double p, int64_t idx) {
+    auto atOut = impl::aten::buildATen(out);
+    auto atOutput = at::bernoulli(atOut, p, c10::nullopt);
+    return diopiSuccess;
+}
+
 diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input, 
                              const diopiTensorHandle_t mask, const diopiTensorHandle_t value){
     auto atInput = impl::aten::buildATen(input);
