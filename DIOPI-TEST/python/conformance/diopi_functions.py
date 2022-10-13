@@ -956,7 +956,7 @@ def sort(input, dim=- 1, descending=False, stable=False):
     ret = func(input.context_handle, vals.tensor_handle, indices.tensor_handle,
                input.tensor_handle, dim, descending, stable)
     check_returncode(ret)
-    return vals, indices
+    return input, indices
 
 
 def topk(input, k, dim=-1, largest=True, sorted=True):

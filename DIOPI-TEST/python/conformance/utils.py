@@ -1,6 +1,7 @@
 import logging
 from . import diopi_runtime
-from .diopi_runtime import device_impl_lib
+from .diopi_runtime import device_impl_lib, get_last_error
+import os
 
 
 default_cfg_dict = dict(
@@ -16,6 +17,7 @@ default_cfg_dict = dict(
     log_level="DEBUG"  # NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICA
 )
 default_cfg_dict['log_level'] = 1
+error_counter = [0]
 
 
 class Log(object):
@@ -40,7 +42,18 @@ class Log(object):
         return self.logger
 
 
+def wrap_logger_error(func):
+    def inner(*args, **kwargs):
+        global error_counter
+        error_counter[0] += 1
+        return func(*args, **kwargs)
+    return inner
+
+
 logger = Log(default_cfg_dict['log_level']).get_logger()
+is_ci = os.getenv('CI', 'null')
+if is_ci != 'null':
+    logger.error = wrap_logger_error(logger.error)
 
 
 class DiopiException(Exception):
@@ -57,9 +70,12 @@ class FunctionNotImplementedError(DiopiException):
 
 def check_returncode(returncode, throw_exception=True):
     if 0 != returncode:
-        error_info = f"returncode {returncode}"
+        error_info = f"Returncode: {returncode}"
+        error_detail = get_last_error()
+        error_info += ", Details: " + error_detail
+
         if throw_exception:
-            raise DiopiException(errcode=returncode, info=error_info)
+            raise DiopiException(error_info)
         else:
             logger.info(error_info)
 
