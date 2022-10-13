@@ -485,12 +485,6 @@ def min(input, dim=0, keepdim=False) -> Tensor:
     output = Res(out, indices)
     return output
 
-def convert_compute_mode(name):
-    if name == 'use_mm_for_euclid_dist':
-        return 1
-    if name == 'donot_use_mm_for_euclid_dist':
-        return 2
-    return 1
 
 def convert_reduction(name):
     if name == 'none':
@@ -1849,6 +1843,7 @@ def max_pool2d_backward(input, grad_outputs, indices, kernel_size, stride=None, 
     check_returncode(ret)
     return {"input": grad_input}
 
+
 def batch_norm_backward(input, grad_outputs, running_mean, running_var, weight=None, training=False,
                         bias=None, eps=1e-05, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
@@ -1876,6 +1871,66 @@ def batch_norm_backward(input, grad_outputs, running_mean, running_var, weight=N
                save_invstd.tensor_handle, c_bool(training), c_double(eps))
     check_returncode(ret)
     return out
+
+
+def arange(end, start=0, step=1, dtype=None) -> Tensor:
+    if type(start) == float or type(end) == float or type(step) == float:
+        dtype=Dtype.float32
+    else:
+        dtype=Dtype.int64
+    
+    numel = int((end - start)/step)
+    out = Tensor((numel,), dtype)
+
+    func = check_function("diopiArange")
+    ret = func(out.context_handle, out.tensor_handle, byref(Scalar(dtype, start)), byref(Scalar(dtype, end)), byref(Scalar(dtype, step)))
+    check_returncode(ret)
+    return out
+
+
+def randperm(n:int, dtype=None) -> Tensor:
+    dtype=Dtype.int64 if dtype is None else dtype
+    numel = n
+    out = Tensor((numel,), dtype)
+
+    func = check_function("diopiRandperm")
+    ret = func(out.context_handle, out.tensor_handle, c_int64(n), c_int64(0))
+    check_returncode(ret)
+    return out
+
+
+def uniform(input, start=0, end=1) -> Tensor:
+    func = check_function("diopiUniformInp")
+    ret = func(input.context_handle, input.tensor_handle, c_double(start), c_double(end), c_int64(0))
+    check_returncode(ret)
+    return input
+
+
+def random(input, start=0, end=None) -> Tensor:
+    func = check_function("diopiRandomInp")
+    end = c_void_p() if end is None else pointer(c_int64(end))
+    ret = func(input.context_handle, input.tensor_handle, c_int64(start), end, c_int64(0))
+    check_returncode(ret)
+    return input
+
+
+def bernoulli(input, inplace=False, p=None) -> Tensor:
+    out = input
+
+    if p is not None:
+        func = check_function("diopiBernoulliScalar")
+        ret = func(input.context_handle, input.tensor_handle, c_double(p), c_int64(0))
+    elif inplace:
+        func = check_function("diopiBernoulliInp")
+        ret = func(input.context_handle, input.tensor_handle, c_int64(0))
+    else:
+        out = raw_like(input)
+        func = check_function("diopiBernoulli")
+        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, c_int64(0))
+
+    check_returncode(ret)
+    return out
+
 
 def masked_fill(input, mask, value, inplace=False) -> Tensor:
     assert mask.get_dtype() == Dtype.bool, "mask must be bool tensor"
@@ -1908,6 +1963,7 @@ def masked_fill(input, mask, value, inplace=False) -> Tensor:
     check_returncode(ret)
     return out
 
+
 def adamw(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr, 
           beta1, beta2, eps, weight_decay, step, amsgrad=False, maximize=False):
     # note: buf, param_grad are mutable
@@ -1917,6 +1973,7 @@ def adamw(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,
                c_float(eps), c_float(weight_decay), c_int64(step), amsgrad, maximize)
     check_returncode(ret)
     return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
+
 
 def adam(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr, 
           beta1, beta2, eps, weight_decay, step, amsgrad=False, maximize=False):
@@ -1928,6 +1985,7 @@ def adam(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,
     check_returncode(ret)
     return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
 
+
 def adadelta(param, param_grad, square_avg, acc_delta, lr, rho, eps, weight_decay):
     # note: buf, param_grad are mutable
     func = check_function("diopiAdadelta")
@@ -1935,6 +1993,7 @@ def adadelta(param, param_grad, square_avg, acc_delta, lr, rho, eps, weight_deca
                acc_delta.tensor_handle, c_float(lr), c_float(rho), c_float(eps), c_float(weight_decay))
     check_returncode(ret)
     return param, param_grad, square_avg, acc_delta
+
 
 def conv_transpose2d(input, weight, bias=None, stride=1,
            padding=0, output_padding=0, groups=1, dilation=1) -> Tensor:
@@ -1978,6 +2037,7 @@ def conv_transpose2d(input, weight, bias=None, stride=1,
     check_returncode(ret)
     return out
 
+
 def cumsum(input, dim, dtype=None):
     assert isinstance(dim, int), "dim should be int"
 
@@ -1993,12 +2053,16 @@ def cumsum(input, dim, dtype=None):
     check_returncode(ret)
     return out
 
+
 def cdist(x1, x2, p, compute_mode=None):
     assert x1.numel() > 1 and x2.numel() > 1, "cdist only supports at least 2D tensors"
     assert x1.numel() == x2.numel(), "X1 and X2 must have the same number of columns"
 
     if compute_mode is not None:
-        compute_mode = convert_compute_mode(compute_mode)
+        if compute_mode == 'use_mm_for_euclid_dist':
+            compute_mode = 1
+        else:
+            compute_mode = 2
         compute_mode = byref(c_int64(compute_mode))
     else:
         compute_mode = c_void_p()
@@ -2012,6 +2076,7 @@ def cdist(x1, x2, p, compute_mode=None):
     check_returncode(ret)
     return out
 
+
 def cdist_backward(x1, grad_outputs, output, x2, p, **kwargs):
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     assert x1.numel() > 1 and x2.numel() > 1, "cdist only supports at least 2D tensors"
@@ -2023,6 +2088,7 @@ def cdist_backward(x1, grad_outputs, output, x2, p, **kwargs):
                x2.tensor_handle, c_double(p), output.tensor_handle)
     check_returncode(ret)
     return {'x1': grad_x1}
+
 
 def reciprocal(input, inplace=False) -> Tensor:
     out = raw_like(input)
@@ -2041,6 +2107,7 @@ def reciprocal(input, inplace=False) -> Tensor:
     check_returncode(ret)
     return out
 
+
 def bitwise_not(input):
     assert (input.get_dtype() in [Dtype.bool, Dtype.int8, Dtype.int16, Dtype.int32, Dtype.int64] ),\
         "input tensor must be of integral or boolean"
@@ -2050,6 +2117,7 @@ def bitwise_not(input):
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle)
     check_returncode(ret)
     return out
+
 
 def argmax(input, dim=None, keepdim=False):
     sizeO = list(input.size())
@@ -2072,6 +2140,7 @@ def argmax(input, dim=None, keepdim=False):
 
     return out
 
+
 def smooth_l1_loss(input, target, reduction='mean', beta=1.0):
     assert input.shape() == target.shape(), \
         'target shape must be the same as input shape'
@@ -2089,6 +2158,7 @@ def smooth_l1_loss(input, target, reduction='mean', beta=1.0):
                target.tensor_handle, c_int64(reduction_mode), c_double(beta))
     check_returncode(ret)
     return out
+
 
 def smooth_l1_loss_backward(input, grad_outputs, target, reduction='mean', beta=1.0, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
