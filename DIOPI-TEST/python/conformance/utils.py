@@ -51,7 +51,7 @@ def wrap_logger_error(func):
 
 
 logger = Log(default_cfg_dict['log_level']).get_logger()
-is_ci = os.getenv('CI', 'null')
+is_ci = os.getenv('GITHUB_JOB', 'null')
 if is_ci != 'null':
     logger.error = wrap_logger_error(logger.error)
 
