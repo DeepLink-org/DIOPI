@@ -2444,4 +2444,79 @@ diopi_configs = {
         ),
     ),
 
+   'arange': dict(
+        name=['arange'],
+        interface=['torch'],
+        para=dict(
+            start=[0, 0, -4, 0.1],
+            end=[91, 128, 5, 0.5],
+            step=[13, 1, 1, 0.1],
+        ),
+    ),
+
+   'randperm': dict(
+        name=['randperm'],
+        no_output_ref=True,
+        para=dict(
+            n=[2, 1999, 640000],
+        ),
+    ),
+
+   'uniform': dict(
+        name=['uniform'],
+        no_output_ref=True,
+        para={
+            'start':[0.5, -0.12499999999999999, -0.25, -0.04811252243246881],
+            'end':[1.5, 0.12499999999999999, 0.25, 0.04811252243246881],
+        },
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1, ), (64, 64), (16, 1, 3, 3), (96, 48, 3, 3)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+            ],
+        ),
+    ),
+
+   'random': dict(
+        name=['random'],
+        no_output_ref=True,
+        para={
+            'start':[0, 3, -1, 0],
+            'end':[2, None, 1, None],
+        },
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1, ), (64, 64), (16, 1, 3, 3), (96, 48, 3, 3)),
+                    "dtype": [Dtype.float32, Dtype.int64],
+                },
+            ],
+        ),
+    ),
+
+   'bernoulli': dict(
+        name=['bernoulli'],
+        no_output_ref=True,
+        is_inplace=True,
+        para=dict(
+            p=[None, 0.5, None, None],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.rand,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1, ), (64, 64), (16, 1, 3, 3), (96, 48, 3, 3)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+            ],
+        ),
+    ),
+
 }

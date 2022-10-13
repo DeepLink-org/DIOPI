@@ -77,7 +77,47 @@ class ManualTest(object):
         assert np.abs(real_ratio - p) < 2e-2,\
             "failed to execute dropout"
 
+    def test_randperm(n):
+        out = F.randperm(n)
+        out_numpy = out.numpy()
+        out_ref = np.arange(0, n, 1)
+        if out.numel() > 10:
+            assert not np.allclose(out_numpy, out_ref, 1e-3),\
+                "failed to execute randperm"
 
+        out_numpy.sort()
+        assert np.allclose(out_numpy, out_ref, 1e-3),\
+            "failed to execute randperm"
+
+    def test_uniform(input, start, end):
+        out = F.uniform(input, start, end)
+        out_numpy = out.numpy()
+
+        assert (out_numpy <= end).all() and (out_numpy >= start).all(),\
+            "failed to execute uniform"
+        if out.numel() > 100:
+            assert abs(out_numpy.mean() - (end + start)/2) < 1e-1,\
+                "failed to execute uniform"
+
+    def test_bernoulli(input, inplace=False, p=None):
+        p_numpy = input.numpy()
+        p = p_numpy.mean() if p is None else p
+        out = F.bernoulli(input, inplace, p)
+        out_numpy = out.numpy()
+
+        if out.numel() > 100:
+            assert abs(out_numpy.mean() - p) < 1e-1,\
+                "failed to execute bernoulli"
+
+    def test_random(input, start, end):
+        out = F.random(input, start, end)
+        out_numpy = out.numpy()
+
+        assert (out_numpy >= start).all(),\
+            "failed to execute random"
+        if end is not None:
+            assert (out_numpy <= end -1).all(),\
+                "failed to execute random"
 class ConformanceTest(object):
     r'''
     Run all functions by using input, then compare_with_gen_output with saved output
@@ -98,20 +138,19 @@ class ConformanceTest(object):
 
             need_output = False if "no_output_ref" in data['cfg'] else True
             module = "F" if need_output else "ManualTest"
+            test_func_name = cfg_func_name if need_output else "test_" + cfg_func_name
             if need_output:
                 output_reference = get_data_from_file(output_abs_path, saved_pth, "output")
                 if output_reference is None:
                     continue
-            else:
-                cfg_func_name = "test_" + cfg_func_name
 
             function_paras = data["function_paras"]
             convert_input_tensors(function_paras)
             kwargs = function_paras['kwargs']
             func_call_list = []
-            func_call_list.append(f"{module}.{cfg_func_name}(**kwargs)")
+            func_call_list.append(f"{module}.{test_func_name}(**kwargs)")
             if data["cfg"].get("is_inplace", False):
-                func_call_list.append(f"{module}.{cfg_func_name}(**kwargs, inplace=True)")
+                func_call_list.append(f"{module}.{test_func_name}(**kwargs, inplace=True)")
 
             for func_call in func_call_list:
                 try:
