@@ -2167,6 +2167,129 @@ def smooth_l1_loss_backward(input, grad_outputs, target, reduction='mean', beta=
     return {"input": grad_input}
 
 
+def maximum(input, other) -> Tensor:
+    out = Tensor(input.size(), input.get_dtype())
+
+    func = check_function("diopiMaximum")
+    ret = func(input.context_handle, out.tensor_handle,
+               input.tensor_handle, other.tensor_handle)
+    check_returncode(ret)
+    return out
+
+
+def minimum(input, other) -> Tensor:
+    out = Tensor(input.size(), input.get_dtype())
+
+    func = check_function("diopiMinimum")
+    ret = func(input.context_handle, out.tensor_handle,
+               input.tensor_handle, other.tensor_handle)
+    check_returncode(ret)
+    return out
+
+
+def mm(input, mat2) -> Tensor:
+    size1 = list(input.size())
+    assert (len(size1) == 2), 'input must be 2d tensor'
+    size2 = mat2.size()
+    assert (len(size2) == 2), 'mat2 must be 2d tensor'
+    assert (size1[1] == size2[0]), 'invalid args'
+
+    size_out = size1
+    size_out[1] = size2[1]
+    out = Tensor(size_out, input.get_dtype())
+
+    func = check_function("diopiMm")
+    ret = func(input.context_handle, out.tensor_handle,
+               input.tensor_handle, mat2.tensor_handle)
+    check_returncode(ret)
+    return out
+
+
+def conv3d(input, weight, bias=None, stride=1,
+           padding=0, dilation=1, groups=1) -> Tensor:
+    if bias is not None:
+        assert isinstance(bias, Tensor), \
+            'bias must be a Tensor'
+        bias = bias.tensor_handle
+    else:
+        bias = c_void_p()
+
+    sizeI = input.size()
+    sizeW = list(weight.size())
+    assert len(sizeI) == 5 and len(sizeW) == 5,\
+        'input and weight must be 4d tensors'
+
+    sizeO = []
+    sizeO.append(sizeI[0])
+    sizeO.append(sizeW[0])
+
+    if isinstance(stride, int):
+        stride = (stride, stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding, padding)
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation, dilation)
+    for i in range(-3, 0):
+        # equivalent kernel size
+        sizeW[i] += (sizeW[i] - 1) * (dilation[i] - 1)
+        sizeO.append(int((sizeI[i] - sizeW[i] + 2*padding[i])/stride[i]) + 1)
+
+    stride = Sizes(tuple(stride))
+    padding = Sizes(tuple(padding))
+    dilation = Sizes(tuple(dilation))
+
+    out = Tensor(sizeO, input.get_dtype())
+    func = check_function("diopiConvolution3d")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
+               weight.tensor_handle, bias, stride, padding, dilation, groups)
+    check_returncode(ret)
+    return out
+
+
+def conv3d_backward(input, grad_outputs, weight, bias=None, stride=1,
+                    padding=0, dilation=1, groups=1, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    sizeI = input.size()
+    sizeW = weight.size()
+    assert len(sizeI) == 5 and len(sizeW) == 5,\
+        'input and weight must be 5d tensors'
+
+    if isinstance(stride, int):
+        stride = (stride, stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding, padding)
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation, dilation)
+
+    stride = Sizes(tuple(stride))
+    padding = Sizes(tuple(padding))
+    dilation = Sizes(tuple(dilation))
+
+    grad_input = raw_like(input)
+    grad_weight = raw_like(weight)
+    out = {"input": grad_input, "weight": grad_weight}
+
+    if bias is None:
+        grad_bias = c_void_p()
+        sizeBias = c_void_p()
+    else:
+        gradBias = raw_like(bias)
+        grad_bias = gradBias.tensor_handle
+        sizeBias = byref(Sizes(bias.size()))
+        out.update({"bias": grad_bias})
+
+    # todo: no transposed/output_padding in forward
+    transposed = False
+    output_padding = Sizes((0, 0, 0))
+
+    func = check_function("diopiConvolution3dBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_weight.tensor_handle, grad_bias,
+               grad_outputs[0].tensor_handle, input.tensor_handle, weight.tensor_handle, sizeBias, stride,
+               padding, dilation, c_bool(transposed), output_padding, c_int64(groups))
+    check_returncode(ret)
+    return out
+
+
 def masked_select(input, mask) -> Tensor:
     assert mask.get_dtype() == Dtype.bool, "mask must be bool tensor"
     out_tensor_handle = TensorHandle()
