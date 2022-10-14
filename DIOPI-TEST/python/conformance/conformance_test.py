@@ -116,8 +116,9 @@ class ManualTest(object):
         assert (out_numpy >= start).all(),\
             "failed to execute random"
         if end is not None:
-            assert (out_numpy <= end -1).all(),\
+            assert (out_numpy <= end - 1).all(),\
                 "failed to execute random"
+
 
 class ConformanceTest(object):
     r'''

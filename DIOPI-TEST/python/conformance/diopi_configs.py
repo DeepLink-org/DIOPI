@@ -302,8 +302,7 @@ diopi_configs = {
                     "shape": ((72,), None, (80, ), None),
                     "gen_fn": dict(fn=Genfunc.randint, high=4),
                     "dtype": [Dtype.int64],
-                },
-    
+                },    
             ],
         ),
     ),
@@ -1637,7 +1636,7 @@ diopi_configs = {
                 {
                     "ins": ['value'],
                     # masked_fill_ only supports a 0-dimensional value tensor
-                    "shape": (( ), ( ), ( ), ( ), ( ), ( )),
+                    "shape": ((), (), (), (), (), ()),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.ones
                 },
@@ -1656,7 +1655,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((1,), (182,), (64, 128),(2, 1, 640, 640)),
+                    "shape": ((1,), (182,), (64, 128), (2, 1, 640, 640)),
                     "dtype": [Dtype.float32, Dtype.float64],
                 },
             ],
@@ -2050,7 +2049,6 @@ diopi_configs = {
                 },
                 {
                     "ins": ['mask'],
-                    "requires_grad": [False],
                     "shape": ((1, ), (16,), (8, 48), (4, 128, 128), (256, 8, 8)),
                     "dtype": [Dtype.bool],
                     "gen_fn": Genfunc.mask
@@ -2069,8 +2067,7 @@ diopi_configs = {
                     "shape": ((1, ), (16,), (8, 48), (4, 128, 128), (256, 8, 8)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
-                },
-                
+                },                
             ],
         ),
     ),
@@ -2091,8 +2088,7 @@ diopi_configs = {
                     "shape": ((48, 128), (128, 128), (8, 1)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
-                },
-                
+                },              
             ],
         ),
     ),
@@ -2109,14 +2105,44 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
                     "shape": ((5, 3), (16, 8), (16, 4, 4), (4, 4, 14, 14)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                     "gen_fn": Genfunc.randn
                 },
                 {
                     "ins": ['index'],
-                    "requires_grad": [False],
+                    "shape": ((3,), (5,), (2,), (10,)),
+                    "dtype": [Dtype.int64],
+                    "gen_fn": dict(fn=Genfunc.randint, high=3)
+                },
+            ]
+        ),
+    ),
+
+    'index_fill_scalar': dict(
+        name=['index_fill'],
+        interface=['torch'],
+        is_inplace=True,
+        para=dict(
+            dim=[0, 1, 2, 3],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((5, 3), (16, 8), (16, 4, 4), (4, 4, 14, 14)),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
+                    "gen_fn": Genfunc.randn
+                },
+                {
+                    "ins": ['value'],
+                    # index_fill_ only supports a 0-dimensional value tensor
+                    "shape": ((), (), (), ()),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
+                    "gen_fn": Genfunc.ones
+                },
+                {
+                    "ins": ['index'],
                     "shape": ((3,), (5,), (2,), (10,)),
                     "dtype": [Dtype.int64],
                     "gen_fn": dict(fn=Genfunc.randint, high=3)
@@ -2129,15 +2155,16 @@ diopi_configs = {
         name=['expand'],
         interface=['torch.Tensor'],
         para=dict(
-            size=[(3, 4), (-1, 4), (3, -1), (3, 3, 5)],
+            size=[(60800, 3), (-1, 4), (-1, 8, -1), (7, 3, -1)],
+            implicit=[True, False, True, False],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [(3, 1), (3, 1), (3, 1), (3, 1)],
+                    "shape": [(60800, 1), (100, 1), (70, 1, 2), (3, 1)],
                     "gen_fn": Genfunc.randn,
-                    "dtype": [Dtype.float32],
+                    "dtype": [Dtype.float32, Dtype.bool],
                 },
             ],
         ),
@@ -2146,6 +2173,10 @@ diopi_configs = {
     'linspace': dict(
         name=['linspace'],
         interface=['torch'],
+        atol=1e-4,
+        rtol=1e-3,
+        rtol_half=1e-3,
+        atol_half=1e-4,
         para=dict(
             start=[0, 0, -1, -1, -1, -1, -1, -1],
             end=[0.5, 0.0, 1, 1, 1, 1, 1, 1],

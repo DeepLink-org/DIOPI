@@ -361,7 +361,7 @@ class CustomizedTest(object):
         exp_avg_sqs = [exp_avg_sq]
         max_exp_avg_sqs = [max_exp_avg_sq]
         state_steps = [step]
-        
+
         torch.optim._functional.adam(params_with_grad,
                                       grads,
                                       exp_avgs,
@@ -421,6 +421,7 @@ class CustomizedTest(object):
     def index_put(input, indices1, indices2, values, accumulate):
         import torch
         return torch.index_put(input, (indices1, indices2), values, accumulate)
+
 
 def transfer_tensor_to_device(function_paras: dict):
     import torch
