@@ -2133,7 +2133,6 @@ def argmax(input, dim=None, keepdim=False):
         dim = c_void_p()
 
     out =  Tensor(sizeO, Dtype.int64)
-    print(out.size())
     func = check_function("diopiArgmax")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim, keepdim)
     check_returncode(ret)
