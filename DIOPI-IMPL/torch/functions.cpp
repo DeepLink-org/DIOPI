@@ -2123,4 +2123,48 @@ diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     return diopiSuccess;
 }
 
+diopiError_t diopiAdaptiveAvgPool3d(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, diopiSize_t output_size) {
+    at::Tensor atInput = impl::aten::buildATen(input);
+    auto atOutSize = impl::aten::buildAtIntArray(output_size);
+    at::Tensor atOut = at::adaptive_avg_pool3d(atInput, atOutSize);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiAdaptiveAvgPool3dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input,
+                                            const diopiTensorHandle_t grad_output, const diopiTensorHandle_t input) {
+    auto atGradOutput  = impl::aten::buildATen(grad_output);
+    auto atInput = impl::aten::buildATen(input);
+    impl::aten::invokeATenFuncRet(ctx, at::_adaptive_avg_pool3d_backward, grad_input, atGradOutput, atInput);
+    return diopiSuccess;
+}
+
+diopiError_t diopiAdaptiveMaxPool3d(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, diopiSize_t output_size) {
+    at::Tensor atInput = impl::aten::buildATen(input);
+    auto atOutSize = impl::aten::buildAtIntArray(output_size);
+    auto atOuts = at::adaptive_max_pool3d(atInput, atOutSize);
+    impl::aten::updateATen2Tensor(ctx, std::get<0>(atOuts), out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiAdaptiveMaxPool3dWithIndices(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        diopiTensorHandle_t indices, const diopiTensorHandle_t input, diopiSize_t output_size) {
+    at::Tensor atInput = impl::aten::buildATen(input);
+    auto atOutSize = impl::aten::buildAtIntArray(output_size);
+    diopi_tensor_list vecOut = {out, indices};
+    impl::aten::invokeATenFuncRet(ctx, at::adaptive_max_pool3d, vecOut, atInput, atOutSize);
+    return diopiSuccess;
+}
+
+diopiError_t diopiAdaptiveMaxPool3dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input,
+        const diopiTensorHandle_t grad_output, const diopiTensorHandle_t input, const diopiTensorHandle_t indices) {
+    at::Tensor atInput = impl::aten::buildATen(input);
+    at::Tensor atGradOutput = impl::aten::buildATen(grad_output);
+    at::Tensor atIndices = impl::aten::buildATen(indices);
+    impl::aten::invokeATenFuncRet(ctx, at::adaptive_max_pool3d_backward, grad_input, atGradOutput, atInput, atIndices);
+    return diopiSuccess;
+}
+
 }  // extern "C"
