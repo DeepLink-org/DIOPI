@@ -2582,3 +2582,90 @@ def layer_norm_backward(input, grad_outputs, normalized_shape, weight=None, bias
     check_returncode(ret)
     return out
 
+
+def adaptive_avg_pool3d(input, output_size):
+    sizeI = input.size()
+    assert len(sizeI) == 5 or len(sizeI) == 4,\
+        'input must be 4d or 5d tensors'
+
+    sizeO = []
+    sizeO.append(sizeI[0])
+    if len(sizeI) == 5:
+        sizeO.append(sizeI[1])
+
+    if isinstance(output_size, int):
+        output_size = (output_size, output_size, output_size)
+
+    for i in range(-3, 0):
+        if output_size[i] is None:
+            sizeO.append(sizeI[i])
+        else:
+            sizeO.append(output_size[i])
+
+    out = Tensor(sizeO, input.get_dtype())
+    output_size = Sizes((sizeO[-3], sizeO[-2], sizeO[-1]))
+
+    func = check_function("diopiAdaptiveAvgPool3d")
+    ret = func(input.context_handle, out.tensor_handle,
+               input.tensor_handle, output_size)
+    check_returncode(ret)
+    return out
+
+
+def adaptive_avg_pool3d_backward(input, grad_outputs, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    grad_input = raw_like(input)
+
+    func = check_function("diopiAdaptiveAvgPool3dBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle)
+    check_returncode(ret)
+    return {"input": grad_input}
+
+
+def adaptive_max_pool3d(input, output_size, return_indices=False):
+    sizeI = input.size()
+    assert len(sizeI) == 5 or len(sizeI) == 4,\
+        'input must be 4d or 5d tensors'
+
+    sizeO = []
+    sizeO.append(sizeI[0])
+    if len(sizeI) == 5:
+        sizeO.append(sizeI[1])
+
+    if isinstance(output_size, int):
+        output_size = (output_size, output_size, output_size)
+
+    for i in range(-3, 0):
+        if output_size[i] is None:
+            sizeO.append(sizeI[i])
+        else:
+            sizeO.append(output_size[i])
+
+    out = Tensor(sizeO, input.get_dtype())
+    output_size = Sizes(tuple(output_size))
+
+    if return_indices:
+        func = check_function("diopiAdaptiveMaxPool3dWithIndices")
+        indices = Tensor(sizeO, Dtype.int64)
+        ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
+                   input.tensor_handle, output_size)
+        check_returncode(ret)
+        return out, indices
+    else:
+        func = check_function("diopiAdaptiveMaxPool3d")
+        ret = func(input.context_handle, out.tensor_handle,
+                   input.tensor_handle, output_size)
+    check_returncode(ret)
+    return out
+
+
+def adaptive_max_pool3d_backward(input, grad_outputs, indices, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    grad_input = raw_like(input)
+
+    func = check_function("diopiAdaptiveMaxPool3dBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle, indices.tensor_handle)
+    check_returncode(ret)
+    return {"input": grad_input}
