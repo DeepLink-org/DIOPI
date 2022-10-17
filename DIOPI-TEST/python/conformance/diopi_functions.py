@@ -2295,7 +2295,7 @@ def conv3d_backward(input, grad_outputs, weight, bias=None, stride=1,
     return out
 
 
-def expand(input, size) -> Tensor:
+def expand(input, size, implicit) -> Tensor:
     SizeI = input.size()
     size = list(size)
     for i in (-1, -len(SizeI)):
@@ -2313,7 +2313,7 @@ def expand(input, size) -> Tensor:
     
     
     func = check_function("diopiExpand")
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, size, True)
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, size, c_bool(implicit))
     check_returncode(ret)
     return out
 
