@@ -2409,8 +2409,6 @@ def roll(input, shifts, dims=None):
     shifts = Sizes(tuple(shifts))
 
     if dims is not None:
-        if isinstance(dims, int):
-            dims = (dims, )
         dims = Sizes(tuple(dims))
     else:
         dims = Sizes(tuple(()))
@@ -2429,7 +2427,6 @@ def norm(input, p, dim=None, keepdim=False, dtype=None):
 
     if isinstance(dim, int):
         dim = (dim, )
-
     sizeO = list(input.size())
     if dim is not None:
         for i in range(len(dim)-1, -1, -1):
@@ -2445,5 +2442,41 @@ def norm(input, p, dim=None, keepdim=False, dtype=None):
     out = Tensor(sizeO, input.get_dtype())
     func = check_function("diopiNorm")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, p, dim, c_int32(dtype.value))
+    check_returncode(ret)
+    return out
+
+
+def group_norm(input, num_groups, weight=None, bias=None, eps=1e-05, backward=False):
+    dim = list(input.size())
+    save_mean = Tensor((dim[0], num_groups), input.get_dtype())
+    save_invstd = raw_like(save_mean)
+
+    weight = c_void_p() if weight is None else weight.tensor_handle
+    bias = c_void_p() if bias is None else bias.tensor_handle
+
+    out = raw_like(input)
+    func = check_function("diopiGroupNorm")
+    ret = func(input.context_handle, out.tensor_handle, save_mean.tensor_handle, save_invstd.tensor_handle,
+               input.tensor_handle, weight, bias, c_int64(num_groups), c_double(eps))
+    check_returncode(ret)
+    if backward:
+        return save_mean, save_invstd
+    return out
+
+
+def group_norm_backward(input, grad_outputs, num_groups, weight=None, bias=None,  eps=1e-05, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    save_mean, save_invstd = group_norm(input, num_groups, weight, bias, eps, backward=True)
+    grad_input = raw_like(input)
+    grad_weight = raw_like(weight)
+    grad_bias = raw_like(bias)
+    weight = c_void_p() if weight is None else weight.tensor_handle
+    bias = c_void_p() if bias is None else bias.tensor_handle
+
+    out = {"input": grad_input, "weight": grad_weight, "bias": grad_bias}
+    func = check_function("diopiGroupNormBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_weight.tensor_handle, grad_bias.tensor_handle,
+               grad_outputs[0].tensor_handle, input.tensor_handle, weight, save_mean.tensor_handle, save_invstd.tensor_handle,
+               c_int64(num_groups), c_double(eps))
     check_returncode(ret)
     return out
