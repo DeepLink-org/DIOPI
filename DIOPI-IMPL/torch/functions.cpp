@@ -2211,4 +2211,12 @@ diopiError_t diopiMaxPool3dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     return diopiSuccess;
 }
 
+diopiError_t diopiPermute(diopiContextHandle_t ctx,
+        diopiTensorHandle_t out, const diopiTensorHandle_t input, diopiSize_t dims) {
+    at::Tensor atInput = impl::aten::buildATen(input);
+    auto atDims = impl::aten::buildAtIntArray(dims);
+    impl::aten::invokeATenFuncRet(ctx, at::permute, out, atInput, atDims);
+    return diopiSuccess;
+}
+
 }  // extern "C"
