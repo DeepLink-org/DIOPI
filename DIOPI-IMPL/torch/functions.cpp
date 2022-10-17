@@ -1996,7 +1996,25 @@ diopiError_t diopiLinspace(diopiContextHandle_t ctx, diopiTensorHandle_t out, co
     auto atEnd = impl::aten::buildAtScalar(end);
     c10::optional<int64_t> atStep(steps);
     at::Tensor atOut = impl::aten::buildATen(out);
-    linspace_out(atOut, atStart, atEnd, atStep);
+    at::linspace_out(atOut, atStart, atEnd, atStep);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiRoll(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input, diopiSize_t shifts, diopiSize_t dims) {
+    auto atInput = impl::aten::buildATen(input);
+    at::IntArrayRef atShifts = impl::aten::buildAtIntArray(shifts);
+    at::IntArrayRef atDims = impl::aten::buildAtIntArray(dims);
+    auto atOut = at::roll(atInput, atShifts, atDims);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input, const diopiScalar_t* p, diopiSize_t dim, diopiDtype_t dtype) {
+    auto atInput = impl::aten::buildATen(input);
+    auto atP = impl::aten::buildAtScalar(p);
+    at::IntArrayRef atDim = impl::aten::buildAtIntArray(dim);
+    auto atOut = at::norm(atInput, atP, atDim);
     impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
 }
