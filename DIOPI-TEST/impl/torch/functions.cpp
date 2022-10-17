@@ -2167,4 +2167,48 @@ diopiError_t diopiAdaptiveMaxPool3dBackward(diopiContextHandle_t ctx, diopiTenso
     return diopiSuccess;
 }
 
+diopiError_t diopiMaxPool3d(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        const diopiTensorHandle_t input, diopiSize_t kernel_size, diopiSize_t stride,
+        diopiSize_t padding, diopiSize_t dilation, bool ceil_mode) {
+    at::Tensor atInput = impl::aten::buildATen(input);
+    at::IntArrayRef atKernelSize = impl::aten::buildAtIntArray(kernel_size);
+    at::IntArrayRef atStride = impl::aten::buildAtIntArray(stride);
+    at::IntArrayRef atPadding = impl::aten::buildAtIntArray(padding);
+    at::IntArrayRef atDilation = impl::aten::buildAtIntArray(dilation);
+    bool atCeilMode = ceil_mode;
+    impl::aten::invokeATenFuncRet(ctx, at::max_pool3d, out,
+        atInput, atKernelSize, atStride, atPadding, atDilation, atCeilMode);
+    return diopiSuccess;
+}
+
+diopiError_t diopiMaxPool3dWithIndices(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        diopiTensorHandle_t indices, const diopiTensorHandle_t input, diopiSize_t kernel_size,
+        diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceil_mode) {
+    at::Tensor atInput = impl::aten::buildATen(input);
+    at::IntArrayRef atKernelSize = impl::aten::buildAtIntArray(kernel_size);
+    at::IntArrayRef atStride = impl::aten::buildAtIntArray(stride);
+    at::IntArrayRef atPadding = impl::aten::buildAtIntArray(padding);
+    at::IntArrayRef atDilation = impl::aten::buildAtIntArray(dilation);
+    bool atCeilMode = ceil_mode;
+    diopi_tensor_list vecOut = {out, indices};
+    impl::aten::invokeATenFuncRet(ctx, at::max_pool3d_with_indices, vecOut,
+        atInput, atKernelSize, atStride, atPadding, atDilation, atCeilMode);
+    return diopiSuccess;
+}
+
+diopiError_t diopiMaxPool3dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
+                                    const diopiTensorHandle_t input, diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding,
+                                    diopiSize_t dilation, bool ceil_mode, const diopiTensorHandle_t indices) {
+    auto atGradOutput = impl::aten::buildATen(grad_output);
+    auto atInput = impl::aten::buildATen(input);
+    at::IntArrayRef atKernelSize = impl::aten::buildAtIntArray(kernel_size);
+    at::IntArrayRef atStride = impl::aten::buildAtIntArray(stride);
+    at::IntArrayRef atPadding = impl::aten::buildAtIntArray(padding);
+    at::IntArrayRef atDilation = impl::aten::buildAtIntArray(dilation);
+    auto atIndices = impl::aten::buildATen(indices);
+    impl::aten::invokeATenFuncRet(ctx, at::max_pool3d_with_indices_backward, grad_input, atGradOutput, atInput, atKernelSize, 
+                                  atStride, atPadding, atDilation, ceil_mode, atIndices);
+    return diopiSuccess;
+}
+
 }  // extern "C"

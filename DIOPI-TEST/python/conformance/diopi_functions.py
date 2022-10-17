@@ -2669,3 +2669,83 @@ def adaptive_max_pool3d_backward(input, grad_outputs, indices, **kwargs) -> Tens
                input.tensor_handle, indices.tensor_handle)
     check_returncode(ret)
     return {"input": grad_input}
+
+
+def max_pool3d(input, kernel_size, stride=None, padding=0, dilation=1,
+               ceil_mode=False, return_indices=False) -> Tensor:
+    sizeI = input.size()
+    assert len(sizeI) == 5 or len(sizeI) == 4,\
+        'input must be 5d or 4d tensors'
+
+    sizeO = []
+    sizeO.append(sizeI[0])
+    if len(sizeI) == 5:
+        sizeO.append(sizeI[1])
+
+    if isinstance(kernel_size, int):
+        kernel_size = (kernel_size, kernel_size, kernel_size)
+    if isinstance(stride, int):
+        stride = (stride, stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding, padding)
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation, dilation)
+
+    for i in range(-3, 0):
+        tmp_ker_size = kernel_size[i] + (kernel_size[i] - 1) * (dilation[i] - 1)
+        tmp_size = (sizeI[i] - tmp_ker_size + 2*padding[i])/stride[i] + 1
+        tmp_size = tmp_size if tmp_size > 1 else 1
+        if ceil_mode:
+            sizeO.append(math.ceil(tmp_size))
+        else:
+            sizeO.append(math.floor(tmp_size))
+
+    stride = Sizes(tuple(stride))
+    padding = Sizes(tuple(padding))
+    kernel_size = Sizes(tuple(kernel_size))
+    dilation = Sizes(tuple(dilation))
+    out = Tensor(sizeO, input.get_dtype())
+
+    if not return_indices:
+        func = check_function("diopiMaxPool3d")
+        ret = func(input.context_handle, out.tensor_handle,
+                   input.tensor_handle, kernel_size,
+                   stride, padding, dilation, ceil_mode)
+        check_returncode(ret)
+        return out
+    else:
+        func = check_function("diopiMaxPool3dWithIndices")
+        indices = Tensor(sizeO, Dtype.int64)
+        ret = func(input.context_handle, out.tensor_handle,
+                   indices.tensor_handle, input.tensor_handle,
+                   kernel_size, stride, padding, dilation, ceil_mode)
+        check_returncode(ret)
+        return out, indices
+
+
+def max_pool3d_backward(input, grad_outputs, indices, kernel_size, stride=None, padding=0, dilation=1,
+               ceil_mode=False, **kwargs ) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    grad_input = raw_like(input)
+    sizeI = input.size()
+    assert len(sizeI) == 5 or len(sizeI) == 4, 'input must be 5d or 4d tensors'
+
+    if isinstance(kernel_size, int):
+        kernel_size = (kernel_size, kernel_size, kernel_size)
+    if isinstance(stride, int):
+        stride = (stride, stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding, padding)
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation, dilation)
+
+    stride = Sizes(tuple(stride))
+    padding = Sizes(tuple(padding))
+    kernel_size = Sizes(tuple(kernel_size))
+    dilation = Sizes(tuple(dilation))
+
+    func = check_function("diopiMaxPool3dBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle, kernel_size, stride, padding, dilation, ceil_mode, indices.tensor_handle)
+    check_returncode(ret)
+    return {"input": grad_input}
