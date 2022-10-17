@@ -31,6 +31,9 @@ def compare_with_gen_output(output, cfg, output_reference):
     passed = True
     if isinstance(output, Tensor):
         passed = allclose(cfg, output.numpy(), output_reference)
+        # if not passed:
+        #     mask = np.isclose(output.numpy(), output_reference, cfg.get('rtol', 1e-5), cfg.get('atol', 1e-8), True)
+        #     print("faild:", output.numpy()[0], output_reference[0])
     elif isinstance(output, (list, tuple)):
         assert isinstance(output_reference, (list, tuple))
         assert len(output) == len(output_reference)
@@ -158,6 +161,7 @@ class ConformanceTest(object):
                 try:
                     output = eval(func_call)
                     passed = compare_with_gen_output(output, data['cfg'], output_reference) if need_output else True
+                    # print(output.size(), output_reference.shape)
                     logger.info(f"Run diopi_functions.{cfg_func_name} succeed") \
                         if passed else logger.error(f"Run diopi_functions.{cfg_func_name} failed")
                 except FunctionNotImplementedError as e:

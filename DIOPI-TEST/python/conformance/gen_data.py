@@ -525,7 +525,13 @@ class GenOutputData(object):
                 logger.error(f"Failed to execute function {func_call}, caused by {e}")
                 continue
 
+            if outputs is not None:
+                with open(os.path.join(outputs_dir_path, saved_pth), "wb") as f:
+                    pickle.dump(to_numpy(outputs), f)
+                    gen_counter += 1
+
             if function_paras["requires_grad"]:
+                kwargs['input'] = kwargs['input'] if 'input' in kwargs else input
                 saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
                 if not isinstance(outputs, (list, tuple)):
                     outputs = [outputs]
@@ -552,10 +558,6 @@ class GenOutputData(object):
                 logger.info(f"Generate benchmark {logger_str} data for {func_signature}")
                 func_name_list.append(cfg_func_name)
 
-            if outputs is not None:
-                with open(os.path.join(outputs_dir_path, saved_pth), "wb") as f:
-                    pickle.dump(to_numpy(outputs), f)
-                    gen_counter += 1
 
         logger.info(f"Generate test cases number for output data: {gen_counter}")
         if gen_counter == 0:
