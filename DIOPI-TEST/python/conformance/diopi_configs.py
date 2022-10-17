@@ -2246,6 +2246,7 @@ diopi_configs = {
         para=dict(
             p=[2.5, float('inf'), -float('inf')],
             dim=[None, (0, 1), (1, 2)],
+            keepdim=[False, True, False]
         ),
         tensor_para=dict(
             args=[

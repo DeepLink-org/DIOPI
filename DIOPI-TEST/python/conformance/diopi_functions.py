@@ -2401,3 +2401,49 @@ def linspace(start, end, steps):
     ret = func(out.context_handle, out.tensor_handle, start, end, c_int64(steps))
     check_returncode(ret)
     return out
+
+
+def roll(input, shifts, dims=None):
+    if isinstance(shifts, int):
+        shifts = (shifts, )
+    shifts = Sizes(tuple(shifts))
+
+    if dims is not None:
+        if isinstance(dims, int):
+            dims = (dims, )
+        dims = Sizes(tuple(dims))
+    else:
+        dims = Sizes(tuple(()))
+    
+    out = raw_like(input)
+    func = check_function("diopiRoll")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, shifts, dims)
+    check_returncode(ret)
+    return out
+
+
+def norm(input, p, dim=None, keepdim=False, dtype=None):
+    p = byref(Scalar(input.get_dtype(), p))
+    if dtype is None:
+        dtype = input.get_dtype()
+
+    if isinstance(dim, int):
+        dim = (dim, )
+
+    sizeO = list(input.size())
+    if dim is not None:
+        for i in range(len(dim)-1, -1, -1):
+            if keepdim:
+                sizeO[dim[i]] = 1
+            else:
+                del sizeO[dim[i]]
+        dim = Sizes(tuple(dim))
+    else:
+        sizeO = (1, )
+        dim = Sizes(tuple(()))
+
+    out = Tensor(sizeO, input.get_dtype())
+    func = check_function("diopiNorm")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, p, dim, c_int32(dtype.value))
+    check_returncode(ret)
+    return out
