@@ -1548,11 +1548,7 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     c10::optional<at::Tensor> atSaveVar = save_invstd
         ? c10::optional<at::Tensor>(impl::aten::buildATen(save_invstd))
         : c10::nullopt;
-    auto reserve = at::empty({0}, atInput.options().dtype(at::kByte));
-    diopi_tensor_list vecOut = {grad_input, grad_weight, grad_bias};
     auto grad_input_mask = std::array<bool, 3>{true, true, true};
-    // impl::aten::invokeATenFuncRet(ctx, at::cudnn_batch_norm_backward, vecOut, atInput, atGradOutput,  atWeight, atRunningMean,
-    //                               atRunningVar, atSaveMean, atSaveVar, eps, reserve);
     auto atOut = at::native_batch_norm_backward(atGradOutput, atInput, atWeight, atRunningMean,  atRunningVar, atSaveMean, 
         atSaveVar, training, eps, grad_input_mask);
     impl::aten::updateATen2Tensor(ctx, std::get<0>(atOut), grad_input);
@@ -1909,30 +1905,6 @@ diopiError_t diopiConvolution3dBackward(diopiContextHandle_t ctx, diopiTensorHan
     return diopiSuccess;
 }
 
-diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input, diopiSize_t size, bool implicit) {
-    auto atInput = impl::aten::buildATen(input);
-    auto atSize = impl::aten::buildAtIntArray(size);
-    auto atOut = at::native::expand(atInput, atSize, implicit).clone();
-    impl::aten::updateATen2Tensor(ctx, atOut, out);
-    return diopiSuccess;
-}
-
-diopiError_t diopiUnfold(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input, int64_t dim, int64_t size, int64_t step) {
-    auto atInput = impl::aten::buildATen(input);
-    // must use contiguous rather than clone in this case
-    auto atOut = at::native::unfold(atInput, dim, size, step).contiguous();
-    impl::aten::updateATen2Tensor(ctx, atOut, out);
-    return diopiSuccess;
-}
-
-diopiError_t diopiUnfoldBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
-        diopiSize_t input_sizes, int64_t dim, int64_t size, int64_t step) {
-    auto atGrad = impl::aten::buildATen(grad_output);
-    auto atInputSize = impl::aten::buildAtIntArray(input_sizes);
-    impl::aten::invokeATenFuncRet(ctx, at::unfold_backward, grad_input, atGrad, atInputSize, dim, size, step);
-    return diopiSuccess;
-}
-
 diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t* out,
                                const diopiTensorHandle_t input, const diopiTensorHandle_t mask) {
     auto atInput = impl::aten::buildATen(input);
@@ -2018,5 +1990,39 @@ diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, const 
     impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
 }
-                          
+
+diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean, diopiTensorHandle_t save_invstd,
+                            const diopiTensorHandle_t input, const diopiTensorHandle_t weight, const diopiTensorHandle_t bias, int64_t num_groups, double eps) {
+    at::Tensor atInput = impl::aten::buildATen(input);
+    at::Tensor atWeight = impl::aten::buildATen(weight);
+    at::Tensor atBias = impl::aten::buildATen(bias);
+    const int64_t N = atInput.size(0);
+    const int64_t C = atInput.size(1);
+    const auto input_shape = atInput.sizes();
+    const int64_t HxW = c10::multiply_integers(input_shape.cbegin() + 2, input_shape.cend());
+    diopi_tensor_list vecOut = {out, save_mean, save_invstd};
+    impl::aten::invokeATenFuncRet(ctx, at::native_group_norm, vecOut, atInput, atWeight, atBias, N, C, HxW, num_groups, eps);  
+    return diopiSuccess;
+}
+
+diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight, diopiTensorHandle_t grad_bias,
+                                    const diopiTensorHandle_t grad_output, const diopiTensorHandle_t input, const diopiTensorHandle_t weight, const diopiTensorHandle_t mean,
+                                    const diopiTensorHandle_t rstd, int64_t num_groups, double eps) {
+    auto atGradOutput = impl::aten::buildATen(grad_output);
+    auto atInput = impl::aten::buildATen(input);
+    auto atWeight = impl::aten::buildATen(weight);
+    auto atSaveMean = impl::aten::buildATen(mean);
+    auto atSaveVar = impl::aten::buildATen(rstd);
+    const int64_t N = atInput.size(0);
+    const int64_t C = atInput.size(1);
+    const auto input_shape = atInput.sizes();
+    const int64_t HxW = c10::multiply_integers(input_shape.cbegin() + 2, input_shape.cend());
+    auto grad_input_mask = std::array<bool, 3>{true, true, true};
+    auto atOut = at::native_group_norm_backward(atGradOutput, atInput, atSaveMean, atSaveVar, 
+                                                atWeight,  N, C, HxW, num_groups, grad_input_mask);
+    impl::aten::updateATen2Tensor(ctx, std::get<0>(atOut), grad_input);
+    impl::aten::updateATen2Tensor(ctx, std::get<1>(atOut), grad_weight);
+    impl::aten::updateATen2Tensor(ctx, std::get<2>(atOut), grad_bias);
+    return diopiSuccess;
+}
 }  // extern "C"
