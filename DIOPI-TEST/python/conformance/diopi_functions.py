@@ -2749,3 +2749,22 @@ def max_pool3d_backward(input, grad_outputs, indices, kernel_size, stride=None, 
                input.tensor_handle, kernel_size, stride, padding, dilation, ceil_mode, indices.tensor_handle)
     check_returncode(ret)
     return {"input": grad_input}
+
+
+def permute(input, dims=None) -> Tensor:
+    assert isinstance(dims, (tuple, list)) or dims is None,\
+        "dims should be tuple or list"
+
+    sizeI = list(input.size())
+    strideI = list(input.get_stride())
+    sizeO = list(input.size())
+    strideO = list(input.get_stride())
+    for i in range(len(dims)):
+        sizeO[i] = sizeI[dims[i]]
+        strideO[i] = strideI[dims[i]]
+    out = Tensor(sizeO, input.get_dtype(), strideO)
+    dims = Sizes(tuple(dims))
+    func = check_function("diopiPermute")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dims)
+    check_returncode(ret)
+    return out
