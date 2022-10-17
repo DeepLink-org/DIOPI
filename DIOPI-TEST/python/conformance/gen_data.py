@@ -531,7 +531,8 @@ class GenOutputData(object):
                     gen_counter += 1
 
             if function_paras["requires_grad"]:
-                kwargs['input'] = kwargs['input'] if 'input' in kwargs else input
+                if module == "torch.Tensor":
+                    kwargs['input'] = input
                 saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
                 if not isinstance(outputs, (list, tuple)):
                     outputs = [outputs]
