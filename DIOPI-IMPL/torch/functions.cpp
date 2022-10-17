@@ -1620,6 +1620,7 @@ diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
     auto atInput = impl::aten::buildATen(input);
     auto atMask = impl::aten::buildATen(mask);
     auto atValue = impl::aten::buildATen(value);
+    // impl::aten::invokeATenFuncRet<at::Tensor (*)(at::Tensor &, at::Tensor &, at::Tensor &)>(ctx, at::masked_fill, out, atInput, atMask, atValue);
     auto atOut = at::masked_fill(atInput, atMask, atValue);
     impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
@@ -1640,6 +1641,7 @@ diopiError_t diopiMaskedFillScalar(diopiContextHandle_t ctx, diopiTensorHandle_t
     auto atInput = impl::aten::buildATen(input);
     auto atMask = impl::aten::buildATen(mask);
     auto atValue = impl::aten::buildAtScalar(value);
+    // impl::aten::invokeATenFuncRet<at::Tensor (*)(at::Tensor &, at::Tensor &, at::Scalar)>(ctx, at::masked_fill, atInput, atMask, atValue);
     auto atOut = at::masked_fill(atInput, atMask, atValue);
     impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;        
@@ -1909,71 +1911,28 @@ diopiError_t diopiConvolution3dBackward(diopiContextHandle_t ctx, diopiTensorHan
     return diopiSuccess;
 }
 
-diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t* out,
-                               const diopiTensorHandle_t input, const diopiTensorHandle_t mask) {
+diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input, diopiSize_t size, bool implicit) {
     auto atInput = impl::aten::buildATen(input);
-    auto atMask = impl::aten::buildATen(mask);
-    auto atOut = at::masked_select(atInput, atMask);
-    impl::aten::buildDiopiTensor(ctx, atOut, out);
-    return diopiSuccess;
-}
-
-diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
-                                       const diopiTensorHandle_t input, const diopiTensorHandle_t mask) {
-    auto atGradOutput = impl::aten::buildATen(grad_output);
-    auto atInput = impl::aten::buildATen(input);
-    auto atMask = impl::aten::buildATen(mask);
-    impl::aten::invokeATenFuncRet(ctx, at::masked_select_backward, grad_input, atGradOutput, atInput, atMask);
-    return diopiSuccess;
-}
-
-diopiError_t diopiIndexFillScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
-                                  int64_t dim, const diopiTensorHandle_t index, const diopiScalar_t* value) {
-    auto atInput = impl::aten::buildATen(input);
-    auto atIndex = impl::aten::buildATen(index);
-    auto atValue = impl::aten::buildAtScalar(value);
-    auto atOut = at::index_fill(atInput, dim, atIndex, atValue);
-    impl::aten::updateATen2Tensor(ctx, atOut, out);
-    return diopiSuccess; 
-}
-
-diopiError_t diopiIndexFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
-                            int64_t dim, const diopiTensorHandle_t index, const diopiTensorHandle_t value) {
-    auto atInput = impl::aten::buildATen(input);
-    auto atIndex = impl::aten::buildATen(index);
-    auto atValue = impl::aten::buildATen(value);
-    auto atOut = at::index_fill(atInput, dim, atIndex, atValue);
-    impl::aten::updateATen2Tensor(ctx, atOut, out);
-    return diopiSuccess; 
-}
-
-diopiError_t diopiIndexFillInpScalar(diopiContextHandle_t ctx, const diopiTensorHandle_t input,
-                                     int64_t dim, const diopiTensorHandle_t index, const diopiScalar_t* value) {
-    auto atInput = impl::aten::buildATen(input);
-    auto atIndex = impl::aten::buildATen(index);
-    auto atValue = impl::aten::buildAtScalar(value);
-    auto atOut = at::index_fill(atInput, dim, atIndex, atValue);
-    impl::aten::updateATen2Tensor(ctx, atOut, input);
-    return diopiSuccess;  
-}
-
-diopiError_t diopiIndexFillInp(diopiContextHandle_t ctx, const diopiTensorHandle_t input,
-                               int64_t dim, const diopiTensorHandle_t index, const diopiTensorHandle_t value) {
-    auto atInput = impl::aten::buildATen(input);
-    auto atIndex = impl::aten::buildATen(index);
-    auto atValue = impl::aten::buildATen(value);
-    auto atOut = at::index_fill(atInput, dim, atIndex, atValue);
-    impl::aten::updateATen2Tensor(ctx, atOut, input);
-    return diopiSuccess;
-}
-
-diopiError_t diopiLinspace(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiScalar_t* start, const diopiScalar_t* end, int64_t steps) {
-    auto atStart = impl::aten::buildAtScalar(start);
-    auto atEnd = impl::aten::buildAtScalar(end);
-    c10::optional<int64_t> atStep(steps);
-    at::Tensor atOut = impl::aten::buildATen(out);
-    linspace_out(atOut, atStart, atEnd, atStep);
+    auto atSize = impl::aten::buildAtIntArray(size);
+    auto atOut = at::native::expand(atInput, atSize, implicit).clone();
     impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
-}                          
+}
+
+diopiError_t diopiUnfold(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input, int64_t dimension, int64_t size, int64_t step) {
+    auto atInput = impl::aten::buildATen(input);
+    // must use contiguous rather than clone in this case
+    auto atOut = at::native::unfold(atInput, dimension, size, step).contiguous();
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiUnfoldBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
+        diopiSize_t input_sizes, int64_t dimension, int64_t size, int64_t step) {
+    auto atGrad = impl::aten::buildATen(grad_output);
+    auto atInputSize = impl::aten::buildAtIntArray(input_sizes);
+    impl::aten::invokeATenFuncRet(ctx, at::unfold_backward, grad_input, atGrad, atInputSize, dimension, size, step);
+    return diopiSuccess;
+}
+
 }  // extern "C"
