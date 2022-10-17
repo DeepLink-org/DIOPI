@@ -1905,6 +1905,30 @@ diopiError_t diopiConvolution3dBackward(diopiContextHandle_t ctx, diopiTensorHan
     return diopiSuccess;
 }
 
+diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input, diopiSize_t size, bool implicit) {
+    auto atInput = impl::aten::buildATen(input);
+    auto atSize = impl::aten::buildAtIntArray(size);
+    auto atOut = at::native::expand(atInput, atSize, implicit).clone();
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiUnfold(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input, int64_t dim, int64_t size, int64_t step) {
+    auto atInput = impl::aten::buildATen(input);
+    // must use contiguous rather than clone in this case
+    auto atOut = at::native::unfold(atInput, dim, size, step).contiguous();
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiUnfoldBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
+        diopiSize_t input_sizes, int64_t dim, int64_t size, int64_t step) {
+    auto atGrad = impl::aten::buildATen(grad_output);
+    auto atInputSize = impl::aten::buildAtIntArray(input_sizes);
+    impl::aten::invokeATenFuncRet(ctx, at::unfold_backward, grad_input, atGrad, atInputSize, dim, size, step);
+    return diopiSuccess;
+}
+
 diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t* out,
                                const diopiTensorHandle_t input, const diopiTensorHandle_t mask) {
     auto atInput = impl::aten::buildATen(input);
