@@ -1126,7 +1126,7 @@ def clip_grad_norm_(parameters, max_norm, norm_type=2.0, error_if_nonfinite=Fals
 def batch_norm(input, running_mean, running_var, weight=None, bias=None,
                training=False, momentum=0.1, eps=1e-05, backward=False) -> Tensor:
     dim = len(list(input.size()))
-    dim = [0] + [i for i in range(2,dim)]
+    dim = [0] + [i for i in range(2, dim)]
     _, save_mean = reduce_op_process(input, dim)
     save_invstd = raw_like(save_mean)
 
@@ -1764,7 +1764,7 @@ def threshold_backward(input, grad_outputs, threshold, **kwargs) -> Tensor:
 
 
 def binary_cross_entropy_with_logits_backward(input, grad_outputs, target, weight=None,
-                                     reduction='mean', pos_weight=None, **kwargs) -> Tensor:
+                                              reduction='mean', pos_weight=None, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     assert input.size() == target.size(), \
         'target shape must be the same as input shape'
@@ -1789,7 +1789,7 @@ def binary_cross_entropy_with_logits_backward(input, grad_outputs, target, weigh
     grad_input = raw_like(input)
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiBCEWithLogitsBackward")
-    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle, 
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
                input.tensor_handle, target.tensor_handle, weight, pos_weight, c_int64(reduction_mode))
     check_returncode(ret)
     return {"input": grad_input}
@@ -1817,7 +1817,7 @@ def nll_loss_backward(input, grad_outputs, target, weight=None, ignore_index=-10
 
 
 def max_pool2d_backward(input, grad_outputs, indices, kernel_size, stride=None, padding=0, dilation=1,
-               ceil_mode=False, **kwargs ) -> Tensor:
+                        ceil_mode=False, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
     sizeI = input.size()
@@ -1861,13 +1861,10 @@ def batch_norm_backward(input, grad_outputs, running_mean, running_var, weight=N
             "if not trainging, running_mean and running_var must be defined"
     running_mean = c_void_p() if running_mean is None else running_mean.tensor_handle
     running_var = c_void_p() if running_var is None else running_var.tensor_handle
-
-    
     out = {"input": grad_input, "weight": grad_weight, "bias": grad_bias}
-    
     func = check_function("diopiBatchNormBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_weight.tensor_handle, grad_bias.tensor_handle,
-               grad_outputs[0].tensor_handle, input.tensor_handle, weight, running_mean, running_var, save_mean.tensor_handle, 
+               grad_outputs[0].tensor_handle, input.tensor_handle, weight, running_mean, running_var, save_mean.tensor_handle,
                save_invstd.tensor_handle, c_bool(training), c_double(eps))
     check_returncode(ret)
     return out
@@ -1889,8 +1886,8 @@ def arange(end, start=0, step=1, dtype=None) -> Tensor:
     return out
 
 
-def randperm(n:int, dtype=None) -> Tensor:
-    dtype=Dtype.int64 if dtype is None else dtype
+def randperm(n :int, dtype=None) -> Tensor:
+    dtype = Dtype.int64 if dtype is None else dtype
     numel = n
     out = Tensor((numel,), dtype)
 
@@ -1965,22 +1962,22 @@ def masked_fill(input, mask, value, inplace=False) -> Tensor:
     return out
 
 
-def adamw(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr, 
+def adamw(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,
           beta1, beta2, eps, weight_decay, step, amsgrad=False, maximize=False):
     # note: buf, param_grad are mutable
     func = check_function("diopiAdamW")
-    ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle, exp_avg.tensor_handle, 
-               exp_avg_sq.tensor_handle, max_exp_avg_sq.tensor_handle, c_float(lr), c_float(beta1), c_float(beta2), 
+    ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle, exp_avg.tensor_handle,
+               exp_avg_sq.tensor_handle, max_exp_avg_sq.tensor_handle, c_float(lr), c_float(beta1), c_float(beta2),
                c_float(eps), c_float(weight_decay), c_int64(step), amsgrad, maximize)
     check_returncode(ret)
     return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
 
 
-def adam(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr, 
+def adam(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,
           beta1, beta2, eps, weight_decay, step, amsgrad=False, maximize=False):
     # note: buf, param_grad are mutable
     func = check_function("diopiAdam")
-    ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle, exp_avg.tensor_handle, 
+    ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle, exp_avg.tensor_handle,
                exp_avg_sq.tensor_handle, max_exp_avg_sq.tensor_handle, c_float(lr), c_float(beta1), c_float(beta2), 
                c_float(eps), c_float(weight_decay), c_int64(step), amsgrad, maximize)
     check_returncode(ret)
@@ -1990,7 +1987,7 @@ def adam(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,
 def adadelta(param, param_grad, square_avg, acc_delta, lr, rho, eps, weight_decay):
     # note: buf, param_grad are mutable
     func = check_function("diopiAdadelta")
-    ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle, square_avg.tensor_handle, 
+    ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle, square_avg.tensor_handle,
                acc_delta.tensor_handle, c_float(lr), c_float(rho), c_float(eps), c_float(weight_decay))
     check_returncode(ret)
     return param, param_grad, square_avg, acc_delta
@@ -2046,7 +2043,7 @@ def cumsum(input, dim, dtype=None):
     assert dim < len(sizeI), "dim out of index"
     if dtype is None:
         dtype = input.get_dtype()
-    
+
     out = raw_like(input)
     func = check_function("diopiCumsum")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
@@ -2070,7 +2067,6 @@ def cdist(x1, x2, p, compute_mode=None):
 
     sizeO = list(x1.size())
     sizeO[-1] = list(x2.size())[-2]
-    
     out = Tensor(sizeO, x1.get_dtype())
     func = check_function("diopiCdist")
     ret = func(x1.context_handle, out.tensor_handle, x1.tensor_handle, x2.tensor_handle, c_double(p), compute_mode)
@@ -2085,7 +2081,7 @@ def cdist_backward(x1, grad_outputs, output, x2, p, **kwargs):
 
     grad_x1 = raw_like(x1)
     func = check_function("diopiCdistBackward")
-    ret = func(x1.context_handle, grad_x1.tensor_handle, grad_outputs[0].tensor_handle, x1.tensor_handle, 
+    ret = func(x1.context_handle, grad_x1.tensor_handle, grad_outputs[0].tensor_handle, x1.tensor_handle,
                x2.tensor_handle, c_double(p), output.tensor_handle)
     check_returncode(ret)
     return {'x1': grad_x1}
@@ -2110,7 +2106,7 @@ def reciprocal(input, inplace=False) -> Tensor:
 
 
 def bitwise_not(input):
-    assert (input.get_dtype() in [Dtype.bool, Dtype.int8, Dtype.int16, Dtype.int32, Dtype.int64] ),\
+    assert (input.get_dtype() in [Dtype.bool, Dtype.int8, Dtype.int16, Dtype.int32, Dtype.int64]),\
         "input tensor must be of integral or boolean"
 
     out = raw_like(input)
@@ -2127,13 +2123,13 @@ def argmax(input, dim=None, keepdim=False):
         if keepdim:
             sizeO[dim] = 1
         else:
-            sizeO = sizeO[ : dim] + sizeO[dim+1 : ]
+            sizeO = sizeO[:dim] + sizeO[dim+1:]
         dim = byref(c_int64(dim))
     else:
         sizeO = [1]
         dim = c_void_p()
 
-    out =  Tensor(sizeO, Dtype.int64)
+    out = Tensor(sizeO, Dtype.int64)
     func = check_function("diopiArgmax")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim, keepdim)
     check_returncode(ret)
@@ -2341,3 +2337,67 @@ def unfold_backward(input, grad_outputs, dimension, size, step, **kwargs):
     check_returncode(ret)
     return {"input": grad_input}
 
+
+def masked_select(input, mask) -> Tensor:
+    assert mask.get_dtype() == Dtype.bool, "mask must be bool tensor"
+    out_tensor_handle = TensorHandle()
+
+    func = check_function("diopiMaskedSelect")
+    ret = func(input.context_handle, pointer(out_tensor_handle), input.tensor_handle,
+               mask.tensor_handle)
+    check_returncode(ret)
+    out = Tensor.from_handle(out_tensor_handle)
+    return out
+
+
+def masked_select_backward(input, grad_outputs, mask) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    grad_input = raw_like(input)
+
+    func = check_function("diopiMaskedSelectBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle, mask.tensor_handle)
+    check_returncode(ret)
+    return {"input": grad_input}
+
+
+def index_fill(input, dim, index, value, inplace=False) -> Tensor:
+    out = raw_like(input)
+
+    call = "diopiIndexFill"
+    call_scalar = False
+    if isinstance(value, Tensor):
+        value = value.tensor_handle
+    else:
+        value = byref(Scalar(input.get_dtype(), value))
+        call_scalar = True
+
+    if inplace:
+        out = input
+        call = call + "Inp"
+        if call_scalar:
+            call = call + "Scalar"
+        func = check_function(call)
+        ret = func(input.context_handle, input.tensor_handle, c_int64(dim), index.tensor_handle, value)
+    else:
+        out = raw_like(input)
+        if call_scalar:
+            call = call + "Scalar"
+        func = check_function(call)
+        ret = func(input.context_handle, out.tensor_handle,
+                   input.tensor_handle, c_int64(dim), index.tensor_handle, value)
+
+    check_returncode(ret)
+    return out
+
+
+def linspace(start, end, steps):
+    out = Tensor((steps, ), Dtype.float64)
+
+    start = byref(Scalar(Dtype.float64, start))
+    end = byref(Scalar(Dtype.float64, end))
+    func = check_function("diopiLinspace")
+
+    ret = func(out.context_handle, out.tensor_handle, start, end, c_int64(steps))
+    check_returncode(ret)
+    return out
