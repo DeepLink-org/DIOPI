@@ -506,6 +506,31 @@ def convert_round_mode(name):
     return 4
 
 
+def binary_cross_entropy(input, target, weight=None, reduction='mean'):
+    assert input.size() == target.size(), \
+        'target shape must be the same as input shape'
+    assert reduction in ['mean', 'sum', 'none'], \
+        'reduction must be one of (mean, sum, none)'
+
+    if weight is not None:
+        assert isinstance(weight, Tensor),'weigth must be a Tensor'
+        weight = weight.tensor_handle
+    else:
+        weight = c_void_p()
+
+    if reduction == 'none':
+        out = raw_like(input)
+    else:
+        out = Tensor((1,), input.get_dtype())
+
+    reduction_mode = convert_reduction(reduction)
+    func = check_function("diopiBCELoss")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
+               target.tensor_handle, weight, c_int64(reduction_mode))
+    check_returncode(ret)
+    return out
+
+
 def binary_cross_entropy_with_logits(input, target, weight=None,
                                      reduction='mean', pos_weight=None):
     assert input.size() == target.size(), \
@@ -1763,6 +1788,30 @@ def threshold_backward(input, grad_outputs, threshold, **kwargs) -> Tensor:
     return {"input": grad_input}
 
 
+def binary_cross_entropy_backward(input, grad_outputs, target, weight=None,
+                                  reduction='mean', **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    assert input.size() == target.size(), \
+        'target shape must be the same as input shape'
+    assert reduction in ['mean', 'sum', 'none'], \
+        'reduction must be one of (mean, sum, none)'
+
+    if weight is not None:
+        assert isinstance(weight, Tensor), \
+            'weigth must be a Tensor'
+        weight = weight.tensor_handle
+    else:
+        weight = c_void_p()
+
+    grad_input = raw_like(input)
+    reduction_mode = convert_reduction(reduction)
+    func = check_function("diopiBCELossBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle, target.tensor_handle, weight, c_int64(reduction_mode))
+    check_returncode(ret)
+    return {"input": grad_input}
+
+
 def binary_cross_entropy_with_logits_backward(input, grad_outputs, target, weight=None,
                                               reduction='mean', pos_weight=None, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
@@ -2477,6 +2526,59 @@ def group_norm_backward(input, grad_outputs, num_groups, weight=None, bias=None,
     func = check_function("diopiGroupNormBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_weight.tensor_handle, grad_bias.tensor_handle,
                grad_outputs[0].tensor_handle, input.tensor_handle, weight, save_mean.tensor_handle, save_invstd.tensor_handle,
-               c_int64(num_groups), c_double(eps))
+               c_int64(num_groups))
     check_returncode(ret)
     return out
+
+
+def layer_norm(input, normalized_shape, weight=None, bias=None, eps=1e-05, backward=False):
+    sizeI = input.size()
+    dims = len(sizeI) - len(normalized_shape)
+    size = [i for i in sizeI[0:dims]]
+    save_mean = Tensor(size, input.get_dtype())
+    save_invstd = raw_like(save_mean)
+
+    weight = c_void_p() if weight is None else weight.tensor_handle
+    bias = c_void_p() if bias is None else bias.tensor_handle
+
+    out = raw_like(input)
+    func = check_function("diopiLayerNorm")
+    ret = func(input.context_handle, out.tensor_handle, save_mean.tensor_handle, save_invstd.tensor_handle,
+               input.tensor_handle, weight, bias, Sizes(normalized_shape), c_double(eps))
+    check_returncode(ret)
+    if backward:
+        return save_mean, save_invstd
+    return out
+
+
+def layer_norm_backward(input, grad_outputs, normalized_shape, weight=None, bias=None,  eps=1e-05, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    save_mean, save_invstd = layer_norm(input, normalized_shape, weight, bias, eps, backward=True)
+    grad_input = raw_like(input)
+    out = {"input": grad_input}
+
+    if weight is None:
+        weight = c_void_p()
+        grad_weight_handle = c_void_p()
+    else:
+        grad_weight = raw_like(weight)
+        weight = weight.tensor_handle
+        grad_weight_handle = grad_weight.tensor_handle
+        out['weight'] = grad_weight
+        
+
+    if bias is None:
+        bias = c_void_p()
+        grad_bias_handle = c_void_p()
+    else:
+        grad_bias = raw_like(bias)
+        bias = bias.tensor_handle
+        grad_bias_handle = grad_bias.tensor_handle
+        out['bias'] = grad_bias
+
+    func = check_function("diopiLayerNormBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_weight_handle, grad_bias_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle, weight, bias, save_mean.tensor_handle, save_invstd.tensor_handle, Sizes(normalized_shape))
+    check_returncode(ret)
+    return out
+

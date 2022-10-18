@@ -268,6 +268,41 @@ diopi_configs = {
     ),
 
     'binary_cross_entropy': dict(
+        name=["binary_cross_entropy"],
+        atol=1e-3,
+        rtol=1e-4,
+        dtype=[Dtype.float32],
+        para=dict(
+            reduction=['mean', 'none', 'sum', 'mean'],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.rand,
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((72,), (2, 11856),
+                              (2, 741, 80),
+                              (4, 4, 16, 20)),
+                },
+                {
+                    "ins": ['target'],
+                    "shape": ((72,), (2, 11856),
+                              (2, 741, 80),
+                              (4, 4, 16, 20)),
+                },
+                {
+                    "ins": ['weight'],
+                    "shape": ((72,), (2, 11856),
+                              (2, 741, 80),
+                              None),
+                    "gen_fn": Genfunc.randn,
+                },  
+            ],
+        ),
+    ),
+
+    'binary_cross_entropy_with_logits': dict(
         name=["binary_cross_entropy_with_logits"],
         atol=1e-3,
         rtol=1e-4,
@@ -2552,6 +2587,38 @@ diopi_configs = {
                 },
             ],
         ),
+    ),
+
+    'layer_norm': dict(
+        name=["layer_norm"],
+        dtype=[Dtype.float32],
+        atol=1e-5,
+        para=dict(
+            eps=[1e-5, 1e-5, 1e-12],
+            normalized_shape=[(5, 3, 5), (128, ), (64, )],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad": [True],
+                    "shape": ((2, 5, 3, 5), (2, 3136, 128), (2, 64)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["weight"],
+                    "requires_grad": [True],
+                    "shape": (None, (128, ), (64, )),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["bias"],
+                    "requires_grad": [True],
+                    "shape": (None, (128, ), (64, )),
+                    "gen_fn": Genfunc.randn,
+                },
+            ]
+        )
     ),
 
 }
