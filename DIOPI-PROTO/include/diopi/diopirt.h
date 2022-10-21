@@ -1,0 +1,121 @@
+/**************************************************************************************************
+ * Copyright (c) 2022, SenseTime Inc.
+ * License
+ * Author
+ *
+ *************************************************************************************************/
+
+#ifndef _PROJECT_DIOPERATOR_INTERFACE_RT_H_
+#define _PROJECT_DIOPERATOR_INTERFACE_RT_H_
+
+#include <stdint.h>
+
+#define DIOPI_API
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+#define DIOPI_VER_MAJOR 1
+#define DIOPI_VER_MINOR 0
+#define DIOPI_VER_PATCH 0
+#define DIOPI_VERSION   (DIOPI_VER_MAJOR * 1000 + DIOPI_VER_MINOR * 100 + DIOPI_VER_PATCH)
+
+typedef struct diopiSize_t_ {
+    const int64_t* data;
+    int64_t  len;
+
+#if defined(__cplusplus)
+    diopiSize_t_() : data(nullptr), len(0) {}
+    diopiSize_t_(const int64_t* d, int64_t l) : data(d), len(l) {}
+#endif  // __cplusplus
+} diopiSize_t;
+
+typedef enum {
+    diopiSuccess                                      = 0,
+    diopiErrorOccurred                                = 1,
+    diopiNotInited                                    = 2,
+    diopiNoRegisteredStreamCreateFunction             = 3,
+    diopiNoRegisteredStreamDestoryFunction            = 4,
+    diopiNoRegisteredStreamSyncFunction               = 5,
+    diopiNoRegisteredDeviceMemoryMallocFunction       = 6,
+    diopiNoRegisteredDeviceMemoryFreeFunction         = 7,
+    diopiNoRegisteredDevice2DdeviceMemoryCopyFunction = 8,
+    diopiNoRegisteredDevice2HostMemoryCopyFunction    = 9,
+    diopiNoRegisteredHost2DeviceMemoryCopyFunction    = 10,
+    diopiNoRegisteredGetLastErrorFunction             = 11,
+    diopi5DNotSupported                               = 12,
+    diopiDtypeNotSupported                            = 1000,
+} diopiError_t;
+
+typedef enum {
+    diopi_host   = 0,
+    diopi_device = 1,
+} diopiDevice_t;
+
+typedef enum {
+    diopi_dtype_int8     = 0,
+    diopi_dtype_uint8    = 1,
+    diopi_dtype_int16    = 2,
+    diopi_dtype_uint16   = 3,
+    diopi_dtype_int32    = 4,
+    diopi_dtype_uint32   = 5,
+    diopi_dtype_int64    = 6,
+    diopi_dtype_uint64   = 7,
+    diopi_dtype_float16  = 8,
+    diopi_dtype_float32  = 9,
+    diopi_dtype_float64  = 10,
+    diopi_dtype_bool     = 11,
+    diopi_dtype_bfloat16 = 12,
+    diopi_dtype_tfloat32 = 13,
+} diopiDtype_t;
+
+/**
+ * Opaque structure holding Context and Tensor
+ **/
+struct diopiContext;
+typedef struct diopiContext* diopiContextHandle_t;
+
+struct diopiTensor;
+typedef struct diopiTensor* diopiTensorHandle_t;
+
+/**
+ * Opaque pointer of Stream
+ **/
+typedef void* diopiStreamHandle_t;
+
+/**
+ * get the version of the Device-Independent Operator Inetrface
+ */
+extern DIOPI_API const char* diopiGetVersion();
+
+/**
+ * operations to manipulate Tensor objects
+ **/
+extern DIOPI_API diopiError_t diopiGetTensorData(diopiTensorHandle_t* th, void**);
+extern DIOPI_API diopiError_t diopiGetTensorDataConst(const diopiTensorHandle_t* th, const void**);
+extern DIOPI_API diopiError_t diopiGetTensorShape(const diopiTensorHandle_t th, diopiSize_t* size);
+extern DIOPI_API diopiError_t diopiGetTensorStride(const diopiTensorHandle_t th, diopiSize_t* stride);
+extern DIOPI_API diopiError_t diopiGetTensorDtype(const diopiTensorHandle_t th, diopiDtype_t* dtype);
+extern DIOPI_API diopiError_t diopiGetTensorDevice(const diopiTensorHandle_t th, diopiDevice_t* device);
+
+extern DIOPI_API diopiError_t diopiGetTensorNumel(const diopiTensorHandle_t th, int64_t* numel);
+extern DIOPI_API diopiError_t diopiGetTensorElemSize(const diopiTensorHandle_t th, int64_t* itemsize);
+
+/**
+ * operations to require Stream and Tensor instances from a Context handle
+ **/
+extern DIOPI_API diopiError_t diopiGetStream(diopiContextHandle_t ctx, diopiStreamHandle_t* stream);
+
+extern DIOPI_API diopiError_t diopiRequireTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor,
+                                                 const diopiSize_t* size, const diopiSize_t* stride,
+                                                 const diopiDtype_t dtype, const diopiDevice_t device);
+extern DIOPI_API diopiError_t diopiRequireBuffer(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor,
+                                                 int64_t num_bytes, diopiDevice_t device);
+
+
+#if defined(__cplusplus)
+}
+#endif
+
+#endif   // _PROJECT_DIOPERATOR_INTERFACE_RT_H_
