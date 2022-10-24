@@ -46,6 +46,12 @@ namespace impl {
 
 namespace aten {
 
+inline void sync(diopiContextHandle_t ctx) {
+    diopiStreamHandle_t stream_handle;
+    diopiGetStream(ctx, &stream_handle);
+    cudaStreamSynchronize(static_cast<cudaStream_t>(stream_handle));
+}
+
 caffe2::TypeMeta getATenType(diopiDtype_t dt) {
     switch (dt) {
     case diopi_dtype_bool:
@@ -191,11 +197,9 @@ decltype(auto) buildATenList(const diopiTensorHandle_t* tensors, int64_t numTens
 
 void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiTensorHandle_t out) {
     // TODO(fengsibo): add device and nbytes check
-    void* src = atOut.data_ptr();
-    size_t nbytes = atOut.nbytes();
-    void* dst = nullptr;
-    diopiGetTensorData(&out, &dst);
-    cudaMemcpy(dst, src, nbytes, cudaMemcpyDeviceToDevice);
+    at::Tensor atOutput = buildATen(out);
+    atOutput.copy_(atOut);
+    sync(ctx);
 }
 
 template<typename TupleT, std::size_t N>

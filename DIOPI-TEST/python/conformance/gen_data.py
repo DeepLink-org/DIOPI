@@ -201,6 +201,8 @@ def gen_tensor(arg: dict) -> np.ndarray:
         else:
             value = np.random.randn(*shape).astype(dtype)
 
+        if "no_contiguous" in arg:
+            value = value.transpose()
     except BaseException as e:
         logger.error(e, exc_info=True)
         logger.error(arg)

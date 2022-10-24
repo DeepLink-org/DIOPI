@@ -2768,3 +2768,10 @@ def permute(input, dims=None) -> Tensor:
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dims)
     check_returncode(ret)
     return out
+
+
+def copy_(input, other) -> Tensor:
+    func = check_function("diopiCopyInp")
+    ret = func(input.context_handle, other.tensor_handle, input.tensor_handle)
+    check_returncode(ret)
+    return input

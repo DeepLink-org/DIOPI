@@ -477,8 +477,8 @@ diopi_configs = {
     ),
 
     'pointwise_binary': dict(
-        name=['add', 'mul', 'div', 'eq', 'ne', 'le', 'lt',
-              'gt', 'ge', 'logical_and', 'logical_or'],
+        name=['add', 'sub', 'mul', 'div', 'eq', 'ne', 'le',
+              'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
         interface=['torch'],
         dtype=[Dtype.float32],
         tensor_para=dict(
@@ -500,7 +500,7 @@ diopi_configs = {
     ),
 
     'pointwise_binary_scalar': dict(
-        name=['add', 'mul', 'div', 'eq',
+        name=['add', 'sub', 'mul', 'div', 'eq',
               'ne', 'le',  'lt', 'gt', 'ge'],
         interface=['torch'],
         dtype=[Dtype.float32],
@@ -526,7 +526,6 @@ diopi_configs = {
             alpha=[-2, 2.0, 4, 1],
             other=[-2, 2.0, 4, 1],
         ),
-        no_contiguous=[True],
         interface=['torch'],
         dtype=[Dtype.float32],
         tensor_para=dict(
@@ -537,6 +536,7 @@ diopi_configs = {
                     "shape": ((1024, ), (384, 128),
                               (128, 64, 3, 3),
                               (2, 32, 130, 130)),
+                    'no_contiguous': [True],
                 },
             ],
         ),
@@ -2598,24 +2598,42 @@ diopi_configs = {
             normalized_shape=[(5, 3, 5), (128, ), (64, )],
         ),
         tensor_para=dict(
+            gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ["input"],
                     "requires_grad": [True],
                     "shape": ((2, 5, 3, 5), (2, 3136, 128), (2, 64)),
-                    "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["weight"],
                     "requires_grad": [True],
                     "shape": (None, (128, ), (64, )),
-                    "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["bias"],
                     "requires_grad": [True],
                     "shape": (None, (128, ), (64, )),
-                    "gen_fn": Genfunc.randn,
+                },
+            ]
+        )
+    ),
+
+    'copy': dict(
+        name=["copy_"],
+        interface=['torch.Tensor'],
+        dtype=[Dtype.float32],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((192, 147), (1, 1, 384), (2, 1, 38, 45)),
+                    "no_contiguous": [True],
+                },
+                {
+                    "ins": ["other"],
+                    "shape": ((147, 1), (384, 1, 1), (45, 38, 1, 2)),
                 },
             ]
         )
