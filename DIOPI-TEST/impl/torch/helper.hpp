@@ -198,7 +198,7 @@ decltype(auto) buildATenList(const diopiTensorHandle_t* tensors, int64_t numTens
 void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiTensorHandle_t out) {
     // TODO(fengsibo): add device and nbytes check
     at::Tensor atOutput = buildATen(out);
-    atOutput.copy_(atOut);
+    atOutput.reshape_as(atOut).copy_(atOut);
     sync(ctx);
 }
 
