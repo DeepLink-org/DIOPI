@@ -1892,13 +1892,13 @@ diopiError_t diopiConvolution3dBackward(diopiContextHandle_t ctx, diopiTensorHan
     if (bias_sizes != nullptr && grad3 != nullptr) {
         auto atBias = impl::aten::buildATen(grad3);
         at::Tensor atTmp = atGrad;
-        int64_t size = atGrad.dim();
+        int64_t size = atGrad.dim() - 1;
         while (atBias.dim() != size) {
             atTmp = at::sum(atTmp, -1, false);
             size -= 1;
         }
         if (atBias.size(0) !=  atTmp.size(0)) {
-            atTmp = at::sum(atTmp, -1, false);
+            atTmp = at::sum(atTmp, 0, false);
         }
         impl::aten::updateATen2Tensor(ctx, atTmp, grad3);
     }
