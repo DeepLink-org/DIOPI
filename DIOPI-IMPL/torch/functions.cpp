@@ -2219,4 +2219,11 @@ diopiError_t diopiPermute(diopiContextHandle_t ctx,
     return diopiSuccess;
 }
 
+diopiError_t diopiCopyInp(diopiContextHandle_t ctx, const diopiTensorHandle_t src, diopiTensorHandle_t input) {
+    at::Tensor atInput = impl::aten::buildATen(input);
+    at::Tensor atSrc = impl::aten::buildATen(src);
+    at::native::copy_(atInput, atSrc, false);
+    return diopiSuccess;
+}
+
 }  // extern "C"
