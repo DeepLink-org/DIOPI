@@ -1550,14 +1550,11 @@ def sigmoid_focal_loss_backward(inputs, grad_outputs, targets, alpha=0.25, gamma
         'reduction must be one of (mean, sum, none)'
 
     grad_input = raw_like(inputs)
-    grad_output = ones_like(inputs)
-    if reduction == 'mean':
-        fill(grad_output, 1 / inputs.numel())
-
+    reduction = convert_reduction(reduction)
     func = check_function("diopiSigmoidFocalLossBackward")
-    # todo: check why need weight in functions.h
-    ret = func(inputs.context_handle, grad_output.tensor_handle, inputs.tensor_handle,
-               targets.tensor_handle, c_void_p(), grad_input.tensor_handle, c_float(gamma), c_float(alpha))
+
+    ret = func(inputs.context_handle, grad_outputs[0].tensor_handle, inputs.tensor_handle, targets.tensor_handle,
+               grad_input.tensor_handle, c_float(gamma), c_float(alpha), c_int64(reduction))
     check_returncode(ret)
     return {"inputs": grad_input}
 
