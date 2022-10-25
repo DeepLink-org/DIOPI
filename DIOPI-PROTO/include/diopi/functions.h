@@ -165,7 +165,7 @@ DIOPI_API diopiError_t diopiSigmoidFocalLoss(diopiContextHandle_t ctx, diopiTens
                                              const diopiTensorHandle_t targets, float alpha, float gamma, int64_t reduction);
 DIOPI_API diopiError_t diopiSigmoidFocalLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_output,
                                                      const diopiTensorHandle_t input, const diopiTensorHandle_t target,
-                                                     const diopiTensorHandle_t weight,  diopiTensorHandle_t grad_input, float gamma, float alpha);
+                                                     diopiTensorHandle_t grad_input, float gamma, float alpha, int64_t reduction);
 
 /**
  * \brief Measures thee Cross Entropy between the target and input probabilities.
