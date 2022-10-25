@@ -2407,6 +2407,28 @@ diopi_configs = {
         interface=['torch'],
         atol=1e-4,
         rtol=1e-5,
+        para=dict(
+            self=[4.3, 10.1, 5.2, 100.],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['other'],
+                    "shape": ((6, ), (4, 1), (1, 28, 28),
+                              (16, 3, 7, 14, 14)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'remainder_tensor': dict(
+        name=['remainder'],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-5,
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
@@ -2428,24 +2450,46 @@ diopi_configs = {
         ),
     ),
 
+    'remainder_scalar': dict(
+        name=['remainder'],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-5,
+        para=dict(
+            other=[4.3, 10.1, 5.2, 100.],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((6, ), (4, 5), (14, 28, 28),
+                              (16, 1, 7, 14, 14)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
     'gather': dict(
         name=['gather'],
         interface=['torch'],
         para=dict(
-            dim=[0, 1],
+            dim=[0, 1, 2],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((16, 4, 4), (64, 4, 14, 14)),
+                    "shape": ((16, 4, 4), (64, 4, 14, 14), (64, 4, 16, 16)),
                     "dtype": [Dtype.float32, Dtype.float64],
                 },
 
                 {
                     "ins": ['index'],
-                    "shape": ((16, 4, 4), (64, 4, 14, 14)),
+                    "shape": ((16, 4, 4), (64, 4, 14, 14), (64, 4, 16, 16)),
                     "dtype": [Dtype.int64],
                     "gen_fn": dict(fn=Genfunc.randint, low=0, high=4),
                 },
@@ -2459,7 +2503,69 @@ diopi_configs = {
         interface=['torch'],
         is_inplace=True,
         para=dict(
-            dim=[0, 1],
+            dim=[2, 1],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((16, 4, 4), (2, 8, 64, 64)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+                {
+                    "ins": ['index'],
+                    "shape": ((16, 4, 4), (2, 8, 1, 1)),
+                    "dtype": [Dtype.int64],
+                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=4),
+                },
+                {
+                    "ins": ['src'],
+                    "shape": ((16, 4, 4), (2, 8, 4, 4)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+            ]
+        ),
+    ),
+
+    'scatter_reduce': dict(
+        name=['scatter'],
+        interface=['torch'],
+        is_inplace=True,
+        para=dict(
+            dim=[2, 1],
+            reduce=['add', 'multiply']
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((16, 4, 4), (2, 8, 64, 64)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+                {
+                    "ins": ['index'],
+                    "shape": ((16, 4, 4), (2, 8, 1, 1)),
+                    "dtype": [Dtype.int64],
+                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=4),
+                },
+                {
+                    "ins": ['src'],
+                    "shape": ((16, 4, 4), (2, 8, 4, 4)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+            ]
+        ),
+    ),
+
+    'scatter_scalar': dict(
+        name=['scatter'],
+        interface=['torch'],
+        is_inplace=True,
+        para=dict(
+            dim=[2, 1],
+            value=[-100, float("-inf")],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -2475,8 +2581,60 @@ diopi_configs = {
                     "dtype": [Dtype.int64],
                     "gen_fn": dict(fn=Genfunc.randint, low=0, high=4),
                 },
+            ]
+        ),
+    ),
+
+    'scatter_reduce_scalar': dict(
+        name=['scatter'],
+        interface=['torch'],
+        is_inplace=True,
+        para=dict(
+            dim=[2, 1],
+            value=[-100, float("-inf")],
+            reduce=['add', 'multiply']
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
                 {
-                    "ins": ['src'],
+                    "ins": ['input'],
+                    "shape": ((16, 4, 4), (64, 4, 14, 14)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+                {
+                    "ins": ['index'],
+                    "shape": ((16, 4, 4), (64, 4, 14, 14)),
+                    "dtype": [Dtype.int64],
+                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=4),
+                },
+            ]
+        ),
+    ),
+
+    'index_put_acc': dict(
+        name=['index_put'],
+        interface=['CustomizedTest'],
+        is_inplace=True,
+        para=dict(
+            accumulate=[True, True]
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((16, 4, 4), (64, 4, 14, 14)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+                {
+                    "ins": ['indices1', 'indices2'],
+                    "shape": ((16, 4), (64, 4)),
+                    "dtype": [Dtype.int64],
+                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=4),
+                },
+                {
+                    "ins": ['values'],
                     "shape": ((16, 4, 4), (64, 4, 14, 14)),
                     "dtype": [Dtype.float32, Dtype.float64],
                 },
@@ -2509,6 +2667,8 @@ diopi_configs = {
                     "ins": ['values'],
                     "shape": ((16, 4, 4), (64, 4, 14, 14)),
                     "dtype": [Dtype.float32, Dtype.float64],
+                    # sample test for index_put when acc is False
+                    "gen_fn": Genfunc.ones,
                 },
             ]
         ),

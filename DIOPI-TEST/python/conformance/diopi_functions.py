@@ -2772,3 +2772,159 @@ def copy_(input, other) -> Tensor:
     ret = func(input.context_handle, other.tensor_handle, input.tensor_handle)
     check_returncode(ret)
     return input
+
+
+def gather(input, dim, index):
+    assert isinstance(dim, int), "dim must be int"
+    assert len(input.size()) == len(index.size()), "input and index must have the same number of dimensions"
+    out = raw_like(input)
+    func = check_function("diopiGather")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, c_int64(dim), index.tensor_handle)
+    check_returncode(ret)
+    return out
+
+
+def gather_backward(input, grad_outputs, dim, index, **kwargs):
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    assert isinstance(dim, int), "dim must be int"
+    grad_input = raw_like(input)
+    func = check_function("diopiGatherBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle, c_int64(dim), index.tensor_handle)
+    check_returncode(ret)
+    return {"input": grad_input}
+
+
+def remainder(other, input=None, self=None):
+    if self is not None:
+        input = self
+    call = "diopiRemainder"
+    if isinstance(input, Tensor):
+        context = input.context_handle
+        if isinstance(other, Tensor):
+            call += "Tensor"
+            sizeO = list(input.size())
+            sizeOther = list(other.size())
+            for i in range(0, len(sizeOther)):
+                if sizeO[i] != sizeOther[i]:
+                    assert sizeO[i] == 1 or sizeOther[i] == 1, \
+                        "input and other must Supports broadcasting to a common shape"
+                    if sizeO[i] == 1:
+                        sizeO[i] = sizeOther[i]
+            out = Tensor(sizeO, input.get_dtype())
+            input = input.tensor_handle
+            other = other.tensor_handle
+        else:
+            call += "Scalar"
+            out = raw_like(input)
+            other = byref(Scalar(input.get_dtype(), other))
+            input = input.tensor_handle
+    else:
+        assert isinstance(other, Tensor), "input or other must be tensor"
+        context = other.context_handle
+        out = raw_like(other)
+        input = byref(Scalar(other.get_dtype(), input))
+        other = other.tensor_handle    
+    func = check_function(call)
+    ret = func(context, out.tensor_handle, input, other)
+    check_returncode(ret)
+    return out
+
+
+def ctc_loss(log_probs, targets, input_lengths, target_lengths, blank=0, reduction='mean', zero_infinity=False, backward=False):
+    sizeO = (1, )
+    sizeI = list(log_probs.size())
+    reduction_mode = convert_reduction(reduction)
+    max_target_length = int(max(target_lengths, 0)[0].numpy())
+    max_target_length = 2 * max_target_length + 1
+    if reduction == 'none':
+        sizeO = (sizeI[1], )
+    neg_log_likelihood = Tensor((sizeI[1], ), log_probs.get_dtype())
+    log_alpha = Tensor((sizeI[1], sizeI[0], max_target_length), log_probs.get_dtype())
+    out = Tensor(sizeO, log_probs.get_dtype())
+
+    func = check_function("diopiCTCLoss")
+    ret = func(log_probs.context_handle, out.tensor_handle, neg_log_likelihood.tensor_handle,
+               log_alpha.tensor_handle, log_probs.tensor_handle, targets.tensor_handle, input_lengths.tensor_handle,
+               target_lengths.tensor_handle, c_int64(blank), c_int64(reduction_mode), zero_infinity)
+    check_returncode(ret)
+    if backward:
+        return neg_log_likelihood, log_alpha
+    return out
+
+
+def ctc_loss_backward(log_probs, grad_outputs, targets, input_lengths, target_lengths, blank=0, reduction='mean', zero_infinity=False) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    grad_input = raw_like(log_probs)
+    neg_log_likelihood, log_alpha = ctc_loss(log_probs, targets, input_lengths, target_lengths, blank, reduction,
+                                             zero_infinity, backward=True)
+
+    reduction_mode = convert_reduction(reduction)
+    func = check_function("diopiCTCLossBackward")
+    ret = func(log_probs.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle, log_probs.tensor_handle,
+               targets.tensor_handle, input_lengths.tensor_handle, target_lengths.tensor_handle, neg_log_likelihood.tensor_handle,
+               log_alpha.tensor_handle, c_int64(blank), c_int64(reduction_mode), zero_infinity)
+    check_returncode(ret)
+    return {"log_probs": grad_input}
+
+
+def index_put(input, indices1, indices2, values, accumulate=False, inplace=False):
+    c_tensors = [indices1.tensor_handle, indices2.tensor_handle]
+    c_tensors = (c_void_p * 2)(*c_tensors)
+    call = "diopiIndexPut"
+    out = raw_like(input)
+    if inplace:
+        call += "Inp"
+        out = input
+        func = check_function(call)
+        ret = func(input.context_handle, input.tensor_handle, values.tensor_handle,
+                pointer(c_tensors), c_bool(accumulate))
+    else:
+        func = check_function(call)
+        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, values.tensor_handle,
+                pointer(c_tensors), c_bool(accumulate))
+    check_returncode(ret)
+    return out
+
+
+def scatter(input, dim, index, src=None, value=None, reduce=None, inplace=False):
+    assert isinstance(dim, int), "dim must be int"
+    assert len(input.size()) == len(index.size()), \
+        "input and index must have the same number of dimensions"
+    assert (src is not None) or (value is not None)
+    if reduce is not None:
+        assert reduce == 'add' or reduce == 'multiply', "reduce argument must be either add or multiply."
+    else:
+        reduce = ""
+    if src is not None:
+        assert len(input.size()) == len(src.size()), \
+            "input and src must have the same number of dimensions"
+    else:
+        src = value    
+    out = raw_like(input)
+    call = "diopiScatter"
+    call_scalar = False
+    if isinstance(src, Tensor):
+        src = src.tensor_handle
+    else:
+        src = byref(Scalar(input.get_dtype(), src))
+        call_scalar = True
+
+    if inplace:
+        out = input
+        call = call + "Inp"
+        if call_scalar:
+            call = call + "Scalar"
+        func = check_function(call)
+        ret = func(input.context_handle, input.tensor_handle, c_int64(dim),
+                   src, index.tensor_handle, reduce.encode('UTF-8'))
+    else:
+        out = raw_like(input)
+        if call_scalar:
+            call = call + "Scalar"
+        func = check_function(call)
+        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
+                   c_int64(dim), src, index.tensor_handle, reduce.encode('UTF-8'))
+
+    check_returncode(ret)
+    return out
