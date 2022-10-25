@@ -2928,3 +2928,37 @@ def scatter(input, dim, index, src=None, value=None, reduce=None, inplace=False)
 
     check_returncode(ret)
     return out
+
+
+def interpolate(input, size, mode="nearest", align_corners=None) -> Tensor:
+    sizeI = list(input.size())
+    for i in range(len(size)):
+        sizeI[-i - 1] = size[-i - 1]
+    out = Tensor(sizeI, input.get_dtype())
+
+    c_size = Sizes(tuple(size))
+    if mode == "nearest":
+        func = check_function("diopiUpsampleNearest")
+        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, c_size)
+    else:
+        func = check_function("diopiUpsampleLinear")
+        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, c_size,
+                   c_bool(align_corners), mode.encode('UTF-8'))
+    check_returncode(ret)
+    return out
+
+
+def interpolate_backward(input, grad_outputs, size, mode="nearest", align_corners=None) -> Tensor:
+    in_size = Sizes(input.size())
+    out_size = Sizes(tuple(size))
+    grad_input = raw_like(input)
+    
+    if mode == "nearest":
+        func = check_function("diopiUpsampleNearestBackward")
+        ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle, out_size, in_size)
+    else:
+        func = check_function("diopiUpsampleLinearBackward")
+        ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle, out_size, in_size,
+                   c_bool(align_corners), mode.encode('UTF-8'))
+    check_returncode(ret)
+    return {'input': grad_input}

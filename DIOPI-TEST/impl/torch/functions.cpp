@@ -2430,4 +2430,105 @@ diopiError_t diopiScatterScalar(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     return diopiSuccess;
 }
 
+diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input, diopiSize_t size) {
+    at::Tensor atInput = impl::aten::buildATen(input);
+    at::Tensor atOut = impl::aten::buildATen(out);
+    at::IntArrayRef atSize = impl::aten::buildAtIntArray(size);
+    if (atInput.dim() == 3) {
+        at::upsample_nearest1d_out(atOut, atInput, atSize);
+    } else if (atInput.dim() == 4) {
+        at::upsample_nearest2d_out(atOut, atInput, atSize);
+    } else if (atInput.dim() == 5) {
+        at::upsample_nearest3d_out(atOut, atInput, atSize); 
+    }
+    impl::aten::sync(ctx);
+    return diopiSuccess;
+}
+
+diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
+        diopiSize_t out_size, diopiSize_t in_size) {
+    at::Tensor atGradOut = impl::aten::buildATen(grad_output);
+    at::Tensor atGradInput = impl::aten::buildATen(grad_input);
+    at::IntArrayRef atOutSize = impl::aten::buildAtIntArray(out_size);
+    at::IntArrayRef atInSize = impl::aten::buildAtIntArray(in_size);
+    if (atGradInput.dim() == 3) {
+        at::upsample_nearest1d_backward_out(atGradInput, atGradOut, atOutSize, atInSize);
+    } else if (atGradInput.dim() == 4) {
+        at::upsample_nearest2d_backward_out(atGradInput, atGradOut, atOutSize, atInSize);
+    } else if (atGradInput.dim() == 5) {
+        at::upsample_nearest3d_backward_out(atGradInput, atGradOut, atOutSize, atInSize);
+    }
+    impl::aten::sync(ctx);
+    return diopiSuccess;
+}
+
+//todo (huqingqing): not find UpsampleNearestExact op
+diopiError_t diopiUpsampleNearestExact(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input, diopiSize_t size) {
+    at::Tensor atInput = impl::aten::buildATen(input);
+    at::IntArrayRef atSize = impl::aten::buildAtIntArray(size);
+    if (atInput.dim() == 3) {
+        //impl::aten::invokeATenFuncRet(ctx, at::_upsample_nearest_exact1d, out, atInput, atSize);
+    } else if (atInput.dim() == 4) {
+        //impl::aten::invokeATenFuncRet(ctx, at::_upsample_nearest_exact2d, out, atInput, atSize);
+    } else if (atInput.dim() == 5) {
+        //impl::aten::invokeATenFuncRet(ctx, at::_upsample_nearest_exact3d, out, atInput, atSize);
+    }
+    return diopiSuccess;
+}
+
+diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input, diopiSize_t size,
+        bool align_corners, const char* mode) {
+    at::Tensor atInput = impl::aten::buildATen(input);
+    at::Tensor atOut = impl::aten::buildATen(out);
+    at::IntArrayRef atSize = impl::aten::buildAtIntArray(size);
+    if ( 3 == atInput.dim() && 0 == strcmp(mode, "linear")) {
+        at::upsample_linear1d_out(atOut, atInput, atSize, align_corners);
+    } else if ( 4 == atInput.dim()) {
+        if (0 == strcmp(mode, "bilinear")) {
+            at::upsample_bilinear2d_out(atOut, atInput, atSize, align_corners);
+        } else if (0 == strcmp(mode, "bicubic")) {
+            at::upsample_bicubic2d_out(atOut, atInput, atSize, align_corners);
+        } else {
+            NOT_SUPPORTED("interpolate mode type");
+            return diopiErrorOccurred;
+        }
+    } else if ( 5 == atInput.dim() && 0 == strcmp(mode, "trilinear")) {
+        at::upsample_trilinear3d_out(atOut, atInput, atSize, align_corners); 
+    } else {
+        NOT_SUPPORTED("interpolate mode type");
+        return diopiErrorOccurred;
+
+    }
+    impl::aten::sync(ctx);
+    return diopiSuccess;
+}
+
+diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx,  diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
+        diopiSize_t out_size, diopiSize_t in_size, bool align_corners, const char* mode) {
+    at::Tensor atGradOut = impl::aten::buildATen(grad_output);
+    at::Tensor atGradInput = impl::aten::buildATen(grad_input);
+    at::IntArrayRef atOutSize = impl::aten::buildAtIntArray(out_size);
+    at::IntArrayRef atInSize = impl::aten::buildAtIntArray(in_size);
+    if ( 3 == atGradInput.dim() && 0 == strcmp(mode, "linear")) {
+        at::upsample_linear1d_backward_out(atGradInput, atGradOut, atOutSize, atInSize, align_corners);
+    } else if ( 4 == atGradInput.dim()) {
+        if (0 == strcmp(mode, "bilinear")) {
+            at::upsample_bilinear2d_backward_out(atGradInput, atGradOut, atOutSize, atInSize, align_corners);
+        } else if (0 == strcmp(mode, "bicubic")) {
+            at::upsample_bicubic2d_backward_out(atGradInput, atGradOut, atOutSize, atInSize, align_corners);
+        } else {
+            NOT_SUPPORTED("interpolate mode type");
+            return diopiErrorOccurred;
+        }
+    } else if ( 5 == atGradInput.dim() && 0 == strcmp(mode, "trilinear")) {
+        at::upsample_trilinear3d_backward_out(atGradInput, atGradOut, atOutSize, atInSize, align_corners); 
+    } else {
+        NOT_SUPPORTED("interpolate mode type");
+        return diopiErrorOccurred;
+
+    }
+    impl::aten::sync(ctx);
+    return diopiSuccess;
+}
+
 }  // extern "C"

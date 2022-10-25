@@ -2799,4 +2799,25 @@ diopi_configs = {
         )
     ),
 
+    'interpolate': dict(
+        name=["interpolate"],
+        dtype=[Dtype.float32],
+        para=dict(
+            mode=['nearest', 'bilinear', 'nearest', 'bicubic', 'trilinear', 'linear'],
+            size=[(50, 76), (25, 38), (4, 224, 224), (64, 64), (4, 224, 112), (64, )],
+            align_corners=[None, False, None, True, True, False],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad": [True],
+                    "shape": ((2, 256, 25, 38), (2, 256, 13, 19), (1, 3, 32, 224, 224), (2, 16, 1, 1),
+                              (1, 3, 32, 224, 224), (2, 32, 32)),
+                },
+            ]
+        )
+    ),
+
 }
