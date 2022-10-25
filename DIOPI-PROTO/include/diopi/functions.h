@@ -177,12 +177,12 @@ DIOPI_API diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx, diopiTens
 /**
  * \brief Measures thee nll loss between the target and input probabilities.
  */
-DIOPI_API diopiError_t diopiCrossNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
-                                             const diopiTensorHandle_t target, const diopiTensorHandle_t weight, int64_t reduction,
-                                             int64_t ignore_index);
-DIOPI_API diopiError_t diopiCrossNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
-                                                 const diopiTensorHandle_t input, const diopiTensorHandle_t target, const diopiTensorHandle_t weight,
-                                                 int64_t reduction, int64_t ignore_index);
+DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input,
+                                    const diopiTensorHandle_t target, const diopiTensorHandle_t weight, int64_t reduction,
+                                    int64_t ignore_index);
+DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
+                                            const diopiTensorHandle_t input, const diopiTensorHandle_t target, const diopiTensorHandle_t weight,
+                                            int64_t reduction, int64_t ignore_index);
 
 /**
  * \brief Measures the Binary Cross Entropy between the target and input probabilities.
@@ -732,7 +732,8 @@ DIOPI_API diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t o
 /**
  * \brief Computes the Connectionist Temporal Classification loss.
  */
-DIOPI_API diopiError_t diopiCTCLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t log_probs, const diopiTensorHandle_t targets, const diopiTensorHandle_t input_lengths,
+DIOPI_API diopiError_t diopiCTCLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t neg_log_likelihood, diopiTensorHandle_t log_alpha, 
+                                    const diopiTensorHandle_t log_probs, const diopiTensorHandle_t targets, const diopiTensorHandle_t input_lengths,
                                     const diopiTensorHandle_t target_lengths, int64_t blank, int64_t reduction, bool zero_infinity);
 DIOPI_API diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output, const diopiTensorHandle_t log_probs, const diopiTensorHandle_t targets,
                                             const diopiTensorHandle_t input_lengths, const diopiTensorHandle_t target_lengths, const diopiTensorHandle_t neg_log_likelihood, const diopiTensorHandle_t log_alpha,
