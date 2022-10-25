@@ -1272,11 +1272,22 @@ diopiError_t diopiIndexBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gr
 
 diopiError_t diopiSigmoidFocalLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_output,
         const diopiTensorHandle_t input, const diopiTensorHandle_t target,
-        const diopiTensorHandle_t weight,  diopiTensorHandle_t grad_input, float gamma, float alpha) {
+        diopiTensorHandle_t grad_input, float gamma, float alpha, int64_t reduction) {
     at::Tensor atInput = impl::aten::buildATen(input);
     at::Tensor atTarget = impl::aten::buildATen(target);
-    at::Tensor atGradOutput = impl::aten::buildATen(grad_output);
-    at::Tensor atWeight = impl::aten::buildATen(weight);
+    at::Tensor atGrad = impl::aten::buildATen(grad_output);
+    at::Tensor atGradOutput = at::empty_like(atInput);
+    if (reduction == 1) {
+        atGradOutput.copy_(atGrad.expand_as(atInput) / atInput.numel());
+    } else if (reduction == 2) {
+        atGradOutput.copy_(atGrad.expand_as(atInput));
+    } else if (reduction == 0) {
+        atGradOutput.copy_(atGrad);
+    } else {
+        NOT_SUPPORTED("sigmoid reduction type");
+        return diopiErrorOccurred;
+    }
+
     at::Tensor atP = at::sigmoid(atInput);
     // (1-p)**g * (1 - p - g*p*log(p))
     at::Tensor atTerm1 = at::pow(1 - atP, gamma) * (1 - atP - gamma * atP * at::log(at::clamp_min(atP, FLT_MIN)));
