@@ -788,6 +788,21 @@ DIOPI_API diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTen
                                               const diopiTensorHandle_t grad_output, const diopiTensorHandle_t input, const diopiTensorHandle_t weight, const diopiTensorHandle_t bias,
                                               const diopiTensorHandle_t mean, const diopiTensorHandle_t rstd, diopiSize_t normalized_shape);
 
+/**
+ * \brief Copies the elements from src into input tensor.
+ */
+DIOPI_API diopiError_t diopiCopyInp(diopiContextHandle_t ctx, const diopiTensorHandle_t src, diopiTensorHandle_t input);
+
+/**
+ * \brief Upsamples a given multi-channel 1D (temporal), 2D (spatial) or 3D (volumetric) data.
+ */
+DIOPI_API diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input, diopiSize_t size);
+DIOPI_API diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
+                                                    diopiSize_t out_size, diopiSize_t in_size);
+DIOPI_API diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input, diopiSize_t size,
+                                           bool align_corners, const char* mode);
+DIOPI_API diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx,  diopiTensorHandle_t grad_input, const diopiTensorHandle_t grad_output,
+                                                   diopiSize_t out_size, diopiSize_t in_size, bool align_corners, const char* mode);
 #if defined(__cplusplus)
 }
 #endif // __cplusplus
