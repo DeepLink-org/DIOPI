@@ -1343,7 +1343,7 @@ def nll_loss(input, target, weight=None, ignore_index=-100, reduction='mean'):
         out = Tensor((1,), input.get_dtype())
 
     reduction_mode = convert_reduction(reduction)
-    func = check_function("diopiCrossNLLLoss")
+    func = check_function("diopiNLLLoss")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                target.tensor_handle, weight, reduction_mode, ignore_index)
     check_returncode(ret)
@@ -1855,7 +1855,7 @@ def nll_loss_backward(input, grad_outputs, target, weight=None, ignore_index=-10
 
     reduction_mode = convert_reduction(reduction)
 
-    func = check_function("diopiCrossNLLLossBackward")
+    func = check_function("diopiNLLLossBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
                input.tensor_handle, target.tensor_handle, weight, c_int64(reduction_mode), c_int64(ignore_index))
     check_returncode(ret)
