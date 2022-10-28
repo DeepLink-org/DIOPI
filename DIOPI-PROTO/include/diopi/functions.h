@@ -722,7 +722,7 @@ DIOPI_API diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTen
  * \brief Returns the unique elements of the input tensor.
  */
 DIOPI_API diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t* out, const diopiTensorHandle_t input, int64_t* dim,
-                                   bool sorted, diopiTensorHandle_t indices, diopiTensorHandle_t* counts);
+                                   bool sorted, bool return_counts, diopiTensorHandle_t indices, diopiTensorHandle_t* counts);
 
 /**
  * \brief Returns the product of all elements in the input tensor.
