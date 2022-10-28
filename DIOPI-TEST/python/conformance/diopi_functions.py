@@ -2563,7 +2563,6 @@ def layer_norm_backward(input, grad_outputs, normalized_shape, weight=None, bias
         grad_weight_handle = grad_weight.tensor_handle
         out['weight'] = grad_weight
         
-
     if bias is None:
         bias = c_void_p()
         grad_bias_handle = c_void_p()
@@ -2952,7 +2951,7 @@ def interpolate_backward(input, grad_outputs, size, mode="nearest", align_corner
     in_size = Sizes(input.size())
     out_size = Sizes(tuple(size))
     grad_input = raw_like(input)
-    
+
     if mode == "nearest":
         func = check_function("diopiUpsampleNearestBackward")
         ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle, out_size, in_size)
@@ -2962,3 +2961,83 @@ def interpolate_backward(input, grad_outputs, size, mode="nearest", align_corner
                    c_bool(align_corners), mode.encode('UTF-8'))
     check_returncode(ret)
     return {'input': grad_input}
+
+
+def pad(input, pad, mode='constant', value=None):
+    assert mode in ['constant', 'reflect', 'replicate', 'circular'], \
+        "mode must one of ""'constant', 'reflect', 'replicate', 'circular'"
+    sizeO = list(input.size())
+    assert len(pad) % 2 == 0, "Padding length must be divisible by 2"
+    assert len(pad) // 2 <= len(sizeO), \
+        "Padding length must be equal or more than length of input"
+    paded_length = len(pad) // 2
+    for i in range(paded_length):
+        if len(pad) <= len(sizeO):
+            pad_idx = paded_length - i
+        else:
+            pad_idx = i+1
+        sizeO[-pad_idx] += (pad[2 * i] + pad[2 * i + 1])
+    pad = Sizes(pad)
+    if value is None:
+        value = c_void_p()
+    else:
+        value = byref(c_double(value))
+    out = Tensor(sizeO, input.get_dtype())
+    func = check_function("diopiPad")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, pad, 
+               mode.encode('UTF-8'), value)
+    check_returncode(ret)
+    return out
+
+
+def unique(input, sorted=True, return_inverse=False, return_counts=False, dim=None):
+    out_tensor_handle = TensorHandle()
+    if return_inverse:
+        sizeI = list(input.size())
+        if dim is not None:
+            sizeI = (sizeI[dim], )
+        indices = Tensor(sizeI, Dtype.int64)
+        indices_handle = indices.tensor_handle
+    else:
+        indices_handle = c_void_p()
+    counts = TensorHandle()
+
+    if dim is None:
+        dim = c_void_p()
+    else:
+        dim = byref(c_int64(dim))
+
+    func = check_function("diopiUnique")
+    ret = func(input.context_handle, pointer(out_tensor_handle), input.tensor_handle, dim, c_bool(sorted),
+               c_bool(return_counts), indices_handle, pointer(counts))
+    check_returncode(ret)
+    out = Tensor.from_handle(out_tensor_handle)
+    if return_counts:
+        counts = Tensor.from_handle(counts)
+    if return_inverse and not return_counts:
+        return out, indices
+    elif not return_inverse and return_counts:
+        return out, counts
+    elif return_inverse and return_counts:
+        return out, indices, counts
+    else:
+        return out
+
+
+def prod(input, dim=None, keepdim=False, dtype=None) -> Tensor:
+    assert isinstance(dim, (int)) or dim is None,\
+        "dim should be int"
+
+    _, out = reduce_op_process(input, dim, keepdim, dtype)
+    if dim is None:
+        dim = c_void_p()
+    else:
+        dim = byref(c_int64(dim))
+
+    if dtype is None:
+        dtype = input.get_dtype()
+    func = check_function("diopiProd")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
+               dim, c_int32(dtype.value))
+    check_returncode(ret)
+    return out

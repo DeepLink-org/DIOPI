@@ -2349,12 +2349,13 @@ diopi_configs = {
         interface=['torch'],
         para=dict(
             dim=[-1, 0, -1, 0],
+            keepdim=[True, False, True, False]
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((56, 1), (70, 1, 2), (2, 512, 38, 38), (2, 80, 128, 128, 1)),
+                    "shape": ((56, 1), (70, 1, 2), (2, 512, 38, 38), (2, 80, 128, 128, 2)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
