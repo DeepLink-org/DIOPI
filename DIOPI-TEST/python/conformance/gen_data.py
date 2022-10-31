@@ -6,8 +6,10 @@ import numpy as np
 
 from . import to_numpy_dtype
 from .utils import logger
+from .utils import need_process_func
 from .config import Genfunc, dict_elem_length, Config
 from . import diopi_configs
+from .dtype import Dtype, from_dtype_str
 
 
 _cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -106,7 +108,7 @@ def expand_cfg_by_para(cfg_dict: dict):
     return paras_list, tensor_paras_list
 
 
-def expand_cfg_all(paras_list, tensor_paras_list, cfg_dict) -> list:
+def expand_cfg_all(paras_list, tensor_paras_list, cfg_dict, filter_dtype_list) -> list:
     cfg_expand_list = []
     if len(tensor_paras_list) != 0:
         arg_dtype_num = 0
@@ -118,6 +120,7 @@ def expand_cfg_all(paras_list, tensor_paras_list, cfg_dict) -> list:
         if arg_dtype_num != 0:
             for i in range(arg_dtype_num):
                 for j in range(len(tensor_paras_list)):
+                    filter_dtype = False
                     tmp_cfg_dict = copy.deepcopy(cfg_dict)
                     tmp_cfg_dict["tensor_para"]["args"] = copy.deepcopy(
                         tensor_paras_list[j])
@@ -126,8 +129,14 @@ def expand_cfg_all(paras_list, tensor_paras_list, cfg_dict) -> list:
                             paras_list[j])
                     for arg in tmp_cfg_dict["tensor_para"]["args"]:
                         if arg.get("dtype") is not None:
-                            arg["dtype"] = copy.deepcopy(arg["dtype"][i])
-                    cfg_expand_list.append(tmp_cfg_dict)
+                            entry_dtype = arg["dtype"][i]
+                            if entry_dtype in filter_dtype_list:
+                                filter_dtype = True
+                                break
+                            else:
+                                arg["dtype"] = copy.deepcopy(entry_dtype)
+                    if not filter_dtype:
+                        cfg_expand_list.append(tmp_cfg_dict)
         # dtype does not exit in args, so do not take dtype into account
         else:
             for i in range(len(tensor_paras_list)):
@@ -145,11 +154,20 @@ def expand_cfg_all(paras_list, tensor_paras_list, cfg_dict) -> list:
     return cfg_expand_list
 
 
-def expand_cfg_by_all_options(cfg_dict: dict) -> list:
+def expand_cfg_by_all_options(cfg_dict: dict, filter_dtype_list: list) -> list:
     paras_list, tensor_paras_list = expand_cfg_by_para(cfg_dict)
-    cfg_expand_list = expand_cfg_all(paras_list, tensor_paras_list, cfg_dict)
+    cfg_expand_list = expand_cfg_all(paras_list, tensor_paras_list, cfg_dict, filter_dtype_list)
     return cfg_expand_list
 
+
+def get_filter_dtype_list(filter_dtype_str_list: list) -> list:
+    if filter_dtype_str_list is None:
+        return []
+
+    filter_dtype_list = []
+    for filter_dtype_str in filter_dtype_str_list:
+        filter_dtype_list.append(from_dtype_str(filter_dtype_str))
+    return filter_dtype_list
 
 def delete_if_gen_fn_in_tensor_para(cfg_dict):
     for arg in cfg_dict["tensor_para"]["args"]:
@@ -295,7 +313,7 @@ class GenInputData(object):
     '''
 
     @staticmethod
-    def run(func_name):
+    def run(func_name, model_name, filter_dtype_str_list):
         if not os.path.exists(inputs_dir_path):
             os.makedirs(inputs_dir_path)
 
@@ -305,10 +323,12 @@ class GenInputData(object):
         cfg_save_dict = {}
         for cfg_name in configs:
             cfg_func_name = configs[cfg_name]["name"]
-            if func_name not in ['all', cfg_func_name]:
+            if not need_process_func(cfg_func_name, func_name, model_name):
                 continue
             logger.info(f"Generate benchmark input data for diopi_functions.{cfg_func_name}")
-            cfg_expand_list = expand_cfg_by_all_options(configs[cfg_name])
+            filter_dtype_list = get_filter_dtype_list(filter_dtype_str_list)
+            cfg_expand_list = expand_cfg_by_all_options(configs[cfg_name], filter_dtype_list)
+
             cfg_counter += len(cfg_expand_list)
             gen_and_dump_data(inputs_dir_path, cfg_name, cfg_expand_list, cfg_save_dict)
 
@@ -487,7 +507,7 @@ class GenOutputData(object):
     '''
 
     @staticmethod
-    def run(func_name):
+    def run(func_name, model_name, filter_dtype_str_list):
         import torch
         import torchvision
         if not os.path.exists(inputs_dir_path):
@@ -502,7 +522,7 @@ class GenOutputData(object):
         saved_pth_list = get_saved_pth_list()
         for saved_pth in saved_pth_list:
             cfg_func_name = saved_pth.split("::")[1].rsplit("_", 1)[0]
-            if func_name not in ['all', cfg_func_name]:
+            if not need_process_func(cfg_func_name, func_name, model_name):
                 continue
 
             input_abs_path = os.path.join(inputs_dir_path, saved_pth)

@@ -348,6 +348,7 @@ diopiError_t diopiNms(diopiContextHandle_t ctx, diopiTensorHandle_t* out, const 
     auto atScores = impl::aten::buildATen(scores);
     auto atOut = vision::ops::nms_kernel(atDets, atScores, iouThreshold);
     impl::aten::buildDiopiTensor(ctx, atOut, out);
+    return diopiSuccess;
 }
 
 diopiError_t diopiNonzero(diopiContextHandle_t ctx,
@@ -375,6 +376,7 @@ diopiError_t diopiRoiAlign(diopiContextHandle_t ctx, diopiTensorHandle_t out, co
     auto atOut = vision::ops::roi_align_forward_kernel(atInput, atRois, spatialScale,
         pooledHeight, pooledWidth, samplingRatio, aligned);
     impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
 }
 
 diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTensorHandle_t dw, diopiTensorHandle_t buf,
@@ -1429,6 +1431,7 @@ diopiError_t diopiRoiAlignBackward(diopiContextHandle_t ctx, diopiTensorHandle_t
     auto atOut = vision::ops::roi_align_backward_kernel(atGrad, atRois, spatialScale,
         pooledHeight, pooledWidth, batchSize, channels, height, width, samplingRatio, aligned);
     impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
 }
 
 diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,

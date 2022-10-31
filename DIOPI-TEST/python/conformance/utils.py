@@ -1,6 +1,7 @@
 import logging
 from . import diopi_runtime
 from .diopi_runtime import device_impl_lib, get_last_error
+from .model_list import model_list, model_op_list
 import os
 
 
@@ -104,4 +105,15 @@ def squeeze(input: diopi_runtime.Tensor, dim=None):
             new_size.append(size[i])
 
     input.reset_shape(new_size)
+
+
+def need_process_func(cfg_func_name, func_name, model_name):
+    if model_name != '':
+        op_list = model_op_list[model_name]
+        if cfg_func_name not in op_list:
+            return False
+    elif func_name not in ['all', cfg_func_name]:
+        return False
+
+    return True
 

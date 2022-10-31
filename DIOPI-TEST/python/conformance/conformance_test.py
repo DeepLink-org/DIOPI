@@ -4,6 +4,7 @@ import numpy as np
 
 from . import diopi_functions as F
 from .utils import logger, FunctionNotImplementedError
+from .utils import need_process_func
 from .diopi_runtime import Tensor
 from .gen_data import inputs_dir_path, outputs_dir_path
 from .gen_data import get_saved_pth_list, get_data_from_file
@@ -128,11 +129,11 @@ class ConformanceTest(object):
     Run all functions by using input, then compare_with_gen_output with saved output
     '''
     @staticmethod
-    def run(func_name):
+    def run(func_name, model_name, filter_dtype_str_list):
         saved_pth_list = get_saved_pth_list()
         for saved_pth in saved_pth_list:
             cfg_func_name = saved_pth.split("::")[1].rsplit("_", 1)[0]
-            if func_name not in ['all', cfg_func_name]:
+            if not need_process_func(cfg_func_name, func_name, model_name):
                 continue
 
             input_abs_path = os.path.join(inputs_dir_path, saved_pth)

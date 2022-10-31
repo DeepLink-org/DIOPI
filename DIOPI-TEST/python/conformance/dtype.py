@@ -57,3 +57,32 @@ def dtype_to_ctype(dtype):
         return c_int64
     if dtype == Dtype.uint64:
         return c_uint64
+
+
+def from_dtype_str(dtype_str: str) -> Dtype:
+    if dtype_str == 'int8':
+        return Dtype.int8
+    elif dtype_str == 'uint8':
+        return Dtype.uint8
+    elif dtype_str == 'int16':
+        return Dtype.int16
+    elif dtype_str == 'uint16':
+        return Dtype.uint16
+    elif dtype_str == 'int32':
+        return Dtype.int32
+    elif dtype_str == 'uint32':
+        return Dtype.uint32
+    elif dtype_str == 'int64':
+        return Dtype.int64
+    elif dtype_str == 'uint64':
+        return Dtype.uint64
+    elif dtype_str == 'float16':
+        return Dtype.float16
+    elif dtype_str == 'float32':
+        return Dtype.float32
+    elif dtype_str == 'float64':
+        return Dtype.float64
+    elif dtype_str == 'bool':
+        return Dtype.bool
+    else:
+        return None

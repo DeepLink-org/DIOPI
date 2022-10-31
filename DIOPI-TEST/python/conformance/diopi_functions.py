@@ -2444,11 +2444,13 @@ def index_fill(input, dim, index, value, inplace=False) -> Tensor:
     return out
 
 
-def linspace(start, end, steps):
-    out = Tensor((steps, ), Dtype.float64)
+def linspace(start, end, steps, dtype=None):
+    dtype = Dtype.float32 if dtype is None else dtype
 
-    start = byref(Scalar(Dtype.float64, start))
-    end = byref(Scalar(Dtype.float64, end))
+    out = Tensor((steps, ), dtype)
+
+    start = byref(Scalar(dtype, start))
+    end = byref(Scalar(dtype, end))
     func = check_function("diopiLinspace")
 
     ret = func(out.context_handle, out.tensor_handle, start, end, c_int64(steps))
