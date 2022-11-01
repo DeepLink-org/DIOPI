@@ -4,13 +4,32 @@
 #include <torch/optim.h>
 #include <iostream>
 #include <math.h>
+#include <cstring>
+#include <cuda_runtime_api.h>
+#include <cudnn.h>
 
 #include "helper.hpp"
 #include "vision_kernel.h"
 
-#define FLT_MIN		__FLT_MIN__
+#define FLT_MIN  __FLT_MIN__
 
 extern "C" {
+
+static const char* name = "CudaDevice"; 
+static char version[1024] = {0};
+
+const char* diopiGetVendorName() {
+    return name;  
+}
+
+const char* diopiGetImplVersion() {
+    if (strlen(version) == 0) {
+        const char* diopiVersion = diopiGetVersion();
+        sprintf(version, "Cuda Version: %d; Cudnn Version: %d; %s",
+                CUDART_VERSION, CUDNN_VERSION, diopiVersion);   
+    }
+    return version; 
+}
 
 diopiError_t diopiRelu(diopiContextHandle_t ctx,
         diopiTensorHandle_t out, const diopiTensorHandle_t input) {
