@@ -2,11 +2,13 @@
 #define _DIOPI_REFERENCE_IMPLTORCH_ATEN_HPP_
 
 #include <vector>
-
 #include <cuda_runtime.h>
 #include <ATen/ATen.h>
-
 #include <diopi/diopirt.h>
+#include <diopi/functions.h>
+#include <iostream>
+
+#include "cuda_helpers.h"
 
 #define TORCH_MM_VERSION (TORCH_VERSION_MAJOR * 1000 + TORCH_VERSION_MINOR * 10)
 #define TORCH_1_7_MM_VERSION 1070
@@ -26,19 +28,22 @@ void logError(First&& first, Rest&& ...rest) {
     logError(std::forward<Rest>(rest)...);
 }
 
-#define ATEN_NOT_SUPPORTED() \
-    LOG_LINE_INFO() \
-    logError("NotImplementError: function ", __FUNCTION__, " is not implemented for torch version ", \
-        TORCH_VERSION);
+template<typename...Types>
+void set_last_error_string(const char* szFmt, Types&& ...args) {
+    char szBuf[4096] = {0};
+    sprintf(szBuf, szFmt, std::forward<Types>(args)...);
+    impl::aten::_set_last_error_string(szBuf);
+}
 
 #define ATEN_NOT_IMPLEMENT() \
     LOG_LINE_INFO() \
     logError("NotImplementError: function ", __FUNCTION__, " is not implemented for torch version ", \
-        TORCH_VERSION);
+        TORCH_VERSION);\
+    set_last_error_string("NotImplementError: function %s is not implemented for torch version %d" \
+        __FUNCTION__, TORCH_VERSION); \
 
 #define NOT_SUPPORTED(str) \
-    LOG_LINE_INFO() \
-    logError("NotSupported: ", (str), ", ", __FILE__, ":", __LINE__);
+    set_last_error_string("NotSupported: %s at %s:%d", str, __FILE__, __LINE__); \
 
 using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
 
@@ -272,4 +277,4 @@ c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding_mode) 
 
 }  // namespace impl
 
-#endif
+#endif //_DIOPI_REFERENCE_IMPLTORCH_ATEN_HPP_

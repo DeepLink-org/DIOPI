@@ -1,5 +1,15 @@
 #pragma once
 
+
+namespace impl {
+namespace aten {
+
+void _set_last_error_string(const char *err);
+const char* _get_last_error_string();
+
+}  // namespace aten
+}  // namespace impl
+
 namespace vision {
 namespace ops {
 

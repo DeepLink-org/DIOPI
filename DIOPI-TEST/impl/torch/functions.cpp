@@ -2,7 +2,6 @@
 #include <diopi/functions.h>
 #include <torch/nn.h>
 #include <torch/optim.h>
-#include <iostream>
 #include <math.h>
 #include <cstring>
 #include <cuda_runtime_api.h>
@@ -29,6 +28,10 @@ const char* diopiGetImplVersion() {
                 CUDART_VERSION, CUDNN_VERSION, diopiVersion);   
     }
     return version; 
+}
+
+const char* diopiGetLastErrorString() {
+    return impl::aten::_get_last_error_string();
 }
 
 diopiError_t diopiRelu(diopiContextHandle_t ctx,
@@ -2681,7 +2684,6 @@ diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTensorHandle_t o
     } else {
         NOT_SUPPORTED("interpolate mode type");
         return diopiErrorOccurred;
-
     }
     impl::aten::sync(ctx);
     return diopiSuccess;
