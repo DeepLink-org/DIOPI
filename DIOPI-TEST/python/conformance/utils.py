@@ -91,10 +91,17 @@ def check_function(fn_name):
     return func
 
 
-def squeeze(input: diopi_runtime.Tensor):
+def squeeze(input: diopi_runtime.Tensor, dim=None):
     size = input.size()
     new_size = []
+    if dim < 0:
+        dim += len(size)
+
     for i in range(0, len(size)):
         if size[i] != 1:
             new_size.append(size[i])
+        elif dim is not None and i != dim:
+            new_size.append(size[i])
+
     input.reset_shape(new_size)
+

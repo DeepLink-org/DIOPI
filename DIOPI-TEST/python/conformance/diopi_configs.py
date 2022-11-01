@@ -747,7 +747,6 @@ diopi_configs = {
         interface=['torch'],
         para=dict(
             dim=[0, 1, [0, 1], 2, [-1, 0], 3],
-            keepdim=[True, False, True, False, True, False],
         ),
         atol=1e-4,
         rtol=1e-5,
@@ -769,7 +768,6 @@ diopi_configs = {
         interface=['torch'],
         para=dict(
             dim=[0, 1, [0, 1], 2, [-1, 0], 3],
-            keepdim=[True, False, True, False, True, False],
             unbiased=[True, False, True, False, True, False],
         ),
         atol=1e-4,
@@ -792,7 +790,6 @@ diopi_configs = {
         interface=['torch'],
         para=dict(
             dim=[0, 1, 1, 2, -1, 3],
-            keepdim=[True, False, True, False, True, False],
         ),
         atol=1e-4,
         rtol=1e-5,
@@ -814,7 +811,6 @@ diopi_configs = {
         interface=['torch'],
         para=dict(
             dim=[0, 1, 0, 2, -1, 3],
-            keepdim=[True, False, True, False, True, False],
         ),
         atol=1e-4,
         rtol=1e-5,
@@ -2281,7 +2277,6 @@ diopi_configs = {
         para=dict(
             p=[2.5, float('inf'), -float('inf')],
             dim=[None, (0, 1), (1, 2)],
-            keepdim=[False, True, False]
         ),
         tensor_para=dict(
             args=[
@@ -2349,13 +2344,12 @@ diopi_configs = {
         interface=['torch'],
         para=dict(
             dim=[-1, 0, -1, 0],
-            keepdim=[True, False, True, False]
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((56, 1), (70, 1, 2), (2, 512, 38, 38), (2, 80, 128, 128, 2)),
+                    "shape": ((56, 1), (70, 1, 2), (2, 512, 38, 38), (2, 80, 128, 128, 1)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },

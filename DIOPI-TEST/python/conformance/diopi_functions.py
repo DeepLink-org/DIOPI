@@ -3,7 +3,7 @@ import math
 
 from ctypes import c_float, c_double, c_int64, c_int32, c_bool, c_void_p, byref, pointer
 from .diopi_runtime import Sizes, Scalar, Tensor, TensorHandle
-from .utils import check_returncode, check_function, squeeze
+from .utils import check_returncode, check_function
 from . import Dtype, raw_like
 from collections import namedtuple
 import numpy as np
@@ -24,25 +24,32 @@ def broadcast_out_size(size1, size2):
 
 
 def reduce_op_process(input, dim=None, keepdim=False, dtype=None):
-    sizeI = list(input.size())
-    if dim is None:
-        for i in range(0, len(sizeI)):
-            sizeI[i] = 1
-        dim = []
-    elif isinstance(dim, list):
-        for i in dim:
-            sizeI[i] = 1
-    else:
-        sizeI[dim] = 1
-        dim = [dim]
+    sizeI = input.size()
+    size = len(sizeI)
+    sizeO = []
+    dim_list = []
+    dim = list(dim) if isinstance(dim, tuple) else dim
+
+    if dim is None and keepdim:
+        sizeO = [1 for i in range(0, size)]
+    elif dim is not None:
+        dim_list = dim if isinstance(dim, list) else [dim]
+        for i in range(0, len(dim_list)):
+            if dim_list[i] < 0:
+                dim_list[i] += size
+
+        dim_list.sort()   
+        for i in range(0, size):
+            if i not in dim_list:
+                sizeO.append(sizeI[i])
+            elif keepdim:
+                sizeO.append(1)
 
     if dtype is None:
         dtype = input.get_dtype()
 
-    out = Tensor(sizeI, dtype)
-    if not keepdim:
-        squeeze(out)
-    return dim, out
+    out = Tensor(sizeO, dtype)
+    return dim_list, out
 
 
 def fill(tensor, value):
@@ -521,7 +528,7 @@ def binary_cross_entropy(input, target, weight=None, reduction='mean'):
     if reduction == 'none':
         out = raw_like(input)
     else:
-        out = Tensor((1,), input.get_dtype())
+        out = Tensor((), input.get_dtype())
 
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiBCELoss")
@@ -555,7 +562,7 @@ def binary_cross_entropy_with_logits(input, target, weight=None,
     if reduction == 'none':
         out = raw_like(input)
     else:
-        out = Tensor((1,), input.get_dtype())
+        out = Tensor((), input.get_dtype())
 
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiBCEWithLogits")
@@ -580,7 +587,7 @@ def cross_entropy(input, target, weight=None, ignore_index=- 100,
     if reduction == 'none':
         out = Tensor(target.size(), input.get_dtype())
     else:
-        out = Tensor((1,), input.get_dtype())
+        out = Tensor((), input.get_dtype())
 
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiCrossEntropyLoss")
@@ -600,7 +607,7 @@ def mse_loss(input, target, reduction='mean'):
     if reduction == 'none':
         out = raw_like(input)
     else:
-        out = Tensor((1,), input.get_dtype())
+        out = Tensor((), input.get_dtype())
 
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiMSELoss")
@@ -1340,7 +1347,7 @@ def nll_loss(input, target, weight=None, ignore_index=-100, reduction='mean'):
     if reduction == 'none':
         out = Tensor(target.size(), input.get_dtype())
     else:
-        out = Tensor((1,), input.get_dtype())
+        out = Tensor((), input.get_dtype())
 
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiNLLLoss")
@@ -1359,7 +1366,7 @@ def sigmoid_focal_loss(inputs, targets, alpha=0.25, gamma=2, reduction='none') -
     if reduction == 'none':
         out = raw_like(inputs)
     else:
-        out = Tensor((1,), inputs.get_dtype())
+        out = Tensor((), inputs.get_dtype())
 
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiSigmoidFocalLoss")
@@ -2192,7 +2199,7 @@ def smooth_l1_loss(input, target, reduction='mean', beta=1.0):
     if reduction == 'none':
         out = raw_like(input)
     else:
-        out = Tensor((1,), input.get_dtype())
+        out = Tensor((), input.get_dtype())
 
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiSmoothL1Loss")
@@ -2468,26 +2475,12 @@ def roll(input, shifts, dims=None):
 
 def norm(input, p, dim=None, keepdim=False, dtype=None):
     p = byref(Scalar(input.get_dtype(), p))
-    if dtype is None:
-        dtype = input.get_dtype()
+    dim, out = reduce_op_process(input, dim, keepdim, dtype)
+    dim = Sizes(tuple(dim))
 
-    if isinstance(dim, int):
-        dim = (dim, )
-    sizeO = list(input.size())
-    if dim is not None:
-        for i in range(len(dim)-1, -1, -1):
-            if keepdim:
-                sizeO[dim[i]] = 1
-            else:
-                del sizeO[dim[i]]
-        dim = Sizes(tuple(dim))
-    else:
-        sizeO = (1, )
-        dim = Sizes(tuple(()))
-
-    out = Tensor(sizeO, input.get_dtype())
     func = check_function("diopiNorm")
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, p, dim, c_int32(dtype.value))
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
+               p, dim, c_int32(out.get_dtype().value))
     check_returncode(ret)
     return out
 
