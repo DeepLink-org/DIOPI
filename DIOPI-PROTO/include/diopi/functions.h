@@ -90,7 +90,7 @@ DIOPI_API diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTen
  * \brief Applies the gaussian error linear unit function element-wise
  */
 DIOPI_API diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-                                 diopiTensorHandle_t input, const char* approximate);
+                                 diopiConstTensorHandle_t input, const char* approximate);
 DIOPI_API diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                          diopiConstTensorHandle_t input, const char* approximate);
 
