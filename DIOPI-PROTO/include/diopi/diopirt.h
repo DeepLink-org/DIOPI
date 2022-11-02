@@ -78,6 +78,7 @@ typedef struct diopiContext* diopiContextHandle_t;
 
 struct diopiTensor;
 typedef struct diopiTensor* diopiTensorHandle_t;
+typedef const struct diopiTensor* diopiConstTensorHandle_t;
 
 /**
  * Opaque pointer of Stream
@@ -93,14 +94,14 @@ extern DIOPI_API const char* diopiGetVersion();
  * operations to manipulate Tensor objects
  **/
 extern DIOPI_API diopiError_t diopiGetTensorData(diopiTensorHandle_t* th, void**);
-extern DIOPI_API diopiError_t diopiGetTensorDataConst(const diopiTensorHandle_t* th, const void**);
-extern DIOPI_API diopiError_t diopiGetTensorShape(const diopiTensorHandle_t th, diopiSize_t* size);
-extern DIOPI_API diopiError_t diopiGetTensorStride(const diopiTensorHandle_t th, diopiSize_t* stride);
-extern DIOPI_API diopiError_t diopiGetTensorDtype(const diopiTensorHandle_t th, diopiDtype_t* dtype);
-extern DIOPI_API diopiError_t diopiGetTensorDevice(const diopiTensorHandle_t th, diopiDevice_t* device);
+extern DIOPI_API diopiError_t diopiGetTensorDataConst(diopiConstTensorHandle_t* th, const void**);
+extern DIOPI_API diopiError_t diopiGetTensorShape(diopiConstTensorHandle_t th, diopiSize_t* size);
+extern DIOPI_API diopiError_t diopiGetTensorStride(diopiConstTensorHandle_t th, diopiSize_t* stride);
+extern DIOPI_API diopiError_t diopiGetTensorDtype(diopiConstTensorHandle_t th, diopiDtype_t* dtype);
+extern DIOPI_API diopiError_t diopiGetTensorDevice(diopiConstTensorHandle_t th, diopiDevice_t* device);
 
-extern DIOPI_API diopiError_t diopiGetTensorNumel(const diopiTensorHandle_t th, int64_t* numel);
-extern DIOPI_API diopiError_t diopiGetTensorElemSize(const diopiTensorHandle_t th, int64_t* itemsize);
+extern DIOPI_API diopiError_t diopiGetTensorNumel(diopiConstTensorHandle_t th, int64_t* numel);
+extern DIOPI_API diopiError_t diopiGetTensorElemSize(diopiConstTensorHandle_t th, int64_t* itemsize);
 
 /**
  * operations to require Stream and Tensor instances from a Context handle
