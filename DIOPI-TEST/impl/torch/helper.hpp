@@ -139,7 +139,8 @@ at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes,
     return at::empty({0}, options).set_(storage, 0, sizes, strides);
 }
 
-at::Tensor buildATen(diopiTensorHandle_t tensor) {
+template<typename T>
+at::Tensor buildATen(T tensor) {
     if (tensor == nullptr) return at::Tensor();
 
     diopiDtype_t dtype;
@@ -150,7 +151,7 @@ at::Tensor buildATen(diopiTensorHandle_t tensor) {
     c10::DeviceType atDevice = getATenDevice(device);
 
     void* data = nullptr;
-    diopiGetTensorData(&tensor, &data);
+    diopiGetTensorData(const_cast<diopiTensorHandle_t*>(&tensor), &data);
 
     diopiSize_t shape;
     diopiGetTensorShape(tensor, &shape);
@@ -192,7 +193,8 @@ at::IntArrayRef buildAtIntArray(diopiSize_t size) {
     return at::IntArrayRef(size.data, size.len);
 }
 
-decltype(auto) buildATenList(const diopiTensorHandle_t* tensors, int64_t numTensors) {
+template<typename T>
+decltype(auto) buildATenList(T* tensors, int64_t numTensors) {
     std::vector<at::Tensor> vecAtTensor;
     for (size_t i = 0; i < numTensors; ++i) {
         vecAtTensor.emplace_back(buildATen(tensors[i]));

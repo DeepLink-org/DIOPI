@@ -291,12 +291,12 @@ public:
                 diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context);
     ~diopiTensor();
 
-    diopiSize_t shape() {
+    diopiSize_t shape() const {
         diopiSize_t size(shape_.data(), static_cast<int64_t>(shape_.size()));
         return size;
     }
 
-    diopiSize_t stride() {
+    diopiSize_t stride() const {
         diopiSize_t stride(stride_.data(), static_cast<int64_t>(stride_.size()));
         return stride;
     }
@@ -370,49 +370,49 @@ DIOPI_API diopiError_t diopiGetTensorData(diopiTensorHandle_t* pth, void** pptr)
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiGetTensorDataConst(const diopiTensorHandle_t* pth, const void** pptr) {
+DIOPI_API diopiError_t diopiGetTensorDataConst(diopiConstTensorHandle_t* pth, const void** pptr) {
     *pptr = (*pth)->data();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiGetTensorShape(const diopiTensorHandle_t th, diopiSize_t* size) {
+DIOPI_API diopiError_t diopiGetTensorShape(diopiConstTensorHandle_t th, diopiSize_t* size) {
     *size = th->shape();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiGetTensorStride(const diopiTensorHandle_t th, diopiSize_t* stride) {
+DIOPI_API diopiError_t diopiGetTensorStride(diopiConstTensorHandle_t th, diopiSize_t* stride) {
     *stride = th->stride();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiGetTensorDtype(const diopiTensorHandle_t th, diopiDtype_t* dtype) {
+DIOPI_API diopiError_t diopiGetTensorDtype(diopiConstTensorHandle_t th, diopiDtype_t* dtype) {
     *dtype = th->dtype();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiGetTensorDevice(const diopiTensorHandle_t th, diopiDevice_t* device) {
+DIOPI_API diopiError_t diopiGetTensorDevice(diopiConstTensorHandle_t th, diopiDevice_t* device) {
     *device = th->device();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiGetTensorNumel(const diopiTensorHandle_t th, int64_t* numel) {
+DIOPI_API diopiError_t diopiGetTensorNumel(diopiConstTensorHandle_t th, int64_t* numel) {
     *numel = th->numel();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiGetTensorElemSize(const diopiTensorHandle_t th, int64_t* elem_size) {
+DIOPI_API diopiError_t diopiGetTensorElemSize(diopiConstTensorHandle_t th, int64_t* elem_size) {
     *elem_size = itemsize(th->dtype());
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t _diopiTensorResetShape(const diopiTensorHandle_t th, const diopiSize_t* size) {
+DIOPI_API diopiError_t _diopiTensorResetShape(diopiTensorHandle_t th, const diopiSize_t* size) {
     if (!th->reset_shape(size)) {
         return diopiErrorOccurred;
     }
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t _diopiTensorGetCtxHandle(const diopiTensorHandle_t th, diopiContextHandle_t* ctx) {
+DIOPI_API diopiError_t _diopiTensorGetCtxHandle(diopiConstTensorHandle_t th, diopiContextHandle_t* ctx) {
     *ctx = th->get_ctx();
     return diopiSuccess;
 }
@@ -549,7 +549,7 @@ DIOPI_API diopiError_t _diopiTensorCopyFromBuffer(diopiContextHandle_t ctx,
 }
 
 DIOPI_API diopiError_t _diopiTensorCopyToBuffer(diopiContextHandle_t      ctx,
-                                                const diopiTensorHandle_t tensor,
+                                                diopiConstTensorHandle_t tensor,
                                                 void*                     dst) {
     if (tensor->device() == diopi_device) {
         diopiStreamHandle_t stream;
