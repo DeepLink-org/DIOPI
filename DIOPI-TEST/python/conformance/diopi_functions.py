@@ -2016,23 +2016,23 @@ def masked_fill(input, mask, value, inplace=False) -> Tensor:
 
 
 def adamw(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,
-          beta1, beta2, eps, weight_decay, step, amsgrad=False, maximize=False):
+          beta1, beta2, eps, weight_decay, step, amsgrad=False):
     # note: buf, param_grad are mutable
     func = check_function("diopiAdamW")
     ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle, exp_avg.tensor_handle,
                exp_avg_sq.tensor_handle, max_exp_avg_sq.tensor_handle, c_float(lr), c_float(beta1), c_float(beta2),
-               c_float(eps), c_float(weight_decay), c_int64(step), amsgrad, maximize)
+               c_float(eps), c_float(weight_decay), c_int64(step), amsgrad)
     check_returncode(ret)
     return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
 
 
 def adam(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,
-          beta1, beta2, eps, weight_decay, step, amsgrad=False, maximize=False):
+          beta1, beta2, eps, weight_decay, step, amsgrad=False):
     # note: buf, param_grad are mutable
     func = check_function("diopiAdam")
     ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle, exp_avg.tensor_handle,
                exp_avg_sq.tensor_handle, max_exp_avg_sq.tensor_handle, c_float(lr), c_float(beta1), c_float(beta2), 
-               c_float(eps), c_float(weight_decay), c_int64(step), amsgrad, maximize)
+               c_float(eps), c_float(weight_decay), c_int64(step), amsgrad)
     check_returncode(ret)
     return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
 

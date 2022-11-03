@@ -374,7 +374,7 @@ class CustomizedTest(object):
         optimizer.step()
         return param, buf
 
-    def adam(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,  beta1, beta2, eps, weight_decay, step, amsgrad, maximize):
+    def adam(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,  beta1, beta2, eps, weight_decay, step, amsgrad):
         import torch
 
         params_with_grad = [param]
@@ -398,7 +398,7 @@ class CustomizedTest(object):
                                       eps=eps)
         return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
 
-    def adamw(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,  beta1, beta2, eps, step, weight_decay, amsgrad, maximize):
+    def adamw(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,  beta1, beta2, eps, step, weight_decay, amsgrad):
         import torch
 
         params_with_grad = [param]

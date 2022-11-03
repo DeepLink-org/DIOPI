@@ -1709,7 +1709,6 @@ diopi_configs = {
             step=[1, 4],
             weight_decay=[0, 0.1],
             amsgrad=[False, True],
-            maximize=[False, False],
         ),
         tensor_para=dict(
             dtype=[Dtype.float16, Dtype.float32, Dtype.float64],

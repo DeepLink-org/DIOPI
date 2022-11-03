@@ -1804,7 +1804,7 @@ diopiError_t diopiMaskedFillInpScalar(diopiContextHandle_t ctx, diopiConstTensor
 
 diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t grad,
                         diopiTensorHandle_t exp_avg, diopiTensorHandle_t exp_avg_sq, diopiTensorHandle_t max_exp_avg_sq,
-                        float lr, float beta1, float beta2, float eps, float weight_decay, int64_t step, bool amsgrad, bool maximize){
+                        float lr, float beta1, float beta2, float eps, float weight_decay, int64_t step, bool amsgrad){
     
     auto atInput = impl::aten::buildATen(input);
     auto atGrad = impl::aten::buildATen(grad);
@@ -1840,7 +1840,7 @@ diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, dio
 
 diopiError_t diopiAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t grad, 
                        diopiTensorHandle_t exp_avg, diopiTensorHandle_t exp_avg_sq, diopiTensorHandle_t max_exp_avg_sq, 
-                       float lr, float beta1, float beta2, float eps, float weight_decay, int64_t step, bool amsgrad, bool maximize) {
+                       float lr, float beta1, float beta2, float eps, float weight_decay, int64_t step, bool amsgrad) {
     auto atInput = impl::aten::buildATen(input);
     auto atGrad = impl::aten::buildATen(grad);
     auto atExpAvg = impl::aten::buildATen(exp_avg);
