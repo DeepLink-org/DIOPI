@@ -169,6 +169,7 @@ def get_filter_dtype_list(filter_dtype_str_list: list) -> list:
         filter_dtype_list.append(from_dtype_str(filter_dtype_str))
     return filter_dtype_list
 
+
 def delete_if_gen_fn_in_tensor_para(cfg_dict):
     for arg in cfg_dict["tensor_para"]["args"]:
         if "gen_fn" in arg.keys():
@@ -328,7 +329,6 @@ class GenInputData(object):
             logger.info(f"Generate benchmark input data for diopi_functions.{cfg_func_name}")
             filter_dtype_list = get_filter_dtype_list(filter_dtype_str_list)
             cfg_expand_list = expand_cfg_by_all_options(configs[cfg_name], filter_dtype_list)
-
             cfg_counter += len(cfg_expand_list)
             gen_and_dump_data(inputs_dir_path, cfg_name, cfg_expand_list, cfg_save_dict)
 

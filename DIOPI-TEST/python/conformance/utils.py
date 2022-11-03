@@ -116,4 +116,3 @@ def need_process_func(cfg_func_name, func_name, model_name):
         return False
 
     return True
-
