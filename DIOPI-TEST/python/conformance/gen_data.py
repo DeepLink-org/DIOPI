@@ -222,6 +222,8 @@ def gen_tensor(arg: dict) -> np.ndarray:
 
         if "no_contiguous" in arg:
             value = value.transpose()
+        if "abs_input" in arg:
+            value = np.abs(value)
     except BaseException as e:
         logger.error(e, exc_info=True)
         logger.error(arg)

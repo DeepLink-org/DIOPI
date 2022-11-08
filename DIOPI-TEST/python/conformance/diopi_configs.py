@@ -170,34 +170,6 @@ diopi_configs = {
         ),
     ),
 
-    'max_pool2d_with_indices': dict(
-        name=["max_pool2d"],
-        requires_backward=[0],
-        saved_args=dict(indices=1),
-        para=dict(
-            kernel_size=[3, (2, 1), (2, 2), 3],
-            stride=[2, (2, 1), (2, 1), 2],
-            padding=[1, 0, (0, 1), 0],
-            dilation=[1, 1, 1, 2],
-            ceil_mode=[False, True, False, True],
-            return_indices=[True, True, True, True],
-        ),
-        tensor_para=dict(
-            gen_fn=Genfunc.randn,
-            args=[
-                {
-                    "ins": ['input'],
-                    "requires_grad": [True],
-                    "shape": ((2, 64, 352, 528),
-                              (2, 256, 12, 40),
-                              (2, 512, 4, 26),
-                              (3, 4, 10)),
-                    "dtype": [Dtype.float16, Dtype.float32],
-                },
-            ]
-        ),
-    ),
-
     'max_pool2d': dict(
         name=["max_pool2d"],
         para=dict(
@@ -213,6 +185,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
+                    "requires_grad": [True],
                     "shape": ((2, 64, 352, 528),
                               (2, 256, 12, 40),
                               (2, 512, 4, 26),
@@ -248,11 +221,9 @@ diopi_configs = {
         name=["adaptive_max_pool2d"],
         atol=1e-5,
         rtol=1e-4,
-        requires_backward=[0],
-        saved_args=dict(indices=1),
         para=dict(
             output_size=[2, (1, 3), (3, 4)],
-            return_indices=[True, True, True]
+            return_indices=[False, False, False]
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -344,8 +315,7 @@ diopi_configs = {
 
     'pointwise_op': dict(
         name=['abs', 'cos', 'erf', 'exp', 'floor',
-              'log', 'log2', 'log10', 'neg', 'sin',
-              'sqrt'],
+              'neg', 'sin', 'sqrt'],
         interface=['torch'],
         is_inplace=True,
         dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
@@ -357,6 +327,25 @@ diopi_configs = {
                     "shape": ((1, ), (1024,), (364800, 4), (2, 128, 3072),
                               (256, 128, 3, 3),
                               (2, 31, 512, 6, 40)),
+                },
+            ],
+        ),
+    ),
+
+    'pointwise_op_abs_input': dict(
+        name=['log', 'log2', 'log10', 'sqrt'],
+        interface=['torch'],
+        is_inplace=True,
+        dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1, ), (1024,), (364800, 4), (2, 128, 3072),
+                              (256, 128, 3, 3),
+                              (2, 31, 512, 6, 40)),
+                    'abs_input': [True],
                 },
             ],
         ),
@@ -1966,31 +1955,6 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((9, 6, 6, 8, 6),
-                              (4, 6, 8, 9, 12),
-                              (6, 9, 8, 10, 7)),
-                    "dtype": [Dtype.float16, Dtype.float32],
-                },
-            ]
-        ),
-    ),
-
-    'max_pool3d_with_indices': dict(
-        name=['max_pool3d'],
-        requires_backward=[0],
-        saved_args=dict(indices=1),
-        para=dict(
-            kernel_size=[(3, 2, 2), (1, 2, 3), 1],
-            stride=[(2, 1, 2), 2, (2, 3, 4)],
-            dilation=[2, (2, 1, 3), (2, 2, 2)],
-            ceil_mode=[False, False, False],
-            return_indices=[True, True, True],
-        ),
-        tensor_para=dict(
-            gen_fn=Genfunc.randn,
-            args=[
-                {
-                    "ins": ['input'],
                     "requires_grad": [True],
                     "shape": ((9, 6, 6, 8, 6),
                               (4, 6, 8, 9, 12),
@@ -2029,28 +1993,6 @@ diopi_configs = {
         para=dict(
             output_size=[2, (1, 3, 2), (3, 4, 4)],
             return_indices=[False, False, False]
-        ),
-        tensor_para=dict(
-            gen_fn=Genfunc.randn,
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((1, 2048, 4, 7, 7), (2, 512, 4, 4), (2, 1024, 14, 14)),
-                    "dtype": [Dtype.float32],
-                },
-            ]
-        ),
-    ),
-
-    'adaptive_max_pool3d_with_indices': dict(
-        name=["adaptive_max_pool3d"],
-        atol=1e-5,
-        rtol=1e-4,
-        requires_backward=[0],
-        saved_args=dict(indices=1),
-        para=dict(
-            output_size=[2, (1, 3, 2), (3, 4, 4)],
-            return_indices=[True, True, True]
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,

@@ -1473,9 +1473,10 @@ def sgd(param, param_grad, buf, lr, momentum=0, dampening=0, weight_decay=0, nes
     return param, buf
 
 
-def adaptive_max_pool2d_backward(input, grad_outputs, indices, **kwargs) -> Tensor:
+def adaptive_max_pool2d_backward(input, grad_outputs, output_size, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
+    _, indices = adaptive_max_pool2d(input, output_size, return_indices=True)
 
     func = check_function("diopiAdaptiveMaxPool2dBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
@@ -1869,7 +1870,7 @@ def nll_loss_backward(input, grad_outputs, target, weight=None, ignore_index=-10
     return {"input": grad_input}
 
 
-def max_pool2d_backward(input, grad_outputs, indices, kernel_size, stride=None, padding=0, dilation=1,
+def max_pool2d_backward(input, grad_outputs, kernel_size, stride=None, padding=0, dilation=1,
                         ceil_mode=False, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
@@ -1885,6 +1886,7 @@ def max_pool2d_backward(input, grad_outputs, indices, kernel_size, stride=None, 
     if isinstance(dilation, int):
         dilation = (dilation, dilation)
 
+    _, indices = max_pool2d(input, kernel_size, stride, padding, dilation, ceil_mode, True)
     stride = Sizes(tuple(stride))
     padding = Sizes(tuple(padding))
     kernel_size = Sizes(tuple(kernel_size))
@@ -2651,9 +2653,10 @@ def adaptive_max_pool3d(input, output_size, return_indices=False):
     return out
 
 
-def adaptive_max_pool3d_backward(input, grad_outputs, indices, **kwargs) -> Tensor:
+def adaptive_max_pool3d_backward(input, grad_outputs, output_size, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
+    _, indices = adaptive_max_pool3d(input, output_size, return_indices=True)
 
     func = check_function("diopiAdaptiveMaxPool3dBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
@@ -2714,7 +2717,7 @@ def max_pool3d(input, kernel_size, stride=None, padding=0, dilation=1,
         return out, indices
 
 
-def max_pool3d_backward(input, grad_outputs, indices, kernel_size, stride=None, padding=0, dilation=1,
+def max_pool3d_backward(input, grad_outputs, kernel_size, stride=None, padding=0, dilation=1,
                ceil_mode=False, **kwargs ) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
@@ -2730,6 +2733,7 @@ def max_pool3d_backward(input, grad_outputs, indices, kernel_size, stride=None, 
     if isinstance(dilation, int):
         dilation = (dilation, dilation, dilation)
 
+    _, indices = max_pool3d(input, kernel_size, stride, padding, dilation, ceil_mode, True)
     stride = Sizes(tuple(stride))
     padding = Sizes(tuple(padding))
     kernel_size = Sizes(tuple(kernel_size))

@@ -82,7 +82,7 @@ _cur_dir = os.path.dirname(os.path.abspath(__file__))
 diopirt_lib = cdll.LoadLibrary(os.path.join(_cur_dir, "../../lib/libdiopirt.so"))
 diopirt_lib.diopiInit()
 
-device_impl_lib = cdll.LoadLibrary(os.path.join(_cur_dir, "../../lib/libdevice_impl.so"))
+device_impl_lib = cdll.LoadLibrary(os.path.join(_cur_dir, "../../lib/libdiopi_impl.so"))
 device_impl_lib.initLibrary()
 
 
