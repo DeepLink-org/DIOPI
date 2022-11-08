@@ -18,6 +18,7 @@ endif()
 
 set(IMPL_SRC
     conform_test.cpp
+    error.cpp
     functions.cpp
     nms_kernel.cu
     roi_align_kernel.cu

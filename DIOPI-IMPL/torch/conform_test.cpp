@@ -9,9 +9,8 @@
 #include <cuda_runtime.h>
 
 #include <cstdio>
-#include <mutex>
 
-#include "cuda_helpers.h"
+#include "error.hpp"
 
 extern "C" {
 
@@ -80,19 +79,6 @@ int32_t cuda_memcpy_d2d_async(diopiStreamHandle_t stream_handle,
     return diopiSuccess;
 }
 
-static char strLastError[4096] = {0};
-static char strLastErrorOther[2048] = {0};
-static std::mutex mtxLastError;
-
-const char* cuda_get_last_error_string()
-{
-    cudaError_t error = cudaGetLastError();
-    std::lock_guard<std::mutex> lock(mtxLastError);
-    sprintf(strLastError, "cuda error: %s; other error: %s",
-            cudaGetErrorString(error), strLastErrorOther);
-    return strLastError;
-}
-
 int32_t initLibrary()
 {
     diopiRegisterDeviceMallocFunc(cuda_malloc);
@@ -114,18 +100,3 @@ int32_t finalizeLibrary()
 }
 
 }  // extern "C"
-
-namespace impl {
-namespace aten {
-
-void _set_last_error_string(const char *err) {
-    std::lock_guard<std::mutex> lock(mtxLastError);
-    sprintf(strLastErrorOther, "%s", err);
-}
-
-const char* _get_last_error_string() {
-    return cuda_get_last_error_string();
-}
-
-}  // namespace aten
-}  // namespace impl

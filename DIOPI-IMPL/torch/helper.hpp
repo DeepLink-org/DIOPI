@@ -8,7 +8,7 @@
 #include <diopi/functions.h>
 #include <iostream>
 
-#include "cuda_helpers.h"
+#include "error.hpp"
 
 #define TORCH_MM_VERSION (TORCH_VERSION_MAJOR * 1000 + TORCH_VERSION_MINOR * 10)
 #define TORCH_1_7_MM_VERSION 1070
@@ -32,7 +32,7 @@ template<typename...Types>
 void set_last_error_string(const char* szFmt, Types&& ...args) {
     char szBuf[4096] = {0};
     sprintf(szBuf, szFmt, std::forward<Types>(args)...);
-    impl::aten::_set_last_error_string(szBuf);
+    _set_last_error_string(szBuf);
 }
 
 #define ATEN_NOT_IMPLEMENT() \
