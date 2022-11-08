@@ -31,7 +31,7 @@ const char* diopiGetImplVersion() {
 }
 
 const char* diopiGetLastErrorString() {
-    return impl::aten::_get_last_error_string();
+    return cuda_get_last_error_string();
 }
 
 diopiError_t diopiRelu(diopiContextHandle_t ctx,

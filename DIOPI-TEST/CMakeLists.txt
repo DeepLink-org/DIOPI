@@ -22,7 +22,7 @@ else()
 endif()
 set_target_properties(${DIOPIRT} PROPERTIES SUFFIX ".so")
 
-set(DEVICEIMPL device_impl)
+set(DEVICEIMPL diopi_impl)
 
 list(APPEND IMPL_CUDA "CUDA" "cuda")
 list(APPEND IMPL_TORCH "TORCH" "LIBTORCH" "ATEN" "PYTORCH" "torch" "libtorch" "aten" "pytorch" "PyTorch")
