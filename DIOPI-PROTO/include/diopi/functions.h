@@ -43,6 +43,7 @@ typedef struct {
  */
 DIOPI_API const char* diopiGetVendorName();
 DIOPI_API const char* diopiGetImplVersion();
+DIOPI_API const char* diopiGetLastErrorString();
 
 /**
  * \brief Applies a 2D convolution over an input image composed of several input planes.
