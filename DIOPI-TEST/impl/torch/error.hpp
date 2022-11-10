@@ -1,7 +1,0 @@
-#ifndef _DIOPI_REFERENCE_IMPL_DIOPI_CONFORMETEST_ERROR_HPP_
-#define _DIOPI_REFERENCE_IMPL_DIOPI_CONFORMETEST_ERROR_HPP_
-
-void _set_last_error_string(const char *err);
-const char* cuda_get_last_error_string();
-
-#endif //_DIOPI_REFERENCE_IMPL_DIOPI_CONFORMETEST_ERROR_HPP_
