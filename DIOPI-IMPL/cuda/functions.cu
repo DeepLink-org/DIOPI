@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "helper.hpp"
+#include <stdio.h>
 
 
 #define dispatch_dtype(fun, dtype, gridSize, blockSize, stream, ...)                             \
