@@ -1752,7 +1752,7 @@ def softmax_backward(input, grad_outputs, output, dim, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
 
-    func = check_function("diopiSoftmaxBackwardData")
+    func = check_function("diopiSoftmaxBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
                output.tensor_handle, dim, c_int32(input.get_dtype().value))
     check_returncode(ret)
@@ -1763,7 +1763,7 @@ def log_softmax_backward(input, grad_outputs, output, dim, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
 
-    func = check_function("diopiLogSoftmaxBackwardData")
+    func = check_function("diopiLogSoftmaxBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
                output.tensor_handle, dim, c_int32(input.get_dtype().value))
     check_returncode(ret)
