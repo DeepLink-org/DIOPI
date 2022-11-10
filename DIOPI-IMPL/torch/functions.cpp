@@ -2075,10 +2075,10 @@ diopiError_t diopiConvolution3dBackward(diopiContextHandle_t ctx, diopiTensorHan
     return diopiSuccess;
 }
 
-diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size, bool implicit) {
+diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size) {
     auto atInput = impl::aten::buildATen(input);
     auto atSize = impl::aten::buildAtIntArray(size);
-    auto atOut = at::native::expand(atInput, atSize, implicit).clone();
+    auto atOut = at::native::expand(atInput, atSize).clone();
     impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
 }
@@ -2719,51 +2719,24 @@ diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
                       diopiSize_t pad, const char* mode, double* value) {
     auto atInput = impl::aten::buildATen(input);
     auto atPad = impl::aten::buildAtIntArray(pad);
-    TORCH_CHECK(atPad.size() % 2 == 0, "Padding length must be divisible by 2");
-    TORCH_CHECK(((int64_t)(atPad.size() / 2)) <= atInput.dim(), "Padding length too large");
+    torch::nn::functional::PadFuncOptions::mode_t pad_mode;
+    double atValue = *value;
     if (strcmp(mode, "constant") == 0) {
-        auto atOut = at::constant_pad_nd(atInput, atPad, *value);
-        impl::aten::updateATen2Tensor(ctx, atOut, out);
+        pad_mode = torch::kConstant;
+    } else if (strcmp(mode, "reflect") == 0) {
+        pad_mode = torch::kReflect;
+        atValue = 0;
+    } else if (strcmp(mode, "replicate") == 0) {
+        pad_mode = torch::kReplicate;
+        atValue = 0;
+    } else if (strcmp(mode, "circular") == 0) {
+        pad_mode = torch::kCircular;
+        atValue = 0;
     } else {
-        auto atOut = impl::aten::buildATen(out);
-        if (atPad.size() == 2 && (atInput.dim() == 2 || atInput.dim() == 3)) {
-            if (strcmp(mode, "reflect") == 0) {
-                at::reflection_pad1d_out(atOut, atInput, atPad);
-            } else if (strcmp(mode, "replicate") == 0) {
-                at::replication_pad1d_out(atOut, atInput, atPad);
-            } else if (strcmp(mode, "circular") == 0) {
-                //TODO(ht): not implement in aten
-                // _pad_circular(input, pad);
-            } else {
-                TORCH_CHECK(false, "NotImplementedError");
-            }
-        } else if(atPad.size() == 4 && (atInput.dim() == 3 || atInput.dim() == 4)) {
-            if (strcmp(mode, "reflect") == 0) {
-                at::reflection_pad2d_out(atOut, atInput, atPad);
-            } else if (strcmp(mode, "replication") == 0) {
-                at::replication_pad2d_out(atOut, atInput, atPad);
-            } else if (strcmp(mode, "circular") == 0) {
-                //TODO(ht): not implement in aten
-                // _pad_circular(input, pad);
-            } else {
-                TORCH_CHECK(false, "NotImplementedError");
-            }
-        } else if (atPad.size() == 6 && (atInput.dim() == 4 || atInput.dim() == 5)) {
-            if (strcmp(mode, "reflection") == 0) {
-                at::reflection_pad3d_out(atOut, atInput, atPad);
-            } else if (strcmp(mode, "replication") == 0) {
-                at::replication_pad3d_out(atOut, atInput, atPad);
-            } else if (strcmp(mode, "circular") == 0) {
-                //TODO(ht): not implement in aten
-                // _pad_circular(input, pad);
-            } else {
-                TORCH_CHECK(false, "NotImplementedError");
-            }
-        } else {
-            TORCH_CHECK(false, "Only 2D, 3D, 4D, 5D padding with non-constant padding are supported for now");
-        }
-        impl::aten::sync(ctx);
+        TORCH_CHECK(false, "Not support this type padding");
     }
+    auto atOut = torch::nn::functional::detail::pad(atInput, atPad, pad_mode, atValue);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
 }
 
