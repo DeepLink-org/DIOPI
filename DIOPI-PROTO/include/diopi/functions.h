@@ -683,7 +683,7 @@ DIOPI_API diopiError_t diopiIndexFillInp(diopiContextHandle_t ctx, diopiConstTen
 /**
  * \brief Expand tensor to the same size as size.
  */
-DIOPI_API diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size, bool implicit);
+DIOPI_API diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size);
 
 /**
  * \brief Creates a one-dimensional tensor of size steps whose values are evenly spaced from start to end, inclusive.
