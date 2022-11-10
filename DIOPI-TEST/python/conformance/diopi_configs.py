@@ -2128,7 +2128,6 @@ diopi_configs = {
         interface=['torch.Tensor'],
         para=dict(
             size=[(60800, 3), (-1, 4), (-1, 8, -1), (7, 3, -1)],
-            implicit=[True, False, True, False],
         ),
         tensor_para=dict(
             args=[
@@ -2177,8 +2176,25 @@ diopi_configs = {
     'pad': dict(
         name=['pad'],
         para=dict(
-            pad=[(0, 3), (0, 1, 0, 1), (1, 1, 1, 1), (0, 193, 0, 128)],
-            # 'reflect' 'replicate' 'circular' not support torch 1.10
+            pad=[(0, 3), (0, 1, 0, 1), (1, 1, 1, 1), (0, 193)],
+            mode=['circular', 'replicate', 'reflect', 'replicate'],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [(2, 56, 56), (2, 3, 260, 260), (2, 144, 65, 65), (3, 576, 862)],
+                    "gen_fn": Genfunc.randn,
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+            ],
+        ),
+    ),
+
+    'constant_pad': dict(
+        name=['pad'],
+        para=dict(
+            pad=[(0, 3), (0, 1, 0, 1), (1, 1, 1, 1), (0, 193)],
             mode=['constant', 'constant', 'constant', 'constant'],
             value=[100, 0, -1, 1]
         ),
@@ -2186,7 +2202,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [(2, 56, 56, 128), (2, 3, 260, 260), (2, 144, 65, 65), (3, 576, 862)],
+                    "shape": [(2, 56, 56), (2, 3, 260, 260), (2, 144, 65, 65), (3, 576, 862)],
                     "gen_fn": Genfunc.randn,
                     "dtype": [Dtype.float32, Dtype.float64],
                 },
