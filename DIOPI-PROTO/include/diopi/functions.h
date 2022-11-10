@@ -155,49 +155,49 @@ DIOPI_API diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHand
  * \brief Measures the element-wise mean squared error
  */
 DIOPI_API diopiError_t diopiMSELoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
-                                    diopiConstTensorHandle_t target, int64_t reduction);
+                                    diopiConstTensorHandle_t target, diopiReduction_t reduction);
 DIOPI_API diopiError_t diopiMSELossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, int64_t reduction);
+                                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiReduction_t reduction);
 
 /**
  * \brief
  */
 DIOPI_API diopiError_t diopiSigmoidFocalLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t inputs,
-                                             diopiConstTensorHandle_t targets, float alpha, float gamma, int64_t reduction);
+                                             diopiConstTensorHandle_t targets, float alpha, float gamma, diopiReduction_t reduction);
 DIOPI_API diopiError_t diopiSigmoidFocalLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_output,
                                                      diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
-                                                     diopiTensorHandle_t grad_input, float gamma, float alpha, int64_t reduction);
+                                                     diopiTensorHandle_t grad_input, float gamma, float alpha, diopiReduction_t reduction);
 
 /**
  * \brief Measures thee Cross Entropy between the target and input probabilities.
  */
 DIOPI_API diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
-                                             diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, int64_t reduction,
+                                             diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction,
                                              int64_t ignore_index, double label_smoothing);
 
 /**
  * \brief Measures thee nll loss between the target and input probabilities.
  */
 DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
-                                    diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, int64_t reduction,
+                                    diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction,
                                     int64_t ignore_index);
 DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
-                                            int64_t reduction, int64_t ignore_index);
+                                            diopiReduction_t reduction, int64_t ignore_index);
 
 /**
  * \brief Measures the Binary Cross Entropy between the target and input probabilities.
  */
 DIOPI_API diopiError_t diopiBCEWithLogits(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
                                           diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
-                                          diopiConstTensorHandle_t pos_weight, int64_t reduction);
+                                          diopiConstTensorHandle_t pos_weight, diopiReduction_t reduction);
 DIOPI_API diopiError_t diopiBCEWithLogitsBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                                   diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
-                                                  diopiConstTensorHandle_t pos_weight, int64_t reduction);
+                                                  diopiConstTensorHandle_t pos_weight, diopiReduction_t reduction);
 DIOPI_API diopiError_t diopiBCELoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
-                                    diopiConstTensorHandle_t weight, int64_t reduction);
+                                    diopiConstTensorHandle_t weight, diopiReduction_t reduction);
 DIOPI_API diopiError_t diopiBCELossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, int64_t reduction);
+                                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction);
 
 /**
  * \brief Element-wise math functions
@@ -376,15 +376,15 @@ DIOPI_API diopiError_t diopiAll(diopiContextHandle_t ctx, diopiTensorHandle_t ou
  * \brief Applies a softmax function.
  */
 DIOPI_API diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim, diopiDtype_t dtype);
-DIOPI_API diopiError_t diopiSoftmaxBackwardData(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                                diopiConstTensorHandle_t output, int64_t dim, diopiDtype_t input_dtype);
+DIOPI_API diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                            diopiConstTensorHandle_t output, int64_t dim, diopiDtype_t input_dtype);
 
 /**
  * \brief Applies a log_softmax function.
  */
 DIOPI_API diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim, diopiDtype_t dtype);
-DIOPI_API diopiError_t diopiLogSoftmaxBackwardData(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                                   diopiConstTensorHandle_t output, int64_t dim, diopiDtype_t input_dtype);
+DIOPI_API diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                               diopiConstTensorHandle_t output, int64_t dim, diopiDtype_t input_dtype);
 
 /**
  * \brief Returns a new tensor which indexes the input tensor along dimension dim using the entries in index.
@@ -609,9 +609,9 @@ DIOPI_API diopiError_t diopiAdam(diopiContextHandle_t ctx, diopiTensorHandle_t i
  * \brief Creates a criterion that uses a squared term if the absolute element-wise error falls below beta and an L1 term otherwise.
  */
 DIOPI_API diopiError_t diopiSmoothL1Loss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
-                                         int64_t reduction, double beta);
+                                         diopiReduction_t reduction, double beta);
 DIOPI_API diopiError_t diopiSmoothL1LossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                                 diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, int64_t reduction, double beta);
+                                                 diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiReduction_t reduction, double beta);
 
 /**
  * \brief Applies a 3D convolution over an input image composed of several input planes.
@@ -735,10 +735,10 @@ DIOPI_API diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t o
  */
 DIOPI_API diopiError_t diopiCTCLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t neg_log_likelihood, diopiTensorHandle_t log_alpha, 
                                     diopiConstTensorHandle_t log_probs, diopiConstTensorHandle_t targets, diopiConstTensorHandle_t input_lengths,
-                                    diopiConstTensorHandle_t target_lengths, int64_t blank, int64_t reduction, bool zero_infinity);
+                                    diopiConstTensorHandle_t target_lengths, int64_t blank, diopiReduction_t reduction, bool zero_infinity);
 DIOPI_API diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t log_probs, diopiConstTensorHandle_t targets,
                                             diopiConstTensorHandle_t input_lengths, diopiConstTensorHandle_t target_lengths, diopiConstTensorHandle_t neg_log_likelihood, diopiConstTensorHandle_t log_alpha,
-                                            int64_t blank, int64_t reduction, bool zero_infinity);
+                                            int64_t blank, diopiReduction_t reduction, bool zero_infinity);
 
 /**
  * \brief Applies modulus operation.
