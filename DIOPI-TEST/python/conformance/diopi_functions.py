@@ -821,20 +821,22 @@ def adaptive_max_pool2d(input, output_size, return_indices=False):
 
 def dropout(input, p=0.5, training=True, inplace=False):
     call = "diopiDropout"
-    args = 'input.context_handle, '
+    args = 'input.context_handle, out.tensor_handle, mask.tensor_handle, '
 
     if inplace:
         out = input
         call = call + 'Inp'
     else:
         out = raw_like(input)
-        args = args + 'out.tensor_handle, '
+        args = args + 'input.tensor_handle, '
 
-    args = args + "input.tensor_handle, c_double(p), training"
+    sizeI = input.size()
+    mask = Tensor(sizeI, Dtype.uint8)
+    args = args + "c_double(p), training"
     func = check_function(call)
     ret = eval(f'func({args})')
     check_returncode(ret)
-    return out
+    return out, mask
 
 
 def index_select(input, dim, index) -> Tensor:

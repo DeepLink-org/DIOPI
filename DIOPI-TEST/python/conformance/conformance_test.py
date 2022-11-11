@@ -22,25 +22,24 @@ def convert_input_tensors(function_paras: dict):
             function_paras['kwargs'][para] = tensors
 
 
-def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray) -> bool:
+def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare=False) -> bool:
     rtol = cfg.get('rtol_half', 1e-5) if tensor1.dtype == np.float16 else cfg.get('rtol', 1e-5)
     atol = cfg.get('atol_half', 1e-8) if tensor1.dtype == np.float16 else cfg.get('atol', 1e-8)
+    if sum_to_compare:
+        return np.allclose(np.sum(tensor1), np.sum(tensor2), rtol, atol, True)
     return np.allclose(tensor1, tensor2, rtol, atol, True)
 
 
-def compare_with_gen_output(output, cfg, output_reference):
+def compare_with_gen_output(output, cfg, output_reference, sum_to_compare=False):
     passed = True
     if isinstance(output, Tensor):
-        passed = allclose(cfg, output.numpy(), output_reference)
-        # if not passed:
-        #     mask = np.isclose(output.numpy(), output_reference, cfg.get('rtol', 1e-5), cfg.get('atol', 1e-8), True)
-        #     print("faild:", output.numpy()[0], output_reference[0])
+        passed = allclose(cfg, output.numpy(), output_reference, sum_to_compare)
     elif isinstance(output, (list, tuple)):
         assert isinstance(output_reference, (list, tuple))
         assert len(output) == len(output_reference)
         for i in range(len(output)):
             if isinstance(output[i], Tensor):
-                passed &= allclose(cfg, output[i].numpy(), output_reference[i])
+                passed &= allclose(cfg, output[i].numpy(), output_reference[i], sum_to_compare)
             if not passed:
                 return False
     elif isinstance(output, dict):
@@ -50,7 +49,6 @@ def compare_with_gen_output(output, cfg, output_reference):
             if isinstance(v, Tensor):
                 passed = passed and allclose(cfg, v.numpy(), output_reference[k])
             if not passed:
-                # print(k, "faild:", v.numpy()[0], output_reference[k][0])
                 return False
     elif isinstance(output, (int, float)):
         assert isinstance(output_reference, np.ndarray), "output_reference should be type numpy.array"
@@ -66,19 +64,20 @@ def compare_with_gen_output(output, cfg, output_reference):
 class ManualTest(object):
     def test_dropout(input, p=0.5, training=True, inplace=False):
         input_numpy = input.numpy()
-        out = F.dropout(input, p, training, inplace)
+        out, mask = F.dropout(input, p, training, inplace)
         out_numpy = out.numpy()
+        mask_numpy = mask.numpy()
 
         # compute ratio
-        real_ratio = np.sum(out_numpy == 0) / out.numel()
-
+        real_ratio = np.sum(mask_numpy) / mask.numel()
         # check data
-        remains = out_numpy[out_numpy != 0]
-        ref = input_numpy[out_numpy != 0]
-        assert np.allclose(remains, ref / (1 - p), 1e-3),\
+        remains = out_numpy[mask_numpy == 1]
+        ref = input_numpy[mask_numpy == 1]
+
+        assert np.allclose(remains, ref / (1 - p), rtol=1e-4, atol=1e-5),\
             "failed to execute dropout"
 
-        assert np.abs(real_ratio - p) < 2e-2,\
+        assert np.abs(real_ratio - (1 - p)) < 3e-2,\
             "failed to execute dropout"
 
     def test_randperm(n):
@@ -161,8 +160,9 @@ class ConformanceTest(object):
             for func_call in func_call_list:
                 try:
                     output = eval(func_call)
-                    passed = compare_with_gen_output(output, data['cfg'], output_reference) if need_output else True
-                    # print(output.size(), output_reference.shape)
+                    sum_to_compare = True if 'sorted' in kwargs and ~kwargs['sorted'] else False
+                    passed = compare_with_gen_output(output, data['cfg'], output_reference, sum_to_compare) \
+                        if need_output else True
                     logger.info(f"Run diopi_functions.{cfg_func_name} succeed") \
                         if passed else logger.error(f"Run diopi_functions.{cfg_func_name} failed")
                 except FunctionNotImplementedError as e:
