@@ -1172,17 +1172,23 @@ diopiError_t diopiAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     return diopiSuccess;
 }
 
-diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask,
         diopiConstTensorHandle_t input, double p, bool train) {
     at::Tensor atInput = impl::aten::buildATen(input);
-    impl::aten::invokeATenFuncRet(ctx, at::dropout, out, atInput, p, train);
+    if (train) {
+        diopi_tensor_list vecOut = {out, mask};
+        impl::aten::invokeATenFuncRet(ctx, at::_fused_dropout, vecOut, atInput, 1 - p, c10::nullopt); 
+    }
     return diopiSuccess;
-
 }
 
-diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, double p, bool train) {
+diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t mask, double p, bool train) {
     at::Tensor atInput = impl::aten::buildATen(input);
-    impl::aten::invokeATenFuncInp(ctx, at::dropout_, atInput, p, train);
+    if (train) {
+        auto atOuts = at::_fused_dropout(atInput, 1 - p, c10::nullopt);
+        impl::aten::updateATen2Tensor(ctx, std::get<0>(atOuts), input);
+        impl::aten::updateATen2Tensor(ctx, std::get<1>(atOuts), mask);
+    }
     return diopiSuccess;
 }
 
