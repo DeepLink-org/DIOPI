@@ -148,8 +148,10 @@ DIOPI_API diopiError_t diopiAdaptiveMaxPool2dBackward(diopiContextHandle_t ctx, 
 /**
  * \brief Randomly zeroes some of the elements of the input tensor with probability p using samples from a Bernoulli distribution.
  */
-DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, double p, bool train);
-DIOPI_API diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, double p, bool train);
+DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask,
+                                    diopiConstTensorHandle_t input, double p, bool train);
+DIOPI_API diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t mask,
+                                       double p, bool train);
 
 /**
  * \brief Measures the element-wise mean squared error
