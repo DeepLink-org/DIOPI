@@ -275,6 +275,164 @@ c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding_mode) 
     }
 }
 
+at::Tensor nllLossNdBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, diopiConstTensorHandle_t weight,
+                             int64_t reduction, int64_t ignore_index) {
+    auto atWeight = buildATen(weight);
+    auto atTempTotalWeight = atInput.clone();
+    auto atTotalWeight = atTempTotalWeight.resize_({1}).fill_(atTarget.numel());
+
+    auto dim = atInput.dim();
+    assert(dim > 1);    
+    if (dim !=2 && dim != 4) {
+        auto n = atInput.size(0);
+        auto c = atInput.size(1);
+        int64_t inputLastSize = 1;
+        int64_t targetLastSize = 1;
+        for (int i = 2; i < atInput.dim(); ++i) {
+            inputLastSize *= atInput.size(i);
+        }
+        for (int i = 1; i < atTarget.dim(); ++i) {
+            targetLastSize *= atTarget.size(i);
+        }
+        std::vector<int64_t> inputShape = {n, c, 1, inputLastSize};
+        std::vector<int64_t> targetShape = {n, 1, targetLastSize};
+        atInput = atInput.reshape(inputShape);
+        atTarget = atTarget.reshape(targetShape);
+        if (0 == reduction) {
+            atGradOutput = atGradOutput.reshape(targetShape);
+        }
+    }
+    at::Tensor atGradInput;
+    if (dim == 2) {
+        atGradInput = at::nll_loss_backward(atGradOutput, atInput, atTarget, atWeight, reduction,
+                                  ignore_index, atTotalWeight);
+    } else {
+        atGradInput = at::nll_loss2d_backward(atGradOutput, atInput, atTarget, atWeight, reduction,
+                                    ignore_index, atTotalWeight);
+    }
+    return atGradInput;
+}
+
+at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, 
+                                              diopiConstTensorHandle_t weight, int64_t reduction, double label_smoothing) {
+    auto atLogSoftmaxOutput = at::log_softmax(atInput, 1, atInput.scalar_type());
+    at::Tensor atGradInput;
+    const auto n_classes = atInput.size(1);
+    if (label_smoothing > 0.0) {
+        TORCH_CHECK(label_smoothing <= 1.0, "label_smoothing must be between 0.0 and 1.0. Got: ", label_smoothing);
+        atTarget = atTarget * (1 - label_smoothing) + label_smoothing / n_classes;
+    }
+    std::vector<int64_t> expand_shape;
+    for (int i = 0; i < atInput.dim(); ++i) {
+        expand_shape.push_back(atInput.size(i));
+    }
+    at::IntArrayRef shape(expand_shape.data(), expand_shape.size());
+    if(weight){
+        auto atWeight = buildATen(weight);
+        std::vector<int64_t> weight_broadcast_shape(atInput.dim(), 1);
+        weight_broadcast_shape[1] = atWeight.size(0);
+        atWeight = atWeight.view(weight_broadcast_shape);
+        switch (reduction) {
+            case at::Reduction::Mean:
+                atGradOutput = atGradOutput.expand(shape);
+                atGradInput = -(atGradOutput * atTarget * atWeight)/ (atInput.numel() / atInput.size(1));
+                break;
+            case at::Reduction::Sum:
+                atGradOutput = atGradOutput.expand(shape);
+                atGradInput = -(atGradOutput * atTarget * atWeight);
+                break;
+            case at::Reduction::None:
+                atGradOutput = atGradOutput.unsqueeze(1).expand(shape);
+                atGradInput = -(atGradOutput * atTarget * atWeight);
+                break;
+            default:
+                TORCH_CHECK(false, "Invalid reduction type encountered in cross_entropy: ", reduction);
+        }
+    } else {
+        switch (reduction) {
+            case at::Reduction::Mean:
+                atGradOutput = atGradOutput.expand(shape);
+                atGradInput = -(atGradOutput * atTarget)/ (atInput.numel() / atInput.size(1));
+                break;
+            case at::Reduction::Sum:
+                atGradOutput = atGradOutput.expand(shape);
+                atGradInput = -(atGradOutput * atTarget);
+                break;
+            case at::Reduction::None:
+                atGradOutput = atGradOutput.unsqueeze(1).expand(shape);
+                atGradInput = -(atGradOutput * atTarget);
+                break;
+            default:
+                TORCH_CHECK(false, "Invalid reduction type encountered in cross_entropy: ", reduction);
+        }
+    }
+    auto atGradInputFinal = at::_log_softmax_backward_data(atGradInput, atLogSoftmaxOutput, 1, atLogSoftmaxOutput);
+    return atGradInputFinal;
+} 
+
+at::Tensor crossEntropyLossLabelSmoothingBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget,
+                                                  diopiConstTensorHandle_t weight, int64_t reduction, int64_t ignore_index, double label_smoothing) {
+    auto atLogSoftmaxOutput = at::log_softmax(atInput, 1, atInput.scalar_type());
+    const auto n_classes = atInput.size(1);
+    auto atNlllossGrad = atGradOutput * (1 - label_smoothing);
+    auto atSmoothlossGrad = atGradOutput * (label_smoothing / n_classes);
+    at::Tensor atGradInput;
+    std::vector<int64_t> expand_shape;
+    for (int i = 0; i < atInput.dim(); ++i) {
+        if(i != 1) {
+            expand_shape.push_back(atInput.size(i));
+        }
+    }
+    at::IntArrayRef shape(expand_shape.data(), expand_shape.size());
+    switch (reduction) {
+        case at::Reduction::Mean:
+            if (weight) {
+            // loss is normalized by the weights to be consistent with nll_loss_nd
+            auto atWeight = buildATen(weight);
+            atGradInput = atSmoothlossGrad.expand(shape) / atWeight.gather(0, atTarget.flatten()).sum();
+            } else {
+            float num = 1.;
+            for(int i = 0; i < expand_shape.size(); ++i) {
+                num *= expand_shape[i];
+            }
+            atGradInput = atSmoothlossGrad.expand(shape) / num;
+            }
+            break;
+        case at::Reduction::Sum:
+            atGradInput = atSmoothlossGrad.expand(shape);
+            break;
+        case at::Reduction::None:
+            atGradInput = atSmoothlossGrad;
+            break;
+        default:
+            TORCH_CHECK(false, "Invalid reduction type encountered in cross_entropy: ", reduction);
+    }
+    atGradInput = atGradInput.clone();
+    if (ignore_index >= 0) {
+        atGradInput.index_put_({atTarget == ignore_index}, 0.0);
+    }
+    std::vector<int64_t> final_expand_shape;
+    for (int i = 0; i < atInput.dim(); ++i) {
+        final_expand_shape.push_back(atInput.size(i));
+    }
+    at::IntArrayRef final_shape(final_expand_shape.data(), final_expand_shape.size());
+    if (weight) {
+        auto atWeight = buildATen(weight);
+        std::vector<int64_t> weight_broadcast_shape(atInput.dim(), 1);
+        weight_broadcast_shape[1] = atWeight.size(0);
+        atWeight = atWeight.view(weight_broadcast_shape);
+        atGradInput = -(atGradInput.unsqueeze(1).expand(final_shape) * atWeight);
+    } else {
+        atGradInput = -atGradInput.unsqueeze(1).expand(final_shape);
+    }
+    auto atGradInput2 = nllLossNdBackward(atLogSoftmaxOutput, atNlllossGrad, atTarget, weight, reduction, ignore_index);
+    atGradInput = atGradInput.clone();
+    atGradInput += atGradInput2;
+    atLogSoftmaxOutput = at::log_softmax(atInput, 1, atInput.scalar_type());
+    auto atGradInputFinal = at::_log_softmax_backward_data(atGradInput, atLogSoftmaxOutput, 1, atLogSoftmaxOutput);
+    return atGradInputFinal;
+}
+
 }  // namespace aten
 
 }  // namespace impl
