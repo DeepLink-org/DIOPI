@@ -713,6 +713,24 @@ diopi_configs = {
         ),
     ),
 
+    'fill': dict(
+        name=["fill_"],
+        interface=["torch.Tensor"],
+        para=dict(
+            value=[-100, 0.0, float("-inf"), -100, 0.0, float("-inf")],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1,), (64,), (4, 49), (1276, 49, 49), (2, 8, 726, 726), (2, 31, 6, 40, 1)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+    
     'reduce_op': dict(
         name=['mean', 'sum'],
         interface=['torch'],
@@ -873,10 +891,13 @@ diopi_configs = {
 
     'cross_entropy': dict(
         name=["cross_entropy"],
+        saved_args=dict(output=0),
+        atol=1e-1,
+        rtol=1e-2,
         para=dict(
-            reduction=['mean', 'none'],
-            ignore_index=[0, -100],
-            label_smoothing=[0.0, 0.5],
+            reduction=['mean', 'none', 'sum', 'none'],
+            ignore_index=[0, -100, 0, -100],
+            label_smoothing=[0.0, 0.0, 0.5, 0.5],
         ),
         dtype=[Dtype.float32],
         tensor_para=dict(
@@ -884,15 +905,16 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((1024, 81), (3, 5, 6, 6)),
+                    "requires_grad": [True],
+                    "shape": ((1024, 81), (3, 8, 64, 64), (64, 32), (3, 5, 6, 6)),
                 },
                 {
                     "ins": ['weight'],
-                    "shape": (None, (5,)),
+                    "shape": (None, (8,), None, (5,)),
                 },
                 {
                     "ins": ['target'],
-                    "shape": ((1024, ), (3, 6, 6)),
+                    "shape": ((1024, ), (3, 64, 64), (64, ), (3, 6, 6)),
                     "gen_fn": dict(fn=Genfunc.randint, low=0, high=5),
                     "dtype": [Dtype.int64],
 
@@ -903,9 +925,12 @@ diopi_configs = {
 
     'cross_entropy_prob_target': dict(
         name=["cross_entropy"],
+        saved_args=dict(output=0),
+        atol=1e-3,
+        rtol=1e-4,
         para=dict(
-            reduction=['sum'],
-            label_smoothing=[0.1],
+            reduction=['sum', 'mean', 'none'],
+            label_smoothing=[0.1, 0.3, 0.5],
         ),
         dtype=[Dtype.float32],
         tensor_para=dict(
@@ -913,15 +938,16 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((3, 5, 6, 6), ),
+                    "requires_grad": [True],
+                    "shape": ((3, 5, 6, 6), (1024, 81), (64, 8, 8)),
                 },
                 {
                     "ins": ['weight'],
-                    "shape": ((5,), ),
+                    "shape": ((5,), None, (8,)),
                 },
                 {
                     "ins": ['target'],
-                    "shape": ((3, 5, 6, 6), ),
+                    "shape": ((3, 5, 6, 6), (1024, 81), (64, 8, 8)),
                 },
             ],
         ),
@@ -1037,22 +1063,28 @@ diopi_configs = {
     'linear': dict(
         name=["linear"],
         atol=1e-4,
+        rtol=1e-5,
+        atol_half=1e-2,
+        rtol_half=1e-1,
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
+                    "requires_grad": [True],
                     "shape": ((2, 512), (128, 49, 128), (6, 2, 100, 256),
                               (2, 31, 6, 40, 512)),
                     "dtype": [Dtype.float16, Dtype.float32],
                 },
                 {
                     "ins": ['weight'],
+                    "requires_grad": [True],
                     "shape": ((10, 512), (384, 128), (81, 256), (1, 512)),
                     "dtype": [Dtype.float16, Dtype.float32],
                 },
                 {
                     "ins": ['bias'],
+                    "requires_grad": [True],
                     "shape": ((10, ), None, (81, ), (1,)),
                     "dtype": [Dtype.float16, Dtype.float32],
                 },

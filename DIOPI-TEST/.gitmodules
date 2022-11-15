@@ -1,8 +1,6 @@
 [submodule "diopirt"]
 	path = diopirt
 	url = git@github.com:OpenComputeLab/DIOPI.git
-	branch = main
 [submodule "impl"]
 	path = impl
 	url = git@github.com:OpenComputeLab/DIOPI-IMPL.git
-	branch = main

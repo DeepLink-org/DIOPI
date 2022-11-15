@@ -52,22 +52,23 @@ def reduce_op_process(input, dim=None, keepdim=False, dtype=None):
     return dim_list, out
 
 
-def fill(tensor, value):
+def fill_(input, value):
     func = check_function("diopiFill")
-    ret = func(tensor.context_handle, tensor.tensor_handle, c_float(value))
+    value = byref(Scalar(input.get_dtype(), value))
+    ret = func(input.context_handle, input.tensor_handle, value)
     check_returncode(ret)
-    return tensor
+    return input
 
 
 def ones_like(tensor):
     new_tensor = raw_like(tensor)
-    fill(new_tensor, 1)
+    fill_(new_tensor, 1)
     return new_tensor
 
 
 def zeros_like(tensor):
     new_tensor = raw_like(tensor)
-    fill(new_tensor, 0)
+    fill_(new_tensor, 0)
     return new_tensor
 
 
@@ -584,8 +585,10 @@ def cross_entropy(input, target, weight=None, ignore_index=- 100,
     else:
         weight = c_void_p()
 
+    sizeI = list(input.size())
+    sizeO = [sizeI[0]] + sizeI[2:]
     if reduction == 'none':
-        out = Tensor(target.size(), input.get_dtype())
+        out = Tensor(sizeO, input.get_dtype())
     else:
         out = Tensor((), input.get_dtype())
 
@@ -3042,3 +3045,49 @@ def prod(input, dim=None, keepdim=False, dtype=None) -> Tensor:
                dim, c_int32(dtype.value))
     check_returncode(ret)
     return out
+
+
+def linear_backward(input, grad_outputs, weight, bias=None, **kwargs):
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+
+    grad_input = raw_like(input)
+    grad_weight = raw_like(weight)
+    if bias is not None:
+        assert isinstance(bias, Tensor), \
+            'bias must be a Tensor'
+        grad_bias = raw_like(bias)
+        grad_bias_handle = grad_bias.tensor_handle
+    else:
+        grad_bias_handle = c_void_p()
+
+    func = check_function("diopiLinearBackward")
+
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_weight.tensor_handle, grad_bias_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle, weight.tensor_handle)
+    check_returncode(ret)
+    if bias is None:
+        return {"input": grad_input, "weight": grad_weight}
+    return {"input": grad_input, "weight": grad_weight, "bias": grad_bias}
+
+
+def cross_entropy_backward(input, grad_outputs, output, target, weight=None, ignore_index=- 100,
+                  reduction='mean', label_smoothing=0.0, **kwargs):
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    assert reduction in ['mean', 'sum', 'none'], \
+        'reduction must be one of (mean, sum, none)'
+
+    grad_input = raw_like(input)
+    if weight is not None:
+        assert isinstance(weight, Tensor), \
+            'weigth must be a Tensor'
+        weight = weight.tensor_handle
+    else:
+        weight = c_void_p()
+
+    reduction_mode = convert_reduction(reduction)
+    func = check_function("diopiCrossEntropyLossBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle, input.tensor_handle,
+               output.tensor_handle, target.tensor_handle, weight, c_int64(reduction_mode),
+               c_int64(ignore_index), c_double(label_smoothing))
+    check_returncode(ret)
+    return {"input": grad_input}
