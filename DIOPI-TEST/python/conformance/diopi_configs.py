@@ -891,7 +891,6 @@ diopi_configs = {
 
     'cross_entropy': dict(
         name=["cross_entropy"],
-        saved_args=dict(output=0),
         atol=1e-1,
         rtol=1e-2,
         para=dict(

@@ -3070,7 +3070,7 @@ def linear_backward(input, grad_outputs, weight, bias=None, **kwargs):
     return {"input": grad_input, "weight": grad_weight, "bias": grad_bias}
 
 
-def cross_entropy_backward(input, grad_outputs, output, target, weight=None, ignore_index=- 100,
+def cross_entropy_backward(input, grad_outputs, target, weight=None, ignore_index=- 100,
                   reduction='mean', label_smoothing=0.0, **kwargs):
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     assert reduction in ['mean', 'sum', 'none'], \
@@ -3087,7 +3087,6 @@ def cross_entropy_backward(input, grad_outputs, output, target, weight=None, ign
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiCrossEntropyLossBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle, input.tensor_handle,
-               output.tensor_handle, target.tensor_handle, weight, c_int64(reduction_mode),
-               c_int64(ignore_index), c_double(label_smoothing))
+               target.tensor_handle, weight, c_int64(reduction_mode), c_int64(ignore_index), c_double(label_smoothing))
     check_returncode(ret)
     return {"input": grad_input}
