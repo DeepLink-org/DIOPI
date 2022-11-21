@@ -54,7 +54,7 @@ def reduce_op_process(input, dim=None, keepdim=False, dtype=None):
 
 def fill_(input, value):
     func = check_function("diopiFill")
-    value = byref(Scalar(input.get_dtype(), value))
+    value = byref(Scalar(value))
     ret = func(input.context_handle, input.tensor_handle, value)
     check_returncode(ret)
     return input
@@ -124,13 +124,13 @@ def binary_op_scalar(input, other, inplace, call, alpha=None, dtype=None) -> Ten
 
     if not isinstance(other, Tensor):
         call = call + "Scalar"
-        other = Scalar(input.get_dtype(), other)
+        other = Scalar(other)
         args = args + "input.tensor_handle, byref(other)"
     else:
         args = args + "input.tensor_handle, other.tensor_handle"\
 
     if alpha is not None:
-        alpha = Scalar(input.get_dtype(), alpha)
+        alpha = Scalar(alpha)
         args = args + ", byref(alpha)"
 
     func = check_function(call)
@@ -260,7 +260,7 @@ def div(input, other, rounding_mode=None) -> Tensor:
     if not isinstance(other, Tensor):
         out = Tensor(sizeI, input.get_dtype())
         call = call + "Scalar"
-        other = Scalar(input.get_dtype(), other)
+        other = Scalar(other)
         args = args + "byref(other)"
     else:
         sizeO = other.size()
@@ -284,7 +284,7 @@ def logical_or(input, other) -> Tensor:
 
 
 def leaky_relu(input, negative_slope=0.01, inplace=False) -> Tensor:
-    negative_slope = byref(Scalar(Dtype.float64, negative_slope))
+    negative_slope = byref(Scalar(negative_slope, Dtype.float64))
     if inplace:
         out = input
         func = check_function("diopiLeakyReluInp")
@@ -326,7 +326,7 @@ def addcmul(input, tensor1, tensor2, value=1) -> Tensor:
     sizeO = broadcast_out_size(size1, size2)
     sizeO = broadcast_out_size(sizeI, sizeO)
     out = Tensor(sizeO, input.get_dtype())
-    value = byref(Scalar(input.get_dtype(), value))
+    value = byref(Scalar(value))
 
     func = check_function("diopiAddcmul")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
@@ -390,8 +390,8 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
     else:
         assert (~isinstance(max, Tensor)), 'min and max must have same type'
         call = call + 'Scalar'
-        min = byref(Scalar(input.get_dtype(), min))
-        max = byref(Scalar(input.get_dtype(), max))
+        min = byref(Scalar(min))
+        max = byref(Scalar(max))
         args = args + "input.tensor_handle, min, max"
 
     func = check_function(call)
@@ -414,7 +414,7 @@ def clamp_min(input, min, inplace=False) -> Tensor:
         args = args + "input.tensor_handle, min.tensor_handle"
     else:
         call = call + 'Scalar'
-        min = byref(Scalar(input.get_dtype(), min))
+        min = byref(Scalar(min))
         args = args + "input.tensor_handle, min"
 
     func = check_function(call)
@@ -437,7 +437,7 @@ def clamp_max(input, max, inplace=False) -> Tensor:
         args = args + "input.tensor_handle, max.tensor_handle"
     else:
         call = call + 'Scalar'
-        max = byref(Scalar(input.get_dtype(), max))
+        max = byref(Scalar(max))
         args = args + "input.tensor_handle, max"
 
     func = check_function(call)
@@ -1085,20 +1085,14 @@ def pow(input, exponent) -> Tensor:
         func = check_function("diopiPowScalar")
         # todo: return type = input type or float
         out = raw_like(exponent)
-        if isinstance(input, int):
-            input = byref(Scalar(Dtype.int64, input))
-        else:
-            input = byref(Scalar(Dtype.float64, input))
+        input = byref(Scalar(input))
         ret = func(exponent.context_handle, out.tensor_handle, input, exponent.tensor_handle)
     elif not isinstance(exponent, Tensor):
         assert isinstance(input, Tensor),\
             "input must be tensor when exponent is scalar"
         func = check_function("diopiPow")
         out = raw_like(input)
-        if isinstance(exponent, int):
-            exponent = byref(Scalar(Dtype.int64, exponent))
-        else:
-            exponent = byref(Scalar(Dtype.float64, exponent))
+        exponent = byref(Scalar(exponent))
         ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, exponent)
     else:
         sizeI = list(input.size())
@@ -1205,8 +1199,8 @@ def log_softmax(input, dim, dtype=None):
 
 def hardtanh(input, min_val=- 1.0, max_val=1.0, inplace=False) -> Tensor:
     call = "diopiHardtanh"
-    min_val = byref(Scalar(input.get_dtype(), min_val))
-    max_val = byref(Scalar(input.get_dtype(), max_val))
+    min_val = byref(Scalar(min_val))
+    max_val = byref(Scalar(max_val))
     if inplace:
         out = input
         call = call + "Inp"
@@ -1224,8 +1218,8 @@ def hardtanh(input, min_val=- 1.0, max_val=1.0, inplace=False) -> Tensor:
 
 def threshold(input, threshold, value, inplace=False) -> Tensor:
     call = "diopiThreshold"
-    threshold = byref(Scalar(input.get_dtype(), threshold))
-    value = byref(Scalar(input.get_dtype(), value))
+    threshold = byref(Scalar(threshold))
+    value = byref(Scalar(value))
     if inplace:
         out = input
         call = call + "Inp"
@@ -1261,7 +1255,7 @@ def addcdiv(input, tensor1, tensor2, value=1) -> Tensor:
     sizeO = broadcast_out_size(size1, size2)
     sizeO = broadcast_out_size(sizeI, sizeO)
     out = Tensor(sizeO, input.get_dtype())
-    value = byref(Scalar(input.get_dtype(), value))
+    value = byref(Scalar(value))
 
     func = check_function("diopiAddcdiv")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
@@ -1277,8 +1271,8 @@ def addmm(input, mat1, mat2, beta=1, alpha=1) -> Tensor:
     sizeI = list(input.size())
     sizeO = broadcast_out_size(sizeI, size1)
     out = Tensor(sizeO, input.get_dtype())
-    alpha = byref(Scalar(input.get_dtype(), alpha))
-    beta = byref(Scalar(input.get_dtype(), beta))
+    alpha = byref(Scalar(alpha))
+    beta = byref(Scalar(beta))
 
     func = check_function("diopiAddmm")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
@@ -1546,7 +1540,7 @@ def index_backward(input, grad_outputs, **kwargs) -> Tensor:
 def leaky_relu_backward(input, grad_outputs, negative_slope=0.01, input_is_result=False, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
-    negative_slope = byref(Scalar(Dtype.float64, negative_slope))
+    negative_slope = byref(Scalar(negative_slope, Dtype.float64))
 
     func = check_function("diopiLeakyReluBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
@@ -1644,8 +1638,8 @@ def conv2d_backward(input, grad_outputs, weight, bias=None, stride=1,
 def hardtanh_backward(input, grad_outputs, min_val=-1.0, max_val=1.0, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
-    min_val = byref(Scalar(input.get_dtype(), min_val))
-    max_val = byref(Scalar(input.get_dtype(), max_val))
+    min_val = byref(Scalar(min_val))
+    max_val = byref(Scalar(max_val))
 
     func = check_function("diopiHardtanhBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
@@ -1789,7 +1783,7 @@ def sigmoid_backward(input, grad_outputs, output, **kwargs) -> Tensor:
 def threshold_backward(input, grad_outputs, threshold, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
-    threshold = byref(Scalar(input.get_dtype(), threshold))
+    threshold = byref(Scalar(threshold))
 
     func = check_function("diopiThresholdBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
@@ -1941,7 +1935,7 @@ def arange(end, start=0, step=1, dtype=None) -> Tensor:
     out = Tensor((numel,), dtype)
 
     func = check_function("diopiArange")
-    ret = func(out.context_handle, out.tensor_handle, byref(Scalar(dtype, start)), byref(Scalar(dtype, end)), byref(Scalar(dtype, step)))
+    ret = func(out.context_handle, out.tensor_handle, byref(Scalar(start)), byref(Scalar(end)), byref(Scalar(step)))
     check_returncode(ret)
     return out
 
@@ -2000,7 +1994,7 @@ def masked_fill(input, mask, value, inplace=False) -> Tensor:
     if isinstance(value, Tensor):
         value = value.tensor_handle
     else:
-        value = byref(Scalar(input.get_dtype(), value))
+        value = byref(Scalar(value))
         call_scalar = True
 
     if inplace:
@@ -2429,7 +2423,7 @@ def index_fill(input, dim, index, value, inplace=False) -> Tensor:
     if isinstance(value, Tensor):
         value = value.tensor_handle
     else:
-        value = byref(Scalar(input.get_dtype(), value))
+        value = byref(Scalar(value))
         call_scalar = True
 
     if inplace:
@@ -2456,8 +2450,8 @@ def linspace(start, end, steps, dtype=None):
 
     out = Tensor((steps, ), dtype)
 
-    start = byref(Scalar(dtype, start))
-    end = byref(Scalar(dtype, end))
+    start = byref(Scalar(start))
+    end = byref(Scalar(end))
     func = check_function("diopiLinspace")
 
     ret = func(out.context_handle, out.tensor_handle, start, end, c_int64(steps))
@@ -2483,7 +2477,7 @@ def roll(input, shifts, dims=None):
 
 
 def norm(input, p, dim=None, keepdim=False, dtype=None):
-    p = byref(Scalar(input.get_dtype(), p))
+    p = byref(Scalar(p))
     dim, out = reduce_op_process(input, dim, keepdim, dtype)
     dim = Sizes(tuple(dim))
 
@@ -2820,13 +2814,13 @@ def remainder(other, input=None, self=None):
         else:
             call += "Scalar"
             out = raw_like(input)
-            other = byref(Scalar(input.get_dtype(), other))
+            other = byref(Scalar(other))
             input = input.tensor_handle
     else:
         assert isinstance(other, Tensor), "input or other must be tensor"
         context = other.context_handle
         out = raw_like(other)
-        input = byref(Scalar(other.get_dtype(), input))
+        input = byref(Scalar(input))
         other = other.tensor_handle    
     func = check_function(call)
     ret = func(context, out.tensor_handle, input, other)
@@ -2910,7 +2904,7 @@ def scatter(input, dim, index, src=None, value=None, reduce=None, inplace=False)
     if isinstance(src, Tensor):
         src = src.tensor_handle
     else:
-        src = byref(Scalar(input.get_dtype(), src))
+        src = byref(Scalar(src))
         call_scalar = True
 
     if inplace:

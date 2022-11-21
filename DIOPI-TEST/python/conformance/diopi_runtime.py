@@ -138,7 +138,9 @@ class ScalarUnion(Union):
 class Scalar(Structure):
     _fields_ = [("stype", c_int32), ("val", ScalarUnion)]
 
-    def __init__(self, dtype, value):
+    def __init__(self, value, dtype=None):
+        if dtype is None:
+            dtype = Dtype.int64 if isinstance(value, int) else Dtype.float64
         self.stype = dtype.value
         if dtype in [Dtype.float16, Dtype.float32, Dtype.float64]:
             self.val.fval = value
