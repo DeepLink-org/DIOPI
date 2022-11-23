@@ -45,6 +45,18 @@ void set_last_error_string(const char* szFmt, Types&& ...args) {
 #define NOT_SUPPORTED(str) \
     set_last_error_string("NotSupported: %s at %s:%d", str, __FILE__, __LINE__); \
 
+#define DIOPI_CHECK(cond, str) \
+    if (!(cond)) { \
+        set_last_error_string("%s at %s:%d", str, __FILE__, __LINE__); \
+        return diopiErrorOccurred; \
+    } \
+
+#define DIOPI_CHECK_PTR(ptr)\
+    if (ptr == nullptr) { \
+        set_last_error_string("NotSupported: %s is nullptr at %s:%d", #ptr, __FILE__, __LINE__); \
+        return diopiErrorOccurred; \
+    } \
+
 using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
 
 namespace impl {
@@ -182,6 +194,10 @@ inline bool isFloat(const diopiScalar_t* scalar) {
 }
 
 inline at::Scalar buildAtScalar(const diopiScalar_t* scalar) {
+    if (scalar == nullptr) {
+        NOT_SUPPORTED("scalar is null ptr, we use temporarily zero");
+        return at::Scalar();
+    }
     return isInt(scalar) ? scalar->ival : scalar->fval;
 }
 
@@ -204,9 +220,11 @@ decltype(auto) buildATenList(T* tensors, int64_t numTensors) {
 
 void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiTensorHandle_t out) {
     // TODO(fengsibo): add device and nbytes check
-    at::Tensor atOutput = buildATen(out);
-    atOutput.reshape_as(atOut).copy_(atOut);
-    sync(ctx);
+    if (out != nullptr) {
+        at::Tensor atOutput = buildATen(out);
+        atOutput.reshape_as(atOut).copy_(atOut);
+        sync(ctx);
+    }
 }
 
 template<typename TupleT, std::size_t N>
