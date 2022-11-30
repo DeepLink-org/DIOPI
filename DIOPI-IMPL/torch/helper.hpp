@@ -59,11 +59,13 @@ void set_last_error_string(const char* szFmt, Types&& ...args) {
     } \
 
 using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
-static diopiContextHandle_t context = nullptr;
+extern thread_local diopiContextHandle_t context;
 namespace c10 {
 
 namespace cuda {
 
+//Note: this is a overloaded aten function to get the stream from context.
+//For original functions, please refer to https://github.com/pytorch/pytorch/blob/v1.10.0/c10/cuda/CUDAStream.cpp.
 CUDAStream getCurrentCUDAStream(DeviceIndex device_index) {
     if (device_index == -1) {
         device_index = current_device();

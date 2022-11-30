@@ -7,10 +7,11 @@
 #include <cuda_runtime_api.h>
 #include <cudnn.h>
 
+#define FLT_MIN  __FLT_MIN__
+
+static thread_local diopiContextHandle_t context = nullptr;
 #include "helper.hpp"
 #include "vision_kernel.h"
-
-#define FLT_MIN  __FLT_MIN__
 
 extern "C" {
 
