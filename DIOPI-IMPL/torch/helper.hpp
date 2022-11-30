@@ -4,6 +4,7 @@
 #include <vector>
 #include <cuda_runtime.h>
 #include <ATen/ATen.h>
+#include <c10/cuda/CUDAStream.h>
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <iostream>
@@ -58,10 +59,34 @@ void set_last_error_string(const char* szFmt, Types&& ...args) {
     } \
 
 using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
+static diopiContextHandle_t context = nullptr;
+namespace c10 {
+
+namespace cuda {
+
+CUDAStream getCurrentCUDAStream(DeviceIndex device_index) {
+    if (device_index == -1) {
+        device_index = current_device();
+    }
+    if (context) {
+        diopiStreamHandle_t stream_handle;
+        diopiGetStream(context, &stream_handle);
+        return getStreamFromExternal(static_cast<cudaStream_t>(stream_handle), device_index);
+    } else {
+        return getDefaultCUDAStream(device_index);
+    }
+}
+
+} // namespace cuda
+} // namespace c10
 
 namespace impl {
 
 namespace aten {
+
+inline void setCurCtx(diopiContextHandle_t ctx) {
+    context = ctx;
+}
 
 inline void sync(diopiContextHandle_t ctx) {
     diopiStreamHandle_t stream_handle;
@@ -198,7 +223,13 @@ inline at::Scalar buildAtScalar(const diopiScalar_t* scalar) {
         NOT_SUPPORTED("scalar is null ptr, we use temporarily zero");
         return at::Scalar();
     }
-    return isInt(scalar) ? scalar->ival : scalar->fval;
+    if ( isInt(scalar) ) {
+        int64_t ival = scalar->ival;
+        return ival;
+    } else {
+        double fval = scalar->fval;
+        return fval;
+    }
 }
 
 at::IntArrayRef buildAtIntArray(const diopiSize_t* size) {
@@ -222,8 +253,7 @@ void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiT
     // TODO(fengsibo): add device and nbytes check
     if (out != nullptr) {
         at::Tensor atOutput = buildATen(out);
-        atOutput.reshape_as(atOut).copy_(atOut);
-        sync(ctx);
+        atOutput.reshape_as(atOut).copy_(atOut, true); 
     }
 }
 
