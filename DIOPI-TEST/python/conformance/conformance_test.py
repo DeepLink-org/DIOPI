@@ -8,7 +8,7 @@ from .utils import need_process_func
 from .diopi_runtime import Tensor
 from .gen_data import inputs_dir_path, outputs_dir_path
 from .gen_data import get_saved_pth_list, get_data_from_file
-
+from .utils import save_precision, record, write_precision
 
 def convert_input_tensors(function_paras: dict):
     for para in function_paras["kwargs"].keys():
@@ -22,12 +22,15 @@ def convert_input_tensors(function_paras: dict):
             function_paras['kwargs'][para] = tensors
 
 
-def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare=False) -> bool:
+def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare=False, var_name="out") -> bool:
     rtol = cfg.get('rtol_half', 1e-5) if tensor1.dtype == np.float16 else cfg.get('rtol', 1e-5)
     atol = cfg.get('atol_half', 1e-8) if tensor1.dtype == np.float16 else cfg.get('atol', 1e-8)
-    if sum_to_compare:
-        return np.allclose(np.sum(tensor1), np.sum(tensor2), rtol, atol, True)
-    return np.allclose(tensor1, tensor2, rtol, atol, True)
+    tensor1 = np.ndarray(np.sum(tensor1)) if sum_to_compare else tensor1
+    tensor2 = np.ndarray(np.sum(tensor2)) if sum_to_compare else tensor2
+    passed = np.allclose(tensor1, tensor2, rtol, atol, True)
+    if record:
+        save_precision(cfg, tensor1, tensor2, passed, var_name)
+    return passed
 
 
 def compare_with_gen_output(output, cfg, output_reference, sum_to_compare=False):
@@ -39,22 +42,22 @@ def compare_with_gen_output(output, cfg, output_reference, sum_to_compare=False)
         assert len(output) == len(output_reference)
         for i in range(len(output)):
             if isinstance(output[i], Tensor):
-                passed &= allclose(cfg, output[i].numpy(), output_reference[i], sum_to_compare)
-            if not passed:
-                return False
+                passed &= allclose(cfg, output[i].numpy(), output_reference[i], sum_to_compare, "out" + str(i))
+            if not record and not passed:
+                return False 
     elif isinstance(output, dict):
         assert isinstance(output_reference, dict)
         assert len(output) == len(output_reference)
         for k, v in output.items():
             if isinstance(v, Tensor):
-                passed = passed and allclose(cfg, v.numpy(), output_reference[k])
-            if not passed:
-                return False
+                passed = passed and allclose(cfg, v.numpy(), output_reference[k], False, k)
+            if not record and not passed:
+                return False 
     elif isinstance(output, (int, float)):
         assert isinstance(output_reference, np.ndarray), "output_reference should be type numpy.array"
         output = np.array(output)
         assert output.shape == output_reference.shape, "output and output_reference should be same shape"
-        passed = passed and allclose(cfg, output, output_reference)
+        passed = passed and allclose(cfg, output, output_reference, False, "scalar")
     else:
         return False
 
@@ -175,6 +178,8 @@ class ConformanceTest(object):
                     logger.error(f"Failed: {e}")
                     continue
 
+                write_precision(data["cfg"], cfg_func_name, passed)
+        
                 if function_paras["requires_grad"] and "inplace=True" not in func_call:
                     saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
                     saved_backward_pth = os.path.join(outputs_dir_path, saved_backward_pth)
@@ -200,6 +205,7 @@ class ConformanceTest(object):
                         passed = compare_with_gen_output(grad_input, data['cfg'], backward_out_reference)
                         logger.info(f"Run diopi_functions.{cfg_func_name}_backward succeed") \
                             if passed else logger.error(f"Run diopi_functions.{cfg_func_name}_backward failed")
+                        write_precision(data["cfg"], cfg_func_name + '_bp', passed)
                     except FunctionNotImplementedError as e:
                         logger.error(f"NotImplemented: {e}")
                     except AttributeError as e:
