@@ -75,9 +75,10 @@ python main.py --mode utest
 
 选项说明：
 
-- --mode_name *可选项：选择的模型名字, 指定后 --fname 将失效
+- --mode_name *可选项：选择的模型名字, 指定后 --fname 将失效*
 </br> 指定模型选项，当前 mode 对模型所需算子清单中的所有算子执行
-- --filter_dtype *可选项：过滤的数据类型
+
+- --filter_dtype *可选项：过滤的数据类型*
 </br> 指定过滤的数据类型选项，当前 mode 对指定的数据类型不执行
 
 ## 配置文件规则
