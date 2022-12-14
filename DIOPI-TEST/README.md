@@ -3,13 +3,15 @@
 <!-- 简体中文｜[English](README.md) -->
 
 ## 简介
-一致性测试套件（ConformanceTest-DIOPI）是构建于[设备无关算子接口（Device-Independent Operator Interface, DIOPI）](https://github.com/ParrotsDL/DIOPI)之上的测试框架，它支持了没有训练框架的情况下，验证算子适配正确性的功能。
+一致性测试套件（ConformanceTest-DIOPI）是构建于[设备无关算子接口（Device-Independent Operator Interface, DIOPI）](https://github.com/OpenComputeLab/DIOPI)之上的测试框架，它支持了没有训练框架的情况下，验证算子适配正确性的功能。
 
 主要模块：
 - [DIOPI 运行时](csrc)：支持了运行时函数的接口，驱动芯片对算子进行运算。
 - DIOPI 算子实现：提供了接入一致性测试套件的算子开发示例。
-    + [impl/cuda](impl/cuda)：使用 CUDA 和 cuDNN 实现了算子接口。
-    + [impl/torch](impl/torch)：使用 PyTorch C++ API 实现了算子接口。
+    + [impl/cuda](impl/cuda)：使用 CUDA 和 cuDNN 实现了小部分英伟达算子接口。
+    + [impl/torch](impl/torch)：使用 PyTorch C++ API 实现了英伟达算子接口。
+    + [impl/camb](impl/camb)：使用 CNNL 实现了小部分寒武纪算子接口。
+    + [impl/camb_pytorch](impl/camb_pytorch)：使用 camb_pytorch 实现了寒武纪算子接口。
 - [算子测试](python/main.py)：
     + 自定义测例配置：套件提供了描述算子测例的配置文件，方便用户自定义扩展测例。
     + 生成基准数据：套件可以根据配置文件生成算子测例的基准输入和输出数据。
@@ -29,11 +31,11 @@ git submodule update --init
 ```bash
 mkdir -p build && cd build
 
-cmake .. -DCUDA_ARCH_AUTO=ON -DIMPL_OPT=CUDA
+cmake .. -DCUDA_ARCH_AUTO=ON -DIMPL_OPT=Torch
 
 make -j4
 ```
-同时项目中提供了编译脚本 `sh scripts/build_impl.sh cuda`，可以直接运行进行编译。
+同时项目中提供了编译脚本 `sh scripts/build_impl.sh torch`，可以直接运行进行编译。
 
 
 ### iii. 测试
@@ -61,6 +63,22 @@ python main.py --mode run_test --fname all
 # Other: 用于验证接入芯片是否支持框架 diopiTensor 的基本操作
 python main.py --mode utest
 ```
+## 其他定制化测试
+</br>测试脚本运行命令：
+</br>`python main.py [-h] [--get_model_list]`
+
+选项说明：
+</br> 执行该模式, 将返回目前已有的模型及模型所需算子清单
+
+</br>测试脚本运行命令：
+</br>`python main.py [-h] [--mode MODE] [--model_name NAME] [--filter_dtype TYPE]`
+
+选项说明：
+
+- --mode_name *可选项：选择的模型名字, 指定后 --fname 将失效
+</br> 指定模型选项，当前 mode 对模型所需算子清单中的所有算子执行
+- --filter_dtype *可选项：过滤的数据类型
+</br> 指定过滤的数据类型选项，当前 mode 对指定的数据类型不执行
 
 ## 配置文件规则
 配置文件 [diopi-conifg.py](python/conformance/diopi_configs.py) 使用 Python 语法以字典 key-value 的形式描述算子测例，key 为测例的名字，value 包含了测例的参数配置。下面以 `conv2d` 为例介绍配置文件选项：

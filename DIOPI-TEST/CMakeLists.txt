@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.4)
 project(diopi_conformance_test)
 
 option(USE_CXX "Whether to use cxx impl, or use c impl" ON)
+option(RUNTIME "Whether to compile DIOPI with runtime" ON)
 
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/diopirt/include")
 include_directories(include)
