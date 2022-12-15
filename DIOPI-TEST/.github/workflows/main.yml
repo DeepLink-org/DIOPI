@@ -16,6 +16,7 @@ env:
   GPU_REQUESTS: 1
   SLURM_PAR_SH1984: ${{ secrets.SLURM_PAR_SH1984 }}
   CLUSTER_1984: SH1984
+  PJLAB_Docker: Docker191
 
 jobs:
   Rsync:
@@ -65,7 +66,7 @@ jobs:
     steps:
       - name: buildimage
         run: |
-          ssh ${Docker191} """
+          ssh ${PJLAB_Docker} """
           set -e
           hostname && which docker
           """
