@@ -58,3 +58,14 @@ jobs:
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=40 --gres=gpu:${GPU_REQUESTS} bash -c 'cd python && python main.py --mode gen_data && python main.py --mode run_test'
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB}
           """
+
+  Buildimage:
+    name: buildimage
+    runs-on: github-parrots-docker-pjlab
+    steps:
+      - name: buildimage
+        run: |
+          ssh ${Docker191} """
+          set -e
+          hostname && which docker
+          """
