@@ -207,21 +207,26 @@ void vecFill(void* a, const float value, const int numel)
     }
 }
 
-extern "C" diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t tensor, const float value)
+extern "C" diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* value)
 {
     auto stream = impl::cuda::getStream(ctx);
-    auto tr = impl::cuda::makeTensor(tensor);
+    auto tr = impl::cuda::makeTensor(input);
 
     diopiDevice_t device = tr.device();
     diopiDtype_t  dtype  = tr.dtype();
     int64_t       numel  = tr.numel();
-
+    float val;
+    if (value->stype <= 7) {
+        val = value->ival;
+    } else {
+        val = value->fval;
+    }
     if (diopi_host == device) {
         return diopiErrorOccurred;
     } else {
         int blockSize = 256;
         int gridSize  = (numel + blockSize - 1) / blockSize;
-        dispatch_dtype(vecFill, dtype, gridSize, blockSize, stream, tr.data(), value, numel);
+        dispatch_dtype(vecFill, dtype, gridSize, blockSize, stream, tr.data(), val, numel);
     }
 
     return diopiSuccess;

@@ -81,7 +81,7 @@ static diopiError_t convertType(cnnlDataType_t *cnnlType, diopiDtype_t type) {
 
 extern "C" {
 
-diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const float value) {
+diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* value) {
     auto stream  = impl::camb::getStream(ctx);
     auto trInput = impl::camb::makeTensor(input);
 
@@ -116,9 +116,17 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
             }
         }
     }
+
+    float val;
+    if (value->stype <= 7) {
+        val = value->ival;
+    } else {
+        val = value->fval;
+    }
+
     DIOPI_CALLCNNL(cnnlSetTensorDescriptorEx(desc, layout, dtype, dimNb, 
         dimSize.data(), dimStrides.data()));
-    DIOPI_CALLCNNL(cnnlFill(handle, value, desc, trInput.data()));
+    DIOPI_CALLCNNL(cnnlFill(handle, val, desc, trInput.data()));
     return diopiSuccess;
 }
 

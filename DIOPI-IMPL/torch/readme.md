@@ -33,7 +33,7 @@ python main.py --mode run_test --fname all
 ### ii. updateATen2Tensor
 > void updateATen2Tensor(*diopiContextHandle_t ctx, const at::Tensor& atOut, diopiTensorHandle_t out*);
 
-一个 `at::func` 会返回一个(组) `at::Tensor` 作为算子的输出结果，`diopiTensor` 没有办法转化为 `at::Tensor` 直接参与计算得到结果，需要将输出的 at::Tensor 内存拷贝回 diopiTensor 中,
+一个 `at::func` 没有指定 out 参数时会返回一个(组) `at::Tensor` 作为算子的输出结果，此时`diopiTensor` 没有办法转化为 `at::Tensor` 直接参与计算得到结果，需要将输出的 at::Tensor 内存拷贝回 diopiTensor 中,
 因此每个 `at::func` 调用后都需要调用 `updateATen2Tensor` 将结果拷回。
 
 当 `at::func` 得到一组 `std::tuple<at::Tensor, at::Tensor, ...>` 或 `std::vector<at::Tensor>`，函数提供了相应的重载可以调用。

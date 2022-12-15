@@ -29,7 +29,7 @@ void set_last_error_string(const char* szFmt, Types&& ...args) {
     set_last_error_string("NotSupported: %s at %s:%d", str, __FILE__, __LINE__); \
 
 using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
-static diopiContextHandle_t context = nullptr;
+extern thread_local diopiContextHandle_t context;
 
 namespace torch_mlu {
 

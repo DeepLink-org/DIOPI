@@ -5,6 +5,7 @@
 #include <math.h>
 #include <cnrt.h>
 
+static thread_local diopiContextHandle_t context = nullptr;
 #include "aten_helper.hpp"
 
 #define FLT_MIN  __FLT_MIN__

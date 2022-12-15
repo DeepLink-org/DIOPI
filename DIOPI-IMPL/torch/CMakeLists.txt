@@ -17,15 +17,22 @@ else()
 endif()
 
 set(IMPL_SRC
-    conform_test.cpp
     error.cpp
     functions.cpp
     nms_kernel.cu
     roi_align_kernel.cu
 )
 
+if (RUNTIME)
+    set(IMPL_SRC ${IMPL_SRC} conform_test.cpp)
+else ()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-version-script=${CMAKE_CURRENT_SOURCE_DIR}/diopi.map")
+endif()
+
 cuda_add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
-target_link_libraries(${DEVICEIMPL} ${DIOPIRT})
+if (RUNTIME)
+    target_link_libraries(${DEVICEIMPL} ${DIOPIRT})
+endif()
 target_link_libraries(${DEVICEIMPL} ${CUDA_LIBRARIES})
 target_link_libraries(${DEVICEIMPL} ${TORCH_LIBRARIES})
