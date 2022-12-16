@@ -8,7 +8,11 @@ include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/diopirt/include")
 include_directories(include)
 
 SET(DIOPIRT diopirt)
-SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+if (RUNTIME)
+    SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+else()
+    SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib/no_runtime)
+endif()
 
 if (USE_CXX)
     set(CXX_LITERT_SRC csrc/litert.cpp)
