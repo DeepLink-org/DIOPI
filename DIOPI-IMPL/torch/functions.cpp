@@ -2951,4 +2951,49 @@ diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, diopiTensor
     return diopiSuccess;
 }
 
+diopiError_t diopiErfinv(diopiContextHandle_t ctx,
+        diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atInput = impl::aten::buildATen(input);
+    at::Tensor atOut = impl::aten::buildATen(out);
+    at::erfinv_out(atOut, atInput);
+    return diopiSuccess;
+}
+
+diopiError_t diopiErfinvInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atInput = impl::aten::buildATen(input);
+    impl::aten::invokeATenFuncInp(ctx, at::erfinv_out, atInput, atInput);
+    return diopiSuccess;
+}
+
+diopiError_t diopiIm2Col(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernel_size, diopiSize_t dilation, diopiSize_t padding, diopiSize_t stride) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atInput = impl::aten::buildATen(input);
+    at::Tensor atOut = impl::aten::buildATen(out);
+    at::IntArrayRef atKernelSize = impl::aten::buildAtIntArray(kernel_size);
+    at::IntArrayRef atDilation = impl::aten::buildAtIntArray(dilation);
+    at::IntArrayRef atPadding = impl::aten::buildAtIntArray(padding);
+    at::IntArrayRef atStride = impl::aten::buildAtIntArray(stride);
+
+    at::im2col_out(atOut, atInput, atKernelSize, atDilation, atPadding, atStride);
+
+    return diopiSuccess;
+}
+
+diopiError_t diopiCol2Im(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t output_size, diopiSize_t kernel_size, diopiSize_t dilation, diopiSize_t padding, diopiSize_t stride) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atInput = impl::aten::buildATen(input);
+    at::Tensor atOut = impl::aten::buildATen(out);
+    at::IntArrayRef atOutSize = impl::aten::buildAtIntArray(output_size);
+    at::IntArrayRef atKernelSize = impl::aten::buildAtIntArray(kernel_size);
+    at::IntArrayRef atDilation = impl::aten::buildAtIntArray(dilation);
+    at::IntArrayRef atPadding = impl::aten::buildAtIntArray(padding);
+    at::IntArrayRef atStride = impl::aten::buildAtIntArray(stride);
+
+    at::col2im_out(atOut, atInput, atOutSize, atKernelSize, atDilation, atPadding, atStride);
+    
+    return diopiSuccess;
+}
+
 }  // extern "C"
