@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - '**'
-    tags:
-      - '**'
   pull_request:
     branches:
       - 'master'
@@ -16,7 +14,6 @@ env:
   GPU_REQUESTS: 1
   SLURM_PAR_SH1984: ${{ secrets.SLURM_PAR_SH1984 }}
   CLUSTER_1984: SH1984
-  PJLAB_Docker: Docker191
 
 jobs:
   Rsync:
@@ -58,15 +55,4 @@ jobs:
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${GITHUB_JOB}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=40 --gres=gpu:${GPU_REQUESTS} bash -c 'cd python && python main.py --mode gen_data && python main.py --mode run_test'
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB}
-          """
-
-  Buildimage:
-    name: buildimage
-    runs-on: github-parrots-docker-pjlab
-    steps:
-      - name: buildimage
-        run: |
-          ssh ${PJLAB_Docker} """
-          set -e
-          hostname && which docker
           """
