@@ -291,7 +291,7 @@ diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     if (dim.len != 0) {
         auto atOut= camb::aten::buildATen(out);
         at::mean_out(atOut, atInput, atDim, false, camb::aten::getAtScalarType(dtype));
-        } else {
+    } else {
         auto atOutCpu = at::mean(atInput.cpu(), atDim, false, camb::aten::getAtScalarType(dtype));
         camb::aten::updateATen2Tensor(ctx, atOutCpu, out);
     }
@@ -307,7 +307,7 @@ diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     if (dim.len != 0) {
         auto atOut= camb::aten::buildATen(out);
         at::sum_out(atOut, atInput, atDim, false, camb::aten::getAtScalarType(dtype));
-        } else {
+    } else {
         auto atOutCpu = at::sum(atInput.cpu(), atDim, false, camb::aten::getAtScalarType(dtype));
         camb::aten::updateATen2Tensor(ctx, atOutCpu, out);
     }
@@ -886,7 +886,7 @@ diopiError_t diopiPow(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     } else {
         at::Tensor atOut = camb::aten::buildATen(out);
         at::pow_out(atOut, atInput, atExponent);
-        }
+    }
     return diopiSuccess;
 }
 
@@ -904,7 +904,7 @@ diopiError_t diopiPowTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     } else {
         at::Tensor atOut = camb::aten::buildATen(out);
         at::pow_out(atOut, atInput, atExponent);
-        }
+    }
     return diopiSuccess;
 }
 
@@ -1892,7 +1892,7 @@ diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t out, cons
         camb::aten::updateATen2Tensor(ctx, atOutCpu, out);
     } else {
         at::arange_out(atOut, atStart, atEnd, atStep);
-        }
+    }
     return diopiSuccess;
 }
 

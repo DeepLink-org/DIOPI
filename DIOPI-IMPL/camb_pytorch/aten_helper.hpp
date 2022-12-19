@@ -31,7 +31,17 @@ void set_last_error_string(const char* szFmt, Types&& ...args) {
 using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
 extern thread_local diopiContextHandle_t context;
 
+#define CALL_CAMB(Expr)   {                                                         \
+    ::cnrtRet_t ret = Expr;                                                         \
+    if (ret != ::CNRT_RET_SUCCESS) {                                                \
+        printf("call a cambrt function (%s) failed. return code=%d", #Expr, ret);   \
+    }}                                                                              \
+
 namespace torch_mlu {
+
+void MluTypeDefault::init() {
+    return;
+}
 
 Queue getCurrentQueue(DeviceIndex device_index) {
     if (context) {
@@ -41,7 +51,8 @@ Queue getCurrentQueue(DeviceIndex device_index) {
         diopiStreamHandle_t stream;
         diopiGetStream(context, &stream);
         cnrtQueue_t phStream = (cnrtQueue_t)stream;
-        torch_mlu::Queue ctx_queue(phStream, device_index, -1);
+        //printf("getqueue addr %p, deviceid: %d \n", phStream, device_index);
+        torch_mlu::Queue ctx_queue(phStream, device_index, device_index);
         return ctx_queue;
     } else {
         return getDefaultQueue(device_index);
@@ -62,7 +73,7 @@ inline void resetCurCtx(diopiContextHandle_t ctx) {
 }
 
 void sync(diopiContextHandle_t ctx) {
-    ::cnrtSyncDevice();
+    CALL_CAMB(::cnrtSyncDevice());
     //diopiStreamHandle_t stream;
     //diopiGetStream(ctx, &stream);
     //cnrtQueue_t phStream = (cnrtQueue_t)stream;
@@ -73,14 +84,14 @@ void sync(diopiContextHandle_t ctx) {
 inline at::Tensor toType(at::Tensor &atTarget, at::ScalarType dtype){
     if (atTarget.scalar_type() != dtype) {
         auto atCpu = at::empty_like(atTarget, atTarget.options().device(at::kCPU));
-        ::cnrtSyncDevice();
+        CALL_CAMB(::cnrtSyncDevice());
         ::cnrtMemcpy(atCpu.data_ptr(), atTarget.data_ptr(), atTarget.nbytes(), CNRT_MEM_TRANS_DIR_DEV2HOST);
-        ::cnrtSyncDevice();
+        CALL_CAMB(::cnrtSyncDevice());
         auto atTmp = atCpu.to(dtype);
         auto atMlu = at::empty_like(atTmp, atTmp.options().device(at::kMLU));
-        ::cnrtSyncDevice();
+        CALL_CAMB(::cnrtSyncDevice());
         ::cnrtMemcpy(atMlu.data_ptr(), atTmp.data_ptr(), atTmp.nbytes(), CNRT_MEM_TRANS_DIR_HOST2DEV);       
-        ::cnrtSyncDevice();
+        CALL_CAMB(::cnrtSyncDevice());
         atTarget = atMlu;
         return atMlu;
     }
@@ -90,13 +101,13 @@ inline at::Tensor toType(at::Tensor &atTarget, at::ScalarType dtype){
 inline void convertToRealLong(at::Tensor& src, at::Tensor& dst, at::ScalarType dtype){
     //Note: convert int32 to int64 for indice, it's strange that returned indice with int64 type is int32 in real.
     auto atCpu = at::empty_like(src, src.options().device(at::kCPU)).to(dtype);
-    ::cnrtSyncDevice();
+    CALL_CAMB(::cnrtSyncDevice());
     ::cnrtMemcpy(atCpu.data_ptr(), src.data_ptr(), atCpu.nbytes(), CNRT_MEM_TRANS_DIR_DEV2HOST);
-    ::cnrtSyncDevice();
+    CALL_CAMB(::cnrtSyncDevice());
     auto atTmp = atCpu.contiguous().to(at::ScalarType::Long);
-    ::cnrtSyncDevice();
+    CALL_CAMB(::cnrtSyncDevice());
     ::cnrtMemcpy(dst.data_ptr(), atTmp.data_ptr(), atTmp.nbytes(), CNRT_MEM_TRANS_DIR_HOST2DEV);
-    ::cnrtSyncDevice();
+    CALL_CAMB(::cnrtSyncDevice());
 }
 
 caffe2::TypeMeta getATenType(diopiDtype_t dt) {
@@ -289,13 +300,13 @@ void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atSrc, diopiT
     //Note: atDst.reshape_as(atSrc).copy_(atSrc); can not use copy_ for int64
     if (atDst.scalar_type() == at::ScalarType::Long || atDst.scalar_type() == at::ScalarType::Double) {
         if (atDst.is_mlu() && atSrc.is_mlu()) {
-            ::cnrtSyncDevice();
+            CALL_CAMB(::cnrtSyncDevice());
             ::cnrtMemcpy(atDst.data_ptr(), atSrc.data_ptr(), atSrc.nbytes(), CNRT_MEM_TRANS_DIR_DEV2DEV);
-            ::cnrtSyncDevice();
+            CALL_CAMB(::cnrtSyncDevice());
         } else {
-            ::cnrtSyncDevice();
+            CALL_CAMB(::cnrtSyncDevice());
             ::cnrtMemcpy(atDst.data_ptr(), atSrc.data_ptr(), atSrc.nbytes(), CNRT_MEM_TRANS_DIR_HOST2DEV);
-            ::cnrtSyncDevice();
+            CALL_CAMB(::cnrtSyncDevice());
         }
     } else {
         atDst.reshape_as(atSrc).copy_(atSrc, true);
