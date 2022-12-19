@@ -1,0 +1,25 @@
+name: build diopi docker
+on:
+  push:
+    tags:
+      - 'dailytest_**'
+
+env:
+  PJLAB_Docker: Docker191
+  TOKEN: ${{ secrets.PJ_GITLAB_TOKEN }}
+  WORK_DIR: "/home/wugeshui/diopi/senseparrots.dockerfile/diopi"
+  REF_NAME: '${{ github.ref_name }}'
+
+jobs:
+  Buildimage:
+    name: buildimage
+    runs-on: github-parrots-docker-pjlab
+    steps:
+      - name: buildimage
+        run: |
+          ssh ${PJLAB_Docker} """
+          set -e
+          cd ${WORK_DIR} && git pull
+          docker build -t registry.sensetime.com/parrots/parrots:pat_diopi_${REF_NAME} -f Dockerfile --build-arg GITLAB_TOKEN=${TOKEN} --build-arg Branch=${REF_NAME} .
+          docker push registry.sensetime.com/parrots/parrots:pat_diopi_${REF_NAME}
+          """
