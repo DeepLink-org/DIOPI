@@ -1,5 +1,6 @@
 name: build diopi docker
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'dailytest_**'
