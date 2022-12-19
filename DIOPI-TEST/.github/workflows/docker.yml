@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - 'dailytest_**'
+      - '**'
 
 env:
   PJLAB_Docker: Docker191
