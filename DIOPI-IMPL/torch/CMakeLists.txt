@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.4)
 project(torch_cpp_impl)
 
-find_package(Torch 1.10 EXACT REQUIRED)
+find_package(Torch 1.10 REQUIRED)
 if (Torch_FOUND)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -std=c++14 -fPIC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
