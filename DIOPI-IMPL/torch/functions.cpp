@@ -1539,9 +1539,7 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
             atTmp = at::sum(atTmp, -1, false);
             size -= 1;
         }
-        if (atBias.size(0) !=  atTmp.size(0)) {
-            atTmp = at::sum(atTmp, 0, false);
-        }
+        atTmp = at::sum(atTmp, 0, false);
         impl::aten::updateATen2Tensor(ctx, atTmp, grad3);
     }
     return diopiSuccess;
