@@ -3084,3 +3084,5 @@ def cross_entropy_backward(input, grad_outputs, target, weight=None, ignore_inde
                target.tensor_handle, weight, c_int64(reduction_mode), c_int64(ignore_index), c_double(label_smoothing))
     check_returncode(ret)
     return {"input": grad_input}
+def erfinv(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, 'diopiErfinv')

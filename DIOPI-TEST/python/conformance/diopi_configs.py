@@ -332,6 +332,24 @@ diopi_configs = {
         ),
     ),
 
+    'erfinv': dict(
+        name=["erfinv"],
+        interface=['torch'],
+        is_inplace=True,
+        atol=1e-5,
+        rtol=1e-4,
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "requires_grad": [False],
+                    "shape": ((10, ), (16, 8), (16, 4, 4), (64, 4, 14, 14)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+            ]
+        ),
+    ),
+
     'pointwise_op_abs_input': dict(
         name=['log', 'log2', 'log10', 'sqrt'],
         interface=['torch'],
