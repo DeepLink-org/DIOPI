@@ -2865,8 +2865,13 @@ def ctc_loss_backward(log_probs, grad_outputs, targets, input_lengths, target_le
     return {"log_probs": grad_input}
 
 
-def index_put(input, indices1, indices2, values, accumulate=False, inplace=False):
-    c_tensors = [indices1.tensor_handle, indices2.tensor_handle]
+def index_put(input, values, indices1, indices2=None, accumulate=False, inplace=False):
+    if indices2 is not None:
+        c_tensors = [indices1.tensor_handle, indices2.tensor_handle]
+        indices_counts = 2
+    else:
+        c_tensors = [indices1.tensor_handle]
+        indices_counts = 1
     c_tensors = (c_void_p * 2)(*c_tensors)
     call = "diopiIndexPut"
     out = raw_like(input)
@@ -2875,11 +2880,11 @@ def index_put(input, indices1, indices2, values, accumulate=False, inplace=False
         out = input
         func = check_function(call)
         ret = func(input.context_handle, input.tensor_handle, values.tensor_handle,
-                pointer(c_tensors), c_bool(accumulate))
+                pointer(c_tensors), c_int64(indices_counts), c_bool(accumulate))
     else:
         func = check_function(call)
         ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, values.tensor_handle,
-                pointer(c_tensors), c_bool(accumulate))
+                pointer(c_tensors), c_int64(indices_counts), c_bool(accumulate))
     check_returncode(ret)
     return out
 
@@ -3084,5 +3089,73 @@ def cross_entropy_backward(input, grad_outputs, target, weight=None, ignore_inde
                target.tensor_handle, weight, c_int64(reduction_mode), c_int64(ignore_index), c_double(label_smoothing))
     check_returncode(ret)
     return {"input": grad_input}
+
+
 def erfinv(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, 'diopiErfinv')
+
+
+def im2col(input, kernel_size, dilation=1, padding=0, stride=1) -> Tensor:
+   
+    sizeI = input.size()
+    assert len(sizeI) == 4
+    if isinstance(kernel_size, int):
+        kernel_size = (kernel_size, kernel_size)
+    if isinstance(stride, int):
+        stride = (stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding)
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation)
+    L = 1
+    for i in range(2):
+        L *= int((sizeI[i+2] + 2 * padding[i] - dilation[i]*(kernel_size[i]-1) -1) / stride[i]) + 1
+    C = sizeI[1]
+    for i in range(len(kernel_size)):
+        C *= kernel_size[i]
+    sizeO = [sizeI[0], C, L]
+
+    stride = Sizes(tuple(stride))
+    padding = Sizes(tuple(padding))
+    kernel_size = Sizes(tuple(kernel_size))
+    dilation = Sizes(tuple(dilation))
+    
+    out = Tensor(sizeO, input.get_dtype())
+    func = check_function("diopiIm2Col")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, kernel_size,
+                dilation, padding, stride)
+    check_returncode(ret)
+    return out
+
+def col2im(input, output_size, kernel_size, dilation=1, padding=0, stride=1) -> Tensor:
+   
+    sizeI = input.size()
+    assert len(sizeI) == 3
+    if isinstance(output_size, int):
+        output_size = (output_size, output_size)
+    if isinstance(kernel_size, int):
+        kernel_size = (kernel_size, kernel_size)
+    if isinstance(stride, int):
+        stride = (stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding)
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation)
+    
+    C = sizeI[1]
+    for i in range(len(kernel_size)):
+        C = C // kernel_size[i]
+    sizeO = [sizeI[0], C, output_size[0], output_size[1]]
+
+    output_size = Sizes(tuple(output_size))
+    stride = Sizes(tuple(stride))
+    padding = Sizes(tuple(padding))
+    kernel_size = Sizes(tuple(kernel_size))
+    dilation = Sizes(tuple(dilation))
+    
+    out = Tensor(sizeO, input.get_dtype())
+    func = check_function("diopiCol2Im")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, output_size, kernel_size,
+                dilation, padding, stride)
+    check_returncode(ret)
+    return out

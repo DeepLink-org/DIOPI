@@ -442,9 +442,21 @@ class CustomizedTest(object):
                                          weight_decay=weight_decay)
         return param, param_grad, square_avg, acc_delta
 
-    def index_put(input, indices1, indices2, values, accumulate):
+    def index_put(input,  values, indices1, indices2=None, accumulate=False):
         import torch
-        return torch.index_put(input, (indices1, indices2), values, accumulate)
+        if indices2 is not None:
+            indices = [indices1, indices2]
+        else:
+            indices = [indices1]
+        return torch.index_put(input, indices, values, accumulate)
+    
+    def im2col(input, kernel_size, dilation=1, padding=0, stride=1):
+        import torch
+        return torch.nn.Unfold(kernel_size, dilation, padding, stride)(input)
+    
+    def col2im(input, output_size, kernel_size, dilation=1, padding=0, stride=1):
+        import torch
+        return torch.nn.Fold(output_size, kernel_size, dilation, padding, stride)(input)
 
 
 def transfer_tensor_to_device(function_paras: dict):
