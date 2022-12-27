@@ -98,16 +98,22 @@ inline at::Tensor toType(at::Tensor &atTarget, at::ScalarType dtype){
     return atTarget;
 }
 
-inline void convertToRealLong(at::Tensor& src, at::Tensor& dst, at::ScalarType dtype){
-    //Note: convert int32 to int64 for indice, it's strange that returned indice with int64 type is int32 in real.
-    auto atCpu = at::empty_like(src, src.options().device(at::kCPU)).to(dtype);
-    CALL_CAMB(::cnrtSyncDevice());
-    ::cnrtMemcpy(atCpu.data_ptr(), src.data_ptr(), atCpu.nbytes(), CNRT_MEM_TRANS_DIR_DEV2HOST);
-    CALL_CAMB(::cnrtSyncDevice());
-    auto atTmp = atCpu.contiguous().to(at::ScalarType::Long);
-    CALL_CAMB(::cnrtSyncDevice());
-    ::cnrtMemcpy(dst.data_ptr(), atTmp.data_ptr(), atTmp.nbytes(), CNRT_MEM_TRANS_DIR_HOST2DEV);
-    CALL_CAMB(::cnrtSyncDevice());
+void convertToRealLong(at::Tensor& src, at::Tensor& dst, at::ScalarType dtype) {
+    if (dst.scalar_type() == dtype) {
+        CALL_CAMB(::cnrtSyncDevice());
+        ::cnrtMemcpy(dst.data_ptr(), src.data_ptr(), dst.nbytes(), CNRT_MEM_TRANS_DIR_DEV2DEV);
+        CALL_CAMB(::cnrtSyncDevice());
+    } else {
+        //Note: convert int32 to int64 for indice, it's strange that returned indice with int64 type is int32 in real.
+        auto atCpu = at::empty_like(src, src.options().device(at::kCPU)).to(dtype);
+        CALL_CAMB(::cnrtSyncDevice());
+        ::cnrtMemcpy(atCpu.data_ptr(), src.data_ptr(), atCpu.nbytes(), CNRT_MEM_TRANS_DIR_DEV2HOST);
+        CALL_CAMB(::cnrtSyncDevice());
+        auto atTmp = atCpu.contiguous().to(at::ScalarType::Long);
+        CALL_CAMB(::cnrtSyncDevice());
+        ::cnrtMemcpy(dst.data_ptr(), atTmp.data_ptr(), atTmp.nbytes(), CNRT_MEM_TRANS_DIR_HOST2DEV);
+        CALL_CAMB(::cnrtSyncDevice());
+    }
 }
 
 caffe2::TypeMeta getATenType(diopiDtype_t dt) {

@@ -586,18 +586,14 @@ diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
     camb::aten::setCurCtx(ctx);
     auto atInput = camb::aten::buildATen(input);
     auto atIndices = camb::aten::buildATen(indices);
-    diopi_tensor_list vecOut = {values, indices};
 #if TORCH_MM_VERSION <= TORCH_1_8_MM_VERSION
-    camb::aten::invokeATenFuncRet
-        <std::tuple<at::Tensor, at::Tensor> (*)(at::Tensor const &, int64_t, bool)>
-        (ctx, at::sort, vecOut, atInput, dim, descending);
+    auto atOuts = at::sort(atInput, dim, descending);
 #else
     c10::optional<bool> atStable = stable ? c10::optional<bool>(*stable) : c10::nullopt;
-    camb::aten::invokeATenFuncRet
-        <std::tuple<at::Tensor, at::Tensor> (*)(at::Tensor const &, c10::optional<bool>, int64_t, bool)>
-        (ctx, at::sort, vecOut, atInput, atStable, dim, descending);
+    auto atOuts = at::sort(atInput, atStable, dim, descending);
 #endif
-    camb::aten::convertToRealLong(atIndices, atIndices, at::ScalarType::Int);
+    camb::aten::updateATen2Tensor(ctx, std::get<0>(atOuts), values);
+    camb::aten::convertToRealLong(std::get<1>(atOuts), atIndices, at::ScalarType::Int);
     return diopiSuccess;
 }
 
@@ -607,12 +603,14 @@ diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
     auto atInput = camb::aten::buildATen(input);
     auto atValues = camb::aten::buildATen(values);
     auto atIndices = camb::aten::buildATen(indices);
-    at::topk_out(atValues, atIndices, atInput, k, dim, largest, sorted);
+    cnnl_topk_internal(atValues, atIndices, atInput, k, dim, largest, sorted);
     if  (!atValues.is_contiguous()) {
         atValues = atValues.contiguous();
         camb::aten::updateATen2Tensor(ctx, atValues, values); 
     }
-    camb::aten::convertToRealLong(atIndices, atIndices, at::ScalarType::Int);
+    if (atIndices.scalar_type() == at::ScalarType::Long) {
+        camb::aten::convertToRealLong(atIndices, atIndices, at::ScalarType::Int);  
+    }
     return diopiSuccess;
 }
 
@@ -1314,7 +1312,6 @@ diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_
     return diopiSuccess;
 }
 
-//TODO: add set_stride to support nhwc output
 diopiError_t diopiAdaptiveMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         diopiConstTensorHandle_t input, diopiSize_t output_size) {
     camb::aten::setCurCtx(ctx);
@@ -1336,11 +1333,10 @@ diopiError_t diopiAdaptiveMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTe
     auto atOutSize = camb::aten::buildAtIntArray(output_size);
     // cnnl use nhwc memory format, return local indices
     cnnl_adaptive_max_pool2d_out(atOut, atIndices, atInput, atOutSize);
-    atOut = atOut.contiguous();
-    atIndices = atIndices.contiguous();
-
-    camb::aten::updateATen2Tensor(ctx, atOut, out);
-    camb::aten::updateATen2Tensor(ctx, atIndices, indices);
+    if (atIndices.scalar_type() == at::ScalarType::Long) {
+        atIndices = atIndices.contiguous();
+        camb::aten::updateATen2Tensor(ctx, atIndices, indices);
+    }
     return diopiSuccess;
 }
 
@@ -1486,6 +1482,7 @@ diopiError_t diopiSlice(diopiContextHandle_t ctx, diopiTensorHandle_t null_out, 
     return diopiSuccess;
 }
 
+//TODO
 diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input,
         diopiConstTensorHandle_t* indices, int64_t nums) {
     camb::aten::setCurCtx(ctx);
@@ -2304,6 +2301,7 @@ diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopiTensorHand
     return diopiSuccess;
 }
 
+//TODO
 diopiError_t diopiIndexFillScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
                                   int64_t dim, diopiConstTensorHandle_t index, const diopiScalar_t* value) {
     camb::aten::setCurCtx(ctx);
