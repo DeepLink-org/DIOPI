@@ -2620,28 +2620,34 @@ diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
 }
 
 diopiError_t diopiIndexPutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t values,
-                              diopiConstTensorHandle_t* indices, bool accumulate) {
+                              diopiConstTensorHandle_t* indices, int64_t indices_counts, bool accumulate) {
     impl::aten::setCurCtx(ctx);
     DIOPI_CHECK_PTR(indices);
     auto atInput = impl::aten::buildATen(input);
     auto atValues = impl::aten::buildATen(values);
-    auto indices1 = c10::optional<at::Tensor>(impl::aten::buildATen(indices[0]));
-    auto indices2 = c10::optional<at::Tensor>(impl::aten::buildATen(indices[1]));
-    torch::List<c10::optional<at::Tensor>> atIndicesList({indices1, indices2});
+    torch::List<c10::optional<at::Tensor>> atIndicesList;
+    assert(indices_counts >= 1);
+    for(int i = 0; i < indices_counts; ++i) {
+        auto atIndices = c10::optional<at::Tensor>(impl::aten::buildATen(indices[i]));
+        atIndicesList.emplace_back(atIndices);
+    }
     at::Tensor atOut = at::index_put(atInput, atIndicesList, atValues, accumulate);
     impl::aten::updateATen2Tensor(ctx, atOut, input);
     return diopiSuccess;
 }
 
 DIOPI_API diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
-                                     diopiConstTensorHandle_t values, diopiConstTensorHandle_t* indices, bool accumulate) {
+                                     diopiConstTensorHandle_t values, diopiConstTensorHandle_t* indices, int64_t indices_counts, bool accumulate) {
     impl::aten::setCurCtx(ctx);
     DIOPI_CHECK_PTR(indices);
     auto atInput = impl::aten::buildATen(input);
     auto atValues = impl::aten::buildATen(values);
-    auto indices1 = c10::optional<at::Tensor>(impl::aten::buildATen(indices[0]));
-    auto indices2 = c10::optional<at::Tensor>(impl::aten::buildATen(indices[1]));
-    torch::List<c10::optional<at::Tensor>> atIndicesList({indices1, indices2});
+    torch::List<c10::optional<at::Tensor>> atIndicesList;
+    assert(indices_counts >= 1);
+    for(int i = 0; i < indices_counts; ++i) {
+        auto atIndices = c10::optional<at::Tensor>(impl::aten::buildATen(indices[i]));
+        atIndicesList.emplace_back(atIndices);
+    }
     at::Tensor atOut = at::index_put(atInput, atIndicesList, atValues, accumulate);
     impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
