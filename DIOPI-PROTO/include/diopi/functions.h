@@ -41,9 +41,9 @@ typedef struct {
 /**
  * \brief get the vendor's name who implements the functions
  */
-DIOPI_API const char* diopiGetVendorName();
-DIOPI_API const char* diopiGetImplVersion();
-DIOPI_API const char* diopiGetLastErrorString();
+DIOPI_RT_API const char* diopiGetVendorName();
+DIOPI_RT_API const char* diopiGetImplVersion();
+DIOPI_RT_API const char* diopiGetLastErrorString();
 
 /**
  * \brief Applies a 2D convolution over an input image composed of several input planes.
