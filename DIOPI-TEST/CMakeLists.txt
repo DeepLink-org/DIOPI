@@ -3,6 +3,7 @@ project(diopi_conformance_test)
 
 option(USE_CXX "Whether to use cxx impl, or use c impl" ON)
 option(RUNTIME "Whether to compile DIOPI with runtime" ON)
+option(ATTR_WEAK "Whether to use weak symbol for diopi functions" OFF)
 
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/diopirt/include")
 include_directories(include)
@@ -12,6 +13,9 @@ if (RUNTIME)
     SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 else()
     SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib/no_runtime)
+endif()
+if (ATTR_WEAK)
+    add_definitions(-DDIOPI_ATTR_WEAK)
 endif()
 
 if (USE_CXX)
