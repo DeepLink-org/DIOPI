@@ -3096,9 +3096,8 @@ def erfinv(input, inplace=False) -> Tensor:
 
 
 def im2col(input, kernel_size, dilation=1, padding=0, stride=1) -> Tensor:
-   
     sizeI = input.size()
-    assert len(sizeI) == 4
+    assert len(sizeI) == 4, "only support 4d tensor"
     if isinstance(kernel_size, int):
         kernel_size = (kernel_size, kernel_size)
     if isinstance(stride, int):
@@ -3107,13 +3106,13 @@ def im2col(input, kernel_size, dilation=1, padding=0, stride=1) -> Tensor:
         padding = (padding, padding)
     if isinstance(dilation, int):
         dilation = (dilation, dilation)
-    L = 1
+    num_blocks = 1
     for i in range(2):
-        L *= int((sizeI[i+2] + 2 * padding[i] - dilation[i]*(kernel_size[i]-1) -1) / stride[i]) + 1
-    C = sizeI[1]
+        num_blocks *= int((sizeI[i+2] + 2 * padding[i] - dilation[i]*(kernel_size[i]-1) -1) / stride[i]) + 1
+    channels = sizeI[1]
     for i in range(len(kernel_size)):
-        C *= kernel_size[i]
-    sizeO = [sizeI[0], C, L]
+        channels *= kernel_size[i]
+    sizeO = [sizeI[0], channels, num_blocks]
 
     stride = Sizes(tuple(stride))
     padding = Sizes(tuple(padding))
@@ -3127,10 +3126,10 @@ def im2col(input, kernel_size, dilation=1, padding=0, stride=1) -> Tensor:
     check_returncode(ret)
     return out
 
+
 def col2im(input, output_size, kernel_size, dilation=1, padding=0, stride=1) -> Tensor:
-   
     sizeI = input.size()
-    assert len(sizeI) == 3
+    assert len(sizeI) == 3, "only support 3d tensor"
     if isinstance(output_size, int):
         output_size = (output_size, output_size)
     if isinstance(kernel_size, int):
@@ -3142,10 +3141,10 @@ def col2im(input, output_size, kernel_size, dilation=1, padding=0, stride=1) -> 
     if isinstance(dilation, int):
         dilation = (dilation, dilation)
     
-    C = sizeI[1]
+    channels = sizeI[1]
     for i in range(len(kernel_size)):
-        C = C // kernel_size[i]
-    sizeO = [sizeI[0], C, output_size[0], output_size[1]]
+        channels = channels // kernel_size[i]
+    sizeO = [sizeI[0], channels, output_size[0], output_size[1]]
 
     output_size = Sizes(tuple(output_size))
     stride = Sizes(tuple(stride))
