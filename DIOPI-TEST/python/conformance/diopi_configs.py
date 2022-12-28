@@ -332,6 +332,24 @@ diopi_configs = {
         ),
     ),
 
+    'erfinv': dict(
+        name=["erfinv"],
+        interface=['torch'],
+        is_inplace=True,
+        atol=1e-5,
+        rtol=1e-4,
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "requires_grad": [False],
+                    "shape": ((10, ), (16, 8), (16, 4, 4), (64, 4, 14, 14)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+            ]
+        ),
+    ),
+
     'pointwise_op_abs_input': dict(
         name=['log', 'log2', 'log10', 'sqrt'],
         interface=['torch'],
@@ -2625,6 +2643,37 @@ diopi_configs = {
         ),
     ),
 
+    'index_put_acc_one_indices': dict(
+        name=['index_put'],
+        interface=['CustomizedTest'],
+        is_inplace=True,
+        para=dict(
+            accumulate=[True, True]
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((16, 4, 4), (64, 4, 14, 14)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+                {
+                    "ins": ['indices1'],
+                    "shape": ((16,), (64,)),
+                    "dtype": [Dtype.int64],
+                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=4),
+                },
+                {
+                    "ins": ['values'],
+                    "shape": ((16, 4, 4), (64, 4, 14, 14)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+            ]
+        ),
+    ),
+
+
     'index_put': dict(
         name=['index_put'],
         interface=['CustomizedTest'],
@@ -2643,6 +2692,38 @@ diopi_configs = {
                 {
                     "ins": ['indices1', 'indices2'],
                     "shape": ((16, 4), (64, 4)),
+                    "dtype": [Dtype.int64],
+                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=4),
+                },
+                {
+                    "ins": ['values'],
+                    "shape": ((16, 4, 4), (64, 4, 14, 14)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    # sample test for index_put when acc is False
+                    "gen_fn": Genfunc.ones,
+                },
+            ]
+        ),
+    ),
+
+    'index_put_one_indices': dict(
+        name=['index_put'],
+        interface=['CustomizedTest'],
+        is_inplace=True,
+        para=dict(
+            accumulate=[True, False]
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((16, 4, 4), (64, 4, 14, 14)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+                {
+                    "ins": ['indices1'],
+                    "shape": ((16,), (64,)),
                     "dtype": [Dtype.int64],
                     "gen_fn": dict(fn=Genfunc.randint, low=0, high=4),
                 },
@@ -2801,6 +2882,55 @@ diopi_configs = {
                 },
             ]
         )
+    ),
+
+    'col2im': dict(
+        name=["col2im"],
+        interface=['CustomizedTest'],
+        para=dict(
+            output_size=[(352, 528), (12, 40), (4, 26), 10],
+            kernel_size=[3, (2, 1), (2, 2), 3],
+            stride=[2, (2, 1), (2, 1), 2],
+            padding=[1, 0, (0, 1), 0],
+            dilation=[1, 1, 1, 2],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 576, 46464),
+                              (2, 512, 240),
+                              (2, 2048, 54),
+                              (3, 36, 9)),
+                    "dtype": [Dtype.float16, Dtype.float32],
+                },
+            ]
+        ),
+    ),
+
+    'im2col': dict(
+        name=["im2col"],
+        interface=['CustomizedTest'],
+        para=dict(
+            kernel_size=[3, (2, 1), (2, 2), 3],
+            stride=[2, (2, 1), (2, 1), 2],
+            padding=[1, 0, (0, 1), 0],
+            dilation=[1, 1, 1, 2],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 64, 352, 528),
+                              (2, 256, 12, 40),
+                              (2, 512, 4, 26),
+                              (3, 4, 10, 10)),
+                    "dtype": [Dtype.float16, Dtype.float32],
+                },
+            ]
+        ),
     ),
 
 }
