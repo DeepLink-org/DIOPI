@@ -3,17 +3,40 @@ import pickle
 import numpy as np
 
 from . import diopi_functions as F
-from .utils import logger, FunctionNotImplementedError
-from .utils import need_process_func
-from .diopi_runtime import Tensor
+from .utils import logger, FunctionNotImplementedError, DiopiException
+from .utils import need_process_func, glob_vars, nhwc_op, dtype_op
+from .diopi_runtime import Tensor, compute_nhwc_stride
 from .gen_data import inputs_dir_path, outputs_dir_path
 from .gen_data import get_saved_pth_list, get_data_from_file
 from .utils import save_precision, record, write_precision
 
-def convert_input_tensors(function_paras: dict):
+
+def convert_input_tensors(function_paras: dict, nhwc_list=[], dtype_list=[]):
     for para in function_paras["kwargs"].keys():
+        tensor = function_paras['kwargs'][para]
+        if glob_vars.four_bytes and (para in dtype_list) and tensor is not None:
+            tensor = tensor.astype(np.int32)
         if isinstance(function_paras['kwargs'][para], np.ndarray):
-            function_paras['kwargs'][para] = Tensor.from_numpy(function_paras['kwargs'][para])
+            ndim = tensor.ndim
+            if glob_vars.nhwc and (para in nhwc_list):
+                if ndim < glob_vars.nhwc_min_dim or ndim > 5:
+                   raise DiopiException(f"Skipped: {ndim}-dim Tensor skipped for nhwc test")
+                tensor_nchw = tensor
+                ndim = tensor_nchw.ndim
+                if ndim == 3:
+                    axis = (1,2,0)
+                elif ndim == 4 and '3d' in nhwc_list:
+                    axis = (1,2,3,0)
+                elif ndim == 4:
+                    axis = (0,2,3,1)
+                elif ndim == 5:
+                    axis = (0,2,3,4,1)
+                tensor_nhwc = np.transpose(tensor_nchw, axis).copy()
+                tensor_nhwc.shape = tensor_nchw.shape
+                tensor_nhwc.strides = compute_nhwc_stride(tensor_nchw.shape, tensor_nchw.itemsize, nhwc_list[0])
+                tensor = tensor_nhwc
+
+            function_paras['kwargs'][para] = Tensor.from_numpy(tensor)
 
         if para == "tensors":
             tensors = function_paras['kwargs'][para]
@@ -153,7 +176,8 @@ class ConformanceTest(object):
                     continue
 
             function_paras = data["function_paras"]
-            convert_input_tensors(function_paras)
+            nhwc_list = nhwc_op[cfg_func_name] if glob_vars.nhwc and (cfg_func_name in nhwc_op) else []
+            dtype_list = dtype_op[cfg_func_name] if glob_vars.four_bytes and (cfg_func_name in dtype_op) else []
             kwargs = function_paras['kwargs']
             func_call_list = []
             func_call_list.append(f"{module}.{test_func_name}(**kwargs)")
@@ -162,6 +186,7 @@ class ConformanceTest(object):
 
             for func_call in func_call_list:
                 try:
+                    convert_input_tensors(function_paras, nhwc_list, dtype_list)
                     output = eval(func_call)
                     sum_to_compare = True if 'sorted' in kwargs and ~kwargs['sorted'] else False
                     passed = compare_with_gen_output(output, data['cfg'], output_reference, sum_to_compare) \
@@ -175,7 +200,7 @@ class ConformanceTest(object):
                     logger.error(f"AttributeError: {e}")
                     continue
                 except Exception as e:
-                    logger.error(f"Failed: {e}")
+                    logger.error(f"{e}")
                     continue
 
                 write_precision(data["cfg"], cfg_func_name, passed)

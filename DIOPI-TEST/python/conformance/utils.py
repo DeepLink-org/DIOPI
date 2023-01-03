@@ -2,6 +2,7 @@ import logging
 from . import diopi_runtime
 from .diopi_runtime import device_impl_lib, get_last_error
 from .model_list import model_list, model_op_list
+from .dtype import Dtype
 import os
 import numpy as np
 import csv
@@ -21,6 +22,95 @@ default_cfg_dict = dict(
 )
 default_cfg_dict['log_level'] = 1
 error_counter = [0]
+
+# Note : 1. aten's cuda implementation doesn't support 3-dim nhwc Tensor
+#        adaptive_max_pool2d（3d), max_pool3d,
+#        adaptive_avg_pool3d, interpolate doesn't support nhwc memory format
+#        avg_pool2d backward can't compute right along the edges 
+#        2. For camb test, adaptive_max_pool2d/max_pool2d need indices being int32
+#        Only conv2d, bn, adaptive_avg_pool2d, adaptive_max_pool2d can be tested, because
+#        the rest have't been implemented.
+nhwc_op = { 'conv2d':["2d", "input", 'weight'],
+            'conv3d':["3d", "input", 'weight'],
+            'batch_norm':['input'],
+            'adaptive_avg_pool2d':["2d", 'input'],
+            'adaptive_max_pool2d':["2d", 'input'],
+            'adaptive_avg_pool3d':["3d", 'input'],
+            'adaptive_max_pool3d':["3d", 'input'],
+            'avg_pool2d':["2d", 'input'],
+            'max_pool2d':["2d", 'input'], 
+            #'avg_pool3d':["3d", 'input'], # diopi doesn't hava avg_pool3d test
+            'max_pool3d':["3d", 'input'], 
+            # both embedding 
+            'interpolate':['input'],
+            'pad':['input'],
+            'roi_align':['input']
+          }
+
+# Note : 1. camb test: all ops implemented is passed.
+#        2. nv test: most of ops is not implemented for 'Int'. 
+#           Tests of index_select, bce, embedding passed for 'Int'.
+dtype_op = { # input using int32/float32 type
+             'nll_loss' : ['target'],
+             'cross_entropy' : ['target'],
+             'index_select' : ['index'],
+             'index_put' : ['indices1', 'indices2'],
+             'binary_cross_entropy_with_logits' : ['pos_weight'],
+             'gather' : ['index'],
+             'scatter' : ['index'],
+             'embedding' : ['input'],
+             'index' : ['idx1', 'idx2'],
+             'ctc_loss' : ['targets', 'input_lengths', 'target_lengths'],
+             'index_fill' : ['index'],
+             'one_hot' : ['input'],
+           }
+
+# Note : 1. camb test: all ops implemented is passed.
+#        2. nv test: most of ops is not implemented for 'Int'. 
+#           Tests of unique, arange, randperm, argmax passed for 'Int'.
+dtype_out_op = {
+             # out using int32/float32 type
+             'max_pool2d' : ['indices'], 
+             'max_pool3d' : ['indices'],
+             'adaptive_max_pool2d' : ['indices'],
+             'adaptive_max_pool3d' : ['indices'],
+             'max' : ['indices'],
+             'min' : ['indices'],
+             'sort' : ['indices'],
+             'topk' : ['indices'],
+             'unique' : ['indices'],
+             'one_hot' : ['out'],
+             'arange' : ['out'],
+             'randperm' : ['out'],
+             'argmax' : ['out']
+           }
+
+class glob_var(object):
+    def __init__(self, nhwc=False, nhwc_min_dim=3, four_bytes=False):
+        self.nhwc = nhwc
+        self.nhwc_min_dim = nhwc_min_dim
+        self.four_bytes = four_bytes
+        self.int_type = Dtype.int64
+        self.float_type = Dtype.float64
+
+    def set_nhwc(self):
+        self.nhwc = True
+
+    def set_nhwc_min_dim(self, dim):
+        self.nhwc_min_dim = dim
+
+    def get_nhwc(self):
+        return self.nhwc
+
+    def set_four_bytes(self):
+        self.four_bytes = True
+        self.int_type = Dtype.int32
+        self.float_type = Dtype.float32
+
+    def get_four_bytes(self):
+        return self.four_bytes
+
+glob_vars = glob_var()
 
 
 class Log(object):
@@ -48,6 +138,7 @@ class Log(object):
 def wrap_logger_error(func):
     def inner(*args, **kwargs):
         if args[0].startswith("NotImplemented") or \
+            args[0].startswith("Skipped") or \
              args[0].startswith("AttributeError"):
             return func(*args, **kwargs)
         global error_counter

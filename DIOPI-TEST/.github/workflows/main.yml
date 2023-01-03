@@ -54,5 +54,14 @@ jobs:
           export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${GITHUB_JOB}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=40 --gres=gpu:${GPU_REQUESTS} bash -c 'cd python && python main.py --mode gen_data && python main.py --mode run_test'
+          """
+      - name: NHWC-32bit-test
+        run: |
+          ssh ${CLUSTER_1984} """
+          set -e
+          export CI=true
+          source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${GITHUB_JOB}
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=40 --gres=gpu:${GPU_REQUESTS} bash -c 'cd python && python main.py --mode run_test --fname batch_norm --nhwc &&
+          python main.py --mode run_test --fname index_select --four_bytes && python main.py --mode run_test --fname arange --four_bytes'
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB}
           """

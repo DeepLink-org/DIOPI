@@ -2,8 +2,8 @@
 import math
 
 from ctypes import c_float, c_double, c_int64, c_int32, c_bool, c_void_p, byref, pointer
-from .diopi_runtime import Sizes, Scalar, Tensor, TensorHandle
-from .utils import check_returncode, check_function
+from .diopi_runtime import Sizes, Scalar, Tensor, TensorHandle, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d
+from .utils import check_returncode, check_function, glob_vars
 from . import Dtype, raw_like
 from collections import namedtuple
 import numpy as np
@@ -483,7 +483,7 @@ def min(input, dim=0, keepdim=False) -> Tensor:
     else:
         del sizeI[dim]
     out = Tensor(sizeI, input.get_dtype())
-    indices = Tensor(out.size(), Dtype.int64)
+    indices = Tensor(out.size(), glob_vars.int_type)
     func = check_function("diopiMin")
 
     ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
@@ -653,7 +653,8 @@ def conv2d(input, weight, bias=None, stride=1,
     padding = Sizes(tuple(padding))
     dilation = Sizes(tuple(dilation))
 
-    out = Tensor(sizeO, input.get_dtype())
+    nhwc_stride = compute_nhwc_stride_2d(sizeO) if glob_vars.nhwc else None
+    out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
     func = check_function("diopiConvolution2d")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                weight.tensor_handle, bias, stride, padding, dilation, groups)
@@ -688,7 +689,8 @@ def avg_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False,
     stride = Sizes(tuple(stride))
     padding = Sizes(tuple(padding))
     kernel_size = Sizes(tuple(kernel_size))
-    out = Tensor(sizeO, input.get_dtype())
+    nhwc_stride = compute_nhwc_stride_2d(sizeO) if glob_vars.nhwc else None
+    out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
 
     if divisor_override is None:
         divisor_override = c_void_p()
@@ -737,7 +739,8 @@ def max_pool2d(input, kernel_size, stride=None, padding=0, dilation=1,
     padding = Sizes(tuple(padding))
     kernel_size = Sizes(tuple(kernel_size))
     dilation = Sizes(tuple(dilation))
-    out = Tensor(sizeO, input.get_dtype())
+    nhwc_stride = compute_nhwc_stride_2d(sizeO) if glob_vars.nhwc else None
+    out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
 
     if not return_indices:
         func = check_function("diopiMaxPool2d")
@@ -748,7 +751,8 @@ def max_pool2d(input, kernel_size, stride=None, padding=0, dilation=1,
         return out
     else:
         func = check_function("diopiMaxPool2dWithIndices")
-        indices = Tensor(sizeO, Dtype.int64)
+        nhwc_stride = compute_nhwc_stride_2d(sizeO) if glob_vars.nhwc else None
+        indices = Tensor(sizeO, glob_vars.int_type, stride=nhwc_stride)
         ret = func(input.context_handle, out.tensor_handle,
                    indices.tensor_handle, input.tensor_handle,
                    kernel_size, stride, padding, dilation, ceil_mode)
@@ -775,7 +779,8 @@ def adaptive_avg_pool2d(input, output_size):
         else:
             sizeO.append(output_size[i])
 
-    out = Tensor(sizeO, input.get_dtype())
+    nhwc_stride = compute_nhwc_stride_2d(sizeO) if glob_vars.nhwc else None
+    out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
     output_size = Sizes((sizeO[-2], sizeO[-1]))
 
     func = check_function("diopiAdaptiveAvgPool2d")
@@ -804,12 +809,14 @@ def adaptive_max_pool2d(input, output_size, return_indices=False):
         else:
             sizeO.append(output_size[i])
 
-    out = Tensor(sizeO, input.get_dtype())
+    nhwc_stride = compute_nhwc_stride_2d(sizeO) if glob_vars.nhwc else None
+    out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
     output_size = Sizes(tuple(output_size))
 
     if return_indices:
         func = check_function("diopiAdaptiveMaxPool2dWithIndices")
-        indices = Tensor(sizeO, Dtype.int64)
+        nhwc_stride = compute_nhwc_stride_2d(sizeO) if glob_vars.nhwc else None
+        indices = Tensor(sizeO, glob_vars.int_type, stride=nhwc_stride)
         ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
                    input.tensor_handle, output_size)
         check_returncode(ret)
@@ -985,7 +992,7 @@ def stack(tensors, dim=0) -> Tensor:
 def sort(input, dim=- 1, descending=False, stable=False):
     vals = raw_like(input)
     sizeI = input.size()
-    indices = Tensor(sizeI, Dtype.int64)
+    indices = Tensor(sizeI, glob_vars.int_type)
 
     stable = c_void_p() if stable is None else pointer(c_bool(stable))
 
@@ -1000,7 +1007,7 @@ def topk(input, k, dim=-1, largest=True, sorted=True):
     sizeI = list(input.size())
     sizeI[dim] = k
     values = Tensor(sizeI, input.get_dtype())
-    indices = Tensor(sizeI, Dtype.int64)
+    indices = Tensor(sizeI, glob_vars.int_type)
 
     func = check_function("diopiTopk")
     ret = func(input.context_handle, values.tensor_handle,
@@ -1031,10 +1038,10 @@ def one_hot(input, num_classes=- 1):
     sizeI = input.size()
     if num_classes == -1:
         sizeI += (np.max(input.numpy()) + 1, )
-        out = Tensor(sizeI, Dtype.int64)
+        out = Tensor(sizeI, glob_vars.int_type)
     else:
         sizeI += (num_classes, )
-        out = Tensor(sizeI, Dtype.int64)
+        out = Tensor(sizeI, glob_vars.int_type)
 
     func = check_function("diopiOneHot")
     ret = func(input.context_handle, out.tensor_handle,
@@ -1303,7 +1310,7 @@ def max(input, dim, keepdim=False):
     else:
         del sizeI[dim]
     out = Tensor(sizeI, input.get_dtype())
-    indices = Tensor(out.size(), Dtype.int64)
+    indices = Tensor(out.size(), glob_vars.int_type)
 
     func = check_function("diopiMax")
     ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
@@ -1409,7 +1416,8 @@ def roi_align(input, boxes, output_size, spatial_scale=1.0, sampling_ratio=-1, a
     sizeI[-1] = output_size[-1]
     sizeI[-2] = output_size[-2]
 
-    out = Tensor(sizeI, input.get_dtype())
+    nhwc_stride = compute_nhwc_stride_2d(sizeI) if glob_vars.nhwc else None
+    out = Tensor(sizeI, input.get_dtype(), stride=nhwc_stride)
     func = check_function("diopiRoiAlign")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                boxes.tensor_handle, c_double(spatial_scale), output_size[-2],
@@ -1929,7 +1937,7 @@ def arange(end, start=0, step=1, dtype=None) -> Tensor:
         if type(start) == float or type(end) == float or type(step) == float:
             dtype=Dtype.float32
         else:
-            dtype=Dtype.int64
+            dtype=glob_vars.int_type
     
     numel = int((end - start)/step)
     out = Tensor((numel,), dtype)
@@ -1941,7 +1949,7 @@ def arange(end, start=0, step=1, dtype=None) -> Tensor:
 
 
 def randperm(n :int, dtype=None) -> Tensor:
-    dtype = Dtype.int64 if dtype is None else dtype
+    dtype = glob_vars.int_type if dtype is None else dtype
     numel = n
     out = Tensor((numel,), dtype)
 
@@ -2160,7 +2168,7 @@ def reciprocal(input, inplace=False) -> Tensor:
 
 
 def bitwise_not(input):
-    assert (input.get_dtype() in [Dtype.bool, Dtype.int8, Dtype.int16, Dtype.int32, Dtype.int64]),\
+    assert (input.get_dtype() in [Dtype.bool, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type]),\
         "input tensor must be of integral or boolean"
 
     out = raw_like(input)
@@ -2183,7 +2191,7 @@ def argmax(input, dim=None, keepdim=False):
         sizeO = [1]
         dim = c_void_p()
 
-    out = Tensor(sizeO, Dtype.int64)
+    out = Tensor(sizeO, glob_vars.int_type)
     func = check_function("diopiArgmax")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim, keepdim)
     check_returncode(ret)
@@ -2293,7 +2301,8 @@ def conv3d(input, weight, bias=None, stride=1,
     padding = Sizes(tuple(padding))
     dilation = Sizes(tuple(dilation))
 
-    out = Tensor(sizeO, input.get_dtype())
+    nhwc_stride = compute_nhwc_stride_3d(sizeO) if glob_vars.nhwc else None
+    out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
     func = check_function("diopiConvolution3d")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
                weight.tensor_handle, bias, stride, padding, dilation, groups)
@@ -2594,7 +2603,8 @@ def adaptive_avg_pool3d(input, output_size):
         else:
             sizeO.append(output_size[i])
 
-    out = Tensor(sizeO, input.get_dtype())
+    nhwc_stride = compute_nhwc_stride_3d(sizeO) if glob_vars.nhwc else None
+    out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
     output_size = Sizes((sizeO[-3], sizeO[-2], sizeO[-1]))
 
     func = check_function("diopiAdaptiveAvgPool3d")
@@ -2634,12 +2644,14 @@ def adaptive_max_pool3d(input, output_size, return_indices=False):
         else:
             sizeO.append(output_size[i])
 
-    out = Tensor(sizeO, input.get_dtype())
+    nhwc_stride = compute_nhwc_stride_3d(sizeO) if glob_vars.nhwc else None
+    out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
     output_size = Sizes(tuple(output_size))
 
     if return_indices:
         func = check_function("diopiAdaptiveMaxPool3dWithIndices")
-        indices = Tensor(sizeO, Dtype.int64)
+        nhwc_stride = compute_nhwc_stride_3d(sizeO) if glob_vars.nhwc else None
+        indices = Tensor(sizeO, glob_vars.int_type, stride=nhwc_stride)
         ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
                    input.tensor_handle, output_size)
         check_returncode(ret)
@@ -2708,7 +2720,7 @@ def max_pool3d(input, kernel_size, stride=None, padding=0, dilation=1,
         return out
     else:
         func = check_function("diopiMaxPool3dWithIndices")
-        indices = Tensor(sizeO, Dtype.int64)
+        indices = Tensor(sizeO, glob_vars.int_type)
         ret = func(input.context_handle, out.tensor_handle,
                    indices.tensor_handle, input.tensor_handle,
                    kernel_size, stride, padding, dilation, ceil_mode)
@@ -2936,7 +2948,10 @@ def interpolate(input, size, mode="nearest", align_corners=None) -> Tensor:
     sizeI = list(input.size())
     for i in range(len(size)):
         sizeI[-i - 1] = size[-i - 1]
-    out = Tensor(sizeI, input.get_dtype())
+
+
+    nhwc_stride = compute_nhwc_stride(sizeI) if glob_vars.nhwc else None
+    out = Tensor(sizeI, input.get_dtype(), stride=nhwc_stride)
 
     c_size = Sizes(tuple(size))
     if mode == "nearest":
@@ -2985,7 +3000,10 @@ def pad(input, pad, mode='constant', value=None):
         value = c_void_p()
     else:
         value = byref(c_double(value))
-    out = Tensor(sizeO, input.get_dtype())
+
+
+    nhwc_stride = compute_nhwc_stride(sizeO) if glob_vars.nhwc else None
+    out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
     func = check_function("diopiPad")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, pad, 
                mode.encode('UTF-8'), value)
@@ -2999,7 +3017,7 @@ def unique(input, sorted=True, return_inverse=False, return_counts=False, dim=No
         sizeI = list(input.size())
         if dim is not None:
             sizeI = (sizeI[dim], )
-        indices = Tensor(sizeI, Dtype.int64)
+        indices = Tensor(sizeI, glob_vars.int_type)
         indices_handle = indices.tensor_handle
     else:
         indices_handle = c_void_p()
