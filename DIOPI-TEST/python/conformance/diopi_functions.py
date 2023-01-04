@@ -487,7 +487,7 @@ def min(input, dim=0, keepdim=False) -> Tensor:
     func = check_function("diopiMin")
 
     ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
-               input.tensor_handle, dim)
+               input.tensor_handle, c_int64(dim))
     check_returncode(ret)
     Res = namedtuple('Res', ['values', 'indices'])
     output = Res(out, indices)
@@ -615,7 +615,7 @@ def mse_loss(input, target, reduction='mean'):
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiMSELoss")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               target.tensor_handle, reduction_mode)
+               target.tensor_handle, c_int64(reduction_mode))
     check_returncode(ret)
     return out
 
@@ -700,7 +700,7 @@ def avg_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False,
 
     func = check_function("diopiAvgPool2d")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               kernel_size, stride, padding, ceil_mode, count_include_pad,
+               kernel_size, stride, padding, c_bool(ceil_mode), c_bool(count_include_pad),
                divisor_override)
     check_returncode(ret)
     return out
@@ -755,7 +755,7 @@ def max_pool2d(input, kernel_size, stride=None, padding=0, dilation=1,
         indices = Tensor(sizeO, glob_vars.int_type, stride=nhwc_stride)
         ret = func(input.context_handle, out.tensor_handle,
                    indices.tensor_handle, input.tensor_handle,
-                   kernel_size, stride, padding, dilation, ceil_mode)
+                   kernel_size, stride, padding, dilation, c_bool(ceil_mode))
         check_returncode(ret)
         return out, indices
 
@@ -842,7 +842,7 @@ def dropout(input, p=0.5, training=True, inplace=False):
 
     sizeI = input.size()
     mask = Tensor(sizeI, Dtype.uint8)
-    args = args + "c_double(p), training"
+    args = args + "c_double(p), c_bool(training)"
     func = check_function(call)
     ret = eval(f'func({args})')
     check_returncode(ret)
@@ -856,7 +856,7 @@ def index_select(input, dim, index) -> Tensor:
 
     func = check_function("diopiIndexSelect")
     ret = func(input.context_handle, out.tensor_handle,
-               input.tensor_handle, dim, index.tensor_handle)
+               input.tensor_handle, c_int64(dim), index.tensor_handle)
     check_returncode(ret)
     return out
 
@@ -931,7 +931,7 @@ def embedding(input, weight, padding_idx=None, max_norm=None, norm_type=2.0,
     # note: scale_grad_by_freq and sparse are useless during forward phase
     func = check_function("diopiEmbedding")
     ret = func(input.context_handle, out.tensor_handle, weight.tensor_handle,
-               input.tensor_handle, c_int64(padding_idx), scale_grad_by_freq, sparse)
+               input.tensor_handle, c_int64(padding_idx), c_bool(scale_grad_by_freq), c_bool(sparse))
     check_returncode(ret)
 
     return out
@@ -941,7 +941,7 @@ def tril(input, diagonal=0) -> Tensor:
     out = raw_like(input)
     func = check_function("diopiTril")
     ret = func(input.context_handle, out.tensor_handle,
-               input.tensor_handle, diagonal)
+               input.tensor_handle, c_int64(diagonal))
     check_returncode(ret)
     return out
 
@@ -962,7 +962,7 @@ def cat(tensors, dim=0) -> Tensor:
     out = Tensor(sizeI, tensors[0].get_dtype())
     func = check_function("diopiCat")
     ret = func(tensors[0].context_handle, out.tensor_handle,
-               pointer(c_tensors), insNum, dim)
+               pointer(c_tensors), c_int64(insNum), c_int64(dim))
     check_returncode(ret)
     return out
 
@@ -984,7 +984,7 @@ def stack(tensors, dim=0) -> Tensor:
     out = Tensor(sizeI, tensors[0].get_dtype())
     func = check_function("diopiStack")
     ret = func(tensors[0].context_handle, out.tensor_handle,
-               pointer(c_tensors), insNum, dim)
+               pointer(c_tensors), c_int64(insNum), c_int64(dim))
     check_returncode(ret)
     return out
 
@@ -998,7 +998,7 @@ def sort(input, dim=- 1, descending=False, stable=False):
 
     func = check_function("diopiSort")
     ret = func(input.context_handle, vals.tensor_handle, indices.tensor_handle,
-               input.tensor_handle, dim, descending, stable)
+               input.tensor_handle, c_int64(dim), c_bool(descending), stable)
     check_returncode(ret)
     return vals, indices
 
@@ -1012,7 +1012,7 @@ def topk(input, k, dim=-1, largest=True, sorted=True):
     func = check_function("diopiTopk")
     ret = func(input.context_handle, values.tensor_handle,
                indices.tensor_handle, input.tensor_handle,
-               k, dim, largest, sorted)
+               c_int64(k), c_int64(dim), c_bool(largest), c_bool(sorted))
     check_returncode(ret)
     return values, indices
 
@@ -1026,7 +1026,7 @@ def transpose(input, dim0, dim1) -> Tensor:
 
     func = check_function("diopiTranspose")
     ret = func(input.context_handle, out.tensor_handle,
-               input.tensor_handle, dim0, dim1)
+               input.tensor_handle, c_int64(dim0), c_int64(dim1))
     check_returncode(ret)
     return out
 
@@ -1045,7 +1045,7 @@ def one_hot(input, num_classes=- 1):
 
     func = check_function("diopiOneHot")
     ret = func(input.context_handle, out.tensor_handle,
-               input.tensor_handle, num_classes)
+               input.tensor_handle, c_int64(num_classes))
     check_returncode(ret)
     return out
 
@@ -1180,7 +1180,7 @@ def batch_norm(input, running_mean, running_var, weight=None, bias=None,
     out = raw_like(input)
     func = check_function("diopiBatchNorm")
     ret = func(input.context_handle, out.tensor_handle, save_mean.tensor_handle, save_invstd.tensor_handle,
-               input.tensor_handle, weight, bias, running_mean, running_var, training,
+               input.tensor_handle, weight, bias, running_mean, running_var, c_bool(training),
                c_double(momentum), c_double(eps))
     check_returncode(ret)
     if backward:
@@ -1314,7 +1314,7 @@ def max(input, dim, keepdim=False):
 
     func = check_function("diopiMax")
     ret = func(input.context_handle, out.tensor_handle, indices.tensor_handle,
-               input.tensor_handle, dim)
+               input.tensor_handle, c_int64(dim))
     check_returncode(ret)
     Res = namedtuple('Res', ['values', 'indices'])
     output = Res(out, indices)
@@ -1325,7 +1325,7 @@ def any(input, dim, keepdim=False) -> Tensor:
     assert isinstance(dim, int), "dim should be int"
     _, out = reduce_op_process(input, dim, keepdim, dtype=Dtype.bool)
     func = check_function("diopiAny")
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim)
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, c_int64(dim))
     check_returncode(ret)
     return out
 
@@ -1334,7 +1334,7 @@ def all(input, dim, keepdim=False) -> Tensor:
     assert isinstance(dim, int), "dim should be int"
     _, out = reduce_op_process(input, dim, keepdim, dtype=Dtype.bool)
     func = check_function("diopiAll")
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim)
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, c_int64(dim))
     check_returncode(ret)
     return out
 
@@ -1358,7 +1358,7 @@ def nll_loss(input, target, weight=None, ignore_index=-100, reduction='mean'):
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiNLLLoss")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               target.tensor_handle, weight, reduction_mode, ignore_index)
+               target.tensor_handle, weight, c_int64(reduction_mode), c_int64(ignore_index))
     check_returncode(ret)
     return out
 
@@ -1377,7 +1377,7 @@ def sigmoid_focal_loss(inputs, targets, alpha=0.25, gamma=2, reduction='none') -
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiSigmoidFocalLoss")
     ret = func(inputs.context_handle, out.tensor_handle, inputs.tensor_handle,
-               targets.tensor_handle, c_float(alpha), c_float(gamma), reduction_mode)
+               targets.tensor_handle, c_float(alpha), c_float(gamma), c_int64(reduction_mode))
     check_returncode(ret)
     return out
 
@@ -1420,8 +1420,8 @@ def roi_align(input, boxes, output_size, spatial_scale=1.0, sampling_ratio=-1, a
     out = Tensor(sizeI, input.get_dtype(), stride=nhwc_stride)
     func = check_function("diopiRoiAlign")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               boxes.tensor_handle, c_double(spatial_scale), output_size[-2],
-               output_size[-1], sampling_ratio, aligned)
+               boxes.tensor_handle, c_double(spatial_scale), c_int64(output_size[-2]),
+               c_int64(output_size[-1]), c_int64(sampling_ratio), c_bool(aligned))
     check_returncode(ret)
     return out
 
@@ -1434,7 +1434,7 @@ def slice_op(input, dim, index) -> Tensor:
 
     func = check_function("diopiSlice")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               dim, c_int64(index.start), c_int64(index.stop), c_int64(index.step))
+               c_int64(dim), c_int64(index.start), c_int64(index.stop), c_int64(index.step))
 
     check_returncode(ret)
     return out
@@ -1475,7 +1475,7 @@ def sgd(param, param_grad, buf, lr, momentum=0, dampening=0, weight_decay=0, nes
     # note: buf, param_grad are mutable
     func = check_function("diopiSgd")
     ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle, buf.tensor_handle,
-               c_double(lr), c_double(momentum), c_double(dampening), c_double(weight_decay), nesterov)
+               c_double(lr), c_double(momentum), c_double(dampening), c_double(weight_decay), c_bool(nesterov))
     check_returncode(ret)
     return param, buf
 
@@ -1552,7 +1552,7 @@ def leaky_relu_backward(input, grad_outputs, negative_slope=0.01, input_is_resul
 
     func = check_function("diopiLeakyReluBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
-               input.tensor_handle, negative_slope, input_is_result)
+               input.tensor_handle, negative_slope, c_bool(input_is_result))
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -1594,7 +1594,7 @@ def roi_align_backward(input, grad_outputs, boxes, output_size, spatial_scale=1.
     ret = func(input.context_handle, out.tensor_handle, grad_outputs[0].tensor_handle,
                boxes.tensor_handle, c_double(spatial_scale), c_int64(output_size[-2]),
                c_int64(output_size[-1]), c_int64(sizeI[0]), c_int64(sizeI[1]), c_int64(sizeI[2]),
-               c_int64(sizeI[3]), c_int64(sampling_ratio), aligned)
+               c_int64(sizeI[3]), c_int64(sampling_ratio), c_bool(aligned))
     check_returncode(ret)
     return {"input": out}
 
@@ -1689,7 +1689,8 @@ def avg_pool2d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
 
     func = check_function("diopiAvgPool2dBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
-               input.tensor_handle, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override)
+               input.tensor_handle, kernel_size, stride, padding, c_bool(ceil_mode),
+               c_bool(count_include_pad), divisor_override)
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -1703,7 +1704,7 @@ def embedding_backward(input, grad_outputs, weight, padding_idx=None, scale_grad
     # note: scale_grad_by_freq and sparse are useless during forward phase
     func = check_function("diopiEmbeddingBackward")
     ret = func(input.context_handle, grad_weight.tensor_handle, grad_outputs[0].tensor_handle,
-               input.tensor_handle, c_int64(num_weight), c_int64(padding_idx), scale_grad_by_freq, sparse)
+               input.tensor_handle, c_int64(num_weight), c_int64(padding_idx), c_bool(scale_grad_by_freq), c_bool(sparse))
     check_returncode(ret)
     return {"weight": grad_weight}
 
@@ -1761,7 +1762,7 @@ def softmax_backward(input, grad_outputs, output, dim, **kwargs) -> Tensor:
 
     func = check_function("diopiSoftmaxBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
-               output.tensor_handle, dim, c_int32(input.get_dtype().value))
+               output.tensor_handle, c_int64(dim), c_int32(input.get_dtype().value))
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -1772,7 +1773,7 @@ def log_softmax_backward(input, grad_outputs, output, dim, **kwargs) -> Tensor:
 
     func = check_function("diopiLogSoftmaxBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
-               output.tensor_handle, dim, c_int32(input.get_dtype().value))
+               output.tensor_handle, c_int64(dim), c_int32(input.get_dtype().value))
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -1901,7 +1902,7 @@ def max_pool2d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
 
     func = check_function("diopiMaxPool2dBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
-               input.tensor_handle, kernel_size, stride, padding, dilation, ceil_mode, indices.tensor_handle)
+               input.tensor_handle, kernel_size, stride, padding, dilation, c_bool(ceil_mode), indices.tensor_handle)
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -2030,7 +2031,7 @@ def adamw(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,
     func = check_function("diopiAdamW")
     ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle, exp_avg.tensor_handle,
                exp_avg_sq.tensor_handle, max_exp_avg_sq.tensor_handle, c_float(lr), c_float(beta1), c_float(beta2),
-               c_float(eps), c_float(weight_decay), c_int64(step), amsgrad)
+               c_float(eps), c_float(weight_decay), c_int64(step), c_bool(amsgrad))
     check_returncode(ret)
     return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
 
@@ -2041,7 +2042,7 @@ def adam(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,
     func = check_function("diopiAdam")
     ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle, exp_avg.tensor_handle,
                exp_avg_sq.tensor_handle, max_exp_avg_sq.tensor_handle, c_float(lr), c_float(beta1), c_float(beta2), 
-               c_float(eps), c_float(weight_decay), c_int64(step), amsgrad)
+               c_float(eps), c_float(weight_decay), c_int64(step), c_bool(amsgrad))
     check_returncode(ret)
     return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
 
@@ -2093,7 +2094,7 @@ def conv_transpose2d(input, weight, bias=None, stride=1,
     out = Tensor(sizeO, input.get_dtype())
     func = check_function("diopiConvTranspose2d")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               weight.tensor_handle, bias, stride, padding, output_padding, groups, dilation)
+               weight.tensor_handle, bias, stride, padding, output_padding, c_int64(groups), dilation)
     check_returncode(ret)
     return out
 
@@ -2193,7 +2194,8 @@ def argmax(input, dim=None, keepdim=False):
 
     out = Tensor(sizeO, glob_vars.int_type)
     func = check_function("diopiArgmax")
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim, keepdim)
+    # todo: check the reason of using keepdim
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim, c_bool(keepdim))
     check_returncode(ret)
 
     return out
@@ -2305,7 +2307,7 @@ def conv3d(input, weight, bias=None, stride=1,
     out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
     func = check_function("diopiConvolution3d")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               weight.tensor_handle, bias, stride, padding, dilation, groups)
+               weight.tensor_handle, bias, stride, padding, dilation, c_int64(groups))
     check_returncode(ret)
     return out
 
@@ -2715,7 +2717,7 @@ def max_pool3d(input, kernel_size, stride=None, padding=0, dilation=1,
         func = check_function("diopiMaxPool3d")
         ret = func(input.context_handle, out.tensor_handle,
                    input.tensor_handle, kernel_size,
-                   stride, padding, dilation, ceil_mode)
+                   stride, padding, dilation, c_bool(ceil_mode))
         check_returncode(ret)
         return out
     else:
@@ -2723,7 +2725,7 @@ def max_pool3d(input, kernel_size, stride=None, padding=0, dilation=1,
         indices = Tensor(sizeO, glob_vars.int_type)
         ret = func(input.context_handle, out.tensor_handle,
                    indices.tensor_handle, input.tensor_handle,
-                   kernel_size, stride, padding, dilation, ceil_mode)
+                   kernel_size, stride, padding, dilation, c_bool(ceil_mode))
         check_returncode(ret)
         return out, indices
 
@@ -2752,7 +2754,7 @@ def max_pool3d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
 
     func = check_function("diopiMaxPool3dBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
-               input.tensor_handle, kernel_size, stride, padding, dilation, ceil_mode, indices.tensor_handle)
+               input.tensor_handle, kernel_size, stride, padding, dilation, c_bool(ceil_mode), indices.tensor_handle)
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -2855,7 +2857,7 @@ def ctc_loss(log_probs, targets, input_lengths, target_lengths, blank=0, reducti
     func = check_function("diopiCTCLoss")
     ret = func(log_probs.context_handle, out.tensor_handle, neg_log_likelihood.tensor_handle,
                log_alpha.tensor_handle, log_probs.tensor_handle, targets.tensor_handle, input_lengths.tensor_handle,
-               target_lengths.tensor_handle, c_int64(blank), c_int64(reduction_mode), zero_infinity)
+               target_lengths.tensor_handle, c_int64(blank), c_int64(reduction_mode), c_bool(zero_infinity))
     check_returncode(ret)
     if backward:
         return neg_log_likelihood, log_alpha
@@ -2872,7 +2874,7 @@ def ctc_loss_backward(log_probs, grad_outputs, targets, input_lengths, target_le
     func = check_function("diopiCTCLossBackward")
     ret = func(log_probs.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle, log_probs.tensor_handle,
                targets.tensor_handle, input_lengths.tensor_handle, target_lengths.tensor_handle, neg_log_likelihood.tensor_handle,
-               log_alpha.tensor_handle, c_int64(blank), c_int64(reduction_mode), zero_infinity)
+               log_alpha.tensor_handle, c_int64(blank), c_int64(reduction_mode), c_bool(zero_infinity))
     check_returncode(ret)
     return {"log_probs": grad_input}
 
