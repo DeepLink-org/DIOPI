@@ -12,6 +12,12 @@ case $1 in
       -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` \
       && make -j4) \
     || exit -1;;
+  torch_dyload)
+    (rm -rf build && mkdir build && cd build \
+      && cmake .. -DIMPL_OPT=TORCH -DDYLOAD=ON \
+      -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` \
+      && make -j4) \
+    || exit -1;;
   torch_no_runtime)
     (rm -rf build && mkdir build && cd build \
       && cmake .. -DIMPL_OPT=TORCH -DRUNTIME=OFF \
