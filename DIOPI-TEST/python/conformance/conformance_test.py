@@ -36,7 +36,7 @@ def convert_input_tensors(function_paras: dict, nhwc_list=[], dtype_list=[], fil
                 tensor_nhwc.strides = compute_nhwc_stride(tensor_nchw.shape, tensor_nchw.itemsize, nhwc_list[0])
                 tensor = tensor_nhwc
 
-            if str(tensor.dtype) in filter_dtype_str_list:
+            if filter_dtype_str_list and str(tensor.dtype) in filter_dtype_str_list:
                 raise DiopiException(f"Skipped: {tensor.dtype} Tensor skipped for test")
             function_paras['kwargs'][para] = Tensor.from_numpy(tensor)
 
