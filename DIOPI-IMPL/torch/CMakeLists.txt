@@ -18,6 +18,11 @@ endif()
 
 set(IMPL_SRC
     error.cpp
+    wrap_func.cpp
+)
+
+set(REAL_IMPL_SRC
+    error.cpp
     functions.cpp
     nms_kernel.cu
     roi_align_kernel.cu
@@ -29,10 +34,21 @@ else ()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-version-script=${CMAKE_CURRENT_SOURCE_DIR}/diopi.map")
 endif()
 
-cuda_add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
-set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
+if (DYLOAD)
+    set(REALIMPL diopi_real_impl)
+    cuda_add_library(${REALIMPL} SHARED ${REAL_IMPL_SRC})
+    add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
+    target_link_libraries(${DEVICEIMPL} -ldl ${CUDA_LIBRARIES})
+    target_link_libraries(${REALIMPL} ${TORCH_LIBRARIES})
+else ()
+    cuda_add_library(${DEVICEIMPL} SHARED ${REAL_IMPL_SRC})
+    target_link_libraries(${DEVICEIMPL} ${CUDA_LIBRARIES} ${TORCH_LIBRARIES})
+endif()
+
+
 if (RUNTIME)
     target_link_libraries(${DEVICEIMPL} ${DIOPIRT})
+    if (DYLOAD)
+        target_link_libraries(${REALIMPL} ${DIOPIRT})
+    endif()
 endif()
-target_link_libraries(${DEVICEIMPL} ${CUDA_LIBRARIES})
-target_link_libraries(${DEVICEIMPL} ${TORCH_LIBRARIES})
