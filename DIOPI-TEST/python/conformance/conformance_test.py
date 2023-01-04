@@ -11,7 +11,7 @@ from .gen_data import get_saved_pth_list, get_data_from_file
 from .utils import save_precision, record, write_precision
 
 
-def convert_input_tensors(function_paras: dict, nhwc_list=[], dtype_list=[]):
+def convert_input_tensors(function_paras: dict, nhwc_list=[], dtype_list=[], filter_dtype_str_list=[]):
     for para in function_paras["kwargs"].keys():
         tensor = function_paras['kwargs'][para]
         if glob_vars.four_bytes and (para in dtype_list) and tensor is not None:
@@ -36,6 +36,8 @@ def convert_input_tensors(function_paras: dict, nhwc_list=[], dtype_list=[]):
                 tensor_nhwc.strides = compute_nhwc_stride(tensor_nchw.shape, tensor_nchw.itemsize, nhwc_list[0])
                 tensor = tensor_nhwc
 
+            if str(tensor.dtype) in filter_dtype_str_list:
+                raise DiopiException(f"Skipped: {tensor.dtype} Tensor skipped for test")
             function_paras['kwargs'][para] = Tensor.from_numpy(tensor)
 
         if para == "tensors":
@@ -186,7 +188,7 @@ class ConformanceTest(object):
 
             for func_call in func_call_list:
                 try:
-                    convert_input_tensors(function_paras, nhwc_list, dtype_list)
+                    convert_input_tensors(function_paras, nhwc_list, dtype_list, filter_dtype_str_list)
                     output = eval(func_call)
                     sum_to_compare = True if 'sorted' in kwargs and ~kwargs['sorted'] else False
                     passed = compare_with_gen_output(output, data['cfg'], output_reference, sum_to_compare) \

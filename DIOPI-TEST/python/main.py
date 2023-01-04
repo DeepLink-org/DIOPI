@@ -40,6 +40,14 @@ if __name__ == "__main__":
             print(f"The model {model_name}'s op_list: {op_list}")
         exit(0)
 
+    if args.filter_dtype:
+        dtype_str_list = ['int8', 'uint8', 'int16', 'uint16', 'int32', 'uint32',
+                          'int64', 'uint64', 'float16', 'float32', 'float64', 'bool']
+        for dtype in args.filter_dtype:
+            if dtype not in dtype_str_list:
+                logger.error(f"expect type in {dtype_str_list} but got '{dtype}'")
+                exit(0)
+
     if args.nhwc:
         print(f"The op_list using nhwc layout: {list(nhwc_op.keys())}",)
         glob_vars.set_nhwc()
