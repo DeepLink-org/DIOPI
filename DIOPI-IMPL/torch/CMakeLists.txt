@@ -16,7 +16,16 @@ else()
     message(FATAL_ERROR "Libtorch version 1.10 is required, no suitable version was found")
 endif()
 
-set(IMPL_SRC
+if (DYLOAD)
+    # creat an empty file to pass wrap_func.cpp's existence check
+    # one can change code_gen.py or wrap_func.cpp to recompile once wrap_func.cpp built
+    execute_process(COMMAND touch ${CMAKE_CURRENT_SOURCE_DIR}/wrap_func.cpp)
+    add_custom_target(code_gen COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/code_gen.py 
+                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    set(IMPL_SRC error.cpp wrap_func.cpp)
+endif()
+
+set(REAL_IMPL_SRC
     error.cpp
     functions.cpp
     nms_kernel.cu
@@ -24,15 +33,31 @@ set(IMPL_SRC
 )
 
 if (RUNTIME)
-    set(IMPL_SRC ${IMPL_SRC} conform_test.cpp)
+    if (DYLOAD)
+        set(IMPL_SRC ${IMPL_SRC} conform_test.cpp)
+    else()
+        set(REAL_IMPL_SRC ${REAL_IMPL_SRC} conform_test.cpp)
+    endif()
 else ()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-version-script=${CMAKE_CURRENT_SOURCE_DIR}/diopi.map")
 endif()
 
-cuda_add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
-set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
+if (DYLOAD)
+    set(REALIMPL diopi_real_impl)
+    cuda_add_library(${REALIMPL} SHARED ${REAL_IMPL_SRC})
+    add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
+    target_link_libraries(${DEVICEIMPL} -ldl ${CUDA_LIBRARIES})
+    add_dependencies(${DEVICEIMPL} code_gen) # make sure to recompile once code_gen.py changed
+    target_link_libraries(${REALIMPL} ${TORCH_LIBRARIES})
+else ()
+    cuda_add_library(${DEVICEIMPL} SHARED ${REAL_IMPL_SRC})
+    target_link_libraries(${DEVICEIMPL} ${CUDA_LIBRARIES} ${TORCH_LIBRARIES})
+endif()
+
+
 if (RUNTIME)
     target_link_libraries(${DEVICEIMPL} ${DIOPIRT})
+    if (DYLOAD)
+        target_link_libraries(${REALIMPL} ${DIOPIRT})
+    endif()
 endif()
-target_link_libraries(${DEVICEIMPL} ${CUDA_LIBRARIES})
-target_link_libraries(${DEVICEIMPL} ${TORCH_LIBRARIES})
