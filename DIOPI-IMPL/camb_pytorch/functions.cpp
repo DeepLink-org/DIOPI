@@ -27,9 +27,8 @@ const char* diopiGetVendorName() {
 
 const char* diopiGetImplVersion() {
     if (strlen(version) == 0) {
-        const char* diopiVersion = diopiGetVersion();
-        sprintf(version, "Cnrt Version: %d; CNNL Version: %d; %s",
-                CNRT_VERSION, CNNL_VERSION, diopiVersion);   
+        sprintf(version, "Cnrt Version: %d; CNNL Version: %d; DIOPI Version: %d.%d.%d",
+                CNRT_VERSION, CNNL_VERSION, DIOPI_VER_MAJOR, DIOPI_VER_MINOR, DIOPI_VER_PATCH);   
     }
     return version; 
 }

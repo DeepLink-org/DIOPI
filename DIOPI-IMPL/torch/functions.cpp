@@ -24,9 +24,8 @@ const char* diopiGetVendorName() {
 
 const char* diopiGetImplVersion() {
     if (strlen(version) == 0) {
-        const char* diopiVersion = diopiGetVersion();
-        sprintf(version, "Cuda Version: %d; Cudnn Version: %d; %s",
-                CUDART_VERSION, CUDNN_VERSION, diopiVersion);   
+        sprintf(version, "Cuda Version: %d; Cudnn Version: %d; DIOPI Version: %d.%d.%d",
+                CUDART_VERSION, CUDNN_VERSION, DIOPI_VER_MAJOR, DIOPI_VER_MINOR, DIOPI_VER_PATCH);   
     }
     return version; 
 }
