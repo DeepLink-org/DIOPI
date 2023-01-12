@@ -14,7 +14,8 @@ from .utils import save_precision, record, write_precision
 def convert_input_tensors(function_paras: dict, nhwc_list=[], dtype_list=[], filter_dtype_str_list=[]):
     for para in function_paras["kwargs"].keys():
         tensor = function_paras['kwargs'][para]
-        if glob_vars.four_bytes and (para in dtype_list) and tensor is not None:
+        if glob_vars.four_bytes and (para in dtype_list) \
+                and tensor is not None and tensor.dtype == np.int64:
             tensor = tensor.astype(np.int32)
         if isinstance(function_paras['kwargs'][para], np.ndarray):
             ndim = tensor.ndim
