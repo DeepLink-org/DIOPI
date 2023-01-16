@@ -654,7 +654,7 @@ prod
 .. _broadcasting-semantics:
 
 Broadcasting semantics
-======================
+------------------------
 
 Many operations support NumPy's broadcasting semantics.
 See https://numpy.org/doc/stable/user/basics.broadcasting.html for details.
@@ -666,7 +666,7 @@ automatically expanded to be of equal sizes (without making copies of the data).
 .. _type-promotion-doc:
 
 Type promotion
-======================
+------------------------
 
 When the dtypes of inputs to an arithmetic operation (`add`, `sub`, `div`, `mul`) differ, we promote
 by finding the minimum dtype that satisfies the following rules:

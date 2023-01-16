@@ -942,7 +942,6 @@ diopi_configs = {
 
     'cross_entropy_prob_target': dict(
         name=["cross_entropy"],
-        saved_args=dict(output=0),
         atol=1e-3,
         rtol=1e-4,
         para=dict(
@@ -965,6 +964,7 @@ diopi_configs = {
                 {
                     "ins": ['target'],
                     "shape": ((3, 5, 6, 6), (1024, 81), (64, 8, 8)),
+                    "gen_fn": Genfunc.rand,
                 },
             ],
         ),
@@ -1279,7 +1279,6 @@ diopi_configs = {
                 },
             ],
         ),
-        requires_backward=[0],
     ),
 
     'split_bool': dict(
@@ -1303,7 +1302,6 @@ diopi_configs = {
                 },
             ],
         ),
-        requires_backward=[0],
     ),
 
     'sort': dict(
@@ -1325,7 +1323,6 @@ diopi_configs = {
                 },
             ],
         ),
-        requires_backward=[0],
     ),
 
     'topk_nonzero': dict(
@@ -1348,7 +1345,6 @@ diopi_configs = {
                 },
             ],
         ),
-        requires_backward=[0],
     ),
 
     'topk_zero': dict(
@@ -1370,7 +1366,6 @@ diopi_configs = {
                 },
             ],
         ),
-        requires_backward=[0],
     ),
 
     'transpose': dict(

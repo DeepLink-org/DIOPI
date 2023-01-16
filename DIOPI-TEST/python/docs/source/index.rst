@@ -12,3 +12,4 @@ Welcome to CONFORMANCETEST-DIOPI's documentation!
    
    cn_ref
    en_ref
+   conformance_test

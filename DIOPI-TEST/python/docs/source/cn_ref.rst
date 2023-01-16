@@ -1,4 +1,4 @@
-DIOPI Functions
+DIOPI 函数
 ===================
 .. currentmodule:: docs.CN_doc
 
