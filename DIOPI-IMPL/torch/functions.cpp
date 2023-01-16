@@ -3513,4 +3513,13 @@ DIOPI_API diopiError_t diopiTriangularSolveBackward(diopiContextHandle_t ctx, di
     }
 }
 
+diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t repeats_size) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atInput = impl::aten::buildATen(input);
+    at::IntArrayRef atRepeatsSize = impl::aten::buildAtIntArray(repeats_size);
+    auto atOut = at::native::repeat(atInput, atRepeatsSize);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
 }  // extern "C"
