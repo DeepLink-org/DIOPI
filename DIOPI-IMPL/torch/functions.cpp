@@ -264,7 +264,11 @@ diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);
     auto atDim = impl::aten::buildAtIntArray(dim);
-    at::mean_out(atOut, atInput, atDim);  // TODO(fengsibo): use default type instead
+    bool keepdim = false;
+    if (atInput.dim() == atOut.dim()) {
+        keepdim = true;
+    }
+    at::mean_out(atOut, atInput, atDim, keepdim);  // TODO(fengsibo): use default type instead
     return diopiSuccess;
 }
 
@@ -275,7 +279,12 @@ diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);
     auto atDim = impl::aten::buildAtIntArray(dim);
-    at::sum_out(atOut, atInput, atDim);  // TODO(fengsibo): use default type instead
+    // TODO(fengsibo): use default type instead
+    bool keepdim = false;
+    if (atInput.dim() == atOut.dim()) {
+        keepdim = true;
+    }
+    at::sum_out(atOut, atInput, atDim, keepdim);
     return diopiSuccess;
 }
 
@@ -285,7 +294,11 @@ diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);
     auto atDim = impl::aten::buildAtIntArray(dim);
-    at::std_out(atOut, atInput, atDim, unbiased);
+    bool keepdim = false;
+    if (atInput.dim() == atOut.dim()) {
+        keepdim = true;
+    }
+    at::std_out(atOut, atInput, atDim, unbiased, keepdim);
     return diopiSuccess;
 }
 
@@ -295,7 +308,11 @@ diopiError_t diopiMin(diopiContextHandle_t ctx, diopiTensorHandle_t min, diopiTe
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(min);
     auto atIndices = impl::aten::buildATen(min_indices);
-    at::min_out(atOut, atIndices, atInput, dim);
+    bool keepdim = false;
+    if (atInput.dim() == atOut.dim()) {
+        keepdim = true;
+    }
+    at::min_out(atOut, atIndices, atInput, dim, keepdim);
     return diopiSuccess;
 }
 
@@ -305,7 +322,11 @@ diopiError_t diopiMax(diopiContextHandle_t ctx, diopiTensorHandle_t max, diopiTe
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(max);
     auto atIndices = impl::aten::buildATen(max_indices);
-    at::max_out(atOut, atIndices, atInput, dim); 
+    bool keepdim = false;
+    if (atInput.dim() == atOut.dim()) {
+        keepdim = true;
+    }
+    at::max_out(atOut, atIndices, atInput, dim, keepdim); 
     return diopiSuccess;
 }
 
@@ -314,7 +335,11 @@ diopiError_t diopiAny(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);
-    at::any_out(atOut, atInput, dim);
+    bool keepdim = false;
+    if (atInput.dim() == atOut.dim()) {
+        keepdim = true;
+    }
+    at::any_out(atOut, atInput, dim, keepdim);
     return diopiSuccess;
 }
 
@@ -323,7 +348,11 @@ diopiError_t diopiAll(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);
-    at::all_out(atOut, atInput, dim);
+    bool keepdim = false;
+    if (atInput.dim() == atOut.dim()) {
+        keepdim = true;
+    }
+    at::all_out(atOut, atInput, dim, keepdim);
     return diopiSuccess;
 }
 
@@ -2508,7 +2537,11 @@ diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     auto atOut = impl::aten::buildATen(out);
     auto atP = impl::aten::buildAtScalar(p);
     at::IntArrayRef atDim = impl::aten::buildAtIntArray(dim);
-    at::norm_out(atOut, atInput, atP, atDim);
+    bool keepdim = false;
+    if (atInput.dim() == atOut.dim()) {
+        keepdim = true;
+    }
+    at::norm_out(atOut, atInput, atP, atDim, keepdim);
     return diopiSuccess;
 }
 
@@ -3133,7 +3166,11 @@ diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
         auto atTmp = at::prod(atInput);
         impl::aten::updateATen2Tensor(ctx, atTmp, out);
     } else {
-        at::prod_out(atOut, atInput, *dim);
+        bool keepdim = false;
+        if (atInput.dim() == atOut.dim()) {
+            keepdim = true;
+        }
+        at::prod_out(atOut, atInput, *dim, keepdim);
     }
     return diopiSuccess;
 }
