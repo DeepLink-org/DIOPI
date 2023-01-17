@@ -111,6 +111,7 @@ def binary_op_scalar(input, other, inplace, call, alpha=None, dtype=None) -> Ten
         dtype = input.get_dtype()
 
     if inplace:
+        call = call + "Inp"
         out = input
     else:
         sizeI = input.size()
@@ -216,57 +217,65 @@ def erf(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, 'diopiErf')
 
 
-def add(input, other, alpha=1) -> Tensor:
-    return binary_op_scalar(input, other, False, 'diopiAdd', alpha=alpha)
+def add(input, other, inplace=False, alpha=1) -> Tensor:
+    return binary_op_scalar(input, other, inplace, 'diopiAdd', alpha=alpha)
 
 
-def sub(input, other, alpha=1.0) -> Tensor:
-    return binary_op_scalar(input, other, False, 'diopiSub', alpha=alpha)
+def sub(input, other, inplace=False, alpha=1.0) -> Tensor:
+    return binary_op_scalar(input, other, inplace, 'diopiSub', alpha=alpha)
 
 
-def eq(input, other) -> Tensor:
-    return binary_op_scalar(input, other, False, 'diopiEq', dtype=Dtype.bool)
+def eq(input, other, inplace=False) -> Tensor:
+    return binary_op_scalar(input, other, inplace, 'diopiEq', dtype=Dtype.bool)
 
 
-def ne(input, other) -> Tensor:
-    return binary_op_scalar(input, other, False, 'diopiNe', dtype=Dtype.bool)
+def ne(input, other, inplace=False) -> Tensor:
+    return binary_op_scalar(input, other, inplace, 'diopiNe', dtype=Dtype.bool)
 
 
-def ge(input, other) -> Tensor:
-    return binary_op_scalar(input, other, False, 'diopiGe', dtype=Dtype.bool)
+def ge(input, other, inplace=False) -> Tensor:
+    return binary_op_scalar(input, other, inplace, 'diopiGe', dtype=Dtype.bool)
 
 
-def gt(input, other) -> Tensor:
-    return binary_op_scalar(input, other, False, 'diopiGt', dtype=Dtype.bool)
+def gt(input, other, inplace=False) -> Tensor:
+    return binary_op_scalar(input, other, inplace, 'diopiGt', dtype=Dtype.bool)
 
 
-def le(input, other) -> Tensor:
-    return binary_op_scalar(input, other, False, 'diopiLe', dtype=Dtype.bool)
+def le(input, other, inplace=False) -> Tensor:
+    return binary_op_scalar(input, other, inplace, 'diopiLe', dtype=Dtype.bool)
 
 
-def lt(input, other) -> Tensor:
-    return binary_op_scalar(input, other, False, 'diopiLt', dtype=Dtype.bool)
+def lt(input, other, inplace=False) -> Tensor:
+    return binary_op_scalar(input, other, inplace, 'diopiLt', dtype=Dtype.bool)
 
 
-def mul(input, other) -> Tensor:
-    return binary_op_scalar(input, other, False, 'diopiMul')
+def mul(input, other, inplace=False) -> Tensor:
+    return binary_op_scalar(input, other, inplace, 'diopiMul')
 
 
-def div(input, other, rounding_mode=None) -> Tensor:
+def div(input, other, inplace=False, rounding_mode=None) -> Tensor:
     call = "diopiDiv"
-    args = "input.context_handle, out.tensor_handle, input.tensor_handle, "
+    args = "input.context_handle, "
     sizeI = input.size()
     rounding_mode = convert_round_mode(rounding_mode)
+    if inplace:
+        call = call + "Inp"
+        out = input
+    else:
+        if not isinstance(other, Tensor):
+            out = Tensor(sizeI, input.get_dtype())
+        else:
+            sizeO = other.size()
+            outsize = broadcast_out_size(list(sizeI), list(sizeO))
+            out = Tensor(outsize, input.get_dtype())
+        args = args + "out.tensor_handle, "
+
     if not isinstance(other, Tensor):
-        out = Tensor(sizeI, input.get_dtype())
         call = call + "Scalar"
         other = Scalar(other)
-        args = args + "byref(other)"
+        args = args + "input.tensor_handle, byref(other)"
     else:
-        sizeO = other.size()
-        outsize = broadcast_out_size(list(sizeI), list(sizeO))
-        out = Tensor(outsize, input.get_dtype())
-        args = args + "other.tensor_handle"
+        args = args + "input.tensor_handle, other.tensor_handle"
 
     func = check_function(call)
     ret = eval(f'func({args}, rounding_mode)')
@@ -275,11 +284,11 @@ def div(input, other, rounding_mode=None) -> Tensor:
     return out
 
 
-def logical_and(input, other) -> Tensor:
+def logical_and(input, other, inplace=False) -> Tensor:
     return binary_op_scalar(input, other, False, 'diopiBitwiseAnd', dtype=Dtype.bool)
 
 
-def logical_or(input, other) -> Tensor:
+def logical_or(input, other, inplace=False) -> Tensor:
     return binary_op_scalar(input, other, False, 'diopiBitwiseOr', dtype=Dtype.bool)
 
 
@@ -1085,7 +1094,7 @@ def split(tensor, split_size_or_sections, dim=0):
     return outs
 
 
-def pow(input, exponent) -> Tensor:
+def pow(input, exponent, inplace = False) -> Tensor:
     if not isinstance(input, Tensor):
         assert isinstance(exponent, Tensor),\
             "exponent must be tensor when input is scalar"
@@ -1097,19 +1106,28 @@ def pow(input, exponent) -> Tensor:
     elif not isinstance(exponent, Tensor):
         assert isinstance(input, Tensor),\
             "input must be tensor when exponent is scalar"
-        func = check_function("diopiPow")
-        out = raw_like(input)
         exponent = byref(Scalar(exponent))
-        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, exponent)
+        if inplace:
+            func = check_function("diopiPowInp")
+            ret = func(input.context_handle, input.tensor_handle, exponent)
+        else:
+            func = check_function("diopiPow")
+            out = raw_like(input)
+            ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, exponent)
+    elif inplace:
+        func = check_function("diopiPowInpTensor")
+        ret = func(input.context_handle, input.tensor_handle, exponent.tensor_handle)
     else:
         sizeI = list(input.size())
         sizeE = list(exponent.size())
         sizeO = broadcast_out_size(sizeI, sizeE)
         out = Tensor(sizeO, input.get_dtype())
-
         func = check_function("diopiPowTensor")
         ret = func(input.context_handle, out.tensor_handle,
-                   input.tensor_handle, exponent.tensor_handle)
+                input.tensor_handle, exponent.tensor_handle)
+    if inplace:
+        out = input
+
     check_returncode(ret)
     return out
 

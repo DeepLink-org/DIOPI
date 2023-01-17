@@ -427,6 +427,7 @@ diopi_configs = {
     'pow_float_tensor': dict(
         name=['pow'],
         interface=['torch'],
+        is_inplace=True,
         dtype=[Dtype.float32, Dtype.float64],
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -450,6 +451,7 @@ diopi_configs = {
     'pow_float_number': dict(
         name=['pow'],
         interface=['torch'],
+        is_inplace=True,
         para=dict(
            exponent=[2, 3, 4, 0.2],
         ),
@@ -470,6 +472,7 @@ diopi_configs = {
     'pow_int_tensor': dict(
         name=['pow'],
         interface=['torch'],
+        is_inplace=True,
         tensor_para=dict(
             args=[
                 {
@@ -487,6 +490,7 @@ diopi_configs = {
         name=['add', 'sub', 'mul', 'div', 'eq', 'ne', 'le',
               'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
         interface=['torch'],
+        is_inplace=True,
         dtype=[Dtype.float32],
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -510,6 +514,7 @@ diopi_configs = {
         name=['add', 'sub', 'mul', 'div', 'eq',
               'ne', 'le',  'lt', 'gt', 'ge'],
         interface=['torch'],
+        is_inplace=True,
         dtype=[Dtype.float32],
         para=dict(
             other=[-1, 0.028, 2, 1.0],
@@ -534,6 +539,7 @@ diopi_configs = {
             other=[-2, 2.0, 4, 1],
         ),
         interface=['torch'],
+        is_inplace=True,
         dtype=[Dtype.float32],
         tensor_para=dict(
             gen_fn=Genfunc.randn,
