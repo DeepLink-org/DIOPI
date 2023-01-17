@@ -318,7 +318,7 @@ void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHa
 
 c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding_mode) {
     switch(rounding_mode) {
-    case (RoundModeNone): return "";
+    case (RoundModeNone): return c10::nullopt;
     case (RoundModeTrunc): return "trunc";
     case (RoundModeFloor): return "floor";
     case (RoundModeEND): return "";
