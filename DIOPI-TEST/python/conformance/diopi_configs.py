@@ -513,6 +513,7 @@ diopi_configs = {
         name=['add', 'sub', 'mul', 'div', 'eq',
               'ne', 'le', 'lt', 'gt', 'ge'],
         interface=['torch'],
+        tag=['scalar'],
         is_inplace=True,
         dtype=[Dtype.float32],
         para=dict(

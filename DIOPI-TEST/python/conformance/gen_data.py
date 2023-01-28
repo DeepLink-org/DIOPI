@@ -183,7 +183,7 @@ def delete_fn(cfg_dict):
     return cfg_dict
 
 
-def gen_tensor(arg: dict) -> np.ndarray:
+def gen_tensor(arg: dict, cfg_save_dict: dict) -> np.ndarray:
     if "value" in arg.keys():
         dtype = to_numpy_dtype(arg.get("dtype", None))
         value = np.array(arg["value"], dtype=dtype)
@@ -202,6 +202,9 @@ def gen_tensor(arg: dict) -> np.ndarray:
             low = arg["gen_fn"].get("low", 0)
             high = arg["gen_fn"].get("high", 10)
         dtype = to_numpy_dtype(arg["dtype"])
+
+        if (shape == () or 0 in shape) and "empty" not in cfg_save_dict['tag']:
+            cfg_save_dict['tag'].append("empty")
 
         if gen_fn == Genfunc.randn:
             value = np.random.randn(*shape).astype(dtype)
@@ -254,7 +257,7 @@ def gen_and_dump_data(dir_path: str, cfg_name: str, cfg_expand_list: list, cfg_s
             name = arg["ins"]
             # length of gen_num_range must be 2, otherwise ignore gen_num_range
             if len(arg["gen_num_range"]) != 2:
-                value = gen_tensor(arg)
+                value = gen_tensor(arg, cfg_save_dict)
                 function_paras["kwargs"][name] = value
                 if arg["requires_grad"] == [True] and arg["shape"] is not None:
                     function_paras["requires_grad"][name] = arg["requires_grad"]
@@ -263,7 +266,7 @@ def gen_and_dump_data(dir_path: str, cfg_name: str, cfg_expand_list: list, cfg_s
                                                 arg['gen_num_range'][1])
                 arg.setdefault("tensors_num", tensors_num)
                 for _ in range(tensors_num):
-                    value = gen_tensor(arg)
+                    value = gen_tensor(arg, cfg_save_dict)
                     tensor_list.append(value)
                 assert (cfg_dict["tensor_para"]["seq_name"] != ""), "need a name the list of tensors"
         # tie all the function_paras in a list named seq_name

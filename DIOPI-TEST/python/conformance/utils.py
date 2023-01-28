@@ -18,10 +18,19 @@ default_cfg_dict = dict(
         fp16_exact_match=False,
         train=True,
     ),
-    log_level="DEBUG"  # NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICA
+    # set log_level = "DEBUG" for debug infos
+    log_level="INFO"  # NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICA
 )
-default_cfg_dict['log_level'] = 1
+np.set_printoptions(precision=5,
+                    threshold=100,
+                    edgeitems=3,
+                    linewidth=275,
+                    suppress=True,
+                    formatter=None)
+
 error_counter = [0]
+error_content = []
+error_content_other = []
 
 # Note : 1. aten's cuda implementation doesn't support 3-dim nhwc Tensor
 #        adaptive_max_pool2d（3d), max_pool3d,
@@ -133,21 +142,52 @@ class Log(object):
 
 
 def wrap_logger_error(func):
-    def inner(*args, **kwargs):
+    def inner(*args, tag=[], info=[], **kwargs):
         if args[0].startswith("NotImplemented") or \
                 args[0].startswith("Skipped") or \
                 args[0].startswith("AttributeError"):
+            error_content_other.append(args[0] + "\n")
             return func(*args, **kwargs)
         global error_counter
         error_counter[0] += 1
+        tag = str(tag).replace("'", "")
+        info = str(info).replace("'", "")
+        error_content.append(f"{error_counter[0]}--{args[0]}.   TestTag: {tag}  TensorInfo : {info}\n")
+        error_content.append("---------------------------------\n")
+        func(*args, **kwargs)
+        if default_cfg_dict['log_level'] == "DEBUG":
+            write_report()
+            exit()
+    return inner
+
+
+def wrap_logger_debug(func):
+    def inner(*args, **kwargs):
+        if default_cfg_dict['log_level'] == "DEBUG":
+            error_content.append(args[0])
         return func(*args, **kwargs)
     return inner
 
 
 logger = Log(default_cfg_dict['log_level']).get_logger()
 is_ci = os.getenv('CI', 'null')
-if is_ci != 'null':
-    logger.error = wrap_logger_error(logger.error)
+logger.error = wrap_logger_error(logger.error)
+logger.debug = wrap_logger_debug(logger.debug)
+
+
+def write_report():
+    if is_ci != 'null':
+        return
+    os.system("rm -f error_report.csv")
+    with open("error_report.csv", "w") as f:
+        f.write("Conformance-Test Error Report\n")
+        f.write("---------------------------------\n")
+        f.write(f"{error_counter[0]} Tests failed:\n")
+        for ele in error_content:
+            f.write(ele)
+        f.write("Test skipped or op not implemented: \n")
+        for ele in error_content_other:
+            f.write(ele)
 
 
 class DiopiException(Exception):
@@ -202,7 +242,7 @@ def need_process_func(cfg_func_name, func_name, model_name):
         op_list = model_op_list[model_name]
         if cfg_func_name not in op_list:
             return False
-    elif func_name not in ['all', cfg_func_name]:
+    elif func_name not in ['all_ops', cfg_func_name]:
         return False
 
     return True

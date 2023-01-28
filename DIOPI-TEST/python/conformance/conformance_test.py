@@ -10,7 +10,8 @@ from .gen_data import get_saved_pth_list, get_data_from_file
 from .utils import save_precision, record, write_precision
 
 
-def convert_input_tensors(function_paras: dict, nhwc_list=[], dtype_list=[], filter_dtype_str_list=[]):
+def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dtype_list=[], filter_dtype_str_list=[]):
+    tensor_info = []
     for para in function_paras["kwargs"].keys():
         tensor = function_paras['kwargs'][para]
         if glob_vars.four_bytes and (para in dtype_list) \
@@ -35,16 +36,25 @@ def convert_input_tensors(function_paras: dict, nhwc_list=[], dtype_list=[], fil
                 tensor_nhwc.shape = tensor_nchw.shape
                 tensor_nhwc.strides = compute_nhwc_stride(tensor_nchw.shape, tensor_nchw.itemsize, nhwc_list[0])
                 tensor = tensor_nhwc
+                if 'nhwc' not in test_tag:
+                    test_tag.append('nhwc')
 
             if filter_dtype_str_list and str(tensor.dtype) in filter_dtype_str_list:
                 raise DiopiException(f"Skipped: {tensor.dtype} Tensor skipped for test")
+            if tensor is not None and str(tensor.dtype) not in test_tag:
+                test_tag.append(str(tensor.dtype))
             function_paras['kwargs'][para] = Tensor.from_numpy(tensor)
+            tensor_info.append((para, str(tensor.dtype), str(tensor.shape)))
 
         if para == "tensors":
             tensors = function_paras['kwargs'][para]
             for idx, ele in enumerate(tensors):
                 tensors[idx] = Tensor.from_numpy(ele)
+                if ele is not None and str(ele.dtype) not in test_tag:
+                    test_tag.append(str(ele.dtype))
             function_paras['kwargs'][para] = tensors
+            tensor_info.append(("TensorList: " + para, str(tensors[0].dtype), str(tensors[0].shape)))
+    return tensor_info
 
 
 def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare=False, var_name="out") -> bool:
@@ -55,6 +65,13 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
     passed = np.allclose(tensor1, tensor2, rtol, atol, True)
     if record:
         save_precision(cfg, tensor1, tensor2, passed, var_name)
+    if not passed and logger.level == 10:
+        sum1 = tensor1.sum()
+        sum2 = tensor2.sum()
+        mask = np.isclose(tensor1, tensor2, rtol, atol, True)
+        max_diff = np.abs(tensor1 - tensor2).max()
+        logger.debug(f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}, Max of diff is {max_diff}. \
+                     \n" + f"{var_name} is {tensor1},\n{var_name}_ref is {tensor2},\nMask is {mask}\n")
     return passed
 
 
@@ -90,23 +107,32 @@ def compare_with_gen_output(output, cfg, output_reference, sum_to_compare=False)
 
 
 class ManualTest(object):
-    def test_dropout(input, p=0.5, training=True, inplace=False):
+    def test_dropout_(func, input, p=0.5, training=True, inplace=False):
         input_numpy = input.numpy()
-        out, mask = F.dropout(input, p, training, inplace)
+        out, mask = func(input, p, training, inplace)
+        name = 'dropout' if func == F.dropout else 'dropout2d'
         out_numpy = out.numpy()
         mask_numpy = mask.numpy()
 
         # compute ratio
         real_ratio = np.sum(mask_numpy) / mask.numel()
         # check data
+        if func == F.dropout2d:
+            tmp = np.ones(input.shape)
+            mask_numpy = mask_numpy * tmp
         remains = out_numpy[mask_numpy == 1]
         ref = input_numpy[mask_numpy == 1]
-
         assert np.allclose(remains, ref / (1 - p), rtol=1e-4, atol=1e-5),\
-            "failed to execute dropout"
+            f"failed to execute {name}"
 
         assert np.abs(real_ratio - (1 - p)) < 3e-2,\
-            "failed to execute dropout"
+            f"failed to execute {name} "
+
+    def test_dropout(input, p=0.5, training=True, inplace=False):
+        ManualTest.test_dropout_(F.dropout, input, p, training, inplace)
+
+    def test_dropout2d(input, p=0.5, training=True, inplace=False):
+        ManualTest.test_dropout_(F.dropout2d, input, p, training, inplace)
 
     def test_randperm(n):
         out = F.randperm(n)
@@ -178,6 +204,8 @@ class ConformanceTest(object):
                     continue
 
             function_paras = data["function_paras"]
+            test_tag = data["cfg"]["tag"]
+            tensor_info = []
             nhwc_list = nhwc_op[cfg_func_name] if glob_vars.nhwc and (cfg_func_name in nhwc_op) else []
             dtype_list = dtype_op[cfg_func_name] if glob_vars.four_bytes and (cfg_func_name in dtype_op) else []
             kwargs = function_paras['kwargs']
@@ -187,14 +215,19 @@ class ConformanceTest(object):
                 func_call_list.append(f"{module}.{test_func_name}(**kwargs, inplace=True)")
 
             for func_call in func_call_list:
+                if "inplace=True" in func_call:
+                    if test_tag[-1] == 'backward':
+                        test_tag.pop()
+                    test_tag.append("inplace")
                 try:
-                    convert_input_tensors(function_paras, nhwc_list, dtype_list, filter_dtype_str_list)
+                    info = convert_input_tensors(function_paras, test_tag, nhwc_list, dtype_list, filter_dtype_str_list)
+                    tensor_info = info if info else tensor_info
                     output = eval(func_call)
                     sum_to_compare = True if 'sorted' in kwargs and ~kwargs['sorted'] else False
                     passed = compare_with_gen_output(output, data['cfg'], output_reference, sum_to_compare) \
                         if need_output else True
                     logger.info(f"Run diopi_functions.{cfg_func_name} succeed") \
-                        if passed else logger.error(f"Run diopi_functions.{cfg_func_name} failed")
+                        if passed else logger.error(f"Run diopi_functions.{cfg_func_name} failed", tag=test_tag, info=tensor_info)
                 except FunctionNotImplementedError as e:
                     logger.error(f"NotImplemented: {e}")
                     continue
@@ -208,6 +241,7 @@ class ConformanceTest(object):
                 write_precision(data["cfg"], cfg_func_name, passed)
 
                 if function_paras["requires_grad"] and "inplace=True" not in func_call:
+                    test_tag.append("backward")
                     saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
                     saved_backward_pth = os.path.join(outputs_dir_path, saved_backward_pth)
                     backward_out_reference = get_data_from_file(saved_backward_pth, saved_pth, "backward output")
@@ -231,7 +265,7 @@ class ConformanceTest(object):
                         # import pdb;pdb.set_trace()
                         passed = compare_with_gen_output(grad_input, data['cfg'], backward_out_reference)
                         logger.info(f"Run diopi_functions.{cfg_func_name}_backward succeed") \
-                            if passed else logger.error(f"Run diopi_functions.{cfg_func_name}_backward failed")
+                            if passed else logger.error(f"Run diopi_functions.{cfg_func_name}_backward failed", tag=test_tag, info=tensor_info)
                         write_precision(data["cfg"], cfg_func_name + '_bp', passed)
                     except FunctionNotImplementedError as e:
                         logger.error(f"NotImplemented: {e}")

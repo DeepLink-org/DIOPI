@@ -2,7 +2,7 @@ import subprocess
 import argparse
 import shlex
 import conformance as cf
-from conformance.utils import is_ci, error_counter, DiopiException
+from conformance.utils import is_ci, error_counter, DiopiException, write_report
 from conformance.utils import logger, nhwc_op, dtype_op, dtype_out_op, glob_vars
 from conformance.model_list import model_list, model_op_list
 
@@ -11,8 +11,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Conformance Test for DIOPI')
     parser.add_argument('--mode', type=str, default='test',
                         help='running mode, available options: gen_data, run_test and utest')
-    parser.add_argument('--fname', type=str, default='all',
-                        help='the name of the function for which the test will run (default: all)')
+    parser.add_argument('--fname', type=str, default='all_ops',
+                        help='the name of the function for which the test will run (default: all_ops)')
     parser.add_argument('--model_name', type=str, default='',
                         help='Get op list of given model name')
     parser.add_argument('--filter_dtype', type=str, nargs='*',
@@ -66,6 +66,7 @@ if __name__ == "__main__":
         if args.model_name != '':
             logger.info(f"Now, fname will be disabled, and all {args.model_name}'s ops will be processed.")
         cf.ConformanceTest.run(args.fname, args.model_name, args.filter_dtype)
+        write_report()
     elif args.mode == 'utest':
         call = "python3 -m pytest -vx tests"
         subprocess.call(shlex.split(call))  # nosec

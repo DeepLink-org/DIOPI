@@ -203,17 +203,17 @@ def add_name_for_tensor_config(cfgs_dict):
 
 def check_and_expand_in_args(domain, args: dict, key):
     length = 1
-    len_dtype_eq_1 = []
-    len_dtype_not_eq_1 = []
+    len_value_eq_1 = []
+    len_value_not_eq_1 = []
     for arg in args:
         if key in arg.keys():
             if len(arg[key]) == 1:
-                len_dtype_eq_1.append(arg)
+                len_value_eq_1.append(arg)
             else:
-                len_dtype_not_eq_1.append(arg)
+                len_value_not_eq_1.append(arg)
 
     is_1st = True
-    for arg in len_dtype_not_eq_1:
+    for arg in len_value_not_eq_1:
         if key in arg.keys():
             if is_1st:
                 length = len(arg[key])
@@ -221,7 +221,7 @@ def check_and_expand_in_args(domain, args: dict, key):
                 if length != len(arg[key]):
                     assert False, f"{domain}.{key} length is not matched"
 
-    for arg in len_dtype_eq_1:
+    for arg in len_value_eq_1:
         if key in arg.keys():
             if length != 1:
                 arg[key] = arg[key] * length
@@ -249,9 +249,7 @@ def check_and_set(case_v, key, default_v):
 
 def format_cfg(cases):
     for case_k, case_v in cases.items():
-        # set [] for defalut para, tensor_para, para, pytorch
-        # if "pytorch" not in case_v.keys():
-        #     case_v["pytorch"] = pt.default
+        # set [] for defalut para, tensor_para, para
         if "tensor_para" not in case_v.keys():
             case_v["tensor_para"] = {}
         if "args" not in case_v["tensor_para"].keys():
@@ -263,8 +261,8 @@ def format_cfg(cases):
             case_v["requires_backward"] = []
         if "para" not in case_v.keys():
             case_v["para"] = {}
-        if "skip_if" not in case_v.keys():
-            case_v["skip_if"] = ""
+        if "tag" not in case_v.keys():
+            case_v["tag"] = []
         if "saved_args" not in case_v.keys():
             case_v["saved_args"] = {}
         if "interface" not in case_v.keys():
