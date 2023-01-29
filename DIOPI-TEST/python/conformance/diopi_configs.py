@@ -356,14 +356,13 @@ diopi_configs = {
         is_inplace=True,
         dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
         tensor_para=dict(
-            gen_fn=Genfunc.randn,
+            gen_fn=Genfunc.positive,
             args=[
                 {
                     "ins": ['input'],
                     "shape": ((1, ), (1024,), (364800, 4), (2, 128, 3072),
                               (256, 128, 3, 3),
                               (2, 31, 512, 6, 40)),
-                    'abs_input': [True],
                 },
             ],
         ),
@@ -2932,6 +2931,75 @@ diopi_configs = {
                 },
             ]
         ),
+    ),
+
+    'flip': dict(
+        name=['flip'],
+        interface=['torch'],
+        para=dict(
+            dims=[(1,), (-2, -1), (0, 1)],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "shape": ((49, 49), (12, 13, 14), (12, 13, 14, 16)),
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'cholesky': dict(
+        name=['cholesky_ex'],
+        interface=['torch.linalg'],
+        para=dict(
+            upper=[True, False],
+            check_errors=[True, False],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((2, 3, 3), (2, 3, 3)),
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.sym_mat,
+                },
+            ],
+        ),
+        requires_backward=[0],
+        saved_args=dict(output=0),
+    ),
+
+    'triangular_solve': dict(
+        name=['triangular_solve'],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-5,
+        para=dict(
+            upper=[True, False, True, False],
+            transpose=[True, False, True, False],
+            unitriangular=[True, False, True, False],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((2, 2, 2), (3, 3), (7, 6, 5), (7, 2, 1)),
+                    "dtype": [Dtype.float32],
+                },
+                {
+                    "ins": ['A'],
+                    "requires_grad": [True],
+                    "shape": ((2, 2, 2), (5, 3, 3), (7, 6, 6), (2, 2)),
+                    "dtype": [Dtype.float32],
+                },
+            ],
+        ),
+        saved_args=dict(output=0),
     ),
 
 }

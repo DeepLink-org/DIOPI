@@ -217,13 +217,18 @@ def gen_tensor(arg: dict) -> np.ndarray:
             value = np.random.randint(low=low, high=high, size=shape, dtype=dtype)
         elif gen_fn == Genfunc.empty:
             value = np.empty(shape, dtype=dtype)
+        elif gen_fn == Genfunc.positive:
+            value = np.abs(np.random.randn(*shape).astype(dtype))
+        elif gen_fn == Genfunc.sym_mat:
+            axis = (0, 2, 1) if len(shape) == 3 else (0, 1)
+            mat = np.random.randn(*shape).astype(dtype)
+            value = mat @ mat.transpose(axis)
         else:
             value = np.random.randn(*shape).astype(dtype)
 
         if "no_contiguous" in arg:
             value = value.transpose()
-        if "abs_input" in arg:
-            value = np.abs(value)
+
     except BaseException as e:
         logger.error(e, exc_info=True)
         logger.error(arg)

@@ -3196,3 +3196,61 @@ def col2im(input, output_size, kernel_size, dilation=1, padding=0, stride=1) -> 
                 dilation, padding, stride)
     check_returncode(ret)
     return out
+
+
+def flip(input, dims):
+    out = raw_like(input)
+    dims = Sizes(tuple(dims))
+    func = check_function("diopiFlip")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dims)
+    check_returncode(ret)
+    return out
+
+
+def cholesky_ex(input, upper=False, check_errors=False):
+    out = raw_like(input)
+    sizeI = input.size()
+    nums = sizeI[0:-2] if len(sizeI) > 2 else ()
+    info = Tensor(nums, Dtype.int32)
+    func = check_function("diopiCholesky")
+    ret = func(input.context_handle, out.tensor_handle, info.tensor_handle, input.tensor_handle, c_bool(upper), c_bool(check_errors))
+    check_returncode(ret)
+    return out, info
+
+
+def cholesky_ex_backward(input, grad_outputs, output, upper=False, **kwargs):
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    grad_input = raw_like(input)
+    func = check_function("diopiCholeskyBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle, output.tensor_handle, c_bool(upper))
+    check_returncode(ret)
+    return {"input": grad_input}
+
+
+def triangular_solve(input, A, upper=True, transpose=False, unitriangular=False):
+    sizeA = list(A.size())
+    sizeI = list(input.size())
+    sizeO = sizeA if len(sizeA) > len(sizeI) else sizeI
+    sizeO[-1] = sizeI[-1]
+    out = Tensor(sizeO, A.get_dtype())
+    sizeO[-1] = sizeA[-1]
+    cloned_mat = Tensor(sizeO, A.get_dtype())
+    func = check_function("diopiTriangularSolve")
+    ret = func(input.context_handle, out.tensor_handle, cloned_mat.tensor_handle, input.tensor_handle, 
+               A.tensor_handle, c_bool(upper), c_bool(transpose), c_bool(unitriangular))
+    check_returncode(ret)
+    Res = namedtuple('Res', ['solution', 'cloned_coefficient'])
+    output = Res(out, cloned_mat)
+    return output
+
+
+def triangular_solve_backward(input, grad_outputs, output, A, upper=True, transpose=False, unitriangular=False, **kwargs):
+    assert len(grad_outputs) <= 2, "accept at most 2 gradient to do backward"
+    grad_cloned_mat = c_void_p() if len(grad_outputs) == 1 else grad_outputs[1].tensor_handle
+    grad_A = raw_like(A)
+    grad_input = raw_like(input)
+    func = check_function("diopiTriangularSolveBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_A.tensor_handle, grad_outputs[0].tensor_handle,
+               grad_cloned_mat, output.tensor_handle, input.tensor_handle, A.tensor_handle, c_bool(upper), c_bool(transpose), c_bool(unitriangular))
+    check_returncode(ret)
+    return {"input": grad_input, "A": grad_A}

@@ -6,14 +6,16 @@ from .dtype import Dtype
 
 
 class Genfunc(object):
-    randn = 0
-    rand = 1
+    randn = 0 # “standard normal” distribution
+    rand = 1 # random samples from a uniform distribution over [0, 1).
     ones = 2
     zeros = 3
     mask = 4
     empty = 5
     randint = 6
-    default = 7
+    positive = 7
+    sym_mat = 8
+    default = 9
 
     @staticmethod
     def load(file_path):
