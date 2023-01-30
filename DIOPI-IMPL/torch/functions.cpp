@@ -3284,4 +3284,104 @@ diopiError_t diopiCol2Im(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     return diopiSuccess;
 }
 
+diopiError_t diopiFlip(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dims) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atInput = impl::aten::buildATen(input);
+    at::Tensor atOut = impl::aten::buildATen(out);
+    at::IntArrayRef atDims = impl::aten::buildAtIntArray(dims);
+    impl::aten::invokeATenFuncRet(ctx, at::flip, out, atInput, atDims);
+}
+
+diopiError_t diopiCholesky(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t info, diopiConstTensorHandle_t mat, bool upper, bool checkerror) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atMat = impl::aten::buildATen(mat);
+    at::Tensor atOut = impl::aten::buildATen(out);
+    at::Tensor atInfo = impl::aten::buildATen(info);
+    at::linalg_cholesky_ex_out(atOut, atInfo, atMat, upper, checkerror);
+}
+
+diopiError_t diopiCholeskyBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_mat, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t L, bool upper) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atGradMat = impl::aten::buildATen(grad_mat);
+    at::Tensor atL = impl::aten::buildATen(L);
+    at::Tensor atGradOut = impl::aten::buildATen(grad_output);
+    if (upper) {
+        atL = atL.transpose(-1, -2).conj();
+        atGradOut = atGradOut.transpose(-1, -2).conj();
+    }
+    auto L_inverse = std::get<0>(at::triangular_solve(at::eye(atL.size(-1), atL.options()), atL, /*upper=*/false));
+    auto phi = at::matmul(atL.transpose(-1, -2).conj(), atGradOut);
+    phi.tril_().diagonal(/*offset=*/0, /*dim1=*/-2, /*dim2=*/-1).mul_(0.5);
+
+    auto grad_input = at::matmul(at::matmul(L_inverse.transpose(-1, -2).conj(), phi), L_inverse);
+    auto out = grad_input.add(grad_input.transpose(-1, -2).conj()).mul_(0.5);  // Symmetrizing the gradient
+    impl::aten::updateATen2Tensor(ctx, out, grad_mat);
+}
+
+diopiError_t diopiTriangularSolve(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t cloned_mat, diopiConstTensorHandle_t b,
+        diopiConstTensorHandle_t mat, bool upper, bool transpose, bool unitriangular) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atClonedMat = impl::aten::buildATen(cloned_mat);
+    at::Tensor atOut = impl::aten::buildATen(out);
+    at::Tensor atb = impl::aten::buildATen(b);
+    at::Tensor atMat = impl::aten::buildATen(mat);
+    at::triangular_solve_out(atOut, atClonedMat, atb, atMat, upper, transpose, unitriangular);
+}
+
+DIOPI_API diopiError_t diopiTriangularSolveBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_b, diopiTensorHandle_t grad_mat,
+        diopiConstTensorHandle_t grad_x, diopiConstTensorHandle_t grad_cloned_mat, diopiConstTensorHandle_t x,
+        diopiConstTensorHandle_t b, diopiConstTensorHandle_t mat, bool upper, bool transpose, bool unitriangular) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atGradB = impl::aten::buildATen(grad_b);
+    at::Tensor atGradM = impl::aten::buildATen(grad_mat);
+
+    at::Tensor atGradx = impl::aten::buildATen(grad_x);
+    at::Tensor atGradCloneMat = impl::aten::buildATen(grad_cloned_mat);
+
+    at::Tensor atx = impl::aten::buildATen(x);
+    at::Tensor atb = impl::aten::buildATen(b);
+    at::Tensor atMat = impl::aten::buildATen(mat);
+
+    at::Tensor atGradb, atGradMat;
+    if (atGradx.defined() || atGradCloneMat.defined()) {
+        if (atGradx.defined()) {
+            atGradb = std::get<0>(atGradx.triangular_solve(atMat.conj(), upper, !transpose, unitriangular));
+            if (grad_mat != nullptr) {
+                atGradMat = transpose ? -atx.conj().matmul(atGradb.transpose(-1, -2)) : -atGradb.matmul(atx.transpose(-1, -2).conj());
+                if (upper) {
+                    atGradMat = atGradMat.triu((int) unitriangular);
+                } else {
+                    atGradMat = atGradMat.tril(-((int) unitriangular));
+                }
+            }
+        }
+        if (!atGradMat.defined()) {
+            atGradMat = at::zeros({1}, atMat.options()).expand_as(atMat);
+        }
+        if (!atGradb.defined()) {
+            atGradb = at::zeros({1}, atb.options()).expand_as(atb);
+        }
+        if (grad_mat != nullptr && atGradCloneMat.defined()) {
+            atGradMat = atGradMat.add(atGradCloneMat);
+        }
+        int64_t nums = atGradMat.numel() / atGradM.numel();
+        std::vector<int64_t> newShape{nums, atGradMat.size(-2), -1};
+        if (nums != 1) {
+            at::IntArrayRef atShape(newShape.data(), newShape.size());
+            at::sum_out(atGradM, atGradMat.reshape(atShape), 0, false);
+        } else {
+            impl::aten::updateATen2Tensor(ctx, atGradMat, grad_mat);
+        }
+
+        nums = atGradb.numel() / atGradB.numel();
+        if (nums != 1) {
+            newShape[0] = nums;
+            at::IntArrayRef atShape(newShape.data(), newShape.size());
+            at::sum_out(atGradB, atGradb.reshape(atShape), 0, false);
+        } else {
+            impl::aten::updateATen2Tensor(ctx, atGradb, grad_b);
+        }
+    }
+}
+
 }  // extern "C"
