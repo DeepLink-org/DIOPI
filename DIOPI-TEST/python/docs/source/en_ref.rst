@@ -4,10 +4,11 @@ DIOPI Functions
 
 Function List
 ------------------------
-* Unary Functions(14)
+* Unary Functions(15)
      - abs_
      - cos_
      - erf_
+     - erfinv_
      - exp_
      - floor_
      - log_
@@ -76,7 +77,7 @@ Function List
      - adamw_
      - adadelta_
 
-* Other Functions(62)
+* Other Functions(67)
      - addcdiv_
      - addcmul_
      - addmm_
@@ -139,6 +140,11 @@ Function List
      - pad_
      - unique_
      - prod_
+     - im2col_
+     - col2im_
+     - flip_
+     - cholesky_
+     - triangular_solve_
 
 
 1. Unary Functions
@@ -155,6 +161,10 @@ cos
 erf
 ~~~~~~~~
 .. autofunction:: erf
+
+erfinv
+~~~~~~~~
+.. autofunction:: erfinv
 
 exp
 ~~~~~~~~
@@ -650,6 +660,27 @@ unique
 prod
 ~~~~~~~~~~~~
 .. autofunction:: prod
+
+im2col
+~~~~~~~~~~~~
+.. autofunction:: im2col
+
+col2im
+~~~~~~~~~~~~
+.. autofunction:: col2im
+
+flip
+~~~~~~~~~~~~
+.. autofunction:: flip
+
+cholesky
+~~~~~~~~~~~~
+.. autofunction:: cholesky_ex
+
+triangular_solve
+~~~~~~~~~~~~~~~~~~~~
+.. autofunction:: triangular_solve
+
 
 .. _broadcasting-semantics:
 
