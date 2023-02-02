@@ -1,5 +1,4 @@
 import os
-import pickle
 import numpy as np
 
 from . import diopi_functions as F
@@ -21,17 +20,17 @@ def convert_input_tensors(function_paras: dict, nhwc_list=[], dtype_list=[], fil
             ndim = tensor.ndim
             if glob_vars.nhwc and (para in nhwc_list):
                 if ndim < glob_vars.nhwc_min_dim or ndim > 5:
-                   raise DiopiException(f"Skipped: {ndim}-dim Tensor skipped for nhwc test")
+                    raise DiopiException(f"Skipped: {ndim}-dim Tensor skipped for nhwc test")
                 tensor_nchw = tensor
                 ndim = tensor_nchw.ndim
                 if ndim == 3:
-                    axis = (1,2,0)
+                    axis = (1, 2, 0)
                 elif ndim == 4 and '3d' in nhwc_list:
-                    axis = (1,2,3,0)
+                    axis = (1, 2, 3, 0)
                 elif ndim == 4:
-                    axis = (0,2,3,1)
+                    axis = (0, 2, 3, 1)
                 elif ndim == 5:
-                    axis = (0,2,3,4,1)
+                    axis = (0, 2, 3, 4, 1)
                 tensor_nhwc = np.transpose(tensor_nchw, axis).copy()
                 tensor_nhwc.shape = tensor_nchw.shape
                 tensor_nhwc.strides = compute_nhwc_stride(tensor_nchw.shape, tensor_nchw.itemsize, nhwc_list[0])
@@ -70,7 +69,7 @@ def compare_with_gen_output(output, cfg, output_reference, sum_to_compare=False)
             if isinstance(output[i], Tensor):
                 passed &= allclose(cfg, output[i].numpy(), output_reference[i], sum_to_compare, "out" + str(i))
             if not record and not passed:
-                return False 
+                return False
     elif isinstance(output, dict):
         assert isinstance(output_reference, dict)
         assert len(output) == len(output_reference)
@@ -78,7 +77,7 @@ def compare_with_gen_output(output, cfg, output_reference, sum_to_compare=False)
             if isinstance(v, Tensor):
                 passed = passed and allclose(cfg, v.numpy(), output_reference[k], False, k)
             if not record and not passed:
-                return False 
+                return False
     elif isinstance(output, (int, float)):
         assert isinstance(output_reference, np.ndarray), "output_reference should be type numpy.array"
         output = np.array(output)
@@ -128,7 +127,7 @@ class ManualTest(object):
         assert (out_numpy <= end).all() and (out_numpy >= start).all(),\
             "failed to execute uniform"
         if out.numel() > 100:
-            assert abs(out_numpy.mean() - (end + start)/2) < 1e-1,\
+            assert abs(out_numpy.mean() - (end + start) / 2) < 1e-1,\
                 "failed to execute uniform"
 
     def test_bernoulli(input, inplace=False, p=None):
@@ -207,7 +206,7 @@ class ConformanceTest(object):
                     continue
 
                 write_precision(data["cfg"], cfg_func_name, passed)
-        
+
                 if function_paras["requires_grad"] and "inplace=True" not in func_call:
                     saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
                     saved_backward_pth = os.path.join(outputs_dir_path, saved_backward_pth)

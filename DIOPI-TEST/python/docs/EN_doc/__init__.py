@@ -1,20 +1,19 @@
 import conformance.diopi_functions as F
 import re
-from conformance.diopi_functions import abs, cos, erf, exp, floor, log, log2, log10, neg, nonzero,\
-                                        sign, sin, sqrt, add, bmm, div, eq, fill_, ge, gt, le, lt,\
-                                        logical_and, logical_or, matmul, mul, ne, pow, sub, binary_cross_entropy_with_logits,\
-                                        cross_entropy, mse_loss, nll_loss, leaky_relu, relu, sigmoid, hardtanh, threshold,\
-                                        gelu, tanh, softmax, log_softmax, mean, min, max, std, sum, all, any, addcdiv, addcmul,\
-                                        addmm, adaptive_avg_pool2d, avg_pool2d, max_pool2d, adaptive_max_pool2d, batch_norm,\
-                                        cat, clamp, clip_grad_norm_, conv2d, dropout, embedding, index_select, masked_scatter,\
-                                        linear, one_hot, select, sort, split, stack, topk, transpose, tril, where
-
-from conformance.diopi_functions import sigmoid_focal_loss, nms, slice_op, index, sgd, roi_align #TODO(ht): add slice_op and index doc
-from conformance.diopi_functions import arange, randperm, uniform, random, bernoulli, masked_fill, adamw, adam, adadelta, conv_transpose2d, \
-                                        cumsum, cdist, reciprocal, bitwise_not, argmax, smooth_l1_loss, maximum, minimum, mm, conv3d, \
-                                        expand, unfold, masked_select, index_fill, linspace, roll, norm, group_norm, layer_norm,\
-                                        adaptive_avg_pool3d, adaptive_max_pool3d, max_pool3d, permute, copy_, gather, remainder,\
-                                        ctc_loss, index_put, scatter, interpolate, pad, unique, prod
+from conformance.diopi_functions import (abs, cos, erf, exp, floor, log, log2, log10, neg, nonzero,
+                                         sign, sin, sqrt, add, bmm, div, eq, fill_, ge, gt, le, lt,
+                                         logical_and, logical_or, matmul, mul, ne, pow, sub, binary_cross_entropy_with_logits,
+                                         cross_entropy, mse_loss, nll_loss, leaky_relu, relu, sigmoid, hardtanh, threshold,
+                                         gelu, tanh, softmax, log_softmax, mean, min, max, std, sum, all, any, addcdiv, addcmul,
+                                         addmm, adaptive_avg_pool2d, avg_pool2d, max_pool2d, adaptive_max_pool2d, batch_norm,
+                                         cat, clamp, clip_grad_norm_, conv2d, dropout, embedding, index_select, masked_scatter,
+                                         linear, one_hot, select, sort, split, stack, topk, transpose, tril, where)
+from conformance.diopi_functions import sigmoid_focal_loss, nms, slice_op, index, sgd, roi_align  # TODO(ht): add slice_op and index doc
+from conformance.diopi_functions import (arange, randperm, uniform, random, bernoulli, masked_fill, adamw, adam, adadelta, conv_transpose2d,
+                                         cumsum, cdist, reciprocal, bitwise_not, argmax, smooth_l1_loss, maximum, minimum, mm, conv3d,
+                                         expand, unfold, masked_select, index_fill, linspace, roll, norm, group_norm, layer_norm,
+                                         adaptive_avg_pool3d, adaptive_max_pool3d, max_pool3d, permute, copy_, gather, remainder,
+                                         ctc_loss, index_put, scatter, interpolate, pad, unique, prod)
 from conformance.diopi_functions import erfinv, im2col, col2im, flip, cholesky_ex, triangular_solve
 
 
@@ -70,6 +69,7 @@ as :attr:`input` except in the dimension :attr:`dim` where it is of size 1.
 Otherwise, :attr:`dim` is squeezed, resulting in
 the output tensor having 1 fewer dimension than :attr:`input`."""})
 
+
 def add_docstr(attr, docstr):
     assert hasattr(F, attr)
     fuc = getattr(F, attr)
@@ -110,8 +110,7 @@ Example::
     tensor([ 0.1395,  0.2957,  0.6553,  0.5574])
 """.format(**common_args))
 
-add_docstr("sin",
-        r"""
+add_docstr("sin", r"""
 Returns a new tensor with the sine of the elements of :attr:`input`.
 
 .. math::
@@ -130,9 +129,7 @@ Example::
 """)
 
 
-
-add_docstr("where",
-           r"""
+add_docstr("where", r"""
 Return a tensor of elements selected from either :attr:`x` or :attr:`y`, depending on :attr:`condition`.
 
 The operation is defined as:
@@ -429,8 +426,7 @@ Example::
 """.format(**common_args))
 
 
-add_docstr('select',
-               r"""
+add_docstr('select', r"""
 Slices the :attr:`self` tensor along the selected dimension at the given index.
 This function returns a view of the original tensor with the given dimension removed.
 
@@ -503,8 +499,7 @@ add_docstr("linear", r"""
     """)
 
 
-add_docstr('masked_scatter',
-               r"""
+add_docstr('masked_scatter', r"""
 Copies elements from :attr:`source` into :attr:`self` tensor at positions where
 the :attr:`mask` is True.
 The shape of :attr:`mask` must be :ref:`broadcastable <broadcasting-semantics>`
@@ -712,7 +707,7 @@ Example::
              -0.5790,  0.1497]])
 """)
 
-add_docstr("batch_norm",  r"""Applies Batch Normalization over a 4D input (a mini-batch of 2D inputs
+add_docstr("batch_norm", r"""Applies Batch Normalization over a 4D input (a mini-batch of 2D inputs
     with additional channel dimension) as described in the paper
     `Batch Normalization: Accelerating Deep Network Training by Reducing
     Internal Covariate Shift <https://arxiv.org/abs/1502.03167>`__ .
@@ -771,7 +766,7 @@ add_docstr("batch_norm",  r"""Applies Batch Normalization over a 4D input (a min
     """)
 
 
-add_docstr("adaptive_max_pool2d",  r"""Applies a 2D adaptive max pooling over an input signal composed of
+add_docstr("adaptive_max_pool2d", r"""Applies a 2D adaptive max pooling over an input signal composed of
     several input planes.
 
     In the simplest case, the output value of the layer with input size :math:`(N, C, H, W)`,
@@ -823,7 +818,7 @@ add_docstr("adaptive_max_pool2d",  r"""Applies a 2D adaptive max pooling over an
     """)
 
 
-add_docstr("max_pool2d",  r"""Applies a 2D max pooling over an input signal composed of several input
+add_docstr("max_pool2d", r"""Applies a 2D max pooling over an input signal composed of several input
     planes.
 
     In the simplest case, the output value of the layer with input size :math:`(N, C, H, W)`,
@@ -874,8 +869,7 @@ add_docstr("max_pool2d",  r"""Applies a 2D max pooling over an input signal comp
     """)
 
 
-add_docstr("avg_pool2d",
-    r"""
+add_docstr("avg_pool2d", r"""
     Applies a 2D average pooling over an input signal composed of several input
     planes.
 
@@ -991,9 +985,7 @@ Example::
 """)
 
 
-
-add_docstr("addcmul",
-           r"""
+add_docstr("addcmul", r"""
 Performs the element-wise multiplication of :attr:`tensor1`
 by :attr:`tensor2`, multiply the result by the scalar :attr:`value`
 and add it to :attr:`input`.
@@ -1318,7 +1310,7 @@ add_docstr("log_softmax", r"""
         - Input: :math:`(*)` where `*` means, any number of additional
           dimensions
         - Output: :math:`(*)`, same shape as the input
- 
+
     Returns:
         a Tensor of the same dimension and shape as the input with
         values in the range [-inf, 0)
@@ -1412,7 +1404,7 @@ add_docstr("hardtanh", r"""Applies the HardTanh function element-wise.
         - Input: :math:`(*)`, where :math:`*` means any number of dimensions.
         - Output: :math:`(*)`, same shape as the input.""")
 
-add_docstr("sigmoid",     r"""
+add_docstr("sigmoid", r"""
     Applies the element-wise function:
 
     .. math::
@@ -1423,7 +1415,7 @@ add_docstr("sigmoid",     r"""
         - Output: :math:`(*)`, same shape as the input.
     """)
 
-add_docstr("relu",     r"""Applies the rectified linear unit function element-wise:
+add_docstr("relu", r"""Applies the rectified linear unit function element-wise:
 
     :math:`\text{ReLU}(x) = (x)^+ = \max(0, x)`
 
@@ -1437,7 +1429,7 @@ add_docstr("relu",     r"""Applies the rectified linear unit function element-wi
 
     """)
 
-add_docstr("leaky_relu",     r"""Applies the element-wise function:
+add_docstr("leaky_relu", r"""Applies the element-wise function:
 
     .. math::
         \text{LeakyReLU}(x) = \max(0, x) + \text{negative_slope} * \min(0, x)
@@ -1451,7 +1443,7 @@ add_docstr("leaky_relu",     r"""Applies the element-wise function:
         \text{negative_slope} \times x, & \text{ otherwise }
         \end{cases}
 
-    Args: 
+    Args:
         input (Tensor): input
         negative_slope: Controls the angle of the negative slope. Default: 1e-2
         inplace: can optionally do the operation in-place. Default: ``False``
@@ -1463,7 +1455,7 @@ add_docstr("leaky_relu",     r"""Applies the element-wise function:
 
     """)
 
-add_docstr("nll_loss",    r"""
+add_docstr("nll_loss", r"""
     The negative log likelihood loss. It is useful to train a classification
     problem with `C` classes.
 
@@ -1527,7 +1519,7 @@ add_docstr("nll_loss",    r"""
 
     """)
 
-add_docstr("mse_loss",     r"""Creates a criterion that measures the mean squared error (squared L2 norm) between
+add_docstr("mse_loss", r"""Creates a criterion that measures the mean squared error (squared L2 norm) between
     each element in the input :math:`x` and target :math:`y`.
 
     The unreduced (i.e. with :attr:`reduction` set to ``'none'``) loss can be described as:
@@ -1569,7 +1561,7 @@ add_docstr("mse_loss",     r"""Creates a criterion that measures the mean square
 
     """)
 
-add_docstr("cross_entropy",    r"""This criterion computes the cross entropy loss between input and target.
+add_docstr("cross_entropy", r"""This criterion computes the cross entropy loss between input and target.
 
     It is useful when training a classification problem with `C` classes.
     If provided, the optional argument :attr:`weight` should be a 1D `Tensor`
@@ -1676,7 +1668,7 @@ add_docstr("cross_entropy",    r"""This criterion computes the cross entropy los
             \end{aligned}
     """)
 
-add_docstr("binary_cross_entropy_with_logits",    r"""This loss combines a `Sigmoid` layer and the `BCELoss` in one single
+add_docstr("binary_cross_entropy_with_logits", r"""This loss combines a `Sigmoid` layer and the `BCELoss` in one single
     class. This version is more numerically stable than using a plain `Sigmoid`
     followed by a `BCELoss` as, by combining the operations into one layer,
     we take advantage of the log-sum-exp trick for numerical stability.
@@ -2477,8 +2469,7 @@ Example::
             [False, True]])
 """)
 
-add_docstr('fill_',
-               r"""
+add_docstr('fill_', r"""
 Fills :attr:`tensor` with the specified value.
 
 Args:
@@ -2507,7 +2498,7 @@ Example::
     tensor([[True, True], [False, True]])
 """)
 
-add_docstr("sigmoid_focal_loss",  r"""
+add_docstr("sigmoid_focal_loss", r"""
     Original implementation from https://github.com/facebookresearch/fvcore/blob/master/fvcore/nn/focal_loss.py .
     Loss used in RetinaNet for dense detection: https://arxiv.org/abs/1708.02002.
 
@@ -2529,7 +2520,7 @@ add_docstr("sigmoid_focal_loss",  r"""
         Loss tensor with the reduction option applied.
     """)
 
-add_docstr("nms",    r"""
+add_docstr("nms", r"""
     Performs non-maximum suppression (NMS) on the boxes according
     to their intersection-over-union (IoU).
 
@@ -2552,7 +2543,7 @@ add_docstr("nms",    r"""
     """)
 
 
-add_docstr("roi_align",     r"""
+add_docstr("roi_align", r"""
     Performs Region of Interest (RoI) Align operator with average pooling, as described in Mask R-CNN.
 
     Args:
@@ -2721,7 +2712,7 @@ add_docstr("random", r"""
     """)
 
 
-add_docstr("bernoulli",     r"""
+add_docstr("bernoulli", r"""
     Draws binary random numbers (0 or 1) from a Bernoulli distribution.
 
     The :attr:`input` tensor should be a tensor containing probabilities
@@ -2771,8 +2762,8 @@ add_docstr("bernoulli",     r"""
                 [ 0.,  0.,  0.]])
     """)
 
- 
-add_docstr("masked_fill",   r"""
+
+add_docstr("masked_fill", r"""
     Fills elements of :attr:`self` tensor with :attr:`value` where :attr:`mask` is
     True. The shape of :attr:`mask` must be
     :ref:`broadcastable <broadcasting-semantics>` with the shape of the underlying
@@ -2843,7 +2834,7 @@ add_docstr("adamw", r"""
     """)
 
 
-add_docstr("adam",  r"""
+add_docstr("adam", r"""
     Implements Adam algorithm.
 
     .. math::
@@ -2902,7 +2893,7 @@ add_docstr("adam",  r"""
     """)
 
 
-add_docstr("adadelta",  r"""
+add_docstr("adadelta", r"""
     Implements Adadelta algorithm.
 
     .. math::
@@ -2947,7 +2938,7 @@ add_docstr("adadelta",  r"""
     """)
 
 
-add_docstr("conv_transpose2d",  r"""
+add_docstr("conv_transpose2d", r"""
     Applies a 2D transposed convolution operator over an input image
     composed of several input planes, sometimes also called "deconvolution".
 
@@ -2975,9 +2966,9 @@ add_docstr("conv_transpose2d",  r"""
         >>> weights = randn(4, 8, 3, 3)
         >>> F.conv_transpose2d(inputs, weights, padding=1)
     """)
- 
 
-add_docstr("cumsum",    r"""
+
+add_docstr("cumsum", r"""
     Returns the cumulative sum of elements of :attr:`input` in the dimension
     :attr:`dim`.
 
@@ -3003,7 +2994,7 @@ add_docstr("cumsum",    r"""
     """)
 
 
-add_docstr("cdist",r"""
+add_docstr("cdist", r"""
     Computes batched the p-norm distance between each pair of the two collections of row vectors.
 
     Args:
@@ -3046,7 +3037,7 @@ add_docstr("cdist",r"""
     """)
 
 
-add_docstr("reciprocal",    r"""
+add_docstr("reciprocal", r"""
     Returns a new tensor with the reciprocal of the elements of :attr:`input`
 
     .. math::
@@ -3070,7 +3061,7 @@ add_docstr("reciprocal",    r"""
     """)
 
 
-add_docstr("bitwise_not",   r"""
+add_docstr("bitwise_not", r"""
     Computes the bitwise NOT of the given input tensor. The input tensor must be of
     integral or Boolean types. For bool tensors, it computes the logical NOT.
 
@@ -3084,7 +3075,7 @@ add_docstr("bitwise_not",   r"""
     """)
 
 
-add_docstr("argmax",    r"""
+add_docstr("argmax", r"""
     Returns the indices of the maximum values of a tensor across a dimension.
 
     This is the second value returned by :meth:`max`. See its
@@ -3174,7 +3165,7 @@ add_docstr("smooth_l1_loss", r"""
     """)
 
 
-add_docstr("maximum",   r"""
+add_docstr("maximum", r"""
     Computes the element-wise maximum of :attr:`input` and :attr:`other`.
 
     .. note::
@@ -3214,7 +3205,7 @@ add_docstr("minimum", r"""
     """)
 
 
-add_docstr("mm",    r"""
+add_docstr("mm", r"""
     Performs a matrix multiplication of the matrices :attr:`input` and :attr:`mat2`.
 
     If :attr:`input` is a :math:`(n \times m)` tensor, :attr:`mat2` is a
@@ -3242,7 +3233,7 @@ add_docstr("mm",    r"""
     """)
 
 
-add_docstr("conv3d",    r"""
+add_docstr("conv3d", r"""
     Applies a 3D convolution over an input image composed of several input
     planes.
 
@@ -3282,7 +3273,7 @@ add_docstr("conv3d",    r"""
     """)
 
 
-add_docstr("expand",    r"""
+add_docstr("expand", r"""
     Returns a new view of the :attr:`self` tensor with singleton dimensions expanded
     to a larger size.
 
@@ -3325,7 +3316,7 @@ add_docstr("expand",    r"""
     """)
 
 
-add_docstr("unfold",    r"""
+add_docstr("unfold", r"""
     Returns a view of the original tensor which contains all slices of size :attr:`size` from
     :attr:`self` tensor in the dimension :attr:`dimension`.
 
@@ -3361,7 +3352,7 @@ add_docstr("unfold",    r"""
     """)
 
 
-add_docstr("masked_select",     r"""
+add_docstr("masked_select", r"""
     Returns a new 1-D tensor which indexes the :attr:`input` tensor according to
     the boolean mask :attr:`mask` which is a `BoolTensor`.
 
@@ -3392,7 +3383,7 @@ add_docstr("masked_select",     r"""
     """)
 
 
-add_docstr('index_fill',    r"""
+add_docstr('index_fill', r"""
     Fills the elements of the :attr:`self` tensor with value :attr:`value` by
     selecting the indices in the order given in :attr:`index`.
 
@@ -3411,7 +3402,7 @@ add_docstr('index_fill',    r"""
     """)
 
 
-add_docstr("linspace",      r"""
+add_docstr("linspace", r"""
     Creates a one-dimensional tensor of size :attr:`steps` whose values are evenly
     spaced from :attr:`start` to :attr:`end`, inclusive. That is, the value are:
 
@@ -3449,7 +3440,7 @@ add_docstr("linspace",      r"""
     """)
 
 
-add_docstr("roll",  r"""
+add_docstr("roll", r"""
     Roll the tensor along the given dimension(s). Elements that are shifted beyond the
     last position are re-introduced at the first position. If a dimension is not
     specified, the tensor will be flattened before rolling and then restored
@@ -3489,7 +3480,7 @@ add_docstr("roll",  r"""
     """)
 
 
-add_docstr("norm",  r"""
+add_docstr("norm", r"""
     Returns the matrix norm or vector norm of a given tensor.
 
     .. warning::
@@ -3581,7 +3572,7 @@ add_docstr("norm",  r"""
     """)
 
 
-add_docstr("group_norm",    r"""
+add_docstr("group_norm", r"""
     Applies Group Normalization over a mini-batch of inputs as described in
     the paper `Group Normalization <https://arxiv.org/abs/1803.08494>`__
 
@@ -3725,7 +3716,7 @@ add_docstr("adaptive_avg_pool3d", r"""
     """)
 
 
-add_docstr("adaptive_max_pool3d",   r"""
+add_docstr("adaptive_max_pool3d", r"""
     Applies a 3D adaptive max pooling over an input signal composed of several input planes.
 
     The output is of size :math:`D_{out} \times H_{out} \times W_{out}`, for any input size.
@@ -3763,7 +3754,7 @@ add_docstr("adaptive_max_pool3d",   r"""
     """)
 
 
-add_docstr("max_pool3d",    r"""
+add_docstr("max_pool3d", r"""
     Applies a 3D max pooling over an input signal composed of several input
     planes.
 
@@ -3831,7 +3822,7 @@ add_docstr("max_pool3d",    r"""
     """)
 
 
-add_docstr("permute",   r"""
+add_docstr("permute", r"""
     Returns a view of the original tensor :attr:`input` with its dimensions permuted.
 
     Args:
@@ -3847,7 +3838,7 @@ add_docstr("permute",   r"""
     """)
 
 
-add_docstr('copy_',    r"""
+add_docstr('copy_', r"""
     Copies the elements from :attr:`other` into :attr:`input` tensor and returns
     :attr:`self`.
 
@@ -3861,7 +3852,7 @@ add_docstr('copy_',    r"""
     """)
 
 
-add_docstr("gather",    r"""
+add_docstr("gather", r"""
     Gathers values along an axis specified by `dim`.
 
     For a 3-D tensor the output is specified by::
@@ -3893,7 +3884,7 @@ add_docstr("gather",    r"""
     """)
 
 
-add_docstr("remainder",   r"""
+add_docstr("remainder", r"""
     Like :func:`fmod` this applies C++'s `std::fmod <https://en.cppreference.com/w/cpp/numeric/math/fmod>`_
     for floating point tensors and the modulus operation for integer tensors.
     Unlike :func:`fmod`, however, if the sign of the modulus is different
@@ -3934,7 +3925,7 @@ add_docstr("remainder",   r"""
     """)
 
 
-add_docstr("ctc_loss",  r"""
+add_docstr("ctc_loss", r"""
     The Connectionist Temporal Classification loss.
 
     Calculates loss between a continuous (unsegmented) time series and a target sequence. CTCLoss sums over the
@@ -4050,7 +4041,7 @@ add_docstr("ctc_loss",  r"""
     """)
 
 
-add_docstr('index_put',    r"""
+add_docstr('index_put', r"""
     Puts values from the tensor :attr:`values` into the tensor :attr:`self` using
     the indices specified in :attr:`indices` (which is a tuple of Tensors). The
     expression ``tensor.index_put_(indices, values)`` is equivalent to
@@ -4069,7 +4060,7 @@ add_docstr('index_put',    r"""
     """)
 
 
-add_docstr('scatter',   r"""
+add_docstr('scatter', r"""
     Writes all values from the tensor :attr:`src` into :attr:`self` at the indices
     specified in the :attr:`index` tensor. For each value in :attr:`src`, its output
     index is specified by its index in :attr:`src` for ``dimension != dim`` and by
@@ -4160,8 +4151,8 @@ add_docstr('scatter',   r"""
     """)
 
 
-add_docstr("interpolate",   r"""
-    Down/up samples the input to either the given :attr:`size` 
+add_docstr("interpolate", r"""
+    Down/up samples the input to either the given :attr:`size`
 
     The algorithm used for interpolation is determined by :attr:`mode`.
 
@@ -4207,7 +4198,7 @@ add_docstr("interpolate",   r"""
     """)
 
 
-add_docstr("pad",   r"""
+add_docstr("pad", r"""
     Pads tensor.
 
     Padding size:
@@ -4262,7 +4253,7 @@ add_docstr("pad",   r"""
     """)
 
 
-add_docstr("unique",    r"""
+add_docstr("unique", r"""
     Returns the unique elements of the input tensor.
 
     .. note:: This function is different from :func:`unique_consecutive` in the sense that
@@ -4323,7 +4314,7 @@ add_docstr("unique",    r"""
     """)
 
 
-add_docstr("prod",      r"""
+add_docstr("prod", r"""
     Returns the product of each row of the :attr:`input` tensor in the given
     dimension :attr:`dim`.
 
@@ -4345,7 +4336,7 @@ add_docstr("prod",      r"""
     """)
 
 
-add_docstr("erfinv",   r"""
+add_docstr("erfinv", r"""
     Computes the inverse error function of :attr:`input`.
     The inverse error function is defined in the range :math:`(-1, 1)` as:
 
@@ -4358,7 +4349,7 @@ add_docstr("erfinv",   r"""
     """)
 
 
-add_docstr("im2col",   r"""
+add_docstr("im2col", r"""
     Extracts sliding local blocks from a batched input tensor.
 
     Consider a batched :attr:`input` tensor of shape :math:`(N, C, *)`,
@@ -4422,7 +4413,7 @@ add_docstr("im2col",   r"""
     """)
 
 
-add_docstr("col2im",   r"""
+add_docstr("col2im", r"""
     Combines an array of sliding local blocks into a large containing
     tensor.
 
@@ -4491,7 +4482,7 @@ add_docstr("col2im",   r"""
     """)
 
 
-add_docstr("flip",   r"""
+add_docstr("flip", r"""
     Reverse the order of a n-D tensor along given axis in dims.
 
     Args:
@@ -4516,7 +4507,7 @@ add_docstr("flip",   r"""
     """.format(**common_args))
 
 
-add_docstr("cholesky_ex",   r"""
+add_docstr("cholesky_ex", r"""
     Computes the Cholesky decomposition of a complex Hermitian or real symmetric positive-definite matrix.
 
     Letting :math:`\mathbb{K}` be :math:`\mathbb{R}` or :math:`\mathbb{C}`,
@@ -4562,7 +4553,7 @@ add_docstr("cholesky_ex",   r"""
     """)
 
 
-add_docstr("triangular_solve",   r"""
+add_docstr("triangular_solve", r"""
     Solves a system of equations with a triangular coefficient matrix :math:`A`
     and multiple right-hand sides :math:`b`.
 

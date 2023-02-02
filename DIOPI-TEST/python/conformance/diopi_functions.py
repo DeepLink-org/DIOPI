@@ -38,7 +38,7 @@ def reduce_op_process(input, dim=None, keepdim=False, dtype=None):
             if dim_list[i] < 0:
                 dim_list[i] += size
 
-        dim_list.sort()   
+        dim_list.sort()
         for i in range(0, size):
             if i not in dim_list:
                 sizeO.append(sizeI[i])
@@ -355,7 +355,7 @@ def matmul(input, other) -> Tensor:
     # (batched) matrix x vector
     elif len(sizeO) == 1:
         sizeI[-1] = 1
-        out = Tensor(sizeI,  input.get_dtype())
+        out = Tensor(sizeI, input.get_dtype())
     # pretended matrix x (batched) matrix
     elif len(sizeI) == 1:
         sizeO[-2] = 1
@@ -530,7 +530,7 @@ def binary_cross_entropy(input, target, weight=None, reduction='mean'):
         'reduction must be one of (mean, sum, none)'
 
     if weight is not None:
-        assert isinstance(weight, Tensor),'weigth must be a Tensor'
+        assert isinstance(weight, Tensor), 'weigth must be a Tensor'
         weight = weight.tensor_handle
     else:
         weight = c_void_p()
@@ -656,7 +656,7 @@ def conv2d(input, weight, bias=None, stride=1,
     for i in range(-2, 0):
         # equivalent kernel size
         sizeW[i] += (sizeW[i] - 1) * (dilation[i] - 1)
-        sizeO.append(int((sizeI[i] - sizeW[i] + 2*padding[i])/stride[i]) + 1)
+        sizeO.append(int((sizeI[i] - sizeW[i] + 2 * padding[i]) / stride[i]) + 1)
 
     stride = Sizes(tuple(stride))
     padding = Sizes(tuple(padding))
@@ -691,9 +691,9 @@ def avg_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False,
 
     for i in range(-2, 0):
         if ceil_mode:
-            sizeO.append(math.ceil((sizeI[i] - kernel_size[i] + 2*padding[i])/stride[i]) + 1)
+            sizeO.append(math.ceil((sizeI[i] - kernel_size[i] + 2 * padding[i]) / stride[i]) + 1)
         else:
-            sizeO.append(math.floor((sizeI[i] - kernel_size[i] + 2*padding[i])/stride[i]) + 1)
+            sizeO.append(math.floor((sizeI[i] - kernel_size[i] + 2 * padding[i]) / stride[i]) + 1)
 
     stride = Sizes(tuple(stride))
     padding = Sizes(tuple(padding))
@@ -737,7 +737,7 @@ def max_pool2d(input, kernel_size, stride=None, padding=0, dilation=1,
 
     for i in range(-2, 0):
         tmp_ker_size = kernel_size[i] + (kernel_size[i] - 1) * (dilation[i] - 1)
-        tmp_size = (sizeI[i] - tmp_ker_size + 2*padding[i])/stride[i] + 1
+        tmp_size = (sizeI[i] - tmp_ker_size + 2 * padding[i]) / stride[i] + 1
         tmp_size = tmp_size if tmp_size > 1 else 1
         if ceil_mode:
             sizeO.append(math.ceil(tmp_size))
@@ -1070,8 +1070,7 @@ def split(tensor, split_size_or_sections, dim=0):
     is_int = isinstance(split_size_or_sections, int)
 
     while sum > 0:
-        sizeI[dim] = split_size_or_sections if is_int else\
-                     split_size_or_sections[idx]
+        sizeI[dim] = split_size_or_sections if is_int else split_size_or_sections[idx]
         sizeI[dim] = sizeI[dim] if sum > sizeI[dim] else sum
         idx += 1
         sum -= sizeI[dim]
@@ -1094,7 +1093,7 @@ def split(tensor, split_size_or_sections, dim=0):
     return outs
 
 
-def pow(input, exponent, inplace = False) -> Tensor:
+def pow(input, exponent, inplace=False) -> Tensor:
     if not isinstance(input, Tensor):
         assert isinstance(exponent, Tensor),\
             "exponent must be tensor when input is scalar"
@@ -1124,7 +1123,7 @@ def pow(input, exponent, inplace = False) -> Tensor:
         out = Tensor(sizeO, input.get_dtype())
         func = check_function("diopiPowTensor")
         ret = func(input.context_handle, out.tensor_handle,
-                input.tensor_handle, exponent.tensor_handle)
+                   input.tensor_handle, exponent.tensor_handle)
     if inplace:
         out = input
 
@@ -1446,7 +1445,7 @@ def roi_align(input, boxes, output_size, spatial_scale=1.0, sampling_ratio=-1, a
 
 def slice_op(input, dim, index) -> Tensor:
     sizeI = list(input.size())
-    num = int((index.stop - index.start + index.step - 1)/index.step)
+    num = int((index.stop - index.start + index.step - 1) / index.step)
     sizeI[dim] = num
     out = Tensor(sizeI, input.get_dtype())
 
@@ -1750,7 +1749,7 @@ def tanh_backward(input, grad_outputs, output, **kwargs) -> Tensor:
     return {"input": grad_input}
 
 
-def index_select_backward(input, grad_outputs, dim, index,  **kwargs) -> Tensor:
+def index_select_backward(input, grad_outputs, dim, index, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
     inputSize = Sizes(input.size())
@@ -1769,7 +1768,7 @@ def select_backward(input, grad_outputs, dim, index, **kwargs) -> Tensor:
 
     func = check_function("diopiSelectBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
-               inputSize,  c_int64(dim), c_int64(index))
+               inputSize, c_int64(dim), c_int64(index))
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -1954,11 +1953,11 @@ def batch_norm_backward(input, grad_outputs, running_mean, running_var, weight=N
 def arange(end, start=0, step=1, dtype=None) -> Tensor:
     if dtype is None:
         if type(start) == float or type(end) == float or type(step) == float:
-            dtype=Dtype.float32
+            dtype = Dtype.float32
         else:
-            dtype=glob_vars.int_type
-    
-    numel = int((end - start)/step)
+            dtype = glob_vars.int_type
+
+    numel = int((end - start) / step)
     out = Tensor((numel,), dtype)
 
     func = check_function("diopiArange")
@@ -1967,7 +1966,7 @@ def arange(end, start=0, step=1, dtype=None) -> Tensor:
     return out
 
 
-def randperm(n :int, dtype=None) -> Tensor:
+def randperm(n: int, dtype=None) -> Tensor:
     dtype = glob_vars.int_type if dtype is None else dtype
     numel = n
     out = Tensor((numel,), dtype)
@@ -2055,11 +2054,11 @@ def adamw(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,
 
 
 def adam(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,
-          beta1, beta2, eps, weight_decay, step, amsgrad=False):
+         beta1, beta2, eps, weight_decay, step, amsgrad=False):
     # note: buf, param_grad are mutable
     func = check_function("diopiAdam")
     ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle, exp_avg.tensor_handle,
-               exp_avg_sq.tensor_handle, max_exp_avg_sq.tensor_handle, c_float(lr), c_float(beta1), c_float(beta2), 
+               exp_avg_sq.tensor_handle, max_exp_avg_sq.tensor_handle, c_float(lr), c_float(beta1), c_float(beta2),
                c_float(eps), c_float(weight_decay), c_int64(step), c_bool(amsgrad))
     check_returncode(ret)
     return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
@@ -2075,7 +2074,7 @@ def adadelta(param, param_grad, square_avg, acc_delta, lr, rho, eps, weight_deca
 
 
 def conv_transpose2d(input, weight, bias=None, stride=1,
-           padding=0, output_padding=0, groups=1, dilation=1) -> Tensor:
+                     padding=0, output_padding=0, groups=1, dilation=1) -> Tensor:
     if bias is not None:
         assert isinstance(bias, Tensor), \
             'bias must be a Tensor'
@@ -2204,7 +2203,7 @@ def argmax(input, dim=None, keepdim=False):
         if keepdim:
             sizeO[dim] = 1
         else:
-            sizeO = sizeO[:dim] + sizeO[dim+1:]
+            sizeO = sizeO[:dim] + sizeO[dim + 1:]
         dim = byref(c_int64(dim))
     else:
         sizeO = [1]
@@ -2315,7 +2314,7 @@ def conv3d(input, weight, bias=None, stride=1,
     for i in range(-3, 0):
         # equivalent kernel size
         sizeW[i] += (sizeW[i] - 1) * (dilation[i] - 1)
-        sizeO.append(int((sizeI[i] - sizeW[i] + 2*padding[i])/stride[i]) + 1)
+        sizeO.append(int((sizeI[i] - sizeW[i] + 2 * padding[i]) / stride[i]) + 1)
 
     stride = Sizes(tuple(stride))
     padding = Sizes(tuple(padding))
@@ -2383,14 +2382,13 @@ def expand(input, size) -> Tensor:
         else:
             assert size[i] == SizeI[i] or SizeI[i] == 1,\
                 "size must be broadcastable with input"
-    
+
     if len(size) > len(SizeI):
         assert size[0] >= 0, "the size of new dimension can't be negative"
 
     out = Tensor(size, input.get_dtype())
     size = Sizes(tuple(size))
-    
-    
+
     func = check_function("diopiExpand")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, size)
     check_returncode(ret)
@@ -2399,7 +2397,7 @@ def expand(input, size) -> Tensor:
 
 def unfold(input, dimension, size, step):
     sizeO = list(input.size())
-    sizeO[dimension] = int((sizeO[dimension]-size)/step + 1)
+    sizeO[dimension] = int((sizeO[dimension] - size) / step + 1)
     sizeO.append(size)
 
     out = Tensor(sizeO, input.get_dtype())
@@ -2413,7 +2411,7 @@ def unfold_backward(input, grad_outputs, dimension, size, step, **kwargs):
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
     sizeI = Sizes(input.size())
-  
+
     func = check_function("diopiUnfoldBackward")
     ret = func(grad_input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle, sizeI,
                c_int64(dimension), c_int64(size), c_int64(step))
@@ -2497,7 +2495,7 @@ def roll(input, shifts, dims=None):
         dims = Sizes(tuple(dims))
     else:
         dims = Sizes(tuple(()))
-    
+
     out = raw_like(input)
     func = check_function("diopiRoll")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, shifts, dims)
@@ -2535,7 +2533,7 @@ def group_norm(input, num_groups, weight=None, bias=None, eps=1e-05, backward=Fa
     return out
 
 
-def group_norm_backward(input, grad_outputs, num_groups, weight=None, bias=None,  eps=1e-05, **kwargs) -> Tensor:
+def group_norm_backward(input, grad_outputs, num_groups, weight=None, bias=None, eps=1e-05, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     save_mean, save_invstd = group_norm(input, num_groups, weight, bias, eps, backward=True)
     grad_input = raw_like(input)
@@ -2573,7 +2571,7 @@ def layer_norm(input, normalized_shape, weight=None, bias=None, eps=1e-05, backw
     return out
 
 
-def layer_norm_backward(input, grad_outputs, normalized_shape, weight=None, bias=None,  eps=1e-05, **kwargs) -> Tensor:
+def layer_norm_backward(input, grad_outputs, normalized_shape, weight=None, bias=None, eps=1e-05, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     save_mean, save_invstd = layer_norm(input, normalized_shape, weight, bias, eps, backward=True)
     grad_input = raw_like(input)
@@ -2587,7 +2585,7 @@ def layer_norm_backward(input, grad_outputs, normalized_shape, weight=None, bias
         weight = weight.tensor_handle
         grad_weight_handle = grad_weight.tensor_handle
         out['weight'] = grad_weight
-        
+
     if bias is None:
         bias = c_void_p()
         grad_bias_handle = c_void_p()
@@ -2718,7 +2716,7 @@ def max_pool3d(input, kernel_size, stride=None, padding=0, dilation=1,
 
     for i in range(-3, 0):
         tmp_ker_size = kernel_size[i] + (kernel_size[i] - 1) * (dilation[i] - 1)
-        tmp_size = (sizeI[i] - tmp_ker_size + 2*padding[i])/stride[i] + 1
+        tmp_size = (sizeI[i] - tmp_ker_size + 2 * padding[i]) / stride[i] + 1
         tmp_size = tmp_size if tmp_size > 1 else 1
         if ceil_mode:
             sizeO.append(math.ceil(tmp_size))
@@ -2749,7 +2747,7 @@ def max_pool3d(input, kernel_size, stride=None, padding=0, dilation=1,
 
 
 def max_pool3d_backward(input, grad_outputs, kernel_size, stride=None, padding=0, dilation=1,
-               ceil_mode=False, **kwargs ) -> Tensor:
+                        ceil_mode=False, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
     sizeI = input.size()
@@ -2853,7 +2851,7 @@ def remainder(other, input=None, self=None):
         context = other.context_handle
         out = raw_like(other)
         input = byref(Scalar(input))
-        other = other.tensor_handle    
+        other = other.tensor_handle
     func = check_function(call)
     ret = func(context, out.tensor_handle, input, other)
     check_returncode(ret)
@@ -2912,11 +2910,11 @@ def index_put(input, values, indices1, indices2=None, accumulate=False, inplace=
         out = input
         func = check_function(call)
         ret = func(input.context_handle, input.tensor_handle, values.tensor_handle,
-                pointer(c_tensors), c_int64(indices_counts), c_bool(accumulate))
+                   pointer(c_tensors), c_int64(indices_counts), c_bool(accumulate))
     else:
         func = check_function(call)
         ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, values.tensor_handle,
-                pointer(c_tensors), c_int64(indices_counts), c_bool(accumulate))
+                   pointer(c_tensors), c_int64(indices_counts), c_bool(accumulate))
     check_returncode(ret)
     return out
 
@@ -2934,7 +2932,7 @@ def scatter(input, dim, index, src=None, value=None, reduce=None, inplace=False)
         assert len(input.size()) == len(src.size()), \
             "input and src must have the same number of dimensions"
     else:
-        src = value    
+        src = value
     out = raw_like(input)
     call = "diopiScatter"
     call_scalar = False
@@ -2968,7 +2966,6 @@ def interpolate(input, size, mode="nearest", align_corners=None) -> Tensor:
     sizeI = list(input.size())
     for i in range(len(size)):
         sizeI[-i - 1] = size[-i - 1]
-
 
     nhwc_stride = compute_nhwc_stride(sizeI) if glob_vars.nhwc else None
     out = Tensor(sizeI, input.get_dtype(), stride=nhwc_stride)
@@ -3013,7 +3010,7 @@ def pad(input, pad, mode='constant', value=None):
         if len(pad) <= len(sizeO):
             pad_idx = paded_length - i
         else:
-            pad_idx = i+1
+            pad_idx = i + 1
         sizeO[-pad_idx] += (pad[2 * i] + pad[2 * i + 1])
     pad = Sizes(pad)
     if value is None:
@@ -3021,11 +3018,10 @@ def pad(input, pad, mode='constant', value=None):
     else:
         value = byref(c_double(value))
 
-
     nhwc_stride = compute_nhwc_stride(sizeO) if glob_vars.nhwc else None
     out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
     func = check_function("diopiPad")
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, pad, 
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, pad,
                mode.encode('UTF-8'), value)
     check_returncode(ret)
     return out
@@ -3108,7 +3104,7 @@ def linear_backward(input, grad_outputs, weight, bias=None, **kwargs):
 
 
 def cross_entropy_backward(input, grad_outputs, target, weight=None, ignore_index=- 100,
-                  reduction='mean', label_smoothing=0.0, **kwargs):
+                           reduction='mean', label_smoothing=0.0, **kwargs):
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     assert reduction in ['mean', 'sum', 'none'], \
         'reduction must be one of (mean, sum, none)'
@@ -3146,7 +3142,7 @@ def im2col(input, kernel_size, dilation=1, padding=0, stride=1) -> Tensor:
         dilation = (dilation, dilation)
     num_blocks = 1
     for i in range(2):
-        num_blocks *= int((sizeI[i+2] + 2 * padding[i] - dilation[i]*(kernel_size[i]-1) -1) / stride[i]) + 1
+        num_blocks *= int((sizeI[i + 2] + 2 * padding[i] - dilation[i] * (kernel_size[i] - 1) - 1) / stride[i]) + 1
     channels = sizeI[1]
     for i in range(len(kernel_size)):
         channels *= kernel_size[i]
@@ -3156,11 +3152,11 @@ def im2col(input, kernel_size, dilation=1, padding=0, stride=1) -> Tensor:
     padding = Sizes(tuple(padding))
     kernel_size = Sizes(tuple(kernel_size))
     dilation = Sizes(tuple(dilation))
-    
+
     out = Tensor(sizeO, input.get_dtype())
     func = check_function("diopiIm2Col")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, kernel_size,
-                dilation, padding, stride)
+               dilation, padding, stride)
     check_returncode(ret)
     return out
 
@@ -3178,7 +3174,7 @@ def col2im(input, output_size, kernel_size, dilation=1, padding=0, stride=1) -> 
         padding = (padding, padding)
     if isinstance(dilation, int):
         dilation = (dilation, dilation)
-    
+
     channels = sizeI[1]
     for i in range(len(kernel_size)):
         channels = channels // kernel_size[i]
@@ -3189,11 +3185,11 @@ def col2im(input, output_size, kernel_size, dilation=1, padding=0, stride=1) -> 
     padding = Sizes(tuple(padding))
     kernel_size = Sizes(tuple(kernel_size))
     dilation = Sizes(tuple(dilation))
-    
+
     out = Tensor(sizeO, input.get_dtype())
     func = check_function("diopiCol2Im")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, output_size, kernel_size,
-                dilation, padding, stride)
+               dilation, padding, stride)
     check_returncode(ret)
     return out
 
@@ -3236,7 +3232,7 @@ def triangular_solve(input, A, upper=True, transpose=False, unitriangular=False)
     sizeO[-1] = sizeA[-1]
     cloned_mat = Tensor(sizeO, A.get_dtype())
     func = check_function("diopiTriangularSolve")
-    ret = func(input.context_handle, out.tensor_handle, cloned_mat.tensor_handle, input.tensor_handle, 
+    ret = func(input.context_handle, out.tensor_handle, cloned_mat.tensor_handle, input.tensor_handle,
                A.tensor_handle, c_bool(upper), c_bool(transpose), c_bool(unitriangular))
     check_returncode(ret)
     Res = namedtuple('Res', ['solution', 'cloned_coefficient'])

@@ -9,7 +9,7 @@ from .utils import logger
 from .utils import need_process_func
 from .config import Genfunc, dict_elem_length, Config
 from . import diopi_configs
-from .dtype import Dtype, from_dtype_str
+from .dtype import from_dtype_str
 
 
 _cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -344,8 +344,8 @@ class GenInputData(object):
 
         logger.info(f"Generate test cases number for input data: {cfg_counter}")
         if cfg_counter == 0:
-            logger.warn(f"No benchmark input data is generated, \"--fname {func_name}\" may not be in the diopi-config, " \
-                f"check the arguments --fname")
+            logger.warn(f"No benchmark input data is generated, \"--fname {func_name}\" may not be in the diopi-config, "
+                        f"check the arguments --fname")
         else:
             logger.info("Generate benchmark input data done!")
 
@@ -381,7 +381,7 @@ class CustomizedTest(object):
         optimizer.step()
         return param, buf
 
-    def adam(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,  beta1, beta2, eps, weight_decay, step, amsgrad):
+    def adam(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr, beta1, beta2, eps, weight_decay, step, amsgrad):
         import torch
 
         params_with_grad = [param]
@@ -392,20 +392,20 @@ class CustomizedTest(object):
         state_steps = [step]
 
         torch.optim._functional.adam(params_with_grad,
-                                      grads,
-                                      exp_avgs,
-                                      exp_avg_sqs,
-                                      max_exp_avg_sqs,
-                                      state_steps,
-                                      amsgrad=amsgrad,
-                                      beta1=beta1,
-                                      beta2=beta2,
-                                      lr=lr,
-                                      weight_decay=weight_decay,
-                                      eps=eps)
+                                     grads,
+                                     exp_avgs,
+                                     exp_avg_sqs,
+                                     max_exp_avg_sqs,
+                                     state_steps,
+                                     amsgrad=amsgrad,
+                                     beta1=beta1,
+                                     beta2=beta2,
+                                     lr=lr,
+                                     weight_decay=weight_decay,
+                                     eps=eps)
         return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
 
-    def adamw(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr,  beta1, beta2, eps, step, weight_decay, amsgrad):
+    def adamw(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr, beta1, beta2, eps, step, weight_decay, amsgrad):
         import torch
 
         params_with_grad = [param]
@@ -414,7 +414,7 @@ class CustomizedTest(object):
         exp_avg_sqs = [exp_avg_sq]
         max_exp_avg_sqs = [max_exp_avg_sq]
         state_steps = [step]
-        
+
         torch.optim._functional.adamw(params_with_grad,
                                       grads,
                                       exp_avgs,
@@ -447,18 +447,18 @@ class CustomizedTest(object):
                                          weight_decay=weight_decay)
         return param, param_grad, square_avg, acc_delta
 
-    def index_put(input,  values, indices1, indices2=None, accumulate=False):
+    def index_put(input, values, indices1, indices2=None, accumulate=False):
         import torch
         if indices2 is not None:
             indices = [indices1, indices2]
         else:
             indices = [indices1]
         return torch.index_put(input, indices, values, accumulate)
-    
+
     def im2col(input, kernel_size, dilation=1, padding=0, stride=1):
         import torch
         return torch.nn.Unfold(kernel_size, dilation, padding, stride)(input)
-    
+
     def col2im(input, output_size, kernel_size, dilation=1, padding=0, stride=1):
         import torch
         return torch.nn.Fold(output_size, kernel_size, dilation, padding, stride)(input)
@@ -600,10 +600,9 @@ class GenOutputData(object):
                 logger.info(f"Generate benchmark {logger_str} data for {func_signature}")
                 func_name_list.append(cfg_func_name)
 
-
         logger.info(f"Generate test cases number for output data: {gen_counter}")
         if gen_counter == 0:
-            logger.info(f"No benchmark output data is generated, \"--fname {func_name}\" may not be in the diopi-config, " \
-                f"or \"{func_name}\" doesn't need output data")
+            logger.info(f"No benchmark output data is generated, \"--fname {func_name}\" may not be in the diopi-config, "
+                        f"or \"{func_name}\" doesn't need output data")
         else:
             logger.info("Generate benchmark output and backward data done!")

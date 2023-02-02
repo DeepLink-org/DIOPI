@@ -6,8 +6,8 @@ from .dtype import Dtype
 
 
 class Genfunc(object):
-    randn = 0 # “standard normal” distribution
-    rand = 1 # random samples from a uniform distribution over [0, 1).
+    randn = 0   # “standard normal” distribution
+    rand = 1   # random samples from a uniform distribution over [0, 1).
     ones = 2
     zeros = 3
     mask = 4
@@ -121,13 +121,13 @@ def check_configs_format(cfgs_dict: dict):
         if "para" in case_v.keys():
             _must_be_the_type(domain, case_v, dict, ['para'])
             dict_obj = case_v["para"]
-            _must_be_the_type(domain+".para", dict_obj, (list, tuple),
+            _must_be_the_type(domain + ".para", dict_obj, (list, tuple),
                               [i for i in dict_obj.keys() if i != "gen_fn"])
 
         # checking the length associated with para
         length = 0
         if "para" in case_v.keys():
-            domain_tmp = domain+".para"
+            domain_tmp = domain + ".para"
             length = dict_elem_length(case_v["para"])
             for para_k, para_v in \
                     case_v["para"].items():

@@ -1,7 +1,7 @@
 import logging
 from . import diopi_runtime
-from .diopi_runtime import device_impl_lib, get_last_error
-from .model_list import model_list, model_op_list
+from .diopi_runtime import get_last_error
+from .model_list import model_op_list
 from .dtype import Dtype
 import os
 import numpy as np
@@ -26,64 +26,60 @@ error_counter = [0]
 # Note : 1. aten's cuda implementation doesn't support 3-dim nhwc Tensor
 #        adaptive_max_pool2d（3d), max_pool3d,
 #        adaptive_avg_pool3d, interpolate doesn't support nhwc memory format
-#        avg_pool2d backward can't compute right along the edges 
+#        avg_pool2d backward can't compute right along the edges
 #        2. For camb test, adaptive_max_pool2d/max_pool2d need indices being int32
 #        Only conv2d, bn, adaptive_avg_pool2d, adaptive_max_pool2d can be tested, because
 #        the rest have't been implemented.
-nhwc_op = { 'conv2d':["2d", "input", 'weight'],
-            'conv3d':["3d", "input", 'weight'],
-            'batch_norm':['input'],
-            'adaptive_avg_pool2d':["2d", 'input'],
-            'adaptive_max_pool2d':["2d", 'input'],
-            'adaptive_avg_pool3d':["3d", 'input'],
-            'adaptive_max_pool3d':["3d", 'input'],
-            'avg_pool2d':["2d", 'input'],
-            'max_pool2d':["2d", 'input'], 
-            #'avg_pool3d':["3d", 'input'], # diopi doesn't hava avg_pool3d test
-            'max_pool3d':["3d", 'input'], 
-            # both embedding 
-            'interpolate':['input'],
-            'pad':['input'],
-            'roi_align':['input']
-          }
+nhwc_op = {'conv2d': ["2d", "input", 'weight'],
+           'conv3d': ["3d", "input", 'weight'],
+           'batch_norm': ['input'],
+           'adaptive_avg_pool2d': ["2d", 'input'],
+           'adaptive_max_pool2d': ["2d", 'input'],
+           'adaptive_avg_pool3d': ["3d", 'input'],
+           'adaptive_max_pool3d': ["3d", 'input'],
+           'avg_pool2d': ["2d", 'input'],
+           'max_pool2d': ["2d", 'input'],
+           # 'avg_pool3d': ["3d", 'input'], diopi doesn't hava avg_pool3d test
+           'max_pool3d': ["3d", 'input'],
+           # both embedding
+           'interpolate': ['input'],
+           'pad': ['input'],
+           'roi_align': ['input']}
 
 # Note : 1. camb test: all ops implemented is passed.
-#        2. nv test: most of ops is not implemented for 'Int'. 
+#        2. nv test: most of ops is not implemented for 'Int'.
 #           Tests of index_select, bce, embedding passed for 'Int'.
-dtype_op = { # input using int32/float32 type
-             'nll_loss' : ['target'],
-             'cross_entropy' : ['target'],
-             'index_select' : ['index'],
-             'index_put' : ['indices1', 'indices2'],
-             'binary_cross_entropy_with_logits' : ['pos_weight'],
-             'gather' : ['index'],
-             'scatter' : ['index'],
-             'embedding' : ['input'],
-             'index' : ['idx1', 'idx2'],
-             'ctc_loss' : ['targets', 'input_lengths', 'target_lengths'],
-             'index_fill' : ['index'],
-             'one_hot' : ['input'],
-           }
+
+dtype_op = {'nll_loss': ['target'],  # input using int32/float32 type
+            'cross_entropy': ['target'],
+            'index_select': ['index'],
+            'index_put': ['indices1', 'indices2'],
+            'binary_cross_entropy_with_logits': ['pos_weight'],
+            'gather': ['index'],
+            'scatter': ['index'],
+            'embedding': ['input'],
+            'index': ['idx1', 'idx2'],
+            'ctc_loss': ['targets', 'input_lengths', 'target_lengths'],
+            'index_fill': ['index'],
+            'one_hot': ['input']}
 
 # Note : 1. camb test: all ops implemented is passed.
-#        2. nv test: most of ops is not implemented for 'Int'. 
+#        2. nv test: most of ops is not implemented for 'Int'.
 #           Tests of unique, arange, randperm, argmax passed for 'Int'.
-dtype_out_op = {
-             # out using int32/float32 type
-             'max_pool2d' : ['indices'], 
-             'max_pool3d' : ['indices'],
-             'adaptive_max_pool2d' : ['indices'],
-             'adaptive_max_pool3d' : ['indices'],
-             'max' : ['indices'],
-             'min' : ['indices'],
-             'sort' : ['indices'],
-             'topk' : ['indices'],
-             'unique' : ['indices'],
-             'one_hot' : ['out'],
-             'arange' : ['out'],
-             'randperm' : ['out'],
-             'argmax' : ['out']
-           }
+dtype_out_op = {'max_pool2d': ['indices'],  # out using int32/float32 type
+                'max_pool3d': ['indices'],
+                'adaptive_max_pool2d': ['indices'],
+                'adaptive_max_pool3d': ['indices'],
+                'max': ['indices'],
+                'min': ['indices'],
+                'sort': ['indices'],
+                'topk': ['indices'],
+                'unique': ['indices'],
+                'one_hot': ['out'],
+                'arange': ['out'],
+                'randperm': ['out'],
+                'argmax': ['out']}
+
 
 class glob_var(object):
     def __init__(self, nhwc=False, nhwc_min_dim=3, four_bytes=False):
@@ -109,6 +105,7 @@ class glob_var(object):
 
     def get_four_bytes(self):
         return self.four_bytes
+
 
 glob_vars = glob_var()
 
@@ -138,8 +135,8 @@ class Log(object):
 def wrap_logger_error(func):
     def inner(*args, **kwargs):
         if args[0].startswith("NotImplemented") or \
-            args[0].startswith("Skipped") or \
-             args[0].startswith("AttributeError"):
+                args[0].startswith("Skipped") or \
+                args[0].startswith("AttributeError"):
             return func(*args, **kwargs)
         global error_counter
         error_counter[0] += 1
@@ -251,7 +248,7 @@ def save_precision(cfg, output, output_reference, passed, var_name):
         need_atol = np.max(diff - rtol * np.abs(output_reference))
 
     global sigle_func_record
-    sigle_func_record += [var_name, str(output.dtype), str(output.shape),\
+    sigle_func_record += [var_name, str(output.dtype), str(output.shape),
                           str(passed), str(need_atol), str(max_atol)]
 
 
@@ -263,17 +260,17 @@ def write_precision(cfg, func_name, passed=True):
     if call_once:
         call_once = False
         if record_env == "ALL":
-            write_csv(path, ['func', "rtol_half", "atol_half", 'rtol', 'atol',\
-                      'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol',\
-                      'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol',\
-                      'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol'])
-        write_csv(failed_path, ['failed_func', "rtol_half", "atol_half", 'rtol', 'atol',\
-                 'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol',\
-                 'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol',\
-                 'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol'])
+            write_csv(path, ['func', "rtol_half", "atol_half", 'rtol', 'atol',
+                             'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol',
+                             'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol',
+                             'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol'])
+        write_csv(failed_path, ['failed_func', "rtol_half", "atol_half", 'rtol', 'atol',
+                                'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol',
+                                'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol',
+                                'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol'])
 
     rtol_half = cfg.get('rtol_half', 1e-5)
-    atol_half = cfg.get('atol_half', 1e-8) 
+    atol_half = cfg.get('atol_half', 1e-8)
     rtol = cfg.get('rtol', 1e-5)
     atol = cfg.get('atol', 1e-8)
 

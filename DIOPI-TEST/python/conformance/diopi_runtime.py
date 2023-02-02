@@ -301,7 +301,7 @@ class Tensor:
             raise TypeError(f"expected np.ndarray (got {type(darray)})")
 
         dtype = from_numpy_dtype(darray.dtype)
-        stride = [int(darray.strides[i]/darray.itemsize)
+        stride = [int(darray.strides[i] / darray.itemsize)
                   for i in range(len(darray.strides))]
         tr = cls(size=darray.shape, dtype=dtype, stride=stride)
         diopirt_lib._diopiTensorCopyFromBuffer(tr.context_handle,
@@ -313,7 +313,7 @@ class Tensor:
         dtype = to_numpy_dtype(self.get_dtype())
         itemsize = self.itemsize()
         stride = self.get_stride()
-        strides = [int(stride[i]*itemsize) for i in range(len(stride))]
+        strides = [int(stride[i] * itemsize) for i in range(len(stride))]
         darray = np.ndarray(shape=self.size(), dtype=dtype, strides=strides)
         diopirt_lib._diopiTensorCopyToBuffer(self.context_handle,
                                              self.tensor_handle,

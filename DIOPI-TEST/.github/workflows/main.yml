@@ -32,6 +32,23 @@ jobs:
           ssh ${CLUSTER_1984} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
           rsync -a --delete ${GITHUB_WORKSPACE}/ ${CLUSTER_1984}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
 
+  lint-c-python:
+    name: lint-python
+    runs-on: github-parrots-ci
+    needs: [Rsync]
+    steps:
+      - name: lint-c-python
+        run: |
+          ssh ${CLUSTER_1984} """
+          set -e
+          cd ${NFS_PATH}/ && ls -al && find ${NFS_PATH}/ -maxdepth 1 -ctime 1 -type d |xargs rm -rf
+          source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
+          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${GITHUB_JOB} && cp -R source ${GITHUB_JOB} && cd ${GITHUB_JOB}
+          export CI=true
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=40 --gres=gpu:${GPU_REQUESTS} bash scripts/ci_script.sh py-lint &&
+          bash scripts/ci_script.sh cpp-lint
+          """
+
   Gen-test:
     name: Gen-test
     runs-on: github-parrots-ci

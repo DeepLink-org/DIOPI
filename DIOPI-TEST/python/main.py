@@ -71,6 +71,6 @@ if __name__ == "__main__":
         subprocess.call(shlex.split(call))  # nosec
     else:
         print("available options for mode: gen_data, run_test and utest")
- 
+
     if is_ci != "null" and error_counter[0] != 0:
         raise DiopiException(str(error_counter[0]) + " errors during this program")
