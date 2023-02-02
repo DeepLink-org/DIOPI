@@ -4,12 +4,11 @@
  * Author
  *
  *************************************************************************************************/
-#include <cstdio>
-#include <vector>
-
 #include <diopi/functions.h>
 #include <cuda_runtime.h>
 #include <cudnn.h>
+#include <cstdio>
+#include <vector>
 
 #include "helper.hpp"
 
@@ -143,8 +142,7 @@ diopiError_t setTensorDesc(diopiDtype_t type, const diopiSize_t& shape,
 
 
 extern "C" diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-                                     diopiConstTensorHandle_t input, int64_t dim, diopiDtype_t dtype)
-{
+                                     diopiConstTensorHandle_t input, int64_t dim, diopiDtype_t dtype) {
     if (dim > 1) {
         impl::cuda::set_last_error_string("unkown dim error dim=%d at %s:%s", dim, __FILE__, __LINE__);
         return diopiErrorOccurred;
@@ -196,8 +194,7 @@ extern "C" diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input)
-{
+extern "C" diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     impl::cuda::CudnnResourceGuard<cudnnHandle_t, cudnnCreate, cudnnDestroy> handle;
     impl::cuda::CudnnResourceGuard<cudnnTensorDescriptor_t,
         cudnnCreateTensorDescriptor, cudnnDestroyTensorDescriptor> desc;

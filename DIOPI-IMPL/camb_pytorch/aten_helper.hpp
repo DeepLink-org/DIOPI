@@ -1,18 +1,18 @@
-#ifndef _DIOPI_REFERENCE_IMPLTORCH_ATEN_HPP_
-#define _DIOPI_REFERENCE_IMPLTORCH_ATEN_HPP_
+#ifndef IMPL_CAMB_PYTORCH_ATEN_HELPER_HPP_
+#define IMPL_CAMB_PYTORCH_ATEN_HELPER_HPP_
 
-#include <vector>
-#include <iostream>
-#include <exception>
 #include <torch_mlu/torch_mlu.h>
 #include <cnnl.h>
-
 #include <diopi/functions.h>
 #include <diopi/diopirt.h>
 
+#include <utility>
+#include <vector>
+#include <iostream>
+#include <exception>
+
 #include "error.hpp"
 
-using namespace torch_mlu::cnnl::ops;
 
 template<typename...Types>
 void set_last_error_string(const char* szFmt, Types&& ...args) {
@@ -51,7 +51,7 @@ Queue getCurrentQueue(DeviceIndex device_index) {
         diopiStreamHandle_t stream;
         diopiGetStream(context, &stream);
         cnrtQueue_t phStream = (cnrtQueue_t)stream;
-        //printf("getqueue addr %p, deviceid: %d \n", phStream, device_index);
+        // printf("getqueue addr %p, deviceid: %d \n", phStream, device_index);
         torch_mlu::Queue ctx_queue(phStream, device_index, device_index);
         return ctx_queue;
     } else {
@@ -59,7 +59,7 @@ Queue getCurrentQueue(DeviceIndex device_index) {
     }
 }
 
-} // namespace torch_mlu
+}  // namespace torch_mlu
 namespace camb {
 
 namespace aten {
@@ -74,14 +74,14 @@ inline void resetCurCtx(diopiContextHandle_t ctx) {
 
 void sync(diopiContextHandle_t ctx) {
     CALL_CAMB(::cnrtSyncDevice());
-    //diopiStreamHandle_t stream;
-    //diopiGetStream(ctx, &stream);
-    //cnrtQueue_t phStream = (cnrtQueue_t)stream;
-    //::cnrtQueueSync(phStream);
+    // diopiStreamHandle_t stream;
+    // diopiGetStream(ctx, &stream);
+    // cnrtQueue_t phStream = (cnrtQueue_t)stream;
+    // ::cnrtQueueSync(phStream);
 }
 
-//Note: at::Tensor::to dosen't support int64/double, so we use the following functions to replace it.
-inline at::Tensor toType(at::Tensor &atTarget, at::ScalarType dtype){
+// Note: at::Tensor::to dosen't support int64/double, so we use the following functions to replace it.
+inline at::Tensor toType(at::Tensor &atTarget, at::ScalarType dtype) {
     if (atTarget.scalar_type() != dtype) {
         auto atCpu = at::empty_like(atTarget, atTarget.options().device(at::kCPU));
         CALL_CAMB(::cnrtSyncDevice());
@@ -90,7 +90,7 @@ inline at::Tensor toType(at::Tensor &atTarget, at::ScalarType dtype){
         auto atTmp = atCpu.to(dtype);
         auto atMlu = at::empty_like(atTmp, atTmp.options().device(at::kMLU));
         CALL_CAMB(::cnrtSyncDevice());
-        ::cnrtMemcpy(atMlu.data_ptr(), atTmp.data_ptr(), atTmp.nbytes(), CNRT_MEM_TRANS_DIR_HOST2DEV);       
+        ::cnrtMemcpy(atMlu.data_ptr(), atTmp.data_ptr(), atTmp.nbytes(), CNRT_MEM_TRANS_DIR_HOST2DEV);
         CALL_CAMB(::cnrtSyncDevice());
         atTarget = atMlu;
         return atMlu;
@@ -104,7 +104,7 @@ void convertToRealLong(at::Tensor& src, at::Tensor& dst, at::ScalarType dtype) {
         ::cnrtMemcpy(dst.data_ptr(), src.data_ptr(), dst.nbytes(), CNRT_MEM_TRANS_DIR_DEV2DEV);
         CALL_CAMB(::cnrtSyncDevice());
     } else {
-        //Note: convert int32 to int64 for indice, it's strange that returned indice with int64 type is int32 in real.
+        // Note: convert int32 to int64 for indice, it's strange that returned indice with int64 type is int32 in real.
         auto atCpu = at::empty_like(src, src.options().device(at::kCPU)).to(dtype);
         CALL_CAMB(::cnrtSyncDevice());
         ::cnrtMemcpy(atCpu.data_ptr(), src.data_ptr(), atCpu.nbytes(), CNRT_MEM_TRANS_DIR_DEV2HOST);
@@ -150,7 +150,7 @@ caffe2::TypeMeta getATenType(diopiDtype_t dt) {
 }
 
 diopiDtype_t getDIOPITensorType(at::Tensor& input) {
-    switch(input.scalar_type()) {
+    switch (input.scalar_type()) {
     case at::ScalarType::Char:
         return diopi_dtype_bool;
     case at::ScalarType::Byte:
@@ -173,7 +173,7 @@ diopiDtype_t getDIOPITensorType(at::Tensor& input) {
 }
 
 at::ScalarType getAtScalarType(diopiDtype_t type) {
-    switch(type) {
+    switch (type) {
     case diopi_dtype_bool:
         return at::ScalarType::Char;
     case diopi_dtype_uint8:
@@ -257,7 +257,6 @@ at::Tensor buildATen(T tensor) {
         at::Allocator* allocator = nullptr;
         return fromPreAllocated(data, atDims,
             atStrides, [](void*){}, allocator, options);
-
     }
 }
 
@@ -302,9 +301,8 @@ decltype(auto) buildATenList(T* tensors, int64_t numTensors) {
 }
 
 void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atSrc, diopiTensorHandle_t out) {
-    // TODO: add device and nbytes check
     at::Tensor atDst = buildATen(out);
-    //Note: atDst.reshape_as(atSrc).copy_(atSrc); can not use copy_ for int64
+    // Note: atDst.reshape_as(atSrc).copy_(atSrc); can not use copy_ for int64
     if (atDst.scalar_type() == at::ScalarType::Long || atDst.scalar_type() == at::ScalarType::Double) {
         if (atDst.is_mlu() && atSrc.is_mlu()) {
             CALL_CAMB(::cnrtSyncDevice());
@@ -378,7 +376,7 @@ void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHa
 }
 
 c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding_mode) {
-    switch(rounding_mode) {
+    switch (rounding_mode) {
     case (RoundModeNone): return "";
     case (RoundModeTrunc): return "trunc";
     case (RoundModeFloor): return "floor";
@@ -388,7 +386,7 @@ c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding_mode) 
 }
 
 diopiError_t nll_loss_internal(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-        at::Tensor &atInput, diopiConstTensorHandle_t target, 
+        const at::Tensor &atInput, diopiConstTensorHandle_t target,
         diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignore_index) {
     auto atWeight = camb::aten::buildATen(weight);
     auto atTargetTmp = camb::aten::buildATen(target);
@@ -401,11 +399,11 @@ diopiError_t nll_loss_internal(diopiContextHandle_t ctx, diopiTensorHandle_t out
     camb::aten::toType(atTarget, at::ScalarType::Int);
     auto dim = atInput.dim();
     assert(dim > 1);
-    if (dim == 2 or dim == 1) {
-        auto atOuts = cnnl_nll_loss_forward(atInput, atTarget, atWeight, reduction, ignore_index);
+    if (dim == 2 || dim == 1) {
+        auto atOuts = torch_mlu::cnnl::ops::cnnl_nll_loss_forward(atInput, atTarget, atWeight, reduction, ignore_index);
         camb::aten::updateATen2Tensor(ctx, std::get<0>(atOuts), out);
     } else if (dim == 4) {
-        auto atOuts = cnnl_nll_loss2d_forward(atInput, atTarget, atWeight, reduction, ignore_index);
+        auto atOuts = torch_mlu::cnnl::ops::cnnl_nll_loss2d_forward(atInput, atTarget, atWeight, reduction, ignore_index);
         camb::aten::updateATen2Tensor(ctx, std::get<0>(atOuts), out);
     } else {
         auto n = atInput.size(0);
@@ -422,7 +420,7 @@ diopiError_t nll_loss_internal(diopiContextHandle_t ctx, diopiTensorHandle_t out
         std::vector<int64_t> targetShape = {n, 1, targetLastSize};
         atInput = atInput.reshape(inputShape);
         atTarget = atTarget.reshape(targetShape);
-        auto atOuts = cnnl_nll_loss2d_forward(atInput, atTarget, atWeight, reduction, ignore_index);
+        auto atOuts = torch_mlu::cnnl::ops::cnnl_nll_loss2d_forward(atInput, atTarget, atWeight, reduction, ignore_index);
         camb::aten::updateATen2Tensor(ctx, std::get<0>(atOuts), out);
     }
     return diopiSuccess;
@@ -441,12 +439,12 @@ diopiError_t nll_loss_bp_internal(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto dim = atInput.dim();
     assert(dim > 1);
     if (dim == 2) {
-        auto atGradInput = cnnl_nll_loss_backward(atGradOutput, atInput, atTarget, atWeight, reduction,
-                               ignore_index, atTotalWeight);
+        auto atGradInput = torch_mlu::cnnl::ops::cnnl_nll_loss_backward(atGradOutput, atInput, atTarget,
+                                atWeight, reduction, ignore_index, atTotalWeight);
         camb::aten::updateATen2Tensor(ctx, atGradInput, grad_input);
     } else if (dim == 4) {
-        auto atGradInput = cnnl_nll_loss2d_backward(atGradOutput, atInput, atTarget, atWeight, reduction,
-                                ignore_index, atTotalWeight);
+        auto atGradInput = torch_mlu::cnnl::ops::cnnl_nll_loss2d_backward(atGradOutput, atInput, atTarget,
+                                atWeight, reduction, ignore_index, atTotalWeight);
         camb::aten::updateATen2Tensor(ctx, atGradInput, grad_input);
     } else {
         auto n = atInput.size(0);
@@ -466,7 +464,8 @@ diopiError_t nll_loss_bp_internal(diopiContextHandle_t ctx, diopiTensorHandle_t 
         if (0 == reduction) {
             atGradOutput = atGradOutput.reshape(targetShape);
         }
-        auto atGradInput = cnnl_nll_loss2d_backward(atGradOutput, atInput, atTarget, atWeight, reduction, ignore_index, atTotalWeight);
+        auto atGradInput = torch_mlu::cnnl::ops::cnnl_nll_loss2d_backward(atGradOutput, atInput, atTarget,
+                                atWeight, reduction, ignore_index, atTotalWeight);
         camb::aten::updateATen2Tensor(ctx, atGradInput, grad_input);
     }
     return diopiSuccess;
@@ -477,4 +476,4 @@ diopiError_t nll_loss_bp_internal(diopiContextHandle_t ctx, diopiTensorHandle_t 
 
 }  // namespace camb
 
-#endif
+#endif  // IMPL_CAMB_PYTORCH_ATEN_HELPER_HPP_

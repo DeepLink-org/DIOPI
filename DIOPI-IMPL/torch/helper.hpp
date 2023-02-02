@@ -1,12 +1,13 @@
-#ifndef _DIOPI_REFERENCE_IMPLTORCH_ATEN_HPP_
-#define _DIOPI_REFERENCE_IMPLTORCH_ATEN_HPP_
+#ifndef IMPL_TORCH_HELPER_HPP_
+#define IMPL_TORCH_HELPER_HPP_
 
-#include <vector>
 #include <cuda_runtime.h>
 #include <ATen/ATen.h>
 #include <c10/cuda/CUDAStream.h>
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
+#include <vector>
+#include <utility>
 #include <iostream>
 
 #include "error.hpp"
@@ -19,9 +20,9 @@
 #define TORCH_1_11_MM_VERSION 1110
 #define TORCH_1_12_MM_VERSION 1120
 
-#define LOG_LINE_INFO() std::cerr << __FILE__ << ":" << __LINE__ << ": "; 
+#define LOG_LINE_INFO() std::cerr << __FILE__ << ":" << __LINE__ << ": ";
 
-void logError(){std::cerr << std::endl;}
+void logError() {std::cerr << std::endl;}
 
 template<typename First, typename ...Rest>
 void logError(First&& first, Rest&& ...rest) {
@@ -64,8 +65,8 @@ namespace c10 {
 
 namespace cuda {
 
-//Note: this is a overloaded aten function to get the stream from context.
-//For original functions, please refer to https://github.com/pytorch/pytorch/blob/v1.10.0/c10/cuda/CUDAStream.cpp.
+// Note: this is a overloaded aten function to get the stream from context.
+// For original functions, please refer to https://github.com/pytorch/pytorch/blob/v1.10.0/c10/cuda/CUDAStream.cpp.
 CUDAStream getCurrentCUDAStream(DeviceIndex device_index) {
     if (device_index == -1) {
         device_index = current_device();
@@ -79,8 +80,8 @@ CUDAStream getCurrentCUDAStream(DeviceIndex device_index) {
     }
 }
 
-} // namespace cuda
-} // namespace c10
+}  // namespace cuda
+}  // namespace c10
 
 namespace impl {
 
@@ -130,7 +131,7 @@ caffe2::TypeMeta getATenType(diopiDtype_t dt) {
 }
 
 diopiDtype_t getDIOPITensorType(at::Tensor& input) {
-    switch(input.scalar_type()) {
+    switch (input.scalar_type()) {
     case at::ScalarType::Char:
         return diopi_dtype_bool;
     case at::ScalarType::Byte:
@@ -256,7 +257,7 @@ void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiT
     // TODO(fengsibo): add device and nbytes check
     if (out != nullptr) {
         at::Tensor atOutput = buildATen(out);
-        atOutput.reshape_as(atOut).copy_(atOut, true); 
+        atOutput.reshape_as(atOut).copy_(atOut, true);
     }
 }
 
@@ -317,7 +318,7 @@ void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHa
 }
 
 c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding_mode) {
-    switch(rounding_mode) {
+    switch (rounding_mode) {
     case (RoundModeNone): return c10::nullopt;
     case (RoundModeTrunc): return "trunc";
     case (RoundModeFloor): return "floor";
@@ -333,7 +334,7 @@ at::Tensor nllLossNdBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::
     auto atTotalWeight = atTempTotalWeight.resize_({1}).fill_(atTarget.numel());
 
     auto dim = atInput.dim();
-    assert(dim > 1);    
+    assert(dim > 1);
     if (dim !=2 && dim != 4) {
         auto n = atInput.size(0);
         auto c = atInput.size(1);
@@ -364,7 +365,7 @@ at::Tensor nllLossNdBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::
     return atGradInput;
 }
 
-at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, 
+at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget,
                                               diopiConstTensorHandle_t weight, int64_t reduction, double label_smoothing) {
     auto atLogSoftmaxOutput = at::log_softmax(atInput, 1, atInput.scalar_type());
     at::Tensor atGradInput;
@@ -378,7 +379,7 @@ at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& a
         expand_shape.push_back(atInput.size(i));
     }
     at::IntArrayRef shape(expand_shape.data(), expand_shape.size());
-    if(weight){
+    if (weight) {
         auto atWeight = buildATen(weight);
         std::vector<int64_t> weight_broadcast_shape(atInput.dim(), 1);
         weight_broadcast_shape[1] = atWeight.size(0);
@@ -419,7 +420,7 @@ at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& a
     }
     auto atGradInputFinal = at::_log_softmax_backward_data(atGradInput, atLogSoftmaxOutput, 1, atLogSoftmaxOutput);
     return atGradInputFinal;
-} 
+}
 
 at::Tensor crossEntropyLossLabelSmoothingBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget,
                                                   diopiConstTensorHandle_t weight, int64_t reduction, int64_t ignore_index, double label_smoothing) {
@@ -430,7 +431,7 @@ at::Tensor crossEntropyLossLabelSmoothingBackward(at::Tensor& atInput, at::Tenso
     at::Tensor atGradInput;
     std::vector<int64_t> expand_shape;
     for (int i = 0; i < atInput.dim(); ++i) {
-        if(i != 1) {
+        if (i != 1) {
             expand_shape.push_back(atInput.size(i));
         }
     }
@@ -443,7 +444,7 @@ at::Tensor crossEntropyLossLabelSmoothingBackward(at::Tensor& atInput, at::Tenso
             atGradInput = atSmoothlossGrad.expand(shape) / atWeight.gather(0, atTarget.flatten()).sum();
             } else {
             float num = 1.;
-            for(int i = 0; i < expand_shape.size(); ++i) {
+            for (int i = 0; i < expand_shape.size(); ++i) {
                 num *= expand_shape[i];
             }
             atGradInput = atSmoothlossGrad.expand(shape) / num;
@@ -488,4 +489,4 @@ at::Tensor crossEntropyLossLabelSmoothingBackward(at::Tensor& atInput, at::Tenso
 
 }  // namespace impl
 
-#endif //_DIOPI_REFERENCE_IMPLTORCH_ATEN_HPP_
+#endif  // IMPL_TORCH_HELPER_HPP_

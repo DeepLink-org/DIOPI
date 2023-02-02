@@ -32,5 +32,5 @@ at::Tensor roi_align_backward_kernel(
     int64_t sampling_ratio,
     bool aligned);
 
-} // namespace ops
-} // namespace vision
+}  // namespace ops
+}  // namespace vision

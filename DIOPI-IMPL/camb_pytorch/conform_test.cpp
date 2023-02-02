@@ -23,59 +23,51 @@ extern "C" {
         printf("call a cambrt function (%s) failed. return code=%d", #Expr, ret);   \
     }}                                                                              \
 
-void* camb_malloc(uint64_t bytes)
-{
+void* camb_malloc(uint64_t bytes) {
     void* ptr;
     CALL_CAMB(::cnrtMalloc(&ptr, bytes));
     return ptr;
 }
 
-void camb_free(void* ptr)
-{
+void camb_free(void* ptr) {
     CALL_CAMB(::cnrtFree(ptr));
 }
 
-int32_t camb_make_stream(diopiStreamHandle_t* stream_handle_ptr)
-{
+int32_t camb_make_stream(diopiStreamHandle_t* stream_handle_ptr) {
     cnrtQueue_t phStream;
     CALL_CAMB(::cnrtQueueCreate(&phStream));
     *stream_handle_ptr = (diopiStreamHandle_t)phStream;
     return diopiSuccess;
 }
 
-int32_t camb_destroy_stream(diopiStreamHandle_t stream_handle)
-{
+int32_t camb_destroy_stream(diopiStreamHandle_t stream_handle) {
     cnrtQueue_t phStream = (cnrtQueue_t)stream_handle;
     CALL_CAMB(::cnrtQueueDestroy(phStream));
     return diopiSuccess;
 }
 
-int32_t camb_synchronize_stream(diopiStreamHandle_t stream_handle)
-{
+int32_t camb_synchronize_stream(diopiStreamHandle_t stream_handle) {
     cnrtQueue_t phStream = (cnrtQueue_t)stream_handle;
     CALL_CAMB(::cnrtQueueSync(phStream));
     return diopiSuccess;
 }
 
 int32_t camb_memcpy_h2d_async(diopiStreamHandle_t stream_handle,
-                              void* dst, const void* src, uint64_t bytes)
-{
+                              void* dst, const void* src, uint64_t bytes) {
     cnrtQueue_t phStream = (cnrtQueue_t)stream_handle;
     CALL_CAMB(::cnrtMemcpyAsync(dst, const_cast<void *>(src), bytes, phStream, CNRT_MEM_TRANS_DIR_HOST2DEV));
     return diopiSuccess;
 }
 
 int32_t camb_memcpy_d2h_async(diopiStreamHandle_t stream_handle,
-                              void* dst, const void* src, uint64_t bytes)
-{
+                              void* dst, const void* src, uint64_t bytes) {
     cnrtQueue_t phStream = (cnrtQueue_t)stream_handle;
     CALL_CAMB(::cnrtMemcpyAsync(dst, const_cast<void *>(src), bytes, phStream, CNRT_MEM_TRANS_DIR_DEV2HOST));
     return diopiSuccess;
 }
 
 int32_t camb_memcpy_d2d_async(diopiStreamHandle_t stream_handle,
-                              void* dst, const void* src, uint64_t bytes)
-{
+                              void* dst, const void* src, uint64_t bytes) {
     cnrtQueue_t phStream = (cnrtQueue_t)stream_handle;
     CALL_CAMB(::cnrtMemcpyAsync(dst, const_cast<void *>(src), bytes, phStream, CNRT_MEM_TRANS_DIR_DEV2DEV));
     return diopiSuccess;

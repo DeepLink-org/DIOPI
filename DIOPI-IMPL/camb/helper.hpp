@@ -5,11 +5,12 @@
  *
  *************************************************************************************************/
 
-#ifndef _DIOPI_REFERENCE_IMPLCUDA_HELPER_HPP_
-#define _DIOPI_REFERENCE_IMPLCUDA_HELPER_HPP_
+#ifndef IMPL_CAMB_HELPER_HPP_
+#define IMPL_CAMB_HELPER_HPP_
 
 #include <diopi/diopirt.h>
 #include <cnnl.h>
+#include <utility>
 
 
 #define DIOPI_CALL(Expr) {                                                              \
@@ -133,4 +134,4 @@ void set_last_error_string(const char* szFmt, Types&&...args) {
 
 }  // namespace impl
 
-#endif  // _DIOPI_REFERENCE_IMPLCUDA_HELPER_HPP_
+#endif  // IMPL_CAMB_HELPER_HPP_

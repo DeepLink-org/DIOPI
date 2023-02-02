@@ -14,5 +14,5 @@ constexpr __host__ __device__ inline integer ceil_div(integer n, integer m) {
   return (n + m - 1) / m;
 }
 
-} // namespace ops
-} // namespace vision
+}  // namespace ops
+}  // namespace vision

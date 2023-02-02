@@ -1,8 +1,8 @@
-#include <cstdio>
-#include <vector>
-
 #include <diopi/functions.h>
 #include <cnnl.h>
+
+#include <cstdio>
+#include <vector>
 
 #include "helper.hpp"
 
@@ -87,7 +87,7 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
 
     CnnlResourceGuard<cnnlHandle_t, cnnlCreate, cnnlDestroy> CnnlHandle;
     cnnlHandle_t handle = CnnlHandle.get();
-    DIOPI_CALLCNNL(cnnlSetQueue(handle, stream));        
+    DIOPI_CALLCNNL(cnnlSetQueue(handle, stream));
 
     CnnlResourceGuard<cnnlTensorDescriptor_t,
         cnnlCreateTensorDescriptor, cnnlDestroyTensorDescriptor> CnnlDesc;
@@ -124,11 +124,11 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
         val = value->fval;
     }
 
-    DIOPI_CALLCNNL(cnnlSetTensorDescriptorEx(desc, layout, dtype, dimNb, 
+    DIOPI_CALLCNNL(cnnlSetTensorDescriptorEx(desc, layout, dtype, dimNb,
         dimSize.data(), dimStrides.data()));
     DIOPI_CALLCNNL(cnnlFill(handle, val, desc, trInput.data()));
     return diopiSuccess;
 }
 
 
-} // extern "C"
+}  // extern "C"

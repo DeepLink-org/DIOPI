@@ -163,5 +163,5 @@ at::Tensor nms_kernel(
 }
 
 
-} // namespace ops
-} // namespace vision
+}  // namespace ops
+}  // namespace vision

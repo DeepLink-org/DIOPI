@@ -6,39 +6,31 @@
  *************************************************************************************************/
 
 #include <diopi/functions.h>
+#include <stdio.h>
 #include <cuda_runtime.h>
 #include <vector>
 
 #include "helper.hpp"
-#include <stdio.h>
 
 
 #define dispatch_dtype(fun, dtype, gridSize, blockSize, stream, ...)                             \
     if (diopi_dtype_int32 == dtype) {                                                            \
         fun<int32_t><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                           \
-    }                                                                                            \
-    else if (diopi_dtype_uint32 == dtype) {                                                      \
+    } else if (diopi_dtype_uint32 == dtype) {                                                    \
         fun<uint32_t><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                          \
-    }                                                                                            \
-    else if (diopi_dtype_int16 == dtype) {                                                       \
+    } else if (diopi_dtype_int16 == dtype) {                                                      \
         fun<int16_t><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                           \
-    }                                                                                            \
-    else if (diopi_dtype_uint16 == dtype) {                                                      \
+    } else if (diopi_dtype_uint16 == dtype) {                                                     \
         fun<uint16_t><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                          \
-    }                                                                                            \
-    else if (diopi_dtype_int8 == dtype) {                                                        \
+    } else if (diopi_dtype_int8 == dtype) {                                                       \
         fun<int8_t><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                            \
-    }                                                                                            \
-    else if (diopi_dtype_uint8 == dtype) {                                                       \
+    } else if (diopi_dtype_uint8 == dtype) {                                                      \
         fun<uint8_t><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                           \
-    }                                                                                            \
-    else if (diopi_dtype_float32 == dtype) {                                                     \
+    } else if (diopi_dtype_float32 == dtype) {                                                    \
         fun<float><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                             \
-    }                                                                                            \
-    else if (diopi_dtype_float64 == dtype) {                                                     \
+    } else if (diopi_dtype_float64 == dtype) {                                                    \
         fun<double><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                            \
-    }                                                                                            \
-    else if (diopi_dtype_bool == dtype) {                                                        \
+    } else if (diopi_dtype_bool == dtype) {                                                       \
         fun<bool><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                              \
     } else {                                                                                     \
         fprintf(stderr, "%s:%s: %s<%s %d><<<%d,%d>>>(%s)", __FILE__, __FUNCTION__, #fun, #dtype, \
@@ -47,8 +39,7 @@
     }
 
 template<typename T> __global__
-void vecAdd(const void* a, const void* b, void* c, const int numel, const T alpha)
-{
+void vecAdd(const void* a, const void* b, void* c, const int numel, const T alpha) {
     int id = blockIdx.x * blockDim.x + threadIdx.x;
     const T* A = static_cast<const T*>(a);
     const T* B = static_cast<const T*>(b);
@@ -60,8 +51,7 @@ void vecAdd(const void* a, const void* b, void* c, const int numel, const T alph
 
 template<typename T> __global__
 void vecAddBroadcast(const void* a, const void* b, void* c, const int numel, const T alpha,
-        const int64_t* stride1, const int64_t* stride2, const int64_t* outStride, const int len)
-{
+        const int64_t* stride1, const int64_t* stride2, const int64_t* outStride, const int len) {
     int id = blockIdx.x * blockDim.x + threadIdx.x;
     const T* A = static_cast<const T*>(a);
     const T* B = static_cast<const T*>(b);
@@ -81,8 +71,7 @@ void vecAddBroadcast(const void* a, const void* b, void* c, const int numel, con
 }
 
 template<typename T> __global__
-void vecAddScalar(const void* a, const T b, void* c, const int numel, const T alpha)
-{
+void vecAddScalar(const void* a, const T b, void* c, const int numel, const T alpha) {
     int id = blockIdx.x * blockDim.x + threadIdx.x;
     const T* A = static_cast<const T*>(a);
     T* C = static_cast<T*>(c);
@@ -91,8 +80,7 @@ void vecAddScalar(const void* a, const T b, void* c, const int numel, const T al
     }
 }
 
-bool compareShape(const diopiSize_t& size1, const diopiSize_t& size2)
-{
+bool compareShape(const diopiSize_t& size1, const diopiSize_t& size2) {
     if (size1.len == size2.len) {
         for (int i = 0; i < size1.len; ++i) {
             if (size1.data[i] != size2.data[i]) {
@@ -105,8 +93,7 @@ bool compareShape(const diopiSize_t& size1, const diopiSize_t& size2)
 }
 
 void computeStride(const diopiSize_t& size1, const diopiSize_t& size2, diopiSize_t outSize,
-        int64_t* stride1, int64_t* stride2)
-{
+        int64_t* stride1, int64_t* stride2) {
     int length = size1.len;
     int len = outSize.len;
     int64_t stride = 1;
@@ -131,8 +118,7 @@ void computeStride(const diopiSize_t& size1, const diopiSize_t& size2, diopiSize
 }
 
 extern "C" diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-        diopiConstTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha)
-{
+        diopiConstTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha) {
     auto stream  = impl::cuda::getStream(ctx);
     auto trInput = impl::cuda::makeTensor(input);
     auto trOther = impl::cuda::makeTensor(other);
@@ -176,8 +162,7 @@ extern "C" diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t o
 }
 
 extern "C" diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-        diopiConstTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha)
-{
+        diopiConstTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
     auto stream  = impl::cuda::getStream(ctx);
     auto trInput = impl::cuda::makeTensor(input);
     auto trOut   = impl::cuda::makeTensor(out);
@@ -198,8 +183,7 @@ extern "C" diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHand
 }
 
 template<typename T> __global__
-void vecFill(void* a, const float value, const int numel)
-{
+void vecFill(void* a, const float value, const int numel) {
     int id = blockIdx.x * blockDim.x + threadIdx.x;
     T* A = static_cast<T*>(a);
     if (id < numel) {
@@ -207,8 +191,7 @@ void vecFill(void* a, const float value, const int numel)
     }
 }
 
-extern "C" diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* value)
-{
+extern "C" diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* value) {
     auto stream = impl::cuda::getStream(ctx);
     auto tr = impl::cuda::makeTensor(input);
 

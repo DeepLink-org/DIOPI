@@ -5,12 +5,12 @@
  *
  *************************************************************************************************/
 
-#ifndef _DIOPI_REFERENCE_IMPLCUDA_HELPER_HPP_
-#define _DIOPI_REFERENCE_IMPLCUDA_HELPER_HPP_
+#ifndef IMPL_CUDA_HELPER_HPP_
+#define IMPL_CUDA_HELPER_HPP_
 
 #include <diopi/diopirt.h>
 #include <cuda_runtime.h>
-
+#include <utility>
 
 #define DIOPI_CALL(Expr) {                                                              \
     diopiError_t ret = Expr;                                                            \
@@ -133,4 +133,4 @@ void set_last_error_string(const char* szFmt, Types&&...args) {
 
 }  // namespace impl
 
-#endif  // _DIOPI_REFERENCE_IMPLCUDA_HELPER_HPP_
+#endif  // IMPL_CUDA_HELPER_HPP_

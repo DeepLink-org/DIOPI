@@ -29,8 +29,8 @@ __device__ T bilinear_interpolate(
   if (x <= 0)
     x = 0;
 
-  int y_low = (int)y;
-  int x_low = (int)x;
+  int y_low = static_cast<int>(y);
+  int x_low = static_cast<int>(x);
   int y_high;
   int x_high;
 
@@ -112,20 +112,19 @@ __global__ void roi_align_forward_kernel_impl(
     // We use roi_bin_grid to sample the grid and mimic integral
     int roi_bin_grid_h = (sampling_ratio > 0)
         ? sampling_ratio
-        : ceil(roi_height / pooled_height); // e.g., = 2
+        : ceil(roi_height / pooled_height);  // e.g., = 2
     int roi_bin_grid_w =
         (sampling_ratio > 0) ? sampling_ratio : ceil(roi_width / pooled_width);
 
     // We do average (integral) pooling inside a bin
     // When the grid is empty, output zeros.
-    const T count = max(roi_bin_grid_h * roi_bin_grid_w, 1); // e.g. = 4
+    const T count = max(roi_bin_grid_h * roi_bin_grid_w, 1);  // e.g. = 4
 
     T output_val = 0.;
-    for (int iy = 0; iy < roi_bin_grid_h; iy++) // e.g., iy = 0, 1
-    {
+    for (int iy = 0; iy < roi_bin_grid_h; iy++) {  // e.g., iy = 0, 1
       const T y = roi_start_h + ph * bin_size_h +
           static_cast<T>(iy + .5f) * bin_size_h /
-              static_cast<T>(roi_bin_grid_h); // e.g., 0.5, 1.5
+              static_cast<T>(roi_bin_grid_h);  // e.g., 0.5, 1.5
       for (int ix = 0; ix < roi_bin_grid_w; ix++) {
         const T x = roi_start_w + pw * bin_size_w +
             static_cast<T>(ix + .5f) * bin_size_w /
@@ -169,8 +168,8 @@ __device__ void bilinear_interpolate_gradient(
   if (x <= 0)
     x = 0;
 
-  y_low = (int)y;
-  x_low = (int)x;
+  y_low = static_cast<int>(y);
+  x_low = static_cast<int>(x);
 
   if (y_low >= height - 1) {
     y_high = y_low = height - 1;
@@ -259,18 +258,17 @@ __global__ void roi_align_backward_kernel_impl(
     // We use roi_bin_grid to sample the grid and mimic integral
     int roi_bin_grid_h = (sampling_ratio > 0)
         ? sampling_ratio
-        : ceil(roi_height / pooled_height); // e.g., = 2
+        : ceil(roi_height / pooled_height);  // e.g., = 2
     int roi_bin_grid_w =
         (sampling_ratio > 0) ? sampling_ratio : ceil(roi_width / pooled_width);
 
     // We do average (integral) pooling inside a bin
-    const T count = roi_bin_grid_h * roi_bin_grid_w; // e.g. = 4
+    const T count = roi_bin_grid_h * roi_bin_grid_w;  // e.g. = 4
 
-    for (int iy = 0; iy < roi_bin_grid_h; iy++) // e.g., iy = 0, 1
-    {
+    for (int iy = 0; iy < roi_bin_grid_h; iy++) {  // e.g., iy = 0, 1
       const T y = roi_start_h + ph * bin_size_h +
           static_cast<T>(iy + .5f) * bin_size_h /
-              static_cast<T>(roi_bin_grid_h); // e.g., 0.5, 1.5
+              static_cast<T>(roi_bin_grid_h);  // e.g., 0.5, 1.5
       for (int ix = 0; ix < roi_bin_grid_w; ix++) {
         const T x = roi_start_w + pw * bin_size_w +
             static_cast<T>(ix + .5f) * bin_size_w /
@@ -308,10 +306,10 @@ __global__ void roi_align_backward_kernel_impl(
               offset_grad_input + y_high * width + x_low, static_cast<T>(g3));
           atomicAdd(
               offset_grad_input + y_high * width + x_high, static_cast<T>(g4));
-        } // if
-      } // ix
-    } // iy
-  } // CUDA_1D_KERNEL_LOOP
+        }  // if
+      }  // ix
+    }  // iy
+  }  // CUDA_1D_KERNEL_LOOP
 }
 
 at::Tensor roi_align_forward_kernel(
@@ -446,5 +444,5 @@ at::Tensor roi_align_backward_kernel(
 }
 
 
-} // namespace ops
-} // namespace vision
+}  // namespace ops
+}  // namespace vision
