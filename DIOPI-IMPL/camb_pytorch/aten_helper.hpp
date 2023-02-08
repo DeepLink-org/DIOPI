@@ -418,9 +418,9 @@ diopiError_t nll_loss_internal(diopiContextHandle_t ctx, diopiTensorHandle_t out
         }
         std::vector<int64_t> inputShape = {n, c, 1, inputLastSize};
         std::vector<int64_t> targetShape = {n, 1, targetLastSize};
-        atInput = atInput.reshape(inputShape);
-        atTarget = atTarget.reshape(targetShape);
-        auto atOuts = torch_mlu::cnnl::ops::cnnl_nll_loss2d_forward(atInput, atTarget, atWeight, reduction, ignore_index);
+        auto atInput_tmp = atInput.reshape(inputShape);
+        auto atTarget_tmp = atTarget.reshape(targetShape);
+        auto atOuts = torch_mlu::cnnl::ops::cnnl_nll_loss2d_forward(atInput_tmp, atTarget_tmp, atWeight, reduction, ignore_index);
         camb::aten::updateATen2Tensor(ctx, std::get<0>(atOuts), out);
     }
     return diopiSuccess;
