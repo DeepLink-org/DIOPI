@@ -130,12 +130,8 @@ caffe2::TypeMeta getATenType(diopiDtype_t dt) {
         return caffe2::TypeMeta::Make<uint16_t>();
     case diopi_dtype_int32:
         return caffe2::TypeMeta::Make<int32_t>();
-    case  diopi_dtype_uint32:
-        return caffe2::TypeMeta::Make<uint32_t>();
     case diopi_dtype_int64:
         return caffe2::TypeMeta::Make<int64_t>();
-    case diopi_dtype_uint64:
-        return caffe2::TypeMeta::Make<uint64_t>();
     case diopi_dtype_float32:
         return caffe2::TypeMeta::Make<float>();
     case diopi_dtype_float64:
