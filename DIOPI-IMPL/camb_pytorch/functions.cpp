@@ -2420,12 +2420,44 @@ diopiError_t diopiScatterScalar(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     return diopiSuccess;
 }
 
+
+diopiError_t diopiPad(diopiContextHandle_t ctx,
+        diopiTensorHandle_t out, diopiConstTensorHandle_t input,
+        diopiSize_t pad, const char* mode, double* value) {
+    camb::aten::setCurCtx(ctx);
+    at::Tensor atInput = camb::aten::buildATen(input);
+    at::IntArrayRef atPad = camb::aten::buildAtIntArray(pad);
+    torch::nn::functional::PadFuncOptions::mode_t pad_mode;
+    double atValue = 0;
+    if (strcmp(mode, "constant") == 0) {
+        DIOPI_CHECK_PTR(value);
+        atValue = *value;
+        pad_mode = torch::kConstant;
+    } else if (strcmp(mode, "reflect") == 0) {
+        pad_mode = torch::kReflect;
+    } else if (strcmp(mode, "replicate") == 0) {
+        if (3 == atInput.dim()) {
+            NOT_SUPPORTED("MLU doesn't support replication_pad1d for 3D tensors currently");
+            return diopiErrorOccurred;
+        }
+        pad_mode = torch::kReplicate;
+    } else if (strcmp(mode, "circular") == 0) {
+        pad_mode = torch::kCircular;
+    } else {
+        NOT_SUPPORTED("padding mode");
+        return diopiErrorOccurred;
+    }
+    at::Tensor atOut = torch::nn::functional::detail::pad(atInput, atPad, pad_mode, atValue);
+    camb::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
 diopiError_t diopiPermute(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dims) {
     camb::aten::setCurCtx(ctx);
     at::Tensor atInput = camb::aten::buildATen(input);
     auto atDims = camb::aten::buildAtIntArray(dims);
     camb::aten::invokeATenFuncRet(ctx, at::native::permute, out, atInput, atDims);
-    
+
     return diopiSuccess;
 }
 

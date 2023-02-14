@@ -37,6 +37,12 @@ extern thread_local diopiContextHandle_t context;
         printf("call a cambrt function (%s) failed. return code=%d", #Expr, ret);   \
     }}                                                                              \
 
+#define DIOPI_CHECK_PTR(ptr)\
+    if (ptr == nullptr) { \
+        set_last_error_string("NotSupported: %s is nullptr at %s:%d", #ptr, __FILE__, __LINE__); \
+        return diopiErrorOccurred; \
+    } \
+
 namespace torch_mlu {
 
 void MluTypeDefault::init() {
