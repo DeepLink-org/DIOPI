@@ -40,9 +40,8 @@ struct DataType<diopiTensorHandle_t> {
 
 template<>
 struct DataType<const diopiTensorHandle_t> {
-    using type = const void*;
 
-    static const void* data(const diopiTensorHandle_t& tensor) {
+    static const void* data(diopiConstTensorHandle_t tensor) {
         const void *data;
         diopiGetTensorDataConst(&tensor, &data);
         return data;
