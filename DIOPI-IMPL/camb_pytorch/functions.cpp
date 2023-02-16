@@ -424,6 +424,7 @@ diopiError_t diopiMaskedScatter(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 
 diopiError_t diopiNms(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t dets,
         diopiConstTensorHandle_t scores, double iouThreshold) {
+    DIOPI_CHECK_PTR(out);
     camb::aten::setCurCtx(ctx);
     auto atDets = camb::aten::buildATen(dets);
     auto atScores = camb::aten::buildATen(scores);
@@ -435,6 +436,7 @@ diopiError_t diopiNms(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiC
 // TOCHECK
 diopiError_t diopiNonzero(diopiContextHandle_t ctx,
         diopiTensorHandle_t* out, diopiConstTensorHandle_t input) {
+    DIOPI_CHECK_PTR(out);
     camb::aten::setCurCtx(ctx);
     auto atInput = camb::aten::buildATen(input);
     auto atOut = at::nonzero(atInput);
@@ -500,6 +502,8 @@ diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTens
  */
 diopiError_t diopiClipGradNorm(diopiContextHandle_t ctx, double* out, diopiTensorHandle_t* parameters,
         int64_t parametersNum, double maxNorm, double normType, bool errorIfNonfinite) {
+    DIOPI_CHECK(parameters != nullptr && out != nullptr,
+                "Not supported: out or parameters is nullptr");
     camb::aten::setCurCtx(ctx);
     auto tensorList = camb::aten::buildATenList(parameters, parametersNum);
     *out = torch::nn::utils::clip_grad_norm_(tensorList, maxNorm, normType);
@@ -537,6 +541,7 @@ diopiError_t diopiTril(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 
 diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         diopiConstTensorHandle_t* tensors, int64_t insNum, int64_t dim) {
+    DIOPI_CHECK_PTR(tensors);
     camb::aten::setCurCtx(ctx);
     auto tensorList = camb::aten::buildATenList(tensors, insNum);
     auto atOut = camb::aten::buildATen(out);
@@ -546,6 +551,7 @@ diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 
 diopiError_t diopiSplitWithSizes(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, int64_t outsNum,
         diopiConstTensorHandle_t input, const diopiSize_t splitSizes, int64_t dim) {
+    DIOPI_CHECK_PTR(outs);
     camb::aten::setCurCtx(ctx);
     auto atInput = camb::aten::buildATen(input);
     auto atSizes = camb::aten::buildAtIntArray(splitSizes);
@@ -568,6 +574,7 @@ diopiError_t diopiSplitWithSizes(diopiContextHandle_t ctx, diopiTensorHandle_t* 
 
 diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         diopiConstTensorHandle_t* tensors, int64_t numTensors, int64_t dim) {
+    DIOPI_CHECK_PTR(tensors);
     camb::aten::setCurCtx(ctx);
     auto tensorList = camb::aten::buildATenList(tensors, numTensors);
 
@@ -588,7 +595,7 @@ diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
 #if TORCH_MM_VERSION <= TORCH_1_8_MM_VERSION
     auto atOuts = at::sort(atInput, dim, descending);
 #else
-    c10::optional<bool> atStable = stable ? c10::optional<bool>(*stable) : c10::nullopt;
+    c10::optional<bool> atStable = stable ? c10::optional<bool>(*stable) : c10::optional<bool>(false);
     auto atOuts = at::sort(atInput, atStable, dim, descending);
 #endif
     camb::aten::updateATen2Tensor(ctx, std::get<0>(atOuts), values);
@@ -1484,6 +1491,8 @@ diopiError_t diopiSlice(diopiContextHandle_t ctx, diopiTensorHandle_t null_out, 
 // TOCHECK
 diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input,
         diopiConstTensorHandle_t* indices, int64_t nums) {
+    DIOPI_CHECK(out != nullptr && indices != nullptr,
+                "Not supported: out or indices is nullptr");
     camb::aten::setCurCtx(ctx);
     at::Tensor atInput = camb::aten::buildATen(input);
     c10::List<c10::optional<at::Tensor>> vecIdx;
@@ -1589,6 +1598,7 @@ diopiError_t diopiSliceBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gr
 
 diopiError_t diopiIndexBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t zeros_like_input,
         diopiConstTensorHandle_t* indices, int64_t nums, diopiConstTensorHandle_t grad) {
+    DIOPI_CHECK_PTR(indices);
     camb::aten::setCurCtx(ctx);
     at::Tensor atZerosInput = camb::aten::buildATen(zeros_like_input);
     at::Tensor atGrad = camb::aten::buildATen(grad);
@@ -2282,6 +2292,7 @@ diopiError_t diopiUnfoldBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
 
 diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t* out,
                                diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask) {
+    DIOPI_CHECK_PTR(out);
     camb::aten::setCurCtx(ctx);
     auto atInput = camb::aten::buildATen(input);
     auto atMask = camb::aten::buildATen(mask);
