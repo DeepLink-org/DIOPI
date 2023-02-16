@@ -403,6 +403,17 @@ diopiError_t diopiIndexSelect(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     return diopiSuccess;
 }
 
+//To Check
+diopiError_t diopiGather(diopiContextHandle_t ctx, diopiTensorHandle_t out,
+        diopiConstTensorHandle_t input, int64_t dim, diopiConstTensorHandle_t index) {
+    camb::aten::setCurCtx(ctx);
+    auto atIndex = camb::aten::buildATen(index);
+    auto atInput = camb::aten::buildATen(input);
+    auto atOut = at::gather(atInput, dim, atIndex, false);
+    camb::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
 diopiError_t diopiSelect(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         diopiConstTensorHandle_t input, int64_t dim, int64_t index) {
     camb::aten::setCurCtx(ctx);
