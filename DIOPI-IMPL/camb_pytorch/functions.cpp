@@ -403,7 +403,7 @@ diopiError_t diopiIndexSelect(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     return diopiSuccess;
 }
 
-//To Check
+// To Check
 diopiError_t diopiGather(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         diopiConstTensorHandle_t input, int64_t dim, diopiConstTensorHandle_t index) {
     camb::aten::setCurCtx(ctx);
