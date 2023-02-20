@@ -62,8 +62,8 @@ DIOPI_API diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diop
  */
 DIOPI_API diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean,
                                       diopiTensorHandle_t save_invstd, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
-                                      diopiConstTensorHandle_t bias, diopiConstTensorHandle_t running_mean,
-                                      diopiConstTensorHandle_t running_var, bool training, double momentum, double eps);
+                                      diopiConstTensorHandle_t bias, diopiTensorHandle_t running_mean,
+                                      diopiTensorHandle_t running_var, bool training, double momentum, double eps);
 DIOPI_API diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
                                               diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                               diopiConstTensorHandle_t running_mean, diopiConstTensorHandle_t running_var, diopiConstTensorHandle_t save_mean,
@@ -408,22 +408,24 @@ DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
  */
 DIOPI_API diopiError_t diopiMin(diopiContextHandle_t ctx, diopiTensorHandle_t min, diopiTensorHandle_t min_indices,
                                 diopiConstTensorHandle_t input, int64_t dim);
+DIOPI_API diopiError_t diopiMinAll(diopiContextHandle_t ctx, diopiTensorHandle_t min, diopiConstTensorHandle_t input);
 
 /**
  * \brief Returns the maximum value of all elements in the input tensor.
  */
 DIOPI_API diopiError_t diopiMax(diopiContextHandle_t ctx, diopiTensorHandle_t max, diopiTensorHandle_t max_indices,
                                 diopiConstTensorHandle_t input, int64_t dim);
+DIOPI_API diopiError_t diopiMaxAll(diopiContextHandle_t ctx, diopiTensorHandle_t max, diopiConstTensorHandle_t input);
 
 /**
  * \brief Returns True if any element in each row of the tensor in the given dimension dim are True, False otherwise.
  */
-DIOPI_API diopiError_t diopiAny(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim);
+DIOPI_API diopiError_t diopiAny(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t* dim);
 
 /**
  * \brief Returns True if all elements in each row of the tensor in the given dimension dim are True, False otherwise.
  */
-DIOPI_API diopiError_t diopiAll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim);
+DIOPI_API diopiError_t diopiAll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t* dim);
 
 /**
  * \brief Applies a softmax function.
