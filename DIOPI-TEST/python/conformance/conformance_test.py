@@ -53,7 +53,7 @@ def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dt
                 if ele is not None and str(ele.dtype) not in test_tag:
                     test_tag.append(str(ele.dtype))
             function_paras['kwargs'][para] = tensors
-            tensor_info.append(("TensorList: " + para, str(tensors[0].dtype), str(tensors[0].shape)))
+            tensor_info.append(("TensorList: " + para, str(tensors[0].get_dtype()), str(tensors[0].shape())))
     return tensor_info
 
 
