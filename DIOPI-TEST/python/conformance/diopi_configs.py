@@ -857,6 +857,24 @@ diopi_configs = {
         ),
     ),
 
+    'reduce_partial_op_4': dict(
+        name=['min', 'max', 'any', 'all'],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-5,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((64, ), (169, 4), (17100, 2), (1, 1, 384),
+                              (4, 133, 128, 128), (2, 64, 3, 3, 3)),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.bool],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
     'mse_loss': dict(
         name=["mse_loss"],
         para=dict(
@@ -1456,6 +1474,25 @@ diopi_configs = {
                     "ins": ['input'],
                     "shape": ((2, 4096), (32, 49, 256), (2, 16, 64, 64),
                               (1, 2304, 1, 1, 1)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'dropout2d': dict(
+        name=["dropout2d"],
+        no_output_ref=True,
+        is_inplace=True,
+        para=dict(
+            p=[0.5, 0.1],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((32, 49, 256), (32, 16, 64, 64)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },

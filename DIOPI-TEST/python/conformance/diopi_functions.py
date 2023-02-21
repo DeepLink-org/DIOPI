@@ -483,7 +483,14 @@ def std(input, unbiased, dim=None, keepdim=False) -> Tensor:
     return out
 
 
-def min(input, dim=0, keepdim=False) -> Tensor:
+def min(input, dim=None, keepdim=False) -> Tensor:
+    if dim is None:
+        out = Tensor([], input.get_dtype())
+        func = check_function("diopiMinAll")
+        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle)
+        check_returncode(ret)
+        return out
+
     assert isinstance(dim, int), "dim should be int"
 
     sizeI = list(input.size())
@@ -838,7 +845,7 @@ def adaptive_max_pool2d(input, output_size, return_indices=False):
     return out
 
 
-def dropout(input, p=0.5, training=True, inplace=False):
+def dropout_impl(input, size_mask, p=0.5, training=True, inplace=False):
     call = "diopiDropout"
     args = 'input.context_handle, out.tensor_handle, mask.tensor_handle, '
 
@@ -849,13 +856,23 @@ def dropout(input, p=0.5, training=True, inplace=False):
         out = raw_like(input)
         args = args + 'input.tensor_handle, '
 
-    sizeI = input.size()
-    mask = Tensor(sizeI, Dtype.uint8)
+    mask = Tensor(size_mask, Dtype.uint8)
     args = args + "c_double(p), c_bool(training)"
     func = check_function(call)
     ret = eval(f'func({args})')
     check_returncode(ret)
     return out, mask
+
+
+def dropout(input, p=0.5, training=True, inplace=False):
+    return dropout_impl(input, input.size(), p, training, inplace)
+
+
+def dropout2d(input, p=0.5, training=True, inplace=False):
+    sizeI = list(input.size())
+    for i in range(2, len(sizeI)):
+        sizeI[i] = 1
+    return dropout_impl(input, sizeI, p, training, inplace)
 
 
 def index_select(input, dim, index) -> Tensor:
@@ -1319,7 +1336,14 @@ def sum(input, dim=None, keepdim=False, dtype=None) -> Tensor:
     return out
 
 
-def max(input, dim, keepdim=False):
+def max(input, dim=None, keepdim=False):
+    if dim is None:
+        out = Tensor([], input.get_dtype())
+        func = check_function("diopiMaxAll")
+        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle)
+        check_returncode(ret)
+        return out
+
     assert isinstance(dim, int), "dim should be int"
     sizeI = list(input.size())
     if keepdim:
@@ -1338,20 +1362,30 @@ def max(input, dim, keepdim=False):
     return output
 
 
-def any(input, dim, keepdim=False) -> Tensor:
-    assert isinstance(dim, int), "dim should be int"
-    _, out = reduce_op_process(input, dim, keepdim, dtype=Dtype.bool)
+def any(input, dim=None, keepdim=False) -> Tensor:
+    if dim is None:
+        out = Tensor([], Dtype.bool)
+        dim = c_void_p()
+    else:
+        assert isinstance(dim, int), "dim should be int"
+        _, out = reduce_op_process(input, dim, keepdim, dtype=Dtype.bool)
+        dim = byref(c_int64(dim))
     func = check_function("diopiAny")
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, c_int64(dim))
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim)
     check_returncode(ret)
     return out
 
 
-def all(input, dim, keepdim=False) -> Tensor:
-    assert isinstance(dim, int), "dim should be int"
-    _, out = reduce_op_process(input, dim, keepdim, dtype=Dtype.bool)
+def all(input, dim=None, keepdim=False) -> Tensor:
+    if dim is None:
+        out = Tensor([], Dtype.bool)
+        dim = c_void_p()
+    else:
+        assert isinstance(dim, int), "dim should be int"
+        _, out = reduce_op_process(input, dim, keepdim, dtype=Dtype.bool)
+        dim = byref(c_int64(dim))
     func = check_function("diopiAll")
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, c_int64(dim))
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim)
     check_returncode(ret)
     return out
 
