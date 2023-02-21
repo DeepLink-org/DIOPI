@@ -43,6 +43,12 @@ extern thread_local diopiContextHandle_t context;
         return diopiErrorOccurred; \
     } \
 
+#define DIOPI_CHECK(cond, str) \
+    if (!(cond)) { \
+        set_last_error_string("%s at %s:%d", str, __FILE__, __LINE__); \
+        return diopiErrorOccurred; \
+    }
+
 namespace torch_mlu {
 
 void MluTypeDefault::init() {
