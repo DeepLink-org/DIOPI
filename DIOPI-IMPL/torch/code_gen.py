@@ -22,7 +22,7 @@ static void* handle;\n\
 static void\n\
 __attribute__ ((constructor))\n\
 diopi_init(void) {\n\
-    handle = dlopen("libdiopi_real_impl.so", RTLD_NOW | RTLD_LOCAL | RTLD_DEEPBIND);\n\
+    handle = dlopen("libdiopi_real_impl.so", RTLD_LAZY | RTLD_LOCAL | RTLD_DEEPBIND);\n\
     printf("diopi dyload init\\n");\n\
     if (!handle) {\n\
         fprintf (stderr, "%s ", dlerror());\n\
@@ -41,7 +41,7 @@ dlclose(handle);\n\
 def get_func_arg(content):
     arg = "("
     new_content = []
-    arg_type = "    diopiError_t (*func) "
+    arg_type = "    diopiError_t (*func)"
     for row in content:
         idx0 = 0
         idx2 = row.find(",")
