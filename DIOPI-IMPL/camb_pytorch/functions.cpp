@@ -2376,14 +2376,6 @@ diopiError_t diopiLinspace(diopiContextHandle_t ctx, diopiTensorHandle_t out, co
     return diopiSuccess;
 }
 
-diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiTensorHandle_t input) {
-    camb::aten::setCurCtx(ctx);
-    at::Tensor atInput = camb::aten::buildATen(input);
-    at::Tensor atSrc = camb::aten::buildATen(src);
-    at::native::copy_(atInput, atSrc, false);
-    return diopiSuccess;
-}
-
 diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight, diopiTensorHandle_t grad_bias,
         diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight) {
     camb::aten::setCurCtx(ctx);
