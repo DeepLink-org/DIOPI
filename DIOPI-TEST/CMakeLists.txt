@@ -5,7 +5,7 @@ option(USE_CXX "Whether to use cxx impl, or use c impl" ON)
 option(RUNTIME "Whether to compile DIOPI with runtime" ON)
 option(ATTR_WEAK "Whether to use weak symbol for diopi functions" OFF)
 option(DYLOAD "Whether to load so in runtime by dlopen" OFF)
-
+option(DEBUG "whether to use debug" OFF)
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/diopirt/include")
 include_directories(include)
 
@@ -17,6 +17,12 @@ else()
 endif()
 if (ATTR_WEAK)
     add_definitions(-DDIOPI_ATTR_WEAK)
+endif()
+
+if (DEBUG)
+    SET(CMAKE_BUILD_TYPE "Debug")
+else()
+    SET(CMAKE_BUILD_TYPE "Release")
 endif()
 
 if (USE_CXX)
