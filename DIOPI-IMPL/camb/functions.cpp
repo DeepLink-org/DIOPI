@@ -130,5 +130,4 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
     return diopiSuccess;
 }
 
-
 }  // extern "C"
