@@ -1046,9 +1046,7 @@ def topk(input, k, dim=-1, largest=True, sorted=True):
 def transpose(input, dim0, dim1) -> Tensor:
     sizeI = list(input.size())
     sizeI[dim0], sizeI[dim1] = sizeI[dim1], sizeI[dim0]
-    strideI = list(input.get_stride())
-    strideI[dim0], strideI[dim1] = strideI[dim1], strideI[dim0]
-    out = Tensor(sizeI, input.get_dtype(), strideI)
+    out = Tensor(sizeI, input.get_dtype())
 
     func = check_function("diopiTranspose")
     ret = func(input.context_handle, out.tensor_handle,
@@ -2814,13 +2812,10 @@ def permute(input, dims=None) -> Tensor:
         "dims should be tuple or list"
 
     sizeI = list(input.size())
-    strideI = list(input.get_stride())
     sizeO = list(input.size())
-    strideO = list(input.get_stride())
     for i in range(len(dims)):
         sizeO[i] = sizeI[dims[i]]
-        strideO[i] = strideI[dims[i]]
-    out = Tensor(sizeO, input.get_dtype(), strideO)
+    out = Tensor(sizeO, input.get_dtype())
     dims = Sizes(tuple(dims))
     func = check_function("diopiPermute")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dims)
