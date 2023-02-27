@@ -4,44 +4,36 @@
 #include <cnnl.h>
 #include <vector>
 #include "diopi_helper.hpp"
+#include "error.hpp"
 
-#define DIOPI_CHECK(cond, str)                           \
-    do {                                                 \
-        if (!(cond)) {                                   \
-            impl::camb::set_last_error_string(           \
-                "%s at %s:%d", str, __FILE__, __LINE__); \
-            return diopiErrorOccurred;                   \
-        }                                                \
+#define DIOPI_CHECK(cond, str)                                                         \
+    do {                                                                               \
+        if (!(cond)) {                                                                 \
+            impl::camb::set_last_error_string("%s at %s:%d", str, __FILE__, __LINE__); \
+            return diopiErrorOccurred;                                                 \
+        }                                                                              \
     } while (false);
 
-#define DIOPI_CALLCNNL(Expr)                                                 \
-    do {                                                                     \
-        ::cnnlStatus_t ret = Expr;                                           \
-        if (ret != ::CNNL_STATUS_SUCCESS) {                                  \
-            impl::camb::set_last_error_string("cnnl error %d : %s at %s:%d", \
-                                              ret,                           \
-                                              ::cnnlGetErrorString(ret),     \
-                                              __FILE__,                      \
-                                              __LINE__);                     \
-            return diopiErrorOccurred;                                       \
-        }                                                                    \
+#define DIOPI_CALLCNNL(Expr)                                                                        \
+    do {                                                                                            \
+        ::cnnlStatus_t ret = Expr;                                                                  \
+        if (ret != ::CNNL_STATUS_SUCCESS) {                                                         \
+            impl::camb::set_last_error_string(                                                      \
+                "cnnl error %d : %s at %s:%d", ret, ::cnnlGetErrorString(ret), __FILE__, __LINE__); \
+            return diopiErrorOccurred;                                                              \
+        }                                                                                           \
     } while (false);
 
-#define DIOPI_CHECKCNNL(Expr)                                                \
-    do {                                                                     \
-        ::cnnlStatus_t ret = Expr;                                           \
-        if (ret != ::CNNL_STATUS_SUCCESS) {                                  \
-            impl::camb::set_last_error_string("cnnl error %d : %s at %s:%d", \
-                                              ret,                           \
-                                              ::cnnlGetErrorString(ret),     \
-                                              __FILE__,                      \
-                                              __LINE__);                     \
-        }                                                                    \
+#define DIOPI_CHECKCNNL(Expr)                                                                       \
+    do {                                                                                            \
+        ::cnnlStatus_t ret = Expr;                                                                  \
+        if (ret != ::CNNL_STATUS_SUCCESS) {                                                         \
+            impl::camb::set_last_error_string(                                                      \
+                "cnnl error %d : %s at %s:%d", ret, ::cnnlGetErrorString(ret), __FILE__, __LINE__); \
+        }                                                                                           \
     } while (false);
 
-template <typename T,
-          ::cnnlStatus_t (*fnCreate)(T*),
-          ::cnnlStatus_t (*fnDestroy)(T)>
+template <typename T, ::cnnlStatus_t (*fnCreate)(T*), ::cnnlStatus_t (*fnDestroy)(T)>
 class CnnlResourceGuard final {
    public:
     CnnlResourceGuard() { DIOPI_CHECKCNNL(fnCreate(&resource_)); }
@@ -62,10 +54,7 @@ class CnnlTensorDesc {
         cnnlStatus_t ret = cnnlCreateTensorDescriptor(&desc);
         if (ret != CNNL_STATUS_SUCCESS) {
             impl::camb::set_last_error_string(
-                "failed to cnnlCreateTensorDescriptor %d at %s:%d",
-                ret,
-                __FILE__,
-                __LINE__);
+                "failed to cnnlCreateTensorDescriptor %d at %s:%d", ret, __FILE__, __LINE__);
         }
     }
 
@@ -73,18 +62,11 @@ class CnnlTensorDesc {
         cnnlStatus_t ret = cnnlCreateTensorDescriptor(&desc);
         if (ret != CNNL_STATUS_SUCCESS) {
             impl::camb::set_last_error_string(
-                "failed to cnnlCreateTensorDescriptor %d at %s:%d",
-                ret,
-                __FILE__,
-                __LINE__);
+                "failed to cnnlCreateTensorDescriptor %d at %s:%d", ret, __FILE__, __LINE__);
         }
         diopiError_t status = set(t, layout);
         if (ret != CNNL_STATUS_SUCCESS) {
-            impl::camb::set_last_error_string(
-                "failed to cnnlSetTensorDescriptor %d at %s:%d",
-                ret,
-                __FILE__,
-                __LINE__);
+            impl::camb::set_last_error_string("failed to cnnlSetTensorDescriptor %d at %s:%d", ret, __FILE__, __LINE__);
         }
     }
 
@@ -92,10 +74,7 @@ class CnnlTensorDesc {
         cnnlStatus_t ret = cnnlDestroyTensorDescriptor(desc);
         if (ret != CNNL_STATUS_SUCCESS) {
             impl::camb::set_last_error_string(
-                "failed to cnnlDestroyTensorDescriptor %d at %s:%d",
-                ret,
-                __FILE__,
-                __LINE__);
+                "failed to cnnlDestroyTensorDescriptor %d at %s:%d", ret, __FILE__, __LINE__);
         }
     }
 
@@ -115,8 +94,7 @@ class CnnlTensorDesc {
     diopiError_t set(T& t, cnnlTensorLayout_t layout, std::vector<int> dims) {
         cnnlDataType_t dtype;
         DIOPI_CALL(convertType(&dtype, t.dtype()));
-        DIOPI_CALLCNNL(cnnlSetTensorDescriptor(
-            this->get(), layout, dtype, dims.size(), dims.data()));
+        DIOPI_CALLCNNL(cnnlSetTensorDescriptor(this->get(), layout, dtype, dims.size(), dims.data()));
         return diopiSuccess;
     }
 

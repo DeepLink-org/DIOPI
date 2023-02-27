@@ -8,11 +8,11 @@
 #ifndef IMPL_CAMB_DIOPI_HELPER_HPP_
 #define IMPL_CAMB_DIOPI_HELPER_HPP_
 
-#include<utility>
 #include <cstdio>
+#include <utility>
 
-#include <diopi/diopirt.h>
 #include <cnrt.h>
+#include <diopi/diopirt.h>
 
 #define DIOPI_CALL(Expr)           \
     do {                           \
@@ -26,33 +26,33 @@ namespace impl {
 
 namespace camb {
 
-template<typename TensorType>
+template <typename TensorType>
 struct DataType;
 
-template<>
+template <>
 struct DataType<diopiTensorHandle_t> {
     using type = void*;
 
     static void* data(diopiTensorHandle_t& tensor) {
-        void *data;
+        void* data;
         diopiGetTensorData(&tensor, &data);
         return data;
     }
 };
 
-template<>
+template <>
 struct DataType<diopiConstTensorHandle_t> {
     using type = const void*;
     static const void* data(diopiConstTensorHandle_t& tensor) {
-        const void *data;
+        const void* data;
         diopiGetTensorDataConst(&tensor, &data);
         return data;
     }
 };
 
-template<typename TensorType>
+template <typename TensorType>
 class DiopiTensor final {
-public:
+   public:
     explicit DiopiTensor(TensorType& tensor) : tensor_(tensor) {}
 
     diopiDevice_t device() const {
@@ -86,31 +86,29 @@ public:
         return elemsize;
     }
 
-    typename DataType<TensorType>::type data() {
-        return DataType<TensorType>::data(tensor_);
-    }
+    typename DataType<TensorType>::type data() { return DataType<TensorType>::data(tensor_); }
 
-protected:
+   protected:
     TensorType tensor_;
 
     diopiSize_t shape_;
     diopiSize_t stride_;
 };
 
-template<typename TensorType>
+template <typename TensorType>
 inline auto makeTensor(TensorType& tensor) -> DiopiTensor<TensorType> {
     return DiopiTensor<TensorType>(tensor);
 }
 
-inline DiopiTensor<diopiTensorHandle_t> requiresTensor(
-        diopiContextHandle_t ctx, const diopiSize_t& size, diopiDtype_t dtype) {
+inline DiopiTensor<diopiTensorHandle_t> requiresTensor(diopiContextHandle_t ctx,
+                                                       const diopiSize_t& size,
+                                                       diopiDtype_t dtype) {
     diopiTensorHandle_t tensor;
     diopiRequireTensor(ctx, &tensor, &size, nullptr, dtype, diopi_device);
     return makeTensor(tensor);
 }
 
-inline DiopiTensor<diopiTensorHandle_t> requiresBuffer(
-        diopiContextHandle_t ctx, int64_t num_bytes) {
+inline DiopiTensor<diopiTensorHandle_t> requiresBuffer(diopiContextHandle_t ctx, int64_t num_bytes) {
     diopiTensorHandle_t tensor;
     diopiRequireBuffer(ctx, &tensor, num_bytes, diopi_device);
     return makeTensor(tensor);
@@ -121,15 +119,6 @@ inline cnrtQueue_t getStream(diopiContextHandle_t ctx) {
     diopiGetStream(ctx, &stream_handle);
     return static_cast<cnrtQueue_t>(stream_handle);
 }
-
-void _set_last_error_string(const char *err);
-
-template<typename...Types>
-inline void set_last_error_string(const char* szFmt, Types&&...args){
-    char szBuf[4096] = {0};
-    sprintf(szBuf, szFmt, std::forward<Types>(args)...);
-    _set_last_error_string(szBuf);
-};
 
 }  // namespace camb
 
