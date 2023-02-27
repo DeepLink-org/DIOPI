@@ -20,6 +20,9 @@ diopiError_t convertType(cnnlDataType_t *cnnlType, diopiDtype_t type) {
     case diopi_dtype_float32:
         *cnnlType = CNNL_DTYPE_FLOAT;
         break;
+    case diopi_dtype_float64:
+        *cnnlType = CNNL_DTYPE_DOUBLE;
+        break;
     case diopi_dtype_int16:
         *cnnlType = CNNL_DTYPE_INT16;
         break;
@@ -33,7 +36,7 @@ diopiError_t convertType(cnnlDataType_t *cnnlType, diopiDtype_t type) {
         *cnnlType = CNNL_DTYPE_INT64;
         break;
     default:
-        impl::camb::set_last_error_string("unkown diopitype error %d at %s:%s", type, __FILE__, __LINE__);
+        impl::camb::set_last_error_string("unkown diopitype error %d at %s:%d", type, __FILE__, __LINE__);
         return diopiDtypeNotSupported;
     }
     return diopiSuccess;
