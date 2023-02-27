@@ -5,20 +5,22 @@
  *
  *************************************************************************************************/
 
-#ifndef IMPL_CAMB_HELPER_HPP_
-#define IMPL_CAMB_HELPER_HPP_
+#ifndef IMPL_CAMB_DIOPI_HELPER_HPP_
+#define IMPL_CAMB_DIOPI_HELPER_HPP_
+
+#include<utility>
+#include <cstdio>
 
 #include <diopi/diopirt.h>
-#include <cnnl.h>
-#include <utility>
+#include <cnrt.h>
 
-
-#define DIOPI_CALL(Expr) {                                                              \
-    diopiError_t ret = Expr;                                                            \
-    if (diopiSuccess != ret) {                                                          \
-        return ret;                                                                     \
-    }}\
-
+#define DIOPI_CALL(Expr)           \
+    do {                           \
+        diopiError_t ret = Expr;   \
+        if (diopiSuccess != ret) { \
+            return ret;            \
+        }                          \
+    } while (false);
 
 namespace impl {
 
@@ -40,6 +42,7 @@ struct DataType<diopiTensorHandle_t> {
 
 template<>
 struct DataType<const diopiTensorHandle_t> {
+    using type = void*;
     static const void* data(diopiConstTensorHandle_t tensor) {
         const void *data;
         diopiGetTensorDataConst(&tensor, &data);
@@ -95,7 +98,7 @@ protected:
 };
 
 template<typename TensorType>
-auto makeTensor(TensorType& tensor) -> DiopiTensor<TensorType> {
+inline auto makeTensor(TensorType& tensor) -> DiopiTensor<TensorType> {
     return DiopiTensor<TensorType>(tensor);
 }
 
@@ -122,14 +125,14 @@ inline cnrtQueue_t getStream(diopiContextHandle_t ctx) {
 void _set_last_error_string(const char *err);
 
 template<typename...Types>
-void set_last_error_string(const char* szFmt, Types&&...args) {
+inline void set_last_error_string(const char* szFmt, Types&&...args){
     char szBuf[4096] = {0};
     sprintf(szBuf, szFmt, std::forward<Types>(args)...);
     _set_last_error_string(szBuf);
-}
+};
 
 }  // namespace camb
 
 }  // namespace impl
 
-#endif  // IMPL_CAMB_HELPER_HPP_
+#endif  // IMPL_CAMB_DIOPI_HELPER_HPP_

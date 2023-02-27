@@ -23,7 +23,8 @@ else()
     message(FATAL_ERROR "No Cambricon Neuware toolkit found.")
 endif()
 
-set(IMPL_SRC conform_test.cpp functions.cpp)
+file(GLOB_RECURSE IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions/*.cpp)
+list(APPEND IMPL_SRC cnnl_helper.cpp conform_test.cpp)
 
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")

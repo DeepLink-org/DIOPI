@@ -12,65 +12,61 @@
 #include <cstdio>
 #include <mutex>
 
-#include "helper.hpp"
 
-
-extern "C" {
-
-
-#define CALL_CAMB(Expr)   {                                                         \
+#define CALL_CNRT(Expr)   {                                                         \
     ::cnrtRet_t ret = Expr;                                                         \
     if (ret != ::CNRT_RET_SUCCESS) {                                                \
         printf("call a cambrt function (%s) failed. return code=%d", #Expr, ret);   \
     }}                                                                              \
 
+extern "C" {
 void* camb_malloc(uint64_t bytes) {
     void* ptr;
-    CALL_CAMB(::cnrtMalloc(&ptr, bytes));
+    CALL_CNRT(::cnrtMalloc(&ptr, bytes));
     return ptr;
 }
 
 void camb_free(void* ptr) {
-    CALL_CAMB(cnrtFree(ptr));
+    CALL_CNRT(cnrtFree(ptr));
 }
 
 int32_t camb_make_stream(diopiStreamHandle_t* stream_handle_ptr) {
     cnrtQueue_t phStream;
-    CALL_CAMB(cnrtCreateQueue(&phStream));
+    CALL_CNRT(cnrtCreateQueue(&phStream));
     *stream_handle_ptr = (diopiStreamHandle_t)phStream;
     return diopiSuccess;
 }
 
 int32_t camb_destroy_stream(diopiStreamHandle_t stream_handle) {
     cnrtQueue_t phStream = (cnrtQueue_t)stream_handle;
-    CALL_CAMB(cnrtDestroyQueue(phStream));
+    CALL_CNRT(cnrtDestroyQueue(phStream));
     return diopiSuccess;
 }
 
 int32_t camb_synchronize_stream(diopiStreamHandle_t stream_handle) {
     cnrtQueue_t phStream = (cnrtQueue_t)stream_handle;
-    CALL_CAMB(cnrtSyncQueue(phStream));
+    CALL_CNRT(cnrtSyncQueue(phStream));
     return diopiSuccess;
 }
 
 int32_t camb_memcpy_h2d_async(diopiStreamHandle_t stream_handle,
                               void* dst, const void* src, uint64_t bytes) {
     cnrtQueue_t phStream = (cnrtQueue_t)stream_handle;
-    CALL_CAMB(cnrtMemcpyAsync(dst, const_cast<void *>(src), bytes, phStream, CNRT_MEM_TRANS_DIR_HOST2DEV));
+    CALL_CNRT(cnrtMemcpyAsync(dst, const_cast<void *>(src), bytes, phStream, CNRT_MEM_TRANS_DIR_HOST2DEV));
     return diopiSuccess;
 }
 
 int32_t camb_memcpy_d2h_async(diopiStreamHandle_t stream_handle,
                               void* dst, const void* src, uint64_t bytes) {
     cnrtQueue_t phStream = (cnrtQueue_t)stream_handle;
-    CALL_CAMB(cnrtMemcpyAsync(dst, const_cast<void *>(src), bytes, phStream, CNRT_MEM_TRANS_DIR_DEV2HOST));
+    CALL_CNRT(cnrtMemcpyAsync(dst, const_cast<void *>(src), bytes, phStream, CNRT_MEM_TRANS_DIR_DEV2HOST));
     return diopiSuccess;
 }
 
 int32_t camb_memcpy_d2d_async(diopiStreamHandle_t stream_handle,
                               void* dst, const void* src, uint64_t bytes) {
     cnrtQueue_t phStream = (cnrtQueue_t)stream_handle;
-    CALL_CAMB(cnrtMemcpyAsync(dst, const_cast<void *>(src), bytes, phStream, CNRT_MEM_TRANS_DIR_DEV2DEV));
+    CALL_CNRT(cnrtMemcpyAsync(dst, const_cast<void *>(src), bytes, phStream, CNRT_MEM_TRANS_DIR_DEV2DEV));
     return diopiSuccess;
 }
 
