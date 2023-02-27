@@ -1552,6 +1552,8 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
             at::mul_out(atOut, atInput, atMask);
             atOut.div_(1 - p);
         }
+    } else {
+        impl::aten::updateATen2Tensor(ctx, atInput, out);
     }
     return diopiSuccess;
 }
