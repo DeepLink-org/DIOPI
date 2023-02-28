@@ -32,12 +32,12 @@ jobs:
           ssh ${CLUSTER_1984} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
           rsync -a --delete ${GITHUB_WORKSPACE}/ ${CLUSTER_1984}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
 
-  lint-c-python:
-    name: lint-python
+  lint-cpp:
+    name: lint-cpp
     runs-on: github-diopi-ci
     needs: [Rsync]
     steps:
-      - name: lint-c-python
+      - name: lint-cpp
         run: |
           ssh ${CLUSTER_1984} """
           set -e
