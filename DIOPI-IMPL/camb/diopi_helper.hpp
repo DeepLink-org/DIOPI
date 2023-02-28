@@ -100,9 +100,7 @@ inline auto makeTensor(TensorType& tensor) -> DiopiTensor<TensorType> {
     return DiopiTensor<TensorType>(tensor);
 }
 
-inline DiopiTensor<diopiTensorHandle_t> requiresTensor(diopiContextHandle_t ctx,
-                                                       const diopiSize_t& size,
-                                                       diopiDtype_t dtype) {
+inline DiopiTensor<diopiTensorHandle_t> requiresTensor(diopiContextHandle_t ctx, const diopiSize_t& size, diopiDtype_t dtype) {
     diopiTensorHandle_t tensor;
     diopiRequireTensor(ctx, &tensor, &size, nullptr, dtype, diopi_device);
     return makeTensor(tensor);

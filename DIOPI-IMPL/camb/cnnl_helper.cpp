@@ -1,4 +1,5 @@
 #include "cnnl_helper.hpp"
+
 #include "error.hpp"
 
 diopiError_t convertType(cnnlDataType_t *cnnlType, diopiDtype_t type) {

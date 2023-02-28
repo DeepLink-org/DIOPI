@@ -24,7 +24,7 @@ Standard:  Cpp11
 AllowAllParametersOfDeclarationOnNextLine: true
 BinPackParameters: false
 BinPackArguments: false
-ColumnLimit: 120
+ColumnLimit: 160
 IncludeIsMainSourceRegex: (\.cu)$
 IncludeCategories:
   - Regex:           '^<.*\.h(pp)?>'
