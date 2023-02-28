@@ -5,7 +5,7 @@ on:
       - '**'
   pull_request:
     branches:
-      - 'master'
+      - 'main'
 
 env:
   NFS_PATH: '/mnt/cache/share/parrotsci/github/cibuild/${{ github.repository }}'
