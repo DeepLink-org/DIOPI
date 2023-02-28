@@ -1,8 +1,10 @@
-#ifndef CNNL_HELPER_HPP_
-#define CNNL_HELPER_HPP_
+#ifndef IMPL_CAMB_CNNL_HELPER_HPP_
+#define IMPL_CAMB_CNNL_HELPER_HPP_
 
 #include <cnnl.h>
+
 #include <vector>
+
 #include "diopi_helper.hpp"
 #include "error.hpp"
 
@@ -35,21 +37,21 @@
 
 template <typename T, ::cnnlStatus_t (*fnCreate)(T*), ::cnnlStatus_t (*fnDestroy)(T)>
 class CnnlResourceGuard final {
-   public:
+public:
     CnnlResourceGuard() { DIOPI_CHECKCNNL(fnCreate(&resource_)); }
 
     ~CnnlResourceGuard() { DIOPI_CHECKCNNL(fnDestroy(resource_)); }
 
     T& get() { return resource_; }
 
-   protected:
+protected:
     T resource_{0};
 };
 
 diopiError_t convertType(cnnlDataType_t* cnnlType, diopiDtype_t type);
 
 class CnnlTensorDesc {
-   public:
+public:
     CnnlTensorDesc() {
         cnnlStatus_t ret = cnnlCreateTensorDescriptor(&desc);
         if (ret != CNNL_STATUS_SUCCESS) {
@@ -98,10 +100,10 @@ class CnnlTensorDesc {
         return diopiSuccess;
     }
 
-    cnnlTensorDescriptor_t& get() { return desc; };
+    cnnlTensorDescriptor_t& get() { return desc; }
 
-   protected:
+protected:
     cnnlTensorDescriptor_t desc{0};
 };
 
-#endif  // CNNL_HELPER_HPP_
+#endif  // IMPL_CAMB_CNNL_HELPER_HPP_

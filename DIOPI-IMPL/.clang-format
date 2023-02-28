@@ -19,12 +19,18 @@ BasedOnStyle:  Google
 IndentWidth:     4
 TabWidth:        4
 ContinuationIndentWidth: 4
-AccessModifierOffset: -1  # The private/protected/public has no indent in class
+AccessModifierOffset: -4  # The private/protected/public has no indent in class
 Standard:  Cpp11
 AllowAllParametersOfDeclarationOnNextLine: true
 BinPackParameters: false
 BinPackArguments: false
-IncludeBlocks: Preserve
-IncludeIsMainSourceRegex: (\.cu)$
 ColumnLimit: 120
+IncludeIsMainSourceRegex: (\.cu)$
+IncludeCategories:
+  - Regex:           '^<.*\.h(pp)?>'
+    Priority:        1
+  - Regex:           '^<.*'
+    Priority:        2
+  - Regex:           '.*'
+    Priority:        3
 ...

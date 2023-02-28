@@ -1,6 +1,6 @@
-#include <vector>
-
 #include <diopi/functions.h>
+
+#include <vector>
 
 #include "../cnnl_helper.hpp"
 

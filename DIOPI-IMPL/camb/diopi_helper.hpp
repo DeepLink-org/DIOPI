@@ -8,11 +8,11 @@
 #ifndef IMPL_CAMB_DIOPI_HELPER_HPP_
 #define IMPL_CAMB_DIOPI_HELPER_HPP_
 
-#include <cstdio>
-#include <utility>
-
 #include <cnrt.h>
 #include <diopi/diopirt.h>
+
+#include <cstdio>
+#include <utility>
 
 #define DIOPI_CALL(Expr)           \
     do {                           \
@@ -52,7 +52,7 @@ struct DataType<diopiConstTensorHandle_t> {
 
 template <typename TensorType>
 class DiopiTensor final {
-   public:
+public:
     explicit DiopiTensor(TensorType& tensor) : tensor_(tensor) {}
 
     diopiDevice_t device() const {
@@ -88,7 +88,7 @@ class DiopiTensor final {
 
     typename DataType<TensorType>::type data() { return DataType<TensorType>::data(tensor_); }
 
-   protected:
+protected:
     TensorType tensor_;
 
     diopiSize_t shape_;
