@@ -4,7 +4,7 @@ set -e
 case $1 in
   py-lint)
     (echo "py-lint" && flake8 --ignore=E501,F841 python/conformance/diopi_functions.py \
-       && flake8 --ignore=E501,F401 --exclude=python/conformance/diopi_functions.py,scripts/cpplint.py) \
+       && flake8 --ignore=E501,F401 --exclude=python/conformance/diopi_functions.py,scripts/cpplint.py,impl/) \
     || exit -1;;
   cpp-lint)
     # for other cpplint version, maybe  -whitespace/indent is needed to check impl
