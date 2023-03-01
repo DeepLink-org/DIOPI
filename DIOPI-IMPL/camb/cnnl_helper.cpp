@@ -43,3 +43,5 @@ diopiError_t convertType(cnnlDataType_t *cnnlType, diopiDtype_t type) {
     }
     return diopiSuccess;
 }
+
+CnnlHandlePool cnnlHandlePool;

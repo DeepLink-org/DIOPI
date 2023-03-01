@@ -7,13 +7,8 @@
 extern "C" {
 
 diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* value) {
-    auto stream = impl::camb::getStream(ctx);
     auto trInput = impl::camb::makeTensor(input);
-
-    CnnlResourceGuard<cnnlHandle_t, cnnlCreate, cnnlDestroy> CnnlHandle;
-    cnnlHandle_t handle = CnnlHandle.get();
-    DIOPI_CALLCNNL(cnnlSetQueue(handle, stream));
-
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     CnnlResourceGuard<cnnlTensorDescriptor_t, cnnlCreateTensorDescriptor, cnnlDestroyTensorDescriptor> CnnlDesc;
     cnnlTensorLayout_t layout = CNNL_LAYOUT_ARRAY;
     cnnlDataType_t dtype;
