@@ -81,12 +81,7 @@ public:
 
     template <typename T>
     diopiError_t set(T& t, cnnlTensorLayout_t layout) {
-        int dimNb = t.shape().len;
-        auto dimSize = t.shape().data;
-        std::vector<int> shape(dimNb);
-        for (size_t i = 0; i < dimNb; ++i) {
-            shape[i] = dimSize[i];
-        }
+        const std::vector<int32_t>& shape = t.shape();
         DIOPI_CALL(set(t, layout, shape));
         return diopiSuccess;
     }

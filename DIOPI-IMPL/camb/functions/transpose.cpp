@@ -6,8 +6,7 @@ std::vector<int> getPerm(diopiConstTensorHandle_t tensor_handle,
                          int64_t dim0,
                          int64_t dim1) {
     auto tensor = impl::camb::makeTensor(tensor_handle);
-    diopiSize_t shape = tensor.shape();
-    int input_size_ = shape.len;
+    int input_size_ = tensor.shape().size();
 
     int dim0_ = 0;
     dim0_ = static_cast<int>(dim0);

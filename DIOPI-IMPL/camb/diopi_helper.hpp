@@ -13,6 +13,7 @@
 
 #include <cstdio>
 #include <utility>
+#include <vector>
 
 #define DIOPI_CALL(Expr)           \
     do {                           \
@@ -53,7 +54,16 @@ struct DataType<diopiConstTensorHandle_t> {
 template <typename TensorType>
 class DiopiTensor final {
 public:
-    explicit DiopiTensor(TensorType& tensor) : tensor_(tensor) {}
+    explicit DiopiTensor(TensorType& tensor) : tensor_(tensor) {
+        diopiSize_t diopiShape;
+        diopiSize_t diopiStride;
+        diopiGetTensorShape(tensor_, &diopiShape);
+        std::vector<int32_t> shapeTmp(diopiShape.data, diopiShape.data + diopiShape.len);
+        diopiGetTensorStride(tensor_, &diopiStride);
+        std::vector<int32_t> strideTmp(diopiStride.data, diopiStride.data + diopiStride.len);
+        shape_ = std::move(shapeTmp);
+        stride_ = std::move(strideTmp);
+    }
 
     diopiDevice_t device() const {
         diopiDevice_t device;
@@ -66,14 +76,8 @@ public:
         return dtype;
     }
 
-    const diopiSize_t& shape() {
-        diopiGetTensorShape(tensor_, &shape_);
-        return shape_;
-    }
-    const diopiSize_t& stride() {
-        diopiGetTensorStride(tensor_, &stride_);
-        return stride_;
-    }
+    const std::vector<int32_t>& shape() { return shape_; }
+    const std::vector<int32_t>& stride() { return stride_; }
 
     int64_t numel() const {
         int64_t numel;
@@ -90,9 +94,8 @@ public:
 
 protected:
     TensorType tensor_;
-
-    diopiSize_t shape_;
-    diopiSize_t stride_;
+    std::vector<int32_t> shape_;
+    std::vector<int32_t> stride_;
 };
 
 template <typename TensorType>
