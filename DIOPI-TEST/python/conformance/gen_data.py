@@ -196,6 +196,9 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
         shape = arg["shape"]
         if isinstance(arg["gen_fn"], int):
             gen_fn = arg["gen_fn"]
+            if gen_fn == Genfunc.randint:
+                low = 0
+                high = 10
         else:
             gen_fn = arg["gen_fn"]["fn"]
             assert (gen_fn == Genfunc.randint), "only randint needs args"
@@ -217,7 +220,7 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
         elif gen_fn == Genfunc.mask:
             value = np.random.randint(low=0, high=2, size=shape).astype(dtype)
         elif gen_fn == Genfunc.randint:
-            value = np.random.randint(low=low, high=high, size=shape, dtype=dtype)
+            value = np.random.randint(low=low, high=high, size=shape).astype(dtype)
         elif gen_fn == Genfunc.empty:
             value = np.empty(shape, dtype=dtype)
         elif gen_fn == Genfunc.positive:

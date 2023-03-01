@@ -310,11 +310,15 @@ def div(input, other, inplace=False, rounding_mode=None) -> Tensor:
 
 
 def logical_and(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(input, other, False, 'diopiBitwiseAnd', dtype=Dtype.bool)
+    return binary_op_scalar(input, other, inplace, 'diopiLogicalAnd', dtype=Dtype.bool)
 
 
 def logical_or(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(input, other, False, 'diopiBitwiseOr', dtype=Dtype.bool)
+    return binary_op_scalar(input, other, inplace, 'diopiLogicalOr', dtype=Dtype.bool)
+
+
+def logical_not(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, 'diopiLogicalNot', dtype=Dtype.bool)
 
 
 def leaky_relu(input, negative_slope=0.01, inplace=False) -> Tensor:
@@ -353,18 +357,25 @@ def bmm(input, mat2) -> Tensor:
     return out
 
 
-def addcmul(input, tensor1, tensor2, value=1) -> Tensor:
+def addcmul(input, tensor1, tensor2, value=1, inplace=False) -> Tensor:
     size1 = list(tensor1.size())
     size2 = list(tensor2.size())
     sizeI = list(input.size())
     sizeO = broadcast_out_size(size1, size2)
     sizeO = broadcast_out_size(sizeI, sizeO)
-    out = Tensor(sizeO, input.get_dtype())
     value = byref(Scalar(value))
 
-    func = check_function("diopiAddcmul")
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               tensor1.tensor_handle, tensor2.tensor_handle, value)
+    if inplace:
+        out = input
+        assert list(sizeO) == sizeI, 'can not be inplaced'
+        func = check_function("diopiAddcmulInp")
+        ret = func(input.context_handle, input.tensor_handle,
+                   tensor1.tensor_handle, tensor2.tensor_handle, value)
+    else:
+        out = Tensor(sizeO, input.get_dtype())
+        func = check_function("diopiAddcmul")
+        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
+                   tensor1.tensor_handle, tensor2.tensor_handle, value)
     check_returncode(ret)
     return out
 
@@ -1326,18 +1337,25 @@ def gelu(input, approximate='none') -> Tensor:
     return out
 
 
-def addcdiv(input, tensor1, tensor2, value=1) -> Tensor:
+def addcdiv(input, tensor1, tensor2, value=1, inplace=False) -> Tensor:
     size1 = list(tensor1.size())
     size2 = list(tensor2.size())
     sizeI = list(input.size())
     sizeO = broadcast_out_size(size1, size2)
     sizeO = broadcast_out_size(sizeI, sizeO)
-    out = Tensor(sizeO, input.get_dtype())
     value = byref(Scalar(value))
 
-    func = check_function("diopiAddcdiv")
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               tensor1.tensor_handle, tensor2.tensor_handle, value)
+    if inplace:
+        out = input
+        assert list(sizeO) == sizeI, 'can not be inplaced'
+        func = check_function("diopiAddcdivInp")
+        ret = func(input.context_handle, input.tensor_handle,
+                   tensor1.tensor_handle, tensor2.tensor_handle, value)
+    else:
+        out = Tensor(sizeO, input.get_dtype())
+        func = check_function("diopiAddcdiv")
+        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
+                   tensor1.tensor_handle, tensor2.tensor_handle, value)
     check_returncode(ret)
     return out
 
@@ -2257,15 +2275,38 @@ def reciprocal(input, inplace=False) -> Tensor:
     return out
 
 
-def bitwise_not(input):
-    assert (input.get_dtype() in [Dtype.bool, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type]),\
+def bitwise_not(input, inplace=False):
+    assert input.get_dtype() in [Dtype.bool, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
         "input tensor must be of integral or boolean"
+    return unary_op(input, inplace, "diopiBitwiseNot")
 
-    out = raw_like(input)
-    func = check_function("diopiBitwiseNot")
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle)
-    check_returncode(ret)
-    return out
+
+def bitwise_and(input, other, inplace=False):
+    assert input.get_dtype() in [Dtype.bool, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
+        "input tensor must be of integral or boolean"
+    if isinstance(other, Tensor):
+        other_type = other.get_dtype()
+        assert other_type in [Dtype.bool, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
+            "other tensor must be of integral or boolean"
+    else:
+        assert isinstance(other, int), "other must be of integral or boolean"
+        other_type = Dtype.int64
+    out_dtype = common_dtype(input.get_dtype(), other_type)
+    return binary_op_scalar(input, other, inplace, "diopiBitwiseAnd", dtype=out_dtype)
+
+
+def bitwise_or(input, other, inplace=False):
+    assert input.get_dtype() in [Dtype.bool, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
+        "input tensor must be of integral or boolean"
+    if isinstance(other, Tensor):
+        other_type = other.get_dtype()
+        assert other_type in [Dtype.bool, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
+            "other tensor must be of integral or boolean"
+    else:
+        assert isinstance(other, int), "other must be of integral or boolean"
+        other_type = Dtype.int64
+    out_dtype = common_dtype(input.get_dtype(), other_type)
+    return binary_op_scalar(input, other, inplace, "diopiBitwiseOr", dtype=out_dtype)
 
 
 def argmax(input, dim=None, keepdim=False):
