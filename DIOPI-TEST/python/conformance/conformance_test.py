@@ -114,19 +114,23 @@ class ManualTest(object):
         out_numpy = out.numpy()
         mask_numpy = mask.numpy()
 
-        # compute ratio
-        real_ratio = np.sum(mask_numpy) / mask.numel()
-        # check data
-        if func == F.dropout2d:
-            tmp = np.ones(input.shape)
-            mask_numpy = mask_numpy * tmp
-        remains = out_numpy[mask_numpy == 1]
-        ref = input_numpy[mask_numpy == 1]
-        assert np.allclose(remains, ref / (1 - p), rtol=1e-4, atol=1e-5),\
-            f"failed to execute {name}"
+        if training:
+            # compute ratio
+            real_ratio = np.sum(mask_numpy) / mask.numel()
+            # check data
+            if func == F.dropout2d:
+                tmp = np.ones(input.shape)
+                mask_numpy = mask_numpy * tmp
+            remains = out_numpy[mask_numpy == 1]
+            ref = input_numpy[mask_numpy == 1]
+            assert np.allclose(remains, ref / (1 - p), rtol=1e-4, atol=1e-5),\
+                f"failed to execute {name}"
 
-        assert np.abs(real_ratio - (1 - p)) < 3e-2,\
-            f"failed to execute {name} "
+            assert np.abs(real_ratio - (1 - p)) < 3e-2,\
+                f"failed to execute {name} "
+        else:
+            assert np.allclose(input_numpy, out_numpy, rtol=1e-4, atol=1e-5),\
+                "failed to execute dropout"
 
     def test_dropout(input, p=0.5, training=True, inplace=False):
         ManualTest.test_dropout_(F.dropout, input, p, training, inplace)
