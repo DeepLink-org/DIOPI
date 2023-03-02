@@ -46,28 +46,21 @@ diopiError_t convertType(cnnlDataType_t* cnnlType, diopiDtype_t type);
 
 class CnnlTensorDesc {
 public:
-    CnnlTensorDesc() {
-        cnnlStatus_t ret = cnnlCreateTensorDescriptor(&desc);
-        if (ret != CNNL_STATUS_SUCCESS) {
-            impl::camb::set_last_error_string("failed to cnnlCreateTensorDescriptor %d at %s:%d", ret, __FILE__, __LINE__);
-        }
-    }
+    CnnlTensorDesc() {}
 
     CnnlTensorDesc(auto& t, cnnlTensorLayout_t layout) {
-        cnnlStatus_t ret = cnnlCreateTensorDescriptor(&desc);
-        if (ret != CNNL_STATUS_SUCCESS) {
-            impl::camb::set_last_error_string("failed to cnnlCreateTensorDescriptor %d at %s:%d", ret, __FILE__, __LINE__);
-        }
         diopiError_t status = set(t, layout);
-        if (ret != CNNL_STATUS_SUCCESS) {
-            impl::camb::set_last_error_string("failed to cnnlSetTensorDescriptor %d at %s:%d", ret, __FILE__, __LINE__);
+        if (status != diopiSuccess) {
+            impl::camb::set_last_error_string("failed to cnnlSetTensorDescriptor %d at %s:%d", status, __FILE__, __LINE__);
         }
     }
 
     ~CnnlTensorDesc() {
-        cnnlStatus_t ret = cnnlDestroyTensorDescriptor(desc);
-        if (ret != CNNL_STATUS_SUCCESS) {
-            impl::camb::set_last_error_string("failed to cnnlDestroyTensorDescriptor %d at %s:%d", ret, __FILE__, __LINE__);
+        if (desc != nullptr) {
+            cnnlStatus_t ret = cnnlDestroyTensorDescriptor(desc);
+            if (ret != CNNL_STATUS_SUCCESS) {
+                impl::camb::set_last_error_string("failed to cnnlDestroyTensorDescriptor %d at %s:%d", ret, __FILE__, __LINE__);
+            }
         }
     }
 
@@ -104,6 +97,7 @@ public:
     diopiError_t set(T& t, cnnlTensorLayout_t layout, std::vector<int> dims) {
         cnnlDataType_t dtype;
         DIOPI_CALL(convertType(&dtype, t.dtype()));
+        DIOPI_CALLCNNL(cnnlCreateTensorDescriptor(&desc));
         DIOPI_CALLCNNL(cnnlSetTensorDescriptor(this->get(), layout, dtype, dims.size(), dims.data()));
         return diopiSuccess;
     }
