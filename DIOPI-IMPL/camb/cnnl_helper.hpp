@@ -10,15 +10,7 @@
 #include <vector>
 
 #include "diopi_helper.hpp"
-#include "error.hpp"
 
-#define DIOPI_CHECK(cond, str)                                                         \
-    do {                                                                               \
-        if (!(cond)) {                                                                 \
-            impl::camb::set_last_error_string("%s at %s:%d", str, __FILE__, __LINE__); \
-            return diopiErrorOccurred;                                                 \
-        }                                                                              \
-    } while (false);
 
 #define DIOPI_CALLCNNL(Expr)                                                                                                      \
     do {                                                                                                                          \
@@ -81,7 +73,29 @@ public:
 
     template <typename T>
     diopiError_t set(T& t, cnnlTensorLayout_t layout) {
-        const std::vector<int32_t>& shape = t.shape();
+        const std::vector<int32_t>& dimSize = t.shape();
+        int dim = dimSize.size();
+        std::vector<int32_t> shape(dim);
+
+        if (layout == CNNL_LAYOUT_NHWC || layout == CNNL_LAYOUT_NDHWC
+                || layout == CNNL_LAYOUT_NLC) {
+            shape[0] = dimSize[0];
+            for (size_t i = 0; i < dim - 1; ++i) {
+                shape[i+1] = dimSize[(i + 1) % (dim - 1) + 1];
+            }
+        } else if (layout == CNNL_LAYOUT_HWCN) {
+            // HWCN is only used by depthwise conv now, and the dim is 4
+            DIOPI_CHECK(dim == 4, "depthwise convolution input's dim must be 4!");
+            shape[0] = dimSize[2];
+            shape[1] = dimSize[3];
+            shape[2] = dimSize[1];
+            shape[3] = dimSize[0];
+        } else {
+            for (size_t i = 0; i < dim; ++i) {
+                shape[i] = dimSize[i];
+            }
+        }
+
         DIOPI_CALL(set(t, layout, shape));
         return diopiSuccess;
     }
@@ -130,6 +144,35 @@ public:
 private:
     std::unordered_map<cnrtQueue_t, cnnlHandle_t> cnnlHandlePool_;
     std::mutex mutex_;
+};
+
+template <typename T, ::cnnlStatus_t (*fnCreate)(T*), ::cnnlStatus_t (*fnDestroy)(T)>
+class CnnlDescBase {
+public:
+    CnnlDescBase() { DIOPI_CHECKCNNL(fnCreate(&resource_)); }
+
+    ~CnnlDescBase() { DIOPI_CHECKCNNL(fnDestroy(resource_)); }
+
+    T& get() { return resource_; }
+
+protected:
+    T resource_{0};
+};
+
+class CnnlTransposeDescriptor final
+    : public CnnlDescBase<cnnlTransposeDescriptor_t,
+          cnnlCreateTransposeDescriptor, cnnlDestroyTransposeDescriptor> {
+public:
+    CnnlTransposeDescriptor() {}
+
+    CnnlTransposeDescriptor(const int dim, const int* permute) {
+        set(dim, permute);
+    }
+
+    diopiError_t set(const int dim, const int* permute) {
+        DIOPI_CALLCNNL(cnnlSetTransposeDescriptor(get(), dim, permute));
+        return diopiSuccess;
+    }
 };
 
 extern CnnlHandlePool cnnlHandlePool;
