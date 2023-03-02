@@ -169,6 +169,43 @@ public:
     }
 };
 
+template<typename T>
+diopiError_t cnnl_transpose(diopiContextHandle_t& ctx,
+                            cnnlHandle_t& handle, T& in,
+                            impl::camb::DiopiTensor<diopiTensorHandle_t>& out,
+                            cnnlTensorLayout_t layoutIn,
+                            cnnlTensorLayout_t layoutOut) {
+    std::vector<int> order;
+    if (layoutIn == CNNL_LAYOUT_NHWC && layoutOut == CNNL_LAYOUT_HWCN) {
+        order = {1, 2, 3, 0};
+    } else if (layoutIn == CNNL_LAYOUT_NHWC && layoutOut == CNNL_LAYOUT_NCHW) {
+        order = {0, 3, 1, 2};
+    } else if (layoutIn == CNNL_LAYOUT_NCHW && layoutOut == CNNL_LAYOUT_HWCN) {
+        order = {2, 3, 1, 0};
+    } else if (layoutIn == CNNL_LAYOUT_NCHW && layoutOut == CNNL_LAYOUT_NHWC) {
+        order = {0, 2, 3, 1};
+    } else if (layoutIn == CNNL_LAYOUT_HWCN && layoutOut == CNNL_LAYOUT_NHWC) {
+        order = {3, 0, 1, 2};
+    } else if (layoutIn == CNNL_LAYOUT_HWCN && layoutOut == CNNL_LAYOUT_NCHW) {
+        order = {3, 2, 0, 1};
+    } else {
+        impl::camb::set_last_error_string("unkown layout error, layout should be"
+        "in [CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_HWCN], at %s:%s", __FILE__, __LINE__);
+        return diopiDtypeNotSupported;
+    }
+    CnnlTensorDesc inDesc(in, layoutIn);
+    CnnlTensorDesc outDesc(out, layoutOut);
+    CnnlTransposeDescriptor transDesc(order.size(), order.data());
+    size_t workspace_size = 0;
+    DIOPI_CHECKCNNL(cnnlGetTransposeWorkspaceSize(handle, inDesc.get(), transDesc.get(), &workspace_size));
+
+    void* workspace_ptr = workspace_size== 0 ? impl::camb::requiresBuffer(ctx, workspace_size).data() : nullptr;
+    DIOPI_CALLCNNL(cnnlTranspose_v2(handle, transDesc.get(), inDesc.get(),
+                                      in.data(), outDesc.get(), out.data(),
+                                      workspace_ptr, workspace_size));
+    return diopiSuccess;
+}
+
 extern CnnlHandlePool cnnlHandlePool;
 
 #endif  // IMPL_CAMB_CNNL_HELPER_HPP_
