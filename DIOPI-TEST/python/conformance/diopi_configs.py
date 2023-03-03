@@ -1633,7 +1633,7 @@ diopi_configs = {
 
     'clip_grad_norm': dict(
         name=["clip_grad_norm_"],
-        interface=["torch.nn.utils"],
+        interface=["CustomizedTest"],
         para=dict(
             max_norm=[1.0, 5, 2.0, 10],
             norm_type=[2.0, 3.0, 2.0, 2.0],
@@ -1642,12 +1642,14 @@ diopi_configs = {
         tensor_para=dict(
             args=[
                 {
-                    "ins": ["parameters"],
+                    "ins": ["grads"],
                     "shape": ((10, 3), (10, 2), (20, 3), (20, 2)),
                     "gen_fn": Genfunc.rand,
                     "dtype": [Dtype.float32],
+                    "gen_num_range": [1, 5]
                 },
             ],
+            seq_name='tensors',
         ),
     ),
 
@@ -2490,6 +2492,38 @@ diopi_configs = {
                 },
                 {
                     "ins": ['square_avg', 'acc_delta'],
+                    "shape": [(2, 3, 16), (4, 32, 7, 7)],
+                    "gen_fn": Genfunc.zeros,
+                },
+            ]
+        ),
+    ),
+
+    'rmsprop': dict(
+        name=["rmsprop"],
+        interface=["CustomizedTest"],
+        atol_half=1e-3,
+        rtol_half=1e-2,
+        atol=1e-5,
+        rtol=1e-3,
+        para=dict(
+            lr=[0.1, 0.01],
+            alpha=[0.9, 0.99],
+            eps=[1e-6, 1e-8],
+            weight_decay=[0, 0.1],
+            momentum=[0, 0.1],
+            centered=[False, True],
+        ),
+        tensor_para=dict(
+            dtype=[Dtype.float32, Dtype.float16],
+            args=[
+                {
+                    "ins": ['param', 'param_grad'],
+                    "shape": [(2, 3, 16), (4, 32, 7, 7)],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ['square_avg', 'grad_avg', 'momentum_buffer'],
                     "shape": [(2, 3, 16), (4, 32, 7, 7)],
                     "gen_fn": Genfunc.zeros,
                 },
@@ -3569,6 +3603,96 @@ diopi_configs = {
             ],
         ),
         saved_args=dict(output=0),
+    ),
+
+    'repeat' : dict(
+        name=["repeat"],
+        interface=['torch.Tensor'],
+        para=dict(
+            repeats=[(4, 2), (4, 2, 1),
+                    (4, 2), (4, 2, 1),
+                    (4, 2, 1)],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((3, ), (3, ),
+                              (1, 2), (1, 2),
+                              (1, 2, 3)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+            ]
+        ),
+    ),
+
+
+    'normal' : dict(
+        name=["normal"],
+        no_output_ref=True,
+        para=dict(
+            mean=[0, 0.1],
+            std=[1, 2],
+            shape=[(32, 8), (32, 2, 3, 3)],
+        ),
+    ),#f
+
+    'normal_std_tensor' : dict(
+        name=["normal"],
+        no_output_ref=True,
+        para=dict(
+            mean=[0, 0.5],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.positive,
+            args=[
+                {
+                    "ins": ['std'],
+                    "shape": ((256, 256, 3, 3), (256, 128, 1, 1)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+            ]
+        ),
+    ),
+
+    'normal_mean_tensor' : dict(
+        name=["normal"],
+        no_output_ref=True,
+        para=dict(
+            std=[0.1, 0.024056261216234408],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['mean'],
+                    "shape": ((256, 256, 3, 3), (256, 128, 1, 1)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+            ]
+        ),
+    ),
+
+    'normal_tensor' : dict(
+        name=["normal"],
+        no_output_ref=True,
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['mean'],
+                    "shape": ((256, 256, 3, 3), (256, 128, 1, 1)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+                {
+                    "ins": ['std'],
+                    "shape": ((256, 256, 3, 3), (256, 128, 1, 1)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.positive,
+                },
+            ]
+        ),
     ),
 
 }

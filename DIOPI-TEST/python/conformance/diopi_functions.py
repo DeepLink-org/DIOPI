@@ -1215,29 +1215,28 @@ def where(condition, input, other) -> Tensor:
     return out
 
 
-def clip_grad_norm_(parameters, max_norm, norm_type=2.0, error_if_nonfinite=False):
+def clip_grad_norm_(tensors, max_norm, norm_type=2.0, error_if_nonfinite=False):
     assert (isinstance(max_norm, (int, float))),\
         "max_norm must be a int or float"
     assert (isinstance(norm_type, (int, float))),\
         "norm_type must be a int or float"
 
-    if isinstance(parameters, Tensor):
-        input = parameters
-        parameters = [parameters.tensor_handle]
-        parameters = (c_void_p * 1)(*parameters)
-        parametersNum = 1
+    if isinstance(tensors, Tensor):
+        ctx = tensors.context_handle
+        grads = [tensors.tensor_handle]
+        grads = (c_void_p * 1)(*grads)
+        num_grads = 1
     else:
-        input = parameters[0]
-        parametersNum = len(parameters)
-        parameters = [p.tensor_handle for p in parameters]
-        parameters = (c_void_p * parametersNum)(*parameters)
+        ctx = tensors[0].context_handle
+        num_grads = len(tensors)
+        grads = [grad.tensor_handle for grad in tensors]
+        grads = (c_void_p * num_grads)(*grads)
 
     out = c_double(0.0)
 
     func = check_function("diopiClipGradNorm")
-    func.argtypes = (c_void_p, type(pointer(out)), type(pointer(parameters)), c_int64, c_double, c_double, c_bool)
-    ret = func(input.context_handle, pointer(out), pointer(parameters), parametersNum,
-               max_norm, norm_type, error_if_nonfinite)
+    ret = func(ctx, pointer(out), pointer(grads), c_int64(num_grads), c_double(max_norm), c_double(norm_type),
+               c_bool(error_if_nonfinite))
     check_returncode(ret)
     return out.value
 
@@ -2161,6 +2160,15 @@ def adadelta(param, param_grad, square_avg, acc_delta, lr, rho, eps, weight_deca
                acc_delta.tensor_handle, c_float(lr), c_float(rho), c_float(eps), c_float(weight_decay))
     check_returncode(ret)
     return param, param_grad, square_avg, acc_delta
+
+
+def rmsprop(param, param_grad, square_avg, grad_avg, momentum_buffer, lr, alpha, eps, weight_decay, momentum, centered):
+    func = check_function("diopiRmsprop")
+    ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle, square_avg.tensor_handle,
+               grad_avg.tensor_handle, momentum_buffer.tensor_handle, c_float(lr), c_float(alpha), c_float(eps),
+               c_float(weight_decay), c_float(momentum), c_bool(centered))
+    check_returncode(ret)
+    return param, param_grad, square_avg, grad_avg, momentum_buffer
 
 
 def conv_transpose2d(input, weight, bias=None, stride=1,
@@ -3360,3 +3368,51 @@ def triangular_solve_backward(input, grad_outputs, output, A, upper=True, transp
                grad_cloned_mat, output.tensor_handle, input.tensor_handle, A.tensor_handle, c_bool(upper), c_bool(transpose), c_bool(unitriangular))
     check_returncode(ret)
     return {"input": grad_input, "A": grad_A}
+
+
+def repeat(input, repeats):
+    sizeI = list(input.size())
+    input_ndims = len(sizeI)
+    repeats_size = list(repeats)
+    out_ndims = len(repeats)
+    assert input_ndims <= out_ndims, f'input_ndims ({input_ndims}) should <= out_ndims ({out_ndims})'
+
+    output_size = []
+    for i in range(out_ndims):
+        idx = input_ndims + i - out_ndims
+        k = repeats_size[i] * sizeI[idx] if idx >= 0 else repeats_size[i]
+        output_size.append(k)
+
+    sizeO = Sizes(output_size)
+    repeats_size = Sizes(repeats)
+
+    out = Tensor(output_size, input.get_dtype())
+    func = check_function("diopiRepeat")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, repeats_size)
+    check_returncode(ret)
+    return out
+
+
+def normal(mean, std, shape=None):
+    call = "diopiNormal"
+    if isinstance(mean, Tensor) and isinstance(std, Tensor):
+        assert mean.numel() == std.numel(), 'the total number of elements in each tensor need to be the same.'
+        out = Tensor(mean.size(), mean.get_dtype())
+        call += "Tensor"
+    elif isinstance(mean, Tensor):
+        out = Tensor(mean.size(), mean.get_dtype())
+        call += "TensorScalar"
+    elif isinstance(std, Tensor):
+        out = Tensor(std.size(), std.get_dtype())
+        call += "ScalarTensor"
+    else:
+        assert shape is not None, "need the shape of output while both mean and std are scalar"
+        out = Tensor(shape, Dtype.float32)
+
+    arg_mean = mean.tensor_handle if isinstance(mean, Tensor) else c_double(mean)
+    arg_std = std.tensor_handle if isinstance(std, Tensor) else c_double(std)
+    func = check_function(call)
+    ret = func(out.context_handle, out.tensor_handle, arg_mean, arg_std)
+    check_returncode(ret)
+    return out
+

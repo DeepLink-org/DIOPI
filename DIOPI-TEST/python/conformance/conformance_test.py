@@ -180,6 +180,24 @@ class ManualTest(object):
             assert (out_numpy <= end - 1).all(),\
                 "failed to execute random"
 
+    def test_normal(mean, std, shape=None):
+        from scipy import stats
+        out = F.normal(mean, std, shape)
+        out_numpy = out.numpy()
+        if isinstance(mean, Tensor):
+            mean_numpy = mean.numpy()
+            out_numpy -= mean_numpy
+            mean = 0.0
+        if isinstance(std, Tensor):
+            out_numpy -= mean
+            std_numpy = std.numpy()
+            out_numpy /= std_numpy
+            mean = 0.0
+            std = 1.
+        out_numpy = out_numpy.flatten()
+        p_value = stats.kstest(out_numpy, 'norm', args=(mean, std))[1]
+        assert p_value > 0.05, f"failed to execute normal"
+
 
 class ConformanceTest(object):
     r'''
