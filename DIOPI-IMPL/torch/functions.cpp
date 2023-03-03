@@ -538,13 +538,47 @@ diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTens
  * @param errorIfNonfinite supported in pytorch ?
  * @return diopiError_t
  */
-diopiError_t diopiClipGradNorm(diopiContextHandle_t ctx, double* out, diopiTensorHandle_t* parameters,
-        int64_t parametersNum, double maxNorm, double normType, bool errorIfNonfinite) {
+diopiError_t diopiClipGradNorm(diopiContextHandle_t ctx, double* out, diopiTensorHandle_t* grads,
+        int64_t num_grads, double maxNorm, double normType, bool errorIfNonfinite) {
     impl::aten::setCurCtx(ctx);
-    DIOPI_CHECK(parameters != nullptr && out != nullptr,
+    DIOPI_CHECK(grads != nullptr && out != nullptr,
                 "Not supported: out or parameters is nullptr");
-    auto tensorList = impl::aten::buildATenList(parameters, parametersNum);
-    *out = torch::nn::utils::clip_grad_norm_(tensorList, maxNorm, normType);
+    auto atGrads = impl::aten::buildATenList(grads, num_grads);
+    at::Tensor total_norm_tensor;
+    if (normType == std::numeric_limits<double>::infinity()) {
+        std::vector<at::Tensor> norms;
+        norms.reserve(atGrads.size());
+        for (const auto& grad : atGrads) {
+            norms.emplace_back(grad.abs().max());
+        }
+        total_norm_tensor = (norms.size() == 1) ? norms[0] : torch::max(torch::stack(norms));
+    } else if (normType == 0) {
+        total_norm_tensor = torch::full({}, static_cast<double>(atGrads.size()));
+    } else {
+        std::vector<at::Tensor> norms;
+        norms.reserve(atGrads.size());
+        for (const auto& grad : atGrads) {
+            norms.emplace_back(grad.norm(normType));
+        }
+        total_norm_tensor = (norms.size() == 1) ? norms[0] : torch::stack(norms).norm(normType);
+    }
+
+    c10::optional<double> total_norm = c10::nullopt;
+    if (errorIfNonfinite) {
+        total_norm = total_norm_tensor.item().toDouble();
+        DIOPI_CHECK(std::isfinite(*total_norm), "The total norm for gradients from `parameters` is non-finite");
+    }
+
+    auto clip_coef =  maxNorm / (total_norm_tensor + 1e-6);
+    auto clip_coef_clamped = torch::clamp(clip_coef, c10::nullopt /* min */, 1.0 /* max */);
+    for (auto& grad : atGrads) {
+        grad.mul_(clip_coef_clamped);
+    }
+
+    if (!total_norm.has_value()) {
+        total_norm = total_norm_tensor.item().toDouble();
+    }
+    *out = *total_norm;
     return diopiSuccess;
 }
 
@@ -2195,6 +2229,39 @@ diopiError_t diopiBernoulliScalar(diopiContextHandle_t ctx, diopiTensorHandle_t 
     return diopiSuccess;
 }
 
+diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, double std) {
+    impl::aten::setCurCtx(ctx);
+    auto atOut = impl::aten::buildATen(out);
+    auto atSize = atOut.sizes();
+    at::normal_out(atOut, mean, std, atSize);
+    return diopiSuccess;
+}
+
+diopiError_t diopiNormalTensorScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t mean, double std) {
+    impl::aten::setCurCtx(ctx);
+    auto atOut = impl::aten::buildATen(out);
+    auto atMean = impl::aten::buildATen(mean);
+    at::normal_out(atOut, atMean, std);
+    return diopiSuccess;
+}
+
+diopiError_t diopiNormalScalarTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, diopiConstTensorHandle_t std) {
+    impl::aten::setCurCtx(ctx);
+    auto atOut = impl::aten::buildATen(out);
+    auto atStd = impl::aten::buildATen(std);
+    at::normal_out(atOut, mean, atStd);
+    return diopiSuccess;
+}
+
+diopiError_t diopiNormalTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t std) {
+    impl::aten::setCurCtx(ctx);
+    auto atOut = impl::aten::buildATen(out);
+    auto atMean = impl::aten::buildATen(mean);
+    auto atStd = impl::aten::buildATen(std);
+    at::normal_out(atOut, atMean, atStd);
+    return diopiSuccess;
+}
+
 diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
                              diopiConstTensorHandle_t mask, diopiConstTensorHandle_t value) {
     impl::aten::setCurCtx(ctx);
@@ -2335,6 +2402,38 @@ diopiError_t diopiAdadelta(diopiContextHandle_t ctx, diopiTensorHandle_t input, 
     impl::aten::updateATen2Tensor(ctx, atGrad, grad);
     impl::aten::updateATen2Tensor(ctx, atSquareAvg, square_avg);
     impl::aten::updateATen2Tensor(ctx, atAccDelta, acc_delta);
+    return diopiSuccess;
+}
+
+diopiError_t diopiRmsprop(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t grad, diopiTensorHandle_t square_avg,
+                          diopiTensorHandle_t grad_avg, diopiTensorHandle_t momentum_buf, float lr, float alpha, float eps,
+                          float weight_decay, float momentum, bool centered) {
+    impl::aten::setCurCtx(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atGrad = impl::aten::buildATen(grad);
+    auto atSquareAvg = impl::aten::buildATen(square_avg);
+    auto atGradAvg = impl::aten::buildATen(grad_avg);
+    auto atBuf = impl::aten::buildATen(momentum_buf);
+
+    if (weight_decay != 0) {
+        atGrad = atGrad.add(atInput, weight_decay);
+    }
+    atSquareAvg.mul_(alpha).addcmul_(atGrad, atGrad, 1 - alpha);
+    at::Tensor atAvg;
+
+    if (centered) {
+        atGradAvg.mul_(alpha).add_(atGrad, 1 - alpha);
+        atAvg = atSquareAvg.addcmul(atGradAvg, atGradAvg, -1).sqrt_().add_(eps);
+    } else {
+        atAvg = atSquareAvg.sqrt().add_(eps);
+    }
+
+    if (momentum > 0) {
+        atBuf.mul_(momentum).addcdiv_(atGrad, atAvg);
+        atInput.add_(atBuf, -lr);
+    } else {
+        atInput.addcdiv_(atGrad, atAvg, -lr);
+    }
     return diopiSuccess;
 }
 
