@@ -3415,4 +3415,3 @@ def normal(mean, std, shape=None):
     ret = func(out.context_handle, out.tensor_handle, arg_mean, arg_std)
     check_returncode(ret)
     return out
-

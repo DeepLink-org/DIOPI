@@ -3605,13 +3605,13 @@ diopi_configs = {
         saved_args=dict(output=0),
     ),
 
-    'repeat' : dict(
+    'repeat': dict(
         name=["repeat"],
         interface=['torch.Tensor'],
         para=dict(
             repeats=[(4, 2), (4, 2, 1),
-                    (4, 2), (4, 2, 1),
-                    (4, 2, 1)],
+                     (4, 2), (4, 2, 1),
+                     (4, 2, 1)],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -3627,8 +3627,7 @@ diopi_configs = {
         ),
     ),
 
-
-    'normal' : dict(
+    'normal': dict(
         name=["normal"],
         no_output_ref=True,
         para=dict(
@@ -3636,9 +3635,9 @@ diopi_configs = {
             std=[1, 2],
             shape=[(32, 8), (32, 2, 3, 3)],
         ),
-    ),#f
+    ),
 
-    'normal_std_tensor' : dict(
+    'normal_std_tensor': dict(
         name=["normal"],
         no_output_ref=True,
         para=dict(
@@ -3656,7 +3655,7 @@ diopi_configs = {
         ),
     ),
 
-    'normal_mean_tensor' : dict(
+    'normal_mean_tensor': dict(
         name=["normal"],
         no_output_ref=True,
         para=dict(
@@ -3674,7 +3673,7 @@ diopi_configs = {
         ),
     ),
 
-    'normal_tensor' : dict(
+    'normal_tensor': dict(
         name=["normal"],
         no_output_ref=True,
         tensor_para=dict(
