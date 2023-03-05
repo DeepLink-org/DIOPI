@@ -34,7 +34,7 @@ namespace camb {
 class CnnlDataType final {
 public:
     static diopiError_t convertToCnnlType(cnnlDataType_t* cnnlType, diopiDtype_t type);
-    bool isFloat(cnnlDataType_t cnnlDT);
+    static bool isFloat(cnnlDataType_t cnnlDT);
     static bool isInteger(cnnlDataType_t cnnlDT);
     static bool isBool(cnnlDataType_t cnnlDT);
 };
@@ -104,12 +104,13 @@ public:
     template <typename T>
     diopiError_t set(T& t, cnnlTensorLayout_t layout, std::vector<int> dims) {
         cnnlDataType_t dtype;
+        DIOPI_CALLCNNL(cnnlCreateTensorDescriptor(&desc));
         DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, t.dtype()));
-        DIOPI_CALLCNNL(cnnlSetTensorDescriptor(this->get(), layout, dtype, dims.size(), dims.data()));
+        DIOPI_CALLCNNL(cnnlSetTensorDescriptor(desc, layout, dtype, dims.size(), dims.data()));
         return diopiSuccess;
     }
 
-    cnnlTensorDescriptor_t& get() { return desc; }
+    cnnlTensorDescriptor_t get() { return desc; }
 
 protected:
     cnnlTensorDescriptor_t desc{0};
