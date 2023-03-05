@@ -4,11 +4,14 @@
 
 #include "../cnnl_helper.hpp"
 
+namespace impl {
+namespace camb {
+
 extern "C" diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto input_tensor = impl::camb::makeTensor(input);
-    auto output_tensor = impl::camb::makeTensor(out);
+    auto input_tensor = makeTensor(input);
+    auto output_tensor = makeTensor(out);
     if (input_tensor.dtype() == diopi_dtype_float64) {
         return diopiDtypeNotSupported;
     }
@@ -33,9 +36,12 @@ extern "C" DIOPI_API diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTe
     DIOPI_CALLCNNL(
         cnnlSetActivationDescriptor_v4(activation_desc, CNNL_ACTIVATION_RELU, CNNL_ACTIVATION_HIGH_PRECISION, CNNL_NOT_PROPAGATE_NAN, 0.0, 0, 0.0, 0.0));
 
-    auto input_tensor = impl::camb::makeTensor(input);
+    auto input_tensor = makeTensor(input);
     CnnlTensorDesc desc;
     desc.set(input_tensor, CNNL_LAYOUT_ARRAY);
     void* ptr = input_tensor.data();
     DIOPI_CALLCNNL(cnnlActivationForward(handle, activation_desc, NULL, desc.get(), ptr, NULL, desc.get(), ptr));
 }
+
+}  // namespace camb
+}  // namespace impl

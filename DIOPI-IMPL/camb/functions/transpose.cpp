@@ -2,10 +2,13 @@
 #include <numeric>
 #include "../cnnl_helper.hpp"
 
+namespace impl {
+namespace camb {
+
 std::vector<int> getPerm(diopiConstTensorHandle_t tensor_handle,
                          int64_t dim0,
                          int64_t dim1) {
-    auto tensor = impl::camb::makeTensor(tensor_handle);
+    auto tensor = makeTensor(tensor_handle);
     int input_size_ = tensor.shape().size();
 
     int dim0_ = 0;
@@ -36,7 +39,7 @@ DIOPI_API diopiError_t diopiTranspose(diopiContextHandle_t ctx,
                                       diopiConstTensorHandle_t input,
                                       int64_t dim0,
                                       int64_t dim1) {
-    auto stream = impl::camb::getStream(ctx);
+    auto stream = getStream(ctx);
     CnnlResourceGuard<cnnlHandle_t, cnnlCreate, cnnlDestroy> CnnlHandle;
     cnnlHandle_t handle = CnnlHandle.get();
     DIOPI_CALLCNNL(cnnlSetQueue(handle, stream));
@@ -50,8 +53,8 @@ DIOPI_API diopiError_t diopiTranspose(diopiContextHandle_t ctx,
     DIOPI_CALLCNNL(
         cnnlSetTransposeDescriptor(transpose_desc, perms.size(), perms.data()));
 
-    auto input_tensor = impl::camb::makeTensor(input);
-    auto output_tensor = impl::camb::makeTensor(out);
+    auto input_tensor = makeTensor(input);
+    auto output_tensor = makeTensor(out);
     if (input_tensor.dtype() == diopi_dtype_float64) {
         return diopiDtypeNotSupported;
     }
@@ -65,7 +68,7 @@ DIOPI_API diopiError_t diopiTranspose(diopiContextHandle_t ctx,
         handle, input_desc.get(), transpose_desc, &workspace_size));
     void *workspace = nullptr;
     if (0 != workspace_size) {
-        workspace = impl::camb::requiresBuffer(ctx, workspace_size).data();
+        workspace = requiresBuffer(ctx, workspace_size).data();
     }
     DIOPI_CALLCNNL(cnnlTranspose_v2(handle,
                                     transpose_desc,
@@ -77,4 +80,7 @@ DIOPI_API diopiError_t diopiTranspose(diopiContextHandle_t ctx,
                                     workspace_size));
     return diopiSuccess;
 }
-}
+}  // extern "C"
+
+}  // namespace camb
+}  // namespace impl

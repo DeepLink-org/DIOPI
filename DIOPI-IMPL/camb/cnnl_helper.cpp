@@ -2,6 +2,9 @@
 
 #include "error.hpp"
 
+namespace impl {
+namespace camb {
+
 diopiError_t convertType(cnnlDataType_t *cnnlType, diopiDtype_t type) {
     switch (type) {
         case diopi_dtype_int8:
@@ -35,10 +38,14 @@ diopiError_t convertType(cnnlDataType_t *cnnlType, diopiDtype_t type) {
             *cnnlType = CNNL_DTYPE_INT64;
             break;
         default:
-            impl::camb::set_last_error_string("unkown diopitype error %d at %s:%d", type, __FILE__, __LINE__);
+            set_last_error_string("unkown diopitype error %d at %s:%d", type, __FILE__, __LINE__);
             return diopiDtypeNotSupported;
     }
     return diopiSuccess;
 }
 
 CnnlHandlePool cnnlHandlePool;
+
+}  // namespace camb
+
+}  // namespace impl

@@ -21,6 +21,7 @@ inline void set_last_error_string(const char* szFmt, Types&&... args) {
 }
 
 const char* camb_get_last_error_string();
+
 }  // namespace camb
 
 }  // namespace impl

@@ -5,11 +5,14 @@
 
 #include "../cnnl_helper.hpp"
 
-diopiError_t diopiPermute(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dims) {
+namespace impl {
+namespace camb {
+
+extern "C" diopiError_t diopiPermute(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dims) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto input_tensor = impl::camb::makeTensor(input);
-    auto output_tensor = impl::camb::makeTensor(out);
+    auto input_tensor = makeTensor(input);
+    auto output_tensor = makeTensor(out);
 
     CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc output_desc(output_tensor, CNNL_LAYOUT_ARRAY);
@@ -28,10 +31,13 @@ diopiError_t diopiPermute(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
 
     void* workspace = nullptr;
     if (0 != workspace_size) {
-        workspace = impl::camb::requiresBuffer(ctx, workspace_size).data();
+        workspace = requiresBuffer(ctx, workspace_size).data();
     }
 
     DIOPI_CALLCNNL(
         cnnlTranspose_v2(handle, trans_desc.get(), input_desc.get(), input_tensor.data(), output_desc.get(), output_tensor.data(), workspace, workspace_size));
     return diopiSuccess;
 }
+
+}  // namespace camb
+}  // namespace impl

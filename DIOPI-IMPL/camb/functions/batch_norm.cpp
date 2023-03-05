@@ -1,7 +1,8 @@
 #include <diopi/functions.h>
 
 #include "../cnnl_helper.hpp"
-
+namespace impl {
+namespace camb {
 
 extern "C" {
 
@@ -10,14 +11,14 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
                                       diopiConstTensorHandle_t bias, diopiTensorHandle_t running_mean,
                                       diopiTensorHandle_t running_var, bool training, double momentum, double eps) {
     /* Generate Tensors */
-    auto save_mean_tr = impl::camb::makeTensor(save_mean);
-    auto save_invstd_tr = impl::camb::makeTensor(save_invstd);
-    auto input_tr = impl::camb::makeTensor(input);
-    auto weight_tr = impl::camb::makeTensor(weight);
-    auto bias_tr = impl::camb::makeTensor(bias);
-    auto running_mean_tr = impl::camb::makeTensor(running_mean);
-    auto running_var_tr = impl::camb::makeTensor(running_var);
-    auto output_tr = impl::camb::makeTensor(out);
+    auto save_mean_tr = makeTensor(save_mean);
+    auto save_invstd_tr = makeTensor(save_invstd);
+    auto input_tr = makeTensor(input);
+    auto weight_tr = makeTensor(weight);
+    auto bias_tr = makeTensor(bias);
+    auto running_mean_tr = makeTensor(running_mean);
+    auto running_var_tr = makeTensor(running_var);
+    auto output_tr = makeTensor(out);
 
     /* Some basic check */
     if (running_mean_tr.defined() && running_var_tr.defined()) {
@@ -30,7 +31,7 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     /* Transpose NCHW to NHWC */
-    auto memory_format = impl::camb::MemoryFormat::ChannelsLast;
+    auto memory_format = MemoryFormat::ChannelsLast;
     auto input_channel_last = input_tr.contiguous(ctx, memory_format);
     cnnl_transpose(ctx, handle, input_tr, input_channel_last, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC);
     auto output_channel_last = output_tr.contiguous(ctx, memory_format);
@@ -46,7 +47,7 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
         size_t workspace_size = 0;
         DIOPI_CHECKCNNL(cnnlGetBatchNormForwardWorkspaceSize(handle, input_channel_last_desc.get(), &workspace_size));
 
-        void* workspace_ptr = workspace_size == 0 ? nullptr : impl::camb::requiresBuffer(ctx, workspace_size).data();
+        void* workspace_ptr = workspace_size == 0 ? nullptr : requiresBuffer(ctx, workspace_size).data();
 
         // set activition part to default
         cnnlActivationMode_t active_mode = CNNL_ACTIVATION_IDENTITY;
@@ -117,17 +118,17 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx,
                                     diopiConstTensorHandle_t save_invstd,
                                     bool training, double eps) {
     /* Generate diopi Tensors and Handle*/
-    auto grad_input_tr = impl::camb::makeTensor(grad_input);
-    auto grad_weight_tr = impl::camb::makeTensor(grad_weight);
-    auto grad_bias_tr = impl::camb::makeTensor(grad_bias);
-    auto input_tr = impl::camb::makeTensor(input);
-    auto weight_tr = impl::camb::makeTensor(weight);
-    auto running_mean_tr = impl::camb::makeTensor(running_mean);
-    auto running_var_tr = impl::camb::makeTensor(running_var);
-    auto save_mean_tr = impl::camb::makeTensor(save_mean);
-    auto save_invstd_tr = impl::camb::makeTensor(save_invstd);
+    auto grad_input_tr = makeTensor(grad_input);
+    auto grad_weight_tr = makeTensor(grad_weight);
+    auto grad_bias_tr = makeTensor(grad_bias);
+    auto input_tr = makeTensor(input);
+    auto weight_tr = makeTensor(weight);
+    auto running_mean_tr = makeTensor(running_mean);
+    auto running_var_tr = makeTensor(running_var);
+    auto save_mean_tr = makeTensor(save_mean);
+    auto save_invstd_tr = makeTensor(save_invstd);
 
-    auto grad_output_tr = impl::camb::makeTensor(grad_output);
+    auto grad_output_tr = makeTensor(grad_output);
 
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
@@ -139,7 +140,7 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx,
     DIOPI_CHECK(input_tr.dim() >= 4 && input_tr.dim() <=4, "Input dim is out of range");
 
     /* Transpose */
-    auto memory_format = impl::camb::MemoryFormat::ChannelsLast;
+    auto memory_format = MemoryFormat::ChannelsLast;
     auto input_channel_last = input_tr.contiguous(ctx, memory_format);
     cnnl_transpose(ctx, handle, input_tr, input_channel_last, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC);
     auto grad_output_channel_last = grad_output_tr.contiguous(ctx, memory_format);
@@ -168,7 +169,7 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx,
         size_t workspace_size = 0;
         DIOPI_CHECKCNNL(cnnlGetBatchNormBackwardWorkspaceSize(handle, input_desc.get(), &workspace_size));
 
-        void* workspace_ptr = workspace_size == 0 ? nullptr : impl::camb::requiresBuffer(ctx, workspace_size).data();
+        void* workspace_ptr = workspace_size == 0 ? nullptr : requiresBuffer(ctx, workspace_size).data();
 
         DIOPI_CALLCNNL(cnnlBatchNormBackward_v2(
             handle,
@@ -205,7 +206,7 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx,
         size_t workspace_size = 0;
         DIOPI_CHECKCNNL(cnnlGetFrozenBatchNormBackwardWorkspaceSize(handle, input_desc.get(), &workspace_size));
 
-        void* workspace_ptr = workspace_size == 0 ? nullptr : impl::camb::requiresBuffer(ctx, workspace_size).data();
+        void* workspace_ptr = workspace_size == 0 ? nullptr : requiresBuffer(ctx, workspace_size).data();
 
         DIOPI_CALLCNNL(cnnlFrozenBatchNormBackward_v2(
             handle,
@@ -241,3 +242,6 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx,
 }
 
 }  // extern "C"
+
+}  // namespace camb
+}  // namespace impl

@@ -2,6 +2,9 @@
 #include <numeric>
 #include "../cnnl_helper.hpp"
 
+namespace impl {
+namespace camb {
+
 namespace {
 void getAxis(auto& t, std::vector<int>& axis) {
     axis.clear();
@@ -17,8 +20,8 @@ extern "C" {
 DIOPI_API diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, diopiDtype_t dtype) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto input_tensor = impl::camb::makeTensor(input);
-    auto out_tensor = impl::camb::makeTensor(out);
+    auto input_tensor = makeTensor(input);
+    auto out_tensor = makeTensor(out);
 
     CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc out_desc;
@@ -48,11 +51,14 @@ DIOPI_API diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t o
     DIOPI_CALLCNNL(cnnlGetReduceOpWorkspaceSize(handle, input_desc.get(), out_desc.get(), reduce_desc, &workspace_size));
     void* workspace = nullptr;
     if (0 != workspace_size) {
-        workspace = impl::camb::requiresBuffer(ctx, workspace_size).data();
+        workspace = requiresBuffer(ctx, workspace_size).data();
     }
 
     DIOPI_CALLCNNL(
         cnnlReduce(handle, reduce_desc, workspace, workspace_size, nullptr, input_desc.get(), input_ptr, 0, nullptr, nullptr, out_desc.get(), out_ptr));
     return diopiSuccess;
 }
-}
+}  // extern "C"
+
+}  // namespace camb
+}  // namespace impl

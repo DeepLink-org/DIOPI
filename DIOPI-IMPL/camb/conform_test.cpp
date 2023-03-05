@@ -14,6 +14,9 @@
 
 #include "error.hpp"
 
+namespace impl {
+namespace camb {
+
 #define CALL_CNRT(Expr)                                                               \
     {                                                                                 \
         ::cnrtRet_t ret = Expr;                                                       \
@@ -77,7 +80,7 @@ int32_t initLibrary() {
     diopiRegisterMemcpyD2HAsyncFunc(camb_memcpy_d2h_async);
     diopiRegisterMemcpyD2DAsyncFunc(camb_memcpy_d2d_async);
     diopiRegisterMemcpyH2DAsyncFunc(camb_memcpy_h2d_async);
-    diopiRegisterGetLastErrorFunc(impl::camb::camb_get_last_error_string);
+    diopiRegisterGetLastErrorFunc(camb_get_last_error_string);
 
     return diopiSuccess;
 }
@@ -85,3 +88,6 @@ int32_t initLibrary() {
 int32_t finalizeLibrary() { return diopiSuccess; }
 
 }  // extern "C"
+
+}  // namespace camb
+}  // namespace impl

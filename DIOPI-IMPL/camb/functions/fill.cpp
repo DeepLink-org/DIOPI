@@ -4,10 +4,13 @@
 
 #include "../cnnl_helper.hpp"
 
+namespace impl {
+namespace camb {
+
 extern "C" {
 
 diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* value) {
-    auto trInput = impl::camb::makeTensor(input);
+    auto trInput = makeTensor(input);
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     CnnlResourceGuard<cnnlTensorDescriptor_t, cnnlCreateTensorDescriptor, cnnlDestroyTensorDescriptor> CnnlDesc;
     cnnlTensorLayout_t layout = CNNL_LAYOUT_ARRAY;
@@ -35,3 +38,6 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
 }
 
 }  // extern "C"
+
+}  // namespace camb
+}  // namespace impl

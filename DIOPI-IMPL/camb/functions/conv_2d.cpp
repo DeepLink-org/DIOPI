@@ -5,6 +5,9 @@
 
 #include "../cnnl_helper.hpp"
 
+namespace impl {
+namespace camb {
+
 namespace {
 enum class Transform {
     NONE,
@@ -39,9 +42,9 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx,
                                            int64_t groups) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto input_tensor = impl::camb::makeTensor(input);
-    auto output_tensor = impl::camb::makeTensor(out);
-    auto weight_tensor = impl::camb::makeTensor(weight);
+    auto input_tensor = makeTensor(input);
+    auto output_tensor = makeTensor(out);
+    auto weight_tensor = makeTensor(weight);
 
     std::vector<int64_t> input_shape_t_64;
     std::vector<int64_t> weight_shape_t_64;
@@ -80,7 +83,7 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx,
     const void *bias_ptr = nullptr;
     CnnlTensorDesc bias_desc;
     if (nullptr != bias) {
-        auto bias_tensor = impl::camb::makeTensor(bias);
+        auto bias_tensor = makeTensor(bias);
         DIOPI_CALL(bias_desc.set(bias_tensor, CNNL_LAYOUT_ARRAY));
         bias_ptr = bias_tensor.data();
     }
@@ -105,7 +108,7 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx,
 
     void *workspace = nullptr;
     if (0 != workspace_size) {
-        workspace = impl::camb::requiresBuffer(ctx, workspace_size).data();
+        workspace = requiresBuffer(ctx, workspace_size).data();
     }
 
     DIOPI_CALLCNNL(cnnlConvolutionForward(handle,
@@ -113,19 +116,22 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx,
                                           CNNL_CONVOLUTION_FWD_ALGO_DIRECT,
                                           NULL,
                                           input_desc.get(),
-                                          impl::camb::makeTensor(input_tensor_t).data(),
+                                          makeTensor(input_tensor_t).data(),
                                           weight_desc.get(),
-                                          impl::camb::makeTensor(weight_tensor_t).data(),
+                                          makeTensor(weight_tensor_t).data(),
                                           bias_desc.get(),
                                           bias_ptr,
                                           workspace,
                                           workspace_size,
                                           NULL,
                                           output_desc.get(),
-                                          impl::camb::makeTensor(output_tensor_t).data()));
+                                          makeTensor(output_tensor_t).data()));
 
     std::vector<int64_t> perm_nhwc2nchw{0, 3, 1, 2};
     diopiSize_t nhwc2nchw(perm_nhwc2nchw.data(), 4);
     DIOPI_CALL(diopiPermute(ctx, out, output_tensor_t, nhwc2nchw));
     return diopiSuccess;
 }
+
+}  // namespace camb
+}  // namespace impl

@@ -19,10 +19,13 @@
 
 #include "error.hpp"
 
+namespace impl {
+namespace camb {
+
 #define DIOPI_CHECK(cond, str)                                                         \
     do {                                                                               \
         if (!(cond)) {                                                                 \
-            impl::camb::set_last_error_string("%s at %s:%d", str, __FILE__, __LINE__); \
+            set_last_error_string("%s at %s:%d", str, __FILE__, __LINE__); \
             return diopiErrorOccurred;                                                 \
         }                                                                              \
     } while (false);
@@ -43,9 +46,6 @@
         }                          \
     } while (false);
 
-namespace impl {
-
-namespace camb {
 
 enum class MemoryFormat : size_t {
     Contiguous      = 0,
@@ -131,19 +131,19 @@ public:
     int64_t dim() {
         return this->shape().size();
     }
-    DiopiTensor<diopiTensorHandle_t> contiguous(diopiContextHandle_t ctx, impl::camb::MemoryFormat format) {
+    DiopiTensor<diopiTensorHandle_t> contiguous(diopiContextHandle_t ctx, MemoryFormat format) {
         /* Returns a new Tensor in new memory format, without data copy */
         int64_t dim = this->dim();
         std::vector<int64_t> strides(dim);
         int64_t stride = 1;
-        if (format == impl::camb::MemoryFormat::Contiguous) {
+        if (format == MemoryFormat::Contiguous) {
             for (size_t i = dim; i > 0; --i) {
                 strides[i - 1] = stride;
                 if (shape_[i - 1] == 0) continue;
                 if (shape_[i - 1] == -1) stride = -1;
                 if (stride != -1) stride *= shape_[i - 1];
             }
-        } else if (format == impl::camb::MemoryFormat::ChannelsLast) {
+        } else if (format == MemoryFormat::ChannelsLast) {
             for (auto k : {1, 3, 2, 0}) {
                 strides[k] = stride;
                 if (shape_[k] == 0) continue;

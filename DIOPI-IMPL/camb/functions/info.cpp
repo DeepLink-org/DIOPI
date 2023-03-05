@@ -7,6 +7,9 @@
 
 #include "../diopi_helper.hpp"
 
+namespace impl {
+namespace camb {
+
 static char version[512];
 
 const char* diopiGetVendorName() { return "CambDevice"; }
@@ -16,3 +19,6 @@ const char* diopiGetImplVersion() {
     }
     return version;
 }
+
+}  // namespace camb
+}  // namespace impl
