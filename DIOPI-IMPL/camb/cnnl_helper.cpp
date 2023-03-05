@@ -5,7 +5,7 @@
 namespace impl {
 namespace camb {
 
-diopiError_t convertType(cnnlDataType_t *cnnlType, diopiDtype_t type) {
+diopiError_t CnnlDataType::convertToCnnlType(cnnlDataType_t* cnnlType, diopiDtype_t type) {
     switch (type) {
         case diopi_dtype_int8:
             *cnnlType = CNNL_DTYPE_INT8;
@@ -43,6 +43,15 @@ diopiError_t convertType(cnnlDataType_t *cnnlType, diopiDtype_t type) {
     }
     return diopiSuccess;
 }
+bool CnnlDataType::isFloat(cnnlDataType_t cnnlDT) {
+    return cnnlDT == CNNL_DTYPE_HALF || cnnlDT == CNNL_DTYPE_FLOAT || cnnlDT == CNNL_DTYPE_DOUBLE || cnnlDT == CNNL_DTYPE_COMPLEX_HALF ||
+           cnnlDT == CNNL_DTYPE_COMPLEX_FLOAT;
+}
+bool CnnlDataType::isInteger(cnnlDataType_t cnnlDT) {
+    return cnnlDT == CNNL_DTYPE_INT8 || cnnlDT == CNNL_DTYPE_INT16 || cnnlDT == CNNL_DTYPE_INT31 || cnnlDT == CNNL_DTYPE_INT32 || cnnlDT == CNNL_DTYPE_INT64 ||
+           cnnlDT == CNNL_DTYPE_UINT8 || cnnlDT == CNNL_DTYPE_UINT16 || cnnlDT == CNNL_DTYPE_UINT32 || cnnlDT == CNNL_DTYPE_UINT64;
+}
+bool CnnlDataType::isBool(cnnlDataType_t cnnlDT) { return cnnlDT == CNNL_DTYPE_BOOL; }
 
 CnnlHandlePool cnnlHandlePool;
 

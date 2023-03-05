@@ -99,7 +99,7 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx,
     int dilation_[2] = {dilation_vec[0], dilation_vec[1]};
 
     cnnlDataType_t input_type;
-    DIOPI_CALL(convertType(&input_type, input_tensor.dtype()));
+    DIOPI_CALL(CnnlDataType::convertToCnnlType(&input_type, input_tensor.dtype()));
     DIOPI_CALLCNNL(cnnlSetConvolutionDescriptor(conv_desc.get(), 4, padding_, stride_, dilation_, groups, input_type));
 
     size_t workspace_size;

@@ -15,7 +15,7 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
     CnnlResourceGuard<cnnlTensorDescriptor_t, cnnlCreateTensorDescriptor, cnnlDestroyTensorDescriptor> CnnlDesc;
     cnnlTensorLayout_t layout = CNNL_LAYOUT_ARRAY;
     cnnlDataType_t dtype;
-    DIOPI_CALL(convertType(&dtype, trInput.dtype()));
+    DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, trInput.dtype()));
     cnnlTensorDescriptor_t desc = CnnlDesc.get();
 
     std::vector<int32_t> strides = trInput.stride();

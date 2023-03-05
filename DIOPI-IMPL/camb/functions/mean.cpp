@@ -37,7 +37,7 @@ DIOPI_API diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t o
     CnnlResourceGuard<cnnlReduceDescriptor_t, cnnlCreateReduceDescriptor, cnnlDestroyReduceDescriptor> CnnlReduceDesc;
     cnnlReduceDescriptor_t reduce_desc = CnnlReduceDesc.get();
     cnnlDataType_t cnnl_dtype;
-    DIOPI_CALL(convertType(&cnnl_dtype, dtype));
+    DIOPI_CALL(CnnlDataType::convertToCnnlType(&cnnl_dtype, dtype));
     std::vector<int> axis;
     if (dim.len > 0) {
         std::vector<int> dims{dim.data, dim.data + dim.len};
