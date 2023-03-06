@@ -98,8 +98,8 @@ extern DIOPI_API const char* diopiGetVersion();
 /**
  * operations to manipulate Tensor objects
  **/
-extern DIOPI_RT_API diopiError_t diopiGetTensorData(diopiTensorHandle_t* th, void**);
-extern DIOPI_RT_API diopiError_t diopiGetTensorDataConst(diopiConstTensorHandle_t* th, const void**);
+extern DIOPI_RT_API diopiError_t diopiGetTensorData(diopiTensorHandle_t th, void**);
+extern DIOPI_RT_API diopiError_t diopiGetTensorDataConst(diopiConstTensorHandle_t th, const void**);
 extern DIOPI_RT_API diopiError_t diopiGetTensorShape(diopiConstTensorHandle_t th, diopiSize_t* size);
 extern DIOPI_RT_API diopiError_t diopiGetTensorStride(diopiConstTensorHandle_t th, diopiSize_t* stride);
 extern DIOPI_RT_API diopiError_t diopiGetTensorDtype(diopiConstTensorHandle_t th, diopiDtype_t* dtype);
