@@ -238,7 +238,7 @@ class ConformanceTest(object):
 
             for func_call in func_call_list:
                 if "inplace=True" in func_call:
-                    if test_tag[-1] == 'backward':
+                    if test_tag and test_tag[-1] == 'backward':
                         test_tag.pop()
                     test_tag.append("inplace")
                 try:

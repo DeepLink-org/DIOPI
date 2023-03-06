@@ -365,13 +365,13 @@ bool diopiTensor::reset_shape(const diopiSize_t* size) {
 
 diopiTensor::~diopiTensor() {}
 
-DIOPI_RT_API diopiError_t diopiGetTensorData(diopiTensorHandle_t* pth, void** pptr) {
-    *pptr = (*pth)->data();
+DIOPI_RT_API diopiError_t diopiGetTensorData(diopiTensorHandle_t th, void** pptr) {
+    *pptr = th->data();
     return diopiSuccess;
 }
 
-DIOPI_RT_API diopiError_t diopiGetTensorDataConst(diopiConstTensorHandle_t* pth, const void** pptr) {
-    *pptr = (*pth)->data();
+DIOPI_RT_API diopiError_t diopiGetTensorDataConst(diopiConstTensorHandle_t th, const void** pptr) {
+    *pptr = th->data();
     return diopiSuccess;
 }
 
