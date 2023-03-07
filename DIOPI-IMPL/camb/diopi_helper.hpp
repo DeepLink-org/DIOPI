@@ -131,7 +131,7 @@ public:
     int64_t dim() {
         return this->shape().size();
     }
-    DiopiTensor<diopiTensorHandle_t> contiguous(diopiContextHandle_t ctx, MemoryFormat format) {
+    DiopiTensor<diopiTensorHandle_t> contiguous(diopiContextHandle_t ctx, MemoryFormat format = MemoryFormat::Contiguous) {
         /* Returns a new Tensor in new memory format, without data copy */
         int64_t dim = this->dim();
         std::vector<int64_t> strides(dim);
@@ -158,6 +158,31 @@ public:
         diopiRequireTensor(ctx, &tensor, &diopi_shape, &diopi_stride, this->dtype(), this->device());
         return DiopiTensor<diopiTensorHandle_t>(tensor);
     }
+
+    bool is_contiguous(MemoryFormat format = MemoryFormat::Contiguous) {
+        int64_t stride = 1;
+        int64_t dim = this->dim();
+        auto strides = this->stride();
+        auto shape = this->shape();
+
+        if (format == MemoryFormat::Contiguous) {
+            for (int i = dim - 1; i >= 0; i--) {
+                if (strides[i] != stride) {
+                    return false;
+                }
+                stride *= shape[i];
+            }
+        } else if (format == MemoryFormat::ChannelsLast) {
+            for (auto i : {1, 3, 2, 0}) {
+                if (strides[i] != stride) {
+                    return false;
+                }
+                stride *= shape[i];
+            }
+        }
+        return true;
+    }
+
     bool defined() const {
         if (tensor_ == nullptr) return false;
         return this->numel() != 0;

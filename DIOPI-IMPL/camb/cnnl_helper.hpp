@@ -177,6 +177,47 @@ public:
     }
 };
 
+class CnnlReduceDescriptor final
+    : public CnnlDescBase<cnnlReduceDescriptor_t,
+          cnnlCreateReduceDescriptor, cnnlDestroyReduceDescriptor> {
+public:
+    CnnlReduceDescriptor() {}
+
+    CnnlReduceDescriptor(auto& t, diopiSize_t dim,
+                         const cnnlReduceOp_t reduceOp,
+                         cnnlDataType_t dtype,
+                         cnnlNanPropagation_t nanPropagation,
+                         cnnlReduceIndices_t indices,
+                         cnnlIndicesType_t indicesType) {
+        set(t, dim, reduceOp, dtype, nanPropagation, indices, indicesType);
+    }
+
+    template <typename T>
+    diopiError_t set(T& t, diopiSize_t dim,
+            const cnnlReduceOp_t reduceOp,
+            cnnlDataType_t dtype,
+            cnnlNanPropagation_t nanPropagation,
+            cnnlReduceIndices_t indices,
+            cnnlIndicesType_t indicesType) {
+        /* if dim is not set, all dimensions are reduced. */
+        std::vector<int> axis;
+        if (dim.len > 0) {
+            std::vector<int> dims{dim.data, dim.data + dim.len};
+            axis = dims;
+        } else {
+            int input_size = t.shape().size();
+            for (int i = 0; i < input_size; i++) {
+                axis.push_back(i);
+            }
+        }
+        DIOPI_CALLCNNL(cnnlSetReduceDescriptor(
+            get(), axis.data(), axis.size(), reduceOp, dtype,
+            nanPropagation, indices, indicesType));
+
+        return diopiSuccess;
+    }
+};
+
 template<typename T>
 diopiError_t cnnl_transpose(diopiContextHandle_t& ctx,
                             cnnlHandle_t& handle, T& in,
