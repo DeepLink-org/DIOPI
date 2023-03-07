@@ -63,7 +63,7 @@ struct DataType<diopiTensorHandle_t> {
 
     static void* data(diopiTensorHandle_t& tensor) {
         void* data;
-        diopiGetTensorData(&tensor, &data);
+        diopiGetTensorData(tensor, &data);
         return data;
     }
 };
@@ -73,7 +73,7 @@ struct DataType<diopiConstTensorHandle_t> {
     using type = const void*;
     static const void* data(diopiConstTensorHandle_t& tensor) {
         const void* data;
-        diopiGetTensorDataConst(&tensor, &data);
+        diopiGetTensorDataConst(tensor, &data);
         return data;
     }
 };
