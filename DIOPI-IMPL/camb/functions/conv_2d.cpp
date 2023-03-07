@@ -7,30 +7,6 @@
 
 namespace impl {
 namespace camb {
-
-namespace {
-enum class Transform {
-    NONE,
-    NCHW_TO_NHWC,
-};
-
-template <typename T, typename SRC>
-diopiError_t convert_vector(const SRC &data, std::vector<T> &out, Transform trans = Transform::NONE) {
-    if (Transform::NONE == trans) {
-        out = std::vector<T>{data.begin(), data.end()};
-        return diopiSuccess;
-    } else if (Transform::NCHW_TO_NHWC == trans) {
-        out.resize(4);
-        out[0] = data[0];
-        out[1] = data[2];
-        out[2] = data[3];
-        out[3] = data[1];
-        return diopiSuccess;
-    }
-    return diopiErrorOccurred;
-}
-}  // namespace
-
 extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx,
                                            diopiTensorHandle_t out,
                                            diopiConstTensorHandle_t input,
@@ -46,39 +22,32 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx,
     auto output_tensor = makeTensor(out);
     auto weight_tensor = makeTensor(weight);
 
-    std::vector<int64_t> input_shape_t_64;
-    std::vector<int64_t> weight_shape_t_64;
-    std::vector<int64_t> output_shape_t_64;
+    diopiTensorHandle_t input_t;
+    diopiTensorHandle_t weight_t;
+    diopiTensorHandle_t output_t;
 
-    DIOPI_CALL(convert_vector(input_tensor.shape(), input_shape_t_64, Transform::NCHW_TO_NHWC));
-    DIOPI_CALL(convert_vector(weight_tensor.shape(), weight_shape_t_64, Transform::NCHW_TO_NHWC));
-    DIOPI_CALL(convert_vector(output_tensor.shape(), output_shape_t_64, Transform::NCHW_TO_NHWC));
+    auto permute_to_nhwc = [&](auto src, auto &dst) {
+        std::vector<int64_t> axis{0, 2, 3, 1};
+        auto src_tensor = makeTensor(src);
+        std::vector<int64_t> src_shape_t_64(src_tensor.shape().size());
+        for (int i = 0; i < src_tensor.shape().size(); ++i) {
+            src_shape_t_64[i] = src_tensor.shape()[axis[i]];
+        }
+        diopiSize_t src_t_shape(src_shape_t_64.data(), src_shape_t_64.size());
+        DIOPI_CALL(diopiRequireTensor(ctx, &dst, &src_t_shape, nullptr, src_tensor.dtype(), diopi_device));
+        diopiSize_t nchw2nhwc(axis.data(), 4);
+        DIOPI_CALL(diopiPermute(ctx, dst, src, nchw2nhwc));
+        return diopiSuccess;
+    };
 
-    std::vector<int> input_shape_t{input_shape_t_64.begin(), input_shape_t_64.end()};
-    std::vector<int> weight_shape_t{weight_shape_t_64.begin(), weight_shape_t_64.end()};
-    std::vector<int> output_shape_t{output_shape_t_64.begin(), output_shape_t_64.end()};
-
-    diopiTensorHandle_t input_tensor_t;
-    diopiTensorHandle_t weight_tensor_t;
-    diopiTensorHandle_t output_tensor_t;
-
-    diopiSize_t input_t_shape(input_shape_t_64.data(), input_shape_t_64.size());
-    diopiSize_t weight_t_shape(weight_shape_t_64.data(), weight_shape_t_64.size());
-    diopiSize_t output_t_shape(output_shape_t_64.data(), output_shape_t_64.size());
-
-    DIOPI_CALL(diopiRequireTensor(ctx, &input_tensor_t, &input_t_shape, nullptr, input_tensor.dtype(), diopi_device));
-    DIOPI_CALL(diopiRequireTensor(ctx, &weight_tensor_t, &weight_t_shape, nullptr, weight_tensor.dtype(), diopi_device));
-    DIOPI_CALL(diopiRequireTensor(ctx, &output_tensor_t, &output_t_shape, nullptr, output_tensor.dtype(), diopi_device));
-
-    std::vector<int64_t> perm_nchw2nhwc{0, 2, 3, 1};
-    diopiSize_t nchw2nhwc(perm_nchw2nhwc.data(), 4);
-    DIOPI_CALL(diopiPermute(ctx, input_tensor_t, input, nchw2nhwc));
-    DIOPI_CALL(diopiPermute(ctx, weight_tensor_t, weight, nchw2nhwc));
+    DIOPI_CALL(permute_to_nhwc(input, input_t));
+    DIOPI_CALL(permute_to_nhwc(weight, weight_t));
+    DIOPI_CALL(permute_to_nhwc(out, output_t));
 
     CnnlTensorDesc input_desc, output_desc, weight_desc;
-    DIOPI_CALL(input_desc.set(input_tensor, CNNL_LAYOUT_NHWC, input_shape_t));
-    DIOPI_CALL(output_desc.set(output_tensor, CNNL_LAYOUT_NHWC, output_shape_t));
-    DIOPI_CALL(weight_desc.set(weight_tensor, CNNL_LAYOUT_NHWC, weight_shape_t));
+    DIOPI_CALL(input_desc.set(input_tensor, CNNL_LAYOUT_NHWC));
+    DIOPI_CALL(output_desc.set(output_tensor, CNNL_LAYOUT_NHWC));
+    DIOPI_CALL(weight_desc.set(weight_tensor, CNNL_LAYOUT_NHWC));
 
     const void *bias_ptr = nullptr;
     CnnlTensorDesc bias_desc;
@@ -116,20 +85,177 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx,
                                           CNNL_CONVOLUTION_FWD_ALGO_DIRECT,
                                           NULL,
                                           input_desc.get(),
-                                          makeTensor(input_tensor_t).data(),
+                                          makeTensor(input_t).data(),
                                           weight_desc.get(),
-                                          makeTensor(weight_tensor_t).data(),
+                                          makeTensor(weight_t).data(),
                                           bias_desc.get(),
                                           bias_ptr,
                                           workspace,
                                           workspace_size,
                                           NULL,
                                           output_desc.get(),
-                                          makeTensor(output_tensor_t).data()));
+                                          makeTensor(output_t).data()));
 
     std::vector<int64_t> perm_nhwc2nchw{0, 3, 1, 2};
     diopiSize_t nhwc2nchw(perm_nhwc2nchw.data(), 4);
-    DIOPI_CALL(diopiPermute(ctx, out, output_tensor_t, nhwc2nchw));
+    DIOPI_CALL(diopiPermute(ctx, out, output_t, nhwc2nchw));
+    return diopiSuccess;
+}
+
+extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx,
+                                                   diopiTensorHandle_t grad_input,
+                                                   diopiTensorHandle_t grad_weight,
+                                                   diopiTensorHandle_t grad3,
+                                                   diopiConstTensorHandle_t grad_output,
+                                                   diopiConstTensorHandle_t input,
+                                                   diopiConstTensorHandle_t weight,
+                                                   diopiSize_t *bias_sizes,
+                                                   diopiSize_t stride,
+                                                   diopiSize_t padding,
+                                                   diopiSize_t dilation,
+                                                   bool transposed,
+                                                   diopiSize_t output_padding,
+                                                   int64_t groups) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+
+    auto input_tensor = makeTensor(input);
+    auto weight_tensor = makeTensor(weight);
+    auto grad_output_tensor = makeTensor(grad_output);
+    auto grad_input_tensor = makeTensor(grad_input);
+    auto grad_weight_tensor = makeTensor(grad_weight);
+
+    diopiTensorHandle_t input_t;
+    diopiTensorHandle_t weight_t;
+    diopiTensorHandle_t grad_output_t;
+    diopiTensorHandle_t grad_input_t;
+    diopiTensorHandle_t grad_weight_t;
+
+    auto permute_to_nhwc = [&](auto src, auto &dst) {
+        std::vector<int64_t> axis{0, 2, 3, 1};
+        auto src_tensor = makeTensor(src);
+        std::vector<int64_t> src_shape_t_64(src_tensor.shape().size());
+        for (int i = 0; i < src_tensor.shape().size(); ++i) {
+            src_shape_t_64[i] = src_tensor.shape()[axis[i]];
+        }
+        diopiSize_t src_t_shape(src_shape_t_64.data(), src_shape_t_64.size());
+        DIOPI_CALL(diopiRequireTensor(ctx, &dst, &src_t_shape, nullptr, src_tensor.dtype(), diopi_device));
+        diopiSize_t nchw2nhwc(axis.data(), 4);
+        DIOPI_CALL(diopiPermute(ctx, dst, src, nchw2nhwc));
+        return diopiSuccess;
+    };
+
+    DIOPI_CALL(permute_to_nhwc(input, input_t));
+    DIOPI_CALL(permute_to_nhwc(weight, weight_t));
+    DIOPI_CALL(permute_to_nhwc(grad_output, grad_output_t));
+    DIOPI_CALL(permute_to_nhwc(grad_input, grad_input_t));
+    DIOPI_CALL(permute_to_nhwc(grad_weight, grad_weight_t));
+
+    auto input_tensor_t = makeTensor(input_t);
+    auto weight_tensor_t = makeTensor(weight_t);
+    auto grad_output_tensor_t = makeTensor(grad_output_t);
+    auto grad_input_tensor_t = makeTensor(grad_input_t);
+    auto grad_weight_tensor_t = makeTensor(grad_weight_t);
+
+    CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_NHWC);
+    CnnlTensorDesc weight_desc(weight_tensor, CNNL_LAYOUT_NHWC);
+    CnnlTensorDesc output_grad_desc(grad_output_tensor, CNNL_LAYOUT_NHWC);
+    CnnlTensorDesc input_grad_desc(grad_input_tensor, CNNL_LAYOUT_NHWC);
+    CnnlTensorDesc weight_grad_desc(grad_weight_tensor, CNNL_LAYOUT_NHWC);
+
+    CnnlResourceGuard<cnnlConvolutionDescriptor_t, cnnlCreateConvolutionDescriptor, cnnlDestroyConvolutionDescriptor> conv_desc;
+
+    std::vector<int> stride_vec{stride.data, stride.data + stride.len};
+    std::vector<int> padding_vec{padding.data, padding.data + padding.len};
+    std::vector<int> dilation_vec{dilation.data, dilation.data + dilation.len};
+
+    int padding_[4] = {padding_vec[0], padding_vec[1], padding_vec[0], padding_vec[1]};
+    int stride_[2] = {stride_vec[0], stride_vec[1]};
+    int dilation_[2] = {dilation_vec[0], dilation_vec[1]};
+
+    cnnlDataType_t input_type;
+    DIOPI_CALL(CnnlDataType::convertToCnnlType(&input_type, input_tensor_t.dtype()));
+    DIOPI_CALLCNNL(cnnlSetConvolutionDescriptor(conv_desc.get(), 4, padding_, stride_, dilation_, groups, input_type));
+
+    size_t workspace_size_filter = 0;
+    DIOPI_CALLCNNL(cnnlGetConvolutionBackwardFilterWorkspaceSize(
+        handle, input_desc.get(), output_grad_desc.get(), weight_desc.get(), conv_desc.get(), CNNL_CONVOLUTION_BWD_FILTER_ALGO_DIRECT, &workspace_size_filter));
+
+    void *workspace_filter = nullptr;
+    if (workspace_size_filter != 0) {
+        workspace_filter = requiresBuffer(ctx, workspace_size_filter).data();
+    }
+
+    DIOPI_CALLCNNL(cnnlConvolutionBackwardFilter(handle,
+                                                 NULL,
+                                                 input_desc.get(),
+                                                 input_tensor_t.data(),
+                                                 output_grad_desc.get(),
+                                                 grad_output_tensor_t.data(),
+                                                 conv_desc.get(),
+                                                 CNNL_CONVOLUTION_BWD_FILTER_ALGO_DIRECT,
+                                                 workspace_filter,
+                                                 workspace_size_filter,
+                                                 NULL,
+                                                 weight_grad_desc.get(),
+                                                 grad_weight_tensor_t.data()));
+
+    size_t workspace_size_input;
+    DIOPI_CALLCNNL(cnnlGetConvolutionBackwardDataWorkspaceSize(handle,
+                                                               weight_desc.get(),
+                                                               output_grad_desc.get(),
+                                                               conv_desc.get(),
+                                                               input_grad_desc.get(),
+                                                               CNNL_CONVOLUTION_BWD_DATA_ALGO_DIRECT,
+                                                               &workspace_size_input));
+
+    void *workspace_input;
+    if (workspace_size_input != 0) {
+        workspace_input = requiresBuffer(ctx, workspace_size_input).data();
+    }
+
+    DIOPI_CALLCNNL(cnnlConvolutionBackwardData(handle,
+                                               NULL,
+                                               weight_desc.get(),
+                                               weight_tensor_t.data(),
+                                               output_grad_desc.get(),
+                                               grad_output_tensor_t.data(),
+                                               conv_desc.get(),
+                                               CNNL_CONVOLUTION_BWD_DATA_ALGO_DIRECT,
+                                               workspace_input,
+                                               workspace_size_input,
+                                               NULL,
+                                               input_grad_desc.get(),
+                                               grad_input_tensor_t.data()));
+
+    std::vector<int64_t> perm_nhwc2nchw{0, 3, 1, 2};
+    diopiSize_t nhwc2nchw(perm_nhwc2nchw.data(), 4);
+    DIOPI_CALL(diopiPermute(ctx, grad_input, grad_input_t, nhwc2nchw));
+    DIOPI_CALL(diopiPermute(ctx, grad_weight, grad_weight_t, nhwc2nchw));
+
+    if (grad3 != nullptr) {
+        auto bias_grad_tensor = makeTensor(grad3);
+        CnnlTensorDesc bias_grad_desc;
+        DIOPI_CALL(bias_grad_desc.set(bias_grad_tensor, CNNL_LAYOUT_ARRAY));
+        std::vector<int64_t> bias_shape{bias_grad_tensor.shape().begin(), bias_grad_tensor.shape().end()};
+        bias_sizes->data = bias_shape.data();
+        bias_sizes->len = bias_shape.size();
+        size_t workspace_size_bias;
+        DIOPI_CALLCNNL(cnnlGetBiasAddBackwardWorkspaceSize(handle, output_grad_desc.get(), bias_grad_desc.get(), 3, &workspace_size_bias))
+
+        void *workspace_bias = nullptr;
+        if (0 != workspace_size_bias) {
+            workspace_bias = requiresBuffer(ctx, workspace_size_bias).data();
+        }
+        DIOPI_CALLCNNL(cnnlBiasAddBackward_v2(handle,
+                                              output_grad_desc.get(),
+                                              grad_output_tensor_t.data(),
+                                              3,
+                                              bias_grad_desc.get(),
+                                              bias_grad_tensor.data(),
+                                              workspace_bias,
+                                              workspace_size_bias));
+    }
+
     return diopiSuccess;
 }
 
