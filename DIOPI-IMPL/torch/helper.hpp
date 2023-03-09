@@ -91,6 +91,10 @@ inline void setCurCtx(diopiContextHandle_t ctx) {
     context = ctx;
 }
 
+inline void unsetCurCtx() {
+    context = nullptr;
+}
+
 inline void sync(diopiContextHandle_t ctx) {
     diopiStreamHandle_t stream_handle;
     diopiGetStream(ctx, &stream_handle);
