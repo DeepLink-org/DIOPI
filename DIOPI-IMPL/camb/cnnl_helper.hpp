@@ -222,10 +222,9 @@ public:
     }
 };
 
-template<typename T>
+template<typename T1, typename T2>
 diopiError_t cnnl_transpose(diopiContextHandle_t& ctx,
-                            cnnlHandle_t& handle, T& in,
-                            DiopiTensor<diopiTensorHandle_t>& out,
+                            cnnlHandle_t& handle, T1& in, T2& out,
                             cnnlTensorLayout_t layoutIn,
                             cnnlTensorLayout_t layoutOut) {
     std::vector<int> order;
@@ -242,7 +241,7 @@ diopiError_t cnnl_transpose(diopiContextHandle_t& ctx,
     } else if (layoutIn == CNNL_LAYOUT_HWCN && layoutOut == CNNL_LAYOUT_NCHW) {
         order = {3, 2, 0, 1};
     } else {
-        set_last_error_string("unkown layout error, layout should be"
+        set_last_error_string("unkown layout error, layout should be "
         "in [CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_HWCN], at %s:%s", __FILE__, __LINE__);
         return diopiDtypeNotSupported;
     }
@@ -254,7 +253,7 @@ diopiError_t cnnl_transpose(diopiContextHandle_t& ctx,
 
     void* workspace_ptr = workspace_size== 0 ? requiresBuffer(ctx, workspace_size).data() : nullptr;
     DIOPI_CALLCNNL(cnnlTranspose_v2(handle, transDesc.get(), inDesc.get(),
-                                      in.data(), outDesc.get(), out.data(),
+                                      in.data(), outDesc.get(), const_cast<void*>(out.data()),
                                       workspace_ptr, workspace_size));
     return diopiSuccess;
 }

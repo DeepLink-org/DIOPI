@@ -35,7 +35,6 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     auto input_channel_last = input_tr.contiguous(ctx, memory_format);
     cnnl_transpose(ctx, handle, input_tr, input_channel_last, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC);
     auto output_channel_last = output_tr.contiguous(ctx, memory_format);
-    // cnnl_transpose(ctx, handle, output_tr, output_channel_last, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC);
 
     CnnlTensorDesc weight_bias_mean_var_desc(weight_tr, CNNL_LAYOUT_ARRAY);
     cnnlTensorLayout_t layout = CNNL_LAYOUT_NHWC;
