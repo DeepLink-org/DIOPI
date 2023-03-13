@@ -18,8 +18,8 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, trInput.dtype()));
     cnnlTensorDescriptor_t desc = CnnlDesc.get();
 
-    std::vector<int32_t> strides = trInput.stride();
-    std::vector<int32_t> shape = trInput.shape();
+    std::vector<int32_t> strides(trInput.stride().begin(), trInput.stride().end());
+    std::vector<int32_t> shape(trInput.shape().begin(), trInput.shape().end());
     if (strides.size() == 0) {
         shape.push_back(1);
         strides.push_back(1);
@@ -31,7 +31,6 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
     } else {
         val = value->fval;
     }
-
     DIOPI_CALLCNNL(cnnlSetTensorDescriptorEx(desc, layout, dtype, shape.size(), shape.data(), strides.data()));
     DIOPI_CALLCNNL(cnnlFill(handle, val, desc, trInput.data()));
     return diopiSuccess;

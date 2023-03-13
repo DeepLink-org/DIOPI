@@ -20,7 +20,7 @@ extern "C" diopiError_t diopiPermute(diopiContextHandle_t ctx, diopiTensorHandle
         return diopiDtypeNotSupported;
     }
 
-    const std::vector<int32_t> src_input_shape = input_tensor.shape();
+    const std::vector<int64_t> src_input_shape = input_tensor.shape();
     std::vector<int> perm_data{dims.data, dims.data + dims.len};
     CnnlResourceGuard<cnnlTransposeDescriptor_t, cnnlCreateTransposeDescriptor, cnnlDestroyTransposeDescriptor> trans_desc;
 
