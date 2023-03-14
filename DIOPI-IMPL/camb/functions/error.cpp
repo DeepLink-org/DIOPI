@@ -1,4 +1,5 @@
 #include "../error.hpp"
+
 #include <diopi/functions.h>
 
 namespace impl {
@@ -16,7 +17,7 @@ const char* camb_get_last_error_string() {
     return strLastError;
 }
 
-const char* diopiGetLastErrorString() { return camb_get_last_error_string(); }
+extern "C" DIOPI_RT_API const char* diopiGetLastErrorString() { return camb_get_last_error_string(); }
 
 }  // namespace camb
 

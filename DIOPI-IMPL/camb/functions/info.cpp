@@ -12,8 +12,8 @@ namespace camb {
 
 static char version[512];
 
-const char* diopiGetVendorName() { return "CambDevice"; }
-const char* diopiGetImplVersion() {
+extern "C" DIOPI_RT_API const char* diopiGetVendorName() { return "CambDevice"; }
+extern "C" DIOPI_RT_API const char* diopiGetImplVersion() {
     if (strlen(version) == 0) {
         sprintf(version, "Cnrt Version: %d; CNNL Version: %d; DIOPI Version: %d", CNRT_VERSION, CNNL_VERSION, DIOPI_VERSION);
     }
