@@ -284,8 +284,12 @@ def save_precision(cfg, output, output_reference, passed, var_name):
 
         # fixing rtol，compute atol needed to pass test
         # diff <= atol + rtol * np.abs(output_reference)
-        max_atol = np.max(diff)
-        need_atol = np.max(diff - rtol * np.abs(output_reference))
+        if nan_mask.sum() == 0:
+            max_atol = 'none'
+            need_atol = 'none'
+        else:
+            max_atol = np.max(diff)
+            need_atol = np.max(diff - rtol * np.abs(output_reference))
 
     global sigle_func_record
     sigle_func_record += [var_name, str(output.dtype), str(output.shape),

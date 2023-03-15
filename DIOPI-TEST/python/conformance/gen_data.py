@@ -378,7 +378,7 @@ class CustomizedTest(object):
                 new_args.append(ele)
         return torch.Tensor.__getitem__(input, new_args)
 
-    def sgd(param, param_grad, buf, lr, momentum=0, dampening=0, weight_decay=0, nesterov=False):
+    def sgd(param, param_grad, lr, buf=None, momentum=0, dampening=0, weight_decay=0, nesterov=False):
         param.requires_grad = True
         param.grad = param_grad
         optimizer = torch.optim.SGD([param, ], lr, momentum, dampening, weight_decay, nesterov)

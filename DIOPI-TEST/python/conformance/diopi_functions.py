@@ -1241,16 +1241,13 @@ def clip_grad_norm_(tensors, max_norm, norm_type=2.0, error_if_nonfinite=False):
     return out.value
 
 
-def batch_norm(input, running_mean, running_var, weight=None, bias=None,
+def batch_norm(input, running_mean, running_var, weight, bias,
                training=False, momentum=0.1, eps=1e-05, backward=False) -> Tensor:
     dim = len(list(input.size()))
     dim = [0] + [i for i in range(2, dim)]
     dtype = Dtype.float32 if input.get_dtype() == Dtype.float16 else None
     _, save_mean = reduce_op_process(input, dim, dtype=dtype)
     save_invstd = raw_like(save_mean)
-
-    weight = c_void_p() if weight is None else weight.tensor_handle
-    bias = c_void_p() if bias is None else bias.tensor_handle
 
     if not training:
         assert (running_mean is not None and running_var is not None),\
@@ -1261,7 +1258,7 @@ def batch_norm(input, running_mean, running_var, weight=None, bias=None,
     out = raw_like(input)
     func = check_function("diopiBatchNorm")
     ret = func(input.context_handle, out.tensor_handle, save_mean.tensor_handle, save_invstd.tensor_handle,
-               input.tensor_handle, weight, bias, running_mean, running_var, c_bool(training),
+               input.tensor_handle, weight.tensor_handle, bias.tensor_handle, running_mean, running_var, c_bool(training),
                c_double(momentum), c_double(eps))
     check_returncode(ret)
     if backward:
@@ -1577,10 +1574,12 @@ def index(input, **kwargs) -> Tensor:
     return out
 
 
-def sgd(param, param_grad, buf, lr, momentum=0, dampening=0, weight_decay=0, nesterov=False):
+def sgd(param, param_grad, lr, buf=None, momentum=0, dampening=0, weight_decay=0, nesterov=False):
     # note: buf, param_grad are mutable
     func = check_function("diopiSgd")
-    ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle, buf.tensor_handle,
+
+    arg_buf = c_void_p() if buf is None else buf.tensor_handle
+    ret = func(param.context_handle, param.tensor_handle, param_grad.tensor_handle, arg_buf,
                c_double(lr), c_double(momentum), c_double(dampening), c_double(weight_decay), c_bool(nesterov))
     check_returncode(ret)
     return param, buf
@@ -2013,17 +2012,14 @@ def max_pool2d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
     return {"input": grad_input}
 
 
-def batch_norm_backward(input, grad_outputs, running_mean, running_var, weight=None, training=False,
-                        bias=None, eps=1e-05, **kwargs) -> Tensor:
+def batch_norm_backward(input, grad_outputs, running_mean, running_var, weight, bias,
+                        training=False, eps=1e-05, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     save_mean, save_invstd = batch_norm(input, running_mean, running_var, weight, bias, training, 0.1, eps, backward=True)
 
     grad_input = raw_like(input)
     grad_weight = raw_like(weight)
     grad_bias = raw_like(bias)
-
-    weight = c_void_p() if weight is None else weight.tensor_handle
-    bias = c_void_p() if bias is None else bias.tensor_handle
 
     if not training:
         assert (running_mean is not None and running_var is not None),\
@@ -2033,7 +2029,7 @@ def batch_norm_backward(input, grad_outputs, running_mean, running_var, weight=N
     out = {"input": grad_input, "weight": grad_weight, "bias": grad_bias}
     func = check_function("diopiBatchNormBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_weight.tensor_handle, grad_bias.tensor_handle,
-               grad_outputs[0].tensor_handle, input.tensor_handle, weight, running_mean, running_var, save_mean.tensor_handle,
+               grad_outputs[0].tensor_handle, input.tensor_handle, weight.tensor_handle, running_mean, running_var, save_mean.tensor_handle,
                save_invstd.tensor_handle, c_bool(training), c_double(eps))
     check_returncode(ret)
     return out
