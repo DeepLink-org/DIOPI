@@ -32,7 +32,7 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
         val = value->fval;
     }
     DIOPI_CALLCNNL(cnnlSetTensorDescriptorEx(desc, layout, dtype, shape.size(), shape.data(), strides.data()));
-    DIOPI_CALLCNNL(cnnlFill(handle, val, desc, trInput.data()));
+    DIOPI_CALLCNNL(cnnlFill_v3(handle, CNNL_POINTER_MODE_HOST, &val, desc, trInput.data()));
     return diopiSuccess;
 }
 
