@@ -36,6 +36,10 @@ case $1 in
     (rm -rf build && mkdir build && cd build \
         && cmake .. -DIMPL_OPT=CAMB && make -j4) \
     || exit -1;;
+  camb_no_runtime)
+    (rm -rf build && mkdir build && cd build \
+        && cmake .. -DIMPL_OPT=CAMB -DRUNTIME=OFF && make -j4) \
+    || exit -1;;
   hip_pytorch)
     (rm -rf build && mkdir build && cd build \
         &&cmake .. -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DIMPL_OPT=TORCH -DHIP=ON && make -j4) \
