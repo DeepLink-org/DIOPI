@@ -24,9 +24,15 @@ else()
 endif()
 
 file(GLOB_RECURSE IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions/*.cpp common/*.cpp)
-list(APPEND IMPL_SRC cnnl_helper.cpp conform_test.cpp)
+list(APPEND IMPL_SRC cnnl_helper.cpp)
+
+if (RUNTIME)
+    list(APPEND IMPL_SRC conform_test.cpp)
+endif()
 
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
-target_link_libraries(${DEVICEIMPL} ${DIOPIRT})
+if (RUNTIME)
+    target_link_libraries(${DEVICEIMPL} ${DIOPIRT})
+endif()
 target_link_libraries(${DEVICEIMPL} cndev cnrt cnnl cnmlrt)
