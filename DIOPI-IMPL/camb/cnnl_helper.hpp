@@ -78,9 +78,21 @@ public:
 
     template <typename T>
     diopiError_t set(T& t, cnnlTensorLayout_t layout) {
+        DIOPI_CALLCNNL(cnnlCreateTensorDescriptor(&desc));
+
         const std::vector<int64_t>& dimSize = t.shape();
         size_t dim = dimSize.size();
         std::vector<int32_t> shape(dim);
+
+        cnnlDataType_t dtype;
+        DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, t.dtype()));
+
+        if (!dim) {
+            std::vector<int> dim_array(1, 1);
+            DIOPI_CALLCNNL(cnnlSetTensorDescriptorEx(
+                desc, CNNL_LAYOUT_ARRAY, dtype, 1, dim_array.data(), dim_array.data()));
+            return diopiSuccess;
+        }
 
         if (layout == CNNL_LAYOUT_NHWC || layout == CNNL_LAYOUT_NDHWC || layout == CNNL_LAYOUT_NLC) {
             shape[0] = dimSize[0];
@@ -99,9 +111,6 @@ public:
                 shape[i] = dimSize[i];
             }
         }
-        cnnlDataType_t dtype;
-        DIOPI_CALLCNNL(cnnlCreateTensorDescriptor(&desc));
-        DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, t.dtype()));
         DIOPI_CALLCNNL(cnnlSetTensorDescriptor(desc, layout, dtype, shape.size(), shape.data()));
         return diopiSuccess;
     }
