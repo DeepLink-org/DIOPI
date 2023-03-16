@@ -257,6 +257,38 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx,
     return diopiSuccess;
 }
 
+diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx,
+                                   diopiTensorHandle_t out,
+                                   diopiConstTensorHandle_t input,
+                                   diopiConstTensorHandle_t target,
+                                   diopiConstTensorHandle_t weight,
+                                   diopiReduction_t reduction,
+                                   int64_t ignore_index,
+                                   double label_smoothing) {
+    // TODO(ywt): fix value error
+    DIOPI_CHECK(label_smoothing != 0.0, "param label_smoothing is not supported")
+    auto input_tr = makeTensor(input);
+    diopiLogSoftmax(ctx, out, input, 1, input_tr.dtype());
+    diopiNLLLoss(ctx, out, input, target, weight, reduction, ignore_index);
+    return diopiSuccess;
+}
+diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx,
+                                           diopiTensorHandle_t grad_input,
+                                           diopiConstTensorHandle_t grad_output,
+                                           diopiConstTensorHandle_t input,
+                                           diopiConstTensorHandle_t target,
+                                           diopiConstTensorHandle_t weight,
+                                           diopiReduction_t reduction,
+                                           int64_t ignore_index,
+                                           double label_smoothing) {
+    // TODO(ywt): fix value error
+    DIOPI_CHECK(label_smoothing != 0.0, "param label_smoothing is not supported")
+    auto input_tr = makeTensor(input);
+    diopiNLLLossBackward(ctx, grad_input, grad_output, input, target, weight, reduction, ignore_index);
+    diopiLogSoftmaxBackward(ctx, grad_input, grad_output, input, 1, input_tr.dtype());
+    return diopiSuccess;
+}
+
 }  // extern "C"
 
 }  // namespace camb
