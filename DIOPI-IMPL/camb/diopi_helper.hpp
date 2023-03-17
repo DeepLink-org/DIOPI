@@ -210,7 +210,7 @@ inline diopiTensorHandle_t ones(diopiContextHandle_t ctx, std::vector<int64_t>& 
     diopiSize_t size_(size.data(), size.size());
     diopiRequireTensor(ctx, &tensor, &size_, nullptr, dtype, diopi_device);
     diopiScalar_t scalar = {dtype, 1.0};
-    if (DiopiDataType().isInteger(dtype)) scalar = {dtype, {.ival = 1}};
+    if (DiopiDataType().isInteger(dtype)) scalar = {dtype, 1};
     diopiFill(ctx, tensor, &scalar);
     return tensor;
 }
