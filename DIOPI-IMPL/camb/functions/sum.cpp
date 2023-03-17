@@ -14,8 +14,8 @@ diopiError_t diopiSum(diopiContextHandle_t ctx,
                       diopiDtype_t dtype) {
     /* Get handle and generate tensors */
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto input_tr = impl::camb::makeTensor(input);
-    auto output_tr = impl::camb::makeTensor(out);
+    auto input_tr = impl::camb::DiopiTensor(input);
+    auto output_tr = impl::camb::DiopiTensor(out);
 
     /* Some basic check */
     DIOPI_CHECK(input_tr.dtype() != diopi_dtype_int16 && input_tr.dtype() != diopi_dtype_int64 &&

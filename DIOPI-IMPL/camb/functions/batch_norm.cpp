@@ -11,14 +11,14 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
                                       diopiConstTensorHandle_t bias, diopiTensorHandle_t running_mean,
                                       diopiTensorHandle_t running_var, bool training, double momentum, double eps) {
     /* Generate Tensors */
-    auto save_mean_tr = makeTensor(save_mean);
-    auto save_invstd_tr = makeTensor(save_invstd);
-    auto input_tr = makeTensor(input);
-    auto weight_tr = makeTensor(weight);
-    auto bias_tr = makeTensor(bias);
-    auto running_mean_tr = makeTensor(running_mean);
-    auto running_var_tr = makeTensor(running_var);
-    auto output_tr = makeTensor(out);
+    auto save_mean_tr = DiopiTensor(save_mean);
+    auto save_invstd_tr = DiopiTensor(save_invstd);
+    auto input_tr = DiopiTensor(input);
+    auto weight_tr = DiopiTensor(weight);
+    auto bias_tr = DiopiTensor(bias);
+    auto running_mean_tr = DiopiTensor(running_mean);
+    auto running_var_tr = DiopiTensor(running_var);
+    auto output_tr = DiopiTensor(out);
 
     /* Some basic check */
     if (running_mean_tr.defined() && running_var_tr.defined()) {
@@ -117,17 +117,17 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx,
                                     diopiConstTensorHandle_t save_invstd,
                                     bool training, double eps) {
     /* Generate diopi Tensors and Handle*/
-    auto grad_input_tr = makeTensor(grad_input);
-    auto grad_weight_tr = makeTensor(grad_weight);
-    auto grad_bias_tr = makeTensor(grad_bias);
-    auto input_tr = makeTensor(input);
-    auto weight_tr = makeTensor(weight);
-    auto running_mean_tr = makeTensor(running_mean);
-    auto running_var_tr = makeTensor(running_var);
-    auto save_mean_tr = makeTensor(save_mean);
-    auto save_invstd_tr = makeTensor(save_invstd);
+    auto grad_input_tr = DiopiTensor(grad_input);
+    auto grad_weight_tr = DiopiTensor(grad_weight);
+    auto grad_bias_tr = DiopiTensor(grad_bias);
+    auto input_tr = DiopiTensor(input);
+    auto weight_tr = DiopiTensor(weight);
+    auto running_mean_tr = DiopiTensor(running_mean);
+    auto running_var_tr = DiopiTensor(running_var);
+    auto save_mean_tr = DiopiTensor(save_mean);
+    auto save_invstd_tr = DiopiTensor(save_invstd);
 
-    auto grad_output_tr = makeTensor(grad_output);
+    auto grad_output_tr = DiopiTensor(grad_output);
 
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 

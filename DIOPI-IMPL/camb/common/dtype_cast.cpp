@@ -6,23 +6,23 @@ namespace impl {
 namespace camb {
 
 
-DiopiTensorT dataTypeCast(diopiContextHandle_t& ctx, const DiopiTensorT& src, diopiDtype_t destDtype) {
+DiopiTensor dataTypeCast(diopiContextHandle_t& ctx, const DiopiTensor& src, diopiDtype_t destDtype) {
     if (src.dtype() == destDtype) {
         return src;
     }
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     diopiSize_t srcSize = vec2diopiSize_t(src.shape());
-    DiopiTensorT dest = requiresTensor(ctx, srcSize, destDtype);
+    DiopiTensor dest = requiresTensor(ctx, srcSize, destDtype);
     diopiDtype_t srcDtype = src.dtype();
     cnnlCastDataType_t cnnlCastDtype = gCnnlCastDataTypeMapping[{srcDtype, destDtype}];
     DIOPI_CHECK_ABORT(cnnlCastDtype != 0, "data type cast from %d to %d in cnnl is not allown", srcDtype, destDtype);
     CnnlTensorDesc descSrc(src, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc descDest(dest, CNNL_LAYOUT_ARRAY);
-    DIOPI_CHECKCNNL(cnnlCastDataType(handle, descSrc.get(), const_cast<DiopiTensorT&>(src).data(), cnnlCastDtype, descDest.get(), dest.data()));
+    DIOPI_CHECKCNNL(cnnlCastDataType(handle, descSrc.get(), const_cast<DiopiTensor&>(src).data(), cnnlCastDtype, descDest.get(), dest.data()));
     return dest;
 }
 
-void dataTypeCast(diopiContextHandle_t ctx, DiopiTensorT& dest, const DiopiTensorT& src) {
+void dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const DiopiTensor& src) {
     if (dest.dtype() == src.dtype()) {
         return;
     }
@@ -34,7 +34,7 @@ void dataTypeCast(diopiContextHandle_t ctx, DiopiTensorT& dest, const DiopiTenso
     CnnlTensorDesc descSrc(src, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc descDest(dest, CNNL_LAYOUT_ARRAY);
     cnnlCastDataType_t cnnlCastDtype = gCnnlCastDataTypeMapping[{srcDtype, destDtype}];
-    DIOPI_CHECKCNNL(cnnlCastDataType(handle, descSrc.get(), const_cast<DiopiTensorT&>(src).data(), cnnlCastDtype, descDest.get(), dest.data()));
+    DIOPI_CHECKCNNL(cnnlCastDataType(handle, descSrc.get(), const_cast<DiopiTensor&>(src).data(), cnnlCastDtype, descDest.get(), dest.data()));
     return;
 }
 
@@ -61,8 +61,8 @@ diopiDtype_t choiceDtype(const std::set<diopiDtype_t>& opSupportedDtypes) {
     return diopi_dtype_int64;  // just for return a value
 }
 
-void autoCastTensorType(diopiContextHandle_t ctx, std::vector<DiopiTensorT*>& pTensors, const std::set<diopiDtype_t>& opSupportedDtype) {
-    // std::multimap<diopiDtype_t, DiopiTensorT*> dtypeAndTensorPtrs;
+void autoCastTensorType(diopiContextHandle_t ctx, std::vector<DiopiTensor*>& pTensors, const std::set<diopiDtype_t>& opSupportedDtype) {
+    // std::multimap<diopiDtype_t, DiopiTensor*> dtypeAndTensorPtrs;
     std::set<diopiDtype_t> dtypeAndTensorPtrs;
     diopiDtype_t targetType = diopi_dtype_float32;
     for (const auto& pTensor : pTensors) {

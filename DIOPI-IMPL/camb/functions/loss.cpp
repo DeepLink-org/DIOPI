@@ -19,10 +19,10 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx,
     // TODO(after yb的cast支持模板后): remove target_
     diopiTensorHandle_t target_ = diopiTensorHandle_t(target);
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto input_tr = makeTensor(input);
-    auto output_tr = makeTensor(out);
-    auto target_tr = makeTensor(target_);
-    auto weight_tr = makeTensor(weight);
+    auto input_tr = DiopiTensor(input);
+    auto output_tr = DiopiTensor(out);
+    auto target_tr = DiopiTensor(target_);
+    auto weight_tr = DiopiTensor(weight);
 
     DIOPI_CHECK(input_tr.dtype() != diopi_dtype_float16, "Half is not supported currently")
     DIOPI_CHECK(input_tr.numel() != 0, "input tensor is empty")
@@ -33,7 +33,7 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx,
     if (!weight_tr.defined()) {
         std::vector<int64_t> weight_size({input_tr.shape().data()[1]});
         diopiConstTensorHandle_t weight_ = ones(ctx, weight_size, input_tr.dtype());
-        weight_tr = makeTensor(weight_);
+        weight_tr = DiopiTensor(weight_);
     }
     DIOPI_CHECK(input_tr.is_contiguous(), "input tensor should be contiguous");
     DIOPI_CHECK(weight_tr.is_contiguous(), "weight tensor should be contiguous");
@@ -144,11 +144,11 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx,
     // TODO(after yb的cast支持模板后): remove target_
     diopiTensorHandle_t target_ = diopiTensorHandle_t(target);
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto input_tr = makeTensor(input);
-    auto grad_input_tr = makeTensor(grad_input);
-    auto grad_output_tr = makeTensor(grad_output);
-    auto target_tr = makeTensor(target_);
-    auto weight_tr = makeTensor(weight);
+    auto input_tr = DiopiTensor(input);
+    auto grad_input_tr = DiopiTensor(grad_input);
+    auto grad_output_tr = DiopiTensor(grad_output);
+    auto target_tr = DiopiTensor(target_);
+    auto weight_tr = DiopiTensor(weight);
 
     DIOPI_CHECK(input_tr.dtype() != diopi_dtype_float16, "Half is not supported currently")
     DIOPI_CHECK(input_tr.numel() != 0, "input tensor is empty")
@@ -159,7 +159,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx,
     if (!weight_tr.defined()) {
         std::vector<int64_t> weight_size({input_tr.shape().data()[1]});
         diopiConstTensorHandle_t weight_ = ones(ctx, weight_size, input_tr.dtype());
-        weight_tr = makeTensor(weight_);
+        weight_tr = DiopiTensor(weight_);
     }
     DIOPI_CHECK(input_tr.is_contiguous(), "input tensor should be contiguous");
     DIOPI_CHECK(weight_tr.is_contiguous(), "weight tensor should be contiguous");
@@ -219,7 +219,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx,
     diopiSize_t output_size_diopi(output_size.data(), output_size.size());
     diopiTensorHandle_t grad_input_real;
     diopiRequireTensor(ctx, &grad_input_real, &output_size_diopi, nullptr, input_contiguous.dtype(), input_contiguous.device());
-    auto grad_input_real_tr = makeTensor(grad_input_real);
+    auto grad_input_real_tr = DiopiTensor(grad_input_real);
 
     std::vector<int64_t> total_weight_size = {1};
     auto total_weight_tr = requiresTensor(ctx, total_weight_size, weight_tr.dtype());
@@ -267,7 +267,7 @@ diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx,
                                    double label_smoothing) {
     // TODO(ywt): fix value error
     DIOPI_CHECK(label_smoothing != 0.0, "param label_smoothing is not supported")
-    auto input_tr = makeTensor(input);
+    auto input_tr = DiopiTensor(input);
     diopiLogSoftmax(ctx, out, input, 1, input_tr.dtype());
     diopiNLLLoss(ctx, out, input, target, weight, reduction, ignore_index);
     return diopiSuccess;
@@ -283,7 +283,7 @@ diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx,
                                            double label_smoothing) {
     // TODO(ywt): fix value error
     DIOPI_CHECK(label_smoothing != 0.0, "param label_smoothing is not supported")
-    auto input_tr = makeTensor(input);
+    auto input_tr = DiopiTensor(input);
     diopiNLLLossBackward(ctx, grad_input, grad_output, input, target, weight, reduction, ignore_index);
     diopiLogSoftmaxBackward(ctx, grad_input, grad_output, input, 1, input_tr.dtype());
     return diopiSuccess;
