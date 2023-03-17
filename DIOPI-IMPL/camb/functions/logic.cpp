@@ -1,6 +1,8 @@
 #include <diopi/functions.h>
 #include <string.h>
+
 #include <numeric>
+
 #include "../cnnl_helper.hpp"
 
 namespace impl {
@@ -235,6 +237,31 @@ DIOPI_API diopiError_t diopiEq(diopiContextHandle_t ctx, diopiTensorHandle_t out
 DIOPI_API diopiError_t diopiEqInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
     DIOPI_CALL(LogicInp(ctx, input, other, CNNL_LOGIC_OP_EQ));
 }
+
+//  logical_and
+DIOPI_API diopiError_t diopiLogicalAnd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
+    DIOPI_CALL(Logic(ctx, out, input, other, CNNL_LOGIC_OP_AND));
+}
+
+DIOPI_API diopiError_t diopiLogicalAndInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
+    DIOPI_CALL(LogicInp(ctx, input, other, CNNL_LOGIC_OP_AND));
+}
+
+// logical_or
+DIOPI_API diopiError_t diopiLogicalOr(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
+    DIOPI_CALL(Logic(ctx, out, input, other, CNNL_LOGIC_OP_OR));
+}
+
+DIOPI_API diopiError_t diopiLogicalOrInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
+    DIOPI_CALL(LogicInp(ctx, input, other, CNNL_LOGIC_OP_OR));
+}
+
+// logical_not
+DIOPI_API diopiError_t diopiLogicalNot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    DIOPI_CALL(Logic(ctx, out, input, input, CNNL_LOGIC_OP_NOT));
+}
+
+DIOPI_API diopiError_t diopiLogicalNotInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { DIOPI_CALL(LogicInp(ctx, input, input, CNNL_LOGIC_OP_NOT)); }
 
 }  // extern "C"
 
