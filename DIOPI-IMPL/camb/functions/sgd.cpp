@@ -24,9 +24,9 @@ extern "C" DIOPI_API diopiError_t diopiSgd(diopiContextHandle_t ctx,
                                            bool nesterov) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto w_tensor = makeTensor(w);
-    auto dw_tensor = makeTensor(dw);
-    auto buf_tensor = makeTensor(buf);
+    auto w_tensor = DiopiTensor(w);
+    auto dw_tensor = DiopiTensor(dw);
+    auto buf_tensor = DiopiTensor(buf);
 
     CnnlTensorDesc w_desc(w_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc dw_desc(dw_tensor, CNNL_LAYOUT_ARRAY);
@@ -60,7 +60,7 @@ extern "C" DIOPI_API diopiError_t diopiSgd(diopiContextHandle_t ctx,
                 DIOPI_CALL(add_mul_func(dw_tensor, 1.0, dw_tensor, momentum));
             }
         } else {
-            auto buf_tensor = makeTensor(buf);
+            auto buf_tensor = DiopiTensor(buf);
             CnnlTensorDesc buf_desc(buf_tensor, CNNL_LAYOUT_ARRAY);
             DIOPI_CALL(add_mul_func(buf_tensor, momentum, dw_tensor, (1.0 - dampening)));
             if (nesterov) {

@@ -17,8 +17,8 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     // TODO(waiting for dispatch): support broadcast, dealing with uncontiguous
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto input_tr = impl::camb::makeTensor(input);
-    auto src_tr = impl::camb::makeTensor(src);
+    auto input_tr = impl::camb::DiopiTensor(input);
+    auto src_tr = impl::camb::DiopiTensor(src);
 
     CnnlTensorDesc input_desc(input_tr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc src_desc(src_tr, CNNL_LAYOUT_ARRAY);

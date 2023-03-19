@@ -560,7 +560,12 @@ diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTens
         d_p = d_p.add(p.data(), weightDecay);
     }
     if (momentum != 0) {
-        atBuf.mul_(momentum).add_(d_p, 1 - dampening);
+        if (buf != nullptr) {
+            atBuf.mul_(momentum).add_(d_p, 1 - dampening);
+            impl::aten::updateATen2Tensor(ctx, atBuf, buf);
+        } else {
+            atBuf = d_p;
+        }
         if (nesterov) {
           d_p = d_p.add(atBuf, momentum);
         } else {
@@ -571,7 +576,6 @@ diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTens
 
     impl::aten::updateATen2Tensor(ctx, atW, w);
     impl::aten::updateATen2Tensor(ctx, atDw, dw);
-    impl::aten::updateATen2Tensor(ctx, atBuf, buf);
 
     impl::aten::unsetCurCtx();
     return diopiSuccess;
@@ -2476,7 +2480,7 @@ diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
     return diopiSuccess;
 }
 
-diopiError_t diopiMaskedFillInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask,
+diopiError_t diopiMaskedFillInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t mask,
                                 diopiConstTensorHandle_t value) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
@@ -2499,7 +2503,7 @@ diopiError_t diopiMaskedFillScalar(diopiContextHandle_t ctx, diopiTensorHandle_t
     return diopiSuccess;
 }
 
-diopiError_t diopiMaskedFillInpScalar(diopiContextHandle_t ctx, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask,
+diopiError_t diopiMaskedFillInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t mask,
                                       const diopiScalar_t* value) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
@@ -2706,7 +2710,7 @@ diopiError_t diopiReciprocal(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
     return diopiSuccess;
 }
 
-diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t input) {
+diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     at::reciprocal_(atInput);

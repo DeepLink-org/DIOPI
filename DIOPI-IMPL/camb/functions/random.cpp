@@ -17,7 +17,7 @@ namespace camb {
 extern "C" DIOPI_API diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t from, const int64_t* to, int64_t idx) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto tensor = makeTensor(inout);
+    auto tensor = DiopiTensor(inout);
     cnnlDataType_t dtype;
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, tensor.dtype()));
     cnnlRandGenerator_t generator;

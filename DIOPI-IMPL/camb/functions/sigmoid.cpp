@@ -16,8 +16,8 @@ namespace camb {
 extern "C" diopiError_t diopiSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto input_tensor = makeTensor(input);
-    auto output_tensor = makeTensor(out);
+    auto input_tensor = DiopiTensor(input);
+    auto output_tensor = DiopiTensor(out);
     if (input_tensor.dtype() == diopi_dtype_float64) {
         set_last_error_string("%s", "Unsupport datatype float64");
         return diopiDtypeNotSupported;
@@ -41,7 +41,7 @@ extern "C" diopiError_t diopiSigmoid(diopiContextHandle_t ctx, diopiTensorHandle
 extern "C" diopiError_t diopiSigmoidInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto input_tensor = makeTensor(input);
+    auto input_tensor = DiopiTensor(input);
     if (input_tensor.dtype() == diopi_dtype_float64) {
         return diopiDtypeNotSupported;
     }
@@ -62,9 +62,9 @@ extern "C" diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx,
                                              diopiConstTensorHandle_t output) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto input_grad = makeTensor(grad_input);
-    auto output_grad = makeTensor(grad_output);
-    auto output_tensor = makeTensor(output);
+    auto input_grad = DiopiTensor(grad_input);
+    auto output_grad = DiopiTensor(grad_output);
+    auto output_tensor = DiopiTensor(output);
 
     CnnlTensorDesc input_grad_desc(input_grad, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc output_grad_desc(output_grad, CNNL_LAYOUT_ARRAY);

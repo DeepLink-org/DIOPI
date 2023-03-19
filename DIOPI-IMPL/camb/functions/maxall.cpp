@@ -15,8 +15,8 @@ extern "C" {
 
 diopiError_t diopiMaxAll(diopiContextHandle_t ctx, diopiTensorHandle_t max, diopiConstTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto input_tensor = makeTensor(input);
-    auto output_tensor = makeTensor(max);
+    auto input_tensor = DiopiTensor(input);
+    auto output_tensor = DiopiTensor(max);
     CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc output_desc(output_tensor, CNNL_LAYOUT_ARRAY);
 

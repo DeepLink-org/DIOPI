@@ -15,17 +15,16 @@
 namespace impl {
 namespace camb {
 
-using DiopiTensorT = DiopiTensor<diopiTensorHandle_t>;
 
-DiopiTensorT dataTypeCast(diopiContextHandle_t& ctx, const DiopiTensorT& src, diopiDtype_t destDtype);
+DiopiTensor dataTypeCast(diopiContextHandle_t& ctx, const DiopiTensor& src, diopiDtype_t destDtype);
 
-DiopiTensorT makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar);
+DiopiTensor makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar);
 
-void dataTypeCast(diopiContextHandle_t ctx, DiopiTensorT& dest, const DiopiTensorT& src);
+void dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const DiopiTensor& src);
 
 diopiDtype_t choiceDtype(const std::set<diopiDtype_t>& opSupportedDtypes);
 
-void autoCastTensorType(diopiContextHandle_t ctx, std::vector<DiopiTensorT*>& pTensors, const std::set<diopiDtype_t>& opSupportedDtype);
+void autoCastTensorType(diopiContextHandle_t ctx, std::vector<DiopiTensor*>& pTensors, const std::set<diopiDtype_t>& opSupportedDtype);
 
 }  // namespace camb
 }  // namespace impl

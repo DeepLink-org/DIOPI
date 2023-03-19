@@ -15,7 +15,7 @@ namespace impl {
 namespace camb {
 
 extern "C" DIOPI_API diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, int64_t n, int64_t idx) {
-    auto out_tensor = makeTensor(out);
+    auto out_tensor = DiopiTensor(out);
     long int arr[n];
     std::iota(arr, arr + n, 0);
     std::random_shuffle(arr, arr + n);

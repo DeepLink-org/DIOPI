@@ -21,12 +21,10 @@ namespace camb {
 
 extern "C" DIOPI_API diopiError_t
 diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha) {
-    diopiTensorHandle_t input_ = diopiTensorHandle_t(input);
-    diopiTensorHandle_t other_ = diopiTensorHandle_t(other);
-    auto trInput = makeTensor(input_);
-    auto trOther = makeTensor(other_);
-    auto trOut = makeTensor(out);
-    std::vector<DiopiTensorT*> pTensors{&trInput, &trOther};
+    auto trInput = DiopiTensor(input);
+    auto trOther = DiopiTensor(other);
+    auto trOut = DiopiTensor(out);
+    std::vector<DiopiTensor*> pTensors{&trInput, &trOther};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_int32};
 
     autoCastTensorType(ctx, pTensors, supportedDtypes);
@@ -39,7 +37,7 @@ diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHand
     CnnlTensorDesc descInput(trInput, layout);
     CnnlTensorDesc descOther(trOther, layout);
     CnnlTensorDesc descOut(trOut, layout);
-    DiopiTensorT trOutTmp;
+    DiopiTensor trOutTmp;
     CnnlTensorDesc descOutTmp;
     if (trInput.dtype() == trOut.dtype()) {
         trOutTmp = trOut;
@@ -90,8 +88,8 @@ extern "C" DIOPI_API diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTen
 
 extern "C" DIOPI_API diopiError_t
 diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
-    DiopiTensorT trOther = makeTensorFromScalar(ctx, other);
-    DIOPI_CALL(diopiAdd(ctx, out, input, trOther, alpha));
+    DiopiTensor trOther = makeTensorFromScalar(ctx, other);
+    DIOPI_CALL(diopiAdd(ctx, out, input, static_cast<diopiTensorHandle_t>(trOther), alpha));
     return diopiSuccess;
 }
 

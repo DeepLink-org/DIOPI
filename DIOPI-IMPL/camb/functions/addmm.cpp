@@ -34,18 +34,18 @@ DIOPI_API diopiError_t diopiAddmm(diopiContextHandle_t ctx,
     DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmul_desc, CNNL_MATMUL_DESC_TRANSB, &(is_transb), sizeof(int32_t)));
     DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmul_desc, CNNL_MATMUL_ALLOW_TF32, &(allow_tf32_i32), sizeof(int32_t)));
 
-    auto mat1_tensor = makeTensor(mat1);
-    auto mat2_tensor = makeTensor(mat2);
-    auto input_tensor = makeTensor(input);
-    auto out_tensor = makeTensor(out);
+    auto mat1_tensor = DiopiTensor(mat1);
+    auto mat2_tensor = DiopiTensor(mat2);
+    auto input_tensor = DiopiTensor(input);
+    auto out_tensor = DiopiTensor(out);
     diopiTensorHandle_t mm_result;
     diopiTensorHandle_t tmpc;
     diopiSize_t out_shape;
     diopiGetTensorShape(out, &out_shape);
     diopiRequireTensor(ctx, &mm_result, &out_shape, nullptr, out_tensor.dtype(), diopi_device);
-    auto mm_result_tensor = makeTensor(mm_result);
+    auto mm_result_tensor = DiopiTensor(mm_result);
     diopiRequireTensor(ctx, &tmpc, &out_shape, nullptr, out_tensor.dtype(), diopi_device);
-    auto tmpc_tensor = makeTensor(tmpc);
+    auto tmpc_tensor = DiopiTensor(tmpc);
 
     CnnlTensorDesc tmpc_desc(tmpc_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc mm_result_desc(mm_result_tensor, CNNL_LAYOUT_ARRAY);

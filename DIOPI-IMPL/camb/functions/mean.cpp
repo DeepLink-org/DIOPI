@@ -26,8 +26,8 @@ extern "C" {
 DIOPI_API diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, diopiDtype_t dtype) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto input_tensor = makeTensor(input);
-    auto out_tensor = makeTensor(out);
+    auto input_tensor = DiopiTensor(input);
+    auto out_tensor = DiopiTensor(out);
 
     CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc out_desc;
