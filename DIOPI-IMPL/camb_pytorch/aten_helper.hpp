@@ -1,7 +1,8 @@
-/**************************************************************************************************
-* @Copyright (c) 2023, SenseTime Inc.
-*
-*************************************************************************************************/
+/**
+ * @file
+ * @author pjlab
+ * @copyright  (c) 2023, SenseTime Inc.
+ */
 
 #ifndef IMPL_CAMB_PYTORCH_ATEN_HELPER_HPP_
 #define IMPL_CAMB_PYTORCH_ATEN_HELPER_HPP_

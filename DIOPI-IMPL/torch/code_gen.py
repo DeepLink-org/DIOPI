@@ -14,10 +14,11 @@ import os
 # }
 
 new_content = []
-new_content.append('/**************************************************************************************************
-* @Copyright (c) 2023, SenseTime Inc.
-*
-*************************************************************************************************/
+new_content.append('/**
+ * @file
+ * @author pjlab
+ * @copyright  (c) 2023, SenseTime Inc.
+ */
 #include <diopi/functions.h>\n\
 #include <stdio.h>\n\
 #include <dlfcn.h>\n\
