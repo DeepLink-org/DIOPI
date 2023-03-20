@@ -1,7 +1,6 @@
 #ifndef IMPL_ASCEND_ERROR_HPP_
 #define IMPL_ASCEND_ERROR_HPP_
 
-
 #include <mutex>
 #include <utility>
 
