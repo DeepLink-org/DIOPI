@@ -1,6 +1,6 @@
 [submodule "diopirt"]
 	path = diopirt
-	url = git@github.com:OpenComputeLab/DIOPI.git
+	url = git@github.com:OpenComputeLab/DIOPI-PROTO.git
 [submodule "impl"]
 	path = impl
 	url = git@github.com:OpenComputeLab/DIOPI-IMPL.git
