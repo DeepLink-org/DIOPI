@@ -24,15 +24,15 @@ jobs:
     steps:
       - name: clone repo
         run: |
-          cd ${GITHUB_WORKSPACE} && rm -rf ConformanceTest-DIOPI && git clone git@github.com:OpenComputeLab/ConformanceTest-DIOPI.git && cd ConformanceTest-DIOPI
+          cd ${GITHUB_WORKSPACE} && rm -rf ConformanceTest-DIOPI DIOPI-TEST && git clone git@github.com:OpenComputeLab/DIOPI-TEST.git && cd DIOPI-TEST
           git submodule update --init && rm -rf impl && git clone git@github.com:OpenComputeLab/DIOPI-IMPL.git && mv DIOPI-IMPL impl
           cd impl && git checkout ${{ github.sha }}
       - name: Rsync to Server
         run: |
           ssh ${CLUSTER_1984} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
-          rsync -a --delete ${GITHUB_WORKSPACE}/ConformanceTest-DIOPI/* ${CLUSTER_1984}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
+          rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI-TEST/* ${CLUSTER_1984}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
           ssh ${CLUSTER_CAMB} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
-          rsync -a --delete ${GITHUB_WORKSPACE}/ConformanceTest-DIOPI/* ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
+          rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI-TEST/* ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
 
   lint-cpp:
     name: lint-cpp
