@@ -4,7 +4,7 @@ import copy
 import pickle
 import numpy as np
 
-from . import to_numpy_dtype
+from . import to_numpy_dtype, model_config
 from .utils import logger
 from .utils import need_process_func
 from .config import Genfunc, dict_elem_length, Config
@@ -15,8 +15,6 @@ import torchvision
 
 
 _cur_dir = os.path.dirname(os.path.abspath(__file__))
-inputs_dir_path = os.path.join(_cur_dir, "../data/inputs")
-outputs_dir_path = os.path.join(_cur_dir, "../data/outputs")
 cfg_file_name = "test_config.cfg"
 
 
@@ -212,9 +210,9 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
             cfg_dict['tag'].append("empty")
 
         if gen_fn == Genfunc.randn:
-            value = np.random.randn(*shape).astype(dtype)
+            value = np.array(np.random.randn(*shape)).astype(dtype)
         elif gen_fn == Genfunc.rand:
-            value = np.random.rand(*shape).astype(dtype)
+            value = np.array(np.random.rand(*shape)).astype(dtype)
         elif gen_fn == Genfunc.ones:
             value = np.ones(shape, dtype=dtype)
         elif gen_fn == Genfunc.zeros:
@@ -226,13 +224,13 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
         elif gen_fn == Genfunc.empty:
             value = np.empty(shape, dtype=dtype)
         elif gen_fn == Genfunc.positive:
-            value = np.abs(np.random.randn(*shape).astype(dtype))
+            value = np.abs(np.array(np.random.randn(*shape)).astype(dtype))
         elif gen_fn == Genfunc.sym_mat:
             axis = (0, 2, 1) if len(shape) == 3 else (0, 1)
             mat = np.random.randn(*shape).astype(dtype)
             value = mat @ mat.transpose(axis)
         else:
-            value = np.random.randn(*shape).astype(dtype)
+            value = np.array(np.random.randn(*shape)).astype(dtype)
 
         if "no_contiguous" in arg:
             value = value.transpose()
@@ -261,7 +259,13 @@ def gen_and_dump_data(dir_path: str, cfg_name: str, cfg_expand_list: list, cfg_s
         for arg in tensor_para_args_list:
             name = arg["ins"]
             # length of gen_num_range must be 2, otherwise ignore gen_num_range
-            if len(arg["gen_num_range"]) != 2:
+            if name == 'tensors':
+                for idx in range(len(arg['shape'])):
+                    new_arg = copy.deepcopy(arg)
+                    new_arg['shape'] = arg['shape'][idx]
+                    value = gen_tensor(new_arg, cfg_dict)
+                    tensor_list.append(value)
+            elif len(arg["gen_num_range"]) != 2:
                 value = gen_tensor(arg, cfg_dict)
                 function_paras["kwargs"][name] = value
                 if arg["requires_grad"] == [True] and arg["shape"] is not None:
@@ -293,14 +297,14 @@ def gen_and_dump_data(dir_path: str, cfg_name: str, cfg_expand_list: list, cfg_s
         function_paras["kwargs"].update(construct_paras)
         cfg_info = {"function_paras": function_paras, "cfg": cfg_dict}
         with open(os.path.join(dir_path, file_name), "wb") as f:
-            pickle.dump(cfg_info, f)
+            pickle.dump(cfg_info, f, protocol=4)
 
         tensor_list = []
         function_paras['kwargs'] = {}
         function_paras["requires_grad"] = {}
 
 
-def get_saved_pth_list() -> list:
+def get_saved_pth_list(inputs_dir_path) -> list:
     with open(os.path.join(inputs_dir_path, cfg_file_name), "rb") as f:
         cfg_dict = pickle.load(f)
 
@@ -330,10 +334,16 @@ class GenInputData(object):
 
     @staticmethod
     def run(func_name, model_name, filter_dtype_str_list):
+
+        if model_name != "":
+            diopi_config = "model_config." + model_name + "_config"
+            configs = Config.process_configs(eval(diopi_config))
+        else:
+            configs = Config.process_configs(diopi_configs)
+
+        inputs_dir_path = os.path.join(_cur_dir, "../data/" + model_name + "/inputs")
         if not os.path.exists(inputs_dir_path):
             os.makedirs(inputs_dir_path)
-
-        configs = Config.process_configs(diopi_configs)
 
         cfg_counter = 0
         cfg_save_dict = {}
@@ -551,6 +561,8 @@ class GenOutputData(object):
 
     @staticmethod
     def run(func_name, model_name, filter_dtype_str_list):
+        inputs_dir_path = os.path.join(_cur_dir, "../data/" + model_name + "/inputs")
+        outputs_dir_path = os.path.join(_cur_dir, "../data/" + model_name + "/outputs")
         if not os.path.exists(inputs_dir_path):
             logger.error("Input data is not generated!")
             sys.exit(0)
@@ -560,7 +572,7 @@ class GenOutputData(object):
 
         gen_counter = 0
         func_name_list = []  # make the info log once
-        saved_pth_list = get_saved_pth_list()
+        saved_pth_list = get_saved_pth_list(inputs_dir_path)
         for saved_pth in saved_pth_list:
             cfg_func_name = saved_pth.split("::")[1].rsplit("_", 1)[0]
             if not need_process_func(cfg_func_name, func_name, model_name):
@@ -580,6 +592,8 @@ class GenOutputData(object):
                 input = kwargs['input']
                 module = "input"
                 del kwargs['input']
+            if 'dtype' in kwargs.keys():
+                kwargs['dtype'] = eval(str(kwargs['dtype']).replace("Dtype.", "torch."))
             func_call = f"{module}.{cfg_func_name}(**kwargs)"
 
             try:

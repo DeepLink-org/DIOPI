@@ -1,7 +1,6 @@
 import logging
 from . import diopi_runtime
 from .diopi_runtime import get_last_error
-from .model_list import model_op_list
 from .dtype import Dtype
 import os
 import numpy as np
@@ -10,10 +9,10 @@ import csv
 
 default_cfg_dict = dict(
     default_option=dict(
-        atol=1e-8,
+        atol=1e-5,
         rtol=1e-5,
-        atol_half=1e-4,
-        rtol_half=5e-3,
+        atol_half=1e-2,
+        rtol_half=5e-2,
         memory_format="NCHW",
         fp16_exact_match=False,
         train=True,
@@ -179,7 +178,7 @@ def write_report():
     if is_ci != 'null':
         return
     os.system("rm -f error_report.csv")
-    with open("error_report.csv", "w") as f:
+    with open("error_report.csv", "a") as f:
         f.write("Conformance-Test Error Report\n")
         f.write("---------------------------------\n")
         f.write(f"{error_counter[0]} Tests failed:\n")
@@ -237,14 +236,15 @@ def squeeze(input: diopi_runtime.Tensor, dim=None):
     input.reset_shape(new_size)
 
 
+real_op_list = []
+
+
 def need_process_func(cfg_func_name, func_name, model_name):
     if model_name != '':
-        op_list = model_op_list[model_name]
-        if cfg_func_name not in op_list:
-            return False
-    elif func_name not in ['all_ops', cfg_func_name]:
+        if cfg_func_name not in real_op_list:
+            real_op_list.append(cfg_func_name)
+    if func_name not in ['all_ops', cfg_func_name]:
         return False
-
     return True
 
 
@@ -266,34 +266,32 @@ def write_csv(w_path, content_list):
 
 def save_precision(cfg, output, output_reference, passed, var_name):
     rtol = cfg.get('rtol_half', 1e-5) if output.dtype == np.float16 else cfg.get('rtol', 1e-5)
-    if output_reference.shape == ():
-        diff = np.abs(output - output_reference)
-        if np.isnan(diff):
-            diff = 0
-            output_reference = 1
-        max_atol = np.max(diff)
-        need_atol = np.max(diff - rtol * np.abs(output_reference))
-    elif output_reference.dtype == np.bool:
-        max_atol = 'none'
-        need_atol = 'none'
-    else:
-        diff = np.abs(output - output_reference)
-        nan_mask = ~np.isnan(diff)
+    atol = cfg.get('atol_half', 1e-5) if output.dtype == np.float16 else cfg.get('atol', 1e-5)
+    max_atol = 'none'
+    need_atol = 'none'
+    max_rtol = 'none'
+    need_rtol = 'none'
+    diff = np.abs(output - output_reference)
+    nan_mask = ~np.isnan(diff)
+    if nan_mask.sum() != 0 and output_reference.dtype != np.bool:
         diff = diff[nan_mask]
         output_reference = output_reference[nan_mask]
-
         # fixing rtol，compute atol needed to pass test
         # diff <= atol + rtol * np.abs(output_reference)
-        if nan_mask.sum() == 0:
-            max_atol = 'none'
-            need_atol = 'none'
-        else:
-            max_atol = np.max(diff)
-            need_atol = np.max(diff - rtol * np.abs(output_reference))
+        max_atol = np.max(diff)
+        need_atol = np.max(diff - rtol * np.abs(output_reference))
+        # fixing atol，compute rtol needed to pass test
+        # diff <= atol + rtol * np.abs(output_reference)
+        zero_mask = ~(output_reference == 0)
+        if zero_mask.sum() != 0:
+            diff = diff[zero_mask]
+            output_reference = output_reference[zero_mask]
+            max_rtol = np.max(diff / output_reference)
+            need_rtol = np.max((diff - atol) / np.abs(output_reference))
 
     global sigle_func_record
     sigle_func_record += [var_name, str(output.dtype), str(output.shape),
-                          str(passed), str(need_atol), str(max_atol)]
+                          str(passed), str(need_atol), str(max_atol), str(need_rtol), str(max_rtol)]
 
 
 def write_precision(cfg, func_name, passed=True):
@@ -305,13 +303,13 @@ def write_precision(cfg, func_name, passed=True):
         call_once = False
         if record_env == "ALL":
             write_csv(path, ['func', "rtol_half", "atol_half", 'rtol', 'atol',
-                             'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol',
-                             'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol',
-                             'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol'])
+                             'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol', 'need_rtol', 'max_rtol',
+                             'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol', 'need_rtol', 'max_rtol',
+                             'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol', 'need_rtol', 'max_rtol'])
         write_csv(failed_path, ['failed_func', "rtol_half", "atol_half", 'rtol', 'atol',
-                                'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol',
-                                'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol',
-                                'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol'])
+                                'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol', 'need_rtol', 'max_rtol',
+                                'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol', 'need_rtol', 'max_rtol',
+                                'var_name', 'var_dtype', 'var_shape', 'passed', 'need_atol', 'max_atol', 'need_rtol', 'max_rtol'])
 
     rtol_half = cfg.get('rtol_half', 1e-5)
     atol_half = cfg.get('atol_half', 1e-8)

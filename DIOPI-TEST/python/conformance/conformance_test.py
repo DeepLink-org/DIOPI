@@ -5,7 +5,6 @@ from . import diopi_functions as F
 from .utils import logger, FunctionNotImplementedError, DiopiException
 from .utils import need_process_func, glob_vars, nhwc_op, dtype_op
 from .diopi_runtime import Tensor, compute_nhwc_stride
-from .gen_data import inputs_dir_path, outputs_dir_path
 from .gen_data import get_saved_pth_list, get_data_from_file
 from .utils import save_precision, record, write_precision
 
@@ -150,7 +149,7 @@ class ManualTest(object):
         assert np.allclose(out_numpy, out_ref, 1e-3),\
             "failed to execute randperm"
 
-    def test_uniform(input, start, end):
+    def test_uniform(input, start=0, end=1):
         out = F.uniform(input, start, end)
         out_numpy = out.numpy()
 
@@ -180,9 +179,9 @@ class ManualTest(object):
             assert (out_numpy <= end - 1).all(),\
                 "failed to execute random"
 
-    def test_normal(mean, std, shape=None):
+    def test_normal(mean, std, size=None):
         from scipy import stats
-        out = F.normal(mean, std, shape)
+        out = F.normal(mean, std, size)
         out_numpy = out.numpy()
         if isinstance(mean, Tensor):
             mean_numpy = mean.numpy()
@@ -199,6 +198,9 @@ class ManualTest(object):
         # pytorch use 0.0001, but stats.kstest use 0.05 as threshold
         assert p_value > 0.001, "failed to execute normal"
 
+    def test_normal_(mean, std, size):
+        ManualTest.test_normal(mean, std, size)
+
 
 class ConformanceTest(object):
     r'''
@@ -206,7 +208,12 @@ class ConformanceTest(object):
     '''
     @staticmethod
     def run(func_name, model_name, filter_dtype_str_list):
-        saved_pth_list = get_saved_pth_list()
+
+        _cur_dir = os.path.dirname(os.path.abspath(__file__))
+        inputs_dir_path = os.path.join(_cur_dir, "../data/" + model_name + "/inputs")
+        outputs_dir_path = os.path.join(_cur_dir, "../data/" + model_name + "/outputs")
+
+        saved_pth_list = get_saved_pth_list(inputs_dir_path)
         for saved_pth in saved_pth_list:
             cfg_func_name = saved_pth.split("::")[1].rsplit("_", 1)[0]
             if not need_process_func(cfg_func_name, func_name, model_name):
@@ -263,7 +270,7 @@ class ConformanceTest(object):
 
                 write_precision(data["cfg"], cfg_func_name, passed)
 
-                if function_paras["requires_grad"] and "inplace=True" not in func_call:
+                if function_paras["requires_grad"] and "inplace=True" not in func_call and not kwargs.get('inplace', False):
                     test_tag.append("backward")
                     saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
                     saved_backward_pth = os.path.join(outputs_dir_path, saved_backward_pth)
