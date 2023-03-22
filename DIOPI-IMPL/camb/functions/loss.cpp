@@ -289,6 +289,102 @@ diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx,
     return diopiSuccess;
 }
 
+DIOPI_API diopiError_t diopiMSELoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
+                                    diopiConstTensorHandle_t target, diopiReduction_t reduction) {
+    auto trInput = DiopiTensor(input);
+    auto trTarget = DiopiTensor(target);
+    auto trOut = DiopiTensor(out);
+    std::vector<DiopiTensor*> pTensors{&trInput, &trTarget};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
+    autoCastTensorType(ctx, pTensors, supportedDtypes);
+
+    cnnlMSELossReduction_t cnnl_reduction;
+    if (reduction == ReductionMean) {
+        cnnl_reduction = CNNL_MSE_LOSS_MEAN;
+        DIOPI_CHECK(trOut.dim() == 0, "Output dim must be 0.");
+    } else if (reduction == ReductionSum) {
+        cnnl_reduction = CNNL_MSE_LOSS_SUM;
+        DIOPI_CHECK(trOut.dim() == 0, "Output dim must be 0.");
+    } else {
+        cnnl_reduction = CNNL_MSE_LOSS_NONE;
+        DIOPI_CHECK(trOut.dim() == trInput.dim(), "Output dim must be the same as input.");
+    }
+
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    cnnlTensorLayout_t layout = CNNL_LAYOUT_ARRAY;
+    cnnlDataType_t dtype;
+    DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, trInput.dtype()));
+
+    CnnlTensorDesc descInput(trInput, layout);
+    CnnlTensorDesc descTarget(trTarget, layout);
+    CnnlTensorDesc descOut(trOut, layout);
+    DiopiTensor trOutTmp;
+    CnnlTensorDesc descOutTmp;
+    if (trInput.dtype() == trOut.dtype()) {
+        trOutTmp = trOut;
+        descOutTmp = descOut;
+    } else {
+        trOutTmp = requiresTensor(ctx, vec2diopiSize_t(trOut.shape()), trInput.dtype());
+        descOutTmp.set(trOutTmp, CNNL_LAYOUT_ARRAY);
+    }
+
+    DIOPI_CALLCNNL(cnnlMSELoss(handle, cnnl_reduction, descInput.get(), trInput.data(), descTarget.get(), trTarget.data(), descOutTmp.get(), trOutTmp.data()));
+    if (trOutTmp.dtype() != trOut.dtype()) {
+        dataTypeCast(ctx, trOut, trOutTmp);
+    }
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiMSELossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiReduction_t reduction) {
+    auto trInput = DiopiTensor(input);
+    auto trGradOutput = DiopiTensor(grad_output);
+    auto trTarget = DiopiTensor(target);
+    auto trGradInput = DiopiTensor(grad_input);
+
+    std::vector<DiopiTensor*> pTensors{&trInput, &trGradOutput, &trTarget};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
+    autoCastTensorType(ctx, pTensors, supportedDtypes);
+
+    cnnlMSELossReduction_t cnnl_reduction;
+    if (reduction == ReductionMean) {
+        cnnl_reduction = CNNL_MSE_LOSS_MEAN;
+        DIOPI_CHECK(trGradOutput.dim() == 0, "Grad output dim must be 0.");
+    } else if (reduction == ReductionSum) {
+        cnnl_reduction = CNNL_MSE_LOSS_SUM;
+        DIOPI_CHECK(trGradOutput.dim() == 0, "Grad output dim must be 0.");
+    } else {
+        cnnl_reduction = CNNL_MSE_LOSS_NONE;
+        DIOPI_CHECK(trGradOutput.dim() == trInput.dim(), "Output dim must be the same as input.");
+    }
+
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    cnnlTensorLayout_t layout = CNNL_LAYOUT_ARRAY;
+    cnnlDataType_t dtype;
+    DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, trInput.dtype()));
+
+    CnnlTensorDesc descInput(trInput, layout);
+    CnnlTensorDesc descTarget(trTarget, layout);
+    CnnlTensorDesc descGradOutput(trGradOutput, layout);
+    CnnlTensorDesc descGradInput(trGradInput, layout);
+    DiopiTensor trGradInputTmp;
+    CnnlTensorDesc descGradInputTmp;
+    if (trInput.dtype() == trGradInput.dtype()) {
+        trGradInputTmp = trGradInput;
+        descGradInputTmp = descGradInput;
+    } else {
+        trGradInputTmp = requiresTensor(ctx, vec2diopiSize_t(trGradInput.shape()), trInput.dtype());
+        descGradInputTmp.set(trGradInputTmp, CNNL_LAYOUT_ARRAY);
+    }
+
+    DIOPI_CALLCNNL(cnnlMSELossBackward(handle, cnnl_reduction, descInput.get(), trInput.data(), descTarget.get(), \
+    trTarget.data(), descGradOutput.get(), trGradOutput.data(), descGradInputTmp.get(), trGradInputTmp.data()));
+    if (trGradInputTmp.dtype() != trGradInput.dtype()) {
+        dataTypeCast(ctx, trGradInput, trGradInputTmp);
+    }
+    return diopiSuccess;
+}
+
 }  // extern "C"
 
 }  // namespace camb
