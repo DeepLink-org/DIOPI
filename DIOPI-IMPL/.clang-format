@@ -22,7 +22,7 @@ ContinuationIndentWidth: 4
 AccessModifierOffset: -4  # The private/protected/public has no indent in class
 Standard:  Cpp11
 AllowAllParametersOfDeclarationOnNextLine: true
-BinPackParameters: false
+BinPackParameters: true
 BinPackArguments: false
 ColumnLimit: 160
 IncludeIsMainSourceRegex: (\.cu)$
