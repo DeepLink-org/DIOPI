@@ -64,17 +64,25 @@ extern "C" diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHan
     DIOPI_CALL(x_desc.set(input_tensor, CNNL_LAYOUT_ARRAY, input_shape));
     DIOPI_CALL(y_desc.set(output_tensor, CNNL_LAYOUT_ARRAY, input_shape));
 
-    DIOPI_CALLCNNL(cnnlSoftmaxForward_v2(
-        handle, CNNL_SOFTMAX_LOG, mode_, CNNL_COMPUTATION_FAST, &alpha, x_desc.get(), input_tensor.data(), &beta, y_desc.get(), output_tensor.data()));
+    DIOPI_CALLCNNL(cnnlSoftmaxForward_v2(handle,
+                                         CNNL_SOFTMAX_LOG,
+                                         mode_,
+                                         CNNL_COMPUTATION_ULTRAHIGH_PRECISION,
+                                         &alpha,
+                                         x_desc.get(),
+                                         input_tensor.data(),
+                                         &beta,
+                                         y_desc.get(),
+                                         output_tensor.data()));
     return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx,
-                                     diopiTensorHandle_t grad_input,
-                                     diopiConstTensorHandle_t grad_output,
-                                     diopiConstTensorHandle_t output,
-                                     int64_t dim,
-                                     diopiDtype_t input_dtype) {
+                                                diopiTensorHandle_t grad_input,
+                                                diopiConstTensorHandle_t grad_output,
+                                                diopiConstTensorHandle_t output,
+                                                int64_t dim,
+                                                diopiDtype_t input_dtype) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     auto input_grad = DiopiTensor(grad_input);
