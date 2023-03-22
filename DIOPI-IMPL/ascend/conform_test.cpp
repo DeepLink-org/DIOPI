@@ -15,12 +15,12 @@
 namespace impl {
 namespace ascend {
 
-#define CALL_ACLRT(Expr)                                                                \
-    {                                                                                   \
-        ::aclError ret = Expr;                                                          \
-        if (ret != ::ACL_SUCCESS) {                                                     \
-            printf("call a ascendrt function (%s) failed. return code=%d", #Expr, ret); \
-        }                                                                               \
+#define CALL_ACLRT(Expr)                                                                                          \
+    {                                                                                                             \
+        ::aclError ret = Expr;                                                                                    \
+        if (ret != ::ACL_SUCCESS) {                                                                               \
+            printf("call a ascendrt function (%s) failed. return code=%d, %s", #Expr, ret, aclGetRecentErrMsg()); \
+        }                                                                                                         \
     }
 
 extern "C" {
@@ -64,6 +64,7 @@ int32_t ascend_memcpy_d2d_async(diopiStreamHandle_t stream_handle, void* dst, co
 
 int32_t initLibrary() {
     CALL_ACLRT(aclInit(nullptr));
+    CALL_ACLRT(aclrtSetDevice(0));
     diopiRegisterDeviceMallocFunc(ascend_malloc);
     diopiRegisterDevMemFreeFunc(ascend_free);
     diopiRegisterStreamCreateFunc(ascend_make_stream);
