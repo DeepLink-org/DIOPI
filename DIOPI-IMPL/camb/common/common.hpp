@@ -26,6 +26,11 @@ diopiDtype_t choiceDtype(const std::set<diopiDtype_t>& opSupportedDtypes);
 
 void autoCastTensorType(diopiContextHandle_t ctx, std::vector<DiopiTensor*>& pTensors, const std::set<diopiDtype_t>& opSupportedDtype);
 
+diopiError_t broadcast(diopiContextHandle_t ctx, DiopiTensor& out, const DiopiTensor& input);
+
+DiopiTensor broadcastHelper(diopiContextHandle_t ctx, DiopiTensor input_tensor, DiopiTensor target_tensor);
+
+
 }  // namespace camb
 }  // namespace impl
 
