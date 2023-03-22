@@ -11,10 +11,10 @@ namespace camb {
 namespace {
 template <typename T>
 diopiError_t randperm_func(DiopiTensor tensor, int64_t n, int64_t idx) {
-    T array[n];
-    std::iota(array, array + n, 0);
-    std::random_shuffle(array, array + n);
-    auto ret = cnrtMemcpy(tensor.data(), array, sizeof(T) * n, cnrtMemcpyHostToDev);
+    std::vector<T> vec(n);
+    std::iota(vec.begin(), vec.end(), 0);
+    std::random_shuffle(vec.begin(), vec.end());
+    auto ret = cnrtMemcpy(tensor.data(), vec.data(), sizeof(T) * n, cnrtMemcpyHostToDev);
     if (ret != cnrtSuccess) {
         set_last_error_string("%s%d", "cnrt memcpy error, ret = ", ret);
         return diopiErrorOccurred;
