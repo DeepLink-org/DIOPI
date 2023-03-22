@@ -21,25 +21,25 @@ namespace ascend {
         }                                                                               \
     }
 
-#define warning(...)                         \
-    printf("[%s:%d]: ", __FILE__, __LINE__); \
-    printf(__VA_ARGS__);                     \
+#define warning(...)                             \
+    printf("[%s:%d]: ", __FUNCTION__, __LINE__); \
+    printf(__VA_ARGS__);                         \
     printf("\n");
 
-#define info(...)                            \
-    printf("[%s:%d]: ", __FILE__, __LINE__); \
-    printf(__VA_ARGS__);                     \
+#define info(...)                                \
+    printf("[%s:%d]: ", __FUNCTION__, __LINE__); \
+    printf(__VA_ARGS__);                         \
     printf("\n");
 
-#define check_args(condition, ...)               \
-    if (!(condition)) {                          \
-        printf("[%s:%d]: ", __FILE__, __LINE__); \
-        printf(__VA_ARGS__);                     \
-        printf("\n");                            \
-        std::abort();                            \
+#define check_args(condition, ...)                   \
+    if (!(condition)) {                              \
+        printf("[%s:%d]: ", __FUNCTION__, __LINE__); \
+        printf(__VA_ARGS__);                         \
+        printf("\n");                                \
+        std::abort();                                \
     }
 
-inline aclDataType getAclDataType(const diopiTensorHandle_t& th) {
+inline aclDataType getAclDataType(diopiConstTensorHandle_t th) {
     diopiDtype_t type;
     diopiGetTensorDtype(th, &type);
     switch (type) {
@@ -72,7 +72,7 @@ inline aclDataType getAclDataType(const diopiTensorHandle_t& th) {
     return ACL_DT_UNDEFINED;
 }
 
-inline aclFormat getAclDataFormat(const diopiTensorHandle_t& th) {
+inline aclFormat getAclDataFormat(diopiConstTensorHandle_t th) {
     diopiSize_t shape;
     diopiSize_t stride;
     diopiGetTensorShape(th, &shape);
@@ -102,11 +102,11 @@ public:
     AclOpRunner(std::string opname) : opname_(std::move(opname)), attr_(aclopCreateAttr()) {
         for (size_t i = 0; i < InputSize; i++) {
             inputDescs_[i] = nullptr;
-            inputBuffers_ = nullptr;
+            inputBuffers_[i] = nullptr;
         }
         for (size_t i = 0; i < OutputSize; i++) {
-            outputDescs_ = nullptr;
-            outputBuffers_ = nullptr;
+            outputDescs_[i] = nullptr;
+            outputBuffers_[i] = nullptr;
         }
     }
 
@@ -117,7 +117,7 @@ public:
             if (desc) {
                 aclDestroyTensorDesc(desc);
             }
-            auto buffer = inputDescs_[i];
+            auto buffer = inputBuffers_[i];
             if (buffer) {
                 aclDestroyDataBuffer(buffer);
             }
@@ -127,7 +127,7 @@ public:
             if (desc) {
                 aclDestroyTensorDesc(desc);
             }
-            auto buffer = outputDescs_[i];
+            auto buffer = outputBuffers_[i];
             if (buffer) {
                 aclDestroyDataBuffer(buffer);
             }
@@ -135,7 +135,7 @@ public:
     }
 
     template <int index>
-    AclOpRunner& addInput(const diopiTensorHandle_t& th, const aclFormat& format) {
+    AclOpRunner& addInput(diopiConstTensorHandle_t th, const aclFormat& format) {
         static_assert(index >= 0 && index < InputSize);
         diopiSize_t shape;
         diopiSize_t stride;
@@ -161,15 +161,28 @@ public:
         desc = aclCreateTensorDesc(getAclDataType(th), dims.size(), dims.data(), format);
         check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
         buffer = aclCreateDataBuffer(const_cast<void*>(ptr), numel * itemsize);
+        return *this;
     }
 
     template <int index>
-    AclOpRunner& addInput(const diopiTensorHandle_t& th) {
+    AclOpRunner& addInput(diopiConstTensorHandle_t th) {
         return addInput<index>(th, getAclDataFormat(th));
     }
 
+    AclOpRunner& addInput(diopiConstTensorHandle_t th) {
+        static_assert(InputSize == 0);
+        return addInput<0>(th, getAclDataFormat(th));
+    }
+
+    template <typename T, typename... Ins>
+    AclOpRunner& addInput(T in, const Ins&... ins) {
+        static_assert(sizeof...(Ins) < InputSize);
+        addInput<InputSize - 1 - (sizeof...(Ins))>(in);
+        return addInput<InputSize - (sizeof...(Ins))>(ins...);
+    }
+
     template <int index>
-    AclOpRunner& addOutput(diopiTensorHandle_t& th, const aclFormat& format) {
+    AclOpRunner& addOutput(diopiTensorHandle_t th, const aclFormat& format) {
         static_assert(index >= 0 && index < OutputSize);
         diopiSize_t shape;
         diopiSize_t stride;
@@ -180,7 +193,7 @@ public:
         diopiGetTensorStride(th, &stride);
         diopiGetTensorNumel(th, &numel);
         diopiGetTensorElemSize(th, &itemsize);
-        diopiGetTensorDataConst(th, &ptr);
+        diopiGetTensorData(th, &ptr);
 
         std::vector<int64_t> dims(shape.len);
         for (size_t i = 0; i < dims.size(); ++i) {
@@ -195,11 +208,23 @@ public:
         desc = aclCreateTensorDesc(getAclDataType(th), dims.size(), dims.data(), format);
         check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
         buffer = aclCreateDataBuffer(ptr, numel * itemsize);
+        return *this;
     }
 
     template <int index>
-    AclOpRunner& addOutput(diopiTensorHandle_t& th) {
+    AclOpRunner& addOutput(diopiTensorHandle_t th) {
         return addOutput<index>(th, getAclDataFormat(th));
+    }
+
+    AclOpRunner& addOutput(diopiTensorHandle_t th) {
+        static_assert(OutputSize == 1);
+        return addOutput<0>(th, getAclDataFormat(th));
+    }
+
+    template <typename T, typename... Outs>
+    AclOpRunner& addOutput(T out, Outs&... outs) {
+        addOutput<OutputSize - 1 - (sizeof...(Outs))>(out);
+        return addOutput<OutputSize - (sizeof...(Outs))>(outs...);
     }
 
     template <typename T>
