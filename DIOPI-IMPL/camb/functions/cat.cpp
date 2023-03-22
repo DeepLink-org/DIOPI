@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @author pjlab
+ * @copyright  (c) 2023, SenseTime Inc.
+ */
+
 #include <diopi/functions.h>
 
 #include "../cnnl_helper.hpp"
