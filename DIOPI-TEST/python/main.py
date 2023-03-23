@@ -58,8 +58,9 @@ if __name__ == "__main__":
         glob_vars.set_four_bytes()
 
     if args.mode == 'gen_data':
-        cf.GenInputData.run(args.fname, args.model_name.lower(), args.filter_dtype)
-        cf.GenOutputData.run(args.fname, args.model_name.lower(), args.filter_dtype)
+        import conformance.gen_data as gd
+        gd.GenInputData.run(args.fname, args.model_name.lower(), args.filter_dtype)
+        gd.GenOutputData.run(args.fname, args.model_name.lower(), args.filter_dtype)
         if args.model_name != '':
             logger.info(f"the op list of {args.model_name}: {real_op_list}")
     elif args.mode == 'run_test':
