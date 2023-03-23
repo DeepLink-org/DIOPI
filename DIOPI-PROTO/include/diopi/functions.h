@@ -406,13 +406,13 @@ DIOPI_API diopiError_t diopiLtInp(diopiContextHandle_t ctx, diopiTensorHandle_t 
  * \brief Returns the mean value of all elements in the input tensor.
  */
 DIOPI_API diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-                                 diopiConstTensorHandle_t input, diopiSize_t dim, diopiDtype_t dtype);
+                                 diopiConstTensorHandle_t input, diopiSize_t dim);
 
 /**
  * \brief Returns the sum value of all elements in the input tensor.
  */
 DIOPI_API diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-                                 diopiConstTensorHandle_t input, diopiSize_t dim, diopiDtype_t dtype);
+                                 diopiConstTensorHandle_t input, diopiSize_t dim);
 
 /**
  * \brief Returns the standard derivation of all elements in the input tensor.
@@ -447,16 +447,16 @@ DIOPI_API diopiError_t diopiAll(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 /**
  * \brief Applies a softmax function.
  */
-DIOPI_API diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim, diopiDtype_t dtype);
+DIOPI_API diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim);
 DIOPI_API diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                            diopiConstTensorHandle_t output, int64_t dim, diopiDtype_t input_dtype);
+                                            diopiConstTensorHandle_t output, int64_t dim);
 
 /**
  * \brief Applies a log_softmax function.
  */
-DIOPI_API diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim, diopiDtype_t dtype);
+DIOPI_API diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim);
 DIOPI_API diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                               diopiConstTensorHandle_t output, int64_t dim, diopiDtype_t input_dtype);
+                                               diopiConstTensorHandle_t output, int64_t dim);
 
 /**
  * \brief Returns a new tensor which indexes the input tensor along dimension dim using the entries in index.
@@ -647,7 +647,7 @@ DIOPI_API diopiError_t diopiUnfoldBackward(diopiContextHandle_t ctx, diopiTensor
 /**
  * \brief Returns the cumulative sum of elements of input in the dimension dim.
  */
-DIOPI_API diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim, diopiDtype_t dtype);
+DIOPI_API diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim);
 
 /**
  * \brief Computes batched the p-norm distance between each pair of the two collections of row vectors.
@@ -758,7 +758,7 @@ DIOPI_API diopiError_t diopiIndexFillInp(diopiContextHandle_t ctx, diopiConstTen
 /**
  * \brief Expand tensor to the same size as size.
  */
-DIOPI_API diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size);
+DIOPI_API diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
 /**
  * \brief Creates a one-dimensional tensor of size steps whose values are evenly spaced from start to end, inclusive.
@@ -788,7 +788,7 @@ DIOPI_API diopiError_t diopiFlip(diopiContextHandle_t ctx, diopiTensorHandle_t o
 /**
  * \brief Returns the matrix norm or vector norm of a given tensor.
  */
-DIOPI_API diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* p, diopiSize_t dim, diopiDtype_t dtype);
+DIOPI_API diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* p, diopiSize_t dim);
 
 /**
  * \brief Applies Group Normalization over a mini-batch of inputs.
@@ -808,7 +808,7 @@ DIOPI_API diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t
 /**
  * \brief Returns the product of all elements in the input tensor.
  */
-DIOPI_API diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim, diopiDtype_t type);
+DIOPI_API diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim);
 
 /**
  * \brief Computes the Connectionist Temporal Classification loss.
