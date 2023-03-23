@@ -116,7 +116,7 @@ public:
         diopiGetTensorElemSize(tensor_, &elemsize);
         return elemsize;
     }
-    int64_t dim() { return this->shape().size(); }
+    int64_t dim() const { return this->shape().size(); }
 
     DiopiTensor contiguous(diopiContextHandle_t ctx, MemoryFormat format = MemoryFormat::Contiguous) {
         /* Returns a new Tensor in new memory format, without data copy */
@@ -163,6 +163,7 @@ public:
                 stride *= shape[i];
             }
         } else if (format == MemoryFormat::ChannelsLast) {
+            if (strides.size() != 4) return false;
             for (auto i : {1, 3, 2, 0}) {
                 if (strides[i] != stride) {
                     return false;

@@ -27,7 +27,7 @@ void dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const DiopiTensor
         return;
     }
     // check size of dest and src
-    assert((void("the shapes of src and dest are not equal"), src.shape().size() != 0 && src.shape() == dest.shape()));
+    assert((void("the shapes of src and dest are not equal"), src.shape() == dest.shape()));
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     diopiDtype_t srcDtype = src.dtype();
     diopiDtype_t destDtype = dest.dtype();
