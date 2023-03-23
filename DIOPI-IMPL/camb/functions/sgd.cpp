@@ -60,7 +60,6 @@ extern "C" DIOPI_API diopiError_t diopiSgd(diopiContextHandle_t ctx,
                 DIOPI_CALL(add_mul_func(dw_tensor, 1.0, dw_tensor, momentum));
             }
         } else {
-            auto buf_tensor = DiopiTensor(buf);
             CnnlTensorDesc buf_desc(buf_tensor, CNNL_LAYOUT_ARRAY);
             DIOPI_CALL(add_mul_func(buf_tensor, momentum, dw_tensor, (1.0 - dampening)));
             if (nesterov) {

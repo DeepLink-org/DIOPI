@@ -14,11 +14,13 @@
 namespace impl {
 namespace camb {
 
-extern "C" diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim, diopiDtype_t dtype) {
+extern "C" diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     auto input_tensor = DiopiTensor(input);
     auto output_tensor = DiopiTensor(out);
+
+    diopiDtype_t dtype = output_tensor.dtype();
 
     std::vector<int> src_input_shape{input_tensor.shape().begin(), input_tensor.shape().end()};
     std::vector<int> src_output_shape{output_tensor.shape().begin(), output_tensor.shape().end()};
@@ -78,8 +80,7 @@ extern "C" diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx,
                                   diopiTensorHandle_t grad_input,
                                   diopiConstTensorHandle_t grad_output,
                                   diopiConstTensorHandle_t output,
-                                  int64_t dim,
-                                  diopiDtype_t input_dtype) {
+                                  int64_t dim) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     auto input_grad = DiopiTensor(grad_input);
