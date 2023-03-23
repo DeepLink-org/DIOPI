@@ -13,10 +13,10 @@ namespace ascend {
 
 extern "C" DIOPI_API diopiError_t
 diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha) {
-    AclOpRunner<2,1> runner("Add");
-    runner.addInput(input, other);
-    runner.addOutput(out);
-    runner.run(ctx);
+    AclOpRunner<2,1> ("AddV2")
+        .addInput(input, other)
+        .addOutput(out)
+        .run(ctx);
     return diopiSuccess;
 }
 
@@ -27,7 +27,11 @@ extern "C" DIOPI_API diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTen
 
 extern "C" DIOPI_API diopiError_t
 diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
-
+     AclOpRunner<1,1> ("Adds")
+        .addInput(input)
+        .setAttr<float>("value", getValue<float>(other))
+        .addOutput(out)
+        .run(ctx);
     return diopiSuccess;
 }
 
@@ -38,6 +42,5 @@ extern "C" DIOPI_API diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx,
 
     return diopiSuccess;
 }
-
-}  // namespace camb
+}  // namespace ascend
 }  // namespace impl

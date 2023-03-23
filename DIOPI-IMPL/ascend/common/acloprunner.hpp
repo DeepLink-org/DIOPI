@@ -83,6 +83,33 @@ inline aclFormat getAclDataFormat(diopiConstTensorHandle_t th) {
     return ACL_FORMAT_ND;
 }
 
+inline bool is_integral_type(const diopiDtype_t& type) {
+    switch (type)
+    {
+    case diopi_dtype_bool:
+    case diopi_dtype_int8:
+    case diopi_dtype_uint8:
+    case diopi_dtype_int16:
+    case diopi_dtype_uint16:
+    case diopi_dtype_int32:
+    case diopi_dtype_uint32:
+    case diopi_dtype_int64:
+    case diopi_dtype_uint64:
+        return true;
+    }
+    return false;
+}
+
+template<typename T>
+T getValue(const diopiScalar_t* scalar) {
+    check_args(scalar != nullptr, "input should not be nullptr");
+    if (is_integral_type(scalar->stype)) {
+        return static_cast<T>(scalar->ival);
+    } else {
+        return static_cast<T>(scalar->fval);
+    }
+}
+
 template <int InputSize, int OutputSize, aclEngineType EngineType = ACL_ENGINE_SYS, aclCompileType CompileType = ACL_COMPILE_SYS>
 class AclOpRunner {
     std::string opname_;
@@ -137,6 +164,7 @@ public:
     template <int index>
     AclOpRunner& addInput(diopiConstTensorHandle_t th, const aclFormat& format) {
         static_assert(index >= 0 && index < InputSize);
+        check_args(th != nullptr, "input should not be nullptr");
         diopiSize_t shape;
         diopiSize_t stride;
         int64_t numel = 0;
@@ -170,7 +198,7 @@ public:
     }
 
     AclOpRunner& addInput(diopiConstTensorHandle_t th) {
-        static_assert(InputSize == 0);
+        static_assert(InputSize == 1);
         return addInput<0>(th, getAclDataFormat(th));
     }
 
@@ -184,6 +212,7 @@ public:
     template <int index>
     AclOpRunner& addOutput(diopiTensorHandle_t th, const aclFormat& format) {
         static_assert(index >= 0 && index < OutputSize);
+        check_args(th != nullptr, "output should not be nullptr");
         diopiSize_t shape;
         diopiSize_t stride;
         int64_t numel = 0;
@@ -252,7 +281,6 @@ public:
     AclOpRunner& run(diopiContextHandle_t& ctx) {
         diopiStreamHandle_t stream;
         diopiGetStream(ctx, &stream);
-
         auto errorcode = aclopCompileAndExecute(opname_.data(),
                                                 InputSize,
                                                 inputDescs_.data(),
@@ -265,9 +293,12 @@ public:
                                                 CompileType,
                                                 nullptr,
                                                 stream);
+        if (errorcode != ACL_SUCCESS) {
+            warning((dumpRunnerInfo() + ":" + aclGetRecentErrMsg()).c_str());
+        }
 
-        check_args(errorcode == ACL_SUCCESS, dumpRunnerInfo().c_str());
 
+        //check_args(errorcode == ACL_SUCCESS, dumpRunnerInfo().c_str());
         //  Get environment variables once when run is called for the first time
         static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
         if (PARROTS_DEBUG_ACLOPRUNNER > 0) {

@@ -79,6 +79,7 @@ int32_t initLibrary() {
 }
 
 int32_t finalizeLibrary() {
+    //CALL_ACLRT(aclrtResetDevice(0));
     CALL_ACLRT(aclFinalize());
     return diopiSuccess;
 }
