@@ -144,9 +144,7 @@ public:
         diopiSize_t shape_diopi(this->shape().data(), this->shape().size());
         diopiTensorHandle_t tensor;
         diopiRequireTensor(ctx, &tensor, &shape_diopi, &stride_diopi, this->dtype(), this->device());
-
-        diopiTensorHandle_t tensor_may_const = tensor;
-        return DiopiTensor(tensor_may_const);
+        return DiopiTensor(tensor);
     }
 
     bool is_contiguous(MemoryFormat format = MemoryFormat::Contiguous) {
@@ -192,6 +190,14 @@ public:
         return p;
     }
 
+    diopiTensorHandle_t tensor_handle() {
+        return tensor_;
+    }
+
+    diopiConstTensorHandle_t tensor_handle() const{
+        return tensor_;
+    }
+
 protected:
     diopiTensorHandle_t tensor_ = 0;
     std::vector<int64_t> shape_{0};
@@ -206,14 +212,14 @@ inline auto makeTensor(diopiContextHandle_t ctx, const diopiScalar_t* pScalar) -
     return DiopiTensor(tensor);
 }
 
-inline diopiTensorHandle_t ones(diopiContextHandle_t ctx, std::vector<int64_t>& size, diopiDtype_t dtype) {
+inline DiopiTensor ones(diopiContextHandle_t ctx, std::vector<int64_t> size, diopiDtype_t dtype) {
     diopiTensorHandle_t tensor;
     diopiSize_t size_(size.data(), size.size());
     diopiRequireTensor(ctx, &tensor, &size_, nullptr, dtype, diopi_device);
     diopiScalar_t scalar = {dtype, 1.0};
     if (DiopiDataType().isInteger(dtype)) scalar = {dtype, 1};
     diopiFill(ctx, tensor, &scalar);
-    return tensor;
+    return DiopiTensor(tensor);
 }
 
 inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const diopiSize_t& size, diopiDtype_t dtype) {
