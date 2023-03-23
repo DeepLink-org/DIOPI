@@ -193,7 +193,7 @@ public:
         return tensor_;
     }
 
-    diopiConstTensorHandle_t tensor_handle() const{
+    diopiConstTensorHandle_t tensor_handle() const {
         return tensor_;
     }
 
