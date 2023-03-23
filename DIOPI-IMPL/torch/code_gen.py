@@ -1,4 +1,4 @@
-# Copyright (c) 2023, SenseTime Inc.
+# Copyright (c) 2023, OpenComputeLab.
 import os
 # CONVERT
 #
@@ -16,8 +16,8 @@ import os
 new_content = []
 new_content.append('/**
  * @file
- * @author pjlab
- * @copyright  (c) 2023, SenseTime Inc.
+ * @author OpenComputeLab
+ * @copyright  (c) 2023, OpenComputeLab.
  */
 #include <diopi/functions.h>\n\
 #include <stdio.h>\n\

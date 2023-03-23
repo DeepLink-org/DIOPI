@@ -1,7 +1,7 @@
 /**
  * @file
- * @author pjlab
- * @copyright  (c) 2023, SenseTime Inc.
+ * @author OpenComputeLab
+ * @copyright  (c) 2023, OpenComputeLab.
  */
 
 #ifndef IMPL_CUDA_HELPER_HPP_

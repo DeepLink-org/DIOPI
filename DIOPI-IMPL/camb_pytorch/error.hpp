@@ -1,7 +1,7 @@
 /**
  * @file
- * @author pjlab
- * @copyright  (c) 2023, SenseTime Inc.
+ * @author OpenComputeLab
+ * @copyright  (c) 2023, OpenComputeLab.
  */
 
 #ifndef IMPL_CAMB_PYTORCH_ERROR_HPP_
