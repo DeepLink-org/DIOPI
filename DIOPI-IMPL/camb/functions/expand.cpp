@@ -13,9 +13,12 @@
 namespace impl {
 namespace camb {
 
-extern "C" DIOPI_API diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size) {
+extern "C" DIOPI_API diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     auto trInput = DiopiTensor(input);
     auto trOut = DiopiTensor(out);
+
+    diopiSize_t size;
+    diopiGetTensorShape(out, &size);
 
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     cnnlTensorLayout_t layout = CNNL_LAYOUT_ARRAY;

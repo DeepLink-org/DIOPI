@@ -175,10 +175,13 @@ diopiError_t reduce_dim_impl(diopiContextHandle_t ctx,
 
 extern "C" {
 
-diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, diopiDtype_t dtype) {
+diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
     auto input_tr = DiopiTensor(input);
     auto output_tr = DiopiTensor(out);
     auto index_tr = requiresTensor(ctx, {1}, diopi_dtype_int32);
+
+    diopiDtype_t dtype = output_tr.dtype();
+
     std::vector<int64_t> dim_vec(dim.data, dim.data + dim.len);
 
     DIOPI_CHECK(dtype != diopi_dtype_int64, "Sum: dtype == int64 is not supported in camb now");
@@ -192,10 +195,13 @@ diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     return diopiSuccess;
 }
 
-diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, diopiDtype_t dtype) {
+diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
     auto input_tr = DiopiTensor(input);
     auto output_tr = DiopiTensor(out);
     auto index_tr = requiresTensor(ctx, {1}, diopi_dtype_int32);
+
+    diopiDtype_t dtype = output_tr.dtype();
+
     std::vector<int64_t> dim_vec(dim.data, dim.data + dim.len);
 
     if (input_tr.dtype() != dtype) {
@@ -206,10 +212,12 @@ diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     return diopiSuccess;
 }
 
-diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim, diopiDtype_t type) {
+diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim) {
     auto input_tr = DiopiTensor(input);
     auto output_tr = DiopiTensor(out);
     auto index_tr = requiresTensor(ctx, {1}, diopi_dtype_int32);
+
+    diopiDtype_t type = output_tr.dtype();
 
     if (input_tr.dtype() != type) {
         input_tr = dataTypeCast(ctx, input_tr, type);
@@ -265,7 +273,7 @@ diopiError_t diopiMaxAll(diopiContextHandle_t ctx, diopiTensorHandle_t max, diop
 }
 
 diopiError_t diopiNorm(
-    diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* p, diopiSize_t dim, diopiDtype_t dtype) {
+    diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* p, diopiSize_t dim) {
     float norm = p->fval;
     if (DiopiDataType().isInteger(p->stype)) norm = p->ival;
     DIOPI_CHECK(norm == 1.0 || norm == 2.0, "camb only support L1-Norm as p=1.0 and L2-Norm as p=2.0");
@@ -273,6 +281,8 @@ diopiError_t diopiNorm(
     auto input_tr = DiopiTensor(input);
     auto output_tr = DiopiTensor(out);
     auto index_tr = requiresTensor(ctx, {1}, diopi_dtype_int32);
+
+    diopiDtype_t dtype = output_tr.dtype();
 
     if (input_tr.dtype() != dtype) {
         input_tr = dataTypeCast(ctx, input_tr, dtype);

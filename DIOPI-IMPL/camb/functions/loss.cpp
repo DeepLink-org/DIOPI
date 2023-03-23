@@ -248,7 +248,7 @@ diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx,
     DIOPI_CHECK(target_tr.dim() == input_tr.dim() - 1, "Probabilities for each class are not supported");
 
     auto log_tr = requiresTensor(ctx, input_tr.shape(), input_tr.dtype());
-    diopiLogSoftmax(ctx, log_tr.tensor_handle(), input, 1, input_tr.dtype());
+    diopiLogSoftmax(ctx, log_tr.tensor_handle(), input, 1);
     diopiNLLLoss(ctx, out, log_tr.tensor_handle(), target, weight, reduction, ignore_index);
     return diopiSuccess;
 }
@@ -271,11 +271,11 @@ diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx,
     auto log_tr = requiresTensor(ctx, input_tr.shape(), input_tr.dtype());
     auto grad_tmp_tr = requiresTensor(ctx, grad_input_tr.shape(), grad_input_tr.dtype());
 
-    diopiLogSoftmax(ctx, log_tr.tensor_handle(), input, 1, input_tr.dtype());
+    diopiLogSoftmax(ctx, log_tr.tensor_handle(), input, 1);
     // for nll loss backward, `input` should be logsoftmax out.
     diopiNLLLossBackward(ctx, grad_tmp_tr.tensor_handle(), grad_output, log_tr.tensor_handle(), target, weight, reduction, ignore_index);
     // for softmax backward, `output` should be logsoftmax out
-    diopiLogSoftmaxBackward(ctx, grad_input, grad_tmp_tr.tensor_handle(), log_tr.tensor_handle(), 1, input_tr.dtype());
+    diopiLogSoftmaxBackward(ctx, grad_input, grad_tmp_tr.tensor_handle(), log_tr.tensor_handle(), 1);
     return diopiSuccess;
 }
 
