@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import math
 
-from ctypes import c_float, c_double, c_int64, c_int32, c_bool, c_void_p, byref, pointer
+from ctypes import c_float, c_double, c_int64, c_bool, c_void_p, byref, pointer
 from .diopi_runtime import Sizes, Scalar, Tensor, TensorHandle, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d
 from .utils import check_returncode, check_function, glob_vars
 from . import Dtype, raw_like
@@ -189,13 +189,10 @@ def softmax(input, dim, dtype=None):
         dim = 0
     if input.numel() == 0:
         return input
-    if dtype is None:
-        dtype = input.get_dtype()
-    out = raw_like(input)
+    out = raw_like(input) if dtype is None else Tensor(input.size(), dtype)
 
     func = check_function('diopiSoftmax')
-    ret = func(input.context_handle, out.tensor_handle,
-               input.tensor_handle, c_int64(dim), c_int32(dtype.value))
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, c_int64(dim))
     check_returncode(ret)
     return out
 
@@ -517,10 +514,7 @@ def mean(input, dim=None, keepdim=False, dtype=None) -> Tensor:
     dim, out = reduce_op_process(input, dim, keepdim, dtype)
     func = check_function("diopiMean")
     dim1 = Sizes(tuple(dim))
-    if dtype is None:
-        dtype = input.get_dtype()
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               dim1, c_int32(dtype.value))
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim1)
     check_returncode(ret)
     return out
 
@@ -1288,13 +1282,11 @@ def log_softmax(input, dim=None, dtype=None):
         dim = 0
     if input.numel() == 0:
         return input
-    if dtype is None:
-        dtype = input.get_dtype()
-    out = raw_like(input)
+    out = raw_like(input) if dtype is None else Tensor(input.size(), dtype)
 
     func = check_function('diopiLogSoftmax')
     ret = func(input.context_handle, out.tensor_handle,
-               input.tensor_handle, c_int64(dim), c_int32(dtype.value))
+               input.tensor_handle, c_int64(dim))
     check_returncode(ret)
     return out
 
@@ -1397,10 +1389,7 @@ def sum(input, dim=None, keepdim=False, dtype=None) -> Tensor:
     dtype = promote_type(input, Dtype.int64)
     dim, out = reduce_op_process(input, dim, keepdim, dtype)
     dim1 = Sizes(tuple(dim))
-    if dtype is None:
-        dtype = input.get_dtype()
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               dim1, c_int32(dtype.value))
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim1)
     check_returncode(ret)
     return out
 
@@ -1884,7 +1873,7 @@ def softmax_backward(input, grad_outputs, output, dim, **kwargs) -> Tensor:
 
     func = check_function("diopiSoftmaxBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
-               output.tensor_handle, c_int64(dim), c_int32(input.get_dtype().value))
+               output.tensor_handle, c_int64(dim))
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -1895,7 +1884,7 @@ def log_softmax_backward(input, grad_outputs, output, dim, **kwargs) -> Tensor:
 
     func = check_function("diopiLogSoftmaxBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
-               output.tensor_handle, c_int64(dim), c_int32(input.get_dtype().value))
+               output.tensor_handle, c_int64(dim))
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -2232,13 +2221,10 @@ def cumsum(input, dim, dtype=None):
 
     sizeI = list(input.size())
     assert dim < len(sizeI), "dim out of index"
-    if dtype is None:
-        dtype = input.get_dtype()
 
-    out = raw_like(input)
+    out = raw_like(input) if dtype is None else Tensor(input.size(), dtype)
     func = check_function("diopiCumsum")
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               c_int64(dim), c_int32(dtype.value))
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, c_int64(dim))
     check_returncode(ret)
     return out
 
@@ -2522,10 +2508,9 @@ def expand(input, size) -> Tensor:
         assert size[0] >= 0, "the size of new dimension can't be negative"
 
     out = Tensor(size, input.get_dtype())
-    size = Sizes(tuple(size))
 
     func = check_function("diopiExpand")
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, size)
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle)
     check_returncode(ret)
     return out
 
@@ -2644,8 +2629,7 @@ def norm(input, p, dim=None, keepdim=False, dtype=None):
     dim = Sizes(tuple(dim))
 
     func = check_function("diopiNorm")
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               p, dim, c_int32(out.get_dtype().value))
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, p, dim)
     check_returncode(ret)
     return out
 
@@ -3215,11 +3199,8 @@ def prod(input, dim=None, keepdim=False, dtype=None) -> Tensor:
     else:
         dim = byref(c_int64(dim))
 
-    if dtype is None:
-        dtype = input.get_dtype()
     func = check_function("diopiProd")
-    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle,
-               dim, c_int32(dtype.value))
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim)
     check_returncode(ret)
     return out
 
