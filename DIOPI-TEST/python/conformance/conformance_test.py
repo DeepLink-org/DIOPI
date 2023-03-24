@@ -5,8 +5,11 @@ from . import diopi_functions as F
 from .utils import logger, FunctionNotImplementedError, DiopiException
 from .utils import need_process_func, glob_vars, nhwc_op, dtype_op
 from .diopi_runtime import Tensor, compute_nhwc_stride
-from .gen_data import get_saved_pth_list, get_data_from_file
 from .utils import save_precision, record, write_precision
+try:
+    from .gen_data import get_saved_pth_list, get_data_from_file
+except Exception:
+    logger.warning("import gen_data error")
 
 
 def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dtype_list=[], filter_dtype_str_list=[]):
