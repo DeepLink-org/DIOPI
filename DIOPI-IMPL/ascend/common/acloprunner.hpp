@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <array>
+#include <functional>
 #include <initializer_list>
 #include <sstream>
 #include <vector>
@@ -112,7 +113,7 @@ T getValue(const diopiScalar_t* scalar) {
     }
 }
 
-template <int InputSize, int OutputSize>
+template <int InputSize, int OutputSize, aclDataType (*dtypeCastStrategy)(diopiConstTensorHandle_t) = getAclDataType>
 class AclOpRunner {
     std::string opname_;
     aclopAttr* attr_;
@@ -188,7 +189,8 @@ public:
 
         auto& desc = inputDescs_[finalIndex];
         auto& buffer = inputBuffers_[finalIndex];
-        desc = aclCreateTensorDesc(getAclDataType(th), dims.size(), dims.data(), format);
+
+        desc = aclCreateTensorDesc(dtypeCastStrategy(th), dims.size(), dims.data(), format);
         check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
         buffer = aclCreateDataBuffer(const_cast<void*>(ptr), numel * itemsize);
         return *this;
@@ -248,7 +250,7 @@ public:
 
         auto& desc = outputDescs_[finalIndex];
         auto& buffer = outputBuffers_[finalIndex];
-        desc = aclCreateTensorDesc(getAclDataType(th), dims.size(), dims.data(), format);
+        desc = aclCreateTensorDesc(dtypeCastStrategy(th), dims.size(), dims.data(), format);
         check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
         buffer = aclCreateDataBuffer(ptr, numel * itemsize);
         return *this;
