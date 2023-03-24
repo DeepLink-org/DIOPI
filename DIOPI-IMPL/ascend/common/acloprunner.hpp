@@ -6,10 +6,12 @@
 #include <acl/acl_op_compiler.h>
 #include <diopi/diopirt.h>
 #include <stdint.h>
+
+#include <algorithm>
 #include <array>
+#include <initializer_list>
 #include <sstream>
 #include <vector>
-#include<initializer_list>
 
 namespace impl {
 namespace ascend {
@@ -85,23 +87,22 @@ inline aclFormat getAclDataFormat(diopiConstTensorHandle_t th) {
 }
 
 inline bool is_integral_type(const diopiDtype_t& type) {
-    switch (type)
-    {
-    case diopi_dtype_bool:
-    case diopi_dtype_int8:
-    case diopi_dtype_uint8:
-    case diopi_dtype_int16:
-    case diopi_dtype_uint16:
-    case diopi_dtype_int32:
-    case diopi_dtype_uint32:
-    case diopi_dtype_int64:
-    case diopi_dtype_uint64:
-        return true;
+    switch (type) {
+        case diopi_dtype_bool:
+        case diopi_dtype_int8:
+        case diopi_dtype_uint8:
+        case diopi_dtype_int16:
+        case diopi_dtype_uint16:
+        case diopi_dtype_int32:
+        case diopi_dtype_uint32:
+        case diopi_dtype_int64:
+        case diopi_dtype_uint64:
+            return true;
     }
     return false;
 }
 
-template<typename T>
+template <typename T>
 T getValue(const diopiScalar_t* scalar) {
     check_args(scalar != nullptr, "input should not be nullptr");
     if (is_integral_type(scalar->stype)) {
@@ -128,41 +129,30 @@ class AclOpRunner {
 
 public:
     AclOpRunner(std::string opname) : opname_(std::move(opname)), attr_(aclopCreateAttr()) {
-        for (size_t i = 0; i < InputSize; i++) {
-            inputDescs_[i] = nullptr;
-            inputBuffers_[i] = nullptr;
-        }
-        for (size_t i = 0; i < OutputSize; i++) {
-            outputDescs_[i] = nullptr;
-            outputBuffers_[i] = nullptr;
-        }
+        inputDescs_.fill(nullptr);
+        inputBuffers_.fill(nullptr);
+        outputDescs_.fill(nullptr);
+        inputBuffers_.fill(nullptr);
     }
 
     ~AclOpRunner() {
         aclopDestroyAttr(attr_);
-        for (size_t i = 0; i < InputSize; i++) {
-            auto desc = inputDescs_[i];
+        auto destoryAclTensorDesc = [](aclTensorDesc* desc) {
             if (desc) {
                 aclDestroyTensorDesc(desc);
             }
-            auto buffer = inputBuffers_[i];
+        };
+        auto destoryAclDataBuffer = [](aclDataBuffer* buffer) {
             if (buffer) {
                 aclDestroyDataBuffer(buffer);
             }
-        }
-        for (size_t i = 0; i < OutputSize; i++) {
-            auto desc = outputDescs_[i];
-            if (desc) {
-                aclDestroyTensorDesc(desc);
-            }
-            auto buffer = outputBuffers_[i];
-            if (buffer) {
-                aclDestroyDataBuffer(buffer);
-            }
-        }
+        };
+        std::for_each(inputDescs_.begin(), inputDescs_.end(), destoryAclTensorDesc);
+        std::for_each(outputDescs_.begin(), outputDescs_.end(), destoryAclTensorDesc);
+        std::for_each(inputBuffers_.begin(), inputBuffers_.end(), destoryAclDataBuffer);
+        std::for_each(outputBuffers_.begin(), outputBuffers_.end(), destoryAclDataBuffer);
     }
 
-    //template <int index>
     AclOpRunner& addInput(const int index, diopiConstTensorHandle_t th, const aclFormat& format) {
         check_args(th != nullptr, "input should not be nullptr");
         diopiSize_t shape;
@@ -194,7 +184,6 @@ public:
             }
         }
 
-
         check_args(finalIndex >= 0 && finalIndex < InputSize, "check 0<=finalIndex<InputSize failed");
 
         auto& desc = inputDescs_[finalIndex];
@@ -211,9 +200,7 @@ public:
         return addInput(index, th, format);
     }
 
-    AclOpRunner& addInput(const int index, diopiConstTensorHandle_t th) {
-        return addInput(index, th, getAclDataFormat(th));
-    }
+    AclOpRunner& addInput(const int index, diopiConstTensorHandle_t th) { return addInput(index, th, getAclDataFormat(th)); }
 
     template <int index = -1>
     AclOpRunner& addInput(diopiConstTensorHandle_t th) {
@@ -250,8 +237,7 @@ public:
 
         int finalIndex = index;
         if (index < 0) {
-            for (size_t i = 0; i < OutputSize; i++)
-            {
+            for (size_t i = 0; i < OutputSize; i++) {
                 if (outputDescs_[i] == nullptr) {
                     finalIndex = i;
                     break;
@@ -308,12 +294,11 @@ public:
     template <typename T>
     AclOpRunner& setAttr(const std::string& attrName, const typename std::vector<T>& value) {
         std::vector<int64_t> vec(value.begin(), value.end());
-        CALL_ACLRT(
-            aclopSetAttrListInt(attr_, attrName.data(), vec.size(), vec.data()));
+        CALL_ACLRT(aclopSetAttrListInt(attr_, attrName.data(), vec.size(), vec.data()));
         return *this;
     }
 
-    template<aclEngineType EngineType = ACL_ENGINE_SYS, aclCompileType CompileType = ACL_COMPILE_SYS>
+    template <aclEngineType EngineType = ACL_ENGINE_SYS, aclCompileType CompileType = ACL_COMPILE_SYS>
     AclOpRunner& run(diopiContextHandle_t& ctx) {
         diopiStreamHandle_t stream;
         diopiGetStream(ctx, &stream);
@@ -345,8 +330,8 @@ public:
         if (errorcode != ACL_SUCCESS) {
             warning((dumpRunnerInfo() + ":" + aclGetRecentErrMsg()).c_str());
         }
-        //check_args(errorcode == ACL_SUCCESS, dumpRunnerInfo().c_str());
-        //  Get environment variables once when run is called for the first time
+        // check_args(errorcode == ACL_SUCCESS, dumpRunnerInfo().c_str());
+        //   Get environment variables once when run is called for the first time
         static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
         if (PARROTS_DEBUG_ACLOPRUNNER > 0) {
             info(dumpRunnerInfo().c_str());
