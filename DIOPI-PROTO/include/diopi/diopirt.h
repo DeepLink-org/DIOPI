@@ -1,9 +1,8 @@
-/**************************************************************************************************
- * Copyright (c) 2022, SenseTime Inc.
- * License
- * Author
- *
- *************************************************************************************************/
+/**
+ * @file
+ * @author OpenComputeLab
+ * @copyright  (c) 2023, OpenComputeLab.
+ */
 
 #ifndef _PROJECT_DIOPERATOR_INTERFACE_RT_H_
 #define _PROJECT_DIOPERATOR_INTERFACE_RT_H_
