@@ -6,10 +6,8 @@ from .utils import logger, FunctionNotImplementedError, DiopiException
 from .utils import need_process_func, glob_vars, nhwc_op, dtype_op
 from .diopi_runtime import Tensor, compute_nhwc_stride
 from .utils import save_precision, record, write_precision
-try:
-    from .gen_data import get_saved_pth_list, get_data_from_file
-except Exception:
-    logger.warning("import gen_data error")
+from .utils import get_saved_pth_list, get_data_from_file
+from .utils import cfg_file_name
 
 
 def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dtype_list=[], filter_dtype_str_list=[]):
@@ -216,7 +214,7 @@ class ConformanceTest(object):
         inputs_dir_path = os.path.join(_cur_dir, "../data/" + model_name + "/inputs")
         outputs_dir_path = os.path.join(_cur_dir, "../data/" + model_name + "/outputs")
 
-        saved_pth_list = get_saved_pth_list(inputs_dir_path)
+        saved_pth_list = get_saved_pth_list(inputs_dir_path, cfg_file_name)
         for saved_pth in saved_pth_list:
             cfg_func_name = saved_pth.split("::")[1].rsplit("_", 1)[0]
             if not need_process_func(cfg_func_name, func_name, model_name):

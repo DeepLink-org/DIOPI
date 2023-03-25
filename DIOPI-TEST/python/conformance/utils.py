@@ -5,7 +5,10 @@ from .dtype import Dtype
 import os
 import numpy as np
 import csv
+import pickle
 
+
+cfg_file_name = "test_config.cfg"
 
 default_cfg_dict = dict(
     default_option=dict(
@@ -322,3 +325,26 @@ def write_precision(cfg, func_name, passed=True):
     if record_env == "ALL":
         write_csv(path, content)
     sigle_func_record = []
+
+
+def get_saved_pth_list(inputs_dir_path, cfg_file_name) -> list:
+    with open(os.path.join(inputs_dir_path, cfg_file_name), "rb") as f:
+        cfg_dict = pickle.load(f)
+
+    return [k for k in cfg_dict]
+
+
+def get_data_from_file(data_path, test_path, name=""):
+    if not os.path.exists(data_path):
+        logger.error(f"FileNotFound: No benchmark {name} data '{test_path}' was generated"
+                     f" (No such file or directory: {data_path})")
+        return None
+    try:
+        f = open(data_path, "rb")
+        data = pickle.load(f)
+    except Exception as e:
+        logger.error(f"Failed: {e}")
+        return None
+    else:
+        f.close()
+    return data

@@ -10,12 +10,12 @@ from .utils import need_process_func
 from .config import Genfunc, dict_elem_length, Config
 from . import diopi_configs
 from .dtype import from_dtype_str
+from .utils import get_saved_pth_list, get_data_from_file, cfg_file_name
 import torch
 import torchvision
 
 
 _cur_dir = os.path.dirname(os.path.abspath(__file__))
-cfg_file_name = "test_config.cfg"
 
 
 def expand_para(para_dict: dict, paras_list: list):
@@ -304,29 +304,6 @@ def gen_and_dump_data(dir_path: str, cfg_name: str, cfg_expand_list: list, cfg_s
         function_paras["requires_grad"] = {}
 
 
-def get_saved_pth_list(inputs_dir_path) -> list:
-    with open(os.path.join(inputs_dir_path, cfg_file_name), "rb") as f:
-        cfg_dict = pickle.load(f)
-
-    return [k for k in cfg_dict]
-
-
-def get_data_from_file(data_path, test_path, name=""):
-    if not os.path.exists(data_path):
-        logger.error(f"FileNotFound: No benchmark {name} data '{test_path}' was generated"
-                     f" (No such file or directory: {data_path})")
-        return None
-    try:
-        f = open(data_path, "rb")
-        data = pickle.load(f)
-    except Exception as e:
-        logger.error(f"Failed: {e}")
-        return None
-    else:
-        f.close()
-    return data
-
-
 class GenInputData(object):
     r'''
     Generate input data for all functions by using diopi_configs
@@ -572,7 +549,7 @@ class GenOutputData(object):
 
         gen_counter = 0
         func_name_list = []  # make the info log once
-        saved_pth_list = get_saved_pth_list(inputs_dir_path)
+        saved_pth_list = get_saved_pth_list(inputs_dir_path, cfg_file_name)
         for saved_pth in saved_pth_list:
             cfg_func_name = saved_pth.split("::")[1].rsplit("_", 1)[0]
             if not need_process_func(cfg_func_name, func_name, model_name):
