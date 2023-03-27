@@ -1,7 +1,7 @@
 /**
  * @file
- * @author OpenComputeLab
- * @copyright  (c) 2023, OpenComputeLab.
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
  */
 
 #ifndef IMPL_TORCH_ERROR_HPP_

@@ -1,4 +1,4 @@
-# Copyright (c) 2023, OpenComputeLab.
+# Copyright (c) 2023, DeepLink.
 import os
 # CONVERT
 #
@@ -16,8 +16,8 @@ import os
 new_content = []
 new_content.append('/**
  * @file
- * @author OpenComputeLab
- * @copyright  (c) 2023, OpenComputeLab.
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
  */
 #include <diopi/functions.h>\n\
 #include <stdio.h>\n\

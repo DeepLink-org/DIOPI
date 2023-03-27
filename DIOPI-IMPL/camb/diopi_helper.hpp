@@ -1,7 +1,7 @@
 /**
  * @file
- * @author OpenComputeLab
- * @copyright  (c) 2023, OpenComputeLab.
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
  */
 
 #ifndef IMPL_CAMB_DIOPI_HELPER_HPP_
