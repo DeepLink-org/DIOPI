@@ -190,13 +190,9 @@ public:
         return p;
     }
 
-    diopiTensorHandle_t tensor_handle() {
-        return tensor_;
-    }
+    diopiTensorHandle_t tensor_handle() { return tensor_; }
 
-    diopiConstTensorHandle_t tensor_handle() const{
-        return tensor_;
-    }
+    diopiConstTensorHandle_t tensor_handle() const { return tensor_; }
 
 protected:
     diopiTensorHandle_t tensor_ = 0;
