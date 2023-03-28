@@ -235,7 +235,7 @@ def cos(input, inplace=False) -> Tensor:
 
 
 def tanh(input, inplace=False) -> Tensor:
-    return unary_op(input, inplace, 'diopiTanh')
+    return unary_op(input, inplace, 'diopiTanh', promote_type(input, Dtype.float32))
 
 
 def exp(input, inplace=False) -> Tensor:
@@ -2223,7 +2223,7 @@ def cumsum(input, dim, dtype=None):
     sizeI = list(input.size())
     assert dim < len(sizeI), "dim out of index"
 
-    out = raw_like(input) if dtype is None else Tensor(input.size(), dtype)
+    out = Tensor(input.size(), promote_type(input, Dtype.int64)) if dtype is None else Tensor(input.size(), dtype)
     func = check_function("diopiCumsum")
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, c_int64(dim))
     check_returncode(ret)
@@ -2232,7 +2232,7 @@ def cumsum(input, dim, dtype=None):
 
 def cdist(x1, x2, p, compute_mode=None):
     sizeX1 = list(x1.size())
-    sizeX2 = x2.size()
+    sizeX2 = list(x2.size())
     assert len(sizeX1) == len(sizeX2) and len(sizeX1) > 1, "cdist only supports at least 2D tensors"
     assert sizeX1[-1] == sizeX2[-1], "X1 and X2 must have the same number of elements at the last dimension"
 
@@ -2245,8 +2245,14 @@ def cdist(x1, x2, p, compute_mode=None):
     else:
         compute_mode = c_void_p()
 
-    sizeX1[-1] = sizeX2[-2]
-    out = Tensor(sizeX1, x1.get_dtype())
+    sizeO = sizeX1
+    length = len(sizeX1)
+    for i in range(length - 2):
+        assert sizeX1[i] == sizeX2[i] or sizeX1[i] == 1 or sizeX2[i] == 1,\
+            "size1 and size2 must be broadcastable"
+        sizeO[i] = sizeX1[i] if sizeX2[i] == 1 else sizeX2[i]
+    sizeO[-1] = sizeX2[-2]
+    out = Tensor(sizeO, x1.get_dtype())
     func = check_function("diopiCdist")
     ret = func(x1.context_handle, out.tensor_handle, x1.tensor_handle, x2.tensor_handle, c_double(p), compute_mode)
     check_returncode(ret)
@@ -2278,7 +2284,7 @@ def reciprocal(input, inplace=False) -> Tensor:
         func = check_function(call)
         ret = func(input.context_handle, input.tensor_handle)
     else:
-        out = raw_like(input)
+        out = Tensor(input.size(), promote_type(input, Dtype.float32))
         func = check_function(call)
         ret = func(input.context_handle, out.tensor_handle, input.tensor_handle)
 
@@ -2370,8 +2376,8 @@ def smooth_l1_loss_backward(input, grad_outputs, target, reduction='mean', beta=
 
 
 def maximum(input, other) -> Tensor:
-    sizeO = broadcast_out_size(list(input.size()), list(other.size()))
-    out = Tensor(sizeO, input.get_dtype())
+    size = broadcast_out_size(list(input.size()), list(other.size()))
+    out = Tensor(size, common_dtype(input, other))
 
     func = check_function("diopiMaximum")
     ret = func(input.context_handle, out.tensor_handle,
@@ -2381,8 +2387,8 @@ def maximum(input, other) -> Tensor:
 
 
 def minimum(input, other) -> Tensor:
-    sizeO = broadcast_out_size(list(input.size()), list(other.size()))
-    out = Tensor(sizeO, input.get_dtype())
+    size = broadcast_out_size(list(input.size()), list(other.size()))
+    out = Tensor(size, common_dtype(input, other))
 
     func = check_function("diopiMinimum")
     ret = func(input.context_handle, out.tensor_handle,
@@ -2955,18 +2961,21 @@ def remainder(other, input=None, self=None):
                         "input and other must Supports broadcasting to a common shape"
                     if sizeO[i] == 1:
                         sizeO[i] = sizeOther[i]
-            out = Tensor(sizeO, input.get_dtype())
+            out_dtype = common_dtype(input, other)
+            out = Tensor(sizeO, out_dtype)
             input = input.tensor_handle
             other = other.tensor_handle
         else:
             call += "Scalar"
-            out = raw_like(input)
+            out_dtype = common_dtype(input, other)
+            out = Tensor(input.size(), out_dtype)
             other = byref(Scalar(other))
             input = input.tensor_handle
     else:
         assert isinstance(other, Tensor), "input or other must be tensor"
         context = other.context_handle
-        out = raw_like(other)
+        out_dtype = common_dtype(input, other)
+        out = Tensor(other.size(), out_dtype)
         input = byref(Scalar(input))
         other = other.tensor_handle
     func = check_function(call)
@@ -3109,9 +3118,9 @@ def interpolate(input, size=None, scale_factor=None, mode="nearest", align_corne
     return out
 
 
-def interpolate_backward(input, grad_outputs, size, mode="nearest", align_corners=None) -> Tensor:
+def interpolate_backward(input, grad_outputs, size, mode="nearest", align_corners=None, **kwargs) -> Tensor:
     in_size = Sizes(input.size())
-    out_size = Sizes(tuple(size))
+    out_size = Sizes(grad_outputs[0].size()[2:])
     grad_input = raw_like(input)
 
     if mode == "nearest":
@@ -3194,7 +3203,7 @@ def prod(input, dim=None, keepdim=False, dtype=None) -> Tensor:
     assert isinstance(dim, (int)) or dim is None,\
         "dim should be int"
 
-    _, out = reduce_op_process(input, dim, keepdim, dtype)
+    _, out = reduce_op_process(input, dim, keepdim, promote_type(input, Dtype.int64))
     if dim is None:
         dim = c_void_p()
     else:
