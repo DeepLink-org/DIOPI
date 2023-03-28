@@ -1,9 +1,9 @@
-/**************************************************************************************************
- * Copyright (c) 2022, SenseTime Inc.
- * License
- * Author
- *
- *************************************************************************************************/
+ /**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ * @brief A reference implemention for DIOPI runtime, which is utilized to support conformance test suite of DIOPI
+ */
 
 #ifndef _PROJECT_DIOPI_CONFORMANCETEST_REGISTER_H_
 #define _PROJECT_DIOPI_CONFORMANCETEST_REGISTER_H_

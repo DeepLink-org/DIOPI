@@ -14,8 +14,8 @@ import os
 sys.path.insert(0, os.path.abspath('../../'))
 
 project = 'CONFORMANCETEST-DIOPI'
-copyright = '2022, sensetime'
-author = 'sensetime'
+copyright = '2023, DeepLink'
+author = 'DeepLink'
 release = '1.0.0'
 
 # -- General configuration ---------------------------------------------------

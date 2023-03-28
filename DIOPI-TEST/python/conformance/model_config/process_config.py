@@ -1,3 +1,4 @@
+# Copyright (c) 2023, DeepLink.
 import cv_config
 import seg_config
 import os
