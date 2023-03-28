@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
+
 #ifndef IMPL_CAMB_COMMON_COMMON_HPP_
 #define IMPL_CAMB_COMMON_COMMON_HPP_
 

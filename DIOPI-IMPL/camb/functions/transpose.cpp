@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
+
 #include <string.h>
 #include <numeric>
 #include "../cnnl_helper.hpp"

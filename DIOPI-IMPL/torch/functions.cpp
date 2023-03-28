@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
+
 #include <math.h>
 #include <diopi/functions.h>
 #include <torch/nn.h>

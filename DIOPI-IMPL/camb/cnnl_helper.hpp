@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
+
 #ifndef IMPL_CAMB_CNNL_HELPER_HPP_
 #define IMPL_CAMB_CNNL_HELPER_HPP_
 

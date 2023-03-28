@@ -1,9 +1,9 @@
-/**************************************************************************************************
- * Copyright (c) 2022, SenseTime Inc.
- * License
- * Author
- *
- *************************************************************************************************/
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
+
 #include <cnmlrt.h>
 #include <cnnl.h>
 #include <diopi/diopirt.h>

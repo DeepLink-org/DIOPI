@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
+
 #include <cnnl.h>
 #include <cnrt.h>
 #include <diopi/functions.h>
