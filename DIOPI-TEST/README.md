@@ -1,200 +1,273 @@
-# ConformanceTest-DIOPI
+# DIOPI-TEST
 
-<!-- 简体中文｜[English](README.md) -->
+## **什么是DIOPI-TEST？**
 
-## 简介
-一致性测试套件（ConformanceTest-DIOPI）是构建于[设备无关算子接口（Device-Independent Operator Interface, DIOPI）](https://github.com/OpenComputeLab/DIOPI)之上的测试框架，它支持了没有训练框架的情况下，验证算子适配正确性的功能。
+DIOPI-TEST是构建于设备无关算子接口（Device-Independent Operator Interface, DIOPI）之上的测试框架，它支持了没有训练框架的情况下，验证算子适配正确性的功能。DIOPI-TEST设计了一套完整的测试框架和一套算子函数测试。测试套件，可以使芯片厂商适配 DIOPI 算子时，无需训练框架即可对适配结果的正确性进行验证。
 
 主要模块：
-- [DIOPI 运行时](csrc)：支持了运行时函数的接口，驱动芯片对算子进行运算。
-- DIOPI 算子实现：提供了接入一致性测试套件的算子开发示例。
-    + [impl/cuda](impl/cuda)：使用 CUDA 和 cuDNN 实现了小部分英伟达算子接口。
-    + [impl/torch](impl/torch)：使用 PyTorch C++ API 实现了英伟达算子接口。
-    + [impl/camb](impl/camb)：使用 CNNL 实现了小部分寒武纪算子接口。
-    + [impl/camb_pytorch](impl/camb_pytorch)：使用 camb_pytorch 实现了寒武纪算子接口。
-- [算子测试](python/main.py)：
-    + 自定义测例配置：套件提供了描述算子测例的配置文件，方便用户自定义扩展测例。
-    + 生成基准数据：套件可以根据配置文件生成算子测例的基准输入和输出数据。
-    + 校验适配算子：算子适配完成后使用基准输入数据得到的结果与基准输出数据进行比较验证。
+* DIOPI-TEST 运行时：支持了运行时函数的接口，用以管理设备相关资源。
+* 非算子测试：
+    * 测试获取设备相关信息标准接口。
+    * 测试获取错误信息标准接口。
+    * 测试上下文 Context 中 Stream 的正确使用。
+* 算子测试：
+    * 自定义测例配置：套件提供了描述算子测例的配置文件，用户可自定义扩展测例。
+    * 生成基准数据：套件可以根据配置文件生成算子测例的基准输入和输出数据。
+    * 校验适配算子：算子适配完成后使用基准输入数据得到的结果与基准输出数据进行比较验证。
+* 模型算子测试：
+    * 采用算子测试相同的测例配置规则, 使用同一个测试框架生成基准数据并进行测试验证。
+    * 从30多个模型训练过程中抓取张量形状，数据类型及其他非张量参数值生成测例。
 
-## <span id="start">开始</span>
-以 [impl/cuda](impl/cuda) 为例介绍如何使用一致性测试套件进行算子测试，使用之前请确保 CUDA 和 PyTorch 已经成功安装在环境中，生成基准数据和运行 impl/cuda 算子测例要求 `cuda>=10.1`， `pytorch>=1.7.0`。
+
+DIOPI-TEST 测试范围：
+* 每一个 DIOPI 标准算子均有相应的测试，并且会从不同的数据类型、张量维度、非张量参数等角度对每个算子设计多个测例。保证 DIOPI 标准算子接口中每个参数功能均被测试。针对常见训练算子目前已有约 2500个测例， 其中涵盖了如 conv2d， batch_norm, adaptive_max_pool2d, relu 等经典训练算子。
+* DIOPI-TEST 提供的模型算子测试，涵盖了经典分类模型如 resnet50, vgg16, seresnet50, densenet, mobilenet_v2, efficientnet, shufflenet_v2, repvgg, swin_transformer, vit, inceptionv3 及经典检测模型如 retinanet, faster_rcnn_r50, ssd300, yolov3, atss, fcos, mask_rcnn, solo, centernet, cascade_rcnn, detr 及经典分割模型如 unet, upernet, pspnet, fcn, deeplabv3, deeplabv3plus 及其他领域深度学习模型 sar, dbnet, stgcn, crnn, hrnet, deeppose, tsn, slowfast。
 
 
-### i. 准备 DIOPI 子模块
-```bash
-git submodule update --init
+## **使用教学**
+
+### 基础安装及使用
+1. 需下载 [DIOPI-Test仓库](https://github.com/OpenComputeLab/DIOPI-Test)，可使用命令：
+    ```
+    git clone https://github.com/OpenComputeLab/DIOPI-Test.git
+    ```
+2. 编译 DIOPI-IMPL 提供编译文件的编译计算库。以下示例仅供参考：
+    ```
+    mkdir build && cd build && cmake .. -DIMPL_OPT=cuda && make -j32
+    ```
+3. 进入python目录，生成基准数据(需准备 nv 机器和 pytorch1.10 环境)
+    ```
+    cd python && python main.py --mode gen_data
+    ```
+    如需指定模型：
+    ```
+    python main.py --mode gen_data --model_name xxx
+    ```
+    其中支持的模型名可以通过如下命令获得：
+    ```
+    python main.py --get_model_list
+    ```
+4. 将数据拷贝到芯片机器上，执行以下命令验证算子：
+    ```
+    python main.py --mode run_test
+    ```
+    如需指定模型：
+    ```
+    python main.py --mode run_test --model_name xxx
+    ```
+    如需过滤不支持的数据类型以及部分测试使用nhwc格式张量(如跳过float64以及int64测例）：
+    ```
+    python main.py --mode run_test --filter_dtype float64 int64 --nhwc
+    ```
+
+### 结果分析
+
+测例通过的输出形式如下：
+  ```
+  2022-09-29 16:40:40,550 - DIOPI-Test - INFO - Run diopi_functions.relu succeed
+  ```
+失败的测例会额外存储测例输入参数的张量信息在 error_report.csv 中以供调试所需。
+  ```
+  DIOPI-Test Error Report
+  ---------------------------------
+  1 Tests failed:
+  1--Run diopi_functions.batch_norm_backward failed.   TestTag: [float32, backward]  TensorInfo : [(input, float32, (32, 16, 112, 112)), (running_mean, float32, (16,)), (running_var, float32, (16,)), (weight, float32, (16,)), (bias, float32, (16,))]
+  ---------------------------------
+  Test skipped or op not implemented:
+  ```
+
+### 可选测试模式
+DIOPI-TEST框架还提供针对不同硬件芯片特点的测试模式以及其他测试模式
+
+* mode: 指定测试阶段
+
+    mode 为 gen_data 时产生基准输入输出数据：
+    ```
+    python main.py --mode gen_data
+    ```
+    mode 为 run_test 时运行测试：
+    ```
+    python main.py --mode run_test
+    ```
+    mode 为 utest 时运行非算子测试：
+    ```
+    python main.py --mode utest
+    ```
+* fname: 指定算子测试
+    fname 为函数名字选项, 如果指定函数名字 (测例配置文件中测例的 name) 则会对该算子进行基准数据生成和测试,
+    不指定默认对所有算子生成基准数据和测试。fname 默认值为 all_ops。
+
+    ```
+        # 只测试 relu
+        python main.py --mode gen_data --fname relu
+        python main.py --mode run_test --fname relu
+
+        # 测试所有算子
+        python main.py --mode gen_data
+        python main.py --mode run_test
+
+        # 测试所有算子
+        python main.py --mode gen_data --fname all_ops
+        python main.py --mode run_test --fname all_ops
+    ```
+
+* filter_dtype: 过滤指定数据类型的测试
+    当前测试方案中, 会在配置文件中配置算子支持的多个数据类型, 比如: int32, int64, float32, float64。
+    默认的测试行为会对所有配置的数据类型都进行测试，但是可能存在某些硬件并不支持所有配置的数据类型，
+    比如不支持 float64, 那么可以通过设置 filter_dtype 为 float64 来过滤掉对于 float64 的测试。
+
+    ```
+        python main.py --mode run_test --fname relu --filter_dtype float64
+        # 可叠加不支持的数据类型
+        python main.py --mode run_test --fname relu --filter_dtype float64 int64
+    ```
+
+* nhwc : 使用 channel_last 格式的张量测试
+    目前，模型中使用到的数据格式主要为 nchw/nhwc 和 ncdhw/ndhwc。当前测试默认支持的是 nchw/ncdhw 数据格式。
+    如果需要测试 nhwc/ndhwc 格式，可以通过设置 nhwc 来生效。
+
+    channel_last 测试只对部分算子有效, 请参考 python/conformance/utils.py 中 nhwc_op 字典。
+    其中, key 为需要使用 channel last 数据格式的算子名称, value 的第一个参数表示 2d/3d 数据。
+    如果没有显式指明，如 interpolate 算子, 则对 4 维以下的张量按照 2d 数据处理, 5 维张量按照
+    3d 数据处理, 目前不支持 5 维以上输入。value 后续元素代表算子需要转换为 channel last 数据格式的
+    参数。
+
+    出于统一管理基准输入输出数据的目的, 且数据格式是否为 channel last 并不影响最终计算结果。
+    故数据格式的转换仅发生在 run_test 阶段。
+
+    ```
+        # --nhwc 仅对在 nhwc_op 字典中的算子有效
+        python main.py --mode run_test --fname relu --nhwc
+    ```
+
+
+* four_bytes: 使用int32代替int64测试
+    pytorch 需要索引张量的算子 (max_pool, sort等), 基本采用 int64 作为默认数据格式。
+    而很多国产 AI 芯片并不支持该数据类型运算, 在底层核函数中使用 int32 数据类型代替 int64 计算。
+    为了支持国产 AI 芯片这一特性, 一致性测试框架允许使用 int32 数据类型进行测试。
+
+    该设置只对部分算子有效, 请参考 python/conformance/utils.py 中 dtype_op 字典。
+    其中, key 为使用 int32 代替 int64 的算子名称, value 中为使用 int32
+    数据类型的输入变量或输出变量。
+
+    出于统一管理基准输入输出数据的目的, 且均是整型数据类型, 对于精度不会产生明显影响。
+    故数据类型的转换仅发生在 run_test 阶段。
+
+    ```
+        # --four_bytes 仅对在 dtype_op/dtype_out_op 字典中的算子有效
+        python main.py --mode run_test --fname relu --four_bytes
+    ```
+
+* model_name: 指定模型相关算子测试
+    为了简化模型相关的算子测试，可以通过设置 model_name 来测试指定模型的所有算子。
+
+    ```
+        python main.py --mode gen_data --model_name resnet50
+        python main.py --mode run_test --model_name resnet50
+    ```
+### 测例配置说明
+
+DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子测试为例，
+所有算子测例配置文件位于 python/conformance/diopi_configs.py 中。
+我们以 group_norm 算子测例配置为例来阐释说明测例生成。
+
 ```
-
-### ii. 编译
-编译后可以在 lib 目录查看到生成的 `libdiopirt.so` 和 `libdevice_impl.so` 动态库。
-```bash
-mkdir -p build && cd build
-
-cmake .. -DCUDA_ARCH_AUTO=ON -DIMPL_OPT=Torch
-
-make -j4
-```
-同时项目中提供了编译脚本 `sh scripts/build_impl.sh torch`，可以直接运行进行编译。
-
-
-### iii. 测试
-第一步生成基准输入和输出数据，第二步验证适配的算子的正确性。
-</br>测试脚本运行命令：
-</br>`python main.py [-h] [--mode MODE] [--fname FNAME]`
-
-选项说明：
-
-- --mode *可选项：gen_data, run_test, utest*
-</br> 运行模式选项，用于选择当前函数生成基准数据还是测试算子
-
-- --fname *缺省：all*
-</br> 函数名字选项，如果指定函数名字（配置文件中测例的 *name*）则会对该算子进行基准数据生成和测试，不指定默认对所有算子生成基准数据和测试。
-
-```bash
-cd ../python
-
-# Step 1: 在 Nvidia 设备上生成基准输入和输出数据
-python main.py --mode gen_data --fname all
-
-# Step 2: 在接入芯片设备上运行测试
-python main.py --mode run_test --fname all
-
-# Other: 用于验证接入芯片是否支持框架 diopiTensor 的基本操作
-python main.py --mode utest
-```
-## 其他定制化测试
-</br>测试脚本运行命令：
-</br>`python main.py [-h] [--get_model_list]`
-
-选项说明：
-</br> 执行该模式, 将返回目前已有的模型及模型所需算子清单
-
-</br>测试脚本运行命令：
-</br>`python main.py [-h] [--mode MODE] [--model_name NAME] [--filter_dtype TYPE]`
-
-选项说明：
-
-- --mode_name *可选项：选择的模型名字, 指定后 --fname 将失效*
-</br> 指定模型选项，当前 mode 对模型所需算子清单中的所有算子执行
-
-- --filter_dtype *可选项：过滤的数据类型*
-</br> 指定过滤的数据类型选项，当前 mode 对指定的数据类型不执行
-
-## 配置文件规则
-配置文件 [diopi-conifg.py](python/conformance/diopi_configs.py) 使用 Python 语法以字典 key-value 的形式描述算子测例，key 为测例的名字，value 包含了测例的参数配置。下面以 `conv2d` 为例介绍配置文件选项：
-
-- name: *list*
-    </br> 函数名字。
-    </br> conv2d 在生成基准数据中使用到的函数名字：
-    > torch.nn.functional.conv2d(*input, weight, bias=None, stride=1, padding=0, dilation=1, groups=1*) -> Tensor
-
-    </br> 在测试算子适配中使用到的 python 函数名字：
-    > diopi_funtions.conv2d(*input, weight, bias=None, stride=1, padding=0, dilation=1, groups=1*) -> Tensor
-- atol: *float*
-    </br> 用于结果验证的绝对误差参数。
-- rtol: *float*
-    </br> 用于结果验证的相对误差参数。
-    </br> 结果验证使用此函数检查 input 和 other 是否满足条件：
-    > |input - other| ≤ atol + rtol × |other|
-- dtype: *list*
-    </br> 函数张量参数的数据类型。
-- tensor_para: *dict*
-    </br> 函数张量参数（比如 input，weight，bias 等）。
-    </br> args 中：
-    + ins: *list*
-        </br> 张量参数的名字。
-    + shape: *tuple*
-        </br> 张量参数的形状。
-    + gen_fn（缺省）: *builtin_function*
-        </br> 数据生成器，使用了 numpy.random.randn 作为默认生成器。
-    
-    </br> args 中包含`多组`测试用例张量，shape 元素个数代表张量组数，每个 ins 的 shape 都是`一一对应`的。
-    </br> conv_2d 中描述了三组输入张量测试用例：
-    </br> * 第一组：`group0 = {"input": tensor(2, 256, 200, 304), "weight": tensor(12, 256, 1, 1), "bias": tensor(12),}`
-    </br> * 第二组：`group1 = {"input": tensor(2, 2048, 64, 64), "weight": tensor(2048, 1, 3, 3), "bias": None,}`
-    </br> * 第三组：`group2 = {"input": tensor(2, 2048, 1, 1), "weight": tensor(512, 2048, 1, 1), "bias": None,}`
-- para: *dict*
-    </br> 函数参数（非张量参数）。
-    </br> para 中的参数与 tensor_para 中 shape `一一对应`，代表每一组输入张量的函数参数。
-    </br> conv_2d 中为每组张量用例描述了函数参数：
-    </br> * 第一组：`group0.update(dict(stride=2, padding=0, dilation=1, groups=1))`
-    </br> * 第二组：`group1.update(dict(stride=1, padding=12, dilation=12, groups=2048))`
-    </br> * 第三组：`group2.update(dict(stride=1, padding=0, dilation=1, groups=1))`
-
-
-```python
-'conv_2d': dict(
-    name=["conv2d"],
-    atol=1e-5,
-    rtol=1e-4,
-    dtype=[Dtype.float32, Dtype.float16],
-    tensor_para=dict(
-        args=[
-            {
-                "ins": ["input"],
-                "shape": ((2, 256, 200, 304), (2, 2048, 64, 64), (2, 2048, 1, 1)),
-            },
-            {
-                "ins": ["weight"],
-                "shape": ((12, 256, 1, 1), (2048, 1, 3, 3), (512, 2048, 1, 1)),
-            },
-            {
-                "ins": ["bias"],
-                "shape": ((12, ), None, None),
-            },
-        ]
+    'group_norm': dict(
+        name=['group_norm'],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-5,
+        para=dict(
+            num_groups=[32, 32, 32, 32],
+            eps=[1e-05, 1e-05, 1e-05, 1e-05]
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad": [True],
+                    "shape": ((2, 256, 100, 152), (2, 256, 7, 10),
+                              (2, 256, 24, 24), (2, 256, 12, 12)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+                {
+                    "ins": ["weight", "bias"],
+                    "requires_grad": [True],
+                    "shape": ((256,), (256,),
+                              (256,), (256,)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+            ]
+        ),
     ),
-    para=dict(
-        stride=[2, 1, 1],
-        padding=[0, 12, 0],
-        dilation=[1, 12, 1],
-        groups=[1, 2048, 1],
-    ),
-),
 ```
+* name: *list*
+    函数名字。
 
-## 适配流程
-以 [impl/cuda](impl/cuda) 中 `ReLU` 为例介绍接入一款芯片进行算子开发和测试流程（部分宏定义和函数没有给出实现，用户根据需求自行定义函数）。
-### i. 实现运行时函数
-测试套件提供了运行时所需 [C-API 函数声明](include/diopi_register.h)，用户根据函数声明实现运行时所需函数，然后进行注册。以 CUDA 设备间内存拷贝为例：
-- CUDA 设备间内存拷贝实现
-```c
-int32_t cuda_memcpy_d2d_async(diopiStreamHandle_t stream_handle,
-                              void* dst, const void* src, uint64_t bytes) {
-    cudaStream_t phStream = (cudaStream_t)stream_handle;
-    CALL_CUDA(cudaMemcpyAsync(dst, src, bytes, cudaMemcpyDeviceToDevice, phStream));
-    return diopiSuccess;
-}
-```
+    如在测试 DIOPI 算子时使用到的 python 函数名字：
 
-- 实现函数后进行注册
-```c++
-int32_t initLibrary() {
-    // others register function...
-    diopiRegisterMemcpyD2DAsyncFunc(cuda_memcpy_d2d_async);
-    // others register function...
+    ```
+    diopi_funtions.group_norm(**kwargs)
+    ```
 
-    return diopiSuccess;
-}
-```
-### ii. 实现 DIOPI 函数接口
-[DIOPI](https://github.com/ParrotsDL/DIOPI/blob/master/include/diopi/functions.h) 提供了了 `ReLU` 函数接口
-> DIOPI_API diopiError_t diopiRelu(*diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiTensorHandle_t input*);
+* interface: *list*
 
-使用 cuDNN 函数库实现声明的 `ReLU` 函数接口，具体实现参考[这里](impl/cuda/functions.cpp)，伪代码如下：
-```c
-extern "C" diopiError_t diopiRelu(diopiContextHandle_t ctx,
-    diopiTensorHandle_t out, const diopiTensorHandle_t input) {
-    // others ...
+    在生成基准数据中使用模块名, 若不指定, 默认为 torch.nn.functional。
+    如在生成基准数据时调用的 pytorch 函数:
 
-    DIOPI_CALLCUDNN(cudnnActivationForward(
-        handle, descAct, &alpha, desc,
-        trIn.data(), &beta, desc, trOut.data()));
+    ```
+    torch.group_norm(**kwargs)
+    ```
 
-    // others ...
-    return diopiSuccess;
-}
-```
-### iii. 对适配算子正确性验证
-算子完成后需要进行测试验证，在[开始](#start)已经介绍了如何进行算子测试，这里不再进行介绍。
+* atol: *float*
+    用于结果验证的绝对误差参数。
+
+* rtol: *float*
+    用于结果验证的相对误差参数。
+    结果验证使用此函数检查输出 out  和参考输出 out_ref 是否满足条件：
+
+        |out - out_ref| ≤ atol + rtol x |out_ref|
+
+* para: *dict*
+    函数非张量参数（比如 num_groups, eps 等）。
+
+* tensor_para: *dict*
+    函数张量参数（比如 input, weight, bias 等）。
+
+    args 中：
+
+        - ins (*list*): 张量参数的名字, 默认为 ["input"]。
+        - shape (*tuple*): 张量参数的形状。
+        - gen_fn (*builtin_function*): 数据生成器, 默认为 numpy.random.randn。
+          若在 args 外部制定, 则应用于 args 内所有张量参数。
+        - requires_grad (*list*): 是否反向计算梯度, 默认为 [Fasle]。
+        - dtype (*list*): 张量的数据类型, 若在 args 外部制定, 则应用于 args 内所有张量参数。
+
+    args 中包含 **多组** 测试用例张量, shape 元素个数代表张量组数, 每个 ins 的 shape 都是 **一一对应** 的。
+    该数量于 **para** 每个非张量参数的数量也 **一一对应**。
+    group_norm 中描述了四组输入张量测试用例, 以下四组测例分别为不同数据类型，此测例配置为 float32, float64
+    各生成一次基准输入输出数据:
+
+    第一组: `group0 = {"num_group": 32, "eps" : 1e-05, "input": tensor(2, 256, 100, 152), "weight": tensor(256), "bias": tensor(256)}`
+
+    第二组: `group1 = {"num_group": 32, "eps" : 1e-05, "input": tensor(2, 256, 7, 10), "weight": tensor(256), "bias": tensor(256)}`
+
+    第三组: `group2 = {"num_group": 32, "eps" : 1e-05, "input": tensor(2, 256, 24, 24), "weight": tensor(256), "bias": tensor(256)}`
+
+    第四组: `group3 = {"num_group": 32, "eps" : 1e-05, "input": tensor(2, 256, 12, 12), "weight": tensor(256), "bias": tensor(256)}`
+
+* 其他配置参数：
+    * atol_half: *float*
+        用于 half 数据类型测试结果验证的绝对误差参数。
+    * rtol_half: *float*
+        用于 half 数据类型测试结果验证的相对误差参数。
+    * is_inplace: *bool*
+        是否复用基准输入输出数据做 inplace 版本算子测试。默认为 Fasle。
+    * no_out_ref: *bool*
+        常见于随机数算子测试中，用以表明该算子测试无基准输出数据。
+    * saved_args: *dict*
+        指定输出结果作为反向计算的输入参数。
+    * seq_name: *str* 和 gen_num_range : *list*
+        见于cat、stack算子的测例配置, 组合使用。gen_num_range 表示在指定的范围内产生随机数个 args 中的张量。
+        seq_name 指示将这些放入列表中的张量列表名字。
+
