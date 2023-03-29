@@ -113,7 +113,7 @@ T getValue(const diopiScalar_t* scalar) {
     }
 }
 
-template <int InputSize, int OutputSize, aclDataType (*dtypeCastStrategy)(diopiConstTensorHandle_t) = getAclDataType>
+template <int InputSize = 8, int OutputSize = 8, aclDataType (*dtypeCastStrategy)(diopiConstTensorHandle_t) = getAclDataType>
 class AclOpRunner {
     std::string opname_;
     aclopAttr* attr_;
