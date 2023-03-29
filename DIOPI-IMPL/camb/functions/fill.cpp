@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
+
 #include <diopi/functions.h>
 
 #include <vector>
@@ -10,7 +16,7 @@ namespace camb {
 extern "C" {
 
 diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* value) {
-    auto trInput = makeTensor(input);
+    auto trInput = DiopiTensor(input);
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     CnnlResourceGuard<cnnlTensorDescriptor_t, cnnlCreateTensorDescriptor, cnnlDestroyTensorDescriptor> CnnlDesc;
     cnnlTensorLayout_t layout = CNNL_LAYOUT_ARRAY;

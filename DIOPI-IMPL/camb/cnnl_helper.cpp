@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
+
 #include "cnnl_helper.hpp"
 
 #include <functional>
@@ -26,6 +32,9 @@ diopiError_t CnnlDataType::convertToCnnlType(cnnlDataType_t* cnnlType, diopiDtyp
             break;
         case diopi_dtype_float32:
             *cnnlType = CNNL_DTYPE_FLOAT;
+            break;
+        case diopi_dtype_float64:
+            *cnnlType = CNNL_DTYPE_DOUBLE;
             break;
         case diopi_dtype_int16:
             *cnnlType = CNNL_DTYPE_INT16;
@@ -115,6 +124,37 @@ std::map<std::vector<diopiDtype_t>, cnnlCastDataType_t> gCnnlCastDataTypeMapping
 };
 
 CnnlHandlePool cnnlHandlePool;
+
+diopiError_t cnnl_transpose(
+    diopiContextHandle_t& ctx, cnnlHandle_t& handle, DiopiTensor& in, DiopiTensor& out, cnnlTensorLayout_t layoutIn, cnnlTensorLayout_t layoutOut) {
+    std::vector<int> order;
+    if (layoutIn == CNNL_LAYOUT_NHWC && layoutOut == CNNL_LAYOUT_HWCN) {
+        order = {1, 2, 3, 0};
+    } else if (layoutIn == CNNL_LAYOUT_NHWC && layoutOut == CNNL_LAYOUT_NCHW) {
+        order = {0, 3, 1, 2};
+    } else if (layoutIn == CNNL_LAYOUT_NCHW && layoutOut == CNNL_LAYOUT_HWCN) {
+        order = {2, 3, 1, 0};
+    } else if (layoutIn == CNNL_LAYOUT_NCHW && layoutOut == CNNL_LAYOUT_NHWC) {
+        order = {0, 2, 3, 1};
+    } else if (layoutIn == CNNL_LAYOUT_HWCN && layoutOut == CNNL_LAYOUT_NHWC) {
+        order = {3, 0, 1, 2};
+    } else if (layoutIn == CNNL_LAYOUT_HWCN && layoutOut == CNNL_LAYOUT_NCHW) {
+        order = {3, 2, 0, 1};
+    } else {
+        DIOPI_CHECK(false,
+                    "unkown layout error, layout should be "
+                    "in [CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_HWCN]");
+    }
+    CnnlTensorDesc inDesc(in, layoutIn);
+    CnnlTensorDesc outDesc(out, layoutOut);
+    CnnlTransposeDescriptor transDesc(order.size(), order.data());
+    size_t workspace_size = 0;
+    DIOPI_CHECKCNNL(cnnlGetTransposeWorkspaceSize(handle, inDesc.get(), transDesc.get(), &workspace_size));
+
+    void* workspace_ptr = workspace_size == 0 ? requiresBuffer(ctx, workspace_size).data() : nullptr;
+    DIOPI_CALLCNNL(cnnlTranspose_v2(handle, transDesc.get(), inDesc.get(), in.data(), outDesc.get(), out.data(), workspace_ptr, workspace_size));
+    return diopiSuccess;
+}
 
 }  // namespace camb
 

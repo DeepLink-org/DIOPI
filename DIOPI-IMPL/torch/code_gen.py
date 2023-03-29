@@ -1,3 +1,4 @@
+# Copyright (c) 2023, DeepLink.
 import os
 # CONVERT
 #
@@ -13,7 +14,12 @@ import os
 # }
 
 new_content = []
-new_content.append('#include <diopi/functions.h>\n\
+new_content.append('/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
+#include <diopi/functions.h>\n\
 #include <stdio.h>\n\
 #include <dlfcn.h>\n\
 \n\

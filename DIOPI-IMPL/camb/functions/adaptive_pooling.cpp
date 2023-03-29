@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
+
 #include <diopi/functions.h>
 
 #include "../cnnl_helper.hpp"
@@ -9,8 +15,8 @@ extern "C" {
 diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t output_size) {
     /* Get handle and generate tensors */
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto input_tr = makeTensor(input);
-    auto output_tr = makeTensor(out);
+    auto input_tr = DiopiTensor(input);
+    auto output_tr = DiopiTensor(out);
 
     /* Some basic check */
     DIOPI_CHECK(input_tr.dim() == 3 || input_tr.dim() == 4, "non-empty 3D or 4D (batch mode) tensor expected for input");
@@ -47,9 +53,9 @@ diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx,
                                             diopiConstTensorHandle_t input) {
     /* Get handle and generate tensors */
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto input_tr = makeTensor(input);
-    auto grad_output_tr = makeTensor(grad_output);
-    auto grad_input_tr = makeTensor(grad_input);
+    auto input_tr = DiopiTensor(input);
+    auto grad_output_tr = DiopiTensor(grad_output);
+    auto grad_input_tr = DiopiTensor(grad_input);
 
     /* Some basic check */
     DIOPI_CHECK(input_tr.dim() == 3 || input_tr.dim() == 4, "non-empty 3D or 4D (batch mode) tensor expected for input");

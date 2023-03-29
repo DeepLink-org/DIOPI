@@ -1,9 +1,8 @@
-/**************************************************************************************************
- * Copyright (c) 2022, SenseTime Inc.
- * License
- * Author
- *
- *************************************************************************************************/
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
 
 #ifndef IMPL_CAMB_DIOPI_HELPER_HPP_
 #define IMPL_CAMB_DIOPI_HELPER_HPP_
@@ -57,40 +56,16 @@ namespace camb {
 
 enum class MemoryFormat : size_t { Contiguous = 0, ChannelsLast = 1, ChannelsLast3d = 2, Preserve = 3 };
 
-template <typename TensorType>
-struct DataType;
-
-template <>
-struct DataType<diopiTensorHandle_t> {
-    using type = void*;
-
-    static void* data(diopiTensorHandle_t& tensor) {
-        void* data;
-        diopiGetTensorData(tensor, &data);
-        return data;
-    }
-};
-
-template <>
-struct DataType<diopiConstTensorHandle_t> {
-    using type = const void*;
-    static const void* data(diopiConstTensorHandle_t& tensor) {
-        const void* data;
-        diopiGetTensorDataConst(tensor, &data);
-        return data;
-    }
-};
-
 class DiopiDataType final {
 public:
     static bool isInteger(diopiDtype_t dtype) { return dtype < 8; }
     static bool isFloatPoint(diopiDtype_t dtype) { return dtype <= 10 && dtype >= 8 || dtype == 12 || dtype == 13; }
 };
-template <typename TensorType>
+
 class DiopiTensor final {
 public:
     DiopiTensor() = default;
-    explicit DiopiTensor(TensorType& tensor) : tensor_(tensor) {
+    explicit DiopiTensor(const diopiTensorHandle_t& tensor) : tensor_(tensor) {
         if (tensor_ != nullptr) {
             diopiSize_t diopiShape;
             diopiSize_t diopiStride;
@@ -102,8 +77,9 @@ public:
             stride_ = std::move(strideTmp);
         }
     }
+    explicit DiopiTensor(const diopiConstTensorHandle_t& tensor) : DiopiTensor(const_cast<diopiTensorHandle_t>(tensor)) {}
 
-    operator TensorType() { return tensor_; }
+    explicit operator diopiTensorHandle_t() { return tensor_; }
 
     diopiDevice_t device() const {
         DIOPI_CHECK_NULLPTR_ABORT(tensor_);
@@ -139,9 +115,9 @@ public:
         diopiGetTensorElemSize(tensor_, &elemsize);
         return elemsize;
     }
-    int64_t dim() { return this->shape().size(); }
+    int64_t dim() const { return this->shape().size(); }
 
-    DiopiTensor<TensorType> contiguous(diopiContextHandle_t ctx, MemoryFormat format = MemoryFormat::Contiguous) {
+    DiopiTensor contiguous(diopiContextHandle_t ctx, MemoryFormat format = MemoryFormat::Contiguous) {
         /* Returns a new Tensor in new memory format, without data copy */
         if (this->is_contiguous(format)) return *this;
         MemoryFormat format_self;
@@ -164,13 +140,10 @@ public:
             }
         }
         diopiSize_t stride_diopi(strides.data(), static_cast<int64_t>(strides.size()));
-        diopiSize_t shape_diopi;
-        diopiGetTensorShape(tensor_, &shape_diopi);
-        diopiTensorHandle_t tensor;
+        diopiSize_t shape_diopi(this->shape().data(), this->shape().size());
+        diopiTensorHandle_t tensor = nullptr;
         diopiRequireTensor(ctx, &tensor, &shape_diopi, &stride_diopi, this->dtype(), this->device());
-
-        TensorType tensor_may_const = tensor;
-        return DiopiTensor<TensorType>(tensor_may_const);
+        return DiopiTensor(tensor);
     }
 
     bool is_contiguous(MemoryFormat format = MemoryFormat::Contiguous) {
@@ -187,6 +160,7 @@ public:
                 stride *= shape[i];
             }
         } else if (format == MemoryFormat::ChannelsLast) {
+            if (strides.size() != 4) return false;
             for (auto i : {1, 3, 2, 0}) {
                 if (strides[i] != stride) {
                     return false;
@@ -202,38 +176,72 @@ public:
         return this->numel() != 0;
     }
 
-    typename DataType<TensorType>::type data() { return DataType<TensorType>::data(tensor_); }
+    void reshape(const std::vector<int64_t> shape) { this->shape_ = shape; }
+
+    void* data() {
+        void* p = nullptr;
+        diopiGetTensorData(tensor_, &p);
+        return p;
+    }
+    const void* data() const {
+        const void* p = nullptr;
+        diopiGetTensorDataConst(tensor_, &p);
+        return p;
+    }
+
+    diopiTensorHandle_t tensor_handle() { return tensor_; }
+
+    diopiConstTensorHandle_t tensor_handle() const { return tensor_; }
 
 protected:
-    TensorType tensor_ = 0;
+    diopiTensorHandle_t tensor_ = 0;
     std::vector<int64_t> shape_{0};
     std::vector<int64_t> stride_{0};
 };
 
-template <typename TensorType>
-inline auto makeTensor(TensorType& tensor) -> DiopiTensor<TensorType> {
-    return DiopiTensor<TensorType>(tensor);
-}
-
-template <typename TensorType>
-inline auto makeTensor(diopiContextHandle_t ctx, const diopiScalar_t* pScalar) -> DiopiTensor<TensorType> {
-    diopiTensorHandle_t tensor;
-    std::vector<int32_t> shape{1};
+inline auto makeTensor(diopiContextHandle_t ctx, const diopiScalar_t* pScalar) -> DiopiTensor {
+    diopiTensorHandle_t tensor = nullptr;
+    std::vector<int64_t> shape{1};
     diopiSize_t size(shape.data(), 1);
     diopiRequireTensor(ctx, &tensor, &size, nullptr, pScalar->stype, diopi_device);
-    return makeTensor(tensor);
+    return DiopiTensor(tensor);
 }
 
-inline DiopiTensor<diopiTensorHandle_t> requiresTensor(diopiContextHandle_t ctx, const diopiSize_t& size, diopiDtype_t dtype) {
-    diopiTensorHandle_t tensor;
+inline DiopiTensor ones(diopiContextHandle_t ctx, std::vector<int64_t> size, diopiDtype_t dtype) {
+    diopiTensorHandle_t tensor = nullptr;
+    diopiSize_t size_(size.data(), size.size());
+    diopiRequireTensor(ctx, &tensor, &size_, nullptr, dtype, diopi_device);
+    diopiScalar_t scalar = {dtype, 1.0};
+    if (DiopiDataType().isInteger(dtype)) scalar = {dtype, 1};
+    diopiFill(ctx, tensor, &scalar);
+    return DiopiTensor(tensor);
+}
+
+inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const diopiSize_t& size, diopiDtype_t dtype) {
+    diopiTensorHandle_t tensor = nullptr;
     diopiRequireTensor(ctx, &tensor, &size, nullptr, dtype, diopi_device);
-    return makeTensor(tensor);
+    return DiopiTensor(tensor);
 }
 
-inline DiopiTensor<diopiTensorHandle_t> requiresBuffer(diopiContextHandle_t ctx, int64_t num_bytes) {
-    diopiTensorHandle_t tensor;
+inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, const std::vector<int64_t>& stride, diopiDtype_t dtype) {
+    diopiSize_t size_(size.data(), size.size());
+    diopiSize_t stride_(stride.data(), stride.size());
+    diopiTensorHandle_t tensor = nullptr;
+    diopiRequireTensor(ctx, &tensor, &size_, &stride_, dtype, diopi_device);
+    return DiopiTensor(tensor);
+}
+
+inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype) {
+    diopiSize_t size_(size.data(), size.size());
+    diopiTensorHandle_t tensor = nullptr;
+    diopiRequireTensor(ctx, &tensor, &size_, nullptr, dtype, diopi_device);
+    return DiopiTensor(tensor);
+}
+
+inline DiopiTensor requiresBuffer(diopiContextHandle_t ctx, int64_t num_bytes) {
+    diopiTensorHandle_t tensor = nullptr;
     diopiRequireBuffer(ctx, &tensor, num_bytes, diopi_device);
-    return makeTensor(tensor);
+    return DiopiTensor(tensor);
 }
 
 inline cnrtQueue_t getStream(diopiContextHandle_t ctx) {
@@ -251,7 +259,6 @@ inline diopiSize_t vec2diopiSize_t(const std::vector<int64_t>& sizeIn) {
     diopiSize_t diopiSize(sizeIn.data(), sizeIn.size());
     return diopiSize;
 }
-
 }  // namespace camb
 
 }  // namespace impl

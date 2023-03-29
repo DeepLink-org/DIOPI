@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
+
 #include <math.h>
 #include <diopi/functions.h>
 #include <torch/nn.h>
@@ -310,7 +316,7 @@ diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 
 // NOTE(fengsibo): add int, short, bool test case
 diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-        diopiConstTensorHandle_t input, diopiSize_t dim, diopiDtype_t dtype) {
+        diopiConstTensorHandle_t input, diopiSize_t dim) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);
@@ -326,7 +332,7 @@ diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 
 // NOTE(fengsibo): add int, short, bool test case
 diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-        diopiConstTensorHandle_t input, diopiSize_t dim, diopiDtype_t dtype) {
+        diopiConstTensorHandle_t input, diopiSize_t dim) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);
@@ -439,7 +445,7 @@ diopiError_t diopiAll(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 }
 
 diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-        diopiConstTensorHandle_t input, int64_t dim, diopiDtype_t dtype) {
+        diopiConstTensorHandle_t input, int64_t dim) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atOut = at::softmax(atInput, dim);  // TODO(fengsibo): use default type instead
@@ -449,7 +455,7 @@ diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 }
 
 diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-        diopiConstTensorHandle_t input, int64_t dim, diopiDtype_t dtype) {
+        diopiConstTensorHandle_t input, int64_t dim) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atOut = at::log_softmax(atInput, dim);  // TODO(fengsibo): use default type instead
@@ -2239,7 +2245,7 @@ diopiError_t diopiSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
 }
 
 diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                  diopiConstTensorHandle_t output, int64_t dim, diopiDtype_t input_dtype) {
+                                  diopiConstTensorHandle_t output, int64_t dim) {
     impl::aten::setCurCtx(ctx);
     auto atGradOutput = impl::aten::buildATen(grad_output);
     auto atOutput = impl::aten::buildATen(output);
@@ -2250,7 +2256,7 @@ diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
 }
 
 diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                     diopiConstTensorHandle_t output, int64_t dim, diopiDtype_t input_dtype) {
+                                     diopiConstTensorHandle_t output, int64_t dim) {
     impl::aten::setCurCtx(ctx);
     auto atGradOutput = impl::aten::buildATen(grad_output);
     auto atOutput = impl::aten::buildATen(output);
@@ -2662,8 +2668,7 @@ diopiError_t diopiConvTranspose2d(diopiContextHandle_t ctx, diopiTensorHandle_t 
     return diopiSuccess;
 }
 
-diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
-                         int64_t dim, diopiDtype_t dtype) {
+diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atOut  = impl::aten::buildATen(out);
@@ -2870,9 +2875,11 @@ diopiError_t diopiConvolution3dBackward(diopiContextHandle_t ctx, diopiTensorHan
     return diopiSuccess;
 }
 
-diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size) {
+diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
+    diopiSize_t size;
+    diopiGetTensorShape(out, &size);
     auto atSize = impl::aten::buildAtIntArray(size);
     auto atOut = at::native::expand(atInput, atSize).clone();
     impl::aten::updateATen2Tensor(ctx, atOut, out);
@@ -2992,7 +2999,7 @@ diopiError_t diopiRoll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
 }
 
 diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
-        const diopiScalar_t* p, diopiSize_t dim, diopiDtype_t dtype) {
+        const diopiScalar_t* p, diopiSize_t dim) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);
@@ -3302,11 +3309,9 @@ diopiError_t diopiRemainderScalar(diopiContextHandle_t ctx, diopiTensorHandle_t 
 diopiError_t diopiRemainder(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiScalar_t* input, diopiConstTensorHandle_t other) {
     impl::aten::setCurCtx(ctx);
     auto atInputScalar = impl::aten::buildAtScalar(input);
-    auto atInput = impl::aten::buildATen(other).clone().fill_(atInputScalar);
     auto atOther = impl::aten::buildATen(other);
-    auto atOut = impl::aten::buildATen(out);
-    at::remainder_out(atOut, atInput, atOther);
-    impl::aten::unsetCurCtx();
+    auto atOut = at::remainder(atInputScalar, atOther);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
     return diopiSuccess;
 }
 
@@ -3656,7 +3661,7 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t* out, dio
     return diopiSuccess;
 }
 
-diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim, diopiDtype_t type) {
+diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);

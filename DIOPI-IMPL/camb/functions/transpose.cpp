@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
+
 #include <string.h>
 #include <numeric>
 #include "../cnnl_helper.hpp"
@@ -8,7 +14,7 @@ namespace camb {
 std::vector<int> getPerm(diopiConstTensorHandle_t tensor_handle,
                          int64_t dim0,
                          int64_t dim1) {
-    auto tensor = makeTensor(tensor_handle);
+    auto tensor = DiopiTensor(tensor_handle);
     int input_size_ = tensor.shape().size();
 
     int dim0_ = 0;
@@ -53,8 +59,8 @@ DIOPI_API diopiError_t diopiTranspose(diopiContextHandle_t ctx,
     DIOPI_CALLCNNL(
         cnnlSetTransposeDescriptor(transpose_desc, perms.size(), perms.data()));
 
-    auto input_tensor = makeTensor(input);
-    auto output_tensor = makeTensor(out);
+    auto input_tensor = DiopiTensor(input);
+    auto output_tensor = DiopiTensor(out);
     if (input_tensor.dtype() == diopi_dtype_float64) {
         return diopiDtypeNotSupported;
     }

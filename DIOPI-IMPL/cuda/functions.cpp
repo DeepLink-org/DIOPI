@@ -1,9 +1,9 @@
-/**************************************************************************************************
- * Copyright (c) 2022, SenseTime Inc.
- * License
- * Author
- *
- *************************************************************************************************/
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink
+ */
+
 #include <diopi/functions.h>
 #include <cuda_runtime.h>
 #include <cudnn.h>

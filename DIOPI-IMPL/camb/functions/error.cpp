@@ -1,5 +1,10 @@
-#include "../error.hpp"
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
 
+#include "../error.hpp"
 #include <diopi/functions.h>
 
 namespace impl {

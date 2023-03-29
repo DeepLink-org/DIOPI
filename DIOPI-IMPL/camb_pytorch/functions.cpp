@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
+
 #include <math.h>
 #include <diopi/functions.h>
 #include <../../aten/operators/cnnl/internal/binaryops_util.h>
@@ -283,15 +289,16 @@ diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 
 // NOTE(fengsibo): add int, short, bool test case
 diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-        diopiConstTensorHandle_t input, diopiSize_t dim, diopiDtype_t dtype) {
+        diopiConstTensorHandle_t input, diopiSize_t dim) {
     camb::aten::setCurCtx(ctx);
     auto atInput = camb::aten::buildATen(input);
     auto atDim = camb::aten::buildAtIntArray(dim);
+    auto atOutTmp = camb::aten::buildATen(out);
     if (dim.len != 0) {
         auto atOut = camb::aten::buildATen(out);
-        at::mean_out(atOut, atInput, atDim, false, camb::aten::getAtScalarType(dtype));
+        at::mean_out(atOut, atInput, atDim, false, atOutTmp.scalar_type());
     } else {
-        auto atOutCpu = at::mean(atInput.cpu(), atDim, false, camb::aten::getAtScalarType(dtype));
+        auto atOutCpu = at::mean(atInput.cpu(), atDim, false, atOutTmp.scalar_type());
         camb::aten::updateATen2Tensor(ctx, atOutCpu, out);
     }
     return diopiSuccess;
@@ -299,15 +306,16 @@ diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 
 // NOTE(fengsibo): add int, short, bool test case
 diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-        diopiConstTensorHandle_t input, diopiSize_t dim, diopiDtype_t dtype) {
+        diopiConstTensorHandle_t input, diopiSize_t dim) {
     camb::aten::setCurCtx(ctx);
     auto atInput = camb::aten::buildATen(input);
     auto atDim = camb::aten::buildAtIntArray(dim);
+    auto atOutTmp = camb::aten::buildATen(out);
     if (dim.len != 0) {
         auto atOut = camb::aten::buildATen(out);
-        at::sum_out(atOut, atInput, atDim, false, camb::aten::getAtScalarType(dtype));
+        at::sum_out(atOut, atInput, atDim, false, atOutTmp.scalar_type());
     } else {
-        auto atOutCpu = at::sum(atInput.cpu(), atDim, false, camb::aten::getAtScalarType(dtype));
+        auto atOutCpu = at::sum(atInput.cpu(), atDim, false, atOutTmp.scalar_type());
         camb::aten::updateATen2Tensor(ctx, atOutCpu, out);
     }
     return diopiSuccess;
@@ -373,7 +381,7 @@ diopiError_t diopiAll(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 }
 
 diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-        diopiConstTensorHandle_t input, int64_t dim, diopiDtype_t dtype) {
+        diopiConstTensorHandle_t input, int64_t dim) {
     camb::aten::setCurCtx(ctx);
     auto atInput = camb::aten::buildATen(input);
     // Note: cnnl has not out version
@@ -383,7 +391,7 @@ diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 }
 
 diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-        diopiConstTensorHandle_t input, int64_t dim, diopiDtype_t dtype) {
+        diopiConstTensorHandle_t input, int64_t dim) {
     camb::aten::setCurCtx(ctx);
     auto atInput = camb::aten::buildATen(input);
     // Note: cnnl has not out version
@@ -1775,7 +1783,7 @@ diopiError_t diopiSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
 }
 
 diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                  diopiConstTensorHandle_t output, int64_t dim, diopiDtype_t input_dtype) {
+                                  diopiConstTensorHandle_t output, int64_t dim) {
     camb::aten::setCurCtx(ctx);
     auto atGradOutput = camb::aten::buildATen(grad_output);
     auto atOutput = camb::aten::buildATen(output);
@@ -1785,7 +1793,7 @@ diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
 }
 
 diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                     diopiConstTensorHandle_t output, int64_t dim, diopiDtype_t input_dtype) {
+                                     diopiConstTensorHandle_t output, int64_t dim) {
     camb::aten::setCurCtx(ctx);
     auto atGradOutput = camb::aten::buildATen(grad_output);
     auto atOutput = camb::aten::buildATen(output);
@@ -1973,8 +1981,7 @@ diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
     return diopiSuccess;
 }
 
-diopiError_t diopiMaskedFillInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask,
-                                diopiConstTensorHandle_t value) {
+diopiError_t diopiMaskedFillInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t mask, diopiConstTensorHandle_t value) {
     camb::aten::setCurCtx(ctx);
     auto atInput = camb::aten::buildATen(input);
     auto atMask = camb::aten::buildATen(mask);
@@ -1994,7 +2001,7 @@ diopiError_t diopiMaskedFillScalar(diopiContextHandle_t ctx, diopiTensorHandle_t
     return diopiSuccess;
 }
 
-diopiError_t diopiMaskedFillInpScalar(diopiContextHandle_t ctx, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask,
+diopiError_t diopiMaskedFillInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t mask,
                                       const diopiScalar_t* value) {
     camb::aten::setCurCtx(ctx);
     auto atInput = camb::aten::buildATen(input);
@@ -2122,7 +2129,7 @@ diopiError_t diopiConvTranspose2d(diopiContextHandle_t ctx, diopiTensorHandle_t 
 }
 
 diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
-                         int64_t dim, diopiDtype_t dtype) {
+                         int64_t dim) {
     camb::aten::setCurCtx(ctx);
     auto atInput = camb::aten::buildATen(input);
     auto atOut = at::cumsum(atInput, dim);
@@ -2158,7 +2165,7 @@ diopiError_t diopiReciprocal(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
     return diopiSuccess;
 }
 
-diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t input) {
+diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     camb::aten::setCurCtx(ctx);
     auto atInput = camb::aten::buildATen(input);
     at::reciprocal_(atInput);
@@ -2274,7 +2281,9 @@ diopiError_t diopiConvolution3dBackward(diopiContextHandle_t ctx, diopiTensorHan
     return diopiSuccess;
 }
 
-diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size) {
+diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    diopiSize_t size;
+    diopiGetTensorShape(out, &size);
     camb::aten::setCurCtx(ctx);
     auto atInput = camb::aten::buildATen(input);
     auto atSize = camb::aten::buildAtIntArray(size);
