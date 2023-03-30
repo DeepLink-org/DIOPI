@@ -36,15 +36,14 @@ diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHand
 
     CnnlTensorDesc descInput(trInput, layout);
     CnnlTensorDesc descOther(trOther, layout);
-    CnnlTensorDesc descOut(trOut, layout);
+    CnnlTensorDesc descOut;
     DiopiTensor trOutTmp;
-    CnnlTensorDesc descOutTmp;
     if (trInput.dtype() == trOut.dtype()) {
         trOutTmp = trOut;
-        descOutTmp = descOut;
+        descOut.set(trOut, layout);
     } else {
         trOutTmp = requiresTensor(ctx, vec2diopiSize_t(trOut.shape()), trInput.dtype());
-        descOutTmp.set(trOutTmp, CNNL_LAYOUT_ARRAY);
+        descOut.set(trOutTmp, CNNL_LAYOUT_ARRAY);
     }
 
     std::unique_ptr<void, void (*)(void*)> pAlphaIn(malloc(4), free);
@@ -70,11 +69,11 @@ diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHand
     const void* inputs[2] = {trInput.data(), trOther.data()};
     uint32_t inputNum = 2;
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetAddNWorkspaceSize(handle, inputDescs, inputNum, descOutTmp.get(), &workspaceSize));
+    DIOPI_CALLCNNL(cnnlGetAddNWorkspaceSize(handle, inputDescs, inputNum, descOut.get(), &workspaceSize));
     auto buff = requiresBuffer(ctx, workspaceSize);
     void* pWorkspace = buff.data();
 
-    DIOPI_CALLCNNL(cnnlAddN_v2(handle, inputDescs, inputs, inputNum, descOutTmp.get(), trOutTmp.data(), pWorkspace, workspaceSize));
+    DIOPI_CALLCNNL(cnnlAddN_v2(handle, inputDescs, inputs, inputNum, descOut.get(), trOutTmp.data(), pWorkspace, workspaceSize));
     if (trOutTmp.dtype() != trOut.dtype()) {
         dataTypeCast(ctx, trOut, trOutTmp);
     }

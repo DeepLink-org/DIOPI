@@ -34,16 +34,15 @@ extern "C" DIOPI_API diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTen
     CnnlTensorDesc descInput(trInput, layout);
     CnnlTensorDesc descOut(trOut, layout);
     DiopiTensor trOutTmp;
-    CnnlTensorDesc descOutTmp;
     if (trInput.dtype() == trOut.dtype()) {
         trOutTmp = trOut;
-        descOutTmp = descOut;
+        descOut.set(trOut, layout);
     } else {
         trOutTmp = requiresTensor(ctx, vec2diopiSize_t(trOut.shape()), trInput.dtype());
-        descOutTmp.set(trOutTmp, CNNL_LAYOUT_ARRAY);
+        descOut.set(trOutTmp, CNNL_LAYOUT_ARRAY);
     }
 
-    DIOPI_CALLCNNL(cnnlExpand(handle, descInput.get(), trInput.data(), descOutTmp.get(), trOutTmp.data()));
+    DIOPI_CALLCNNL(cnnlExpand(handle, descInput.get(), trInput.data(), descOut.get(), trOutTmp.data()));
     if (trOutTmp.dtype() != trOut.dtype()) {
         dataTypeCast(ctx, trOut, trOutTmp);
     }

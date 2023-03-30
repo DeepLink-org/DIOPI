@@ -57,8 +57,8 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx,
 
     const void *bias_ptr = nullptr;
     CnnlTensorDesc bias_desc;
+    auto bias_tensor = DiopiTensor(bias);
     if (nullptr != bias) {
-        auto bias_tensor = DiopiTensor(bias);
         DIOPI_CALL(bias_desc.set(bias_tensor, CNNL_LAYOUT_ARRAY));
         bias_ptr = bias_tensor.data();
     }
@@ -94,8 +94,8 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx,
                                           DiopiTensor(input_t).data(),
                                           weight_desc.get(),
                                           DiopiTensor(weight_t).data(),
-                                          bias_desc.get(),
-                                          bias_ptr,
+                                          bias_tensor.defined()?bias_desc.get() : nullptr,
+                                          bias_tensor.defined()?bias_tensor.data() : nullptr,
                                           workspace,
                                           workspace_size,
                                           NULL,

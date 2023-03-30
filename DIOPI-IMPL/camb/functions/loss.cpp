@@ -313,18 +313,17 @@ DIOPI_API diopiError_t diopiMSELoss(diopiContextHandle_t ctx, diopiTensorHandle_
 
     CnnlTensorDesc descInput(trInput, layout);
     CnnlTensorDesc descTarget(trTarget, layout);
-    CnnlTensorDesc descOut(trOut, layout);
+    CnnlTensorDesc descOut;
     DiopiTensor trOutTmp;
-    CnnlTensorDesc descOutTmp;
     if (trInput.dtype() == trOut.dtype()) {
         trOutTmp = trOut;
-        descOutTmp = descOut;
+        descOut.set(trOut, layout);
     } else {
         trOutTmp = requiresTensor(ctx, vec2diopiSize_t(trOut.shape()), trInput.dtype());
-        descOutTmp.set(trOutTmp, CNNL_LAYOUT_ARRAY);
+        descOut.set(trOutTmp, CNNL_LAYOUT_ARRAY);
     }
 
-    DIOPI_CALLCNNL(cnnlMSELoss(handle, cnnl_reduction, descInput.get(), trInput.data(), descTarget.get(), trTarget.data(), descOutTmp.get(), trOutTmp.data()));
+    DIOPI_CALLCNNL(cnnlMSELoss(handle, cnnl_reduction, descInput.get(), trInput.data(), descTarget.get(), trTarget.data(), descOut.get(), trOutTmp.data()));
     if (trOutTmp.dtype() != trOut.dtype()) {
         dataTypeCast(ctx, trOut, trOutTmp);
     }
@@ -362,19 +361,19 @@ DIOPI_API diopiError_t diopiMSELossBackward(diopiContextHandle_t ctx, diopiTenso
     CnnlTensorDesc descInput(trInput, layout);
     CnnlTensorDesc descTarget(trTarget, layout);
     CnnlTensorDesc descGradOutput(trGradOutput, layout);
-    CnnlTensorDesc descGradInput(trGradInput, layout);
+    CnnlTensorDesc descGradInput;
     DiopiTensor trGradInputTmp;
     CnnlTensorDesc descGradInputTmp;
     if (trInput.dtype() == trGradInput.dtype()) {
         trGradInputTmp = trGradInput;
-        descGradInputTmp = descGradInput;
+        descGradInput.set(trGradInput, layout);
     } else {
         trGradInputTmp = requiresTensor(ctx, vec2diopiSize_t(trGradInput.shape()), trInput.dtype());
-        descGradInputTmp.set(trGradInputTmp, CNNL_LAYOUT_ARRAY);
+        descGradInput.set(trGradInputTmp, CNNL_LAYOUT_ARRAY);
     }
 
     DIOPI_CALLCNNL(cnnlMSELossBackward(handle, cnnl_reduction, descInput.get(), trInput.data(), descTarget.get(), \
-    trTarget.data(), descGradOutput.get(), trGradOutput.data(), descGradInputTmp.get(), trGradInputTmp.data()));
+    trTarget.data(), descGradOutput.get(), trGradOutput.data(), descGradInput.get(), trGradInputTmp.data()));
     if (trGradInputTmp.dtype() != trGradInput.dtype()) {
         dataTypeCast(ctx, trGradInput, trGradInputTmp);
     }
