@@ -24,7 +24,7 @@ void dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const DiopiTensor
 
 diopiDtype_t choiceDtype(const std::set<diopiDtype_t>& opSupportedDtypes);
 
-void autoCastTensorType(diopiContextHandle_t ctx, std::vector<DiopiTensor*>& pTensors, const std::set<diopiDtype_t>& opSupportedDtype);
+void autoCastTensorType(diopiContextHandle_t ctx, const std::vector<DiopiTensor*>& pTensors, const std::set<diopiDtype_t>& opSupportedDtype);
 
 diopiError_t broadcast(diopiContextHandle_t ctx, DiopiTensor& out, const DiopiTensor& input);
 
