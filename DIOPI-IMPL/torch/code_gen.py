@@ -14,11 +14,11 @@ import os
 # }
 
 new_content = []
-new_content.append('/**
- * @file
- * @author DeepLink
- * @copyright  (c) 2023, DeepLink.
- */
+new_content.append('/**\n\
+ * @file\n\
+ * @author DeepLink\n\
+ * @copyright  (c) 2023, DeepLink.\n\
+ */\n\
 #include <diopi/functions.h>\n\
 #include <stdio.h>\n\
 #include <dlfcn.h>\n\
