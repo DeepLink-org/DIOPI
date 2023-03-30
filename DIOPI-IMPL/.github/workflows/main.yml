@@ -116,7 +116,7 @@ jobs:
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=40 --gres=gpu:${GPU_REQUESTS} bash -c 'cd python && python main.py --mode gen_data && python main.py --mode run_test' \
-          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -df ${GEN_DATA} && exit 1 )
+          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           """
 
   Op-test-nvidia:
@@ -132,7 +132,7 @@ jobs:
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=40 --gres=gpu:${GPU_REQUESTS} bash -c 'cd python && python main.py --mode run_test --fname batch_norm --nhwc &&
           python main.py --mode run_test --fname index_select --four_bytes && python main.py --mode run_test --fname arange --four_bytes' \
-          || (cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -df ${GEN_DATA} && exit 1)
+          || (cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1)
           """
       - name: dyload-test
         run: |
@@ -142,7 +142,7 @@ jobs:
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST2}
           rm -rf ${GEN_DATA} && ln -s ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${GEN_DATA}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=40 --gres=gpu:${GPU_REQUESTS} bash -c 'cd python && python main.py --mode run_test' \
-          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST2} && git clean -df ${GEN_DATA} && exit 1 )
+          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST2} && git clean -xdf ${GEN_DATA} && exit 1 )
           """
 
   Rt-test-nvidia:
@@ -158,7 +158,7 @@ jobs:
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=40 --gres=gpu:${GPU_REQUESTS} bash -c 'cd python && python main.py --mode utest' \
-          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -df ${GEN_DATA} && exit 1 )
+          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           """
 
   Op-test-camb:
@@ -174,7 +174,7 @@ jobs:
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
           rsync -a ${CLUSTER_1984}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/python/data ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/python/
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} -x ${CAMB_EXCLUSIVE_HOST} --time=40 --gres=mlu:${GPU_REQUESTS} bash -c 'cd python && python main.py --mode run_test' \
-          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -df ${GEN_DATA} && exit 1 )
+          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           """
 
   Rt-test-camb:
@@ -189,5 +189,5 @@ jobs:
           export CI=true
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} -x ${CAMB_EXCLUSIVE_HOST} --time=40 --gres=mlu:${GPU_REQUESTS} bash -c 'cd python && python main.py --mode utest' \
-          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -df ${GEN_DATA} && exit 1 )
+          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           """
