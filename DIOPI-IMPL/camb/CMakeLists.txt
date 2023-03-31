@@ -31,8 +31,13 @@ if (RUNTIME)
 endif()
 
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
+
+# third_party include
+set(THIRD_PARTY_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/half/include)
+
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
 if (RUNTIME)
     target_link_libraries(${DEVICEIMPL} ${DIOPIRT})
 endif()
 target_link_libraries(${DEVICEIMPL} cndev cnrt cnnl cnmlrt)
+target_include_directories(${DEVICEIMPL} PUBLIC ${THIRD_PARTY_INCLUDE_DIRS})
