@@ -196,7 +196,7 @@ public:
 diopiError_t cnnl_transpose(diopiContextHandle_t& ctx, cnnlHandle_t& handle, DiopiTensor& in, DiopiTensor& out, cnnlTensorLayout_t layoutIn,
                             cnnlTensorLayout_t layoutOut);
 // global var
-extern std::map<std::vector<diopiDtype_t>, cnnlCastDataType_t> gCnnlCastDataTypeMapping;
+extern const std::map<std::vector<diopiDtype_t>, cnnlCastDataType_t> gCnnlCastDataTypeMapping;
 extern CnnlHandlePool cnnlHandlePool;
 
 }  // namespace camb

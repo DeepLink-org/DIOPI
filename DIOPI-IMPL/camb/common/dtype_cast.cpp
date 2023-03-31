@@ -20,7 +20,7 @@ DiopiTensor dataTypeCast(diopiContextHandle_t& ctx, const DiopiTensor& src, diop
     diopiSize_t srcSize = vec2diopiSize_t(src.shape());
     DiopiTensor dest = requiresTensor(ctx, srcSize, destDtype);
     diopiDtype_t srcDtype = src.dtype();
-    cnnlCastDataType_t cnnlCastDtype = gCnnlCastDataTypeMapping[{srcDtype, destDtype}];
+    cnnlCastDataType_t cnnlCastDtype = gCnnlCastDataTypeMapping.at({srcDtype, destDtype});
     DIOPI_CHECK_ABORT(cnnlCastDtype != 0, "data type cast from %d to %d in cnnl is not allown", srcDtype, destDtype);
     CnnlTensorDesc descSrc(src, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc descDest(dest, CNNL_LAYOUT_ARRAY);
@@ -39,7 +39,7 @@ void dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const DiopiTensor
     diopiDtype_t destDtype = dest.dtype();
     CnnlTensorDesc descSrc(src, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc descDest(dest, CNNL_LAYOUT_ARRAY);
-    cnnlCastDataType_t cnnlCastDtype = gCnnlCastDataTypeMapping[{srcDtype, destDtype}];
+    cnnlCastDataType_t cnnlCastDtype = gCnnlCastDataTypeMapping.at({srcDtype, destDtype});
     DIOPI_CHECKCNNL(cnnlCastDataType(handle, descSrc.get(), const_cast<DiopiTensor&>(src).data(), cnnlCastDtype, descDest.get(), dest.data()));
     return;
 }
@@ -67,7 +67,7 @@ diopiDtype_t choiceDtype(const std::set<diopiDtype_t>& opSupportedDtypes) {
     return diopi_dtype_int64;  // just for return a value
 }
 
-void autoCastTensorType(diopiContextHandle_t ctx, std::vector<DiopiTensor*>& pTensors, const std::set<diopiDtype_t>& opSupportedDtype) {
+void autoCastTensorType(diopiContextHandle_t ctx, const std::vector<DiopiTensor*>& pTensors, const std::set<diopiDtype_t>& opSupportedDtype) {
     // std::multimap<diopiDtype_t, DiopiTensor*> dtypeAndTensorPtrs;
     std::set<diopiDtype_t> dtypeAndTensorPtrs;
     diopiDtype_t targetType = diopi_dtype_float32;
@@ -120,7 +120,7 @@ void autoCastTensorType(diopiContextHandle_t ctx, std::vector<DiopiTensor*>& pTe
     } else {
         assert((void("tensor's dtype error, can't be cast"), false));
     }
-    for (auto pTensor : pTensors) {
+    for (const auto& pTensor : pTensors) {
         *pTensor = dataTypeCast(ctx, *pTensor, targetType);
     }
 }

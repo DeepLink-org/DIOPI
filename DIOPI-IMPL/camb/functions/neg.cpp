@@ -1,0 +1,39 @@
+
+#include <diopi/functions.h>
+#include <string.h>
+#include <numeric>
+#include "../cnnl_helper.hpp"
+#include "../common/common.hpp"
+
+namespace impl {
+namespace camb {
+
+extern "C" {
+
+DIOPI_API diopiError_t diopiNeg(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    auto input_tensor = DiopiTensor(input);
+    auto out_tensor = DiopiTensor(out);
+
+    std::vector<DiopiTensor*> pTensors{&input_tensor};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
+    autoCastTensorType(ctx, pTensors, supportedDtypes);
+    DiopiTensor input_tensor_tmp = *pTensors[0];
+    DiopiTensor out_tensor_tmp = dataTypeCast(ctx, out_tensor, input_tensor_tmp.dtype());
+
+    CnnlTensorDesc input_desc(input_tensor_tmp, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc out_desc(out_tensor_tmp, CNNL_LAYOUT_ARRAY);
+    DIOPI_CALLCNNL(cnnlNegTensor(handle, input_desc.get(), input_tensor_tmp.data(), out_desc.get(), out_tensor_tmp.data()));
+    dataTypeCast(ctx, out_tensor, out_tensor_tmp);
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiNegInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    DIOPI_CALL(diopiNeg(ctx, input, input));
+    return diopiSuccess;
+}
+
+}  // extern "C"
+
+}  // namespace camb
+}  // namespace impl
