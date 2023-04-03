@@ -13,6 +13,7 @@
 #include <initializer_list>
 #include <sstream>
 #include <vector>
+#include <typeinfo>
 
 namespace impl {
 namespace ascend {
@@ -76,13 +77,63 @@ inline aclDataType getAclDataType(diopiConstTensorHandle_t th) {
     return ACL_DT_UNDEFINED;
 }
 
+inline std::string dumpTensor(diopiConstTensorHandle_t th) {
+
+    std::stringstream stream;
+     stream << "Tensor(handle:" << th;
+    if (th) {
+        diopiSize_t shape;
+        diopiSize_t stride;
+        const void* ptr;
+        diopiDtype_t dtype;
+        diopiGetTensorDtype(th, &dtype);
+        diopiGetTensorDataConst(th, &ptr);
+        diopiGetTensorShape(th, &shape);
+        diopiGetTensorStride(th, &stride);
+        stream << " ,data:" << ptr;
+        stream << " ,dtype:" << dtype;
+        stream << " ,shape:";
+        std::for_each(shape.data, shape.data + shape.len, [&stream](int64_t v){stream << v << " ";});
+        stream << " ,stride:";
+        std::for_each(stride.data, stride.data + stride.len, [&stream](int64_t v){stream << v << " ";});
+    }
+    stream << ")";
+    return stream.str();
+}
+
 inline aclFormat getAclDataFormat(diopiConstTensorHandle_t th) {
     diopiSize_t shape;
     diopiSize_t stride;
     diopiGetTensorShape(th, &shape);
     diopiGetTensorStride(th, &stride);
+    check_args(stride.len == shape.len, "stride.len == shape.len check failed");
     if (shape.len == 4) {
-        return ACL_FORMAT_NCHW;
+        std::array<int64_t, 4> thStride{stride.data[0], stride.data[1], stride.data[2], stride.data[3]};
+        {
+            std::array<int64_t, 4> nchwStride;
+            int st = 1;
+            for (auto k : {3, 2, 1, 0}) {
+                nchwStride[k] = st;
+                if (shape.data[k] == 0) continue;
+                if (shape.data[k] == -1) st = -1;
+                if (st != -1) st *= shape.data[k];
+            }
+            if (thStride == nchwStride) {
+                return ACL_FORMAT_NCHW;
+            }
+        }
+        std::array<int64_t, 4> nhwcStride;
+        int st = 1;
+        for (auto k : {1, 3, 2, 0}) {
+            nhwcStride[k] = st;
+            if (shape.data[k] == 0) continue;
+            if (shape.data[k] == -1) st = -1;
+            if (st != -1) st *= shape.data[k];
+        }
+        if (thStride == nhwcStride) {
+            return ACL_FORMAT_NHWC;
+        }
+        warning("Acl only support NCHW or NHWC format! but get %s", dumpTensor(th).c_str());
     }
     return ACL_FORMAT_ND;
 }
@@ -113,7 +164,7 @@ T getValue(const diopiScalar_t* scalar) {
     }
 }
 
-template <int InputSize = 8, int OutputSize = 8, aclDataType (*dtypeCastStrategy)(diopiConstTensorHandle_t) = getAclDataType>
+template <int InputSize, int OutputSize, aclDataType (*dtypeCastStrategy)(diopiConstTensorHandle_t) = getAclDataType>
 class AclOpRunner {
     std::string opname_;
     aclopAttr* attr_;
@@ -289,7 +340,7 @@ public:
             CALL_ACLRT(aclopSetAttrString(attr_, attrName.data(), value.data()));
             return *this;
         }
-        check_args(false, "no specialization for this type.");
+        check_args(false, "%s: no specialization for %s type.", dumpRunnerInfo().c_str() , typeid(T).name());
         return *this;
     }
 
