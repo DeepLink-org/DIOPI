@@ -79,15 +79,15 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx,
     }
     const std::vector<int64_t> paddingTemp = {padding.data[0], padding.data[2], padding.data[1], padding.data[3]};
 
-    diopiSize_t weightShape, inputShape;
+    diopiSize_t weightShape, gradWeightShape;
     diopiGetTensorShape(weight, &weightShape);
-    diopiGetTensorShape(input, &inputShape);
+    diopiGetTensorShape(grad_weight, &gradWeightShape);
 
 
     AclOpRunner<2, 1>("Conv2DBackpropFilterD")
         .addInput(input, grad_output)
         .addOutput(grad_weight)
-        .setAttr("filter_size", std::vector<int32_t>{weightShape.data[0], weightShape.data[1], weightShape.data[2], weightShape.data[3]})
+        .setAttr("filter_size", std::vector<int32_t>{gradWeightShape.data[0], gradWeightShape.data[1], gradWeightShape.data[2], gradWeightShape.data[3]})
         .setAttr("strides", strideTemp)
         .setAttr("pads", paddingTemp)
         .setAttr("dilations", dilationsTemp)
@@ -95,6 +95,8 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx,
         .setAttr("data_format", dataFormat)
         .run(ctx);
     if (grad_input != nullptr) {
+        diopiSize_t inputShape;
+        diopiGetTensorShape(input, &inputShape);
         AclOpRunner<2, 1>("Conv2DBackpropInputD")
         .addInput(weight, grad_output)
         .addOutput(grad_input)
