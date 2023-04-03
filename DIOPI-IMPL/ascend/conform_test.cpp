@@ -33,32 +33,32 @@ void* ascend_malloc(uint64_t bytes) {
 void ascend_free(void* ptr) { CALL_ACLRT(aclrtFree(ptr)); }
 
 int32_t ascend_make_stream(diopiStreamHandle_t* stream_handle_ptr) {
-    CALL_ACLRT(aclrtCreateStream((aclrtStream*)stream_handle_ptr));
+    CALL_ACLRT(aclrtCreateStream(reinterpret_cast<aclrtStream*>(stream_handle_ptr)));
     return diopiSuccess;
 }
 
 int32_t ascend_destroy_stream(diopiStreamHandle_t stream_handle) {
-    CALL_ACLRT(aclrtDestroyStream((aclrtStream)stream_handle));
+    CALL_ACLRT(aclrtDestroyStream(reinterpret_cast<aclrtStream>(stream_handle)));
     return diopiSuccess;
 }
 
 int32_t ascend_synchronize_stream(diopiStreamHandle_t stream_handle) {
-    CALL_ACLRT(aclrtSynchronizeStream((aclrtStream)stream_handle));
+    CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream_handle)));
     return diopiSuccess;
 }
 
 int32_t ascend_memcpy_h2d_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
-    CALL_ACLRT(aclrtMemcpyAsync(dst, bytes, src, bytes, ACL_MEMCPY_HOST_TO_DEVICE, (aclrtStream)stream_handle));
+    CALL_ACLRT(aclrtMemcpyAsync(dst, bytes, src, bytes, ACL_MEMCPY_HOST_TO_DEVICE, reinterpret_cast<aclrtStream>(stream_handle)));
     return diopiSuccess;
 }
 
 int32_t ascend_memcpy_d2h_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
-    CALL_ACLRT(aclrtMemcpyAsync(dst, bytes, src, bytes, ACL_MEMCPY_DEVICE_TO_HOST, (aclrtStream)stream_handle));
+    CALL_ACLRT(aclrtMemcpyAsync(dst, bytes, src, bytes, ACL_MEMCPY_DEVICE_TO_HOST, reinterpret_cast<aclrtStream>(stream_handle)));
     return diopiSuccess;
 }
 
 int32_t ascend_memcpy_d2d_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
-    CALL_ACLRT(aclrtMemcpyAsync(dst, bytes, src, bytes, ACL_MEMCPY_DEVICE_TO_DEVICE, (aclrtStream)stream_handle));
+    CALL_ACLRT(aclrtMemcpyAsync(dst, bytes, src, bytes, ACL_MEMCPY_DEVICE_TO_DEVICE, reinterpret_cast<aclrtStream>(stream_handle)));
     return diopiSuccess;
 }
 
@@ -79,7 +79,6 @@ int32_t initLibrary() {
 }
 
 int32_t finalizeLibrary() {
-    //CALL_ACLRT(aclrtResetDevice(0));
     CALL_ACLRT(aclFinalize());
     return diopiSuccess;
 }

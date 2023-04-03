@@ -1,5 +1,5 @@
-#ifndef ACLOPRUNNER_HPP_
-#define ACLOPRUNNER_HPP_
+#ifndef IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_
+#define IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_
 
 #include <acl/acl.h>
 #include <acl/acl_op.h>
@@ -14,6 +14,8 @@
 #include <sstream>
 #include <vector>
 #include <typeinfo>
+#include <string>
+#include <utility>
 
 namespace impl {
 namespace ascend {
@@ -79,7 +81,6 @@ inline aclDataType getAclDataType(diopiConstTensorHandle_t th) {
 }
 
 inline std::string dumpTensor(diopiConstTensorHandle_t th) {
-
     std::stringstream stream;
      stream << "Tensor(handle:" << th;
     if (th) {
@@ -181,7 +182,7 @@ class AclOpRunner {
     }
 
 public:
-    AclOpRunner(std::string opname) : opname_(std::move(opname)), attr_(aclopCreateAttr()) {
+    explicit AclOpRunner(std::string opname) : opname_(std::move(opname)), attr_(aclopCreateAttr()) {
         inputDescs_.fill(nullptr);
         inputBuffers_.fill(nullptr);
         outputDescs_.fill(nullptr);
@@ -406,4 +407,4 @@ public:
 }  // namespace ascend
 }  // namespace impl
 
-#endif  //  ACLOPRUNNER_HPP_
+#endif  //  IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_
