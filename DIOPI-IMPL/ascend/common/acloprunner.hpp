@@ -44,6 +44,7 @@ namespace ascend {
         std::abort();                                \
     }
 
+
 inline aclDataType getAclDataType(diopiConstTensorHandle_t th) {
     diopiDtype_t type;
     diopiGetTensorDtype(th, &type);
@@ -236,6 +237,11 @@ public:
             }
         }
 
+        static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (PARROTS_DEBUG_ACLOPRUNNER > 0) {
+            info("%s input[%d]:%s", opname_.c_str(), finalIndex, dumpTensor(th).c_str());
+        }
+
         check_args(finalIndex >= 0 && finalIndex < InputSize, "check 0<=finalIndex<InputSize failed");
 
         auto& desc = inputDescs_[finalIndex];
@@ -269,6 +275,19 @@ public:
 
     AclOpRunner& addOutput(const int index, diopiTensorHandle_t th, const aclFormat format) {
         check_args(th != nullptr, "output should not be nullptr");
+        int finalIndex = index;
+        if (index < 0) {
+            for (size_t i = 0; i < OutputSize; i++) {
+                if (outputDescs_[i] == nullptr) {
+                    finalIndex = i;
+                    break;
+                }
+            }
+        }
+        static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (PARROTS_DEBUG_ACLOPRUNNER > 0) {
+            info("%s output[%d]:%s", opname_.c_str(), finalIndex, dumpTensor(th).c_str());
+        }
         diopiSize_t shape;
         diopiSize_t stride;
         int64_t numel = 0;
@@ -288,17 +307,7 @@ public:
             dims.push_back(1);
         }
 
-        int finalIndex = index;
-        if (index < 0) {
-            for (size_t i = 0; i < OutputSize; i++) {
-                if (outputDescs_[i] == nullptr) {
-                    finalIndex = i;
-                    break;
-                }
-            }
-        }
         check_args(finalIndex >= 0 && finalIndex < OutputSize, "check 0<=finalIndex<OutputSize failed");
-
         auto& desc = outputDescs_[finalIndex];
         auto& buffer = outputBuffers_[finalIndex];
         desc = aclCreateTensorDesc(dtypeCastStrategy(th), dims.size(), dims.data(), format);
