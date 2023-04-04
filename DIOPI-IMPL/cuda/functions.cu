@@ -10,32 +10,7 @@
 #include <vector>
 
 #include "helper.hpp"
-
-
-#define dispatch_dtype(fun, dtype, gridSize, blockSize, stream, ...)                             \
-    if (diopi_dtype_int32 == dtype) {                                                            \
-        fun<int32_t><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                           \
-    } else if (diopi_dtype_uint32 == dtype) {                                                    \
-        fun<uint32_t><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                          \
-    } else if (diopi_dtype_int16 == dtype) {                                                      \
-        fun<int16_t><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                           \
-    } else if (diopi_dtype_uint16 == dtype) {                                                     \
-        fun<uint16_t><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                          \
-    } else if (diopi_dtype_int8 == dtype) {                                                       \
-        fun<int8_t><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                            \
-    } else if (diopi_dtype_uint8 == dtype) {                                                      \
-        fun<uint8_t><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                           \
-    } else if (diopi_dtype_float32 == dtype) {                                                    \
-        fun<float><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                             \
-    } else if (diopi_dtype_float64 == dtype) {                                                    \
-        fun<double><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                            \
-    } else if (diopi_dtype_bool == dtype) {                                                       \
-        fun<bool><<<gridSize, blockSize, 0, stream>>>(__VA_ARGS__);                              \
-    } else {                                                                                     \
-        fprintf(stderr, "%s:%s: %s<%s %d><<<%d,%d>>>(%s)", __FILE__, __FUNCTION__, #fun, #dtype, \
-                dtype, gridSize, blockSize, #__VA_ARGS__);                                       \
-        return diopiDtypeNotSupported;                                                           \
-    }
+#include "cuda_helper.hpp"
 
 template<typename T> __global__
 void vecAdd(const void* a, const void* b, void* c, const int numel, const T alpha) {
@@ -134,7 +109,7 @@ extern "C" diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t o
     diopiSize_t othShape = trOther.shape();
     int gridSize  = (trOut.numel() + blockSize - 1) / blockSize;
     if (compareShape(inShape, othShape)) {
-        dispatch_dtype(vecAdd, trInput.dtype(), gridSize, blockSize, stream,
+        DISPATCH_DTYPE(vecAdd, trInput.dtype(), gridSize, blockSize, stream,
             trInput.data(), trOther.data(), trOut.data(), trInput.numel(), coff);
     } else {
         diopiSize_t outShape = trOut.shape();
@@ -153,7 +128,7 @@ extern "C" diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t o
         cudaMemcpyAsync(othStride.data(), othStrideHost.data(), nbytes, cudaMemcpyHostToDevice, stream);
         cudaMemcpyAsync(outStride.data(), outStrideHost.data, nbytes, cudaMemcpyHostToDevice, stream);
 
-        dispatch_dtype(vecAddBroadcast, trInput.dtype(), gridSize, blockSize, stream,
+        DISPATCH_DTYPE(vecAddBroadcast, trInput.dtype(), gridSize, blockSize, stream,
            trInput.data(), trOther.data(), trOut.data(), trOut.numel(), coff, static_cast<const int64_t*>(inStride.data()),
            static_cast<const int64_t*>(othStride.data()), static_cast<const int64_t*>(outStride.data()), len);
     }
@@ -176,7 +151,7 @@ extern "C" diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHand
         otherVal = other->fval;
     }
     int gridSize = (trInput.numel() + blockSize - 1) / blockSize;
-    dispatch_dtype(vecAddScalar, trInput.dtype(), gridSize, blockSize, stream,
+    DISPATCH_DTYPE(vecAddScalar, trInput.dtype(), gridSize, blockSize, stream,
         trInput.data(), otherVal, trOut.data(), trInput.numel(), coff);
     return diopiSuccess;
 }
@@ -208,7 +183,7 @@ extern "C" diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t 
     } else {
         int blockSize = 256;
         int gridSize  = (numel + blockSize - 1) / blockSize;
-        dispatch_dtype(vecFill, dtype, gridSize, blockSize, stream, tr.data(), val, numel);
+        DISPATCH_DTYPE(vecFill, dtype, gridSize, blockSize, stream, tr.data(), val, numel);
     }
 
     return diopiSuccess;
