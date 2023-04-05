@@ -82,7 +82,7 @@ extern "C" DIOPI_API diopiError_t diopiSgd(diopiContextHandle_t ctx,
         CnnlResourceGuard<cnnlTensorDescriptor_t, cnnlCreateTensorDescriptor, cnnlDestroyTensorDescriptor> lr_half_desc;
         std::vector<int> shape{1};
         DIOPI_CALLCNNL(cnnlSetTensorDescriptor(lr_half_desc.get(), CNNL_LAYOUT_ARRAY, CNNL_DTYPE_HALF, 1, shape.data()));
-        cnnlCastDataType(handle, lr_desc.get(), lr_tensor.data(), CNNL_CAST_FLOAT_TO_HALF, lr_half_desc.get(), lr_tensor.data());
+        DIOPI_CALLCNNL(cnnlCastDataType(handle, lr_desc.get(), lr_tensor.data(), CNNL_CAST_FLOAT_TO_HALF, lr_half_desc.get(), lr_tensor.data()));
     }
     DIOPI_CALLCNNL(cnnlGradientDescent(handle, dw_desc.get(), dw_tensor.data(), lr_tensor.data(), w_desc.get(), w_tensor.data()));
     return diopiSuccess;

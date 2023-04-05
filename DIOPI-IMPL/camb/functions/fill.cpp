@@ -24,7 +24,7 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
 
     // float64 not supported yet
     if (input_tensor.dtype() == diopi_dtype_float64) {
-       dataTypeCast(ctx, input_tensor_temp, diopi_dtype_float32);
+       DIOPI_CALL(dataTypeCast(ctx, input_tensor_temp, diopi_dtype_float32));
     }
 
     CnnlTensorDesc input_tensor_desc(input_tensor_temp, CNNL_LAYOUT_ARRAY);
@@ -92,7 +92,7 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
     DIOPI_CALLCNNL(cnnlFill_v3(handle, CNNL_POINTER_MODE_HOST, value_ptr, input_tensor_desc.get(), input_tensor_temp.data()));
 
     if (input_tensor_temp.dtype() != input_tensor.dtype()) {
-        dataTypeCast(ctx, input_tensor, input_tensor_temp);
+        DIOPI_CALL(dataTypeCast(ctx, input_tensor, input_tensor_temp));
     }
     return diopiSuccess;
 }

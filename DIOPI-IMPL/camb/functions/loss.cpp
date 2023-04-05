@@ -32,7 +32,7 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx,
     DIOPI_CHECK(input_tr.numel() != 0, "input tensor is empty")
 
     if (target_tr.dtype() != diopi_dtype_int32) {
-        dataTypeCast(ctx, target_tr, diopi_dtype_int32);
+        DIOPI_CALL(dataTypeCast(ctx, target_tr, diopi_dtype_int32));
     }
     if (!weight_tr.defined()) {
         weight_tr = ones(ctx, {input_tr.shape()[1]}, input_tr.dtype());
@@ -147,7 +147,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx,
     DIOPI_CHECK(input_tr.numel() != 0, "input tensor is empty")
 
     if (target_tr.dtype() != diopi_dtype_int32) {
-        dataTypeCast(ctx, target_tr, diopi_dtype_int32);
+        DIOPI_CALL(dataTypeCast(ctx, target_tr, diopi_dtype_int32));
     }
     if (!weight_tr.defined()) {
         weight_tr = ones(ctx, {input_tr.shape()[1]}, input_tr.dtype());
@@ -292,7 +292,7 @@ DIOPI_API diopiError_t diopiMSELoss(diopiContextHandle_t ctx, diopiTensorHandle_
     auto trOut = DiopiTensor(out);
     std::vector<DiopiTensor*> pTensors{&trInput, &trTarget};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
-    autoCastTensorType(ctx, pTensors, supportedDtypes);
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
     cnnlMSELossReduction_t cnnl_reduction;
     if (reduction == ReductionMean) {
@@ -325,7 +325,7 @@ DIOPI_API diopiError_t diopiMSELoss(diopiContextHandle_t ctx, diopiTensorHandle_
 
     DIOPI_CALLCNNL(cnnlMSELoss(handle, cnnl_reduction, descInput.get(), trInput.data(), descTarget.get(), trTarget.data(), descOut.get(), trOutTmp.data()));
     if (trOutTmp.dtype() != trOut.dtype()) {
-        dataTypeCast(ctx, trOut, trOutTmp);
+        DIOPI_CALL(dataTypeCast(ctx, trOut, trOutTmp));
     }
     return diopiSuccess;
 }
@@ -339,7 +339,7 @@ DIOPI_API diopiError_t diopiMSELossBackward(diopiContextHandle_t ctx, diopiTenso
 
     std::vector<DiopiTensor*> pTensors{&trInput, &trGradOutput, &trTarget};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
-    autoCastTensorType(ctx, pTensors, supportedDtypes);
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
     cnnlMSELossReduction_t cnnl_reduction;
     if (reduction == ReductionMean) {
@@ -375,7 +375,7 @@ DIOPI_API diopiError_t diopiMSELossBackward(diopiContextHandle_t ctx, diopiTenso
     DIOPI_CALLCNNL(cnnlMSELossBackward(handle, cnnl_reduction, descInput.get(), trInput.data(), descTarget.get(), \
     trTarget.data(), descGradOutput.get(), trGradOutput.data(), descGradInput.get(), trGradInputTmp.data()));
     if (trGradInputTmp.dtype() != trGradInput.dtype()) {
-        dataTypeCast(ctx, trGradInput, trGradInputTmp);
+        DIOPI_CALL(dataTypeCast(ctx, trGradInput, trGradInputTmp));
     }
     return diopiSuccess;
 }

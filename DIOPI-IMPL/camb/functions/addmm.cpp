@@ -28,12 +28,12 @@ DIOPI_API diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t 
 
     std::vector<DiopiTensor*> pTensors{&input_tensor, &mat1_tensor, &mat2_tensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
-    autoCastTensorType(ctx, pTensors, supportedDtypes);
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
     DiopiTensor input_tensor_tmp = *pTensors[0];
     DiopiTensor mat1_tensor_tmp = *pTensors[1];
     DiopiTensor mat2_tensor_tmp = *pTensors[2];
     DiopiTensor out_tensor_tmp = out_tensor;
-    dataTypeCast(ctx, out_tensor_tmp, input_tensor_tmp.dtype());
+    DIOPI_CALL(dataTypeCast(ctx, out_tensor_tmp, input_tensor_tmp.dtype()));
 
     CnnlTensorDesc input_desc(input_tensor_tmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc mat1_desc(mat1_tensor_tmp, CNNL_LAYOUT_ARRAY);
@@ -131,7 +131,7 @@ DIOPI_API diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t 
                                 &beta_default,
                                 out_desc.get(),
                                 out_tensor_tmp.data()));
-    dataTypeCast(ctx, out_tensor, out_tensor_tmp);
+    DIOPI_CALL(dataTypeCast(ctx, out_tensor, out_tensor_tmp));
 
     return diopiSuccess;
 }

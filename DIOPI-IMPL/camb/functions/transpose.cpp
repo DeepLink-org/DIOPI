@@ -56,8 +56,7 @@ DIOPI_API diopiError_t diopiTranspose(diopiContextHandle_t ctx,
         CnnlTransposeDesc;
     cnnlTransposeDescriptor_t transpose_desc = CnnlTransposeDesc.get();
     std::vector<int> perms = getPerm(input, dim0, dim1);
-    DIOPI_CALLCNNL(
-        cnnlSetTransposeDescriptor(transpose_desc, perms.size(), perms.data()));
+    DIOPI_CALLCNNL(cnnlSetTransposeDescriptor(transpose_desc, perms.size(), perms.data()));
 
     auto input_tensor = DiopiTensor(input);
     auto output_tensor = DiopiTensor(out);

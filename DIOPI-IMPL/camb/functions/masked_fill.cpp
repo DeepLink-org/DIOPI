@@ -25,14 +25,14 @@ DIOPI_API diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHand
     std::vector<DiopiTensor*> MTensors{&mask_tensor};
     std::set<diopiDtype_t> supportedDtypes_mask{diopi_dtype_int8, diopi_dtype_uint8, diopi_dtype_bool};
 
-    autoCastTensorType(ctx, pTensors, supportedDtypes);
-    autoCastTensorType(ctx, MTensors, supportedDtypes_mask);
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
+    DIOPI_CALL(autoCastTensorType(ctx, MTensors, supportedDtypes_mask));
 
     DiopiTensor input_tensor_tmp = *pTensors[0];
     DiopiTensor value_tensor_tmp = *pTensors[1];
     DiopiTensor mask_tensor_tmp = *MTensors[0];
     DiopiTensor out_tensor_tmp = out_tensor;
-    dataTypeCast(ctx, out_tensor_tmp, input_tensor_tmp.dtype());
+    DIOPI_CALL(dataTypeCast(ctx, out_tensor_tmp, input_tensor_tmp.dtype()));
 
     CnnlTensorDesc input_desc(input_tensor_tmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc mask_desc(mask_tensor_tmp, CNNL_LAYOUT_ARRAY);
@@ -53,7 +53,7 @@ DIOPI_API diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHand
     if (input_tensor_tmp.dtype() != value_tensor_tmp.dtype()) {
         value_cast = true;
         value_cast_tensor = value_tensor_tmp;
-        dataTypeCast(ctx, value_tensor, input_tensor_tmp.dtype());
+        DIOPI_CALL(dataTypeCast(ctx, value_tensor, input_tensor_tmp.dtype()));
         value_cast_desc.set(value_cast_tensor, CNNL_LAYOUT_ARRAY);
     }
 
@@ -79,7 +79,7 @@ DIOPI_API diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHand
                                  out_tensor_tmp.data(),
                                  nullptr));
 
-    dataTypeCast(ctx, out_tensor, out_tensor_tmp);
+    DIOPI_CALL(dataTypeCast(ctx, out_tensor, out_tensor_tmp));
     return diopiSuccess;
 }
 

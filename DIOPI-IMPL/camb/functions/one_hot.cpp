@@ -214,8 +214,8 @@ diopiError_t diopiOneHot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     auto off_value_tensor = DiopiTensor(off_value);
     CnnlTensorDesc on_tensor_desc(on_value_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc off_tensor_desc(off_value_tensor, CNNL_LAYOUT_ARRAY);
-    cnnlFill(handle, 1, on_tensor_desc.get(), on_value_tensor.data());
-    cnnlFill(handle, 0, off_tensor_desc.get(), off_value_tensor.data());
+    DIOPI_CALLCNNL(cnnlFill(handle, 1, on_tensor_desc.get(), on_value_tensor.data()));
+    DIOPI_CALLCNNL(cnnlFill(handle, 0, off_tensor_desc.get(), off_value_tensor.data()));
     int axis = -1;
 
     // output must be int32, float16, float32

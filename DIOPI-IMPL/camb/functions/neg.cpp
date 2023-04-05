@@ -17,15 +17,15 @@ DIOPI_API diopiError_t diopiNeg(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 
     std::vector<DiopiTensor*> pTensors{&input_tensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
-    autoCastTensorType(ctx, pTensors, supportedDtypes);
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
     DiopiTensor input_tensor_tmp = *pTensors[0];
     DiopiTensor out_tensor_tmp = out_tensor;
-    dataTypeCast(ctx, out_tensor_tmp, input_tensor_tmp.dtype());
+    DIOPI_CALL(dataTypeCast(ctx, out_tensor_tmp, input_tensor_tmp.dtype()));
 
     CnnlTensorDesc input_desc(input_tensor_tmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc out_desc(out_tensor_tmp, CNNL_LAYOUT_ARRAY);
     DIOPI_CALLCNNL(cnnlNegTensor(handle, input_desc.get(), input_tensor_tmp.data(), out_desc.get(), out_tensor_tmp.data()));
-    dataTypeCast(ctx, out_tensor, out_tensor_tmp);
+    DIOPI_CALL(dataTypeCast(ctx, out_tensor, out_tensor_tmp));
     return diopiSuccess;
 }
 

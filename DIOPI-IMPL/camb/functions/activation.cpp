@@ -73,15 +73,15 @@ diopiError_t cnnl_activation_internal(diopiContextHandle_t ctx, DiopiTensor inpu
     DIOPI_CALLCNNL(cnnlSetActivationDescriptor_v6(activation_desc.get(), mode, perf, nan_prop, coef, sliced_dim, gamma, scale, is_result, approximate));
 
     std::vector<DiopiTensor*> inputs{&input};
-    autoCastTensorType(ctx, inputs, {diopi_dtype_float16, diopi_dtype_float32});
+    DIOPI_CALL(autoCastTensorType(ctx, inputs, {diopi_dtype_float16, diopi_dtype_float32}));
     DiopiTensor temp_output = out;
-    dataTypeCast(ctx, temp_output, input.dtype());
+    DIOPI_CALL(dataTypeCast(ctx, temp_output, input.dtype()));
 
     CnnlTensorDesc input_desc(input, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc output_desc(temp_output, CNNL_LAYOUT_ARRAY);
 
     DIOPI_CALLCNNL(cnnlActivationForward(handle, activation_desc.get(), alpha, input_desc.get(), input.data(), beta, output_desc.get(), temp_output.data()));
-    dataTypeCast(ctx, out, temp_output);
+    DIOPI_CALL(dataTypeCast(ctx, out, temp_output));
 
     return diopiSuccess;
 }
@@ -113,9 +113,9 @@ diopiError_t cnnl_activation_backward_internal(diopiContextHandle_t ctx, DiopiTe
     }
 
     std::set<diopiDtype_t> support_dtype{diopi_dtype_float16, diopi_dtype_float32};
-    autoCastTensorType(ctx, inputs, support_dtype);
+    DIOPI_CALL(autoCastTensorType(ctx, inputs, support_dtype));
     DiopiTensor temp_grad_input = grad_input;
-    dataTypeCast(ctx, temp_grad_input, grad_output.dtype());
+    DIOPI_CALL(dataTypeCast(ctx, temp_grad_input, grad_output.dtype()));
 
     CnnlTensorDesc grad_input_desc(temp_grad_input, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc grad_output_desc(grad_output, CNNL_LAYOUT_ARRAY);
@@ -140,7 +140,7 @@ diopiError_t cnnl_activation_backward_internal(diopiContextHandle_t ctx, DiopiTe
                                           beta,
                                           grad_input_desc.get(),
                                           temp_grad_input.data()));
-    dataTypeCast(ctx, grad_input, temp_grad_input);
+    DIOPI_CALL(dataTypeCast(ctx, grad_input, temp_grad_input));
     return diopiSuccess;
 }
 

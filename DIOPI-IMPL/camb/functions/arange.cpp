@@ -20,7 +20,7 @@ diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t out, cons
     auto out_tensor = DiopiTensor(out);
     DiopiTensor out32_tensor = out_tensor;
     if (diopi_dtype_int64 == out_tensor.dtype()) {
-        dataTypeCast(ctx, out32_tensor, diopi_dtype_int32);
+        DIOPI_CALL(dataTypeCast(ctx, out32_tensor, diopi_dtype_int32));
     }
     CnnlTensorDesc outDesc(out32_tensor, CNNL_LAYOUT_ARRAY);
 
@@ -29,7 +29,7 @@ diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t out, cons
     if (CnnlDataType::isInteger(dtype)) {
         DIOPI_CALLCNNL(cnnlArange_v2(handle, CNNL_COMPUTATION_ULTRAHIGH_PRECISION, &(start->ival), &(step->ival), outDesc.get(), out32_tensor.data()));
         if (out32_tensor.dtype() != out_tensor.dtype()) {
-            dataTypeCast(ctx, out_tensor, out32_tensor);
+            DIOPI_CALL(dataTypeCast(ctx, out_tensor, out32_tensor));
         }
     } else if (CnnlDataType::isFloat(dtype)) {
         float start_val = start->fval;

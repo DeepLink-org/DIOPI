@@ -57,7 +57,7 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
         // set activition part to default
         cnnlActivationMode_t active_mode = CNNL_ACTIVATION_IDENTITY;
         cnnlActivationDescriptor_t activation_desc = nullptr;
-        cnnlCreateActivationDescriptor(&activation_desc);
+        DIOPI_CALLCNNL(cnnlCreateActivationDescriptor(&activation_desc));
         cnnlSetActivationDescriptor_v5(activation_desc, active_mode, CNNL_ACTIVATION_HIGH_PRECISION,
                                                             CNNL_NOT_PROPAGATE_NAN, 1.0, -1, 1.0, 1.0, false);
         DIOPI_CALLCNNL(cnnlBatchNormForwardTraining_v2(
@@ -165,7 +165,7 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx,
     cnnlActivationMode_t active_mode = CNNL_ACTIVATION_IDENTITY;
 
     cnnlActivationDescriptor_t activation_desc = nullptr;
-    cnnlCreateActivationDescriptor(&activation_desc);
+    DIOPI_CALLCNNL(cnnlCreateActivationDescriptor(&activation_desc));
     cnnlSetActivationDescriptor_v5(activation_desc, active_mode, CNNL_ACTIVATION_HIGH_PRECISION,
                                                         CNNL_NOT_PROPAGATE_NAN, 1.0, -1, 1.0, 1.0, false);
 

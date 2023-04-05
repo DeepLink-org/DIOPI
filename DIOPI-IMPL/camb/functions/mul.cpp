@@ -21,13 +21,15 @@ DIOPI_API diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 
     DiopiTensor out_tensor_tmp = out_tensor;
     if ((out_tensor.dtype() != diopi_dtype_float16) && (out_tensor.dtype() != diopi_dtype_float32)) {
-        dataTypeCast(ctx, out_tensor_tmp, diopi_dtype_float16);
+        DIOPI_CALL(dataTypeCast(ctx, out_tensor_tmp, diopi_dtype_float16));
     }
-    dataTypeCast(ctx, input_tensor, out_tensor_tmp.dtype());
-    dataTypeCast(ctx, other_tensor, out_tensor_tmp.dtype());
+    DIOPI_CALL(dataTypeCast(ctx, input_tensor, out_tensor_tmp.dtype()));
+    DIOPI_CALL(dataTypeCast(ctx, other_tensor, out_tensor_tmp.dtype()));
 
-    DiopiTensor bcast_input_tensor = broadcastHelper(ctx, input_tensor, out_tensor_tmp);
-    DiopiTensor bcast_other_tensor = broadcastHelper(ctx, other_tensor, out_tensor_tmp);
+    DiopiTensor bcast_input_tensor;
+    broadcastHelper(ctx, input_tensor, out_tensor_tmp, &bcast_input_tensor);
+    DiopiTensor bcast_other_tensor;
+    broadcastHelper(ctx, other_tensor, out_tensor_tmp, &bcast_other_tensor);
 
     CnnlTensorDesc bcast_input_desc(bcast_input_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc bcast_other_desc(bcast_other_tensor, CNNL_LAYOUT_ARRAY);
@@ -38,7 +40,7 @@ DIOPI_API diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 
     DIOPI_CALLCNNL(cnnlMulN(handle, input_descs, inputs, 2, out_desc.get(), out_tensor_tmp.data()))
     if (out_tensor_tmp.dtype() != out_tensor.dtype()) {
-        dataTypeCast(ctx, out_tensor, out_tensor_tmp);
+        DIOPI_CALL(dataTypeCast(ctx, out_tensor, out_tensor_tmp));
     }
     return diopiSuccess;
 }

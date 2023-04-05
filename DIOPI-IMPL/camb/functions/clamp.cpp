@@ -11,7 +11,7 @@ diopiError_t getClampBoundPtr(diopiContextHandle_t ctx, diopiConstTensorHandle_t
         auto bound_tensor = DiopiTensor(bound);
         DIOPI_CHECK(bound_tensor.numel() == 1, "only supported when %s is scalar or one element Tensor currently", bound_type);
         if (desire_dtype != bound_tensor.dtype()) {
-            dataTypeCast(ctx, bound_tensor, desire_dtype);
+            DIOPI_CALL(dataTypeCast(ctx, bound_tensor, desire_dtype));
         }
         *out = bound_tensor.data();
     }
@@ -30,8 +30,8 @@ diopiError_t clampCommon(diopiContextHandle_t ctx, diopiConstTensorHandle_t inpu
     auto input32_tensor = input_tensor;
     auto output32_tensor = output_tensor;
     if (input_tensor.dtype() == diopi_dtype_int64 || input_tensor.dtype() == diopi_dtype_int16 || input_tensor.dtype() == diopi_dtype_int8) {
-        dataTypeCast(ctx, input32_tensor, diopi_dtype_int32);
-        dataTypeCast(ctx, input32_tensor, diopi_dtype_int32);
+        DIOPI_CALL(dataTypeCast(ctx, input32_tensor, diopi_dtype_int32));
+        DIOPI_CALL(dataTypeCast(ctx, input32_tensor, diopi_dtype_int32));
     }
     CnnlTensorDesc input32Desc(input32_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc output32Desc(output32_tensor, CNNL_LAYOUT_ARRAY);
@@ -44,7 +44,7 @@ diopiError_t clampCommon(diopiContextHandle_t ctx, diopiConstTensorHandle_t inpu
     DIOPI_CALLCNNL(
         cnnlClip_v2(handle, CNNL_POINTER_MODE_DEVICE, input32Desc.get(), input32_tensor.data(), min_ptr, max_ptr, output32Desc.get(), output32_tensor.data()));
     if (output_tensor.dtype() != output32_tensor.dtype()) {
-        dataTypeCast(ctx, output_tensor, output32_tensor);
+        DIOPI_CALL(dataTypeCast(ctx, output_tensor, output32_tensor));
     }
     return diopiSuccess;
 }
