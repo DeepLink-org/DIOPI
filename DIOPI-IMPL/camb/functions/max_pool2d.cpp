@@ -195,7 +195,7 @@ DIOPI_API diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx,
                                                    indices32_tmp_ptr,
                                                    workspace,
                                                    workspace_size));
-        DIOPI_CHECKCNNL(cnnlCastDataType(handle, indices32_tmp_desc.get(), indices32_tmp_ptr, CNNL_CAST_INT32_TO_INT64, indices_desc.get(), indices_ptr));
+        DIOPI_CALLCNNL(cnnlCastDataType(handle, indices32_tmp_desc.get(), indices32_tmp_ptr, CNNL_CAST_INT32_TO_INT64, indices_desc.get(), indices_ptr));
     } else if ((indices_dtype == indices_dtype_ori) && (indices_dtype_ori == CNNL_DTYPE_INT32)) {
         DIOPI_CALLCNNL(cnnlPoolingForwardWithIndex(
             handle, pool_desc, alpha, input_desc.get(), input_ptr, beta, out_desc.get(), out_ptr, indices_desc.get(), indices_ptr, workspace, workspace_size));
@@ -217,7 +217,7 @@ DIOPI_API diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx,
                                                    indices16_tmp_ptr,
                                                    workspace,
                                                    workspace_size));
-        DIOPI_CHECKCNNL(cnnlCastDataType(handle, indices16_tmp_desc.get(), indices16_tmp_ptr, CNNL_CAST_INT16_TO_INT32, indices_desc.get(), indices_ptr));
+        DIOPI_CALLCNNL(cnnlCastDataType(handle, indices16_tmp_desc.get(), indices16_tmp_ptr, CNNL_CAST_INT16_TO_INT32, indices_desc.get(), indices_ptr));
     } else {
         diopiTensorHandle_t indices16_tmp = nullptr;
         DIOPI_CALL(diopiRequireTensor(ctx, &indices16_tmp, &indices_shape, nullptr, diopi_dtype_int16, diopi_device));
@@ -236,9 +236,9 @@ DIOPI_API diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx,
                                                    indices16_tmp_ptr,
                                                    workspace,
                                                    workspace_size));
-        DIOPI_CHECKCNNL(
+        DIOPI_CALLCNNL(
             cnnlCastDataType(handle, indices16_tmp_desc.get(), indices16_tmp_ptr, CNNL_CAST_INT16_TO_INT32, indices32_tmp_desc.get(), indices32_tmp_ptr));
-        DIOPI_CHECKCNNL(cnnlCastDataType(handle, indices32_tmp_desc.get(), indices32_tmp_ptr, CNNL_CAST_INT32_TO_INT64, indices_desc.get(), indices_ptr));
+        DIOPI_CALLCNNL(cnnlCastDataType(handle, indices32_tmp_desc.get(), indices32_tmp_ptr, CNNL_CAST_INT32_TO_INT64, indices_desc.get(), indices_ptr));
     }
     return diopiSuccess;
 }
@@ -363,7 +363,7 @@ DIOPI_API diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx,
     DIOPI_CALL(indices16_cast_desc.set(indices16_cast_tensor, CNNL_LAYOUT_NHWC, indices_shape_));
 
     if (indices_dtype == CNNL_DTYPE_INT64) {
-        DIOPI_CHECKCNNL(cnnlCastDataType(
+        DIOPI_CALLCNNL(cnnlCastDataType(
             handle, indices_t_desc.get(), indices_tensor_t.data(), CNNL_CAST_INT64_TO_INT32, indices32_cast_desc.get(), indices32_cast_tensor.data()));
         DIOPI_CALLCNNL(cnnlPoolingBackward(handle,
                                            pool_desc,
@@ -391,7 +391,7 @@ DIOPI_API diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx,
                                            grad_input_desc.get(),
                                            grad_input_ptr));
     } else if ((indices_dtype == CNNL_DTYPE_INT16) && (indices_dtype_ori == CNNL_DTYPE_INT32)) {
-        DIOPI_CHECKCNNL(cnnlCastDataType(
+        DIOPI_CALLCNNL(cnnlCastDataType(
             handle, indices_t_desc.get(), indices_tensor_t.data(), CNNL_CAST_INT32_TO_INT16, indices16_cast_desc.get(), indices16_cast_tensor.data()));
         DIOPI_CALLCNNL(cnnlPoolingBackward(handle,
                                            pool_desc,
@@ -406,9 +406,9 @@ DIOPI_API diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx,
                                            grad_input_desc.get(),
                                            grad_input_ptr));
     } else {
-        DIOPI_CHECKCNNL(cnnlCastDataType(
+        DIOPI_CALLCNNL(cnnlCastDataType(
             handle, indices_t_desc.get(), indices_tensor_t.data(), CNNL_CAST_INT64_TO_INT32, indices32_cast_desc.get(), indices32_cast_tensor.data()));
-        DIOPI_CHECKCNNL(cnnlCastDataType(handle,
+        DIOPI_CALLCNNL(cnnlCastDataType(handle,
                                          indices32_cast_desc.get(),
                                          indices32_cast_tensor.data(),
                                          CNNL_CAST_INT32_TO_INT16,

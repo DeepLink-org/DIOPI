@@ -8,7 +8,9 @@
 #define IMPL_CAMB_ERROR_HPP_
 
 #include <cnrt.h>
+#include <diopi/diopirt.h>
 
+#include <string>
 #include <mutex>
 #include <utility>
 
@@ -27,6 +29,8 @@ inline void set_last_error_string(const char* szFmt, Types&&... args) {
 }
 
 const char* camb_get_last_error_string();
+
+const std::string getDiopiErrorStr(diopiError_t err);
 
 }  // namespace camb
 

@@ -18,11 +18,9 @@ DIOPI_API diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandl
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_int8, diopi_dtype_uint8, diopi_dtype_int16, diopi_dtype_int32, diopi_dtype_float16, diopi_dtype_float32};
     autoCastTensorType(ctx, pTensors, supportedDtypes);
 
-    DiopiTensor out_tensor_temp;
+    DiopiTensor out_tensor_temp = out_tensor;
     if (out_tensor.dtype() != input_tensor.dtype()) {
-        out_tensor_temp = dataTypeCast(ctx, out_tensor, input_tensor.dtype());
-    } else {
-        out_tensor_temp = DiopiTensor(out);
+        dataTypeCast(ctx, out_tensor_temp, input_tensor.dtype());
     }
 
     CnnlTensorDesc input_tensor_desc(input_tensor, CNNL_LAYOUT_ARRAY);
@@ -104,11 +102,9 @@ DIOPI_API diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTen
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
     autoCastTensorType(ctx, pTensors, supportedDtypes);
 
-    DiopiTensor grad_input_tensor_temp;
+    DiopiTensor grad_input_tensor_temp = grad_input_tensor;
     if (grad_input_tensor.dtype() != input_tensor.dtype()) {
-        grad_input_tensor_temp = dataTypeCast(ctx, grad_input_tensor, input_tensor.dtype());
-    } else {
-        grad_input_tensor_temp = grad_input_tensor;
+        dataTypeCast(ctx, grad_input_tensor_temp, input_tensor.dtype());
     }
 
     CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);

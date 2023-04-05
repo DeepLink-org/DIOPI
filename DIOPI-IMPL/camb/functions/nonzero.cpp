@@ -29,7 +29,7 @@ diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
     auto input_tensor = DiopiTensor(input);
     if (input_tensor.dtype() == diopi_dtype_uint8 || input_tensor.dtype() == diopi_dtype_int8 || input_tensor.dtype() == diopi_dtype_int16 ||
         input_tensor.dtype() == diopi_dtype_int64) {
-        input_tensor = dataTypeCast(ctx, input_tensor, diopi_dtype_int32);
+        dataTypeCast(ctx, input_tensor, diopi_dtype_int32);
     }
     CnnlTensorDesc inputDesc(input_tensor, CNNL_LAYOUT_ARRAY);
 

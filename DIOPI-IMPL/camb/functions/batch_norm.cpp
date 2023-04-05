@@ -50,7 +50,7 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     if (training) {
         // get workspace
         size_t workspace_size = 0;
-        DIOPI_CHECKCNNL(cnnlGetBatchNormForwardWorkspaceSize(handle, input_channel_last_desc.get(), &workspace_size));
+        DIOPI_CALLCNNL(cnnlGetBatchNormForwardWorkspaceSize(handle, input_channel_last_desc.get(), &workspace_size));
 
         void* workspace_ptr = workspace_size == 0 ? nullptr : requiresBuffer(ctx, workspace_size).data();
 
@@ -172,7 +172,7 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx,
     if (training) {
         // get workspace
         size_t workspace_size = 0;
-        DIOPI_CHECKCNNL(cnnlGetBatchNormBackwardWorkspaceSize(handle, input_desc.get(), &workspace_size));
+        DIOPI_CALLCNNL(cnnlGetBatchNormBackwardWorkspaceSize(handle, input_desc.get(), &workspace_size));
 
         void* workspace_ptr = workspace_size == 0 ? nullptr : requiresBuffer(ctx, workspace_size).data();
 
@@ -209,7 +209,7 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx,
             0));
     } else {
         size_t workspace_size = 0;
-        DIOPI_CHECKCNNL(cnnlGetFrozenBatchNormBackwardWorkspaceSize(handle, input_desc.get(), &workspace_size));
+        DIOPI_CALLCNNL(cnnlGetFrozenBatchNormBackwardWorkspaceSize(handle, input_desc.get(), &workspace_size));
 
         void* workspace_ptr = workspace_size == 0 ? nullptr : requiresBuffer(ctx, workspace_size).data();
 
@@ -241,7 +241,7 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx,
     }
 
     // NHWC -> NCHW
-    cnnl_transpose(ctx, handle, grad_input_channel_last, grad_input_tr, CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW);
+    DIOPI_CALL(cnnl_transpose(ctx, handle, grad_input_channel_last, grad_input_tr, CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW));
 
     return diopiSuccess;
 }

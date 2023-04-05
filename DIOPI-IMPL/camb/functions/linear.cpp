@@ -15,7 +15,7 @@ namespace impl {
 namespace camb {
 
 namespace {
-diopiError_t flatten_to_2d(std::vector<long int> in_dims, std::vector<int>& out_dims) {
+diopiError_t flatten_to_2d(std::vector<int64_t> in_dims, std::vector<int>& out_dims) {
     out_dims.resize(2);
     if (in_dims.size() >= 2) {
         out_dims[0] = std::accumulate(in_dims.begin(), in_dims.end() - 1, 1, std::multiplies<int32_t>());

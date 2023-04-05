@@ -24,11 +24,9 @@ diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandl
             diopi_dtype_int8, diopi_dtype_uint8, diopi_dtype_int16, diopi_dtype_int32, diopi_dtype_float16, diopi_dtype_float32};
         autoCastTensorType(ctx, pTensors, supportedDtypes);
 
-        DiopiTensor output_tensor_temp;
+        DiopiTensor output_tensor_temp = output_tensor;
         if ((output_tensor.dtype() != input_tensor.dtype())) {
-            output_tensor_temp = dataTypeCast(ctx, output_tensor, input_tensor.dtype());
-        } else {
-            output_tensor_temp = DiopiTensor(out);
+            dataTypeCast(ctx, output_tensor_temp, input_tensor.dtype());
         }
 
         CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);

@@ -87,7 +87,8 @@ extern "C" DIOPI_API diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTen
 
 extern "C" DIOPI_API diopiError_t
 diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
-    DiopiTensor trOther = makeTensorFromScalar(ctx, other);
+    DiopiTensor trOther;
+    makeTensorFromScalar(ctx, other, trOther);
     DIOPI_CALL(diopiAdd(ctx, out, input, static_cast<diopiTensorHandle_t>(trOther), alpha));
     return diopiSuccess;
 }

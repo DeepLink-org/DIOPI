@@ -18,7 +18,8 @@ DIOPI_API diopiError_t Log(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
     autoCastTensorType(ctx, pTensors, supportedDtypes);
     DiopiTensor input_tensor_tmp = *pTensors[0];
-    DiopiTensor out_tensor_tmp = dataTypeCast(ctx, out_tensor, input_tensor_tmp.dtype());
+    DiopiTensor out_tensor_tmp = out_tensor;
+    dataTypeCast(ctx, out_tensor_tmp, input_tensor_tmp.dtype());
 
     CnnlTensorDesc input_desc(input_tensor_tmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc out_desc(out_tensor_tmp, CNNL_LAYOUT_ARRAY);

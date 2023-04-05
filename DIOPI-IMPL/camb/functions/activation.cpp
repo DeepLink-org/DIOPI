@@ -74,7 +74,8 @@ diopiError_t cnnl_activation_internal(diopiContextHandle_t ctx, DiopiTensor inpu
 
     std::vector<DiopiTensor*> inputs{&input};
     autoCastTensorType(ctx, inputs, {diopi_dtype_float16, diopi_dtype_float32});
-    DiopiTensor temp_output = dataTypeCast(ctx, out, input.dtype());
+    DiopiTensor temp_output = out;
+    dataTypeCast(ctx, temp_output, input.dtype());
 
     CnnlTensorDesc input_desc(input, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc output_desc(temp_output, CNNL_LAYOUT_ARRAY);
@@ -113,7 +114,8 @@ diopiError_t cnnl_activation_backward_internal(diopiContextHandle_t ctx, DiopiTe
 
     std::set<diopiDtype_t> support_dtype{diopi_dtype_float16, diopi_dtype_float32};
     autoCastTensorType(ctx, inputs, support_dtype);
-    DiopiTensor temp_grad_input = dataTypeCast(ctx, grad_input, grad_output.dtype());
+    DiopiTensor temp_grad_input = grad_input;
+    dataTypeCast(ctx, temp_grad_input, grad_output.dtype());
 
     CnnlTensorDesc grad_input_desc(temp_grad_input, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc grad_output_desc(grad_output, CNNL_LAYOUT_ARRAY);

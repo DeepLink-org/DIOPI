@@ -20,7 +20,7 @@ diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t out, cons
     auto out_tensor = DiopiTensor(out);
     DiopiTensor out32_tensor = out_tensor;
     if (diopi_dtype_int64 == out_tensor.dtype()) {
-        out32_tensor = dataTypeCast(ctx, out_tensor, diopi_dtype_int32);
+        dataTypeCast(ctx, out32_tensor, diopi_dtype_int32);
     }
     CnnlTensorDesc outDesc(out32_tensor, CNNL_LAYOUT_ARRAY);
 

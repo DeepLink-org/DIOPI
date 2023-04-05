@@ -17,7 +17,8 @@ DIOPI_API diopiError_t diopiPowTensor(diopiContextHandle_t ctx, diopiTensorHandl
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
     autoCastTensorType(ctx, pTensors_in, supportedDtypes);
     DiopiTensor input_tensor_tmp = *pTensors_in[0];
-    DiopiTensor out_tensor_tmp = dataTypeCast(ctx, out_tensor, input_tensor_tmp.dtype());
+    DiopiTensor out_tensor_tmp = out_tensor;
+    dataTypeCast(ctx, out_tensor_tmp, input_tensor_tmp.dtype());
 
     CnnlTensorDesc input_desc(input_tensor_tmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc out_desc(out_tensor_tmp, CNNL_LAYOUT_ARRAY);
@@ -35,13 +36,13 @@ DIOPI_API diopiError_t diopiPowTensor(diopiContextHandle_t ctx, diopiTensorHandl
     CnnlTensorDesc exponent_desc(exponent_tensor_tmp, CNNL_LAYOUT_ARRAY);
 
     size_t workspace_size = 0;
-    DIOPI_CHECKCNNL(cnnlGetPowWorkspaceSize(handle, input_desc.get(), exponent_desc.get(), out_desc.get(), &workspace_size));
+    DIOPI_CALLCNNL(cnnlGetPowWorkspaceSize(handle, input_desc.get(), exponent_desc.get(), out_desc.get(), &workspace_size));
     void* workspace = nullptr;
     if (0 != workspace_size) {
         workspace = requiresBuffer(ctx, workspace_size).data();
     }
 
-    DIOPI_CHECKCNNL(cnnlPow(handle,
+    DIOPI_CALLCNNL(cnnlPow(handle,
                             CNNL_COMPUTATION_HIGH_PRECISION,
                             input_desc.get(),
                             input_tensor_tmp.data(),
@@ -61,7 +62,8 @@ DIOPI_API diopiError_t diopiPowInpTensor(diopiContextHandle_t ctx, diopiTensorHa
 }
 
 DIOPI_API diopiError_t diopiPow(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* exponent) {
-    DiopiTensor exponent_tensor = makeTensorFromScalar(ctx, exponent);
+    DiopiTensor exponent_tensor;
+    makeTensorFromScalar(ctx, exponent, exponent_tensor);
     DIOPI_CALL(diopiPowTensor(ctx, out, input, static_cast<diopiTensorHandle_t>(exponent_tensor)));
     return diopiSuccess;
 }
@@ -72,7 +74,8 @@ DIOPI_API diopiError_t diopiPowInp(diopiContextHandle_t ctx, diopiTensorHandle_t
 }
 
 DIOPI_API diopiError_t diopiPowScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiScalar_t* input, diopiConstTensorHandle_t exponent) {
-    DiopiTensor input_tensor = makeTensorFromScalar(ctx, input);
+    DiopiTensor input_tensor;
+    makeTensorFromScalar(ctx, input, input_tensor);
     DIOPI_CALL(diopiPowTensor(ctx, out, static_cast<diopiTensorHandle_t>(input_tensor), exponent));
     return diopiSuccess;
 }

@@ -32,7 +32,8 @@ DIOPI_API diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t 
     DiopiTensor input_tensor_tmp = *pTensors[0];
     DiopiTensor mat1_tensor_tmp = *pTensors[1];
     DiopiTensor mat2_tensor_tmp = *pTensors[2];
-    DiopiTensor out_tensor_tmp = dataTypeCast(ctx, out_tensor, input_tensor_tmp.dtype());
+    DiopiTensor out_tensor_tmp = out_tensor;
+    dataTypeCast(ctx, out_tensor_tmp, input_tensor_tmp.dtype());
 
     CnnlTensorDesc input_desc(input_tensor_tmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc mat1_desc(mat1_tensor_tmp, CNNL_LAYOUT_ARRAY);

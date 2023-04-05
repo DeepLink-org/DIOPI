@@ -20,13 +20,11 @@ extern "C" {
 diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* value) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     auto input_tensor = DiopiTensor(input);
-    DiopiTensor input_tensor_temp;
+    DiopiTensor input_tensor_temp = input_tensor;
 
     // float64 not supported yet
     if (input_tensor.dtype() == diopi_dtype_float64) {
-        input_tensor_temp = dataTypeCast(ctx, input_tensor, diopi_dtype_float32);
-    } else {
-        input_tensor_temp = DiopiTensor(input);
+       dataTypeCast(ctx, input_tensor_temp, diopi_dtype_float32);
     }
 
     CnnlTensorDesc input_tensor_desc(input_tensor_temp, CNNL_LAYOUT_ARRAY);

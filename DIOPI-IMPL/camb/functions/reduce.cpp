@@ -144,7 +144,7 @@ diopiError_t reduce_impl(diopiContextHandle_t ctx, DiopiTensor& output_tr, Diopi
     }
     auto reduce_dtype = find_supported_type(reduce_op, input_tr.dtype());
     if (input_tr.dtype() != reduce_dtype) {
-        input_tr = dataTypeCast(ctx, input_tr, reduce_dtype);
+        dataTypeCast(ctx, input_tr, reduce_dtype);
     }
     if (output_tr.dtype() != input_tr.dtype()) {
         auto output_tr_t = requiresTensor(ctx, output_tr.shape(), input_tr.dtype());
@@ -167,7 +167,7 @@ diopiError_t reduce_dim_impl(diopiContextHandle_t ctx,
     auto reduce_dtype = find_supported_type(reduce_op, input_tr.dtype());
 
     if (input_tr.dtype() != reduce_dtype) {
-        input_tr = dataTypeCast(ctx, input_tr, reduce_dtype);
+        dataTypeCast(ctx, input_tr, reduce_dtype);
     }
     if (output_tr.dtype() != input_tr.dtype()) {
         auto output_tr_t = requiresTensor(ctx, output_tr.shape(), input_tr.dtype());
@@ -193,7 +193,7 @@ diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     DIOPI_CHECK(dtype != diopi_dtype_int64, "Sum: dtype == int64 is not supported in camb now");
 
     if (input_tr.dtype() != dtype) {
-        input_tr = dataTypeCast(ctx, input_tr, dtype);
+        dataTypeCast(ctx, input_tr, dtype);
     }
 
     reduce_dim_impl(ctx, output_tr, index_tr, input_tr, dim_vec, false, CNNL_REDUCE_ADD);
@@ -211,7 +211,7 @@ diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     std::vector<int64_t> dim_vec(dim.data, dim.data + dim.len);
 
     if (input_tr.dtype() != dtype) {
-        input_tr = dataTypeCast(ctx, input_tr, dtype);
+        dataTypeCast(ctx, input_tr, dtype);
     }
 
     reduce_dim_impl(ctx, output_tr, index_tr, input_tr, dim_vec, false, CNNL_REDUCE_AVG);
@@ -226,7 +226,7 @@ diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     diopiDtype_t type = output_tr.dtype();
 
     if (input_tr.dtype() != type) {
-        input_tr = dataTypeCast(ctx, input_tr, type);
+        dataTypeCast(ctx, input_tr, type);
     }
 
     reduce_dim_impl(ctx, output_tr, index_tr, input_tr, {*dim}, false, CNNL_REDUCE_MUL);
@@ -291,7 +291,7 @@ diopiError_t diopiNorm(
     diopiDtype_t dtype = output_tr.dtype();
 
     if (input_tr.dtype() != dtype) {
-        input_tr = dataTypeCast(ctx, input_tr, dtype);
+        dataTypeCast(ctx, input_tr, dtype);
     }
 
     std::vector<int64_t> dim_vec(dim.data, dim.data + dim.len);
