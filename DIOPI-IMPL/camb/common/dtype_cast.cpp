@@ -23,7 +23,7 @@ diopiError_t dataTypeCast(diopiContextHandle_t& ctx, DiopiTensor& src, diopiDtyp
     DiopiTensor dest = requiresTensor(ctx, srcSize, destDtype);
     diopiDtype_t srcDtype = src.dtype();
     if (gCnnlCastDataTypeMapping.find({srcDtype, destDtype}) == gCnnlCastDataTypeMapping.end()) {
-        set_last_error_string("can't dtype cast from %s to %s is not allown at %s:%d",
+        set_last_error_string("dtype cast from %s to %s is not allown at %s:%d",
                               DiopiDataType::dataTypeStr(srcDtype).c_str(),
                               DiopiDataType::dataTypeStr(destDtype).c_str(),
                               __FILE__,
@@ -50,7 +50,7 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const Dio
     CnnlTensorDesc descSrc(src, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc descDest(dest, CNNL_LAYOUT_ARRAY);
     if (gCnnlCastDataTypeMapping.find({srcDtype, destDtype}) == gCnnlCastDataTypeMapping.end()) {
-        set_last_error_string("can't dtype cast from %s to %s is not allown at %s:%d",
+        set_last_error_string("dtype cast from %s to %s is not allown at %s:%d",
                               DiopiDataType::dataTypeStr(srcDtype).c_str(),
                               DiopiDataType::dataTypeStr(destDtype).c_str(),
                               __FILE__,
