@@ -31,60 +31,72 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
 
     double value_scalar = DiopiDataType::isInteger(value->stype) ? value->ival : value->fval;
     void* value_ptr;
+    bool temp_bool = 0;
+    int8_t temp_i8 = 0;
+    uint8_t temp_u8 = 0;
+    int16_t temp_i16 = 0;
+    uint16_t temp_u16 = 0;
+    int32_t temp_i32 = 0;
+    uint32_t temp_u32 = 0;
+    int64_t temp_i64 = 0;
+    uint64_t temp_u64 = 0;
+    half_float::half temp_f16 = static_cast<half_float::half>(0);
+    float temp_f32 = 0;
+
     switch (input_tensor_temp.dtype()) {
         case diopi_dtype_bool: {
-            auto temp = static_cast<bool>(value_scalar);
-            value_ptr = &temp;
+            temp_bool = static_cast<bool>(value_scalar);
+            value_ptr = &temp_bool;
             break;
         }
         case diopi_dtype_int8: {
-            auto temp = int8_t(value_scalar);
-            value_ptr = &temp;
+            temp_i8 = int8_t(value_scalar);
+            value_ptr = &temp_i8;
             break;
         }
         case diopi_dtype_uint8: {
-            auto temp = uint8_t(value_scalar);
-            value_ptr = &temp;
+            temp_u8 = uint8_t(value_scalar);
+            value_ptr = &temp_u8;
             break;
         }
         case diopi_dtype_int16: {
-            auto temp = int16_t(value_scalar);
-            value_ptr = &temp;
+            temp_i16 = int16_t(value_scalar);
+            value_ptr = &temp_i16;
             break;
         }
         case diopi_dtype_uint16: {
-            auto temp = int16_t(value_scalar);
-            value_ptr = &temp;
+            temp_u16 = uint16_t(value_scalar);
+            value_ptr = &temp_u16;
             break;
         }
         case diopi_dtype_int32: {
-            auto temp = int32_t(value_scalar);
-            value_ptr = &temp;
+            temp_i32 = int32_t(value_scalar);
+            value_ptr = &temp_i32;
             break;
         }
         case diopi_dtype_uint32: {
-            auto temp = uint32_t(value_scalar);
-            value_ptr = &temp;
+            temp_u32 = uint32_t(value_scalar);
+            value_ptr = &temp_u32;
             break;
         }
         case diopi_dtype_int64: {
-            auto temp = int64_t(value_scalar);
-            value_ptr = &temp;
+            temp_i64 = int64_t(value_scalar);
+            value_ptr = &temp_i64;
             break;
         }
         case diopi_dtype_uint64: {
-            auto temp = uint64_t(value_scalar);
-            value_ptr = &temp;
+            temp_u64 = uint64_t(value_scalar);
+            value_ptr = &temp_u64;
             break;
         }
         case diopi_dtype_float16: {
-            auto temp = half_float::half(value_scalar);
-            value_ptr = &temp;
+            temp_f16 = half_float::half(value_scalar);
+            value_ptr = &temp_f16;
             break;
         }
         case diopi_dtype_float32: {
-            auto temp = static_cast<float>(value_scalar);
-            value_ptr = &temp;
+            temp_f32 = static_cast<float>(value_scalar);
+            value_ptr = &temp_f32;
             break;
         }
     }
