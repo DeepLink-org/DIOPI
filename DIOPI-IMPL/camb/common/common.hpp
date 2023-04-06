@@ -28,6 +28,7 @@ diopiError_t broadcast(diopiContextHandle_t ctx, DiopiTensor& out, const DiopiTe
 
 diopiError_t broadcastHelper(diopiContextHandle_t ctx, DiopiTensor input_tensor, DiopiTensor target_tensor, DiopiTensor* out_tensor);
 
+void print_backtrace();
 
 }  // namespace camb
 }  // namespace impl
