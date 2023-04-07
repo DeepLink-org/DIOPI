@@ -19,7 +19,7 @@ extern "C" {
 
 diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* value) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto input_tensor = DiopiTensor(input);
+    DiopiTensor input_tensor(input);
     DiopiTensor input_tensor_temp = input_tensor;
 
     // float64 not supported yet

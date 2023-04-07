@@ -23,10 +23,10 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx,
                           diopiReduction_t reduction,
                           int64_t ignore_index) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto input_tr = DiopiTensor(input);
-    auto output_tr = DiopiTensor(out);
-    auto target_tr = DiopiTensor(target);
-    auto weight_tr = DiopiTensor(weight);
+    DiopiTensor input_tr(input);
+    DiopiTensor output_tr(out);
+    DiopiTensor target_tr(target);
+    DiopiTensor weight_tr(weight);
 
     DIOPI_CHECK(input_tr.dtype() != diopi_dtype_float16, "Half is not supported currently")
     DIOPI_CHECK(input_tr.numel() != 0, "input tensor is empty")
@@ -137,11 +137,11 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx,
                                   diopiReduction_t reduction,
                                   int64_t ignore_index) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto input_tr = DiopiTensor(input);
-    auto grad_input_tr = DiopiTensor(grad_input);
-    auto grad_output_tr = DiopiTensor(grad_output);
-    auto target_tr = DiopiTensor(target);
-    auto weight_tr = DiopiTensor(weight);
+    DiopiTensor input_tr(input);
+    DiopiTensor grad_input_tr(grad_input);
+    DiopiTensor grad_output_tr(grad_output);
+    DiopiTensor target_tr(target);
+    DiopiTensor weight_tr(weight);
 
     DIOPI_CHECK(input_tr.dtype() != diopi_dtype_float16, "Half is not supported currently")
     DIOPI_CHECK(input_tr.numel() != 0, "input tensor is empty")
@@ -247,8 +247,8 @@ diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx,
                                    diopiReduction_t reduction,
                                    int64_t ignore_index,
                                    double label_smoothing) {
-    auto input_tr = DiopiTensor(input);
-    auto target_tr = DiopiTensor(target);
+    DiopiTensor input_tr(input);
+    DiopiTensor target_tr(target);
 
     DIOPI_CHECK(label_smoothing == 0, "param label_smoothing is not supported")
     DIOPI_CHECK(target_tr.dim() == input_tr.dim() - 1, "Probabilities for each class are not supported");
@@ -267,9 +267,9 @@ diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx,
                                            diopiReduction_t reduction,
                                            int64_t ignore_index,
                                            double label_smoothing) {
-    auto input_tr = DiopiTensor(input);
-    auto target_tr = DiopiTensor(target);
-    auto grad_input_tr = DiopiTensor(grad_input);
+    DiopiTensor input_tr(input);
+    DiopiTensor target_tr(target);
+    DiopiTensor grad_input_tr(grad_input);
 
     DIOPI_CHECK(label_smoothing == 0, "param label_smoothing is not supported")
     DIOPI_CHECK(target_tr.dim() == input_tr.dim() - 1, "Probabilities for each class are not supported");
@@ -287,9 +287,9 @@ diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx,
 
 DIOPI_API diopiError_t diopiMSELoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
                                     diopiConstTensorHandle_t target, diopiReduction_t reduction) {
-    auto trInput = DiopiTensor(input);
-    auto trTarget = DiopiTensor(target);
-    auto trOut = DiopiTensor(out);
+    DiopiTensor trInput(input);
+    DiopiTensor trTarget(target);
+    DiopiTensor trOut(out);
     std::vector<DiopiTensor*> pTensors{&trInput, &trTarget};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
@@ -332,10 +332,10 @@ DIOPI_API diopiError_t diopiMSELoss(diopiContextHandle_t ctx, diopiTensorHandle_
 
 DIOPI_API diopiError_t diopiMSELossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiReduction_t reduction) {
-    auto trInput = DiopiTensor(input);
-    auto trGradOutput = DiopiTensor(grad_output);
-    auto trTarget = DiopiTensor(target);
-    auto trGradInput = DiopiTensor(grad_input);
+    DiopiTensor trInput(input);
+    DiopiTensor trGradOutput(grad_output);
+    DiopiTensor trTarget(target);
+    DiopiTensor trGradInput(grad_input);
 
     std::vector<DiopiTensor*> pTensors{&trInput, &trGradOutput, &trTarget};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};

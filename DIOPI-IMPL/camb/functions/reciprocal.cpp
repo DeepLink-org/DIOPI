@@ -15,8 +15,8 @@ extern "C" {
 
 DIOPI_API diopiError_t diopiReciprocal(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto input_tensor = DiopiTensor(input);
-    auto out_tensor = DiopiTensor(out);
+    DiopiTensor input_tensor(input);
+    DiopiTensor out_tensor(out);
 
     DIOPI_CHECK(((input_tensor.dtype() == diopi_dtype_float16) || (input_tensor.dtype() == diopi_dtype_float32)),
                 "input datatype not supported, only float16, float32 supported");

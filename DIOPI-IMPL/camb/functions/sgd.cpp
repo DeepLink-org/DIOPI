@@ -24,9 +24,9 @@ extern "C" DIOPI_API diopiError_t diopiSgd(diopiContextHandle_t ctx,
                                            bool nesterov) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto w_tensor = DiopiTensor(w);
-    auto dw_tensor = DiopiTensor(dw);
-    auto buf_tensor = DiopiTensor(buf);
+    DiopiTensor w_tensor(w);
+    DiopiTensor dw_tensor(dw);
+    DiopiTensor buf_tensor(buf);
 
     CnnlTensorDesc w_desc(w_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc dw_desc(dw_tensor, CNNL_LAYOUT_ARRAY);

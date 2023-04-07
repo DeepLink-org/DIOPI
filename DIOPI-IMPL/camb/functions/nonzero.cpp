@@ -12,7 +12,7 @@ extern "C" {
 diopiError_t nonzeroCount(diopiContextHandle_t ctx, diopiConstTensorHandle_t input, DiopiTensor* num_true) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto input_tensor = DiopiTensor(input);
+    DiopiTensor input_tensor(input);
     CnnlTensorDesc inputDesc(input_tensor, CNNL_LAYOUT_ARRAY);
 
     std::vector<int64_t> shape = {1};
@@ -26,7 +26,7 @@ diopiError_t nonzeroCount(diopiContextHandle_t ctx, diopiConstTensorHandle_t inp
 diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto input_tensor = DiopiTensor(input);
+    DiopiTensor input_tensor(input);
     if (input_tensor.dtype() == diopi_dtype_uint8 || input_tensor.dtype() == diopi_dtype_int8 || input_tensor.dtype() == diopi_dtype_int16 ||
         input_tensor.dtype() == diopi_dtype_int64) {
         DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_int32));

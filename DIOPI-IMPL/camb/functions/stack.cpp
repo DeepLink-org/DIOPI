@@ -13,7 +13,7 @@ DIOPI_API diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t 
 
     // insert a new dim to input_tensors
     for (int i = 0; i < numTensors; i++) {
-        auto temp_tensor = DiopiTensor(tensors[i]);
+        DiopiTensor temp_tensor(tensors[i]);
         std::vector<int> cat_shape(temp_tensor.shape().begin(), temp_tensor.shape().end());
         cnnlDataType_t dtype;
         CnnlDataType::convertToCnnlType(&dtype, temp_tensor.dtype());
@@ -34,7 +34,7 @@ DIOPI_API diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t 
     if (0 != workspace_size) {
         workspace = requiresBuffer(ctx, workspace_size).data();
     }
-    auto out_tensor = DiopiTensor(out);
+    DiopiTensor out_tensor(out);
     CnnlTensorDesc out_desc(out_tensor, CNNL_LAYOUT_ARRAY);
     DIOPI_CALLCNNL(cnnlConcat(handle, numTensors, dim, inputs_desc.data(), inputs_data.data(), workspace, workspace_size, out_desc.get(), out_tensor.data()));
     return diopiSuccess;

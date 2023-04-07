@@ -21,10 +21,10 @@ DIOPI_API diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t 
                                   diopiConstTensorHandle_t mat2, const diopiScalar_t* beta, const diopiScalar_t* alpha) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto mat1_tensor = DiopiTensor(mat1);
-    auto mat2_tensor = DiopiTensor(mat2);
-    auto input_tensor = DiopiTensor(input);
-    auto out_tensor = DiopiTensor(out);
+    DiopiTensor mat1_tensor(mat1);
+    DiopiTensor mat2_tensor(mat2);
+    DiopiTensor input_tensor(input);
+    DiopiTensor out_tensor(out);
 
     std::vector<DiopiTensor*> pTensors{&input_tensor, &mat1_tensor, &mat2_tensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};

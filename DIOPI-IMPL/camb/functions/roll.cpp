@@ -10,8 +10,8 @@ extern "C" {
 DIOPI_API diopiError_t diopiRoll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t shifts, diopiSize_t dims) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto input_tensor = DiopiTensor(input);
-    auto out_tensor = DiopiTensor(out);
+    DiopiTensor input_tensor(input);
+    DiopiTensor out_tensor(out);
 
     CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc out_desc(out_tensor, CNNL_LAYOUT_ARRAY);

@@ -8,7 +8,7 @@ extern "C" {
 
 diopiError_t getClampBoundPtr(diopiContextHandle_t ctx, diopiConstTensorHandle_t bound, diopiDtype_t desire_dtype, const char* bound_type, void** out) {
     if (nullptr != bound) {
-        auto bound_tensor = DiopiTensor(bound);
+        DiopiTensor bound_tensor(bound);
         DIOPI_CHECK(bound_tensor.numel() == 1, "only supported when %s is scalar or one element Tensor currently", bound_type);
         if (desire_dtype != bound_tensor.dtype()) {
             DIOPI_CALL(dataTypeCast(ctx, bound_tensor, desire_dtype));
@@ -23,8 +23,8 @@ diopiError_t clampCommon(diopiContextHandle_t ctx, diopiConstTensorHandle_t inpu
                          diopiConstTensorHandle_t max) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto input_tensor = DiopiTensor(input);
-    auto output_tensor = DiopiTensor(out);
+    DiopiTensor input_tensor(input);
+    DiopiTensor output_tensor(out);
     DIOPI_CHECK(input_tensor.dtype() == output_tensor.dtype(), "the dtype of input and output must be the same")
 
     auto input32_tensor = input_tensor;

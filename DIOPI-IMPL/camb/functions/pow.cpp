@@ -9,9 +9,9 @@ extern "C" {
 
 DIOPI_API diopiError_t diopiPowTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t exponent) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto input_tensor = DiopiTensor(input);
-    auto exponent_tensor = DiopiTensor(exponent);
-    auto out_tensor = DiopiTensor(out);
+    DiopiTensor input_tensor(input);
+    DiopiTensor exponent_tensor(exponent);
+    DiopiTensor out_tensor(out);
 
     std::vector<DiopiTensor*> pTensors_in{&input_tensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};

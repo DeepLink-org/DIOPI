@@ -127,10 +127,10 @@ diopiError_t matmul(
 extern "C" diopiError_t diopiLinear(
     diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto input_tensor = DiopiTensor(input);
-    auto output_tensor = DiopiTensor(out);
-    auto weight_tensor = DiopiTensor(weight);
-    auto bias_tensor = DiopiTensor(bias);
+    DiopiTensor input_tensor(input);
+    DiopiTensor output_tensor(out);
+    DiopiTensor weight_tensor(weight);
+    DiopiTensor bias_tensor(bias);
 
     DIOPI_CALL(matmul(ctx, input_tensor, weight_tensor, bias_tensor, output_tensor, false, true));
     return diopiSuccess;
@@ -143,19 +143,19 @@ extern "C" diopiError_t diopiLinearBackward(diopiContextHandle_t ctx,
                                             diopiConstTensorHandle_t input,
                                             diopiConstTensorHandle_t weight) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto grad_input_tensor = DiopiTensor(grad_input);
-    auto grad_weight_tensor = DiopiTensor(grad_weight);
-    auto grad_output_tensor = DiopiTensor(grad_output);
-    auto input_tensor = DiopiTensor(input);
-    auto weight_tensor = DiopiTensor(weight);
-    auto bias_tensor = DiopiTensor((diopiTensorHandle_t) nullptr);
+    DiopiTensor grad_input_tensor(grad_input);
+    DiopiTensor grad_weight_tensor(grad_weight);
+    DiopiTensor grad_output_tensor(grad_output);
+    DiopiTensor input_tensor(input);
+    DiopiTensor weight_tensor(weight);
+    DiopiTensor bias_tensor((diopiTensorHandle_t) nullptr);
 
     DIOPI_CALL(matmul(ctx, grad_output_tensor, input_tensor, bias_tensor, grad_weight_tensor, true, false));
 
     DIOPI_CALL(matmul(ctx, grad_output_tensor, weight_tensor, bias_tensor, grad_input_tensor, false, false));
 
     if (grad_bias != nullptr) {
-        auto bias_grad_tensor = DiopiTensor(grad_bias);
+        DiopiTensor bias_grad_tensor(grad_bias);
         CnnlTensorDesc bias_grad_desc;
         DIOPI_CALL(bias_grad_desc.set(bias_grad_tensor, CNNL_LAYOUT_ARRAY));
 

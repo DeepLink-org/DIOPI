@@ -14,10 +14,10 @@ DIOPI_API diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHand
                                        diopiConstTensorHandle_t value) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto input_tensor = DiopiTensor(input);
-    auto mask_tensor = DiopiTensor(mask);
-    auto value_tensor = DiopiTensor(value);
-    auto out_tensor = DiopiTensor(out);
+    DiopiTensor input_tensor(input);
+    DiopiTensor mask_tensor(mask);
+    DiopiTensor value_tensor(value);
+    DiopiTensor out_tensor(out);
 
     std::vector<DiopiTensor*> pTensors{&input_tensor, &value_tensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_int8, diopi_dtype_int16, diopi_dtype_int32, diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_bool};

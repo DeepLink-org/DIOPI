@@ -16,7 +16,7 @@ diopiError_t bitwiseCommon(
     diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other, cnnlBitComputeOp_t optype) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto out_tensor = DiopiTensor(out);
+    DiopiTensor out_tensor(out);
     auto out32_tensor = out_tensor;
     if (diopi_dtype_int64 == out_tensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, out32_tensor, diopi_dtype_int32));
@@ -24,7 +24,7 @@ diopiError_t bitwiseCommon(
     CnnlTensorDesc outDesc(out32_tensor, CNNL_LAYOUT_ARRAY);
 
     diopiTensorHandle_t input1 = const_cast<diopiTensorHandle_t>(input);
-    auto input1_tensor = DiopiTensor(input1);
+    DiopiTensor input1_tensor(input1);
     if (input1_tensor.dtype() != out32_tensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, input1_tensor, out32_tensor.dtype()));
     }
@@ -35,7 +35,7 @@ diopiError_t bitwiseCommon(
     CnnlTensorDesc input2Desc;
     cnnlTensorDescriptor_t input2_desc = nullptr;
     if (nullptr != other) {
-        auto input2_tensor = DiopiTensor(input2);
+        DiopiTensor input2_tensor(input2);
         if (input2_tensor.dtype() != out32_tensor.dtype()) {
             DIOPI_CALL(dataTypeCast(ctx, input2_tensor, out32_tensor.dtype()));
         }

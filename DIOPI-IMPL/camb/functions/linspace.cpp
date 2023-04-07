@@ -5,7 +5,7 @@ namespace camb {
 
 extern "C" diopiError_t diopiLinspace(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiScalar_t* start, const diopiScalar_t* end, int64_t steps) {
     auto handle = cnnlHandlePool.get(ctx);
-    auto out_tensor = DiopiTensor(out);
+    DiopiTensor out_tensor(out);
 
     float start_value, end_value;
 

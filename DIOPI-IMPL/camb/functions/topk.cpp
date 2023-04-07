@@ -22,9 +22,9 @@ DIOPI_API diopiError_t diopiTopk(diopiContextHandle_t ctx,
                                  bool largest,
                                  bool sorted) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto input_tensor = DiopiTensor(input);
-    auto indices_tensor = DiopiTensor(indices);
-    auto values_tensor = DiopiTensor(values);
+    DiopiTensor input_tensor(input);
+    DiopiTensor indices_tensor(indices);
+    DiopiTensor values_tensor(values);
 
     DiopiTensor values_tensor_temp = values_tensor;
     DiopiTensor input_tensor_temp = input_tensor;

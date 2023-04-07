@@ -17,7 +17,7 @@ extern "C" {
 diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiScalar_t* start, const diopiScalar_t* end, const diopiScalar_t* step) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto out_tensor = DiopiTensor(out);
+    DiopiTensor out_tensor(out);
     DiopiTensor out32_tensor = out_tensor;
     if (diopi_dtype_int64 == out_tensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, out32_tensor, diopi_dtype_int32));

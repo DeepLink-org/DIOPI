@@ -20,8 +20,8 @@ namespace impl {
 namespace camb {
 
 extern "C" DIOPI_API diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    auto trInput = DiopiTensor(input);
-    auto trOut = DiopiTensor(out);
+    DiopiTensor trInput(input);
+    DiopiTensor trOut(out);
 
     diopiSize_t size;
     diopiGetTensorShape(out, &size);

@@ -14,7 +14,7 @@ namespace camb {
 std::vector<int> getPerm(diopiConstTensorHandle_t tensor_handle,
                          int64_t dim0,
                          int64_t dim1) {
-    auto tensor = DiopiTensor(tensor_handle);
+    DiopiTensor tensor(tensor_handle);
     int input_size_ = tensor.shape().size();
 
     int dim0_ = 0;
@@ -58,8 +58,8 @@ DIOPI_API diopiError_t diopiTranspose(diopiContextHandle_t ctx,
     std::vector<int> perms = getPerm(input, dim0, dim1);
     DIOPI_CALLCNNL(cnnlSetTransposeDescriptor(transpose_desc, perms.size(), perms.data()));
 
-    auto input_tensor = DiopiTensor(input);
-    auto output_tensor = DiopiTensor(out);
+    DiopiTensor input_tensor(input);
+    DiopiTensor output_tensor(out);
     if (input_tensor.dtype() == diopi_dtype_float64) {
         return diopiDtypeNotSupported;
     }

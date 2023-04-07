@@ -17,8 +17,8 @@ extern "C" {
 diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t repeats_size) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto input_tensor = DiopiTensor(input);
-    auto out_tensor = DiopiTensor(out);
+    DiopiTensor input_tensor(input);
+    DiopiTensor out_tensor(out);
     CnnlTensorDesc inputDesc(input_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(out_tensor, CNNL_LAYOUT_ARRAY);
 

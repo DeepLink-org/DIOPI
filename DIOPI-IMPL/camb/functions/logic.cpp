@@ -19,8 +19,8 @@ extern "C" {
 DIOPI_API diopiError_t
 LogicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other, cnnlLogicOp_t logic_op) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto input_tensor = DiopiTensor(input);
-    auto out_tensor = DiopiTensor(out);
+    DiopiTensor input_tensor(input);
+    DiopiTensor out_tensor(out);
 
     CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc out_desc(out_tensor, CNNL_LAYOUT_ARRAY);
@@ -30,7 +30,7 @@ LogicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorH
     DIOPI_CALL(diopiGetTensorShape(input, &input_shape));
     DIOPI_CALL(diopiRequireTensor(ctx, &other_t, &input_shape, nullptr, input_tensor.dtype(), diopi_device));
     DIOPI_CALL(diopiFill(ctx, other_t, other));
-    auto other_t_tensor = DiopiTensor(other_t);
+    DiopiTensor other_t_tensor(other_t);
     CnnlTensorDesc other_t_desc(other_t_tensor, CNNL_LAYOUT_ARRAY);
 
     size_t workspace_size = 0;
@@ -55,7 +55,7 @@ LogicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorH
 
 DIOPI_API diopiError_t LogicInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, cnnlLogicOp_t logic_op) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto input_tensor = DiopiTensor(input);
+    DiopiTensor input_tensor(input);
     CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
 
     diopiTensorHandle_t other_t;
@@ -63,7 +63,7 @@ DIOPI_API diopiError_t LogicInpScalar(diopiContextHandle_t ctx, diopiTensorHandl
     DIOPI_CALL(diopiGetTensorShape(input, &input_shape));
     DIOPI_CALL(diopiRequireTensor(ctx, &other_t, &input_shape, nullptr, input_tensor.dtype(), diopi_device));
     DIOPI_CALL(diopiFill(ctx, other_t, other));
-    auto other_t_tensor = DiopiTensor(other_t);
+    DiopiTensor other_t_tensor(other_t);
     CnnlTensorDesc other_t_desc(other_t_tensor, CNNL_LAYOUT_ARRAY);
 
     size_t workspace_size = 0;
@@ -88,9 +88,9 @@ DIOPI_API diopiError_t LogicInpScalar(diopiContextHandle_t ctx, diopiTensorHandl
 DIOPI_API diopiError_t
 Logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other, cnnlLogicOp_t logic_op) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto input_tensor = DiopiTensor(input);
-    auto other_tensor = DiopiTensor(other);
-    auto out_tensor = DiopiTensor(out);
+    DiopiTensor input_tensor(input);
+    DiopiTensor other_tensor(other);
+    DiopiTensor out_tensor(out);
 
     CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc other_desc(other_tensor, CNNL_LAYOUT_ARRAY);
@@ -117,8 +117,8 @@ Logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_
 
 DIOPI_API diopiError_t LogicInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, cnnlLogicOp_t logic_op) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto input_tensor = DiopiTensor(input);
-    auto other_tensor = DiopiTensor(other);
+    DiopiTensor input_tensor(input);
+    DiopiTensor other_tensor(other);
 
     CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc other_desc(other_tensor, CNNL_LAYOUT_ARRAY);

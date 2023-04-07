@@ -10,10 +10,10 @@ extern "C" {
 DIOPI_API diopiError_t diopiAddcmul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t tensor1,
                                     diopiConstTensorHandle_t tensor2, const diopiScalar_t* value) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    auto input_tensor = DiopiTensor(input);
-    auto other_tensor1 = DiopiTensor(tensor1);
-    auto other_tensor2 = DiopiTensor(tensor2);
-    auto out_tensor = DiopiTensor(out);
+    DiopiTensor input_tensor(input);
+    DiopiTensor other_tensor1(tensor1);
+    DiopiTensor other_tensor2(tensor2);
+    DiopiTensor out_tensor(out);
 
     std::vector<DiopiTensor*> pTensors{&input_tensor, &other_tensor1, &other_tensor2};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32, diopi_dtype_float16};

@@ -13,9 +13,9 @@ DIOPI_API diopiError_t
 diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p, bool train) {
     if (train) {
         cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-        auto input_tensor = DiopiTensor(input);
-        auto output_tensor = DiopiTensor(out);
-        auto mask_tensor = DiopiTensor(mask);
+        DiopiTensor input_tensor(input);
+        DiopiTensor output_tensor(out);
+        DiopiTensor mask_tensor(mask);
 
         // Do this Check to use DIOPI-TEST because non-float data not supported in PyTorch unless p==0
         DIOPI_CHECK(((DiopiDataType::isFloatPoint(input_tensor.dtype()) || p == 0)), "result type Float can't be cast to the desired type");
