@@ -1,6 +1,9 @@
+<div align=center>
+<img src="images/deeplink_logo.png">
+</div>
+
 # DIOPI PROTO
 
-## **什么是DIOPI-PROTO？**
  DIOPI-PROTO是标准算子接口的原型声明，是芯片厂商实现与框架算子调用的中间层。通过规定标准的运行时函数与算子接口的声明，对框架来说，统一了算子接口，无需考虑芯片厂商具体的算子实现；对厂商来说，可以只聚焦于算子实现与优化，无需考虑框架适配。DIOPI-PROTO作为DIOPI中具体算子声明的环节，起到了承上（框架）启下（芯片厂商）的作用。
 
  DIOPI_PROTO有如下核心功能：
