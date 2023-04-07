@@ -1,6 +1,11 @@
+<div align=center>
+<img src="resources/deeplink_logo.png">
+</div>
+
+
+
 # DIOPI-IMPL
 
-## **什么是DIOPI-Impl？**
  DIOPI-IMPL 主要用于芯片厂商基于 DIOPI-PROTO 进行标准算子实现，和基于 DIOPI-TEST 注册基础少量的运行时函数。芯片厂商需要在 DIOPI-IMPL 通过注册的形式，为后续测试提供如内存拷贝、流创建销毁等可管理设备芯片的功能，该实现部分仅供 DIOPI-TEST 测试所用。更为重要的是，芯片厂商可通过封装自身计算库或者调用 ```kernel``` 的方式来实现 DIOPI-PROTO 定义良好的标准算子接口以备后续测试调用和训练框架调用。
 
  其价值体现在以实现统一接口计算库的形式，来对接不同训练框架。无需考虑不同训练框架特性，可更专注于提升每个功能性算子的性能。
