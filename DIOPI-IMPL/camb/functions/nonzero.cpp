@@ -9,12 +9,10 @@ namespace camb {
 
 extern "C" {
 
-diopiError_t nonzeroCount(diopiContextHandle_t ctx, diopiConstTensorHandle_t input, DiopiTensor* num_true) {
+diopiError_t nonzeroCount(diopiContextHandle_t ctx, DiopiTensor input_tensor, DiopiTensor* num_true) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    DiopiTensor input_tensor(input);
     CnnlTensorDesc inputDesc(input_tensor, CNNL_LAYOUT_ARRAY);
-
     std::vector<int64_t> shape = {1};
     *num_true = requiresTensor(ctx, shape, diopi_dtype_int32);
     CnnlTensorDesc num_trueDesc(*num_true, CNNL_LAYOUT_ARRAY);
@@ -27,14 +25,15 @@ diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor input_tensor(input);
-    if (input_tensor.dtype() == diopi_dtype_uint8 || input_tensor.dtype() == diopi_dtype_int8 || input_tensor.dtype() == diopi_dtype_int16 ||
-        input_tensor.dtype() == diopi_dtype_int64) {
+    if (DiopiDataType::isInteger(input_tensor.dtype())) {
         DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_int32));
+    } else if (input_tensor.dtype() == diopi_dtype_float64) {
+        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_float32));
     }
     CnnlTensorDesc inputDesc(input_tensor, CNNL_LAYOUT_ARRAY);
 
     DiopiTensor num_true;
-    nonzeroCount(ctx, diopiTensorHandle_t(input_tensor), &num_true);
+    nonzeroCount(ctx, input_tensor, &num_true);
     CnnlTensorDesc num_trueDesc(num_true, CNNL_LAYOUT_ARRAY);
 
     size_t workspace_size(0);
@@ -44,9 +43,8 @@ diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
         workspace = requiresBuffer(ctx, workspace_size).data();
     }
 
+    syncStreamInCtx(ctx);
     int32_t count = 0;
-    cnrtMemcpy(&count, num_true.data(), sizeof(int32_t), CNRT_MEM_TRANS_DIR_DEV2HOST);
-    // ! copy again, otherwise copy might fail.
     cnrtMemcpy(&count, num_true.data(), sizeof(int32_t), CNRT_MEM_TRANS_DIR_DEV2HOST);
 
     std::vector<int64_t> shape(2);
