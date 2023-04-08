@@ -31,47 +31,54 @@ DIOPI_API diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandl
 
     void* threshold_val;
     void* value_val;
+    int8_t value_int8, threshold_val_int8;
+    uint8_t value_uint8, threshold_val_uint8;
+    int16_t value_int16, threshold_val_int16;
+    int32_t value_int32, threshold_val_int32;
+    half_float::half value_float16, threshold_val_float16;
+    float value_float32, threshold_val_float32;
+
     switch (input_tensor.dtype()) {
         case diopi_dtype_int8: {
-            auto temp1 = int8_t(threshold_scalar);
-            auto temp2 = int8_t(value_scalar);
-            threshold_val = &temp1;
-            value_val = &temp2;
+            threshold_val_int8 = int8_t(threshold_scalar);
+            value_int8 = int8_t(value_scalar);
+            threshold_val = &threshold_val_int8;
+            value_val = &value_int8;
             break;
         }
         case diopi_dtype_uint8: {
-            auto temp1 = uint8_t(threshold_scalar);
-            auto temp2 = uint(value_scalar);
-            threshold_val = &temp1;
-            value_val = &temp2;
+            threshold_val_uint8 = uint8_t(threshold_scalar);
+            value_uint8 = uint(value_scalar);
+            threshold_val = &threshold_val_uint8;
+            value_val = &value_uint8;
             break;
         }
         case diopi_dtype_int16: {
-            auto temp1 = int16_t(threshold_scalar);
-            auto temp2 = int16_t(value_scalar);
-            threshold_val = &temp1;
-            value_val = &temp2;
+            threshold_val_int16 = int16_t(threshold_scalar);
+            value_int16 = int16_t(value_scalar);
+            threshold_val = &threshold_val_int16;
+            value_val = &value_int16;
             break;
         }
         case diopi_dtype_int32: {
-            auto temp1 = int32_t(threshold_scalar);
-            auto temp2 = int32_t(value_scalar);
-            threshold_val = &temp1;
-            value_val = &temp2;
+            threshold_val_int32 = int32_t(threshold_scalar);
+            value_int32 = int32_t(value_scalar);
+            threshold_val = &threshold_val_int32;
+            value_val = &value_int32;
             break;
         }
         case diopi_dtype_float16: {
-            auto temp1 = half_float::half(threshold_scalar);
-            auto temp2 = half_float::half(value_scalar);
-            threshold_val = &temp1;
-            value_val = &temp2;
+            threshold_val_float16 = half_float::half(threshold_scalar);
+            value_float16 = half_float::half(value_scalar);
+            threshold_val = &threshold_val_float16;
+            value_val = &value_float16;
             break;
         }
         case diopi_dtype_float32: {
-            auto temp1 = static_cast<float>(threshold_scalar);
-            auto temp2 = static_cast<float>(value_scalar);
-            threshold_val = &temp1;
-            value_val = &temp2;
+            threshold_val_float32 = static_cast<float>(threshold_scalar);
+            value_float32 = static_cast<float>(value_scalar);
+            threshold_val = &threshold_val_float32;
+            value_val = &value_float32;
             break;
         }
         default:
@@ -114,15 +121,17 @@ DIOPI_API diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTen
     double threshold_scalar = DiopiDataType::isInteger(threshold->stype) ? threshold->ival : threshold->fval;
 
     void* threshold_val;
+    half_float::half threshold_scalar_half;
+    float threshold_scalar_float;
     switch (input_tensor.dtype()) {
         case diopi_dtype_float16: {
-            auto temp = half_float::half(threshold_scalar);
-            threshold_val = &temp;
+            threshold_scalar_half = half_float::half(threshold_scalar);
+            threshold_val = &threshold_scalar_half;
             break;
         }
         case diopi_dtype_float32: {
-            auto temp = static_cast<float>(threshold_scalar);
-            threshold_val = &temp;
+            threshold_scalar_float = static_cast<float>(threshold_scalar);
+            threshold_val = &threshold_scalar_float;
             break;
         }
         default:
