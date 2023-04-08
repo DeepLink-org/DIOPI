@@ -14,37 +14,34 @@
 namespace impl {
 namespace camb {
 
-extern "C" diopiError_t diopiExpInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    auto handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    if (input_tensor.dtype() == diopi_dtype_float64) {
-        auto input_tensor_f32 = input_tensor;
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor_f32, diopi_dtype_float32));
-        CnnlTensorDesc f32_desc(input_tensor_f32, CNNL_LAYOUT_ARRAY);
-        DIOPI_CALLCNNL(cnnlExp_v2(handle, CNNL_COMPUTATION_HIGH_PRECISION, f32_desc.get(), input_tensor_f32.data(), f32_desc.get(), input_tensor_f32.data()));
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor, input_tensor_f32));
-    } else {
-        CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
-        DIOPI_CALLCNNL(cnnlExp_v2(handle, CNNL_COMPUTATION_HIGH_PRECISION, input_desc.get(), input_tensor.data(), input_desc.get(), input_tensor.data()));
+static diopiError_t exp(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor& output) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    std::vector<DiopiTensor*> pTensors{&input};
+    DIOPI_CHECK(input.shape() == output.shape(), "input shape should be same as output");
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
+    DiopiTensor output_tmp = output;
+    if (input.dtype() != output.dtype()) {
+        output_tmp = requiresTensor(ctx, output.shape(), input.dtype());
+    }
+    CnnlTensorDesc desc(input, CNNL_LAYOUT_ARRAY);
+    DIOPI_CALLCNNL(cnnlExp_v2(handle, CNNL_COMPUTATION_HIGH_PRECISION, desc.get(), input.data(), desc.get(), output_tmp.data()));
+    if (output.dtype() != output_tmp.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, output, output_tmp));
     }
     return diopiSuccess;
 }
 
+extern "C" diopiError_t diopiExpInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    DiopiTensor input_tensor(input);
+    DIOPI_CALL(exp(ctx, input_tensor, input_tensor));
+    return diopiSuccess;
+}
+
 extern "C" diopiError_t diopiExp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    auto handle = cnnlHandlePool.get(ctx);
     DiopiTensor input_tensor(input);
     DiopiTensor output_tensor(out);
-    if (input_tensor.dtype() == diopi_dtype_float64) {
-        auto input_tensor_f32 = input_tensor;
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor_f32, diopi_dtype_float32));
-        CnnlTensorDesc f32_desc(input_tensor_f32, CNNL_LAYOUT_ARRAY);
-        DIOPI_CALLCNNL(cnnlExp_v2(handle, CNNL_COMPUTATION_HIGH_PRECISION, f32_desc.get(), input_tensor_f32.data(), f32_desc.get(), input_tensor_f32.data()));
-        DIOPI_CALL(dataTypeCast(ctx, output_tensor, input_tensor_f32));
-    } else {
-        CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
-        CnnlTensorDesc output_desc(output_tensor, CNNL_LAYOUT_ARRAY);
-        DIOPI_CALLCNNL(cnnlExp_v2(handle, CNNL_COMPUTATION_HIGH_PRECISION, input_desc.get(), input_tensor.data(), output_desc.get(), output_tensor.data()));
-    }
+    DIOPI_CALL(exp(ctx, input_tensor, output_tensor));
     return diopiSuccess;
 }
 
