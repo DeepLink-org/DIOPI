@@ -112,6 +112,22 @@ diopi_configs = {
         ),
     ),
 
+    'hardswish': dict(
+        name=["hardswish"],
+        is_inplace=True,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 4096), (64, 28, 28),
+                              (32, 64, 112, 112), (64, 3, 7, 28, 28)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
     'threshold': dict(
         name=["threshold"],
         is_inplace=True,
@@ -4185,6 +4201,25 @@ diopi_configs = {
         ),
     ),
 
+    'normal_': dict(
+        name=["normal_"],
+        no_output_ref=True,
+        para=dict(
+            mean=[0, 0.1],
+            std=[1, 2],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [(32, 8), (16, 64, 32)],
+                    "dtype": [Dtype.float32, Dtype.float64],
+                },
+            ]
+        ),
+    ),
+
     'normal_std_tensor': dict(
         name=["normal"],
         no_output_ref=True,
@@ -4239,6 +4274,23 @@ diopi_configs = {
                     "gen_fn": Genfunc.positive,
                 },
             ]
+        ),
+    ),
+
+    'meshgrid': dict(
+        name=["meshgrid"],
+        interface=['CustomizedTest'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['tensor'],
+                    "shape": ((8,), (16,), (32,)),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.int64],
+                    "gen_fn": Genfunc.randn,
+                    "gen_num_range": [1, 5],
+                },
+            ],
+            seq_name='tensors',
         ),
     ),
 

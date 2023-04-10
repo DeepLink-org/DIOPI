@@ -1311,6 +1311,10 @@ def hardtanh(input, min_val=- 1.0, max_val=1.0, inplace=False) -> Tensor:
     return out
 
 
+def hardswish(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, 'diopiHardswish')
+
+
 def threshold(input, threshold, value, inplace=False) -> Tensor:
     call = "diopiThreshold"
     threshold = byref(Scalar(threshold))
@@ -3431,5 +3435,36 @@ def normal(mean, std, size=None):
     arg_std = std.tensor_handle if isinstance(std, Tensor) else c_double(std)
     func = check_function(call)
     ret = func(out.context_handle, out.tensor_handle, arg_mean, arg_std)
+    check_returncode(ret)
+    return out
+
+
+def normal_(input, mean, std, shape=None) -> Tensor:
+    call = "diopiNormalInp"
+    func = check_function(call)
+    ret = func(input.context_handle, input.tensor_handle, c_double(mean), c_double(std))
+    check_returncode(ret)
+    return input
+
+
+def meshgrid(tensors, shape=None):
+    assert isinstance(tensors, (list, tuple)),\
+        "tensors must be a list or tuple"
+    inputsNum = len(tensors)
+    c_tensors = []
+    co_tensors = []
+    dims = []
+    for tensor in tensors:
+        assert (len(tensor.size()) == 1),\
+            "Expected scalar or 1D tensor in the tensor list"
+        c_tensors.append(tensor.tensor_handle)
+        dims.append(tensor.size()[0])
+    c_tensors = (c_void_p * inputsNum)(*c_tensors)
+    out = [Tensor(dims, tensors[0].get_dtype()) for i in range(inputsNum)]
+    for tensor in out:
+        co_tensors.append(tensor.tensor_handle)
+    co_tensors = (c_void_p * inputsNum)(*co_tensors)
+    func = check_function("diopiMeshGrid")
+    ret = func(tensors[0].context_handle, pointer(co_tensors), pointer(c_tensors), c_int64(inputsNum))
     check_returncode(ret)
     return out

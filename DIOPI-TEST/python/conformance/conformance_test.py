@@ -200,8 +200,13 @@ class ManualTest(object):
         # pytorch use 0.0001, but stats.kstest use 0.05 as threshold
         assert p_value > 0.001, "failed to execute normal"
 
-    def test_normal_(mean, std, size):
-        ManualTest.test_normal(mean, std, size)
+    def test_normal_(input, mean, std, shape=None):
+        from scipy import stats
+        out = F.normal_(input, mean, std, shape)
+        out_numpy = out.numpy()
+        out_numpy = out_numpy.flatten()
+        p_value = stats.kstest(out_numpy, 'norm', args=(mean, std))[1]
+        assert p_value > 0.05, "failed to execute normal_"
 
 
 class ConformanceTest(object):

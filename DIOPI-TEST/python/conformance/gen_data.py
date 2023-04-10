@@ -347,6 +347,9 @@ class GenInputData(object):
 
 
 class CustomizedTest(object):
+    def meshgrid(tensors, shape=None):
+        return torch.meshgrid(tensors)
+
     def slice_op(input, dim, index):
         sizeI = input.size()
         slice_args = []
