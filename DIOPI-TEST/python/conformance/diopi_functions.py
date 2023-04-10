@@ -1387,8 +1387,8 @@ def sum(input, dim=None, keepdim=False, dtype=None) -> Tensor:
     assert isinstance(dim, (int, list, tuple)) or dim is None,\
         "dim should be int or list"
     func = check_function("diopiSum")
-    dtype = promote_type(input, Dtype.int64)
-    dim, out = reduce_op_process(input, dim, keepdim, dtype)
+    out_dtype = dtype if dtype is not None else promote_type(input, Dtype.int64)
+    dim, out = reduce_op_process(input, dim, keepdim, out_dtype)
     dim1 = Sizes(tuple(dim))
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, dim1)
     check_returncode(ret)
@@ -2293,16 +2293,16 @@ def reciprocal(input, inplace=False) -> Tensor:
 
 
 def bitwise_not(input, inplace=False):
-    assert input.get_dtype() in [Dtype.bool, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
+    assert input.get_dtype() in [Dtype.bool, Dtype.uint8, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
         "input tensor must be of integral or boolean"
     return unary_op(input, inplace, "diopiBitwiseNot")
 
 
 def bitwise_and(input, other, inplace=False):
-    assert input.get_dtype() in [Dtype.bool, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
+    assert input.get_dtype() in [Dtype.bool, Dtype.uint8, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
         "input tensor must be of integral or boolean"
     if isinstance(other, Tensor):
-        assert other.get_dtype() in [Dtype.bool, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
+        assert other.get_dtype() in [Dtype.bool, Dtype.uint8, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
             "other tensor must be of integral or boolean"
     else:
         assert isinstance(other, int), "other must be of integral or boolean"
@@ -2311,10 +2311,10 @@ def bitwise_and(input, other, inplace=False):
 
 
 def bitwise_or(input, other, inplace=False):
-    assert input.get_dtype() in [Dtype.bool, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
+    assert input.get_dtype() in [Dtype.bool, Dtype.uint8, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
         "input tensor must be of integral or boolean"
     if isinstance(other, Tensor):
-        assert other.get_dtype() in [Dtype.bool, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
+        assert other.get_dtype() in [Dtype.bool, Dtype.uint8, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
             "other tensor must be of integral or boolean"
     else:
         assert isinstance(other, int), "other must be of integral or boolean"
@@ -3203,7 +3203,8 @@ def prod(input, dim=None, keepdim=False, dtype=None) -> Tensor:
     assert isinstance(dim, (int)) or dim is None,\
         "dim should be int"
 
-    _, out = reduce_op_process(input, dim, keepdim, promote_type(input, Dtype.int64))
+    out_dtype = dtype if dtype is not None else promote_type(input, Dtype.int64)
+    _, out = reduce_op_process(input, dim, keepdim, out_dtype)
     if dim is None:
         dim = c_void_p()
     else:
