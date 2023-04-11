@@ -1,5 +1,5 @@
 <div align=center>
-<img src="resources/deeplink_logo.png">
+<img src="resources/deepLink_logo.png">
 </div>
 
 # DIOPI-TEST
