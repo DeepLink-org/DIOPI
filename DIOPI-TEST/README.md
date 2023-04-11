@@ -1,6 +1,8 @@
-# DIOPI-TEST
+<div align=center>
+<img src="resources/deeplink_logo.png">
+</div>
 
-## **什么是DIOPI-TEST？**
+# DIOPI-TEST
 
 DIOPI-TEST是构建于设备无关算子接口（Device-Independent Operator Interface, DIOPI）之上的测试框架，它支持了没有训练框架的情况下，验证算子适配正确性的功能。DIOPI-TEST设计了一套完整的测试框架和一套算子函数测试。测试套件，可以使芯片厂商适配 DIOPI 算子时，无需训练框架即可对适配结果的正确性进行验证。
 
