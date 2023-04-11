@@ -1,5 +1,5 @@
 <div align=center>
-<img src="images/deeplink_logo.png">
+<img src="image/deepLink_logo.png">
 </div>
 
 # DIOPI PROTO
