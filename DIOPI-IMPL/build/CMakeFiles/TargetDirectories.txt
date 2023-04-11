@@ -1,8 +1,0 @@
-/nvme/xintian/diopi-merge/DIOPI/DIOPI-IMPL/build/CMakeFiles/edit_cache.dir
-/nvme/xintian/diopi-merge/DIOPI/DIOPI-IMPL/build/CMakeFiles/rebuild_cache.dir
-/nvme/xintian/diopi-merge/DIOPI/DIOPI-IMPL/build/torch/CMakeFiles/diopi_impl.dir
-/nvme/xintian/diopi-merge/DIOPI/DIOPI-IMPL/build/torch/CMakeFiles/edit_cache.dir
-/nvme/xintian/diopi-merge/DIOPI/DIOPI-IMPL/build/torch/CMakeFiles/rebuild_cache.dir
-/nvme/xintian/diopi-merge/DIOPI/DIOPI-IMPL/build/torch/test/CMakeFiles/diopirt.dir
-/nvme/xintian/diopi-merge/DIOPI/DIOPI-IMPL/build/torch/test/CMakeFiles/edit_cache.dir
-/nvme/xintian/diopi-merge/DIOPI/DIOPI-IMPL/build/torch/test/CMakeFiles/rebuild_cache.dir
