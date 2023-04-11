@@ -6,7 +6,8 @@
  */
 
 #include <diopi/diopirt.h>
-#include <diopi_register.h>
+#include <conform_test.h>
+#include <diopi/functions.h>
 
 #include <cassert>
 #include <cstdio>
@@ -15,7 +16,6 @@
 #include <memory>
 #include <vector>
 #include <set>
-
 
 extern "C" {
 
@@ -49,33 +49,6 @@ DIOPI_RT_API const char* diopiGetVersion()
     return szVersion;
 }
 
-static void* fake_device_malloc_func(uint64_t bytes)
-{
-    diopi_err("The device memory malloc function is not registered\n");
-    exit(diopiNoRegisteredDeviceMemoryMallocFunction);
-    return nullptr;
-}
-
-static malloc_func_t device_malloc_func = fake_device_malloc_func;
-DIOPI_RT_API diopiError_t diopiRegisterDeviceMallocFunc(malloc_func_t f)
-{
-    device_malloc_func = f;
-    return diopiSuccess;
-}
-
-static void fake_device_memory_free_func(void* ptr)
-{
-    diopi_err("The device memory free function is not registered!\n");
-    exit(diopiNoRegisteredDeviceMemoryFreeFunction);
-}
-
-static free_func_t device_mem_free_func = fake_device_memory_free_func;
-DIOPI_RT_API diopiError_t diopiRegisterDevMemFreeFunc(free_func_t f)
-{
-    device_mem_free_func = f;
-    return diopiSuccess;
-}
-
 static void* host_malloc(uint64_t bytes)
 {
     return malloc(bytes);
@@ -86,104 +59,9 @@ static void host_free(void* ptr)
     free(ptr);
 }
 
-static void* device_malloc(uint64_t bytes)
-{
-    void* ptr = device_malloc_func(bytes);
-    diopi_log("device malloc bytes: %lu @ %16p", bytes, ptr);
-    return ptr;
-}
-
-static void device_free(void* ptr)
-{
-    diopi_log("free device memory:%16p", ptr);
-    device_mem_free_func(ptr);
-}
-
-static int32_t fake_memcpy_h2d_async_func(diopiStreamHandle_t stream, void* dst,
-                                          const void* src, uint64_t bytes)
-{
-    diopi_err("The memcpy_h2d_async_func function is not registered, no operation is performed!\n");
-    return diopiNoRegisteredHost2DeviceMemoryCopyFunction;
-}
-
-static memcpy_h2d_async_func_t memcpy_h2d_async_func = fake_memcpy_h2d_async_func;
-DIOPI_RT_API diopiError_t diopiRegisterMemcpyH2DAsyncFunc(memcpy_h2d_async_func_t f)
-{
-    memcpy_h2d_async_func = f;
-    return diopiSuccess;
-}
-
-static int32_t fake_memcpy_d2h_async_func(diopiStreamHandle_t stream, void* dst, const void* src,
-                                          uint64_t bytes)
-{
-    diopi_err("The memcpy_d2h_async_func function is not registered, no operation is performed!\n");
-    return diopiNoRegisteredDevice2HostMemoryCopyFunction;
-}
-
-static memcpy_d2h_async_func_t memcpy_d2h_async_func = fake_memcpy_d2h_async_func;
-DIOPI_RT_API diopiError_t diopiRegisterMemcpyD2HAsyncFunc(memcpy_d2h_async_func_t f)
-{
-    memcpy_d2h_async_func = f;
-    return diopiSuccess;
-}
-
-static int32_t fake_memcpy_d2d_async_func(diopiStreamHandle_t stream, void* dst, const void* src,
-                                          uint64_t bytes)
-{
-    diopi_err("The memcpy_d2d_async_func function is not registered, no operation is performed!\n");
-    return diopiNoRegisteredDevice2HostMemoryCopyFunction;
-}
-
-static memcpy_d2d_async_func_t memcpy_d2d_async_func = fake_memcpy_d2d_async_func;
-DIOPI_RT_API diopiError_t diopiRegisterMemcpyD2DAsyncFunc(memcpy_d2d_async_func_t f)
-{
-    memcpy_d2d_async_func = f;
-    return diopiSuccess;
-}
-
-create_stream_func_t stream_create_func = nullptr;
-DIOPI_RT_API diopiError_t diopiRegisterStreamCreateFunc(create_stream_func_t f)
-{
-    stream_create_func = f;
-    return diopiSuccess;
-}
-
-destroy_stream_func_t registered_stream_destroy_func = nullptr;
-DIOPI_RT_API diopiError_t diopiRegisterStreamDestroyFunc(destroy_stream_func_t f)
-{
-    registered_stream_destroy_func = f;
-    return diopiSuccess;
-}
-
-static int32_t fake_synchronize_stream(diopiStreamHandle_t stream)
-{
-    diopi_err("The stream synchronization function is not registered!\n");
-    return diopiNoRegisteredStreamSyncFunction;
-}
-
-static sync_stream_func_t synchronize_stream_func = fake_synchronize_stream;
-DIOPI_RT_API diopiError_t diopiRegisterSynchronizeStreamFunc(sync_stream_func_t f)
-{
-    synchronize_stream_func = f;
-    return diopiSuccess;
-}
-
-static const char* fake_get_last_error_string_func()
-{
-    diopi_err("The get_last_error_string function is not registered.\n");
-    return nullptr;
-}
-
-static get_last_error_string_func_t get_last_error_string_func = fake_get_last_error_string_func;
-DIOPI_RT_API diopiError_t diopiRegisterGetLastErrorFunc(get_last_error_string_func_t f)
-{
-    get_last_error_string_func = f;
-    return diopiSuccess;
-}
-
-DIOPI_RT_API const char* diopiGetLastErrorString() {
-    return get_last_error_string_func();
-}
+// DIOPI_RT_API const char* diopiGetLastErrorString() {
+//     return device_get_last_error_string();
+// }
 
 void _getLastErrorString(const char** strErr) {
     const char* str = diopiGetLastErrorString();
@@ -429,9 +307,7 @@ public:
 
     ~diopiContext() {
         if (nullptr != stream_) {
-            if (registered_stream_destroy_func != nullptr) {
-                registered_stream_destroy_func(stream_);
-            }
+            device_destroy_stream(stream_);
         }
         for (auto it : setTensors_) {
             delete it;
@@ -441,11 +317,7 @@ public:
 
     diopiStreamHandle_t getStreamHandle() {
         if (stream_ == nullptr) {
-            if (stream_create_func == nullptr) {
-                diopi_err("stream create function is not registered!\n");
-            } else {
-                stream_create_func(&stream_);
-            }
+            device_make_stream(&stream_);
         }
         return stream_;
     }
@@ -479,10 +351,6 @@ DIOPI_RT_API diopiError_t _diopiDestroyContext(diopiContextHandle_t ctx) {
 }
 
 diopiError_t diopiGetStream(diopiContextHandle_t ctx, diopiStreamHandle_t* stream) {
-    if (nullptr == stream_create_func) {
-        diopi_err("stream create function is not registered!\n");
-        return diopiNoRegisteredStreamCreateFunction;
-    }
     *stream = ctx->getStreamHandle();
     return diopiSuccess;
 }
@@ -522,7 +390,6 @@ DIOPI_RT_API diopiError_t diopiInit() {
         DIOPIRT_LOG_LEVEL = 0;
     }
     diopi_log("DIOPIRT_LOG_LEVEL:%d", DIOPIRT_LOG_LEVEL);
-
     return diopiSuccess;
 }
 
@@ -542,8 +409,8 @@ DIOPI_RT_API diopiError_t _diopiTensorCopyFromBuffer(diopiContextHandle_t ctx,
     if (tensor->device() == diopi_device) {
         diopiStreamHandle_t stream;
         diopiGetStream(ctx, &stream);
-        memcpy_h2d_async_func(stream, tensor->data(), src, tensor->nbytes());
-        synchronize_stream_func(stream);
+        device_memcpy_h2d_async(stream, tensor->data(), src, tensor->nbytes());
+        device_synchronize_stream(stream);
     } else {
         std::memcpy(tensor->data(), src, tensor->nbytes());
     }
@@ -556,8 +423,8 @@ DIOPI_RT_API diopiError_t _diopiTensorCopyToBuffer(diopiContextHandle_t      ctx
     if (tensor->device() == diopi_device) {
         diopiStreamHandle_t stream;
         diopiGetStream(ctx, &stream);
-        memcpy_d2h_async_func(stream, dst, tensor->data(), tensor->nbytes());
-        synchronize_stream_func(stream);
+        device_memcpy_d2h_async(stream, dst, tensor->data(), tensor->nbytes());
+        device_synchronize_stream(stream);
     } else {
         std::memcpy(dst, tensor->data(), tensor->nbytes());
     }

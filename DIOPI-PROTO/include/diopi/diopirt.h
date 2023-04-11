@@ -11,10 +11,11 @@
 
 #ifndef DIOPI_ATTR_WEAK
 #define DIOPI_API
+#define DIOPI_RT_API
 #else
 #define DIOPI_API __attribute__((weak))
+#define DIOPI_RT_API __attribute__((weak))
 #endif
-#define DIOPI_RT_API
 
 #if defined(__cplusplus)
 extern "C" {

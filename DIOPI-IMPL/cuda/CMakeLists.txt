@@ -59,15 +59,12 @@ list(APPEND IMPL_SRC functions.cpp)
 list(APPEND IMPL_SRC functions.cu)
 list(APPEND IMPL_SRC error.cpp)
 
-if (RUNTIME)
-    add_definitions(-DDIOPI_WITH_RUNTIME)
-    set(IMPL_SRC ${IMPL_SRC} conform_test.cpp)
+if (TEST)
+    add_subdirectory(test)
 endif()
 
 cuda_add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
-if (RUNTIME)
-    target_link_libraries(${DEVICEIMPL} ${DIOPIRT})
-endif()
+
 target_link_libraries(${DEVICEIMPL} ${CUDA_LIBRARIES})
 target_link_libraries(${DEVICEIMPL} ${CUDNN_LIBRARIES})

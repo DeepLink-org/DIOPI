@@ -1,20 +1,16 @@
 cmake_minimum_required(VERSION 3.4)
 project(diopi_conformance_test)
 
-option(USE_CXX "Whether to use cxx impl, or use c impl" ON)
-option(RUNTIME "Whether to compile DIOPI with runtime" ON)
-option(ATTR_WEAK "Whether to use weak symbol for diopi functions" OFF)
-option(DYLOAD "Whether to load so in runtime by dlopen" OFF)
+option(ATTR_WEAK "Whether to use weak symbol for diopi functions" ON)
 option(DEBUG "whether to use debug" OFF)
-include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/diopirt/include")
+
+include_directories(SYSTEM "proto/include")
 include_directories(include)
 
 SET(DIOPIRT diopirt)
-if (RUNTIME)
-    SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-else()
-    SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib/no_runtime)
-endif()
+SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+set(DST_SRC_DIR ${CMAKE_SOURCE_DIR}/dist/src)
+
 if (ATTR_WEAK)
     add_definitions(-DDIOPI_ATTR_WEAK)
 endif()
@@ -25,20 +21,15 @@ else()
     SET(CMAKE_BUILD_TYPE "Release")
 endif()
 
-if (USE_CXX)
-    set(CXX_LITERT_SRC csrc/litert.cpp)
-    message("CXX_LITERT_SRC:" ${CXX_LITERT_SRC})
-    add_definitions(-std=c++14)
-    add_library(${DIOPIRT} SHARED ${CXX_LITERT_SRC})
-else()
-    set(C_LITERT_SRC csrc/litert.c)
-    message("C_LITERT_SRC:" ${C_LITERT_SRC})
-    add_library(${DIOPIRT} SHARED ${C_LITERT_SRC})
-    set_target_properties(${DIOPIRT} PROPERTIES LINKER_LANGUAGE C)
-endif()
-set_target_properties(${DIOPIRT} PROPERTIES SUFFIX ".so")
+add_definitions(-std=c++14)
 
-set(DEVICEIMPL diopi_impl)
+include_directories(include)
+include_directories(${PROJECT_SOURCE_DIR}/dist/include)
+
+set(CXX_LITERT_SRC
+    csrc/litert.cpp
+)
+message("CXX_LITERT_SRC:" ${CXX_LITERT_SRC})
 
 list(APPEND IMPL_CUDA "CUDA" "cuda")
 list(APPEND IMPL_TORCH "TORCH" "LIBTORCH" "ATEN" "PYTORCH" "torch" "libtorch" "aten" "pytorch" "PyTorch")
@@ -47,15 +38,57 @@ list(APPEND IMPL_CAMB "CAMB" "camb")
 list(APPEND IMPL_ASCEND "ASCEND" "ascend")
 
 if (${IMPL_OPT} IN_LIST IMPL_CUDA)
-    add_subdirectory(impl/cuda)
+    find_package(CUDA REQUIRED)
+    set(CXX_LITERT_SRC
+        ${CXX_LITERT_SRC}
+        csrc/cuda_conform_test.cpp
+    )
+    cuda_add_library(${DIOPIRT} SHARED ${CXX_LITERT_SRC})
+    set_target_properties(${DIOPIRT} PROPERTIES SUFFIX ".so")
 elseif (${IMPL_OPT} IN_LIST IMPL_TORCH)
-    add_subdirectory(impl/torch)
+    find_package(CUDA REQUIRED)
+    set(CXX_LITERT_SRC
+        ${CXX_LITERT_SRC}
+        csrc/torch_conform_test.cpp
+    )
+    cuda_add_library(${DIOPIRT} SHARED ${CXX_LITERT_SRC})
+    set_target_properties(${DIOPIRT} PROPERTIES SUFFIX ".so")
 elseif (${IMPL_OPT} IN_LIST IMPL_CAMB_TORCH)
-    add_subdirectory(impl/camb_pytorch)
+    set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+    find_package(Neuware 4.6 REQUIRED)
+    set(CXX_LITERT_SRC
+        ${CXX_LITERT_SRC}
+        csrc/camb_torch_conform_test.cpp
+    )
+    add_library(${DIOPIRT} SHARED ${CXX_LITERT_SRC})
+    set_target_properties(${DIOPIRT} PROPERTIES SUFFIX ".so")
 elseif (${IMPL_OPT} IN_LIST IMPL_CAMB)
-    add_subdirectory(impl/camb)
+    set(CXX_LITERT_SRC
+        ${CXX_LITERT_SRC}
+        csrc/camb_conform_test.cpp
+    )
+    add_library(${DIOPIRT} SHARED ${CXX_LITERT_SRC})
 elseif (${IMPL_OPT} IN_LIST IMPL_ASCEND)
-    add_subdirectory(impl/ascend)
+    if(DEFINED ENV{ASCEND_CUSTOM_PATH})
+        set(ASCEND_DIR $ENV{ASCEND_CUSTOM_PATH})
+    else()
+        set(ASCEND_DIR /usr/local/Ascend)
+    endif()
+
+
+    if(EXISTS ${ASCEND_DIR}/ascend-toolkit/latest/)
+        message(STATUS "ascend-toolkit exists:" ${ASCEND_DIR}/ascend-toolkit/latest/)
+        message(STATUS "ASCEND_DIR:" ${ASCEND_DIR})
+        include_directories(${ASCEND_DIR}/ascend-toolkit/latest/include/)
+        link_directories(${ASCEND_DIR}/ascend-toolkit/latest/lib64)
+    else()
+        message(FATAL_ERROR "No ascend-toolkit found.")
+    endif()
+    set(CXX_LITERT_SRC
+        ${CXX_LITERT_SRC}
+        csrc/ascend_conform_test.cpp
+    )
+    add_library(${DIOPIRT} SHARED ${CXX_LITERT_SRC})
 else()
     message(WARNING "No implementation module is compiled, cmake requires option -DIMPL_OPT=CUDA or TORCH")
 endif()

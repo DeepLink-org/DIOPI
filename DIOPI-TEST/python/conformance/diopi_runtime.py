@@ -1,7 +1,7 @@
 # Copyright (c) 2023, DeepLink.
 import os
 from enum import Enum, unique
-from ctypes import (cdll, byref, Structure, Union, POINTER)
+from ctypes import (CDLL, RTLD_GLOBAL, cdll, byref, Structure, Union, POINTER)
 from ctypes import (c_void_p, c_char_p, c_int64, c_int32, c_double)
 from .dtype import Dtype
 import numpy as np
@@ -127,15 +127,15 @@ def compute_nhwc_stride(size, itemsize=1, name=None):
 
 
 _cur_dir = os.path.dirname(os.path.abspath(__file__))
-diopirt_lib = cdll.LoadLibrary(os.path.join(_cur_dir, "../../lib/libdiopirt.so"))
+diopirt_lib = CDLL(name = os.path.join(_cur_dir, "../../lib/libdiopirt.so"), mode = RTLD_GLOBAL)
 diopirt_lib.diopiInit()
 
 device_impl_lib = cdll.LoadLibrary(os.path.join(_cur_dir, "../../lib/libdiopi_impl.so"))
-device_impl_lib.initLibrary()
+# device_impl_lib.initLibrary()
 
 
 def on_diopi_rt_exit():
-    device_impl_lib.finalizeLibrary()
+    diopirt_lib.finalizeLibrary()
     diopirt_lib.diopiFinalize()
 
 

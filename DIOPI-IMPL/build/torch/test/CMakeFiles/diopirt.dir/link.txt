@@ -1,0 +1,1 @@
+/nvme/share/share/platform/dep/gcc-7.3/bin/g++ -fPIC  -O2 -std=c++14 -fPIC -D_GLIBCXX_USE_CXX11_ABI=1 -g -shared -Wl,-soname,libdiopirt.so -o /nvme/xintian/diopi-merge/DIOPI/DIOPI-IMPL/lib/libdiopirt.so CMakeFiles/diopirt.dir/litert.cpp.o CMakeFiles/diopirt.dir/conform_test.cpp.o 

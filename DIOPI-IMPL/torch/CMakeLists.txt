@@ -34,12 +34,8 @@ set(REAL_IMPL_SRC
     roi_align_kernel.cu
 )
 
-if (RUNTIME)
-    if (DYLOAD)
-        set(IMPL_SRC ${IMPL_SRC} conform_test.cpp)
-    else()
-        set(REAL_IMPL_SRC ${REAL_IMPL_SRC} conform_test.cpp)
-    endif()
+if (TEST)
+    add_subdirectory(test)
 else ()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-version-script=${CMAKE_CURRENT_SOURCE_DIR}/diopi.map")
 endif()
@@ -73,7 +69,6 @@ if (DYLOAD)
     endif()
     add_dependencies(${DEVICEIMPL} code_gen) # make sure to recompile once code_gen.py changed
     target_link_libraries(${REALIMPL} ${TORCH_LIBRARIES})
-
 else ()
     if(USE_HIP)
         hip_add_library(${DEVICEIMPL} SHARED ${REAL_IMPL_SRC})
@@ -81,13 +76,5 @@ else ()
     else()
         cuda_add_library(${DEVICEIMPL} SHARED ${REAL_IMPL_SRC})
         target_link_libraries(${DEVICEIMPL} ${CUDA_LIBRARIES} ${TORCH_LIBRARIES})
-    endif()
-endif()
-
-
-if (RUNTIME)
-    target_link_libraries(${DEVICEIMPL} ${DIOPIRT})
-    if (DYLOAD)
-        target_link_libraries(${REALIMPL} ${DIOPIRT})
     endif()
 endif()
