@@ -82,6 +82,7 @@ DIOPI_API diopiError_t diopiHardtanhBackward(diopiContextHandle_t ctx, diopiTens
 
 DIOPI_API diopiError_t diopiHardswish(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 DIOPI_API diopiError_t diopiHardswishInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
+DIOPI_API diopiError_t diopiHardswishBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input);
 
 DIOPI_API diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
                                      const diopiScalar_t* threshold, const diopiScalar_t* value);
