@@ -4,7 +4,7 @@ set -e
 case $1 in
   py-lint)
     (echo "py-lint" && flake8 --ignore=E501,F841 python/conformance/diopi_functions.py \
-       && flake8 --ignore=E501,F401 --exclude=python/conformance/diopi_functions.py,scripts/cpplint.py,impl/,python/conformance/model_config/ \
+       && flake8 --ignore=E501,F401 --exclude=python/conformance/diopi_functions.py,scripts/cpplint.py,impl/,third_party/,python/conformance/model_config/ \
        && flake8 --ignore=E501,F401 python/conformance/model_config/process_config.py python/conformance/model_config/__init__.py ) \
     || exit -1;;
   cpp-lint)
