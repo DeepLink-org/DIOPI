@@ -31,8 +31,8 @@ set(IMPL_SRC
     functions.cpp
 )
 
-if (RUNTIME)
-    set(IMPL_SRC ${IMPL_SRC} conform_test.cpp)
+if (TEST)
+    add_subdirectory(test)
 endif()
 
 link_directories(${NEUWARE_ROOT_DIR}/lib/llvm-mm/lib)
@@ -42,9 +42,6 @@ link_directories(${TORCH_INSTALL_PREFIX}/lib/)
 include_directories(${TORCH_INCLUDE_DIRS})
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
-if (RUNTIME)
-    target_link_libraries(${DEVICEIMPL} ${DIOPIRT})
-endif()
 target_link_libraries(${DEVICEIMPL} ${TORCH_LIBRARIES} ${TORCH_MLU_LIBRARIES})
 
 

@@ -40,6 +40,8 @@ list(APPEND IMPL_TORCH "TORCH" "LIBTORCH" "ATEN" "PYTORCH" "torch" "libtorch" "a
 list(APPEND IMPL_CAMB_TORCH "CAMB_PYTORCH" "camb_pytorch")
 list(APPEND IMPL_CAMB "CAMB" "camb")
 
+add_definitions(-std=c++14)
+
 if (${IMPL_OPT} IN_LIST IMPL_CUDA)
     add_subdirectory(cuda)
 elseif (${IMPL_OPT} IN_LIST IMPL_TORCH)

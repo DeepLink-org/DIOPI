@@ -7,12 +7,10 @@
 #include <cnmlrt.h>
 #include <cnnl.h>
 #include <diopi/diopirt.h>
-#include <diopi_register.h>
+#include <conform_test.h>
 
 #include <cstdio>
 #include <mutex>
-
-#include "error.hpp"
 
 namespace impl {
 namespace camb {

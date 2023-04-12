@@ -26,8 +26,8 @@ endif()
 file(GLOB_RECURSE IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions/*.cpp common/*.cpp)
 list(APPEND IMPL_SRC cnnl_helper.cpp)
 
-if (RUNTIME)
-    list(APPEND IMPL_SRC conform_test.cpp)
+if (TEST)
+    add_subdirectory(test)
 endif()
 
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})

@@ -54,7 +54,7 @@ elseif (${IMPL_OPT} IN_LIST IMPL_TORCH)
     cuda_add_library(${DIOPIRT} SHARED ${CXX_LITERT_SRC})
     set_target_properties(${DIOPIRT} PROPERTIES SUFFIX ".so")
 elseif (${IMPL_OPT} IN_LIST IMPL_CAMB_TORCH)
-    set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
     find_package(Neuware 4.6 REQUIRED)
     set(CXX_LITERT_SRC
         ${CXX_LITERT_SRC}
@@ -63,11 +63,15 @@ elseif (${IMPL_OPT} IN_LIST IMPL_CAMB_TORCH)
     add_library(${DIOPIRT} SHARED ${CXX_LITERT_SRC})
     set_target_properties(${DIOPIRT} PROPERTIES SUFFIX ".so")
 elseif (${IMPL_OPT} IN_LIST IMPL_CAMB)
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+    find_package(Neuware 4.6 REQUIRED)
     set(CXX_LITERT_SRC
         ${CXX_LITERT_SRC}
         csrc/camb_conform_test.cpp
     )
     add_library(${DIOPIRT} SHARED ${CXX_LITERT_SRC})
+    set_target_properties(${DIOPIRT} PROPERTIES SUFFIX ".so")
+    target_link_libraries(${DIOPIRT} cnrt cnmlrt)
 elseif (${IMPL_OPT} IN_LIST IMPL_ASCEND)
     if(DEFINED ENV{ASCEND_CUSTOM_PATH})
         set(ASCEND_DIR $ENV{ASCEND_CUSTOM_PATH})

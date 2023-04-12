@@ -25,6 +25,8 @@ case $1 in
     && make;;
   camb)
     rm -rf build && mkdir build && cd build && cmake .. -DIMPL_OPT=camb && make;;
+  camb_test)
+    rm -rf build && mkdir build && cd build && cmake .. -DIMPL_OPT=camb -DTEST=ON && make;;
   ascend)
     rm -rf build && mkdir build && cd build && cmake .. -DIMPL_OPT=ascend && make;;
   *)

@@ -1,5 +1,7 @@
 set(DIOPIRT diopirt)
 
+include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/test/include")
+
 set(TEST_SRC
     litert.cpp
     conform_test.cpp)
