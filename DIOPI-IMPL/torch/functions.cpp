@@ -2011,6 +2011,16 @@ diopiError_t diopiHardswishInp(diopiContextHandle_t ctx, diopiTensorHandle_t inp
     return diopiSuccess;
 }
 
+diopiError_t diopiHardswishBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input,
+                                    diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input) {
+    impl::aten::setCurCtx(ctx);
+    auto atGradOutput = impl::aten::buildATen(grad_output);
+    auto atInput = impl::aten::buildATen(input);
+    impl::aten::invokeATenFuncRet(ctx, at::hardswish_backward, grad_input, atGradOutput, atInput);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
 diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
                             const diopiScalar_t* threshold, const diopiScalar_t* value) {
     impl::aten::setCurCtx(ctx);
