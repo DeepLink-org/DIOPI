@@ -237,6 +237,29 @@ diopiError_t diopiBmm(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     return diopiSuccess;
 }
 
+diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
+                          diopiConstTensorHandle_t batch1, diopiConstTensorHandle_t batch2, double beta, double alpha) {
+    impl::aten::setCurCtx(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = impl::aten::buildATen(out);
+    auto atBatch1 = impl::aten::buildATen(batch1);
+    auto atBatch2 = impl::aten::buildATen(batch2);
+    at::baddbmm_out(atOut, atInput, atBatch1, atBatch2, beta, alpha);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
+diopiError_t diopiBaddbmmInp(diopiContextHandle_t ctx, diopiTensorHandle_t input,
+                             diopiConstTensorHandle_t batch1, diopiConstTensorHandle_t batch2, double beta, double alpha) {
+    impl::aten::setCurCtx(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atBatch1 = impl::aten::buildATen(batch1);
+    auto atBatch2 = impl::aten::buildATen(batch2);
+    atInput.baddbmm_(atBatch1, atBatch2, beta, alpha);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
 diopiError_t diopiAddcmul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
         diopiConstTensorHandle_t tensor1, diopiConstTensorHandle_t tensor2, const diopiScalar_t* value) {
     impl::aten::setCurCtx(ctx);
