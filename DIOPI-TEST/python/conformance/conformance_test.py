@@ -66,11 +66,12 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
     passed = np.allclose(tensor1, tensor2, rtol, atol, True)
     if record:
         save_precision(cfg, tensor1, tensor2, passed, var_name)
-    if not passed and logger.level == 10:
+    if not passed:
         sum1 = tensor1.sum()
         sum2 = tensor2.sum()
         mask = np.isclose(tensor1, tensor2, rtol, atol, True)
         max_diff = np.abs(tensor1 - tensor2).max()
+        logger.info(f"Max of diff is {max_diff}.")
         logger.debug(f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}, Max of diff is {max_diff}. \
                      \n" + f"{var_name} is {tensor1},\n{var_name}_ref is {tensor2},\nMask is {mask}\n")
     return passed
