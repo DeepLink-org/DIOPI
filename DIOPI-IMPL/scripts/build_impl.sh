@@ -29,7 +29,7 @@ case $1 in
     echo -e "[ERROR] Incorrect compilation option:" $1;
 esac
 
-if [[ -z $DIOPI_BUILD_TESTRT ]] && [[ $DIOPI_BUILD_TESTRT = "ON" ]] ; then
+if [[ 'x'$DIOPI_BUILD_RT == "xOn" ]] ; then
   mkdir -p ${DIOPI_TEST_PATH}/lib
   ln -sf ${CURRENT_DIR}/../lib/libdiopi_impl.so ${DIOPI_TEST_PATH}/lib
   ln -sf ${CURRENT_DIR}/../lib/libdiopirt.so ${DIOPI_TEST_PATH}/lib
