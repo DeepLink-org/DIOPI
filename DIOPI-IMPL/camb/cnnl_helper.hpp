@@ -43,7 +43,7 @@ namespace camb {
 class CnnlDataType final {
 public:
     static diopiError_t convertToCnnlType(cnnlDataType_t* cnnlType, diopiDtype_t type);
-    static bool isFloat(cnnlDataType_t cnnlDT);
+    static bool isFloatPoint(cnnlDataType_t cnnlDT);
     static bool isInteger(cnnlDataType_t cnnlDT);
     static bool isBool(cnnlDataType_t cnnlDT);
 };
