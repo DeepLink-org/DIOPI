@@ -13,7 +13,7 @@ extern "C" diopiError_t diopiLinspace(diopiContextHandle_t ctx, diopiTensorHandl
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&start_type, start->stype));
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&end_type, end->stype));
 
-    if (CnnlDataType::isFloat(start_type)) {
+    if (CnnlDataType::isFloatPoint(start_type)) {
         start_value = start->fval;
     } else if (CnnlDataType::isInteger(start_type)) {
         start_value = start->ival;
@@ -21,7 +21,7 @@ extern "C" diopiError_t diopiLinspace(diopiContextHandle_t ctx, diopiTensorHandl
         return diopiDtypeNotSupported;
     }
 
-    if (CnnlDataType::isFloat(end_type)) {
+    if (CnnlDataType::isFloatPoint(end_type)) {
         end_value = end->fval;
     } else if (CnnlDataType::isInteger(start_type)) {
         end_value = end->ival;
