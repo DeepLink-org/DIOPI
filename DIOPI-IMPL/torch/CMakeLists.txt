@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.4)
-project(torch_cpp_impl)
+project(torch_impl)
 
 option(HIP "Whether to use HIP when available" OFF)
 

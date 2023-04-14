@@ -1,1 +1,0 @@
-../../DIOPI-IMPL/ascend/test/conform_test.cpp

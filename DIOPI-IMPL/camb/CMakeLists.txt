@@ -1,14 +1,6 @@
 cmake_minimum_required(VERSION 3.4)
 project(camb_impl)
 
-option(DEBUG "whether to use debug" OFF)
-
-if (DEBUG)
-    SET(CMAKE_BUILD_TYPE "Debug")
-else()
-    SET(CMAKE_BUILD_TYPE "Release")
-endif()
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 
 find_package(Neuware 4.6 REQUIRED)
@@ -36,8 +28,6 @@ add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 set(THIRD_PARTY_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/half/include)
 
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
-if (RUNTIME)
-    target_link_libraries(${DEVICEIMPL} ${DIOPIRT})
-endif()
+
 target_link_libraries(${DEVICEIMPL} cndev cnrt cnnl cnmlrt)
 target_include_directories(${DEVICEIMPL} PUBLIC ${THIRD_PARTY_INCLUDE_DIRS})

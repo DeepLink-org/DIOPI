@@ -1,1 +1,0 @@
-../../DIOPI-IMPL/cuda/test/conform_test.cpp

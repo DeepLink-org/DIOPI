@@ -31,13 +31,11 @@ endif()
 file(GLOB_RECURSE IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions/*.cpp common/*.cpp)
 #list(APPEND IMPL_SRC acl_helper.cpp)
 
-if (RUNTIME)
-    list(APPEND IMPL_SRC conform_test.cpp)
+if (TEST)
+  add_subdirectory(test)
 endif()
 
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
-if (RUNTIME)
-    target_link_libraries(${DEVICEIMPL} ${DIOPIRT})
-endif()
+
 target_link_libraries(${DEVICEIMPL} ascendcl acl_op_compiler)
