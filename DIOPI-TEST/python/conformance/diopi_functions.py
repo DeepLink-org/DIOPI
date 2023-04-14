@@ -1772,6 +1772,16 @@ def hardtanh_backward(input, grad_outputs, min_val=-1.0, max_val=1.0, **kwargs) 
     return {"input": grad_input}
 
 
+def hardswish_backward(input, grad_outputs, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    grad_input = raw_like(input)
+    func = check_function("diopiHardswishBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle)
+    check_returncode(ret)
+    return {"input": grad_input}
+
+
 def gelu_backward(input, grad_outputs, approximate='none', **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)

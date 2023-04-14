@@ -9,7 +9,7 @@ case $1 in
     || exit -1;;
   cpp-lint)
     # for other cpplint version, maybe  -whitespace/indent is needed to check impl
-    (echo "cpp-lint" && python scripts/cpplint.py --linelength=160 \
+    (echo "cpp-lint" && python scripts/cpplint.py --exclude=impl/third_party/ --linelength=160 \
       --filter=-build/c++11,-legal/copyright,-build/include_subdir,-runtime/references,-runtime/printf,-runtime/int,-build/namespace \
       --recursive impl/ \
       && python scripts/cpplint.py --linelength=240 --filter=-build/header_guard --recursive diopirt/ ) \
