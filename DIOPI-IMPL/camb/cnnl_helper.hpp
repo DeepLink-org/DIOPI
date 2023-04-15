@@ -61,7 +61,6 @@ protected:
     T resource_{0};
 };
 
-
 template <typename T, ::cnnlStatus_t (*fnCreate)(T*), ::cnnlStatus_t (*fnDestroy)(T)>
 class CnnlDescBase {
 public:
@@ -195,8 +194,19 @@ public:
 
 diopiError_t cnnl_transpose(diopiContextHandle_t& ctx, cnnlHandle_t& handle, DiopiTensor& in, DiopiTensor& out, cnnlTensorLayout_t layoutIn,
                             cnnlTensorLayout_t layoutOut);
+
+struct HashCnnlCastDType {
+    size_t operator()(const std::vector<diopiDtype_t>& vec) const {
+        size_t ret = 0;
+        for (auto it : vec) {
+            ret = (ret ^ static_cast<size_t>(it)) + 0x9e3779b9 + (ret << 6) + (ret >> 2);
+        }
+        return ret;
+    }
+};
+
 // global var
-extern const std::map<std::vector<diopiDtype_t>, cnnlCastDataType_t> gCnnlCastDataTypeMapping;
+extern const std::unordered_map<std::vector<diopiDtype_t>, cnnlCastDataType_t, HashCnnlCastDType> gCnnlCastDataTypeMapping;
 extern CnnlHandlePool cnnlHandlePool;
 
 }  // namespace camb
