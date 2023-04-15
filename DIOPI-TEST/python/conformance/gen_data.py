@@ -19,6 +19,34 @@ import torchvision
 _cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 
+def check_device_para_and_tensor_para(cfg_dict, device_cfg_dict):
+    para_dict = cfg_dict["para"]
+    device_para_dict = device_cfg_dict["para"]
+    for dk, dv in device_para_dict.items():
+        if dk in para_dict:
+            v = para_dict[dk]
+            for x in dv:
+                if x not in v:
+                    logger.warn(f"Para {x} of key {dk} in device_configs not found in diopi_configs. Ignored.")
+
+    args_list = cfg_dict["tensor_para"]["args"]
+    device_tensor_paras_dict = device_cfg_dict["tensor_para"]["args"]
+    for input in device_tensor_paras_dict.keys():
+        in_found = False
+        for args in args_list:
+            if "ins" in args:
+                ins = args["ins"]
+                if input in ins:
+                    in_found = True
+                    for key in ["dtype", "shape", "value"]:
+                        if key in device_tensor_paras_dict[input] and key in args:
+                            for dv in device_tensor_paras_dict[input][key]:
+                                if dv not in args[key]:
+                                    logger.warn(f"Tensor para {dv} of key {key} in device_configs found in diopi_configs for ins {ins}. Ignored.")
+        if not in_found:
+            logger.warn(f"Input name {input} in device_configs not found in diopi_configs. Ignored.")
+
+
 def expand_para(para_dict: dict, paras_list: list):
     r'''
     dict(a = [1,2], b = [11,22])
@@ -109,8 +137,28 @@ def expand_cfg_by_para(cfg_dict: dict):
     return paras_list, tensor_paras_list
 
 
-def expand_cfg_all(paras_list, tensor_paras_list, cfg_dict, filter_dtype_list) -> list:
+def expand_cfg_all(paras_list, tensor_paras_list, cfg_dict, filter_dtype_list, device_config) -> list:
     cfg_expand_list = []
+
+    if device_config is not None:
+        skipped_index = []
+        assert len(paras_list) == len(tensor_paras_list)
+        device_paras = device_config["para"]
+        device_tensor_paras = device_config["tensor_para"]["args"]
+        for idx, paras in enumerate(paras_list):
+            for skipped_para_name in device_paras:
+                if skipped_para_name in paras and paras[skipped_para_name] in device_paras[skipped_para_name]:
+                    skipped_index.append(idx)
+        for idx, tensor_paras in enumerate(tensor_paras_list):
+            for tensor_para in tensor_paras:
+                if tensor_para["ins"] in device_tensor_paras:
+                    if ("value" in tensor_para and "value" in device_tensor_paras[tensor_para["ins"]] and tensor_para["value"] in device_tensor_paras[tensor_para["ins"]]["value"]) or \
+                       ("shape" in tensor_para and "shape" in device_tensor_paras[tensor_para["ins"]] and tensor_para["shape"] in device_tensor_paras[tensor_para["ins"]]["shape"]):
+                        if idx not in skipped_index:
+                            skipped_index.append(idx)
+        paras_list = [paras_list[i] for i in range(len(paras_list)) if i not in skipped_index]
+        tensor_paras_list = [tensor_paras_list[i] for i in range(len(tensor_paras_list)) if i not in skipped_index]
+
     if len(tensor_paras_list) != 0:
         arg_dtype_num = 0
         for arg in cfg_dict["tensor_para"]["args"]:
@@ -131,7 +179,11 @@ def expand_cfg_all(paras_list, tensor_paras_list, cfg_dict, filter_dtype_list) -
                     for arg in tmp_cfg_dict["tensor_para"]["args"]:
                         if arg.get("dtype") is not None:
                             entry_dtype = arg["dtype"][i]
-                            if entry_dtype in filter_dtype_list:
+                            arg_filter_dtype_list = []
+                            if device_config is not None:
+                                if arg["ins"] in device_tensor_paras and "dtype" in device_tensor_paras[arg["ins"]]:
+                                    arg_filter_dtype_list = device_tensor_paras[arg["ins"]]["dtype"]
+                            if entry_dtype in filter_dtype_list or entry_dtype in arg_filter_dtype_list:
                                 filter_dtype = True
                                 break
                             else:
@@ -155,9 +207,11 @@ def expand_cfg_all(paras_list, tensor_paras_list, cfg_dict, filter_dtype_list) -
     return cfg_expand_list
 
 
-def expand_cfg_by_all_options(cfg_dict: dict, filter_dtype_list: list) -> list:
+def expand_cfg_by_all_options(cfg_dict: dict, filter_dtype_list: list, device_config: dict = None) -> list:
+    if device_config:
+        check_device_para_and_tensor_para(cfg_dict, device_config)
     paras_list, tensor_paras_list = expand_cfg_by_para(cfg_dict)
-    cfg_expand_list = expand_cfg_all(paras_list, tensor_paras_list, cfg_dict, filter_dtype_list)
+    cfg_expand_list = expand_cfg_all(paras_list, tensor_paras_list, cfg_dict, filter_dtype_list, device_config)
     return cfg_expand_list
 
 
@@ -311,13 +365,22 @@ class GenInputData(object):
     '''
 
     @staticmethod
-    def run(func_name, model_name, filter_dtype_str_list):
-
+    def run(func_name, model_name, filter_dtype_str_list, impl_folder):
         if model_name != "":
             diopi_config = "model_config." + model_name + "_config"
             configs = Config.process_configs(eval(diopi_config))
         else:
             configs = Config.process_configs(diopi_configs)
+
+        src_path = os.path.join(impl_folder, "device_configs.py")
+        use_device_configs = os.path.isfile(src_path)
+        if use_device_configs:
+            dst_path = os.path.join(_cur_dir, "device_configs.py")
+            os.symlink(src_path, dst_path)
+            from .device_configs import device_configs
+            os.unlink(dst_path)
+            from .device_config_helper import DeviceConfig
+            device_configs = DeviceConfig.process_configs(device_configs)
 
         inputs_dir_path = os.path.join(_cur_dir, "../data/" + model_name + "/inputs")
         if not os.path.exists(inputs_dir_path):
@@ -331,7 +394,19 @@ class GenInputData(object):
                 continue
             logger.info(f"Generate benchmark input data for diopi_functions.{cfg_func_name}")
             filter_dtype_list = get_filter_dtype_list(filter_dtype_str_list)
-            cfg_expand_list = expand_cfg_by_all_options(configs[cfg_name], filter_dtype_list)
+
+            if use_device_configs and cfg_name in device_configs:
+                device_config = device_configs[cfg_name]
+                if 'dtype' in device_config:
+                    filter_dtype_list.extend(x for x in device_config['dtype'] if x not in filter_dtype_list)
+                tol_keys_list = ['atol', 'rtol', 'atol_half', 'rtol_half']
+                for key in tol_keys_list:
+                    if key in device_config:
+                        configs[cfg_name][key] = device_config[key]
+                cfg_expand_list = expand_cfg_by_all_options(configs[cfg_name], filter_dtype_list, device_config)
+            else:
+                cfg_expand_list = expand_cfg_by_all_options(configs[cfg_name], filter_dtype_list)
+
             cfg_counter += len(cfg_expand_list)
             gen_and_dump_data(inputs_dir_path, cfg_name, cfg_expand_list, cfg_save_dict)
 
