@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "../cnnl_helper.hpp"
+#include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
@@ -26,8 +27,8 @@ diopiError_t flatten_to_2d(std::vector<int64_t> in_dims, std::vector<int>& out_d
     return diopiSuccess;
 }
 
-diopiError_t matmul(
-    diopiContextHandle_t ctx, DiopiTensor input_a, DiopiTensor input_b, DiopiTensor input_bias, DiopiTensor output, bool trans_a, bool trans_b) {
+diopiError_t matmul(diopiContextHandle_t ctx, DiopiTensor input_a, DiopiTensor input_b, DiopiTensor input_bias, DiopiTensor output, bool trans_a,
+                    bool trans_b) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     std::vector<int> input_shape, weight_shape, output_shape;
@@ -124,23 +125,32 @@ diopiError_t matmul(
 }
 }  // namespace
 
-extern "C" diopiError_t diopiLinear(
-    diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias) {
+extern "C" diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
+                                    diopiConstTensorHandle_t bias) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor input_tensor(input);
-    DiopiTensor output_tensor(out);
     DiopiTensor weight_tensor(weight);
     DiopiTensor bias_tensor(bias);
+    DiopiTensor output_tensor(out);
+    DiopiTensor out_temp = output_tensor;
 
-    DIOPI_CALL(matmul(ctx, input_tensor, weight_tensor, bias_tensor, output_tensor, false, true));
+    if (input_tensor.dtype() == diopi_dtype_float64) {
+        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, out_temp, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, weight_tensor, diopi_dtype_float32));
+        if (bias != nullptr) {
+            DIOPI_CALL(dataTypeCast(ctx, bias_tensor, diopi_dtype_float32));
+        }
+    }
+
+    DIOPI_CALL(matmul(ctx, input_tensor, weight_tensor, bias_tensor, out_temp, false, true));
+    if (out_temp.dtype() != output_tensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, output_tensor, out_temp));
+    }
     return diopiSuccess;
 }
-extern "C" diopiError_t diopiLinearBackward(diopiContextHandle_t ctx,
-                                            diopiTensorHandle_t grad_input,
-                                            diopiTensorHandle_t grad_weight,
-                                            diopiTensorHandle_t grad_bias,
-                                            diopiConstTensorHandle_t grad_output,
-                                            diopiConstTensorHandle_t input,
+extern "C" diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
+                                            diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
                                             diopiConstTensorHandle_t weight) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor grad_input_tensor(grad_input);
@@ -148,16 +158,34 @@ extern "C" diopiError_t diopiLinearBackward(diopiContextHandle_t ctx,
     DiopiTensor grad_output_tensor(grad_output);
     DiopiTensor input_tensor(input);
     DiopiTensor weight_tensor(weight);
+    DiopiTensor grad_input_temp = grad_input_tensor;
+    DiopiTensor grad_weight_temp = grad_weight_tensor;
+    if (input_tensor.dtype() == diopi_dtype_float64) {
+        DIOPI_CALL(dataTypeCast(ctx, grad_input_temp, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, grad_weight_temp, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, grad_output_tensor, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, weight_tensor, diopi_dtype_float32));
+    }
     DiopiTensor bias_tensor((diopiTensorHandle_t) nullptr);
 
-    DIOPI_CALL(matmul(ctx, grad_output_tensor, input_tensor, bias_tensor, grad_weight_tensor, true, false));
-
-    DIOPI_CALL(matmul(ctx, grad_output_tensor, weight_tensor, bias_tensor, grad_input_tensor, false, false));
+    DIOPI_CALL(matmul(ctx, grad_output_tensor, input_tensor, bias_tensor, grad_weight_temp, true, false));
+    if (grad_weight_temp.dtype() != grad_weight_tensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, grad_weight_tensor, grad_weight_temp));
+    }
+    DIOPI_CALL(matmul(ctx, grad_output_tensor, weight_tensor, bias_tensor, grad_input_temp, false, false));
+    if (grad_input_temp.dtype() != grad_input_tensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, grad_input_tensor, grad_input_temp));
+    }
 
     if (grad_bias != nullptr) {
         DiopiTensor bias_grad_tensor(grad_bias);
+        DiopiTensor bias_grad_temp = bias_grad_tensor;
+        if (bias_grad_temp.dtype() == diopi_dtype_float64) {
+            DIOPI_CALL(dataTypeCast(ctx, bias_grad_temp, diopi_dtype_float32));
+        }
         CnnlTensorDesc bias_grad_desc;
-        DIOPI_CALL(bias_grad_desc.set(bias_grad_tensor, CNNL_LAYOUT_ARRAY));
+        DIOPI_CALL(bias_grad_desc.set(bias_grad_temp, CNNL_LAYOUT_ARRAY));
 
         std::vector<int> output_shape;
         DIOPI_CALL(flatten_to_2d(grad_output_tensor.shape(), output_shape));
@@ -172,7 +200,10 @@ extern "C" diopiError_t diopiLinearBackward(diopiContextHandle_t ctx,
             workspace_bias = requiresBuffer(ctx, workspace_size_bias).data();
         }
         DIOPI_CALLCNNL(cnnlBiasAddBackward_v2(
-            handle, grad_output_desc.get(), grad_output_tensor.data(), 1, bias_grad_desc.get(), bias_grad_tensor.data(), workspace_bias, workspace_size_bias));
+            handle, grad_output_desc.get(), grad_output_tensor.data(), 1, bias_grad_desc.get(), bias_grad_temp.data(), workspace_bias, workspace_size_bias));
+        if (bias_grad_tensor.dtype() != bias_grad_temp.dtype()) {
+            DIOPI_CALL(dataTypeCast(ctx, bias_grad_tensor, bias_grad_temp));
+        }
     }
 
     return diopiSuccess;
