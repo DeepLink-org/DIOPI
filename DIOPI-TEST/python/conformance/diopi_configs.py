@@ -555,6 +555,23 @@ diopi_configs = {
         ),
     ),
 
+    'silu': dict(
+        name=["silu"],
+        is_inplace=True,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((182400,), (20267, 80), (8, 200, 304),
+                              (32, 16, 1, 1), (16, 32, 130, 130)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
     'pow_float_tensor': dict(
         name=['pow'],
         interface=['torch'],
@@ -2168,8 +2185,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((2, 4096), (32, 49, 256), (2, 16, 64, 64),
-                              (1, 2304, 1, 1, 1)),
+                    "shape": ((2, 4096), (32, 49, 256), (2, 16, 64, 64), (1, 2304, 1, 1, 1)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
