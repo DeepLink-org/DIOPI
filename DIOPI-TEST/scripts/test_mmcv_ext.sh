@@ -28,8 +28,7 @@ else
     exit 1
 fi
 
-current_path=$(cd "$(dirname "$0")"; pwd)
-cd ${current_path}/third_party/mmcv_diopi
+cd third_party/mmcv_diopi
 export PYTHONPATH=${PWD}:$PYTHONPATH
 cd tests/test_ops
 
