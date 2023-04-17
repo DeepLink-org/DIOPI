@@ -24,6 +24,8 @@ def parse_args():
                         help='Whether to use nhwc layout for 3-dim Tensor')
     parser.add_argument('--four_bytes', action='store_true',
                         help='Whether to use 4-bytes data type for partial tests')
+    parser.add_argument('--impl_folder', type=str, default='',
+                        help='folder to find device configs')
     args = parser.parse_args()
     return args
 
@@ -58,7 +60,7 @@ if __name__ == "__main__":
 
     if args.mode == 'gen_data':
         import conformance.gen_data as gd
-        gd.GenInputData.run(args.fname, args.model_name.lower(), args.filter_dtype)
+        gd.GenInputData.run(args.fname, args.model_name.lower(), args.filter_dtype, args.impl_folder)
         gd.GenOutputData.run(args.fname, args.model_name.lower(), args.filter_dtype)
         if args.model_name != '':
             logger.info(f"the op list of {args.model_name}: {real_op_list}")

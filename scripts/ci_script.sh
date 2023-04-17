@@ -23,8 +23,8 @@ case $1 in
     echo -e "[ERROR] Incorrect option:" $1;;
   py-lint)
     (echo "py-lint" && flake8 --ignore=E501,F841 DIOPI-TEST/python/conformance/diopi_functions.py \
-       && flake8 --ignore=E501,F401 --exclude=DIOPI-TEST/python/conformance/diopi_functions.py,DIOPI-TEST/python/conformance/model_config/ \
-       && flake8 --ignore=E501,F401 DIOPI-TEST/python/conformance/model_config/process_config.py python/conformance/model_config/__init__.py ) \
+       && flake8 --ignore=E501,F401 --exclude=DIOPI-TEST/python/conformance/diopi_functions.py,scripts/cpplint.py,DIOPI-TEST/third_party/,DIOPI-TEST/python/conformance/model_config/ \
+       && flake8 --ignore=E501,F401 DIOPI-TEST/python/conformance/model_config/process_config.py DIOPI-TEST/python/conformance/model_config/__init__.py ) \
     || exit -1;;
   test-cpp-lint)
     # for other cpplint version, maybe  -whitespace/indent is needed to check impl
