@@ -30,7 +30,7 @@ jobs:
       - name: clone repo
         run: |
           cd ${GITHUB_WORKSPACE} && rm -rf DIOPI && git clone git@github.com:OpenComputeLab/DIOPI.git && cd DIOPI
-          git submodule update --init --recursive && cd DIOPI-TEST/third_party && rm -rf mmcv_diopi && git clone git@github.com:OpenComputeLab/mmcv_diopi.git && cd ../../
+          git submodule update --init --recursive && cd DIOPI-TEST/third_party && pwd && rm -rf mmcv_diopi && git clone git@github.com:OpenComputeLab/mmcv_diopi.git && cd ../../
           if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
           git checkout ${{ github.event.pull_request.head.sha }} && git merge --no-edit main
           else
