@@ -43,6 +43,36 @@ diopi_configs = {
         ),
     ),
 
+    'baddbmm': dict(
+        name=["baddbmm"],
+        interface=["torch"],
+        is_inplace=True,
+        dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
+        para=dict(
+            beta=[1, 0.5, 0.1],
+            alpha=[0.1, 0.2, 0.5],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((32, 64, 16), (32, 64, 32), (168, 52, 64)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["batch1"],
+                    "shape": ((32, 64, 32), (32, 64, 8), (168, 52, 38)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["batch2"],
+                    "shape": ((32, 32, 16), (32, 8, 32), (168, 38, 64)),
+                    "gen_fn": Genfunc.randn,
+                },
+            ]
+        ),
+    ),
+
     'conv_2d': dict(
         name=["conv2d"],
         atol=1e-3,

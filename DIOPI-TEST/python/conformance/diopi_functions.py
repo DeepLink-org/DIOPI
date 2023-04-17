@@ -388,6 +388,28 @@ def bmm(input, mat2) -> Tensor:
     return out
 
 
+def baddbmm(input, batch1, batch2, beta, alpha, inplace=False) -> Tensor:
+    size1 = list(input.size())
+    assert (len(size1) == 3), 'input must be 3d tensor'
+    size2 = list(batch1.size())
+    assert (len(size2) == 3), 'batch1 must be 3d tensor'
+    size3 = list(batch2.size())
+    assert (len(size3) == 3), 'batch2 must be 3d tensor'
+    assert (size2[2] == size3[1] and size1[0] == size2[0] and size1[0] == size3[0]), 'invalid args'
+    assert (size1[2] == size3[2] or size1[2] == 1 or size3[2] == 1), 'invalid args'
+    if inplace:
+        func = check_function("diopiBaddbmmInp")
+        ret = func(input.context_handle, input.tensor_handle, batch1.tensor_handle, batch2.tensor_handle, c_double(beta), c_double(alpha))
+        check_returncode(ret)
+        return input
+    else:
+        out = raw_like(input)
+        func = check_function("diopiBaddbmm")
+        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, batch1.tensor_handle, batch2.tensor_handle, c_double(beta), c_double(alpha))
+        check_returncode(ret)
+        return out
+
+
 def addcmul(input, tensor1, tensor2, value=1, inplace=False) -> Tensor:
     size1 = list(tensor1.size())
     size2 = list(tensor2.size())
