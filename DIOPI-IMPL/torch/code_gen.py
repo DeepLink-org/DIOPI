@@ -72,7 +72,8 @@ def get_func_arg(content):
 
 if __name__ == '__main__':
     print("here")
-    with open('../../diopirt/include/diopi/functions.h', 'r') as f:
+    _cur_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(_cur_dir, '../../diopirt/include/diopi/functions.h', 'r'))as f:
         content = f.readlines()
     print("here")
     for idx, row in enumerate(content):
