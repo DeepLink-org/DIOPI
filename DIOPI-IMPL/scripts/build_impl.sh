@@ -4,6 +4,8 @@ set -e
 CURRENT_DIR=$(cd $(dirname $0); pwd)
 DIOPI_TEST_PATH=${CURRENT_DIR}/../../DIOPI-TEST
 
+echo ${DIOPI_BUILD_TESTRT}
+
 case $1 in
   clean)
     rm -rf build;;
@@ -36,7 +38,7 @@ case $1 in
     echo -e "[ERROR] Incorrect compilation option:" $1;
 esac
 
-if [[ 'x'$DIOPI_BUILD_TESTRT == "xOn" ]] ; then
+if [[ 'x'$DIOPI_BUILD_TESTRT == "xON" ]] ; then
   echo ${DIOPI_TEST_PATH}
   mkdir -p ${DIOPI_TEST_PATH}/lib
   ln -sf ${CURRENT_DIR}/../lib/libdiopi_impl.so ${DIOPI_TEST_PATH}/lib
