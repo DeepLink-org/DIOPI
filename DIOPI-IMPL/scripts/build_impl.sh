@@ -18,7 +18,7 @@ case $1 in
   torch_dyload)
     mkdir -p build && cd build && cmake .. -DIMPL_OPT=torch -DDEBUG=ON -DDYLOAD=ON -DTEST=${DIOPI_BUILD_TESTRT} \
     -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` \
-    && make;;
+    && make && ln -sf ${CURRENT_DIR}/../lib/libdiopi_real_impl.so ${DIOPI_TEST_PATH}/lib;;
   camb_pytorch)
     mkdir -p build && cd build && cmake .. -DIMPL_OPT=camb_pytorch -DTEST=${DIOPI_BUILD_TESTRT} \
     -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` \
