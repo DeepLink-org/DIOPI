@@ -181,7 +181,7 @@ jobs:
           rm -rf ${GEN_DATA} && ln -s ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${GEN_DATA}
           export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${PWD}/DIOPI-TEST/lib
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=40 --gres=gpu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode run_test' \
-          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST2} && git clean -xdf ${GEN_DATA} && exit 1 )
+          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST2} && git clean -xdf ${GEN_DATA} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           """
 
   Rt-Test-Nvidia:
