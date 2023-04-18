@@ -10,7 +10,7 @@ case $1 in
     # --repository=.. will be deleted when repository changed.
     (echo "cpp-lint" && python scripts/cpplint.py --linelength=160 --repository=.. \
       --filter=-build/c++11,-legal/copyright,-build/include_subdir,-runtime/references,-runtime/printf,-runtime/int,-build/namespace \
-      --exclude=${current_path}/../DIOPI-IMPL/third_party --recursive ./ )  \
+      --exclude=${current_path}/../DIOPI-IMPL/third_party --exclude=${current_path}/../DIOPI-PROTO --recursive ./ )  \
     || exit -1;;
     *)
     echo -e "[ERROR] Incorrect option:" $1;;

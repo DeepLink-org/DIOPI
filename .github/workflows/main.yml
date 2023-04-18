@@ -61,9 +61,9 @@ jobs:
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${GITHUB_JOB} && cp -R source ${GITHUB_JOB}  && cd ${GITHUB_JOB}
           export CI=true
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=40 bash scripts/ci_script.sh py-lint \
-          && bash scripts/ci_script.sh impl-lint \
-          && bash scripts/ci_script.sh test-cpp-lint && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} \
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=40 bash -c 'cd DIOPI-TEST && bash scripts/ci_script.sh py-lint \
+          && bash scripts/ci_script.sh impl-lint && cd ../DIOPI-IMPL\
+          && bash scripts/ci_script.sh test-cpp-lint' && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} \
           || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} && exit 1 )
           """
 

@@ -5,8 +5,8 @@
  * @brief A reference implemention for DIOPI runtime, which is utilized to support conformance test suite of DIOPI
  */
 
-#ifndef _PROJECT_DIOPI_CONFORMANCETEST_REGISTER_H_
-#define _PROJECT_DIOPI_CONFORMANCETEST_REGISTER_H_
+#ifndef DIOPI_IMPL_CAMB_TEST_INCLUDE_CONFORM_TEST_H_ // NOLINT
+#define DIOPI_IMPL_CAMB_TEST_INCLUDE_CONFORM_TEST_H_ // NOLINT
 
 #include <diopi/diopirt.h>
 
@@ -67,4 +67,4 @@ extern int32_t finalizeLibrary();
 }
 #endif
 
-#endif  // _PROJECT_DIOPI_CONFORMANCETEST_REGISTER_H_
+#endif  // DIOPI_IMPL_CAMB_TEST_INCLUDE_CONFORM_TEST_H  // NOLINT

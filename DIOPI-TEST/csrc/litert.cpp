@@ -39,8 +39,7 @@ static int32_t DIOPIRT_LOG_LEVEL = 0;
 
 static char szVersion[256] = {0};
 
-DIOPI_RT_API const char* diopiGetVersion()
-{
+DIOPI_RT_API const char* diopiGetVersion() {
     static bool inited = false;
     if (!inited) {
         inited = true;
@@ -49,13 +48,11 @@ DIOPI_RT_API const char* diopiGetVersion()
     return szVersion;
 }
 
-static void* host_malloc(uint64_t bytes)
-{
+static void* host_malloc(uint64_t bytes) {
     return malloc(bytes);
 }
 
-static void host_free(void* ptr)
-{
+static void host_free(void* ptr) {
     free(ptr);
 }
 
@@ -68,10 +65,8 @@ void _getLastErrorString(const char** strErr) {
     *strErr = str;
 }
 
-int32_t itemsize(const diopiDtype_t dtype)
-{
-    switch (dtype)
-    {
+int32_t itemsize(const diopiDtype_t dtype) {
+    switch (dtype) {
     case diopi_dtype_int32:
     case diopi_dtype_uint32:
     case diopi_dtype_float32:
@@ -96,8 +91,7 @@ int32_t itemsize(const diopiDtype_t dtype)
     return 0;
 }
 
-const char* diopi_dtype_to_str(const diopiDtype_t dtype)
-{
+const char* diopi_dtype_to_str(const diopiDtype_t dtype) {
 #define _dtype2str(type) \
     if (type == dtype) return #type;
     _dtype2str(diopi_dtype_float16);
@@ -119,8 +113,7 @@ const char* diopi_dtype_to_str(const diopiDtype_t dtype)
 #undef _dtype2str
 }
 
-const char* device_to_str(const diopiDevice_t device)
-{
+const char* device_to_str(const diopiDevice_t device) {
 #define _device2str(type) \
     if (type == device) return #type;
     _device2str(diopi_host);
@@ -192,7 +185,6 @@ public:
     int64_t     nbytes() const { return storage_->nbytes(); }
 
     diopiContextHandle_t get_ctx() const { return context_; }
-
 };
 
 diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride,

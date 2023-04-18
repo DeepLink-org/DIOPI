@@ -127,7 +127,7 @@ def compute_nhwc_stride(size, itemsize=1, name=None):
 
 
 _cur_dir = os.path.dirname(os.path.abspath(__file__))
-diopirt_lib = CDLL(name = os.path.join(_cur_dir, "../../lib/libdiopirt.so"), mode = RTLD_GLOBAL)
+diopirt_lib = CDLL(name=os.path.join(_cur_dir, "../../lib/libdiopirt.so"), mode=RTLD_GLOBAL)
 diopirt_lib.diopiInit()
 
 device_impl_lib = cdll.LoadLibrary(os.path.join(_cur_dir, "../../lib/libdiopi_impl.so"))

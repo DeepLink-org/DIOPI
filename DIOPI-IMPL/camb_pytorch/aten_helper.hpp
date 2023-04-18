@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef IMPL_CAMB_PYTORCH_ATEN_HELPER_HPP_
-#define IMPL_CAMB_PYTORCH_ATEN_HELPER_HPP_
+#ifndef DIOPI_IMPL_CAMB_PYTORCH_ATEN_HELPER_HPP_
+#define DIOPI_IMPL_CAMB_PYTORCH_ATEN_HELPER_HPP_
 
 #include <torch_mlu/torch_mlu.h>
 #include <cnnl.h>
@@ -490,4 +490,4 @@ diopiError_t nll_loss_bp_internal(diopiContextHandle_t ctx, diopiTensorHandle_t 
 
 }  // namespace camb
 
-#endif  // IMPL_CAMB_PYTORCH_ATEN_HELPER_HPP_
+#endif  // DIOPI_IMPL_CAMB_PYTORCH_ATEN_HELPER_HPP_
