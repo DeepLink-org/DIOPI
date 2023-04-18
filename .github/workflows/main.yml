@@ -179,7 +179,8 @@ jobs:
           export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST2}
           rm -rf ${GEN_DATA} && ln -s ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${GEN_DATA}
-          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/DIOPI-TEST/lib
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST2}/DIOPI-TEST/lib
+          echo "LD_LIBRARY_PATH:"
           echo $LD_LIBRARY_PATH
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode run_test' \
           || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST2} && git clean -xdf ${GEN_DATA} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
