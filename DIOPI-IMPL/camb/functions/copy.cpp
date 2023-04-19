@@ -15,20 +15,27 @@ namespace camb {
 extern "C" {
 
 diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiTensorHandle_t input) {
+    if (src == input) {
+        // the same address of pointers, return earlier
+        return diopiSuccess;
+    }
+
     // TODO(waiting for dispatch): support broadcast, dealing with uncontiguous
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    auto input_tr = impl::camb::DiopiTensor(input);
-    auto src_tr = impl::camb::DiopiTensor(src);
+    DiopiTensor dest_tr(input);
+    DiopiTensor src_tr(src);
 
-    if (src_tr.dtype() != input_tr.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, src_tr, input_tr.dtype()));
+
+
+    if (src_tr.dtype() != dest_tr.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, src_tr, dest_tr.dtype()));
     }
 
-    CnnlTensorDesc input_desc(input_tr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc input_desc(dest_tr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc src_desc(src_tr, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlCopy(handle, src_desc.get(), src_tr.data(), input_desc.get(), input_tr.data()));
+    DIOPI_CALLCNNL(cnnlCopy(handle, src_desc.get(), src_tr.data(), input_desc.get(), dest_tr.data()));
 
     return diopiSuccess;
 }
