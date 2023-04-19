@@ -10,4 +10,4 @@ message("CXX_LITERT_SRC:" ${CXX_LITERT_SRC})
 add_library(${DIOPIRT} SHARED ${TEST_SRC})
 set_target_properties(${DIOPIRT} PROPERTIES SUFFIX ".so")
 target_link_libraries(${DIOPIRT} cnnl cnmlrt)
-
+target_link_libraries(${DIOPIRT} diopi_impl)
