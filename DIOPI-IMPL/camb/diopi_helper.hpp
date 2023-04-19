@@ -12,23 +12,23 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 
+#include <algorithm>
 #include <cstdio>
 #include <iostream>
+#include <string>
 #include <utility>
 #include <vector>
-#include <string>
 
 #include "error.hpp"
-
 namespace impl {
 namespace camb {
 
-#define DIOPI_CHECK(cond, fmt, args...)                                             \
-    do {                                                                   \
-        if (!(cond)) {                                                     \
-            set_last_error_string(#fmt" at %s:%d", ##args, __FILE__, __LINE__); \
-            return diopiErrorOccurred;                                     \
-        }                                                                  \
+#define DIOPI_CHECK(cond, fmt, args...)                                          \
+    do {                                                                         \
+        if (!(cond)) {                                                           \
+            set_last_error_string(#fmt " at %s:%d", ##args, __FILE__, __LINE__); \
+            return diopiErrorOccurred;                                           \
+        }                                                                        \
     } while (false);
 
 #define DIOPI_CHECK_NULLPTR_ABORT(variable)                                                      \
@@ -47,13 +47,13 @@ namespace camb {
         }                                                        \
     } while (false);
 
-#define DIOPI_CALL(Expr)                                                                                            \
-    do {                                                                                                            \
-        diopiError_t ret = Expr;                                                                                    \
-        if (diopiSuccess != ret) {                                                                                  \
+#define DIOPI_CALL(Expr)                                                                       \
+    do {                                                                                       \
+        diopiError_t ret = Expr;                                                               \
+        if (diopiSuccess != ret) {                                                             \
             set_last_error_string("%s at %s:%d\n", getDiopiErrorStr(ret), __FILE__, __LINE__); \
-            return ret;                                                                                             \
-        }                                                                                                           \
+            return ret;                                                                        \
+        }                                                                                      \
     } while (false);
 
 enum class MemoryFormat : size_t { Contiguous = 0, ChannelsLast = 1, ChannelsLast3d = 2, Preserve = 3 };
@@ -154,25 +154,42 @@ public:
     int64_t dim() const { return this->shape().size(); }
 
     DiopiTensor contiguous(diopiContextHandle_t ctx, MemoryFormat format = MemoryFormat::Contiguous) {
-        /* Returns a new Tensor in new memory format, without data copy */
+        /* DEPRECATED AND WILL BE REMOVED */
         if (this->is_contiguous(format)) return *this;
-        MemoryFormat format_self;
         int64_t dim = this->dim();
         std::vector<int64_t> strides(dim);
         int64_t stride = 1;
         if (format == MemoryFormat::Contiguous) {
             for (size_t i = dim; i > 0; --i) {
                 strides[i - 1] = stride;
-                if (shape_[i - 1] == 0) continue;
-                if (shape_[i - 1] == -1) stride = -1;
-                if (stride != -1) stride *= shape_[i - 1];
+                if (shape_[i - 1] == 0) {
+                    continue;
+                }
+                if (stride != -1) {
+                    stride *= shape_[i - 1];
+                }
             }
         } else if (format == MemoryFormat::ChannelsLast) {
+            DIOPI_CHECK_ABORT(this->shape().size() == 4, "%s", "tensor size should be 4");
             for (auto k : {1, 3, 2, 0}) {
                 strides[k] = stride;
-                if (shape_[k] == 0) continue;
-                if (shape_[k] == -1) stride = -1;
-                if (stride != -1) stride *= shape_[k];
+                if (shape_[k] == 0) {
+                    continue;
+                }
+                if (stride != -1) {
+                    stride *= shape_[k];
+                }
+            }
+        } else if (format == MemoryFormat::ChannelsLast3d) {
+            DIOPI_CHECK_ABORT(this->shape().size() == 5, "%s", "tensor size should be 5");
+            for (auto k : {1, 4, 3, 2, 0}) {
+                strides[k] = stride;
+                if (shape_[k] == 0) {
+                    continue;
+                }
+                if (stride != -1) {
+                    stride *= shape_[k];
+                }
             }
         }
         diopiSize_t stride_diopi(strides.data(), static_cast<int64_t>(strides.size()));
@@ -203,6 +220,14 @@ public:
                 }
                 stride *= shape[i];
             }
+        } else if (format == MemoryFormat::ChannelsLast3d) {
+            if (strides.size() != 5) return false;
+            for (auto i : {1, 4, 3, 2, 0}) {
+                if (strides[i] != stride) {
+                    return false;
+                }
+                stride *= shape[i];
+            }
         }
         return true;
     }
@@ -223,6 +248,16 @@ public:
         const void* p = nullptr;
         diopiGetTensorDataConst(tensor_, &p);
         return p;
+    }
+
+    MemoryFormat suggest_memory_format() {
+        if (this->is_contiguous(MemoryFormat::Contiguous)) {
+            return MemoryFormat::Contiguous;
+        } else if (this->is_contiguous(MemoryFormat::ChannelsLast)) {
+            return MemoryFormat::ChannelsLast;
+        } else {
+            return MemoryFormat::ChannelsLast3d;
+        }
     }
 
     diopiTensorHandle_t tensorHandle() { return tensor_; }
@@ -272,6 +307,48 @@ inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<in
     diopiTensorHandle_t tensor = nullptr;
     diopiRequireTensor(ctx, &tensor, &size_, nullptr, dtype, diopi_device);
     return DiopiTensor(tensor);
+}
+
+inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype, MemoryFormat memory_format) {
+    int64_t dim = size.size();
+    std::vector<int64_t> strides(dim);
+    int64_t stride = 1;
+    if (memory_format == MemoryFormat::Contiguous) {
+        for (size_t i = dim; i > 0; --i) {
+            strides[i - 1] = stride;
+            if (size[i - 1] == 0) {
+                continue;
+            }
+            if (stride != -1) {
+                stride *= size[i - 1];
+            }
+        }
+    } else if (memory_format == MemoryFormat::ChannelsLast) {
+        /* NCHW -> NHWC */
+        DIOPI_CHECK_ABORT(size.size() == 4, "%s", "tensor size should be 4");
+        for (auto k : {1, 3, 2, 0}) {
+            strides[k] = stride;
+            if (size[k] == 0) {
+                continue;
+            }
+            if (stride != -1) {
+                stride *= size[k];
+            }
+        }
+    } else if (memory_format == MemoryFormat::ChannelsLast3d) {
+        /* NCDHW -> NDHWC */
+        DIOPI_CHECK_ABORT(size.size() == 5, "%s", "tensor size should be 5");
+        for (auto k : {1, 4, 3, 2, 0}) {
+            strides[k] = stride;
+            if (size[k] == 0) {
+                continue;
+            }
+            if (stride != -1) {
+                stride *= size[k];
+            }
+        }
+    }
+    return requiresTensor(ctx, size, strides, dtype);
 }
 
 inline DiopiTensor requiresBuffer(diopiContextHandle_t ctx, int64_t num_bytes) {
