@@ -4024,4 +4024,10 @@ diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     return diopiSuccess;
 }
 
+diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiDtype_t dtype) {
+    impl::aten::setCurCtx(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    
+}
+
 }  // extern "C"
