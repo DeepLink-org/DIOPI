@@ -4015,4 +4015,13 @@ diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     return diopiSuccess;
 }
 
+diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t num_samples, bool replacement) {
+    impl::aten::setCurCtx(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = impl::aten::buildATen(out);
+    at::multinomial_out(atOut, atInput, num_samples, replacement, c10::nullopt);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
 }  // extern "C"
