@@ -132,6 +132,7 @@ diopirt_lib.diopiInit()
 
 device_impl_lib = cdll.LoadLibrary(os.path.join(_cur_dir, "../../lib/libdiopi_impl.so"))
 
+
 def on_diopi_rt_exit():
     diopirt_lib.finalizeLibrary()
     diopirt_lib.diopiFinalize()

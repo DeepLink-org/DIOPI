@@ -188,7 +188,7 @@ jobs:
   Rt-Test-Nvidia:
     name: Rt-Test-Nvidia
     runs-on: tps-diopi-ci
-    needs: Op-Test-Nvidia
+    needs: Build-Nvidia
     steps:
       - name: test
         run: |
@@ -221,7 +221,7 @@ jobs:
   Rt-Test-Camb:
     name: Rt-Test-Camb
     runs-on: tps-diopi-ci
-    needs: Op-Test-Camb
+    needs: Build-Camb
     steps:
       - name: test
         run: |
