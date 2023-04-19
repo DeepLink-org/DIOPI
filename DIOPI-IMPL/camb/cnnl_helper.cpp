@@ -127,6 +127,7 @@ CnnlHandlePool cnnlHandlePool;
 
 diopiError_t cnnl_transpose(
     diopiContextHandle_t& ctx, cnnlHandle_t& handle, DiopiTensor& in, DiopiTensor& out, cnnlTensorLayout_t layoutIn, cnnlTensorLayout_t layoutOut) {
+    /* DEPRECATED AND WILL BE REMOVED */
     std::vector<int> order;
     if (layoutIn == CNNL_LAYOUT_NHWC && layoutOut == CNNL_LAYOUT_HWCN) {
         order = {1, 2, 3, 0};
