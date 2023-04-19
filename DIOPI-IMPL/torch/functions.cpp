@@ -855,6 +855,24 @@ diopiError_t diopiSqrtInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     return diopiSuccess;
 }
 
+diopiError_t diopiRsqrt(diopiContextHandle_t ctx,
+        diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atInput = impl::aten::buildATen(input);
+    at::Tensor atOut = impl::aten::buildATen(out);
+    at::rsqrt_out(atOut, atInput);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
+diopiError_t diopiRsqrtInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atInput = impl::aten::buildATen(input);
+    impl::aten::invokeATenFuncInp(ctx, at::rsqrt_, atInput);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
 diopiError_t diopiFloor(diopiContextHandle_t ctx,
         diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     impl::aten::setCurCtx(ctx);
