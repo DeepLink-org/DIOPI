@@ -880,6 +880,7 @@ DIOPI_API diopiError_t diopiNormalTensor(diopiContextHandle_t ctx, diopiTensorHa
 DIOPI_API diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std);
 
 DIOPI_API diopiError_t diopiMeshGrid(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, diopiConstTensorHandle_t* inputs, int64_t inputsNum);
+DIOPI_API diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t num_samples, bool replacement);
 /**
  * \brief Applies Layer Normalization over a mini-batch of inputs.
  */
