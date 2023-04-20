@@ -6,14 +6,15 @@ namespace impl {
 namespace camb {
 extern "C" {
 
-diopiError_t getClampBoundPtr(diopiContextHandle_t ctx, diopiConstTensorHandle_t bound, diopiDtype_t desire_dtype, const char* bound_type, void** out) {
+diopiError_t getClampBoundPtr(diopiContextHandle_t ctx, diopiConstTensorHandle_t bound, diopiDtype_t desire_dtype, void** out) {
     if (nullptr != bound) {
         DiopiTensor bound_tensor(bound);
-        DIOPI_CHECK(bound_tensor.numel() == 1, "only supported when %s is scalar or one element Tensor currently", bound_type);
+        DIOPI_CHECK(bound_tensor.numel() == 1, "only supported when min and max are scalar or one element Tensor currently");
         if (desire_dtype != bound_tensor.dtype()) {
             DIOPI_CALL(dataTypeCast(ctx, bound_tensor, desire_dtype));
         }
         *out = bound_tensor.data();
+        return diopiSuccess;
     }
     *out = nullptr;
     return diopiSuccess;
@@ -27,24 +28,31 @@ diopiError_t clampCommon(diopiContextHandle_t ctx, diopiConstTensorHandle_t inpu
     DiopiTensor output_tensor(out);
     DIOPI_CHECK(input_tensor.dtype() == output_tensor.dtype(), "the dtype of input and output must be the same")
 
-    auto input32_tensor = input_tensor;
-    auto output32_tensor = output_tensor;
-    if (input_tensor.dtype() == diopi_dtype_int64 || input_tensor.dtype() == diopi_dtype_int16 || input_tensor.dtype() == diopi_dtype_int8) {
-        DIOPI_CALL(dataTypeCast(ctx, input32_tensor, diopi_dtype_int32));
-        DIOPI_CALL(dataTypeCast(ctx, input32_tensor, diopi_dtype_int32));
+    DiopiTensor output32_tensor = output_tensor;
+    if (DiopiDataType::isInteger(input_tensor.dtype())) {
+        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_int32));
+        DIOPI_CALL(dataTypeCast(ctx, output32_tensor, diopi_dtype_int32));
+    } else if (input_tensor.dtype() == diopi_dtype_float64) {
+        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, output32_tensor, diopi_dtype_float32));
     }
-    CnnlTensorDesc input32Desc(input32_tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputDesc(input_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc output32Desc(output32_tensor, CNNL_LAYOUT_ARRAY);
 
     void* min_ptr = nullptr;
     void* max_ptr = nullptr;
-    getClampBoundPtr(ctx, min, input32_tensor.dtype(), "min", &min_ptr);
-    getClampBoundPtr(ctx, max, input32_tensor.dtype(), "max", &max_ptr);
+    DIOPI_CALL(getClampBoundPtr(ctx, min, input_tensor.dtype(), &min_ptr));
+    DIOPI_CALL(getClampBoundPtr(ctx, max, input_tensor.dtype(), &max_ptr));
 
     DIOPI_CALLCNNL(
-        cnnlClip_v2(handle, CNNL_POINTER_MODE_DEVICE, input32Desc.get(), input32_tensor.data(), min_ptr, max_ptr, output32Desc.get(), output32_tensor.data()));
+        cnnlClip_v2(handle, CNNL_POINTER_MODE_DEVICE, inputDesc.get(), input_tensor.data(), min_ptr, max_ptr, output32Desc.get(), output32_tensor.data()));
     if (output_tensor.dtype() != output32_tensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, output_tensor, output32_tensor));
+        if (output_tensor.dtype() != diopi_dtype_uint8) {
+            DIOPI_CALL(dataTypeCast(ctx, output_tensor, output32_tensor));
+        } else {
+            DIOPI_CALL(dataTypeCast(ctx, output32_tensor, diopi_dtype_float32));
+            DIOPI_CALL(dataTypeCast(ctx, output_tensor, output32_tensor));
+        }
     }
     return diopiSuccess;
 }
