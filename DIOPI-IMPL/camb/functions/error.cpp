@@ -62,6 +62,6 @@ const char* getDiopiErrorStr(diopiError_t err) {
 }  // namespace impl
 
 
-const char* diopiGetLastErrorString() { 
+const char* diopiGetLastErrorString() {
     return impl::camb::camb_get_last_error_string();
 }
