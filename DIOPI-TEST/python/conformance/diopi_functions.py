@@ -237,6 +237,10 @@ def sqrt(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, 'diopiSqrt', promote_type(input, Dtype.float32))
 
 
+def rsqrt(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, 'diopiRsqrt', promote_type(input, Dtype.float32))
+
+
 def neg(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, 'diopiNeg')
 
