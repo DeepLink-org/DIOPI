@@ -209,6 +209,19 @@ class ManualTest(object):
         p_value = stats.kstest(out_numpy, 'norm', args=(mean, std))[1]
         assert p_value > 0.05, "failed to execute normal_"
 
+    def test_multinomial(input, num_samples, replacement):
+        out = F.multinomial(input, num_samples, replacement)
+        out_numpy = out.numpy()
+        has_duplicates = False
+        if len(out.size()) == 2:
+            has_duplicates = len(out_numpy[0]) != len(set(out_numpy[0]))
+        else:
+            has_duplicates = len(out_numpy) != len(set(out_numpy))
+        if not replacement:
+            assert has_duplicates is False, "failed to execute multinomial"
+        out_numpy = out_numpy.flatten()
+        assert len(out_numpy) % num_samples == 0, "failed to execute multinomial"
+
 
 def config_to_format_string(data, indent=0):
     yaml_str = ""

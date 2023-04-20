@@ -2217,7 +2217,7 @@ diopi_configs = {
                     "ins": ['input'],
                     "shape": ((2, 4096), (32, 49, 256), (2, 16, 64, 64), (1, 2304, 1, 1, 1)),
                     "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),
@@ -2237,7 +2237,7 @@ diopi_configs = {
                     "shape": ((2, 4096), (32, 49, 256), (2, 16, 64, 64),
                               (1, 2304, 1, 1, 1)),
                     "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),
@@ -2256,7 +2256,7 @@ diopi_configs = {
                     "ins": ['input'],
                     "shape": ((32, 49, 256), (32, 16, 64, 64)),
                     "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),
@@ -4338,6 +4338,26 @@ diopi_configs = {
                 },
             ],
             seq_name='tensors',
+        ),
+    ),
+
+    'multinomial': dict(
+        name=["multinomial"],
+        interface=['torch'],
+        no_output_ref=True,
+        para=dict(
+            num_samples=[6, 60, 200, 128],
+            replacement=[True, True, False, False],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.positive,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((8, ), (16, 64,), (128, 256,), (256, 128,)),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float64, Dtype.float64],
+                },
+            ],
         ),
     ),
 

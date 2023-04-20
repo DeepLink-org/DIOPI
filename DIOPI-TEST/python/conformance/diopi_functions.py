@@ -3535,3 +3535,15 @@ def meshgrid(tensors, shape=None):
     ret = func(tensors[0].context_handle, pointer(co_tensors), pointer(c_tensors), c_int64(inputsNum))
     check_returncode(ret)
     return out
+
+
+def multinomial(input, num_samples, replacement) -> Tensor:
+    call = "diopiMultinomial"
+    func = check_function(call)
+    if len(input.size()) == 2:
+        out = Tensor(size=(input.size()[0], num_samples), dtype=Dtype.int64)
+    if len(input.size()) == 1:
+        out = Tensor(size=(num_samples,), dtype=Dtype.int64)
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, c_int64(num_samples), c_bool(replacement))
+    check_returncode(ret)
+    return out
