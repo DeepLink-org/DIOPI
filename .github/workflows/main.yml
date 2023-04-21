@@ -1,11 +1,13 @@
 name: diopi ci
 on:
+  workflow_dispatch:
   push:
     branches:
-      - '**'
+      - main
+    if: 'contains(github.event.head_commit.message, "ci") || contains(github.event.head_commit.message, "CI")'
   pull_request:
     branches:
-      - 'main'
+      - main
 
 env:
   NFS_PATH: '/mnt/cache/share/parrotsci/github/cibuild/${{ github.repository }}'
@@ -57,7 +59,7 @@ jobs:
         run: |
           ssh ${CLUSTER_1984} """
           set -e
-          cd ${NFS_PATH}/ && ls -al && find ${NFS_PATH}/ -maxdepth 1 -ctime 1 -type d |xargs rm -rf
+          cd ${NFS_PATH}/ && ls -al && find ${NFS_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${GITHUB_JOB} && cp -R source ${GITHUB_JOB}  && cd ${GITHUB_JOB}
           export CI=true
@@ -102,7 +104,7 @@ jobs:
         run: |
           ssh ${CLUSTER_CAMB} """
           set -e
-          cd ${NFS_PATH}/ && ls -al && find ${NFS_PATH}/ -maxdepth 1 -ctime 1 -type d |xargs rm -rf
+          cd ${NFS_PATH}/ && ls -al && find ${NFS_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export CI=true
@@ -155,7 +157,7 @@ jobs:
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode gen_data' \
-          && rsync -a ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/ || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           """
 
   Op-Test-Nvidia:
@@ -170,8 +172,7 @@ jobs:
           export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode run_test --fname batch_norm --nhwc &&
-          python main.py --mode run_test --fname index_select --four_bytes && python main.py --mode run_test --fname arange --four_bytes' \
-          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+          python main.py --mode run_test --fname index_select --four_bytes && python main.py --mode run_test --fname arange --four_bytes'
           """
       - name: dyload-test
         run: |
@@ -181,8 +182,7 @@ jobs:
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST2}
           rm -rf ${GEN_DATA} && ln -s ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${GEN_DATA}
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST2}/DIOPI-TEST/lib
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode run_test' \
-          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST2} && git clean -xdf ${GEN_DATA} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode run_test'
           """
 
   Rt-Test-Nvidia:
@@ -197,8 +197,7 @@ jobs:
           export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode utest' \
-          && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode utest'
           """
 
   Op-Test-Camb:
@@ -212,10 +211,11 @@ jobs:
           set -e
           export CI=true
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && ls
+          rsync -a ${CLUSTER_1984}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/python/data ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/python/
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           mv ${NFS_PATH}/${GITHUB_RUN_NUMBER}/data ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/DIOPI-TEST/python/
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode run_test' \
-          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+          && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           """
 
   Rt-Test-Camb:
@@ -230,7 +230,6 @@ jobs:
           export CI=true
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode utest' \
-          && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           """
 
 
