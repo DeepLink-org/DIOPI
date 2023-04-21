@@ -211,9 +211,8 @@ jobs:
           set -e
           export CI=true
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && ls
-          rsync -a ${CLUSTER_1984}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/python/data ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/python/
+          rsync -a ${CLUSTER_1984}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/DIOPI-TEST/python/
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          mv ${NFS_PATH}/${GITHUB_RUN_NUMBER}/data ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/DIOPI-TEST/python/
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode run_test' \
           && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           """
