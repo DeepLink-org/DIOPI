@@ -47,13 +47,13 @@ namespace camb {
         }                                                        \
     } while (false);
 
-#define DIOPI_CALL(Expr)                                                                       \
-    do {                                                                                       \
-        diopiError_t ret = Expr;                                                               \
-        if (diopiSuccess != ret) {                                                             \
-            set_last_error_string("%s at %s:%d\n", getDiopiErrorStr(ret), __FILE__, __LINE__); \
-            return ret;                                                                        \
-        }                                                                                      \
+#define DIOPI_CALL(Expr)                                                                                                                                  \
+    do {                                                                                                                                                  \
+        diopiError_t ret = Expr;                                                                                                                          \
+        if (diopiSuccess != ret) {                                                                                                                        \
+            set_last_error_string("%s: %s called by `%s` at %s:%d\n", getDiopiErrorStr(ret), camb_get_last_error_string(), __func__, __FILE__, __LINE__); \
+            return ret;                                                                                                                                   \
+        }                                                                                                                                                 \
     } while (false);
 
 enum class MemoryFormat : size_t { Contiguous = 0, ChannelsLast = 1, ChannelsLast3d = 2, Preserve = 3 };

@@ -29,6 +29,7 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     DIOPI_CHECK(input_tr.is_contiguous(), "input tensor should be contiguous");
     DIOPI_CHECK(weight_tr.is_contiguous(), "weight tensor should be contiguous");
     DIOPI_CHECK(target_tr.is_contiguous(), "input tensor should be contiguous");
+    DIOPI_CHECK(output_tr.dim() <= 1, "Output.dim > 1 is not supported by cnnl");
 
     std::vector<DiopiTensor*> p_tensors{&input_tr, &weight_tr};
     std::set<diopiDtype_t> supported_dtypes{diopi_dtype_float16, diopi_dtype_float32};
@@ -152,6 +153,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     DIOPI_CHECK(input_tr.is_contiguous(), "input tensor should be contiguous");
     DIOPI_CHECK(weight_tr.is_contiguous(), "weight tensor should be contiguous");
     DIOPI_CHECK(target_tr.is_contiguous(), "input tensor should be contiguous");
+    DIOPI_CHECK(grad_output_tr.dim() <= 1, "grad_output.dim > 1 is not supported by cnnl");
 
     std::vector<DiopiTensor*> p_tensors{&grad_output_tr, &weight_tr, &input_tr};
     std::set<diopiDtype_t> supported_dtypes{diopi_dtype_float16, diopi_dtype_float32};
@@ -260,12 +262,12 @@ diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx, diopiTensorHandle_t
     DiopiTensor input_tr(input);
     DiopiTensor target_tr(target);
 
-    DIOPI_CHECK(label_smoothing == 0, "param label_smoothing is not supported")
-    DIOPI_CHECK(target_tr.dim() == input_tr.dim() - 1, "Probabilities for each class are not supported");
+    DIOPI_CHECK(label_smoothing == 0, "Param label_smoothing is not supported by cnnl")
+    DIOPI_CHECK(target_tr.dim() == input_tr.dim() - 1, "Probabilities for each class are not supported by cnnl");
 
     auto log_tr = requiresTensor(ctx, input_tr.shape(), input_tr.dtype());
-    diopiLogSoftmax(ctx, log_tr.tensorHandle(), input, 1);
-    diopiNLLLoss(ctx, out, log_tr.tensorHandle(), target, weight, reduction, ignore_index);
+    DIOPI_CALL(diopiLogSoftmax(ctx, log_tr.tensorHandle(), input, 1));
+    DIOPI_CALL(diopiNLLLoss(ctx, out, log_tr.tensorHandle(), target, weight, reduction, ignore_index));
     return diopiSuccess;
 }
 diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
@@ -281,11 +283,11 @@ diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, diopiTensor
     auto log_tr = requiresTensor(ctx, input_tr.shape(), input_tr.dtype());
     auto grad_tmp_tr = requiresTensor(ctx, grad_input_tr.shape(), grad_input_tr.dtype());
 
-    diopiLogSoftmax(ctx, log_tr.tensorHandle(), input, 1);
+    DIOPI_CALL(diopiLogSoftmax(ctx, log_tr.tensorHandle(), input, 1));
     // for nll loss backward, `input` should be logsoftmax out.
-    diopiNLLLossBackward(ctx, grad_tmp_tr.tensorHandle(), grad_output, log_tr.tensorHandle(), target, weight, reduction, ignore_index);
+    DIOPI_CALL(diopiNLLLossBackward(ctx, grad_tmp_tr.tensorHandle(), grad_output, log_tr.tensorHandle(), target, weight, reduction, ignore_index));
     // for softmax backward, `output` should be logsoftmax out
-    diopiLogSoftmaxBackward(ctx, grad_input, grad_tmp_tr.tensorHandle(), log_tr.tensorHandle(), 1);
+    DIOPI_CALL(diopiLogSoftmaxBackward(ctx, grad_input, grad_tmp_tr.tensorHandle(), log_tr.tensorHandle(), 1));
     return diopiSuccess;
 }
 
