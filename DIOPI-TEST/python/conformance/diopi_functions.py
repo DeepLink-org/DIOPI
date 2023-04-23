@@ -1,6 +1,7 @@
 # Copyright (c) 2023, DeepLink.
 # -*- coding: UTF-8 -*-
 import math
+import itertools
 
 from ctypes import c_float, c_double, c_int64, c_bool, c_void_p, byref, pointer
 from .diopi_runtime import Sizes, Scalar, Tensor, TensorHandle, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d
@@ -218,8 +219,26 @@ def sigmoid(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, 'diopiSigmoid')
 
 
+def silu(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, 'diopiSilu')
+
+
+def silu_backward(input, grad_outputs, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    grad_input = raw_like(input)
+    func = check_function("diopiSiluBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle)
+    check_returncode(ret)
+    return {"input": grad_input}
+
+
 def sqrt(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, 'diopiSqrt', promote_type(input, Dtype.float32))
+
+
+def rsqrt(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, 'diopiRsqrt', promote_type(input, Dtype.float32))
 
 
 def neg(input, inplace=False) -> Tensor:
@@ -372,6 +391,28 @@ def bmm(input, mat2) -> Tensor:
                input.tensor_handle, mat2.tensor_handle)
     check_returncode(ret)
     return out
+
+
+def baddbmm(input, batch1, batch2, beta, alpha, inplace=False) -> Tensor:
+    size1 = list(input.size())
+    assert (len(size1) == 3), 'input must be 3d tensor'
+    size2 = list(batch1.size())
+    assert (len(size2) == 3), 'batch1 must be 3d tensor'
+    size3 = list(batch2.size())
+    assert (len(size3) == 3), 'batch2 must be 3d tensor'
+    assert (size2[2] == size3[1] and size1[0] == size2[0] and size1[0] == size3[0]), 'invalid args'
+    assert (size1[2] == size3[2] or size1[2] == 1 or size3[2] == 1), 'invalid args'
+    if inplace:
+        func = check_function("diopiBaddbmmInp")
+        ret = func(input.context_handle, input.tensor_handle, batch1.tensor_handle, batch2.tensor_handle, c_double(beta), c_double(alpha))
+        check_returncode(ret)
+        return input
+    else:
+        out = raw_like(input)
+        func = check_function("diopiBaddbmm")
+        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, batch1.tensor_handle, batch2.tensor_handle, c_double(beta), c_double(alpha))
+        check_returncode(ret)
+        return out
 
 
 def addcmul(input, tensor1, tensor2, value=1, inplace=False) -> Tensor:
@@ -1070,13 +1111,33 @@ def sort(input, dim=- 1, descending=False, stable=False):
     vals = raw_like(input)
     sizeI = input.size()
     indices = Tensor(sizeI, glob_vars.int_type)
-
-    stable = c_void_p() if stable is None else pointer(c_bool(stable))
-
+    stable_c = c_void_p() if stable is None else pointer(c_bool(stable))
     func = check_function("diopiSort")
     ret = func(input.context_handle, vals.tensor_handle, indices.tensor_handle,
-               input.tensor_handle, c_int64(dim), c_bool(descending), stable)
+               input.tensor_handle, c_int64(dim), c_bool(descending), stable_c)
     check_returncode(ret)
+    # if not stable, need to reconstruct indices and use "input[indices]" to check
+    if not stable:
+        # reconstruct the indices
+        lst = []
+        for dim_size in input.shape:
+            temp_lst = [i for i in range(dim_size)]
+            lst.append(temp_lst)
+        temp_indices = list(itertools.product(*lst))
+        for i in range(len(temp_indices)):
+            temp_indices[i] = list(temp_indices[i])
+            temp_indices[i][dim] = indices.numpy().flatten()[i]
+
+        # use input[indices] to check
+        temp_vals = []
+        input_np = input.numpy()
+        for idx in temp_indices:
+            res = input_np
+            # use for loop to index since idx is a list
+            for i in idx:
+                res = res[i]
+            temp_vals.append(res)
+        return vals, temp_vals
     return vals, indices
 
 
@@ -1768,6 +1829,16 @@ def hardtanh_backward(input, grad_outputs, min_val=-1.0, max_val=1.0, **kwargs) 
     func = check_function("diopiHardtanhBackward")
     ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
                input.tensor_handle, min_val, max_val)
+    check_returncode(ret)
+    return {"input": grad_input}
+
+
+def hardswish_backward(input, grad_outputs, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    grad_input = raw_like(input)
+    func = check_function("diopiHardswishBackward")
+    ret = func(input.context_handle, grad_input.tensor_handle, grad_outputs[0].tensor_handle,
+               input.tensor_handle)
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -3466,5 +3537,17 @@ def meshgrid(tensors, shape=None):
     co_tensors = (c_void_p * inputsNum)(*co_tensors)
     func = check_function("diopiMeshGrid")
     ret = func(tensors[0].context_handle, pointer(co_tensors), pointer(c_tensors), c_int64(inputsNum))
+    check_returncode(ret)
+    return out
+
+
+def multinomial(input, num_samples, replacement) -> Tensor:
+    call = "diopiMultinomial"
+    func = check_function(call)
+    if len(input.size()) == 2:
+        out = Tensor(size=(input.size()[0], num_samples), dtype=Dtype.int64)
+    if len(input.size()) == 1:
+        out = Tensor(size=(num_samples,), dtype=Dtype.int64)
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, c_int64(num_samples), c_bool(replacement))
     check_returncode(ret)
     return out
