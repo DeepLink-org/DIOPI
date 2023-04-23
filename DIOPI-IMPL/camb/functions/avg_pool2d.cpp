@@ -101,7 +101,7 @@ DIOPI_API diopiError_t diopiAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandl
     if (divisor_override != nullptr) {
         diopiScalar_t mul_value;
         mul_value.stype = diopi_dtype_float64;
-        mul_value.fval = (double)(kernel_h * kernel_w) / (*divisor_override);
+        mul_value.fval = static_cast<double>(kernel_h * kernel_w) / (*divisor_override);
         DIOPI_CALL(diopiMulInpScalar(ctx, static_cast<diopiTensorHandle_t>(out_tensor_tmp), (const diopiScalar_t*)&mul_value));
     }
     dataTypeCast(ctx, out_tensor, out_tensor_tmp);
@@ -246,7 +246,7 @@ DIOPI_API diopiError_t diopiAvgPool2dBackward(diopiContextHandle_t ctx, diopiTen
     if (divisor_override != nullptr) {
         diopiScalar_t mul_value;
         mul_value.stype = diopi_dtype_float64;
-        mul_value.fval = (double)(kernel_h * kernel_w) / (*divisor_override);
+        mul_value.fval = static_cast<double>(kernel_h * kernel_w) / (*divisor_override);
         DIOPI_CALL(diopiMulInpScalar(ctx, static_cast<diopiTensorHandle_t>(grad_input_tensor_tmp), (const diopiScalar_t*)&mul_value));
     }
     dataTypeCast(ctx, grad_input_tensor, grad_input_tensor_tmp);
