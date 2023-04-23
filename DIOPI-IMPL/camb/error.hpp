@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef IMPL_CAMB_ERROR_HPP_
-#define IMPL_CAMB_ERROR_HPP_
+#ifndef DIOPI_IMPL_CAMB_ERROR_HPP_
+#define DIOPI_IMPL_CAMB_ERROR_HPP_
 
 #include <cnrt.h>
 #include <diopi/diopirt.h>
@@ -36,4 +36,4 @@ const char* getDiopiErrorStr(diopiError_t err);
 
 }  // namespace impl
 
-#endif  // IMPL_CAMB_ERROR_HPP_
+#endif  // DIOPI_IMPL_CAMB_ERROR_HPP_
