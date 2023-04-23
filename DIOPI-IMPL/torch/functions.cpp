@@ -4042,4 +4042,15 @@ diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     return diopiSuccess;
 }
 
+diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    impl::aten::setCurCtx(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(out, &dtype);
+    auto atOut = at::native::to(atInput, impl::aten::getATenType(dtype).toScalarType(), false, true, c10::nullopt);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
 }  // extern "C"
