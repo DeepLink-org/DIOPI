@@ -3,6 +3,8 @@ import os
 import numpy as np
 
 from . import diopi_functions as F
+from . import diopi_configs
+from .config import Config
 from .utils import logger, FunctionNotImplementedError, DiopiException
 from .utils import need_process_func, glob_vars, nhwc_op, dtype_op
 from .diopi_runtime import Tensor, compute_nhwc_stride
@@ -242,19 +244,84 @@ def config_to_format_string(data, indent=0):
     return yaml_str
 
 
+def check_device_para_and_tensor_para(cfg_dicts, device_cfg_dicts, cfg_name):
+    cfg_dict = cfg_dicts[cfg_name]
+    device_cfg_dict = device_cfg_dicts[cfg_name]
+    para_dict = cfg_dict["para"]
+    device_para_dict = device_cfg_dict["para"]
+    for dk, dv in device_para_dict.items():
+        if dk in para_dict:
+            v = para_dict[dk]
+            for x in dv:
+                if x not in v:
+                    logger.error(f"Para {x} of key {dk} for {cfg_name} in device_configs not found in diopi_configs. Ignored.")
+
+    args_list = cfg_dict["tensor_para"]["args"]
+    device_tensor_paras_dict = device_cfg_dict["tensor_para"]["args"]
+    for input in device_tensor_paras_dict.keys():
+        in_found = False
+        for args in args_list:
+            if "ins" in args:
+                ins = args["ins"]
+                if input in ins:
+                    in_found = True
+                    for key in ["dtype", "shape", "value"]:
+                        if key in device_tensor_paras_dict[input] and key in args:
+                            for dv in device_tensor_paras_dict[input][key]:
+                                if dv not in args[key]:
+                                    logger.error(f"Tensor para {dv} of key {key} for {cfg_name} in device_configs not found in diopi_configs for ins {ins}. Ignored.")
+        if not in_found:
+            logger.error(f"Input name {input} for {cfg_name} in device_configs not found in diopi_configs. Ignored.")
+
+
 class ConformanceTest(object):
     r'''
     Run all functions by using input, then compare_with_gen_output with saved output
     '''
     @staticmethod
-    def run(func_name, model_name, filter_dtype_str_list, debug_level):
+    def run(func_name, model_name, filter_dtype_str_list, debug_level, impl_folder):
 
         _cur_dir = os.path.dirname(os.path.abspath(__file__))
         inputs_dir_path = os.path.join(_cur_dir, "../data/" + model_name + "/inputs")
         outputs_dir_path = os.path.join(_cur_dir, "../data/" + model_name + "/outputs")
 
         saved_pth_list = get_saved_pth_list(inputs_dir_path, cfg_file_name)
+
+        if model_name != "":
+            diopi_config = "model_config." + model_name + "_config"
+            configs = Config.process_configs(eval(diopi_config))
+        else:
+            configs = Config.process_configs(diopi_configs)
+
+        use_device_configs = impl_folder != ''
+        if use_device_configs:
+            src_path = os.path.join(impl_folder, "device_configs.py")
+            if os.path.isfile(src_path):
+                dst_path = os.path.join(_cur_dir, "device_configs.py")
+
+                def unlink_device_configs():
+                    if os.path.islink(dst_path):
+                        os.unlink(dst_path)
+                unlink_device_configs()
+                os.symlink(src_path, dst_path)
+                import atexit
+                atexit.register(unlink_device_configs)
+                from .device_configs import device_configs
+                from .device_config_helper import DeviceConfig
+                device_configs = DeviceConfig.process_configs(device_configs)
+                for cfg_name in configs:
+                    cfg_func_name = configs[cfg_name]["name"]
+                    if not need_process_func(cfg_func_name, func_name, model_name):
+                        continue
+                    if cfg_name in device_configs:
+                        check_device_para_and_tensor_para(configs, device_configs, cfg_name)
+            else:
+                logger.error(f"device_configs.py not found in directory: {impl_folder} !")
+                import sys
+                sys.exit(0)
+
         for saved_pth in saved_pth_list:
+            cfg_name = saved_pth.split("_")[0]
             cfg_func_name = saved_pth.split("::")[1].rsplit("_", 1)[0]
             if not need_process_func(cfg_func_name, func_name, model_name):
                 continue
@@ -263,6 +330,40 @@ class ConformanceTest(object):
             output_abs_path = os.path.join(outputs_dir_path, saved_pth)
             data = get_data_from_file(input_abs_path, saved_pth, "input")
             if data is None:
+                continue
+
+            skipped = False
+            if use_device_configs:
+                if cfg_name in device_configs:
+                    device_cfg = device_configs[cfg_name]
+
+                    paras = data['cfg']['para']
+                    device_paras = device_cfg['para']
+                    for para_k, para_v in paras.items():
+                        if para_k in device_paras and para_v in device_paras[para_k]:
+                            skipped = True
+                            break
+
+                    tensor_paras = data['cfg']['tensor_para']['args']
+                    device_tensor_paras = device_cfg['tensor_para']['args']
+                    for tensor_para in tensor_paras:
+                        if tensor_para['ins'] in device_tensor_paras:
+                            device_tensor_para = device_tensor_paras[tensor_para['ins']]
+                            need_checking_keys = ['dtype', 'value', 'shape']
+                            for ck in need_checking_keys:
+                                if ck in tensor_para and ck in device_tensor_para:
+                                    if tensor_para[ck] in device_tensor_para[ck]:
+                                        skipped = True
+                            if 'dtype' in device_cfg and tensor_para['dtype'] in device_cfg['dtype']:
+                                skipped = True
+
+                    tol_keys_list = ['atol', 'rtol', 'atol_half', 'rtol_half']
+                    for key in tol_keys_list:
+                        if key in device_cfg:
+                            data['cfg'][key] = device_cfg[key]
+
+            if skipped:
+                logger.warning(f"Run diopi_functions.{cfg_func_name} skipped")
                 continue
 
             need_output = False if "no_output_ref" in data['cfg'] else True
