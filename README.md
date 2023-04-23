@@ -24,17 +24,17 @@ DIOPI-设备无关算子接口（Device-Independent Operator Interface, DIOPI）
 
 <img src="img/structure2.png">
 
-DIOPI主要包含以下几个仓库：
+DIOPI主要包含以下几个组件：
 
-- [DIOPI-PROTO](https://github.com/OpenComputeLab/DIOPI-PROTO)：声明了一套运行时函数接口(diopirt)和标准算子接口(function)。
-- [DIOPI-IMPL](https://github.com/OpenComputeLab/DIOPI-IMPL)：对接硬件芯片。硬件厂商可在其中使用硬件软件栈提供的计算接口，实现算子功能。其使用 ```DIOPI-PROTO/include/diopi/diopirt.h``` 提供的接口实现 ```DIOPI-PROTO/include/diopi/functions.h``` 声明的标准算子, 并编译为 ```libdiopi_impl.so``` 动态库。在测试阶段，DIOPI-IMPL 还需实现并注册 ```DIOPI-TEST/include/diopi_register.h``` 声明的硬件芯片管理相关的函数。
-- [DIOPI-TEST](https://github.com/OpenComputeLab/DIOPI-TEST)：用于保证算子功能正确性。实现 ```DIOPI-PROTO/include/diopi/diopirt.h``` 声明基础运行时函数，并调用 ```libdiopi_impl.so``` 进行测试验证。
+- [DIOPI-PROTO](https://github.com/OpenComputeLab/DIOPI/DIOPI-PROTO)：声明了一套运行时函数接口(diopirt)和标准算子接口(function)。
+- [DIOPI-IMPL](https://github.com/OpenComputeLab/DIOPI/DIOPI-IMPL)：对接硬件芯片。硬件厂商可在其中使用硬件软件栈提供的计算接口，实现算子功能。其使用 ```DIOPI-PROTO/include/diopi/diopirt.h``` 提供的接口实现 ```DIOPI-PROTO/include/diopi/functions.h``` 声明的标准算子, 并编译为 ```libdiopi_impl.so``` 动态库。在测试阶段，DIOPI-IMPL 还需实现并注册 ```DIOPI-TEST/include/diopi_register.h``` 声明的硬件芯片管理相关的函数。
+- [DIOPI-TEST](https://github.com/OpenComputeLab/DIOPI/DIOPI-TEST)：用于保证算子功能正确性。实现 ```DIOPI-PROTO/include/diopi/diopirt.h``` 声明基础运行时函数，并调用 ```libdiopi_impl.so``` 进行测试验证。
 <!-- * DIPU-Adapter 实现 DIOPI-PROTO/include/diopi/diopirt.h 声明基础运行时函数, 将 DIOPI 算子适配训练框架，保证训练框架调用 libdiopi_impl.so 进行模型训练。 -->
 
 <!--
-- [DIOPI-PROTO](https://github.com/OpenComputeLab/DIOPI)：定义了若干运行时函数接口(diopirt)和算子声明接口(function)；
-- [DIOPI-IMPL](https://github.com/OpenComputeLab/DIOPI_Impl)：对接硬件芯片。硬件厂商可在其中使用硬件软件栈提供的计算接口，实现算子功能；
-- [DIOPI-TEST](https://github.com/OpenComputeLab/DIOPI-Test)：用于保证算子功能正确性(算子测试 + 模型验证)，通过LiteRT实现了运行时函数；
+- [DIOPI-PROTO](https://github.com/OpenComputeLab/DIOPI/DIOPI-PROTO)：定义了若干运行时函数接口(diopirt)和算子声明接口(function)；
+- [DIOPI-IMPL](https://github.com/OpenComputeLab/DIOPI/DIOPI-IMPL)：对接硬件芯片。硬件厂商可在其中使用硬件软件栈提供的计算接口，实现算子功能；
+- [DIOPI-TEST](https://github.com/OpenComputeLab/DIOPI/DIOPI-TEST)：用于保证算子功能正确性(算子测试 + 模型验证)，通过LiteRT实现了运行时函数；
 - [DIPU-Adapter](https://github.com/OpenComputeLab/DIPU-Adapter)：对接训练框架。其中实现了用于接入pytorch2.0的运行时函数；
 
 
@@ -76,7 +76,7 @@ DIOPI主要包含以下几个仓库：
   2. 进入python目录，生成基准数据(需准备nv机器和pytorch1.10环境)
 
       ```
-      cd DIOPI-IMPL && python && python main.py --mode gen_data
+      cd DIOPI-TEST && python && python main.py --mode gen_data
       ```
       **或** 使用提供的基准测试数据，下载所有数据压缩包，一个MD5SUMS文件。以Mac/Linux系统为例：
       ```
