@@ -3,8 +3,8 @@
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  */
-#ifndef IMPL_CAMB_COMMON_DEBUG_HPP_
-#define IMPL_CAMB_COMMON_DEBUG_HPP_
+#ifndef DIOPI_IMPL_CAMB_COMMON_DEBUG_HPP_
+#define DIOPI_IMPL_CAMB_COMMON_DEBUG_HPP_
 
 #include <cxxabi.h>
 #include <execinfo.h>
@@ -63,4 +63,4 @@ static void print_backtrace() {
 }  // namespace camb
 }  // namespace impl
 
-#endif  // IMPL_CAMB_COMMON_DEBUG_HPP_
+#endif  // DIOPI_IMPL_CAMB_COMMON_DEBUG_HPP_

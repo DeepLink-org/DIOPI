@@ -41,22 +41,22 @@
 将代码克隆到本地
 
 ```shell
-git clone git@github.com:{username}/DIOPI_IMPL.git
+git clone git@github.com:{username}/DIOPI.git
 ```
 
 添加原代码库为上游代码库
 
 ```bash
-git remote add upstream git@github.com:OpenComputeLab/DIOPI-IMPL
+git remote add upstream git@github.com:OpenComputeLab/DIOPI
 ```
 
 检查 remote 是否添加成功，在终端输入 `git remote -v`
 
 ```bash
-origin	git@github.com:{username}/DIOPI-IMPL.git (fetch)
-origin	git@github.com:{username}/DIOPI-IMPL.git (push)
-upstream	git@github.com:OpenComputeLab/DIOPI-IMPL (fetch)
-upstream	git@github.com:OpenComputeLab/DIOPI-IMPL (push)
+origin	git@github.com:{username}/DIOPI.git (fetch)
+origin	git@github.com:{username}/DIOPI.git (push)
+upstream	git@github.com:OpenComputeLab/DIOPI (fetch)
+upstream	git@github.com:OpenComputeLab/DIOPI (push)
 ```
 
 > 这里对 origin 和 upstream 进行一个简单的介绍，当我们使用 git clone 来克隆代码时，会默认创建一个 origin 的 remote，它指向我们克隆的代码库地址，而 upstream 则是我们自己添加的，用来指向原始代码库地址。当然如果你不喜欢他叫 upstream，也可以自己修改，比如叫 diopi。我们通常向 origin 提交代码（即 fork 下来的远程仓库），然后向 upstream 提交一个 pull request。如果提交的代码和最新的代码发生冲突，再从 upstream 拉取最新的代码，和本地分支解决冲突，再提交到 origin。
@@ -78,7 +78,7 @@ git pull upstream master
 
 
 #### 3. 提交代码并在本地通过一致性测试
-提交的代码需要通过一致性测试套件以保证实现的正确性，具体可以参考一致性测试套件的[README](https://github.com/OpenComputeLab/DIOPI-TEST)。
+提交的代码需要通过一致性测试套件以保证实现的正确性，具体可以参考一致性测试套件的[README](https://github.com/OpenComputeLab/DIOPI/DIOPI-TEST)。
 
 
 #### 4. 推送代码到远程
@@ -130,6 +130,7 @@ git push -u origin {branch_name}
 -->
 所有 reviewer 同意合入 PR 后，我们会尽快将 PR 合并到主分支。
 
+(5) 当前只有DIOPI-IMPL文件夹支持开发者贡献代码，DIOPI-PROTO与DIOPI-TEST后续会逐步开放。
 
 #### 6. 解决冲突
 

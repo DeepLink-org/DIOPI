@@ -27,7 +27,6 @@ const char* camb_get_last_error_string() {
     return strLastError;
 }
 
-extern "C" DIOPI_RT_API const char* diopiGetLastErrorString() { return camb_get_last_error_string(); }
 
 const char* getDiopiErrorStr(diopiError_t err) {
     switch (err) {
@@ -65,3 +64,8 @@ const char* getDiopiErrorStr(diopiError_t err) {
 }  // namespace camb
 
 }  // namespace impl
+
+
+const char* diopiGetLastErrorString() {
+    return impl::camb::camb_get_last_error_string();
+}
