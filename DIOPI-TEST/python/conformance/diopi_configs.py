@@ -4361,4 +4361,24 @@ diopi_configs = {
         ),
     ),
 
+    'cast_dtype': dict(
+        name=["cast_dtype"],
+        interface=['CustomizedTest'],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [(32, 64,), (128, 24, 32), (16, 8,), (24, 12,)],
+                    "dtype": [Dtype.float32, Dtype.int64, Dtype.int8, Dtype.uint8],
+                },
+                {
+                    "ins": ['out'],
+                    "shape": [(32, 64,), (128, 24, 32), (16, 8,), (24, 12,)],
+                    "dtype": [Dtype.int64, Dtype.float64, Dtype.bool, Dtype.float16],
+                },
+            ]
+        ),
+    ),
+
 }

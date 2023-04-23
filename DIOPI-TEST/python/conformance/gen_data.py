@@ -346,6 +346,10 @@ class GenInputData(object):
 
 
 class CustomizedTest(object):
+    def cast_dtype(input, out):
+        out = input.to(out.dtype, copy=True)
+        return out
+
     def meshgrid(tensors, shape=None):
         return torch.meshgrid(tensors)
 

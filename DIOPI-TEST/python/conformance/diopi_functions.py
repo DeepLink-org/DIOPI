@@ -3541,6 +3541,14 @@ def meshgrid(tensors, shape=None):
     return out
 
 
+def cast_dtype(input, out) -> Tensor:
+    call = "diopiCastDtype"
+    func = check_function(call)
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle)
+    check_returncode(ret)
+    return out
+
+
 def multinomial(input, num_samples, replacement) -> Tensor:
     call = "diopiMultinomial"
     func = check_function(call)
