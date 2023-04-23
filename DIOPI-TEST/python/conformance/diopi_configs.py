@@ -43,6 +43,36 @@ diopi_configs = {
         ),
     ),
 
+    'baddbmm': dict(
+        name=["baddbmm"],
+        interface=["torch"],
+        is_inplace=True,
+        dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
+        para=dict(
+            beta=[1, 0.5, 0.1],
+            alpha=[0.1, 0.2, 0.5],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((32, 64, 16), (32, 64, 32), (168, 52, 64)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["batch1"],
+                    "shape": ((32, 64, 32), (32, 64, 8), (168, 52, 38)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["batch2"],
+                    "shape": ((32, 32, 16), (32, 8, 32), (168, 38, 64)),
+                    "gen_fn": Genfunc.randn,
+                },
+            ]
+        ),
+    ),
+
     'conv_2d': dict(
         name=["conv2d"],
         atol=1e-3,
@@ -342,7 +372,7 @@ diopi_configs = {
 
     'pointwise_op': dict(
         name=['abs', 'cos', 'erf', 'exp', 'floor',
-              'neg', 'sin', 'sqrt', 'logical_not'],
+              'neg', 'sin', 'sqrt', 'logical_not', 'rsqrt'],
         interface=['torch'],
         is_inplace=True,
         dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
@@ -361,7 +391,7 @@ diopi_configs = {
 
     'pointwise_op_int_without_inplace': dict(
         name=['abs', 'cos', 'erf', 'exp',
-              'neg', 'sin', 'sqrt', 'logical_not'],
+              'neg', 'sin', 'sqrt', 'logical_not', 'rsqrt'],
         interface=['torch'],
         dtype=[Dtype.int16, Dtype.int32, Dtype.int64, Dtype.uint8, Dtype.int8],
         tensor_para=dict(
@@ -395,7 +425,7 @@ diopi_configs = {
     ),
 
     'pointwise_op_bool': dict(
-        name=['cos', 'erf', 'exp', 'sin', 'sqrt'],
+        name=['cos', 'erf', 'exp', 'sin', 'sqrt', 'rsqrt'],
         interface=['torch'],
         dtype=[Dtype.bool],
         tensor_para=dict(
@@ -430,7 +460,7 @@ diopi_configs = {
     ),
 
     'pointwise_op_abs_input': dict(
-        name=['log', 'log2', 'log10', 'sqrt'],
+        name=['log', 'log2', 'log10', 'sqrt', 'rsqrt'],
         interface=['torch'],
         is_inplace=True,
         dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
@@ -2187,7 +2217,7 @@ diopi_configs = {
                     "ins": ['input'],
                     "shape": ((2, 4096), (32, 49, 256), (2, 16, 64, 64), (1, 2304, 1, 1, 1)),
                     "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),
@@ -2207,7 +2237,7 @@ diopi_configs = {
                     "shape": ((2, 4096), (32, 49, 256), (2, 16, 64, 64),
                               (1, 2304, 1, 1, 1)),
                     "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),
@@ -2226,7 +2256,7 @@ diopi_configs = {
                     "ins": ['input'],
                     "shape": ((32, 49, 256), (32, 16, 64, 64)),
                     "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),
@@ -4308,6 +4338,26 @@ diopi_configs = {
                 },
             ],
             seq_name='tensors',
+        ),
+    ),
+
+    'multinomial': dict(
+        name=["multinomial"],
+        interface=['torch'],
+        no_output_ref=True,
+        para=dict(
+            num_samples=[6, 60, 200, 128],
+            replacement=[True, True, False, False],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.positive,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((8, ), (16, 64,), (128, 256,), (256, 128,)),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float64, Dtype.float64],
+                },
+            ],
         ),
     ),
 

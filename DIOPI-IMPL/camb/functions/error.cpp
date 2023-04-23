@@ -19,7 +19,11 @@ const char* camb_get_last_error_string() {
     // consider cnrt version cnrtGetLastErr or cnrtGetLaislhhstError
     ::cnrtRet_t err = ::cnrtGetLastError();
     std::lock_guard<std::mutex> lock(mtxLastError);
-    sprintf(strLastError, "camb error: %s, more infos: %s", ::cnrtGetErrorStr(err), strLastErrorOther);
+    if (cnrtSuccess != err) {
+        sprintf(strLastError, "camb error: %s, more infos: %s", ::cnrtGetErrorStr(err), strLastErrorOther);
+    } else {
+        sprintf(strLastError, "%s", strLastErrorOther);
+    }
     return strLastError;
 }
 

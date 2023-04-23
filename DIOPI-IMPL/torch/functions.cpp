@@ -855,6 +855,24 @@ diopiError_t diopiSqrtInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     return diopiSuccess;
 }
 
+diopiError_t diopiRsqrt(diopiContextHandle_t ctx,
+        diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atInput = impl::aten::buildATen(input);
+    at::Tensor atOut = impl::aten::buildATen(out);
+    at::rsqrt_out(atOut, atInput);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
+diopiError_t diopiRsqrtInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atInput = impl::aten::buildATen(input);
+    impl::aten::invokeATenFuncInp(ctx, at::rsqrt_, atInput);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
 diopiError_t diopiFloor(diopiContextHandle_t ctx,
         diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     impl::aten::setCurCtx(ctx);
@@ -4011,6 +4029,15 @@ diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     at::IntArrayRef atRepeatsSize = impl::aten::buildAtIntArray(repeats_size);
     auto atOut = at::native::repeat(atInput, atRepeatsSize);
     impl::aten::updateATen2Tensor(ctx, atOut, out);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
+diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t num_samples, bool replacement) {
+    impl::aten::setCurCtx(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = impl::aten::buildATen(out);
+    at::multinomial_out(atOut, atInput, num_samples, replacement, c10::nullopt);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
