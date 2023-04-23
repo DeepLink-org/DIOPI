@@ -7,23 +7,67 @@
 #include <diopi/functions.h>
 #include <string.h>
 
-#include <numeric>
+#include <set>
 
 #include "../cnnl_helper.hpp"
+#include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
 
 extern "C" {
 
-DIOPI_API diopiError_t
-LogicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other, cnnlLogicOp_t logic_op) {
+DIOPI_API diopiError_t Logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
+                             cnnlLogicOp_t logic_op) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    DiopiTensor input_tensor(input);
+    DiopiTensor other_tensor(other);
+    DiopiTensor out_tensor(out);
+
+    std::vector<DiopiTensor*> pTensors{&input_tensor, &other_tensor};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
+
+    DiopiTensor out_tensor_temp = out_tensor;
+    if (out_tensor.dtype() != input_tensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, out_tensor_temp, input_tensor.dtype()));
+    }
+
+    CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc other_desc(other_tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc out_desc(out_tensor_temp, CNNL_LAYOUT_ARRAY);
+
+    size_t workspace_size = 0;
+    DIOPI_CALLCNNL(cnnlGetLogicOpWorkspaceSize(handle, input_desc.get(), other_desc.get(), out_desc.get(), &workspace_size));
+    void* workspace = nullptr;
+    if (0 != workspace_size) {
+        workspace = requiresBuffer(ctx, workspace_size).data();
+    }
+    DIOPI_CALLCNNL(cnnlLogicOp(handle,
+                               logic_op,
+                               input_desc.get(),
+                               input_tensor.data(),
+                               other_desc.get(),
+                               other_tensor.data(),
+                               workspace,
+                               workspace_size,
+                               out_desc.get(),
+                               out_tensor_temp.data()));
+    if (out_tensor_temp.dtype() != out_tensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, out_tensor, out_tensor_temp));
+    }
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t LogicInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, cnnlLogicOp_t logic_op) {
+    DIOPI_CALL(Logic(ctx, input, input, other, logic_op));
+}
+
+DIOPI_API diopiError_t LogicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
+                                   cnnlLogicOp_t logic_op) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor input_tensor(input);
     DiopiTensor out_tensor(out);
-
-    CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc out_desc(out_tensor, CNNL_LAYOUT_ARRAY);
 
     diopiTensorHandle_t other_t;
     diopiSize_t input_shape;
@@ -31,7 +75,19 @@ LogicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorH
     DIOPI_CALL(diopiRequireTensor(ctx, &other_t, &input_shape, nullptr, input_tensor.dtype(), diopi_device));
     DIOPI_CALL(diopiFill(ctx, other_t, other));
     DiopiTensor other_t_tensor(other_t);
+
+    std::vector<DiopiTensor*> pTensors{&input_tensor, &other_t_tensor};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
+
+    DiopiTensor out_tensor_temp = out_tensor;
+    if (out_tensor.dtype() != input_tensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, out_tensor_temp, input_tensor.dtype()));
+    }
+
+    CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc other_t_desc(other_t_tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc out_desc(out_tensor_temp, CNNL_LAYOUT_ARRAY);
 
     size_t workspace_size = 0;
     DIOPI_CALLCNNL(cnnlGetLogicOpWorkspaceSize(handle, input_desc.get(), other_t_desc.get(), out_desc.get(), &workspace_size));
@@ -49,97 +105,15 @@ LogicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorH
                                workspace,
                                workspace_size,
                                out_desc.get(),
-                               out_tensor.data()));
+                               out_tensor_temp.data()));
+    if (out_tensor_temp.dtype() != out_tensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, out_tensor, out_tensor_temp));
+    }
     return diopiSuccess;
 }
 
 DIOPI_API diopiError_t LogicInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, cnnlLogicOp_t logic_op) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
-
-    diopiTensorHandle_t other_t;
-    diopiSize_t input_shape;
-    DIOPI_CALL(diopiGetTensorShape(input, &input_shape));
-    DIOPI_CALL(diopiRequireTensor(ctx, &other_t, &input_shape, nullptr, input_tensor.dtype(), diopi_device));
-    DIOPI_CALL(diopiFill(ctx, other_t, other));
-    DiopiTensor other_t_tensor(other_t);
-    CnnlTensorDesc other_t_desc(other_t_tensor, CNNL_LAYOUT_ARRAY);
-
-    size_t workspace_size = 0;
-    DIOPI_CALLCNNL(cnnlGetLogicOpWorkspaceSize(handle, input_desc.get(), other_t_desc.get(), input_desc.get(), &workspace_size));
-    void* workspace = nullptr;
-    if (0 != workspace_size) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
-    }
-    DIOPI_CALLCNNL(cnnlLogicOp(handle,
-                               logic_op,
-                               input_desc.get(),
-                               input_tensor.data(),
-                               other_t_desc.get(),
-                               other_t_tensor.data(),
-                               workspace,
-                               workspace_size,
-                               input_desc.get(),
-                               input_tensor.data()));
-    return diopiSuccess;
-}
-
-DIOPI_API diopiError_t
-Logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other, cnnlLogicOp_t logic_op) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor other_tensor(other);
-    DiopiTensor out_tensor(out);
-
-    CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc other_desc(other_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc out_desc(out_tensor, CNNL_LAYOUT_ARRAY);
-
-    size_t workspace_size = 0;
-    DIOPI_CALLCNNL(cnnlGetLogicOpWorkspaceSize(handle, input_desc.get(), other_desc.get(), out_desc.get(), &workspace_size));
-    void* workspace = nullptr;
-    if (0 != workspace_size) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
-    }
-    DIOPI_CALLCNNL(cnnlLogicOp(handle,
-                               logic_op,
-                               input_desc.get(),
-                               input_tensor.data(),
-                               other_desc.get(),
-                               other_tensor.data(),
-                               workspace,
-                               workspace_size,
-                               out_desc.get(),
-                               out_tensor.data()));
-    return diopiSuccess;
-}
-
-DIOPI_API diopiError_t LogicInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, cnnlLogicOp_t logic_op) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor other_tensor(other);
-
-    CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc other_desc(other_tensor, CNNL_LAYOUT_ARRAY);
-
-    size_t workspace_size = 0;
-    DIOPI_CALLCNNL(cnnlGetLogicOpWorkspaceSize(handle, input_desc.get(), other_desc.get(), input_desc.get(), &workspace_size));
-    void* workspace = nullptr;
-    if (0 != workspace_size) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
-    }
-    DIOPI_CALLCNNL(cnnlLogicOp(handle,
-                               logic_op,
-                               input_desc.get(),
-                               input_tensor.data(),
-                               other_desc.get(),
-                               other_tensor.data(),
-                               workspace,
-                               workspace_size,
-                               input_desc.get(),
-                               input_tensor.data()));
-    return diopiSuccess;
+    DIOPI_CALL(LogicScalar(ctx, input, input, other, logic_op));
 }
 
 // ge

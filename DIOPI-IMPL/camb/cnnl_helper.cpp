@@ -54,7 +54,7 @@ diopiError_t CnnlDataType::convertToCnnlType(cnnlDataType_t* cnnlType, diopiDtyp
     }
     return diopiSuccess;
 }
-bool CnnlDataType::isFloat(cnnlDataType_t cnnlDT) {
+bool CnnlDataType::isFloatPoint(cnnlDataType_t cnnlDT) {
     return cnnlDT == CNNL_DTYPE_HALF || cnnlDT == CNNL_DTYPE_FLOAT || cnnlDT == CNNL_DTYPE_DOUBLE || cnnlDT == CNNL_DTYPE_COMPLEX_HALF ||
            cnnlDT == CNNL_DTYPE_COMPLEX_FLOAT;
 }
@@ -64,7 +64,8 @@ bool CnnlDataType::isInteger(cnnlDataType_t cnnlDT) {
 }
 bool CnnlDataType::isBool(cnnlDataType_t cnnlDT) { return cnnlDT == CNNL_DTYPE_BOOL; }
 
-const std::map<std::vector<diopiDtype_t>, cnnlCastDataType_t> gCnnlCastDataTypeMapping{
+const std::unordered_map<std::vector<diopiDtype_t>, cnnlCastDataType_t, HashCnnlCastDType> gCnnlCastDataTypeMapping{
+    {{diopi_dtype_bool, diopi_dtype_int32}, CNNL_CAST_BOOL_TO_INT32},
     {{diopi_dtype_bool, diopi_dtype_float16}, CNNL_CAST_BOOL_TO_HALF},
     {{diopi_dtype_bool, diopi_dtype_float32}, CNNL_CAST_BOOL_TO_FLOAT},
 
@@ -126,6 +127,9 @@ CnnlHandlePool cnnlHandlePool;
 
 diopiError_t cnnl_transpose(
     diopiContextHandle_t& ctx, cnnlHandle_t& handle, DiopiTensor& in, DiopiTensor& out, cnnlTensorLayout_t layoutIn, cnnlTensorLayout_t layoutOut) {
+    /* DEPRECATED AND WILL BE REMOVED */
+    DIOPI_CHECK(in.dtype() == out.dtype(), "the data type of input and output tensor should be the same.");
+
     std::vector<int> order;
     if (layoutIn == CNNL_LAYOUT_NHWC && layoutOut == CNNL_LAYOUT_HWCN) {
         order = {1, 2, 3, 0};
