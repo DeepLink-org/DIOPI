@@ -97,7 +97,14 @@ DIOPI_API diopiError_t diopiAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandl
     const void* beta = nullptr;
     DIOPI_CALLCNNL(cnnlPoolingForward(
         handle, pool_desc, alpha, input_desc.get(), input_tensor_tmp.data(), beta, out_desc.get(), out_tensor_tmp.data(), workspace, workspace_size));
-    DIOPI_CALL(dataTypeCast(ctx, out_tensor, out_tensor_tmp));
+
+    if (divisor_override != nullptr) {
+        diopiScalar_t mul_value;
+        mul_value.stype = diopi_dtype_float64;
+        mul_value.fval = (double)(kernel_h * kernel_w) / (*divisor_override);
+        DIOPI_CALL(diopiMulInpScalar(ctx, static_cast<diopiTensorHandle_t>(out_tensor_tmp), (const diopiScalar_t*)&mul_value));
+    }
+    dataTypeCast(ctx, out_tensor, out_tensor_tmp);
 
     return diopiSuccess;
 }
@@ -235,7 +242,14 @@ DIOPI_API diopiError_t diopiAvgPool2dBackward(diopiContextHandle_t ctx, diopiTen
     } else {
         DIOPI_CHECK(false, "non-empty 3D or 4D (batch mode) tensor expected for input");
     }
-    DIOPI_CALL(dataTypeCast(ctx, grad_input_tensor, grad_input_tensor_tmp));
+
+    if (divisor_override != nullptr) {
+        diopiScalar_t mul_value;
+        mul_value.stype = diopi_dtype_float64;
+        mul_value.fval = (double)(kernel_h * kernel_w) / (*divisor_override);
+        DIOPI_CALL(diopiMulInpScalar(ctx, static_cast<diopiTensorHandle_t>(grad_input_tensor_tmp), (const diopiScalar_t*)&mul_value));
+    }
+    dataTypeCast(ctx, grad_input_tensor, grad_input_tensor_tmp);
 
     return diopiSuccess;
 }
