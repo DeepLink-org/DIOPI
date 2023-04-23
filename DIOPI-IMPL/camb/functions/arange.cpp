@@ -31,7 +31,7 @@ diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t out, cons
         if (out32_tensor.dtype() != out_tensor.dtype()) {
             DIOPI_CALL(dataTypeCast(ctx, out_tensor, out32_tensor));
         }
-    } else if (CnnlDataType::isFloat(dtype)) {
+    } else if (CnnlDataType::isFloatPoint(dtype)) {
         float start_val = start->fval;
         float step_val = step->fval;
         DIOPI_CALLCNNL(cnnlArange_v2(handle, CNNL_COMPUTATION_ULTRAHIGH_PRECISION, &(start_val), &(step_val), outDesc.get(), out32_tensor.data()));

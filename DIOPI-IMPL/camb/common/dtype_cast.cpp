@@ -14,26 +14,49 @@
 namespace impl {
 namespace camb {
 
-diopiError_t dataTypeCast(diopiContextHandle_t& ctx, DiopiTensor& src, diopiDtype_t destDtype) {
+#define _MAKE_KEY(a, b) (((static_cast<uint64_t>(a) & 0xFFFFFFFF) << 32) | (static_cast<uint64_t>(b) & 0xFFFFFFFF))
+
+inline bool canCastByInt32(uint64_t castType) {
+    // special convert (cnnl doesn't support)
+    constexpr uint64_t BoolInt64 = _MAKE_KEY(diopi_dtype_bool, diopi_dtype_int64);
+    constexpr uint64_t Int16Int64 = _MAKE_KEY(diopi_dtype_int16, diopi_dtype_int64);
+    constexpr uint64_t Uint8Bool = _MAKE_KEY(diopi_dtype_uint8, diopi_dtype_bool);
+    constexpr uint64_t Int16Bool = _MAKE_KEY(diopi_dtype_int16, diopi_dtype_bool);
+    constexpr uint64_t Int64Bool = _MAKE_KEY(diopi_dtype_int64, diopi_dtype_bool);
+    constexpr uint64_t Int8Bool = _MAKE_KEY(diopi_dtype_int8, diopi_dtype_bool);
+    constexpr uint64_t Int8Int64 = _MAKE_KEY(diopi_dtype_int8, diopi_dtype_int64);
+    constexpr uint64_t Int64Int8 = _MAKE_KEY(diopi_dtype_int64, diopi_dtype_int8);
+    return BoolInt64 == castType || Int16Int64 == castType || Uint8Bool == castType || Int16Bool == castType || Int64Bool == castType || Int8Bool == castType ||
+           Int8Int64 == castType || Int64Int8 == castType;
+}
+
+static diopiError_t dataTypeCastTwice(diopiContextHandle_t ctx, DiopiTensor& dest, const DiopiTensor& src) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    diopiDtype_t srcDtype = src.dtype();
+    diopiDtype_t destDtype = dest.dtype();
+    cnnlCastDataType_t cast_type;
+    // cast through middle
+    auto key = _MAKE_KEY(srcDtype, destDtype);
+    if (canCastByInt32(key)) {
+        DiopiTensor mid = requiresTensor(ctx, src.shape(), diopi_dtype_int32);
+        DIOPI_CALL(dataTypeCast(ctx, mid, src));
+        DIOPI_CALL(dataTypeCast(ctx, dest, mid));
+    } else {
+        // TODO(waiting for dispatch) : cast through cpu
+        set_last_error_string("Can not cast from %d to %d at %s:%d ", srcDtype, destDtype, __FILE__, __LINE__);
+        return diopiDtypeNotSupported;
+    }
+    return diopiSuccess;
+}
+
+#undef _MAKE_KEY
+
+diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& src, diopiDtype_t destDtype) {
     if (src.dtype() == destDtype) {
         return diopiSuccess;
     }
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    diopiSize_t srcSize = vec2diopiSize_t(src.shape());
-    DiopiTensor dest = requiresTensor(ctx, srcSize, destDtype);
-    diopiDtype_t srcDtype = src.dtype();
-    if (gCnnlCastDataTypeMapping.find({srcDtype, destDtype}) == gCnnlCastDataTypeMapping.end()) {
-        set_last_error_string("dtype cast from %s to %s is not allown at %s:%d",
-                              DiopiDataType::dataTypeStr(srcDtype).c_str(),
-                              DiopiDataType::dataTypeStr(destDtype).c_str(),
-                              __FILE__,
-                              __LINE__);
-        return diopiDtypeNotSupported;
-    }
-    cnnlCastDataType_t cnnlCastDtype = gCnnlCastDataTypeMapping.at({srcDtype, destDtype});
-    CnnlTensorDesc descSrc(src, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc descDest(dest, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlCastDataType(handle, descSrc.get(), const_cast<DiopiTensor&>(src).data(), cnnlCastDtype, descDest.get(), dest.data()));
+    DiopiTensor dest = requiresTensor(ctx, src.shape(), destDtype);
+    dataTypeCast(ctx, dest, src);
     src = dest;
     return diopiSuccess;
 }
@@ -43,22 +66,21 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const Dio
         return diopiSuccess;
     }
     // check size of dest and src
-    assert((void("the shapes of src and dest are not equal"), src.shape() == dest.shape()));
+    DIOPI_CHECK(src.shape() == dest.shape(), "the shapes of src and dest are not equal");
+
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     diopiDtype_t srcDtype = src.dtype();
     diopiDtype_t destDtype = dest.dtype();
-    CnnlTensorDesc descSrc(src, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc descDest(dest, CNNL_LAYOUT_ARRAY);
-    if (gCnnlCastDataTypeMapping.find({srcDtype, destDtype}) == gCnnlCastDataTypeMapping.end()) {
-        set_last_error_string("dtype cast from %s to %s is not allown at %s:%d",
-                              DiopiDataType::dataTypeStr(srcDtype).c_str(),
-                              DiopiDataType::dataTypeStr(destDtype).c_str(),
-                              __FILE__,
-                              __LINE__);
-        return diopiDtypeNotSupported;
+
+    auto it = gCnnlCastDataTypeMapping.find({srcDtype, destDtype});
+    if (it != gCnnlCastDataTypeMapping.end()) {
+        CnnlTensorDesc srcDesc(src, CNNL_LAYOUT_ARRAY);
+        CnnlTensorDesc destDesc(dest, CNNL_LAYOUT_ARRAY);
+        cnnlCastDataType_t castType = it->second;
+        DIOPI_CALLCNNL(cnnlCastDataType(handle, srcDesc.get(), src.data(), castType, destDesc.get(), dest.data()));
+    } else {
+        DIOPI_CALL(dataTypeCastTwice(ctx, dest, src));
     }
-    cnnlCastDataType_t cnnlCastDtype = gCnnlCastDataTypeMapping.at({srcDtype, destDtype});
-    DIOPI_CALLCNNL(cnnlCastDataType(handle, descSrc.get(), const_cast<DiopiTensor&>(src).data(), cnnlCastDtype, descDest.get(), dest.data()));
     return diopiSuccess;
 }
 
@@ -83,14 +105,12 @@ static diopiError_t choiceDtype(const std::set<diopiDtype_t>& opSupportedDtypes,
 }
 
 diopiError_t autoCastTensorType(diopiContextHandle_t ctx, const std::vector<DiopiTensor*>& pTensors, const std::set<diopiDtype_t>& opSupportedDtype) {
-    // std::multimap<diopiDtype_t, DiopiTensor*> dtypeAndTensorPtrs;
     std::set<diopiDtype_t> dtypeAndTensorPtrs;
     diopiDtype_t targetType = diopi_dtype_float32;
     for (const auto& pTensor : pTensors) {
         dtypeAndTensorPtrs.insert(pTensor->dtype());
     }
-    if (dtypeAndTensorPtrs.find(diopi_dtype_float64) != dtypeAndTensorPtrs.end() ||
-               dtypeAndTensorPtrs.find(diopi_dtype_float32) != dtypeAndTensorPtrs.end()) {
+    if (dtypeAndTensorPtrs.find(diopi_dtype_float64) != dtypeAndTensorPtrs.end() || dtypeAndTensorPtrs.find(diopi_dtype_float32) != dtypeAndTensorPtrs.end()) {
         if (opSupportedDtype.find(diopi_dtype_float32) == opSupportedDtype.end()) {  // not support float32
             DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
         } else {  // all tensors cast into float32
