@@ -2308,7 +2308,7 @@ def cumsum(input, dim, dtype=None):
 def infer_size(a, b):
     dimsA = len(a)
     dimsB = len(b)
-    ndim =  dimsA if dimsA >= dimsB else dimsB
+    ndim = dimsA if dimsA >= dimsB else dimsB
     expanded_sizes = [0] * ndim
     for i in range(ndim - 1, -1, -1):
         offset = ndim - 1 - i
@@ -2316,18 +2316,18 @@ def infer_size(a, b):
         dimB = dimsB - 1 - offset
         sizeA = a[dimA] if dimA >= 0 else 1
         sizeB = b[dimB] if dimB >= 0 else 1
-        assert sizeA == sizeB or sizeA == 1 or sizeB == 1,  \
-        f"The size of tensor a ({sizeA}) must match the size of tensor b ({sizeB}) at non-singleton dimension {i}"
+        assert sizeA == sizeB or sizeA == 1 or sizeB == 1, \
+            f"The size of tensor a ({sizeA}) must match the size of tensor b ({sizeB}) at non-singleton dimension {i}"
         expanded_sizes[i] = sizeA if sizeA != 1 else sizeB
     return expanded_sizes
 
 
 def cdist(x1, x2, p, compute_mode=None):
     sizeX1 = list(x1.size())
-    sizeX2 = list(x2.size())   
+    sizeX2 = list(x2.size())
     dim1 = len(sizeX1)
     dim2 = len(sizeX2)
-    assert  dim1 > 1 and dim2 > 1, "cdist only supports at least 2D tensors"
+    assert dim1 > 1 and dim2 > 1, "cdist only supports at least 2D tensors"
     assert sizeX1[-1] == sizeX2[-1], "X1 and X2 must have the same number of elements at the last dimension"
     c1 = sizeX1[-1]
     c2 = sizeX2[-1]
@@ -2355,10 +2355,10 @@ def cdist(x1, x2, p, compute_mode=None):
 def cdist_backward(x1, grad_outputs, output, x2, p, **kwargs):
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     sizeX1 = list(x1.size())
-    sizeX2 = list(x2.size())   
+    sizeX2 = list(x2.size()) 
     dim1 = len(sizeX1)
     dim2 = len(sizeX2)
-    assert  dim1 > 1 and dim2 > 1, "cdist only supports at least 2D tensors"
+    assert dim1 > 1 and dim2 > 1, "cdist only supports at least 2D tensors"
     assert sizeX1[-1] == sizeX2[-1], "X1 and X2 must have the same number of elements at the last dimension"
     c1 = sizeX1[-1]
     c2 = sizeX2[-1]
@@ -2372,20 +2372,20 @@ def cdist_backward(x1, grad_outputs, output, x2, p, **kwargs):
     func = check_function("diopiCdistBackward")
     ret = func(x1.context_handle, grad_x1.tensor_handle, grad_outputs[0].tensor_handle, x1.tensor_handle,
                x2.tensor_handle, c_double(p), output.tensor_handle)
-    grad_x1 = grad_x1.numpy() 
+    grad_x1 = grad_x1.numpy()
     i = len(grad_x1.shape) - 1
     j = dim1 - 1
-    while i >=0 and j >=0 and len(grad_x1.shape) != dim1:
+    while i >= 0 and j >= 0 and len(grad_x1.shape) != dim1:
         while i > 0 and j > 0 and grad_x1.shape[i] != sizeX1[j]:
             grad_x1 = np.sum(grad_x1, axis=i)
             i -= 1
-        j = j-1
-        i = i-1
-    if i== 0 and j == -1:
+        j = j - 1
+        i = i - 1
+    if i == 0 and j == -1:
         grad_x1 = np.sum(grad_x1, axis=i)
     for index in range(dim1):
         if sizeX1[index] != grad_x1.shape[index]:
-            grad_x1 = np.sum(grad_x1,axis=index,keepdims=True)
+            grad_x1 = np.sum(grad_x1, axis=index, keepdims=True)
     grad_x1 = Tensor.from_numpy(grad_x1)
     check_returncode(ret)
     return {'x1': grad_x1}
