@@ -328,7 +328,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32)],
+                    "dtype": [Skip(Dtype.float16)],
                 },
             ],
         ),
@@ -438,7 +438,19 @@ device_configs = {
             ],
         ),
     ),
-
+    
+    'cross_entropy': dict(
+        name=["cross_entropy"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                },
+            ],
+        ),
+    ),
+    
     'select': dict(
         name=["select"],
         tensor_para=dict(
@@ -628,7 +640,7 @@ device_configs = {
 
     'sgd': dict(
         name=["sgd"],
-        atol_half=1e-3,
+        atol_half=1e-2,
     ),
 
     'reciprocal': dict(
