@@ -1198,7 +1198,6 @@ device_configs = {
 
     'interpolate': dict(
         name=["interpolate"],
-        dtype=[Dtype.float32, Dtype.float64, Dtype.float16],
         tensor_para=dict(
             args=[
                 {
