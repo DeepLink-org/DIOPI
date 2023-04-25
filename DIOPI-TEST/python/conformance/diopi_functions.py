@@ -2329,14 +2329,12 @@ def cdist(x1, x2, p, compute_mode=None):
     dim2 = len(sizeX2)
     assert dim1 > 1 and dim2 > 1, "cdist only supports at least 2D tensors"
     assert sizeX1[-1] == sizeX2[-1], "X1 and X2 must have the same number of elements at the last dimension"
-    c1 = sizeX1[-1]
-    c2 = sizeX2[-1]
-    r1 = sizeX1[-2]
-    r2 = sizeX2[-2]
+    rank1 = sizeX1[-2]
+    rank2 = sizeX2[-2]
     batch_tensor1 = list(sizeX1[:-2])
     batch_tensor2 = list(sizeX2[:-2])
     expand_batch_portion = infer_size(batch_tensor1, batch_tensor2)
-    out_shape = expand_batch_portion + [r1, r2]
+    out_shape = expand_batch_portion + [rank1, rank2]
     if compute_mode is not None:
         if compute_mode == 'use_mm_for_euclid_dist':
             compute_mode = 1
@@ -2360,14 +2358,12 @@ def cdist_backward(x1, grad_outputs, output, x2, p, **kwargs):
     dim2 = len(sizeX2)
     assert dim1 > 1 and dim2 > 1, "cdist only supports at least 2D tensors"
     assert sizeX1[-1] == sizeX2[-1], "X1 and X2 must have the same number of elements at the last dimension"
-    c1 = sizeX1[-1]
-    c2 = sizeX2[-1]
-    r1 = sizeX1[-2]
-    r2 = sizeX2[-2]
+    column1 = sizeX1[-1]
+    rank1 = sizeX1[-2]
     batch_tensor1 = list(sizeX1[:-2])
     batch_tensor2 = list(sizeX2[:-2])
     expand_batch_portion = infer_size(batch_tensor1, batch_tensor2)
-    grad_x1_shape = expand_batch_portion + [r1, c1]
+    grad_x1_shape = expand_batch_portion + [rank1, column1]
     grad_x1 = Tensor(grad_x1_shape, x1.get_dtype())
     func = check_function("diopiCdistBackward")
     ret = func(x1.context_handle, grad_x1.tensor_handle, grad_outputs[0].tensor_handle, x1.tensor_handle,
