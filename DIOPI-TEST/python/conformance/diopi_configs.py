@@ -754,9 +754,6 @@ diopi_configs = {
         interface=['torch'],
         is_inplace=True,
         dtype=[Dtype.float64, Dtype.float32, Dtype.float16, Dtype.int64, Dtype.int32, Dtype.int16, Dtype.int8, Dtype.uint8],
-        para=dict(
-            alpha=[-2, 2.0, 4, 1],
-        ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
@@ -944,7 +941,8 @@ diopi_configs = {
         is_inplace=True,
         dtype=[Dtype.float32],
         para=dict(
-            other=[-1, 0.028, 2, 1.0],
+            alpha=[-2, 2.0, 4, 1],
+            other=[-1, 0.028, 2, 1],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
