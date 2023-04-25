@@ -915,18 +915,6 @@ device_configs = {
         ),
     ),
     
-    'prod': dict(
-        name=['prod'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": (Skip((2, 80, 128, 128, 1))),
-                },
-            ],
-        ),
-    ),
-    
     'ctc_loss': dict(
         name=["ctc_loss"],
         tensor_para=dict(
