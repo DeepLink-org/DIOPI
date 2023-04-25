@@ -70,8 +70,8 @@ diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHand
         DIOPI_CALL(clone(ctx, trOther, trOtherTmp));
     }
     CnnlTensorDesc descOtherTmp(trOtherTmp, layout);
-    DIOPI_CALLCNNL(
-        cnnlTransform_v2(handle, CNNL_POINTER_MODE_HOST, pAlphaIn.get(), descOtherTmp.get(), trOtherTmp.data(), pBetaIn.get(), descOtherTmp.get(), trOtherTmp.data()));
+    DIOPI_CALLCNNL(cnnlTransform_v2(
+        handle, CNNL_POINTER_MODE_HOST, pAlphaIn.get(), descOtherTmp.get(), trOtherTmp.data(), pBetaIn.get(), descOtherTmp.get(), trOtherTmp.data()));
     trOther = trOtherTmp;
     const cnnlTensorDescriptor_t inputDescs[2] = {descInput.get(), descOther.get()};
     const void* inputs[2] = {trInput.data(), trOther.data()};
