@@ -652,7 +652,14 @@ device_configs = {
 
     'sgd': dict(
         name=["sgd"],
-        atol_half=1e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['param', 'param_grad'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+            ]
+        ),
     ),
 
     'reciprocal': dict(
@@ -724,6 +731,18 @@ device_configs = {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
                               Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                },
+            ],
+        ),
+    ),
+
+    'cumsum': dict(
+        name=["cumsum"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.uint8)],
                 },
             ],
         ),
