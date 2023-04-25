@@ -2739,7 +2739,7 @@ diopi_configs = {
         interface=['torch'],
         saved_args=dict(output=0),
         para=dict(
-            p=[1, 2, 0, 0.5, 3],
+            p=[1, 2, 0, 0.5, float("inf")],
             compute_mode=['use_mm_for_euclid_dist', 'donot_use_mm_for_euclid_dist', 'use_mm_for_euclid_dist_if_necessary',
                           'use_mm_for_euclid_dist_if_necessary', 'use_mm_for_euclid_dist_if_necessary']
         ),
