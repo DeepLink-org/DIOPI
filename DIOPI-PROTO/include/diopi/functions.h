@@ -36,6 +36,13 @@ typedef struct {
     };
 } diopiScalar_t;
 
+typedef enum {
+    Contiguous      = 0,
+    ChannelsLast    = 1,
+    ChannelsLast3d  = 2,
+    Preserve        = 3
+} diopiMemoryFormat_t;
+
 
 /**
  * \brief get the vendor's name who implements the functions
@@ -74,7 +81,7 @@ DIOPI_API diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorH
  */
 DIOPI_API diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
                                                   diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
-                                                  diopiConstTensorHandle_t weight, diopiSize_t *bias_sizes, diopiSize_t stride, diopiSize_t padding,
+                                                  diopiConstTensorHandle_t weight, diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding,
                                                   diopiSize_t dilation, bool transposed, diopiSize_t output_padding, int64_t groups);
 
 /**
@@ -1368,7 +1375,7 @@ DIOPI_API diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w,
 /**
  * \brief
  */
-DIOPI_API diopiError_t diopiClipGradNorm(diopiContextHandle_t ctx, double* out, diopiTensorHandle_t *grads,
+DIOPI_API diopiError_t diopiClipGradNorm(diopiContextHandle_t ctx, double* out, diopiTensorHandle_t* grads,
                                          int64_t num_grads, double max_norm, double norm_type, bool error_if_nonfinite);
 
 /**
@@ -1650,7 +1657,7 @@ DIOPI_API diopiError_t diopiConvolution3d(diopiContextHandle_t ctx, diopiTensorH
                                           diopiSize_t padding, diopiSize_t dilation, int64_t groups);
 DIOPI_API diopiError_t diopiConvolution3dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
                                                   diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
-                                                  diopiConstTensorHandle_t weight, diopiSize_t *bias_sizes, diopiSize_t stride, diopiSize_t padding,
+                                                  diopiConstTensorHandle_t weight, diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding,
                                                   diopiSize_t dilation, bool transposed, diopiSize_t output_padding, int64_t groups);
 
 /**
