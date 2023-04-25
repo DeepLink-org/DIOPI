@@ -125,7 +125,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erf', 'rsqrt'],
+        name=['erf', 'rsqrt', 'floor'],
         tensor_para=dict(
             args=[
                 {
@@ -322,6 +322,18 @@ device_configs = {
         ),
     ),
 
+    'addcdiv': dict(
+        name=["addcdiv"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float32)],
+                },
+            ],
+        ),
+    ),
+
     'matmul': dict(
         name=['matmul'],
         atol=1e-3,
@@ -345,6 +357,18 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
 
+            ],
+        ),
+    ),
+
+    'reduce_partial_op': dict(
+        name=['sum'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float16)],
+                },
             ],
         ),
     ),
@@ -600,6 +624,11 @@ device_configs = {
                 },
             ],
         ),
+    ),
+
+    'sgd': dict(
+        name=["sgd"],
+        atol_half=1e-3,
     ),
 
     'reciprocal': dict(
@@ -1257,6 +1286,11 @@ device_configs = {
                 },
             ],
         ),
+    ),
+
+    'layer_norm': dict(
+        name=["layer_norm"],
+        atol=1e-4,
     ),
 
     'copy': dict(
