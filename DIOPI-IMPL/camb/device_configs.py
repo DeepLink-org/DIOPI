@@ -420,7 +420,7 @@ device_configs = {
         tensor_para=dict(
             args=[
                 {
-                    "requires_grad": [True],
+                    "ins": ['input'],
                     "dtype": [Skip(Dtype.float64)],
                 },
             ]
