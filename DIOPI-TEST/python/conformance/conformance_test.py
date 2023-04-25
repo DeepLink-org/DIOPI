@@ -11,6 +11,7 @@ from .diopi_runtime import Tensor, compute_nhwc_stride
 from .utils import save_precision, record, write_precision
 from .utils import get_saved_pth_list, get_data_from_file
 from .utils import cfg_file_name
+from . import model_config
 
 
 def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dtype_list=[], filter_dtype_str_list=[]):
@@ -72,7 +73,10 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
         sum1 = tensor1.sum()
         sum2 = tensor2.sum()
         mask = np.isclose(tensor1, tensor2, rtol, atol, True)
-        max_diff = np.abs(tensor1 - tensor2).max()
+        if tensor1.dtype == np.bool:
+            max_diff = 1
+        else:
+            max_diff = np.abs(tensor1 - tensor2).max()
         logger.info(f"Max of diff is {max_diff}.")
         logger.debug(f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}, Max of diff is {max_diff}. \
                      \n" + f"{var_name} is {tensor1},\n{var_name}_ref is {tensor2},\nMask is {mask}\n")
