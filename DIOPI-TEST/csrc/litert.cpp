@@ -57,8 +57,12 @@ static void host_free(void* ptr) { free(ptr); }
 // }
 
 void _getLastErrorString(const char** strErr) {
-    const char* str = diopiGetLastErrorString();
-    *strErr = str;
+    if (diopiGetLastErrorString != nullptr) {
+        const char* str = diopiGetLastErrorString();
+        *strErr = str;
+    } else {
+        *strErr = "Function pointer is null";
+    }
 }
 
 int32_t itemsize(const diopiDtype_t dtype) {
