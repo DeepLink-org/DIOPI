@@ -9,7 +9,7 @@
 namespace impl {
 namespace camb {
 
-diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiTensor& outTensor){
+diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiTensor& outTensor) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     outTensor = requiresTensor(ctx, inTensor.shape(), inTensor.dtype());
     CnnlTensorDesc inTensorDesc(inTensor, CNNL_LAYOUT_ARRAY);
