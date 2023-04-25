@@ -450,6 +450,18 @@ device_configs = {
             ],
         ),
     ),
+
+    'cross_entropy_prob_target': dict(
+        name=["cross_entropy"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float32)],
+                },
+            ],
+        ),
+    ),
     
     'select': dict(
         name=["select"],
