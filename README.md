@@ -121,6 +121,6 @@ DIOPI主要包含以下几个组件：
 
 其他文档
 <!--* [API文档]{} -->
-* [常见问题](FAQ.md)
+* [常见问题](https://deeplink-org.github.io/OpenComputeLab.github.io/5%20FAQ.html)
 * [Release Note](https://github.com/DeepLink-org/DIOPI/releases)
 * [开发者指南](https://github.com/DeepLink-org/DIOPI/blob/main/Contributors.md)
