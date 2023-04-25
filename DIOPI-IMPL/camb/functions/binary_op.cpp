@@ -66,8 +66,8 @@ diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHand
     }
     // to avoid modification of other when use cnnlTransform_v2
     DiopiTensor trOtherTmp = trOther;
-    if(trOther.dtype() == trOtherOrigin.dtype()){
-        clone(ctx, trOther, trOtherTmp);
+    if (trOther.dtype() == trOtherOrigin.dtype()) {
+        DIOPI_CALL(clone(ctx, trOther, trOtherTmp));
     }
     CnnlTensorDesc descOtherTmp(trOtherTmp, layout);
     DIOPI_CALLCNNL(
