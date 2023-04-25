@@ -941,7 +941,7 @@ diopi_configs = {
         is_inplace=True,
         dtype=[Dtype.float32],
         para=dict(
-            other=[-1, 0.028, 2, 1.0],
+            other=[-1, 0.028, 2, 1],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -1044,6 +1044,31 @@ diopi_configs = {
             ],
         ),
     ),
+
+    'pointwise_binary_with_alpha': dict(
+        name=['add', 'sub'],
+        para=dict(
+            alpha=[-2, 2.0],
+        ),
+        interface=['torch'],
+        is_inplace=True,
+        dtype=[Dtype.float32],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 3),
+                              (2, 2, 4, 3)),
+                },
+                {
+                    "ins": ['other'],
+                    "shape": ((1,), (1,)),
+                }
+            ],
+        ),
+    ),
+
 
     'bmm': dict(
         name=['bmm'],

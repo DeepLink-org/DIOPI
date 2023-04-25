@@ -22,6 +22,7 @@ namespace camb {
 extern "C" DIOPI_API diopiError_t
 diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha) {
     DiopiTensor trInput(input);
+    DiopiTensor trOtherOrigin(other);
     DiopiTensor trOther(other);
     DiopiTensor trOut(out);
     std::vector<DiopiTensor*> pTensors{&trInput, &trOther};
@@ -63,8 +64,15 @@ diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHand
             *reinterpret_cast<float*>(pAlphaIn.get()) = static_cast<float>(alpha->fval);
         }
     }
-    DIOPI_CALLCNNL(
-        cnnlTransform_v2(handle, CNNL_POINTER_MODE_HOST, pAlphaIn.get(), descOther.get(), trOther.data(), pBetaIn.get(), descOther.get(), trOther.data()));
+    // to avoid modification of other when use cnnlTransform_v2
+    DiopiTensor trOtherTmp = trOther;
+    if (trOther.dtype() == trOtherOrigin.dtype()) {
+        DIOPI_CALL(clone(ctx, trOther, trOtherTmp));
+    }
+    CnnlTensorDesc descOtherTmp(trOtherTmp, layout);
+    DIOPI_CALLCNNL(cnnlTransform_v2(
+        handle, CNNL_POINTER_MODE_HOST, pAlphaIn.get(), descOtherTmp.get(), trOtherTmp.data(), pBetaIn.get(), descOtherTmp.get(), trOtherTmp.data()));
+    trOther = trOtherTmp;
     const cnnlTensorDescriptor_t inputDescs[2] = {descInput.get(), descOther.get()};
     const void* inputs[2] = {trInput.data(), trOther.data()};
     uint32_t inputNum = 2;
