@@ -52,6 +52,18 @@ device_configs = {
         ),
     ),
 
+    'gelu': dict(
+        name=['gelu'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                },
+            ],
+        ),
+    ),
+    
     'avg_pool2d': dict(
         name=["avg_pool2d"],
         tensor_para=dict(
@@ -249,8 +261,45 @@ device_configs = {
         ),
     ),
 
+    'div_rounding_mode': dict(
+        name=['div'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+            ],
+        ),
+    ),
+
+    'div_dtype_int_and_bool': dict(
+        name=['div'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
+                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                },
+            ],
+        ),
+    ),
+    
     'pointwise_binary_scalar': dict(
         name=['mul'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float32)],
+                },
+            ],
+        ),
+    ),
+
+    'pointwise_binary_constant_with_alpha_and_no_contiguous': dict(
+        name=['add', 'sub'],
         tensor_para=dict(
             args=[
                 {
@@ -275,6 +324,7 @@ device_configs = {
 
     'matmul': dict(
         name=['matmul'],
+        atol=1e-3,
         tensor_para=dict(
             dtype=[Dtype.float64],
             args=[
@@ -352,6 +402,31 @@ device_configs = {
             ],
         ),
     ),
+
+    'nll_loss': dict(
+        name=["nll_loss"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                },
+            ],
+        ),
+    ),
+
+    'select': dict(
+        name=["select"],
+        tensor_para=dict(
+            args=[
+                {
+                    "requires_grad": [True],
+                    "dtype": [Skip(Dtype.float64)],
+                },
+            ]
+        ),
+    ),
+
 
     'masked_scatter': dict(
         name=["masked_scatter"],
@@ -646,7 +721,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
                 },
             ]
         ),
@@ -914,6 +989,20 @@ device_configs = {
             ],
         ),
     ),
+
+    'prod': dict(
+        name=['prod'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
+                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
+                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                },
+            ],
+        ),
+    ),
     
     'ctc_loss': dict(
         name=["ctc_loss"],
@@ -963,7 +1052,7 @@ device_configs = {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
                               Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                              Skip(Dtype.int8), Skip(Dtype.uint8)],
                 },
             ],
         ),
