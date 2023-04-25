@@ -2355,7 +2355,7 @@ def cdist(x1, x2, p, compute_mode=None):
 def cdist_backward(x1, grad_outputs, output, x2, p, **kwargs):
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     sizeX1 = list(x1.size())
-    sizeX2 = list(x2.size()) 
+    sizeX2 = list(x2.size())
     dim1 = len(sizeX1)
     dim2 = len(sizeX2)
     assert dim1 > 1 and dim2 > 1, "cdist only supports at least 2D tensors"
