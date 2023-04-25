@@ -57,6 +57,8 @@ static void host_free(void* ptr) { free(ptr); }
 // }
 
 void _getLastErrorString(const char** strErr) {
+    // TODO(waiting for dispatch): make sure diopiGetLastErrorString is defined
+    // eg: remove weak definition
     if (diopiGetLastErrorString != nullptr) {
         const char* str = diopiGetLastErrorString();
         *strErr = str;
