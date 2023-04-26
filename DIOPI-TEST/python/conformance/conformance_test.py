@@ -421,7 +421,7 @@ class ConformanceTest(object):
                 if is_inplace:
                     func_call_list.append(f"{module}.{test_func_name}(**kwargs, inplace=True)")
 
-            ignore_paras_for_input_check = ops_with_states.get(test_func_name, {})
+            ignore_paras_for_input_check = ops_with_states.get(test_func_name, set())
             for func_call in func_call_list:
                 if is_inplace:
                     if test_tag and test_tag[-1] == 'backward':
