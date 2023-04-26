@@ -29,11 +29,14 @@ class Dtype(Enum):
     bool = 11
     bfloat16 = 12
     tfloat32 = 13
+    complex64 = 14
+    complex128 = 15
 
     all_types = [float16, float32, float64, int32, int64]
     float_types = [float16, float32, float64]
     float_no_half_types = [float32, float64]
     int_types = [int32, int64]
+    complex_types = [complex64, complex128]
     default = all_types
 
 
