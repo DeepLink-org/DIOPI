@@ -414,9 +414,12 @@ class ConformanceTest(object):
             func_call_list = []
             func_call_list.append(f"{module}.{test_func_name}(**kwargs)")
             is_inplace = False
-            if data["cfg"].get("is_inplace", False):
-                is_inplace = True
-                func_call_list.append(f"{module}.{test_func_name}(**kwargs, inplace=True)")
+            if  "inplace" in kwargs.keys():
+                is_inplace = kwargs["inplace"]
+            else:
+                is_inplace = data["cfg"].get("is_inplace", False)
+                if is_inplace:
+                    func_call_list.append(f"{module}.{test_func_name}(**kwargs, inplace=True)")
 
             for func_call in func_call_list:
                 if is_inplace:
@@ -457,7 +460,7 @@ class ConformanceTest(object):
 
                 write_precision(data["cfg"], cfg_func_name, passed)
 
-                if function_paras["requires_grad"] and not is_inplace and not kwargs.get('inplace', False):
+                if function_paras["requires_grad"] and not is_inplace:
                     test_tag.append("backward")
                     saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
                     saved_backward_pth = os.path.join(outputs_dir_path, saved_backward_pth)
