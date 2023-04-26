@@ -2,12 +2,17 @@
 from .config import Genfunc
 from .dtype import Dtype
 
-ops_with_states = {"batch_norm": {"running_mean", "runnint_var"},
+ops_with_states = {"batch_norm": {"running_mean", "running_var"},
                    "sgd": {"buf", "param"},
                    "fill_": {"input"},
                    "embedding": {"weight"},
-                   "adam": {"param"},
-                   "adadelta": {"param"}}
+                   "adam": {"param", "exp_avg"},
+                   "adamw": {"param", "exp_vag"},
+                   "adadelta": {"param", "square_avg"},
+                   "rmsprop": {"param"},
+                   "copy_": {"input"},
+                   "cast_dtype": {"out"},
+                   }
 
 
 diopi_configs = {
