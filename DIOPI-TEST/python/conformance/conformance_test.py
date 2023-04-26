@@ -414,7 +414,7 @@ class ConformanceTest(object):
             func_call_list = []
             func_call_list.append(f"{module}.{test_func_name}(**kwargs)")
             is_inplace = False
-            if  "inplace" in kwargs.keys():
+            if "inplace" in kwargs.keys():
                 is_inplace = kwargs["inplace"]
             else:
                 is_inplace = data["cfg"].get("is_inplace", False)
