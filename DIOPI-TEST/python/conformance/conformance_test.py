@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 from . import diopi_functions as F
-from . import diopi_configs
+from . import diopi_configs, ops_with_states
 from .config import Config
 from .utils import logger, FunctionNotImplementedError, DiopiException
 from .utils import need_process_func, glob_vars, nhwc_op, dtype_op
@@ -278,10 +278,10 @@ def check_device_para_and_tensor_para(cfg_dicts, device_cfg_dicts, cfg_name):
             logger.error(f"Input name {input} for {cfg_name} in device_configs not found in diopi_configs. Ignored.")
 
 
-def get_np_inputs(input_params: dict, is_inplace):
+def get_np_inputs(input_params: dict, ignore_params):
     np_inputs = {}
     for name, value in input_params.items():
-        if is_inplace and name == "input":
+        if name in ignore_params:
             continue
         if isinstance(value, np.ndarray):
             np_inputs[name] = value
@@ -414,21 +414,27 @@ class ConformanceTest(object):
             func_call_list = []
             func_call_list.append(f"{module}.{test_func_name}(**kwargs)")
             is_inplace = False
-            if data["cfg"].get("is_inplace", False):
-                is_inplace = True
-                func_call_list.append(f"{module}.{test_func_name}(**kwargs, inplace=True)")
+            if "inplace" in kwargs.keys():
+                is_inplace = kwargs["inplace"]
+            else:
+                is_inplace = data["cfg"].get("is_inplace", False)
+                if is_inplace:
+                    func_call_list.append(f"{module}.{test_func_name}(**kwargs, inplace=True)")
 
+            ignore_paras_for_input_check = ops_with_states.get(test_func_name, set())
             for func_call in func_call_list:
                 if is_inplace:
                     if test_tag and test_tag[-1] == 'backward':
                         test_tag.pop()
                     test_tag.append("inplace")
                 try:
-                    np_inputs_orign = get_np_inputs(function_paras['kwargs'], is_inplace)
+                    if is_inplace:
+                        ignore_paras_for_input_check.add("input")
+                    np_inputs_orign = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
                     info = convert_input_tensors(function_paras, test_tag, nhwc_list, dtype_list, filter_dtype_str_list)
                     tensor_info = info if info else tensor_info
                     output = eval(func_call)
-                    np_inputs_after_forward = get_np_inputs(function_paras['kwargs'], is_inplace)
+                    np_inputs_after_forward = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
                     passed, not_passed_name = np_allclose(np_inputs_orign, np_inputs_after_forward)
                     sum_to_compare = True if 'sorted' in kwargs and ~kwargs['sorted'] else False
                     passed = passed and compare_with_gen_output(output, data['cfg'], output_reference, sum_to_compare) if need_output else True
@@ -457,7 +463,7 @@ class ConformanceTest(object):
 
                 write_precision(data["cfg"], cfg_func_name, passed)
 
-                if function_paras["requires_grad"] and not is_inplace and not kwargs.get('inplace', False):
+                if function_paras["requires_grad"] and not is_inplace:
                     test_tag.append("backward")
                     saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
                     saved_backward_pth = os.path.join(outputs_dir_path, saved_backward_pth)
@@ -479,7 +485,7 @@ class ConformanceTest(object):
 
                     try:
                         grad_input = eval(f"F.{cfg_func_name}_backward(**kwargs, **backward_para)")
-                        np_inputs_after_backward = get_np_inputs(kwargs, is_inplace=False)
+                        np_inputs_after_backward = get_np_inputs(kwargs, ignore_paras_for_input_check)
                         passed, not_passed_name = np_allclose(np_inputs_orign, np_inputs_after_backward)
                         passed = passed and compare_with_gen_output(grad_input, data['cfg'], backward_out_reference)
                         if passed:
