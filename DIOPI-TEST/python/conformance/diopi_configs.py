@@ -2762,6 +2762,41 @@ diopi_configs = {
         ),
     ),
 
+    'cdist_compute_mode': dict(
+        name=['cdist'],
+        interface=['torch'],
+        atol=1e-2,
+        rtol=1e-3,
+        saved_args=dict(output=0),
+        para=dict(
+            p=[2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+            compute_mode=['use_mm_for_euclid_dist', 'use_mm_for_euclid_dist', 'use_mm_for_euclid_dist', 'use_mm_for_euclid_dist',
+                          'use_mm_for_euclid_dist_if_necessary', 'use_mm_for_euclid_dist_if_necessary', 'use_mm_for_euclid_dist_if_necessary', 'use_mm_for_euclid_dist_if_necessary',
+                          'donot_use_mm_for_euclid_dist', 'donot_use_mm_for_euclid_dist', 'donot_use_mm_for_euclid_dist', 'donot_use_mm_for_euclid_dist']
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['x1'],
+                    "requires_grad": [True],
+                    "shape": ((5, 4), (2, 256, 256), (2, 16, 256), (5, 4, 256, 256),
+                              (3, 5, 4), (2, 256, 256), (3, 2, 16, 256), (5, 4, 26, 256),
+                              (5, 4), (2, 256, 256), (2, 16, 256), (5, 4, 256, 256),),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ['x2'],
+                    "shape": ((3, 4), (2, 16, 256), (2, 26, 256), (2, 5, 4, 256, 256),
+                              (3, 4), (2, 16, 256), (2, 26, 256), (2, 5, 4, 256, 256),
+                              (4, 3, 4), (2, 16, 256), (4, 2, 26, 256), (2, 5, 4, 256, 256),),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
     'bitwise_not': dict(
         name=['bitwise_not'],
         interface=['torch'],
