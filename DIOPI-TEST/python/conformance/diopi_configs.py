@@ -5,9 +5,9 @@ from .dtype import Dtype
 ops_with_states = {"batch_norm": {"running_mean", "runnint_var"},
                    "sgd": {"buf", "param"},
                    "fill_": {"input"},
-                   "embedding":{"weight"},
-                   "adam":{"param"},
-                   "adadelta":{"param"}}
+                   "embedding": {"weight"},
+                   "adam": {"param"},
+                   "adadelta": {"param"}}
 
 
 diopi_configs = {
