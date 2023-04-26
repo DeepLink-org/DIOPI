@@ -2,6 +2,11 @@
 from .config import Genfunc
 from .dtype import Dtype
 
+ops_with_states = {"batch_norm": {"running_mean", "runnint_var"},
+                   "sgd": {"buf"},
+                   }
+
+
 diopi_configs = {
     'batch_norm': dict(
         name=["batch_norm"],
