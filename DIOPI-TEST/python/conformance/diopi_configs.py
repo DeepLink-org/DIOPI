@@ -4267,9 +4267,10 @@ diopi_configs = {
         name=["normal"],
         no_output_ref=True,
         para=dict(
-            mean=[0, 0.1],
-            std=[1, 2],
-            size=[(32, 8), (32, 2, 3, 3)],
+            mean=[-1, -0.5, 0, 0.1, 2, True, False],
+            std=[0.1, 0.5, 1, 2.3, 3, True, True],
+            size=[(), (128,), (32, 16), (32, 8),
+                  (32, 8), (2, 2, 2, 16), (32, 2, 3, 3)],
         ),
     ),
 
