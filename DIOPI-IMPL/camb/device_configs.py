@@ -475,7 +475,6 @@ device_configs = {
         ),
     ),
 
-
     'masked_scatter': dict(
         name=["masked_scatter"],
         tensor_para=dict(
@@ -662,6 +661,18 @@ device_configs = {
         ),
     ),
 
+    'sgd_without_buf': dict(
+        name=["sgd"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['param', 'param_grad'],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+            ]
+        ),
+    ),
+    
     'reciprocal': dict(
         name=["reciprocal"],
         tensor_para=dict(
