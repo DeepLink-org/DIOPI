@@ -22,8 +22,8 @@ Thanks for your contribution and we appreciate it a lot. The following instructi
 ## Checklist
 **Before PR**:
 
-- [ ] I have read and followed the workflow indicated in the [Contributors.md](https://github.com/OpenComputeLab/DIOPI-IMPL/blob/main/Contributors.md) to create this PR.
-- [ ] Pre-commit or linting tools indicated in [Contributors.md](https://github.com/OpenComputeLab/DIOPI-IMPL/blob/main/Contributors.md) are used to fix the potential lint issues.
+- [ ] I have read and followed the workflow indicated in the [Contributors.md](https://github.com/DeepLink-org/DIOPI/blob/main/Contributors.md) to create this PR.
+- [ ] Pre-commit or linting tools indicated in [Contributors.md](https://github.com/DeepLink-org/DIOPI/blob/main/Contributors.md) are used to fix the potential lint issues.
 - [ ] Bug fixes are covered by unit tests, the case that causes the bug should be added in the unit tests.
 - [ ] New functionalities are covered by complete unit tests. If not, please add more unit test to ensure the correctness.
 - [ ] The documentation has been modified accordingly, including docstring or example tutorials.

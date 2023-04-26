@@ -15,9 +15,9 @@ version number of the system、 software、python packages and other environment
 
 **To Reproduce**
 Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
+1. Prepare the environment (including data, scripts) ...
+2. Run script / Execute command ...
+3. Check result or message, noticing that ...
 4. See error
 
 **Expected behavior**
