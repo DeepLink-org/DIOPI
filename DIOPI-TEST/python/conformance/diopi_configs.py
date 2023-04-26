@@ -2,6 +2,19 @@
 from .config import Genfunc
 from .dtype import Dtype
 
+ops_with_states = {"batch_norm": {"running_mean", "running_var"},
+                   "sgd": {"buf", "param"},
+                   "fill_": {"input"},
+                   "embedding": {"weight"},
+                   "adam": {"param", "exp_avg", "exp_avg_sq", "max_exp_avg_sq"},
+                   "adamw": {"param", "exp_avg", "exp_avg_sq", "max_exp_avg_sq"},
+                   "adadelta": {"param", "square_avg", "acc_delta"},
+                   "rmsprop": {"param", "square_avg", "grad_avg", "momentum_buffer"},
+                   "copy_": {"input"},
+                   "cast_dtype": {"out"},
+                   }
+
+
 diopi_configs = {
     'batch_norm': dict(
         name=["batch_norm"],
