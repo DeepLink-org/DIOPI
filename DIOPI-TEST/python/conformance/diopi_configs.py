@@ -2773,13 +2773,13 @@ diopi_configs = {
                 {
                     "ins": ['x1'],
                     "requires_grad": [True],
-                    "shape": ((100, 4), (2, 256, 256), (4, 256, 256), (4, 256, 256), (1, 10, 128)),
+                    "shape": ((2, 50, 4), (1, 32, 32), (4, 31, 256), (4, 256, 256), (10, 128)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ['x2'],
-                    "shape": ((100, 4), (2, 256, 256), (4, 256, 256), (4, 256, 256), (1, 10, 128)),
+                    "shape": ((100, 4), (32, 2, 48, 64, 32), (4, 256, 256), (4, 256, 256), (1, 10, 128)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -4297,15 +4297,16 @@ diopi_configs = {
         name=["normal"],
         no_output_ref=True,
         para=dict(
-            mean=[0, 0.5],
+            mean=[-1, -0.5, 0, 0.1, 2],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.positive,
             args=[
                 {
                     "ins": ['std'],
-                    "shape": ((256, 256, 3, 3), (256, 128, 1, 1)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "shape": ((), (16,), (8, 4),
+                              (256, 256, 3, 3), (256, 128, 1, 1)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
             ]
         ),
