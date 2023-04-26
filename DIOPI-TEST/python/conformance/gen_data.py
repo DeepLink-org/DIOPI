@@ -227,7 +227,7 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
         elif gen_fn == Genfunc.positive:
             value = np.abs(np.array(np.random.randn(*shape)).astype(dtype))
         elif gen_fn == Genfunc.sym_mat:
-            axis = (0, 2, 1) if len(shape) == 3 else (0, 1)
+            axis = [i for i in range(len(shape)-2)] + [-1, -2]
             mat = np.random.randn(*shape).astype(dtype)
             value = mat @ mat.transpose(axis)
         else:
