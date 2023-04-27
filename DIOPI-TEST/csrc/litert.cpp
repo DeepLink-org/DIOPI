@@ -63,7 +63,8 @@ void _getLastErrorString(const char** strErr) {
         const char* str = diopiGetLastErrorString();
         *strErr = str;
     } else {
-        *strErr = "Function pointer is null";
+        *strErr = "`diopiGetLastErrorString` function pointer is nullptr."
+        " You can't get the correct error string, please check your compilation and linking";
     }
 }
 
