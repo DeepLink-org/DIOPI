@@ -1,5 +1,5 @@
 <div align=center>
-<img src="resources/deepLink_logo.png">
+<img src="img/deepLink_logo.png">
 </div>
 
 # 介绍
@@ -26,9 +26,9 @@ DIOPI-设备无关算子接口（Device-Independent Operator Interface, DIOPI）
 
 DIOPI主要包含以下几个组件：
 
-- [DIOPI-PROTO](https://github.com/OpenComputeLab/DIOPI/DIOPI-PROTO)：声明了一套运行时函数接口(diopirt)和标准算子接口(function)。
-- [DIOPI-IMPL](https://github.com/OpenComputeLab/DIOPI/DIOPI-IMPL)：对接硬件芯片。硬件厂商可在其中使用硬件软件栈提供的计算接口，实现算子功能。其使用 ```DIOPI-PROTO/include/diopi/diopirt.h``` 提供的接口实现 ```DIOPI-PROTO/include/diopi/functions.h``` 声明的标准算子, 并编译为 ```libdiopi_impl.so``` 动态库。在测试阶段，DIOPI-IMPL 还需实现并注册 ```DIOPI-TEST/include/diopi_register.h``` 声明的硬件芯片管理相关的函数。
-- [DIOPI-TEST](https://github.com/OpenComputeLab/DIOPI/DIOPI-TEST)：用于保证算子功能正确性。实现 ```DIOPI-PROTO/include/diopi/diopirt.h``` 声明基础运行时函数，并调用 ```libdiopi_impl.so``` 进行测试验证。
+- [DIOPI-PROTO](https://github.com/DeepLink-org/DIOPI/tree/main/DIOPI-PROTO)：声明了一套运行时函数接口(diopirt)和标准算子接口(function)。
+- [DIOPI-IMPL](https://github.com/DeepLink-org/DIOPI/tree/main/DIOPI-IMPL)：对接硬件芯片。硬件厂商可在其中使用硬件软件栈提供的计算接口，实现算子功能。其使用 ```DIOPI-PROTO/include/diopi/diopirt.h``` 提供的接口实现 ```DIOPI-PROTO/include/diopi/functions.h``` 声明的标准算子, 并编译为 ```libdiopi_impl.so``` 动态库。在测试阶段，DIOPI-IMPL 还需实现并注册 ```DIOPI-TEST/include/diopi_register.h``` 声明的硬件芯片管理相关的函数。
+- [DIOPI-TEST](https://github.com/DeepLink-org/DIOPI/tree/main/DIOPI-TEST)：用于保证算子功能正确性。实现 ```DIOPI-PROTO/include/diopi/diopirt.h``` 声明基础运行时函数，并调用 ```libdiopi_impl.so``` 进行测试验证。
 <!-- * DIPU-Adapter 实现 DIOPI-PROTO/include/diopi/diopirt.h 声明基础运行时函数, 将 DIOPI 算子适配训练框架，保证训练框架调用 libdiopi_impl.so 进行模型训练。 -->
 
 <!--
@@ -46,32 +46,31 @@ DIOPI主要包含以下几个组件：
 
 ## 硬件芯片适配
 
-如需在硬件芯片中进行计算接口算子实现，可进行以下步骤（具体参考 [DIOPI](https://github.com/OpenComputeLab/DIOPI#readme)）。
+如需在硬件芯片中进行计算接口算子实现，可进行以下步骤（具体参考 [DIOPI](https://github.com/DeepLink-org/DIOPI#readme)）。
 
 
-1. 需下载 [DIOPI仓库](https://github.com/OpenComputeLab/DIOPI)，可使用命令：
+1. 需下载 [DIOPI仓库](https://github.com/DeepLink-org/DIOPI)，可使用命令：
     ```
-    git clone https://github.com/OpenComputeLab/DIOPI.git
+    git clone https://github.com/DeepLink-org/DIOPI.git
     ```
 2. 在 DIOPI-IMPL 中新建目录实现 ```DIOPI-PROTO/include/diopi/functions.h``` 声明的标准算子的函数。
 
     在设备相关目录下提供相应的编译文件，通过以下参考命令进行编译：
     ```
-    mkdir build && cd build && cmake .. && make -j32
+    cd DIOPI-IMPL && sh scripts/diopi_impl.sh torch
     ```
 
 ## 校验适配算子 <a id="test_tutor"></a>
 
-芯片厂商完成相关算子适配后，可以下载 [DIOPI仓库](https://github.com/OpenComputeLab/DIOPI)，并使用如下步骤进行算子正确性验证：
+芯片厂商完成相关算子适配后，可以下载 [DIOPI仓库](https://github.com/DeepLink-org/DIOPI)，并使用如下步骤进行算子正确性验证：
 
   1. 下载 DIOPI 测验仓库：
       ```
-      git clone https://github.com/OpenComputeLab/DIOPI.git
+      git clone https://github.com/DeepLink-org/DIOPI.git
       ```
   2. 进入DIOPI-IMPL编译算子实现, 通过以下参考命令进行编译：
       ```
-      export DIOPI_BUILD_TESTRT=ON
-      cd DIOPI-IMPL && mkdir build && cd build && cmake .. && make -j32
+      export DIOPI_BUILD_TESTRT=ON && cd DIOPI-IMPL && sh scripts/diopi_impl.sh torch
       ```
   2. 进入python目录，生成基准数据(需准备nv机器和pytorch1.10环境)
 
@@ -115,13 +114,13 @@ DIOPI主要包含以下几个组件：
 
 ## Learn More
 组件介绍
-* [DIOPI-PROTO Readme](https://github.com/OpenComputeLab/DIOPI/DIOPI-PROTO#readme)
-* [DIOPI-IMPL Readme](https://github.com/OpenComputeLab/DIOPI/DIOPI-IMPL#readme)
-* [DIOPI-TEST Readme](https://github.com/OpenComputeLab/DIOPI/DIOPI-TEST#readme)
+* [DIOPI-PROTO Readme](https://github.com/DeepLink-org/DIOPI/tree/main/DIOPI-PROTO#readme)
+* [DIOPI-IMPL Readme](https://github.com/DeepLink-org/DIOPI/tree/main/DIOPI-IMPL#readme)
+* [DIOPI-TEST Readme](https://github.com/DeepLink-org/DIOPI/tree/main/DIOPI-TEST#readme)
 <!--* [DIPU-Adapter Readme](DIPU-Adapter.md)-->
 
 其他文档
 <!--* [API文档]{} -->
-* [常见问题](https://opencomputelab.github.io/5%20FAQ.html)
-* [Release Note](https://github.com/OpenComputeLab/DIOPIreleases)
-* [开发者指南](https://github.com/OpenComputeLab/DIOPI/DIOPI-IMPL/blob/main/Contributors.md)
+* [常见问题](https://deeplink-org.github.io/OpenComputeLab.github.io/5%20FAQ.html)
+* [Release Note](https://github.com/DeepLink-org/DIOPI/releases)
+* [开发者指南](https://github.com/DeepLink-org/DIOPI/blob/main/Contributors.md)

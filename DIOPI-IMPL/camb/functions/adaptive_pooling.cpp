@@ -35,22 +35,34 @@ diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_
     auto memory_format = MemoryFormat::ChannelsLast;
     auto input_channel_last = input_tr.contiguous(ctx, memory_format);
     DIOPI_CALL(cnnl_transpose(ctx, handle, input_tr, input_channel_last, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC));
-    auto output_channel_last = output_tmp_tr.contiguous(ctx, memory_format);
 
-    /* generate tensor desc */
+    auto output_channel_last = output_tmp_tr;
+    if (!output_channel_last.is_contiguous(memory_format)) {
+        // for some special case like shape = [2, 2048, 1, 1], it's already been ChannelsLast
+        output_channel_last = requiresTensor(ctx, output_tmp_tr.shape(), output_tmp_tr.dtype(), MemoryFormat::ChannelsLast);
+    }
+
     cnnlTensorLayout_t layout = CNNL_LAYOUT_NHWC;
     CnnlTensorDesc input_desc(input_channel_last, layout);
     CnnlTensorDesc output_desc(output_channel_last, layout);
 
+    cnnlPoolingMode_t mode = CNNL_POOLING_AVERAGE_COUNT_INCLUDE_PADDING;
+    size_t workspace_size = 0;
+    DIOPI_CALLCNNL(cnnlGetAdaptivePoolingForwardWorkspaceSize(handle, input_desc.get(), mode, output_desc.get(), &workspace_size));
+
+    void* workspace_ptr = workspace_size == 0 ? nullptr : requiresBuffer(ctx, workspace_size).data();
+
     /* call adaptive pooling */
-    DIOPI_CALLCNNL(cnnlAdaptivePoolingForward(handle,
-                                              input_desc.get(),
-                                              input_channel_last.data(),
-                                              CNNL_POOLING_AVERAGE_COUNT_INCLUDE_PADDING,
-                                              output_desc.get(),
-                                              output_channel_last.data(),
-                                              nullptr,
-                                              nullptr));
+    DIOPI_CALLCNNL(cnnlAdaptivePoolingForward_v2(handle,
+                                                 input_desc.get(),
+                                                 input_channel_last.data(),
+                                                 mode,
+                                                 workspace_ptr,
+                                                 workspace_size,
+                                                 output_desc.get(),
+                                                 output_channel_last.data(),
+                                                 nullptr,
+                                                 nullptr));
 
     // NHWC -> NCHW
     DIOPI_CALL(cnnl_transpose(ctx, handle, output_channel_last, output_tmp_tr, CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW));

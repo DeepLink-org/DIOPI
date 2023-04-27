@@ -275,6 +275,11 @@ def save_precision(cfg, output, output_reference, passed, var_name):
     need_atol = 'none'
     max_rtol = 'none'
     need_rtol = 'none'
+    if output.dtype == np.bool:
+        output = output.astype(np.int32)
+    if output_reference.dtype == np.bool:
+        output_reference = output_reference.astype(np.int32)
+
     diff = np.abs(output - output_reference)
     nan_mask = ~np.isnan(diff)
     if nan_mask.sum() != 0 and output_reference.dtype != np.bool:
