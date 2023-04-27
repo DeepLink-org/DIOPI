@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 from . import diopi_functions as F
-from . import diopi_configs
+from . import diopi_configs, ops_with_states
 from .config import Config
 from .utils import logger, FunctionNotImplementedError, DiopiException
 from .utils import need_process_func, glob_vars, nhwc_op, dtype_op
@@ -11,6 +11,7 @@ from .diopi_runtime import Tensor, compute_nhwc_stride
 from .utils import save_precision, record, write_precision
 from .utils import get_saved_pth_list, get_data_from_file
 from .utils import cfg_file_name
+from . import model_config
 
 
 def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dtype_list=[], filter_dtype_str_list=[]):
@@ -72,7 +73,10 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
         sum1 = tensor1.sum()
         sum2 = tensor2.sum()
         mask = np.isclose(tensor1, tensor2, rtol, atol, True)
-        max_diff = np.abs(tensor1 - tensor2).max()
+        if tensor1.dtype == np.bool:
+            max_diff = 1
+        else:
+            max_diff = np.abs(tensor1 - tensor2).max()
         logger.info(f"Max of diff is {max_diff}.")
         logger.debug(f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}, Max of diff is {max_diff}. \
                      \n" + f"{var_name} is {tensor1},\n{var_name}_ref is {tensor2},\nMask is {mask}\n")
@@ -274,6 +278,31 @@ def check_device_para_and_tensor_para(cfg_dicts, device_cfg_dicts, cfg_name):
             logger.error(f"Input name {input} for {cfg_name} in device_configs not found in diopi_configs. Ignored.")
 
 
+def get_np_inputs(input_params: dict, ignore_params):
+    np_inputs = {}
+    for name, value in input_params.items():
+        if name in ignore_params:
+            continue
+        if isinstance(value, np.ndarray):
+            np_inputs[name] = value
+        # transform tensor to numpy
+        if isinstance(value, Tensor):
+            np_inputs[name] = value.numpy()
+    return np_inputs
+
+
+def np_allclose(np_values1: dict, np_values2: dict):
+    passed = True
+    not_passed_name = ""
+    for name, value in np_values1.items():
+        assert name in np_values2.keys(), f"{name} not exist in np_values2"
+        passed = np.allclose(value, np_values2[name])
+        if not passed:
+            not_passed_name = name
+            break
+    return passed, not_passed_name
+
+
 class ConformanceTest(object):
     r'''
     Run all functions by using input, then compare_with_gen_output with saved output
@@ -321,7 +350,7 @@ class ConformanceTest(object):
                 sys.exit(0)
 
         for saved_pth in saved_pth_list:
-            cfg_name = saved_pth.split("_")[0]
+            cfg_name = saved_pth.rsplit("_", 1)[0]
             cfg_func_name = saved_pth.split("::")[1].rsplit("_", 1)[0]
             if not need_process_func(cfg_func_name, func_name, model_name):
                 continue
@@ -347,6 +376,10 @@ class ConformanceTest(object):
                     tensor_paras = data['cfg']['tensor_para']['args']
                     device_tensor_paras = device_cfg['tensor_para']['args']
                     for tensor_para in tensor_paras:
+                        if skipped:
+                            break
+                        if 'dtype' in device_cfg and tensor_para['dtype'] in device_cfg['dtype']:
+                            skipped = True
                         if tensor_para['ins'] in device_tensor_paras:
                             device_tensor_para = device_tensor_paras[tensor_para['ins']]
                             need_checking_keys = ['dtype', 'value', 'shape']
@@ -354,8 +387,6 @@ class ConformanceTest(object):
                                 if ck in tensor_para and ck in device_tensor_para:
                                     if tensor_para[ck] in device_tensor_para[ck]:
                                         skipped = True
-                            if 'dtype' in device_cfg and tensor_para['dtype'] in device_cfg['dtype']:
-                                skipped = True
 
                     tol_keys_list = ['atol', 'rtol', 'atol_half', 'rtol_half']
                     for key in tol_keys_list:
@@ -382,25 +413,36 @@ class ConformanceTest(object):
             kwargs = function_paras['kwargs']
             func_call_list = []
             func_call_list.append(f"{module}.{test_func_name}(**kwargs)")
-            if data["cfg"].get("is_inplace", False):
-                func_call_list.append(f"{module}.{test_func_name}(**kwargs, inplace=True)")
+            is_inplace = False
+            if "inplace" in kwargs.keys():
+                is_inplace = kwargs["inplace"]
+            else:
+                is_inplace = data["cfg"].get("is_inplace", False)
+                if is_inplace:
+                    func_call_list.append(f"{module}.{test_func_name}(**kwargs, inplace=True)")
 
+            ignore_paras_for_input_check = ops_with_states.get(test_func_name, set())
             for func_call in func_call_list:
-                if "inplace=True" in func_call:
+                if is_inplace:
                     if test_tag and test_tag[-1] == 'backward':
                         test_tag.pop()
                     test_tag.append("inplace")
                 try:
+                    if is_inplace:
+                        ignore_paras_for_input_check.add("input")
+                    np_inputs_orign = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
                     info = convert_input_tensors(function_paras, test_tag, nhwc_list, dtype_list, filter_dtype_str_list)
                     tensor_info = info if info else tensor_info
                     output = eval(func_call)
+                    np_inputs_after_forward = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
+                    passed, not_passed_name = np_allclose(np_inputs_orign, np_inputs_after_forward)
                     sum_to_compare = True if 'sorted' in kwargs and ~kwargs['sorted'] else False
-                    passed = compare_with_gen_output(output, data['cfg'], output_reference, sum_to_compare) \
-                        if need_output else True
+                    passed = passed and compare_with_gen_output(output, data['cfg'], output_reference, sum_to_compare) if need_output else True
                     if passed:
                         logger.info(f"Run diopi_functions.{cfg_func_name} succeed")
                     else:
-                        logger.error(f"Run diopi_functions.{cfg_func_name} failed", tag=test_tag, info=tensor_info)
+                        input_compare_str = "" if not_passed_name == "" else f", because of inputs: {not_passed_name} changed"
+                        logger.error(f"Run diopi_functions.{cfg_func_name} failed{input_compare_str}", tag=test_tag, info=tensor_info)
                         if debug_level > 0:
                             logger.error("failed config:\n%s", config_to_format_string(data['cfg']))
                             if debug_level > 1:
@@ -421,7 +463,7 @@ class ConformanceTest(object):
 
                 write_precision(data["cfg"], cfg_func_name, passed)
 
-                if function_paras["requires_grad"] and "inplace=True" not in func_call and not kwargs.get('inplace', False):
+                if function_paras["requires_grad"] and not is_inplace:
                     test_tag.append("backward")
                     saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
                     saved_backward_pth = os.path.join(outputs_dir_path, saved_backward_pth)
@@ -443,11 +485,14 @@ class ConformanceTest(object):
 
                     try:
                         grad_input = eval(f"F.{cfg_func_name}_backward(**kwargs, **backward_para)")
-                        passed = compare_with_gen_output(grad_input, data['cfg'], backward_out_reference)
+                        np_inputs_after_backward = get_np_inputs(kwargs, ignore_paras_for_input_check)
+                        passed, not_passed_name = np_allclose(np_inputs_orign, np_inputs_after_backward)
+                        passed = passed and compare_with_gen_output(grad_input, data['cfg'], backward_out_reference)
                         if passed:
                             logger.info(f"Run diopi_functions.{cfg_func_name}_backward succeed")
                         else:
-                            logger.error(f"Run diopi_functions.{cfg_func_name}_backward failed", tag=test_tag, info=tensor_info)
+                            input_compare_str = "" if not_passed_name == "" else f", because of inputs: {not_passed_name} changed"
+                            logger.error(f"Run diopi_functions.{cfg_func_name}_backward failed{input_compare_str}", tag=test_tag, info=tensor_info)
                             if debug_level > 0:
                                 logger.error("failed config:\n%s", config_to_format_string(data['cfg']))
                                 if debug_level > 1:

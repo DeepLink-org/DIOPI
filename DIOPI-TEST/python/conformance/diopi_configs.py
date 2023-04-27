@@ -2,6 +2,19 @@
 from .config import Genfunc
 from .dtype import Dtype
 
+ops_with_states = {"batch_norm": {"running_mean", "running_var"},
+                   "sgd": {"buf", "param"},
+                   "fill_": {"input"},
+                   "embedding": {"weight"},
+                   "adam": {"param", "exp_avg", "exp_avg_sq", "max_exp_avg_sq"},
+                   "adamw": {"param", "exp_avg", "exp_avg_sq", "max_exp_avg_sq"},
+                   "adadelta": {"param", "square_avg", "acc_delta"},
+                   "rmsprop": {"param", "square_avg", "grad_avg", "momentum_buffer"},
+                   "copy_": {"input"},
+                   "cast_dtype": {"out"},
+                   }
+
+
 diopi_configs = {
     'batch_norm': dict(
         name=["batch_norm"],
@@ -941,7 +954,7 @@ diopi_configs = {
         is_inplace=True,
         dtype=[Dtype.float32],
         para=dict(
-            other=[-1, 0.028, 2, 1.0],
+            other=[-1, 0.028, 2, 1],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -1044,6 +1057,31 @@ diopi_configs = {
             ],
         ),
     ),
+
+    'pointwise_binary_with_alpha': dict(
+        name=['add', 'sub'],
+        para=dict(
+            alpha=[-2, 2.0],
+        ),
+        interface=['torch'],
+        is_inplace=True,
+        dtype=[Dtype.float32],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 3),
+                              (2, 2, 4, 3)),
+                },
+                {
+                    "ins": ['other'],
+                    "shape": ((1,), (1,)),
+                }
+            ],
+        ),
+    ),
+
 
     'bmm': dict(
         name=['bmm'],

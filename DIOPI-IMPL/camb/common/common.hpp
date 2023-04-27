@@ -28,8 +28,6 @@ diopiError_t broadcast(diopiContextHandle_t ctx, DiopiTensor& out, const DiopiTe
 
 diopiError_t broadcastHelper(diopiContextHandle_t ctx, DiopiTensor input_tensor, DiopiTensor target_tensor, DiopiTensor* out_tensor);
 
-void print_backtrace();
-
 diopiError_t contiguous_(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryFormat memory_format);
 
 diopiError_t contiguous_(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryFormat memory_format, cnnlTensorLayout_t layout_in, cnnlTensorLayout_t layout_out);
@@ -37,6 +35,8 @@ diopiError_t contiguous_(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryForm
 template<typename T1 = double, typename T2 = double, typename T3 = double>
 diopiError_t cnnl_op_tensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor other, DiopiTensor out, cnnlOpTensorDesc_t op_type, T1 alpha1 = 1.0,
                             T2 alpha2 = 1.0, T3 beta = 0.0);
+
+diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiTensor& outTensor);
 
 }  // namespace camb
 }  // namespace impl
