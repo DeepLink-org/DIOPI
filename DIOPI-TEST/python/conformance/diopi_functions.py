@@ -3526,10 +3526,11 @@ def meshgrid(tensors, shape=None):
     co_tensors = []
     dims = []
     for tensor in tensors:
-        assert (len(tensor.size()) == 1),\
-            "Expected scalar or 1D tensor in the tensor list"
         c_tensors.append(tensor.tensor_handle)
-        dims.append(tensor.size()[0])
+        if len(tensor.size()) > 0:
+            dims.append(tensor.size()[0])
+        else:
+            dims.append(1)
     c_tensors = (c_void_p * inputsNum)(*c_tensors)
     out = [Tensor(dims, tensors[0].get_dtype()) for i in range(inputsNum)]
     for tensor in out:
