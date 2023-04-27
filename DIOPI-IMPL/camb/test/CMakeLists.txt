@@ -15,4 +15,4 @@ target_link_libraries(${DIOPIRT} cnnl cnmlrt)
 # depending on the compiler and linker version,
 # linking `diopi_impl.so` may fail.
 # Here, we use no-as-needed to ensure that diopi_impl.so is linked.
-target_link_libraries(${DIOPIRT} -Wl,--no-as-needed diopi_impl -Wl,--as-needed)
+target_link_libraries(${DIOPIRT} -Wl,--no-as-needed ${DEVICEIMPL} -Wl,--as-needed)
