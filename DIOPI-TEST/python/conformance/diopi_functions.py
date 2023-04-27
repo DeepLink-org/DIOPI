@@ -406,20 +406,20 @@ def baddbmm(input, batch1, batch2, beta, alpha, inplace=False) -> Tensor:
         assert (size1[2] == size3[2] or size1[2] == 1 or size3[2] == 1), 'invalid args'
     elif input_len == 2:
         assert (((size1[1] == size3[2] or size1[1] == 1) and (size1[0] == size2[1] or size1[0] == 1))), 'invalid args'
-        input_numpy = np.expand_dims(input_numpy, axis = 0)
-        input_numpy = np.repeat(input_numpy, size2[0], axis = 0)
+        input_numpy = np.expand_dims(input_numpy, axis=0)
+        input_numpy = np.repeat(input_numpy, size2[0], axis=0)
     elif input_len == 1:
         assert (size1[0] == size3[2] or size1[0] == 1), 'invalid args'
-        input_numpy = np.expand_dims(input_numpy, axis = 0)
-        input_numpy = np.repeat(input_numpy, size2[1], axis = 0)
-        input_numpy = np.expand_dims(input_numpy, axis = 0)
-        input_numpy = np.repeat(input_numpy, size2[0], axis = 0)
+        input_numpy = np.expand_dims(input_numpy, axis=0)
+        input_numpy = np.repeat(input_numpy, size2[1], axis=0)
+        input_numpy = np.expand_dims(input_numpy, axis=0)
+        input_numpy = np.repeat(input_numpy, size2[0], axis=0)
     if input_numpy.shape[0] != size2[0]:
-        input_numpy = np.repeat(input_numpy, size2[0], axis = 0)
+        input_numpy = np.repeat(input_numpy, size2[0], axis=0)
     if input_numpy.shape[1] != size2[1]:
-        input_numpy = np.repeat(input_numpy, size2[1], axis = 1)
+        input_numpy = np.repeat(input_numpy, size2[1], axis=1)
     if input_numpy.shape[2] != size3[2]:
-        input_numpy = np.repeat(input_numpy, size3[2], axis = 2)
+        input_numpy = np.repeat(input_numpy, size3[2], axis=2)
     input = Tensor.from_numpy(input_numpy)
     if inplace:
         func = check_function("diopiBaddbmmInp")
