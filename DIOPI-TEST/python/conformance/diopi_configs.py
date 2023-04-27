@@ -442,7 +442,7 @@ diopi_configs = {
 
     'pointwise_op': dict(
         name=['abs', 'cos', 'erf', 'exp', 'floor',
-              'neg', 'sin', 'sqrt', 'logical_not', 'rsqrt'],
+              'neg', 'sin', 'sqrt', 'logical_not', 'rsqrt', 'ceil'],
         interface=['torch'],
         is_inplace=True,
         dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
@@ -451,7 +451,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((1, ), (1024,), (364800, 4), (2, 128, 3072),
+                    "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
                               (256, 128, 3, 3),
                               (2, 31, 512, 6, 40)),
                 },
@@ -4419,6 +4419,50 @@ diopi_configs = {
             ]
         ),
     ),
+    
+    'normalize': dict(
+        name=["normalize"],
+        para=dict(
+            p=[2.0, 1.0, 0, 1.5],
+            dim=[1, 2, -1, 0],
+            eps=[1e-12, 1e-12, 1e-11, 1e-12],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((256, 256, 3, 3), (256, 128, 1, 1), (64, 32, 16), (32, 8)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
+                }
+            ]
+        )
+    ),
+    
+    'normalize_p': dict(
+        name=['normalize'],
+        para=dict(
+            p=['fro', 0., 2, -1, None,
+                0.231, -1.234, 'fro', 'fro', 'fro',
+                'nuc', 'nuc', 'nuc', float('inf'), float('-inf'), ],
+            dim=[None, None, None, [1, -1, 0], None,
+                 0, None, None, 0, [0, 1],
+                 None, [0, 1], [-1, 1], None, [0, 1, 2, 3]],
+            eps=[1e-12, 1e-12, 1e-12, 1e-12, 1e-12,
+                 1e-12, 1e-12, 1e-12, 1e-12, 1e-12,
+                 1e-12, 1e-12, 1e-12, 1e-12, 1e-12,],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "shape": ((), (3,), (3, 4), (3, 4, 5), (6, 3, 4, 5),
+                              (3, 4, 5, 6), (3, 4, 5), (), (3,), (6, 3,),
+                              (6, 3,), (3, 4), (3, 4, 5), (), (6, 3, 4, 5)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
 
     'meshgrid': dict(
         name=["meshgrid"],
@@ -4538,6 +4582,15 @@ diopi_configs = {
                               (2, 32, 1, 1)),
                 },
             ],
+        ),
+    ),
+    
+    'randn': dict(
+        name=['randn'],
+        no_output_ref=True,
+        para=dict(
+            size=[(), (128,), (3, 64), (3, 16, 64),
+                  (4, 16, 8, 64), (2, 16, 1, 64, 5)],
         ),
     ),
 }
