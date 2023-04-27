@@ -395,13 +395,32 @@ def bmm(input, mat2) -> Tensor:
 
 def baddbmm(input, batch1, batch2, beta, alpha, inplace=False) -> Tensor:
     size1 = list(input.size())
-    assert (len(size1) == 3), 'input must be 3d tensor'
     size2 = list(batch1.size())
     assert (len(size2) == 3), 'batch1 must be 3d tensor'
     size3 = list(batch2.size())
     assert (len(size3) == 3), 'batch2 must be 3d tensor'
-    assert (size2[2] == size3[1] and size1[0] == size2[0] and size1[0] == size3[0]), 'invalid args'
-    assert (size1[2] == size3[2] or size1[2] == 1 or size3[2] == 1), 'invalid args'
+    input_len = len(input.size())
+    input_numpy = input.numpy()
+    if input_len == 3:
+        assert (size2[2] == size3[1] and size1[0] == size2[0] and size1[0] == size3[0] or size1[0] == 1), 'invalid args'
+        assert (size1[2] == size3[2] or size1[2] == 1 or size3[2] == 1), 'invalid args'
+    elif input_len == 2:
+        assert (((size1[1] == size3[2] or size1[1] == 1) and (size1[0] == size2[1] or size1[0] == 1))), 'invalid args'
+        input_numpy = np.expand_dims(input_numpy, axis = 0)
+        input_numpy = np.repeat(input_numpy, size2[0], axis = 0)
+    elif input_len == 1:
+        assert (size1[0] == size3[2] or size1[0] == 1), 'invalid args'
+        input_numpy = np.expand_dims(input_numpy, axis = 0)
+        input_numpy = np.repeat(input_numpy, size2[1], axis = 0)
+        input_numpy = np.expand_dims(input_numpy, axis = 0)
+        input_numpy = np.repeat(input_numpy, size2[0], axis = 0)
+    if input_numpy.shape[0] != size2[0]:
+        input_numpy = np.repeat(input_numpy, size2[0], axis = 0)
+    if input_numpy.shape[1] != size2[1]:
+        input_numpy = np.repeat(input_numpy, size2[1], axis = 1)
+    if input_numpy.shape[2] != size3[2]:
+        input_numpy = np.repeat(input_numpy, size3[2], axis = 2)
+    input = Tensor.from_numpy(input_numpy)
     if inplace:
         func = check_function("diopiBaddbmmInp")
         ret = func(input.context_handle, input.tensor_handle, batch1.tensor_handle, batch2.tensor_handle, c_double(beta), c_double(alpha))
