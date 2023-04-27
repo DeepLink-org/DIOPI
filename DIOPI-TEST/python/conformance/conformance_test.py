@@ -7,7 +7,7 @@ from . import diopi_configs, ops_with_states
 from .config import Config
 from .utils import logger, FunctionNotImplementedError, DiopiException
 from .utils import need_process_func, glob_vars, nhwc_op, dtype_op
-from .diopi_runtime import Tensor, compute_nhwc_stride
+from .diopi_runtime import Tensor, compute_nhwc_stride, default_context
 from .utils import save_precision, record, write_precision
 from .utils import get_saved_pth_list, get_data_from_file
 from .utils import cfg_file_name
@@ -510,3 +510,4 @@ class ConformanceTest(object):
                         logger.error(f"AttributeError: {e}")
                     except Exception as e:
                         logger.error(f"Failed: {e}")
+            default_context.clear_tensors()

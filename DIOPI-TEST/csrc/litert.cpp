@@ -328,6 +328,16 @@ public:
             delete tensor;
         }
     }
+
+    void clearTensors() {
+        if (stream_ != nullptr) {
+            for (auto it : setTensors_) {
+                delete it;
+            }
+            setTensors_.clear();
+            device_synchronize_stream(stream_);
+        }
+    }
 };
 
 DIOPI_RT_API diopiError_t _diopiCreateContext(diopiContextHandle_t* ctx) {
@@ -420,6 +430,11 @@ DIOPI_RT_API diopiError_t _diopiTensorCopyToBuffer(diopiContextHandle_t      ctx
     } else {
         std::memcpy(dst, tensor->data(), tensor->nbytes());
     }
+    return diopiSuccess;
+}
+
+DIOPI_RT_API diopiError_t _diopiClearTensors(diopiContextHandle_t ctx) {
+    ctx->clearTensors();
     return diopiSuccess;
 }
 
