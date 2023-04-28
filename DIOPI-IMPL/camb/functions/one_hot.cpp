@@ -63,6 +63,7 @@ diopiError_t getClassNum(diopiContextHandle_t ctx, DiopiTensor input_tensor, int
     DiopiTensor max = requiresTensor(ctx, dims, input_tensor.dtype());
     DIOPI_CALL(maxAll(ctx, (diopiTensorHandle_t)max, (diopiTensorHandle_t)input_tensor));
 
+    syncStreamInCtx(ctx);
     int32_t* ptr = reinterpret_cast<int32_t*>(malloc(max.numel() * sizeof(int32_t)));
     cnrtMemcpy(ptr, max.data(), max.numel() * sizeof(int32_t), cnrtMemcpyDevToHost);
     *cls_num = *ptr + 1;
