@@ -106,6 +106,7 @@ public:
 
         if (layout == CNNL_LAYOUT_NHWC || layout == CNNL_LAYOUT_NDHWC || layout == CNNL_LAYOUT_NLC) {
             shape[0] = dimSize[0];
+            stride[0] = dimStride[0];
             for (size_t i = 0; i < dim - 1; ++i) {
                 const int index = (i + 1) % (dim - 1) + 1;
                 shape[i + 1] = dimSize[index];

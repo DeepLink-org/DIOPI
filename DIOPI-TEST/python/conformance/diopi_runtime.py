@@ -166,6 +166,9 @@ class Context:
     def get_handle(self):
         return self.context_handle
 
+    def clear_tensors(self):
+        return self.__class__._c_lib._diopiClearTensors(self.context_handle)
+
 
 default_context = Context()
 
@@ -229,10 +232,6 @@ class Tensor:
         ctx_handle = ContextHandle()
         diopirt_lib._diopiTensorGetCtxHandle(tensor_handle, byref(ctx_handle))
         return cls(size=None, dtype=None, context_handle=ctx_handle, tensor_handle=tensor_handle)
-
-    def __del__(self):
-        diopirt_lib._diopiDestoryTensor(self.context_handle,
-                                        self.tensor_handle)
 
     def __str__(self):
         array = self.numpy()
