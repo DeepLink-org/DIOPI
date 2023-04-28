@@ -420,14 +420,13 @@ def baddbmm(input, batch1, batch2, beta, alpha, inplace=False) -> Tensor:
         input_numpy = np.repeat(input_numpy, size2[1], axis=1)
     if input_numpy.shape[2] != size3[2]:
         input_numpy = np.repeat(input_numpy, size3[2], axis=2)
-    input = Tensor.from_numpy(input_numpy)
     if inplace:
         func = check_function("diopiBaddbmmInp")
         ret = func(input.context_handle, input.tensor_handle, batch1.tensor_handle, batch2.tensor_handle, c_double(beta), c_double(alpha))
         check_returncode(ret)
         return input
     else:
-        out = raw_like(input)
+        out = Tensor.from_numpy(input_numpy)
         func = check_function("diopiBaddbmm")
         ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, batch1.tensor_handle, batch2.tensor_handle, c_double(beta), c_double(alpha))
         check_returncode(ret)
