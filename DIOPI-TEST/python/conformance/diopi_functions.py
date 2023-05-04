@@ -400,33 +400,28 @@ def baddbmm(input, batch1, batch2, beta, alpha, inplace=False) -> Tensor:
     size3 = list(batch2.size())
     assert (len(size3) == 3), 'batch2 must be 3d tensor'
     input_len = len(input.size())
-    input_numpy = input.numpy()
+    out = raw_like(input)
     if input_len == 3:
         assert (size2[2] == size3[1] and size1[0] == size2[0] and size1[0] == size3[0] or size1[0] == 1), 'invalid args'
         assert (size1[2] == size3[2] or size1[2] == 1 or size3[2] == 1), 'invalid args'
     elif input_len == 2:
         assert (((size1[1] == size3[2] or size1[1] == 1) and (size1[0] == size2[1] or size1[0] == 1))), 'invalid args'
-        input_numpy = np.expand_dims(input_numpy, axis=0)
-        input_numpy = np.repeat(input_numpy, size2[0], axis=0)
+        out = Tensor(size=(size2[0], size1[0], size1[1]), dtype=input.get_dtype())
     elif input_len == 1:
         assert (size1[0] == size3[2] or size1[0] == 1), 'invalid args'
-        input_numpy = np.expand_dims(input_numpy, axis=0)
-        input_numpy = np.repeat(input_numpy, size2[1], axis=0)
-        input_numpy = np.expand_dims(input_numpy, axis=0)
-        input_numpy = np.repeat(input_numpy, size2[0], axis=0)
-    if input_numpy.shape[0] != size2[0]:
-        input_numpy = np.repeat(input_numpy, size2[0], axis=0)
-    if input_numpy.shape[1] != size2[1]:
-        input_numpy = np.repeat(input_numpy, size2[1], axis=1)
-    if input_numpy.shape[2] != size3[2]:
-        input_numpy = np.repeat(input_numpy, size3[2], axis=2)
+        out = Tensor(size=(size2[0], size2[1], size1[0]), dtype=input.get_dtype())
+    if out.size()[0] != size2[0]:
+        out = Tensor(size=(size2[0], size1[1], size1[2]), dtype=input.get_dtype())
+    if out.size()[1] != size2[1]:
+        out = Tensor(size=(size1[0], size2[1], size1[2]), dtype=input.get_dtype())
+    if out.size()[2] != size3[2]:
+        out = Tensor(size=(size1[0], size1[1], size3[2]), dtype=input.get_dtype())
     if inplace:
         func = check_function("diopiBaddbmmInp")
         ret = func(input.context_handle, input.tensor_handle, batch1.tensor_handle, batch2.tensor_handle, c_double(beta), c_double(alpha))
         check_returncode(ret)
         return input
     else:
-        out = Tensor.from_numpy(input_numpy)
         func = check_function("diopiBaddbmm")
         ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, batch1.tensor_handle, batch2.tensor_handle, c_double(beta), c_double(alpha))
         check_returncode(ret)
