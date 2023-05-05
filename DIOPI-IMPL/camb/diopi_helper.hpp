@@ -206,25 +206,35 @@ public:
         auto shape = this->shape();
 
         if (format == MemoryFormat::Contiguous) {
-            for (int i = dim - 1; i >= 0; i--) {
-                if (strides[i] != stride) {
-                    return false;
+            for (int64_t i = dim - 1; i >= 0; i--) {
+                const auto& shape_d = shape[i];
+                if (shape_d != 1) {
+                    if (strides[i] != stride) {
+                        return false;
+                    }
                 }
-                stride *= shape[i];
+                stride *= shape_d;
             }
         } else if (format == MemoryFormat::ChannelsLast) {
             if (strides.size() != 4) return false;
-            for (auto i : {1, 3, 2, 0}) {
-                if (strides[i] != stride) {
-                    return false;
+            for (auto& i : {1, 3, 2, 0}) {
+                const auto& shape_d = shape[i];
+                if (shape_d != 1) {
+                    // shape_d != 1 help dealing with shape like [2, 2048, 1, 1]
+                    if (strides[i] != stride) {
+                        return false;
+                    }
                 }
-                stride *= shape[i];
+                stride *= shape_d;
             }
         } else if (format == MemoryFormat::ChannelsLast3d) {
             if (strides.size() != 5) return false;
-            for (auto i : {1, 4, 3, 2, 0}) {
-                if (strides[i] != stride) {
-                    return false;
+            for (auto& i : {1, 4, 3, 2, 0}) {
+                const auto& shape_d = shape[i];
+                if (shape_d != 1) {
+                    if (strides[i] != stride) {
+                        return false;
+                    }
                 }
                 stride *= shape[i];
             }
@@ -237,7 +247,16 @@ public:
         return this->numel() != 0;
     }
 
-    void reshape(const std::vector<int64_t> shape) { this->shape_ = shape; }
+    void reshape(const std::vector<int64_t> shape) {
+        // must be contiguous
+        std::vector<int64_t> stride(shape.size());
+        this->shape_ = shape;
+        stride[shape.size() - 1] = 1;
+        for (int j = shape_.size() - 2; j >= 0; j--) {
+            stride[j] = stride[j + 1] * shape[j + 1];
+        }
+        this->stride_ = stride;
+    }
 
     void* data() {
         void* p = nullptr;
@@ -251,6 +270,7 @@ public:
     }
 
     MemoryFormat suggest_memory_format() {
+        // TODO(waiting for dispatch): Performance can be improved by dividing is_contiguous into several funcs
         if (this->is_contiguous(MemoryFormat::Contiguous)) {
             return MemoryFormat::Contiguous;
         } else if (this->is_contiguous(MemoryFormat::ChannelsLast)) {
@@ -263,6 +283,8 @@ public:
     diopiTensorHandle_t tensorHandle() { return tensor_; }
 
     diopiConstTensorHandle_t tensorHandle() const { return tensor_; }
+
+    bool is_same(DiopiTensor t) { return this->tensorHandle() == t.tensorHandle(); }
 
 protected:
     diopiTensorHandle_t tensor_ = 0;
@@ -324,9 +346,10 @@ inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<in
             }
         }
     } else if (memory_format == MemoryFormat::ChannelsLast) {
-        /* NCHW -> NHWC */
         DIOPI_CHECK_ABORT(size.size() == 4, "%s", "tensor size should be 4");
-        for (auto k : {1, 3, 2, 0}) {
+        // constant array is used here to let
+        // compiler fully unroll the loop to get better performance
+        for (auto& k : {1, 3, 2, 0}) {
             strides[k] = stride;
             if (size[k] == 0) {
                 continue;
@@ -336,9 +359,8 @@ inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<in
             }
         }
     } else if (memory_format == MemoryFormat::ChannelsLast3d) {
-        /* NCDHW -> NDHWC */
         DIOPI_CHECK_ABORT(size.size() == 5, "%s", "tensor size should be 5");
-        for (auto k : {1, 4, 3, 2, 0}) {
+        for (auto& k : {1, 4, 3, 2, 0}) {
             strides[k] = stride;
             if (size[k] == 0) {
                 continue;

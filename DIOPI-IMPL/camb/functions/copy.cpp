@@ -29,7 +29,7 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
 
 
     if (src_tr.dtype() != dest_tr.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, src_tr, dest_tr.dtype()));
+        DIOPI_CALL(dataTypeCast(ctx, dest_tr, src_tr));
     }
 
     CnnlTensorDesc input_desc(dest_tr, CNNL_LAYOUT_ARRAY);
