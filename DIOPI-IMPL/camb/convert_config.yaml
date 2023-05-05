@@ -1,0 +1,19 @@
+#厂商可以不用这个额外的配置，自己在kernel里面
+#是否需要对scalar做r做
+#和厂商讨论一下yaml文件格式（寒武纪王远）
+#尽快有一个diopi补充哪些算子的评审（个性化配置、接算子需求）
+#可以先实现common配置
+# camb_convert_config.yaml
+- common_config:
+#     dtype: (int64)->int32, (float64)->float32
+    layout: NHWC
+    contiguous: False
+    
+- diopiAdd:
+    dtype: (int64)->int32, (float64)->float32
+    tensor_dtype: 
+        input: (float64)->float32
+        other: (float64, int64)->float32
+        out: (float64, int64)->float32
+    layout: NCHW, NHWC, input(NHWC)
+    contiguous: input, out
