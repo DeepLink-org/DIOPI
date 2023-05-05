@@ -747,18 +747,6 @@ device_configs = {
         ),
     ),
 
-    'cumsum': dict(
-        name=["cumsum"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.uint8)],
-                },
-            ],
-        ),
-    ),
-
     'cdist': dict(
         name=['cdist'],
         tensor_para=dict(
