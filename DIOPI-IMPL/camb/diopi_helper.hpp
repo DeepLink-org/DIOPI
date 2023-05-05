@@ -247,7 +247,18 @@ public:
         return this->numel() != 0;
     }
 
-    void reshape(const std::vector<int64_t> shape) { this->shape_ = shape; }
+    void reshape(const std::vector<int64_t> shape) { 
+        // must be contiguous
+        std::vector<int64_t> stride(shape.size());
+        this->shape_ = shape;
+        for(int i = 0; i < shape.size(); ++i){
+            stride[shape.size() -1] = 1;
+            for (int j = shape_.size() - 2; j >= 0;j--) {
+                stride[j] = stride[j + 1] * shape[j + 1]; 
+            }
+        }
+        this->stride_ = stride;
+    }
 
     void* data() {
         void* p = nullptr;

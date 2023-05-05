@@ -337,15 +337,6 @@ device_configs = {
     'matmul': dict(
         name=['matmul'],
         atol=1e-3,
-        tensor_para=dict(
-            dtype=[Dtype.float64],
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64)],
-                },
-            ],
-        ),
     ),
 
     'clamp_tensor': dict(
