@@ -10,9 +10,102 @@
 #include <vector>
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
-#include <utils.hpp>
 
 namespace diopiadaptor{
+
+inline std::vector<int64_t> calcStrides(int ndims, diopiSize_t size, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous) {
+    std::vector<int64_t> strides;
+    strides.resize(ndims);
+    int64_t st = 1;
+    if (format == diopiMemoryFormat_t::Contiguous) {
+        for (int64_t i = ndims; i > 0; --i) {
+            strides[i - 1] = st;
+            if (size.data[i - 1] == 0) continue;
+            if (size.data[i - 1] == -1) st = -1;
+            if (st != -1) st *= size.data[i - 1];
+        }
+    } else if (format == diopiMemoryFormat_t::ChannelsLast) {
+        for (auto k : {1, 3, 2, 0}) {
+            strides[k] = st;
+            if (size.data[k] == 0) {
+                continue;
+            }
+            if (size.data[k] == -1) st = -1;
+            if (st != -1) st *= size.data[k];
+        }
+    } else if (format == diopiMemoryFormat_t::ChannelsLast3d) {
+        for (auto k : {1, 4, 3, 2, 0}) {
+            strides[k] = st;
+            if (size.data[k] == 0) {
+                continue;
+            }
+            if (size.data[k] == -1) st = -1;
+            if (st != -1) {
+                st *= size.data[k];
+            }
+        }
+
+    } 
+    else {
+        // PARROTS_THROW(InvalidArgs) <<
+        //         "Invalid MemoryFormat " << memoryFormatName(format);
+    }
+    return strides;
+}
+
+inline bool isLikeChannelsLast(diopiConstTensorHandle_t tensor, bool checkContiguous, diopiMemoryFormat_t format = diopiMemoryFormat_t::ChannelsLast) {
+    diopiSize_t shape, stride;
+    diopiGetTensorShape(tensor, &shape);
+    diopiGetTensorStride(tensor, &stride);
+    if (shape.len != 4) return false;
+    int64_t totalSize = 1;
+    for (int64_t i = 0; i < shape.len; ++i) {
+        totalSize *= shape.data[i];
+    }
+    if (totalSize == 0) return false;
+    if (stride.data[0] == stride.data[1]) return false;
+    if (checkContiguous) {
+        auto realStride = calcStrides(shape.len, shape, format);
+        for (int i = 0; i < stride.len; ++i) {
+            if (i >= realStride.size() || realStride[i] != stride.data[i]) {
+                return false;
+            }
+        }
+        return true;
+    } else {
+        int64_t st = 1;
+        std::vector<int> orders;
+        if (format == diopiMemoryFormat_t::ChannelsLast)
+            orders = {1, 3, 2, 0};
+        else if (format == diopiMemoryFormat_t::ChannelsLast3d)
+            orders = {1, 4, 3, 2, 0};
+        for (auto k : orders) {
+            if (stride.data[k] < st) return false;
+            st = stride.data[k] * shape.data[k];
+        }
+        return true;
+    }
+}
+
+inline diopiMemoryFormat_t probableMemoryFormat(diopiConstTensorHandle_t tensor, bool exactMatch = false) {
+    return isLikeChannelsLast(tensor, exactMatch) ? diopiMemoryFormat_t::ChannelsLast
+        : (isLikeChannelsLast(tensor, exactMatch, diopiMemoryFormat_t::ChannelsLast3d) ? diopiMemoryFormat_t::ChannelsLast3d
+        : diopiMemoryFormat_t::Contiguous);
+}
+
+inline bool isContiguous(diopiSize_t size, diopiSize_t stride, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous) {
+    int64_t totalSize = 1;
+    for (int64_t i = 0; i < size.len; ++i) {
+        totalSize *= size.data[i];
+    }
+    if (totalSize == 0) return false;
+    if (format == diopiMemoryFormat_t::ChannelsLast && size.len != 4) return false;
+    auto st = calcStrides(size.len, size, format);
+    for (int64_t i = 0; i < size.len; ++i) {
+        if (st[i] != stride.data[i] && size.data[i] > 1) return false;
+    }
+    return true;
+}
 
 static std::vector<diopiMemoryFormat_t> defaultFormats{diopiMemoryFormat_t::Contiguous, diopiMemoryFormat_t::ChannelsLast};
 
@@ -264,7 +357,7 @@ inline diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHand
     return ::diopiConvolution2d(ctx, outWrapper, newInput, newWeight, newBias, stride, padding, dilation, groups);
 }
 
-inline diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight, diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiSize_t *bias_sizes, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool transposed, diopiSize_t output_padding, int64_t groups) {
+inline diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight, diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool transposed, diopiSize_t output_padding, int64_t groups) {
     diopiConstTensorHandle_t newGrad_output,newInput,newWeight;
     castImpl<diopiConstTensorHandle_t>(ctx, grad_output, &newGrad_output, std::vector<diopiMemoryFormat_t>{diopiMemoryFormat_t::ChannelsLast});
     castImpl<diopiConstTensorHandle_t>(ctx, input, &newInput, std::vector<diopiMemoryFormat_t>{diopiMemoryFormat_t::ChannelsLast});
@@ -272,7 +365,7 @@ inline diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTe
     auto grad_inputWrapper = DiopiTensorWrapper<>(ctx, grad_input, std::vector<diopiMemoryFormat_t>{diopiMemoryFormat_t::ChannelsLast});
     auto grad_weightWrapper = DiopiTensorWrapper<>(ctx, grad_weight, std::vector<diopiMemoryFormat_t>{diopiMemoryFormat_t::ChannelsLast});
     auto grad_biasWrapper = DiopiTensorWrapper<>(ctx, grad_bias, std::vector<diopiMemoryFormat_t>{diopiMemoryFormat_t::ChannelsLast});
-    return ::diopiConvolution2dBackward(ctx, grad_inputWrapper, grad_weightWrapper, grad_biasWrapper, newGrad_output, newInput, newWeight, *bias_sizes, stride, padding, dilation, transposed, output_padding, groups);
+    return ::diopiConvolution2dBackward(ctx, grad_inputWrapper, grad_weightWrapper, grad_biasWrapper, newGrad_output, newInput, newWeight, bias_sizes, stride, padding, dilation, transposed, output_padding, groups);
 }
 
 inline diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean, diopiTensorHandle_t save_invstd, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiTensorHandle_t running_mean, diopiTensorHandle_t running_var, bool training, double momentum, double eps) {
@@ -1760,11 +1853,11 @@ inline diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, di
     return ::diopiSgd(ctx, wWrapper, dwWrapper, bufWrapper, lr, momentum, dampening, weight_decay, nesterov);
 }
 
-inline diopiError_t diopiClipGradNorm(diopiContextHandle_t ctx, double* out, diopiTensorHandle_t *grads, int64_t num_grads, double max_norm, double norm_type, bool error_if_nonfinite) {
+inline diopiError_t diopiClipGradNorm(diopiContextHandle_t ctx, double* out, diopiTensorHandle_t* grads, int64_t num_grads, double max_norm, double norm_type, bool error_if_nonfinite) {
 
 
-    auto *gradsWrapper = DiopiTensorWrapper<>(ctx, *grads, std::vector<diopiMemoryFormat_t>{diopiMemoryFormat_t::ChannelsLast});
-    return ::diopiClipGradNorm(ctx, out, *gradsWrapper, num_grads, max_norm, norm_type, error_if_nonfinite);
+
+    return ::diopiClipGradNorm(ctx, out, grads, num_grads, max_norm, norm_type, error_if_nonfinite);
 }
 
 inline diopiError_t diopiEmbeddingRenorm_(diopiContextHandle_t ctx, diopiTensorHandle_t inout, diopiConstTensorHandle_t indices, double max_norm, double norm_type) {
@@ -2033,7 +2126,7 @@ inline diopiError_t diopiConvolution3d(diopiContextHandle_t ctx, diopiTensorHand
     return ::diopiConvolution3d(ctx, outWrapper, newInput, newWeight, newBias, stride, padding, dilation, groups);
 }
 
-inline diopiError_t diopiConvolution3dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight, diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiSize_t *bias_sizes, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool transposed, diopiSize_t output_padding, int64_t groups) {
+inline diopiError_t diopiConvolution3dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight, diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool transposed, diopiSize_t output_padding, int64_t groups) {
     diopiConstTensorHandle_t newGrad_output,newInput,newWeight;
     castImpl<diopiConstTensorHandle_t>(ctx, grad_output, &newGrad_output, std::vector<diopiMemoryFormat_t>{diopiMemoryFormat_t::ChannelsLast});
     castImpl<diopiConstTensorHandle_t>(ctx, input, &newInput, std::vector<diopiMemoryFormat_t>{diopiMemoryFormat_t::ChannelsLast});
@@ -2041,7 +2134,7 @@ inline diopiError_t diopiConvolution3dBackward(diopiContextHandle_t ctx, diopiTe
     auto grad_inputWrapper = DiopiTensorWrapper<>(ctx, grad_input, std::vector<diopiMemoryFormat_t>{diopiMemoryFormat_t::ChannelsLast});
     auto grad_weightWrapper = DiopiTensorWrapper<>(ctx, grad_weight, std::vector<diopiMemoryFormat_t>{diopiMemoryFormat_t::ChannelsLast});
     auto grad_biasWrapper = DiopiTensorWrapper<>(ctx, grad_bias, std::vector<diopiMemoryFormat_t>{diopiMemoryFormat_t::ChannelsLast});
-    return ::diopiConvolution3dBackward(ctx, grad_inputWrapper, grad_weightWrapper, grad_biasWrapper, newGrad_output, newInput, newWeight, *bias_sizes, stride, padding, dilation, transposed, output_padding, groups);
+    return ::diopiConvolution3dBackward(ctx, grad_inputWrapper, grad_weightWrapper, grad_biasWrapper, newGrad_output, newInput, newWeight, bias_sizes, stride, padding, dilation, transposed, output_padding, groups);
 }
 
 inline diopiError_t diopiMaxPool3d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceil_mode) {

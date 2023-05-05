@@ -65,7 +65,7 @@ def prepare():
         '-o',
         '--output_dir',
         help='output a list of source files into the given directory',
-        default='./include')
+        default='./')
     parser.add_argument(
         '-c',
         '--config_device',
