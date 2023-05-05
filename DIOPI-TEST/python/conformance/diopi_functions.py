@@ -400,28 +400,29 @@ def baddbmm(input, batch1, batch2, beta, alpha, inplace=False) -> Tensor:
     size3 = list(batch2.size())
     assert (len(size3) == 3), 'batch2 must be 3d tensor'
     input_len = len(input.size())
-    out = raw_like(input)
+    out_shape = size1
     if input_len == 3:
         assert (size2[2] == size3[1] and size1[0] == size2[0] and size1[0] == size3[0] or size1[0] == 1), 'invalid args'
         assert (size1[2] == size3[2] or size1[2] == 1 or size3[2] == 1), 'invalid args'
     elif input_len == 2:
         assert (((size1[1] == size3[2] or size1[1] == 1) and (size1[0] == size2[1] or size1[0] == 1))), 'invalid args'
-        out = Tensor(size=(size2[0], size1[0], size1[1]), dtype=input.get_dtype())
+        out_shape = (size2[0], size1[0], size1[1])
     elif input_len == 1:
         assert (size1[0] == size3[2] or size1[0] == 1), 'invalid args'
-        out = Tensor(size=(size2[0], size2[1], size1[0]), dtype=input.get_dtype())
-    if out.size()[0] != size2[0]:
-        out = Tensor(size=(size2[0], size1[1], size1[2]), dtype=input.get_dtype())
-    if out.size()[1] != size2[1]:
-        out = Tensor(size=(size1[0], size2[1], size1[2]), dtype=input.get_dtype())
-    if out.size()[2] != size3[2]:
-        out = Tensor(size=(size1[0], size1[1], size3[2]), dtype=input.get_dtype())
+        out_shape = (size2[0], size2[1], size1[0])
+    if out_shape[0] != size2[0]:
+        out_shape = (size2[0], size1[1], size1[2])
+    if out_shape[1] != size2[1]:
+        out_shape = (size1[0], size2[1], size1[2])
+    if out_shape[2] != size3[2]:
+        out_shape = (size1[0], size1[1], size3[2])
     if inplace:
         func = check_function("diopiBaddbmmInp")
         ret = func(input.context_handle, input.tensor_handle, batch1.tensor_handle, batch2.tensor_handle, c_double(beta), c_double(alpha))
         check_returncode(ret)
         return input
     else:
+        out = Tensor(size=out_shape, dtype=input.get_dtype())
         func = check_function("diopiBaddbmm")
         ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, batch1.tensor_handle, batch2.tensor_handle, c_double(beta), c_double(alpha))
         check_returncode(ret)
