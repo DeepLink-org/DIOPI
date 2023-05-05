@@ -34,7 +34,8 @@ void printDevData(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max
     std::cout << std::endl;
 }
 
-void printDevDataUint8Int8(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max_len) {
+template<>
+void printDevData<int8_t>(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max_len, int8_t _) {
     int bytes = len;
     std::unique_ptr ptr(new char[bytes]);
     std::cout << "data address:" << data << std::endl;
@@ -47,13 +48,8 @@ void printDevDataUint8Int8(diopiContextHandle_t ctx, void* data, int64_t len, in
 }
 
 template<>
-void printDevData<int8_t>(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max_len, int8_t _) {
-    printDevDataUint8Int8(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max_len);
-}
-
-template<>
 void printDevData<uint8_t>(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max_len, uint8_t _) {
-    printDevDataUint8Int8(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max_len);
+    printDevData<int8_t>(ctx, data, len, max_len, static_cast<int8_t>(_));
 }
 
 static void print_backtrace() {
