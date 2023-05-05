@@ -527,18 +527,6 @@ device_configs = {
         ),
     ),
 
-    'one_hot': dict(
-        name=["one_hot"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64)],
-                },
-            ],
-        ),
-    ),
-
     'split': dict(
         name=["split"],
         tensor_para=dict(
