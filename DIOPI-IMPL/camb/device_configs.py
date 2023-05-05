@@ -337,15 +337,6 @@ device_configs = {
     'matmul': dict(
         name=['matmul'],
         atol=1e-3,
-        tensor_para=dict(
-            dtype=[Dtype.float64],
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64)],
-                },
-            ],
-        ),
     ),
 
     'clamp_tensor': dict(
@@ -522,18 +513,6 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
                               Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
                               Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'one_hot': dict(
-        name=["one_hot"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64)],
                 },
             ],
         ),
@@ -742,18 +721,6 @@ device_configs = {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
                               Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'cumsum': dict(
-        name=["cumsum"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.uint8)],
                 },
             ],
         ),
