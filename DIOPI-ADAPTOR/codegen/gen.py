@@ -7,6 +7,7 @@ from filemanager import FileManager
 from op_template import OpTemplate as OT
 from code_template import CodeTemplate
 
+
 str_to_diopi_dtype = {
     'uint64': 'diopiDtype_t::diopi_dtype_uint64',
     'int64': 'diopiDtype_t::diopi_dtype_int64',
@@ -84,6 +85,7 @@ def prepare():
                 output_dir=options.output_dir,
                 config_path=config_path)
     return dirs
+
 
 def get_func_info(content):
     args = []
@@ -203,6 +205,7 @@ def get_functions_support(source_dir):
                 if 'grad_' + out in funcs_info[func]['ins']:
                     funcs_info[func]['ins']['grad_' + out] = from_func_info['outs'][out]
     return funcs_info
+
 
 def deal_dtype(op_name, dtype_config, func_infos, tensor_name = None):
     strategy = {}
@@ -399,6 +402,7 @@ for (int i = 0; i < ${num}; ++i) {
             adaptors_code.append(OT.adaptor_template.substitute(env=dict(op_name=op_name, attrs=', '.join(func_infos[func]['call_args']),
                                 new_input=new_input, cast_input=cast_ins, cast_output=cast_outs, call_func=func+'('+', '.join(call_args)+');')))
     return adaptors_code
+
 
 def gen_autogen_operators(dirs, adaptor_fm):
     config_file_path = os.path.join(dirs.get('config_path'), 'convert_config.yaml')
