@@ -165,7 +165,8 @@ def get_functions_support(source_dir):
             if func_name not in funcs_info.keys():
                 funcs_info[func_name] = {}
             funcs_info[func_name]['call_args'] = args
-            if (param_dtypes == {} and func_dtypes == [] and sa_func == None) or ins == None:
+            # if (param_dtypes == {} and func_dtypes == [] and sa_func == None) or ins == None:
+            if ins == None:
                 continue
             if ins_v:
                 funcs_info[func_name]['ins_vector'] = ins_v
@@ -225,9 +226,10 @@ def deal_dtype(op_name, dtype_config, func_infos, tensor_name = None):
             from_dtypes = r.group(1).replace(' ', '').split(',')
             to_dtype = r.group(2)
         for f in from_dtypes:
-            assert (op_name == 'Common' or not tensor_name) or \
-                    (tensor_name in func_infos[op_name]['ins'].keys() and f in func_infos[op_name]['ins'][tensor_name]) or \
-                    (tensor_name in func_infos[op_name]['outs'].keys())
+            # TODO(xintian) : delete '#' when all functions has note
+            # assert (op_name == 'Common' or not tensor_name) or \
+            #         (tensor_name in func_infos[op_name]['ins'].keys() and f in func_infos[op_name]['ins'][tensor_name]) or \
+            #         (tensor_name in func_infos[op_name]['outs'].keys())
             strategy[f.lower()] = to_dtype.lower()
     for s in cast_strategy:
         if len(cast_strategy[s].keys()) != len(strategy.keys()):
