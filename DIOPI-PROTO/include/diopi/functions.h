@@ -36,6 +36,13 @@ typedef struct {
     };
 } diopiScalar_t;
 
+typedef enum {
+    Contiguous      = 0,
+    ChannelsLast    = 1,
+    ChannelsLast3d  = 2,
+    Preserve        = 3
+} diopiMemoryFormat_t;
+
 
 /**
  * \brief get the vendor's name who implements the functions
