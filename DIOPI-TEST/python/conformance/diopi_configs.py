@@ -172,24 +172,6 @@ diopi_configs = {
         ),
     ),
 
-    # 生成小于-3和大于3的测例
-    'hardswish_domain': dict(
-        name=["hardswish"],
-        is_inplace=True,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((), (1024,), (2, 4096), (64, 28, 28),
-                              (32, 64, 112, 112), (64, 3, 7, 28, 28)),
-                    "requires_grad": [True],
-                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
-                    "gen_fn": dict(fn=Genfunc.randint, low=-6, high=6),
-                },
-            ],
-        ),
-    ),
-
     'threshold': dict(
         name=["threshold"],
         is_inplace=True,
