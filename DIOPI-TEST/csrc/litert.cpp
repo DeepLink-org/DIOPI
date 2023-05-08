@@ -7,7 +7,6 @@
 
 #include <conform_test.h>
 #include <diopi/diopirt.h>
-#include <diopi/functions.h>
 #include <inttypes.h>
 
 #include <cassert>
@@ -51,22 +50,6 @@ DIOPI_RT_API const char* diopiGetVersion() {
 static void* host_malloc(uint64_t bytes) { return malloc(bytes); }
 
 static void host_free(void* ptr) { free(ptr); }
-
-// DIOPI_RT_API const char* diopiGetLastErrorString() {
-//     return device_get_last_error_string();
-// }
-
-void _getLastErrorString(const char** strErr) {
-    // TODO(waiting for dispatch): make sure diopiGetLastErrorString is defined
-    // eg: remove weak definition
-    if (diopiGetLastErrorString != nullptr) {
-        const char* str = diopiGetLastErrorString();
-        *strErr = str;
-    } else {
-        *strErr = "`diopiGetLastErrorString` function pointer is nullptr."
-        " You can't get the correct error string, please check your compilation and linking";
-    }
-}
 
 int32_t itemsize(const diopiDtype_t dtype) {
     switch (dtype) {
