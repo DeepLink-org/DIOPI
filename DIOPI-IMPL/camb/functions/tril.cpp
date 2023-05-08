@@ -18,11 +18,6 @@ DIOPI_API diopiError_t diopiTril(diopiContextHandle_t ctx, diopiTensorHandle_t o
     DiopiTensor input_tensor(input);
     DiopiTensor out_tensor(out);
 
-    if (input_tensor.dtype() == diopi_dtype_uint8) {
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_int32));
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_int8));
-    }
-
     std::vector<DiopiTensor*> pTensors{&input_tensor};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_int8, diopi_dtype_int16, diopi_dtype_int32, diopi_dtype_float16, diopi_dtype_float32}));
     DiopiTensor input_tensor_tmp = *pTensors[0];
@@ -33,9 +28,6 @@ DIOPI_API diopiError_t diopiTril(diopiContextHandle_t ctx, diopiTensorHandle_t o
     CnnlTensorDesc out_desc(out_tensor_tmp, CNNL_LAYOUT_ARRAY);
 
     DIOPI_CALLCNNL(cnnlTri(handle, static_cast<int>(diagonal), false, input_desc.get(), input_tensor_tmp.data(), out_desc.get(), out_tensor_tmp.data()));
-    if (out_tensor.dtype() == diopi_dtype_uint8) {
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor_tmp, diopi_dtype_float32));
-    }
     DIOPI_CALL(dataTypeCast(ctx, out_tensor, out_tensor_tmp));
 
     return diopiSuccess;
