@@ -7,7 +7,7 @@ namespace camb {
 
 extern "C" {
 
-DIOPI_API diopiError_t diopiPowTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t exponent) {
+diopiError_t diopiPowTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t exponent) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor input_tensor(input);
     DiopiTensor exponent_tensor(exponent);
@@ -56,24 +56,24 @@ DIOPI_API diopiError_t diopiPowTensor(diopiContextHandle_t ctx, diopiTensorHandl
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiPowInpTensor(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t exponent) {
+diopiError_t diopiPowInpTensor(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t exponent) {
     DIOPI_CALL(diopiPowTensor(ctx, input, input, exponent));
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiPow(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* exponent) {
+diopiError_t diopiPow(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* exponent) {
     DiopiTensor exponent_tensor;
     makeTensorFromScalar(ctx, exponent, exponent_tensor);
     DIOPI_CALL(diopiPowTensor(ctx, out, input, static_cast<diopiTensorHandle_t>(exponent_tensor)));
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiPowInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* exponent) {
+diopiError_t diopiPowInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* exponent) {
     DIOPI_CALL(diopiPow(ctx, input, input, exponent));
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiPowScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiScalar_t* input, diopiConstTensorHandle_t exponent) {
+diopiError_t diopiPowScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiScalar_t* input, diopiConstTensorHandle_t exponent) {
     DiopiTensor input_tensor;
     makeTensorFromScalar(ctx, input, input_tensor);
     DIOPI_CALL(diopiPowTensor(ctx, out, static_cast<diopiTensorHandle_t>(input_tensor), exponent));
