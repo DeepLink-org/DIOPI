@@ -247,7 +247,16 @@ public:
         return this->numel() != 0;
     }
 
-    void reshape(const std::vector<int64_t> shape) { this->shape_ = shape; }
+    void reshape(const std::vector<int64_t> shape) {
+        // must be contiguous
+        std::vector<int64_t> stride(shape.size());
+        this->shape_ = shape;
+        stride[shape.size() - 1] = 1;
+        for (int j = shape_.size() - 2; j >= 0; j--) {
+            stride[j] = stride[j + 1] * shape[j + 1];
+        }
+        this->stride_ = stride;
+    }
 
     void* data() {
         void* p = nullptr;
@@ -275,9 +284,7 @@ public:
 
     diopiConstTensorHandle_t tensorHandle() const { return tensor_; }
 
-    bool is_same(DiopiTensor t) {
-        return this->tensorHandle() == t.tensorHandle();
-    }
+    bool is_same(DiopiTensor t) { return this->tensorHandle() == t.tensorHandle(); }
 
 protected:
     diopiTensorHandle_t tensor_ = 0;

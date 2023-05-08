@@ -337,15 +337,6 @@ device_configs = {
     'matmul': dict(
         name=['matmul'],
         atol=1e-3,
-        tensor_para=dict(
-            dtype=[Dtype.float64],
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64)],
-                },
-            ],
-        ),
     ),
 
     'clamp_tensor': dict(
@@ -1382,20 +1373,6 @@ device_configs = {
                     "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
                 },
             ]
-        ),
-    ),
-
-    'flip': dict(
-        name=['flip'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
         ),
     ),
 
