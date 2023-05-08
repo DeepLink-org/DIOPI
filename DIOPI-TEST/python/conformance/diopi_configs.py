@@ -4354,9 +4354,10 @@ diopi_configs = {
         name=["normal"],
         no_output_ref=True,
         para=dict(
-            mean=[0, 0.1],
-            std=[1, 2],
-            size=[(32, 8), (32, 2, 3, 3)],
+            mean=[-1, -0.5, 0, 0.1, 2, True, False],
+            std=[0, 0.5, 1, 2.3, 3, True, True],
+            size=[(), (128,), (32, 16), (32, 8),
+                  (32, 8), (2, 2, 2, 16), (32, 2, 3, 3)],
         ),
     ),
 
@@ -4383,15 +4384,16 @@ diopi_configs = {
         name=["normal"],
         no_output_ref=True,
         para=dict(
-            mean=[0, 0.5],
+            mean=[-1, -0.5, 0, 0.1, 2],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.positive,
             args=[
                 {
                     "ins": ['std'],
-                    "shape": ((256, 256, 3, 3), (256, 128, 1, 1)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "shape": ((), (16,), (8, 4),
+                              (256, 256, 3, 3), (256, 128, 1, 1)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
             ]
         ),
@@ -4401,15 +4403,15 @@ diopi_configs = {
         name=["normal"],
         no_output_ref=True,
         para=dict(
-            std=[0.1, 0.024056261216234408],
+            std=[0.5, 0.1, 0.054056261216234408, 2, 5],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['mean'],
-                    "shape": ((256, 256, 3, 3), (256, 128, 1, 1)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "shape": ((), (16,), (8, 4), (256, 256, 3, 3), (256, 128, 1, 1)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
             ]
         ),
@@ -4423,13 +4425,17 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['mean'],
-                    "shape": ((256, 256, 3, 3), (256, 128, 1, 1)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    # (3, 4), (4,16,),will be removed in version 1.6 release
+                    "shape": ((), (16, 64), (8, 8, 16), (256, 1, 3, 3), (256, 128, 3, 1)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
                 {
                     "ins": ['std'],
-                    "shape": ((256, 256, 3, 3), (256, 128, 1, 1)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    # (12,), (2,4,4,2), will be removed in version 1.6 release
+                    "shape": ((128,), (16, 64), (8, 16), (256, 256, 3, 3), (256, 128, 1, 1)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64,
+                              Dtype.int16, Dtype.int32, Dtype.int64,
+                              Dtype.int8, Dtype.uint8, Dtype.bool],
                     "gen_fn": Genfunc.positive,
                 },
             ]

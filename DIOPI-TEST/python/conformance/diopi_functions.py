@@ -3541,8 +3541,14 @@ def repeat(input, repeats):
 def normal(mean, std, size=None):
     call = "diopiNormal"
     if isinstance(mean, Tensor) and isinstance(std, Tensor):
-        assert mean.numel() == std.numel(), 'the total number of elements in each tensor need to be the same.'
-        out = Tensor(mean.size(), mean.get_dtype())
+        sizeX1 = list(mean.size())
+        sizeX2 = list(std.size())
+        if mean.numel() <= std.numel():
+            out_size = infer_size(sizeX1, sizeX2)
+            out = Tensor(out_size, std.get_dtype())
+        if mean.numel() > std.numel():
+            out_size = infer_size(sizeX1, sizeX2)
+            out = Tensor(out_size, mean.get_dtype())
         call += "Tensor"
     elif isinstance(mean, Tensor):
         out = Tensor(mean.size(), mean.get_dtype())
@@ -3551,9 +3557,10 @@ def normal(mean, std, size=None):
         out = Tensor(std.size(), std.get_dtype())
         call += "ScalarTensor"
     else:
-        assert size is not None, "need the shape of output while both mean and std are scalar"
-        out = Tensor(size, Dtype.float32)
-
+        if size is not None:
+            out = Tensor(size, Dtype.float32)
+        else:
+            out = Tensor((), Dtype.float32)
     arg_mean = mean.tensor_handle if isinstance(mean, Tensor) else c_double(mean)
     arg_std = std.tensor_handle if isinstance(std, Tensor) else c_double(std)
     func = check_function(call)
