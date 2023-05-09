@@ -17,6 +17,8 @@ str_to_diopi_dtype = {
     'int16': 'diopiDtype_t::diopi_dtype_int16',
     'uint16': 'diopiDtype_t::diopi_dtype_uint16',
     'int16': 'diopiDtype_t::diopi_dtype_int16',
+    'uint8': 'diopiDtype_t::diopi_dtype_uint8',
+    'int8': 'diopiDtype_t::diopi_dtype_int8',
     'float64': 'diopiDtype_t::diopi_dtype_float64',
     'float32': 'diopiDtype_t::diopi_dtype_float32',
     'float16': 'diopiDtype_t::diopi_dtype_float16',
