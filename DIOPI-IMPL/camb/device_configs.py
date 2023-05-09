@@ -40,18 +40,6 @@ device_configs = {
         ),
     ),
 
-    'hardswish': dict(
-        name=["hardswish"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
-
     'gelu': dict(
         name=['gelu'],
         tensor_para=dict(
@@ -205,18 +193,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
-    'silu': dict(
-        name=["silu"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
             ],
         ),
