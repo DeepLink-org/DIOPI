@@ -125,7 +125,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erf', 'rsqrt', 'floor'],
+        name=['rsqrt', 'floor'],
         tensor_para=dict(
             args=[
                 {
@@ -137,7 +137,7 @@ device_configs = {
     ),
 
     'pointwise_op_int_without_inplace': dict(
-        name=['erf', 'rsqrt'],
+        name=['rsqrt'],
         tensor_para=dict(
             args=[
                 {
@@ -149,7 +149,7 @@ device_configs = {
     ),
 
     'pointwise_op_bool': dict(
-        name=['erf', 'rsqrt'],
+        name=['rsqrt'],
         tensor_para=dict(
             args=[
                 {
