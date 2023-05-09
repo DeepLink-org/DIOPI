@@ -222,33 +222,6 @@ device_configs = {
         ),
     ),
 
-    'pointwise_binary': dict(
-        name=['mul'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8)],
-                },
-
-            ],
-        ),
-    ),
-
-    'pointwise_binary_dtype_bool': dict(
-        name=['mul'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
     'div': dict(
         name=['div'],
         tensor_para=dict(
@@ -281,18 +254,6 @@ device_configs = {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
                               Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'pointwise_binary_scalar': dict(
-        name=['mul'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32)],
                 },
             ],
         ),
