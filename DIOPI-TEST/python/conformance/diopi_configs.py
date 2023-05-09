@@ -3850,31 +3850,31 @@ diopi_configs = {
             ],
         ),
     ),
-    
-    'remainder_other_zero': dict(	
-        name=['remainder'],	
-        interface=['torch'],	
-        atol=1e-4,	
-        rtol=1e-5,	
-        tensor_para=dict(	
-            gen_fn=Genfunc.randn,	
-            args=[	
-                {	
-                    "ins": ['input'],	
-                    "shape": ((6, ), (4, 5)),	
-                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,	
-                              Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.float32],	
-                    "gen_fn": Genfunc.randn,	
-                },	
-                {	
-                    "ins": ['other'],	
-                    "shape": ((6, ), (4, 1)),	
-                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,	
-                              Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],	
-                    "gen_fn": Genfunc.zeros,	
-                },	
-            ],	
-        ),	
+
+    'remainder_other_zero': dict(
+        name=['remainder'],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-5,
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((6, ), (4, 5)),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,
+                              Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ['other'],
+                    "shape": ((6, ), (4, 1)),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,
+                              Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
+                    "gen_fn": Genfunc.zeros,
+                },
+            ],
+        ),
     ),
 
     'remainder_scalar': dict(
