@@ -221,7 +221,21 @@ device_configs = {
             ],
         ),
     ),
+    
+    'pointwise_binary': dict(
+        name=['mul'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    ## when dtype of input is uint8, output might overflow.
+                    "dtype": [Skip(Dtype.uint8)],
+                },
 
+            ],
+        ),
+    ),
+    
     'div': dict(
         name=['div'],
         tensor_para=dict(
