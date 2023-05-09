@@ -395,20 +395,34 @@ def bmm(input, mat2) -> Tensor:
 
 def baddbmm(input, batch1, batch2, beta, alpha, inplace=False) -> Tensor:
     size1 = list(input.size())
-    assert (len(size1) == 3), 'input must be 3d tensor'
     size2 = list(batch1.size())
     assert (len(size2) == 3), 'batch1 must be 3d tensor'
     size3 = list(batch2.size())
     assert (len(size3) == 3), 'batch2 must be 3d tensor'
-    assert (size2[2] == size3[1] and size1[0] == size2[0] and size1[0] == size3[0]), 'invalid args'
-    assert (size1[2] == size3[2] or size1[2] == 1 or size3[2] == 1), 'invalid args'
+    input_len = len(input.size())
+    out_shape = size1
+    if input_len == 3:
+        assert (size2[2] == size3[1] and size1[0] == size2[0] and size1[0] == size3[0] or size1[0] == 1), 'invalid args'
+        assert (size1[2] == size3[2] or size1[2] == 1 or size3[2] == 1), 'invalid args'
+    elif input_len == 2:
+        assert (((size1[1] == size3[2] or size1[1] == 1) and (size1[0] == size2[1] or size1[0] == 1))), 'invalid args'
+        out_shape = (size2[0], size1[0], size1[1])
+    elif input_len == 1:
+        assert (size1[0] == size3[2] or size1[0] == 1), 'invalid args'
+        out_shape = (size2[0], size2[1], size1[0])
+    if out_shape[0] != size2[0]:
+        out_shape = (size2[0], size1[1], size1[2])
+    if out_shape[1] != size2[1]:
+        out_shape = (size1[0], size2[1], size1[2])
+    if out_shape[2] != size3[2]:
+        out_shape = (size1[0], size1[1], size3[2])
     if inplace:
         func = check_function("diopiBaddbmmInp")
         ret = func(input.context_handle, input.tensor_handle, batch1.tensor_handle, batch2.tensor_handle, c_double(beta), c_double(alpha))
         check_returncode(ret)
         return input
     else:
-        out = raw_like(input)
+        out = Tensor(size=out_shape, dtype=input.get_dtype())
         func = check_function("diopiBaddbmm")
         ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, batch1.tensor_handle, batch2.tensor_handle, c_double(beta), c_double(alpha))
         check_returncode(ret)
@@ -2305,12 +2319,36 @@ def cumsum(input, dim, dtype=None):
     return out
 
 
+def infer_size(a, b):
+    dimsA = len(a)
+    dimsB = len(b)
+    ndim = dimsA if dimsA >= dimsB else dimsB
+    expanded_sizes = [0] * ndim
+    for i in range(ndim - 1, -1, -1):
+        offset = ndim - 1 - i
+        dimA = dimsA - 1 - offset
+        dimB = dimsB - 1 - offset
+        sizeA = a[dimA] if dimA >= 0 else 1
+        sizeB = b[dimB] if dimB >= 0 else 1
+        assert sizeA == sizeB or sizeA == 1 or sizeB == 1, \
+            f"The size of tensor a ({sizeA}) must match the size of tensor b ({sizeB}) at non-singleton dimension {i}"
+        expanded_sizes[i] = sizeA if sizeA != 1 else sizeB
+    return expanded_sizes
+
+
 def cdist(x1, x2, p, compute_mode=None):
     sizeX1 = list(x1.size())
     sizeX2 = list(x2.size())
-    assert len(sizeX1) == len(sizeX2) and len(sizeX1) > 1, "cdist only supports at least 2D tensors"
+    dim1 = len(sizeX1)
+    dim2 = len(sizeX2)
+    assert dim1 > 1 and dim2 > 1, "cdist only supports at least 2D tensors"
     assert sizeX1[-1] == sizeX2[-1], "X1 and X2 must have the same number of elements at the last dimension"
-
+    row1 = sizeX1[-2]
+    row2 = sizeX2[-2]
+    batch_tensor1 = sizeX1[:-2]
+    batch_tensor2 = sizeX2[:-2]
+    expand_batch_portion = infer_size(batch_tensor1, batch_tensor2)
+    out_shape = expand_batch_portion + [row1, row2]
     if compute_mode is not None:
         if compute_mode == 'use_mm_for_euclid_dist':
             compute_mode = 1
@@ -2319,15 +2357,7 @@ def cdist(x1, x2, p, compute_mode=None):
         compute_mode = byref(c_int64(compute_mode))
     else:
         compute_mode = c_void_p()
-
-    sizeO = sizeX1
-    length = len(sizeX1)
-    for i in range(length - 2):
-        assert sizeX1[i] == sizeX2[i] or sizeX1[i] == 1 or sizeX2[i] == 1,\
-            "size1 and size2 must be broadcastable"
-        sizeO[i] = sizeX1[i] if sizeX2[i] == 1 else sizeX2[i]
-    sizeO[-1] = sizeX2[-2]
-    out = Tensor(sizeO, x1.get_dtype())
+    out = Tensor(out_shape, x1.get_dtype())
     func = check_function("diopiCdist")
     ret = func(x1.context_handle, out.tensor_handle, x1.tensor_handle, x2.tensor_handle, c_double(p), compute_mode)
     check_returncode(ret)
@@ -2336,15 +2366,37 @@ def cdist(x1, x2, p, compute_mode=None):
 
 def cdist_backward(x1, grad_outputs, output, x2, p, **kwargs):
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
-    sizeX1 = x1.size()
-    sizeX2 = x2.size()
-    assert len(sizeX1) == len(sizeX2) and len(sizeX1) > 1, "cdist only supports at least 2D tensors"
+    sizeX1 = list(x1.size())
+    sizeX2 = list(x2.size())
+    dim1 = len(sizeX1)
+    dim2 = len(sizeX2)
+    assert dim1 > 1 and dim2 > 1, "cdist only supports at least 2D tensors"
     assert sizeX1[-1] == sizeX2[-1], "X1 and X2 must have the same number of elements at the last dimension"
-
-    grad_x1 = raw_like(x1)
+    column1 = sizeX1[-1]
+    row1 = sizeX1[-2]
+    batch_tensor1 = sizeX1[:-2]
+    batch_tensor2 = sizeX2[:-2]
+    expand_batch_portion = infer_size(batch_tensor1, batch_tensor2)
+    grad_x1_shape = expand_batch_portion + [row1, column1]
+    grad_x1 = Tensor(grad_x1_shape, x1.get_dtype())
     func = check_function("diopiCdistBackward")
     ret = func(x1.context_handle, grad_x1.tensor_handle, grad_outputs[0].tensor_handle, x1.tensor_handle,
                x2.tensor_handle, c_double(p), output.tensor_handle)
+    grad_x1 = grad_x1.numpy()
+    i = len(grad_x1.shape) - 1
+    j = dim1 - 1
+    while i >= 0 and j >= 0 and len(grad_x1.shape) != dim1:
+        while i > 0 and j > 0 and grad_x1.shape[i] != sizeX1[j]:
+            grad_x1 = np.sum(grad_x1, axis=i)
+            i -= 1
+        j = j - 1
+        i = i - 1
+    if i == 0 and j == -1:
+        grad_x1 = np.sum(grad_x1, axis=i)
+    for index in range(dim1):
+        if sizeX1[index] != grad_x1.shape[index]:
+            grad_x1 = np.sum(grad_x1, axis=index, keepdims=True)
+    grad_x1 = Tensor.from_numpy(grad_x1)
     check_returncode(ret)
     return {'x1': grad_x1}
 
@@ -3489,8 +3541,14 @@ def repeat(input, repeats):
 def normal(mean, std, size=None):
     call = "diopiNormal"
     if isinstance(mean, Tensor) and isinstance(std, Tensor):
-        assert mean.numel() == std.numel(), 'the total number of elements in each tensor need to be the same.'
-        out = Tensor(mean.size(), mean.get_dtype())
+        sizeX1 = list(mean.size())
+        sizeX2 = list(std.size())
+        if mean.numel() <= std.numel():
+            out_size = infer_size(sizeX1, sizeX2)
+            out = Tensor(out_size, std.get_dtype())
+        if mean.numel() > std.numel():
+            out_size = infer_size(sizeX1, sizeX2)
+            out = Tensor(out_size, mean.get_dtype())
         call += "Tensor"
     elif isinstance(mean, Tensor):
         out = Tensor(mean.size(), mean.get_dtype())
@@ -3499,9 +3557,10 @@ def normal(mean, std, size=None):
         out = Tensor(std.size(), std.get_dtype())
         call += "ScalarTensor"
     else:
-        assert size is not None, "need the shape of output while both mean and std are scalar"
-        out = Tensor(size, Dtype.float32)
-
+        if size is not None:
+            out = Tensor(size, Dtype.float32)
+        else:
+            out = Tensor((), Dtype.float32)
     arg_mean = mean.tensor_handle if isinstance(mean, Tensor) else c_double(mean)
     arg_std = std.tensor_handle if isinstance(std, Tensor) else c_double(std)
     func = check_function(call)

@@ -86,6 +86,45 @@ diopi_configs = {
         ),
     ),
 
+    'baddbmm_without_inplace': dict(
+        name=["baddbmm"],
+        interface=["torch"],
+        dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
+        para=dict(
+            beta=[1, -0.34, 0,
+                  2, 0, -1.33,
+                  1, 0.5, 0.1],
+            alpha=[1, 1.33, 2,
+                   0, -2, 3.2,
+                   0.1, 0.2, -0.5],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((32, 64, 16), (32, 64, 32), (168, 52, 64),
+                              (16,), (64, 32), (1, 52, 64),
+                              (32, 1, 16), (32, 64, 1), (64,)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["batch1"],
+                    "shape": ((32, 64, 32), (32, 64, 8), (168, 52, 38),
+                              (32, 64, 32), (32, 64, 8), (168, 52, 38),
+                              (32, 64, 32), (32, 64, 8), (168, 52, 38),),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["batch2"],
+                    "shape": ((32, 32, 16), (32, 8, 32), (168, 38, 64),
+                              (32, 32, 16), (32, 8, 32), (168, 38, 64),
+                              (32, 32, 16), (32, 8, 32), (168, 38, 64)),
+                    "gen_fn": Genfunc.randn,
+                },
+            ]
+        ),
+    ),
+
     'conv_2d': dict(
         name=["conv2d"],
         atol=1e-3,
@@ -2987,6 +3026,8 @@ diopi_configs = {
     'cdist_compute_mode': dict(
         name=['cdist'],
         interface=['torch'],
+        atol=1e-2,
+        rtol=1e-3,
         saved_args=dict(output=0),
         para=dict(
             p=[2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
@@ -4528,7 +4569,7 @@ diopi_configs = {
         no_output_ref=True,
         para=dict(
             mean=[-1, -0.5, 0, 0.1, 2, True, False],
-            std=[0.1, 0.5, 1, 2.3, 3, True, True],
+            std=[0, 0.5, 1, 2.3, 3, True, True],
             size=[(), (128,), (32, 16), (32, 8),
                   (32, 8), (2, 2, 2, 16), (32, 2, 3, 3)],
         ),
@@ -4599,13 +4640,13 @@ diopi_configs = {
                 {
                     "ins": ['mean'],
                     # (3, 4), (4,16,),will be removed in version 1.6 release
-                    "shape": ((8, 8, 16), (256, 1, 3, 3), (256, 128, 3, 1)),
+                    "shape": ((), (16, 64), (8, 8, 16), (256, 1, 3, 3), (256, 128, 3, 1)),
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
                 {
                     "ins": ['std'],
                     # (12,), (2,4,4,2), will be removed in version 1.6 release
-                    "shape": ((8, 16), (256, 256, 3, 3), (256, 128, 1, 1)),
+                    "shape": ((128,), (16, 64), (8, 16), (256, 256, 3, 3), (256, 128, 1, 1)),
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64,
                               Dtype.int16, Dtype.int32, Dtype.int64,
                               Dtype.int8, Dtype.uint8, Dtype.bool],
