@@ -143,7 +143,7 @@ atexit.register(on_diopi_rt_exit)
 
 def get_last_error():
     last_error_str = c_char_p()
-    diopirt_lib._getLastErrorString(byref(last_error_str))
+    device_impl_lib.diopiGetLastErrorString(byref(last_error_str))
     if last_error_str.value is not None:
         last_error_str = str(last_error_str.value, encoding="utf-8")
     return last_error_str

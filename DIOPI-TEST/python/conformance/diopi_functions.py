@@ -395,20 +395,34 @@ def bmm(input, mat2) -> Tensor:
 
 def baddbmm(input, batch1, batch2, beta, alpha, inplace=False) -> Tensor:
     size1 = list(input.size())
-    assert (len(size1) == 3), 'input must be 3d tensor'
     size2 = list(batch1.size())
     assert (len(size2) == 3), 'batch1 must be 3d tensor'
     size3 = list(batch2.size())
     assert (len(size3) == 3), 'batch2 must be 3d tensor'
-    assert (size2[2] == size3[1] and size1[0] == size2[0] and size1[0] == size3[0]), 'invalid args'
-    assert (size1[2] == size3[2] or size1[2] == 1 or size3[2] == 1), 'invalid args'
+    input_len = len(input.size())
+    out_shape = size1
+    if input_len == 3:
+        assert (size2[2] == size3[1] and size1[0] == size2[0] and size1[0] == size3[0] or size1[0] == 1), 'invalid args'
+        assert (size1[2] == size3[2] or size1[2] == 1 or size3[2] == 1), 'invalid args'
+    elif input_len == 2:
+        assert (((size1[1] == size3[2] or size1[1] == 1) and (size1[0] == size2[1] or size1[0] == 1))), 'invalid args'
+        out_shape = (size2[0], size1[0], size1[1])
+    elif input_len == 1:
+        assert (size1[0] == size3[2] or size1[0] == 1), 'invalid args'
+        out_shape = (size2[0], size2[1], size1[0])
+    if out_shape[0] != size2[0]:
+        out_shape = (size2[0], size1[1], size1[2])
+    if out_shape[1] != size2[1]:
+        out_shape = (size1[0], size2[1], size1[2])
+    if out_shape[2] != size3[2]:
+        out_shape = (size1[0], size1[1], size3[2])
     if inplace:
         func = check_function("diopiBaddbmmInp")
         ret = func(input.context_handle, input.tensor_handle, batch1.tensor_handle, batch2.tensor_handle, c_double(beta), c_double(alpha))
         check_returncode(ret)
         return input
     else:
-        out = raw_like(input)
+        out = Tensor(size=out_shape, dtype=input.get_dtype())
         func = check_function("diopiBaddbmm")
         ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, batch1.tensor_handle, batch2.tensor_handle, c_double(beta), c_double(alpha))
         check_returncode(ret)
@@ -3527,8 +3541,14 @@ def repeat(input, repeats):
 def normal(mean, std, size=None):
     call = "diopiNormal"
     if isinstance(mean, Tensor) and isinstance(std, Tensor):
-        assert mean.numel() == std.numel(), 'the total number of elements in each tensor need to be the same.'
-        out = Tensor(mean.size(), mean.get_dtype())
+        sizeX1 = list(mean.size())
+        sizeX2 = list(std.size())
+        if mean.numel() <= std.numel():
+            out_size = infer_size(sizeX1, sizeX2)
+            out = Tensor(out_size, std.get_dtype())
+        if mean.numel() > std.numel():
+            out_size = infer_size(sizeX1, sizeX2)
+            out = Tensor(out_size, mean.get_dtype())
         call += "Tensor"
     elif isinstance(mean, Tensor):
         out = Tensor(mean.size(), mean.get_dtype())
@@ -3537,9 +3557,10 @@ def normal(mean, std, size=None):
         out = Tensor(std.size(), std.get_dtype())
         call += "ScalarTensor"
     else:
-        assert size is not None, "need the shape of output while both mean and std are scalar"
-        out = Tensor(size, Dtype.float32)
-
+        if size is not None:
+            out = Tensor(size, Dtype.float32)
+        else:
+            out = Tensor((), Dtype.float32)
     arg_mean = mean.tensor_handle if isinstance(mean, Tensor) else c_double(mean)
     arg_std = std.tensor_handle if isinstance(std, Tensor) else c_double(std)
     func = check_function(call)
