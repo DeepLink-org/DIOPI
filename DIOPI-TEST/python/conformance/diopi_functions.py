@@ -312,6 +312,7 @@ def lt(input, other, inplace=False) -> Tensor:
 def mul(input, other, inplace=False) -> Tensor:
     return binary_op_scalar(input, other, inplace, 'diopiMul', dtype=promote_type(input, Dtype.float32))
 
+
 def div(input, other, inplace=False, rounding_mode=None) -> Tensor:
     call = "diopiDiv"
     args = "input.context_handle, "
