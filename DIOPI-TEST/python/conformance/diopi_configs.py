@@ -4688,9 +4688,13 @@ diopi_configs = {
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['tensor'],
-                    "shape": ((8,), (16,), (32,)),
-                    "dtype": [Dtype.float32, Dtype.float64, Dtype.int64],
+                    "ins": ['tensors'],
+                    "shape": (((8,), (8,), (8,)),
+                              ((16,), (8,), ()),
+                              ((32,), (16,)), ((8,),)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64,
+                              Dtype.int16, Dtype.int32, Dtype.int64,
+                              Dtype.int8, Dtype.uint8, Dtype.bool],
                     "gen_fn": Genfunc.randn,
                     "gen_num_range": [1, 5],
                 },
@@ -4698,6 +4702,7 @@ diopi_configs = {
             seq_name='tensors',
         ),
     ),
+
 
     'multinomial': dict(
         name=["multinomial"],
