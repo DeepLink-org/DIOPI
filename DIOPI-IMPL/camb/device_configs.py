@@ -28,6 +28,19 @@ device_configs = {
         ),
     ),
 
+    'baddbmm_without_inplace': dict(
+        name=["baddbmm"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+
+            ]
+        ),
+    ),
+    
     'conv_2d': dict(
         name=["conv2d"],
         tensor_para=dict(
@@ -682,6 +695,18 @@ device_configs = {
                 {
                     "ins": ['x1'],
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                },
+            ],
+        ),
+    ),
+
+    'cdist_compute_mode': dict(
+        name=['cdist'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['x1'],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float64)],
                 },
             ],
         ),
@@ -1377,7 +1402,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['std'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
                 },
             ]
         ),
@@ -1389,7 +1414,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['mean'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
                 },
             ]
         ),
@@ -1401,7 +1426,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['mean'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
                 },
             ]
         ),
