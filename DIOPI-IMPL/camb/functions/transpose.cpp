@@ -40,7 +40,7 @@ std::vector<int> getPerm(diopiConstTensorHandle_t tensor_handle,
 
 extern "C" {
 
-DIOPI_API diopiError_t diopiTranspose(diopiContextHandle_t ctx,
+diopiError_t diopiTranspose(diopiContextHandle_t ctx,
                                       diopiTensorHandle_t out,
                                       diopiConstTensorHandle_t input,
                                       int64_t dim0,

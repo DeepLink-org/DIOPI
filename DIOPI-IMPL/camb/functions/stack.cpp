@@ -5,7 +5,7 @@
 namespace impl {
 namespace camb {
 extern "C" {
-DIOPI_API diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t* tensors, int64_t numTensors, int64_t dim) {
+diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t* tensors, int64_t numTensors, int64_t dim) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     std::vector<CnnlTensorDesc> inputsDesc(numTensors);
     std::vector<cnnlTensorDescriptor_t> inputs_desc(numTensors);
