@@ -125,7 +125,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erf', 'rsqrt', 'floor'],
+        name=['erf', 'floor'],
         tensor_para=dict(
             args=[
                 {
@@ -137,7 +137,7 @@ device_configs = {
     ),
 
     'pointwise_op_int_without_inplace': dict(
-        name=['erf', 'rsqrt'],
+        name=['erf'],
         tensor_para=dict(
             args=[
                 {
@@ -149,7 +149,7 @@ device_configs = {
     ),
 
     'pointwise_op_bool': dict(
-        name=['erf', 'rsqrt'],
+        name=['erf'],
         tensor_para=dict(
             args=[
                 {
@@ -169,18 +169,6 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
             ]
-        ),
-    ),
-
-    'pointwise_op_abs_input': dict(
-        name=['rsqrt'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
         ),
     ),
 
@@ -499,20 +487,6 @@ device_configs = {
                 {
                     "ins": ["grads"],
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
-    'tril': dict(
-        name=["tril"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
                 },
             ],
         ),
