@@ -418,18 +418,6 @@ device_configs = {
         ),
     ),
 
-    'nll_loss': dict(
-        name=["nll_loss"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
-
     'cross_entropy': dict(
         name=["cross_entropy"],
         tensor_para=dict(
@@ -637,7 +625,7 @@ device_configs = {
             ]
         ),
     ),
-    
+
     'reciprocal': dict(
         name=["reciprocal"],
         tensor_para=dict(

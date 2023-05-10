@@ -212,7 +212,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
 
     auto total_weight_tr = requiresTensor(ctx, {1}, weight_tr.dtype());
     diopiScalar_t scalar({weight_tr.dtype(), static_cast<double>(target_tr.numel())});
-    diopiFill(ctx, total_weight_tr.tensorHandle(), &scalar);
+    DIOPI_CALL(diopiFill(ctx, total_weight_tr.tensorHandle(), &scalar));
 
     CnnlTensorDesc grad_output_desc(grad_output_tr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc target_desc;
