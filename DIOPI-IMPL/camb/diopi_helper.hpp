@@ -131,10 +131,17 @@ public:
         return dtype;
     }
 
+    diopiDtype_t scalar_type() const { return dtype(); }
+
     const std::vector<int64_t>& shape() const {
         DIOPI_CHECK_NULLPTR_ABORT(tensor_);
         return shape_;
     }
+
+    int64_t size(int i) {
+        return shape()[i];
+    }
+
     const std::vector<int64_t>& stride() const {
         DIOPI_CHECK_NULLPTR_ABORT(tensor_);
         return stride_;
