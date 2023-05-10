@@ -29,7 +29,9 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     DIOPI_CHECK(input_tr.is_contiguous(), "input tensor should be contiguous");
     DIOPI_CHECK(weight_tr.is_contiguous(), "weight tensor should be contiguous");
     DIOPI_CHECK(target_tr.is_contiguous(), "input tensor should be contiguous");
-    DIOPI_CHECK(output_tr.dim() <= 1, "Output.dim > 1 is not supported by cnnl");
+    if (ReductionMean == reduction || ReductionSum == reduction) {
+        DIOPI_CHECK(output_tr.dim() <= 1, "output.dim should be <= 1 when the redcution is %s.", reductionStr(reduction));
+    }
 
     std::vector<DiopiTensor*> p_tensors{&input_tr, &weight_tr};
     std::set<diopiDtype_t> supported_dtypes{diopi_dtype_float16, diopi_dtype_float32};
@@ -153,8 +155,9 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     DIOPI_CHECK(input_tr.is_contiguous(), "input tensor should be contiguous");
     DIOPI_CHECK(weight_tr.is_contiguous(), "weight tensor should be contiguous");
     DIOPI_CHECK(target_tr.is_contiguous(), "input tensor should be contiguous");
-    DIOPI_CHECK(grad_output_tr.dim() <= 1, "grad_output.dim > 1 is not supported by cnnl");
-
+    if (ReductionMean == reduction || ReductionSum == reduction) {
+        DIOPI_CHECK(grad_output_tr.dim() <= 1, "grad_output.dim should be <= 1 when the redcution is %s.", reductionStr(reduction));
+    }
     std::vector<DiopiTensor*> p_tensors{&grad_output_tr, &weight_tr, &input_tr};
     std::set<diopiDtype_t> supported_dtypes{diopi_dtype_float16, diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, p_tensors, supported_dtypes));
@@ -212,7 +215,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
 
     auto total_weight_tr = requiresTensor(ctx, {1}, weight_tr.dtype());
     diopiScalar_t scalar({weight_tr.dtype(), static_cast<double>(target_tr.numel())});
-    diopiFill(ctx, total_weight_tr.tensorHandle(), &scalar);
+    DIOPI_CALL(diopiFill(ctx, total_weight_tr.tensorHandle(), &scalar));
 
     CnnlTensorDesc grad_output_desc(grad_output_tr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc target_desc;
