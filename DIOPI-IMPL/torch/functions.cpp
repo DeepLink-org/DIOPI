@@ -3369,7 +3369,7 @@ diopiError_t diopiPermute(diopiContextHandle_t ctx,
     return diopiSuccess;
 }
 
-diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiTensorHandle_t dest)
+diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiTensorHandle_t dest) {
     impl::aten::setCurCtx(ctx);
     at::Tensor atDest = impl::aten::buildATen(dest);
     at::Tensor atSrc = impl::aten::buildATen(src);
