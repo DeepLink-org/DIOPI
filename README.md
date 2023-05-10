@@ -20,7 +20,7 @@ DIOPI-设备无关算子接口（Device-Independent Operator Interface, DIOPI）
 
 ## 结构说明
 
-<!--![DIOPI结构图如图所示](img/structure.jpg)-->
+<!--![DIOPI结构图如图所示](img/structure3.png)-->
 
 <img src="img/structure2.png">
 
