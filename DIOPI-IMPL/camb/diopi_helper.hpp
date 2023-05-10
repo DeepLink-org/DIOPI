@@ -131,8 +131,6 @@ public:
         return dtype;
     }
 
-    diopiDtype_t scalar_type() const { return dtype(); }
-
     const std::vector<int64_t>& shape() const {
         DIOPI_CHECK_NULLPTR_ABORT(tensor_);
         return shape_;

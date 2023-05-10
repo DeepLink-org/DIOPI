@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef IMPL_CAMB_MLU_HELPER_HPP_
-#define IMPL_CAMB_MLU_HELPER_HPP_
+#ifndef DIOPI_IMPL_CAMB_MLU_HELPER_HPP_
+#define DIOPI_IMPL_CAMB_MLU_HELPER_HPP_
 
 #include <cnrt.h>
 
@@ -19,7 +19,7 @@ namespace camb {
 
 #define NFU_ALIGN_SIZE 128
 
-#define PAD_UP(x, y) (((x) / (y) + (int)((x) % (y) > 0)) * (y))
+#define PAD_UP(x, y) (((x) / (y) + static_cast<int>((x) % (y) > 0)) * (y))
 
 #define PAD_DOWN(x, y) (((x) / (y)) * (y))
 
@@ -98,4 +98,4 @@ inline cnrtDataType_t dtype2CnrtDtype(const diopiDtype_t dt) {
 
 }  // namespace impl
 
-#endif  // IMPL_CAMB_MLU_HELPER_HPP_
+#endif  // DIOPI_IMPL_CAMB_MLU_HELPER_HPP_

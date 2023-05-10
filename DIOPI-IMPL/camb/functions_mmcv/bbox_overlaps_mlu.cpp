@@ -42,35 +42,33 @@ static void policyFunc(cnrtDim3_t *k_dim, cnrtFunctionType_t *k_type,
   return;
 }
 
+extern "C" DIOPI_API diopiError_t diopiBboxOverlapsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t ious_, diopiConstTensorHandle_t bboxes1_,
+                                                        diopiConstTensorHandle_t bboxes2_, int64_t mode, int64_t offset, bool aligned) {
+  auto bboxes1 = impl::camb::DiopiTensor(bboxes1_);
+  auto bboxes2 = impl::camb::DiopiTensor(bboxes2_);
+  auto ious = impl::camb::DiopiTensor(ious_);
 
-extern "C" DIOPI_API diopiError_t diopiBboxOverlapsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t ious_, diopiConstTensorHandle_t bboxes1_, diopiConstTensorHandle_t bboxes2_, 
-                               int64_t mode, int64_t offset, bool aligned) {
-    auto bboxes1 = impl::camb::DiopiTensor(bboxes1_);
-    auto bboxes2 = impl::camb::DiopiTensor(bboxes2_);
-    auto ious = impl::camb::DiopiTensor(ious_);
+  auto rows = bboxes1.size(0);
+  auto cols = bboxes2.size(0);
+  auto batch_num_all = rows;
 
-    auto rows = bboxes1.size(0);
-    auto cols = bboxes2.size(0);
-    auto batch_num_all = rows;
+  if (rows * cols == 0) {
+      // return if zero element
+      return diopiSuccess;
+  }
 
-    if (rows * cols == 0) {
-        // return if zero element
-        return diopiSuccess;
-    }
+  // calculate task dimension
+  cnrtDim3_t k_dim;
+  cnrtFunctionType_t k_type;
+  policyFunc(&k_dim, &k_type, batch_num_all);
 
-    // calculate task dimension
-    cnrtDim3_t k_dim;
-    cnrtFunctionType_t k_type;
-    policyFunc(&k_dim, &k_type, batch_num_all);
+  // get compute queue
+  auto queue = impl::camb::getStream(ctx);
 
-    // get compute queue
-    auto queue = impl::camb::getStream(ctx);
+  // get dtype of input
+  cnrtDataType_t d_type = impl::camb::dtype2CnrtDtype(bboxes1.dtype());
 
-    // get dtype of input
-    cnrtDataType_t d_type = impl::camb::dtype2CnrtDtype(bboxes1.dtype());
-
-    // launch kernel
-    impl::camb::KernelBBoxOverlaps(k_dim, k_type, queue, d_type, bboxes1.data(), bboxes2.data(),
-                       ious.data(), rows, cols, mode, aligned, offset);
-    return diopiSuccess;
+  // launch kernel
+  impl::camb::KernelBBoxOverlaps(k_dim, k_type, queue, d_type, bboxes1.data(), bboxes2.data(), ious.data(), rows, cols, mode, aligned, offset);
+  return diopiSuccess;
 }
