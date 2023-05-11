@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "error.hpp"
+
 namespace impl {
 namespace camb {
 
@@ -387,7 +388,7 @@ inline cnrtQueue_t getStream(diopiContextHandle_t ctx) {
 
 template <typename T>
 inline std::vector<T> diopiSize_t2Vector(diopiSize_t size, T) {
-    return std::vector<T>(size.data(), size.data() + size.len);
+    return std::vector<T>(size.data, size.data + size.len);
 }
 
 inline diopiSize_t vec2diopiSize_t(const std::vector<int64_t>& sizeIn) {
@@ -399,6 +400,19 @@ inline void syncStreamInCtx(const diopiContextHandle_t ctx) {
     cnrtQueue_t queue = getStream(ctx);
     cnrtQueueSync(queue);
     return;
+}
+
+inline const char* reductionStr(diopiReduction_t reduction) {
+    switch (reduction) {
+        case ReductionNone:
+            return "ReductionNone";
+        case ReductionSum:
+            return "ReductionSum";
+        case ReductionMean:
+            return "ReductionMean";
+        default:
+            return "not supported reduction method";
+    }
 }
 
 }  // namespace camb
