@@ -102,7 +102,7 @@ diopiError_t cnnl_activation_backward_internal(
   auto perf = attr.get<cnnlActivationPreference_t>(
       "perf", CNNL_ACTIVATION_HIGH_PRECISION);
   auto nan_prop = attr.get<cnnlNanPropagation_t>(
-      "perf", CNNL_NOT_PROPAGATE_NAN);  // relu relu6
+      "perf", CNNL_NOT_PROPAGATE_NAN);   // relu relu6
 
   float coef = attr.get("coef", 0.0);
   int sliced_dim = attr.get("sliced_dim", 0);
@@ -220,9 +220,11 @@ diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input,
   return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
+extern "C" diopiError_t diopiReluInp(diopiContextHandle_t ctx,
+                                     diopiTensorHandle_t input) {
+  cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+  DiopiTensor input_tensor(input);
+}
 
 extern "C" diopiError_t diopiTanh(diopiContextHandle_t ctx,
                                   diopiTensorHandle_t out,
