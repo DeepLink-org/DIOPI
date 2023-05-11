@@ -458,23 +458,6 @@ diopi_configs = {
             ],
         ),
     ),
-    
-    'pointwise_op_bool': dict(
-        name=['abs', 'cos', 'erf', 'exp', 'sin', 'sqrt', 'logical_not', 'rsqrt'],
-        interface=['torch'],
-        dtype=[Dtype.bool],
-        tensor_para=dict(
-            gen_fn=Genfunc.mask,
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
-                              (256, 128, 3, 3),
-                              (2, 31, 512, 6, 40)),
-                },
-            ],
-        ),
-    ),
 
     'pointwise_op_mask': dict(
         name=['logical_not', 'bitwise_not'],
@@ -494,7 +477,7 @@ diopi_configs = {
     ),
 
     'pointwise_op_bool': dict(
-        name=['abs', 'cos', 'erf', 'exp', 'sin', 'sqrt', 'rsqrt'],
+        name=['abs', 'cos', 'erf', 'exp', 'sin', 'sqrt', 'logical_not', 'rsqrt'],
         interface=['torch'],
         dtype=[Dtype.bool],
         tensor_para=dict(
@@ -502,7 +485,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((1, ), (1024,), (364800, 4), (2, 128, 3072),
+                    "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
                               (256, 128, 3, 3),
                               (2, 31, 512, 6, 40)),
                 },
@@ -636,8 +619,6 @@ diopi_configs = {
             ],
         ),
     ),
-
-    
 
     'pointwise_op_zero': dict(
         name=['abs', 'sign', 'exp', 'floor', 'neg', 'sqrt',
