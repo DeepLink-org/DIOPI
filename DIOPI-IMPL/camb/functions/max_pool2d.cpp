@@ -30,7 +30,7 @@ std::vector<int> getDim(const DiopiTensor& tensor) {
 }  // namespace
 
 extern "C" {
-DIOPI_API diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernel_size,
+diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernel_size,
                                       diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceil_mode) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
@@ -103,7 +103,7 @@ DIOPI_API diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandl
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t indices, diopiConstTensorHandle_t input,
+diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t indices, diopiConstTensorHandle_t input,
                                                  diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceil_mode) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
@@ -215,7 +215,7 @@ DIOPI_API diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopi
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                               diopiConstTensorHandle_t input, diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding,
                                               diopiSize_t dilation, bool ceil_mode, diopiConstTensorHandle_t indices) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
