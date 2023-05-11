@@ -142,10 +142,9 @@ atexit.register(on_diopi_rt_exit)
 
 
 def get_last_error():
-    last_error_str = c_char_p()
-    diopirt_lib._getLastErrorString(byref(last_error_str))
-    if last_error_str.value is not None:
-        last_error_str = str(last_error_str.value, encoding="utf-8")
+    device_impl_lib.diopiGetLastErrorString.restype = c_char_p
+    last_error_str = device_impl_lib.diopiGetLastErrorString()
+    last_error_str = last_error_str.decode("utf-8")
     return last_error_str
 
 
@@ -165,6 +164,9 @@ class Context:
 
     def get_handle(self):
         return self.context_handle
+
+    def clear_tensors(self):
+        return self.__class__._c_lib._diopiClearTensors(self.context_handle)
 
 
 default_context = Context()
@@ -229,10 +231,6 @@ class Tensor:
         ctx_handle = ContextHandle()
         diopirt_lib._diopiTensorGetCtxHandle(tensor_handle, byref(ctx_handle))
         return cls(size=None, dtype=None, context_handle=ctx_handle, tensor_handle=tensor_handle)
-
-    def __del__(self):
-        diopirt_lib._diopiDestoryTensor(self.context_handle,
-                                        self.tensor_handle)
 
     def __str__(self):
         array = self.numpy()

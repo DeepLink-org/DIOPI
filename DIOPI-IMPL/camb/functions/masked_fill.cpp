@@ -10,7 +10,7 @@ namespace camb {
 
 extern "C" {
 
-DIOPI_API diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask,
+diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask,
                                        diopiConstTensorHandle_t value) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
@@ -83,12 +83,12 @@ DIOPI_API diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHand
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiMaskedFillInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t mask, diopiConstTensorHandle_t value) {
+diopiError_t diopiMaskedFillInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t mask, diopiConstTensorHandle_t value) {
     DIOPI_CALL(diopiMaskedFill(ctx, input, input, mask, value));
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiMaskedFillScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask,
+diopiError_t diopiMaskedFillScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask,
                                              const diopiScalar_t* value) {
     DiopiTensor value_tensor;
     makeTensorFromScalar(ctx, value, value_tensor);
@@ -96,7 +96,7 @@ DIOPI_API diopiError_t diopiMaskedFillScalar(diopiContextHandle_t ctx, diopiTens
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiMaskedFillInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t mask,
+diopiError_t diopiMaskedFillInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t mask,
                                                 const diopiScalar_t* value) {
     DiopiTensor value_tensor;
     makeTensorFromScalar(ctx, value, value_tensor);
