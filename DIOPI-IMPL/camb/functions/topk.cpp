@@ -13,7 +13,7 @@ namespace impl {
 namespace camb {
 extern "C" {
 
-DIOPI_API diopiError_t diopiTopk(diopiContextHandle_t ctx,
+diopiError_t diopiTopk(diopiContextHandle_t ctx,
                                  diopiTensorHandle_t values,
                                  diopiTensorHandle_t indices,
                                  diopiConstTensorHandle_t input,

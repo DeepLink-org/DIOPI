@@ -128,3 +128,6 @@ core.*
 # project saved file
 *.pth
 *.cfg
+
+# report
+*.csv

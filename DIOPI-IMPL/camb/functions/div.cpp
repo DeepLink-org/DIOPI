@@ -13,7 +13,7 @@ namespace impl {
 namespace camb {
 extern "C" {
 
-DIOPI_API diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
+diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                                 diopiRoundMode_t rounding_mode) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor input_tensor(input);
@@ -54,12 +54,12 @@ DIOPI_API diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiDivInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, diopiRoundMode_t rounding_mode) {
+diopiError_t diopiDivInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, diopiRoundMode_t rounding_mode) {
     DIOPI_CALL(diopiDiv(ctx, input, input, other, rounding_mode));
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
+diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
                                       diopiRoundMode_t rounding_mode) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor input_tensor(input);
@@ -70,7 +70,7 @@ DIOPI_API diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandl
     DIOPI_CALL(diopiDiv(ctx, out, input, diopiTensorHandle_t(other_tensor), rounding_mode));
     return diopiSuccess;
 }
-DIOPI_API diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, diopiRoundMode_t rounding_mode) {
+diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, diopiRoundMode_t rounding_mode) {
     DIOPI_CALL(diopiDivScalar(ctx, input, input, other, rounding_mode));
     return diopiSuccess;
 }

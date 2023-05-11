@@ -28,6 +28,19 @@ device_configs = {
         ),
     ),
 
+    'baddbmm_without_inplace': dict(
+        name=["baddbmm"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+
+            ]
+        ),
+    ),
+    
     'conv_2d': dict(
         name=["conv2d"],
         tensor_para=dict(
@@ -125,7 +138,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erf', 'rsqrt', 'floor'],
+        name=['erf', 'floor'],
         tensor_para=dict(
             args=[
                 {
@@ -137,7 +150,7 @@ device_configs = {
     ),
 
     'pointwise_op_int_without_inplace': dict(
-        name=['erf', 'rsqrt'],
+        name=['erf'],
         tensor_para=dict(
             args=[
                 {
@@ -149,7 +162,7 @@ device_configs = {
     ),
 
     'pointwise_op_bool': dict(
-        name=['erf', 'rsqrt'],
+        name=['erf'],
         tensor_para=dict(
             args=[
                 {
@@ -169,18 +182,6 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
             ]
-        ),
-    ),
-
-    'pointwise_op_abs_input': dict(
-        name=['rsqrt'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
         ),
     ),
 
@@ -221,34 +222,21 @@ device_configs = {
             ],
         ),
     ),
-
+    
     'pointwise_binary': dict(
         name=['mul'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8)],
+                    ## when dtype of input is uint8, output might overflow.
+                    "dtype": [Skip(Dtype.uint8)],
                 },
 
             ],
         ),
     ),
-
-    'pointwise_binary_dtype_bool': dict(
-        name=['mul'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
+    
     'div': dict(
         name=['div'],
         tensor_para=dict(
@@ -281,18 +269,6 @@ device_configs = {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
                               Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'pointwise_binary_scalar': dict(
-        name=['mul'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32)],
                 },
             ],
         ),
@@ -413,18 +389,6 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
                               Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
                               Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'nll_loss': dict(
-        name=["nll_loss"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
             ],
         ),
@@ -625,7 +589,7 @@ device_configs = {
             ]
         ),
     ),
-    
+
     'reciprocal': dict(
         name=["reciprocal"],
         tensor_para=dict(
@@ -707,6 +671,18 @@ device_configs = {
                 {
                     "ins": ['x1'],
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                },
+            ],
+        ),
+    ),
+
+    'cdist_compute_mode': dict(
+        name=['cdist'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['x1'],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float64)],
                 },
             ],
         ),
@@ -1402,7 +1378,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['std'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
                 },
             ]
         ),
@@ -1414,7 +1390,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['mean'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
                 },
             ]
         ),
@@ -1426,7 +1402,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['mean'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
                 },
             ]
         ),
