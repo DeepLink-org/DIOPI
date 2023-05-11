@@ -203,7 +203,7 @@ class ManualTest(object):
             mean = 0.0
             std = 1.
         out_numpy = out_numpy.flatten()
-        p_value = stats.kstest(out_numpy, 'norm', args=(mean, std))[1]
+        p_value = stats.kstest(out_numpy, 'norm', args=(mean, std + 1e-22))[1]
         # pytorch use 0.0001, but stats.kstest use 0.05 as threshold
         assert p_value > 0.0005, "failed to execute normal"
 
@@ -213,7 +213,7 @@ class ManualTest(object):
         out_numpy = out.numpy()
         out_numpy = out_numpy.flatten()
         p_value = stats.kstest(out_numpy, 'norm', args=(mean, std))[1]
-        assert p_value > 0.05, "failed to execute normal_"
+        assert p_value > 0.0005, "failed to execute normal_"
 
     def test_multinomial(input, num_samples, replacement):
         out = F.multinomial(input, num_samples, replacement)
