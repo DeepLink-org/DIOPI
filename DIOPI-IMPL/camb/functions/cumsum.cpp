@@ -20,7 +20,7 @@ int getDim(DiopiTensor tensor, int64_t dim) {
 
 extern "C" {
 
-DIOPI_API diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
+diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor input_tensor(input);
