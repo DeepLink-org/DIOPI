@@ -77,7 +77,6 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out,
                                          mask_desc.get(), mask_tensor.data(),
                                          temp_desc.get(), temp_tensor.data()));
 
-      // dtype_cast and broad_cast for mask_tensor
       DiopiTensor bcast_temp_tensor;
       DIOPI_CALL(dataTypeCast(ctx, temp_tensor, output_tensor_temp.dtype()));
       broadcastHelper(ctx, temp_tensor, output_tensor_temp, &bcast_temp_tensor);
@@ -100,12 +99,12 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     }
     DIOPI_CALLCNNL(cnnlRandDestroyGenerator(generator));
 
-    return diopiSuccess;
   } else {  // if in test_mode
     diopiCopyInp(ctx, input, out);
-    return diopiSuccess;
   }
+  return diopiSuccess;
 }
+
 DIOPI_API diopiError_t diopiDropoutInp(diopiContextHandle_t ctx,
                                        diopiTensorHandle_t input,
                                        diopiTensorHandle_t mask, double p,
