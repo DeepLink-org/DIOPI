@@ -40,5 +40,5 @@ diopiError_t diopiSign(diopiContextHandle_t ctx, diopiTensorHandle_t out,
   return diopiSuccess;
 }
 }
-}  // namespace camb
-}  // namespace impl
+} // namespace camb
+} // namespace impl
