@@ -220,6 +220,10 @@ diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input,
   return diopiSuccess;
 }
 
+extern "C" diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    DiopiTensor input_tensor(input);
+
 extern "C" diopiError_t diopiTanh(diopiContextHandle_t ctx,
                                   diopiTensorHandle_t out,
                                   diopiConstTensorHandle_t input) {
