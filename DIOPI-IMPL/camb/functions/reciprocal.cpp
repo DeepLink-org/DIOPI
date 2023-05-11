@@ -13,7 +13,7 @@ namespace impl {
 namespace camb {
 extern "C" {
 
-DIOPI_API diopiError_t diopiReciprocal(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+diopiError_t diopiReciprocal(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor input_tensor(input);
     DiopiTensor out_tensor(out);
@@ -29,7 +29,7 @@ DIOPI_API diopiError_t diopiReciprocal(diopiContextHandle_t ctx, diopiTensorHand
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     diopiReciprocal(ctx, input, input);
     return diopiSuccess;
 }

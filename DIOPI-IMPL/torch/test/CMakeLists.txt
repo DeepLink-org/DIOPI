@@ -11,4 +11,3 @@ message("CXX_LITERT_SRC:" ${CXX_LITERT_SRC})
 
 cuda_add_library(${DIOPIRT} SHARED ${TEST_SRC})
 set_target_properties(${DIOPIRT} PROPERTIES SUFFIX ".so")
-target_link_libraries(${DIOPIRT} diopi_impl)

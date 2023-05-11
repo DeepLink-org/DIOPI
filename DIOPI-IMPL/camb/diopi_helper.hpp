@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "error.hpp"
+
 namespace impl {
 namespace camb {
 
@@ -247,7 +248,16 @@ public:
         return this->numel() != 0;
     }
 
-    void reshape(const std::vector<int64_t> shape) { this->shape_ = shape; }
+    void reshape(const std::vector<int64_t> shape) {
+        // must be contiguous
+        std::vector<int64_t> stride(shape.size());
+        this->shape_ = shape;
+        stride[shape.size() - 1] = 1;
+        for (int j = shape_.size() - 2; j >= 0; j--) {
+            stride[j] = stride[j + 1] * shape[j + 1];
+        }
+        this->stride_ = stride;
+    }
 
     void* data() {
         void* p = nullptr;
@@ -275,9 +285,7 @@ public:
 
     diopiConstTensorHandle_t tensorHandle() const { return tensor_; }
 
-    bool is_same(DiopiTensor t) {
-        return this->tensorHandle() == t.tensorHandle();
-    }
+    bool is_same(DiopiTensor t) { return this->tensorHandle() == t.tensorHandle(); }
 
 protected:
     diopiTensorHandle_t tensor_ = 0;
@@ -380,7 +388,7 @@ inline cnrtQueue_t getStream(diopiContextHandle_t ctx) {
 
 template <typename T>
 inline std::vector<T> diopiSize_t2Vector(diopiSize_t size, T) {
-    return std::vector<T>(size.data(), size.data() + size.len);
+    return std::vector<T>(size.data, size.data + size.len);
 }
 
 inline diopiSize_t vec2diopiSize_t(const std::vector<int64_t>& sizeIn) {
@@ -392,6 +400,19 @@ inline void syncStreamInCtx(const diopiContextHandle_t ctx) {
     cnrtQueue_t queue = getStream(ctx);
     cnrtQueueSync(queue);
     return;
+}
+
+inline const char* reductionStr(diopiReduction_t reduction) {
+    switch (reduction) {
+        case ReductionNone:
+            return "ReductionNone";
+        case ReductionSum:
+            return "ReductionSum";
+        case ReductionMean:
+            return "ReductionMean";
+        default:
+            return "not supported reduction method";
+    }
 }
 
 }  // namespace camb
