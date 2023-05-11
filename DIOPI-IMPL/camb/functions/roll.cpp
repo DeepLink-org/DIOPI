@@ -7,7 +7,7 @@ namespace camb {
 
 extern "C" {
 
-DIOPI_API diopiError_t diopiRoll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t shifts, diopiSize_t dims) {
+diopiError_t diopiRoll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t shifts, diopiSize_t dims) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor input_tensor(input);
