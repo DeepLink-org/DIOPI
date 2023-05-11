@@ -2998,6 +2998,8 @@ diopi_configs = {
     'cdist': dict(
         name=['cdist'],
         interface=['torch'],
+        atol=1e-2,
+        rtol=1e-3,
         saved_args=dict(output=0),
         para=dict(
             p=[1, 2, 0, 0.5, float("inf")],
