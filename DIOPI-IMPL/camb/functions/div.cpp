@@ -98,6 +98,11 @@ diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     return diopiSuccess;
 }
 
+diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, diopiRoundMode_t rounding_mode) {
+    DIOPI_CALL(diopiDivScalar(ctx, input, input, other, rounding_mode));
+    return diopiSuccess;
+}
+
 }  // extern "C"
 }  // namespace camb
 }  // namespace impl
