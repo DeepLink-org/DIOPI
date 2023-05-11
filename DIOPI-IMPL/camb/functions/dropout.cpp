@@ -22,8 +22,7 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
         DiopiTensor output_tensor(out);
         DiopiTensor mask_tensor(mask);
 
-        // Do this Check to use DIOPI-TEST because non-float data not supported in
-        // PyTorch unless p==0
+        // Do this Check to use DIOPI-TEST because non-float data not supported in PyTorch unless p==0
         DIOPI_CHECK(((DiopiDataType::isFloatPoint(input_tensor.dtype()) || p == 0)), "result type Float can't be cast to the desired type");
         std::vector<DiopiTensor *> pTensors{&input_tensor};
         std::set<diopiDtype_t> supportedDtypes{
@@ -100,7 +99,7 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t mask, double p, bool train) {
+diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t mask, double p, bool train) {
     diopiDropout(ctx, input, mask, input, p, train);
     return diopiSuccess;
 }
