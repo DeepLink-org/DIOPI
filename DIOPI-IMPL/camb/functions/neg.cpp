@@ -10,7 +10,7 @@ namespace camb {
 
 extern "C" {
 
-DIOPI_API diopiError_t diopiNeg(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+diopiError_t diopiNeg(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor input_tensor(input);
     DiopiTensor out_tensor(out);
@@ -29,7 +29,7 @@ DIOPI_API diopiError_t diopiNeg(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiNegInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+diopiError_t diopiNegInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     DIOPI_CALL(diopiNeg(ctx, input, input));
     return diopiSuccess;
 }
