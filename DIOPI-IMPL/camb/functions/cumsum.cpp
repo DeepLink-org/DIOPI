@@ -20,18 +20,12 @@ int getDim(DiopiTensor tensor, int64_t dim) {
 
 extern "C" {
 
-DIOPI_API diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
+diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor input_tensor(input);
     DiopiTensor out_tensor(out);
-    if (input_tensor.dtype() == diopi_dtype_int64 || input_tensor.dtype() == diopi_dtype_int16 || input_tensor.dtype() == diopi_dtype_int8) {
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_int32));
-    } else if (input_tensor.dtype() == diopi_dtype_float64) {
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_float32));
-    } else if (input_tensor.dtype() == diopi_dtype_bool || input_tensor.dtype() == diopi_dtype_uint8) {
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_float16));
-    }
+    DIOPI_CALL(autoCastTensorType(ctx, {&input_tensor}, {diopi_dtype_int32, diopi_dtype_float32, diopi_dtype_float16}));
 
     CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc out_desc(out_tensor, CNNL_LAYOUT_ARRAY);

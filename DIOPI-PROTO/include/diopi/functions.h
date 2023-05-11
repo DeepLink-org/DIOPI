@@ -36,6 +36,13 @@ typedef struct {
     };
 } diopiScalar_t;
 
+typedef enum {
+    Contiguous      = 0,
+    ChannelsLast    = 1,
+    ChannelsLast3d  = 2,
+    Preserve        = 3
+} diopiMemoryFormat_t;
+
 
 /**
  * \brief get the vendor's name who implements the functions
@@ -74,7 +81,7 @@ DIOPI_API diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorH
  */
 DIOPI_API diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
                                                   diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
-                                                  diopiConstTensorHandle_t weight, diopiSize_t *bias_sizes, diopiSize_t stride, diopiSize_t padding,
+                                                  diopiConstTensorHandle_t weight, diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding,
                                                   diopiSize_t dilation, bool transposed, diopiSize_t output_padding, int64_t groups);
 
 /**
@@ -127,7 +134,7 @@ DIOPI_API diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_
 
 /**
  * @brief It clips the tensor values within a range defined by the lower and upper bounds.
- * Any values below the lower bound are set to the lower bound, and any values above the upper bound are set to the upper bound. 
+ * Any values below the lower bound are set to the lower bound, and any values above the upper bound are set to the upper bound.
  * @param[in] ctx Context environment.
  * @param input the input tensor,type = [float32, float64].
  * @param min_val scalar, the lower bound. type = [float32, float64].
@@ -198,7 +205,7 @@ DIOPI_API diopiError_t diopiLeakyReluInp(diopiContextHandle_t ctx, diopiTensorHa
 /**
  * @brief compute the backward pass of diopiLeakyRelu().
  * @param[in] grad_output the grad of output. type = [float32, float64].
- * @param input_is_result boolean, type = [bool]. 
+ * @param input_is_result boolean, type = [bool].
  * @param[out] grad_input the grad of input. type = [float32, float64].
  * @sa Other parameters refer to diopiLeakyRelu().
  */
@@ -241,9 +248,9 @@ DIOPI_API diopiError_t diopiAvgPool2dBackward(diopiContextHandle_t ctx, diopiTen
  * @param stride an array, stride of the pooling operation. type = [int32, int64].
  * @param padding  an array, implicit negative infinity padding on both sides of the input tensor, its value should be >= 0 and <= kernel_size / 2. type = [int32, int64].
  * @param dilation an array, spacing between the elements within the sliding window, its value should be greater than 0. type = [int32, int64].
- * @param ceil_mode boolean, if True, use ceil instead of the default floor operation when computing the output shape. 
+ * @param ceil_mode boolean, if True, use ceil instead of the default floor operation when computing the output shape.
  * This ensures that every element in the input tensor is covered by a sliding window. type = [bool].
- * @param[out] out the output tensor. type = [float16, float32]. 
+ * @param[out] out the output tensor. type = [float16, float32].
  */
 DIOPI_API diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
                                       diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceil_mode);
@@ -315,7 +322,7 @@ DIOPI_API diopiError_t diopiAdaptiveMaxPool2dBackward(diopiContextHandle_t ctx, 
  * @param p the probability of an element in the input tensor being zeroed out. type = [float32, float64].
  * @param train boolean, whether the module is in training mode. When set to False, the dropout operation will not be performed. type = [bool].
  * @param[out] out the output tensor. type = [float32, float64].
- * @param mask A binary mask tensor of the same shape as the input tensor, where each element's value is either 0 or 1, 
+ * @param mask A binary mask tensor of the same shape as the input tensor, where each element's value is either 0 or 1,
  * indicating whether the corresponding neuron at that position is dropped or not. type = [int32].
  */
 DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask,
@@ -359,13 +366,13 @@ DIOPI_API diopiError_t diopiSigmoidFocalLossBackward(diopiContextHandle_t ctx, d
                                                      diopiTensorHandle_t grad_input, float gamma, float alpha, diopiReduction_t reduction);
 
 /**
- * @brief Measures thee Cross Entropy between the target and input probabilities. 
+ * @brief Measures thee Cross Entropy between the target and input probabilities.
  * @param[in] ctx Context environment.
  * @param input Input tensor representing the unnormalized scores, often referred to as logits. type = [float32, float64].
  * @param target Target tensor representing the true class index or class probabilities. type = [float32, float64].
  * @param weight  Manual rescaling weight for each class. type = [float32, float64].
- * @param reduction Specifies the reduction to apply to the output. 
- * @param ignore_index  Specifies a target value that is to be ignored and does not contribute to the input gradient. 
+ * @param reduction Specifies the reduction to apply to the output.
+ * @param ignore_index  Specifies a target value that is to be ignored and does not contribute to the input gradient.
  * Only used when targets are class indices. type = [int32, int64].
  * @param label_smoothing Float value in [0.0, 1.0]. Specifies the amount of smoothing to be applied while computing the loss. type = [float32, float64]
  * @param[out] out the output tensor. type = [float32, float64].
@@ -390,7 +397,7 @@ DIOPI_API diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, d
  * @param target Target tensor representing class indices, with values in the range of [0, C). type = [int64]
  * @param weight weights manually assigned to each class. type = [float32, float64]
  * @param reduction  Loss reduction mode, which can be none, sum, or mean.
- * @param ignore_index  Specifies a target value to be ignored and does not contribute to the input gradient. 
+ * @param ignore_index  Specifies a target value to be ignored and does not contribute to the input gradient.
  * This parameter can only be used when the target contains class indices. type = [int32, int64].
  * @param[out] out the output tensor. type = [float32, float64].
  */
@@ -500,7 +507,7 @@ DIOPI_API diopiError_t diopiRsqrt(diopiContextHandle_t ctx, diopiTensorHandle_t 
 
 /**
  * @brief the in-place version of diopiSin().
- * @param[in] input the input and output tensor and will be stored result tensor, 
+ * @param[in] input the input and output tensor and will be stored result tensor,
  * type = [float16, float32, float64, int16, int32, int64, uint8, int8].
  */
 DIOPI_API diopiError_t diopiSinInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
@@ -514,7 +521,7 @@ DIOPI_API diopiError_t diopiSin(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 
 /**
  * @brief the in-place version of diopiCos().
- * @param[in] input the input and output tensor and will be stored result tensor, 
+ * @param[in] input the input and output tensor and will be stored result tensor,
  * type = [float16, float32, float64, int16, int32, int64, uint8, int8].
  */
 DIOPI_API diopiError_t diopiCosInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
@@ -583,7 +590,7 @@ DIOPI_API diopiError_t diopiExpInp(diopiContextHandle_t ctx, diopiTensorHandle_t
 /**
  * @brief Returns a new tensor with the exponential of the elements of the input tensor input
  * @param[in] ctx Context environment.
- * @param input the input tensor. type = [float16, float32, float64, int16, int32, 
+ * @param input the input tensor. type = [float16, float32, float64, int16, int32,
  * int64, uint8, int8, bool].
  * @param[out] out the output tensor. type = [float16, float32, float64].
  */
@@ -671,12 +678,12 @@ DIOPI_API diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
  * @brief the in-place version of diopiAdd()
  * @param[in] input the first input tensor and will be stored result tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
  * @sa Other parameters refer to diopiAdd().
- * 
+ *
 */
 DIOPI_API diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input,
                                    diopiConstTensorHandle_t other, const diopiScalar_t* alpha);
 /**
- * @brief Add a scalar to a tensor.  
+ * @brief Add a scalar to a tensor.
  * @param[in] other The scalar value to be added. type = [float64, float32, float16, int64, int32, int16, int8, uint8].
  * @sa Other parameters refer to diopiAdd().
 */
@@ -742,7 +749,7 @@ DIOPI_API diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHa
  * @param[in] ctx Context environment.
  * @param input the input tensor, dividend. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
  * @param other the second tensor, Divisor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
- * @param rounding_mode Rounding mode applied to the result, None: no rounding is performed, if both input and other are integer types, 
+ * @param rounding_mode Rounding mode applied to the result, None: no rounding is performed, if both input and other are integer types,
  * the inputs are promoted to the default scalar type; trunc: truncate towards zero; floor: round down towards negative infinity for the result of the division.
  * @param[out] out the output tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
 */
@@ -815,7 +822,7 @@ DIOPI_API diopiError_t diopiAddcmulInp(diopiContextHandle_t ctx, diopiTensorHand
  * @param input the input tensor. type = [float32, float64].
  * @param other the second tensor. type = [float32, float64].
  * @param[out] out the output tensor. type = [float32, float64].
- */ 
+ */
 DIOPI_API diopiError_t diopiMatmul(diopiContextHandle_t ctx, diopiTensorHandle_t out,
                                    diopiConstTensorHandle_t input, diopiConstTensorHandle_t other);
 
@@ -841,7 +848,7 @@ DIOPI_API diopiError_t diopiAddcdiv(diopiContextHandle_t ctx, diopiTensorHandle_
 DIOPI_API diopiError_t diopiAddcdivInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t tensor1, diopiConstTensorHandle_t tensor2, const diopiScalar_t* value);
 
 /**
- * @brief Performs matrix multiplication between mat1 and mat2, multiplies the result by scalar value alpha, 
+ * @brief Performs matrix multiplication between mat1 and mat2, multiplies the result by scalar value alpha,
  * adds it to input tensor beta x input.
  * @param[in] ctx Context environment.
  * @param input the input tensor. type = [float32, float64, float16]].
@@ -1221,7 +1228,7 @@ DIOPI_API diopiError_t diopiAny(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 /**
  * @brief Returns True if all elements in each row of the tensor in the given dimension dim are True, False otherwise.
  * @param[in] ctx Context environment.
- * @param input the input tensor. type = [bool, float16, float32, float64, int16, 
+ * @param input the input tensor. type = [bool, float16, float32, float64, int16,
  * int32, int64, uint8, int8]
  * @param dim a int pointer, the dimension along which the reduction is performed.
  * @param[out] out the output tensor. type = [bool].
@@ -1368,7 +1375,7 @@ DIOPI_API diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w,
 /**
  * \brief
  */
-DIOPI_API diopiError_t diopiClipGradNorm(diopiContextHandle_t ctx, double* out, diopiTensorHandle_t *grads,
+DIOPI_API diopiError_t diopiClipGradNorm(diopiContextHandle_t ctx, double* out, diopiTensorHandle_t* grads,
                                          int64_t num_grads, double max_norm, double norm_type, bool error_if_nonfinite);
 
 /**
@@ -1420,7 +1427,7 @@ DIOPI_API diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t 
  * @param input the intput tensor. type = [float16, float32, float64, int16, int32, int64, uint8, int8]
  * @param dim the dimension to sort along. type = [int32, int64].
  * @param descending boolean, controls the sorting order (ascending or descending).
- * @param stable a boolean pointer, selects a stable sorting algorithm to use, 
+ * @param stable a boolean pointer, selects a stable sorting algorithm to use,
  * where stable sorting algorithms guarantee that the order of equal elements remains unchanged.
  * @param[out] values the sorted tensor. type = [float16, float32, float64, int16, int32, int64, uint8, int8].
  * @param indices the index of corresponding element in the sorted tensor. type = [int32, int64].
@@ -1434,7 +1441,7 @@ DIOPI_API diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t v
  * @param input the input tesnor.type=[float16, float32, float64, int16, int32, int64, uint8, int8]
  * @param k the k in top-k. type = [int32, int64].
  * @param dim the dimension to sort along. type = [int32, int64].
- * @param largest boolean, whether to return the top k largest elements. 
+ * @param largest boolean, whether to return the top k largest elements.
  * @param sorted boolean, whether to return the top k elements in sorted order.
  * @param[out] values the top-k value tensor. type = [float16, float32, float64, int16, int32, int64, uint8, int8].
  * @param indices the index of top-k value tensor. type = [int32, int64].
@@ -1470,7 +1477,7 @@ DIOPI_API diopiError_t diopiOneHot(diopiContextHandle_t ctx, diopiTensorHandle_t
 /**
  * @brief Return a tensor of elements selected from either x or y, depending on condition.
  * @param[in] ctx Context environment.
- * @param condition A boolean tensor of the same shape as x and y. For elements/positions where the corresponding value is true, 
+ * @param condition A boolean tensor of the same shape as x and y. For elements/positions where the corresponding value is true,
  * the value from x is returned, otherwise the value from y is returned. type = [uint8, bool].
  * @param input the input tensor. type = [float16, float32, float64, int16, int32, int64, uint8, int8, bool]
  * @param other the other tensor. type = [float16, float32, float64, int16, int32, int64, uint8, int8, bool]
@@ -1650,7 +1657,7 @@ DIOPI_API diopiError_t diopiConvolution3d(diopiContextHandle_t ctx, diopiTensorH
                                           diopiSize_t padding, diopiSize_t dilation, int64_t groups);
 DIOPI_API diopiError_t diopiConvolution3dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
                                                   diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
-                                                  diopiConstTensorHandle_t weight, diopiSize_t *bias_sizes, diopiSize_t stride, diopiSize_t padding,
+                                                  diopiConstTensorHandle_t weight, diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding,
                                                   diopiSize_t dilation, bool transposed, diopiSize_t output_padding, int64_t groups);
 
 /**
@@ -1777,7 +1784,7 @@ DIOPI_API diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTen
  * @brief Returns the unique elements of the input tensor.
  * @param[in] ctx Context environment.
  * @param input the input tensor,type = [int64, float32, float64, float16, int16, int32, uint8, int8, bool]
- * @param dim Specifies the dimension along which the duplicates are removed. It can be None, 
+ * @param dim Specifies the dimension along which the duplicates are removed. It can be None,
  * which means removing duplicates from the entire input tensor.
  * @param sorted boolean, whether to sort the result in ascending order.
  * @param return_counts boolean, whether to return the count tensor
@@ -1908,9 +1915,9 @@ DIOPI_API diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTen
                                               diopiConstTensorHandle_t mean, diopiConstTensorHandle_t rstd, diopiSize_t normalized_shape);
 
 /**
- * \brief Copies the elements from src into input tensor.
+ * \brief Copies the elements from src into dest tensor.
  */
-DIOPI_API diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiTensorHandle_t input);
+DIOPI_API diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiTensorHandle_t dest);
 
 /**
  * \brief Upsamples a given multi-channel 1D (temporal), 2D (spatial) or 3D (volumetric) data.

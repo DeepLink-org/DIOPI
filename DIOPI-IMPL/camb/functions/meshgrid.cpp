@@ -15,7 +15,7 @@ namespace camb {
 
 extern "C" {
 
-DIOPI_API diopiError_t diopiMeshGrid(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, diopiConstTensorHandle_t* inputs, int64_t inputsNum) {
+diopiError_t diopiMeshGrid(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, diopiConstTensorHandle_t* inputs, int64_t inputsNum) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     for (int i = 0; i < inputsNum; i++) {
         DiopiTensor input_tensor(inputs[i]);

@@ -5,37 +5,36 @@
  * @brief A reference implemention for DIOPI runtime, which is utilized to support conformance test suite of DIOPI
  */
 
-#include <diopi/diopirt.h>
 #include <conform_test.h>
-#include <diopi/functions.h>
+#include <diopi/diopirt.h>
+#include <inttypes.h>
 
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
-#include <vector>
 #include <set>
+#include <vector>
 
 extern "C" {
 
 static int32_t DIOPIRT_LOG_LEVEL = 0;
 
-#define PRINT_COLOR_NONE    "\033[0m"
-#define PRINT_RED           "\033[1;31;40m"
-#define PRINT_BLUE          "\033[1;34;40m"
-#define PRINT_GREEN         "\033[1;32;40m"
-#define PRINT_YELLOW        "\033[1;33;40m"
+#define PRINT_COLOR_NONE "\033[0m"
+#define PRINT_RED "\033[1;31;40m"
+#define PRINT_BLUE "\033[1;34;40m"
+#define PRINT_GREEN "\033[1;32;40m"
+#define PRINT_YELLOW "\033[1;33;40m"
 
-#define diopi_log(args...)                                                  \
-    if (DIOPIRT_LOG_LEVEL) {                                                \
-        fprintf(stdout, PRINT_BLUE " [ %s ] " PRINT_GREEN, __FUNCTION__);   \
-        fprintf(stdout, args);                                              \
-        fprintf(stdout, PRINT_COLOR_NONE "\n");                             \
+#define diopi_log(args...)                                                \
+    if (DIOPIRT_LOG_LEVEL) {                                              \
+        fprintf(stdout, PRINT_BLUE " [ %s ] " PRINT_GREEN, __FUNCTION__); \
+        fprintf(stdout, args);                                            \
+        fprintf(stdout, PRINT_COLOR_NONE "\n");                           \
     }
 
-#define diopi_err(args)     fprintf(stderr, PRINT_RED args PRINT_COLOR_NONE)
-
+#define diopi_err(args) fprintf(stderr, PRINT_RED args PRINT_COLOR_NONE)
 
 static char szVersion[256] = {0};
 
@@ -48,45 +47,32 @@ DIOPI_RT_API const char* diopiGetVersion() {
     return szVersion;
 }
 
-static void* host_malloc(uint64_t bytes) {
-    return malloc(bytes);
-}
+static void* host_malloc(uint64_t bytes) { return malloc(bytes); }
 
-static void host_free(void* ptr) {
-    free(ptr);
-}
-
-// DIOPI_RT_API const char* diopiGetLastErrorString() {
-//     return device_get_last_error_string();
-// }
-
-void _getLastErrorString(const char** strErr) {
-    const char* str = diopiGetLastErrorString();
-    *strErr = str;
-}
+static void host_free(void* ptr) { free(ptr); }
 
 int32_t itemsize(const diopiDtype_t dtype) {
     switch (dtype) {
-    case diopi_dtype_int32:
-    case diopi_dtype_uint32:
-    case diopi_dtype_float32:
-    case diopi_dtype_tfloat32:
-        return 4;
-    case diopi_dtype_int64:
-    case diopi_dtype_uint64:
-    case diopi_dtype_float64:
-        return 8;
-    case diopi_dtype_int16:
-    case diopi_dtype_uint16:
-    case diopi_dtype_float16:
-    case diopi_dtype_bfloat16:
-        return 2;
-    case diopi_dtype_int8:
-    case diopi_dtype_uint8:
-    case diopi_dtype_bool:
-        return 1;
-    default:
-        assert(0);
+        case diopi_dtype_int32:
+        case diopi_dtype_uint32:
+        case diopi_dtype_float32:
+        case diopi_dtype_tfloat32:
+            return 4;
+        case diopi_dtype_int64:
+        case diopi_dtype_uint64:
+        case diopi_dtype_float64:
+            return 8;
+        case diopi_dtype_int16:
+        case diopi_dtype_uint16:
+        case diopi_dtype_float16:
+        case diopi_dtype_bfloat16:
+            return 2;
+        case diopi_dtype_int8:
+        case diopi_dtype_uint8:
+        case diopi_dtype_bool:
+            return 1;
+        default:
+            assert(0);
     }
     return 0;
 }
@@ -126,13 +112,12 @@ const char* device_to_str(const diopiDevice_t device) {
 class Storage final {
 private:
     malloc_func_t malloc_fn_;
-    free_func_t   free_fn_;
-    int64_t       nbytes_;
-    void*         ptr_;
+    free_func_t free_fn_;
+    int64_t nbytes_;
+    void* ptr_;
 
 public:
-    Storage(malloc_func_t malloc_fn, free_func_t free_fn, int64_t nbytes)
-            : malloc_fn_(malloc_fn), free_fn_(free_fn), nbytes_(nbytes) {
+    Storage(malloc_func_t malloc_fn, free_func_t free_fn, int64_t nbytes) : malloc_fn_(malloc_fn), free_fn_(free_fn), nbytes_(nbytes) {
         assert(free_fn_);
         assert(malloc_fn_);
         ptr_ = malloc_fn_(nbytes_);
@@ -140,28 +125,27 @@ public:
 
     ~Storage() {
         free_fn_(ptr_);
-        ptr_    = nullptr;
+        ptr_ = nullptr;
         nbytes_ = 0;
     }
 
-    void*       data() { return ptr_; }
+    void* data() { return ptr_; }
     const void* data() const { return ptr_; }
-    int64_t     nbytes() const { return nbytes_; }
+    int64_t nbytes() const { return nbytes_; }
 };
 
 struct diopiTensor {
 private:
-    std::vector<int64_t>     shape_;
-    std::vector<int64_t>     stride_;
-    diopiDtype_t             dtype_;
-    diopiDevice_t            device_;
-    int64_t                  numel_;
+    std::vector<int64_t> shape_;
+    std::vector<int64_t> stride_;
+    diopiDtype_t dtype_;
+    diopiDevice_t device_;
+    int64_t numel_;
     std::shared_ptr<Storage> storage_;
-    diopiContextHandle_t     context_;
+    diopiContextHandle_t context_;
 
 public:
-    diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride,
-                diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context);
+    diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context);
     ~diopiTensor();
 
     diopiSize_t shape() const {
@@ -176,27 +160,26 @@ public:
 
     bool reset_shape(const diopiSize_t* size);
 
-    diopiDtype_t  dtype() const { return dtype_; }
+    diopiDtype_t dtype() const { return dtype_; }
     diopiDevice_t device() const { return device_; }
-    int64_t       numel() const { return numel_; }
+    int64_t numel() const { return numel_; }
 
-    void*       data() { return storage_->data(); }
+    void* data() { return storage_->data(); }
     const void* data() const { return storage_->data(); }
-    int64_t     nbytes() const { return storage_->nbytes(); }
+    int64_t nbytes() const { return storage_->nbytes(); }
 
     diopiContextHandle_t get_ctx() const { return context_; }
 };
 
-diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride,
-                         diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context) {
+diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context) {
     assert(shape);
-    dtype_  = dtype;
+    dtype_ = dtype;
     device_ = device;
 
     shape_.resize(shape->len);
     stride_.resize(shape->len);
     int64_t stride_temp = 1;
-    numel_              = 1;
+    numel_ = 1;
     for (int64_t i = shape->len - 1; i >= 0; --i) {
         shape_[i] = shape->data[i];
         numel_ *= shape->data[i];
@@ -291,7 +274,7 @@ DIOPI_RT_API diopiError_t _diopiTensorGetCtxHandle(diopiConstTensorHandle_t th, 
 
 struct diopiContext {
 private:
-    diopiStreamHandle_t stream_ { nullptr };
+    diopiStreamHandle_t stream_{nullptr};
     std::set<diopiTensorHandle_t> setTensors_;
 
 public:
@@ -314,8 +297,7 @@ public:
         return stream_;
     }
 
-    diopiTensorHandle_t createTensor(const diopiSize_t* size, const diopiSize_t* stride,
-                                     const diopiDtype_t dtype, const diopiDevice_t dev) {
+    diopiTensorHandle_t createTensor(const diopiSize_t* size, const diopiSize_t* stride, const diopiDtype_t dtype, const diopiDevice_t dev) {
         diopiTensorHandle_t tensor = new diopiTensor(size, stride, dtype, dev, this);
         setTensors_.insert(tensor);
         return tensor;
@@ -356,19 +338,23 @@ diopiError_t diopiGetStream(diopiContextHandle_t ctx, diopiStreamHandle_t* strea
     return diopiSuccess;
 }
 
-DIOPI_RT_API diopiError_t diopiRequireTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor,
-                                          const diopiSize_t* size, const diopiSize_t* stride,
-                                          const diopiDtype_t dtype, const diopiDevice_t dev) {
-    diopi_log("requires a Tensor, size:[%16p, %lld], stride:%16p, dtype:%d[%s], device:%d[%s]",
-        size->data, size->len, stride, dtype, diopi_dtype_to_str(dtype), dev, device_to_str(dev));
+DIOPI_RT_API diopiError_t diopiRequireTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor, const diopiSize_t* size, const diopiSize_t* stride,
+                                             const diopiDtype_t dtype, const diopiDevice_t dev) {
+    diopi_log("requires a Tensor, size:[%16p, %" PRId64 "], stride:%16p, dtype:%d[%s], device:%d[%s]",
+              size->data,
+              size->len,
+              stride,
+              dtype,
+              diopi_dtype_to_str(dtype),
+              dev,
+              device_to_str(dev));
     *tensor = ctx->createTensor(size, stride, dtype, dev);
 
     return diopiSuccess;
 }
 
-DIOPI_RT_API diopiError_t diopiRequireBuffer(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor,
-                                          int64_t bytes, diopiDevice_t dev) {
-    diopi_log("requires a buffer, bytes: %lld, device: %s", bytes, device_to_str(dev));
+DIOPI_RT_API diopiError_t diopiRequireBuffer(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor, int64_t bytes, diopiDevice_t dev) {
+    diopi_log("requires a buffer, bytes: %" PRId64 ", device: %s", bytes, device_to_str(dev));
     diopiSize_t size(&bytes, 1);
     return diopiRequireTensor(ctx, tensor, &size, nullptr, diopi_dtype_int8, dev);
 }
@@ -404,9 +390,7 @@ DIOPI_RT_API diopiError_t diopiFinalize() {
     return diopiSuccess;
 }
 
-DIOPI_RT_API diopiError_t _diopiTensorCopyFromBuffer(diopiContextHandle_t ctx,
-                                                  const void*          src,
-                                                  diopiTensorHandle_t  tensor) {
+DIOPI_RT_API diopiError_t _diopiTensorCopyFromBuffer(diopiContextHandle_t ctx, const void* src, diopiTensorHandle_t tensor) {
     if (tensor->device() == diopi_device) {
         diopiStreamHandle_t stream;
         diopiGetStream(ctx, &stream);
@@ -418,9 +402,7 @@ DIOPI_RT_API diopiError_t _diopiTensorCopyFromBuffer(diopiContextHandle_t ctx,
     return diopiSuccess;
 }
 
-DIOPI_RT_API diopiError_t _diopiTensorCopyToBuffer(diopiContextHandle_t      ctx,
-                                                diopiConstTensorHandle_t tensor,
-                                                void*                     dst) {
+DIOPI_RT_API diopiError_t _diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diopiConstTensorHandle_t tensor, void* dst) {
     if (tensor->device() == diopi_device) {
         diopiStreamHandle_t stream;
         diopiGetStream(ctx, &stream);
