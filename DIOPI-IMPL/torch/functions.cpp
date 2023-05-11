@@ -4053,4 +4053,14 @@ diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     return diopiSuccess;
 }
 
+diopiError_t diopiPolar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t abs, diopiConstTensorHandle_t angle) {
+    impl::aten::setCurCtx(ctx);
+    auto atOut = impl::aten::buildATen(out);
+    auto atAbs = impl::aten::buildATen(abs);
+    auto atAngle = impl::aten::buildATen(angle);
+    at::polar_out(atOut, atAbs, atAngle);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
 }  // extern "C"
