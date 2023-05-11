@@ -542,18 +542,6 @@ device_configs = {
         ),
     ),
 
-    'dropout2d': dict(
-        name=["dropout2d"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
-
     'leaky_relu': dict(
         name=["leaky_relu"],
         tensor_para=dict(
