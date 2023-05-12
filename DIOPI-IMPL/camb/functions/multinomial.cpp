@@ -32,7 +32,7 @@ diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     DiopiTensor input_tensor(input);
     DiopiTensor out_tensor(out);
     DiopiTensor out_temp = out_tensor;
-    DIOPI_CALL(autoCastTensorType(ctx, {&input_tensor, &out_temp}, {diopi_dtype_float16, diopi_dtype_float32}));
+    DIOPI_CALL(autoCastTensorType(ctx, {&input_tensor, &out_temp}, {diopi_dtype_float32}));
     CnnlTensorDesc inputDesc(input_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(out_temp, CNNL_LAYOUT_ARRAY);
 
