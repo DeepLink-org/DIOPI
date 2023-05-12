@@ -24,7 +24,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
   )
 find_package(BANG)
 if(BANG_FOUND)
-  set(BANG_CNCC_FLAGS "${BANG_CNCC_FLAGS};-fPIC;-pthread;--bang-mlu-arch=mtp_220;--bang-mlu-arch=mtp_270;--bang-mlu-arch=mtp_290;--bang-mlu-arch=mtp_372;--bang-mlu-arch=mtp_592;-Wall")
+  set(BANG_CNCC_FLAGS "${BANG_CNCC_FLAGS};-fPIC;-std=c++14;-pthread;--bang-mlu-arch=mtp_220;--bang-mlu-arch=mtp_270;--bang-mlu-arch=mtp_290;--bang-mlu-arch=mtp_372;--bang-mlu-arch=mtp_592;-O3;-Wall")
   message(STATUS "BANG_CNCC_FLAGS: ${BANG_CNCC_FLAGS}")
 else()
   message(FATAL_ERROR "BANG cannot be found.")
