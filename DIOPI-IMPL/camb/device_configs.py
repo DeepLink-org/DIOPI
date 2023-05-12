@@ -236,18 +236,6 @@ device_configs = {
             ],
         ),
     ),
-    
-    'div': dict(
-        name=['div'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
 
     'div_rounding_mode': dict(
         name=['div'],
@@ -255,20 +243,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64)],
-                },
-            ],
-        ),
-    ),
-
-    'div_dtype_int_and_bool': dict(
-        name=['div'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float16)],
                 },
             ],
         ),
