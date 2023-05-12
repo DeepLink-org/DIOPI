@@ -243,6 +243,20 @@ public:
         return true;
     }
 
+    void unsqueeze(int dim) {
+        auto shape = this->shape();
+        std::vector<int64_t> new_shape(shape.size() + 1);
+        int64_t n = shape.size();
+        for (int64_t i = 0; i < dim; i++) {
+            new_shape[i] = shape[i];
+        }
+        new_shape[dim] = 1;
+        for (int64_t i = dim + 1; i < n + 1; i++) {
+            new_shape[i] = shape[i - 1];
+        }
+        this->reshape(new_shape);
+    }
+
     bool defined() const {
         if (tensor_ == nullptr) return false;
         return this->numel() != 0;
