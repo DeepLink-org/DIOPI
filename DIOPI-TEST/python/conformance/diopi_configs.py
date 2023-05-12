@@ -1108,24 +1108,46 @@ diopi_configs = {
             ],
         ),
     ),
-
-    'pointwise_binary_scalar': dict(
-        name=['add', 'sub', 'mul', 'div', 'eq',
-              'ne', 'le', 'lt', 'gt', 'ge'],
+    
+    'sub_scalar': dict(
+        name=['sub'],
         interface=['torch'],
         tag=['scalar'],
         is_inplace=True,
         dtype=[Dtype.float32],
         para=dict(
-            other=[0, -1, 0.028, 2, 1],
+            other=[0, -1, 0.028, 2.232, 1, -0.2421, -2],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((), (1024, ), (384, 128),
-                              (128, 64, 3, 3),
+                    "shape": ((), (1024, ), (384, 128), (2, 64, 128),
+                              (128, 64, 3, 3), (128, 32, 2, 2),
+                              (2, 32, 130, 130)),
+                },
+            ],
+        ),
+    ),
+
+    'pointwise_binary_scalar': dict(
+        name=['add', 'mul', 'div', 'eq',
+              'ne', 'le', 'lt', 'gt', 'ge'],
+        interface=['torch'],
+        tag=['scalar'],
+        is_inplace=True,
+        dtype=[Dtype.float32],
+        para=dict(
+            other=[0, -1, 0.028, 2.232, 1, True, False],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (1024, ), (384, 128), (2, 64, 128),
+                              (128, 64, 3, 3), (128, 32, 2, 2),
                               (2, 32, 130, 130)),
                 },
             ],
@@ -1197,12 +1219,12 @@ diopi_configs = {
             ],
         ),
     ),
-
-    'pointwise_binary_constant_with_alpha_and_no_contiguous': dict(
-        name=['add', 'sub'],
+    
+    'sub_constant_with_alpha_and_no_contiguous': dict(
+        name=['sub'],
         para=dict(
-            alpha=[0, -2, 2.0, 4, 1],
-            other=[3.5, -2, 2.0, 4, 1],
+            alpha=[0, -2, 2.0, 4, 1, 0.234, -2.123],
+            other=[3.5, -2, 2.0, 4, 1, -0.231, 3],
         ),
         interface=['torch'],
         is_inplace=True,
@@ -1212,8 +1234,31 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((), (1024, ), (384, 128),
-                              (128, 64, 3, 3),
+                    "shape": ((), (1024, ), (384, 128), (2, 64, 128),
+                              (128, 64, 3, 3), (128, 32, 2, 2),
+                              (2, 32, 130, 130)),
+                    'no_contiguous': [True],
+                },
+            ],
+        ),
+    ),
+
+    'pointwise_binary_constant_with_alpha_and_no_contiguous': dict(
+        name=['add'],
+        para=dict(
+            alpha=[0, -2, 2.0, 4, 1, 0.234, -2.123],
+            other=[3.5, -2, 2.0, 4, 1, True, False],
+        ),
+        interface=['torch'],
+        is_inplace=True,
+        dtype=[Dtype.float32],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (1024, ), (384, 128), (2, 64, 128),
+                              (128, 64, 3, 3), (128, 32, 2, 2),
                               (2, 32, 130, 130)),
                     'no_contiguous': [True],
                 },
@@ -1244,7 +1289,30 @@ diopi_configs = {
             ],
         ),
     ),
-
+    
+    'pointwise_binary_with_alpha_bool': dict(
+        name=['add'],
+        para=dict(
+            alpha=[True, False],
+        ),
+        interface=['torch'],
+        is_inplace=True,
+        dtype=[Dtype.bool],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 3),
+                              (2, 2, 4, 3)),
+                },
+                {
+                    "ins": ['other'],
+                    "shape": ((1,), (1,)),
+                }
+            ],
+        ),
+    ),
 
     'bmm': dict(
         name=['bmm'],
