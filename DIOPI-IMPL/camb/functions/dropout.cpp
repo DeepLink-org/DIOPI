@@ -24,7 +24,7 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
 
         // Do this Check to use DIOPI-TEST because non-float data not supported in PyTorch unless p==0
         DIOPI_CHECK(((DiopiDataType::isFloatPoint(input_tensor.dtype()) || p == 0)), "result type Float can't be cast to the desired type");
-        std::vector<DiopiTensor *> pTensors{&input_tensor};
+        std::vector<DiopiTensor*> pTensors{&input_tensor};
         std::set<diopiDtype_t> supportedDtypes{
             diopi_dtype_int8, diopi_dtype_uint8, diopi_dtype_int16, diopi_dtype_int32, diopi_dtype_float16, diopi_dtype_float32};
         DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
@@ -47,13 +47,13 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
         // create and set the state
         size_t size_state = 0;
         DIOPI_CALLCNNL(cnnlRandGetMTGP32StateSize(generator, &size_state));
-        void *state = nullptr;
+        void* state = nullptr;
         state = requiresBuffer(ctx, size_state).data();
         cnnlMTGP32FastParams_t params;
         DIOPI_CALLCNNL(cnnlRandGetMTGP32HostParam(generator, &params));
         size_t size_kernel = 0;
         DIOPI_CALLCNNL(cnnlRandGetMTGP32KernelParamSize(generator, &size_kernel));
-        void *kernel_params = nullptr;
+        void* kernel_params = nullptr;
         kernel_params = requiresBuffer(ctx, size_kernel).data();
         DIOPI_CALLCNNL(cnnlRandMakeMTGP32Constants(handle, params, kernel_params));
         int rand_seed = time(NULL);
@@ -73,7 +73,7 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
             CnnlTensorDesc bcast_temp_desc(bcast_temp_tensor, CNNL_LAYOUT_ARRAY);
 
             cnnlTensorDescriptor_t input_descs[] = {input_desc.get(), bcast_temp_desc.get()};
-            const void *inputs[] = {input_tensor.data(), bcast_temp_tensor.data()};
+            const void* inputs[] = {input_tensor.data(), bcast_temp_tensor.data()};
             DIOPI_CALLCNNL(cnnlMulN(handle, input_descs, inputs, 2, output_desc.get(), output_tensor_temp.data()))
         } else {
             // cases for dropout
