@@ -19,9 +19,14 @@ diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     DiopiTensor out_tensor(out);
     DiopiTensor out_tensor_temp = out_tensor;
 
-    DIOPI_CALL(dataTypeCast(ctx, out_tensor_temp, diopi_dtype_float32));
-    DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_float32));
-    DIOPI_CALL(dataTypeCast(ctx, other_tensor, diopi_dtype_float32));
+    if (rounding_mode == RoundModeFloor || rounding_mode == RoundModeTrunc) {
+        DIOPI_CALL(dataTypeCast(ctx, out_tensor_temp, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, other_tensor, diopi_dtype_float32));
+    } else {
+        DIOPI_CALL(autoCastTensorType(ctx, {&input_tensor, &other_tensor, &out_tensor_temp}, {diopi_dtype_float16, diopi_dtype_float32}));
+    }
+
     CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc other_desc(other_tensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc out_desc(out_tensor_temp, CNNL_LAYOUT_ARRAY);
