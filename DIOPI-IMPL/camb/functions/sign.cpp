@@ -18,7 +18,7 @@ diopiError_t diopiSign(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     DiopiTensor input_tensor(input);
     DiopiTensor out_tensor(out);
 
-    std::vector<DiopiTensor *> pTensors{&input_tensor};
+    std::vector<DiopiTensor*> pTensors{&input_tensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
