@@ -1420,16 +1420,4 @@ device_configs = {
         ),
     ),
 
-    'multinomial': dict(
-        name=["multinomial"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
-
 }
