@@ -43,9 +43,9 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
 
     DIOPI_CHECK(true, input_tensor.is_contiguous() || input_tensor.is_contiguous(MemoryFormat::ChannelsLast),
                 "the memory format is not supportted.");
-    DIOPI_CHECK(true, weight_tensor.is_contiguous() || weight_tensor.is_contiguous(MemoryFormat::ChannelsLast), 
+    DIOPI_CHECK(true, weight_tensor.is_contiguous() || weight_tensor.is_contiguous(MemoryFormat::ChannelsLast),
                 "the memory format is not supportted.");
-    DIOPI_CHECK(true, output_tensor.is_contiguous() || output_tensor.is_contiguous(MemoryFormat::ChannelsLast), 
+    DIOPI_CHECK(true, output_tensor.is_contiguous() || output_tensor.is_contiguous(MemoryFormat::ChannelsLast),
                 "the memory format is not supportted.");
 
     DiopiTensor input_tensor_casted = input_tensor;
