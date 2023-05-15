@@ -67,7 +67,6 @@ diopiError_t reduce_internal(diopiContextHandle_t ctx, DiopiTensor& input_tr, Di
                              const std::vector<int64_t> reduce_dim, cnnlReduceOp_t reduce_op) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    DIOPI_CHECK(input_tr.numel() > 0, "operation does not have an identity.");
     DIOPI_CHECK(input_tr.is_contiguous(), "input tensor should be contiguous");
 
     CnnlReduceDescriptor reduce_desc;
