@@ -19,6 +19,10 @@ diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     DiopiTensor other_tensor(other);
     DiopiTensor out_tensor(out);
 
+    if (!input_tensor.defined()) {
+        return diopiSuccess;
+    }
+
     DiopiTensor out_tensor_tmp = out_tensor;
     if ((out_tensor.dtype() != diopi_dtype_float16) && (out_tensor.dtype() != diopi_dtype_float32)) {
         DIOPI_CALL(dataTypeCast(ctx, out_tensor_tmp, diopi_dtype_float32));
@@ -46,7 +50,7 @@ diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 }
 
 diopiError_t diopiMulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
-    diopiMul(ctx, input, input, other);
+    DIOPI_CALL(diopiMul(ctx, input, input, other));
     return diopiSuccess;
 }
 
@@ -57,12 +61,12 @@ diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     DiopiTensor other_tensor_tmp;
     makeTensorFromScalar(ctx, other, other_tensor_tmp);
     auto other_tensor = other_tensor_tmp.tensorHandle();
-    diopiMul(ctx, out, input, diopiTensorHandle_t(other_tensor));
+    DIOPI_CALL(diopiMul(ctx, out, input, diopiTensorHandle_t(other_tensor)));
     return diopiSuccess;
 }
 
 diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
-    diopiMulScalar(ctx, input, input, other);
+    DIOPI_CALL(diopiMulScalar(ctx, input, input, other));
     return diopiSuccess;
 }
 
