@@ -42,14 +42,11 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
     DiopiTensor output_tensor(out);
 
     DIOPI_CHECK(true, input_tensor.is_contiguous() || input_tensor.is_contiguous(MemoryFormat::ChannelsLast),
-                "the memory format is not supportted."
-    );
+                "the memory format is not supportted.");
     DIOPI_CHECK(true, weight_tensor.is_contiguous() || weight_tensor.is_contiguous(MemoryFormat::ChannelsLast), 
-                "the memory format is not supportted."
-    );
+                "the memory format is not supportted.");
     DIOPI_CHECK(true, output_tensor.is_contiguous() || output_tensor.is_contiguous(MemoryFormat::ChannelsLast), 
-                "the memory format is not supportted."
-    );
+                "the memory format is not supportted.");
 
     DiopiTensor input_tensor_casted = input_tensor;
     DiopiTensor weight_tensor_casted = weight_tensor;
@@ -156,20 +153,15 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
     DiopiTensor grad_weight_tensor(grad_weight);
 
     DIOPI_CHECK(true, input_tensor.is_contiguous() || input_tensor.is_contiguous(MemoryFormat::ChannelsLast),
-                "the memory format is not supportted."
-    );
+                "the memory format is not supportted.");
     DIOPI_CHECK(true, weight_tensor.is_contiguous() || weight_tensor.is_contiguous(MemoryFormat::ChannelsLast),
-                "the memory format is not supportted."
-    );
+                "the memory format is not supportted.");
     DIOPI_CHECK(true, grad_output_tensor.is_contiguous() || grad_output_tensor.is_contiguous(MemoryFormat::ChannelsLast),
-                "the memory format is not supportted."
-    );
+                "the memory format is not supportted.");
     DIOPI_CHECK(true, grad_input_tensor.is_contiguous() || grad_input_tensor.is_contiguous(MemoryFormat::ChannelsLast),
-                "the memory format is not supportted."
-    );
+                "the memory format is not supportted.");
     DIOPI_CHECK(true, grad_weight_tensor.is_contiguous() || grad_weight_tensor.is_contiguous(MemoryFormat::ChannelsLast),
-                "the memory format is not supportted."
-    );
+                "the memory format is not supportted.");
 
     DiopiTensor input_casted = input_tensor;
     DiopiTensor weight_casted = weight_tensor;
