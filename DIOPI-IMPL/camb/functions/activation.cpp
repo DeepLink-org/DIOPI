@@ -24,9 +24,9 @@ public:
     T get(std::string key, T defaultValue) const {
         auto iter = m_data.find(key);
         if (iter != m_data.end()) {
-            const ValueHolderBase *holder = iter->second.get();
+            const ValueHolderBase* holder = iter->second.get();
             if (holder->getTypeInfo() == typeid(T)) {
-                const ValueHolder<T> *typedHolder = static_cast<const ValueHolder<T> *>(holder);
+                const ValueHolder<T>* typedHolder = static_cast<const ValueHolder<T>*>(holder);
                 return typedHolder->get();
             }
         }
@@ -37,14 +37,14 @@ private:
     class ValueHolderBase {
     public:
         virtual ~ValueHolderBase() {}
-        virtual const std::type_info &getTypeInfo() const = 0;
+        virtual const std::type_info& getTypeInfo() const = 0;
     };
 
     template <typename T>
     class ValueHolder : public ValueHolderBase {
     public:
         explicit ValueHolder(T value) : m_value(value) {}
-        const std::type_info &getTypeInfo() const override { return typeid(T); }
+        const std::type_info& getTypeInfo() const override { return typeid(T); }
         T get() const { return m_value; }
 
     private:
@@ -66,13 +66,13 @@ diopiError_t cnnl_activation_internal(diopiContextHandle_t ctx, DiopiTensor inpu
     float scale = attr.get("scale", 0.0);
     bool is_result = attr.get("is_result", false);
     bool approximate = attr.get("approximate", false);
-    void *alpha = attr.get("alpha", nullptr);
-    void *beta = attr.get("beta", nullptr);
+    void* alpha = attr.get("alpha", nullptr);
+    void* beta = attr.get("beta", nullptr);
 
     CnnlResourceGuard<cnnlActivationDescriptor_t, cnnlCreateActivationDescriptor, cnnlDestroyActivationDescriptor> activation_desc;
     DIOPI_CALLCNNL(cnnlSetActivationDescriptor_v6(activation_desc.get(), mode, perf, nan_prop, coef, sliced_dim, gamma, scale, is_result, approximate));
 
-    std::vector<DiopiTensor *> inputs{&input};
+    std::vector<DiopiTensor*> inputs{&input};
     DIOPI_CALL(autoCastTensorType(ctx, inputs, {diopi_dtype_float16, diopi_dtype_float32}));
     DiopiTensor temp_output = out;
     DIOPI_CALL(dataTypeCast(ctx, temp_output, input.dtype()));
@@ -99,12 +99,12 @@ diopiError_t cnnl_activation_backward_internal(diopiContextHandle_t ctx, DiopiTe
     float scale = attr.get("scale", 0.0);
     bool is_result = attr.get("is_result", true);
     bool approximate = attr.get("approximate", false);
-    void *alpha = attr.get("alpha", nullptr);
-    void *beta = attr.get("beta", nullptr);
+    void* alpha = attr.get("alpha", nullptr);
+    void* beta = attr.get("beta", nullptr);
 
     CnnlResourceGuard<cnnlActivationDescriptor_t, cnnlCreateActivationDescriptor, cnnlDestroyActivationDescriptor> activation_desc;
     DIOPI_CALLCNNL(cnnlSetActivationDescriptor_v6(activation_desc.get(), mode, perf, nan_prop, coef, sliced_dim, gamma, scale, is_result, approximate));
-    std::vector<DiopiTensor *> inputs{&grad_output};
+    std::vector<DiopiTensor*> inputs{&grad_output};
     if (input.defined()) {
         inputs.push_back(&input);
     }
@@ -235,7 +235,7 @@ extern "C" diopiError_t diopiTanhBackward(diopiContextHandle_t ctx, diopiTensorH
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char *approximate) {
+extern "C" diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char* approximate) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor input_tensor(input);
     DiopiTensor output_tensor(out);
@@ -249,7 +249,7 @@ extern "C" diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t 
 }
 
 extern "C" diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                          diopiConstTensorHandle_t input, const char *approximate) {
+                                          diopiConstTensorHandle_t input, const char* approximate) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor grad_input_tensor(grad_input);
     DiopiTensor grad_output_tensor(grad_output);
