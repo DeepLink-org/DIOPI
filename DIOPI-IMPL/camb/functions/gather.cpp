@@ -17,8 +17,10 @@ DIOPI_API diopiError_t diopiGather(diopiContextHandle_t ctx, diopiTensorHandle_t
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor input_tensor(input);
-    if (input_tensor.dtype() == diopi_dtype_float64 || input_tensor.dtype() == diopi_dtype_int64) {
+    if (input_tensor.dtype() == diopi_dtype_float64) {
         DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_float32));
+    } else if(input_tensor.dtype() == diopi_dtype_int64) {
+        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_int32));
     }
     DiopiTensor index_tensor(index);
     DIOPI_CALL(autoCastTensorType(ctx, {&index_tensor}, {diopi_dtype_int32, diopi_dtype_int64}));
