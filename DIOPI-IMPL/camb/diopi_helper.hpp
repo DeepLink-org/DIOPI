@@ -243,7 +243,7 @@ public:
         return true;
     }
 
-    void as_strided(std::vector<int64_t>& shape, std::vector<int64_t>& stride){
+    void as_strided(std::vector<int64_t>& shape, std::vector<int64_t>& stride) {
         this->shape_ = shape;
         this->stride_ = stride;
     }
