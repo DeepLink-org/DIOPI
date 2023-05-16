@@ -58,9 +58,9 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
 
     DIOPI_CHECK(true, input_tensor.is_contiguous() || input_tensor.is_contiguous(MemoryFormat::ChannelsLast),
                 "[diopiConvolution2d] the memory format is not supportted.");
-    DIOPI_CHECK(true, weight_tensor.is_contiguous() || weight_tensor.is_contiguous(MemoryFormat::ChannelsLast), 
+    DIOPI_CHECK(true, weight_tensor.is_contiguous() || weight_tensor.is_contiguous(MemoryFormat::ChannelsLast),
                 "[diopiConvolution2d] the memory format is not supportted.");
-    DIOPI_CHECK(true, output_tensor.is_contiguous() || output_tensor.is_contiguous(MemoryFormat::ChannelsLast), 
+    DIOPI_CHECK(true, output_tensor.is_contiguous() || output_tensor.is_contiguous(MemoryFormat::ChannelsLast),
                 "[diopiConvolution2d] the memory format is not supportted.");
 
     DiopiTensor input_tensor_casted = input_tensor;
@@ -256,7 +256,7 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
 
     DIOPI_CALL(diopiTensorPermute2D(ctx, grad_input_casted, grad_input_t, MemoryFormat::Contiguous));
     DIOPI_CALL(diopiTensorPermute2D(ctx, grad_weight_casted, grad_weight_t, MemoryFormat::Contiguous));
-    
+
     DIOPI_CALL(dataTypeCast(ctx, grad_input_tensor, grad_input_casted));
     DIOPI_CALL(dataTypeCast(ctx, grad_weight_tensor, grad_weight_casted));
 
