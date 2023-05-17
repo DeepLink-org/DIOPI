@@ -239,7 +239,7 @@ extern "C" diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t 
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor input_tensor(input);
     DiopiTensor output_tensor(out);
-    
+
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_GELU);
     if (approximate == "tanh") {
