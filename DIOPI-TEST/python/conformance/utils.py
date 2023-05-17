@@ -7,6 +7,9 @@ import os
 import numpy as np
 import csv
 import pickle
+import ctypes
+import diopi_functions
+from diopi_runtime import diopiDtype
 
 
 cfg_file_name = "test_config.cfg"
@@ -98,8 +101,8 @@ class glob_var(object):
         self.nhwc = nhwc
         self.nhwc_min_dim = nhwc_min_dim
         self.four_bytes = four_bytes
-        self.int_type = Dtype.int64
-        self.float_type = Dtype.float64
+        self.int_type = diopiDtype.int64
+        self.float_type = diopiDtype.float64
 
     def set_nhwc(self):
         self.nhwc = True
@@ -112,8 +115,8 @@ class glob_var(object):
 
     def set_four_bytes(self):
         self.four_bytes = True
-        self.int_type = Dtype.int32
-        self.float_type = Dtype.float32
+        self.int_type = diopiDtype.int32
+        self.float_type = diopiDtype.float32
 
     def get_four_bytes(self):
         return self.four_bytes
@@ -218,8 +221,11 @@ def check_returncode(returncode, throw_exception=True):
 
 
 def check_function(fn_name):
+    # import pdb
+    # pdb.set_trace()
     try:
-        func = eval(f"diopi_runtime.device_impl_lib.{fn_name}")
+        func = eval(f"diopi_functions.{fn_name}")
+        # func = eval(f"diopi_runtime.diopirt_lib.{fn_name}")
     except AttributeError as e:
         raise FunctionNotImplementedError(e.args)
     return func
@@ -349,3 +355,11 @@ def get_data_from_file(data_path, test_path, name=""):
     else:
         f.close()
     return data
+
+def get_capsule(src):
+    PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
+    PyCapsule_New = ctypes.pythonapi.PyCapsule_New
+    PyCapsule_New.restype = ctypes.py_object
+    PyCapsule_New.argtypes = (ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor)
+    capsule = PyCapsule_New(src, None, PyCapsule_Destructor(0))
+    return capsule

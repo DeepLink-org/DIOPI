@@ -12,6 +12,9 @@ from .utils import save_precision, record, write_precision
 from .utils import get_saved_pth_list, get_data_from_file
 from .utils import cfg_file_name
 
+import pynvml
+pynvml.nvmlInit()
+handle = pynvml.nvmlDeviceGetHandleByIndex(0)
 
 def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dtype_list=[], filter_dtype_str_list=[]):
     tensor_info = []
@@ -72,6 +75,10 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
         sum1 = tensor1.sum()
         sum2 = tensor2.sum()
         mask = np.isclose(tensor1, tensor2, rtol, atol, True)
+        if tensor1.dtype == np.bool_:
+            tensor1 = tensor1.astype('int32')
+        if tensor2.dtype == np.bool_:
+            tensor2 = tensor2.astype('int32')
         max_diff = np.abs(tensor1 - tensor2).max()
         logger.info(f"Max of diff is {max_diff}.")
         logger.debug(f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}, Max of diff is {max_diff}. \
@@ -123,7 +130,7 @@ class ManualTest(object):
             real_ratio = np.sum(mask_numpy) / mask.numel()
             # check data
             if func == F.dropout2d:
-                tmp = np.ones(input.shape)
+                tmp = np.ones(input.shape().data)
                 mask_numpy = mask_numpy * tmp
             remains = out_numpy[mask_numpy == 1]
             ref = input_numpy[mask_numpy == 1]
@@ -215,7 +222,7 @@ class ManualTest(object):
         out = F.multinomial(input, num_samples, replacement)
         out_numpy = out.numpy()
         has_duplicates = False
-        if len(out.size()) == 2:
+        if out.size().len == 2:
             has_duplicates = len(out_numpy[0]) != len(set(out_numpy[0]))
         else:
             has_duplicates = len(out_numpy) != len(set(out_numpy))
@@ -395,7 +402,11 @@ class ConformanceTest(object):
                 try:
                     info = convert_input_tensors(function_paras, test_tag, nhwc_list, dtype_list, filter_dtype_str_list)
                     tensor_info = info if info else tensor_info
+                    meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
+                    logger.info(f"============================ before" + cfg_func_name + ":" + str(meminfo.used/1024**2))
                     output = eval(func_call)
+                    meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
+                    logger.info(f"============================ after" + cfg_func_name + ":" + str(meminfo.used/1024**2))
                     sum_to_compare = True if 'sorted' in kwargs and ~kwargs['sorted'] else False
                     passed = compare_with_gen_output(output, data['cfg'], output_reference, sum_to_compare) \
                         if need_output else True

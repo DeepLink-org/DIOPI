@@ -3069,7 +3069,7 @@ diopiError_t diopiIndexFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     return diopiSuccess;
 }
 
-diopiError_t diopiIndexFillInpScalar(diopiContextHandle_t ctx, diopiConstTensorHandle_t input,
+diopiError_t diopiIndexFillInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input,
                                      int64_t dim, diopiConstTensorHandle_t index, const diopiScalar_t* value) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
@@ -3080,7 +3080,7 @@ diopiError_t diopiIndexFillInpScalar(diopiContextHandle_t ctx, diopiConstTensorH
     return diopiSuccess;
 }
 
-diopiError_t diopiIndexFillInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t input,
+diopiError_t diopiIndexFillInp(diopiContextHandle_t ctx, diopiTensorHandle_t input,
                                int64_t dim, diopiConstTensorHandle_t index, diopiConstTensorHandle_t value) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
@@ -3723,7 +3723,7 @@ diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx,  diopiTensorH
 }
 
 diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
-                      diopiSize_t pad, const char* mode, double* value) {
+                      diopiSize_t pad, const char* mode, const double* value) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atPad = impl::aten::buildAtIntArray(pad);
