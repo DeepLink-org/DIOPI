@@ -30,9 +30,19 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     if (running_mean_tr.defined() && running_var_tr.defined()) {
         DIOPI_CHECK(running_mean_tr.dtype() == running_var_tr.dtype(), "running_mean and running_var need to have the same data types");
     }
-    // TODO(ywt): 2,3 dim support
-    DIOPI_CHECK(input_tr.dim() >= 4 && input_tr.dim() <= 5, "Input dim is out of range");
-    DIOPI_CHECK(input_tr.dim() == output_tr.dim(), "Input dim != out dim");
+    auto dim = input_tr.dim();
+    DIOPI_CHECK(dim >= 2 && dim <= 5, "Input dim is out of range");
+    DIOPI_CHECK(dim == output_tr.dim(), "Input dim != out dim");
+
+    if (3 == dim) {
+        input_tr.unsqueeze(3);
+        output_tr.reshape(input_tr.shape());
+    }
+    if (2 == dim) {
+        input_tr.unsqueeze(2);
+        input_tr.unsqueeze(3);
+        output_tr.reshape(input_tr.shape());
+    }
 
     std::vector<DiopiTensor*> p_tensors{&input_tr, &weight_tr, &bias_tr};
     if (running_mean_tr.defined()) {
@@ -136,8 +146,21 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     if (running_mean_tr.defined() && running_var_tr.defined()) {
         DIOPI_CHECK(running_mean_tr.dtype() == running_var_tr.dtype(), "running_mean and running_var need to have the same data types");
     }
-    // TODO(ywt): 2,3 dim support
-    DIOPI_CHECK(input_tr.dim() >= 4 && input_tr.dim() <= 5, "Input dim is out of range");
+    auto dim = input_tr.dim();
+    DIOPI_CHECK(dim >= 2 && dim <= 5, "Input dim is out of range");
+
+    if (3 == dim) {
+        input_tr.unsqueeze(3);
+        grad_output_tr.unsqueeze(3);
+        grad_input_tr.reshape(input_tr.shape());
+    }
+    if (2 == dim) {
+        input_tr.unsqueeze(2);
+        input_tr.unsqueeze(3);
+        grad_output_tr.unsqueeze(2);
+        grad_output_tr.unsqueeze(3);
+        grad_input_tr.reshape(input_tr.shape());
+    }
 
     std::vector<DiopiTensor*> p_tensors{&grad_output_tr, &input_tr, &weight_tr};
     if (running_mean_tr.defined()) {

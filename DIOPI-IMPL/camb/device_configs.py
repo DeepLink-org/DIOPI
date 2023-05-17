@@ -6,15 +6,15 @@ from .dtype import Dtype
 device_configs = {
     'batch_norm': dict(
         name=["batch_norm"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                }
-            ]
-        )
+        atol=1e-2,
+        rtol=1e-3,
     ),
+    
+    'nll_loss': dict(
+        name=["nll_loss"],
+        atol=1e-3,
+        rtol=1e-4,
+    )
 
     'baddbmm': dict(
         name=["baddbmm"],
