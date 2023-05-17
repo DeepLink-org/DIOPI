@@ -40,7 +40,7 @@ diopiError_t diopiTensorPermute2D(diopiContextHandle_t ctx, DiopiTensor &dst, Di
         DIOPI_CALL(diopiTensorPermute(ctx, dst, src, {0, 2, 3, 1}));
         return diopiSuccess;
     }
-    if (src.is_contiguous(MemoryFormat::ChannelsLast) && format == MemoryFormat::Contiguous ) {
+    if (src.is_contiguous(MemoryFormat::ChannelsLast) && format == MemoryFormat::Contiguous) {
         DIOPI_CALL(diopiTensorPermute(ctx, dst, src, {0, 3, 1, 2}))
     }
     return diopiErrorOccurred;
