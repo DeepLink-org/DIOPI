@@ -19,9 +19,6 @@ diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     DiopiTensor other_tensor(other);
     DiopiTensor out_tensor(out);
 
-    if (!input_tensor.defined()) {
-        return diopiSuccess;
-    }
 
     DiopiTensor out_tensor_tmp = out_tensor;
     if ((out_tensor.dtype() != diopi_dtype_float16) && (out_tensor.dtype() != diopi_dtype_float32)) {
