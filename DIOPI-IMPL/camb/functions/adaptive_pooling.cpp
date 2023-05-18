@@ -48,11 +48,13 @@ diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_
 
     cnnlPoolingMode_t mode = CNNL_POOLING_AVERAGE_COUNT_INCLUDE_PADDING;
     size_t workspace_size = 0;
+
+    #if (CNNL_MAJOR >= 1 && CNNL_MINOR >= 15 && CNNL_PATCHLEVEL >= 2)
+
     DIOPI_CALLCNNL(cnnlGetAdaptivePoolingForwardWorkspaceSize(handle, input_desc.get(), mode, output_desc.get(), &workspace_size));
 
     void* workspace_ptr = workspace_size == 0 ? nullptr : requiresBuffer(ctx, workspace_size).data();
 
-    #if (CNNL_MAJOR >= 1 && CNNL_MINOR >= 15 && CNNL_PATCHLEVEL >= 2)
     /* call adaptive pooling */
     DIOPI_CALLCNNL(cnnlAdaptivePoolingForward_v2(handle,
                                                  input_desc.get(),
