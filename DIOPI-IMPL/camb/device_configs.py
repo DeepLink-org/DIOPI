@@ -13,7 +13,7 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
                 }
             ]
-        )
+        ),
     ),
 
     'baddbmm': dict(
