@@ -65,18 +65,6 @@ device_configs = {
         ),
     ),
 
-    'gelu': dict(
-        name=['gelu'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
-
     'avg_pool2d': dict(
         name=["avg_pool2d"],
         tensor_para=dict(
