@@ -243,6 +243,25 @@ public:
         return true;
     }
 
+    void as_strided(std::vector<int64_t>& shape, std::vector<int64_t>& stride) {
+        this->shape_ = shape;
+        this->stride_ = stride;
+    }
+
+    void unsqueeze(int dim) {
+        // Note: `channels_last` tensor uses this will become uncontiguous
+        // which is same with pytorch
+        auto shape = this->shape();
+        auto strides = this->stride();
+        int64_t new_stride = dim >= this->dim() ? 1 : shape[dim] * strides[dim];
+        std::vector<int64_t> new_shape(shape.begin(), shape.end());
+        std::vector<int64_t> new_strides(strides.begin(), strides.end());
+
+        new_shape.insert(new_shape.begin() + dim, 1);
+        new_strides.insert(new_strides.begin() + dim, new_stride);
+        this->as_strided(new_shape, new_strides);
+    }
+
     bool defined() const {
         if (tensor_ == nullptr) return false;
         return this->numel() != 0;
