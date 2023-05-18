@@ -14,7 +14,7 @@ device_configs = {
         name=["nll_loss"],
         atol=1e-3,
         rtol=1e-4,
-    )
+    ),
 
     'baddbmm': dict(
         name=["baddbmm"],
