@@ -27,12 +27,12 @@ if (DYLOAD)
     set(IMPL_SRC error.cpp wrap_func.cpp)
 endif()
 
-set(REAL_IMPL_SRC
-    error.cpp
-    functions.cpp
-    nms_kernel.cu
-    roi_align_kernel.cu
-)
+file(GLOB_RECURSE REAL_IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions_mmcv/*.cu)
+list(APPEND REAL_IMPL_SRC nms_kernel.cu)
+list(APPEND REAL_IMPL_SRC roi_align_kernel.cu)
+list(APPEND REAL_IMPL_SRC functions.cpp)
+list(APPEND REAL_IMPL_SRC functions_mmcv.cpp)
+list(APPEND REAL_IMPL_SRC error.cpp)
 
 if (TEST)
     add_subdirectory(test)

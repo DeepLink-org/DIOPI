@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef DIOPI_IMPL_TORCH_HELPER_HPP_
-#define DIOPI_IMPL_TORCH_HELPER_HPP_
+#ifndef IMPL_TORCH_HELPER_HPP_
+#define IMPL_TORCH_HELPER_HPP_
 
 #include <cuda_runtime.h>
 #include <ATen/ATen.h>
@@ -28,7 +28,7 @@
 
 #define LOG_LINE_INFO() std::cerr << __FILE__ << ":" << __LINE__ << ": ";
 
-void logError() {std::cerr << std::endl;}
+inline void logError() {std::cerr << std::endl;}
 
 template<typename First, typename ...Rest>
 void logError(First&& first, Rest&& ...rest) {
@@ -73,7 +73,7 @@ namespace cuda {
 
 // Note: this is a overloaded aten function to get the stream from context.
 // For original functions, please refer to https://github.com/pytorch/pytorch/blob/v1.10.0/c10/cuda/CUDAStream.cpp.
-CUDAStream getCurrentCUDAStream(DeviceIndex device_index) {
+inline CUDAStream getCurrentCUDAStream(DeviceIndex device_index) {
     if (device_index == -1) {
         device_index = current_device();
     }
@@ -107,7 +107,7 @@ inline void sync(diopiContextHandle_t ctx) {
     cudaStreamSynchronize(static_cast<cudaStream_t>(stream_handle));
 }
 
-caffe2::TypeMeta getATenType(diopiDtype_t dt) {
+inline caffe2::TypeMeta getATenType(diopiDtype_t dt) {
     switch (dt) {
     case diopi_dtype_bool:
         return caffe2::TypeMeta::Make<bool>();
@@ -140,7 +140,7 @@ caffe2::TypeMeta getATenType(diopiDtype_t dt) {
     }
 }
 
-diopiDtype_t getDIOPITensorType(at::Tensor& input) {
+inline diopiDtype_t getDIOPITensorType(at::Tensor& input) {
     switch (input.scalar_type()) {
     case at::ScalarType::Bool:
         return diopi_dtype_bool;
@@ -167,7 +167,7 @@ diopiDtype_t getDIOPITensorType(at::Tensor& input) {
     }
 }
 
-c10::DeviceType getATenDevice(diopiDevice_t device) {
+inline c10::DeviceType getATenDevice(diopiDevice_t device) {
     if (device == diopi_host) {
         return c10::DeviceType::CPU;
     } else if (device == diopi_device) {
@@ -177,7 +177,7 @@ c10::DeviceType getATenDevice(diopiDevice_t device) {
     }
 }
 
-at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes,
+inline at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes,
         at::IntArrayRef strides, const std::function<void(void*)>& deleter,
         at::Allocator* allocator, const at::TensorOptions& options) {
     auto device =
@@ -195,7 +195,7 @@ at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes,
 }
 
 template<typename T>
-at::Tensor buildATen(T tensor) {
+inline at::Tensor buildATen(T tensor) {
     if (tensor == nullptr) return at::Tensor();
 
     diopiDtype_t dtype;
@@ -250,16 +250,16 @@ inline at::Scalar buildAtScalar(const diopiScalar_t* scalar) {
     }
 }
 
-at::IntArrayRef buildAtIntArray(const diopiSize_t* size) {
+inline at::IntArrayRef buildAtIntArray(const diopiSize_t* size) {
     return at::IntArrayRef(size->data, size->len);
 }
 
-at::IntArrayRef buildAtIntArray(diopiSize_t size) {
+inline at::IntArrayRef buildAtIntArray(diopiSize_t size) {
     return at::IntArrayRef(size.data, size.len);
 }
 
 template<typename T>
-decltype(auto) buildATenList(T* tensors, int64_t numTensors) {
+inline decltype(auto) buildATenList(T* tensors, int64_t numTensors) {
     std::vector<at::Tensor> vecAtTensor;
     for (size_t i = 0; i < numTensors; ++i) {
         vecAtTensor.emplace_back(buildATen(tensors[i]));
@@ -267,7 +267,7 @@ decltype(auto) buildATenList(T* tensors, int64_t numTensors) {
     return vecAtTensor;
 }
 
-void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiTensorHandle_t out) {
+inline void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiTensorHandle_t out) {
     // TODO(fengsibo): add device and nbytes check
     if (out != nullptr) {
         at::Tensor atOutput = buildATen(out);
@@ -293,35 +293,35 @@ struct UpdateTupleATen<TupleT, 1> {
 };
 
 template<typename TupleT>
-void updateATen2Tensor(diopiContextHandle_t ctx, TupleT& atOuts, diopi_tensor_list& outs) {
+inline void updateATen2Tensor(diopiContextHandle_t ctx, TupleT& atOuts, diopi_tensor_list& outs) {
     constexpr size_t tupleSize = std::tuple_size<TupleT>::value;
     UpdateTupleATen<TupleT, tupleSize>::update(ctx, atOuts, outs);
 }
 
-void updateATen2Tensor(diopiContextHandle_t ctx, std::vector<at::Tensor>& atOuts, diopi_tensor_list& outs) {
+inline void updateATen2Tensor(diopiContextHandle_t ctx, std::vector<at::Tensor>& atOuts, diopi_tensor_list& outs) {
     for (size_t i = 0; i < atOuts.size(); ++i) {
         updateATen2Tensor(ctx, atOuts.at(i), outs.at(i));
     }
 }
 
 template<typename Func, typename ...Args>
-void invokeATenFuncRet(diopiContextHandle_t ctx, Func func, diopiTensorHandle_t out, Args&&... args) {
+inline void invokeATenFuncRet(diopiContextHandle_t ctx, Func func, diopiTensorHandle_t out, Args&&... args) {
     at::Tensor atOut = func(std::forward<Args>(args)...);
     updateATen2Tensor(ctx, atOut, out);
 }
 
 template<typename Func, typename ...Args>
-void invokeATenFuncRet(diopiContextHandle_t ctx, Func func, diopi_tensor_list& outs, Args&&... args) {
+inline void invokeATenFuncRet(diopiContextHandle_t ctx, Func func, diopi_tensor_list& outs, Args&&... args) {
     auto atOuts = func(std::forward<Args>(args)...);
     updateATen2Tensor(ctx, atOuts, outs);
 }
 
 template<typename Func, typename ...Args>
-void invokeATenFuncInp(diopiContextHandle_t ctx, Func func, Args&&... args) {
+inline void invokeATenFuncInp(diopiContextHandle_t ctx, Func func, Args&&... args) {
     func(std::forward<Args>(args)...);
 }
 
-void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
+inline void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
     at::IntArrayRef atSize = input.sizes();
     at::IntArrayRef atStride = input.strides();
     diopiSize_t size(const_cast<int64_t*>(atSize.data()), atSize.size());
@@ -331,7 +331,7 @@ void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHa
     updateATen2Tensor(ctx, input, *out);
 }
 
-c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding_mode) {
+inline c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding_mode) {
     switch (rounding_mode) {
     case (RoundModeNone): return c10::nullopt;
     case (RoundModeTrunc): return "trunc";
@@ -341,7 +341,7 @@ c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding_mode) 
     }
 }
 
-at::Tensor nllLossNdBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, diopiConstTensorHandle_t weight,
+inline at::Tensor nllLossNdBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, diopiConstTensorHandle_t weight,
                              int64_t reduction, int64_t ignore_index) {
     auto atWeight = buildATen(weight);
     auto atTempTotalWeight = atInput.clone();
@@ -379,7 +379,7 @@ at::Tensor nllLossNdBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::
     return atGradInput;
 }
 
-at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget,
+inline at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget,
                                               diopiConstTensorHandle_t weight, int64_t reduction, double label_smoothing) {
     auto atLogSoftmaxOutput = at::log_softmax(atInput, 1, atInput.scalar_type());
     at::Tensor atGradInput;
@@ -436,7 +436,7 @@ at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& a
     return atGradInputFinal;
 }
 
-at::Tensor crossEntropyLossLabelSmoothingBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget,
+inline at::Tensor crossEntropyLossLabelSmoothingBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget,
                                                   diopiConstTensorHandle_t weight, int64_t reduction, int64_t ignore_index, double label_smoothing) {
     auto atLogSoftmaxOutput = at::log_softmax(atInput, 1, atInput.scalar_type());
     const auto n_classes = atInput.size(1);
@@ -503,4 +503,4 @@ at::Tensor crossEntropyLossLabelSmoothingBackward(at::Tensor& atInput, at::Tenso
 
 }  // namespace impl
 
-#endif  // DIOPI_IMPL_TORCH_HELPER_HPP_
+#endif  // IMPL_TORCH_HELPER_HPP_
