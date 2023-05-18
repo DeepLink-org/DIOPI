@@ -127,12 +127,13 @@ def gen_wrapper_func(content):
 
 if __name__ == '__main__':
     print("open functions.h")
-    with open('../../diopirt/include/diopi/functions.h', 'r') as f:
+    _cur_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(_cur_dir, '../proto/include/diopi/functions.h'), 'r')as f:
         content = f.readlines()
     print("generate for functions.h")
     gen_wrapper_func(content)
     print("open functions_mmcv.h")
-    with open('../../diopirt/include/diopi/functions_mmcv.h', 'r') as f:
+    with open(os.path.join(_cur_dir, '../proto/include/diopi/functions_mmcv.h'), 'r') as f:
         content_mmcv = f.readlines()
     print("generate for functions_mmcv.h")
     gen_wrapper_func(content_mmcv)
