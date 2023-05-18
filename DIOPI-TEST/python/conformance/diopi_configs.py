@@ -1483,7 +1483,7 @@ diopi_configs = {
         name=['min', 'max'],
         interface=['torch'],
         para=dict(
-            dim=[0, 1, 1, 2, -1, 3],
+            dim=[None, 0, 1, 1, 2, -1, 3],
         ),
         atol=1e-4,
         rtol=1e-5,
@@ -1491,7 +1491,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((64, ), (169, 4), (17100, 2), (1, 1, 384),
+                    "shape": ((2,3,4), (64, ), (169, 4), (17100, 2), (1, 1, 384),
                               (4, 133, 128, 128), (2, 64, 3, 3, 3)),
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.ones,
