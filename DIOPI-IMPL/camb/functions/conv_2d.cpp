@@ -15,7 +15,7 @@ namespace impl {
 namespace camb {
 
 namespace {
-diopiError_t diopiTensorPermute(diopiContextHandle_t ctx, DiopiTensor &dst_tensor, DiopiTensor src_tensor, std::vector<int64_t> perm_axis) {
+diopiError_t tensorPermute(diopiContextHandle_t ctx, DiopiTensor &dst_tensor, DiopiTensor src_tensor, std::vector<int64_t> perm_axis) {
     if (!dst_tensor.defined()) {
         std::vector<int64_t> src_shape_t_64(src_tensor.shape().size());
         for (int i = 0; i < src_tensor.shape().size(); ++i) {
@@ -31,17 +31,17 @@ diopiError_t diopiTensorPermute(diopiContextHandle_t ctx, DiopiTensor &dst_tenso
     return diopiSuccess;
 }
 
-diopiError_t diopiTensorPermute2D(diopiContextHandle_t ctx, DiopiTensor &dst, DiopiTensor src, MemoryFormat format) {
+diopiError_t tensorPermute2D(diopiContextHandle_t ctx, DiopiTensor &dst, DiopiTensor src, MemoryFormat format) {
     if (src.is_contiguous(format)) {
         dst = src;
         return diopiSuccess;
     }
     if (src.is_contiguous(MemoryFormat::Contiguous) && format == MemoryFormat::ChannelsLast) {
-        DIOPI_CALL(diopiTensorPermute(ctx, dst, src, {0, 2, 3, 1}));
+        DIOPI_CALL(tensorPermute(ctx, dst, src, {0, 2, 3, 1}));
         return diopiSuccess;
     }
     if (src.is_contiguous(MemoryFormat::ChannelsLast) && format == MemoryFormat::Contiguous) {
-        DIOPI_CALL(diopiTensorPermute(ctx, dst, src, {0, 3, 1, 2}))
+        DIOPI_CALL(tensorPermute(ctx, dst, src, {0, 3, 1, 2}))
     }
     return diopiErrorOccurred;
 }
@@ -72,9 +72,9 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
 
     DiopiTensor input_tensor_t, weight_tensor_t, output_tensor_t;
 
-    DIOPI_CALL(diopiTensorPermute2D(ctx, input_tensor_t, input_tensor_casted, MemoryFormat::ChannelsLast));
-    DIOPI_CALL(diopiTensorPermute2D(ctx, output_tensor_t, output_tensor_casted, MemoryFormat::ChannelsLast));
-    DIOPI_CALL(diopiTensorPermute2D(ctx, weight_tensor_t, weight_tensor_casted, MemoryFormat::ChannelsLast));
+    DIOPI_CALL(tensorPermute2D(ctx, input_tensor_t, input_tensor_casted, MemoryFormat::ChannelsLast));
+    DIOPI_CALL(tensorPermute2D(ctx, output_tensor_t, output_tensor_casted, MemoryFormat::ChannelsLast));
+    DIOPI_CALL(tensorPermute2D(ctx, weight_tensor_t, weight_tensor_casted, MemoryFormat::ChannelsLast));
 
     std::vector<int32_t> input_t_shape{input_tensor_t.shape().begin(), input_tensor_t.shape().end()};
     std::vector<int32_t> weight_t_shape{weight_tensor_t.shape().begin(), weight_tensor_t.shape().end()};
@@ -132,7 +132,7 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
                                           output_desc.get(),
                                           output_tensor_t.data()));
 
-    DIOPI_CALL(diopiTensorPermute2D(ctx, output_tensor_casted, output_tensor_casted, MemoryFormat::Contiguous));
+    DIOPI_CALL(tensorPermute2D(ctx, output_tensor_casted, output_tensor_casted, MemoryFormat::Contiguous));
     DIOPI_CALL(dataTypeCast(ctx, output_tensor, output_tensor_casted));
     return diopiSuccess;
 }
@@ -171,11 +171,11 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
 
     DiopiTensor input_t, weight_t, grad_output_t, grad_input_t, grad_weight_t;
 
-    DIOPI_CALL(diopiTensorPermute2D(ctx, input_t, input_casted, MemoryFormat::ChannelsLast));
-    DIOPI_CALL(diopiTensorPermute2D(ctx, weight_t, weight_casted, MemoryFormat::ChannelsLast));
-    DIOPI_CALL(diopiTensorPermute2D(ctx, grad_input_t, grad_input_casted, MemoryFormat::ChannelsLast));
-    DIOPI_CALL(diopiTensorPermute2D(ctx, grad_output_t, grad_output_casted, MemoryFormat::ChannelsLast));
-    DIOPI_CALL(diopiTensorPermute2D(ctx, grad_weight_t, grad_weight_casted, MemoryFormat::ChannelsLast));
+    DIOPI_CALL(tensorPermute2D(ctx, input_t, input_casted, MemoryFormat::ChannelsLast));
+    DIOPI_CALL(tensorPermute2D(ctx, weight_t, weight_casted, MemoryFormat::ChannelsLast));
+    DIOPI_CALL(tensorPermute2D(ctx, grad_input_t, grad_input_casted, MemoryFormat::ChannelsLast));
+    DIOPI_CALL(tensorPermute2D(ctx, grad_output_t, grad_output_casted, MemoryFormat::ChannelsLast));
+    DIOPI_CALL(tensorPermute2D(ctx, grad_weight_t, grad_weight_casted, MemoryFormat::ChannelsLast));
 
     std::vector<int32_t> input_t_shape{input_t.shape().begin(), input_t.shape().end()};
     std::vector<int32_t> weight_t_shape{weight_t.shape().begin(), weight_t.shape().end()};
@@ -254,8 +254,8 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
                                                input_grad_desc.get(),
                                                grad_input_t.data()));
 
-    DIOPI_CALL(diopiTensorPermute2D(ctx, grad_input_casted, grad_input_t, MemoryFormat::Contiguous));
-    DIOPI_CALL(diopiTensorPermute2D(ctx, grad_weight_casted, grad_weight_t, MemoryFormat::Contiguous));
+    DIOPI_CALL(tensorPermute2D(ctx, grad_input_casted, grad_input_t, MemoryFormat::Contiguous));
+    DIOPI_CALL(tensorPermute2D(ctx, grad_weight_casted, grad_weight_t, MemoryFormat::Contiguous));
 
     DIOPI_CALL(dataTypeCast(ctx, grad_input_tensor, grad_input_casted));
     DIOPI_CALL(dataTypeCast(ctx, grad_weight_tensor, grad_weight_casted));
