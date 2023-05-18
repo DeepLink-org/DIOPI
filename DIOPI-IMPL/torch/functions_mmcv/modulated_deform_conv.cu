@@ -229,8 +229,8 @@ __global__ void modulated_deformable_col2im_gpu_kernel(
     const T cur_inv_w_data = w_in + j * dilation_w + offset_w;
 
     const T cur_top_grad = data_col[index] * mask;
-    const int cur_h = (int)cur_inv_h_data;
-    const int cur_w = (int)cur_inv_w_data;
+    const int cur_h = static_cast<int>(cur_inv_h_data);
+    const int cur_w = static_cast<int>(cur_inv_w_data);
     for (int dy = -2; dy <= 2; dy++) {
       for (int dx = -2; dx <= 2; dx++) {
         if (cur_h + dy >= 0 && cur_h + dy < height && cur_w + dx >= 0 &&

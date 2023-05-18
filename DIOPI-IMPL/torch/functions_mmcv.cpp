@@ -4,14 +4,14 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <iostream>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+
+#include <iostream>
 
 #include "context.h"
 #include "helper.hpp"
 #include "mmcv_kernel.h"
-
 
 extern "C" {
 

@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef IMPL_TORCH_CUDA_HELPER_HPP_
-#define IMPL_TORCH_CUDA_HELPER_HPP_
+#ifndef DIOPI_IMPL_TORCH_CUDA_HELPERS_H_
+#define DIOPI_IMPL_TORCH_CUDA_HELPERS_H_
 
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
@@ -77,8 +77,8 @@ __device__ T bilinear_interpolate(const T* input, const int height,
   if (y <= 0) y = 0;
   if (x <= 0) x = 0;
 
-  int y_low = (int)y;
-  int x_low = (int)x;
+  int y_low = static_cast<int>(y);
+  int x_low = static_cast<int>(x);
   int y_high;
   int x_high;
 
@@ -127,8 +127,8 @@ __device__ void bilinear_interpolate_gradient(
   if (y <= 0) y = 0;
   if (x <= 0) x = 0;
 
-  y_low = (int)y;
-  x_low = (int)x;
+  y_low = static_cast<int>(y);
+  x_low = static_cast<int>(x);
 
   if (y_low >= height - 1) {
     y_high = y_low = height - 1;
@@ -163,4 +163,4 @@ __device__ void bilinear_interpolate_gradient(
 }  // namespace ops
 }  // namespace mmcv
 
-#endif  // IMPL_TORCH_CUDA_HELPER_HPP_
+#endif  // DIOPI_IMPL_TORCH_CUDA_HELPERS_H_
