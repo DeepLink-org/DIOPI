@@ -52,6 +52,7 @@ diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_
 
     void* workspace_ptr = workspace_size == 0 ? nullptr : requiresBuffer(ctx, workspace_size).data();
 
+    #if (CNNL_MAJOR >= 1 && CNNL_MINOR >= 15 && CNNL_PATCHLEVEL >= 2)
     /* call adaptive pooling */
     DIOPI_CALLCNNL(cnnlAdaptivePoolingForward_v2(handle,
                                                  input_desc.get(),
@@ -63,6 +64,9 @@ diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_
                                                  output_channel_last.data(),
                                                  nullptr,
                                                  nullptr));
+    #else
+        DIOPI_CHECK(false, "cnnl version must be greater than 1.15.2")
+    #endif
 
     // NHWC -> NCHW
     DIOPI_CALL(cnnl_transpose(ctx, handle, output_channel_last, output_tmp_tr, CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW));
