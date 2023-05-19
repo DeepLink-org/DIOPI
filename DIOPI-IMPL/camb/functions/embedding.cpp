@@ -11,8 +11,8 @@
 
 namespace impl {
 namespace camb {
-
 extern "C" {
+
 diopiError_t diopiEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t indices,
                             int64_t padding_idx, bool scale_grad_byfreq, bool sparse) {
     DIOPI_CHECK(padding_idx >= std::numeric_limits<int32_t>::min() && padding_idx <= std::numeric_limits<int32_t>::max(),
