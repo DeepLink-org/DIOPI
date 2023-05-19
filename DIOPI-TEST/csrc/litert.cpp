@@ -205,7 +205,7 @@ bool diopiTensor::resetShape(const diopiSize_t* size) {
     for (int64_t i = 0; i < size->len; ++i) {
         numel *= size->data[i];
     }
-    if (numel != numel) return false;
+    if (numel != numel_) return false;
 
     shape_.resize(size->len);
     stride_.resize(size->len);
