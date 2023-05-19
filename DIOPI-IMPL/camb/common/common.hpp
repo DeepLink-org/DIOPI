@@ -33,7 +33,7 @@ diopiError_t contiguous_(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryForm
 diopiError_t contiguous_(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryFormat memory_format, cnnlTensorLayout_t layout_in, cnnlTensorLayout_t layout_out);
 
 template<typename T1 = double, typename T2 = double, typename T3 = double>
-diopiError_t cnnl_op_tensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor other, DiopiTensor out, cnnlOpTensorDesc_t op_type, T1 alpha1 = 1.0,
+diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor other, DiopiTensor out, cnnlOpTensorDesc_t op_type, T1 alpha1 = 1.0,
                             T2 alpha2 = 1.0, T3 beta = 0.0);
 
 diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiTensor& outTensor);

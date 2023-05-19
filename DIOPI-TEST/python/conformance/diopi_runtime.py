@@ -157,16 +157,16 @@ class Context:
 
     def __init__(self):
         self.context_handle = ContextHandle()
-        self.__class__._c_lib._diopiCreateContext(byref(self.context_handle))
+        self.__class__._c_lib.diopiCreateContext(byref(self.context_handle))
 
     def __del__(self):
-        self.__class__._c_lib._diopiDestroyContext(self.context_handle)
+        self.__class__._c_lib.diopiDestroyContext(self.context_handle)
 
     def get_handle(self):
         return self.context_handle
 
     def clear_tensors(self):
-        return self.__class__._c_lib._diopiClearTensors(self.context_handle)
+        return self.__class__._c_lib.diopiClearTensors(self.context_handle)
 
 
 default_context = Context()

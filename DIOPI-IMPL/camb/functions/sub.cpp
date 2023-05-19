@@ -19,7 +19,7 @@ extern "C" diopiError_t diopiSub(diopiContextHandle_t ctx, diopiTensorHandle_t o
     DiopiTensor inputTensor(input);
     DiopiTensor otherTensor(other);
     DiopiTensor outputTensor(out);
-    DIOPI_CALL(cnnl_op_tensor(
+    DIOPI_CALL(cnnlOpTensor(
         ctx, inputTensor, otherTensor, outputTensor, CNNL_OP_TENSOR_SUB, 1.0, DiopiDataType::isFloatPoint(alpha->stype) ? alpha->fval : alpha->ival));
     return diopiSuccess;
 }
@@ -28,7 +28,7 @@ extern "C" diopiError_t diopiSubInp(diopiContextHandle_t ctx, diopiTensorHandle_
     DiopiTensor inputTensor(input);
     DiopiTensor otherTensor(other);
     DiopiTensor outputTensor(input);
-    DIOPI_CALL(cnnl_op_tensor(
+    DIOPI_CALL(cnnlOpTensor(
         ctx, inputTensor, otherTensor, outputTensor, CNNL_OP_TENSOR_SUB, 1.0, DiopiDataType::isFloatPoint(alpha->stype) ? alpha->fval : alpha->ival));
     return diopiSuccess;
 }
@@ -39,7 +39,7 @@ extern "C" diopiError_t diopiSubScalar(diopiContextHandle_t ctx, diopiTensorHand
     DiopiTensor outputTensor(out);
     DiopiTensor otherTensor;
     DIOPI_CALL(makeTensorFromScalar(ctx, other, otherTensor));
-    DIOPI_CALL(cnnl_op_tensor(
+    DIOPI_CALL(cnnlOpTensor(
         ctx, inputTensor, otherTensor, outputTensor, CNNL_OP_TENSOR_SUB, 1.0, DiopiDataType::isFloatPoint(alpha->stype) ? alpha->fval : alpha->ival));
     return diopiSuccess;
 }
@@ -49,7 +49,7 @@ extern "C" diopiError_t diopiSubInpScalar(diopiContextHandle_t ctx, diopiTensorH
     DiopiTensor outputTensor(input);
     DiopiTensor otherTensor;
     DIOPI_CALL(makeTensorFromScalar(ctx, other, otherTensor));
-    DIOPI_CALL(cnnl_op_tensor(
+    DIOPI_CALL(cnnlOpTensor(
         ctx, inputTensor, otherTensor, outputTensor, CNNL_OP_TENSOR_SUB, 1.0, DiopiDataType::isFloatPoint(alpha->stype) ? alpha->fval : alpha->ival));
     return diopiSuccess;
 }
