@@ -384,13 +384,8 @@ device_configs = {
 
     'embedding': dict(
         name=["embedding"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.int64), Skip(Dtype.int32)],
-                },
-            ],
+        para=dict(
+            max_norm=[Skip(1.0)],
         ),
     ),
 
