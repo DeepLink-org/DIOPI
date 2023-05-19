@@ -100,7 +100,7 @@ static diopiError_t matMulMat(diopiContextHandle_t ctx, DiopiTensor out, DiopiTe
     CnnlTensorDesc outDesc(out, CNNL_LAYOUT_ARRAY);
 
     CnnlResourceGuard<cnnlMatMulDescriptor_t, cnnlMatMulDescCreate, cnnlMatMulDescDestroy> matmulDescGuard;
-    cnnlMatMulDescriptor_t matmulDesc= matmulDescGuard.get();
+    cnnlMatMulDescriptor_t matmulDesc = matmulDescGuard.get();
     int32_t allowTf32I32 = 1;
     DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmulDesc, CNNL_MATMUL_ALLOW_TF32, &(allowTf32I32), sizeof(int32_t)));
     CnnlResourceGuard<cnnlMatMulAlgo_t, cnnlMatMulAlgoCreate, cnnlMatMulAlgoDestroy> matmulAlgo;
