@@ -221,7 +221,7 @@ static diopiError_t batchMatmul(diopiContextHandle_t ctx, DiopiTensor outTensor,
     size_t workspaceSize(0);
     cnnlGetBatchMatMulHeuristicResult(bmmHeuristicResult.get(), bmmAlgo.get(), &workspaceSize);
     void* workspace = nullptr;
-    if (workspace > 0) {
+    if (workspaceSize > 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 

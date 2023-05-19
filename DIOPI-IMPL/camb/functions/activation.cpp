@@ -4,10 +4,10 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <cstring>
 #include <memory>
 
 #include "../common/common.hpp"
-
 namespace impl {
 namespace camb {
 
@@ -242,7 +242,7 @@ extern "C" diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t 
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_GELU);
-    if (approximate == "tanh") {
+    if (strcmp(approximate, "tanh") == 0) {
         attr.set("approximate", true);
     }
     DIOPI_CALL(cnnlActivationInternal(ctx, inputTensor, outputTensor, attr));
@@ -259,7 +259,7 @@ extern "C" diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorH
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_GELU);
-    if (approximate == "tanh") {
+    if (strcmp(approximate, "tanh") == 0) {
         attr.set("approximate", true);
     }
 

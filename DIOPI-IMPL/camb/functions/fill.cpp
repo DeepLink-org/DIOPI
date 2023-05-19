@@ -30,7 +30,7 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
     CnnlTensorDesc inputTensorDesc(inputTensorTemp, CNNL_LAYOUT_ARRAY);
 
     double valueScalar = DiopiDataType::isInteger(value->stype) ? value->ival : value->fval;
-    void* valuePtr;
+    void* valuePtr = nullptr;
     bool tempBool = 0;
     int8_t tempI8 = 0;
     uint8_t tempU8 = 0;
@@ -98,6 +98,9 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
             tempF32 = static_cast<float>(valueScalar);
             valuePtr = &tempF32;
             break;
+        }
+        default:{
+            DIOPI_CHECK(false, "the input tensor dtype %s is not allown" ,DiopiDataType::dataTypeStr(inputTensorTemp.dtype()).c_str());
         }
     }
 

@@ -95,7 +95,8 @@ diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 }
 
 diopiError_t diopiThresholdInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* threshold, const diopiScalar_t* value) {
-    diopiThreshold(ctx, input, input, threshold, value);
+    DIOPI_CALL(diopiThreshold(ctx, input, input, threshold, value));
+    return diopiSuccess;
 }
 
 diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
