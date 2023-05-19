@@ -15,17 +15,17 @@ extern "C" {
 
 diopiError_t diopiReciprocal(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor out_tensor(out);
+    DiopiTensor inputTensor(input);
+    DiopiTensor outTensor(out);
 
-    DIOPI_CHECK(((input_tensor.dtype() == diopi_dtype_float16) || (input_tensor.dtype() == diopi_dtype_float32)),
+    DIOPI_CHECK(((inputTensor.dtype() == diopi_dtype_float16) || (inputTensor.dtype() == diopi_dtype_float32)),
                 "input datatype not supported, only float16, float32 supported");
-    DIOPI_CHECK(((out_tensor.dtype() == diopi_dtype_float16) || (out_tensor.dtype() == diopi_dtype_float32)),
+    DIOPI_CHECK(((outTensor.dtype() == diopi_dtype_float16) || (outTensor.dtype() == diopi_dtype_float32)),
                 "out datatype not supported, only float16, float32 supported");
 
-    CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc out_desc(out_tensor, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlReciprocal(handle, input_desc.get(), input_tensor.data(), out_desc.get(), out_tensor.data()));
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
+    DIOPI_CALLCNNL(cnnlReciprocal(handle, inputDesc.get(), inputTensor.data(), outDesc.get(), outTensor.data()));
     return diopiSuccess;
 }
 

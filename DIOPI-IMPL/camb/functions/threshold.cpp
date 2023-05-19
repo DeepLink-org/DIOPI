@@ -11,74 +11,74 @@ extern "C" {
 diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* threshold,
                                       const diopiScalar_t* value) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor out_tensor(out);
+    DiopiTensor inputTensor(input);
+    DiopiTensor outTensor(out);
 
-    std::vector<DiopiTensor*> pTensors{&input_tensor};
+    std::vector<DiopiTensor*> pTensors{&inputTensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_int8, diopi_dtype_uint8, diopi_dtype_int16, diopi_dtype_int32, diopi_dtype_float16, diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
-    DiopiTensor out_tensor_temp = out_tensor;
-    if (out_tensor.dtype() != input_tensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor_temp, input_tensor.dtype()));
+    DiopiTensor outTensorTemp = outTensor;
+    if (outTensor.dtype() != inputTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensorTemp, inputTensor.dtype()));
     }
 
-    CnnlTensorDesc input_tensor_desc(input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc out_tensor_desc(out_tensor_temp, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputTensorDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outTensorDesc(outTensorTemp, CNNL_LAYOUT_ARRAY);
 
-    auto threshold_scalar = DiopiDataType::isInteger(threshold->stype) ? threshold->ival : threshold->fval;
-    auto value_scalar = DiopiDataType::isInteger(value->stype) ? value->ival : value->fval;
+    auto thresholdScalar = DiopiDataType::isInteger(threshold->stype) ? threshold->ival : threshold->fval;
+    auto valueScalar = DiopiDataType::isInteger(value->stype) ? value->ival : value->fval;
 
-    void* threshold_val;
-    void* value_val;
-    int8_t value_int8, threshold_val_int8;
-    uint8_t value_uint8, threshold_val_uint8;
-    int16_t value_int16, threshold_val_int16;
-    int32_t value_int32, threshold_val_int32;
-    half_float::half value_float16, threshold_val_float16;
-    float value_float32, threshold_val_float32;
+    void* thresholdVal;
+    void* valueVal;
+    int8_t valueInt8, thresholdValInt8;
+    uint8_t valueUint8, thresholdValUint8;
+    int16_t valueInt16, thresholdValInt16;
+    int32_t valueInt32, thresholdValInt32;
+    half_float::half valueFloat16, thresholdValFloat16;
+    float valueFloat32, thresholdValFloat32;
 
-    switch (input_tensor.dtype()) {
+    switch (inputTensor.dtype()) {
         case diopi_dtype_int8: {
-            threshold_val_int8 = int8_t(threshold_scalar);
-            value_int8 = int8_t(value_scalar);
-            threshold_val = &threshold_val_int8;
-            value_val = &value_int8;
+            thresholdValInt8 = int8_t(thresholdScalar);
+            valueInt8 = int8_t(valueScalar);
+            thresholdVal = &thresholdValInt8;
+            valueVal = &valueInt8;
             break;
         }
         case diopi_dtype_uint8: {
-            threshold_val_uint8 = uint8_t(threshold_scalar);
-            value_uint8 = uint(value_scalar);
-            threshold_val = &threshold_val_uint8;
-            value_val = &value_uint8;
+            thresholdValUint8 = uint8_t(thresholdScalar);
+            valueUint8 = uint(valueScalar);
+            thresholdVal = &thresholdValUint8;
+            valueVal = &valueUint8;
             break;
         }
         case diopi_dtype_int16: {
-            threshold_val_int16 = int16_t(threshold_scalar);
-            value_int16 = int16_t(value_scalar);
-            threshold_val = &threshold_val_int16;
-            value_val = &value_int16;
+            thresholdValInt16 = int16_t(thresholdScalar);
+            valueInt16 = int16_t(valueScalar);
+            thresholdVal = &thresholdValInt16;
+            valueVal = &valueInt16;
             break;
         }
         case diopi_dtype_int32: {
-            threshold_val_int32 = int32_t(threshold_scalar);
-            value_int32 = int32_t(value_scalar);
-            threshold_val = &threshold_val_int32;
-            value_val = &value_int32;
+            thresholdValInt32 = int32_t(thresholdScalar);
+            valueInt32 = int32_t(valueScalar);
+            thresholdVal = &thresholdValInt32;
+            valueVal = &valueInt32;
             break;
         }
         case diopi_dtype_float16: {
-            threshold_val_float16 = half_float::half(threshold_scalar);
-            value_float16 = half_float::half(value_scalar);
-            threshold_val = &threshold_val_float16;
-            value_val = &value_float16;
+            thresholdValFloat16 = half_float::half(thresholdScalar);
+            valueFloat16 = half_float::half(valueScalar);
+            thresholdVal = &thresholdValFloat16;
+            valueVal = &valueFloat16;
             break;
         }
         case diopi_dtype_float32: {
-            threshold_val_float32 = static_cast<float>(threshold_scalar);
-            value_float32 = static_cast<float>(value_scalar);
-            threshold_val = &threshold_val_float32;
-            value_val = &value_float32;
+            thresholdValFloat32 = static_cast<float>(thresholdScalar);
+            valueFloat32 = static_cast<float>(valueScalar);
+            thresholdVal = &thresholdValFloat32;
+            valueVal = &valueFloat32;
             break;
         }
         default:
@@ -86,10 +86,10 @@ diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     }
 
     DIOPI_CALLCNNL(
-        cnnlThreshold(handle, input_tensor_desc.get(), input_tensor.data(), threshold_val, value_val, out_tensor_desc.get(), out_tensor_temp.data()));
+        cnnlThreshold(handle, inputTensorDesc.get(), inputTensor.data(), thresholdVal, valueVal, outTensorDesc.get(), outTensorTemp.data()));
 
-    if (out_tensor_temp.dtype() != out_tensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor, out_tensor_temp));
+    if (outTensorTemp.dtype() != outTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTemp));
     }
     return diopiSuccess;
 }
@@ -98,40 +98,40 @@ diopiError_t diopiThresholdInp(diopiContextHandle_t ctx, diopiTensorHandle_t inp
     diopiThreshold(ctx, input, input, threshold, value);
 }
 
-diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                               diopiConstTensorHandle_t input, const diopiScalar_t* threshold) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor grad_input_tensor(grad_input);
-    DiopiTensor grad_output_tensor(grad_output);
+    DiopiTensor inputTensor(input);
+    DiopiTensor gradInputTensor(gradInput);
+    DiopiTensor gradOutputTensor(gradOutput);
 
-    std::vector<DiopiTensor*> pTensors{&input_tensor, &grad_output_tensor};
+    std::vector<DiopiTensor*> pTensors{&inputTensor, &gradOutputTensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
-    DiopiTensor grad_input_tensor_temp = grad_input_tensor;
-    if (grad_input_tensor.dtype() != input_tensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, grad_input_tensor_temp, input_tensor.dtype()));
+    DiopiTensor gradInputTensorTemp = gradInputTensor;
+    if (gradInputTensor.dtype() != inputTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, gradInputTensorTemp, inputTensor.dtype()));
     }
 
-    CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc grad_input_desc(grad_input_tensor_temp, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc grad_output_desc(grad_output_tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradInputDesc(gradInputTensorTemp, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradOutputDesc(gradOutputTensor, CNNL_LAYOUT_ARRAY);
 
-    double threshold_scalar = DiopiDataType::isInteger(threshold->stype) ? threshold->ival : threshold->fval;
+    double thresholdScalar = DiopiDataType::isInteger(threshold->stype) ? threshold->ival : threshold->fval;
 
-    void* threshold_val;
-    half_float::half threshold_scalar_half;
-    float threshold_scalar_float;
-    switch (input_tensor.dtype()) {
+    void* thresholdVal;
+    half_float::half thresholdScalarHalf;
+    float thresholdScalarFloat;
+    switch (inputTensor.dtype()) {
         case diopi_dtype_float16: {
-            threshold_scalar_half = half_float::half(threshold_scalar);
-            threshold_val = &threshold_scalar_half;
+            thresholdScalarHalf = half_float::half(thresholdScalar);
+            thresholdVal = &thresholdScalarHalf;
             break;
         }
         case diopi_dtype_float32: {
-            threshold_scalar_float = static_cast<float>(threshold_scalar);
-            threshold_val = &threshold_scalar_float;
+            thresholdScalarFloat = static_cast<float>(thresholdScalar);
+            thresholdVal = &thresholdScalarFloat;
             break;
         }
         default:
@@ -139,16 +139,16 @@ diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     }
 
     DIOPI_CALLCNNL(cnnlThresholdBackward(handle,
-                                         input_desc.get(),
-                                         input_tensor.data(),
-                                         grad_output_desc.get(),
-                                         grad_output_tensor.data(),
-                                         threshold_val,
-                                         grad_input_desc.get(),
-                                         grad_input_tensor_temp.data()))
+                                         inputDesc.get(),
+                                         inputTensor.data(),
+                                         gradOutputDesc.get(),
+                                         gradOutputTensor.data(),
+                                         thresholdVal,
+                                         gradInputDesc.get(),
+                                         gradInputTensorTemp.data()))
 
-    if (grad_input_tensor_temp.dtype() != grad_input_tensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, grad_input_tensor, grad_input_tensor_temp));
+    if (gradInputTensorTemp.dtype() != gradInputTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensorTemp));
     }
     return diopiSuccess;
 }

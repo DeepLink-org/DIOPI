@@ -17,13 +17,13 @@ public:
     template <typename T>
     void set(std::string key, T value) {
         auto pHolder = std::make_shared<ValueHolder<T>>(value);
-        m_data[key] = pHolder;
+        mData_[key] = pHolder;
     }
 
     template <typename T>
     T get(std::string key, T defaultValue) const {
-        auto iter = m_data.find(key);
-        if (iter != m_data.end()) {
+        auto iter = mData_.find(key);
+        if (iter != mData_.end()) {
             const ValueHolderBase* holder = iter->second.get();
             if (holder->getTypeInfo() == typeid(T)) {
                 const ValueHolder<T>* typedHolder = static_cast<const ValueHolder<T>*>(holder);
@@ -43,68 +43,68 @@ private:
     template <typename T>
     class ValueHolder : public ValueHolderBase {
     public:
-        explicit ValueHolder(T value) : m_value(value) {}
+        explicit ValueHolder(T value) : mValue_(value) {}
         const std::type_info& getTypeInfo() const override { return typeid(T); }
-        T get() const { return m_value; }
+        T get() const { return mValue_; }
 
     private:
-        T m_value;
+        T mValue_;
     };
 
-    std::unordered_map<std::string, std::shared_ptr<ValueHolderBase>> m_data;
+    std::unordered_map<std::string, std::shared_ptr<ValueHolderBase>> mData_;
 };
 
-diopiError_t cnnl_activation_internal(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor out, CnnlAttribute attr) {
+diopiError_t cnnlActivationInternal(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor out, CnnlAttribute attr) {
     auto handle = cnnlHandlePool.get(ctx);
     auto mode = attr.get<cnnlActivationMode_t>("mode", CNNL_ACTIVATION_SIGMOID);
     auto perf = attr.get<cnnlActivationPreference_t>("perf", CNNL_ACTIVATION_HIGH_PRECISION);
-    auto nan_prop = attr.get<cnnlNanPropagation_t>("nan", CNNL_NOT_PROPAGATE_NAN);
+    auto nanProp = attr.get<cnnlNanPropagation_t>("nan", CNNL_NOT_PROPAGATE_NAN);
 
     float coef = attr.get("coef", 0.0);
-    int sliced_dim = attr.get("sliced_dim", 0);
+    int slicedDim = attr.get("sliced_dim", 0);
     float gamma = attr.get("gamma", 0.0);
     float scale = attr.get("scale", 0.0);
-    bool is_result = attr.get("is_result", false);
+    bool isResult = attr.get("is_result", false);
     bool approximate = attr.get("approximate", false);
     void* alpha = attr.get("alpha", nullptr);
     void* beta = attr.get("beta", nullptr);
 
-    CnnlResourceGuard<cnnlActivationDescriptor_t, cnnlCreateActivationDescriptor, cnnlDestroyActivationDescriptor> activation_desc;
-    DIOPI_CALLCNNL(cnnlSetActivationDescriptor_v6(activation_desc.get(), mode, perf, nan_prop, coef, sliced_dim, gamma, scale, is_result, approximate));
+    CnnlResourceGuard<cnnlActivationDescriptor_t, cnnlCreateActivationDescriptor, cnnlDestroyActivationDescriptor> activationDesc;
+    DIOPI_CALLCNNL(cnnlSetActivationDescriptor_v6(activationDesc.get(), mode, perf, nanProp, coef, slicedDim, gamma, scale, isResult, approximate));
 
     std::vector<DiopiTensor*> inputs{&input};
     DIOPI_CALL(autoCastTensorType(ctx, inputs, {diopi_dtype_float16, diopi_dtype_float32}));
-    DiopiTensor temp_output = out;
-    DIOPI_CALL(dataTypeCast(ctx, temp_output, input.dtype()));
+    DiopiTensor tempOutput = out;
+    DIOPI_CALL(dataTypeCast(ctx, tempOutput, input.dtype()));
 
-    CnnlTensorDesc input_desc(input, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc output_desc(temp_output, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputDesc(input, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outputDesc(tempOutput, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlActivationForward(handle, activation_desc.get(), alpha, input_desc.get(), input.data(), beta, output_desc.get(), temp_output.data()));
-    DIOPI_CALL(dataTypeCast(ctx, out, temp_output));
+    DIOPI_CALLCNNL(cnnlActivationForward(handle, activationDesc.get(), alpha, inputDesc.get(), input.data(), beta, outputDesc.get(), tempOutput.data()));
+    DIOPI_CALL(dataTypeCast(ctx, out, tempOutput));
 
     return diopiSuccess;
 }
 
-diopiError_t cnnl_activation_backward_internal(diopiContextHandle_t ctx, DiopiTensor grad_input, DiopiTensor grad_output, DiopiTensor input, DiopiTensor output,
+diopiError_t cnnlActivationBackwardInternal(diopiContextHandle_t ctx, DiopiTensor gradInput, DiopiTensor gradOutput, DiopiTensor input, DiopiTensor output,
                                                CnnlAttribute attr) {
     auto handle = cnnlHandlePool.get(ctx);
     auto mode = attr.get<cnnlActivationMode_t>("mode", CNNL_ACTIVATION_SIGMOID);
     auto perf = attr.get<cnnlActivationPreference_t>("perf", CNNL_ACTIVATION_HIGH_PRECISION);
-    auto nan_prop = attr.get<cnnlNanPropagation_t>("perf", CNNL_NOT_PROPAGATE_NAN);  // relu relu6
+    auto nanProp = attr.get<cnnlNanPropagation_t>("perf", CNNL_NOT_PROPAGATE_NAN);  // relu relu6
 
     float coef = attr.get("coef", 0.0);
-    int sliced_dim = attr.get("sliced_dim", 0);
+    int slicedDim = attr.get("sliced_dim", 0);
     float gamma = attr.get("gamma", 0.0);
     float scale = attr.get("scale", 0.0);
-    bool is_result = attr.get("is_result", true);
+    bool isResult = attr.get("is_result", true);
     bool approximate = attr.get("approximate", false);
     void* alpha = attr.get("alpha", nullptr);
     void* beta = attr.get("beta", nullptr);
 
-    CnnlResourceGuard<cnnlActivationDescriptor_t, cnnlCreateActivationDescriptor, cnnlDestroyActivationDescriptor> activation_desc;
-    DIOPI_CALLCNNL(cnnlSetActivationDescriptor_v6(activation_desc.get(), mode, perf, nan_prop, coef, sliced_dim, gamma, scale, is_result, approximate));
-    std::vector<DiopiTensor*> inputs{&grad_output};
+    CnnlResourceGuard<cnnlActivationDescriptor_t, cnnlCreateActivationDescriptor, cnnlDestroyActivationDescriptor> activationDesc;
+    DIOPI_CALLCNNL(cnnlSetActivationDescriptor_v6(activationDesc.get(), mode, perf, nanProp, coef, slicedDim, gamma, scale, isResult, approximate));
+    std::vector<DiopiTensor*> inputs{&gradOutput};
     if (input.defined()) {
         inputs.push_back(&input);
     }
@@ -112,35 +112,35 @@ diopiError_t cnnl_activation_backward_internal(diopiContextHandle_t ctx, DiopiTe
         inputs.push_back(&output);
     }
 
-    std::set<diopiDtype_t> support_dtype{diopi_dtype_float16, diopi_dtype_float32};
-    DIOPI_CALL(autoCastTensorType(ctx, inputs, support_dtype));
-    DiopiTensor temp_grad_input = grad_input;
-    DIOPI_CALL(dataTypeCast(ctx, temp_grad_input, grad_output.dtype()));
+    std::set<diopiDtype_t> supportDtype{diopi_dtype_float16, diopi_dtype_float32};
+    DIOPI_CALL(autoCastTensorType(ctx, inputs, supportDtype));
+    DiopiTensor tempGradInput = gradInput;
+    DIOPI_CALL(dataTypeCast(ctx, tempGradInput, gradOutput.dtype()));
 
-    CnnlTensorDesc grad_input_desc(temp_grad_input, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc grad_output_desc(grad_output, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradInputDesc(tempGradInput, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradOutputDesc(gradOutput, CNNL_LAYOUT_ARRAY);
 
-    CnnlTensorDesc input_desc, output_desc;
+    CnnlTensorDesc inputDesc, outputDesc;
     if (input.defined()) {
-        DIOPI_CALL(input_desc.set(input, CNNL_LAYOUT_ARRAY));
+        DIOPI_CALL(inputDesc.set(input, CNNL_LAYOUT_ARRAY));
     }
     if (output.defined()) {
-        DIOPI_CALL(output_desc.set(output, CNNL_LAYOUT_ARRAY));
+        DIOPI_CALL(outputDesc.set(output, CNNL_LAYOUT_ARRAY));
     }
 
     DIOPI_CALLCNNL(cnnlActivationBackward(handle,
-                                          activation_desc.get(),
+                                          activationDesc.get(),
                                           alpha,
-                                          output_desc.get(),
+                                          outputDesc.get(),
                                           output.defined() ? output.data() : nullptr,
-                                          grad_output_desc.get(),
-                                          grad_output.data(),
-                                          input_desc.get(),
+                                          gradOutputDesc.get(),
+                                          gradOutput.data(),
+                                          inputDesc.get(),
                                           input.defined() ? input.data() : nullptr,
                                           beta,
-                                          grad_input_desc.get(),
-                                          temp_grad_input.data()));
-    DIOPI_CALL(dataTypeCast(ctx, grad_input, temp_grad_input));
+                                          gradInputDesc.get(),
+                                          tempGradInput.data()));
+    DIOPI_CALL(dataTypeCast(ctx, gradInput, tempGradInput));
     return diopiSuccess;
 }
 
@@ -148,114 +148,114 @@ diopiError_t cnnl_activation_backward_internal(diopiContextHandle_t ctx, DiopiTe
 
 extern "C" diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor output_tensor(out);
+    DiopiTensor inputTensor(input);
+    DiopiTensor outputTensor(out);
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_RELU);
-    DIOPI_CALL(cnnl_activation_internal(ctx, input_tensor, output_tensor, attr));
+    DIOPI_CALL(cnnlActivationInternal(ctx, inputTensor, outputTensor, attr));
     return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
+    DiopiTensor inputTensor(input);
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_RELU);
-    DIOPI_CALL(cnnl_activation_internal(ctx, input_tensor, input_tensor, attr));
+    DIOPI_CALL(cnnlActivationInternal(ctx, inputTensor, inputTensor, attr));
     return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor output_tensor(out);
+    DiopiTensor inputTensor(input);
+    DiopiTensor outputTensor(out);
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_SIGMOID);
-    DIOPI_CALL(cnnl_activation_internal(ctx, input_tensor, output_tensor, attr));
+    DIOPI_CALL(cnnlActivationInternal(ctx, inputTensor, outputTensor, attr));
     return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiSigmoidInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
+    DiopiTensor inputTensor(input);
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_SIGMOID);
-    DIOPI_CALL(cnnl_activation_internal(ctx, input_tensor, input_tensor, attr));
+    DIOPI_CALL(cnnlActivationInternal(ctx, inputTensor, inputTensor, attr));
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+extern "C" diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                              diopiConstTensorHandle_t output) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor grad_input_tensor(grad_input);
-    DiopiTensor grad_output_tensor(grad_output);
-    DiopiTensor output_tensor(output);
+    DiopiTensor gradInputTensor(gradInput);
+    DiopiTensor gradOutputTensor(gradOutput);
+    DiopiTensor outputTensor(output);
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_SIGMOID);
-    cnnl_activation_backward_internal(ctx, grad_input_tensor, grad_output_tensor, {}, output_tensor, attr);
+    cnnlActivationBackwardInternal(ctx, gradInputTensor, gradOutputTensor, {}, outputTensor, attr);
     return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiTanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor output_tensor(out);
+    DiopiTensor inputTensor(input);
+    DiopiTensor outputTensor(out);
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_TANH);
-    DIOPI_CALL(cnnl_activation_internal(ctx, input_tensor, output_tensor, attr));
+    DIOPI_CALL(cnnlActivationInternal(ctx, inputTensor, outputTensor, attr));
     return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiTanhInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
+    DiopiTensor inputTensor(input);
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_TANH);
-    DIOPI_CALL(cnnl_activation_internal(ctx, input_tensor, input_tensor, attr));
+    DIOPI_CALL(cnnlActivationInternal(ctx, inputTensor, inputTensor, attr));
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiTanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+extern "C" diopiError_t diopiTanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                           diopiConstTensorHandle_t output) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor grad_input_tensor(grad_input);
-    DiopiTensor grad_output_tensor(grad_output);
-    DiopiTensor output_tensor(output);
+    DiopiTensor gradInputTensor(gradInput);
+    DiopiTensor gradOutputTensor(gradOutput);
+    DiopiTensor outputTensor(output);
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_TANH);
-    cnnl_activation_backward_internal(ctx, grad_input_tensor, grad_output_tensor, {}, output_tensor, attr);
+    cnnlActivationBackwardInternal(ctx, gradInputTensor, gradOutputTensor, {}, outputTensor, attr);
     return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char* approximate) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor output_tensor(out);
+    DiopiTensor inputTensor(input);
+    DiopiTensor outputTensor(out);
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_GELU);
     if (approximate == "tanh") {
         attr.set("approximate", true);
     }
-    DIOPI_CALL(cnnl_activation_internal(ctx, input_tensor, output_tensor, attr));
+    DIOPI_CALL(cnnlActivationInternal(ctx, inputTensor, outputTensor, attr));
 
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+extern "C" diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                           diopiConstTensorHandle_t input, const char* approximate) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor grad_input_tensor(grad_input);
-    DiopiTensor grad_output_tensor(grad_output);
-    DiopiTensor input_tensor(input);
+    DiopiTensor gradInputTensor(gradInput);
+    DiopiTensor gradOutputTensor(gradOutput);
+    DiopiTensor inputTensor(input);
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_GELU);
@@ -263,7 +263,7 @@ extern "C" diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorH
         attr.set("approximate", true);
     }
 
-    cnnl_activation_backward_internal(ctx, grad_input_tensor, grad_output_tensor, input_tensor, {}, attr);
+    cnnlActivationBackwardInternal(ctx, gradInputTensor, gradOutputTensor, inputTensor, {}, attr);
     return diopiSuccess;
 }
 

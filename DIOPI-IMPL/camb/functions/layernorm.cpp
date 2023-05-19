@@ -8,176 +8,176 @@ namespace camb {
 
 extern "C" {
 
-diopiError_t diopiLayerNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean, diopiTensorHandle_t save_invstd,
-                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiSize_t normalized_shape,
+diopiError_t diopiLayerNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t saveMean, diopiTensorHandle_t saveInvstd,
+                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiSize_t normalizedShape,
                             double eps) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    DiopiTensor input_tensor(input);
-    DiopiTensor out_tensor(out);
-    DiopiTensor save_mean_tensor(save_mean);
-    DiopiTensor save_invstd_tensor(save_invstd);
+    DiopiTensor inputTensor(input);
+    DiopiTensor outTensor(out);
+    DiopiTensor saveMeanTensor(saveMean);
+    DiopiTensor saveInvstdTensor(saveInvstd);
 
-    diopiDtype_t out_dtype = out_tensor.dtype();
-    if (out_dtype != diopi_dtype_float32 && out_dtype != diopi_dtype_float16) {
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_float32));
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor, diopi_dtype_float32));
-        DIOPI_CALL(dataTypeCast(ctx, save_mean_tensor, diopi_dtype_float32));
-        DIOPI_CALL(dataTypeCast(ctx, save_invstd_tensor, diopi_dtype_float32));
+    diopiDtype_t outDtype = outTensor.dtype();
+    if (outDtype != diopi_dtype_float32 && outDtype != diopi_dtype_float16) {
+        DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, outTensor, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, saveMeanTensor, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, saveInvstdTensor, diopi_dtype_float32));
     }
 
-    CnnlTensorDesc inputDesc(input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc outDesc(out_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc save_meanDesc(save_mean_tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc saveMeanDesc(saveMeanTensor, CNNL_LAYOUT_ARRAY);
 
-    size_t workspace_size(0);
-    DIOPI_CALLCNNL(cnnlGetLayerNormOpWorkspaceSize(handle, normalized_shape.len, inputDesc.get(), &workspace_size));
+    size_t workspaceSize(0);
+    DIOPI_CALLCNNL(cnnlGetLayerNormOpWorkspaceSize(handle, normalizedShape.len, inputDesc.get(), &workspaceSize));
     void *workspace = nullptr;
-    if (workspace_size > 0) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
+    if (workspaceSize > 0) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    void *weight_ptr = nullptr;
-    void *bias_ptr = nullptr;
-    CnnlTensorDesc weight_biasDesc;
-    cnnlTensorDescriptor_t weight_bias_desc = nullptr;
+    void *weightPtr = nullptr;
+    void *biasPtr = nullptr;
+    CnnlTensorDesc weightBiasDesc;
+    cnnlTensorDescriptor_t weightBiasDescTmp = nullptr;
     if (weight != nullptr && bias != nullptr) {
-        DiopiTensor weight_tensor(weight);
-        DiopiTensor bias_tensor(bias);
-        if (out_dtype != diopi_dtype_float32 && out_dtype != diopi_dtype_float16) {
-            DIOPI_CALL(dataTypeCast(ctx, weight_tensor, diopi_dtype_float32));
-            DIOPI_CALL(dataTypeCast(ctx, bias_tensor, diopi_dtype_float32));
+        DiopiTensor weightTensor(weight);
+        DiopiTensor biasTensor(bias);
+        if (outDtype != diopi_dtype_float32 && outDtype != diopi_dtype_float16) {
+            DIOPI_CALL(dataTypeCast(ctx, weightTensor, diopi_dtype_float32));
+            DIOPI_CALL(dataTypeCast(ctx, biasTensor, diopi_dtype_float32));
         }
-        weight_ptr = weight_tensor.data();
-        bias_ptr = bias_tensor.data();
-        weight_biasDesc.set(weight_tensor, CNNL_LAYOUT_ARRAY);
-        weight_bias_desc = weight_biasDesc.get();
+        weightPtr = weightTensor.data();
+        biasPtr = biasTensor.data();
+        weightBiasDesc.set(weightTensor, CNNL_LAYOUT_ARRAY);
+        weightBiasDescTmp = weightBiasDesc.get();
     }
 
-    int axis = input_tensor.dim() - normalized_shape.len;
+    int axis = inputTensor.dim() - normalizedShape.len;
     DIOPI_CALLCNNL(cnnlLayerNormForward(handle,
                                         inputDesc.get(),
-                                        input_tensor.data(),
+                                        inputTensor.data(),
                                         axis,
-                                        weight_bias_desc,
-                                        weight_ptr,
-                                        bias_ptr,
+                                        weightBiasDescTmp,
+                                        weightPtr,
+                                        biasPtr,
                                         eps,
                                         workspace,
-                                        workspace_size,
+                                        workspaceSize,
                                         outDesc.get(),
-                                        out_tensor.data(),
-                                        save_meanDesc.get(),
-                                        save_mean_tensor.data(),
-                                        save_invstd_tensor.data()));
+                                        outTensor.data(),
+                                        saveMeanDesc.get(),
+                                        saveMeanTensor.data(),
+                                        saveInvstdTensor.data()));
 
-    if (out_dtype != diopi_dtype_float32 && out_dtype != diopi_dtype_float16) {
-        DiopiTensor out_tensor_(out);
-        DiopiTensor save_mean_tensor_(save_mean);
-        DiopiTensor save_invstd_tensor_(save_invstd);
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor_, out_tensor));
-        DIOPI_CALL(dataTypeCast(ctx, save_mean_tensor_, save_mean_tensor));
-        DIOPI_CALL(dataTypeCast(ctx, save_invstd_tensor_, save_invstd_tensor));
+    if (outDtype != diopi_dtype_float32 && outDtype != diopi_dtype_float16) {
+        DiopiTensor outTensor(out);
+        DiopiTensor saveMeanTensor(saveMean);
+        DiopiTensor saveInvstdTensor(saveInvstd);
+        DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensor));
+        DIOPI_CALL(dataTypeCast(ctx, saveMeanTensor, saveMeanTensor));
+        DIOPI_CALL(dataTypeCast(ctx, saveInvstdTensor, saveInvstdTensor));
     }
 
     return diopiSuccess;
 }
 
-diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight, diopiTensorHandle_t grad_bias,
-                                    diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
-                                    diopiConstTensorHandle_t bias, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t rstd, diopiSize_t normalized_shape) {
+diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight, diopiTensorHandle_t gradBias,
+                                    diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
+                                    diopiConstTensorHandle_t bias, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t rstd, diopiSize_t normalizedShape) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor grad_input_tensor(grad_input);
-    DiopiTensor grad_output_tensor(grad_output);
-    DiopiTensor input_tensor(input);
-    DiopiTensor mean_tensor(mean);
-    DiopiTensor rstd_tensor(rstd);
-    DiopiTensor weight_tensor(weight);
-    DiopiTensor bias_tensor(bias);
-    DiopiTensor grad_weight_tensor(grad_weight);
-    DiopiTensor grad_bias_tensor(grad_bias);
+    DiopiTensor gradInputTensor(gradInput);
+    DiopiTensor gradOutputTensor(gradOutput);
+    DiopiTensor inputTensor(input);
+    DiopiTensor meanTensor(mean);
+    DiopiTensor rstdTensor(rstd);
+    DiopiTensor weightTensor(weight);
+    DiopiTensor biasTensor(bias);
+    DiopiTensor gradWeightTensor(gradWeight);
+    DiopiTensor gradBiasTensor(gradBias);
 
-    diopiDtype_t out_dtype = grad_input_tensor.dtype();
-    if (out_dtype != diopi_dtype_float16 && out_dtype != diopi_dtype_float32) {
-        DIOPI_CALL(dataTypeCast(ctx, grad_input_tensor, diopi_dtype_float32));
-        DIOPI_CALL(dataTypeCast(ctx, grad_output_tensor, diopi_dtype_float32));
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_float32));
-        DIOPI_CALL(dataTypeCast(ctx, mean_tensor, diopi_dtype_float32));
-        DIOPI_CALL(dataTypeCast(ctx, rstd_tensor, diopi_dtype_float32));
+    diopiDtype_t outDtype = gradInputTensor.dtype();
+    if (outDtype != diopi_dtype_float16 && outDtype != diopi_dtype_float32) {
+        DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, gradOutputTensor, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, meanTensor, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, rstdTensor, diopi_dtype_float32));
     }
 
-    CnnlTensorDesc grad_inputDesc(grad_input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc grad_outputDesc(grad_output_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc inputDesc(input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc meanDesc(mean_tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradInputDesc(gradInputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradOutputDesc(gradOutputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc meanDesc(meanTensor, CNNL_LAYOUT_ARRAY);
 
-    void *weight_ptr = nullptr;
-    CnnlTensorDesc weight_biasDesc;
-    cnnlTensorDescriptor_t weight_bias_desc = nullptr;
-    void *grad_weight_ptr = nullptr;
-    void *grad_bias_ptr = nullptr;
+    void *weightPtr = nullptr;
+    CnnlTensorDesc weightBiasDesc;
+    cnnlTensorDescriptor_t weightBiasDescTmp = nullptr;
+    void *gradWeightPtr = nullptr;
+    void *gradBiasPtr = nullptr;
     if (weight != nullptr && bias != nullptr) {
-        if (out_dtype != diopi_dtype_float16 && out_dtype != diopi_dtype_float32) {
-            DIOPI_CALL(dataTypeCast(ctx, weight_tensor, diopi_dtype_float32));
-            DIOPI_CALL(dataTypeCast(ctx, grad_weight_tensor, diopi_dtype_float32));
-            DIOPI_CALL(dataTypeCast(ctx, grad_bias_tensor, diopi_dtype_float32));
+        if (outDtype != diopi_dtype_float16 && outDtype != diopi_dtype_float32) {
+            DIOPI_CALL(dataTypeCast(ctx, weightTensor, diopi_dtype_float32));
+            DIOPI_CALL(dataTypeCast(ctx, gradWeightTensor, diopi_dtype_float32));
+            DIOPI_CALL(dataTypeCast(ctx, gradBiasTensor, diopi_dtype_float32));
         }
 
-        weight_ptr = weight_tensor.data();
-        grad_weight_ptr = grad_weight_tensor.data();
-        grad_bias_ptr = grad_bias_tensor.data();
-        weight_biasDesc.set(weight_tensor, CNNL_LAYOUT_ARRAY);
-        weight_bias_desc = weight_biasDesc.get();
+        weightPtr = weightTensor.data();
+        gradWeightPtr = gradWeightTensor.data();
+        gradBiasPtr = gradBiasTensor.data();
+        weightBiasDesc.set(weightTensor, CNNL_LAYOUT_ARRAY);
+        weightBiasDescTmp = weightBiasDesc.get();
     } else {
-        weight_tensor = requiresTensor(ctx, normalized_shape, input_tensor.dtype());
-        grad_weight_tensor = requiresTensor(ctx, normalized_shape, input_tensor.dtype());
-        grad_bias_tensor = requiresTensor(ctx, normalized_shape, input_tensor.dtype());
+        weightTensor = requiresTensor(ctx, normalizedShape, inputTensor.dtype());
+        gradWeightTensor = requiresTensor(ctx, normalizedShape, inputTensor.dtype());
+        gradBiasTensor = requiresTensor(ctx, normalizedShape, inputTensor.dtype());
         diopiScalar_t one = {diopi_dtype_float32, 1};
         diopiScalar_t zero = {diopi_dtype_float32, 0};
-        DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(weight_tensor), &one));
-        DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(grad_weight_tensor), &zero));
-        DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(grad_bias_tensor), &zero));
-        weight_ptr = weight_tensor.data();
-        weight_biasDesc.set(weight_tensor, CNNL_LAYOUT_ARRAY);
-        weight_bias_desc = weight_biasDesc.get();
-        grad_weight_ptr = grad_weight_tensor.data();
-        grad_bias_ptr = grad_bias_tensor.data();
+        DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(weightTensor), &one));
+        DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(gradWeightTensor), &zero));
+        DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(gradBiasTensor), &zero));
+        weightPtr = weightTensor.data();
+        weightBiasDesc.set(weightTensor, CNNL_LAYOUT_ARRAY);
+        weightBiasDescTmp = weightBiasDesc.get();
+        gradWeightPtr = gradWeightTensor.data();
+        gradBiasPtr = gradBiasTensor.data();
     }
 
-    int axis = input_tensor.dim() - normalized_shape.len;
+    int axis = inputTensor.dim() - normalizedShape.len;
 
-    size_t workspace_size(0);
-    DIOPI_CALLCNNL(cnnlGetLayerNormBackwardWorkspaceSize(handle, inputDesc.get(), axis, &workspace_size));
+    size_t workspaceSize(0);
+    DIOPI_CALLCNNL(cnnlGetLayerNormBackwardWorkspaceSize(handle, inputDesc.get(), axis, &workspaceSize));
     void *workspace;
-    if (workspace_size > 0) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
+    if (workspaceSize > 0) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
     DIOPI_CALLCNNL(cnnlLayerNormBackward_v2(handle,
                                             inputDesc.get(),
-                                            input_tensor.data(),
+                                            inputTensor.data(),
                                             axis,
-                                            grad_outputDesc.get(),
-                                            grad_output_tensor.data(),
-                                            weight_bias_desc,
-                                            weight_ptr,
+                                            gradOutputDesc.get(),
+                                            gradOutputTensor.data(),
+                                            weightBiasDescTmp,
+                                            weightPtr,
                                             meanDesc.get(),
-                                            mean_tensor.data(),
-                                            rstd_tensor.data(),
+                                            meanTensor.data(),
+                                            rstdTensor.data(),
                                             workspace,
-                                            workspace_size,
-                                            grad_inputDesc.get(),
-                                            grad_input_tensor.data(),
-                                            grad_weight_ptr,
-                                            grad_bias_ptr));
-    if (out_dtype != diopi_dtype_float16 && out_dtype != diopi_dtype_float32) {
-        DiopiTensor grad_input_tensor_(grad_input);
-        DIOPI_CALL(dataTypeCast(ctx, grad_input_tensor_, grad_input_tensor));
-        if (grad_bias != nullptr && grad_weight != nullptr) {
-            DiopiTensor grad_weight_tensor_(grad_weight);
-            DiopiTensor grad_bias_tensor_(grad_bias);
-            DIOPI_CALL(dataTypeCast(ctx, grad_weight_tensor_, grad_weight_tensor));
-            DIOPI_CALL(dataTypeCast(ctx, grad_bias_tensor_, grad_bias_tensor));
+                                            workspaceSize,
+                                            gradInputDesc.get(),
+                                            gradInputTensor.data(),
+                                            gradWeightPtr,
+                                            gradBiasPtr));
+    if (outDtype != diopi_dtype_float16 && outDtype != diopi_dtype_float32) {
+        DiopiTensor gradInputTensor(gradInput);
+        DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensor));
+        if (gradBias != nullptr && gradWeight != nullptr) {
+            DiopiTensor gradWeightTensor(gradWeight);
+            DiopiTensor gradBiasTensor(gradBias);
+            DIOPI_CALL(dataTypeCast(ctx, gradWeightTensor, gradWeightTensor));
+            DIOPI_CALL(dataTypeCast(ctx, gradBiasTensor, gradBiasTensor));
         }
     }
     return diopiSuccess;

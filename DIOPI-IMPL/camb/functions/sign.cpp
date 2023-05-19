@@ -15,24 +15,24 @@ extern "C" {
 
 diopiError_t diopiSign(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor out_tensor(out);
+    DiopiTensor inputTensor(input);
+    DiopiTensor outTensor(out);
 
-    std::vector<DiopiTensor*> pTensors{&input_tensor};
+    std::vector<DiopiTensor*> pTensors{&inputTensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
-    DiopiTensor out_tensor_temp = out_tensor;
-    if (input_tensor.dtype() != out_tensor_temp.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor_temp, input_tensor.dtype()));
+    DiopiTensor outTensorTemp = outTensor;
+    if (inputTensor.dtype() != outTensorTemp.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensorTemp, inputTensor.dtype()));
     }
 
-    CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc out_desc(out_tensor_temp, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlSign(handle, input_desc.get(), input_tensor.data(), out_desc.get(), out_tensor_temp.data()));
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(outTensorTemp, CNNL_LAYOUT_ARRAY);
+    DIOPI_CALLCNNL(cnnlSign(handle, inputDesc.get(), inputTensor.data(), outDesc.get(), outTensorTemp.data()));
 
-    if (out_tensor_temp.dtype() != out_tensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor, out_tensor_temp));
+    if (outTensorTemp.dtype() != outTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTemp));
     }
     return diopiSuccess;
 }

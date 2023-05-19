@@ -30,16 +30,16 @@ diopiError_t broadcast(diopiContextHandle_t ctx, DiopiTensor& out, const DiopiTe
     return diopiSuccess;
 }
 
-diopiError_t broadcastHelper(diopiContextHandle_t ctx, DiopiTensor input_tensor, DiopiTensor target_tensor, DiopiTensor* out_tensor) {
-    diopiTensorHandle_t bcast_input = nullptr;
-    DiopiTensor bcast_input_tensor;
-    if (input_tensor.shape() != target_tensor.shape()) {
-        bcast_input_tensor = requiresTensor(ctx, vec2diopiSize_t(target_tensor.shape()), target_tensor.dtype());
-        DIOPI_CALL(broadcast(ctx, bcast_input_tensor, input_tensor));
+diopiError_t broadcastHelper(diopiContextHandle_t ctx, DiopiTensor inputTensor, DiopiTensor targetTensor, DiopiTensor* outTensor) {
+    diopiTensorHandle_t bcastInput = nullptr;
+    DiopiTensor bcastInputTensor;
+    if (inputTensor.shape() != targetTensor.shape()) {
+        bcastInputTensor = requiresTensor(ctx, vec2diopiSize_t(targetTensor.shape()), targetTensor.dtype());
+        DIOPI_CALL(broadcast(ctx, bcastInputTensor, inputTensor));
     } else {
-        bcast_input_tensor = input_tensor;
+        bcastInputTensor = inputTensor;
     }
-    *out_tensor = bcast_input_tensor;
+    *outTensor = bcastInputTensor;
     return diopiSuccess;
 }
 

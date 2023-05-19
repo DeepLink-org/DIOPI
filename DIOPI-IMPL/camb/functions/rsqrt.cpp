@@ -22,29 +22,29 @@ static diopiError_t rsqrt(diopiContextHandle_t ctx, DiopiTensor& output, DiopiTe
 
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
-    DiopiTensor output_tmp = output;
+    DiopiTensor outputTmp = output;
     if (input.dtype() != output.dtype()) {
-        output_tmp = requiresTensor(ctx, output.shape(), input.dtype());
+        outputTmp = requiresTensor(ctx, output.shape(), input.dtype());
     }
 
     CnnlTensorDesc desc(input, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlRsqrt_v2(handle, CNNL_COMPUTATION_HIGH_PRECISION, desc.get(), input.data(), desc.get(), output_tmp.data()));
-    if (output_tmp.dtype() != output.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, output, output_tmp));
+    DIOPI_CALLCNNL(cnnlRsqrt_v2(handle, CNNL_COMPUTATION_HIGH_PRECISION, desc.get(), input.data(), desc.get(), outputTmp.data()));
+    if (outputTmp.dtype() != output.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, output, outputTmp));
     }
     return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiRsqrtInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    DiopiTensor input_tensor(input);
-    DIOPI_CALL(rsqrt(ctx, input_tensor, input_tensor));
+    DiopiTensor inputTensor(input);
+    DIOPI_CALL(rsqrt(ctx, inputTensor, inputTensor));
     return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiRsqrt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    DiopiTensor input_tensor(input);
-    DiopiTensor output_tensor(out);
-    DIOPI_CALL(rsqrt(ctx, output_tensor, input_tensor));
+    DiopiTensor inputTensor(input);
+    DiopiTensor outputTensor(out);
+    DIOPI_CALL(rsqrt(ctx, outputTensor, inputTensor));
     return diopiSuccess;
 }
 
