@@ -39,7 +39,7 @@ diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     CnnlTensorDesc mat1Desc(mat1TensorTmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc mat2Desc(mat2TensorTmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outTensorTmp, CNNL_LAYOUT_ARRAY);
-    DiopiTensor mmResultTensor = requiresTensor(ctx, vec2diopiSize_t(outTensor.shape()), inputTensorTmp.dtype());
+    DiopiTensor mmResultTensor = requiresTensor(ctx, vec2diopiSizeT(outTensor.shape()), inputTensorTmp.dtype());
     CnnlTensorDesc mmResultDesc(mmResultTensor, CNNL_LAYOUT_ARRAY);
 
     CnnlResourceGuard<cnnlMatMulDescriptor_t, cnnlMatMulDescCreate, cnnlMatMulDescDestroy> cnnlMatMulDesc;

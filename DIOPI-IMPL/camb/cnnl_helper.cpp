@@ -49,7 +49,7 @@ diopiError_t CnnlDataType::convertToCnnlType(cnnlDataType_t* cnnlType, diopiDtyp
             *cnnlType = CNNL_DTYPE_INT64;
             break;
         default:
-            set_last_error_string("unkown diopitype error %d at %s:%d", type, __FILE__, __LINE__);
+            setLastErrorString("unkown diopitype error %d at %s:%d", type, __FILE__, __LINE__);
             return diopiDtypeNotSupported;
     }
     return diopiSuccess;
@@ -125,7 +125,7 @@ const std::unordered_map<std::vector<diopiDtype_t>, cnnlCastDataType_t, HashCnnl
 
 CnnlHandlePool cnnlHandlePool;
 
-diopiError_t cnnl_transpose(
+diopiError_t cnnlTranspose(
     diopiContextHandle_t& ctx, cnnlHandle_t& handle, DiopiTensor& in, DiopiTensor& out, cnnlTensorLayout_t layoutIn, cnnlTensorLayout_t layoutOut) {
     /* DEPRECATED AND WILL BE REMOVED */
     DIOPI_CHECK(in.dtype() == out.dtype(), "the data type of input and output tensor should be the same.");

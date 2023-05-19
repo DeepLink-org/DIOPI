@@ -34,7 +34,7 @@ diopiError_t broadcastHelper(diopiContextHandle_t ctx, DiopiTensor inputTensor, 
     diopiTensorHandle_t bcastInput = nullptr;
     DiopiTensor bcastInputTensor;
     if (inputTensor.shape() != targetTensor.shape()) {
-        bcastInputTensor = requiresTensor(ctx, vec2diopiSize_t(targetTensor.shape()), targetTensor.dtype());
+        bcastInputTensor = requiresTensor(ctx, vec2diopiSizeT(targetTensor.shape()), targetTensor.dtype());
         DIOPI_CALL(broadcast(ctx, bcastInputTensor, inputTensor));
     } else {
         bcastInputTensor = inputTensor;

@@ -26,7 +26,7 @@ namespace camb {
     do {                                                                                                              \
         ::cnnlStatus_t ret = Expr;                                                                                    \
         if (ret != ::CNNL_STATUS_SUCCESS) {                                                                           \
-            set_last_error_string("cnnl error %d : %s at %s:%d", ret, ::cnnlGetErrorString(ret), __FILE__, __LINE__); \
+            setLastErrorString("cnnl error %d : %s at %s:%d", ret, ::cnnlGetErrorString(ret), __FILE__, __LINE__); \
             return diopiErrorOccurred;                                                                                \
         }                                                                                                             \
     } while (false);
@@ -99,8 +99,8 @@ public:
         DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, t.dtype()));
 
         if (!dim) {
-            std::vector<int> dim_array(1, 1);
-            DIOPI_CALLCNNL(cnnlSetTensorDescriptorEx(get(), CNNL_LAYOUT_ARRAY, dtype, 1, dim_array.data(), dim_array.data()));
+            std::vector<int> dimArray(1, 1);
+            DIOPI_CALLCNNL(cnnlSetTensorDescriptorEx(get(), CNNL_LAYOUT_ARRAY, dtype, 1, dimArray.data(), dimArray.data()));
             return diopiSuccess;
         }
 
@@ -115,14 +115,14 @@ public:
         } else if (layout == CNNL_LAYOUT_HWCN) {
             // HWCN is only used by depthwise conv now, and the dim is 4
             DIOPI_CHECK(dim == 4, "depthwise convolution input's dim must be 4!");
-            auto convert_shape_stride_hwcn = [](const std::vector<int64_t>& vec, std::vector<int>& target_vec) {
-                target_vec[0] = static_cast<int>(vec[2]);
-                target_vec[1] = static_cast<int>(vec[3]);
-                target_vec[2] = static_cast<int>(vec[1]);
-                target_vec[3] = static_cast<int>(vec[0]);
+            auto convertShapeStrideHwcn = [](const std::vector<int64_t>& vec, std::vector<int>& targetVec) {
+                targetVec[0] = static_cast<int>(vec[2]);
+                targetVec[1] = static_cast<int>(vec[3]);
+                targetVec[2] = static_cast<int>(vec[1]);
+                targetVec[3] = static_cast<int>(vec[0]);
             };
-            convert_shape_stride_hwcn(dimSize, shape);
-            convert_shape_stride_hwcn(dimStride, stride);
+            convertShapeStrideHwcn(dimSize, shape);
+            convertShapeStrideHwcn(dimStride, stride);
         } else {
             for (size_t i = 0; i < dim; ++i) {
                 shape[i] = dimSize[i];
@@ -191,19 +191,19 @@ class CnnlReduceDescriptor final : public CnnlDescBase<cnnlReduceDescriptor_t, c
 public:
     CnnlReduceDescriptor() {}
 
-    diopiError_t set(DiopiTensor& t, std::vector<int64_t> axis, cnnlReduceOp_t reduce_op, cnnlReduceIndices_t is_indices, cnnlIndicesType_t indices_type,
-                     cnnlDataType_t tensor_type) {
-        int axis_num = axis.size();
-        std::vector<int> axis_list(axis_num);
-        for (int i = 0; i < axis_num; i++) {
-            axis_list[i] = static_cast<int>(axis[i]);
+    diopiError_t set(DiopiTensor& t, std::vector<int64_t> axis, cnnlReduceOp_t reduceOp, cnnlReduceIndices_t isIndices, cnnlIndicesType_t indicesType,
+                     cnnlDataType_t tensorType) {
+        int axisNum = axis.size();
+        std::vector<int> axisList(axisNum);
+        for (int i = 0; i < axisNum; i++) {
+            axisList[i] = static_cast<int>(axis[i]);
         }
-        DIOPI_CALLCNNL(cnnlSetReduceDescriptor(get(), axis_list.data(), axis_num, reduce_op, tensor_type, CNNL_NOT_PROPAGATE_NAN, is_indices, indices_type));
+        DIOPI_CALLCNNL(cnnlSetReduceDescriptor(get(), axisList.data(), axisNum, reduceOp, tensorType, CNNL_NOT_PROPAGATE_NAN, isIndices, indicesType));
         return diopiSuccess;
     }
 };
 
-diopiError_t cnnl_transpose(diopiContextHandle_t& ctx, cnnlHandle_t& handle, DiopiTensor& in, DiopiTensor& out, cnnlTensorLayout_t layoutIn,
+diopiError_t cnnlTranspose(diopiContextHandle_t& ctx, cnnlHandle_t& handle, DiopiTensor& in, DiopiTensor& out, cnnlTensorLayout_t layoutIn,
                             cnnlTensorLayout_t layoutOut);
 
 struct HashCnnlCastDType {

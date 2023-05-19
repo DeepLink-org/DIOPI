@@ -22,7 +22,7 @@ diopiError_t randpermFunc(DiopiTensor tensor, int64_t n, int64_t idx) {
     std::random_shuffle(vec.begin(), vec.end());
     auto ret = cnrtMemcpy(tensor.data(), vec.data(), sizeof(T) * n, cnrtMemcpyHostToDev);
     if (ret != cnrtSuccess) {
-        set_last_error_string("%s%d", "cnrt memcpy error, ret = ", ret);
+        setLastErrorString("%s%d", "cnrt memcpy error, ret = ", ret);
         return diopiErrorOccurred;
     }
     return diopiSuccess;
@@ -36,7 +36,7 @@ extern "C" diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandl
     } else if (outTensor.dtype() == diopi_dtype_int64) {
         DIOPI_CALL(randpermFunc<long int>(outTensor, n, idx));
     } else {
-        set_last_error_string("randperm not support datatype %d.\n", outTensor.dtype());
+        setLastErrorString("randperm not support datatype %d.\n", outTensor.dtype());
         return diopi5DNotSupported;
     }
     return diopiSuccess;

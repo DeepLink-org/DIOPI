@@ -35,7 +35,7 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTens
         alpha2Value = std::make_shared<float>(alpha2);
         betaValue = std::make_shared<float>(beta);
     } else {
-        set_last_error_string("%s", "cnnl op tensor only support int or float type.\n");
+        setLastErrorString("%s", "cnnl op tensor only support int or float type.\n");
         return diopiDtypeNotSupported;
     }
     CnnlTensorDesc inputDesc(inputCasted, CNNL_LAYOUT_ARRAY);

@@ -59,7 +59,7 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     DiopiTensor outputTmpTr = requiresTensor(ctx, outputTr.shape(), inputTr.dtype(), memoryFormat);
 
     /* Transpose to channels last */
-    DIOPI_CALL(contiguous_(ctx, inputTr, memoryFormat));
+    DIOPI_CALL(contiguous(ctx, inputTr, memoryFormat));
 
     CnnlTensorDesc weightBiasMeanVarDesc(weightTr, CNNL_LAYOUT_ARRAY);
     cnnlTensorLayout_t layout = inputTr.dim() == 4 ? CNNL_LAYOUT_NHWC : CNNL_LAYOUT_NDHWC;
@@ -119,7 +119,7 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     }
 
     // channels last -> contiguous
-    DIOPI_CALL(contiguous_(ctx, outputTmpTr, MemoryFormat::Contiguous));
+    DIOPI_CALL(contiguous(ctx, outputTmpTr, MemoryFormat::Contiguous));
     // Copy back to origin
     DIOPI_CALL(diopiCopyInp(ctx, outputTmpTr.tensorHandle(), outputTr.tensorHandle()));
 
@@ -183,8 +183,8 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 
     /* Transpose */
     MemoryFormat memoryFormat = inputTr.dim() == 4 ? MemoryFormat::ChannelsLast : MemoryFormat::ChannelsLast3d;
-    DIOPI_CALL(contiguous_(ctx, inputTr, memoryFormat));
-    DIOPI_CALL(contiguous_(ctx, gradOutputTr, memoryFormat));
+    DIOPI_CALL(contiguous(ctx, inputTr, memoryFormat));
+    DIOPI_CALL(contiguous(ctx, gradOutputTr, memoryFormat));
 
     // Note: 1. output.dtype = input.dtype  2. channelsLast format
     DiopiTensor gradInputTmpTr = requiresTensor(ctx, gradInputTr.shape(), gradOutputTr.dtype(), memoryFormat);
@@ -274,7 +274,7 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     }
 
     // Channels last -> contiguous
-    DIOPI_CALL(contiguous_(ctx, gradInputTmpTr, MemoryFormat::Contiguous));
+    DIOPI_CALL(contiguous(ctx, gradInputTmpTr, MemoryFormat::Contiguous));
     DIOPI_CALL(diopiCopyInp(ctx, gradInputTmpTr.tensorHandle(), gradInputTr.tensorHandle()));
     DIOPI_CALL(diopiCopyInp(ctx, gradWeightTmpTr.tensorHandle(), gradWeightTr.tensorHandle()));
     DIOPI_CALL(diopiCopyInp(ctx, gradBiasTmpTr.tensorHandle(), gradBiasTr.tensorHandle()));

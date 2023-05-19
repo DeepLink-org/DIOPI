@@ -33,7 +33,7 @@ extern "C" diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHand
         }
         DIOPI_CALLCNNL(cnnlRandGenerateUniform(handle, generator, dtype, nullptr, tensor.numel(), min, max, tensor.data()));
     } else {
-        set_last_error_string("%s%d", "cnnl random not support datatype: ", dtype);
+        setLastErrorString("%s%d", "cnnl random not support datatype: ", dtype);
         return diopiDtypeNotSupported;
     }
     DIOPI_CALLCNNL(cnnlRandDestroyGenerator(generator));

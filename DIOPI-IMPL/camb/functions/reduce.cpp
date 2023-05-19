@@ -67,7 +67,7 @@ diopiError_t reduceInternal(diopiContextHandle_t ctx, DiopiTensor& inputTr, Diop
                              const std::vector<int64_t> reduceDim, cnnlReduceOp_t reduceOp) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    DIOPI_CHECK(inputTr.is_contiguous(), "input tensor should be contiguous");
+    DIOPI_CHECK(inputTr.isContiguous(), "input tensor should be contiguous");
 
     CnnlReduceDescriptor reduceDesc;
     CnnlTensorDesc inputDesc;

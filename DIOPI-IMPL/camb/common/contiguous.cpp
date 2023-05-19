@@ -50,8 +50,8 @@ void generateLayoutOrder(int64_t dim, MemoryFormat memoryFormat, cnnlTensorLayou
 }
 
 /* Inplace contiguous, support NCHW <-> NHWC, NCDHW <-> NDHWC */
-diopiError_t contiguous_(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryFormat memoryFormat) {
-    if (src.is_contiguous(memoryFormat)) return diopiSuccess;
+diopiError_t contiguous(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryFormat memoryFormat) {
+    if (src.isContiguous(memoryFormat)) return diopiSuccess;
 
     int64_t dim = src.dim();
     DIOPI_CHECK(dim == 4 || dim == 5, "only support 4d/5d tensor currently");
@@ -69,8 +69,8 @@ diopiError_t contiguous_(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryForm
 }
 
 /* Inplace contiguous, support special layout like CNNL_LAYOUT_HWCN */
-diopiError_t contiguous_(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryFormat memoryFormat, cnnlTensorLayout_t layoutIn, cnnlTensorLayout_t layoutOut) {
-    if (src.is_contiguous(memoryFormat)) return diopiSuccess;
+diopiError_t contiguous(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryFormat memoryFormat, cnnlTensorLayout_t layoutIn, cnnlTensorLayout_t layoutOut) {
+    if (src.isContiguous(memoryFormat)) return diopiSuccess;
     DIOPI_CHECK(src.dim() == 4, "only support 4d tensor currently");
 
     std::vector<int> order;

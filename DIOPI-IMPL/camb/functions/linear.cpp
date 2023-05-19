@@ -49,7 +49,7 @@ diopiError_t matmul(diopiContextHandle_t ctx, DiopiTensor inputA, DiopiTensor in
     } else if (output.dtype() == diopi_dtype_float16) {
         compType = CNNL_DTYPE_HALF;
     } else {
-        set_last_error_string("%s", "matmul on support float or half.");
+        setLastErrorString("%s", "matmul on support float or half.");
         return diopiDtypeNotSupported;
     }
     DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmulDesc.get(), CNNL_MATMUL_DESC_COMPUTE_TYPE, &(compType), sizeof(cnnlDataType_t)));

@@ -373,7 +373,7 @@ static diopiError_t tensorMatmulTensor(diopiContextHandle_t ctx, DiopiTensor out
         return diopiSuccess;
     }
 
-    set_last_error_string("both arguments to matmul need to be at least 1D, but they are ", inputTensor.dim(), "D and ", otherTensor.dim(), "D");
+    setLastErrorString("both arguments to matmul need to be at least 1D, but they are ", inputTensor.dim(), "D and ", otherTensor.dim(), "D");
     return diopiErrorOccurred;
 }
 

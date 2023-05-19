@@ -34,10 +34,10 @@ diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_
 
     auto memoryFormat = MemoryFormat::ChannelsLast;
     auto inputChannelLast = inputTr.contiguous(ctx, memoryFormat);
-    DIOPI_CALL(cnnl_transpose(ctx, handle, inputTr, inputChannelLast, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC));
+    DIOPI_CALL(cnnlTranspose(ctx, handle, inputTr, inputChannelLast, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC));
 
     auto outputChannelLast = outputTmpTr;
-    if (!outputChannelLast.is_contiguous(memoryFormat)) {
+    if (!outputChannelLast.isContiguous(memoryFormat)) {
         // for some special case like shape = [2, 2048, 1, 1], it's already been ChannelsLast
         outputChannelLast = requiresTensor(ctx, outputTmpTr.shape(), outputTmpTr.dtype(), MemoryFormat::ChannelsLast);
     }
@@ -65,7 +65,7 @@ diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_
                                                  nullptr));
 
     // NHWC -> NCHW
-    DIOPI_CALL(cnnl_transpose(ctx, handle, outputChannelLast, outputTmpTr, CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW));
+    DIOPI_CALL(cnnlTranspose(ctx, handle, outputChannelLast, outputTmpTr, CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW));
 
     if (outputTmpTr.dtype() != outputTr.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outputTr, outputTmpTr));
@@ -91,7 +91,7 @@ diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTenso
 
     auto memoryFormat = MemoryFormat::ChannelsLast;
     auto gradOutputChannelLast = gradOutputTr.contiguous(ctx, memoryFormat);
-    DIOPI_CALL(cnnl_transpose(ctx, handle, gradOutputTr, gradOutputChannelLast, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC));
+    DIOPI_CALL(cnnlTranspose(ctx, handle, gradOutputTr, gradOutputChannelLast, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC));
 
     DiopiTensor gradInputTmpTr = gradInputTr;
     if (gradInputTr.dtype() != gradOutputTr.dtype()) {
@@ -116,7 +116,7 @@ diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTenso
                                                gradInputChannelLast.data()));
 
     // NHWC -> NCHW
-    DIOPI_CALL(cnnl_transpose(ctx, handle, gradInputChannelLast, gradInputTmpTr, CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW));
+    DIOPI_CALL(cnnlTranspose(ctx, handle, gradInputChannelLast, gradInputTmpTr, CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW));
 
     if (gradInputTmpTr.dtype() != gradInputTr.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, gradInputTr, gradInputTmpTr));
