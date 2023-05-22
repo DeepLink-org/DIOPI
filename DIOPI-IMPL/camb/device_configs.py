@@ -356,18 +356,6 @@ device_configs = {
         ),
     ),
 
-    'select': dict(
-        name=["select"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64)],
-                },
-            ]
-        ),
-    ),
-
     'masked_scatter': dict(
         name=["masked_scatter"],
         tensor_para=dict(
