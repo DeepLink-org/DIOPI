@@ -72,7 +72,7 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
 
     auto inputSize = inputContiguous.shape();
     int c = inputSize[1];
-    int n = std::accumulate(inputSize.begin(), inputSize.end(), 1, std::multiplies<int64_t>()) / c;
+    int n = std::accumulate(inputSize.begin(), inputSize.end(), 1, std::multiplies<>()) / c;
     DIOPI_CHECK(n == targetTr.numel(), "Target size need be equal as input N*H*W.");
     DIOPI_CHECK(c == weightTr.numel(), "Weight size need be equal as input C.");
     std::vector<int> outputSize(inputSize.begin(), inputSize.end());
@@ -192,7 +192,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
 
     auto inputSize = inputContiguous.shape();
     int c = inputSize[1];
-    int n = std::accumulate(inputSize.begin(), inputSize.end(), 1, std::multiplies<int64_t>()) / c;
+    int n = std::accumulate(inputSize.begin(), inputSize.end(), 1, std::multiplies<>()) / c;
     DIOPI_CHECK(n == targetTr.numel(), "Target size need be equal as input N*H*W.");
     DIOPI_CHECK(c == weightTr.numel(), "Weight size need be equal as input C.");
 

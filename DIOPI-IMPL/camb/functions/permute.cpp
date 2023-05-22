@@ -28,9 +28,9 @@ extern "C" diopiError_t diopiPermute(diopiContextHandle_t ctx, diopiTensorHandle
 
 
     std::vector<int> permData{dims.data, dims.data + dims.len};
-    for (int i = 0; i < permData.size(); i++) {
-        if (permData[i] < 0) {
-            permData[i] += inputTensor.dim();
+    for (int & i : permData) {
+        if (i < 0) {
+            i += inputTensor.dim();
         }
     }
 

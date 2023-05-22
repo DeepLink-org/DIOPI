@@ -44,8 +44,8 @@ static std::vector<int64_t> inferSize(std::vector<int64_t> batchTensor1, std::ve
 
 static int64_t multiplyIntegers(std::vector<int64_t> tensor) {
     int64_t out = 1;
-    for (int i = 0; i < tensor.size(); i++) {
-        out = out * tensor[i];
+    for (long i : tensor) {
+        out = out * i;
     }
 
     return out;

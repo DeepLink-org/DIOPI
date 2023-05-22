@@ -307,7 +307,7 @@ public:
     bool isSame(DiopiTensor t) { return this->tensorHandle() == t.tensorHandle(); }
 
 protected:
-    diopiTensorHandle_t tensor_ = 0;
+    diopiTensorHandle_t tensor_ = nullptr;
     std::vector<int64_t> shape_{0};
     std::vector<int64_t> stride_{0};
 };

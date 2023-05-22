@@ -5,8 +5,8 @@
  */
 
 #include <diopi/functions.h>
-#include <float.h>
 
+#include <cfloat>
 #include <vector>
 
 #include "../cnnl_helper.hpp"

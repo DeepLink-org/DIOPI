@@ -221,7 +221,7 @@ diopiError_t diopiAvgPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     DIOPI_CALLCNNL(cnnlPoolingBackward(handle,
                                        poolDesc,
                                        alpha,
-                                       NULL,
+                                       nullptr,
                                        nullptr,
                                        gradOutputDesc.get(),
                                        gradOutputTensorT.data(),

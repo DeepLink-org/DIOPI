@@ -56,7 +56,7 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
         void* kernelParams = nullptr;
         kernelParams = requiresBuffer(ctx, sizeKernel).data();
         DIOPI_CALLCNNL(cnnlRandMakeMTGP32Constants(handle, params, kernelParams));
-        int randSeed = time(NULL);
+        int randSeed = time(nullptr);
         DIOPI_CALLCNNL(cnnlRandMakeMTGP32KernelState(handle, state, params, kernelParams, randSeed));
 
         // cases for dropout2d when input_shape != mask_shape

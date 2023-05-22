@@ -41,7 +41,7 @@ diopiError_t softmaxForward(diopiContextHandle_t ctx, DiopiTensor input, DiopiTe
             auto reduceDim = [](const std::vector<int>& data, int from, int to) -> int {
                 to = std::min<int>(to, data.size());
                 from = std::max<int>(0, from);
-                return std::accumulate(data.cbegin() + from, data.cbegin() + to + 1, 1LL, std::multiplies<int64_t>());
+                return std::accumulate(data.cbegin() + from, data.cbegin() + to + 1, 1LL, std::multiplies<>());
             };
             const bool flag = (mode == inputRank - 1);
             inputShape[0] = reduceDim(srcInputShape, 0, flag ? (mode - 2) : (mode - 1));
@@ -106,7 +106,7 @@ diopiError_t softmaxBackward(diopiContextHandle_t ctx, DiopiTensor gradInputTens
             auto reduceDim = [](const std::vector<int>& data, int from, int to) -> int {
                 to = std::min<int>(to, data.size());
                 from = std::max<int>(0, from);
-                return std::accumulate(data.cbegin() + from, data.cbegin() + to + 1, 1LL, std::multiplies<int64_t>());
+                return std::accumulate(data.cbegin() + from, data.cbegin() + to + 1, 1LL, std::multiplies<>());
             };
             const bool flag = (mode == inputRank - 1);
             outputShape[0] = reduceDim(srcOutputShape, 0, flag ? (mode - 2) : (mode - 1));
@@ -134,12 +134,12 @@ diopiError_t softmaxBackward(diopiContextHandle_t ctx, DiopiTensor gradInputTens
     DIOPI_CALLCNNL(cnnlSoftmaxBackward(handle,
                                        isLog ? CNNL_SOFTMAX_LOG : CNNL_SOFTMAX_ACCURATE,
                                        modeTmp,
-                                       NULL,
+                                       nullptr,
                                        outputDesc.get(),
                                        outputCasted.data(),
                                        gradOutputDesc.get(),
                                        gradOutputCasted.data(),
-                                       NULL,
+                                       nullptr,
                                        gradInputDesc.get(),
                                        gradInputCasted.data()));
     DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputCasted));

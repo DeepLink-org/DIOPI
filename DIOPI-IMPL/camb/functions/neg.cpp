@@ -1,7 +1,9 @@
 
 #include <diopi/functions.h>
-#include <string.h>
+
+#include <cstring>
 #include <numeric>
+
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 

@@ -1,7 +1,8 @@
-#include <string.h>
+#include <cstring>
 #include <iostream>
 #include <memory>
 #include <numeric>
+
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 

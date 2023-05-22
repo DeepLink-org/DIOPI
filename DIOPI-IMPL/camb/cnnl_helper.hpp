@@ -151,7 +151,7 @@ public:
         cnnlHandle_t cnnlHandle;
         cnnlCreate(&cnnlHandle);
         cnnlSetQueue(cnnlHandle, queue);
-        cnnlHandlePool_.emplace(std::make_pair(queue, cnnlHandle));
+        cnnlHandlePool_.emplace(queue, cnnlHandle);
         return cnnlHandle;
     }
 
@@ -177,7 +177,7 @@ private:
 
 class CnnlTransposeDescriptor final : public CnnlDescBase<cnnlTransposeDescriptor_t, cnnlCreateTransposeDescriptor, cnnlDestroyTransposeDescriptor> {
 public:
-    CnnlTransposeDescriptor() {}
+    CnnlTransposeDescriptor() = default;
 
     CnnlTransposeDescriptor(const int dim, const int* permute) { set(dim, permute); }
 
@@ -189,7 +189,7 @@ public:
 
 class CnnlReduceDescriptor final : public CnnlDescBase<cnnlReduceDescriptor_t, cnnlCreateReduceDescriptor, cnnlDestroyReduceDescriptor> {
 public:
-    CnnlReduceDescriptor() {}
+    CnnlReduceDescriptor() = default;
 
     diopiError_t set(DiopiTensor& t, std::vector<int64_t> axis, cnnlReduceOp_t reduceOp, cnnlReduceIndices_t isIndices, cnnlIndicesType_t indicesType,
                      cnnlDataType_t tensorType) {

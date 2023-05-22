@@ -5,10 +5,12 @@
  */
 
 #include <diopi/functions.h>
-#include <string.h>
+
+#include <cstring>
 #include <iostream>
 #include <numeric>
 #include <vector>
+
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 

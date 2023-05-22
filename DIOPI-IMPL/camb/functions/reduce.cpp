@@ -20,9 +20,9 @@ eg: getRealDims({-1,1,2,3,-2}, 5) -> {1,2,3,4}
 */
 std::vector<int64_t> getRealDims(std::vector<int64_t> inputDim, int64_t tDim) {
     // handle negative dims
-    for (int64_t i = 0; i < inputDim.size(); ++i) {
-        if (inputDim[i] < 0) {
-            inputDim[i] = inputDim[i] + tDim;
+    for (int64_t & i : inputDim) {
+        if (i < 0) {
+            i = i + tDim;
         }
     }
     // remove duplicate dims and sort them

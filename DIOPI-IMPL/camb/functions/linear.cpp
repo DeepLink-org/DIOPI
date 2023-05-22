@@ -19,7 +19,7 @@ namespace {
 diopiError_t flattenTo2d(std::vector<int64_t> inDims, std::vector<int>& outDims) {
     outDims.resize(2);
     if (inDims.size() >= 2) {
-        outDims[0] = std::accumulate(inDims.begin(), inDims.end() - 1, 1, std::multiplies<int32_t>());
+        outDims[0] = std::accumulate(inDims.begin(), inDims.end() - 1, 1, std::multiplies<>());
         outDims[1] = inDims[inDims.size() - 1];
     } else {
         return diopiErrorOccurred;

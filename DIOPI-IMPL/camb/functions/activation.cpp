@@ -36,7 +36,7 @@ public:
 private:
     class ValueHolderBase {
     public:
-        virtual ~ValueHolderBase() {}
+        virtual ~ValueHolderBase() = default;
         virtual const std::type_info& getTypeInfo() const = 0;
     };
 

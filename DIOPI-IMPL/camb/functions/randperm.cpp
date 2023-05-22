@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <numeric>
+#include <random>
 
 #include "../cnnl_helper.hpp"
 
@@ -19,7 +20,7 @@ template <typename T>
 diopiError_t randpermFunc(DiopiTensor tensor, int64_t n, int64_t idx) {
     std::vector<T> vec(n);
     std::iota(vec.begin(), vec.end(), 0);
-    std::random_shuffle(vec.begin(), vec.end());
+    std::shuffle(vec.begin(), vec.end(), std::mt19937(std::random_device()()));
     auto ret = cnrtMemcpy(tensor.data(), vec.data(), sizeof(T) * n, cnrtMemcpyHostToDev);
     if (ret != cnrtSuccess) {
         setLastErrorString("%s%d", "cnrt memcpy error, ret = ", ret);

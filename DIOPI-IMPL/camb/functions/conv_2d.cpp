@@ -119,7 +119,7 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
     DIOPI_CALLCNNL(cnnlConvolutionForward(handle,
                                           convDesc.get(),
                                           CNNL_CONVOLUTION_FWD_ALGO_DIRECT,
-                                          NULL,
+                                          nullptr,
                                           inputDesc.get(),
                                           inputTensorT.data(),
                                           weightDesc.get(),
@@ -128,7 +128,7 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
                                           biasTensor.defined() ? biasTensorCasted.data() : nullptr,
                                           workspace,
                                           workspaceSize,
-                                          NULL,
+                                          nullptr,
                                           outputDesc.get(),
                                           outputTensorT.data()));
 
@@ -213,7 +213,7 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
     }
 
     DIOPI_CALLCNNL(cnnlConvolutionBackwardFilter(handle,
-                                                 NULL,
+                                                 nullptr,
                                                  inputDesc.get(),
                                                  inputT.data(),
                                                  outputGradDesc.get(),
@@ -222,7 +222,7 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
                                                  CNNL_CONVOLUTION_BWD_FILTER_ALGO_DIRECT,
                                                  workspaceFilter,
                                                  workspaceSizeFilter,
-                                                 NULL,
+                                                 nullptr,
                                                  weightGradDesc.get(),
                                                  gradWeightT.data()));
 
@@ -241,7 +241,7 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
     }
 
     DIOPI_CALLCNNL(cnnlConvolutionBackwardData(handle,
-                                               NULL,
+                                               nullptr,
                                                weightDesc.get(),
                                                weightT.data(),
                                                outputGradDesc.get(),
@@ -250,7 +250,7 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
                                                CNNL_CONVOLUTION_BWD_DATA_ALGO_DIRECT,
                                                workspaceInput,
                                                workspaceSizeInput,
-                                               NULL,
+                                               nullptr,
                                                inputGradDesc.get(),
                                                gradInputT.data()));
 

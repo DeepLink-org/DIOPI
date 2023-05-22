@@ -5,8 +5,8 @@
  */
 
 #include <diopi/functions.h>
-#include <string.h>
 
+#include <cstring>
 #include <set>
 
 #include "../cnnl_helper.hpp"

@@ -20,7 +20,7 @@ public:
     cnnlRandGenerator_t& get() { return resource_; }
 
 private:
-    cnnlRandGenerator_t resource_{0};
+    cnnlRandGenerator_t resource_{nullptr};
 };
 
 diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t numSamples, bool replacement) {

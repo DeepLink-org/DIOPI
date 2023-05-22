@@ -31,7 +31,7 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
 
     double valueScalar = DiopiDataType::isInteger(value->stype) ? value->ival : value->fval;
     void* valuePtr = nullptr;
-    bool tempBool = 0;
+    bool tempBool = false;
     int8_t tempI8 = 0;
     uint8_t tempU8 = 0;
     int16_t tempI16 = 0;
