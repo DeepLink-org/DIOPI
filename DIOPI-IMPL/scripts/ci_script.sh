@@ -11,7 +11,7 @@ case $1 in
       --filter=-build/c++11,-legal/copyright,-build/include_subdir,-runtime/references,-runtime/printf,-runtime/int,-build/namespace \
       --exclude=${CURRENT_PATH}/../third_party --exclude=${CURRENT_PATH}/../build \
       --recursive ./ )  \
-    || exit -1;;
+    || exit 1;;
   clang-tidy)
     (echo "CMAKE_EXPORT_COMPILE_COMMANDS_FILE: ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}"
     ls -l ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}
