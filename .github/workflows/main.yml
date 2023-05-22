@@ -121,7 +121,7 @@ jobs:
     steps:
       - name: build
         run: |
-          ssh ${CLUSTER_CAMB} """
+          ssh ${CLUSTER_1984} """
           set -e
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME_MMCV}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST3} && cp -R source ${BUILD_TEST3} && cd ${BUILD_TEST3}
@@ -136,7 +136,7 @@ jobs:
     steps:
       - name: tidy-camb
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_CAMB} """
           set -e
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
