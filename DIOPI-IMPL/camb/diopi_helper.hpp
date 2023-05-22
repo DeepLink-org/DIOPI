@@ -96,7 +96,7 @@ public:
             default:
                 setLastErrorString("dtype:%d is not support at %s:%d", dtype, __FILE__, __LINE__);
         }
-        return nullptr;
+        return "";
     }
 };
 class DiopiTensor final {
@@ -152,7 +152,7 @@ public:
         diopiGetTensorElemSize(tensor_, &elemsize);
         return elemsize;
     }
-    int64_t dim() const { return this->shape().size(); }
+    int64_t dim() const { return static_cast<int64_t>(this->shape().size()); }
 
     DiopiTensor contiguous(diopiContextHandle_t ctx, MemoryFormat format = MemoryFormat::Contiguous) {
         /* DEPRECATED AND WILL BE REMOVED */
@@ -194,7 +194,7 @@ public:
             }
         }
         diopiSize_t strideDiopi(strides.data(), static_cast<int64_t>(strides.size()));
-        diopiSize_t shapeDiopi(this->shape().data(), this->shape().size());
+        diopiSize_t shapeDiopi(this->shape().data(), static_cast<int64_t>(this->shape().size()));
         diopiTensorHandle_t tensor = nullptr;
         diopiRequireTensor(ctx, &tensor, &shapeDiopi, &strideDiopi, this->dtype(), this->device());
         return DiopiTensor(tensor);
@@ -272,7 +272,7 @@ public:
         std::vector<int64_t> stride(shape.size());
         this->shape_ = shape;
         stride[shape.size() - 1] = 1;
-        for (int j = shape_.size() - 2; j >= 0; j--) {
+        for (size_t j = shape_.size() - 2; j >= 0; j--) {
             stride[j] = stride[j + 1] * shape[j + 1];
         }
         this->stride_ = stride;
@@ -415,7 +415,7 @@ inline diopiSize_t vec2diopiSizeT(const std::vector<int64_t>& sizeIn) {
     return diopiSize;
 }
 
-inline void syncStreamInCtx(const diopiContextHandle_t ctx) {
+inline void syncStreamInCtx(diopiContextHandle_t ctx) {
     cnrtQueue_t queue = getStream(ctx);
     cnrtQueueSync(queue);
     return;

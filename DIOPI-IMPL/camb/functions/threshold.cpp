@@ -1,6 +1,6 @@
 #include <diopi/functions.h>
 
-#include "../../third_party/half/include/half.hpp"
+#include "../common/float16.hpp"
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
