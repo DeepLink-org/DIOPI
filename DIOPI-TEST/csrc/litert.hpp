@@ -19,9 +19,7 @@
 #include <iostream>
 
 namespace py = pybind11;
-// #define inline
-// #include <diopi_adaptors.hpp>
-// #undef inline
+
 template <class T>
 class PtrWrapper
 {
@@ -32,18 +30,11 @@ class PtrWrapper
         PtrWrapper(const PtrWrapper& other) : ptr(other.ptr) {}
         T& operator* () const { std::cout << ptr << std::endl; return *ptr; }
         T* operator->() const { return  ptr; }
-        void set(T val) {
-            std::cout << val << std::endl;
-            *ptr = val;
-            std::cout << *ptr << std::endl;
-            std::cout << ptr << std::endl;
-            std::cout << *ptr << std::endl;
-        }
         T* get() const { 
             return ptr; 
         }
         void destroy() { delete ptr; }
-        // T& operator[](std::size_t idx) const { return ptr[idx]; }
+
     private:
         T* ptr;
 };

@@ -13,8 +13,8 @@ case $1 in
     mkdir -p build && cd build && cmake .. -DIMPL_OPT=cuda -DTEST=${DIOPI_BUILD_TESTRT} && make;;
   torch)
     mkdir -p build && cd build && cmake .. -DIMPL_OPT=torch -DDEBUG=ON -DTEST=${DIOPI_BUILD_TESTRT} \
-    -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` \
     # -DCMAKE_PREFIX_PATH=/nvme/share/share/xt/pytorch1.10/torch/share/cmake \
+    -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` \
     && make;;
   torch_dyload)
     mkdir -p build && cd build && cmake .. -DIMPL_OPT=torch -DDEBUG=ON -DDYLOAD=ON -DTEST=${DIOPI_BUILD_TESTRT} \
