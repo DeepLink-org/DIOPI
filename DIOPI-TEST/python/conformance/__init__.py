@@ -1,5 +1,5 @@
 # Copyright (c) 2023, DeepLink.
-from .diopi_runtime import Tensor, Context, Dtype, Device, raw_like
+from .diopi_runtime import Tensor, Dtype, Device, raw_like, diopiTensor, Context
 from .diopi_runtime import get_last_error, device
 from .diopi_runtime import from_numpy_dtype, to_numpy_dtype
 from .diopi_runtime import diopirt_lib, device_impl_lib
@@ -41,4 +41,5 @@ __all__ = [
     'from_numpy_dtype',
     'to_numpy_dtype',
     'ConformanceTest',
+    'diopiTensor',
 ]

@@ -9,7 +9,7 @@ import csv
 import pickle
 import ctypes
 import diopi_functions
-from diopi_runtime import diopiDtype
+from diopi_runtime import Dtype
 
 
 cfg_file_name = "test_config.cfg"
@@ -101,8 +101,8 @@ class glob_var(object):
         self.nhwc = nhwc
         self.nhwc_min_dim = nhwc_min_dim
         self.four_bytes = four_bytes
-        self.int_type = diopiDtype.int64
-        self.float_type = diopiDtype.float64
+        self.int_type = Dtype.int64
+        self.float_type = Dtype.float64
 
     def set_nhwc(self):
         self.nhwc = True
@@ -115,8 +115,8 @@ class glob_var(object):
 
     def set_four_bytes(self):
         self.four_bytes = True
-        self.int_type = diopiDtype.int32
-        self.float_type = diopiDtype.float32
+        self.int_type = Dtype.int32
+        self.float_type = Dtype.float32
 
     def get_four_bytes(self):
         return self.four_bytes

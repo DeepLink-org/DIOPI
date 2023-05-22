@@ -33,6 +33,7 @@ typedef struct diopiSize_t_ {
 #if defined(__cplusplus)
     diopiSize_t_() : data(nullptr), len(0) {}
     diopiSize_t_(const int64_t* d, int64_t l) : data(d), len(l) {}
+    int64_t getLen() const { return len; }
 #endif  // __cplusplus
 } diopiSize_t;
 

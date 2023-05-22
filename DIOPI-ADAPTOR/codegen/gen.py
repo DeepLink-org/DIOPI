@@ -59,7 +59,7 @@ def prepare():
     parser = argparse.ArgumentParser(
         description='Generate parrots source files')
     parser.add_argument(
-        '-s',
+        '-d',
         '--diopi_dir',
         help='path of dependence used to generate code',
         default='../')
@@ -333,6 +333,8 @@ def autogen_cast_strategy():
 
 def memory_format_to_str(memory_format):
     default_format = ['NHWC', 'NCHW']
+    memory_format = memory_format[0].split(',')
+    memory_format = [format.strip(' ') for format in memory_format]
     is_default = [format in default_format for format in memory_format] and len(memory_format) == len(default_format)
     if len(memory_format) == 0 or is_default:
         return ''
@@ -441,3 +443,4 @@ def gen_all_codes():
 
 if __name__ == '__main__':
     gen_all_codes()
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
