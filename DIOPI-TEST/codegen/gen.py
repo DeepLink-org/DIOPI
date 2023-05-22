@@ -4,9 +4,7 @@ import re
 import yaml
 import copy
 
-from filemanager import FileManager
 from op_template import OpTemplate as OT
-from code_template import CodeTemplate
 
 tensor_ptr = ['diopiTensorHandle_t*', 'diopiConstTensorHandle_t*']
 
@@ -104,7 +102,7 @@ def get_func_info(content):
     return type_change, args, attr_types, paras_can_be_none, ins_vector, outs_vector, out_ptr
 
 
-def gen_functions(options, src_fm):
+def gen_functions(options):
     _cur_dir = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(_cur_dir, options.get('source_dir'), 'functions.h'), 'r')as f:
         content = f.readlines()
@@ -181,26 +179,16 @@ def gen_functions(options, src_fm):
                     
     output_path = options.get('output_dir')
     output_file = os.path.join(output_path, 'diopi_functions.cpp')
-    src_fm.write(output_file,
-                 OT.operators_template,
-                 dict(export_functions=exports))
-
-
-def declare_outputs(src_fm):
-    src_fm.will_write('diopi_functions.cpp')
-    src_fm.write_outputs('diopi_functions.txt')
+    out_code = OT.operators_template.substitute(env=dict(export_functions=exports))
+    
+    with open(output_file, 'w') as file:
+        file.write(out_code)
 
 
 def gen_all_codes():
     dirs = prepare()
 
-    src_fm = FileManager(dirs.get('source', '.'))
-
-    declare_outputs(src_fm)
-
-    gen_functions(dirs, src_fm)
-
-    # adaptor_fm.check_all_files_written()
+    gen_functions(dirs)
 
 
 if __name__ == '__main__':
