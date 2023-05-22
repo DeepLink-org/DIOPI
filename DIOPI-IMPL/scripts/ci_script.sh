@@ -23,6 +23,6 @@ case $1 in
       exit 1
     fi);;
   *)
-    echo -e "[ERROR] Incorrect option:" $1;
+    echo -e "[ERROR] Incorrect option:" $1 && exit 1;
 esac
 exit 0
