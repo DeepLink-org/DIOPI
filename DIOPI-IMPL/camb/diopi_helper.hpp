@@ -272,7 +272,7 @@ public:
         std::vector<int64_t> stride(shape.size());
         this->shape_ = shape;
         stride[shape.size() - 1] = 1;
-        for (size_t j = shape_.size() - 2; j >= 0; j--) {
+        for (int j = shape_.size() - 2; j >= 0; j--) {
             stride[j] = stride[j + 1] * shape[j + 1];
         }
         this->stride_ = stride;
