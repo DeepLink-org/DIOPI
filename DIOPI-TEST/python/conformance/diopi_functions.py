@@ -7,11 +7,10 @@ from ctypes import c_float, c_double, c_int64, c_bool, c_void_p, byref, pointer
 from .diopi_runtime import Sizes, Scalar, Tensor, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d
 from .utils import check_returncode, check_function, glob_vars, get_capsule
 from . import Dtype, raw_like
-from .dtype import dtype_to_ctype
 from collections import namedtuple
 import numpy as np
 from diopi_runtime import diopiReduction, diopiRoundMode
-from diopi_runtime import pDiopiTensor, diopiDtype
+from diopi_runtime import TensorP, Dtype
 
 
 def broadcast_out_size(size1, size2):
@@ -39,7 +38,7 @@ def reduce_op_process(input, dim=None, keepdim=False, dtype=None):
         sizeO = [1 for i in range(0, size)]
     elif dim is not None:
         dim_list = dim if isinstance(dim, list) else [dim]
-        for i in range(0, len(dim_list)):
+        for i in range(0):
             if dim_list[i] < 0:
                 dim_list[i] += size
 
@@ -63,7 +62,7 @@ def common_dtype(input, other) -> Dtype:
     elif isinstance(input, int):
         dtype1 = glob_vars.int_type
     elif isinstance(input, float):
-        dtype1 = diopiDtype.float32
+        dtype1 = Dtype.float32
     else:
         assert 0, "not supported type of input"
 
@@ -72,28 +71,28 @@ def common_dtype(input, other) -> Dtype:
     elif isinstance(other, int):
         dtype2 = glob_vars.int_type
     elif isinstance(other, float):
-        dtype2 = diopiDtype.float32
+        dtype2 = Dtype.float32
     else:
         assert 0, "not supported type of other"
 
-    float_types = [diopiDtype.float16, diopiDtype.float32, diopiDtype.float64]
+    float_types = [Dtype.float16, Dtype.float32, Dtype.float64]
     if dtype1 in float_types and dtype2 not in float_types:
         return dtype1
     if dtype1 not in float_types and dtype2 in float_types:
         return dtype2
-    if dtype1 == diopiDtype.bool and dtype2 == diopiDtype.bool:
+    if dtype1 == Dtype.bool and dtype2 == Dtype.bool:
         return dtype1
-    elif dtype1 == diopiDtype.bool:
+    elif dtype1 == Dtype.bool:
         return dtype2
-    elif dtype2 == diopiDtype.bool:
+    elif dtype2 == Dtype.bool:
         return dtype1
     return dtype1 if dtype1.value >= dtype2.value else dtype2
 
 
 def promote_type(input: Tensor, promoted_dtype: Dtype) -> Dtype:
     dtype1 = input.get_dtype()
-    need_promote_types = [diopiDtype.int8, diopiDtype.int16, diopiDtype.int32, diopiDtype.int64,
-                          diopiDtype.uint8, diopiDtype.uint16, diopiDtype.uint32, diopiDtype.uint64, diopiDtype.bool]
+    need_promote_types = [Dtype.int8, Dtype.int16, Dtype.int32, Dtype.int64,
+                          Dtype.uint8, Dtype.uint16, Dtype.uint32, Dtype.uint64, Dtype.bool]
     return dtype1 if dtype1 not in need_promote_types else promoted_dtype
 
 
@@ -237,11 +236,11 @@ def silu_backward(input, grad_outputs, **kwargs) -> Tensor:
 
 
 def sqrt(input, inplace=False) -> Tensor:
-    return unary_op(input, inplace, 'diopiSqrt', promote_type(input, diopiDtype.float32))
+    return unary_op(input, inplace, 'diopiSqrt', promote_type(input, Dtype.float32))
 
 
 def rsqrt(input, inplace=False) -> Tensor:
-    return unary_op(input, inplace, 'diopiRsqrt', promote_type(input, diopiDtype.float32))
+    return unary_op(input, inplace, 'diopiRsqrt', promote_type(input, Dtype.float32))
 
 
 def neg(input, inplace=False) -> Tensor:
@@ -249,35 +248,35 @@ def neg(input, inplace=False) -> Tensor:
 
 
 def sin(input, inplace=False) -> Tensor:
-    return unary_op(input, inplace, 'diopiSin', promote_type(input, diopiDtype.float32))
+    return unary_op(input, inplace, 'diopiSin', promote_type(input, Dtype.float32))
 
 
 def cos(input, inplace=False) -> Tensor:
-    return unary_op(input, inplace, 'diopiCos', promote_type(input, diopiDtype.float32))
+    return unary_op(input, inplace, 'diopiCos', promote_type(input, Dtype.float32))
 
 
 def tanh(input, inplace=False) -> Tensor:
-    return unary_op(input, inplace, 'diopiTanh', promote_type(input, diopiDtype.float32))
+    return unary_op(input, inplace, 'diopiTanh', promote_type(input, Dtype.float32))
 
 
 def exp(input, inplace=False) -> Tensor:
-    return unary_op(input, inplace, 'diopiExp', promote_type(input, diopiDtype.float32))
+    return unary_op(input, inplace, 'diopiExp', promote_type(input, Dtype.float32))
 
 
 def log(input, inplace=False) -> Tensor:
-    return unary_op(input, inplace, 'diopiLog', promote_type(input, diopiDtype.float32))
+    return unary_op(input, inplace, 'diopiLog', promote_type(input, Dtype.float32))
 
 
 def log2(input, inplace=False) -> Tensor:
-    return unary_op(input, inplace, 'diopiLog2', promote_type(input, diopiDtype.float32))
+    return unary_op(input, inplace, 'diopiLog2', promote_type(input, Dtype.float32))
 
 
 def log10(input, inplace=False) -> Tensor:
-    return unary_op(input, inplace, 'diopiLog10', promote_type(input, diopiDtype.float32))
+    return unary_op(input, inplace, 'diopiLog10', promote_type(input, Dtype.float32))
 
 
 def erf(input, inplace=False) -> Tensor:
-    return unary_op(input, inplace, 'diopiErf', promote_type(input, diopiDtype.float32))
+    return unary_op(input, inplace, 'diopiErf', promote_type(input, Dtype.float32))
 
 
 def add(input, other, inplace=False, alpha=1) -> Tensor:
@@ -289,31 +288,31 @@ def sub(input, other, inplace=False, alpha=1) -> Tensor:
 
 
 def eq(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(input, other, inplace, 'diopiEq', dtype=diopiDtype.bool)
+    return binary_op_scalar(input, other, inplace, 'diopiEq', dtype=Dtype.bool)
 
 
 def ne(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(input, other, inplace, 'diopiNe', dtype=diopiDtype.bool)
+    return binary_op_scalar(input, other, inplace, 'diopiNe', dtype=Dtype.bool)
 
 
 def ge(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(input, other, inplace, 'diopiGe', dtype=diopiDtype.bool)
+    return binary_op_scalar(input, other, inplace, 'diopiGe', dtype=Dtype.bool)
 
 
 def gt(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(input, other, inplace, 'diopiGt', dtype=diopiDtype.bool)
+    return binary_op_scalar(input, other, inplace, 'diopiGt', dtype=Dtype.bool)
 
 
 def le(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(input, other, inplace, 'diopiLe', dtype=diopiDtype.bool)
+    return binary_op_scalar(input, other, inplace, 'diopiLe', dtype=Dtype.bool)
 
 
 def lt(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(input, other, inplace, 'diopiLt', dtype=diopiDtype.bool)
+    return binary_op_scalar(input, other, inplace, 'diopiLt', dtype=Dtype.bool)
 
 
 def mul(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(input, other, inplace, 'diopiMul', dtype=promote_type(input, diopiDtype.float32))
+    return binary_op_scalar(input, other, inplace, 'diopiMul', dtype=promote_type(input, Dtype.float32))
 
 
 def div(input, other, inplace=False, rounding_mode=None) -> Tensor:
@@ -325,7 +324,7 @@ def div(input, other, inplace=False, rounding_mode=None) -> Tensor:
         call = call + "Inp"
         out = input
     else:
-        out_type = promote_type(input, diopiDtype.float32)
+        out_type = promote_type(input, Dtype.float32)
         if not isinstance(other, Tensor):
             out = Tensor(sizeI, out_type)
         else:
@@ -349,19 +348,19 @@ def div(input, other, inplace=False, rounding_mode=None) -> Tensor:
 
 
 def logical_and(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(input, other, inplace, 'diopiLogicalAnd', dtype=diopiDtype.bool)
+    return binary_op_scalar(input, other, inplace, 'diopiLogicalAnd', dtype=Dtype.bool)
 
 
 def logical_or(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(input, other, inplace, 'diopiLogicalOr', dtype=diopiDtype.bool)
+    return binary_op_scalar(input, other, inplace, 'diopiLogicalOr', dtype=Dtype.bool)
 
 
 def logical_not(input, inplace=False) -> Tensor:
-    return unary_op(input, inplace, 'diopiLogicalNot', dtype=diopiDtype.bool)
+    return unary_op(input, inplace, 'diopiLogicalNot', dtype=Dtype.bool)
 
 
 def leaky_relu(input, negative_slope=0.01, inplace=False) -> Tensor:
-    dtype = diopiDtype.int64 if isinstance(negative_slope, int) else diopiDtype.float64
+    dtype = Dtype.int64 if isinstance(negative_slope, int) else Dtype.float64
     negative_slope = Scalar(negative_slope, dtype) 
     if inplace:
         out = input
@@ -399,20 +398,34 @@ def bmm(input, mat2) -> Tensor:
 
 def baddbmm(input, batch1, batch2, beta, alpha, inplace=False) -> Tensor:
     size1 = list(input.size().data)
-    assert (len(size1) == 3), 'input must be 3d tensor'
     size2 = list(batch1.size().data)
     assert (len(size2) == 3), 'batch1 must be 3d tensor'
     size3 = list(batch2.size().data)
     assert (len(size3) == 3), 'batch2 must be 3d tensor'
-    assert (size2[2] == size3[1] and size1[0] == size2[0] and size1[0] == size3[0]), 'invalid args'
-    assert (size1[2] == size3[2] or size1[2] == 1 or size3[2] == 1), 'invalid args'
+    input_len = input.size().len
+    out_shape = size1
+    if input_len == 3:
+        assert (size2[2] == size3[1] and size1[0] == size2[0] and size1[0] == size3[0] or size1[0] == 1), 'invalid args'
+        assert (size1[2] == size3[2] or size1[2] == 1 or size3[2] == 1), 'invalid args'
+    elif input_len == 2:
+        assert (((size1[1] == size3[2] or size1[1] == 1) and (size1[0] == size2[1] or size1[0] == 1))), 'invalid args'
+        out_shape = (size2[0], size1[0], size1[1])
+    elif input_len == 1:
+        assert (size1[0] == size3[2] or size1[0] == 1), 'invalid args'
+        out_shape = (size2[0], size2[1], size1[0])
+    if out_shape[0] != size2[0]:
+        out_shape = (size2[0], size1[1], size1[2])
+    if out_shape[1] != size2[1]:
+        out_shape = (size1[0], size2[1], size1[2])
+    if out_shape[2] != size3[2]:
+        out_shape = (size1[0], size1[1], size3[2])
     if inplace:
         func = check_function("diopiBaddbmmInp")
         ret = func(input.context(), input, batch1, batch2, beta, alpha)
         check_returncode(ret)
         return input
     else:
-        out = raw_like(input)
+        out = Tensor(size=out_shape, dtype=input.get_dtype())
         func = check_function("diopiBaddbmm")
         ret = func(input.context(), out, input, batch1, batch2, beta, alpha)
         check_returncode(ret)
@@ -559,7 +572,7 @@ def mean(input, dim=None, keepdim=False, dtype=None) -> Tensor:
 
     dim, out = reduce_op_process(input, dim, keepdim, dtype)
     func = check_function("diopiMean")
-    dim1 = Sizes(tuple(dim)).to_diopi_size()
+    dim1 = Sizes(list(dim))
     ret = func(input.context(), out, input, dim1)
     check_returncode(ret)
     return out
@@ -570,7 +583,7 @@ def std(input, unbiased=True, dim=None, keepdim=False) -> Tensor:
         "dim should be int or list or None"
 
     dim, out = reduce_op_process(input, dim, keepdim)
-    dim1 = Sizes(tuple(dim)).to_diopi_size()
+    dim1 = Sizes(list(dim))
     func = check_function("diopiStd")
     ret = func(input.context(), out, input,
                dim1, unbiased)
@@ -752,9 +765,9 @@ def conv2d(input, weight, bias=None, stride=1,
         sizeW[i] += (sizeW[i] - 1) * (dilation[i] - 1)
         sizeO.append(int((sizeI[i] - sizeW[i] + 2 * padding[i]) / stride[i]) + 1)
     
-    stride = Sizes(tuple(stride)).to_diopi_size()
-    padding = Sizes(tuple(padding)).to_diopi_size()
-    dilation = Sizes(tuple(dilation)).to_diopi_size()
+    stride = Sizes(list(stride))
+    padding = Sizes(list(padding))
+    dilation = Sizes(list(dilation))
 
     nhwc_stride = compute_nhwc_stride_2d(sizeO) if glob_vars.nhwc else None
     out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
@@ -789,9 +802,9 @@ def avg_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False,
         else:
             sizeO.append(math.floor((sizeI[i] - kernel_size[i] + 2 * padding[i]) / stride[i]) + 1)
 
-    stride = Sizes(tuple(stride)).to_diopi_size()
-    padding = Sizes(tuple(padding)).to_diopi_size()
-    kernel_size = Sizes(tuple(kernel_size)).to_diopi_size()
+    stride = Sizes(list(stride))
+    padding = Sizes(list(padding))
+    kernel_size = Sizes(list(kernel_size))
     nhwc_stride = compute_nhwc_stride_2d(sizeO) if glob_vars.nhwc else None
     out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
 
@@ -836,10 +849,10 @@ def max_pool2d(input, kernel_size, stride=None, padding=0, dilation=1,
         else:
             sizeO.append(math.floor(tmp_size))
 
-    stride = Sizes(tuple(stride)).to_diopi_size()
-    padding = Sizes(tuple(padding)).to_diopi_size()
-    kernel_size = Sizes(tuple(kernel_size)).to_diopi_size()
-    dilation = Sizes(tuple(dilation)).to_diopi_size()
+    stride = Sizes(list(stride))
+    padding = Sizes(list(padding))
+    kernel_size = Sizes(list(kernel_size))
+    dilation = Sizes(list(dilation))
     nhwc_stride = compute_nhwc_stride_2d(sizeO) if glob_vars.nhwc else None
     out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
 
@@ -882,7 +895,7 @@ def adaptive_avg_pool2d(input, output_size):
 
     nhwc_stride = compute_nhwc_stride_2d(sizeO) if glob_vars.nhwc else None
     out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
-    output_size = Sizes((sizeO[-2], sizeO[-1])).to_diopi_size()
+    output_size = Sizes(list([sizeO[-2], sizeO[-1]]))
 
     func = check_function("diopiAdaptiveAvgPool2d")
     ret = func(input.context(), out,
@@ -912,7 +925,7 @@ def adaptive_max_pool2d(input, output_size, return_indices=False):
 
     nhwc_stride = compute_nhwc_stride_2d(sizeO) if glob_vars.nhwc else None
     out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
-    output_size = Sizes(tuple(output_size)).to_diopi_size()
+    output_size = Sizes(list(output_size))
 
     if return_indices:
         func = check_function("diopiAdaptiveMaxPool2dWithIndices")
@@ -941,7 +954,7 @@ def dropout_impl(input, size_mask, p=0.5, training=True, inplace=False):
         out = raw_like(input)
         args = args + 'input, '
 
-    mask = Tensor(size_mask, diopiDtype.uint8)
+    mask = Tensor(size_mask, Dtype.uint8)
     args = args + "p, c_bool(training)"
 
     func = check_function(call)
@@ -986,7 +999,7 @@ def select(input, dim, index) -> Tensor:
 
 
 def masked_scatter(input, mask, source) -> Tensor:
-    assert mask.get_dtype() == diopiDtype.bool, \
+    assert mask.get_dtype() == Dtype.bool, \
         "mask must be bool tensor"
     out = raw_like(input)
 
@@ -1001,7 +1014,7 @@ def nonzero(input):
     # note: pytorch(1.12) has argument 'as_tuple' to return multiple 1d tensor
     out = Tensor()
     func = check_function("diopiNonzero")
-    out_ptr = pDiopiTensor(out)
+    out_ptr = TensorP(out)
     ret = func(input.context(), out_ptr, input)
     check_returncode(ret)
     return out_ptr.data()
@@ -1066,7 +1079,7 @@ def cat(tensors, dim=0) -> Tensor:
     for tensor in tensors:
         sizeI = tensor.size().data
         sum += sizeI[dim]
-        c_tensors.append(pDiopiTensor(tensor))
+        c_tensors.append(TensorP(tensor))
 
     sizeI[dim] = sum
     out = Tensor(sizeI, tensors[0].get_dtype())
@@ -1087,7 +1100,7 @@ def stack(tensors, dim=0) -> Tensor:
         size_dim = outNum + dim
     sizeI.insert(size_dim, insNum)
 
-    c_tensors = [pDiopiTensor(t) for t in tensors]
+    c_tensors = [TensorP(t) for t in tensors]
 
     out = Tensor(sizeI, tensors[0].get_dtype())
     func = check_function("diopiStack")
@@ -1196,9 +1209,9 @@ def split(tensor, split_size_or_sections, dim=0):
 
     c_outs = []
     for i in range(idx):
-        c_outs.append(pDiopiTensor(outs[i]))
+        c_outs.append(TensorP(outs[i]))
 
-    splitSizes = Sizes(splitSizes).to_diopi_size()
+    splitSizes = Sizes(list(splitSizes))
     assert sum == 0,\
         "split_size_or_sections should be compatible with tensor shape"
     func = check_function("diopiSplitWithSizes")
@@ -1209,7 +1222,7 @@ def split(tensor, split_size_or_sections, dim=0):
 
 
 def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
-    float_types = [diopiDtype.float16, diopiDtype.float32, diopiDtype.float64]
+    float_types = [Dtype.float16, Dtype.float32, Dtype.float64]
     if input is None and self is not None:
         assert isinstance(exponent, Tensor),\
             "exponent must be tensor when input is scalar"
@@ -1218,7 +1231,7 @@ def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
         out_dtype = None
         exponent_dtype = exponent.get_dtype()
         if isinstance(self, float) or exponent_dtype in float_types:
-            out_dtype = exponent_dtype if exponent_dtype in float_types else diopiDtype.float32
+            out_dtype = exponent_dtype if exponent_dtype in float_types else Dtype.float32
         else:
             out_dtype = exponent_dtype
         out = Tensor(exponent.size().data, out_dtype)
@@ -1234,7 +1247,7 @@ def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
         else:
             func = check_function("diopiPow")
             input_dtype = input.get_dtype()
-            out_dtype = diopiDtype.float32 if input_dtype not in float_types else input_dtype
+            out_dtype = Dtype.float32 if input_dtype not in float_types else input_dtype
             out = Tensor(input.size().data, out_dtype)
             ret = func(input.context(), out, input, temp_exponent)
     elif inplace:
@@ -1258,7 +1271,7 @@ def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
 
 def where(condition, input, other) -> Tensor:
     # todo: add scalar version for pytorch 1.12
-    assert (condition.get_dtype() in (diopiDtype.bool, diopiDtype.uint8)),\
+    assert (condition.get_dtype() in (Dtype.bool, Dtype.uint8)),\
         "condition must be a bool tensor"
     sizeX = input.size().data
     sizeY = other.size().data
@@ -1284,12 +1297,12 @@ def clip_grad_norm_(tensors, max_norm, norm_type=2.0, error_if_nonfinite=False):
 
     if isinstance(tensors, Tensor):
         ctx = tensors.context()
-        grads = list([pDiopiTensor(grad) for grad in tensors])
+        grads = list([TensorP(grad) for grad in tensors])
         num_grads = 1
     else:
         ctx = tensors[0].context()
         num_grads = len(tensors)
-        grads = list([pDiopiTensor(grad) for grad in tensors])
+        grads = list([TensorP(grad) for grad in tensors])
 
     func = check_function("diopiClipGradNorm")
     out = c_double(0.0)
@@ -1304,7 +1317,7 @@ def batch_norm(input, running_mean, running_var, weight, bias,
                training=False, momentum=0.1, eps=1e-05, backward=False) -> Tensor:
     dim = input.size().len
     dim = [0] + [i for i in range(2, dim)]
-    dtype = diopiDtype.float32 if input.get_dtype() == diopiDtype.float16 else None
+    dtype = Dtype.float32 if input.get_dtype() == Dtype.float16 else None
     _, save_mean = reduce_op_process(input, dim, dtype=dtype)
     save_invstd = raw_like(save_mean)
 
@@ -1437,9 +1450,9 @@ def sum(input, dim=None, keepdim=False, dtype=None) -> Tensor:
     assert isinstance(dim, (int, list, tuple)) or dim is None,\
         "dim should be int or list"
     func = check_function("diopiSum")
-    out_dtype = dtype if dtype is not None else promote_type(input, diopiDtype.int64)
+    out_dtype = dtype if dtype is not None else promote_type(input, Dtype.int64)
     dim, out = reduce_op_process(input, dim, keepdim, out_dtype)
-    dim1 = Sizes(tuple(dim)).to_diopi_size()
+    dim1 = Sizes(list(dim))
     ret = func(input.context(), out, input, dim1)
     check_returncode(ret)
     return out
@@ -1473,10 +1486,10 @@ def max(input, dim=None, keepdim=False):
 
 def any(input, dim=None, keepdim=False) -> Tensor:
     if dim is None:
-        out = Tensor([], diopiDtype.bool)
+        out = Tensor([], Dtype.bool)
     else:
         assert isinstance(dim, int), "dim should be int"
-        _, out = reduce_op_process(input, dim, keepdim, dtype=diopiDtype.bool)
+        _, out = reduce_op_process(input, dim, keepdim, dtype=Dtype.bool)
     func = check_function("diopiAny")
 
     ret = func(input.context(), out, input) if dim is None else func(input.context(), out, input, dim)
@@ -1486,10 +1499,10 @@ def any(input, dim=None, keepdim=False) -> Tensor:
 
 def all(input, dim=None, keepdim=False) -> Tensor:
     if dim is None:
-        out = Tensor([], diopiDtype.bool)
+        out = Tensor([], Dtype.bool)
     else:
         assert isinstance(dim, int), "dim should be int"
-        _, out = reduce_op_process(input, dim, keepdim, dtype=diopiDtype.bool)
+        _, out = reduce_op_process(input, dim, keepdim, dtype=Dtype.bool)
         # dim = get_capsule(byref(c_int64(dim)))
     func = check_function("diopiAll")
     ret = func(input.context(), out, input) if dim is None else func(input.context(), out, input, dim)
@@ -1548,7 +1561,7 @@ def nms(boxes, scores, iou_threshold) -> Tensor:
 
     out = Tensor()
     func = check_function("diopiNms")
-    out_ptr = pDiopiTensor(out)
+    out_ptr = TensorP(out)
     ret = func(boxes.context(), out_ptr, boxes,
                scores, iou_threshold)
     out = out_ptr.data()
@@ -1610,15 +1623,15 @@ def index(input, **kwargs) -> Tensor:
                 sizeE = ele.size().data
                 length = len(sizeI) - len(sizeE) - len(new_args)
                 for i in range(length): 
-                    tmp_p = pDiopiTensor(None)
+                    tmp_p = TensorP(None)
                     new_args.append(tmp_p)
 
-            new_args.append(pDiopiTensor(ele))
+            new_args.append(TensorP(ele))
 
     nums = len(new_args)
 
     out_tensor = Tensor()
-    out_ptr = pDiopiTensor(out_tensor)
+    out_ptr = TensorP(out_tensor)
     func = check_function("diopiIndex")
     ret = func(input.context(), out_ptr, input, new_args, nums)
     out = out_ptr.data()
@@ -1652,7 +1665,7 @@ def adaptive_max_pool2d_backward(input, grad_outputs, output_size, **kwargs) -> 
 def slice_op_backward(input, grad_outputs, dim, index, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
-    sizeI = Sizes(input.size().data).to_diopi_size()
+    sizeI = input.size()
 
     func = check_function("diopiSliceBackward")
     ret = func(input.context(), grad_input, grad_outputs[0],
@@ -1688,10 +1701,10 @@ def index_backward(input, grad_outputs, **kwargs) -> Tensor:
                 sizeE = ele.size().data
                 length = len(sizeI) - len(sizeE) - len(new_args)
                 for i in range(length):    
-                    tmp_p = pDiopiTensor(None)
+                    tmp_p = TensorP(None)
                     new_args.append(tmp_p)
 
-            new_args.append(pDiopiTensor(ele))
+            new_args.append(TensorP(ele))
     nums = len(new_args)
 
     func = check_function("diopiIndexBackward")
@@ -1704,7 +1717,7 @@ def index_backward(input, grad_outputs, **kwargs) -> Tensor:
 def leaky_relu_backward(input, grad_outputs, negative_slope=0.01, input_is_result=False, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
-    dtype = diopiDtype.int64 if isinstance(negative_slope, int) else diopiDtype.float64
+    dtype = Dtype.int64 if isinstance(negative_slope, int) else Dtype.float64
     negative_slope = Scalar(negative_slope, dtype) 
 
     func = check_function("diopiLeakyReluBackward")
@@ -1771,9 +1784,9 @@ def conv2d_backward(input, grad_outputs, weight, bias=None, stride=1,
     if isinstance(dilation, int):
         dilation = (dilation, dilation)
 
-    stride = Sizes(tuple(stride)).to_diopi_size()
-    padding = Sizes(tuple(padding)).to_diopi_size()
-    dilation = Sizes(tuple(dilation)).to_diopi_size()
+    stride = Sizes(list(stride))
+    padding = Sizes(list(padding))
+    dilation = Sizes(list(dilation))
 
     grad_input = raw_like(input)
     grad_weight = raw_like(weight)
@@ -1785,12 +1798,12 @@ def conv2d_backward(input, grad_outputs, weight, bias=None, stride=1,
     else:
         gradBias = raw_like(bias)
         grad_bias = gradBias
-        sizeBias = Sizes(bias.size().data).to_diopi_size()
+        sizeBias = bias.size()
         out.update({"bias": grad_bias})
 
     # todo: no transposed/output_padding in forward
     transposed = False
-    output_padding = Sizes((0, 0)).to_diopi_size()
+    output_padding = Sizes(list([0, 0]))
 
     func = check_function("diopiConvolution2dBackward")
     ret = func(input.context(), grad_input, grad_weight, grad_bias,
@@ -1845,9 +1858,9 @@ def avg_pool2d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
     if isinstance(padding, int):
         padding = (padding, padding)
 
-    stride = Sizes(tuple(stride)).to_diopi_size()
-    padding = Sizes(tuple(padding)).to_diopi_size()
-    kernel_size = Sizes(tuple(kernel_size)).to_diopi_size()
+    stride = Sizes(list(stride))
+    padding = Sizes(list(padding))
+    kernel_size = Sizes(list(kernel_size))
 
     func = check_function("diopiAvgPool2dBackward")
     ret = func(input.context(), grad_input, grad_outputs[0],
@@ -1900,7 +1913,7 @@ def tanh_backward(input, grad_outputs, output, **kwargs) -> Tensor:
 def index_select_backward(input, grad_outputs, dim, index, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
-    inputSize = Sizes(input.size().data).to_diopi_size()
+    inputSize = input.size()
 
     func = check_function("diopiIndexSelectBackward")
     ret = func(input.context(), grad_input, grad_outputs[0],
@@ -1912,7 +1925,7 @@ def index_select_backward(input, grad_outputs, dim, index, **kwargs) -> Tensor:
 def select_backward(input, grad_outputs, dim, index, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
-    inputSize = Sizes(input.size().data).to_diopi_size()
+    inputSize = input.size()
 
     func = check_function("diopiSelectBackward")
     ret = func(input.context(), grad_input, grad_outputs[0],
@@ -2046,10 +2059,10 @@ def max_pool2d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
         dilation = (dilation, dilation)
 
     _, indices = max_pool2d(input, kernel_size, stride, padding, dilation, ceil_mode, True)
-    stride = Sizes(tuple(stride)).to_diopi_size()
-    padding = Sizes(tuple(padding)).to_diopi_size()
-    kernel_size = Sizes(tuple(kernel_size)).to_diopi_size()
-    dilation = Sizes(tuple(dilation)).to_diopi_size()
+    stride = Sizes(list(stride))
+    padding = Sizes(list(padding))
+    kernel_size = Sizes(list(kernel_size))
+    dilation = Sizes(list(dilation))
 
     func = check_function("diopiMaxPool2dBackward")
     ret = func(input.context(), grad_input, grad_outputs[0],
@@ -2085,7 +2098,7 @@ def batch_norm_backward(input, grad_outputs, running_mean, running_var, weight, 
 def arange(end, start=0, step=1, dtype=None) -> Tensor:
     if dtype is None:
         if type(start) == float or type(end) == float or type(step) == float:
-            dtype = diopiDtype.float32
+            dtype = Dtype.float32
         else:
             dtype = glob_vars.int_type
 
@@ -2143,7 +2156,7 @@ def bernoulli(input, inplace=False, p=None) -> Tensor:
 
 
 def masked_fill(input, mask, value, inplace=False) -> Tensor:
-    assert mask.get_dtype() == diopiDtype.bool, "mask must be bool tensor"
+    assert mask.get_dtype() == Dtype.bool, "mask must be bool tensor"
     out = raw_like(input)
 
     call = "diopiMaskedFill"
@@ -2241,10 +2254,10 @@ def conv_transpose2d(input, weight, bias=None, stride=1,
         # equivalent kernel size
         sizeW[i] = (sizeW[i] - 1) * dilation[i]
         sizeO.append(int((sizeI[i] - 1) * stride[i] - 2 * padding[i] + sizeW[i] + output_padding[i]) + 1)
-    stride = Sizes(tuple(stride)).to_diopi_size()
-    padding = Sizes(tuple(padding)).to_diopi_size()
-    output_padding = Sizes(tuple(output_padding)).to_diopi_size()
-    dilation = Sizes(tuple(dilation)).to_diopi_size()
+    stride = Sizes(list(stride))
+    padding = Sizes(list(padding))
+    output_padding = Sizes(list(output_padding))
+    dilation = Sizes(list(dilation))
 
     out = Tensor(sizeO, input.get_dtype())
     func = check_function("diopiConvTranspose2d")
@@ -2260,19 +2273,43 @@ def cumsum(input, dim, dtype=None):
     sizeI = list(input.size().data)
     assert dim < len(sizeI), "dim out of index"
 
-    out = Tensor(input.size().data, promote_type(input, diopiDtype.int64)) if dtype is None else Tensor(input.size().data, dtype)
+    out = Tensor(input.size().data, promote_type(input, Dtype.int64)) if dtype is None else Tensor(input.size().data, dtype)
     func = check_function("diopiCumsum")
     ret = func(input.context(), out, input, dim)
     check_returncode(ret)
     return out
 
 
+def infer_size(a, b):
+    dimsA = len(a)
+    dimsB = len(b)
+    ndim = dimsA if dimsA >= dimsB else dimsB
+    expanded_sizes = [0] * ndim
+    for i in range(ndim - 1, -1, -1):
+        offset = ndim - 1 - i
+        dimA = dimsA - 1 - offset
+        dimB = dimsB - 1 - offset
+        sizeA = a[dimA] if dimA >= 0 else 1
+        sizeB = b[dimB] if dimB >= 0 else 1
+        assert sizeA == sizeB or sizeA == 1 or sizeB == 1, \
+            f"The size of tensor a ({sizeA}) must match the size of tensor b ({sizeB}) at non-singleton dimension {i}"
+        expanded_sizes[i] = sizeA if sizeA != 1 else sizeB
+    return expanded_sizes
+
+
 def cdist(x1, x2, p, compute_mode=None):
     sizeX1 = list(x1.size().data)
     sizeX2 = list(x2.size().data)
-    assert len(sizeX1) == len(sizeX2) and len(sizeX1) > 1, "cdist only supports at least 2D tensors"
+    dim1 = len(sizeX1)
+    dim2 = len(sizeX2)
+    assert dim1 > 1 and dim2 > 1, "cdist only supports at least 2D tensors"
     assert sizeX1[-1] == sizeX2[-1], "X1 and X2 must have the same number of elements at the last dimension"
-
+    row1 = sizeX1[-2]
+    row2 = sizeX2[-2]
+    batch_tensor1 = sizeX1[:-2]
+    batch_tensor2 = sizeX2[:-2]
+    expand_batch_portion = infer_size(batch_tensor1, batch_tensor2)
+    out_shape = expand_batch_portion + [row1, row2]
     if compute_mode is not None:
         if compute_mode == 'use_mm_for_euclid_dist':
             compute_mode = 1
@@ -2280,16 +2317,9 @@ def cdist(x1, x2, p, compute_mode=None):
             compute_mode = 2
     else:
         compute_mode = None
-
-    sizeO = sizeX1
-    length = len(sizeX1)
-    for i in range(length - 2):
-        assert sizeX1[i] == sizeX2[i] or sizeX1[i] == 1 or sizeX2[i] == 1,\
-            "size1 and size2 must be broadcastable"
-        sizeO[i] = sizeX1[i] if sizeX2[i] == 1 else sizeX2[i]
-    sizeO[-1] = sizeX2[-2]
-    out = Tensor(sizeO, x1.get_dtype())
+    out = Tensor(out_shape, x1.get_dtype())
     func = check_function("diopiCdist")
+
     ret = func(x1.context(), out, x1, x2, p, compute_mode) if compute_mode else \
         func(x1.context(), out, x1, x2, p)
     check_returncode(ret)
@@ -2298,15 +2328,37 @@ def cdist(x1, x2, p, compute_mode=None):
 
 def cdist_backward(x1, grad_outputs, output, x2, p, **kwargs):
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
-    sizeX1 = x1.size().data
-    sizeX2 = x2.size().data
-    assert len(sizeX1) == len(sizeX2) and len(sizeX1) > 1, "cdist only supports at least 2D tensors"
+    sizeX1 = list(x1.size().data)
+    sizeX2 = list(x2.size().data)
+    dim1 = len(sizeX1)
+    dim2 = len(sizeX2)
+    assert dim1 > 1 and dim2 > 1, "cdist only supports at least 2D tensors"
     assert sizeX1[-1] == sizeX2[-1], "X1 and X2 must have the same number of elements at the last dimension"
-
-    grad_x1 = raw_like(x1)
+    column1 = sizeX1[-1]
+    row1 = sizeX1[-2]
+    batch_tensor1 = sizeX1[:-2]
+    batch_tensor2 = sizeX2[:-2]
+    expand_batch_portion = infer_size(batch_tensor1, batch_tensor2)
+    grad_x1_shape = expand_batch_portion + [row1, column1]
+    grad_x1 = Tensor(grad_x1_shape, x1.get_dtype())
     func = check_function("diopiCdistBackward")
     ret = func(x1.context(), grad_x1, grad_outputs[0], x1,
                x2, p, output)
+    grad_x1 = grad_x1.numpy()
+    i = len(grad_x1.shape) - 1
+    j = dim1 - 1
+    while i >= 0 and j >= 0 and len(grad_x1.shape) != dim1:
+        while i > 0 and j > 0 and grad_x1.shape[i] != sizeX1[j]:
+            grad_x1 = np.sum(grad_x1, axis=i)
+            i -= 1
+        j = j - 1
+        i = i - 1
+    if i == 0 and j == -1:
+        grad_x1 = np.sum(grad_x1, axis=i)
+    for index in range(dim1):
+        if sizeX1[index] != grad_x1.shape[index]:
+            grad_x1 = np.sum(grad_x1, axis=index, keepdims=True)
+    grad_x1 = Tensor.from_numpy(grad_x1)
     check_returncode(ret)
     return {'x1': grad_x1}
 
@@ -2321,7 +2373,7 @@ def reciprocal(input, inplace=False) -> Tensor:
         func = check_function(call)
         ret = func(input.context(), input)
     else:
-        out = Tensor(input.size().data, promote_type(input, diopiDtype.float32))
+        out = Tensor(input.size().data, promote_type(input, Dtype.float32))
         func = check_function(call)
         ret = func(input.context(), out, input)
 
@@ -2330,16 +2382,16 @@ def reciprocal(input, inplace=False) -> Tensor:
 
 
 def bitwise_not(input, inplace=False):
-    assert input.get_dtype() in [diopiDtype.bool, diopiDtype.uint8, diopiDtype.int8, diopiDtype.int16, diopiDtype.int32, glob_vars.int_type], \
+    assert input.get_dtype() in [Dtype.bool, Dtype.uint8, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
         "input tensor must be of integral or boolean"
     return unary_op(input, inplace, "diopiBitwiseNot")
 
 
 def bitwise_and(input, other, inplace=False):
-    assert input.get_dtype() in [diopiDtype.bool, diopiDtype.uint8, diopiDtype.int8, diopiDtype.int16, diopiDtype.int32, glob_vars.int_type], \
+    assert input.get_dtype() in [Dtype.bool, Dtype.uint8, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
         "input tensor must be of integral or boolean"
     if isinstance(other, Tensor):
-        assert other.get_dtype() in [diopiDtype.bool, diopiDtype.uint8, diopiDtype.int8, diopiDtype.int16, diopiDtype.int32, glob_vars.int_type], \
+        assert other.get_dtype() in [Dtype.bool, Dtype.uint8, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
             "other tensor must be of integral or boolean"
     else:
         assert isinstance(other, int), "other must be of integral or boolean"
@@ -2348,10 +2400,10 @@ def bitwise_and(input, other, inplace=False):
 
 
 def bitwise_or(input, other, inplace=False):
-    assert input.get_dtype() in [diopiDtype.bool, diopiDtype.uint8, diopiDtype.int8, diopiDtype.int16, diopiDtype.int32, glob_vars.int_type], \
+    assert input.get_dtype() in [Dtype.bool, Dtype.uint8, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
         "input tensor must be of integral or boolean"
     if isinstance(other, Tensor):
-        assert other.get_dtype() in [diopiDtype.bool, diopiDtype.uint8, diopiDtype.int8, diopiDtype.int16, diopiDtype.int32, glob_vars.int_type], \
+        assert other.get_dtype() in [Dtype.bool, Dtype.uint8, Dtype.int8, Dtype.int16, Dtype.int32, glob_vars.int_type], \
             "other tensor must be of integral or boolean"
     else:
         assert isinstance(other, int), "other must be of integral or boolean"
@@ -2477,9 +2529,9 @@ def conv3d(input, weight, bias=None, stride=1,
         sizeW[i] += (sizeW[i] - 1) * (dilation[i] - 1)
         sizeO.append(int((sizeI[i] - sizeW[i] + 2 * padding[i]) / stride[i]) + 1)
 
-    stride = Sizes(tuple(stride)).to_diopi_size()
-    padding = Sizes(tuple(padding)).to_diopi_size()
-    dilation = Sizes(tuple(dilation)).to_diopi_size()
+    stride = Sizes(list(stride))
+    padding = Sizes(list(padding))
+    dilation = Sizes(list(dilation))
 
     nhwc_stride = compute_nhwc_stride_3d(sizeO) if glob_vars.nhwc else None
     out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
@@ -2505,9 +2557,9 @@ def conv3d_backward(input, grad_outputs, weight, bias=None, stride=1,
     if isinstance(dilation, int):
         dilation = (dilation, dilation, dilation)
 
-    stride = Sizes(tuple(stride)).to_diopi_size()
-    padding = Sizes(tuple(padding)).to_diopi_size()
-    dilation = Sizes(tuple(dilation)).to_diopi_size()
+    stride = Sizes(list(stride))
+    padding = Sizes(list(padding))
+    dilation = Sizes(list(dilation))
 
     grad_input = raw_like(input)
     grad_weight = raw_like(weight)
@@ -2519,12 +2571,12 @@ def conv3d_backward(input, grad_outputs, weight, bias=None, stride=1,
     else:
         gradBias = raw_like(bias)
         grad_bias = gradBias
-        sizeBias = Sizes(bias.size().data).to_diopi_size()
+        sizeBias = bias.size()
         out.update({"bias": grad_bias})
 
     # todo: no transposed/output_padding in forward
     transposed = False
-    output_padding = Sizes((0, 0, 0)).to_diopi_size()
+    output_padding = Sizes(list([0, 0, 0]))
 
     func = check_function("diopiConvolution3dBackward")
     ret = func(input.context(), grad_input, grad_weight, grad_bias,
@@ -2570,7 +2622,7 @@ def unfold(input, dimension, size, step):
 def unfold_backward(input, grad_outputs, dimension, size, step, **kwargs):
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
-    sizeI = Sizes(input.size().data).to_diopi_size()
+    sizeI = input.size()
 
     func = check_function("diopiUnfoldBackward")
     ret = func(grad_input.context(), grad_input, grad_outputs[0], sizeI,
@@ -2580,9 +2632,9 @@ def unfold_backward(input, grad_outputs, dimension, size, step, **kwargs):
 
 
 def masked_select(input, mask) -> Tensor:
-    assert mask.get_dtype() == diopiDtype.bool, "mask must be bool tensor"
+    assert mask.get_dtype() == Dtype.bool, "mask must be bool tensor"
     out_tensor = Tensor()
-    out_ptr = pDiopiTensor(out_tensor)
+    out_ptr = TensorP(out_tensor)
 
     func = check_function("diopiMaskedSelect")
     ret = func(input.context(), out_ptr, input, mask)
@@ -2632,7 +2684,7 @@ def index_fill(input, dim, index, value, inplace=False) -> Tensor:
 
 
 def linspace(start, end, steps, dtype=None):
-    dtype = diopiDtype.float32 if dtype is None else dtype
+    dtype = Dtype.float32 if dtype is None else dtype
 
     out = Tensor((steps, ), dtype)
 
@@ -2648,12 +2700,12 @@ def linspace(start, end, steps, dtype=None):
 def roll(input, shifts, dims=None):
     if isinstance(shifts, int):
         shifts = (shifts, )
-    shifts = Sizes(tuple(shifts)).to_diopi_size()
+    shifts = Sizes(list(shifts))
 
     if dims is not None:
-        dims = Sizes(tuple(dims)).to_diopi_size()
+        dims = Sizes(list(dims))
     else:
-        dims = Sizes(tuple(())).to_diopi_size()
+        dims = Sizes(list(()))
 
     out = raw_like(input)
     func = check_function("diopiRoll")
@@ -2665,7 +2717,7 @@ def roll(input, shifts, dims=None):
 def norm(input, p, dim=None, keepdim=False, dtype=None):
     p = Scalar(p)
     dim, out = reduce_op_process(input, dim, keepdim, dtype)
-    dim = Sizes(tuple(dim)).to_diopi_size()
+    dim = Sizes(list(dim))
 
     func = check_function("diopiNorm")
     ret = func(input.context(), out, input, p, dim)
@@ -2722,7 +2774,7 @@ def layer_norm(input, normalized_shape, weight=None, bias=None, eps=1e-05, backw
     out = raw_like(input)
     func = check_function("diopiLayerNorm")
     ret = func(input.context(), out, save_mean, save_invstd,
-               input, weight, bias, Sizes(normalized_shape).to_diopi_size(), eps)
+               input, weight, bias, Sizes(normalized_shape), eps)
     check_returncode(ret)
     if backward:
         return save_mean, save_invstd
@@ -2755,7 +2807,7 @@ def layer_norm_backward(input, grad_outputs, normalized_shape, weight=None, bias
 
     func = check_function("diopiLayerNormBackward")
     ret = func(input.context(), grad_input, grad_weight_capsule, grad_bias_capsule, grad_outputs[0],
-               input, weight, bias, save_mean, save_invstd, Sizes(normalized_shape).to_diopi_size())
+               input, weight, bias, save_mean, save_invstd, Sizes(normalized_shape))
     check_returncode(ret)
     return out
 
@@ -2781,7 +2833,7 @@ def adaptive_avg_pool3d(input, output_size):
 
     nhwc_stride = compute_nhwc_stride_3d(sizeO) if glob_vars.nhwc else None
     out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
-    output_size = Sizes((sizeO[-3], sizeO[-2], sizeO[-1])).to_diopi_size()
+    output_size = Sizes(list([sizeO[-3], sizeO[-2], sizeO[-1]]))
 
     func = check_function("diopiAdaptiveAvgPool3d")
     ret = func(input.context(), out,
@@ -2822,7 +2874,7 @@ def adaptive_max_pool3d(input, output_size, return_indices=False):
 
     nhwc_stride = compute_nhwc_stride_3d(sizeO) if glob_vars.nhwc else None
     out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
-    output_size = Sizes(tuple(output_size)).to_diopi_size()
+    output_size = Sizes(list(output_size))
 
     if return_indices:
         func = check_function("diopiAdaptiveMaxPool3dWithIndices")
@@ -2881,10 +2933,10 @@ def max_pool3d(input, kernel_size, stride=None, padding=0, dilation=1,
         else:
             sizeO.append(math.floor(tmp_size))
 
-    stride = Sizes(tuple(stride)).to_diopi_size()
-    padding = Sizes(tuple(padding)).to_diopi_size()
-    kernel_size = Sizes(tuple(kernel_size)).to_diopi_size()
-    dilation = Sizes(tuple(dilation)).to_diopi_size()
+    stride = Sizes(list(stride))
+    padding = Sizes(list(padding))
+    kernel_size = Sizes(list(kernel_size))
+    dilation = Sizes(list(dilation))
     out = Tensor(sizeO, input.get_dtype())
 
     if not return_indices:
@@ -2921,10 +2973,10 @@ def max_pool3d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
         dilation = (dilation, dilation, dilation)
 
     _, indices = max_pool3d(input, kernel_size, stride, padding, dilation, ceil_mode, True)
-    stride = Sizes(tuple(stride)).to_diopi_size()
-    padding = Sizes(tuple(padding)).to_diopi_size()
-    kernel_size = Sizes(tuple(kernel_size)).to_diopi_size()
-    dilation = Sizes(tuple(dilation)).to_diopi_size()
+    stride = Sizes(list(stride))
+    padding = Sizes(list(padding))
+    kernel_size = Sizes(list(kernel_size))
+    dilation = Sizes(list(dilation))
 
     func = check_function("diopiMaxPool3dBackward")
     ret = func(input.context(), grad_input, grad_outputs[0],
@@ -2942,7 +2994,7 @@ def permute(input, dims=None) -> Tensor:
     for i in range(len(dims)):
         sizeO[i] = sizeI[dims[i]]
     out = Tensor(sizeO, input.get_dtype())
-    dims = Sizes(tuple(dims)).to_diopi_size()
+    dims = Sizes(list(dims))
     func = check_function("diopiPermute")
     ret = func(input.context(), out, input, dims)
     check_returncode(ret)
@@ -3055,10 +3107,10 @@ def ctc_loss_backward(log_probs, grad_outputs, targets, input_lengths, target_le
 
 def index_put(input, values, indices1, indices2=None, accumulate=False, inplace=False):
     if indices2 is not None:
-        c_tensors = [pDiopiTensor(indices1), pDiopiTensor(indices2)]
+        c_tensors = [TensorP(indices1), TensorP(indices2)]
         indices_counts = 2
     else:
-        c_tensors = [pDiopiTensor(indices1)]
+        c_tensors = [TensorP(indices1)]
         indices_counts = 1
     call = "diopiIndexPut"
     out = raw_like(input)
@@ -3137,7 +3189,7 @@ def interpolate(input, size=None, scale_factor=None, mode="nearest", align_corne
     nhwc_stride = compute_nhwc_stride(sizeI) if glob_vars.nhwc else None
     out = Tensor(sizeI, input.get_dtype(), stride=nhwc_stride)
 
-    c_size = Sizes(tuple(sizeI[2:])).to_diopi_size()
+    c_size = Sizes(list(sizeI[2:]))
     if mode == "nearest":
         func = check_function("diopiUpsampleNearest")
         ret = func(input.context(), out, input, c_size)
@@ -3150,8 +3202,9 @@ def interpolate(input, size=None, scale_factor=None, mode="nearest", align_corne
 
 
 def interpolate_backward(input, grad_outputs, size, mode="nearest", align_corners=None, **kwargs) -> Tensor:
-    in_size = Sizes(input.size().data).to_diopi_size()
-    out_size = Sizes(grad_outputs[0].size().data[2:]).to_diopi_size()
+    in_size = input.size()
+    out_size = grad_outputs[0].size().data[2:]
+    out_size = Sizes(list(out_size))
     grad_input = raw_like(input)
 
     if mode == "nearest":
@@ -3179,7 +3232,7 @@ def pad(input, pad, mode="constant", value=None):
         else:
             pad_idx = i + 1
         sizeO[-pad_idx] += (pad[2 * i] + pad[2 * i + 1])
-    pad = Sizes(pad).to_diopi_size()
+    pad = Sizes(pad)
     if value is None and mode == 'constant':
         value = 0
 
@@ -3195,7 +3248,7 @@ def pad(input, pad, mode="constant", value=None):
 
 def unique(input, sorted=True, return_inverse=False, return_counts=False, dim=None):
     out_tensor = Tensor()
-    out_ptr = pDiopiTensor(out_tensor)
+    out_ptr = TensorP(out_tensor)
     if return_inverse:
         sizeI = list(input.size().data)
         if dim is not None:
@@ -3208,7 +3261,7 @@ def unique(input, sorted=True, return_inverse=False, return_counts=False, dim=No
         counts_tensor = Tensor()
     else:
         counts_tensor = None
-    counts_ptr = pDiopiTensor(counts_tensor)
+    counts_ptr = TensorP(counts_tensor)
 
     func = check_function("diopiUnique")
     ret = func(input.context(), out_ptr, input, sorted,
@@ -3232,7 +3285,7 @@ def unique(input, sorted=True, return_inverse=False, return_counts=False, dim=No
 def prod(input, dim=None, keepdim=False, dtype=None) -> Tensor:
     assert isinstance(dim, (int)) or dim is None,\
         "dim should be int"
-    out_dtype = dtype_to_ctype(dtype) if dtype is not None else promote_type(input, diopiDtype.int64)
+    out_dtype = dtype if dtype is not None else promote_type(input, Dtype.int64)
 
     _, out = reduce_op_process(input, dim, keepdim, out_dtype)
 
@@ -3311,10 +3364,10 @@ def im2col(input, kernel_size, dilation=1, padding=0, stride=1) -> Tensor:
         channels *= kernel_size[i]
     sizeO = [sizeI[0], channels, num_blocks]
 
-    stride = Sizes(tuple(stride)).to_diopi_size()
-    padding = Sizes(tuple(padding)).to_diopi_size()
-    kernel_size = Sizes(tuple(kernel_size)).to_diopi_size()
-    dilation = Sizes(tuple(dilation)).to_diopi_size()
+    stride = Sizes(list(stride))
+    padding = Sizes(list(padding))
+    kernel_size = Sizes(list(kernel_size))
+    dilation = Sizes(list(dilation))
 
     out = Tensor(sizeO, input.get_dtype())
     func = check_function("diopiIm2Col")
@@ -3343,11 +3396,11 @@ def col2im(input, output_size, kernel_size, dilation=1, padding=0, stride=1) -> 
         channels = channels // kernel_size[i]
     sizeO = [sizeI[0], channels, output_size[0], output_size[1]]
 
-    output_size = Sizes(tuple(output_size)).to_diopi_size()
-    stride = Sizes(tuple(stride)).to_diopi_size()
-    padding = Sizes(tuple(padding)).to_diopi_size()
-    kernel_size = Sizes(tuple(kernel_size)).to_diopi_size()
-    dilation = Sizes(tuple(dilation)).to_diopi_size()
+    output_size = Sizes(list(output_size))
+    stride = Sizes(list(stride))
+    padding = Sizes(list(padding))
+    kernel_size = Sizes(list(kernel_size))
+    dilation = Sizes(list(dilation))
 
     out = Tensor(sizeO, input.get_dtype())
     func = check_function("diopiCol2Im")
@@ -3359,7 +3412,7 @@ def col2im(input, output_size, kernel_size, dilation=1, padding=0, stride=1) -> 
 
 def flip(input, dims):
     out = raw_like(input)
-    dims = Sizes(tuple(dims)).to_diopi_size()
+    dims = Sizes(list(dims))
     func = check_function("diopiFlip")
     ret = func(input.context(), out, input, dims)
     check_returncode(ret)
@@ -3370,7 +3423,7 @@ def cholesky_ex(input, upper=False, check_errors=False):
     out = raw_like(input)
     sizeI = input.size().data
     nums = sizeI[0:-2] if len(sizeI) > 2 else ()
-    info = Tensor(nums, diopiDtype.int32)
+    info = Tensor(nums, Dtype.int32)
     func = check_function("diopiCholesky")
     ret = func(input.context(), out, info, input, c_bool(upper), c_bool(check_errors))
     check_returncode(ret)
@@ -3428,8 +3481,8 @@ def repeat(input, repeats):
         k = repeats_size[i] * sizeI[idx] if idx >= 0 else repeats_size[i]
         output_size.append(k)
 
-    sizeO = Sizes(output_size).to_diopi_size()
-    repeats_size = Sizes(repeats).to_diopi_size()
+
+    repeats_size = Sizes(list(repeats))
 
     out = Tensor(output_size, input.get_dtype())
     func = check_function("diopiRepeat")
@@ -3441,8 +3494,15 @@ def repeat(input, repeats):
 def normal(mean, std, size=None):
     call = "diopiNormal"
     if isinstance(mean, Tensor) and isinstance(std, Tensor):
-        assert mean.numel() == std.numel(), 'the total number of elements in each tensor need to be the same.'
-        out = Tensor(mean.size().data, mean.get_dtype())
+        sizeX1 = list(mean.size().data)
+        sizeX2 = list(std.size().data)
+        if mean.numel() <= std.numel():
+            out_size = infer_size(sizeX1, sizeX2)
+            out = Tensor(out_size, std.get_dtype())
+        if mean.numel() > std.numel():
+            out_size = infer_size(sizeX1, sizeX2)
+            out = Tensor(out_size, mean.get_dtype())
+
         call += "Tensor"
     elif isinstance(mean, Tensor):
         out = Tensor(mean.size().data, mean.get_dtype())
@@ -3451,9 +3511,10 @@ def normal(mean, std, size=None):
         out = Tensor(std.size().data, std.get_dtype())
         call += "ScalarTensor"
     else:
-        assert size is not None, "need the shape of output while both mean and std are scalar"
-        out = Tensor(size, diopiDtype.float32)
-
+        if size is not None:
+            out = Tensor(size, Dtype.float32)
+        else:
+            out = Tensor((), Dtype.float32)
     arg_mean = mean if isinstance(mean, Tensor) else mean
     arg_std = std if isinstance(std, Tensor) else std
     func = check_function(call)
@@ -3478,13 +3539,14 @@ def meshgrid(tensors, shape=None):
     co_tensors = []
     dims = []
     for tensor in tensors:
-        assert (len(tensor.size().data) == 1),\
-            "Expected scalar or 1D tensor in the tensor list"
-        c_tensors.append(pDiopiTensor(tensor))
-        dims.append(tensor.size().data[0])
+        c_tensors.append(TensorP(tensor))
+        if tensor.size().len > 0:
+            dims.append(tensor.size().data[0])
+        else:
+            dims.append(1)
     out = [Tensor(dims, tensors[0].get_dtype()) for i in range(inputsNum)]
     for tensor in out:
-        co_tensors.append(pDiopiTensor(tensor))
+        co_tensors.append(TensorP(tensor))
     func = check_function("diopiMeshGrid")
     ret = func(tensors[0].context(), co_tensors, c_tensors, inputsNum)
     check_returncode(ret)
@@ -3503,9 +3565,9 @@ def multinomial(input, num_samples, replacement) -> Tensor:
     call = "diopiMultinomial"
     func = check_function(call)
     if len(input.size().data) == 2:
-        out = Tensor(size=(input.size().data[0], num_samples), dtype=diopiDtype.int64)
+        out = Tensor(size=(input.size().data[0], num_samples), dtype=Dtype.int64)
     if len(input.size().data) == 1:
-        out = Tensor(size=(num_samples,), dtype=diopiDtype.int64)
+        out = Tensor(size=(num_samples,), dtype=Dtype.int64)
     ret = func(input.context(), out, input, num_samples, replacement)
     check_returncode(ret)
     return out

@@ -109,7 +109,7 @@ static diopiError_t choiceDtype(const std::set<diopiDtype_t>& opSupportedDtypes,
     } else if (opSupportedDtypes.find(diopi_dtype_bool) != opSupportedDtypes.end()) {
         *dtype = diopi_dtype_bool;
     } else {
-        set_last_error_string("this operator does not support bool, int8, int16, int32, float16, float32");
+        set_last_error_string("%s", "this operator does not support bool, int8, int16, int32, float16, float32");
         return diopiDtypeNotSupported;
     }
     return diopiSuccess;
@@ -163,7 +163,7 @@ diopiError_t autoCastTensorType(diopiContextHandle_t ctx, const std::vector<Diop
             targetType = diopi_dtype_bool;
         }
     } else {
-        set_last_error_string("tensor's dtype error, can't be cast");
+        set_last_error_string("%s", "tensor's dtype error, can't be cast");
         return diopiDtypeNotSupported;
     }
     for (const auto& pTensor : pTensors) {

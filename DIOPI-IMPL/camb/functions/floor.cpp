@@ -19,7 +19,7 @@
 namespace impl {
 namespace camb {
 
-extern "C" DIOPI_API diopiError_t diopiFloor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+extern "C" diopiError_t diopiFloor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     DiopiTensor trInput(input);
     DiopiTensor trOut(out);
     std::vector<DiopiTensor*> pTensors{&trInput};
@@ -50,7 +50,7 @@ extern "C" DIOPI_API diopiError_t diopiFloor(diopiContextHandle_t ctx, diopiTens
     return diopiSuccess;
 }
 
-extern "C" DIOPI_API diopiError_t diopiFloorInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+extern "C" diopiError_t diopiFloorInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     diopiFloor(ctx, input, input);
     return diopiSuccess;
 }
