@@ -3,7 +3,6 @@ set -e
 
 CURRENT_PATH=$(cd "$(dirname "$0")"; pwd)
 CMAKE_EXPORT_COMPILE_COMMANDS_FILE=${CURRENT_PATH}/../build/compile_commands.json
-echo "CMAKE_EXPORT_COMPILE_COMMANDS_FILE: ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}"
 case $1 in
   cpp-lint)
     # for other cpplint version, maybe  -whitespace/indent is needed to check impl
@@ -14,7 +13,8 @@ case $1 in
       --recursive ./ )  \
     || exit -1;;
   clang-tidy)
-    (if [ -e ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE} ]; then
+    (echo "CMAKE_EXPORT_COMPILE_COMMANDS_FILE: ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}"
+    if [ -e ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE} ]; then
       echo "111111111111111"
       python3 ${CURRENT_PATH}/../../run-clang-tidy.py -p `dirname "${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}"`
     else
