@@ -17,7 +17,7 @@ case $1 in
     (if [ -e "${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}" ]; then
       python3 ${CURRENT_PATH}/../../run-clang-tidy.py -p `dirname "${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}"`
     else
-      error "error: compile_commands.json not found."
+      echo "error: compile_commands.json not found."
       exit 1
     fi);;
   *)
