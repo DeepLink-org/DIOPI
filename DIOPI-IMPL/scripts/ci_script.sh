@@ -1,7 +1,8 @@
 # !/bin/bash
 set -e
 
-current_path=$(cd "$(dirname "$0")"; pwd)
+CURRENT_PATH=$(cd "$(dirname "$0")"; pwd)
+CMAKE_EXPORT_COMPILE_COMMANDS_FILE=${CURRENT_PATH}/../build/compile_commands.json
 
 case $1 in
   cpp-lint)
@@ -9,11 +10,16 @@ case $1 in
     # --repository=.. will be deleted when repository changed.
     (echo "cpp-lint" && python scripts/cpplint.py --linelength=160 --repository=.. \
       --filter=-build/c++11,-legal/copyright,-build/include_subdir,-runtime/references,-runtime/printf,-runtime/int,-build/namespace \
-      --exclude=${current_path}/../third_party --exclude=${current_path}/../build \
+      --exclude=${CURRENT_PATH}/../third_party --exclude=${CURRENT_PATH}/../build \
       --recursive ./ )  \
     || exit -1;;
-    *)
+  clang-tidy)
+    if [ -e ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE} ]; then
+      python3 ${CURRENT_PATH}/../../run-clang-tidy.py -p `dirname ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}`
+    else
+      echo "error: compile_commands.json not found." || exit -1
+    fi;;
+  *)
     echo -e "[ERROR] Incorrect option:" $1;
-
 esac
 exit 0
