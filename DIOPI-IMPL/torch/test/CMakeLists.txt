@@ -30,7 +30,7 @@ add_custom_target(test_code_gen COMMAND python3 ${TEST_GEN_PATH}/gen.py
     --device=torch --use_adaptor=USE_ADAPTOR)
 
 
-file(TOUCH diopi_functions.cpp)
+# file(TOUCH diopi_functions.cpp)
 set(FUNCTIONS_SRC
     diopi_functions.cpp
 )
