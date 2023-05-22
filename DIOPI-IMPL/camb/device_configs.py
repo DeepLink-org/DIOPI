@@ -13,7 +13,7 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float16)],
                 }
             ]
-        )
+        ),
         atol=1e-2,
         rtol=1e-3,
     ),
