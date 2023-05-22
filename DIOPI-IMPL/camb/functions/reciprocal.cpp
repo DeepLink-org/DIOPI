@@ -18,14 +18,18 @@ diopiError_t diopiReciprocal(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
     DiopiTensor inputTensor(input);
     DiopiTensor outTensor(out);
 
-    DIOPI_CHECK(((inputTensor.dtype() == diopi_dtype_float16) || (inputTensor.dtype() == diopi_dtype_float32)),
-                "input datatype not supported, only float16, float32 supported");
-    DIOPI_CHECK(((outTensor.dtype() == diopi_dtype_float16) || (outTensor.dtype() == diopi_dtype_float32)),
-                "out datatype not supported, only float16, float32 supported");
+    diopiDtype_t origin_dtype = input_tensor.dtype();
+    std::vector<DiopiTensor*> pTensors{&input_tensor, &out_tensor};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
-    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlReciprocal(handle, inputDesc.get(), inputTensor.data(), outDesc.get(), outTensor.data()));
+    CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc out_desc(out_tensor, CNNL_LAYOUT_ARRAY);
+    DIOPI_CALLCNNL(cnnlReciprocal(handle, input_desc.get(), input_tensor.data(), out_desc.get(), out_tensor.data()));
+
+    if (origin_dtype == diopi_dtype_float64) {
+        DIOPI_CALL(dataTypeCast(ctx, out_tensor, origin_dtype));
+    }
     return diopiSuccess;
 }
 
