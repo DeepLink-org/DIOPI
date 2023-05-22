@@ -36,7 +36,7 @@ diopiError_t diopiEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
         out_tensor_tmp = requiresTensor(ctx, out_tensor.shape(), weight_tensor.dtype());
     }
 
-    // special case
+    // special case: the indices_tensor is empty
     if (indices_tensor.dim() == 0 && indices_tensor.numel() == 1) {
         out_tensor_tmp.unsqueeze(0);
     }
@@ -91,7 +91,7 @@ diopiError_t diopiEmbeddingBackward(diopiContextHandle_t ctx, diopiTensorHandle_
         out_tensor_tmp = requiresTensor(ctx, out_tensor.shape(), grad_tensor.dtype());
     }
 
-    // special case
+    // special case: the indices_tensor is empty
     if (indices_tensor.dim() == 0 && indices_tensor.numel() == 1) {
         grad_tensor.unsqueeze(0);
     }
