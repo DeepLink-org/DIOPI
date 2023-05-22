@@ -20,7 +20,6 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
         return diopiSuccess;
     }
 
-    // TODO(waiting for dispatch): support broadcast, dealing with uncontiguous
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor dest_tr(dest);
     DiopiTensor src_tr(src);
@@ -29,10 +28,17 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
         DIOPI_CALL(dataTypeCast(ctx, src_tr, dest_tr.dtype()));
     }
 
-    CnnlTensorDesc input_desc(dest_tr, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc src_desc(src_tr, CNNL_LAYOUT_ARRAY);
+    DiopiTensor bcast_src_tr;
+    DiopiTensor bcast_dest_tr;
+    DiopiTensor target_tr = src_tr.numel() > dest_tr.numel() ? src_tr : dest_tr;
 
-    DIOPI_CALLCNNL(cnnlCopy(handle, src_desc.get(), src_tr.data(), input_desc.get(), dest_tr.data()));
+    DIOPI_CALL(broadcastHelper(ctx, src_tr, target_tr, &bcast_src_tr));
+    DIOPI_CALL(broadcastHelper(ctx, dest_tr, target_tr, &bcast_dest_tr));
+
+    CnnlTensorDesc input_desc(bcast_dest_tr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc src_desc(bcast_src_tr, CNNL_LAYOUT_ARRAY);
+
+    DIOPI_CALLCNNL(cnnlCopy(handle, src_desc.get(), bcast_src_tr.data(), input_desc.get(), bcast_dest_tr.data()));
 
     return diopiSuccess;
 }
