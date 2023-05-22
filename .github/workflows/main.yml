@@ -111,7 +111,7 @@ jobs:
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export CI=true
           export DIOPI_BUILD_TESTRT=ON
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 bash -c 'cd DIOPI-IMPL && bash scripts/build_impl.sh camb' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 bash -c 'cd DIOPI-IMPL && sh scripts/ci_script.sh clang-tidy || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
           """
 
   Build-Mmcv-Ext-Nvidia:
@@ -127,6 +127,22 @@ jobs:
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST3} && cp -R source ${BUILD_TEST3} && cd ${BUILD_TEST3}
           export CI=true
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 ls && cd DIOPI-TEST && bash scripts/build_mmcv.sh mmcv_ext || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST3} && exit 1 )
+          """
+
+  Tidy:
+    name: clang-tidy
+    runs-on:  tps-diopi-ci
+    needs: [build]
+    steps:
+      - name: tidy-camb
+        run: |
+          ssh ${CLUSTER_1984} """
+          set -e
+          source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
+          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
+          export CI=true
+          export DIOPI_BUILD_TESTRT=ON
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 bash -c 'cd DIOPI-IMPL && bash scripts/build_impl.sh torch' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
           """
 
   Op-Test-Mmcv-Ext-Nvidia:
