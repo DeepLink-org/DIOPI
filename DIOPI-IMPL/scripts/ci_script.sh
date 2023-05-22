@@ -14,7 +14,7 @@ case $1 in
       --recursive ./ )  \
     || exit -1;;
   clang-tidy)
-    (if [ -e "${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}" ]; then
+    (if [ -e ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE} ]; then
       python3 ${CURRENT_PATH}/../../run-clang-tidy.py -p `dirname "${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}"`
     else
       echo "error: compile_commands.json not found."
