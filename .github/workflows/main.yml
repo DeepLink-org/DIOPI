@@ -132,7 +132,7 @@ jobs:
   clang-tidy:
     name: clang-tidy
     runs-on:  tps-diopi-ci
-    needs: [build]
+    needs: [Build-Camb]
     steps:
       - name: tidy-camb
         run: |
