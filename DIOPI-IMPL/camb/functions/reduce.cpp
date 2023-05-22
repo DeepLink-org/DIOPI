@@ -67,7 +67,6 @@ diopiError_t reduce_internal(diopiContextHandle_t ctx, DiopiTensor& input_tr, Di
                              const std::vector<int64_t> reduce_dim, cnnlReduceOp_t reduce_op) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    DIOPI_CHECK(input_tr.numel() > 0, "operation does not have an identity.");
     DIOPI_CHECK(input_tr.is_contiguous(), "input tensor should be contiguous");
 
     CnnlReduceDescriptor reduce_desc;
@@ -83,9 +82,9 @@ diopiError_t reduce_internal(diopiContextHandle_t ctx, DiopiTensor& input_tr, Di
 
     // Only Min and Max Ops have indices as result.when reduce_dim > 1,
     auto reduce_indices =
-        ((reduce_op == CNNL_REDUCE_MAX || reduce_op == CNNL_REDUCE_MIN) && reduce_dim.size() == 1) ? CNNL_REDUCE_FLATTENED_INDICES : CNNL_REDUCE_NO_INDICES;
+        ((reduce_op == CNNL_REDUCE_MAX || reduce_op == CNNL_REDUCE_MIN) && reduce_dim.size() >= 1) ? CNNL_REDUCE_FLATTENED_INDICES : CNNL_REDUCE_NO_INDICES;
 
-    if (reduce_dim.size() == 0 || reduce_dim.size() == input_tr.dim()) {
+    if (reduce_dim.size() == 0 || reduce_dim.size() == input_tr.dim() + 1) {
         /* FULL-REDUCE: axis = [-1] instead of [0, 1, 2, ..., n] */
         std::vector<int64_t> full_reduce(1, -1);
         std::vector<int64_t> fake_size(input_tr.dim(), 1);

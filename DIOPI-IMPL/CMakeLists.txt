@@ -22,6 +22,7 @@ list(APPEND IMPL_CUDA "CUDA" "cuda")
 list(APPEND IMPL_TORCH "TORCH" "LIBTORCH" "ATEN" "PYTORCH" "torch" "libtorch" "aten" "pytorch" "PyTorch")
 list(APPEND IMPL_CAMB_TORCH "CAMB_PYTORCH" "camb_pytorch")
 list(APPEND IMPL_CAMB "CAMB" "camb")
+list(APPEND IMPL_ASCEND "ASCEND" "ascend")
 
 add_definitions(-std=c++14)
 
