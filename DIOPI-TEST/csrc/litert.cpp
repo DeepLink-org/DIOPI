@@ -7,9 +7,9 @@
 
 #include <conform_test.h>
 #include <diopi/diopirt.h>
-#include <inttypes.h>
 
 #include <cassert>
+#include <cinttypes>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -218,7 +218,7 @@ bool diopiTensor::resetShape(const diopiSize_t* size) {
     return true;
 }
 
-diopiTensor::~diopiTensor() {}
+diopiTensor::~diopiTensor() = default;
 
 DIOPI_RT_API diopiError_t diopiGetTensorData(diopiTensorHandle_t th, void** pptr) {
     *pptr = th->data();
@@ -278,7 +278,7 @@ private:
     std::set<diopiTensorHandle_t> setTensors_;
 
 public:
-    diopiContext() {}
+    diopiContext() = default;
 
     ~diopiContext() {
         if (nullptr != stream_) {

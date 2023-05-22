@@ -30,7 +30,7 @@ diopiError_t diopiRoll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
                             inputTensor.data(),
                             shiftsTmp.data(),
                             shiftsTmp.size(),
-                            dimsTmp.size() > 0 ? dimsTmp.data() : nullptr,
+                            !dimsTmp.empty() ? dimsTmp.data() : nullptr,
                             dimsTmp.size(),
                             workspace,
                             workspaceSize,

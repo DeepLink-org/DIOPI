@@ -40,7 +40,7 @@ diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
     CnnlTensorDesc outDesc(outTensorTmp, CNNL_LAYOUT_ARRAY);
 
     CnnlTensorDesc valueDesc;
-    if (valueTensorTmp.shape().size() > 0) {
+    if (!valueTensorTmp.shape().empty()) {
         DIOPI_CALL(valueDesc.set(valueTensorTmp, CNNL_LAYOUT_ARRAY));
     } else {
         std::vector<int> valueDims = {1};

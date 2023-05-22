@@ -34,7 +34,7 @@ std::vector<int64_t> getRealDims(std::vector<int64_t> inputDim, int64_t tDim) {
 
 std::vector<int> inferDescShape(std::vector<int64_t> inputDim, std::vector<int64_t> reduceDim, bool keepdim) {
     std::vector<int> outputDim(inputDim.begin(), inputDim.end());
-    if (inputDim.size() == 0) {
+    if (inputDim.empty()) {
         return outputDim;
     }
     int num = 0;
@@ -82,9 +82,9 @@ diopiError_t reduceInternal(diopiContextHandle_t ctx, DiopiTensor& inputTr, Diop
 
     // Only Min and Max Ops have indices as result.when reduce_dim > 1,
     auto reduceIndices =
-        ((reduceOp == CNNL_REDUCE_MAX || reduceOp == CNNL_REDUCE_MIN) && reduceDim.size() >= 1) ? CNNL_REDUCE_FLATTENED_INDICES : CNNL_REDUCE_NO_INDICES;
+        ((reduceOp == CNNL_REDUCE_MAX || reduceOp == CNNL_REDUCE_MIN) && !reduceDim.empty()) ? CNNL_REDUCE_FLATTENED_INDICES : CNNL_REDUCE_NO_INDICES;
 
-    if (reduceDim.size() == 0 || reduceDim.size() == inputTr.dim() + 1) {
+    if (reduceDim.empty() || reduceDim.size() == inputTr.dim() + 1) {
         /* FULL-REDUCE: axis = [-1] instead of [0, 1, 2, ..., n] */
         std::vector<int64_t> fullReduce(1, -1);
         std::vector<int64_t> fakeSize(inputTr.dim(), 1);

@@ -15,9 +15,9 @@ namespace {
 
 std::vector<int> getDim(DiopiTensor tensor) {
     int shapeSize = tensor.shape().size();
-    std::vector<int> dim;
+    std::vector<int> dim(shapeSize);
     for (int i = 0; i < shapeSize; i++) {
-        dim.push_back(static_cast<int>(tensor.shape()[i]));
+        dim[i] = static_cast<int>(tensor.shape()[i]);
     }
     if (shapeSize == 3) {
         dim.insert(dim.begin(), 1);
