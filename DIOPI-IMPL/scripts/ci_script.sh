@@ -3,7 +3,7 @@ set -e
 
 CURRENT_PATH=$(cd "$(dirname "$0")"; pwd)
 CMAKE_EXPORT_COMPILE_COMMANDS_FILE=${CURRENT_PATH}/../build/compile_commands.json
-
+echo "CMAKE_EXPORT_COMPILE_COMMANDS_FILE: ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}"
 case $1 in
   cpp-lint)
     # for other cpplint version, maybe  -whitespace/indent is needed to check impl
