@@ -61,10 +61,10 @@ diopiError_t cnnlActivationInternal(diopiContextHandle_t ctx, DiopiTensor input,
     auto nanProp = attr.get<cnnlNanPropagation_t>("nan", CNNL_NOT_PROPAGATE_NAN);
 
     float coef = attr.get("coef", 0.0f);
-    int sliced_dim = attr.get("sliced_dim", 0);
+    int slicedDim = attr.get("sliced_dim", 0);
     float gamma = attr.get("gamma", 0.0f);
     float scale = attr.get("scale", 0.0f);
-    bool is_result = attr.get("is_result", false);
+    bool isResult = attr.get("is_result", false);
     bool approximate = attr.get("approximate", false);
     void* alpha = attr.get("alpha", nullptr);
     void* beta = attr.get("beta", nullptr);
@@ -94,10 +94,10 @@ diopiError_t cnnlActivationBackwardInternal(diopiContextHandle_t ctx, DiopiTenso
     auto nanProp = attr.get<cnnlNanPropagation_t>("perf", CNNL_NOT_PROPAGATE_NAN);  // relu relu6
 
     float coef = attr.get("coef", 0.0f);
-    int sliced_dim = attr.get("sliced_dim", 0);
+    int slicedDim = attr.get("sliced_dim", 0);
     float gamma = attr.get("gamma", 0.0f);
     float scale = attr.get("scale", 0.0f);
-    bool is_result = attr.get("is_result", true);
+    bool isResult = attr.get("is_result", true);
     bool approximate = attr.get("approximate", false);
     void* alpha = attr.get("alpha", nullptr);
     void* beta = attr.get("beta", nullptr);
@@ -197,7 +197,7 @@ extern "C" diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTens
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_SIGMOID);
-    DIOPI_CALL(cnnl_activation_backward_internal(ctx, grad_input_tensor, grad_output_tensor, {}, output_tensor, attr));
+    DIOPI_CALL(cnnlActivationBackwardInternal(ctx, gradInputTensor, gradOutputTensor, {}, outputTensor, attr));
     return diopiSuccess;
 }
 
@@ -231,7 +231,7 @@ extern "C" diopiError_t diopiTanhBackward(diopiContextHandle_t ctx, diopiTensorH
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_TANH);
-    DIOPI_CALL(cnnl_activation_backward_internal(ctx, grad_input_tensor, grad_output_tensor, {}, output_tensor, attr));
+    DIOPI_CALL(cnnlActivationBackwardInternal(ctx, gradInputTensor, gradOutputTensor, {}, outputTensor, attr));
     return diopiSuccess;
 }
 
@@ -263,46 +263,46 @@ extern "C" diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorH
         attr.set("approximate", true);
     }
 
-    DIOPI_CALL(cnnl_activation_backward_internal(ctx, grad_input_tensor, grad_output_tensor, input_tensor, {}, attr));
+    DIOPI_CALL(cnnlActivationBackwardInternal(ctx, gradInputTensor, gradOutputTensor, inputTensor, {}, attr));
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiLeakyRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* negative_slope) {
+extern "C" diopiError_t diopiLeakyRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor output_tensor(out);
+    DiopiTensor inputTensor(input);
+    DiopiTensor outputTensor(out);
 
     CnnlAttribute attr;
-    float coef_val = DiopiDataType::isInteger(negative_slope->stype) ? negative_slope->ival : negative_slope->fval;
-    attr.set("coef", coef_val);
+    float coefVal = DiopiDataType::isInteger(negativeSlope->stype) ? negativeSlope->ival : negativeSlope->fval;
+    attr.set("coef", coefVal);
     attr.set("mode", CNNL_ACTIVATION_LEAKYRELU);
-    DIOPI_CALL(cnnl_activation_internal(ctx, input_tensor, output_tensor, attr));
+    DIOPI_CALL(cnnlActivationInternal(ctx, inputTensor, outputTensor, attr));
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiLeakyReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* negative_slope) {
+extern "C" diopiError_t diopiLeakyReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* negativeSlope) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
+    DiopiTensor inputTensor(input);
     CnnlAttribute attr;
-    float coef_val = DiopiDataType::isInteger(negative_slope->stype) ? negative_slope->ival : negative_slope->fval;
-    attr.set("coef", coef_val);
+    float coefVal = DiopiDataType::isInteger(negativeSlope->stype) ? negativeSlope->ival : negativeSlope->fval;
+    attr.set("coef", coefVal);
     attr.set("mode", CNNL_ACTIVATION_LEAKYRELU);
-    DIOPI_CALL(cnnl_activation_internal(ctx, input_tensor, input_tensor, attr));
+    DIOPI_CALL(cnnlActivationInternal(ctx, inputTensor, inputTensor, attr));
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                               diopiConstTensorHandle_t input, const diopiScalar_t* negative_slope, bool input_is_result) {
+extern "C" diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                               diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope, bool inputIsResult) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor grad_input_tensor(grad_input);
-    DiopiTensor grad_output_tensor(grad_output);
-    DiopiTensor input_tensor(input);
+    DiopiTensor gradInputTensor(gradInput);
+    DiopiTensor gradOutputTensor(gradOutput);
+    DiopiTensor inputTensor(input);
 
     CnnlAttribute attr;
-    float coef_val = DiopiDataType::isInteger(negative_slope->stype) ? negative_slope->ival : negative_slope->fval;
-    attr.set("coef", coef_val);
+    float coefVal = DiopiDataType::isInteger(negativeSlope->stype) ? negativeSlope->ival : negativeSlope->fval;
+    attr.set("coef", coefVal);
     attr.set("mode", CNNL_ACTIVATION_LEAKYRELU);
-    DIOPI_CALL(cnnl_activation_backward_internal(ctx, grad_input_tensor, grad_output_tensor, input_tensor, {}, attr));
+    DIOPI_CALL(cnnlActivationBackwardInternal(ctx, gradInputTensor, gradOutputTensor, inputTensor, {}, attr));
     return diopiSuccess;
 }
 
