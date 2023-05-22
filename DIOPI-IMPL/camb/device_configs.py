@@ -4,8 +4,16 @@ from .device_config_helper import Skip
 from .dtype import Dtype
 
 device_configs = {
-    'batch_norm': dict(
+'batch_norm': dict(
         name=["batch_norm"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float16)],
+                }
+            ]
+        )
         atol=1e-2,
         rtol=1e-3,
     ),
