@@ -40,6 +40,7 @@ jobs:
           git checkout ${{ github.sha }} &&  git merge --no-edit main
           fi
           cd DIOPI-TEST/third_party && rm -rf mmcv_diopi && git clone https://github.com/DeepLink-org/mmcv_diopi.git
+          cd ../../DIOPI-IMPL/third_party && rm -rf pybind11 &&  git clone https://github.com/pybind/pybind11.git
       - name: ci interruptible and support pr ci
         run: |
           cd ${GITHUB_WORKSPACE}/DIOPI && bash scripts/ci_interruptible.sh
