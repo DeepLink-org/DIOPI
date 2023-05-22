@@ -245,7 +245,9 @@ extern "C" diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t 
     if (approximate == "tanh") {
         attr.set("approximate", true);
     }
-    DIOPI_CALL(cnnl_activation_internal(ctx, input_tensor, input_tensor, attr));
+    DIOPI_CALL(cnnl_activation_internal(ctx, input_tensor, output_tensor, attr));
+
+    return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
