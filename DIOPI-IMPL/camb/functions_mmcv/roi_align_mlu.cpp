@@ -115,6 +115,7 @@ extern "C" diopiError_t diopiRoiAlignBackwardMmcv(diopiContextHandle_t ctx, diop
                                                   diopiConstTensorHandle_t rois_, diopiConstTensorHandle_t argmax_y_, diopiConstTensorHandle_t argmax_x_,
                                                   int64_t aligned_height, int64_t aligned_width, int64_t sampling_ratio, int64_t pool_mode, float spatial_scale,
                                                   bool aligned) {
+  return diopiErrorOccurred;
   auto grad = impl::camb::DiopiTensor(grad_output_);
   auto rois = impl::camb::DiopiTensor(rois_);
   auto argmax_y = impl::camb::DiopiTensor(argmax_y_);
