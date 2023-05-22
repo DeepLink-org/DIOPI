@@ -29,7 +29,7 @@ set(TEST_GEN_PATH "${CMAKE_SOURCE_DIR}/../DIOPI-TEST/codegen")
 add_custom_target(test_code_gen COMMAND python3 ${TEST_GEN_PATH}/gen.py
     --device=torch --use_adaptor=USE_ADAPTOR)
 
-set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/torch/test")
+set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../DIOPI-TEST/csrc")
 file(MAKE_DIRECTORY ${FUNCTION_SAVE_PATH})
 file(TOUCH ${FUNCTION_SAVE_PATH}/diopi_functions.cpp)
 set(FUNCTIONS_SRC
