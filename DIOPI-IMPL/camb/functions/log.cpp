@@ -9,9 +9,8 @@
 namespace impl {
 namespace camb {
 
-extern "C" {
 
-diopiError_t log(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, cnnlLogBase_t logBase) {
+diopiError_t logInternal(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, cnnlLogBase_t logBase) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor(input);
     DiopiTensor outTensor(out);
@@ -31,38 +30,39 @@ diopiError_t log(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTe
     return diopiSuccess;
 }
 
-diopiError_t logInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, cnnlLogBase_t logBase) {
-    DIOPI_CALL(log(ctx, input, input, logBase));
+diopiError_t logInpInternal(diopiContextHandle_t ctx, diopiTensorHandle_t input, cnnlLogBase_t logBase) {
+    DIOPI_CALL(logInternal(ctx, input, input, logBase));
     return diopiSuccess;
 }
 
+extern "C" {
 diopiError_t diopiLogInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    DIOPI_CALL(logInp(ctx, input, CNNL_LOG_E));
+    DIOPI_CALL(logInpInternal(ctx, input, CNNL_LOG_E));
     return diopiSuccess;
 }
 
 diopiError_t diopiLog(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    DIOPI_CALL(log(ctx, out, input, CNNL_LOG_E));
+    DIOPI_CALL(logInternal(ctx, out, input, CNNL_LOG_E));
     return diopiSuccess;
 }
 
 diopiError_t diopiLog2Inp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    DIOPI_CALL(logInp(ctx, input, CNNL_LOG_2));
+    DIOPI_CALL(logInpInternal(ctx, input, CNNL_LOG_2));
     return diopiSuccess;
 }
 
 diopiError_t diopiLog2(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    DIOPI_CALL(log(ctx, out, input, CNNL_LOG_2));
+    DIOPI_CALL(logInternal(ctx, out, input, CNNL_LOG_2));
     return diopiSuccess;
 }
 
 diopiError_t diopiLog10Inp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    DIOPI_CALL(logInp(ctx, input, CNNL_LOG_10));
+    DIOPI_CALL(logInpInternal(ctx, input, CNNL_LOG_10));
     return diopiSuccess;
 }
 
 diopiError_t diopiLog10(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    DIOPI_CALL(log(ctx, out, input, CNNL_LOG_10));
+    DIOPI_CALL(logInternal(ctx, out, input, CNNL_LOG_10));
     return diopiSuccess;
 }
 

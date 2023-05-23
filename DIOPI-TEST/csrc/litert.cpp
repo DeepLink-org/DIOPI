@@ -16,6 +16,7 @@
 #include <memory>
 #include <set>
 #include <vector>
+#include <iostream>
 
 extern "C" {
 
@@ -118,9 +119,9 @@ private:
 
 public:
     Storage(malloc_func_t mallocFn, free_func_t freeFn, int64_t nbytes) : mallocFn_(mallocFn), freeFn_(freeFn), nbytes_(nbytes) {
-        assert(freeFn);
-        assert(mallocFn);
-        ptr_ = mallocFn(nbytes);
+        assert(freeFn_);
+        assert(mallocFn_);
+        ptr_ = mallocFn_(nbytes);
     }
 
     ~Storage() {
@@ -192,12 +193,12 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
     }
 
     const int64_t nbytes = numel_ * itemsize(dtype);
-    if (device == diopi_host) {
+    if (device_ == diopi_host) {
         storage_ = std::make_shared<Storage>(hostMalloc, hostFree, nbytes);
     } else {
         storage_ = std::make_shared<Storage>(device_malloc, device_free, nbytes);
     }
-    context = context;
+    context_ = context;
 }
 
 bool diopiTensor::resetShape(const diopiSize_t* size) {
@@ -278,7 +279,7 @@ private:
     std::set<diopiTensorHandle_t> setTensors_;
 
 public:
-    diopiContext() = default;
+    diopiContext() {std::cout << "=====context construct=========\n" << std::endl;};
 
     ~diopiContext() {
         if (nullptr != stream_) {
@@ -288,6 +289,7 @@ public:
             delete it;
         }
         setTensors_.clear();
+        std::cout << "---------context deconstructor ------" <<std::endl;
     }
 
     diopiStreamHandle_t getStreamHandle() {
