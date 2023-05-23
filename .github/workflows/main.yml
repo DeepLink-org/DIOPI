@@ -119,7 +119,7 @@ jobs:
           set -e
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 bash -c 'cd DIOPI-IMPL && bash scripts/ci_script.sh clang-tidy' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 bash -c 'cd DIOPI-IMPL && bash scripts/ci_script.sh clang-tidy' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
           """
 
   Build-Mmcv-Ext-Nvidia:
