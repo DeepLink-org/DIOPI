@@ -13,11 +13,14 @@ case $1 in
     mkdir -p build && cd build && cmake .. -DIMPL_OPT=cuda -DTEST=${DIOPI_BUILD_TESTRT} && make;;
   torch)
     mkdir -p build && cd build && cmake .. -DIMPL_OPT=torch -DDEBUG=ON -DTEST=${DIOPI_BUILD_TESTRT} \
-    -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` \
-    && make;;
+    -DCMAKE_PREFIX_PATH=/nvme/share/share/xt/pytorch1.10/torch/share/cmake \
+    -DPYTHON_INCLUDE_DIR=`python -c 'from distutils.sysconfig import get_python_inc; print(get_python_inc())'` && make;;
+    # -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` \
+    # && make;;
   torch_dyload)
     mkdir -p build && cd build && cmake .. -DIMPL_OPT=torch -DDEBUG=ON -DDYLOAD=ON -DTEST=${DIOPI_BUILD_TESTRT} \
     -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` \
+    -DPYTHON_INCLUDE_DIR=`python -c 'from distutils.sysconfig import get_python_inc; print(get_python_inc())'` \
     && make && mkdir -p ${DIOPI_TEST_PATH}/lib && ln -sf ${CURRENT_DIR}/../lib/libdiopi_real_impl.so ${DIOPI_TEST_PATH}/lib;;
   camb_pytorch)
     mkdir -p build && cd build && cmake .. -DIMPL_OPT=camb_pytorch -DTEST=${DIOPI_BUILD_TESTRT} \

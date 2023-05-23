@@ -2,10 +2,14 @@ set(DIOPIRT diopi_runtime)
 find_package(CUDA REQUIRED)
 
 add_compile_options(-fno-elide-constructors)
-include_directories(${PYTHON_INCLUDE_DIRS})
+# include_directories(${PYTHON_INCLUDE_DIRS})
 add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 build)
+message("999999999999999999999999999999")
 
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/test/include")
+include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/../third_party/pybind11/include")
+include_directories(${PYTHON_INCLUDE_DIR})
+message("${PROJECT_SOURCE_DIR}/../third_party/pybind11/include")
 
 set(RUNTIME_SRC
     litert.cpp
@@ -54,6 +58,7 @@ else()
     set(USE_ADAPTOR "false")
 endif()
 
+file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/../DIOPI-TEST/python)
 add_custom_target(python_copy ALL
     COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:diopi_functions> ${CMAKE_SOURCE_DIR}/../DIOPI-TEST/python
     COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIRT}> ${CMAKE_SOURCE_DIR}/../DIOPI-TEST/python
