@@ -430,43 +430,43 @@ class ConformanceTest(object):
                     if test_tag and test_tag[-1] == 'backward':
                         test_tag.pop()
                     test_tag.append("inplace")
-                # try:
-                if is_inplace:
-                    ignore_paras_for_input_check.add("input")
-                np_inputs_orign = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
-                info = convert_input_tensors(function_paras, test_tag, nhwc_list, dtype_list, filter_dtype_str_list)
-                tensor_info = info if info else tensor_info
-                # meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
-                # logger.info(f"============================ before" + cfg_func_name + ":" + str(meminfo.used/1024**2))
-                output = eval(func_call)
-                # meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
-                # logger.info(f"============================ after" + cfg_func_name + ":" + str(meminfo.used/1024**2))
-                np_inputs_after_forward = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
-                passed, not_passed_name = np_allclose(np_inputs_orign, np_inputs_after_forward)
-                # sum_to_compare = True if 'sorted' in kwargs and ~kwargs['sorted'] else False
-                # passed = passed and compare_with_gen_output(output, data['cfg'], output_reference, sum_to_compare) if need_output else True
-                if passed:
-                    logger.info(f"Run diopi_functions.{cfg_func_name} succeed")
-                else:
-                    input_compare_str = "" if not_passed_name == "" else f", because of inputs: {not_passed_name} changed"
-                    logger.error(f"Run diopi_functions.{cfg_func_name} failed{input_compare_str}", tag=test_tag, info=tensor_info)
-                    if debug_level > 0:
-                        logger.error("failed config:\n%s", config_to_format_string(data['cfg']))
-                        if debug_level > 1:
-                            logger.error("failed arguments:")
-                            for key, arg in kwargs.items():
-                                logger.error(f"{key}: {arg}")
-                            logger.error(f"output_reference:\n{output_reference}")
-                            logger.error(f"output:\n{output}")
-                # except FunctionNotImplementedError as e:
-                #     logger.error(f"NotImplemented: {e}")
-                #     continue
-                # except AttributeError as e:
-                #     logger.error(f"AttributeError: {e}")
-                #     continue
-                # except Exception as e:
-                #     logger.error(f"{e}")
-                #     continue
+                try:
+                    if is_inplace:
+                        ignore_paras_for_input_check.add("input")
+                    np_inputs_orign = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
+                    info = convert_input_tensors(function_paras, test_tag, nhwc_list, dtype_list, filter_dtype_str_list)
+                    tensor_info = info if info else tensor_info
+                    # meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
+                    # logger.info(f"============================ before" + cfg_func_name + ":" + str(meminfo.used/1024**2))
+                    output = eval(func_call)
+                    # meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
+                    # logger.info(f"============================ after" + cfg_func_name + ":" + str(meminfo.used/1024**2))
+                    np_inputs_after_forward = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
+                    passed, not_passed_name = np_allclose(np_inputs_orign, np_inputs_after_forward)
+                    sum_to_compare = True if 'sorted' in kwargs and ~kwargs['sorted'] else False
+                    passed = passed and compare_with_gen_output(output, data['cfg'], output_reference, sum_to_compare) if need_output else True
+                    if passed:
+                        logger.info(f"Run diopi_functions.{cfg_func_name} succeed")
+                    else:
+                        input_compare_str = "" if not_passed_name == "" else f", because of inputs: {not_passed_name} changed"
+                        logger.error(f"Run diopi_functions.{cfg_func_name} failed{input_compare_str}", tag=test_tag, info=tensor_info)
+                        if debug_level > 0:
+                            logger.error("failed config:\n%s", config_to_format_string(data['cfg']))
+                            if debug_level > 1:
+                                logger.error("failed arguments:")
+                                for key, arg in kwargs.items():
+                                    logger.error(f"{key}: {arg}")
+                                logger.error(f"output_reference:\n{output_reference}")
+                                logger.error(f"output:\n{output}")
+                except FunctionNotImplementedError as e:
+                    logger.error(f"NotImplemented: {e}")
+                    continue
+                except AttributeError as e:
+                    logger.error(f"AttributeError: {e}")
+                    continue
+                except Exception as e:
+                    logger.error(f"{e}")
+                    continue
 
                 write_precision(data["cfg"], cfg_func_name, passed)
 
