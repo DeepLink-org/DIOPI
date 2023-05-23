@@ -438,7 +438,7 @@ class ConformanceTest(object):
                 tensor_info = info if info else tensor_info
                 # meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
                 # logger.info(f"============================ before" + cfg_func_name + ":" + str(meminfo.used/1024**2))
-                # output = eval(func_call)
+                output = eval(func_call)
                 # meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
                 # logger.info(f"============================ after" + cfg_func_name + ":" + str(meminfo.used/1024**2))
                 np_inputs_after_forward = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
