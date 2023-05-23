@@ -279,7 +279,7 @@ private:
     std::set<diopiTensorHandle_t> setTensors_;
 
 public:
-    diopiContext() {std::cout << "=====context construct=========\n" << std::endl;};
+    diopiContext() = default;
 
     ~diopiContext() {
         if (nullptr != stream_) {
@@ -289,7 +289,6 @@ public:
             delete it;
         }
         setTensors_.clear();
-        std::cout << "---------context deconstructor ------" <<std::endl;
     }
 
     diopiStreamHandle_t getStreamHandle() {
