@@ -49,4 +49,4 @@ set(THIRD_PARTY_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/half/inc
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
 
 target_link_libraries(${DEVICEIMPL} cndev cnrt cnnl cnmlrt)
-target_include_directories(${DEVICEIMPL} PUBLIC ${THIRD_PARTY_INCLUDE_DIRS})
+target_include_directories(${DEVICEIMPL} SYSTEM PUBLIC ${THIRD_PARTY_INCLUDE_DIRS})
