@@ -135,6 +135,11 @@ public:
         DIOPI_CHECK_NULLPTR_ABORT(tensor_);
         return shape_;
     }
+
+    int64_t size(int i) {
+        return shape()[i];
+    }
+
     const std::vector<int64_t>& stride() const {
         DIOPI_CHECK_NULLPTR_ABORT(tensor_);
         return stride_;
