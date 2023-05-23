@@ -173,11 +173,10 @@ diopi_configs = {
         ),
     ),
 
-    'hardtanh': dict(
+'hardtanh': dict(
         name=["hardtanh"],
-        is_inplace=True,
         para=dict(
-            min_val=[0.0, 0.0, 0.2, 1.4],
+            min_val=[0.0, 0.0, 0.2, 1.0],
             max_val=[6.0, 0.5, 0.2, 1.2],
         ),
         tensor_para=dict(
@@ -185,10 +184,50 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((2, 4096), (64, 28, 28),
-                              (2, 96, 56, 56), (64, 3, 7, 28, 28)),
+                    "shape": ((2, 4), (4, 2, 2),
+                              (2, 3, 2, 1), (4, 3, 1, 1)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'hardtanh_inplace': dict(
+        name=["hardtanh"],
+        is_inplace=True,
+        para=dict(
+            min_val=[0.0, 0.0, 0.2, 1.0],
+            max_val=[6.0, 0.5, 0.2, 1.2],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 4), (4, 2, 2),
+                              (2, 3, 2, 1), (4, 3, 1, 1)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'hardtanh_int_min_max': dict(
+        name=["hardtanh"],
+        is_inplace=True,
+        para=dict(
+            min_val=[0, 0, 2, 10],
+            max_val=[6, 5, 2, 12],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 4), (4, 2, 2),
+                              (2, 3, 2, 1), (4, 3, 1, 1)),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.int16, Dtype.int32, Dtype.int64],
+                    "gen_fn": dict(fn=Genfunc.randint, low=-1, high=15),
                 },
             ],
         ),
