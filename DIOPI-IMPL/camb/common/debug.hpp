@@ -13,6 +13,7 @@
 #include <string.h>
 
 #include <iostream>
+#include <memory>
 
 #include "../diopi_helper.hpp"
 
@@ -24,7 +25,7 @@ namespace camb {
 template <typename T>
 void printDevData(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max_len, T) {
     int bytes = sizeof(T) * len;
-    std::unique_ptr ptr(new char[bytes]);
+    std::unique_ptr<char> ptr(new char[bytes]);
     std::cout << "data address:" << data << std::endl;
     cnrtMemcpyAsync(ptr.get(), data, bytes, getStream(ctx), cnrtMemcpyDevToHost);
     syncStreamInCtx(ctx);
@@ -32,24 +33,6 @@ void printDevData(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max
         std::cout << reinterpret_cast<T*>(ptr.get())[i] << " ";
     }
     std::cout << std::endl;
-}
-
-template<>
-void printDevData<int8_t>(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max_len, int8_t _) {
-    int bytes = len;
-    std::unique_ptr ptr(new char[bytes]);
-    std::cout << "data address:" << data << std::endl;
-    cnrtMemcpyAsync(ptr.get(), data, bytes, getStream(ctx), cnrtMemcpyDevToHost);
-    syncStreamInCtx(ctx);
-    for (int i = 0; i < len && i < max_len; ++i) {
-        std::cout << static_cast<int32>(reinterpret_cast<T*>(ptr.get())[i]) << " ";
-    }
-    std::cout << std::endl;
-}
-
-template<>
-void printDevData<uint8_t>(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max_len, uint8_t _) {
-    printDevData<int8_t>(ctx, data, len, max_len, static_cast<int8_t>(_));
 }
 
 static void print_backtrace() {
