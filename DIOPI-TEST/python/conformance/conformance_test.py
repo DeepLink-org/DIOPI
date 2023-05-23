@@ -13,9 +13,9 @@ from .utils import get_saved_pth_list, get_data_from_file
 from .utils import cfg_file_name
 from . import model_config
 
-import pynvml
-pynvml.nvmlInit()
-handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+# import pynvml
+# pynvml.nvmlInit()
+# handle = pynvml.nvmlDeviceGetHandleByIndex(0)
 
 def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dtype_list=[], filter_dtype_str_list=[]):
     tensor_info = []
@@ -436,11 +436,11 @@ class ConformanceTest(object):
                 np_inputs_orign = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
                 info = convert_input_tensors(function_paras, test_tag, nhwc_list, dtype_list, filter_dtype_str_list)
                 tensor_info = info if info else tensor_info
-                meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
-                logger.info(f"============================ before" + cfg_func_name + ":" + str(meminfo.used/1024**2))
-                output = eval(func_call)
-                meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
-                logger.info(f"============================ after" + cfg_func_name + ":" + str(meminfo.used/1024**2))
+                # meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
+                # logger.info(f"============================ before" + cfg_func_name + ":" + str(meminfo.used/1024**2))
+                # output = eval(func_call)
+                # meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
+                # logger.info(f"============================ after" + cfg_func_name + ":" + str(meminfo.used/1024**2))
                 np_inputs_after_forward = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
                 passed, not_passed_name = np_allclose(np_inputs_orign, np_inputs_after_forward)
                 # sum_to_compare = True if 'sorted' in kwargs and ~kwargs['sorted'] else False
