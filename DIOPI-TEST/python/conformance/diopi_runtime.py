@@ -303,8 +303,8 @@ class Tensor:
                   for i in range(len(darray.strides))]
         tr = cls(size=darray.shape, dtype=dtype, stride=stride)
         diopirt_lib.diopiTensorCopyFromBuffer(tr.context_handle,
-                                               c_void_p(darray.ctypes.data),
-                                               tr.tensor_handle)
+                                              c_void_p(darray.ctypes.data),
+                                              tr.tensor_handle)
         return tr
 
     def numpy(self) -> np.ndarray:
@@ -314,8 +314,8 @@ class Tensor:
         strides = [int(stride[i] * itemsize) for i in range(len(stride))]
         darray = np.ndarray(shape=self.size(), dtype=dtype, strides=strides)
         diopirt_lib.diopiTensorCopyToBuffer(self.context_handle,
-                                             self.tensor_handle,
-                                             c_void_p(darray.ctypes.data))
+                                            self.tensor_handle,
+                                            c_void_p(darray.ctypes.data))
         return darray
 
 
