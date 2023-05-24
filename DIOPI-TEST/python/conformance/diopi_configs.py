@@ -521,9 +521,9 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((1, ), (1024,), (364800, 4), (2, 128, 3072),
-                              (256, 128, 3, 3),
-                              (2, 31, 512, 6, 40)),
+                    "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
+                              (256, 128, 3, 3), (2, 31, 512, 6, 40),
+                              (0,), (0, 16), (8, 0, 4)),
                 },
             ],
         ),
@@ -554,6 +554,25 @@ diopi_configs = {
                Dtype.uint8, Dtype.int8],
         tensor_para=dict(
             gen_fn=Genfunc.zeros,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1, ), (1024,), (364800, 4), (2, 128, 3072),
+                              (256, 128, 3, 3),
+                              (2, 31, 512, 6, 40)),
+                },
+            ],
+        ),
+    ),
+    
+    'log_neg_input': dict(
+        name=['log', 'log2', 'log10'],
+        interface=['torch'],
+        dtype=[Dtype.float16, Dtype.float32, Dtype.float64,
+               Dtype.int16, Dtype.int32, Dtype.int64,
+               Dtype.uint8, Dtype.int8],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
