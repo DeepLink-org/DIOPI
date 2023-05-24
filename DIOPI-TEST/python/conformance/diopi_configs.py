@@ -4644,7 +4644,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'randn': dict(
         name=['randn'],
         no_output_ref=True,
@@ -4653,7 +4653,7 @@ diopi_configs = {
                   (4, 16, 8, 64), (2, 16, 1, 64, 5)],
         ),
     ),
-    
+
     'lerp': dict(
         name=['lerp'],
         interface=['torch'],
@@ -4678,7 +4678,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'lerp_tensor': dict(
         name=['lerp'],
         interface=['torch'],
