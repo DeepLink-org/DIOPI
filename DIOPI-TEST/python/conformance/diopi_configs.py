@@ -254,6 +254,24 @@ diopi_configs = {
             ],
         ),
     ),
+    
+    'gelu_specific': dict(
+        name=['gelu'],
+        atol=1e-4,
+        rtol=1e-5,
+        approximate=['none', 'tanh'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((32,), (16, 7)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.zeros,
+                },
+            ],
+        ),
+    ),
 
     'avg_pool2d': dict(
         name=["avg_pool2d"],
