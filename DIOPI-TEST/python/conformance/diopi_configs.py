@@ -173,7 +173,7 @@ diopi_configs = {
         ),
     ),
 
-'hardtanh': dict(
+    'hardtanh': dict(
         name=["hardtanh"],
         para=dict(
             min_val=[0.0, 0.0, 0.2, 1.4],
