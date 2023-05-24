@@ -308,69 +308,69 @@ extern "C" diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTe
 
 extern "C" diopiError_t diopiHardswish(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor output_tensor(out);
+    DiopiTensor inputTensor(input);
+    DiopiTensor outputTensor(out);
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_HARDSWISH);
-    DIOPI_CALL(cnnl_activation_internal(ctx, input_tensor, output_tensor, attr));
+    DIOPI_CALL(cnnlActivationInternal(ctx, inputTensor, outputTensor, attr));
     return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiHardswishInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
+    DiopiTensor inputTensor(input);
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_HARDSWISH);
-    DIOPI_CALL(cnnl_activation_internal(ctx, input_tensor, input_tensor, attr));
+    DIOPI_CALL(cnnlActivationInternal(ctx, inputTensor, inputTensor, attr));
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiHardswishBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+extern "C" diopiError_t diopiHardswishBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                                diopiConstTensorHandle_t output) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor grad_input_tensor(grad_input);
-    DiopiTensor grad_output_tensor(grad_output);
-    DiopiTensor output_tensor(output);
+    DiopiTensor gradInputTensor(gradInput);
+    DiopiTensor gradOutputTensor(gradOutput);
+    DiopiTensor outputTensor(output);
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_HARDSWISH);
-    cnnl_activation_backward_internal(ctx, grad_input_tensor, grad_output_tensor, {}, output_tensor, attr);
+    cnnlActivationBackwardInternal(ctx, gradInputTensor, gradOutputTensor, {}, outputTensor, attr);
     return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiSilu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor output_tensor(out);
+    DiopiTensor inputTensor(input);
+    DiopiTensor outputTensor(out);
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_SILU);
-    DIOPI_CALL(cnnl_activation_internal(ctx, input_tensor, output_tensor, attr));
+    DIOPI_CALL(cnnlActivationInternal(ctx, inputTensor, outputTensor, attr));
     return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiSiluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
+    DiopiTensor inputTensor(input);
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_SILU);
-    DIOPI_CALL(cnnl_activation_internal(ctx, input_tensor, input_tensor, attr));
+    DIOPI_CALL(cnnlActivationInternal(ctx, inputTensor, inputTensor, attr));
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiSiluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+extern "C" diopiError_t diopiSiluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                           diopiConstTensorHandle_t output) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor grad_input_tensor(grad_input);
-    DiopiTensor grad_output_tensor(grad_output);
-    DiopiTensor output_tensor(output);
+    DiopiTensor gradInputTensor(gradInput);
+    DiopiTensor gradOutputTensor(gradOutput);
+    DiopiTensor outputTensor(output);
 
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_SILU);
-    cnnl_activation_backward_internal(ctx, grad_input_tensor, grad_output_tensor, {}, output_tensor, attr);
+    cnnlActivationBackwardInternal(ctx, gradInputTensor, gradOutputTensor, {}, outputTensor, attr);
     return diopiSuccess;
 }
 }  // namespace camb
