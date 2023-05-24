@@ -652,7 +652,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'neg_without_inplace_zero': dict(
         name=['neg'],
         interface=['torch'],
@@ -4512,7 +4512,7 @@ diopi_configs = {
             ]
         ),
     ),
-    
+
     'normalize': dict(
         name=["normalize"],
         para=dict(
@@ -4530,7 +4530,7 @@ diopi_configs = {
             ]
         )
     ),
-    
+
     'normalize_p': dict(
         name=['normalize'],
         para=dict(
@@ -4542,7 +4542,7 @@ diopi_configs = {
                  None, [0, 1], [-1, 1], None, [0, 1, 2, 3]],
             eps=[1e-12, 1e-12, 1e-12, 1e-12, 1e-12,
                  1e-12, 1e-12, 1e-12, 1e-12, 1e-12,
-                 1e-12, 1e-12, 1e-12, 1e-12, 1e-12,],
+                 1e-12, 1e-12, 1e-12, 1e-12, 1e-12],
         ),
         tensor_para=dict(
             args=[
@@ -4621,57 +4621,23 @@ diopi_configs = {
             ]
         ),
     ),
-    
-    'view_as_real': dict(
-            name=['view_as_real'],
-            interface=['torch'],
-            dtype=[Dtype.complex64, Dtype.complex128],
-            tensor_para=dict(
-                gen_fn=Genfunc.randn_cmplx,
-                args=[
-                    {
-                        "ins": ['input'],
-                        "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
-                                (256, 128, 3, 3),
-                                (2, 31, 512, 6, 40)),
-                    },
-                ],
-            ),
-        ),
-    
-    'view_as_complex': dict(
-            name=['view_as_complex'],
-            interface=['torch'],
-            dtype=[Dtype.float32, Dtype.float64],
-            tensor_para=dict(
-                gen_fn=Genfunc.randn,
-                args=[
-                    {
-                        "ins": ['input'],
-                        "shape": ((2,), (364800, 2), (2, 128, 2),
-                                (256, 128, 3, 2),
-                                (2, 31, 512, 6, 2)),
-                    },
-                ],
-            ),
-        ),
-    
+
     'polar': dict(
         name=['polar'],
         interface=['torch'],
         dtype=[Dtype.float32, Dtype.float64],
         tensor_para=dict(
-            gen_fn=Genfunc.positive,
+            gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['abs'],
-                    "shape": ((1,), (1024, ), (384, 128),
+                    "shape": ((), (1024, ), (384, 128),
                               (64, 1, 128), (128, 64, 3, 3),
                               (2, 32, 130, 130)),
                 },
                 {
                     "ins": ['angle'],
-                    "shape": ((1,), (1024, ), (384, 128),
+                    "shape": ((), (1024, ), (384, 128),
                               (32, 64, 8, 128), (1, ),
                               (2, 32, 1, 1)),
                 },

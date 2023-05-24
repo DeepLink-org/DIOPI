@@ -187,7 +187,7 @@ class ManualTest(object):
         if end is not None:
             assert (out_numpy <= end - 1).all(),\
                 "failed to execute random"
-    
+
     def test_randn(size):
         from scipy import stats
         out = F.randn(size)
