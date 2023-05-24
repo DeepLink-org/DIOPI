@@ -1,5 +1,6 @@
 import re
 
+
 class CodeTemplate(object):
     substitution_str = r'(^[^\n\S]*)?\$([^\d\W]\w*|\{,?[^\d\W]\w*\,?})'
 
@@ -24,8 +25,8 @@ class CodeTemplate(object):
             return kwargs[v] if v in kwargs else env[v]
 
         def indent_lines(indent, v):
-            return ("".join([indent + l + "\n" for e in v
-                    for l in str(e).splitlines()]).rstrip())
+            return ("".join([indent + line + "\n" for e in v
+                    for line in str(e).splitlines()]).rstrip())
 
         def replace(match):
             indent = match.group(1)
@@ -53,7 +54,7 @@ class CodeTemplate(object):
             else:
                 return str(v)
         return self.subtitution.sub(replace, self.pattern)
-    
+
 
 class OpTemplate(object):
     operators_template = CodeTemplate("""\
@@ -90,7 +91,7 @@ m.def("${func_name}", [](${attrs}) {
     return ret;
 });
 """)
-    
+
     vector_template = CodeTemplate("""\
 std::vector<${handle_type}> ${param}V(${param_num});
 for (int i = 0; i < ${param_num}; ++i)

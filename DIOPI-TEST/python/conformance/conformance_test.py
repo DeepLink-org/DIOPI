@@ -17,6 +17,7 @@ from . import model_config
 # pynvml.nvmlInit()
 # handle = pynvml.nvmlDeviceGetHandleByIndex(0)
 
+
 def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dtype_list=[], filter_dtype_str_list=[]):
     tensor_info = []
     for para in function_paras["kwargs"].keys():

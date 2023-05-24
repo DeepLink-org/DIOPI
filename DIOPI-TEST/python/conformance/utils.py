@@ -9,7 +9,6 @@ import csv
 import pickle
 import ctypes
 import diopi_functions
-from diopi_runtime import Dtype
 
 
 cfg_file_name = "test_config.cfg"
@@ -360,6 +359,7 @@ def get_data_from_file(data_path, test_path, name=""):
     else:
         f.close()
     return data
+
 
 def get_capsule(src):
     PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)

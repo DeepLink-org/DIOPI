@@ -55,7 +55,6 @@ class TestStream(object):
             mat1 = tmp
 
         dim = Sizes((0, 1, 2))
-        dtype = res.get_dtype()
         self.sum_func(stream, res, mat1, dim)
         out_ndarray = Tensor.numpy(res)
         end = time.time()
@@ -104,9 +103,3 @@ class TestStream(object):
         thread_2.start()
         thread_1.join()
         thread_2.join()
-
-
-temp = TestStream()
-temp.setup_class()
-temp.test_stream()
-temp.test_multi_stream()

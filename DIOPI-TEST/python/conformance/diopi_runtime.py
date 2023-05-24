@@ -7,7 +7,7 @@ from ctypes import (c_void_p, c_char_p, c_int64, c_double)
 from .dtype import Dtype
 import numpy as np
 import atexit
-from diopi_runtime import diopiTensor, diopiSize, diopiScalar, Context, Dtype, Device, diopi_tensor_copy_to_buffer, get_last_error_string
+from diopi_runtime import diopiTensor, diopiSize, diopiScalar, Context, Device, diopi_tensor_copy_to_buffer, get_last_error_string
 
 # @unique
 # class Device(Enum):
@@ -49,6 +49,7 @@ def from_numpy_dtype(dtype: np.dtype) -> Dtype:
         return Dtype.bool
     else:
         return None
+
 
 def to_numpy_dtype(dtype: Dtype) -> np.dtype:
     if dtype == Dtype.int8:
@@ -170,22 +171,21 @@ class Tensor(diopiTensor):
         size=None,
         dtype=None,
         stride=None,
-        context = default_context,
+        context=default_context,
         data_ptr=None
     ):
         if size is None:
             return diopiTensor.__init__(self)
-        
+
         if isinstance(size, (tuple, list)):
-            size =  Sizes(list(size))
+            size = Sizes(list(size))
 
         if data_ptr is None:
             diopiTensor.__init__(self, size, stride, dtype,
-                                Device.AIChip, context)
+                                 Device.AIChip, context)
         else:
             diopiTensor.__init__(self, size, stride, dtype,
-                    Device.AIChip, context, data_ptr)
-
+                                 Device.AIChip, context, data_ptr)
 
     def __str__(self):
         array = self.numpy()
@@ -194,7 +194,6 @@ class Tensor(diopiTensor):
                      stride:{self.get_stride()}, numel:{self.numel()}\n"
         return string
 
-
     def raw_like(self):
         size = self.size()
         stride = self.get_stride()
@@ -202,18 +201,15 @@ class Tensor(diopiTensor):
         return Tensor(size=size, dtype=dtype, stride=stride,
                       context=self.context())
 
-
     def size(self):
         return self.shape()
-
 
     def reset_shape(self, shape):
         assert isinstance(shape, (tuple, list))
         self.reset_shape(Sizes(list(shape)))
 
-
     @classmethod
-    def from_numpy(cls, darray, context = None):
+    def from_numpy(cls, darray, context=None):
         if not isinstance(darray, (np.generic, np.ndarray)):
             raise TypeError(f"expected np.ndarray (got {type(darray)})")
         dtype = from_numpy_dtype(darray.dtype)
@@ -241,7 +237,6 @@ class Tensor(diopiTensor):
         darray = np.ndarray(shape=self.size().data, dtype=dtype, strides=strides)
         darray = np.array(self, copy=False)
         diopi_tensor_copy_to_buffer(self.context(), self, darray)
-        
         return darray
 
 

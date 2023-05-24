@@ -9,8 +9,8 @@ from op_template import OpTemplate as OT
 tensor_ptr = ['diopiTensorHandle_t*', 'diopiConstTensorHandle_t*']
 
 type_convert_dict = {
-    'int64_t*' : 'void*',
-    'double*' : 'void*'
+    'int64_t*': 'void*',
+    'double*': 'void*'
 }
 
 can_be_none = ['const int64_t*', 'const double*', 'const bool*']
@@ -34,14 +34,13 @@ def prepare():
 
     _cur_dir = os.path.dirname(os.path.abspath(__file__))
     options = parser.parse_args()
-    config_file = os.path.join(_cur_dir, '../../DIOPI-IMPL', options.device)
     source_dir = os.path.join(_cur_dir, '../../DIOPI-PROTO/include/diopi/')
     output_dir = os.path.join(_cur_dir, '../csrc')
     use_adaptor = True if options.use_adaptor == 'true' else False
     options = dict(source_dir=source_dir,
-                    output_dir=output_dir,
-                    use_adaptor=use_adaptor)
-    
+                   output_dir=output_dir,
+                   use_adaptor=use_adaptor)
+
     return options
 
 
@@ -66,7 +65,7 @@ def get_func_info(content):
                 arg_type = type_convert_dict[arg_type]
                 arg = 'reinterpret_cast<' + temp[0] + '>(' + arg.split(' ')[-1] + ')'
             if arg_type in tensor_ptr:
-                for i in range(index+1, len(arg_define)):
+                for i in range(index + 1, len(arg_define)):
                     next_arg = arg_define[i].strip(' ').split(' ')
                     if next_arg == 3:
                         assert arg_type == 'diopiTensorHandle_t*'
@@ -90,7 +89,7 @@ def get_func_info(content):
                         out_ptr.append(arg_index)
                         arg_type = 'PtrWrapper<diopiTensor>'
                         break
-                if index == len(arg_define)-1 and arg_type == 'diopiTensorHandle_t*':
+                if index == len(arg_define) - 1 and arg_type == 'diopiTensorHandle_t*':
                     type_change = True
                     out_ptr.append(arg_index)
                     arg_type = 'PtrWrapper<diopiTensor>'
@@ -138,24 +137,24 @@ def gen_functions(options):
                     else:
                         attrs.append(attr_types[index] + ' ' + call_args[index])
                 for vector in ins_vector:
-                    convert += OT.vector_template.substitute(env=dict(param=call_args[vector], param_num=ins_vector[vector], \
-                                param_type=attr_types[vector], handle_type='diopiConstTensorHandle_t'))
+                    convert += OT.vector_template.substitute(env=dict(param=call_args[vector], param_num=ins_vector[vector],
+                                                             param_type=attr_types[vector], handle_type='diopiConstTensorHandle_t'))
                     call_args[vector] = call_args[vector] + 'DIOPI'
                 for vector in outs_vector:
-                    convert += OT.vector_template.substitute(env=dict(param=call_args[vector], param_num=outs_vector[vector], \
-                                param_type=attr_types[vector], handle_type='diopiTensorHandle_t'))
+                    convert += OT.vector_template.substitute(env=dict(param=call_args[vector], param_num=outs_vector[vector],
+                                                             param_type=attr_types[vector], handle_type='diopiTensorHandle_t'))
                     call_args[vector] = call_args[vector] + 'DIOPI'
-                for out in out_ptr:        
+                for out in out_ptr:
                     convert += "diopiTensorHandle_t {param}Handle = nullptr;\n".format(param=call_args[out])
                     out_copy += "if ({param}.get() != nullptr)\n \
     *{param} = *{param}Handle;\n".format(param=call_args[out])
                     call_args[out] = '&' + call_args[out] + 'Handle'
-                if use_adaptor: 
+                if use_adaptor:
                     call_func = 'diopiadaptor::' + func_name + '(' + ', '.join(call_args) + ')'
                 else:
                     call_func = func_name + '(' + ', '.join(call_args) + ')'
-                exports.append(OT.function_template.substitute(env=dict(func_name=func_name, attrs=', '.join(attrs), convert=convert, \
-                            out_copy=out_copy, call_func=call_func)))
+                exports.append(OT.function_template.substitute(env=dict(func_name=func_name, attrs=', '.join(attrs), convert=convert,
+                                                               out_copy=out_copy, call_func=call_func)))
             else:
                 if use_adaptor:
                     exports.append('m.def("{func_name}", diopiadaptor::{func_name});'.format(func_name=func_name))
@@ -166,21 +165,21 @@ def gen_functions(options):
                 keep_args = []
                 for index, arg in enumerate(call_args):
                     keep_args.append(arg if index not in paras_none else 'nullptr')
-                if use_adaptor: 
+                if use_adaptor:
                     call_func = 'diopiadaptor::' + func_name + '(' + ', '.join(keep_args) + ')'
                 else:
                     call_func = func_name + '(' + ', '.join(keep_args) + ')'
                 if type_change:
-                    exports.append(OT.function_template.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert=convert, \
-                                out_copy=out_copy, call_func=call_func)))
+                    exports.append(OT.function_template.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert=convert,
+                                                                   out_copy=out_copy, call_func=call_func)))
                 else:
-                    exports.append(OT.function_template.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert='', \
-                                out_copy='', call_func=call_func)))
-                    
+                    exports.append(OT.function_template.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert='',
+                                                                   out_copy='', call_func=call_func)))
+
     output_path = options.get('output_dir')
     output_file = os.path.join(output_path, 'diopi_functions.cpp')
     out_code = OT.operators_template.substitute(env=dict(export_functions=exports))
-    
+
     with open(output_file, 'w') as file:
         file.write(out_code)
 

@@ -812,7 +812,7 @@ def avg_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False,
     func = check_function("diopiAvgPool2d")
     if divisor_override:
         ret = func(input.context(), out, input, kernel_size, stride, padding, ceil_mode,
-                   count_include_pad,divisor_override)
+                   count_include_pad, divisor_override)
     else:
         ret = func(input.context(), out, input, kernel_size, stride, padding, ceil_mode,
                    count_include_pad)
@@ -1717,7 +1717,7 @@ def leaky_relu_backward(input, grad_outputs, negative_slope=0.01, input_is_resul
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
     dtype = Dtype.int64 if isinstance(negative_slope, int) else Dtype.float64
-    negative_slope = Scalar(negative_slope, dtype) 
+    negative_slope = Scalar(negative_slope, dtype)
 
     func = check_function("diopiLeakyReluBackward")
     ret = func(input.context(), grad_input, grad_outputs[0],
@@ -1864,8 +1864,8 @@ def avg_pool2d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
     func = check_function("diopiAvgPool2dBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], input, kernel_size, stride, padding,
                ceil_mode, count_include_pad, divisor_override) if divisor_override else \
-               func(input.context(), grad_input, grad_outputs[0], input, kernel_size, stride, padding, ceil_mode,
-               count_include_pad)
+        func(input.context(), grad_input, grad_outputs[0], input, kernel_size, stride, padding, ceil_mode,
+             count_include_pad)
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -2128,8 +2128,8 @@ def uniform(input, start=0, end=1) -> Tensor:
 
 def random(input, start=0, end=None) -> Tensor:
     func = check_function("diopiRandomInp")
-    ret = func(input.context(), input, start, end, 0) if end else
-          func(input.context(), input, start, 0)
+    ret = func(input.context(), input, start, end, 0) if end else \
+        func(input.context(), input, start, 0)
     check_returncode(ret)
     return input
 
@@ -3262,9 +3262,9 @@ def unique(input, sorted=True, return_inverse=False, return_counts=False, dim=No
 
     func = check_function("diopiUnique")
     ret = func(input.context(), out_ptr, input, sorted,
-               return_counts, indices, counts_ptr) if dim is None else
-               func(input.context(), out_ptr, input, dim, sorted,
-               return_counts, indices, counts_ptr)    
+               return_counts, indices, counts_ptr) if dim is None else \
+        func(input.context(), out_ptr, input, dim, sorted,
+             return_counts, indices, counts_ptr)
     check_returncode(ret)
     out = out_ptr.data()
     if return_counts:
