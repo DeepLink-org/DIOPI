@@ -877,7 +877,7 @@ diopi_configs = {
     ),
     
     'pointwise_binary_broadcast': dict(
-        name=['add', 'sub', 'mul', 'eq', 'ne', 'le',
+        name=['add', 'sub', 'mul', 'div', 'eq', 'ne', 'le',
               'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
         interface=['torch'],
         dtype=[Dtype.float32],
@@ -899,29 +899,127 @@ diopi_configs = {
             ],
         ),
     ),
+    
+    'pointwise_binary_broadcast_inplace': dict(
+        name=['add', 'sub', 'mul', 'div', 'eq', 'ne', 'le',
+              'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
+        interface=['torch'],
+        dtype=[Dtype.float32],
+        is_inplace=True,
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((64, ), (2, 1024), (2, 384, 128),
+                              (128, 64, 3, 3), (2, 64, 16, 128),
+                              (5, 2, 32, 130, 130), (16, 0,), (8, 16, 0), (32, 0, 16)),
+                },
+                {
+                    "ins": ['other'],
+                    "shape": ((), (1024, ), (384, 128),
+                              (1, ), (64, 16, 128),
+                              (2, 32, 1, 130), (0,), (16, 1,), (0, 16)),
+                },
+            ],
+        ),
+    ),
 
     'pointwise_binary_diff_dtype': dict(
-        name=['logical_and', 'logical_or'],
+        name=['add', 'mul', 'eq', 'ne', 'le',
+              'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
         interface=['torch'],
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((1024, ), (384, 128),
-                              (128, 64, 3, 3),
-                              (2, 32, 130, 130)),
+                    "shape": ((1024, ),),
                     "dtype":[Dtype.float64, Dtype.float32, Dtype.float16,
                              Dtype.int64, Dtype.int32, Dtype.int16,
                              Dtype.int8, Dtype.uint8, Dtype.bool],
                 },
                 {
                     "ins": ['other'],
-                    "shape": ((1024, ), (384, 128),
-                              (1, ), (2, 32, 1, 1)),
+                    "shape": ((1024, ),),
                     "dtype":[Dtype.int32, Dtype.uint8, Dtype.bool,
                              Dtype.int64, Dtype.float64, Dtype.float32,
                              Dtype.int16, Dtype.float16, Dtype.int8],
+                },
+            ],
+        ),
+    ),
+    
+    'pointwise_binary_diff_dtype_inplace': dict(
+        name=['add', 'mul', 'eq', 'ne', 'le',
+              'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
+        interface=['torch'],
+        is_inplace=True,
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1024, ),),
+                    "dtype":[Dtype.float64, Dtype.float32, Dtype.float16,
+                             Dtype.int32, Dtype.float64, Dtype.float64,
+                             Dtype.int8, Dtype.float32, Dtype.int8],
+                },
+                {
+                    "ins": ['other'],
+                    "shape": ((1024, ),),
+                    "dtype":[Dtype.int32, Dtype.uint8, Dtype.bool,
+                             Dtype.int64, Dtype.float16, Dtype.float32,
+                             Dtype.int16, Dtype.bool, Dtype.uint8],
+                },
+            ],
+        ),
+    ),
+    
+    'pointwise_binary_diff_dtype_without_bool': dict(
+        name=['sub', 'div'],
+        interface=['torch'],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1024, ),),
+                    "dtype":[Dtype.float64, Dtype.float32, Dtype.float16,
+                             Dtype.int32, Dtype.int32, Dtype.int16,
+                             Dtype.int8, Dtype.uint8, Dtype.float32],
+                },
+                {
+                    "ins": ['other'],
+                    "shape": ((1024, ),),
+                    "dtype":[Dtype.int32, Dtype.uint8, Dtype.int32,
+                             Dtype.int64, Dtype.float64, Dtype.float32,
+                             Dtype.uint8, Dtype.float16, Dtype.int8],
+                },
+            ],
+        ),
+    ),
+    
+    'pointwise_binary_diff_dtype_without_bool_inplace': dict(
+        name=['sub'],
+        interface=['torch'],
+        is_inplace=True,
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1024, ),),
+                    "dtype":[Dtype.float64, Dtype.float32, Dtype.float16,
+                             Dtype.int64, Dtype.float16, Dtype.float64,
+                             Dtype.int8, Dtype.uint8, Dtype.float32],
+                },
+                {
+                    "ins": ['other'],
+                    "shape": ((1024, ),),
+                    "dtype":[Dtype.int32, Dtype.uint8, Dtype.int32,
+                             Dtype.int32, Dtype.float64, Dtype.float32,
+                             Dtype.uint8, Dtype.int16, Dtype.int8],
                 },
             ],
         ),
@@ -1058,6 +1156,27 @@ diopi_configs = {
                     "shape": ((4, 16), (), (1024, ), (384, 128),
                               (1, ), (64, 16, 128),
                               (5, 2, 32, 1, 130), (16, 0), (16, 0,), (0, 16)),
+                },
+            ],
+        ),
+    ),
+    
+    'div_diff_dtype_inplace': dict(
+        name=['div'],
+        interface=['torch'],
+        is_inplace=True,
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1024, ),),
+                    "dtype":[Dtype.float64, Dtype.float32, Dtype.float16,],
+                },
+                {
+                    "ins": ['other'],
+                    "shape": ((1024, ),),
+                    "dtype":[Dtype.float32, Dtype.float16, Dtype.float64,],
                 },
             ],
         ),
