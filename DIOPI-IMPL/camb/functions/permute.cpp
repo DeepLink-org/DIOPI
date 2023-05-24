@@ -18,43 +18,42 @@ namespace camb {
 extern "C" diopiError_t diopiPermute(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dims) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    DiopiTensor input_tensor(input);
-    DiopiTensor output_tensor(out);
-    if (diopi_dtype_float64 == input_tensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_float32));
+    DiopiTensor inputTensor(input);
+    DiopiTensor outputTensor(out);
+    if (diopi_dtype_float64 == inputTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
     }
-    CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc output_desc(output_tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outputDesc(outputTensor, CNNL_LAYOUT_ARRAY);
 
-
-    std::vector<int> perm_data{dims.data, dims.data + dims.len};
-    for (int i = 0; i < perm_data.size(); i++) {
-        if (perm_data[i] < 0) {
-            perm_data[i] += input_tensor.dim();
+    std::vector<int> permData{dims.data, dims.data + dims.len};
+    for (int& i : permData) {
+        if (i < 0) {
+            i += inputTensor.dim();
         }
     }
 
-    CnnlResourceGuard<cnnlTransposeDescriptor_t, cnnlCreateTransposeDescriptor, cnnlDestroyTransposeDescriptor> trans_desc;
+    CnnlResourceGuard<cnnlTransposeDescriptor_t, cnnlCreateTransposeDescriptor, cnnlDestroyTransposeDescriptor> transDesc;
 
-    const std::vector<int64_t> src_input_shape = input_tensor.shape();
-    int dim_num = src_input_shape.size();
-    DIOPI_CALLCNNL(cnnlSetTransposeDescriptor(trans_desc.get(), dim_num, perm_data.data()));
-    size_t workspace_size;
-    DIOPI_CALLCNNL(cnnlGetTransposeWorkspaceSize(handle, input_desc.get(), trans_desc.get(), &workspace_size));
+    const std::vector<int64_t> srcInputShape = inputTensor.shape();
+    int dimNum = srcInputShape.size();
+    DIOPI_CALLCNNL(cnnlSetTransposeDescriptor(transDesc.get(), dimNum, permData.data()));
+    size_t workspaceSize;
+    DIOPI_CALLCNNL(cnnlGetTransposeWorkspaceSize(handle, inputDesc.get(), transDesc.get(), &workspaceSize));
     void* workspace = nullptr;
-    if (0 != workspace_size) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
+    if (0 != workspaceSize) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    if (input_tensor.dtype() == output_tensor.dtype()) {
-        DIOPI_CALLCNNL(cnnlTranspose_v2(
-            handle, trans_desc.get(), input_desc.get(), input_tensor.data(), output_desc.get(), output_tensor.data(), workspace, workspace_size));
-    } else {
-        DiopiTensor out_temp = requiresTensor(ctx, output_tensor.shape(), input_tensor.dtype());
-        CnnlTensorDesc out_temp_desc(out_temp, CNNL_LAYOUT_ARRAY);
+    if (inputTensor.dtype() == outputTensor.dtype()) {
         DIOPI_CALLCNNL(
-            cnnlTranspose_v2(handle, trans_desc.get(), input_desc.get(), input_tensor.data(), out_temp_desc.get(), out_temp.data(), workspace, workspace_size));
-        DIOPI_CALL(dataTypeCast(ctx, output_tensor, out_temp));
+            cnnlTranspose_v2(handle, transDesc.get(), inputDesc.get(), inputTensor.data(), outputDesc.get(), outputTensor.data(), workspace, workspaceSize));
+    } else {
+        DiopiTensor outTemp = requiresTensor(ctx, outputTensor.shape(), inputTensor.dtype());
+        CnnlTensorDesc outTempDesc(outTemp, CNNL_LAYOUT_ARRAY);
+        DIOPI_CALLCNNL(
+            cnnlTranspose_v2(handle, transDesc.get(), inputDesc.get(), inputTensor.data(), outTempDesc.get(), outTemp.data(), workspace, workspaceSize));
+        DIOPI_CALL(dataTypeCast(ctx, outputTensor, outTemp));
     }
 
     return diopiSuccess;

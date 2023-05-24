@@ -21,24 +21,24 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     }
 
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor dest_tr(dest);
-    DiopiTensor src_tr(src);
+    DiopiTensor destTr(dest);
+    DiopiTensor srcTr(src);
 
-    if (src_tr.dtype() != dest_tr.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, src_tr, dest_tr.dtype()));
+    if (srcTr.dtype() != destTr.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, srcTr, destTr.dtype()));
     }
 
-    DiopiTensor bcast_src_tr;
-    DiopiTensor bcast_dest_tr;
-    DiopiTensor target_tr = src_tr.numel() > dest_tr.numel() ? src_tr : dest_tr;
+    DiopiTensor bcastSrcTr;
+    DiopiTensor bcastDestTr;
+    DiopiTensor targetTr = srcTr.numel() > destTr.numel() ? srcTr : destTr;
 
-    DIOPI_CALL(broadcastHelper(ctx, src_tr, target_tr, &bcast_src_tr));
-    DIOPI_CALL(broadcastHelper(ctx, dest_tr, target_tr, &bcast_dest_tr));
+    DIOPI_CALL(broadcastHelper(ctx, srcTr, targetTr, &bcastSrcTr));
+    DIOPI_CALL(broadcastHelper(ctx, destTr, targetTr, &bcastDestTr));
 
-    CnnlTensorDesc input_desc(bcast_dest_tr, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc src_desc(bcast_src_tr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputDesc(bcastDestTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc srcDesc(bcastSrcTr, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlCopy(handle, src_desc.get(), bcast_src_tr.data(), input_desc.get(), bcast_dest_tr.data()));
+    DIOPI_CALLCNNL(cnnlCopy(handle, srcDesc.get(), bcastSrcTr.data(), inputDesc.get(), bcastDestTr.data()));
 
     return diopiSuccess;
 }

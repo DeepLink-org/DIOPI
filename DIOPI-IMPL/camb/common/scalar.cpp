@@ -6,7 +6,6 @@
 
 #include "common.hpp"
 
-
 namespace impl {
 namespace camb {
 
@@ -27,7 +26,7 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
         DIOPI_CALLCNNL(cnnlFill_v3(handle, CNNL_POINTER_MODE_HOST, &val, descOut.get(), out.data()));
         return diopiSuccess;
     } else {
-        set_last_error_string("%s", "salar dtype is not float64 or int64");
+        setLastErrorString("%s", "salar dtype is not float64 or int64");
         return diopiDtypeNotSupported;
     }
     return diopiSuccess;

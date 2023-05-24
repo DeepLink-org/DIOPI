@@ -12,49 +12,49 @@ namespace impl {
 namespace camb {
 extern "C" {
 
-diopiError_t bitwiseCommon(
-    diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other, cnnlBitComputeOp_t optype) {
+diopiError_t bitwiseCommon(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
+                           cnnlBitComputeOp_t optype) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    DiopiTensor out_tensor(out);
-    auto out32_tensor = out_tensor;
-    if (diopi_dtype_int64 == out_tensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, out32_tensor, diopi_dtype_int32));
+    DiopiTensor outTensor(out);
+    auto out32Tensor = outTensor;
+    if (diopi_dtype_int64 == outTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, out32Tensor, diopi_dtype_int32));
     }
-    CnnlTensorDesc outDesc(out32_tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(out32Tensor, CNNL_LAYOUT_ARRAY);
 
     diopiTensorHandle_t input1 = const_cast<diopiTensorHandle_t>(input);
-    DiopiTensor input1_tensor(input1);
-    if (input1_tensor.dtype() != out32_tensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, input1_tensor, out32_tensor.dtype()));
+    DiopiTensor input1Tensor(input1);
+    if (input1Tensor.dtype() != out32Tensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, input1Tensor, out32Tensor.dtype()));
     }
-    CnnlTensorDesc input1Desc(input1_tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc input1Desc(input1Tensor, CNNL_LAYOUT_ARRAY);
 
     diopiTensorHandle_t input2 = const_cast<diopiTensorHandle_t>(other);
-    const void* input2_ptr = nullptr;
+    const void* input2Ptr = nullptr;
     CnnlTensorDesc input2Desc;
-    cnnlTensorDescriptor_t input2_desc = nullptr;
+    cnnlTensorDescriptor_t input2DescTmp = nullptr;
     if (nullptr != other) {
-        DiopiTensor input2_tensor(input2);
-        if (input2_tensor.dtype() != out32_tensor.dtype()) {
-            DIOPI_CALL(dataTypeCast(ctx, input2_tensor, out32_tensor.dtype()));
+        DiopiTensor input2Tensor(input2);
+        if (input2Tensor.dtype() != out32Tensor.dtype()) {
+            DIOPI_CALL(dataTypeCast(ctx, input2Tensor, out32Tensor.dtype()));
         }
-        input2_ptr = input2_tensor.data();
-        input2Desc.set(input2_tensor, CNNL_LAYOUT_ARRAY);
-        input2_desc = input2Desc.get();
+        input2Ptr = input2Tensor.data();
+        input2Desc.set(input2Tensor, CNNL_LAYOUT_ARRAY);
+        input2DescTmp = input2Desc.get();
     }
 
-    size_t workspace_size(0);
-    DIOPI_CALLCNNL(cnnlGetBitComputeWorkspaceSize(handle, input1Desc.get(), input2_desc, outDesc.get(), &workspace_size));
+    size_t workspaceSize(0);
+    DIOPI_CALLCNNL(cnnlGetBitComputeWorkspaceSize(handle, input1Desc.get(), input2DescTmp, outDesc.get(), &workspaceSize));
     void* workspace = nullptr;
-    if (0 != workspace_size) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
+    if (0 != workspaceSize) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
     DIOPI_CALLCNNL(cnnlBitCompute_v2(
-        handle, optype, input1Desc.get(), input1_tensor.data(), input2_desc, input2_ptr, outDesc.get(), out32_tensor.data(), workspace, workspace_size));
-    if (out_tensor.dtype() != out32_tensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor, out32_tensor));
+        handle, optype, input1Desc.get(), input1Tensor.data(), input2DescTmp, input2Ptr, outDesc.get(), out32Tensor.data(), workspace, workspaceSize));
+    if (outTensor.dtype() != out32Tensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensor, out32Tensor));
     }
 
     return diopiSuccess;

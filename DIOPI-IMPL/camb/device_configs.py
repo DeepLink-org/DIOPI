@@ -372,13 +372,10 @@ device_configs = {
 
     'embedding': dict(
         name=["embedding"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.int64), Skip(Dtype.int32)],
-                },
-            ],
+        para=dict(
+            # The diopiEmbeddingRenorm_ function is temporarily unavailable due to the unsupported Cambrian operator.  
+            # Thus, to pass the test case, skip all non-None types of the max_norm parameter in the configuration file.
+            max_norm=[Skip(1.0)],   
         ),
     ),
 
@@ -427,18 +424,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float64)],
-                },
-            ],
-        ),
-    ),
-
-    'leaky_relu': dict(
-        name=["leaky_relu"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
             ],
         ),

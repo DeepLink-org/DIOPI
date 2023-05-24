@@ -19,8 +19,8 @@
 namespace impl {
 namespace camb {
 
-extern "C" diopiError_t
-diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha) {
+extern "C" diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
+                                 const diopiScalar_t* alpha) {
     DiopiTensor trInput(input);
     DiopiTensor trOtherOrigin(other);
     DiopiTensor trOther(other);
@@ -43,7 +43,7 @@ diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHand
         trOutTmp = trOut;
         descOut.set(trOut, layout);
     } else {
-        trOutTmp = requiresTensor(ctx, vec2diopiSize_t(trOut.shape()), trInput.dtype());
+        trOutTmp = requiresTensor(ctx, vec2diopiSizeT(trOut.shape()), trInput.dtype());
         descOut.set(trOutTmp, CNNL_LAYOUT_ARRAY);
     }
 
@@ -93,18 +93,15 @@ extern "C" diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_
     return diopiSuccess;
 }
 
-extern "C" diopiError_t
-diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
+extern "C" diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
+                                       const diopiScalar_t* alpha) {
     DiopiTensor trOther;
     makeTensorFromScalar(ctx, other, trOther);
     DIOPI_CALL(diopiAdd(ctx, out, input, static_cast<diopiTensorHandle_t>(trOther), alpha));
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx,
-                                                    diopiTensorHandle_t input,
-                                                    const diopiScalar_t* other,
-                                                    const diopiScalar_t* alpha) {
+extern "C" diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
     diopiAddScalar(ctx, input, input, other, alpha);
     return diopiSuccess;
 }

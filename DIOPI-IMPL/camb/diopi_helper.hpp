@@ -24,12 +24,12 @@
 namespace impl {
 namespace camb {
 
-#define DIOPI_CHECK(cond, fmt, args...)                                          \
-    do {                                                                         \
-        if (!(cond)) {                                                           \
-            set_last_error_string(#fmt " at %s:%d", ##args, __FILE__, __LINE__); \
-            return diopiErrorOccurred;                                           \
-        }                                                                        \
+#define DIOPI_CHECK(cond, fmt, args...)                                       \
+    do {                                                                      \
+        if (!(cond)) {                                                        \
+            setLastErrorString(#fmt " at %s:%d", ##args, __FILE__, __LINE__); \
+            return diopiErrorOccurred;                                        \
+        }                                                                     \
     } while (false);
 
 #define DIOPI_CHECK_NULLPTR_ABORT(variable)                                                      \
@@ -48,13 +48,13 @@ namespace camb {
         }                                                        \
     } while (false);
 
-#define DIOPI_CALL(Expr)                                                                                                                                  \
-    do {                                                                                                                                                  \
-        diopiError_t ret = Expr;                                                                                                                          \
-        if (diopiSuccess != ret) {                                                                                                                        \
-            set_last_error_string("%s: %s called by `%s` at %s:%d\n", getDiopiErrorStr(ret), camb_get_last_error_string(), __func__, __FILE__, __LINE__); \
-            return ret;                                                                                                                                   \
-        }                                                                                                                                                 \
+#define DIOPI_CALL(Expr)                                                                                                                           \
+    do {                                                                                                                                           \
+        diopiError_t ret = Expr;                                                                                                                   \
+        if (diopiSuccess != ret) {                                                                                                                 \
+            setLastErrorString("%s: %s called by `%s` at %s:%d\n", getDiopiErrorStr(ret), cambGetLastErrorString(), __func__, __FILE__, __LINE__); \
+            return ret;                                                                                                                            \
+        }                                                                                                                                          \
     } while (false);
 
 enum class MemoryFormat : size_t { Contiguous = 0, ChannelsLast = 1, ChannelsLast3d = 2, Preserve = 3 };
@@ -94,9 +94,9 @@ public:
             case diopi_dtype_tfloat32:
                 return "diopi_dtype_tfloat32";
             default:
-                set_last_error_string("dtype:%d is not support at %s:%d", dtype, __FILE__, __LINE__);
+                setLastErrorString("dtype:%d is not support at %s:%d", dtype, __FILE__, __LINE__);
         }
-        return nullptr;
+        return "";
     }
 };
 class DiopiTensor final {
@@ -135,6 +135,9 @@ public:
         DIOPI_CHECK_NULLPTR_ABORT(tensor_);
         return shape_;
     }
+
+    int64_t size(int i) { return shape()[i]; }
+
     const std::vector<int64_t>& stride() const {
         DIOPI_CHECK_NULLPTR_ABORT(tensor_);
         return stride_;
@@ -152,11 +155,11 @@ public:
         diopiGetTensorElemSize(tensor_, &elemsize);
         return elemsize;
     }
-    int64_t dim() const { return this->shape().size(); }
+    int64_t dim() const { return static_cast<int64_t>(this->shape().size()); }
 
     DiopiTensor contiguous(diopiContextHandle_t ctx, MemoryFormat format = MemoryFormat::Contiguous) {
         /* DEPRECATED AND WILL BE REMOVED */
-        if (this->is_contiguous(format)) return *this;
+        if (this->isContiguous(format)) return *this;
         int64_t dim = this->dim();
         std::vector<int64_t> strides(dim);
         int64_t stride = 1;
@@ -193,14 +196,14 @@ public:
                 }
             }
         }
-        diopiSize_t stride_diopi(strides.data(), static_cast<int64_t>(strides.size()));
-        diopiSize_t shape_diopi(this->shape().data(), this->shape().size());
+        diopiSize_t strideDiopi(strides.data(), static_cast<int64_t>(strides.size()));
+        diopiSize_t shapeDiopi(this->shape().data(), static_cast<int64_t>(this->shape().size()));
         diopiTensorHandle_t tensor = nullptr;
-        diopiRequireTensor(ctx, &tensor, &shape_diopi, &stride_diopi, this->dtype(), this->device());
+        diopiRequireTensor(ctx, &tensor, &shapeDiopi, &strideDiopi, this->dtype(), this->device());
         return DiopiTensor(tensor);
     }
 
-    bool is_contiguous(MemoryFormat format = MemoryFormat::Contiguous) {
+    bool isContiguous(MemoryFormat format = MemoryFormat::Contiguous) {
         int64_t stride = 1;
         int64_t dim = this->dim();
         auto strides = this->stride();
@@ -208,31 +211,31 @@ public:
 
         if (format == MemoryFormat::Contiguous) {
             for (int64_t i = dim - 1; i >= 0; i--) {
-                const auto& shape_d = shape[i];
-                if (shape_d != 1) {
+                const auto& shapeD = shape[i];
+                if (shapeD != 1) {
                     if (strides[i] != stride) {
                         return false;
                     }
                 }
-                stride *= shape_d;
+                stride *= shapeD;
             }
         } else if (format == MemoryFormat::ChannelsLast) {
             if (strides.size() != 4) return false;
             for (auto& i : {1, 3, 2, 0}) {
-                const auto& shape_d = shape[i];
-                if (shape_d != 1) {
+                const auto& shapeD = shape[i];
+                if (shapeD != 1) {
                     // shape_d != 1 help dealing with shape like [2, 2048, 1, 1]
                     if (strides[i] != stride) {
                         return false;
                     }
                 }
-                stride *= shape_d;
+                stride *= shapeD;
             }
         } else if (format == MemoryFormat::ChannelsLast3d) {
             if (strides.size() != 5) return false;
             for (auto& i : {1, 4, 3, 2, 0}) {
-                const auto& shape_d = shape[i];
-                if (shape_d != 1) {
+                const auto& shapeD = shape[i];
+                if (shapeD != 1) {
                     if (strides[i] != stride) {
                         return false;
                     }
@@ -243,7 +246,7 @@ public:
         return true;
     }
 
-    void as_strided(std::vector<int64_t>& shape, std::vector<int64_t>& stride) {
+    void asStrided(std::vector<int64_t>& shape, std::vector<int64_t>& stride) {
         this->shape_ = shape;
         this->stride_ = stride;
     }
@@ -253,13 +256,13 @@ public:
         // which is same with pytorch
         auto shape = this->shape();
         auto strides = this->stride();
-        int64_t new_stride = dim >= this->dim() ? 1 : shape[dim] * strides[dim];
-        std::vector<int64_t> new_shape(shape.begin(), shape.end());
-        std::vector<int64_t> new_strides(strides.begin(), strides.end());
+        int64_t newStride = dim >= this->dim() ? 1 : shape[dim] * strides[dim];
+        std::vector<int64_t> newShape(shape.begin(), shape.end());
+        std::vector<int64_t> newStrides(strides.begin(), strides.end());
 
-        new_shape.insert(new_shape.begin() + dim, 1);
-        new_strides.insert(new_strides.begin() + dim, new_stride);
-        this->as_strided(new_shape, new_strides);
+        newShape.insert(newShape.begin() + dim, 1);
+        newStrides.insert(newStrides.begin() + dim, newStride);
+        this->asStrided(newShape, newStrides);
     }
 
     bool defined() const {
@@ -289,11 +292,11 @@ public:
         return p;
     }
 
-    MemoryFormat suggest_memory_format() {
+    MemoryFormat suggestMemoryFormat() {
         // TODO(waiting for dispatch): Performance can be improved by dividing is_contiguous into several funcs
-        if (this->is_contiguous(MemoryFormat::Contiguous)) {
+        if (this->isContiguous(MemoryFormat::Contiguous)) {
             return MemoryFormat::Contiguous;
-        } else if (this->is_contiguous(MemoryFormat::ChannelsLast)) {
+        } else if (this->isContiguous(MemoryFormat::ChannelsLast)) {
             return MemoryFormat::ChannelsLast;
         } else {
             return MemoryFormat::ChannelsLast3d;
@@ -304,10 +307,10 @@ public:
 
     diopiConstTensorHandle_t tensorHandle() const { return tensor_; }
 
-    bool is_same(DiopiTensor t) { return this->tensorHandle() == t.tensorHandle(); }
+    bool isSame(DiopiTensor t) { return this->tensorHandle() == t.tensorHandle(); }
 
 protected:
-    diopiTensorHandle_t tensor_ = 0;
+    diopiTensorHandle_t tensor_ = nullptr;
     std::vector<int64_t> shape_{0};
     std::vector<int64_t> stride_{0};
 };
@@ -322,8 +325,8 @@ inline auto makeTensor(diopiContextHandle_t ctx, const diopiScalar_t* pScalar) -
 
 inline DiopiTensor ones(diopiContextHandle_t ctx, std::vector<int64_t> size, diopiDtype_t dtype) {
     diopiTensorHandle_t tensor = nullptr;
-    diopiSize_t size_(size.data(), size.size());
-    diopiRequireTensor(ctx, &tensor, &size_, nullptr, dtype, diopi_device);
+    diopiSize_t sizeTmp(size.data(), size.size());
+    diopiRequireTensor(ctx, &tensor, &sizeTmp, nullptr, dtype, diopi_device);
     diopiScalar_t scalar = {dtype, 1.0};
     if (DiopiDataType().isInteger(dtype)) scalar = {dtype, 1};
     diopiFill(ctx, tensor, &scalar);
@@ -337,25 +340,25 @@ inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const diopiSize_t& s
 }
 
 inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, const std::vector<int64_t>& stride, diopiDtype_t dtype) {
-    diopiSize_t size_(size.data(), size.size());
-    diopiSize_t stride_(stride.data(), stride.size());
+    diopiSize_t sizeTmp(size.data(), size.size());
+    diopiSize_t strideTmp(stride.data(), stride.size());
     diopiTensorHandle_t tensor = nullptr;
-    diopiRequireTensor(ctx, &tensor, &size_, &stride_, dtype, diopi_device);
+    diopiRequireTensor(ctx, &tensor, &sizeTmp, &strideTmp, dtype, diopi_device);
     return DiopiTensor(tensor);
 }
 
 inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype) {
-    diopiSize_t size_(size.data(), size.size());
+    diopiSize_t sizeTmp(size.data(), size.size());
     diopiTensorHandle_t tensor = nullptr;
-    diopiRequireTensor(ctx, &tensor, &size_, nullptr, dtype, diopi_device);
+    diopiRequireTensor(ctx, &tensor, &sizeTmp, nullptr, dtype, diopi_device);
     return DiopiTensor(tensor);
 }
 
-inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype, MemoryFormat memory_format) {
+inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype, MemoryFormat memoryFormat) {
     int64_t dim = size.size();
     std::vector<int64_t> strides(dim);
     int64_t stride = 1;
-    if (memory_format == MemoryFormat::Contiguous) {
+    if (memoryFormat == MemoryFormat::Contiguous) {
         for (size_t i = dim; i > 0; --i) {
             strides[i - 1] = stride;
             if (size[i - 1] == 0) {
@@ -365,7 +368,7 @@ inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<in
                 stride *= size[i - 1];
             }
         }
-    } else if (memory_format == MemoryFormat::ChannelsLast) {
+    } else if (memoryFormat == MemoryFormat::ChannelsLast) {
         DIOPI_CHECK_ABORT(size.size() == 4, "%s", "tensor size should be 4");
         // constant array is used here to let
         // compiler fully unroll the loop to get better performance
@@ -378,7 +381,7 @@ inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<in
                 stride *= size[k];
             }
         }
-    } else if (memory_format == MemoryFormat::ChannelsLast3d) {
+    } else if (memoryFormat == MemoryFormat::ChannelsLast3d) {
         DIOPI_CHECK_ABORT(size.size() == 5, "%s", "tensor size should be 5");
         for (auto& k : {1, 4, 3, 2, 0}) {
             strides[k] = stride;
@@ -393,29 +396,29 @@ inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<in
     return requiresTensor(ctx, size, strides, dtype);
 }
 
-inline DiopiTensor requiresBuffer(diopiContextHandle_t ctx, int64_t num_bytes) {
+inline DiopiTensor requiresBuffer(diopiContextHandle_t ctx, int64_t numBytes) {
     diopiTensorHandle_t tensor = nullptr;
-    diopiRequireBuffer(ctx, &tensor, num_bytes, diopi_device);
+    diopiRequireBuffer(ctx, &tensor, numBytes, diopi_device);
     return DiopiTensor(tensor);
 }
 
 inline cnrtQueue_t getStream(diopiContextHandle_t ctx) {
-    diopiStreamHandle_t stream_handle;
-    diopiGetStream(ctx, &stream_handle);
-    return static_cast<cnrtQueue_t>(stream_handle);
+    diopiStreamHandle_t streamHandle;
+    diopiGetStream(ctx, &streamHandle);
+    return static_cast<cnrtQueue_t>(streamHandle);
 }
 
 template <typename T>
-inline std::vector<T> diopiSize_t2Vector(diopiSize_t size, T) {
+inline std::vector<T> diopiSizeT2Vector(diopiSize_t size, T) {
     return std::vector<T>(size.data, size.data + size.len);
 }
 
-inline diopiSize_t vec2diopiSize_t(const std::vector<int64_t>& sizeIn) {
+inline diopiSize_t vec2diopiSizeT(const std::vector<int64_t>& sizeIn) {
     diopiSize_t diopiSize(sizeIn.data(), sizeIn.size());
     return diopiSize;
 }
 
-inline void syncStreamInCtx(const diopiContextHandle_t ctx) {
+inline void syncStreamInCtx(diopiContextHandle_t ctx) {
     cnrtQueue_t queue = getStream(ctx);
     cnrtQueueSync(queue);
     return;

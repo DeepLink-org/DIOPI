@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "../cnnl_helper.hpp"
-#include "../common/float16.hpp"
 #include "../common/common.hpp"
+#include "../common/float16.hpp"
 
 namespace impl {
 namespace camb {
@@ -19,92 +19,95 @@ extern "C" {
 
 diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* value) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor input_tensor_temp = input_tensor;
+    DiopiTensor inputTensor(input);
+    DiopiTensor inputTensorTemp = inputTensor;
 
     // float64 not supported yet
-    if (input_tensor.dtype() == diopi_dtype_float64) {
-       DIOPI_CALL(dataTypeCast(ctx, input_tensor_temp, diopi_dtype_float32));
+    if (inputTensor.dtype() == diopi_dtype_float64) {
+        DIOPI_CALL(dataTypeCast(ctx, inputTensorTemp, diopi_dtype_float32));
     }
 
-    CnnlTensorDesc input_tensor_desc(input_tensor_temp, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputTensorDesc(inputTensorTemp, CNNL_LAYOUT_ARRAY);
 
-    double value_scalar = DiopiDataType::isInteger(value->stype) ? value->ival : value->fval;
-    void* value_ptr;
-    bool temp_bool = 0;
-    int8_t temp_i8 = 0;
-    uint8_t temp_u8 = 0;
-    int16_t temp_i16 = 0;
-    uint16_t temp_u16 = 0;
-    int32_t temp_i32 = 0;
-    uint32_t temp_u32 = 0;
-    int64_t temp_i64 = 0;
-    uint64_t temp_u64 = 0;
-    half_float::half temp_f16 = static_cast<half_float::half>(0);
-    float temp_f32 = 0;
+    double valueScalar = DiopiDataType::isInteger(value->stype) ? value->ival : value->fval;
+    void* valuePtr = nullptr;
+    bool tempBool = false;
+    int8_t tempI8 = 0;
+    uint8_t tempU8 = 0;
+    int16_t tempI16 = 0;
+    uint16_t tempU16 = 0;
+    int32_t tempI32 = 0;
+    uint32_t tempU32 = 0;
+    int64_t tempI64 = 0;
+    uint64_t tempU64 = 0;
+    half_float::half tempF16 = static_cast<half_float::half>(0);
+    float tempF32 = 0;
 
-    switch (input_tensor_temp.dtype()) {
+    switch (inputTensorTemp.dtype()) {
         case diopi_dtype_bool: {
-            temp_bool = static_cast<bool>(value_scalar);
-            value_ptr = &temp_bool;
+            tempBool = static_cast<bool>(valueScalar);
+            valuePtr = &tempBool;
             break;
         }
         case diopi_dtype_int8: {
-            temp_i8 = int8_t(value_scalar);
-            value_ptr = &temp_i8;
+            tempI8 = int8_t(valueScalar);
+            valuePtr = &tempI8;
             break;
         }
         case diopi_dtype_uint8: {
-            temp_u8 = uint8_t(value_scalar);
-            value_ptr = &temp_u8;
+            tempU8 = uint8_t(valueScalar);
+            valuePtr = &tempU8;
             break;
         }
         case diopi_dtype_int16: {
-            temp_i16 = int16_t(value_scalar);
-            value_ptr = &temp_i16;
+            tempI16 = int16_t(valueScalar);
+            valuePtr = &tempI16;
             break;
         }
         case diopi_dtype_uint16: {
-            temp_u16 = uint16_t(value_scalar);
-            value_ptr = &temp_u16;
+            tempU16 = uint16_t(valueScalar);
+            valuePtr = &tempU16;
             break;
         }
         case diopi_dtype_int32: {
-            temp_i32 = int32_t(value_scalar);
-            value_ptr = &temp_i32;
+            tempI32 = int32_t(valueScalar);
+            valuePtr = &tempI32;
             break;
         }
         case diopi_dtype_uint32: {
-            temp_u32 = uint32_t(value_scalar);
-            value_ptr = &temp_u32;
+            tempU32 = uint32_t(valueScalar);
+            valuePtr = &tempU32;
             break;
         }
         case diopi_dtype_int64: {
-            temp_i64 = int64_t(value_scalar);
-            value_ptr = &temp_i64;
+            tempI64 = int64_t(valueScalar);
+            valuePtr = &tempI64;
             break;
         }
         case diopi_dtype_uint64: {
-            temp_u64 = uint64_t(value_scalar);
-            value_ptr = &temp_u64;
+            tempU64 = uint64_t(valueScalar);
+            valuePtr = &tempU64;
             break;
         }
         case diopi_dtype_float16: {
-            temp_f16 = half_float::half(value_scalar);
-            value_ptr = &temp_f16;
+            tempF16 = half_float::half(valueScalar);
+            valuePtr = &tempF16;
             break;
         }
         case diopi_dtype_float32: {
-            temp_f32 = static_cast<float>(value_scalar);
-            value_ptr = &temp_f32;
+            tempF32 = static_cast<float>(valueScalar);
+            valuePtr = &tempF32;
             break;
+        }
+        default: {
+            DIOPI_CHECK(false, "the input tensor dtype %s is not allown", DiopiDataType::dataTypeStr(inputTensorTemp.dtype()).c_str());
         }
     }
 
-    DIOPI_CALLCNNL(cnnlFill_v3(handle, CNNL_POINTER_MODE_HOST, value_ptr, input_tensor_desc.get(), input_tensor_temp.data()));
+    DIOPI_CALLCNNL(cnnlFill_v3(handle, CNNL_POINTER_MODE_HOST, valuePtr, inputTensorDesc.get(), inputTensorTemp.data()));
 
-    if (input_tensor_temp.dtype() != input_tensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor, input_tensor_temp));
+    if (inputTensorTemp.dtype() != inputTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, inputTensor, inputTensorTemp));
     }
     return diopiSuccess;
 }

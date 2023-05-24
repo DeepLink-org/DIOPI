@@ -13,29 +13,29 @@ namespace camb {
 
 extern "C" {
 
-diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t* tensors, int64_t num_inputs, int64_t dim) {
+diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t* tensors, int64_t numInputs, int64_t dim) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    std::vector<CnnlTensorDesc> inputsDesc(num_inputs);
-    std::vector<cnnlTensorDescriptor_t> inputs_desc(num_inputs);
-    std::vector<const void *> inputs(num_inputs);
-    for (int i = 0; i < num_inputs; i++) {
-        DiopiTensor temp_tensor(tensors[i]);
-        inputsDesc[i].set(temp_tensor, CNNL_LAYOUT_ARRAY);
-        inputs_desc[i] = inputsDesc[i].get();
-        inputs[i] = temp_tensor.data();
+    std::vector<CnnlTensorDesc> inputsDesc(numInputs);
+    std::vector<cnnlTensorDescriptor_t> inputsDescTmp(numInputs);
+    std::vector<const void*> inputs(numInputs);
+    for (int i = 0; i < numInputs; i++) {
+        DiopiTensor tempTensor(tensors[i]);
+        inputsDesc[i].set(tempTensor, CNNL_LAYOUT_ARRAY);
+        inputsDescTmp[i] = inputsDesc[i].get();
+        inputs[i] = tempTensor.data();
     }
 
-    size_t workspace_size(0);
-    DIOPI_CALLCNNL(cnnlGetConcatWorkspaceSize(handle, num_inputs, &workspace_size));
-    void * workspace = nullptr;
-    if (0 != workspace_size) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
+    size_t workspaceSize(0);
+    DIOPI_CALLCNNL(cnnlGetConcatWorkspaceSize(handle, numInputs, &workspaceSize));
+    void* workspace = nullptr;
+    if (0 != workspaceSize) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DiopiTensor out_tensor(out);
-    CnnlTensorDesc out_desc(out_tensor, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlConcat(handle, num_inputs, dim, inputs_desc.data(), inputs.data(), workspace, workspace_size, out_desc.get(), out_tensor.data()));
+    DiopiTensor outTensor(out);
+    CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
+    DIOPI_CALLCNNL(cnnlConcat(handle, numInputs, dim, inputsDescTmp.data(), inputs.data(), workspace, workspaceSize, outDesc.get(), outTensor.data()));
 
     return diopiSuccess;
 }

@@ -18,43 +18,43 @@ namespace camb {
 
 inline bool canCastByInt32(uint64_t castType) {
     // special convert (cnnl doesn't support)
-    constexpr uint64_t BoolInt64 = _MAKE_KEY(diopi_dtype_bool, diopi_dtype_int64);
-    constexpr uint64_t Int16Int64 = _MAKE_KEY(diopi_dtype_int16, diopi_dtype_int64);
-    constexpr uint64_t Uint8Bool = _MAKE_KEY(diopi_dtype_uint8, diopi_dtype_bool);
-    constexpr uint64_t Int16Bool = _MAKE_KEY(diopi_dtype_int16, diopi_dtype_bool);
-    constexpr uint64_t Int64Bool = _MAKE_KEY(diopi_dtype_int64, diopi_dtype_bool);
-    constexpr uint64_t Int8Bool = _MAKE_KEY(diopi_dtype_int8, diopi_dtype_bool);
-    constexpr uint64_t Int8Int64 = _MAKE_KEY(diopi_dtype_int8, diopi_dtype_int64);
-    constexpr uint64_t Int64Int8 = _MAKE_KEY(diopi_dtype_int64, diopi_dtype_int8);
+    constexpr uint64_t boolInt64 = _MAKE_KEY(diopi_dtype_bool, diopi_dtype_int64);
+    constexpr uint64_t int16Int64 = _MAKE_KEY(diopi_dtype_int16, diopi_dtype_int64);
+    constexpr uint64_t uint8Bool = _MAKE_KEY(diopi_dtype_uint8, diopi_dtype_bool);
+    constexpr uint64_t int16Bool = _MAKE_KEY(diopi_dtype_int16, diopi_dtype_bool);
+    constexpr uint64_t int64Bool = _MAKE_KEY(diopi_dtype_int64, diopi_dtype_bool);
+    constexpr uint64_t int8Bool = _MAKE_KEY(diopi_dtype_int8, diopi_dtype_bool);
+    constexpr uint64_t int8Int64 = _MAKE_KEY(diopi_dtype_int8, diopi_dtype_int64);
+    constexpr uint64_t int64Int8 = _MAKE_KEY(diopi_dtype_int64, diopi_dtype_int8);
 
-    return BoolInt64 == castType || Int16Int64 == castType || Uint8Bool == castType || Int16Bool == castType || Int64Bool == castType || Int8Bool == castType ||
-           Int8Int64 == castType || Int64Int8 == castType;
+    return boolInt64 == castType || int16Int64 == castType || uint8Bool == castType || int16Bool == castType || int64Bool == castType || int8Bool == castType ||
+           int8Int64 == castType || int64Int8 == castType;
 }
 
 inline bool canCastByFloat32(uint64_t castType) {
-    constexpr uint64_t Int64Float64 = _MAKE_KEY(diopi_dtype_int64, diopi_dtype_float64);
-    constexpr uint64_t Float64Int64 = _MAKE_KEY(diopi_dtype_float64, diopi_dtype_int64);
-    return Int64Float64 == castType || Float64Int64 == castType;
+    constexpr uint64_t int64Float64 = _MAKE_KEY(diopi_dtype_int64, diopi_dtype_float64);
+    constexpr uint64_t float64Int64 = _MAKE_KEY(diopi_dtype_float64, diopi_dtype_int64);
+    return int64Float64 == castType || float64Int64 == castType;
 }
 
 static diopiError_t dataTypeCastTwice(diopiContextHandle_t ctx, DiopiTensor& dest, const DiopiTensor& src) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     diopiDtype_t srcDtype = src.dtype();
     diopiDtype_t destDtype = dest.dtype();
-    cnnlCastDataType_t cast_type;
+    cnnlCastDataType_t castType;
     // cast through middle
     auto key = _MAKE_KEY(srcDtype, destDtype);
     if (canCastByInt32(key)) {
         DiopiTensor mid = requiresTensor(ctx, src.shape(), diopi_dtype_int32);
         DIOPI_CALL(dataTypeCast(ctx, mid, src));
         DIOPI_CALL(dataTypeCast(ctx, dest, mid));
-    } else if (canCastByFloat32) {
+    } else if (&canCastByFloat32) {
         DiopiTensor mid = requiresTensor(ctx, src.shape(), diopi_dtype_float32);
         DIOPI_CALL(dataTypeCast(ctx, mid, src));
         DIOPI_CALL(dataTypeCast(ctx, dest, mid));
     } else {
         // TODO(waiting for dispatch) : cast through cpu
-        set_last_error_string("Can not cast from %d to %d at %s:%d ", srcDtype, destDtype, __FILE__, __LINE__);
+        setLastErrorString("Can not cast from %d to %d at %s:%d ", srcDtype, destDtype, __FILE__, __LINE__);
         return diopiDtypeNotSupported;
     }
     return diopiSuccess;
@@ -109,7 +109,7 @@ static diopiError_t choiceDtype(const std::set<diopiDtype_t>& opSupportedDtypes,
     } else if (opSupportedDtypes.find(diopi_dtype_bool) != opSupportedDtypes.end()) {
         *dtype = diopi_dtype_bool;
     } else {
-        set_last_error_string("%s", "this operator does not support bool, int8, int16, int32, float16, float32");
+        setLastErrorString("%s", "this operator does not support bool, int8, int16, int32, float16, float32");
         return diopiDtypeNotSupported;
     }
     return diopiSuccess;
@@ -163,7 +163,7 @@ diopiError_t autoCastTensorType(diopiContextHandle_t ctx, const std::vector<Diop
             targetType = diopi_dtype_bool;
         }
     } else {
-        set_last_error_string("%s", "tensor's dtype error, can't be cast");
+        setLastErrorString("%s", "tensor's dtype error, can't be cast");
         return diopiDtypeNotSupported;
     }
     for (const auto& pTensor : pTensors) {
