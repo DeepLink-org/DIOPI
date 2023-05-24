@@ -25,7 +25,7 @@ extern std::mutex mtxLastError;
 template <typename... Types>
 inline void setLastErrorString(const char* szFmt, Types&&... args) {
     std::lock_guard<std::mutex> lock(mtxLastError);
-    sprintf(strLastErrorOther, szFmt, std::forward<Types>(args)...);
+            sprintf(strLastErrorOther, szFmt, std::forward<Types>(args)...);
 }
 
 const char* cambGetLastErrorString();
