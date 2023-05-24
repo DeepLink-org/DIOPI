@@ -32,13 +32,12 @@ diopiError_t diopiEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     DIOPI_CALL(autoCastTensorType(ctx, tensors, supportedDtypes));
 
     DiopiTensor out_tensor_tmp = out_tensor;
-    if (weight_tensor.dtype() != out_tensor.dtype()) {
-        out_tensor_tmp = requiresTensor(ctx, out_tensor.shape(), weight_tensor.dtype());
-    }
-
     // special case: the indices_tensor is empty
     if (indices_tensor.dim() == 0 && indices_tensor.numel() == 1) {
         out_tensor_tmp.unsqueeze(0);
+    }
+    if (weight_tensor.dtype() != out_tensor.dtype()) {
+        out_tensor_tmp = requiresTensor(ctx, out_tensor.shape(), weight_tensor.dtype());
     }
 
     CnnlTensorDesc out_desc(out_tensor_tmp, CNNL_LAYOUT_ARRAY);
@@ -87,13 +86,12 @@ diopiError_t diopiEmbeddingBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     DIOPI_CALL(autoCastTensorType(ctx, tensors1, {diopi_dtype_int32}));
 
     DiopiTensor out_tensor_tmp = out_tensor;
-    if (grad_tensor.dtype() != out_tensor.dtype()) {
-        out_tensor_tmp = requiresTensor(ctx, out_tensor.shape(), grad_tensor.dtype());
-    }
-
     // special case: the indices_tensor is empty
     if (indices_tensor.dim() == 0 && indices_tensor.numel() == 1) {
         grad_tensor.unsqueeze(0);
+    }
+    if (grad_tensor.dtype() != out_tensor.dtype()) {
+        out_tensor_tmp = requiresTensor(ctx, out_tensor.shape(), grad_tensor.dtype());
     }
 
     CnnlTensorDesc out_desc(out_tensor_tmp, CNNL_LAYOUT_ARRAY);
