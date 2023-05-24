@@ -7,6 +7,7 @@
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -18,21 +19,21 @@ namespace impl {
 
 namespace camb {
 
-void KernelFocalLossSigmoidForward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
+void kernelFocalLossSigmoidForward(cnrtDim3_t kDim, cnrtFunctionType_t kType,
                                    cnrtQueue_t queue,
-                                   const cnrtDataType_t d_type,
+                                   const cnrtDataType_t dType,
                                    const void *input, const void *target,
-                                   const void *weight, const int32_t N,
-                                   const int32_t C, const float alpha,
+                                   const void *weight, const int32_t n,
+                                   const int32_t c, const float alpha,
                                    const float gamma, void *output);
 
-void KernelFocalLossSigmoidBackward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
+void kernelFocalLossSigmoidBackward(cnrtDim3_t kDim, cnrtFunctionType_t kType,
                                     cnrtQueue_t queue,
-                                    const cnrtDataType_t d_type,
+                                    const cnrtDataType_t dType,
                                     const void *input, const void *target,
                                     const void *weight, const float gamma,
-                                    const float alpha, const int32_t dim_n,
-                                    const int32_t deal_n, const int32_t dim_c,
+                                    const float alpha, const int32_t dimN,
+                                    const int32_t dealN, const int32_t dimC,
                                     void *output);
 
 }  // namespace camb
@@ -40,68 +41,68 @@ void KernelFocalLossSigmoidBackward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
 }  // namespace impl
 
 // Policy Function for Forward
-static void policyFuncForward(cnrtDim3_t *k_dim, cnrtFunctionType_t *k_type,
+static void policyFuncForward(cnrtDim3_t *kDim, cnrtFunctionType_t *kType,
                               impl::camb::DiopiTensor input, impl::camb::DiopiTensor target,
                               impl::camb::DiopiTensor weight) {
-  auto N = input.size(0);
-  auto C = input.size(1);
+  auto n = input.size(0);
+  auto c = input.size(1);
 
-  const size_t nram_size = impl::camb::getDeviceAttr(cnrtAttrNramSizePerMcore);
-  const size_t c_align_size = PAD_UP((C * input.elemsize()), NFU_ALIGN_SIZE);
-  const int split_target_num = 2;
-  const int split_pipeline_num = 6;
-  const int has_weight = weight.data() != nullptr;
-  const int target_data_width = (target.dtype() == diopi_dtype_int64 || target.dtype() == diopi_dtype_uint64)
+  const size_t nramSize = impl::camb::getDeviceAttr(cnrtAttrNramSizePerMcore);
+  const size_t cAlignSize = PAD_UP((c * input.elemsize()), NFU_ALIGN_SIZE);
+  const int splitTargetNum = 2;
+  const int splitPipelineNum = 6;
+  const int hasWeight = weight.data() != nullptr;
+  const int targetDataWidth = (target.dtype() == diopi_dtype_int64 || target.dtype() == diopi_dtype_uint64)
                                     ? target.elemsize() / 2
                                     : target.elemsize();
-  const int threshold_c =
-      PAD_DOWN((nram_size - split_target_num * sizeof(int)) /
-                   (split_pipeline_num + has_weight),
+  const int thresholdC =
+      PAD_DOWN((nramSize - splitTargetNum * sizeof(int)) /
+                   (splitPipelineNum + hasWeight),
                NFU_ALIGN_SIZE) /
       input.elemsize();
 
-  int n_seg = 1;
-  if (C <= threshold_c) {
-    int c_size = C * input.elemsize();
-    int reservered_align_size =
-        (split_target_num + split_pipeline_num) * NFU_ALIGN_SIZE;
-    int wegiht_size = 0;
-    if (has_weight) {
-      c_size = c_align_size;
-      reservered_align_size = split_target_num * NFU_ALIGN_SIZE;
-      wegiht_size = c_align_size;
+  int nSeg = 1;
+  if (c <= thresholdC) {
+    int cSize = c * input.elemsize();
+    int reserveredAlignSize =
+        (splitTargetNum + splitPipelineNum) * NFU_ALIGN_SIZE;
+    int wegihtSize = 0;
+    if (hasWeight) {
+      cSize = cAlignSize;
+      reserveredAlignSize = splitTargetNum * NFU_ALIGN_SIZE;
+      wegihtSize = cAlignSize;
     }
     // n_seg * c_size * split_pipeline_num + n_seg * target.elemsize() *
     // split_target_num
     //     + weight_size + reservered_align_size <= nram_size
-    n_seg = (nram_size - wegiht_size - reservered_align_size) /
-            (split_pipeline_num * c_size + split_target_num * sizeof(int32_t));
+    nSeg = (nramSize - wegihtSize - reserveredAlignSize) /
+            (splitPipelineNum * cSize + splitTargetNum * static_cast<int>(sizeof(int32_t)));
   }
-  auto seg_num = n_seg == 0 ? N : (N + n_seg - 1) / n_seg;
-  auto core_dim = impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
-  auto cluster_num = impl::camb::getDeviceAttr(cnrtAttrClusterCount);
-  auto core_num = core_dim * cluster_num;
+  auto segNum = nSeg == 0 ? n : (n + nSeg - 1) / nSeg;
+  auto coreDim = impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
+  auto clusterNum = impl::camb::getDeviceAttr(cnrtAttrClusterCount);
+  auto coreNum = coreDim * clusterNum;
 
-  k_dim->x = *k_type;
-  k_dim->y =
-      seg_num > core_num ? cluster_num : (seg_num + core_dim - 1) / core_dim;
-  k_dim->z = 1;
+  kDim->x = *kType;
+  kDim->y =
+      segNum > coreNum ? clusterNum : (segNum + coreDim - 1) / coreDim;
+  kDim->z = 1;
 }
 
 // Policy Function for Backward
-static void policyFuncBackward(cnrtDim3_t *k_dim, cnrtFunctionType_t *k_type) {
+static void policyFuncBackward(cnrtDim3_t *kDim, cnrtFunctionType_t *kType) {
   // set Union1 Job
-  *k_type = CNRT_FUNC_TYPE_UNION1;
-  k_dim->x = impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
-  k_dim->y = impl::camb::getDeviceAttr(cnrtAttrClusterCount);
-  k_dim->z = 1;
+  *kType = CNRT_FUNC_TYPE_UNION1;
+  kDim->x = impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
+  kDim->y = impl::camb::getDeviceAttr(cnrtAttrClusterCount);
+  kDim->z = 1;
 }
 
 extern "C" DIOPI_API diopiError_t diopiSigmoidFocalLossMmcv(diopiContextHandle_t ctx,
-                                                 diopiTensorHandle_t output_,
-                                                 diopiConstTensorHandle_t input_,
-                                                 diopiConstTensorHandle_t target_,
-                                                 diopiConstTensorHandle_t weight_,
+                                                 diopiTensorHandle_t output,
+                                                 diopiConstTensorHandle_t input,
+                                                 diopiConstTensorHandle_t target,
+                                                 diopiConstTensorHandle_t weight,
                                                  float gamma,
                                                  float alpha) {
   // // params check
@@ -128,42 +129,42 @@ extern "C" DIOPI_API diopiError_t diopiSigmoidFocalLossMmcv(diopiContextHandle_t
   // } else {
   //   CNLOG(INFO) << "weight is a empty tensor.";
   // }
-  auto output = impl::camb::DiopiTensor(output_);
-  auto input = impl::camb::DiopiTensor(input_);
-  auto target = impl::camb::DiopiTensor(target_);
-  auto weight = impl::camb::DiopiTensor(weight_);
+  auto outputTr = impl::camb::DiopiTensor(output);
+  auto inputTr = impl::camb::DiopiTensor(input);
+  auto targetTr = impl::camb::DiopiTensor(target);
+  auto weightTr = impl::camb::DiopiTensor(weight);
 
   // return if zero-element
-  if (input.numel() == 0 || target.numel() == 0 || output.numel() == 0) {
+  if (inputTr.numel() == 0 || targetTr.numel() == 0 || outputTr.numel() == 0) {
     return diopiSuccess;
   }
 
   // calculate task dimension
-  cnrtDim3_t k_dim;
-  cnrtFunctionType_t k_type = CNRT_FUNC_TYPE_UNION1;
-  policyFuncForward(&k_dim, &k_type, input, target, weight);
-  auto core_dim = impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
+  cnrtDim3_t kDim;
+  cnrtFunctionType_t kType = CNRT_FUNC_TYPE_UNION1;
+  policyFuncForward(&kDim, &kType, inputTr, targetTr, weightTr);
+  auto coreDim = impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
 
   // get compute queue
   auto queue = impl::camb::getStream(ctx);
 
   // get dtype of input
-  cnrtDataType_t d_type = impl::camb::dtype2CnrtDtype(input.dtype());
+  cnrtDataType_t dType = impl::camb::dtype2CnrtDtype(inputTr.dtype());
 
   // CNLOG(INFO) << "Launch Kernel KernelFocalLossSigmoidForward<<<Union"
   //             << k_type / core_dim << ", " << k_dim.x << ", " << k_dim.y << ", "
   //             << k_dim.z << ">>>";
   // launch kernel
-  impl::camb::KernelFocalLossSigmoidForward(k_dim, k_type, queue, d_type, input.data(),
-                                target.data(), weight.data(), input.size(0),
-                                input.size(1), alpha, gamma, output.data());
+  impl::camb::kernelFocalLossSigmoidForward(kDim, kType, queue, dType, inputTr.data(),
+                                targetTr.data(), weightTr.data(), inputTr.size(0),
+                                inputTr.size(1), alpha, gamma, outputTr.data());
   return diopiSuccess;
 }
 
-void getDealNAndThresholdC(const int compute_data_bytes,
-                           const int target_data_bytes, const int total_c,
-                           int *deal_n_ptr, int *threshold_c_ptr,
-                           const bool has_weight, const bool is_half) {
+void getDealNAndThresholdC(const int computeDataBytes,
+                           const int targetDataBytes, const int totalC,
+                           int *dealNPtr, int *thresholdCPtr,
+                           const bool hasWeight, const bool isHalf) {
   /* NRAM partition:
    *
    * |-----------------ping pong--------------------|
@@ -171,68 +172,68 @@ void getDealNAndThresholdC(const int compute_data_bytes,
    *
    * split_pipeline_num is 5: including input, pt, alpha_t, temp, output.
    */
-  const int nram_split_num = 5;
-  const int nram_split_pingpong = 2;
-  const int max_nram_size = impl::camb::getDeviceAttr(cnrtAttrNramSizePerMcore);
-  int32_t compute_align_size = NFU_ALIGN_SIZE;
-  if (is_half) {
-    compute_align_size += NFU_ALIGN_SIZE;
+  const int nramSplitNum = 5;
+  const int nramSplitPingpong = 2;
+  const int maxNramSize = impl::camb::getDeviceAttr(cnrtAttrNramSizePerMcore);
+  int32_t computeAlignSize = NFU_ALIGN_SIZE;
+  if (isHalf) {
+    computeAlignSize += NFU_ALIGN_SIZE;
   }
-  const int32_t compute_align_num = compute_align_size / compute_data_bytes;
+  const int32_t computeAlignNum = computeAlignSize / computeDataBytes;
   // reservered_align_size: including input(ping pong), pt(ping pong),
   //                        alpha_t(ping pong), temp(ping pong),
   //                        output(ping pong), target(ping pong),
   //                        flt_min and gamma.
-  const int reservered_align_size =
-      ((nram_split_num + 1) * nram_split_pingpong + 2) * compute_align_size;
-  int nram_pingpong_size = max_nram_size - reservered_align_size;
+  const int reserveredAlignSize =
+      ((nramSplitNum + 1) * nramSplitPingpong + 2) * computeAlignSize;
+  int nramPingpongSize = maxNramSize - reserveredAlignSize;
 
-  int compute_c = total_c;
-  int threshold_c = 0;
-  if (has_weight) {
+  int computeC = totalC;
+  int thresholdC = 0;
+  if (hasWeight) {
     // reserved space for weight to align
-    nram_pingpong_size -= NFU_ALIGN_SIZE;
+    nramPingpongSize -= NFU_ALIGN_SIZE;
 
     // threshold_c * nram_split_pingpong * compute_data_bytes * nram_split_num +
     //     nram_split_pingpong * target_data_bytes +
     //     threshold_c * compute_data_bytes <= nram_pingpong_size
-    threshold_c =
-        (nram_pingpong_size - nram_split_pingpong * target_data_bytes) /
-        (compute_data_bytes * (nram_split_num * nram_split_pingpong + 1));
-    threshold_c = PAD_DOWN(threshold_c, compute_align_num);
-    int weight_space = PAD_UP(total_c * compute_data_bytes, NFU_ALIGN_SIZE);
+    thresholdC =
+        (nramPingpongSize - nramSplitPingpong * targetDataBytes) /
+        (computeDataBytes * (nramSplitNum * nramSplitPingpong + 1));
+    thresholdC = PAD_DOWN(thresholdC, computeAlignNum);
+    int weightSpace = PAD_UP(totalC * computeDataBytes, NFU_ALIGN_SIZE);
 
     // reserved space for weight
-    nram_pingpong_size -= weight_space;
-    compute_c = PAD_UP(total_c, compute_align_num);
+    nramPingpongSize -= weightSpace;
+    computeC = PAD_UP(totalC, computeAlignNum);
   } else {
     // threshold_c * nram_split_pingpong * compute_data_bytes * nram_split_num +
     //     nram_split_pingpong * target_data_bytes <= nram_pingpong_size
-    threshold_c =
-        (nram_pingpong_size / nram_split_pingpong - target_data_bytes) /
-        (nram_split_num * compute_data_bytes);
+    thresholdC =
+        (nramPingpongSize / nramSplitPingpong - targetDataBytes) /
+        (nramSplitNum * computeDataBytes);
   }
   // deal_n * compute_c * nram_split_pingpong * compute_data_bytes *
   //     nram_split_num + deal_n * nram_split_pingpong * target_data_bytes <=
   //     nram_pingpong_size
-  *deal_n_ptr =
-      nram_pingpong_size /
-      ((nram_split_num * compute_c * compute_data_bytes + target_data_bytes) *
-       nram_split_pingpong);
-  *threshold_c_ptr = threshold_c;
+  *dealNPtr =
+      nramPingpongSize /
+      ((nramSplitNum * computeC * computeDataBytes + targetDataBytes) *
+       nramSplitPingpong);
+  *thresholdCPtr = thresholdC;
 }
 
 extern "C" DIOPI_API diopiError_t diopiSigmoidFocalLossBackwardMmcv(diopiContextHandle_t ctx,
-                                                         diopiTensorHandle_t grad_input_,
-                                                         diopiConstTensorHandle_t input_,
-                                                         diopiConstTensorHandle_t target_,
-                                                         diopiConstTensorHandle_t weight_,
+                                                         diopiTensorHandle_t gradInput,
+                                                         diopiConstTensorHandle_t input,
+                                                         diopiConstTensorHandle_t target,
+                                                         diopiConstTensorHandle_t weight,
                                                          float gamma,
                                                          float alpha) {
-  auto output = impl::camb::DiopiTensor(grad_input_);
-  auto input = impl::camb::DiopiTensor(input_);
-  auto target = impl::camb::DiopiTensor(target_);
-  auto weight = impl::camb::DiopiTensor(weight_);
+  auto outputTr = impl::camb::DiopiTensor(gradInput);
+  auto inputTr = impl::camb::DiopiTensor(input);
+  auto targetTr = impl::camb::DiopiTensor(target);
+  auto weightTr = impl::camb::DiopiTensor(weight);
 
   // // params check
   // TORCH_CHECK(gamma >= 0, "gamma should be greater than or equal to 0. ",
@@ -248,66 +249,66 @@ extern "C" DIOPI_API diopiError_t diopiSigmoidFocalLossBackwardMmcv(diopiContext
   //     "target type should be Int or Long. ", "But now target type is ",
   //     target.dtype(), ".");
 
-  bool has_weight = false;
-  if (weight.data() != nullptr) {
+  bool hasWeight = false;
+  if (weightTr.data() != nullptr) {
     // TORCH_CHECK(weight.dtype() == input.dtype(),
     //             "Data types of input and weight should be the same. But now "
     //             "input type is ",
     //             input.dtype(), ", weight type is ", weight.dtype(),
     //             ".");
-    has_weight = true;
+    hasWeight = true;
   }
   // else {
   //   CNLOG(INFO) << "weight is a empty tensor.";
   // }
 
-  auto dim_c = input.size(1);
-  const int compute_data_bytes = sizeof(float);
+  auto dimC = inputTr.size(1);
+  const int computeDataBytes = sizeof(float);
   // target supports only INT on MLU device while it keeps LONG on host side,
   // so target.elemsize() / 2
-  const int target_data_bytes = (target.dtype() == diopi_dtype_int64 || target.dtype() == diopi_dtype_uint64)
-                                    ? (target.elemsize() / 2)
-                                    : target.elemsize();
-  int deal_n = 0;
-  int threshold_c = 0;
-  bool is_half = false;
-  if (input.dtype() == diopi_dtype_float16) {
-    is_half = true;
+  const int targetDataBytes = (targetTr.dtype() == diopi_dtype_int64 || targetTr.dtype() == diopi_dtype_uint64)
+                                    ? (targetTr.elemsize() / 2)
+                                    : targetTr.elemsize();
+  int dealN = 0;
+  int thresholdC = 0;
+  bool isHalf = false;
+  if (inputTr.dtype() == diopi_dtype_float16) {
+    isHalf = true;
   }
   // calculate deal_n and threshold_c
-  getDealNAndThresholdC(compute_data_bytes, target_data_bytes, dim_c, &deal_n,
-                        &threshold_c, has_weight, is_half);
+  getDealNAndThresholdC(computeDataBytes, targetDataBytes, dimC, &dealN,
+                        &thresholdC, hasWeight, isHalf);
 
   // // check C
   // TORCH_CHECK(threshold_c >= dim_c,
   //             "input.size(1) should be in the range of [0, ", threshold_c,
   //             "]. ", "But now input.size(1) is ", dim_c, ".");
 
-  if (input.numel() == 0 || target.numel() == 0 || output.numel() == 0) {
+  if (inputTr.numel() == 0 || targetTr.numel() == 0 || outputTr.numel() == 0) {
     // return if zero-element
     return diopiSuccess;
   }
 
   // set task dimension
-  cnrtDim3_t k_dim;
-  cnrtFunctionType_t k_type;
-  policyFuncBackward(&k_dim, &k_type);
+  cnrtDim3_t kDim;
+  cnrtFunctionType_t kType;
+  policyFuncBackward(&kDim, &kType);
 
   // get compute queue
   auto queue = impl::camb::getStream(ctx);
 
   // get dtype of input
-  cnrtDataType_t d_type = impl::camb::dtype2CnrtDtype(input.dtype());
-  auto core_dim = impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
-  auto dim_n = input.size(0);
+  cnrtDataType_t dType = impl::camb::dtype2CnrtDtype(inputTr.dtype());
+  auto coreDim = impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
+  auto dimN = inputTr.size(0);
 
   // CNLOG(INFO) << "Launch Kernel KernelFocalLossSigmoidBackward<<<Union"
   //             << k_type / core_dim << ", " << k_dim.x << ", " << k_dim.y << ", "
   //             << k_dim.z << ">>>";
 
   // launch kernel
-  impl::camb::KernelFocalLossSigmoidBackward(k_dim, k_type, queue, d_type, input.data(),
-                                 target.data(), weight.data(), gamma, alpha, dim_n,
-                                 deal_n, dim_c, output.data());
+  impl::camb::kernelFocalLossSigmoidBackward(kDim, kType, queue, dType, inputTr.data(),
+                                 targetTr.data(), weightTr.data(), gamma, alpha, dimN,
+                                 dealN, dimC, outputTr.data());
   return diopiSuccess;
 }
