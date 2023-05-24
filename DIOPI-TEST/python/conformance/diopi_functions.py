@@ -38,7 +38,7 @@ def reduce_op_process(input, dim=None, keepdim=False, dtype=None):
         sizeO = [1 for i in range(0, size)]
     elif dim is not None:
         dim_list = dim if isinstance(dim, list) else [dim]
-        for i in range(0):
+        for i in range(0, len(dim_list)):
             if dim_list[i] < 0:
                 dim_list[i] += size
 
@@ -1503,7 +1503,7 @@ def all(input, dim=None, keepdim=False) -> Tensor:
     else:
         assert isinstance(dim, int), "dim should be int"
         _, out = reduce_op_process(input, dim, keepdim, dtype=Dtype.bool)
-        # dim = get_capsule(byref(c_int64(dim)))
+
     func = check_function("diopiAll")
     ret = func(input.context(), out, input) if dim is None else func(input.context(), out, input, dim)
     check_returncode(ret)
