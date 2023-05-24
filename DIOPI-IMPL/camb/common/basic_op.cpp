@@ -4,72 +4,72 @@ namespace impl {
 namespace camb {
 
 template <typename T1, typename T2, typename T3>
-diopiError_t cnnl_op_tensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor other, DiopiTensor out, cnnlOpTensorDesc_t op_type, T1 alpha1, T2 alpha2,
+diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor other, DiopiTensor out, cnnlOpTensorDesc_t opType, T1 alpha1, T2 alpha2,
                             T3 beta) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    DiopiTensor input_casted = input;
-    DiopiTensor other_casted = other;
-    DiopiTensor output_casted = out;
+    DiopiTensor inputCasted = input;
+    DiopiTensor otherCasted = other;
+    DiopiTensor outputCasted = out;
 
-    std::vector<DiopiTensor*> tensors{&input_casted, &other_casted, &output_casted};
+    std::vector<DiopiTensor*> tensors{&inputCasted, &otherCasted, &outputCasted};
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_int32}));
 
-    cnnlDataType_t comp_type;
-    DIOPI_CALL(CnnlDataType::convertToCnnlType(&comp_type, input_casted.dtype()));
+    cnnlDataType_t compType;
+    DIOPI_CALL(CnnlDataType::convertToCnnlType(&compType, inputCasted.dtype()));
 
-    CnnlResourceGuard<cnnlOpTensorDescriptor_t, cnnlCreateOpTensorDescriptor, cnnlDestroyOpTensorDescriptor> op_desc;
+    CnnlResourceGuard<cnnlOpTensorDescriptor_t, cnnlCreateOpTensorDescriptor, cnnlDestroyOpTensorDescriptor> opDesc;
 
-    DIOPI_CALLCNNL(cnnlSetOpTensorDescriptor(op_desc.get(), CNNL_OP_TENSOR_SUB, comp_type, CNNL_NOT_PROPAGATE_NAN));
+    DIOPI_CALLCNNL(cnnlSetOpTensorDescriptor(opDesc.get(), CNNL_OP_TENSOR_SUB, compType, CNNL_NOT_PROPAGATE_NAN));
 
-    std::shared_ptr<void> alpha1_value = nullptr;
-    std::shared_ptr<void> alpha2_value = nullptr;
-    std::shared_ptr<void> beta_value = nullptr;
+    std::shared_ptr<void> alpha1Value = nullptr;
+    std::shared_ptr<void> alpha2Value = nullptr;
+    std::shared_ptr<void> betaValue = nullptr;
 
-    if (DiopiDataType::isInteger(input_casted.dtype())) {
-        alpha1_value = std::make_shared<int32_t>(alpha1);
-        alpha2_value = std::make_shared<int32_t>(alpha2);
-        beta_value = std::make_shared<int32_t>(beta);
-    } else if (DiopiDataType::isFloatPoint(input_casted.dtype())) {
-        alpha1_value = std::make_shared<float>(alpha1);
-        alpha2_value = std::make_shared<float>(alpha2);
-        beta_value = std::make_shared<float>(beta);
+    if (DiopiDataType::isInteger(inputCasted.dtype())) {
+        alpha1Value = std::make_shared<int32_t>(alpha1);
+        alpha2Value = std::make_shared<int32_t>(alpha2);
+        betaValue = std::make_shared<int32_t>(beta);
+    } else if (DiopiDataType::isFloatPoint(inputCasted.dtype())) {
+        alpha1Value = std::make_shared<float>(alpha1);
+        alpha2Value = std::make_shared<float>(alpha2);
+        betaValue = std::make_shared<float>(beta);
     } else {
-        set_last_error_string("%s", "cnnl op tensor only support int or float type.\n");
+        setLastErrorString("%s", "cnnl op tensor only support int or float type.\n");
         return diopiDtypeNotSupported;
     }
-    CnnlTensorDesc input_desc(input_casted, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc other_desc(other_casted, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc output_desc(output_casted, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputDesc(inputCasted, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc otherDesc(otherCasted, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outputDesc(outputCasted, CNNL_LAYOUT_ARRAY);
 
-    size_t workspace_size = 0;
-    DIOPI_CALLCNNL(cnnlGetOpTensorWorkspaceSize(handle, input_desc.get(), other_desc.get(), output_desc.get(), &workspace_size));
+    size_t workspaceSize = 0;
+    DIOPI_CALLCNNL(cnnlGetOpTensorWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outputDesc.get(), &workspaceSize));
 
     void* workspace = nullptr;
-    if (workspace_size != 0) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
+    if (workspaceSize != 0) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
     DIOPI_CALLCNNL(cnnlOpTensor(handle,
-                                op_desc.get(),
-                                alpha1_value.get(),
-                                input_desc.get(),
-                                input_casted.data(),
-                                alpha2_value.get(),
-                                other_desc.get(),
-                                other_casted.data(),
+                                opDesc.get(),
+                                alpha1Value.get(),
+                                inputDesc.get(),
+                                inputCasted.data(),
+                                alpha2Value.get(),
+                                otherDesc.get(),
+                                otherCasted.data(),
                                 workspace,
-                                workspace_size,
-                                beta_value.get(),
-                                output_desc.get(),
-                                output_casted.data()));
+                                workspaceSize,
+                                betaValue.get(),
+                                outputDesc.get(),
+                                outputCasted.data()));
 
-    DIOPI_CALL(dataTypeCast(ctx, out, output_casted));
+    DIOPI_CALL(dataTypeCast(ctx, out, outputCasted));
     return diopiSuccess;
 }
 
 // Explicitly instantiate the template function for use in other .cpp files.
-template diopiError_t cnnl_op_tensor<double, double, double>(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor other, DiopiTensor out,
+template diopiError_t cnnlOpTensor<double, double, double>(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor other, DiopiTensor out,
                                                              cnnlOpTensorDesc_t op_type, double alpha1, double alpha2, double beta);
 
 }  // namespace camb

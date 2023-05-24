@@ -15,10 +15,10 @@ namespace camb {
 extern "C" {
 
 diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    DiopiTensor input_tr(input);
-    DiopiTensor output_tr(out);
+    DiopiTensor inputTr(input);
+    DiopiTensor outputTr(out);
 
-    DIOPI_CALL(dataTypeCast(ctx, output_tr, input_tr));
+    DIOPI_CALL(dataTypeCast(ctx, outputTr, inputTr));
 
     return diopiSuccess;
 }
