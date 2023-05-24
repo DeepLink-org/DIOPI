@@ -4,7 +4,10 @@
  * @copyright  (c) 2023, DeepLink Inc.
  * @brief A reference implemention for DIOPI runtime, which is utilized to support conformance test suite of DIOPI
  */
+#ifndef DIOPI_IMPL_TORCH_TEST_INCLUDE_LITERT_HPP_
+#define DIOPI_IMPL_TORCH_TEST_INCLUDE_LITERT_HPP_
 
+#include <pybind11/pybind11.h>
 #include <diopi/diopirt.h>
 #include <conform_test.h>
 #include <diopi/functions.h>
@@ -14,29 +17,27 @@
 #include <cstring>
 #include <memory>
 #include <vector>
+#include <string>
 #include <set>
-#include <pybind11/pybind11.h>
-#include <iostream>
 
 namespace py = pybind11;
 
 template <class T>
-class PtrWrapper
-{
-    public:
-        PtrWrapper() : ptr(nullptr) {}
-        PtrWrapper(py::none) : ptr(nullptr) {}
-        PtrWrapper(T* ptr) : ptr(ptr) {}
-        PtrWrapper(const PtrWrapper& other) : ptr(other.ptr) {}
-        T& operator* () const { std::cout << ptr << std::endl; return *ptr; }
-        T* operator->() const { return  ptr; }
-        T* get() const { 
-            return ptr; 
-        }
-        void destroy() { delete ptr; }
+class PtrWrapper {
+public:
+    PtrWrapper() : ptr(nullptr) {}
+    explicit PtrWrapper(py::none) : ptr(nullptr) {}
+    explicit PtrWrapper(T* ptr) : ptr(ptr) {}
+    PtrWrapper(const PtrWrapper& other) : ptr(other.ptr) {}
+    T& operator* () const {}
+    T* operator->() const { return  ptr; }
+    T* get() const {
+        return ptr; 
+    }
+    void destroy() { delete ptr; }
 
-    private:
-        T* ptr;
+private:
+    T* ptr;
 };
 
 
@@ -80,8 +81,8 @@ private:
 public:
     diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype,
                          diopiDevice_t device, diopiContextHandle_t context, const void* src);
-    diopiTensor() {};
-    ~diopiTensor() {};
+    diopiTensor() {}
+    ~diopiTensor() {}
 
     diopiSize_t shape() const {
         diopiSize_t size(shape_.data(), static_cast<int64_t>(shape_.size()));
@@ -102,7 +103,7 @@ public:
     void* data() { return storage_->data(); }
     const void* data() const { return storage_->data(); }
     int64_t nbytes() const { return storage_->nbytes(); }
-    int64_t elemSize() const;    
+    int64_t elemSize() const;
     py::buffer_info buffer() const noexcept {
         if (storage_ == nullptr) {
             return py::buffer_info();
@@ -195,4 +196,5 @@ DIOPI_RT_API diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t      ctx,
 DIOPI_RT_API diopiError_t diopiInit();
 }  // extern "C"
 
+#endif  // DIOPI_IMPL_TORCH_TEST_INCLUDE_LITERT_HPP_
 
