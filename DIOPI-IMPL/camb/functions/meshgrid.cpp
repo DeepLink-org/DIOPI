@@ -5,8 +5,10 @@
  */
 
 #include <diopi/functions.h>
-#include <string.h>
+
+#include <cstring>
 #include <numeric>
+
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
@@ -18,35 +20,35 @@ extern "C" {
 diopiError_t diopiMeshGrid(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, diopiConstTensorHandle_t* inputs, int64_t inputsNum) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     for (int i = 0; i < inputsNum; i++) {
-        DiopiTensor input_tensor(inputs[i]);
-        DiopiTensor out_tensor(outs[i]);
+        DiopiTensor inputTensor(inputs[i]);
+        DiopiTensor outTensor(outs[i]);
 
-        auto input_dim = input_tensor.shape();
-        auto output_dims = out_tensor.shape();
+        auto inputDim = inputTensor.shape();
+        auto outputDims = outTensor.shape();
 
-        int tmp_output_dims[8] = {1, 1, 1, 1, 1, 1, 1, 1};
-        int tmp_input_dims[8] = {1, 1, 1, 1, 1, 1, 1, 1};
-        int repeat_dim0 = 1;
-        int repeat_dim1 = 1;
+        int tmpOutputDims[8] = {1, 1, 1, 1, 1, 1, 1, 1};
+        int tmpInputDims[8] = {1, 1, 1, 1, 1, 1, 1, 1};
+        int repeatDim0 = 1;
+        int repeatDim1 = 1;
         for (int j = 0; j < i; j++) {
-            repeat_dim0 *= output_dims[j];
+            repeatDim0 *= outputDims[j];
         }
         for (int k = i + 1; k < inputsNum; k++) {
-            repeat_dim1 *= output_dims[k];
+            repeatDim1 *= outputDims[k];
         }
-        tmp_output_dims[0] = repeat_dim0 * output_dims[i];
-        tmp_output_dims[1] = repeat_dim1;
-        tmp_input_dims[0] = output_dims[i];
-        tmp_input_dims[1] = 1;
+        tmpOutputDims[0] = repeatDim0 * outputDims[i];
+        tmpOutputDims[1] = repeatDim1;
+        tmpInputDims[0] = outputDims[i];
+        tmpInputDims[1] = 1;
 
-        CnnlTensorDesc input_desc;
-        CnnlTensorDesc out_desc;
-        std::vector<int> in_dims = {tmp_input_dims[0], tmp_input_dims[1]};
-        std::vector<int> out_dims = {tmp_output_dims[0], tmp_output_dims[1]};
-        input_desc.set(input_tensor, CNNL_LAYOUT_ARRAY, in_dims);
-        out_desc.set(out_tensor, CNNL_LAYOUT_ARRAY, out_dims);
+        CnnlTensorDesc inputDesc;
+        CnnlTensorDesc outDesc;
+        std::vector<int> inDims = {tmpInputDims[0], tmpInputDims[1]};
+        std::vector<int> outDims = {tmpOutputDims[0], tmpOutputDims[1]};
+        inputDesc.set(inputTensor, CNNL_LAYOUT_ARRAY, inDims);
+        outDesc.set(outTensor, CNNL_LAYOUT_ARRAY, outDims);
 
-        DIOPI_CALLCNNL(cnnlTile(handle, input_desc.get(), input_tensor.data(), out_desc.get(), out_tensor.data()));
+        DIOPI_CALLCNNL(cnnlTile(handle, inputDesc.get(), inputTensor.data(), outDesc.get(), outTensor.data()));
     }
 
     return diopiSuccess;
