@@ -3660,7 +3660,7 @@ def asin(input, inplace=False) -> Tensor:
         return input
     else:
         dtype = input.get_dtype()
-        if dtype != 8 and dtype != 9 and dtype != 10:    
+        if dtype != 8 and dtype != 9 and dtype != 10:
             out = Tensor(input.size(), Dtype.float32)
         else:
             out = Tensor(input.size(), input.get_dtype())
@@ -3674,13 +3674,13 @@ def lerp(input, end, weight) -> Tensor:
     call = "diopiLerp"
     out_shape = input.size()
     if isinstance(weight, Tensor):
-        out_shape = infer_size(list(input.size()),list(end.size()))
+        out_shape = infer_size(list(input.size()), list(end.size()))
         out_shape = infer_size(out_shape, list(weight.size()))
         weight = weight.tensor_handle
         func = check_function(call + "Tensor")
     else:
         weight = byref(Scalar(weight))
-        out_shape = infer_size(list(input.size()),list(end.size()))
+        out_shape = infer_size(list(input.size()), list(end.size()))
         func = check_function(call + "Scalar")
     out = Tensor(out_shape, input.get_dtype())
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, end.tensor_handle, weight)
