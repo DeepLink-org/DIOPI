@@ -16,79 +16,79 @@ namespace impl {
 namespace camb {
 
 extern "C" diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTensorHandle_t dw, diopiTensorHandle_t buf, double lr,
-                                           double momentum, double dampening, double weight_decay, bool nesterov) {
+                                           double momentum, double dampening, double weightDecay, bool nesterov) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    DiopiTensor w_tensor(w);
-    DiopiTensor dw_tensor(dw);
-    DiopiTensor buf_tensor;
-    DiopiTensor buf_tensor_tmp;
+    DiopiTensor wTensor(w);
+    DiopiTensor dwTensor(dw);
+    DiopiTensor bufTensor;
+    DiopiTensor bufTensorTmp;
     std::vector<DiopiTensor *> pTensors;
     if (buf != nullptr) {
-        buf_tensor = DiopiTensor(buf);
-        buf_tensor_tmp = buf_tensor;
-        pTensors = std::vector<DiopiTensor *>{&dw_tensor, &buf_tensor_tmp};
+        bufTensor = DiopiTensor(buf);
+        bufTensorTmp = bufTensor;
+        pTensors = std::vector<DiopiTensor *>{&dwTensor, &bufTensorTmp};
     } else {
-        pTensors = std::vector<DiopiTensor *>{&dw_tensor};
+        pTensors = std::vector<DiopiTensor *>{&dwTensor};
     }
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
-    DiopiTensor w_tensor_tmp = w_tensor;
-    if (dw_tensor.dtype() != w_tensor_tmp.dtype()) {
-        w_tensor_tmp = requiresTensor(ctx, w_tensor.shape(), dw_tensor.dtype());
-        DIOPI_CALL(dataTypeCast(ctx, w_tensor_tmp, w_tensor));
+    DiopiTensor wTensorTmp = wTensor;
+    if (dwTensor.dtype() != wTensorTmp.dtype()) {
+        wTensorTmp = requiresTensor(ctx, wTensor.shape(), dwTensor.dtype());
+        DIOPI_CALL(dataTypeCast(ctx, wTensorTmp, wTensor));
     }
 
-    CnnlTensorDesc w_desc_tmp(w_tensor_tmp, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc dw_desc(dw_tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc wDescTmp(wTensorTmp, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc dwDesc(dwTensor, CNNL_LAYOUT_ARRAY);
 
     // a = a * scale_a + b * scale_b;
-    auto add_mul_func = [&](auto &a, float scale_a, auto b, float scale_b) {
-        size_t workspace_size;
+    auto addMulFunc = [&](auto &a, float scaleA, auto b, float scaleB) {
+        size_t workspaceSize;
         std::vector<int> shape;
         shape.push_back(a.numel());
-        CnnlTensorDesc a_desc, b_desc;
-        DIOPI_CALL(a_desc.set(a, CNNL_LAYOUT_ARRAY, shape));
-        DIOPI_CALL(b_desc.set(b, CNNL_LAYOUT_ARRAY, shape));
+        CnnlTensorDesc aDesc, bDesc;
+        DIOPI_CALL(aDesc.set(a, CNNL_LAYOUT_ARRAY, shape));
+        DIOPI_CALL(bDesc.set(b, CNNL_LAYOUT_ARRAY, shape));
 
-        DIOPI_CALLCNNL(cnnlGetBiasAddWorkspaceSize(handle, b_desc.get(), a_desc.get(), &workspace_size));
+        DIOPI_CALLCNNL(cnnlGetBiasAddWorkspaceSize(handle, bDesc.get(), aDesc.get(), &workspaceSize));
 
         void *workspace = nullptr;
-        if (workspace_size != 0) {
-            workspace = requiresBuffer(ctx, workspace_size).data();
+        if (workspaceSize != 0) {
+            workspace = requiresBuffer(ctx, workspaceSize).data();
         }
 
-        DIOPI_CALLCNNL(cnnlBiasAdd(handle, &scale_b, b_desc.get(), b.data(), workspace, workspace_size, &scale_a, a_desc.get(), a.data()));
+        DIOPI_CALLCNNL(cnnlBiasAdd(handle, &scaleB, bDesc.get(), b.data(), workspace, workspaceSize, &scaleA, aDesc.get(), a.data()));
         return diopiSuccess;
     };
 
-    if (weight_decay != 0) {
-        DIOPI_CALL(add_mul_func(dw_tensor, 1.0, w_tensor_tmp, weight_decay));
+    if (weightDecay != 0) {
+        DIOPI_CALL(addMulFunc(dwTensor, 1.0, wTensorTmp, weightDecay));
     }
     if (momentum != 0) {
         if (buf == nullptr) {
-            buf_tensor_tmp = dw_tensor;
+            bufTensorTmp = dwTensor;
         } else {
-            DIOPI_CALL(add_mul_func(buf_tensor_tmp, momentum, dw_tensor, (1.0 - dampening)));
+            DIOPI_CALL(addMulFunc(bufTensorTmp, momentum, dwTensor, (1.0 - dampening)));
         }
         if (nesterov) {
-            DIOPI_CALL(add_mul_func(dw_tensor, 1.0, buf_tensor_tmp, momentum));
+            DIOPI_CALL(addMulFunc(dwTensor, 1.0, bufTensorTmp, momentum));
         } else {
-            dw_tensor = buf_tensor_tmp;
+            dwTensor = bufTensorTmp;
         }
     }
 
     std::vector<int64_t> shape{1};
     diopiSize_t size(shape.data(), shape.size());
-    DiopiTensor lr_tensor;
-    diopiScalar_t lr_scalar{diopi_dtype_float64, {lr}};
-    DIOPI_CALL(makeTensorFromScalar(ctx, &lr_scalar, lr_tensor));
-    DIOPI_CALL(dataTypeCast(ctx, lr_tensor, dw_tensor.dtype()));
-    DIOPI_CALLCNNL(cnnlGradientDescent(handle, dw_desc.get(), dw_tensor.data(), lr_tensor.data(), w_desc_tmp.get(), w_tensor_tmp.data()));
-    DIOPI_CALL(dataTypeCast(ctx, w_tensor, w_tensor_tmp));
+    DiopiTensor lrTensor;
+    diopiScalar_t lrScalar{diopi_dtype_float64, {lr}};
+    DIOPI_CALL(makeTensorFromScalar(ctx, &lrScalar, lrTensor));
+    DIOPI_CALL(dataTypeCast(ctx, lrTensor, dwTensor.dtype()));
+    DIOPI_CALLCNNL(cnnlGradientDescent(handle, dwDesc.get(), dwTensor.data(), lrTensor.data(), wDescTmp.get(), wTensorTmp.data()));
+    DIOPI_CALL(dataTypeCast(ctx, wTensor, wTensorTmp));
     if (buf != nullptr) {
-        DIOPI_CALL(dataTypeCast(ctx, buf_tensor, buf_tensor_tmp));
+        DIOPI_CALL(dataTypeCast(ctx, bufTensor, bufTensorTmp));
     }
     return diopiSuccess;
 }
