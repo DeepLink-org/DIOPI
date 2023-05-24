@@ -3,14 +3,14 @@
 import math
 import itertools
 
-from ctypes import c_float, c_double, c_int64, c_bool, c_void_p, byref, pointer
+from ctypes import c_double, byref
 from .diopi_runtime import Sizes, Scalar, Tensor, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d
 from .utils import check_returncode, check_function, glob_vars, get_capsule
 from . import Dtype, raw_like
 from collections import namedtuple
 import numpy as np
 from diopi_runtime import diopiReduction, diopiRoundMode
-from diopi_runtime import TensorP, Dtype
+from diopi_runtime import TensorP
 
 
 def broadcast_out_size(size1, size2):
@@ -361,7 +361,7 @@ def logical_not(input, inplace=False) -> Tensor:
 
 def leaky_relu(input, negative_slope=0.01, inplace=False) -> Tensor:
     dtype = Dtype.int64 if isinstance(negative_slope, int) else Dtype.float64
-    negative_slope = Scalar(negative_slope, dtype) 
+    negative_slope = Scalar(negative_slope, dtype)
     if inplace:
         out = input
         func = check_function("diopiLeakyReluInp")
@@ -636,6 +636,7 @@ def convert_round_mode(name):
         return diopiRoundMode.RoundModeFloor
     return diopiRoundMode.RoundModeEND
 
+
 def binary_cross_entropy(input, target, weight=None, reduction='mean'):
     assert input.size().data == target.size().data, \
         'target shape must be the same as input shape'
@@ -764,7 +765,7 @@ def conv2d(input, weight, bias=None, stride=1,
         # equivalent kernel size
         sizeW[i] += (sizeW[i] - 1) * (dilation[i] - 1)
         sizeO.append(int((sizeI[i] - sizeW[i] + 2 * padding[i]) / stride[i]) + 1)
-    
+
     stride = Sizes(list(stride))
     padding = Sizes(list(padding))
     dilation = Sizes(list(dilation))
@@ -810,12 +811,11 @@ def avg_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False,
 
     func = check_function("diopiAvgPool2d")
     if divisor_override:
-        ret = func(input.context(), out, input,
-                kernel_size, stride, padding, ceil_mode, count_include_pad,
-                divisor_override)
+        ret = func(input.context(), out, input, kernel_size, stride, padding, ceil_mode,
+                   count_include_pad,divisor_override)
     else:
-        ret = func(input.context(), out, input,
-                kernel_size, stride, padding, ceil_mode, count_include_pad)
+        ret = func(input.context(), out, input, kernel_size, stride, padding, ceil_mode,
+                   count_include_pad)
     check_returncode(ret)
     return out
 
@@ -955,7 +955,7 @@ def dropout_impl(input, size_mask, p=0.5, training=True, inplace=False):
         args = args + 'input, '
 
     mask = Tensor(size_mask, Dtype.uint8)
-    args = args + "p, c_bool(training)"
+    args = args + "p, training"
 
     func = check_function(call)
     ret = eval(f'func({args})')
@@ -1113,10 +1113,9 @@ def sort(input, dim=- 1, descending=False, stable=False):
     vals = raw_like(input)
     sizeI = input.size().data
     indices = Tensor(sizeI, glob_vars.int_type)
-    stable_c = None if stable is None else pointer(c_bool(stable))
     func = check_function("diopiSort")
-    ret = func(input.context(), vals, indices,
-               input, dim, descending, stable_c)
+    ret = func(input.context(), vals, indices, input, dim, descending) if stable is None else \
+        func(input.context(), vals, indices, input, dim, descending, stable)
     check_returncode(ret)
     # if not stable, need to reconstruct indices and use "input[indices]" to check
     if not stable:
@@ -1622,7 +1621,7 @@ def index(input, **kwargs) -> Tensor:
                 sizeI = input.size().data
                 sizeE = ele.size().data
                 length = len(sizeI) - len(sizeE) - len(new_args)
-                for i in range(length): 
+                for i in range(length):
                     tmp_p = TensorP(None)
                     new_args.append(tmp_p)
 
@@ -1645,7 +1644,7 @@ def sgd(param, param_grad, lr, buf=None, momentum=0, dampening=0, weight_decay=0
 
     arg_buf = buf if buf is None else buf
     ret = func(param.context(), param, param_grad, arg_buf,
-               lr, momentum, dampening, weight_decay, c_bool(nesterov))
+               lr, momentum, dampening, weight_decay, nesterov)
     check_returncode(ret)
     return param, buf
 
@@ -1700,7 +1699,7 @@ def index_backward(input, grad_outputs, **kwargs) -> Tensor:
                 sizeI = input.size().data
                 sizeE = ele.size().data
                 length = len(sizeI) - len(sizeE) - len(new_args)
-                for i in range(length):    
+                for i in range(length):
                     tmp_p = TensorP(None)
                     new_args.append(tmp_p)
 
@@ -1722,7 +1721,7 @@ def leaky_relu_backward(input, grad_outputs, negative_slope=0.01, input_is_resul
 
     func = check_function("diopiLeakyReluBackward")
     ret = func(input.context(), grad_input, grad_outputs[0],
-               input, negative_slope, c_bool(input_is_result))
+               input, negative_slope, input_is_result)
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -1863,12 +1862,10 @@ def avg_pool2d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
     kernel_size = Sizes(list(kernel_size))
 
     func = check_function("diopiAvgPool2dBackward")
-    ret = func(input.context(), grad_input, grad_outputs[0],
-               input, kernel_size, stride, padding, ceil_mode,
-               count_include_pad, divisor_override) if divisor_override else \
-        func(input.context(), grad_input, grad_outputs[0],
-            input, kernel_size, stride, padding, ceil_mode,
-            count_include_pad)     
+    ret = func(input.context(), grad_input, grad_outputs[0], input, kernel_size, stride, padding,
+               ceil_mode, count_include_pad, divisor_override) if divisor_override else
+               func(input.context(), grad_input, grad_outputs[0], input, kernel_size, stride, padding, ceil_mode,
+               count_include_pad)
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -2066,7 +2063,7 @@ def max_pool2d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
 
     func = check_function("diopiMaxPool2dBackward")
     ret = func(input.context(), grad_input, grad_outputs[0],
-               input, kernel_size, stride, padding, dilation, c_bool(ceil_mode), indices)
+               input, kernel_size, stride, padding, dilation, ceil_mode, indices)
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -2131,7 +2128,7 @@ def uniform(input, start=0, end=1) -> Tensor:
 
 def random(input, start=0, end=None) -> Tensor:
     func = check_function("diopiRandomInp")
-    ret = func(input.context(), input, start, end, 0) if end else \
+    ret = func(input.context(), input, start, end, 0) if end else
           func(input.context(), input, start, 0)
     check_returncode(ret)
     return input
@@ -2581,7 +2578,7 @@ def conv3d_backward(input, grad_outputs, weight, bias=None, stride=1,
     func = check_function("diopiConvolution3dBackward")
     ret = func(input.context(), grad_input, grad_weight, grad_bias,
                grad_outputs[0], input, weight, sizeBias, stride,
-               padding, dilation, c_bool(transposed), output_padding, groups)
+               padding, dilation, transposed, output_padding, groups)
     check_returncode(ret)
     return out
 
@@ -2943,7 +2940,7 @@ def max_pool3d(input, kernel_size, stride=None, padding=0, dilation=1,
         func = check_function("diopiMaxPool3d")
         ret = func(input.context(), out,
                    input, kernel_size,
-                   stride, padding, dilation, c_bool(ceil_mode))
+                   stride, padding, dilation, ceil_mode)
         check_returncode(ret)
         return out
     else:
@@ -2951,7 +2948,7 @@ def max_pool3d(input, kernel_size, stride=None, padding=0, dilation=1,
         indices = Tensor(sizeO, glob_vars.int_type)
         ret = func(input.context(), out,
                    indices, input,
-                   kernel_size, stride, padding, dilation, c_bool(ceil_mode))
+                   kernel_size, stride, padding, dilation, ceil_mode)
         check_returncode(ret)
         return out, indices
 
@@ -2980,7 +2977,7 @@ def max_pool3d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
 
     func = check_function("diopiMaxPool3dBackward")
     ret = func(input.context(), grad_input, grad_outputs[0],
-               input, kernel_size, stride, padding, dilation, c_bool(ceil_mode), indices)
+               input, kernel_size, stride, padding, dilation, ceil_mode, indices)
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -3196,7 +3193,7 @@ def interpolate(input, size=None, scale_factor=None, mode="nearest", align_corne
     else:
         func = check_function("diopiUpsampleLinear")
         ret = func(input.context(), out, input, c_size,
-                   c_bool(align_corners), mode.encode('UTF-8'))
+                   align_corners, mode.encode('UTF-8'))
     check_returncode(ret)
     return out
 
@@ -3213,7 +3210,7 @@ def interpolate_backward(input, grad_outputs, size, mode="nearest", align_corner
     else:
         func = check_function("diopiUpsampleLinearBackward")
         ret = func(input.context(), grad_input, grad_outputs[0], out_size, in_size,
-                   c_bool(align_corners), mode.encode('UTF-8'))
+                   align_corners, mode.encode('UTF-8'))
     check_returncode(ret)
     return {'input': grad_input}
 
@@ -3265,9 +3262,9 @@ def unique(input, sorted=True, return_inverse=False, return_counts=False, dim=No
 
     func = check_function("diopiUnique")
     ret = func(input.context(), out_ptr, input, sorted,
-               return_counts, indices, counts_ptr) if dim is None else \
-          func(input.context(), out_ptr, input, dim, sorted,
-               return_counts, indices, counts_ptr)         
+               return_counts, indices, counts_ptr) if dim is None else
+               func(input.context(), out_ptr, input, dim, sorted,
+               return_counts, indices, counts_ptr)    
     check_returncode(ret)
     out = out_ptr.data()
     if return_counts:
@@ -3425,7 +3422,7 @@ def cholesky_ex(input, upper=False, check_errors=False):
     nums = sizeI[0:-2] if len(sizeI) > 2 else ()
     info = Tensor(nums, Dtype.int32)
     func = check_function("diopiCholesky")
-    ret = func(input.context(), out, info, input, c_bool(upper), c_bool(check_errors))
+    ret = func(input.context(), out, info, input, upper, check_errors)
     check_returncode(ret)
     return out, info
 
@@ -3434,7 +3431,7 @@ def cholesky_ex_backward(input, grad_outputs, output, upper=False, **kwargs):
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
     func = check_function("diopiCholeskyBackward")
-    ret = func(input.context(), grad_input, grad_outputs[0], output, c_bool(upper))
+    ret = func(input.context(), grad_input, grad_outputs[0], output, upper)
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -3449,7 +3446,7 @@ def triangular_solve(input, A, upper=True, transpose=False, unitriangular=False)
     cloned_mat = Tensor(sizeO, A.get_dtype())
     func = check_function("diopiTriangularSolve")
     ret = func(input.context(), out, cloned_mat, input,
-               A, c_bool(upper), c_bool(transpose), c_bool(unitriangular))
+               A, upper, transpose, unitriangular)
     check_returncode(ret)
     Res = namedtuple('Res', ['solution', 'cloned_coefficient'])
     output = Res(out, cloned_mat)
@@ -3463,7 +3460,7 @@ def triangular_solve_backward(input, grad_outputs, output, A, upper=True, transp
     grad_input = raw_like(input)
     func = check_function("diopiTriangularSolveBackward")
     ret = func(input.context(), grad_input, grad_A, grad_outputs[0],
-               grad_cloned_mat, output, input, A, c_bool(upper), c_bool(transpose), c_bool(unitriangular))
+               grad_cloned_mat, output, input, A, upper, transpose, unitriangular)
     check_returncode(ret)
     return {"input": grad_input, "A": grad_A}
 
@@ -3480,7 +3477,6 @@ def repeat(input, repeats):
         idx = input_ndims + i - out_ndims
         k = repeats_size[i] * sizeI[idx] if idx >= 0 else repeats_size[i]
         output_size.append(k)
-
 
     repeats_size = Sizes(list(repeats))
 
