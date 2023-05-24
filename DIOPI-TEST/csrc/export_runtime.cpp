@@ -39,9 +39,9 @@ PYBIND11_MODULE(diopi_runtime, m) {
             .def("get_dtype", &diopiTensor::dtype)
             .def("get_device", &diopiTensor::device)
             .def("numel", &diopiTensor::numel)
-            .def("reset_shape", &diopiTensor::reset_shape)
+            .def("reset_shape", &diopiTensor::resetShape)
             .def("itemsize", &diopiTensor::elemSize)
-            .def("context", &diopiTensor::get_ctx)
+            .def("context", &diopiTensor::getCtx)
             .def_buffer(&diopiTensor::buffer);
     py::class_<diopiContext>(
             m, "Context", py::buffer_protocol())
@@ -132,7 +132,7 @@ PYBIND11_MODULE(diopi_runtime, m) {
     m.def("diopi_tensor_copy_to_buffer", [](diopiContextHandle_t context, diopiConstTensorHandle_t tensor,
         py::array_t<double>& arr) { 
             py::buffer_info buf = arr.request();
-            _diopiTensorCopyToBuffer(context, tensor, buf.ptr);
+            diopiTensorCopyToBuffer(context, tensor, buf.ptr);
             auto tempData = reinterpret_cast<double*>(buf.ptr);
 
         });

@@ -44,20 +44,20 @@ extern "C" {
 
 class Storage final {
 private:
-    malloc_func_t malloc_fn_;
-    free_func_t free_fn_;
+    malloc_func_t mallocFn_;
+    free_func_t freeFn_;
     int64_t nbytes_;
     void* ptr_;
 
 public:
-    Storage(malloc_func_t malloc_fn, free_func_t free_fn, int64_t nbytes) : malloc_fn_(malloc_fn), free_fn_(free_fn), nbytes_(nbytes) {
-        assert(free_fn_);
-        assert(malloc_fn_);
-        ptr_ = malloc_fn_(nbytes_);
+    Storage(malloc_func_t mallocFn, free_func_t freeFn, int64_t nbytes) : mallocFn_(mallocFn), freeFn_(freeFn), nbytes_(nbytes) {
+        assert(freeFn_);
+        assert(mallocFn_);
+        ptr_ = mallocFn_(nbytes);
     }
 
     ~Storage() {
-        free_fn_(ptr_);
+        freeFn_(ptr_);
         ptr_ = nullptr;
         nbytes_ = 0;
     }
@@ -93,7 +93,7 @@ public:
         return stride;
     }
 
-    bool reset_shape(const diopiSize_t* size);
+    bool resetShape(const diopiSize_t* size);
 
     diopiDtype_t dtype() const { return dtype_; }
     diopiDevice_t device() const { return device_; }
@@ -110,7 +110,7 @@ public:
         try {
             diopiStreamHandle_t stream;
             auto ptr = malloc(nbytes());;
-            diopiGetStream(get_ctx(), &stream);
+            diopiGetStream(getCtx(), &stream);
             device_memcpy_d2h_async(stream, ptr, data(), nbytes());
             device_synchronize_stream(stream);
             ssize_t esize = elemSize();
@@ -136,7 +136,7 @@ public:
         }
     }
 
-    diopiContextHandle_t get_ctx() const { return context_; }
+    diopiContextHandle_t getCtx() const { return context_; }
 };
 
 struct diopiContext {
@@ -145,7 +145,7 @@ private:
     std::set<diopiTensorHandle_t> setTensors_;
 
 public:
-    diopiContext() {}
+    diopiContext() = default;
 
     ~diopiContext() {
         if (nullptr != stream_) {
@@ -188,7 +188,7 @@ public:
     }
 };
 
-DIOPI_RT_API diopiError_t _diopiTensorCopyToBuffer(diopiContextHandle_t      ctx,
+DIOPI_RT_API diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t      ctx,
                                                 diopiConstTensorHandle_t tensor,
                                                 void*                     dst);
 

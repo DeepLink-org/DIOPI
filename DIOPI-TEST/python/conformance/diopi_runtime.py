@@ -187,7 +187,6 @@ class Tensor(diopiTensor):
                     Device.AIChip, context, data_ptr)
 
 
-
     def __str__(self):
         array = self.numpy()
         string = f"{array.__str__()}\n"
