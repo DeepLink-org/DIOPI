@@ -73,6 +73,8 @@ typedef enum {
     diopi_dtype_bool     = 11,
     diopi_dtype_bfloat16 = 12,
     diopi_dtype_tfloat32 = 13,
+    diopi_dtype_complex64 = 14,
+    diopi_dtype_complex128 = 15,
 } diopiDtype_t;
 
 /**

@@ -135,6 +135,10 @@ caffe2::TypeMeta getATenType(diopiDtype_t dt) {
         return caffe2::TypeMeta::Make<at::Half>();
     case diopi_dtype_bfloat16:
         return caffe2::TypeMeta::Make<at::BFloat16>();
+    case diopi_dtype_complex64:
+        return caffe2::TypeMeta::Make<c10::complex<float>>();
+    case diopi_dtype_complex128:
+        return caffe2::TypeMeta::Make<c10::complex<double>>();
     default:
         NOT_SUPPORTED("diopi dytpe");
     }

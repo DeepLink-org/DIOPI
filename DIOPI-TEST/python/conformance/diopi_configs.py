@@ -4661,17 +4661,17 @@ diopi_configs = {
         interface=['torch'],
         dtype=[Dtype.float32, Dtype.float64],
         tensor_para=dict(
-            gen_fn=Genfunc.randn,
+            gen_fn=Genfunc.positive,
             args=[
                 {
                     "ins": ['abs'],
-                    "shape": ((), (1024, ), (384, 128),
+                    "shape": ((1,), (1024, ), (384, 128),
                               (64, 1, 128), (128, 64, 3, 3),
                               (2, 32, 130, 130)),
                 },
                 {
                     "ins": ['angle'],
-                    "shape": ((), (1024, ), (384, 128),
+                    "shape": ((1,), (1024, ), (384, 128),
                               (32, 64, 8, 128), (1, ),
                               (2, 32, 1, 1)),
                 },
