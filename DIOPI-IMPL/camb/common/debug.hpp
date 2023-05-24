@@ -35,7 +35,7 @@ void printDevData(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max
     std::cout << std::endl;
 }
 
-template<>
+template <>
 void printDevData<int8_t>(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max_len, int8_t _) {
     int bytes = len;
     std::unique_ptr<char> ptr(new char[bytes]);
@@ -48,7 +48,7 @@ void printDevData<int8_t>(diopiContextHandle_t ctx, void* data, int64_t len, int
     std::cout << std::endl;
 }
 
-template<>
+template <>
 void printDevData<uint8_t>(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max_len, uint8_t _) {
     printDevData<int8_t>(ctx, data, len, max_len, static_cast<int8_t>(_));
 }
