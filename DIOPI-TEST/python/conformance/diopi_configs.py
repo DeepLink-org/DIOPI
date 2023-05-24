@@ -176,7 +176,7 @@ diopi_configs = {
 'hardtanh': dict(
         name=["hardtanh"],
         para=dict(
-            min_val=[0.0, 0.0, 0.2, 1.0],
+            min_val=[0.0, 0.0, 0.2, 1.4],
             max_val=[6.0, 0.5, 0.2, 1.2],
         ),
         tensor_para=dict(
@@ -184,8 +184,8 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((2, 4), (4, 2, 2),
-                              (2, 3, 2, 1), (4, 3, 1, 1)),
+                    "shape": ((2, 4096), (64, 28, 28),
+                              (2, 96, 56, 56), (64, 3, 7, 28, 28)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -204,8 +204,8 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((2, 4), (4, 2, 2),
-                              (2, 3, 2, 1), (4, 3, 1, 1)),
+                    "shape": ((2, 4096), (64, 28, 28),
+                              (2, 96, 56, 56), (64, 3, 7, 28, 28)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -224,8 +224,8 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((2, 4), (4, 2, 2),
-                              (2, 3, 2, 1), (4, 3, 1, 1)),
+                    "shape": ((2, 4096), (64, 28, 28),
+                              (2, 96, 56, 56), (64, 3, 7, 28, 28)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.int16, Dtype.int32, Dtype.int64],
                     "gen_fn": dict(fn=Genfunc.randint, low=-1, high=15),
                 },
