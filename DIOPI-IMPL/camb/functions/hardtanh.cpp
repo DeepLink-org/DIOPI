@@ -31,7 +31,7 @@ diopiError_t diopiHardtanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     double min = DiopiDataType::isInteger(minVal->stype) ? minVal->ival : minVal->fval;
     double max = DiopiDataType::isInteger(maxVal->stype) ? maxVal->ival : maxVal->fval;
 
-    DIOPI_CALLCNNL(cnnlHardtanh(handle, inputDesc.get(), inputTensor.data(), float(max), float(min), outDesc.get(), outTensor.data()));
+    DIOPI_CALLCNNL(cnnlHardtanh(handle, inputDesc.get(), inputTensor.data(), max, min, outDesc.get(), outTensor.data()));
     return diopiSuccess;
 }
 
