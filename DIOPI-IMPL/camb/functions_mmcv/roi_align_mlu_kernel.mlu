@@ -465,7 +465,7 @@ namespace impl {
 
 namespace camb {
 
-void KernelRoiAlign(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
+void kernelRoiAlign(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
                     cnrtQueue_t queue, const cnrtDataType_t d_type,
                     const void *input, const void *rois, const int channels,
                     const bool aligned, const int pooled_height,
@@ -478,7 +478,7 @@ void KernelRoiAlign(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
       input_width, sampling_ratio, spatial_scale, num_rois, d_type, output);
 }
 
-void KernelRoiAlignBackward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
+void kernelRoiAlignBackward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
                             cnrtQueue_t queue, const cnrtDataType_t dtype,
                             const void *grads, const void *boxes,
                             void *grads_image, const int boxes_num,
