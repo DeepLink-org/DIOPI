@@ -13,7 +13,7 @@ type_convert_dict = {
     'double*' : 'void*'
 }
 
-can_be_none = ['const int64_t*', 'const double*']
+can_be_none = ['const int64_t*', 'const double*', 'const bool*']
 
 
 def prepare():

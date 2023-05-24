@@ -1863,7 +1863,7 @@ def avg_pool2d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
 
     func = check_function("diopiAvgPool2dBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], input, kernel_size, stride, padding,
-               ceil_mode, count_include_pad, divisor_override) if divisor_override else
+               ceil_mode, count_include_pad, divisor_override) if divisor_override else \
                func(input.context(), grad_input, grad_outputs[0], input, kernel_size, stride, padding, ceil_mode,
                count_include_pad)
     check_returncode(ret)
