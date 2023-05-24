@@ -849,7 +849,7 @@ namespace impl {
 
 namespace camb {
 
-void KernelFocalLossSigmoidForward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
+void kernelFocalLossSigmoidForward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
                                    cnrtQueue_t queue,
                                    const cnrtDataType_t d_type,
                                    const void *input, const void *target,
@@ -867,7 +867,7 @@ void KernelFocalLossSigmoidForward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
   }
 }
 
-void KernelFocalLossSigmoidBackward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
+void kernelFocalLossSigmoidBackward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
                                     cnrtQueue_t queue,
                                     const cnrtDataType_t d_type,
                                     const void *input, const void *target,

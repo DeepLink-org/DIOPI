@@ -27,25 +27,25 @@ namespace camb {
 
 #define CEIL_ALIGN(x, y) (((x) + (y)-1) / (y) * (y))
 
-constexpr uint32_t rem_for_stack = 128 * 1024;
+constexpr uint32_t remForStack = 128 * 1024;
 
 inline uint32_t getDeviceAttr(cnrtDeviceAttr_t attr) {
-  int dev_ordinal = 0;
-  int device_attr = 1;
-  cnrtGetDevice(&dev_ordinal);
-  cnrtDeviceGetAttribute(&device_attr, attr, dev_ordinal);
+  int devOrdinal = 0;
+  int deviceAttr = 1;
+  cnrtGetDevice(&devOrdinal);
+  cnrtDeviceGetAttribute(&deviceAttr, attr, devOrdinal);
   if (attr == cnrtAttrNramSizePerMcore) {
-    device_attr -= rem_for_stack;
+    deviceAttr -= remForStack;
   }
-  return device_attr;
+  return deviceAttr;
 }
 
 inline int32_t getJobLimitCapability() {
-  CNcontext drv_ctx;
-  DIOPI_CHECK(CN_SUCCESS == cnCtxGetCurrent(&drv_ctx), "cnCtxGetCurrent fails");
-  CNctxConfigParam ctx_conf_param;
-  DIOPI_CHECK(CN_SUCCESS == cnGetCtxConfigParam(drv_ctx, CN_CTX_CONFIG_UNION_LIMIT, &ctx_conf_param), "cnGetCtxConfigParam fails.");
-  return (int32_t)ctx_conf_param.unionLimit;
+  CNcontext drvCtx;
+  DIOPI_CHECK(CN_SUCCESS == cnCtxGetCurrent(&drvCtx), "cnCtxGetCurrent fails");
+  CNctxConfigParam ctxConfParam;
+  DIOPI_CHECK(CN_SUCCESS == cnGetCtxConfigParam(drvCtx, CN_CTX_CONFIG_UNION_LIMIT, &ctxConfParam), "cnGetCtxConfigParam fails.");
+  return (int32_t)ctxConfParam.unionLimit;
 }
 
 inline int32_t getCoreNumOfJobLimitCapability() {
@@ -92,6 +92,7 @@ inline cnrtDataType_t dtype2CnrtDtype(const diopiDtype_t dt) {
   default:
     std::cerr << "diopi dytpe not supported in pytorch+diopi scenario)";
   }
+  return CNRT_INVALID;
 }
 
 }  // namespace camb

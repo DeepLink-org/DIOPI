@@ -14,10 +14,10 @@ namespace impl {
 
 namespace camb {
 
-void KernelBBoxOverlaps(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
-                        cnrtQueue_t queue, const cnrtDataType_t d_type,
+void kernelBBoxOverlaps(cnrtDim3_t kDim, cnrtFunctionType_t kType,
+                        cnrtQueue_t queue, const cnrtDataType_t dType,
                         const void *bbox1, const void *bbox2, void *ious,
-                        const int32_t num_bbox1, const int32_t num_bbox2,
+                        const int32_t numBbox1, const int32_t numBbox2,
                         const int32_t mode, const bool aligned,
                         const int32_t offset);
 }  // namespace camb
@@ -25,32 +25,32 @@ void KernelBBoxOverlaps(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
 }  // namespace impl
 
 
-static void policyFunc(cnrtDim3_t *k_dim, cnrtFunctionType_t *k_type,
-                       const int32_t batch_num_all) {
-  auto union_num = impl::camb::getDeviceAttr(cnrtAttrClusterCount);
-  auto core_dim = impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
-  auto core_num = union_num * core_dim;
+static void policyFunc(cnrtDim3_t *kDim, cnrtFunctionType_t *kType,
+                       const int32_t batchNumAll) {
+  auto unionNum = impl::camb::getDeviceAttr(cnrtAttrClusterCount);
+  auto coreDim = impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
+  auto coreNum = unionNum * coreDim;
 
   // Union1 policyFunc
-  *k_type = CNRT_FUNC_TYPE_UNION1;
-  k_dim->x = core_dim;
-  auto need_core_num = PAD_UP(batch_num_all, core_dim);
-  k_dim->y =
-      (need_core_num < core_num) ? (need_core_num / core_dim) : union_num;
-  k_dim->z = 1;
+  *kType = CNRT_FUNC_TYPE_UNION1;
+  kDim->x = coreDim;
+  auto needCoreNum = PAD_UP(batchNumAll, coreDim);
+  kDim->y =
+      (needCoreNum < coreNum) ? (needCoreNum / coreDim) : unionNum;
+  kDim->z = 1;
 
   return;
 }
 
-extern "C" DIOPI_API diopiError_t diopiBboxOverlapsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t ious_, diopiConstTensorHandle_t bboxes1_,
-                                                        diopiConstTensorHandle_t bboxes2_, int64_t mode, int64_t offset, bool aligned) {
-  auto bboxes1 = impl::camb::DiopiTensor(bboxes1_);
-  auto bboxes2 = impl::camb::DiopiTensor(bboxes2_);
-  auto ious = impl::camb::DiopiTensor(ious_);
+extern "C" DIOPI_API diopiError_t diopiBboxOverlapsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t ious, diopiConstTensorHandle_t bboxes1,
+                                                        diopiConstTensorHandle_t bboxes2, int64_t mode, int64_t offset, bool aligned) {
+  auto bboxes1Tr = impl::camb::DiopiTensor(bboxes1);
+  auto bboxes2Tr = impl::camb::DiopiTensor(bboxes2);
+  auto iousTr = impl::camb::DiopiTensor(ious);
 
-  auto rows = bboxes1.size(0);
-  auto cols = bboxes2.size(0);
-  auto batch_num_all = rows;
+  auto rows = bboxes1Tr.size(0);
+  auto cols = bboxes2Tr.size(0);
+  auto batchNumAll = rows;
 
   if (rows * cols == 0) {
       // return if zero element
@@ -58,17 +58,17 @@ extern "C" DIOPI_API diopiError_t diopiBboxOverlapsMmcv(diopiContextHandle_t ctx
   }
 
   // calculate task dimension
-  cnrtDim3_t k_dim;
-  cnrtFunctionType_t k_type;
-  policyFunc(&k_dim, &k_type, batch_num_all);
+  cnrtDim3_t kDim;
+  cnrtFunctionType_t kType;
+  policyFunc(&kDim, &kType, batchNumAll);
 
   // get compute queue
   auto queue = impl::camb::getStream(ctx);
 
   // get dtype of input
-  cnrtDataType_t d_type = impl::camb::dtype2CnrtDtype(bboxes1.dtype());
+  cnrtDataType_t dType = impl::camb::dtype2CnrtDtype(bboxes1Tr.dtype());
 
   // launch kernel
-  impl::camb::KernelBBoxOverlaps(k_dim, k_type, queue, d_type, bboxes1.data(), bboxes2.data(), ious.data(), rows, cols, mode, aligned, offset);
+  impl::camb::kernelBBoxOverlaps(kDim, kType, queue, dType, bboxes1Tr.data(), bboxes2Tr.data(), iousTr.data(), rows, cols, mode, aligned, offset);
   return diopiSuccess;
 }
