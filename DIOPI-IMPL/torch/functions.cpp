@@ -4097,7 +4097,8 @@ DIOPI_API diopiError_t diopiAsin(diopiContextHandle_t ctx, diopiTensorHandle_t o
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiLerpTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t end, diopiConstTensorHandle_t weight) {
+DIOPI_API diopiError_t diopiLerpTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
+        diopiConstTensorHandle_t end, diopiConstTensorHandle_t weight) {
     impl::aten::setCurCtx(ctx);
     auto atOut = impl::aten::buildATen(out);
     auto atInput = impl::aten::buildATen(input);
@@ -4108,7 +4109,8 @@ DIOPI_API diopiError_t diopiLerpTensor(diopiContextHandle_t ctx, diopiTensorHand
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiLerpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t end, const diopiScalar_t* weight) {
+DIOPI_API diopiError_t diopiLerpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
+        diopiConstTensorHandle_t end, const diopiScalar_t* weight) {
     impl::aten::setCurCtx(ctx);
     auto atOut = impl::aten::buildATen(out);
     auto atInput = impl::aten::buildATen(input);
