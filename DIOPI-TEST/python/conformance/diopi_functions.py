@@ -1053,7 +1053,7 @@ def embedding(input, weight, padding_idx=None, max_norm=None, norm_type=2.0,
     sizeW = weight.size()
     sizeI.append(sizeW[-1])
     out = Tensor(sizeI, weight.get_dtype())
-    padding_idx = -100 if padding_idx is None else padding_idx
+    padding_idx = -1 if padding_idx is None else padding_idx
 
     if max_norm is not None:
         func2 = check_function("diopiEmbeddingRenorm_")
