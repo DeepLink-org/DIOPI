@@ -155,8 +155,23 @@ extern "C" diopiError_t diopiRoiAlignBackwardMmcv(diopiContextHandle_t ctx, diop
     cnrtDim3_t kDim = {dimX, dimY, 1};
     cnrtDataType_t kDtype = impl::camb::dtype2CnrtDtype(gradTr.dtype());
 
-    impl::camb::kernelRoiAlignBackward(
-        kDim, kType, queue, kDtype, gradTrTmp.data(), roisTr.data(), gradInputTr1.data(), boxesNum, hi, wi, c, no, ho, wo, spatialScale, samplingRatio, aligned);
+    impl::camb::kernelRoiAlignBackward(kDim,
+                                       kType,
+                                       queue,
+                                       kDtype,
+                                       gradTrTmp.data(),
+                                       roisTr.data(),
+                                       gradInputTr1.data(),
+                                       boxesNum,
+                                       hi,
+                                       wi,
+                                       c,
+                                       no,
+                                       ho,
+                                       wo,
+                                       spatialScale,
+                                       samplingRatio,
+                                       aligned);
 
     cnnlTranspose(ctx, handle, gradInputTr1, gradInputTr, CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW);
     return diopiSuccess;
