@@ -9,7 +9,7 @@ namespace camb {
 extern "C" {
 DIOPI_API diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, double std) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor out_tensor(out);
+    DiopiTensor outTensor(out);
     auto type = CNNL_DTYPE_FLOAT;
 
     // create and set the rand_generator
@@ -19,21 +19,21 @@ DIOPI_API diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t
     // set the period to the generator
     DIOPI_CALLCNNL(cnnlRandSetMTGP32Period(generator, CNNL_RAND_MTGP32_P11213));
     // create and set the state
-    size_t size_state = 0;
-    DIOPI_CALLCNNL(cnnlRandGetMTGP32StateSize(generator, &size_state));
+    size_t sizeState = 0;
+    DIOPI_CALLCNNL(cnnlRandGetMTGP32StateSize(generator, &sizeState));
     void* state = nullptr;
-    state = requiresBuffer(ctx, size_state).data();
+    state = requiresBuffer(ctx, sizeState).data();
     cnnlMTGP32FastParams_t params;
     DIOPI_CALLCNNL(cnnlRandGetMTGP32HostParam(generator, &params));
-    size_t size_kernel = 0;
-    DIOPI_CALLCNNL(cnnlRandGetMTGP32KernelParamSize(generator, &size_kernel));
-    void* kernel_params = nullptr;
-    kernel_params = requiresBuffer(ctx, size_kernel).data();
-    DIOPI_CALLCNNL(cnnlRandMakeMTGP32Constants(handle, params, kernel_params));
-    int rand_seed = time(NULL);
-    DIOPI_CALLCNNL(cnnlRandMakeMTGP32KernelState(handle, state, params, kernel_params, rand_seed));
+    size_t sizeKernel = 0;
+    DIOPI_CALLCNNL(cnnlRandGetMTGP32KernelParamSize(generator, &sizeKernel));
+    void* kernelParams = nullptr;
+    kernelParams = requiresBuffer(ctx, sizeKernel).data();
+    DIOPI_CALLCNNL(cnnlRandMakeMTGP32Constants(handle, params, kernelParams));
+    int randSeed = time(nullptr);
+    DIOPI_CALLCNNL(cnnlRandMakeMTGP32KernelState(handle, state, params, kernelParams, randSeed));
 
-    DIOPI_CALLCNNL(cnnlRandGenerateNormal(handle, generator, type, state, out_tensor.numel(), mean, std, out_tensor.data()));
+    DIOPI_CALLCNNL(cnnlRandGenerateNormal(handle, generator, type, state, outTensor.numel(), mean, std, outTensor.data()));
     return diopiSuccess;
 }
 diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std) {
