@@ -3318,7 +3318,6 @@ diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     if (reduction == 1) {
         atGrad = at::native::expand(atGrad, shape).clone();
         auto target_lengths_t = at::tensor(tl, atGrad.options()).clamp_min(1);
-        ;
         atGrad = atGrad / target_lengths_t;
         atGrad.mul_(1. / batch_size);
     } else if (reduction == 2) {
