@@ -5,8 +5,8 @@
  */
 
 #include <diopi/functions.h>
-#include <string.h>
 
+#include <cstring>
 #include <set>
 
 #include "../cnnl_helper.hpp"
@@ -17,263 +17,263 @@ namespace camb {
 
 extern "C" {
 
-diopiError_t Logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
-                             cnnlLogicOp_t logic_op) {
+diopiError_t logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
+                             cnnlLogicOp_t logicOp) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor other_tensor(other);
-    DiopiTensor out_tensor(out);
+    DiopiTensor inputTensor(input);
+    DiopiTensor otherTensor(other);
+    DiopiTensor outTensor(out);
 
-    std::vector<DiopiTensor*> pTensors{&input_tensor, &other_tensor};
+    std::vector<DiopiTensor*> pTensors{&inputTensor, &otherTensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
-    DiopiTensor out_tensor_temp = out_tensor;
-    if (out_tensor.dtype() != input_tensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor_temp, input_tensor.dtype()));
+    DiopiTensor outTensorTemp = outTensor;
+    if (outTensor.dtype() != inputTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensorTemp, inputTensor.dtype()));
     }
 
-    CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc other_desc(other_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc out_desc(out_tensor_temp, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc otherDesc(otherTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(outTensorTemp, CNNL_LAYOUT_ARRAY);
 
-    size_t workspace_size = 0;
-    DIOPI_CALLCNNL(cnnlGetLogicOpWorkspaceSize(handle, input_desc.get(), other_desc.get(), out_desc.get(), &workspace_size));
+    size_t workspaceSize = 0;
+    DIOPI_CALLCNNL(cnnlGetLogicOpWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outDesc.get(), &workspaceSize));
     void* workspace = nullptr;
-    if (0 != workspace_size) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
+    if (0 != workspaceSize) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
     }
     DIOPI_CALLCNNL(cnnlLogicOp(handle,
-                               logic_op,
-                               input_desc.get(),
-                               input_tensor.data(),
-                               other_desc.get(),
-                               other_tensor.data(),
+                               logicOp,
+                               inputDesc.get(),
+                               inputTensor.data(),
+                               otherDesc.get(),
+                               otherTensor.data(),
                                workspace,
-                               workspace_size,
-                               out_desc.get(),
-                               out_tensor_temp.data()));
-    if (out_tensor_temp.dtype() != out_tensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor, out_tensor_temp));
+                               workspaceSize,
+                               outDesc.get(),
+                               outTensorTemp.data()));
+    if (outTensorTemp.dtype() != outTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTemp));
     }
     return diopiSuccess;
 }
 
-diopiError_t LogicInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, cnnlLogicOp_t logic_op) {
-    DIOPI_CALL(Logic(ctx, input, input, other, logic_op));
+diopiError_t logicInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, cnnlLogicOp_t logicOp) {
+    DIOPI_CALL(logic(ctx, input, input, other, logicOp));
     return diopiSuccess;
 }
 
-diopiError_t LogicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
-                                   cnnlLogicOp_t logic_op) {
+diopiError_t logicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
+                                   cnnlLogicOp_t logicOp) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor out_tensor(out);
+    DiopiTensor inputTensor(input);
+    DiopiTensor outTensor(out);
 
-    diopiTensorHandle_t other_t;
-    diopiSize_t input_shape;
-    DIOPI_CALL(diopiGetTensorShape(input, &input_shape));
-    DIOPI_CALL(diopiRequireTensor(ctx, &other_t, &input_shape, nullptr, input_tensor.dtype(), diopi_device));
-    DIOPI_CALL(diopiFill(ctx, other_t, other));
-    DiopiTensor other_t_tensor(other_t);
+    diopiTensorHandle_t otherT;
+    diopiSize_t inputShape;
+    DIOPI_CALL(diopiGetTensorShape(input, &inputShape));
+    DIOPI_CALL(diopiRequireTensor(ctx, &otherT, &inputShape, nullptr, inputTensor.dtype(), diopi_device));
+    DIOPI_CALL(diopiFill(ctx, otherT, other));
+    DiopiTensor otherTTensor(otherT);
 
-    std::vector<DiopiTensor*> pTensors{&input_tensor, &other_t_tensor};
+    std::vector<DiopiTensor*> pTensors{&inputTensor, &otherTTensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
-    DiopiTensor out_tensor_temp = out_tensor;
-    if (out_tensor.dtype() != input_tensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor_temp, input_tensor.dtype()));
+    DiopiTensor outTensorTemp = outTensor;
+    if (outTensor.dtype() != inputTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensorTemp, inputTensor.dtype()));
     }
 
-    CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc other_t_desc(other_t_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc out_desc(out_tensor_temp, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc otherTDesc(otherTTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(outTensorTemp, CNNL_LAYOUT_ARRAY);
 
-    size_t workspace_size = 0;
-    DIOPI_CALLCNNL(cnnlGetLogicOpWorkspaceSize(handle, input_desc.get(), other_t_desc.get(), out_desc.get(), &workspace_size));
+    size_t workspaceSize = 0;
+    DIOPI_CALLCNNL(cnnlGetLogicOpWorkspaceSize(handle, inputDesc.get(), otherTDesc.get(), outDesc.get(), &workspaceSize));
     void* workspace = nullptr;
-    if (0 != workspace_size) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
+    if (0 != workspaceSize) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
     DIOPI_CALLCNNL(cnnlLogicOp(handle,
-                               logic_op,
-                               input_desc.get(),
-                               input_tensor.data(),
-                               other_t_desc.get(),
-                               other_t_tensor.data(),
+                               logicOp,
+                               inputDesc.get(),
+                               inputTensor.data(),
+                               otherTDesc.get(),
+                               otherTTensor.data(),
                                workspace,
-                               workspace_size,
-                               out_desc.get(),
-                               out_tensor_temp.data()));
-    if (out_tensor_temp.dtype() != out_tensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor, out_tensor_temp));
+                               workspaceSize,
+                               outDesc.get(),
+                               outTensorTemp.data()));
+    if (outTensorTemp.dtype() != outTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTemp));
     }
     return diopiSuccess;
 }
 
-diopiError_t LogicInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, cnnlLogicOp_t logic_op) {
-    DIOPI_CALL(LogicScalar(ctx, input, input, other, logic_op));
+diopiError_t logicInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, cnnlLogicOp_t logicOp) {
+    DIOPI_CALL(logicScalar(ctx, input, input, other, logicOp));
     return diopiSuccess;
 }
 
 // ge
 diopiError_t diopiGeScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
-    DIOPI_CALL(LogicScalar(ctx, out, input, other, CNNL_LOGIC_OP_GE));
+    DIOPI_CALL(logicScalar(ctx, out, input, other, CNNL_LOGIC_OP_GE));
     return diopiSuccess;
 }
 
 diopiError_t diopiGeInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
-    DIOPI_CALL(LogicInpScalar(ctx, input, other, CNNL_LOGIC_OP_GE));
+    DIOPI_CALL(logicInpScalar(ctx, input, other, CNNL_LOGIC_OP_GE));
     return diopiSuccess;
 }
 
 diopiError_t diopiGe(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    DIOPI_CALL(Logic(ctx, out, input, other, CNNL_LOGIC_OP_GE));
+    DIOPI_CALL(logic(ctx, out, input, other, CNNL_LOGIC_OP_GE));
     return diopiSuccess;
 }
 
 diopiError_t diopiGeInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
-    DIOPI_CALL(LogicInp(ctx, input, other, CNNL_LOGIC_OP_GE));
+    DIOPI_CALL(logicInp(ctx, input, other, CNNL_LOGIC_OP_GE));
     return diopiSuccess;
 }
 
 // gt
 diopiError_t diopiGtScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
-    DIOPI_CALL(LogicScalar(ctx, out, input, other, CNNL_LOGIC_OP_GT));
+    DIOPI_CALL(logicScalar(ctx, out, input, other, CNNL_LOGIC_OP_GT));
     return diopiSuccess;
 }
 
 diopiError_t diopiGtInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
-    DIOPI_CALL(LogicInpScalar(ctx, input, other, CNNL_LOGIC_OP_GT));
+    DIOPI_CALL(logicInpScalar(ctx, input, other, CNNL_LOGIC_OP_GT));
     return diopiSuccess;
 }
 
 diopiError_t diopiGt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    DIOPI_CALL(Logic(ctx, out, input, other, CNNL_LOGIC_OP_GT));
+    DIOPI_CALL(logic(ctx, out, input, other, CNNL_LOGIC_OP_GT));
     return diopiSuccess;
 }
 
 diopiError_t diopiGtInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
-    DIOPI_CALL(LogicInp(ctx, input, other, CNNL_LOGIC_OP_GT));
+    DIOPI_CALL(logicInp(ctx, input, other, CNNL_LOGIC_OP_GT));
     return diopiSuccess;
 }
 
 // le
 diopiError_t diopiLeScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
-    DIOPI_CALL(LogicScalar(ctx, out, input, other, CNNL_LOGIC_OP_LE));
+    DIOPI_CALL(logicScalar(ctx, out, input, other, CNNL_LOGIC_OP_LE));
     return diopiSuccess;
 }
 
 diopiError_t diopiLeInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
-    DIOPI_CALL(LogicInpScalar(ctx, input, other, CNNL_LOGIC_OP_LE));
+    DIOPI_CALL(logicInpScalar(ctx, input, other, CNNL_LOGIC_OP_LE));
     return diopiSuccess;
 }
 
 diopiError_t diopiLe(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    DIOPI_CALL(Logic(ctx, out, input, other, CNNL_LOGIC_OP_LE));
+    DIOPI_CALL(logic(ctx, out, input, other, CNNL_LOGIC_OP_LE));
     return diopiSuccess;
 }
 
 diopiError_t diopiLeInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
-    DIOPI_CALL(LogicInp(ctx, input, other, CNNL_LOGIC_OP_LE));
+    DIOPI_CALL(logicInp(ctx, input, other, CNNL_LOGIC_OP_LE));
     return diopiSuccess;
 }
 
 // lt
 diopiError_t diopiLtScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
-    DIOPI_CALL(LogicScalar(ctx, out, input, other, CNNL_LOGIC_OP_LT));
+    DIOPI_CALL(logicScalar(ctx, out, input, other, CNNL_LOGIC_OP_LT));
     return diopiSuccess;
 }
 
 diopiError_t diopiLtInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
-    DIOPI_CALL(LogicInpScalar(ctx, input, other, CNNL_LOGIC_OP_LT));
+    DIOPI_CALL(logicInpScalar(ctx, input, other, CNNL_LOGIC_OP_LT));
     return diopiSuccess;
 }
 
 diopiError_t diopiLt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    DIOPI_CALL(Logic(ctx, out, input, other, CNNL_LOGIC_OP_LT));
+    DIOPI_CALL(logic(ctx, out, input, other, CNNL_LOGIC_OP_LT));
     return diopiSuccess;
 }
 
 diopiError_t diopiLtInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
-    DIOPI_CALL(LogicInp(ctx, input, other, CNNL_LOGIC_OP_LT));
+    DIOPI_CALL(logicInp(ctx, input, other, CNNL_LOGIC_OP_LT));
     return diopiSuccess;
 }
 
 // ne
 diopiError_t diopiNeScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
-    DIOPI_CALL(LogicScalar(ctx, out, input, other, CNNL_LOGIC_OP_NE));
+    DIOPI_CALL(logicScalar(ctx, out, input, other, CNNL_LOGIC_OP_NE));
     return diopiSuccess;
 }
 
 diopiError_t diopiNeInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
-    DIOPI_CALL(LogicInpScalar(ctx, input, other, CNNL_LOGIC_OP_NE));
+    DIOPI_CALL(logicInpScalar(ctx, input, other, CNNL_LOGIC_OP_NE));
     return diopiSuccess;
 }
 
 diopiError_t diopiNe(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    DIOPI_CALL(Logic(ctx, out, input, other, CNNL_LOGIC_OP_NE));
+    DIOPI_CALL(logic(ctx, out, input, other, CNNL_LOGIC_OP_NE));
     return diopiSuccess;
 }
 
 diopiError_t diopiNeInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
-    DIOPI_CALL(LogicInp(ctx, input, other, CNNL_LOGIC_OP_NE));
+    DIOPI_CALL(logicInp(ctx, input, other, CNNL_LOGIC_OP_NE));
     return diopiSuccess;
 }
 
 // eq
 diopiError_t diopiEqScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
-    DIOPI_CALL(LogicScalar(ctx, out, input, other, CNNL_LOGIC_OP_EQ));
+    DIOPI_CALL(logicScalar(ctx, out, input, other, CNNL_LOGIC_OP_EQ));
     return diopiSuccess;
 }
 
 diopiError_t diopiEqInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
-    DIOPI_CALL(LogicInpScalar(ctx, input, other, CNNL_LOGIC_OP_EQ));
+    DIOPI_CALL(logicInpScalar(ctx, input, other, CNNL_LOGIC_OP_EQ));
     return diopiSuccess;
 }
 
 diopiError_t diopiEq(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    DIOPI_CALL(Logic(ctx, out, input, other, CNNL_LOGIC_OP_EQ));
+    DIOPI_CALL(logic(ctx, out, input, other, CNNL_LOGIC_OP_EQ));
     return diopiSuccess;
 }
 
 diopiError_t diopiEqInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
-    DIOPI_CALL(LogicInp(ctx, input, other, CNNL_LOGIC_OP_EQ));
+    DIOPI_CALL(logicInp(ctx, input, other, CNNL_LOGIC_OP_EQ));
     return diopiSuccess;
 }
 
 //  logical_and
 diopiError_t diopiLogicalAnd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    DIOPI_CALL(Logic(ctx, out, input, other, CNNL_LOGIC_OP_AND));
+    DIOPI_CALL(logic(ctx, out, input, other, CNNL_LOGIC_OP_AND));
     return diopiSuccess;
 }
 
 diopiError_t diopiLogicalAndInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
-    DIOPI_CALL(LogicInp(ctx, input, other, CNNL_LOGIC_OP_AND));
+    DIOPI_CALL(logicInp(ctx, input, other, CNNL_LOGIC_OP_AND));
     return diopiSuccess;
 }
 
 // logical_or
 diopiError_t diopiLogicalOr(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    DIOPI_CALL(Logic(ctx, out, input, other, CNNL_LOGIC_OP_OR));
+    DIOPI_CALL(logic(ctx, out, input, other, CNNL_LOGIC_OP_OR));
     return diopiSuccess;
 }
 
 diopiError_t diopiLogicalOrInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
-    DIOPI_CALL(LogicInp(ctx, input, other, CNNL_LOGIC_OP_OR));
+    DIOPI_CALL(logicInp(ctx, input, other, CNNL_LOGIC_OP_OR));
     return diopiSuccess;
 }
 
 // logical_not
 diopiError_t diopiLogicalNot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    DIOPI_CALL(Logic(ctx, out, input, input, CNNL_LOGIC_OP_NOT));
+    DIOPI_CALL(logic(ctx, out, input, input, CNNL_LOGIC_OP_NOT));
     return diopiSuccess;
 }
 
 diopiError_t diopiLogicalNotInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    DIOPI_CALL(LogicInp(ctx, input, input, CNNL_LOGIC_OP_NOT));
+    DIOPI_CALL(logicInp(ctx, input, input, CNNL_LOGIC_OP_NOT));
     return diopiSuccess;
 }
 

@@ -22,56 +22,56 @@ diopiError_t diopiTopk(diopiContextHandle_t ctx,
                                  bool largest,
                                  bool sorted) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor indices_tensor(indices);
-    DiopiTensor values_tensor(values);
+    DiopiTensor inputTensor(input);
+    DiopiTensor indicesTensor(indices);
+    DiopiTensor valuesTensor(values);
 
-    DiopiTensor values_tensor_temp = values_tensor;
-    DiopiTensor input_tensor_temp = input_tensor;
-    if (input_tensor.dtype() == diopi_dtype_float64) {
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor_temp, diopi_dtype_float32));
-        DIOPI_CALL(dataTypeCast(ctx, values_tensor_temp, diopi_dtype_float32));
-    } else if (input_tensor.dtype() == diopi_dtype_int64) {
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor_temp, diopi_dtype_int32));
-        DIOPI_CALL(dataTypeCast(ctx, values_tensor_temp, diopi_dtype_int32));
+    DiopiTensor valuesTensorTemp = valuesTensor;
+    DiopiTensor inputTensorTemp = inputTensor;
+    if (inputTensor.dtype() == diopi_dtype_float64) {
+        DIOPI_CALL(dataTypeCast(ctx, inputTensorTemp, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, valuesTensorTemp, diopi_dtype_float32));
+    } else if (inputTensor.dtype() == diopi_dtype_int64) {
+        DIOPI_CALL(dataTypeCast(ctx, inputTensorTemp, diopi_dtype_int32));
+        DIOPI_CALL(dataTypeCast(ctx, valuesTensorTemp, diopi_dtype_int32));
     } else {
-        input_tensor_temp = DiopiTensor(input);
-        values_tensor_temp = DiopiTensor(values);
+        inputTensorTemp = DiopiTensor(input);
+        valuesTensorTemp = DiopiTensor(values);
     }
 
-    DiopiTensor indices_tensor_temp = indices_tensor;
-    DIOPI_CALL(dataTypeCast(ctx, indices_tensor_temp, diopi_dtype_int32));
-    CnnlTensorDesc input_desc(input_tensor_temp, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc values_desc(values_tensor_temp, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc indices_desc(indices_tensor_temp, CNNL_LAYOUT_ARRAY);
+    DiopiTensor indicesTensorTemp = indicesTensor;
+    DIOPI_CALL(dataTypeCast(ctx, indicesTensorTemp, diopi_dtype_int32));
+    CnnlTensorDesc inputDesc(inputTensorTemp, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc valuesDesc(valuesTensorTemp, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc indicesDesc(indicesTensorTemp, CNNL_LAYOUT_ARRAY);
 
-    size_t workspace_size = 0;
-    DIOPI_CALLCNNL(cnnlGetTopKTensorWorkspaceSize(handle, input_desc.get(), k, dim, largest, values_desc.get(), indices_desc.get(), &workspace_size));
+    size_t workspaceSize = 0;
+    DIOPI_CALLCNNL(cnnlGetTopKTensorWorkspaceSize(handle, inputDesc.get(), k, dim, largest, valuesDesc.get(), indicesDesc.get(), &workspaceSize));
     void *workspace = nullptr;
-    if (0 != workspace_size) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
+    if (0 != workspaceSize) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
     }
-    const bool lower_index_first = true;
+    const bool lowerIndexFirst = true;
     DIOPI_CALLCNNL(cnnlTopKTensor_v3(handle,
-                                     input_desc.get(),
-                                     input_tensor_temp.data(),
+                                     inputDesc.get(),
+                                     inputTensorTemp.data(),
                                      k,
                                      dim,
                                      largest,
                                      sorted,
-                                     lower_index_first,
+                                     lowerIndexFirst,
                                      workspace,
-                                     workspace_size,
-                                     values_desc.get(),
-                                     values_tensor_temp.data(),
-                                     indices_desc.get(),
-                                     indices_tensor_temp.data()))
-    if (values_tensor_temp.dtype() != values_tensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, values_tensor, values_tensor_temp));
+                                     workspaceSize,
+                                     valuesDesc.get(),
+                                     valuesTensorTemp.data(),
+                                     indicesDesc.get(),
+                                     indicesTensorTemp.data()))
+    if (valuesTensorTemp.dtype() != valuesTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, valuesTensor, valuesTensorTemp));
     }
 
-    if (indices_tensor_temp.dtype() != indices_tensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, indices_tensor, indices_tensor_temp));
+    if (indicesTensorTemp.dtype() != indicesTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, indicesTensor, indicesTensorTemp));
     }
 
     return diopiSuccess;

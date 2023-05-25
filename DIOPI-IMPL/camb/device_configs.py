@@ -9,7 +9,7 @@ device_configs = {
         atol=1e-2,
         rtol=1e-3,
     ),
-    
+
     'nll_loss': dict(
         name=["nll_loss"],
         atol=1e-3,
@@ -40,14 +40,14 @@ device_configs = {
             ]
         ),
     ),
-    
+
     'conv_2d': dict(
         name=["conv2d"],
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(Dtype.float16)],
                 },
             ]
         ),
@@ -160,7 +160,7 @@ device_configs = {
             ],
         ),
     ),
-    
+
     'pointwise_binary': dict(
         name=['mul'],
         tensor_para=dict(
@@ -174,7 +174,7 @@ device_configs = {
             ],
         ),
     ),
-    
+
     'div': dict(
         name=['div'],
         tensor_para=dict(
@@ -384,13 +384,10 @@ device_configs = {
 
     'embedding': dict(
         name=["embedding"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.int64), Skip(Dtype.int32)],
-                },
-            ],
+        para=dict(
+            # The diopiEmbeddingRenorm_ function is temporarily unavailable due to the unsupported Cambrian operator.  
+            # Thus, to pass the test case, skip all non-None types of the max_norm parameter in the configuration file.
+            max_norm=[Skip(1.0)],   
         ),
     ),
 

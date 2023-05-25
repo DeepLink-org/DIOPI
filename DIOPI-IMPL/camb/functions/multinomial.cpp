@@ -20,34 +20,34 @@ public:
     cnnlRandGenerator_t& get() { return resource_; }
 
 private:
-    cnnlRandGenerator_t resource_{0};
+    cnnlRandGenerator_t resource_{nullptr};
 };
 
-diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t num_samples, bool replacement) {
+diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t numSamples, bool replacement) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     CnnlRandGenerator cnnlGenerator;
     cnnlRandGenerator_t generator = cnnlGenerator.get();
 
-    DiopiTensor input_tensor(input);
-    DiopiTensor out_tensor(out);
-    DiopiTensor out_temp = out_tensor;
-    DIOPI_CALL(autoCastTensorType(ctx, {&input_tensor}, {diopi_dtype_float16, diopi_dtype_float32}));
-    DIOPI_CALL(autoCastTensorType(ctx, {&out_temp}, {diopi_dtype_int32}));
-    CnnlTensorDesc inputDesc(input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc outDesc(out_temp, CNNL_LAYOUT_ARRAY);
+    DiopiTensor inputTensor(input);
+    DiopiTensor outTensor(out);
+    DiopiTensor outTemp = outTensor;
+    DIOPI_CALL(autoCastTensorType(ctx, {&inputTensor}, {diopi_dtype_float16, diopi_dtype_float32}));
+    DIOPI_CALL(autoCastTensorType(ctx, {&outTemp}, {diopi_dtype_int32}));
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(outTemp, CNNL_LAYOUT_ARRAY);
 
-    size_t workspace_size;
-    DIOPI_CALLCNNL(cnnlGetRandGenerateMultinomialWorkspaceSize(handle, inputDesc.get(), &workspace_size));
+    size_t workspaceSize;
+    DIOPI_CALLCNNL(cnnlGetRandGenerateMultinomialWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
     void* workspace = nullptr;
-    if (workspace_size > 0) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
+    if (workspaceSize > 0) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
     DIOPI_CALLCNNL(cnnlRandGenerateMultinomial_v2(
-        handle, generator, inputDesc.get(), input_tensor.data(), replacement, false, nullptr, workspace, workspace_size, outDesc.get(), out_temp.data()));
-    if (out_tensor.dtype() != out_temp.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor, out_temp));
+        handle, generator, inputDesc.get(), inputTensor.data(), replacement, false, nullptr, workspace, workspaceSize, outDesc.get(), outTemp.data()));
+    if (outTensor.dtype() != outTemp.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensor, outTemp));
     }
 
     return diopiSuccess;
