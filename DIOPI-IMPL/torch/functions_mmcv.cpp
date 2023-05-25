@@ -16,19 +16,22 @@
 extern "C" {
 
 diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t *out,
-                      diopiConstTensorHandle_t dets,
-                      diopiConstTensorHandle_t scores, double iouThreshold,
-                      int64_t offset) {
+                          diopiConstTensorHandle_t dets,
+                          diopiConstTensorHandle_t scores, double iouThreshold,
+                          int64_t offset) {
   auto atDets = impl::aten::buildATen(dets);
   auto atScores = impl::aten::buildATen(scores);
-  auto atOut = mmcv::ops::NMSCUDAKernelLauncher(atDets, atScores, iouThreshold, offset);
+  auto atOut =
+      mmcv::ops::NMSCUDAKernelLauncher(atDets, atScores, iouThreshold, offset);
   impl::aten::buildDiopiTensor(ctx, atOut, out);
 }
 
-diopiError_t diopiRoiAlignMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t output_, diopiTensorHandle_t argmax_y_,
-                               diopiTensorHandle_t argmax_x_, diopiConstTensorHandle_t input_, diopiConstTensorHandle_t rois_,
-                               int64_t aligned_height, int64_t aligned_width, int64_t sampling_ratio, int64_t pool_mode,
-                               float spatial_scale, bool aligned) {
+diopiError_t diopiRoiAlignMmcv(
+    diopiContextHandle_t ctx, diopiTensorHandle_t output_,
+    diopiTensorHandle_t argmax_y_, diopiTensorHandle_t argmax_x_,
+    diopiConstTensorHandle_t input_, diopiConstTensorHandle_t rois_,
+    int64_t aligned_height, int64_t aligned_width, int64_t sampling_ratio,
+    int64_t pool_mode, float spatial_scale, bool aligned) {
   auto input = impl::aten::buildATen(input_);
   auto rois = impl::aten::buildATen(rois_);
   auto output = impl::aten::buildATen(output_);
@@ -39,10 +42,12 @@ diopiError_t diopiRoiAlignMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t out
       spatial_scale, sampling_ratio, pool_mode, aligned);
 }
 
-diopiError_t diopiRoiAlignBackwardMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input_, diopiConstTensorHandle_t grad_output_,
-                                       diopiConstTensorHandle_t rois_, diopiConstTensorHandle_t argmax_y_, diopiConstTensorHandle_t argmax_x_,
-                                       int64_t aligned_height, int64_t aligned_width, int64_t sampling_ratio, int64_t pool_mode, float spatial_scale,
-                                       bool aligned) {
+diopiError_t diopiRoiAlignBackwardMmcv(
+    diopiContextHandle_t ctx, diopiTensorHandle_t grad_input_,
+    diopiConstTensorHandle_t grad_output_, diopiConstTensorHandle_t rois_,
+    diopiConstTensorHandle_t argmax_y_, diopiConstTensorHandle_t argmax_x_,
+    int64_t aligned_height, int64_t aligned_width, int64_t sampling_ratio,
+    int64_t pool_mode, float spatial_scale, bool aligned) {
   return diopiErrorOccurred;
   auto grad_output = impl::aten::buildATen(grad_output_);
   auto rois = impl::aten::buildATen(rois_);
@@ -59,14 +64,13 @@ diopiError_t diopiSigmoidFocalLossMmcv(diopiContextHandle_t ctx,
                                        diopiConstTensorHandle_t input_,
                                        diopiConstTensorHandle_t target_,
                                        diopiConstTensorHandle_t weight_,
-                                       float gamma,
-                                       float alpha) {
+                                       float gamma, float alpha) {
   auto output = impl::aten::buildATen(output_);
   auto input = impl::aten::buildATen(input_);
   auto target = impl::aten::buildATen(target_);
   auto weight = impl::aten::buildATen(weight_);
-  mmcv::ops::SigmoidFocalLossForwardCUDAKernelLauncher(input, target, weight, output,
-                                                       gamma, alpha);
+  mmcv::ops::SigmoidFocalLossForwardCUDAKernelLauncher(input, target, weight,
+                                                       output, gamma, alpha);
 }
 
 diopiError_t diopiSigmoidFocalLossBackwardMmcv(diopiContextHandle_t ctx,
@@ -74,28 +78,22 @@ diopiError_t diopiSigmoidFocalLossBackwardMmcv(diopiContextHandle_t ctx,
                                                diopiConstTensorHandle_t input_,
                                                diopiConstTensorHandle_t target_,
                                                diopiConstTensorHandle_t weight_,
-                                               float gamma,
-                                               float alpha) {
+                                               float gamma, float alpha) {
   auto grad_input = impl::aten::buildATen(grad_input_);
   auto input = impl::aten::buildATen(input_);
   auto target = impl::aten::buildATen(target_);
   auto weight = impl::aten::buildATen(weight_);
-  mmcv::ops::SigmoidFocalLossBackwardCUDAKernelLauncher(input, target, weight, grad_input,
-                                                        gamma, alpha);
+  mmcv::ops::SigmoidFocalLossBackwardCUDAKernelLauncher(
+      input, target, weight, grad_input, gamma, alpha);
 }
 
-diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx,
-                                             diopiTensorHandle_t voxels_,
-                                             diopiTensorHandle_t coors_,
-                                             diopiTensorHandle_t num_points_per_voxel_,
-                                             diopiTensorHandle_t voxel_num_,
-                                             diopiConstTensorHandle_t points_,
-                                             diopiConstTensorHandle_t voxel_size_,
-                                             diopiConstTensorHandle_t coors_range_,
-                                             const int64_t max_points,
-                                             const int64_t max_voxels,
-                                             const int64_t NDim,
-                                             const bool deterministic) {
+diopiError_t diopiHardVoxelizeMmcv(
+    diopiContextHandle_t ctx, diopiTensorHandle_t voxels_,
+    diopiTensorHandle_t coors_, diopiTensorHandle_t num_points_per_voxel_,
+    diopiTensorHandle_t voxel_num_, diopiConstTensorHandle_t points_,
+    diopiConstTensorHandle_t voxel_size_, diopiConstTensorHandle_t coors_range_,
+    const int64_t max_points, const int64_t max_voxels, const int64_t NDim,
+    const bool deterministic) {
   auto voxels = impl::aten::buildATen(voxels_);
   auto coors = impl::aten::buildATen(coors_);
   auto num_points_per_voxel = impl::aten::buildATen(num_points_per_voxel_);
@@ -114,12 +112,13 @@ diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx,
 
   if (deterministic) {
     *voxel_num_data = mmcv::ops::HardVoxelizeForwardCUDAKernelLauncher(
-      points, voxels, coors, num_points_per_voxel, voxel_size_v, coors_range_v,
-      max_points, max_voxels, NDim);
-  } else {
-    *voxel_num_data = mmcv::ops::NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
         points, voxels, coors, num_points_per_voxel, voxel_size_v,
         coors_range_v, max_points, max_voxels, NDim);
+  } else {
+    *voxel_num_data =
+        mmcv::ops::NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
+            points, voxels, coors, num_points_per_voxel, voxel_size_v,
+            coors_range_v, max_points, max_voxels, NDim);
   }
 }
 
@@ -130,11 +129,11 @@ diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx,
  * @sa definition of other parameters, refer to diopiHardVoxelize().
  */
 diopiError_t diopiDynamicVoxelizeMmcv(diopiContextHandle_t ctx,
-                                                diopiTensorHandle_t coors_,
-                                                diopiConstTensorHandle_t points_,
-                                                diopiConstTensorHandle_t voxel_size_,
-                                                diopiConstTensorHandle_t coors_range_,
-                                                const int64_t NDim) {
+                                      diopiTensorHandle_t coors_,
+                                      diopiConstTensorHandle_t points_,
+                                      diopiConstTensorHandle_t voxel_size_,
+                                      diopiConstTensorHandle_t coors_range_,
+                                      const int64_t NDim) {
   auto coors = impl::aten::buildATen(coors_);
   auto points = impl::aten::buildATen(points_);
   auto voxel_size = impl::aten::buildATen(voxel_size_);
@@ -146,7 +145,8 @@ diopiError_t diopiDynamicVoxelizeMmcv(diopiContextHandle_t ctx,
   std::vector<float> coors_range_v(
       coors_range.data_ptr<float>(),
       coors_range.data_ptr<float>() + coors_range.numel());
-  mmcv::ops::DynamicVoxelizeForwardCUDAKernelLauncher(points, coors, voxel_size_v, coors_range_v, NDim);
+  mmcv::ops::DynamicVoxelizeForwardCUDAKernelLauncher(
+      points, coors, voxel_size_v, coors_range_v, NDim);
 }
 
 diopiError_t diopiModulatedDeformConvMmcv(
