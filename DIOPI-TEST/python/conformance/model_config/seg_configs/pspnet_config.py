@@ -83,7 +83,7 @@ pspnet_config = {
                     "ins": ["running_var"],
                     "shape": [(32,), (64,), (64,), (256,), (128,), (128,), (512,), (256,), (1024,), (2048,), (512,), (512,), (512,), (512,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.rand,
                 },
                 {
                     "ins": ["weight"],

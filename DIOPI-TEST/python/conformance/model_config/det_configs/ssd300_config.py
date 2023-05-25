@@ -606,7 +606,7 @@ ssd300_config = {
                     "ins": ["input"],
                     "shape": [(71,), (19,), (13,), (34,), (2,), (8,), (17,), (30,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.rand,
                 },
             ],
         ),

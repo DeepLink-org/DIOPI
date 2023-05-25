@@ -675,11 +675,17 @@ vit_config = {
                     "gen_fn": Genfunc.randn,
                 },
                 {
-                    "ins": ["exp_avg", "exp_avg_sq", "max_exp_avg_sq"],
+                    "ins": ["exp_avg", "max_exp_avg_sq"],
                     "shape": [(1, 1, 768), (1, 197, 768)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
+                {
+                    "ins": ["exp_avg_sq"],
+                    "shape": [(1, 1, 768), (1, 197, 768)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.rand,
+                }
             ],
         ),
     ),
@@ -705,11 +711,17 @@ vit_config = {
                     "gen_fn": Genfunc.randn,
                 },
                 {
-                    "ins": ["exp_avg", "exp_avg_sq", "max_exp_avg_sq"],
+                    "ins": ["exp_avg", "max_exp_avg_sq"],
                     "shape": [(768, 3, 16, 16), (768,), (2304, 768), (2304,), (768, 768), (3072, 768), (3072,), (768, 3072), (1000, 3072), (1000,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
+                {
+                    "ins": ["exp_avg_sq"],
+                    "shape": [(768, 3, 16, 16), (768,), (2304, 768), (2304,), (768, 768), (3072, 768), (3072,), (768, 3072), (1000, 3072), (1000,)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.rand,
+                }
             ],
         ),
     ),

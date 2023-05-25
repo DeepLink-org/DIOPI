@@ -166,7 +166,7 @@ dbnet_config = {
                     "ins": ["running_var"],
                     "shape": [(64,), (64,), (128,), (256,), (512,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.rand,
                 },
                 {
                     "ins": ["weight"],

@@ -57,7 +57,7 @@ faster_rcnn_r50_config = {
                     "ins": ["running_var"],
                     "shape": [(64,), (64,), (256,), (128,), (128,), (512,), (256,), (256,), (1024,), (512,), (512,), (2048,), (64,), (64,), (256,), (128,), (128,), (512,), (256,), (256,), (1024,), (512,), (512,), (2048,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.rand,
                 },
                 {
                     "ins": ["weight"],
@@ -682,7 +682,7 @@ faster_rcnn_r50_config = {
                     "ins": ["input"],
                     "shape": [(21,), (48,), (6,), (12,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.rand,
                 },
             ],
         ),
