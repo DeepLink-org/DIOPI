@@ -97,7 +97,7 @@ jobs:
           export CI=true
           export DIOPI_BUILD_TESTRT=ON
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 bash -c 'cd DIOPI-IMPL && bash scripts/build_impl.sh torch_dyload' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST2} && exit 1 )
-          cd ../DIOPI-TEST/python && ls
+          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/DIOPI-TEST/python && ls
           """
 
   Build-Camb:

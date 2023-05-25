@@ -5,15 +5,14 @@
  * @brief A reference implemention for DIOPI runtime, which is utilized to support conformance test suite of DIOPI
  */
 
-#include <iostream>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
-namespace py = pybind11;
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 
 #include <litert.hpp>
+namespace py = pybind11;
 
 PYBIND11_MODULE(diopi_runtime, m) {
     py::options options;
@@ -107,8 +106,7 @@ PYBIND11_MODULE(diopi_runtime, m) {
                 for (int i = 0; i < size.len; i++)
                     data[i] = size.data[i];
                 return data;
-            }
-        );
+            });
     py::class_<diopiScalar_t>(m, "diopiScalar")
         .def(py::init<>())
         .def(py::init([](diopiDtype_t dtype, double val){

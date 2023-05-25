@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink Inc.
  * @brief A reference implemention for DIOPI runtime, which is utilized to support conformance test suite of DIOPI
  */
-#ifndef DIOPI_IMPL_TORCH_TEST_INCLUDE_LITERT_HPP_
-#define DIOPI_IMPL_TORCH_TEST_INCLUDE_LITERT_HPP_
+#ifndef DIOPI_IMPL_TEST_INCLUDE_LITERT_HPP_ // NOLINT
+#define DIOPI_IMPL_TEST_INCLUDE_LITERT_HPP_ // NOLINT
 
 #include <pybind11/pybind11.h>
 #include <diopi/diopirt.h>
@@ -31,9 +31,7 @@ public:
     PtrWrapper(const PtrWrapper& other) : ptr(other.ptr) {}
     T& operator* () const { return *ptr; }
     T* operator->() const { return  ptr; }
-    T* get() const {
-        return ptr; 
-    }
+    T* get() const { return ptr; }
     void destroy() { delete ptr; }
 
 private:
@@ -196,5 +194,5 @@ DIOPI_RT_API diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t      ctx,
 DIOPI_RT_API diopiError_t diopiInit();
 }  // extern "C"
 
-#endif  // DIOPI_IMPL_TORCH_TEST_INCLUDE_LITERT_HPP_
+#endif  // DIOPI_IMPL_TORCH_TEST_INCLUDE_LITERT_HPP_  // NOLINT
 
