@@ -2068,7 +2068,7 @@ diopi_configs = {
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            dim=[-1, 1, 0, 2, 1, 1],
+            dim=[-1, 1, 0, 2, 1, 1, -1, 1, -2],
         ),
         tensor_para=dict(
             args=[
@@ -2077,11 +2077,39 @@ diopi_configs = {
                     "requires_grad": [True],
                     "shape": ((3, ), (512, 4),
                               (0, 50, 76), (2, 31, 512),
-                              (2, 512, 8, 8), (1, 64, 4, 56, 56)),
+                              (2, 512, 8, 8), (1, 64, 4, 56, 56),
+                              (0,), (16, 0), (8, 0, 2)),
                     "dtype": [Dtype.float32, Dtype.float16, Dtype.float64, Dtype.int16,
                               Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool, Dtype.int32],
                     "gen_fn": Genfunc.randn,
                     "gen_num_range": [1, 5]
+                },
+            ],
+            seq_name='tensors',
+        ),
+    ),
+
+    'cat_diff_size': dict(
+        name=['cat',],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-5,
+        para=dict(
+            dim=[-1, 0, -2, 1, 2],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['tensors'],
+                    "requires_grad": [True],
+                    "shape": (((8,), (16,),),
+                              ((2, 8,), (16, 8,), (3, 8,), (4, 8,), (1, 8,)),
+                              ((3, 16, 8,), (3, 2, 8,), (3, 7, 8,)),
+                              ((2, 512, 8, 8), (2, 128, 8, 8), (2, 2, 8, 8), (2, 1, 8, 8)),
+                              ((2, 31, 0), (2, 31, 512), (2, 31, 128)),),
+                    "dtype": [Dtype.float32, Dtype.float16, Dtype.float64, Dtype.int16,
+                              Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool, Dtype.int32],
+                    "gen_fn": Genfunc.randn,
                 },
             ],
             seq_name='tensors',
