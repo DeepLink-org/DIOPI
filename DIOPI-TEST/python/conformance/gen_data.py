@@ -197,12 +197,12 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
         shape = arg["shape"]
         if isinstance(arg["gen_fn"], int):
             gen_fn = arg["gen_fn"]
-            if gen_fn == Genfunc.randint:
+            if gen_fn == Genfunc.randint or gen_fn == Genfunc.uniform:
                 low = 0
                 high = 10
         else:
             gen_fn = arg["gen_fn"]["fn"]
-            assert (gen_fn == Genfunc.randint), "only randint needs args"
+            assert (gen_fn == Genfunc.randint or gen_fn == Genfunc.uniform), "only randint needs args"
             low = arg["gen_fn"].get("low", 0)
             high = arg["gen_fn"].get("high", 10)
         dtype = to_numpy_dtype(arg["dtype"])
@@ -214,6 +214,8 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
             value = np.array(np.random.randn(*shape)).astype(dtype)
         elif gen_fn == Genfunc.rand:
             value = np.array(np.random.rand(*shape)).astype(dtype)
+        elif gen_fn == Genfunc.uniform:
+            value = np.array(np.random.uniform(low=low, high=high, size=shape)).astype(dtype)
         elif gen_fn == Genfunc.ones:
             value = np.ones(shape, dtype=dtype)
         elif gen_fn == Genfunc.zeros:
@@ -588,7 +590,7 @@ class GenOutputData(object):
 
             if outputs is not None:
                 with open(os.path.join(outputs_dir_path, saved_pth), "wb") as f:
-                    pickle.dump(to_numpy(outputs), f)
+                    pickle.dump(to_numpy(outputs), f, protocol=4)
                     gen_counter += 1
 
             if function_paras["requires_grad"]:
@@ -611,7 +613,7 @@ class GenOutputData(object):
                     saved_grads = {k: v for k, v in zip(inputs_name_for_grad, grads)}
 
                 with open(os.path.join(outputs_dir_path, saved_backward_pth), "wb") as f:
-                    pickle.dump(to_numpy(saved_grads), f)
+                    pickle.dump(to_numpy(saved_grads), f, protocol=4)
 
                 logger_str = f"{logger_str} and backward"
 
