@@ -137,45 +137,6 @@ device_configs = {
         ),
     ),
 
-<<<<<<< HEAD
-    'sign': dict(
-        name=['sign'],
-=======
-    'silu': dict(
-        name=["silu"],
->>>>>>> 2bb9d42c8672f7682830c90773720432375f2291
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-<<<<<<< HEAD
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-=======
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
->>>>>>> 2bb9d42c8672f7682830c90773720432375f2291
-                },
-            ],
-        ),
-    ),
-<<<<<<< HEAD
-
-    'sign_zero': dict(
-        name=['sign'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
-=======
-    
->>>>>>> 2bb9d42c8672f7682830c90773720432375f2291
     'pointwise_binary': dict(
         name=['mul'],
         tensor_para=dict(
