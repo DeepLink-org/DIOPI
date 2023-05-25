@@ -485,12 +485,6 @@ def matmul(input, other) -> Tensor:
 
 
 def clamp(input, min=None, max=None, inplace=False) -> Tensor:
-    assert min is not None or max is not None,\
-        "min and max can not be None in the meantime"
-    if max is None:
-        return clamp_min(input, min, inplace)
-    if min is None:
-        return clamp_max(input, max, inplace)
 
     call = "diopiClamp"
     args = "input.context_handle, "
@@ -500,16 +494,39 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
     else:
         out = raw_like(input)
         args = args + "out.tensor_handle, "
-
-    if isinstance(min, Tensor):
-        assert (isinstance(max, Tensor)), 'min and max must have same type'
-        args += "input.tensor_handle, min.tensor_handle, max.tensor_handle"
+    if min is not None and max is not None:
+        if isinstance(min, Tensor):
+            assert (isinstance(max, Tensor)), 'min and max must have same type'
+            args += "input.tensor_handle, min.tensor_handle, max.tensor_handle"
+        else:
+            assert (~isinstance(max, Tensor)), 'min and max must have same type'
+            call = call + 'Scalar'
+            min = byref(Scalar(min))
+            max = byref(Scalar(max))
+            args = args + "input.tensor_handle, min, max"
+    elif min is not None:
+        if isinstance(min, Tensor):
+            max = c_void_p()
+            args += "input.tensor_handle, min.tensor_handle, max"
+        else:
+            call = call + 'Scalar'
+            min = byref(Scalar(min))
+            max = c_void_p()
+            args += "input.tensor_handle, min, max"
+    elif max is not None:
+        if isinstance(max, Tensor):
+            min = c_void_p()
+            args += "input.tensor_handle, min, max.tensor_handle"
+        else:
+            call = call + 'Scalar'
+            min = c_void_p()
+            max = byref(Scalar(max))
+            args += "input.tensor_handle, min, max"
     else:
-        assert (~isinstance(max, Tensor)), 'min and max must have same type'
         call = call + 'Scalar'
-        min = byref(Scalar(min))
-        max = byref(Scalar(max))
-        args = args + "input.tensor_handle, min, max"
+        min = c_void_p()
+        max = c_void_p()
+        args += "input.tensor_handle, min, max"
 
     func = check_function(call)
     ret = eval(f'func({args})')
@@ -3617,5 +3634,57 @@ def multinomial(input, num_samples, replacement) -> Tensor:
     if len(input.size()) == 1:
         out = Tensor(size=(num_samples,), dtype=Dtype.int64)
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, c_int64(num_samples), c_bool(replacement))
+    check_returncode(ret)
+    return out
+
+
+def ceil(input, inplace=False) -> Tensor:
+    call = "diopiCeil"
+    if inplace:
+        call += "Inp"
+        func = check_function(call)
+        ret = func(input.context_handle, input.tensor_handle)
+        check_returncode(ret)
+        return input
+    else:
+        out = Tensor(input.size(), input.get_dtype())
+        func = check_function(call)
+        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle)
+        check_returncode(ret)
+        return out
+
+def polar(abs, angle) -> Tensor:
+    call = "diopiPolar"
+    out = Tensor(abs.size(), Dtype.complex128)
+    func = check_function(call)
+    ret = func(abs.context_handle, out.tensor_handle, abs.tensor_handle, angle.tensor_handle)
+    check_returncode(ret)
+    return out
+
+def asin(input, inplace=False) -> Tensor:
+    call = "diopiAsin"
+    if inplace:
+        call += "Inp"
+        func = check_function(call)
+        ret = func(input.context_handle, input.tensor_handle)
+        check_returncode(ret)
+        return input
+    else:
+        out = Tensor(input.size(), input.get_dtype())
+        func = check_function(call)
+        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle)
+        check_returncode(ret)
+        return out
+
+def lerp(input, end, weight) -> Tensor:
+    call = "diopiLerp"
+    out = Tensor(input.size(), input.get_dtype())
+    if isinstance(weight, Tensor):
+        weight = weight.tensor_handle
+        func = check_function(call + "Tensor")
+    else:
+        weight = byref(Scalar(weight))
+        func = check_function(call + "Scalar")
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, end.tensor_handle, weight)
     check_returncode(ret)
     return out
