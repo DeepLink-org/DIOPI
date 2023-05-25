@@ -15,7 +15,7 @@ namespace impl {
 namespace camb {
 
 namespace {
-diopiError_t tensorPermute(diopiContextHandle_t ctx, DiopiTensor &dstTensor, DiopiTensor srcTensor, std::vector<int64_t> permAxis) {
+diopiError_t diopiTensorPermote(diopiContextHandle_t ctx, DiopiTensor &dstTensor, DiopiTensor srcTensor, std::vector<int64_t> permAxis) {
     if (!dstTensor.defined()) {
         std::vector<int64_t> srcShapeT64(srcTensor.shape().size());
         for (int i = 0; i < srcTensor.shape().size(); ++i) {
@@ -31,21 +31,6 @@ diopiError_t tensorPermute(diopiContextHandle_t ctx, DiopiTensor &dstTensor, Dio
     return diopiSuccess;
 }
 
-diopiError_t tensorPermute2D(diopiContextHandle_t ctx, DiopiTensor &dst, DiopiTensor src, MemoryFormat format) {
-    if (src.isContiguous(format)) {
-        dst = src;
-        return diopiSuccess;
-    }
-    if (src.isContiguous(MemoryFormat::Contiguous) && format == MemoryFormat::ChannelsLast) {
-        DIOPI_CALL(tensorPermute(ctx, dst, src, {0, 2, 3, 1}));
-        return diopiSuccess;
-    }
-    if (src.isContiguous(MemoryFormat::ChannelsLast) && format == MemoryFormat::Contiguous) {
-        DIOPI_CALL(tensorPermute(ctx, dst, src, {0, 3, 1, 2}))
-    }
-    return diopiErrorOccurred;
-}
-
 }  // namespace
 
 extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
@@ -56,13 +41,6 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
     DiopiTensor weightTensor(weight);
     DiopiTensor outputTensor(out);
 
-    DIOPI_CHECK(inputTensor.isContiguous() || inputTensor.isContiguous(MemoryFormat::ChannelsLast), "%s",
-                "[diopiConvolution2d] the memory format is not supportted.");
-    DIOPI_CHECK(weightTensor.isContiguous() || weightTensor.isContiguous(MemoryFormat::ChannelsLast), "%s",
-                "[diopiConvolution2d] the memory format is not supportted.");
-    DIOPI_CHECK(outputTensor.isContiguous() || outputTensor.isContiguous(MemoryFormat::ChannelsLast), "%s",
-                "[diopiConvolution2d] the memory format is not supportted.");
-
     DiopiTensor inputTensorCasted = inputTensor;
     DiopiTensor weightTensorCasted = weightTensor;
     DiopiTensor outputTensorCasted = outputTensor;
@@ -72,9 +50,9 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
 
     DiopiTensor inputTensorT, weightTensorT, outputTensorT;
 
-    DIOPI_CALL(tensorPermute2D(ctx, inputTensorT, inputTensorCasted, MemoryFormat::ChannelsLast));
-    DIOPI_CALL(tensorPermute2D(ctx, outputTensorT, outputTensorCasted, MemoryFormat::ChannelsLast));
-    DIOPI_CALL(tensorPermute2D(ctx, weightTensorT, weightTensorCasted, MemoryFormat::ChannelsLast));
+    DIOPI_CALL(diopiTensorPermote(ctx, inputTensorT, inputTensorCasted, {0, 2, 3, 1}));
+    DIOPI_CALL(diopiTensorPermote(ctx, outputTensorT, outputTensorCasted, {0, 2, 3, 1}));
+    DIOPI_CALL(diopiTensorPermote(ctx, weightTensorT, weightTensorCasted, {0, 2, 3, 1}));
 
     std::vector<int32_t> inputTShape{inputTensorT.shape().begin(), inputTensorT.shape().end()};
     std::vector<int32_t> weightTShape{weightTensorT.shape().begin(), weightTensorT.shape().end()};
@@ -132,7 +110,7 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
                                           outputDesc.get(),
                                           outputTensorT.data()));
 
-    DIOPI_CALL(tensorPermute2D(ctx, outputTensorCasted, outputTensorCasted, MemoryFormat::Contiguous));
+    DIOPI_CALL(diopiTensorPermote(ctx, outputTensorCasted, outputTensorT, {0, 3, 1, 2}));
     DIOPI_CALL(dataTypeCast(ctx, outputTensor, outputTensorCasted));
     return diopiSuccess;
 }
@@ -149,17 +127,6 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
     DiopiTensor gradInputTensor(gradInput);
     DiopiTensor gradWeightTensor(gradWeight);
 
-    DIOPI_CHECK(inputTensor.isContiguous() || inputTensor.isContiguous(MemoryFormat::ChannelsLast), "%s",
-                "[diopiConvolution2dBackward] the memory format is not supportted.");
-    DIOPI_CHECK(weightTensor.isContiguous() || weightTensor.isContiguous(MemoryFormat::ChannelsLast), "%s",
-                "[diopiConvolution2dBackward] the memory format is not supportted.");
-    DIOPI_CHECK(gradOutputTensor.isContiguous() || gradOutputTensor.isContiguous(MemoryFormat::ChannelsLast), "%s",
-                "[diopiConvolution2dBackward] the memory format is not supportted.");
-    DIOPI_CHECK(gradInputTensor.isContiguous() || gradInputTensor.isContiguous(MemoryFormat::ChannelsLast), "%s",
-                "[diopiConvolution2dBackward] the memory format is not supportted.");
-    DIOPI_CHECK(gradWeightTensor.isContiguous() || gradWeightTensor.isContiguous(MemoryFormat::ChannelsLast), "%s",
-                "[diopiConvolution2dBackward] the memory format is not supportted.");
-
     DiopiTensor inputCasted = inputTensor;
     DiopiTensor weightCasted = weightTensor;
     DiopiTensor gradOutputCasted = gradOutputTensor;
@@ -171,11 +138,11 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
 
     DiopiTensor inputT, weightT, gradOutputT, gradInputT, gradWeightT;
 
-    DIOPI_CALL(tensorPermute2D(ctx, inputT, inputCasted, MemoryFormat::ChannelsLast));
-    DIOPI_CALL(tensorPermute2D(ctx, weightT, weightCasted, MemoryFormat::ChannelsLast));
-    DIOPI_CALL(tensorPermute2D(ctx, gradInputT, gradInputCasted, MemoryFormat::ChannelsLast));
-    DIOPI_CALL(tensorPermute2D(ctx, gradOutputT, gradOutputCasted, MemoryFormat::ChannelsLast));
-    DIOPI_CALL(tensorPermute2D(ctx, gradWeightT, gradWeightCasted, MemoryFormat::ChannelsLast));
+    DIOPI_CALL(diopiTensorPermote(ctx, inputT, inputCasted, {0, 2, 3, 1}));
+    DIOPI_CALL(diopiTensorPermote(ctx, weightT, weightCasted, {0, 2, 3, 1}));
+    DIOPI_CALL(diopiTensorPermote(ctx, gradOutputT, gradOutputCasted, {0, 2, 3, 1}));
+    DIOPI_CALL(diopiTensorPermote(ctx, gradInputT, gradInputCasted, {0, 2, 3, 1}));
+    DIOPI_CALL(diopiTensorPermote(ctx, gradWeightT, gradWeightCasted, {0, 2, 3, 1}));
 
     std::vector<int32_t> inputTShape{inputT.shape().begin(), inputT.shape().end()};
     std::vector<int32_t> weightTShape{weightT.shape().begin(), weightT.shape().end()};
@@ -227,13 +194,8 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
                                                  gradWeightT.data()));
 
     size_t workspaceSizeInput;
-    DIOPI_CALLCNNL(cnnlGetConvolutionBackwardDataWorkspaceSize(handle,
-                                                               weightDesc.get(),
-                                                               outputGradDesc.get(),
-                                                               convDesc.get(),
-                                                               inputGradDesc.get(),
-                                                               CNNL_CONVOLUTION_BWD_DATA_ALGO_DIRECT,
-                                                               &workspaceSizeInput));
+    DIOPI_CALLCNNL(cnnlGetConvolutionBackwardDataWorkspaceSize(
+        handle, weightDesc.get(), outputGradDesc.get(), convDesc.get(), inputGradDesc.get(), CNNL_CONVOLUTION_BWD_DATA_ALGO_DIRECT, &workspaceSizeInput));
 
     void *workspaceInput;
     if (workspaceSizeInput != 0) {
@@ -254,9 +216,8 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
                                                inputGradDesc.get(),
                                                gradInputT.data()));
 
-    DIOPI_CALL(tensorPermute2D(ctx, gradInputCasted, gradInputT, MemoryFormat::Contiguous));
-    DIOPI_CALL(tensorPermute2D(ctx, gradWeightCasted, gradWeightT, MemoryFormat::Contiguous));
-
+    DIOPI_CALL(diopiTensorPermote(ctx, gradInputCasted, gradInputT, {0, 3, 1, 2}));
+    DIOPI_CALL(diopiTensorPermote(ctx, gradWeightCasted, gradWeightT, {0, 3, 1, 2}));
     DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputCasted));
     DIOPI_CALL(dataTypeCast(ctx, gradWeightTensor, gradWeightCasted));
 
