@@ -15,6 +15,7 @@ diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiT
     CnnlTensorDesc inTensorDesc(inTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outTensorDesc(outTensor, CNNL_LAYOUT_ARRAY);
     DIOPI_CALLCNNL(cnnlCopy(handle, inTensorDesc.get(), inTensor.data(), outTensorDesc.get(), outTensor.data()));
+    return diopiSuccess;
 }
 
 }  // namespace camb

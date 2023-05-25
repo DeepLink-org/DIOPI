@@ -43,7 +43,7 @@ diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHand
         trOutTmp = trOut;
         descOut.set(trOut, layout);
     } else {
-        trOutTmp = requiresTensor(ctx, vec2diopiSize_t(trOut.shape()), trInput.dtype());
+        trOutTmp = requiresTensor(ctx, vec2diopiSizeT(trOut.shape()), trInput.dtype());
         descOut.set(trOutTmp, CNNL_LAYOUT_ARRAY);
     }
 

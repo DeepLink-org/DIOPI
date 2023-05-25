@@ -9,7 +9,7 @@ device_configs = {
         atol=1e-2,
         rtol=1e-3,
     ),
-    
+
     'nll_loss': dict(
         name=["nll_loss"],
         atol=1e-3,
@@ -40,14 +40,14 @@ device_configs = {
             ]
         ),
     ),
-    
+
     'conv_2d': dict(
         name=["conv2d"],
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(Dtype.float16)],
                 },
             ]
         ),
@@ -55,18 +55,6 @@ device_configs = {
 
     'hardswish': dict(
         name=["hardswish"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
-
-    'gelu': dict(
-        name=['gelu'],
         tensor_para=dict(
             args=[
                 {
@@ -138,36 +126,12 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erf', 'floor'],
+        name=['floor'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
-    'pointwise_op_int_without_inplace': dict(
-        name=['erf'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16), Skip(Dtype.int8), Skip(Dtype.uint8)],
-                },
-            ],
-        ),
-    ),
-
-    'pointwise_op_bool': dict(
-        name=['erf'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.bool)],
                 },
             ],
         ),
@@ -185,32 +149,6 @@ device_configs = {
         ),
     ),
 
-    'sign': dict(
-        name=['sign'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'sign_zero': dict(
-        name=['sign'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
     'silu': dict(
         name=["silu"],
         tensor_para=dict(
@@ -222,7 +160,7 @@ device_configs = {
             ],
         ),
     ),
-    
+
     'pointwise_binary': dict(
         name=['mul'],
         tensor_para=dict(
@@ -236,7 +174,7 @@ device_configs = {
             ],
         ),
     ),
-    
+
     'div': dict(
         name=['div'],
         tensor_para=dict(
@@ -446,13 +384,10 @@ device_configs = {
 
     'embedding': dict(
         name=["embedding"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.int64), Skip(Dtype.int32)],
-                },
-            ],
+        para=dict(
+            # The diopiEmbeddingRenorm_ function is temporarily unavailable due to the unsupported Cambrian operator.  
+            # Thus, to pass the test case, skip all non-None types of the max_norm parameter in the configuration file.
+            max_norm=[Skip(1.0)],   
         ),
     ),
 
@@ -501,30 +436,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float64)],
-                },
-            ],
-        ),
-    ),
-
-    'dropout2d': dict(
-        name=["dropout2d"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
-
-    'leaky_relu': dict(
-        name=["leaky_relu"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
             ],
         ),
@@ -608,20 +519,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
-    'reciprocal_int': dict(
-        name=["reciprocal"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                    "dtype": [Skip(Dtype.float64)],
                 },
             ],
         ),

@@ -10,32 +10,32 @@ namespace camb {
 
 extern "C" {
 static std::vector<int> getPerm(DiopiTensor tensor, int64_t dim0, int64_t dim1) {
-    int input_size = tensor.shape().size();
+    int inputSize = tensor.shape().size();
     if (dim0 < 0) {
-        dim0 = dim0 + input_size;
+        dim0 = dim0 + inputSize;
     }
     if (dim1 < 0) {
-        dim1 = dim1 + input_size;
+        dim1 = dim1 + inputSize;
     }
 
-    std::vector<int> perms(input_size);
+    std::vector<int> perms(inputSize);
     std::iota(perms.begin(), perms.end(), 0);
     perms[dim0] = dim1;
     perms[dim1] = dim0;
     return perms;
 }
 
-static std::vector<int64_t> inferSize(std::vector<int64_t> batch_tensor1, std::vector<int64_t> batch_tensor2) {
-    if (batch_tensor1.size() < batch_tensor2.size()) {
-        batch_tensor1.insert(batch_tensor1.begin(), batch_tensor2.size() - batch_tensor1.size(), 1);
-    } else if (batch_tensor1.size() > batch_tensor2.size()) {
-        batch_tensor2.insert(batch_tensor2.begin(), batch_tensor1.size() - batch_tensor2.size(), 1);
+static std::vector<int64_t> inferSize(std::vector<int64_t> batchTensor1, std::vector<int64_t> batchTensor2) {
+    if (batchTensor1.size() < batchTensor2.size()) {
+        batchTensor1.insert(batchTensor1.begin(), batchTensor2.size() - batchTensor1.size(), 1);
+    } else if (batchTensor1.size() > batchTensor2.size()) {
+        batchTensor2.insert(batchTensor2.begin(), batchTensor1.size() - batchTensor2.size(), 1);
     }
 
-    std::vector<int64_t> res(batch_tensor1);
-    for (int i = 0; i < batch_tensor1.size(); i++) {
-        if (1 == batch_tensor1[i]) {
-            res[i] = batch_tensor2[i];
+    std::vector<int64_t> res(batchTensor1);
+    for (int i = 0; i < batchTensor1.size(); i++) {
+        if (1 == batchTensor1[i]) {
+            res[i] = batchTensor2[i];
         }
     }
 
@@ -44,45 +44,45 @@ static std::vector<int64_t> inferSize(std::vector<int64_t> batch_tensor1, std::v
 
 static int64_t multiplyIntegers(std::vector<int64_t> tensor) {
     int64_t out = 1;
-    for (int i = 0; i < tensor.size(); i++) {
-        out = out * tensor[i];
+    for (long i : tensor) {
+        out = out * i;
     }
 
     return out;
 }
 
-static diopiError_t vectorMulVector(diopiContextHandle_t ctx, DiopiTensor out_tensor, DiopiTensor vector1_tensor, DiopiTensor vector2_tensor) {
+static diopiError_t vectorMulVector(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor vector1Tensor, DiopiTensor vector2Tensor) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    if (vector1_tensor.dtype() != diopi_dtype_float32 && vector1_tensor.dtype() != diopi_dtype_float16) {
-        DIOPI_CALL(dataTypeCast(ctx, vector1_tensor, diopi_dtype_float32));
-        DIOPI_CALL(dataTypeCast(ctx, vector2_tensor, diopi_dtype_float32));
+    if (vector1Tensor.dtype() != diopi_dtype_float32 && vector1Tensor.dtype() != diopi_dtype_float16) {
+        DIOPI_CALL(dataTypeCast(ctx, vector1Tensor, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, vector2Tensor, diopi_dtype_float32));
     }
 
-    CnnlTensorDesc outDesc(out_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc vector1Desc(vector1_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc vector2Desc(vector2_tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc vector1Desc(vector1Tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc vector2Desc(vector2Tensor, CNNL_LAYOUT_ARRAY);
 
-    DiopiTensor temp_out = requiresTensor(ctx, vector1_tensor.shape(), vector1_tensor.dtype());
-    CnnlTensorDesc temp_outDesc(temp_out, CNNL_LAYOUT_ARRAY);
+    DiopiTensor tempOut = requiresTensor(ctx, vector1Tensor.shape(), vector1Tensor.dtype());
+    CnnlTensorDesc tempOutDesc(tempOut, CNNL_LAYOUT_ARRAY);
 
-    std::vector<cnnlTensorDescriptor_t> inputs_desc(2);
-    inputs_desc[0] = vector1Desc.get();
-    inputs_desc[1] = vector2Desc.get();
+    std::vector<cnnlTensorDescriptor_t> inputsDesc(2);
+    inputsDesc[0] = vector1Desc.get();
+    inputsDesc[1] = vector2Desc.get();
     std::vector<const void*> inputs(2);
-    inputs[0] = vector1_tensor.data();
-    inputs[1] = vector2_tensor.data();
+    inputs[0] = vector1Tensor.data();
+    inputs[1] = vector2Tensor.data();
 
-    DIOPI_CALLCNNL(cnnlMulN(handle, inputs_desc.data(), inputs.data(), 2, temp_outDesc.get(), temp_out.data()));
-    int64_t dim_data = 0;
-    diopiSize_t dim = {&dim_data, 1};
+    DIOPI_CALLCNNL(cnnlMulN(handle, inputsDesc.data(), inputs.data(), 2, tempOutDesc.get(), tempOut.data()));
+    int64_t dimData = 0;
+    diopiSize_t dim = {&dimData, 1};
 
-    if (out_tensor.dtype() == vector1_tensor.dtype()) {
-        DIOPI_CALL(diopiSum(ctx, (diopiTensorHandle_t)out_tensor, (diopiTensorHandle_t)temp_out, dim));
+    if (outTensor.dtype() == vector1Tensor.dtype()) {
+        DIOPI_CALL(diopiSum(ctx, (diopiTensorHandle_t)outTensor, (diopiTensorHandle_t)tempOut, dim));
     } else {
-        DiopiTensor out32_tensor = requiresTensor(ctx, out_tensor.shape(), vector1_tensor.dtype());
-        DIOPI_CALL(diopiSum(ctx, (diopiTensorHandle_t)out32_tensor, (diopiTensorHandle_t)temp_out, dim));
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor, out32_tensor));
+        DiopiTensor out32Tensor = requiresTensor(ctx, outTensor.shape(), vector1Tensor.dtype());
+        DIOPI_CALL(diopiSum(ctx, (diopiTensorHandle_t)out32Tensor, (diopiTensorHandle_t)tempOut, dim));
+        DIOPI_CALL(dataTypeCast(ctx, outTensor, out32Tensor));
     }
     return diopiSuccess;
 }
@@ -99,10 +99,10 @@ static diopiError_t matMulMat(diopiContextHandle_t ctx, DiopiTensor out, DiopiTe
     CnnlTensorDesc otherDesc(other, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(out, CNNL_LAYOUT_ARRAY);
 
-    CnnlResourceGuard<cnnlMatMulDescriptor_t, cnnlMatMulDescCreate, cnnlMatMulDescDestroy> matmulDesc;
-    cnnlMatMulDescriptor_t matmul_desc = matmulDesc.get();
-    int32_t allow_tf32_i32 = 1;
-    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmul_desc, CNNL_MATMUL_ALLOW_TF32, &(allow_tf32_i32), sizeof(int32_t)));
+    CnnlResourceGuard<cnnlMatMulDescriptor_t, cnnlMatMulDescCreate, cnnlMatMulDescDestroy> matmulDescGuard;
+    cnnlMatMulDescriptor_t matmulDesc = matmulDescGuard.get();
+    int32_t allowTf32I32 = 1;
+    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmulDesc, CNNL_MATMUL_ALLOW_TF32, &(allowTf32I32), sizeof(int32_t)));
     CnnlResourceGuard<cnnlMatMulAlgo_t, cnnlMatMulAlgoCreate, cnnlMatMulAlgoDestroy> matmulAlgo;
     cnnlMatMulAlgo_t algo = matmulAlgo.get();
 
@@ -110,19 +110,19 @@ static diopiError_t matMulMat(diopiContextHandle_t ctx, DiopiTensor out, DiopiTe
     cnnlMatMulHeuristicResult_t heuristicResult = matMulHeuristic.get();
     int returnAlgoCount = 0;
     DIOPI_CALLCNNL(cnnlGetMatMulAlgoHeuristic(
-        handle, matmul_desc, inputDesc.get(), otherDesc.get(), outDesc.get(), outDesc.get(), nullptr, 1, &heuristicResult, &returnAlgoCount));
-    size_t workspace_size = 0;
-    DIOPI_CALLCNNL(cnnlGetMatMulHeuristicResult(heuristicResult, algo, &workspace_size));
+        handle, matmulDesc, inputDesc.get(), otherDesc.get(), outDesc.get(), outDesc.get(), nullptr, 1, &heuristicResult, &returnAlgoCount));
+    size_t workspaceSize = 0;
+    DIOPI_CALLCNNL(cnnlGetMatMulHeuristicResult(heuristicResult, algo, &workspaceSize));
     void* workspace = nullptr;
-    if (0 != workspace_size) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
+    if (0 != workspaceSize) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
     float alpha = 1;
     float beta = 0;
     if (out.dtype() == input.dtype()) {
         DIOPI_CALLCNNL(cnnlMatMul_v2(handle,
-                                     matmul_desc,
+                                     matmulDesc,
                                      algo,
                                      &alpha,
                                      inputDesc.get(),
@@ -133,14 +133,14 @@ static diopiError_t matMulMat(diopiContextHandle_t ctx, DiopiTensor out, DiopiTe
                                      outDesc.get(),
                                      out.data(),
                                      workspace,
-                                     workspace_size,
+                                     workspaceSize,
                                      outDesc.get(),
                                      out.data()));
     } else {
-        DiopiTensor out_temp = requiresTensor(ctx, out.shape(), input.dtype());
-        CnnlTensorDesc out_tempDesc(out_temp, CNNL_LAYOUT_ARRAY);
+        DiopiTensor outTemp = requiresTensor(ctx, out.shape(), input.dtype());
+        CnnlTensorDesc outTempDesc(outTemp, CNNL_LAYOUT_ARRAY);
         DIOPI_CALLCNNL(cnnlMatMul_v2(handle,
-                                     matmul_desc,
+                                     matmulDesc,
                                      algo,
                                      &alpha,
                                      inputDesc.get(),
@@ -148,243 +148,243 @@ static diopiError_t matMulMat(diopiContextHandle_t ctx, DiopiTensor out, DiopiTe
                                      otherDesc.get(),
                                      other.data(),
                                      &beta,
-                                     out_tempDesc.get(),
-                                     out_temp.data(),
+                                     outTempDesc.get(),
+                                     outTemp.data(),
                                      workspace,
-                                     workspace_size,
-                                     out_tempDesc.get(),
-                                     out_temp.data()));
-        DIOPI_CALL(dataTypeCast(ctx, out, out_temp));
+                                     workspaceSize,
+                                     outTempDesc.get(),
+                                     outTemp.data()));
+        DIOPI_CALL(dataTypeCast(ctx, out, outTemp));
     }
 
     return diopiSuccess;
 }
 
-static diopiError_t matMulVector(diopiContextHandle_t ctx, DiopiTensor out_tensor, DiopiTensor input_tensor, DiopiTensor vector_tensor) {
-    if (input_tensor.shape()[1] != vector_tensor.shape()[0]) {
-        vector_tensor.reshape({1, vector_tensor.shape()[0]});
-        out_tensor.reshape({vector_tensor.shape()[0], 1});
+static diopiError_t matMulVector(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor inputTensor, DiopiTensor vectorTensor) {
+    if (inputTensor.shape()[1] != vectorTensor.shape()[0]) {
+        vectorTensor.reshape({1, vectorTensor.shape()[0]});
+        outTensor.reshape({vectorTensor.shape()[0], 1});
     } else {
-        vector_tensor.reshape({vector_tensor.shape()[0], 1});
-        out_tensor.reshape({input_tensor.shape()[0], 1});
+        vectorTensor.reshape({vectorTensor.shape()[0], 1});
+        outTensor.reshape({inputTensor.shape()[0], 1});
     }
 
-    DIOPI_CALL(matMulMat(ctx, out_tensor, input_tensor, vector_tensor));
+    DIOPI_CALL(matMulMat(ctx, outTensor, inputTensor, vectorTensor));
     return diopiSuccess;
 }
 
-static diopiError_t transpose(diopiContextHandle_t ctx, DiopiTensor out_tensor, DiopiTensor input, int64_t dim0, int64_t dim1) {
+static diopiError_t transpose(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor input, int64_t dim0, int64_t dim1) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    diopiTensorHandle_t out = (diopiTensorHandle_t)out_tensor;
+    diopiTensorHandle_t out = (diopiTensorHandle_t)outTensor;
 
-    CnnlResourceGuard<cnnlTransposeDescriptor_t, cnnlCreateTransposeDescriptor, cnnlDestroyTransposeDescriptor> CnnlTransposeDesc;
-    cnnlTransposeDescriptor_t transpose_desc = CnnlTransposeDesc.get();
+    CnnlResourceGuard<cnnlTransposeDescriptor_t, cnnlCreateTransposeDescriptor, cnnlDestroyTransposeDescriptor> cnnlTransposeDesc;
+    cnnlTransposeDescriptor_t transposeDesc = cnnlTransposeDesc.get();
     std::vector<int> perms = getPerm(input, dim0, dim1);
-    cnnlSetTransposeDescriptor(transpose_desc, perms.size(), perms.data());
+    cnnlSetTransposeDescriptor(transposeDesc, perms.size(), perms.data());
 
     CnnlTensorDesc inputDesc(input, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc outDesc(out_tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
 
-    size_t workspace_size = 0;
-    cnnlGetTransposeWorkspaceSize(handle, inputDesc.get(), transpose_desc, &workspace_size);
+    size_t workspaceSize = 0;
+    cnnlGetTransposeWorkspaceSize(handle, inputDesc.get(), transposeDesc, &workspaceSize);
     void* workspace = nullptr;
-    if (0 != workspace_size) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
+    if (0 != workspaceSize) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    cnnlTranspose_v2(handle, transpose_desc, inputDesc.get(), input.data(), outDesc.get(), out_tensor.data(), workspace, workspace_size);
+    cnnlTranspose_v2(handle, transposeDesc, inputDesc.get(), input.data(), outDesc.get(), outTensor.data(), workspace, workspaceSize);
     return diopiSuccess;
 }
 
-static diopiError_t batchMatmul(diopiContextHandle_t ctx, DiopiTensor out_tensor, DiopiTensor input_tensor, DiopiTensor other_tensor) {
+static diopiError_t batchMatmul(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor inputTensor, DiopiTensor otherTensor) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    if (input_tensor.dtype() == diopi_dtype_float64) {
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_float32));
-        DIOPI_CALL(dataTypeCast(ctx, other_tensor, diopi_dtype_float32));
+    if (inputTensor.dtype() == diopi_dtype_float64) {
+        DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, otherTensor, diopi_dtype_float32));
     }
 
-    CnnlTensorDesc outDesc(out_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc inputDesc(input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc otherDesc(other_tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc otherDesc(otherTensor, CNNL_LAYOUT_ARRAY);
 
-    int32_t allow_tf32_int = 1;
-    CnnlDescBase<cnnlMatMulDescriptor_t, cnnlMatMulDescCreate, cnnlMatMulDescDestroy> bmmDesc;
-    cnnlSetMatMulDescAttr(bmmDesc.get(), CNNL_MATMUL_ALLOW_TF32, &allow_tf32_int, sizeof(allow_tf32_int));
+    int32_t allowTf32Int = 1;
+    CnnlDescBase<cnnlMatMulDescriptor_t, cnnlMatMulDescCreate, cnnlMatMulDescDestroy> bmmDescGuard;
+    cnnlSetMatMulDescAttr(bmmDescGuard.get(), CNNL_MATMUL_ALLOW_TF32, &allowTf32Int, sizeof(allowTf32Int));
     CnnlDescBase<cnnlMatMulAlgo_t, cnnlMatMulAlgoCreate, cnnlMatMulAlgoDestroy> bmmAlgo;
     CnnlDescBase<cnnlMatMulHeuristicResult_t, cnnlCreateMatMulHeuristicResult, cnnlDestroyMatMulHeuristicResult> bmmHeuristicResult;
 
-    int return_algo_count = 0;
+    int returnAlgoCount = 0;
     cnnlGetBatchMatMulAlgoHeuristic(
-        handle, bmmDesc.get(), inputDesc.get(), otherDesc.get(), outDesc.get(), nullptr, 1, &(bmmHeuristicResult.get()), &return_algo_count);
+        handle, bmmDescGuard.get(), inputDesc.get(), otherDesc.get(), outDesc.get(), nullptr, 1, &(bmmHeuristicResult.get()), &returnAlgoCount);
 
-    size_t workspace_size(0);
-    cnnlGetBatchMatMulHeuristicResult(bmmHeuristicResult.get(), bmmAlgo.get(), &workspace_size);
+    size_t workspaceSize(0);
+    cnnlGetBatchMatMulHeuristicResult(bmmHeuristicResult.get(), bmmAlgo.get(), &workspaceSize);
     void* workspace = nullptr;
-    if (workspace > 0) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
+    if (workspaceSize > 0) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    if (out_tensor.dtype() == input_tensor.dtype()) {
+    if (outTensor.dtype() == inputTensor.dtype()) {
         DIOPI_CALLCNNL(cnnlBatchMatMulBCast_v2(handle,
-                                               bmmDesc.get(),
+                                               bmmDescGuard.get(),
                                                bmmAlgo.get(),
                                                nullptr,
                                                inputDesc.get(),
-                                               input_tensor.data(),
+                                               inputTensor.data(),
                                                otherDesc.get(),
-                                               other_tensor.data(),
+                                               otherTensor.data(),
                                                nullptr,
                                                outDesc.get(),
-                                               out_tensor.data(),
+                                               outTensor.data(),
                                                workspace,
-                                               workspace_size));
+                                               workspaceSize));
     } else {
-        DiopiTensor out_temp = requiresTensor(ctx, out_tensor.shape(), input_tensor.dtype());
-        CnnlTensorDesc out_tempDesc(out_temp, CNNL_LAYOUT_ARRAY);
+        DiopiTensor outTemp = requiresTensor(ctx, outTensor.shape(), inputTensor.dtype());
+        CnnlTensorDesc outTempDesc(outTemp, CNNL_LAYOUT_ARRAY);
         DIOPI_CALLCNNL(cnnlBatchMatMulBCast_v2(handle,
-                                               bmmDesc.get(),
+                                               bmmDescGuard.get(),
                                                bmmAlgo.get(),
                                                nullptr,
                                                inputDesc.get(),
-                                               input_tensor.data(),
+                                               inputTensor.data(),
                                                otherDesc.get(),
-                                               other_tensor.data(),
+                                               otherTensor.data(),
                                                nullptr,
-                                               out_tempDesc.get(),
-                                               out_temp.data(),
+                                               outTempDesc.get(),
+                                               outTemp.data(),
                                                workspace,
-                                               workspace_size));
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor, out_temp));
+                                               workspaceSize));
+        DIOPI_CALL(dataTypeCast(ctx, outTensor, outTemp));
     }
 
     return diopiSuccess;
 }
 
-static diopiError_t tensorMatmulTensor(diopiContextHandle_t ctx, DiopiTensor out_tensor, DiopiTensor input_tensor, DiopiTensor other_tensor) {
-    if (input_tensor.dim() == 1 && other_tensor.dim() == 1) {
-        DIOPI_CALL(vectorMulVector(ctx, out_tensor, input_tensor, other_tensor));
+static diopiError_t tensorMatmulTensor(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor inputTensor, DiopiTensor otherTensor) {
+    if (inputTensor.dim() == 1 && otherTensor.dim() == 1) {
+        DIOPI_CALL(vectorMulVector(ctx, outTensor, inputTensor, otherTensor));
         return diopiSuccess;
-    } else if (input_tensor.dim() == 2 && other_tensor.dim() == 1) {
-        DIOPI_CALL(matMulVector(ctx, out_tensor, input_tensor, other_tensor));
+    } else if (inputTensor.dim() == 2 && otherTensor.dim() == 1) {
+        DIOPI_CALL(matMulVector(ctx, outTensor, inputTensor, otherTensor));
         return diopiSuccess;
-    } else if (input_tensor.dim() == 1 && other_tensor.dim() == 2) {
-        std::vector<int64_t> shape(other_tensor.shape());
-        shape[0] = other_tensor.shape()[1];
-        shape[1] = other_tensor.shape()[0];
-        DiopiTensor other_T = requiresTensor(ctx, shape, other_tensor.dtype());
-        DIOPI_CALL(transpose(ctx, other_T, other_tensor, 0, 1))
-        DIOPI_CALL(matMulVector(ctx, out_tensor, other_T, input_tensor));
+    } else if (inputTensor.dim() == 1 && otherTensor.dim() == 2) {
+        std::vector<int64_t> shape(otherTensor.shape());
+        shape[0] = otherTensor.shape()[1];
+        shape[1] = otherTensor.shape()[0];
+        DiopiTensor otherT = requiresTensor(ctx, shape, otherTensor.dtype());
+        DIOPI_CALL(transpose(ctx, otherT, otherTensor, 0, 1))
+        DIOPI_CALL(matMulVector(ctx, outTensor, otherT, inputTensor));
         return diopiSuccess;
-    } else if (input_tensor.dim() == 2 && other_tensor.dim() == 2) {
-        DIOPI_CALL(matMulMat(ctx, out_tensor, input_tensor, other_tensor));
+    } else if (inputTensor.dim() == 2 && otherTensor.dim() == 2) {
+        DIOPI_CALL(matMulMat(ctx, outTensor, inputTensor, otherTensor));
         return diopiSuccess;
-    } else if (input_tensor.dim() >= 3 && (other_tensor.dim() == 1 || other_tensor.dim() == 2)) {
-        std::vector<int64_t> output_size;
-        output_size.insert(output_size.end(), input_tensor.shape().begin(), input_tensor.shape().end() - 1);
-        if (other_tensor.dim() == 1) {
-            std::vector<int64_t> temp_shape(2);
-            temp_shape[0] = other_tensor.shape()[0];
-            temp_shape[1] = 1;
-            other_tensor.reshape(temp_shape);
+    } else if (inputTensor.dim() >= 3 && (otherTensor.dim() == 1 || otherTensor.dim() == 2)) {
+        std::vector<int64_t> outputSize;
+        outputSize.insert(outputSize.end(), inputTensor.shape().begin(), inputTensor.shape().end() - 1);
+        if (otherTensor.dim() == 1) {
+            std::vector<int64_t> tempShape(2);
+            tempShape[0] = otherTensor.shape()[0];
+            tempShape[1] = 1;
+            otherTensor.reshape(tempShape);
         } else {
-            output_size.push_back(other_tensor.shape()[1]);
+            outputSize.push_back(otherTensor.shape()[1]);
         }
 
         std::vector<int64_t> shape(2);
-        shape[1] = input_tensor.shape()[input_tensor.dim() - 1];
-        shape[0] = input_tensor.numel() / shape[1];
-        input_tensor.reshape(shape);
-        shape[1] = other_tensor.shape()[1];
-        out_tensor.reshape(shape);
-        DIOPI_CALL(matMulMat(ctx, out_tensor, input_tensor, other_tensor));
+        shape[1] = inputTensor.shape()[inputTensor.dim() - 1];
+        shape[0] = inputTensor.numel() / shape[1];
+        inputTensor.reshape(shape);
+        shape[1] = otherTensor.shape()[1];
+        outTensor.reshape(shape);
+        DIOPI_CALL(matMulMat(ctx, outTensor, inputTensor, otherTensor));
         return diopiSuccess;
-    } else if ((input_tensor.dim() == 1 || input_tensor.dim() == 2) && other_tensor.dim() >= 3) {
-        int input_dim = input_tensor.dim();
-        int64_t n = input_tensor.dim() == 2 ? input_tensor.shape()[0] : 1;
-        int64_t m = input_tensor.shape()[input_tensor.dim() - 1];
-        int64_t p = other_tensor.shape()[other_tensor.dim() - 1];
-        if (input_dim == 1) {
-            input_tensor.reshape({n, m});
+    } else if ((inputTensor.dim() == 1 || inputTensor.dim() == 2) && otherTensor.dim() >= 3) {
+        int inputDim = inputTensor.dim();
+        int64_t n = inputTensor.dim() == 2 ? inputTensor.shape()[0] : 1;
+        int64_t m = inputTensor.shape()[inputTensor.dim() - 1];
+        int64_t p = otherTensor.shape()[otherTensor.dim() - 1];
+        if (inputDim == 1) {
+            inputTensor.reshape({n, m});
         }
 
-        std::vector<int64_t> other_shape(other_tensor.shape());
-        other_shape[other_tensor.shape().size() - 1] = other_tensor.shape()[other_tensor.shape().size() - 2];
-        other_shape[other_tensor.shape().size() - 2] = other_tensor.shape()[other_tensor.shape().size() - 1];
-        DiopiTensor other_T_tensor = requiresTensor(ctx, other_shape, other_tensor.dtype());
-        DIOPI_CALL(transpose(ctx, other_T_tensor, other_tensor, -1, -2))
-        std::vector<int64_t> input_shape(input_tensor.shape());
-        input_shape[0] = input_tensor.shape()[1];
-        input_shape[1] = input_tensor.shape()[0];
-        DiopiTensor input_T_tensor = requiresTensor(ctx, input_shape, input_tensor.dtype());
-        DIOPI_CALL(transpose(ctx, input_T_tensor, input_tensor, 0, 1))
+        std::vector<int64_t> otherShape(otherTensor.shape());
+        otherShape[otherTensor.shape().size() - 1] = otherTensor.shape()[otherTensor.shape().size() - 2];
+        otherShape[otherTensor.shape().size() - 2] = otherTensor.shape()[otherTensor.shape().size() - 1];
+        DiopiTensor otherTTensor = requiresTensor(ctx, otherShape, otherTensor.dtype());
+        DIOPI_CALL(transpose(ctx, otherTTensor, otherTensor, -1, -2))
+        std::vector<int64_t> inputShape(inputTensor.shape());
+        inputShape[0] = inputTensor.shape()[1];
+        inputShape[1] = inputTensor.shape()[0];
+        DiopiTensor inputTTensor = requiresTensor(ctx, inputShape, inputTensor.dtype());
+        DIOPI_CALL(transpose(ctx, inputTTensor, inputTensor, 0, 1))
 
-        if (input_dim == 1) {
-            DIOPI_CALL(tensorMatmulTensor(ctx, out_tensor, other_T_tensor, input_T_tensor));
+        if (inputDim == 1) {
+            DIOPI_CALL(tensorMatmulTensor(ctx, outTensor, otherTTensor, inputTTensor));
         } else {
-            std::vector<int64_t> shape(other_T_tensor.shape().begin(), other_T_tensor.shape().end() - 1);
-            shape.push_back(input_tensor.shape()[0]);
-            DiopiTensor out_temp = requiresTensor(ctx, shape, out_tensor.dtype());
+            std::vector<int64_t> shape(otherTTensor.shape().begin(), otherTTensor.shape().end() - 1);
+            shape.push_back(inputTensor.shape()[0]);
+            DiopiTensor outTemp = requiresTensor(ctx, shape, outTensor.dtype());
 
-            DIOPI_CALL(tensorMatmulTensor(ctx, out_temp, other_T_tensor, input_T_tensor));
-            DIOPI_CALL(transpose(ctx, out_tensor, out_temp, -1, -2));
+            DIOPI_CALL(tensorMatmulTensor(ctx, outTemp, otherTTensor, inputTTensor));
+            DIOPI_CALL(transpose(ctx, outTensor, outTemp, -1, -2));
         }
 
         return diopiSuccess;
-    } else if ((input_tensor.dim() >= 1 && other_tensor.dim() >= 1) && (input_tensor.dim() >= 3 || other_tensor.dim() >= 3)) {
-        int64_t n = input_tensor.dim() > 1 ? input_tensor.shape()[input_tensor.dim() - 2] : 1;
-        int64_t m1 = input_tensor.shape()[input_tensor.dim() - 1];
-        int64_t data_len = input_tensor.dim() > 2 ? input_tensor.shape().size() - 2 : 0;
-        std::vector<int64_t> batch_tensor1(input_tensor.shape().begin(), input_tensor.shape().begin() + data_len);
+    } else if ((inputTensor.dim() >= 1 && otherTensor.dim() >= 1) && (inputTensor.dim() >= 3 || otherTensor.dim() >= 3)) {
+        int64_t n = inputTensor.dim() > 1 ? inputTensor.shape()[inputTensor.dim() - 2] : 1;
+        int64_t m1 = inputTensor.shape()[inputTensor.dim() - 1];
+        int64_t dataLen = inputTensor.dim() > 2 ? inputTensor.shape().size() - 2 : 0;
+        std::vector<int64_t> batchTensor1(inputTensor.shape().begin(), inputTensor.shape().begin() + dataLen);
 
-        int64_t m2 = other_tensor.dim() > 1 ? other_tensor.shape()[input_tensor.dim() - 2] : 1;
-        int64_t p = other_tensor.shape()[other_tensor.dim() - 1];
-        data_len = other_tensor.dim() > 2 ? other_tensor.shape().size() - 2 : 0;
-        std::vector<int64_t> batch_tensor2(other_tensor.shape().begin(), other_tensor.shape().begin() + data_len);
+        int64_t m2 = otherTensor.dim() > 1 ? otherTensor.shape()[inputTensor.dim() - 2] : 1;
+        int64_t p = otherTensor.shape()[otherTensor.dim() - 1];
+        dataLen = otherTensor.dim() > 2 ? otherTensor.shape().size() - 2 : 0;
+        std::vector<int64_t> batchTensor2(otherTensor.shape().begin(), otherTensor.shape().begin() + dataLen);
 
-        std::vector<int64_t> expand_batch_portion = inferSize(batch_tensor1, batch_tensor2);
-        std::vector<int64_t> tensor1_expand_size(expand_batch_portion);
-        tensor1_expand_size.insert(tensor1_expand_size.end(), {n, m1});
-        std::vector<int64_t> tensor2_expand_size(expand_batch_portion);
-        tensor2_expand_size.insert(tensor2_expand_size.end(), {m2, p});
+        std::vector<int64_t> expandBatchPortion = inferSize(batchTensor1, batchTensor2);
+        std::vector<int64_t> tensor1ExpandSize(expandBatchPortion);
+        tensor1ExpandSize.insert(tensor1ExpandSize.end(), {n, m1});
+        std::vector<int64_t> tensor2ExpandSize(expandBatchPortion);
+        tensor2ExpandSize.insert(tensor2ExpandSize.end(), {m2, p});
 
-        int64_t expand_batch_product = multiplyIntegers(expand_batch_portion);
-        std::vector<int64_t> tensor1_bmm_view({expand_batch_product});
-        tensor1_bmm_view.insert(tensor1_bmm_view.end(), {n, m1});
-        std::vector<int64_t> tensor2_bmm_view({expand_batch_product});
-        tensor2_bmm_view.insert(tensor2_bmm_view.end(), {m2, p});
+        int64_t expandBatchProduct = multiplyIntegers(expandBatchPortion);
+        std::vector<int64_t> tensor1BmmView({expandBatchProduct});
+        tensor1BmmView.insert(tensor1BmmView.end(), {n, m1});
+        std::vector<int64_t> tensor2BmmView({expandBatchProduct});
+        tensor2BmmView.insert(tensor2BmmView.end(), {m2, p});
 
-        DiopiTensor input_expand = requiresTensor(ctx, tensor1_expand_size, input_tensor.dtype());
-        DiopiTensor other_expand = requiresTensor(ctx, tensor2_expand_size, other_tensor.dtype());
-        broadcast(ctx, input_expand, input_tensor);
-        broadcast(ctx, other_expand, other_tensor);
-        input_expand.reshape(tensor1_bmm_view);
-        other_expand.reshape(tensor2_bmm_view);
+        DiopiTensor inputExpand = requiresTensor(ctx, tensor1ExpandSize, inputTensor.dtype());
+        DiopiTensor otherExpand = requiresTensor(ctx, tensor2ExpandSize, otherTensor.dtype());
+        broadcast(ctx, inputExpand, inputTensor);
+        broadcast(ctx, otherExpand, otherTensor);
+        inputExpand.reshape(tensor1BmmView);
+        otherExpand.reshape(tensor2BmmView);
 
-        std::vector<int64_t> output_shape({expand_batch_product});
-        if (input_tensor.dim() > 1) {
-            output_shape.push_back(n);
+        std::vector<int64_t> outputShape({expandBatchProduct});
+        if (inputTensor.dim() > 1) {
+            outputShape.push_back(n);
         }
-        if (other_tensor.dim() > 1) {
-            output_shape.push_back(p);
+        if (otherTensor.dim() > 1) {
+            outputShape.push_back(p);
         }
-        out_tensor.reshape(output_shape);
-        DIOPI_CALL(batchMatmul(ctx, out_tensor, input_expand, other_expand));
+        outTensor.reshape(outputShape);
+        DIOPI_CALL(batchMatmul(ctx, outTensor, inputExpand, otherExpand));
         return diopiSuccess;
     }
 
-    set_last_error_string("both arguments to matmul need to be at least 1D, but they are ", input_tensor.dim(), "D and ", other_tensor.dim(), "D");
+    setLastErrorString("both arguments to matmul need to be at least 1D, but they are ", inputTensor.dim(), "D and ", otherTensor.dim(), "D");
     return diopiErrorOccurred;
 }
 
 diopiError_t diopiMatmul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    DiopiTensor input_tensor(input);
-    DiopiTensor other_tensor(other);
-    DiopiTensor out_tensor(out);
+    DiopiTensor inputTensor(input);
+    DiopiTensor otherTensor(other);
+    DiopiTensor outTensor(out);
 
-    DIOPI_CALL(tensorMatmulTensor(ctx, out_tensor, input_tensor, other_tensor));
+    DIOPI_CALL(tensorMatmulTensor(ctx, outTensor, inputTensor, otherTensor));
     return diopiSuccess;
 }
 

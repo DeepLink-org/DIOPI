@@ -1500,6 +1500,25 @@ diopi_configs = {
         ),
     ),
 
+    'max_min_all': dict(
+        name=['min', 'max'],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-5,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((64, ), (169, 4), (17100, 2), (1, 1, 384),
+                              (4, 133, 128, 128), (2, 64, 3, 3, 3)),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16,
+                              Dtype.int32, Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
     'reduce_partial_op_3': dict(
         name=['any', 'all'],
         interface=['torch'],
