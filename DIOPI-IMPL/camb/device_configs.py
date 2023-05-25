@@ -1239,25 +1239,6 @@ device_configs = {
         saved_args=dict(output=0),
     ),
 
-    'normal': dict(
-        name=["normal"],
-        para=dict(
-            mean=[Skip(0), Skip(0.1)],
-        ),
-    ),
-
-    'normal_': dict(
-        name=["normal_"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
-        ),
-    ),
-
     'normal_std_tensor': dict(
         name=["normal"],
         tensor_para=dict(
