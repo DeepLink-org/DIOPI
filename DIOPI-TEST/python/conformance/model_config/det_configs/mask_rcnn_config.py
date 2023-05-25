@@ -1230,7 +1230,7 @@ mask_rcnn_config = {
                     "ins": ["input"],
                     "shape": [(1024,), (8,), (1000,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.rand,
                 },
             ],
         ),
