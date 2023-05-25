@@ -46,8 +46,8 @@ def from_numpy_dtype(dtype: np.dtype) -> Dtype:
         return Dtype.float64
     elif dtype == np.bool_:
         return Dtype.bool
-    elif dtype == np.complex644:
-        return Dtype.complex6
+    elif dtype == np.complex64:
+        return Dtype.complex64
     elif dtype == np.complex128:
         return Dtype.complex128
     else:
