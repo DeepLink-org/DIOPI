@@ -5,6 +5,7 @@ add_compile_options(-fno-elide-constructors)
 add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 build)
 
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/test/include")
+include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/../third_party/pybind11/include")
 include_directories(${PYTHON_INCLUDE_DIR})
 
 set(RUNTIME_SRC
