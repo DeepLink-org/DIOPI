@@ -29,7 +29,7 @@ public:
     explicit PtrWrapper(py::none) : ptr(nullptr) {}
     explicit PtrWrapper(T* ptr) : ptr(ptr) {}
     PtrWrapper(const PtrWrapper& other) : ptr(other.ptr) {}
-    T& operator* () const {}
+    T& operator* () const { return *ptr; }
     T* operator->() const { return  ptr; }
     T* get() const {
         return ptr; 

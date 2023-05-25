@@ -26,11 +26,14 @@ case $1 in
     -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` \
     && make -j8;;
   camb)
-    mkdir -p build && cd build && cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=camb -DTEST=${DIOPI_BUILD_TESTRT} && make -j8;;
+    mkdir -p build && cd build && cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=camb -DTEST=${DIOPI_BUILD_TESTRT} \
+    -DPYTHON_INCLUDE_DIR=`python -c 'from distutils.sysconfig import get_python_inc; print(get_python_inc())'` && make -j8;;
   ascend)
-    mkdir -p build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=ascend -DTEST=${DIOPI_BUILD_TESTRT} && make -j8;;
+    mkdir -p build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=ascend -DTEST=${DIOPI_BUILD_TESTRT} \
+    -DPYTHON_INCLUDE_DIR=`python -c 'from distutils.sysconfig import get_python_inc; print(get_python_inc())'` && make -j8;;
   hip_pytorch)
-    mkdir build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=TORCH -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DHIP=ON && make -j8 \
+    mkdir build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=TORCH -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DHIP=ON
+    -DPYTHON_INCLUDE_DIR=`python -c 'from distutils.sysconfig import get_python_inc; print(get_python_inc())'` && make -j8 \
     || exit -1;;
   mmcv_ext)
     (cd third_party/mmcv_diopi && rm -rf build && mkdir build \
