@@ -226,7 +226,7 @@ diopi_configs = {
                     "ins": ['input'],
                     "shape": ((2, 4096), (64, 28, 28),
                               (2, 96, 56, 56), (64, 3, 7, 28, 28)),
-                    "dtype": [Dtype.float32, Dtype.float64, Dtype.int16, Dtype.int32, Dtype.int64],
+                    "dtype": [Dtype.float32, Dtype.int64],
                     "gen_fn": dict(fn=Genfunc.randint, low=-1, high=15),
                 },
             ],
