@@ -900,7 +900,7 @@ fcos_config = {
                     "ins": ["input"],
                     "shape": [(411,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.rand,
                 },
             ],
         ),

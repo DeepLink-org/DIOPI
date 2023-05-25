@@ -1242,7 +1242,7 @@ cascade_rcnn_config = {
                     "ins": ["input"],
                     "shape": [(1024,), (1000,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.rand,
                 },
             ],
         ),

@@ -400,7 +400,7 @@ detr_config = {
                     "ins": ["exponent"],
                     "shape": [(128,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.rand,
                 },
             ],
         ),
