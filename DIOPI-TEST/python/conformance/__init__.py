@@ -21,6 +21,8 @@ float32 = Dtype.float32
 float64 = Dtype.float64
 bfloat16 = Dtype.bfloat16
 tfloat32 = Dtype.tfloat32
+complex64 = Dtype.complex64
+complex128 = Dtype.complex128
 
 bool = Dtype.bool
 
