@@ -43,7 +43,7 @@ void printDevData<int8_t>(diopiContextHandle_t ctx, void* data, int64_t len, int
     cnrtMemcpyAsync(ptr.get(), data, bytes, getStream(ctx), cnrtMemcpyDevToHost);
     syncStreamInCtx(ctx);
     for (int i = 0; i < len && i < max_len; ++i) {
-        std::cout << static_cast<int32>(reinterpret_cast<T*>(ptr.get())[i]) << " ";
+        std::cout << static_cast<int8_t>(reinterpret_cast<int8_t*>(ptr.get())[i]) << " ";
     }
     std::cout << std::endl;
 }
