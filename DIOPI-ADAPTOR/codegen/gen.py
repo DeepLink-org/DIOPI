@@ -72,7 +72,7 @@ def prepare():
         '-c',
         '--config_device',
         help='name of file which contains configs of device',
-        default='camb')
+        default='torch')
 
 
     options = parser.parse_args()
@@ -256,64 +256,65 @@ def analysis_configs(config, funcs_info):
     common_layout = []
     common_contiguous = False
     op_dict = {}
-    for info in config:
-        [op_name], [op_cfg] = info.keys(), info.values()
-        if op_name == 'common_config':
-            if 'dtype' in op_cfg.keys():
-                common_cast = deal_dtype('Common', op_cfg['dtype'], funcs_info)
-            if 'layout' in op_cfg.keys():
-                common_layout = [op_cfg['layout']] if isinstance(op_cfg['layout'], str) else op_cfg['layout']
-            if 'contiguous' in op_cfg.keys():
-                common_contiguous = op_cfg['contiguous']
-            op_dict['Common'] = {
-                'cast': common_cast,
-                'layout': common_layout,
-                'contiguous': common_contiguous,
-            }
-        else:
-            op_cast = None
-            op_tensor = {}
-            op_dict[op_name] = {}
-            op_layouts = []
-            assert op_name in funcs_info
-            if 'dtype' in op_cfg.keys():
-                op_cast = deal_dtype(op_name, op_cfg['dtype'], funcs_info)
-                op_dict[op_name]['cast'] = op_cast
-            if 'tensor_dtype' in op_cfg.keys():
-                for tensor in op_cfg['tensor_dtype']:
-                    assert tensor in funcs_info[op_name]['ins'].keys() or  tensor in funcs_info[op_name]['outs'].keys()
-                    tensor_cast = deal_dtype(op_name, op_cfg['tensor_dtype'][tensor], funcs_info, tensor)
-                    op_tensor[tensor] = {}
-                    op_tensor[tensor]['cast'] = tensor_cast 
-            if 'layout' in op_cfg.keys():
-                layouts = op_cfg['layout'].replace(' ', '').split(',')
-                for layout in layouts:
-                    if layout == 'NHWC' or layout == 'NCHW':
-                        op_layouts.append(layout)
-                    else:
-                        r = re.match(r'(.*)\((.*)\)', layout)
-                        tensor_name = r.group(1)
-                        tensor_layout = r.group(2)
+    if config:
+        for info in config:
+            [op_name], [op_cfg] = info.keys(), info.values()
+            if op_name == 'common_config':
+                if 'dtype' in op_cfg.keys():
+                    common_cast = deal_dtype('Common', op_cfg['dtype'], funcs_info)
+                if 'layout' in op_cfg.keys():
+                    common_layout = [op_cfg['layout']] if isinstance(op_cfg['layout'], str) else op_cfg['layout']
+                if 'contiguous' in op_cfg.keys():
+                    common_contiguous = op_cfg['contiguous']
+                op_dict['Common'] = {
+                    'cast': common_cast,
+                    'layout': common_layout,
+                    'contiguous': common_contiguous,
+                }
+            else:
+                op_cast = None
+                op_tensor = {}
+                op_dict[op_name] = {}
+                op_layouts = []
+                assert op_name in funcs_info
+                if 'dtype' in op_cfg.keys():
+                    op_cast = deal_dtype(op_name, op_cfg['dtype'], funcs_info)
+                    op_dict[op_name]['cast'] = op_cast
+                if 'tensor_dtype' in op_cfg.keys():
+                    for tensor in op_cfg['tensor_dtype']:
+                        assert tensor in funcs_info[op_name]['ins'].keys() or  tensor in funcs_info[op_name]['outs'].keys()
+                        tensor_cast = deal_dtype(op_name, op_cfg['tensor_dtype'][tensor], funcs_info, tensor)
+                        op_tensor[tensor] = {}
+                        op_tensor[tensor]['cast'] = tensor_cast 
+                if 'layout' in op_cfg.keys():
+                    layouts = op_cfg['layout'].replace(' ', '').split(',')
+                    for layout in layouts:
+                        if layout == 'NHWC' or layout == 'NCHW':
+                            op_layouts.append(layout)
+                        else:
+                            r = re.match(r'(.*)\((.*)\)', layout)
+                            tensor_name = r.group(1)
+                            tensor_layout = r.group(2)
+                            if tensor_name not in op_tensor.keys():
+                                op_tensor[tensor] = {}
+                                op_tensor[tensor]['layout'] = tensor_layout
+                    op_dict[op_name]['layout'] = op_layouts
+                if 'contiguous' in op_cfg.keys():
+                    contiguous_tensor = op_cfg['contiguous'].replace(' ', '').split(',')
+                    for tensor_name in contiguous_tensor:
                         if tensor_name not in op_tensor.keys():
                             op_tensor[tensor] = {}
-                            op_tensor[tensor]['layout'] = tensor_layout
-                op_dict[op_name]['layout'] = op_layouts
-            if 'contiguous' in op_cfg.keys():
-                contiguous_tensor = op_cfg['contiguous'].replace(' ', '').split(',')
-                for tensor_name in contiguous_tensor:
-                    if tensor_name not in op_tensor.keys():
+                        op_tensor[tensor]['contiguous'] = True
+                for tensor in list(funcs_info[op_name]['ins'].keys())+list(funcs_info[op_name]['outs'].keys()):
+                    if tensor not in op_tensor.keys():
                         op_tensor[tensor] = {}
-                    op_tensor[tensor]['contiguous'] = True
-            for tensor in list(funcs_info[op_name]['ins'].keys())+list(funcs_info[op_name]['outs'].keys()):
-                if tensor not in op_tensor.keys():
-                    op_tensor[tensor] = {}
-                if 'cast' not in op_tensor[tensor]:
-                    op_tensor[tensor]['cast'] = op_cast if op_cast else common_cast
-                if 'contiguous' not in op_tensor[tensor]:
-                    op_tensor[tensor]['contiguous'] = True if common_contiguous else False
-                if 'layout' not in op_tensor[tensor]:
-                    op_tensor[tensor]['layout'] = op_layouts if len(op_layouts) else common_layout
-            op_dict[op_name]['tensor'] = op_tensor
+                    if 'cast' not in op_tensor[tensor]:
+                        op_tensor[tensor]['cast'] = op_cast if op_cast else common_cast
+                    if 'contiguous' not in op_tensor[tensor]:
+                        op_tensor[tensor]['contiguous'] = True if common_contiguous else False
+                    if 'layout' not in op_tensor[tensor]:
+                        op_tensor[tensor]['layout'] = op_layouts if len(op_layouts) else common_layout
+                op_dict[op_name]['tensor'] = op_tensor
     return op_dict
     
 
