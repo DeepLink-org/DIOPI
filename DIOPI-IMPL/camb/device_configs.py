@@ -65,18 +65,6 @@ device_configs = {
         ),
     ),
 
-    'avg_pool2d': dict(
-        name=["avg_pool2d"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
-        ),
-    ),
-
     'max_pool2d': dict(
         name=["max_pool2d"],
         tensor_para=dict(
