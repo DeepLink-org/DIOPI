@@ -3619,3 +3619,70 @@ def multinomial(input, num_samples, replacement) -> Tensor:
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, c_int64(num_samples), c_bool(replacement))
     check_returncode(ret)
     return out
+
+
+def ceil(input, inplace=False) -> Tensor:
+    call = "diopiCeil"
+    if inplace:
+        call += "Inp"
+        func = check_function(call)
+        ret = func(input.context_handle, input.tensor_handle)
+        check_returncode(ret)
+        return input
+    else:
+        out = Tensor(input.size(), input.get_dtype())
+        func = check_function(call)
+        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle)
+        check_returncode(ret)
+        return out
+
+
+def polar(abs, angle) -> Tensor:
+    call = "diopiPolar"
+    out_shape = infer_size(abs.size(), angle.size())
+    if abs.get_dtype() == Dtype.float64:
+        out = Tensor(out_shape, Dtype.complex128)
+    elif abs.get_dtype() == Dtype.float32:
+        out = Tensor(out_shape, Dtype.complex64)
+    func = check_function(call)
+    ret = func(abs.context_handle, out.tensor_handle, abs.tensor_handle, angle.tensor_handle)
+    check_returncode(ret)
+    return out
+
+
+def asin(input, inplace=False) -> Tensor:
+    call = "diopiAsin"
+    if inplace:
+        call += "Inp"
+        func = check_function(call)
+        ret = func(input.context_handle, input.tensor_handle)
+        check_returncode(ret)
+        return input
+    else:
+        dtype = input.get_dtype()
+        if dtype != 8 and dtype != 9 and dtype != 10:
+            out = Tensor(input.size(), Dtype.float32)
+        else:
+            out = Tensor(input.size(), input.get_dtype())
+        func = check_function(call)
+        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle)
+        check_returncode(ret)
+        return out
+
+
+def lerp(input, end, weight) -> Tensor:
+    call = "diopiLerp"
+    out_shape = input.size()
+    if isinstance(weight, Tensor):
+        out_shape = infer_size(list(input.size()), list(end.size()))
+        out_shape = infer_size(out_shape, list(weight.size()))
+        weight = weight.tensor_handle
+        func = check_function(call + "Tensor")
+    else:
+        weight = byref(Scalar(weight))
+        out_shape = infer_size(list(input.size()), list(end.size()))
+        func = check_function(call + "Scalar")
+    out = Tensor(out_shape, input.get_dtype())
+    ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, end.tensor_handle, weight)
+    check_returncode(ret)
+    return out
