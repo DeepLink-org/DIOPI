@@ -7,14 +7,15 @@
 #ifndef DIOPI_IMPL_TORCH_HELPER_HPP_
 #define DIOPI_IMPL_TORCH_HELPER_HPP_
 
-#include <cuda_runtime.h>
 #include <ATen/ATen.h>
 #include <c10/cuda/CUDAStream.h>
+#include <cuda_runtime.h>
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
-#include <vector>
-#include <utility>
+
 #include <iostream>
+#include <utility>
+#include <vector>
 
 #include "error.hpp"
 
@@ -28,42 +29,39 @@
 
 #define LOG_LINE_INFO() std::cerr << __FILE__ << ":" << __LINE__ << ": ";
 
-void logError() {std::cerr << std::endl;}
+void logError() { std::cerr << std::endl; }
 
-template<typename First, typename ...Rest>
-void logError(First&& first, Rest&& ...rest) {
+template <typename First, typename... Rest>
+void logError(First&& first, Rest&&... rest) {
     std::cerr << std::forward<First>(first);
     logError(std::forward<Rest>(rest)...);
 }
 
-template<typename...Types>
-void set_last_error_string(const char* szFmt, Types&& ...args) {
+template <typename... Types>
+void set_last_error_string(const char* szFmt, Types&&... args) {
     char szBuf[4096] = {0};
     sprintf(szBuf, szFmt, std::forward<Types>(args)...);
     _set_last_error_string(szBuf);
 }
 
-#define ATEN_NOT_IMPLEMENT() \
-    LOG_LINE_INFO() \
-    logError("NotImplementError: function ", __FUNCTION__, " is not implemented for torch version ", \
-        TORCH_VERSION);\
-    set_last_error_string("NotImplementError: function %s is not implemented for torch version %d" \
-        __FUNCTION__, TORCH_VERSION); \
+#define ATEN_NOT_IMPLEMENT()                                                                                         \
+    LOG_LINE_INFO()                                                                                                  \
+    logError("NotImplementError: function ", __FUNCTION__, " is not implemented for torch version ", TORCH_VERSION); \
+    set_last_error_string("NotImplementError: function %s is not implemented for torch version %d" __FUNCTION__, TORCH_VERSION);
 
-#define NOT_SUPPORTED(str) \
-    set_last_error_string("NotSupported: %s at %s:%d", str, __FILE__, __LINE__); \
+#define NOT_SUPPORTED(str) set_last_error_string("NotSupported: %s at %s:%d", str, __FILE__, __LINE__);
 
-#define DIOPI_CHECK(cond, str) \
-    if (!(cond)) { \
+#define DIOPI_CHECK(cond, str)                                         \
+    if (!(cond)) {                                                     \
         set_last_error_string("%s at %s:%d", str, __FILE__, __LINE__); \
-        return diopiErrorOccurred; \
-    } \
+        return diopiErrorOccurred;                                     \
+    }
 
-#define DIOPI_CHECK_PTR(ptr)\
-    if (ptr == nullptr) { \
+#define DIOPI_CHECK_PTR(ptr)                                                                     \
+    if (ptr == nullptr) {                                                                        \
         set_last_error_string("NotSupported: %s is nullptr at %s:%d", #ptr, __FILE__, __LINE__); \
-        return diopiErrorOccurred; \
-    } \
+        return diopiErrorOccurred;                                                               \
+    }
 
 using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
 extern thread_local diopiContextHandle_t context;
@@ -93,13 +91,9 @@ namespace impl {
 
 namespace aten {
 
-inline void setCurCtx(diopiContextHandle_t ctx) {
-    context = ctx;
-}
+inline void setCurCtx(diopiContextHandle_t ctx) { context = ctx; }
 
-inline void unsetCurCtx() {
-    context = nullptr;
-}
+inline void unsetCurCtx() { context = nullptr; }
 
 inline void sync(diopiContextHandle_t ctx) {
     diopiStreamHandle_t stream_handle;
@@ -109,61 +103,65 @@ inline void sync(diopiContextHandle_t ctx) {
 
 caffe2::TypeMeta getATenType(diopiDtype_t dt) {
     switch (dt) {
-    case diopi_dtype_bool:
-        return caffe2::TypeMeta::Make<bool>();
-    case diopi_dtype_uint8:
-        return caffe2::TypeMeta::Make<uint8_t>();
-    case diopi_dtype_int8:
-        return caffe2::TypeMeta::Make<int8_t>();
-    case diopi_dtype_int16:
-        return caffe2::TypeMeta::Make<int16_t>();
-    case diopi_dtype_uint16:
-        return caffe2::TypeMeta::Make<uint16_t>();
-    case diopi_dtype_int32:
-        return caffe2::TypeMeta::Make<int32_t>();
-    // case  diopi_dtype_uint32: // can not find symbol for uint32_t
-    //     return caffe2::TypeMeta::Make<uint32_t>();
-    case diopi_dtype_int64:
-        return caffe2::TypeMeta::Make<int64_t>();
-    // case diopi_dtype_uint64:  // can not find symbol for uint64_t
-    //     return caffe2::TypeMeta::Make<uint64_t>();
-    case diopi_dtype_float32:
-        return caffe2::TypeMeta::Make<float>();
-    case diopi_dtype_float64:
-        return caffe2::TypeMeta::Make<double>();
-    case diopi_dtype_float16:
-        return caffe2::TypeMeta::Make<at::Half>();
-    case diopi_dtype_bfloat16:
-        return caffe2::TypeMeta::Make<at::BFloat16>();
-    default:
-        NOT_SUPPORTED("diopi dytpe");
+        case diopi_dtype_bool:
+            return caffe2::TypeMeta::Make<bool>();
+        case diopi_dtype_uint8:
+            return caffe2::TypeMeta::Make<uint8_t>();
+        case diopi_dtype_int8:
+            return caffe2::TypeMeta::Make<int8_t>();
+        case diopi_dtype_int16:
+            return caffe2::TypeMeta::Make<int16_t>();
+        case diopi_dtype_uint16:
+            return caffe2::TypeMeta::Make<uint16_t>();
+        case diopi_dtype_int32:
+            return caffe2::TypeMeta::Make<int32_t>();
+        // case  diopi_dtype_uint32: // can not find symbol for uint32_t
+        //     return caffe2::TypeMeta::Make<uint32_t>();
+        case diopi_dtype_int64:
+            return caffe2::TypeMeta::Make<int64_t>();
+        // case diopi_dtype_uint64:  // can not find symbol for uint64_t
+        //     return caffe2::TypeMeta::Make<uint64_t>();
+        case diopi_dtype_float32:
+            return caffe2::TypeMeta::Make<float>();
+        case diopi_dtype_float64:
+            return caffe2::TypeMeta::Make<double>();
+        case diopi_dtype_float16:
+            return caffe2::TypeMeta::Make<at::Half>();
+        case diopi_dtype_bfloat16:
+            return caffe2::TypeMeta::Make<at::BFloat16>();
+        case diopi_dtype_complex64:
+            return caffe2::TypeMeta::Make<c10::complex<float>>();
+        case diopi_dtype_complex128:
+            return caffe2::TypeMeta::Make<c10::complex<double>>();
+        default:
+            NOT_SUPPORTED("diopi dytpe");
     }
 }
 
 diopiDtype_t getDIOPITensorType(at::Tensor& input) {
     switch (input.scalar_type()) {
-    case at::ScalarType::Bool:
-        return diopi_dtype_bool;
-    case at::ScalarType::Char:
-        return diopi_dtype_int8;
-    case at::ScalarType::Byte:
-        return diopi_dtype_uint8;
-    case at::ScalarType::Short:
-        return diopi_dtype_int16;
-    case at::ScalarType::Int:
-        return diopi_dtype_int32;
-    case at::ScalarType::Long:
-        return diopi_dtype_int64;
-    case at::ScalarType::Half:
-        return diopi_dtype_float16;
-    case at::ScalarType::BFloat16:
-        return diopi_dtype_bfloat16;
-    case at::ScalarType::Float:
-        return diopi_dtype_float32;
-    case at::ScalarType::Double:
-        return diopi_dtype_float64;
-    default:
-        NOT_SUPPORTED("aten dtype");
+        case at::ScalarType::Bool:
+            return diopi_dtype_bool;
+        case at::ScalarType::Char:
+            return diopi_dtype_int8;
+        case at::ScalarType::Byte:
+            return diopi_dtype_uint8;
+        case at::ScalarType::Short:
+            return diopi_dtype_int16;
+        case at::ScalarType::Int:
+            return diopi_dtype_int32;
+        case at::ScalarType::Long:
+            return diopi_dtype_int64;
+        case at::ScalarType::Half:
+            return diopi_dtype_float16;
+        case at::ScalarType::BFloat16:
+            return diopi_dtype_bfloat16;
+        case at::ScalarType::Float:
+            return diopi_dtype_float32;
+        case at::ScalarType::Double:
+            return diopi_dtype_float64;
+        default:
+            NOT_SUPPORTED("aten dtype");
     }
 }
 
@@ -177,24 +175,22 @@ c10::DeviceType getATenDevice(diopiDevice_t device) {
     }
 }
 
-at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes,
-        at::IntArrayRef strides, const std::function<void(void*)>& deleter,
-        at::Allocator* allocator, const at::TensorOptions& options) {
-    auto device =
-        at::globalContext().getDeviceFromPtr(data, options.device().type());
+at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef strides, const std::function<void(void*)>& deleter, at::Allocator* allocator,
+                            const at::TensorOptions& options) {
+    auto device = at::globalContext().getDeviceFromPtr(data, options.device().type());
     if (options.device().has_index()) {
         assert(options.device() == device);
     }
 
-    auto storage = at::Storage(
-        at::Storage::use_byte_size_t(),
-        at::detail::computeStorageNbytes(sizes, strides, options.dtype().itemsize()),
-        c10::InefficientStdFunctionContext::makeDataPtr(data, deleter, device),
-        allocator, false);
+    auto storage = at::Storage(at::Storage::use_byte_size_t(),
+                               at::detail::computeStorageNbytes(sizes, strides, options.dtype().itemsize()),
+                               c10::InefficientStdFunctionContext::makeDataPtr(data, deleter, device),
+                               allocator,
+                               false);
     return at::empty({0}, options).set_(storage, 0, sizes, strides);
 }
 
-template<typename T>
+template <typename T>
 at::Tensor buildATen(T tensor) {
     if (tensor == nullptr) return at::Tensor();
 
@@ -223,25 +219,21 @@ at::Tensor buildATen(T tensor) {
         return at::empty(atDims, options);
     } else {
         at::Allocator* allocator = nullptr;
-        return fromPreAllocated(data, atDims,
-            atStrides, [](void*){}, allocator, options);
+        return fromPreAllocated(
+            data, atDims, atStrides, [](void*) {}, allocator, options);
     }
 }
 
-inline bool isInt(const diopiScalar_t* scalar) {
-    return scalar->stype <= 7;
-}
+inline bool isInt(const diopiScalar_t* scalar) { return scalar->stype <= 7; }
 
-inline bool isFloat(const diopiScalar_t* scalar) {
-    return scalar->stype > 7;
-}
+inline bool isFloat(const diopiScalar_t* scalar) { return scalar->stype > 7; }
 
 inline at::Scalar buildAtScalar(const diopiScalar_t* scalar) {
     if (scalar == nullptr) {
         NOT_SUPPORTED("scalar is null ptr, we use temporarily zero");
         return at::Scalar();
     }
-    if ( isInt(scalar) ) {
+    if (isInt(scalar)) {
         int64_t ival = scalar->ival;
         return ival;
     } else {
@@ -250,15 +242,11 @@ inline at::Scalar buildAtScalar(const diopiScalar_t* scalar) {
     }
 }
 
-at::IntArrayRef buildAtIntArray(const diopiSize_t* size) {
-    return at::IntArrayRef(size->data, size->len);
-}
+at::IntArrayRef buildAtIntArray(const diopiSize_t* size) { return at::IntArrayRef(size->data, size->len); }
 
-at::IntArrayRef buildAtIntArray(diopiSize_t size) {
-    return at::IntArrayRef(size.data, size.len);
-}
+at::IntArrayRef buildAtIntArray(diopiSize_t size) { return at::IntArrayRef(size.data, size.len); }
 
-template<typename T>
+template <typename T>
 decltype(auto) buildATenList(T* tensors, int64_t numTensors) {
     std::vector<at::Tensor> vecAtTensor;
     for (size_t i = 0; i < numTensors; ++i) {
@@ -275,24 +263,22 @@ void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiT
     }
 }
 
-template<typename TupleT, std::size_t N>
+template <typename TupleT, std::size_t N>
 struct UpdateTupleATen {
-    static void update(diopiContextHandle_t ctx, TupleT& atOuts,
-            diopi_tensor_list& outs) {
+    static void update(diopiContextHandle_t ctx, TupleT& atOuts, diopi_tensor_list& outs) {
         UpdateTupleATen<TupleT, N - 1>::update(ctx, atOuts, outs);
         updateATen2Tensor(ctx, std::get<N - 1>(atOuts), outs.at(N - 1));
     }
 };
 
-template<typename TupleT>
+template <typename TupleT>
 struct UpdateTupleATen<TupleT, 1> {
-    static void update(diopiContextHandle_t ctx, TupleT& atOuts,
-            std::vector<diopiTensorHandle_t>& outs) {
+    static void update(diopiContextHandle_t ctx, TupleT& atOuts, std::vector<diopiTensorHandle_t>& outs) {
         updateATen2Tensor(ctx, std::get<0>(atOuts), outs.at(0));
     }
 };
 
-template<typename TupleT>
+template <typename TupleT>
 void updateATen2Tensor(diopiContextHandle_t ctx, TupleT& atOuts, diopi_tensor_list& outs) {
     constexpr size_t tupleSize = std::tuple_size<TupleT>::value;
     UpdateTupleATen<TupleT, tupleSize>::update(ctx, atOuts, outs);
@@ -304,19 +290,19 @@ void updateATen2Tensor(diopiContextHandle_t ctx, std::vector<at::Tensor>& atOuts
     }
 }
 
-template<typename Func, typename ...Args>
+template <typename Func, typename... Args>
 void invokeATenFuncRet(diopiContextHandle_t ctx, Func func, diopiTensorHandle_t out, Args&&... args) {
     at::Tensor atOut = func(std::forward<Args>(args)...);
     updateATen2Tensor(ctx, atOut, out);
 }
 
-template<typename Func, typename ...Args>
+template <typename Func, typename... Args>
 void invokeATenFuncRet(diopiContextHandle_t ctx, Func func, diopi_tensor_list& outs, Args&&... args) {
     auto atOuts = func(std::forward<Args>(args)...);
     updateATen2Tensor(ctx, atOuts, outs);
 }
 
-template<typename Func, typename ...Args>
+template <typename Func, typename... Args>
 void invokeATenFuncInp(diopiContextHandle_t ctx, Func func, Args&&... args) {
     func(std::forward<Args>(args)...);
 }
@@ -333,23 +319,28 @@ void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHa
 
 c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding_mode) {
     switch (rounding_mode) {
-    case (RoundModeNone): return c10::nullopt;
-    case (RoundModeTrunc): return "trunc";
-    case (RoundModeFloor): return "floor";
-    case (RoundModeEND): return "";
-    default: NOT_SUPPORTED("diopi round mode");
+        case (RoundModeNone):
+            return c10::nullopt;
+        case (RoundModeTrunc):
+            return "trunc";
+        case (RoundModeFloor):
+            return "floor";
+        case (RoundModeEND):
+            return "";
+        default:
+            NOT_SUPPORTED("diopi round mode");
     }
 }
 
-at::Tensor nllLossNdBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, diopiConstTensorHandle_t weight,
-                             int64_t reduction, int64_t ignore_index) {
+at::Tensor nllLossNdBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, diopiConstTensorHandle_t weight, int64_t reduction,
+                             int64_t ignore_index) {
     auto atWeight = buildATen(weight);
     auto atTempTotalWeight = atInput.clone();
     auto atTotalWeight = atTempTotalWeight.resize_({1}).fill_(atTarget.numel());
 
     auto dim = atInput.dim();
     assert(dim > 1);
-    if (dim !=2 && dim != 4) {
+    if (dim != 2 && dim != 4) {
         auto n = atInput.size(0);
         auto c = atInput.size(1);
         int64_t inputLastSize = 1;
@@ -370,17 +361,15 @@ at::Tensor nllLossNdBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::
     }
     at::Tensor atGradInput;
     if (dim == 2) {
-        atGradInput = at::nll_loss_backward(atGradOutput, atInput, atTarget, atWeight, reduction,
-                                  ignore_index, atTotalWeight);
+        atGradInput = at::nll_loss_backward(atGradOutput, atInput, atTarget, atWeight, reduction, ignore_index, atTotalWeight);
     } else {
-        atGradInput = at::nll_loss2d_backward(atGradOutput, atInput, atTarget, atWeight, reduction,
-                                    ignore_index, atTotalWeight);
+        atGradInput = at::nll_loss2d_backward(atGradOutput, atInput, atTarget, atWeight, reduction, ignore_index, atTotalWeight);
     }
     return atGradInput;
 }
 
-at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget,
-                                              diopiConstTensorHandle_t weight, int64_t reduction, double label_smoothing) {
+at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, diopiConstTensorHandle_t weight,
+                                              int64_t reduction, double label_smoothing) {
     auto atLogSoftmaxOutput = at::log_softmax(atInput, 1, atInput.scalar_type());
     at::Tensor atGradInput;
     const auto n_classes = atInput.size(1);
@@ -401,7 +390,7 @@ at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& a
         switch (reduction) {
             case at::Reduction::Mean:
                 atGradOutput = atGradOutput.expand(shape);
-                atGradInput = -(atGradOutput * atTarget * atWeight)/ (atInput.numel() / atInput.size(1));
+                atGradInput = -(atGradOutput * atTarget * atWeight) / (atInput.numel() / atInput.size(1));
                 break;
             case at::Reduction::Sum:
                 atGradOutput = atGradOutput.expand(shape);
@@ -418,7 +407,7 @@ at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& a
         switch (reduction) {
             case at::Reduction::Mean:
                 atGradOutput = atGradOutput.expand(shape);
-                atGradInput = -(atGradOutput * atTarget)/ (atInput.numel() / atInput.size(1));
+                atGradInput = -(atGradOutput * atTarget) / (atInput.numel() / atInput.size(1));
                 break;
             case at::Reduction::Sum:
                 atGradOutput = atGradOutput.expand(shape);
@@ -436,8 +425,8 @@ at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& a
     return atGradInputFinal;
 }
 
-at::Tensor crossEntropyLossLabelSmoothingBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget,
-                                                  diopiConstTensorHandle_t weight, int64_t reduction, int64_t ignore_index, double label_smoothing) {
+at::Tensor crossEntropyLossLabelSmoothingBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, diopiConstTensorHandle_t weight,
+                                                  int64_t reduction, int64_t ignore_index, double label_smoothing) {
     auto atLogSoftmaxOutput = at::log_softmax(atInput, 1, atInput.scalar_type());
     const auto n_classes = atInput.size(1);
     auto atNlllossGrad = atGradOutput * (1 - label_smoothing);
@@ -453,15 +442,15 @@ at::Tensor crossEntropyLossLabelSmoothingBackward(at::Tensor& atInput, at::Tenso
     switch (reduction) {
         case at::Reduction::Mean:
             if (weight) {
-            // loss is normalized by the weights to be consistent with nll_loss_nd
-            auto atWeight = buildATen(weight);
-            atGradInput = atSmoothlossGrad.expand(shape) / atWeight.gather(0, atTarget.flatten()).sum();
+                // loss is normalized by the weights to be consistent with nll_loss_nd
+                auto atWeight = buildATen(weight);
+                atGradInput = atSmoothlossGrad.expand(shape) / atWeight.gather(0, atTarget.flatten()).sum();
             } else {
-            float num = 1.;
-            for (int i = 0; i < expand_shape.size(); ++i) {
-                num *= expand_shape[i];
-            }
-            atGradInput = atSmoothlossGrad.expand(shape) / num;
+                float num = 1.;
+                for (int i = 0; i < expand_shape.size(); ++i) {
+                    num *= expand_shape[i];
+                }
+                atGradInput = atSmoothlossGrad.expand(shape) / num;
             }
             break;
         case at::Reduction::Sum:

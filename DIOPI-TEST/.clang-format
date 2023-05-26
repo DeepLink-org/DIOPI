@@ -6,24 +6,31 @@
 # The basic usage is,
 #   clang-format -i -style=file PATH/TO/SOURCE/CODE
 #
-# The -style=file implicit use ".clang-format" file located in one of 
-# parent directory. 
+# The -style=file implicit use ".clang-format" file located in one of
+# parent directory.
 # The -i means inplace change.
 #
-# The document of clang-format is 
+# The document of clang-format is
 #   http://clang.llvm.org/docs/ClangFormat.html
 #   http://clang.llvm.org/docs/ClangFormatStyleOptions.html
 ---
 Language:        Cpp
 BasedOnStyle:  Google
-IndentWidth:     2
-TabWidth:        2
+IndentWidth:     4
+TabWidth:        4
 ContinuationIndentWidth: 4
-AccessModifierOffset: -1  # The private/protected/public has no indent in class
-Standard:  Cpp11 
+AccessModifierOffset: -4  # The private/protected/public has no indent in class
+Standard:  Cpp11
 AllowAllParametersOfDeclarationOnNextLine: true
-BinPackParameters: false
+BinPackParameters: true
 BinPackArguments: false
-IncludeBlocks: Preserve
+ColumnLimit: 160
 IncludeIsMainSourceRegex: (\.cu)$
+IncludeCategories:
+  - Regex:           '^<.*\.h(pp)?>'
+    Priority:        1
+  - Regex:           '^<.*'
+    Priority:        2
+  - Regex:           '.*'
+    Priority:        3
 ...

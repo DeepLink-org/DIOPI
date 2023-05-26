@@ -230,6 +230,8 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
             axis = (0, 2, 1) if len(shape) == 3 else (0, 1)
             mat = np.random.randn(*shape).astype(dtype)
             value = mat @ mat.transpose(axis)
+        elif gen_fn == Genfunc.randn_cmplx:
+            value = np.array(np.random.randn(*shape) + 1j * np.random.randn(*shape)).astype(dtype)
         else:
             value = np.array(np.random.randn(*shape)).astype(dtype)
 

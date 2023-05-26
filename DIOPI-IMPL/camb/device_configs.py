@@ -9,7 +9,7 @@ device_configs = {
         atol=1e-2,
         rtol=1e-3,
     ),
-    
+
     'nll_loss': dict(
         name=["nll_loss"],
         atol=1e-3,
@@ -40,14 +40,14 @@ device_configs = {
             ]
         ),
     ),
-    
+
     'conv_2d': dict(
         name=["conv2d"],
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(Dtype.float16)],
                 },
             ]
         ),
@@ -150,7 +150,7 @@ device_configs = {
             ],
         ),
     ),
-    
+
     'div': dict(
         name=['div'],
         tensor_para=dict(
@@ -1265,6 +1265,22 @@ device_configs = {
                 {
                     "ins": ['mean'],
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+            ]
+        ),
+    ),
+
+    'polar': dict(
+        name=["polar"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['abs'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                },
+                {
+                    "ins": ['angle'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
             ]
         ),
