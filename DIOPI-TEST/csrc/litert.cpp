@@ -2,7 +2,8 @@
  * @file
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink Inc.
- * @brief A reference implemention for DIOPI runtime, which is utilized to support conformance test suite of DIOPI
+ * @brief A reference implemention for DIOPI runtime, which is utilized to
+ * support conformance test suite of DIOPI
  */
 
 #include <diopi/diopirt.h>
@@ -15,6 +16,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <memory>
 #include <set>
 #include <vector>
@@ -64,6 +66,7 @@ int32_t itemsize(const diopiDtype_t dtype) {
         case diopi_dtype_int64:
         case diopi_dtype_uint64:
         case diopi_dtype_float64:
+        case diopi_dtype_complex64:
             return 8;
         case diopi_dtype_int16:
         case diopi_dtype_uint16:
@@ -74,6 +77,8 @@ int32_t itemsize(const diopiDtype_t dtype) {
         case diopi_dtype_uint8:
         case diopi_dtype_bool:
             return 1;
+        case diopi_dtype_complex128:
+            return 16;
         default:
             assert(0);
     }
@@ -97,6 +102,8 @@ const char* diopiDtypeToStr(const diopiDtype_t dtype) {
     _dtype2str(diopi_dtype_bool);
     _dtype2str(diopi_dtype_bfloat16);
     _dtype2str(diopi_dtype_tfloat32);
+    _dtype2str(diopi_dtype_complex64);
+    _dtype2str(diopi_dtype_complex128);
 
     return nullptr;
 #undef _dtype2str

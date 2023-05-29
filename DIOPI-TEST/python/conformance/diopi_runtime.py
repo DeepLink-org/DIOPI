@@ -47,6 +47,10 @@ def from_numpy_dtype(dtype: np.dtype) -> Dtype:
         return Dtype.float64
     elif dtype == np.bool_:
         return Dtype.bool
+    elif dtype == np.complex64:
+        return Dtype.complex64
+    elif dtype == np.complex128:
+        return Dtype.complex128
     else:
         return None
 
@@ -76,6 +80,10 @@ def to_numpy_dtype(dtype: Dtype) -> np.dtype:
         return np.float64
     elif dtype == Dtype.bool:
         return np.bool_
+    elif dtype == Dtype.complex64:
+        return np.complex64
+    elif dtype == Dtype.complex128:
+        return np.complex128
     else:
         return None
 
@@ -234,7 +242,7 @@ class Tensor(diopiTensor):
         itemsize = self.itemsize()
         stride = self.get_stride()
         strides = [int(stride.data[i] * itemsize) for i in range(stride.len)]
-        darray = np.ndarray(shape=self.size().data, dtype=dtype, strides=strides)
+        # darray = np.ndarray(shape=self.size().data, dtype=dtype, strides=strides)
         darray = np.array(self, copy=False)
         diopi_tensor_copy_to_buffer(self.context(), self, darray)
         return darray

@@ -63,7 +63,9 @@ PYBIND11_MODULE(diopi_runtime, m) {
         .value("float64", diopiDtype_t::diopi_dtype_float64)
         .value("bool", diopiDtype_t::diopi_dtype_bool)
         .value("bfloat16", diopiDtype_t::diopi_dtype_bfloat16)
-        .value("tfloat32", diopiDtype_t::diopi_dtype_tfloat32);
+        .value("tfloat32", diopiDtype_t::diopi_dtype_tfloat32)
+        .value("complex64", diopiDtype_t::diopi_dtype_complex64)
+        .value("complex128", diopiDtype_t::diopi_dtype_complex128);
     py::enum_<diopiError_t>(m, "diopiError")
         .value("diopi_success", diopiError_t::diopiSuccess)
         .value("diopi_error_occurred", diopiError_t::diopiErrorOccurred)

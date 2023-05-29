@@ -192,6 +192,14 @@ class ManualTest(object):
             assert (out_numpy <= end - 1).all(),\
                 "failed to execute random"
 
+    def test_randn(size):
+        from scipy import stats
+        out = F.randn(size)
+        out_numpy = out.numpy().flatten()
+        p_value = stats.kstest(out_numpy, 'norm', args=(0.0, 1.))[1]
+        # pytorch use 0.0001, but stats.kstest use 0.05 as threshold
+        assert p_value > 0.0005, "failed to execute normal"
+
     def test_normal(mean, std, size=None):
         from scipy import stats
         out = F.normal(mean, std, size)
