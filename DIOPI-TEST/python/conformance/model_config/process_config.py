@@ -20,6 +20,7 @@ func_para = dict(
     leaky_relu=unary_inp_op,
     nonzero=unary_op,
     sqrt=unary_op,
+    rsqrt=unary_op,
     sin=unary_op,
     cos=unary_op,
     log=unary_op,
@@ -40,6 +41,8 @@ func_para = dict(
     max=reduce_op,
     min=reduce_op,
     argmax=reduce_op,
+    view_as_complex=unary_op,
+    view_as_real=unary_op,
     std={'input': 'tensor', 'dim': 'para', 'unbiased': 'para'},
     remainder={'input': 'tensor/scalar', 'other': 'tensor/scalar'},
     conv_transpose2d={"input": "tensor", "weight": "tensor", "bias": "tensor/none", "stride": "para/key",
@@ -129,6 +132,9 @@ func_para = dict(
     cholesky_ex={"input": "tensor/grad", "upper": "para/key", "check_errors": 'para/key'},
     normal={'mean': 'tensor/para', 'std': 'tensor/para', 'size': 'para/key'},
     normal_={'size': 'para/key', 'mean': 'tensor/para', 'std': 'tensor/para'},
+    triu={"input": "tensor", "diagonal": "para/key"},
+    silu={'input': "tensor/grad", "inplace": "para/key"},
+    multinomial={'input': "tensor", "num_samples": "para", "replacement": "para/key"},
 )
 
 convert_name = {'iadd': "add", 'radd': "add", 'add_': "add", 'rmul': 'mul', 'truediv': 'div', 'rtruediv': 'div',
@@ -137,15 +143,16 @@ convert_name = {'iadd': "add", 'radd': "add", 'add_': "add", 'rmul': 'mul', 'tru
                 'itruediv': 'div', 'invert': 'bitwise_not', 'rsub': 'sub', 'expand_as': 'expand', 't': 'transpose',
                 'erfinv_': 'erfinv', 'floordiv': 'div', 'rpow': 'pow', 'isub': 'sub', 'sqrt_': 'sqrt', 'masked_fill_': 'masked_fill',
                 'mod': 'remainder', 'cholesky': 'cholesky_ex'}
-inplace_tag = ['iadd', 'imul', 'mul_', 'sub_', 'div_', 'clamp_', 'sigmoid_', 'itruediv', 'erfinv_', 'isub', 'masked_fill_']
+inplace_tag = ['iadd', 'imul', 'mul_', 'sub_', 'div_', 'clamp_', 'sigmoid_', 'silu', 'itruediv', 'erfinv_', 'isub', 'masked_fill_']
 interface_tag = {"sgd": "CustomizedTest", "adamw": "CustomizedTest", 'im2col': 'CustomizedTest', 'adadelta': 'CustomizedTest',
                  "split": "torch", 'cholesky_ex': 'torch.linalg', "adam": "CustomizedTest"}
-no_output_ref = ['randperm', 'uniform', 'dropout', 'dropout2d', 'normal', 'normal_']
+no_output_ref = ['randperm', 'uniform', 'dropout', 'dropout2d', 'normal', 'normal_', 'multinomial']
 saved_args = {"sigmoid": "0", 'softmax': '0', 'log_softmax': '0', 'tanh': '0', 'cholesky_ex': '0', 'cdist': '0',
               'triangular_solve': '0'}
 requires_backward = {'cholesky_ex': '0'}
 gen_func = {'cholesky_ex/input': 'Genfunc.sym_mat', 'normal/std': 'Genfunc.positive',
-            'adadelta/square_avg", "acc_delta': 'Genfunc.positive'}
+            'adadelta/square_avg", "acc_delta': 'Genfunc.positive', "rsqrt/input": 'Genfunc.positive',
+            'multinomial/input': 'Genfunc.positive'}
 
 tensor_vide = "                    "
 para_vide = "            "
@@ -180,6 +187,12 @@ def toDtype(dtype, tensor_para, gen_func=None):
         tensor_para.append(tensor_vide + '"dtype": [Dtype.float16],\n')
     elif dtype == 'torch.cuda.ShortTensor':
         tensor_para.append(tensor_vide + '"dtype": [Dtype.int16],\n')
+    elif dtype == 'torch.cuda.ComplexFloatTensor':
+        tensor_para.append(tensor_vide + '"dtype": [Dtype.complex64],\n')
+        gen_fn_str = 'Genfunc.randn_cmplx'
+    elif dtype == 'torch.cuda.ComplexDoubleTensor':
+        tensor_para.append(tensor_vide + '"dtype": [Dtype.complex128],\n')
+        gen_fn_str = 'Genfunc.randn_cmplx'
     elif isinstance(dtype, list):
         dtype_list = [ele.replace("torch", "Dtype") for ele in dtype]
         dtype_list = list(set(dtype_list))
@@ -388,7 +401,9 @@ if __name__ == '__main__':
                          'sar_config': other_config.sar_resnet31_parallel_decoder_5e_st_sub_mj_sub_sa_real_config,
                          'dbnet_config': other_config.dbnet_resnet18_fpnc_1200e_icdar2015_config,
                          'slowfast_config': other_config.slowfast_r50_16x8x1_22e_sthv1_rgb_config,
-                         'tsn_config': other_config.tsn_r50_1x1x8_50e_sthv1_rgb_config}
+                         'tsn_config': other_config.tsn_r50_1x1x8_50e_sthv1_rgb_config,
+                         'llama_config': other_config.llama_config}
     config_dict = other_config_dict
-    for k, v in config_dict.items():
-        gen_config_code(v, "other_configs/" + k)
+    # for k, v in config_dict.items():
+    #     gen_config_code(v, "other_configs/" + k)
+    gen_config_code(other_config.llama_config, "other_configs/" + 'llama_config')
