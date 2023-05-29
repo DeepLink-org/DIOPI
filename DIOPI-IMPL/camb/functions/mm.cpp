@@ -37,7 +37,6 @@ extern "C" diopiError_t diopiMm(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     } else if (out_casted.dtype() == diopi_dtype_float16) {
         comp_type = CNNL_DTYPE_HALF;
     } else {
-        set_last_error_string("%s", "matmul on support float or half.");
         return diopiDtypeNotSupported;
     }
     DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmul_desc.get(), CNNL_MATMUL_DESC_COMPUTE_TYPE, &(comp_type), sizeof(cnnlDataType_t)));
