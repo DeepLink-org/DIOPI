@@ -14,84 +14,84 @@ namespace camb {
 
 extern "C" diopiError_t diopiMm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mat2) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor a_tensor(input);
-    DiopiTensor b_tensor(mat2);
-    DiopiTensor out_tensor(out);
+    DiopiTensor aTensor(input);
+    DiopiTensor bTensor(mat2);
+    DiopiTensor outTensor(out);
 
-    DiopiTensor a_casted = a_tensor;
-    DiopiTensor b_casted = b_tensor;
-    DiopiTensor out_casted = out_tensor;
+    DiopiTensor aCasted = aTensor;
+    DiopiTensor bCasted = bTensor;
+    DiopiTensor outCasted = outTensor;
 
-    std::vector<DiopiTensor*> tensors{&a_casted, &b_casted, &out_casted};
+    std::vector<DiopiTensor*> tensors{&aCasted, &bCasted, &outCasted};
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32}));
 
-    CnnlTensorDesc a_desc(a_casted, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc b_desc(b_casted, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc out_desc(out_casted, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc aDesc(aCasted, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc bDesc(bCasted, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(outCasted, CNNL_LAYOUT_ARRAY);
 
-    CnnlResourceGuard<cnnlMatMulDescriptor_t, cnnlMatMulDescCreate, cnnlMatMulDescDestroy> matmul_desc;
+    CnnlResourceGuard<cnnlMatMulDescriptor_t, cnnlMatMulDescCreate, cnnlMatMulDescDestroy> matmulDesc;
 
-    cnnlDataType_t comp_type;
-    if (out_casted.dtype() == diopi_dtype_float32) {
-        comp_type = CNNL_DTYPE_FLOAT;
-    } else if (out_casted.dtype() == diopi_dtype_float16) {
-        comp_type = CNNL_DTYPE_HALF;
+    cnnlDataType_t compType;
+    if (outCasted.dtype() == diopi_dtype_float32) {
+        compType = CNNL_DTYPE_FLOAT;
+    } else if (outCasted.dtype() == diopi_dtype_float16) {
+        compType = CNNL_DTYPE_HALF;
     } else {
         return diopiDtypeNotSupported;
     }
-    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmul_desc.get(), CNNL_MATMUL_DESC_COMPUTE_TYPE, &(comp_type), sizeof(cnnlDataType_t)));
-    int32_t is_transa = 0;
-    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmul_desc.get(), CNNL_MATMUL_DESC_TRANSA, &(is_transa), sizeof(int32_t)));
-    int32_t is_transb = 0;
-    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmul_desc.get(), CNNL_MATMUL_DESC_TRANSB, &(is_transb), sizeof(int32_t)));
-    int32_t allow_tf32_i32 = 1;
-    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmul_desc.get(), CNNL_MATMUL_ALLOW_TF32, &(allow_tf32_i32), sizeof(int32_t)));
+    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmulDesc.get(), CNNL_MATMUL_DESC_COMPUTE_TYPE, &(compType), sizeof(cnnlDataType_t)));
+    int32_t isTransa = 0;
+    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmulDesc.get(), CNNL_MATMUL_DESC_TRANSA, &(isTransa), sizeof(int32_t)));
+    int32_t isTransb = 0;
+    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmulDesc.get(), CNNL_MATMUL_DESC_TRANSB, &(isTransb), sizeof(int32_t)));
+    int32_t allowTf32I32 = 1;
+    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmulDesc.get(), CNNL_MATMUL_ALLOW_TF32, &(allowTf32I32), sizeof(int32_t)));
 
-    int32_t use_beta = 0;
+    int32_t useBeta = 0;
     float beta = 0.0;
 
-    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmul_desc.get(), CNNL_MATMUL_USE_BETA, &(use_beta), sizeof(int32_t)));
+    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmulDesc.get(), CNNL_MATMUL_USE_BETA, &(useBeta), sizeof(int32_t)));
 
-    size_t workspace_size = 0;
+    size_t workspaceSize = 0;
     int requestedAlgoCount = 1;
     int returnAlgoCount = 0;
-    CnnlResourceGuard<cnnlMatMulHeuristicResult_t, cnnlCreateMatMulHeuristicResult, cnnlDestroyMatMulHeuristicResult> heuristic_result;
+    CnnlResourceGuard<cnnlMatMulHeuristicResult_t, cnnlCreateMatMulHeuristicResult, cnnlDestroyMatMulHeuristicResult> heuristicResult;
     CnnlResourceGuard<cnnlMatMulAlgo_t, cnnlMatMulAlgoCreate, cnnlMatMulAlgoDestroy> algo;
     DIOPI_CALLCNNL(cnnlGetMatMulAlgoHeuristic(handle,
-                                              matmul_desc.get(),
-                                              a_desc.get(),
-                                              b_desc.get(),
-                                              out_desc.get(),
-                                              out_desc.get(),
+                                              matmulDesc.get(),
+                                              aDesc.get(),
+                                              bDesc.get(),
+                                              outDesc.get(),
+                                              outDesc.get(),
                                               nullptr,
                                               requestedAlgoCount,
-                                              &heuristic_result.get(),
+                                              &heuristicResult.get(),
                                               &returnAlgoCount));
-    DIOPI_CALLCNNL(cnnlGetMatMulHeuristicResult(heuristic_result.get(), algo.get(), &workspace_size));
+    DIOPI_CALLCNNL(cnnlGetMatMulHeuristicResult(heuristicResult.get(), algo.get(), &workspaceSize));
 
     void* workspace = nullptr;
-    if (0 != workspace_size) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
+    if (0 != workspaceSize) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    float alpha_default = 1.0;
+    float alphaDefault = 1.0;
 
     DIOPI_CALLCNNL(cnnlMatMul_v2(handle,
-                                 matmul_desc.get(),
+                                 matmulDesc.get(),
                                  algo.get(),
-                                 &alpha_default,
-                                 a_desc.get(),
-                                 a_casted.data(),
-                                 b_desc.get(),
-                                 b_casted.data(),
+                                 &alphaDefault,
+                                 aDesc.get(),
+                                 aCasted.data(),
+                                 bDesc.get(),
+                                 bCasted.data(),
                                  &beta,
-                                 out_desc.get(),
-                                 out_casted.data(),
+                                 outDesc.get(),
+                                 outCasted.data(),
                                  workspace,
-                                 workspace_size,
-                                 out_desc.get(),
-                                 out_casted.data()));
-    DIOPI_CALL(dataTypeCast(ctx, out_tensor, out_casted));
+                                 workspaceSize,
+                                 outDesc.get(),
+                                 outCasted.data()));
+    DIOPI_CALL(dataTypeCast(ctx, outTensor, outCasted));
     return diopiSuccess;
 }
 
