@@ -64,7 +64,7 @@ class OpTemplate(object):
  * @author OpenComputeLab
  * @copyright  (c) 2023, DeepLink.
  */
- 
+
 //NOLINTBEGIN
 #include <pybind11/pybind11.h>
 #include "litert.hpp"

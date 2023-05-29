@@ -9,7 +9,6 @@
 #include <diopi/diopirt.h>
 #include <conform_test.h>
 #include <diopi/functions.h>
-#include <cinttypes.h>
 
 #include <cassert>
 #include <cinttypes>
