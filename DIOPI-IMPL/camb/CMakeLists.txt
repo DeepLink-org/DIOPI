@@ -60,7 +60,4 @@ endif()
 
 if (TEST)
     add_subdirectory(test)
-else ()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-version-script=${CMAKE_CURRENT_SOURCE_DIR}/diopi.map")
 endif()
-
