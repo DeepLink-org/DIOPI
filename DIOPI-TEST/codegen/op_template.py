@@ -64,7 +64,8 @@ class OpTemplate(object):
  * @author OpenComputeLab
  * @copyright  (c) 2023, DeepLink.
  */
-
+ 
+//NOLINTBEGIN
 #include <pybind11/pybind11.h>
 #include "litert.hpp"
 #ifdef TEST_USE_ADAPTOR
@@ -81,7 +82,7 @@ PYBIND11_MODULE(diopi_functions, m) {
     m.def("diopiGetLastErrorString", &diopiGetLastErrorString);
     ${export_functions}
 }
-
+// NOLINTEND
 """)
 
     function_template = CodeTemplate("""\
