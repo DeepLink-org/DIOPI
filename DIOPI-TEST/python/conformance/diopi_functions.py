@@ -3628,8 +3628,8 @@ def lerp(input, end, weight) -> Tensor:
         out_shape = infer_size(out_shape, list(weight.size().data))
         func = check_function(call + "Tensor")
     else:
-        weight = byref(Scalar(weight))
-        out_shape = infer_size(list(input.size().data1), list(end.size().data))
+        weight = Scalar(weight)
+        out_shape = infer_size(list(input.size().data), list(end.size().data))
         func = check_function(call + "Scalar")
     out = Tensor(out_shape, input.get_dtype())
     ret = func(input.context(), out, input, end, weight)

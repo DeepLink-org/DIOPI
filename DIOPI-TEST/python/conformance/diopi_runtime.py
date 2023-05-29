@@ -238,8 +238,6 @@ class Tensor(diopiTensor):
         return tr
 
     def numpy(self) -> np.ndarray:
-        itemsize = self.itemsize()
-        stride = self.get_stride()
         darray = np.array(self, copy=False)
         diopi_tensor_copy_to_buffer(self.context(), self, darray)
         return darray

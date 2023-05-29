@@ -105,7 +105,7 @@ def get_func_info(content):
 
 def gen_functions(options):
     _cur_dir = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(_cur_dir, options.get('source_dir'), 'functions.h'), 'r')as f:
+    with open(os.path.join(_cur_dir, options.get('source_dir'), 'functions.h'), 'r', encoding = 'utf8')as f:
         content = f.readlines()
     exports = []
     use_adaptor = options.get('use_adaptor')

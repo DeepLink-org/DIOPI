@@ -114,7 +114,7 @@ def get_func_info(content):
 
 
 def get_functions_support(source_dir):
-    with open(os.path.join(source_dir, 'functions.h'), 'r')as f:
+    with open(os.path.join(source_dir, 'functions.h'), 'r', encoding = 'utf8')as f:
         content = f.readlines()
     funcs_info = {}
     func_dtypes = []
