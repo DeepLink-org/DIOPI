@@ -1,3 +1,5 @@
+# Copyright (c) 2023, DeepLink.
+# -*- coding: UTF-8 -*-
 import argparse
 import os
 import re
