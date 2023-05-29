@@ -91,8 +91,7 @@ def compare_with_gen_output(output, cfg, output_reference, sum_to_compare=False)
         assert isinstance(output_reference, (list, tuple))
         assert len(output) == len(output_reference)
         for i in range(len(output)):
-            if isinstance(output[i], Tensor):
-                passed &= allclose(cfg, output[i].numpy(), output_reference[i], sum_to_compare, "out" + str(i))
+            passed &= compare_with_gen_output(output[i], cfg, output_reference[i], sum_to_compare)
             if not record and not passed:
                 return False
     elif isinstance(output, dict):

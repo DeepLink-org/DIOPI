@@ -1325,7 +1325,7 @@ def clip_grad_norm_(tensors, max_norm, norm_type=2.0, error_if_nonfinite=False):
     ret = func(ctx, pointer(out), pointer(grads), c_int64(num_grads), c_double(max_norm), c_double(norm_type),
                c_bool(error_if_nonfinite))
     check_returncode(ret)
-    return out.value
+    return out.value, tensors
 
 
 def batch_norm(input, running_mean, running_var, weight, bias,
