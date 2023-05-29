@@ -152,7 +152,7 @@ saved_args = {"sigmoid": "0", 'softmax': '0', 'log_softmax': '0', 'tanh': '0', '
 requires_backward = {'cholesky_ex': '0'}
 gen_func = {'cholesky_ex/input': 'Genfunc.sym_mat', 'normal/std': 'Genfunc.positive',
             'adadelta/square_avg", "acc_delta': 'Genfunc.positive', "rsqrt/input": 'Genfunc.positive',
-            'multinomial/input': 'Genfunc.positive'}
+            'multinomial/input': 'Genfunc.positive', 'batch_norm/running_var': 'Genfunc.positive'}
 
 tensor_vide = "                    "
 para_vide = "            "
@@ -404,6 +404,6 @@ if __name__ == '__main__':
                          'tsn_config': other_config.tsn_r50_1x1x8_50e_sthv1_rgb_config,
                          'llama_config': other_config.llama_config}
     config_dict = other_config_dict
-    # for k, v in config_dict.items():
-    #     gen_config_code(v, "other_configs/" + k)
-    gen_config_code(other_config.llama_config, "other_configs/" + 'llama_config')
+    for k, v in config_dict.items():
+        gen_config_code(v, "other_configs/" + k)
+    # gen_config_code(other_config.llama_config, "other_configs/" + 'llama_config')

@@ -83,7 +83,7 @@ repvgg_config = {
                     "ins": ["running_var"],
                     "shape": [(48,), (48,), (96,), (192,), (1280,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.rand,
+                    "gen_fn": Genfunc.positive,
                 },
                 {
                     "ins": ["weight"],

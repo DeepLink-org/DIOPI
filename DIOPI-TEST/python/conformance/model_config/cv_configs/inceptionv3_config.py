@@ -268,7 +268,7 @@ inceptionv3_config = {
                     "ins": ["running_var"],
                     "shape": [(32,), (32,), (64,), (80,), (192,), (64,), (48,), (96,), (32,), (384,), (96,), (192,), (128,), (160,), (320,), (192,), (384,), (448,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.rand,
+                    "gen_fn": Genfunc.positive,
                 },
                 {
                     "ins": ["weight"],

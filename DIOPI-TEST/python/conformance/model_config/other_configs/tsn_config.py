@@ -65,7 +65,7 @@ tsn_config = {
                     "ins": ["running_var"],
                     "shape": [(64,), (64,), (256,), (128,), (128,), (512,), (256,), (256,), (1024,), (512,), (512,), (2048,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.rand,
+                    "gen_fn": Genfunc.positive,
                 },
                 {
                     "ins": ["weight"],

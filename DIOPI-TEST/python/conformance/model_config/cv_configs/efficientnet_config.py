@@ -110,7 +110,7 @@ efficientnet_config = {
                     "ins": ["running_var"],
                     "shape": [(32,), (16,), (96,), (96,), (24,), (144,), (144,), (48,), (288,), (288,), (88,), (528,), (120,), (720,), (720,), (208,), (1248,), (352,), (2112,), (1408,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.rand,
+                    "gen_fn": Genfunc.positive,
                 },
                 {
                     "ins": ["weight"],
