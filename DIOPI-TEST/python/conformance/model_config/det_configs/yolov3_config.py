@@ -752,7 +752,7 @@ yolov3_config = {
                     "ins": ["input"],
                     "shape": [(1,), (4,), (10,), (2,), (3,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.rand,
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),

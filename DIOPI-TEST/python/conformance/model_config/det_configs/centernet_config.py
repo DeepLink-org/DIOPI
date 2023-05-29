@@ -695,7 +695,7 @@ centernet_config = {
                     "ins": ["input"],
                     "shape": [(16, 80, 128, 128)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.rand,
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),

@@ -655,7 +655,7 @@ retinanet_config = {
                     "ins": ["input"],
                     "shape": [(71,), (34,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.rand,
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),

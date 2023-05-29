@@ -684,8 +684,8 @@ vit_config = {
                     "ins": ["exp_avg_sq"],
                     "shape": [(1, 1, 768), (1, 197, 768)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.rand,
-                }
+                    "gen_fn": Genfunc.positive,
+                },
             ],
         ),
     ),
@@ -720,8 +720,8 @@ vit_config = {
                     "ins": ["exp_avg_sq"],
                     "shape": [(768, 3, 16, 16), (768,), (2304, 768), (2304,), (768, 768), (3072, 768), (3072,), (768, 3072), (1000, 3072), (1000,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.rand,
-                }
+                    "gen_fn": Genfunc.positive,
+                },
             ],
         ),
     ),

@@ -598,7 +598,7 @@ atss_config = {
                     "ins": ["input"],
                     "shape": [(22400, 17), (22400, 26), (176,), (218,), (17,), (9,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.rand,
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),

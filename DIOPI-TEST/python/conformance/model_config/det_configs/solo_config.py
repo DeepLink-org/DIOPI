@@ -400,7 +400,7 @@ solo_config = {
                     "ins": ["input"],
                     "shape": [(7,), (6,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.rand,
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),

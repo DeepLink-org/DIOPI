@@ -111,12 +111,12 @@ func_para = dict(
     fill_={'input': 'tensor', 'value': 'scalar'},
     unique={'input': 'tensor', 'sorted': 'para/key', 'return_inverse': 'para/key', 'return_counts': 'para/key', 'dim': 'para/key'},
     topk={'input': 'tensor', 'k': 'para', 'dim': 'para/key', 'largest': 'para/key', 'sorted': 'para/key'},
-    adamw={'param", "param_grad': "tensor", 'exp_avg", "exp_avg_sq", "max_exp_avg_sq': "tensor", 'step': 'para',
+    adamw={'param", "param_grad': "tensor", 'exp_avg", "max_exp_avg_sq': "tensor", 'exp_avg_sq': "tensor", 'step': 'para',
            "amsgrad": "para/key", "beta1": "para/key", "beta2": "para/key", "lr": "para/key", "weight_decay": "para/key", "eps": "para/key"},
     cdist={'x1': 'tensor/grad', 'x2': 'tensor', 'p': 'para/key', 'compute_mode': 'para/key'},
     bmm={'input': 'tensor', 'mat2': 'tensor'},
     cumsum={'input': 'tensor', 'dim': 'para', 'dtype': 'para/key'},
-    adam={'param", "param_grad': "tensor", 'exp_avg", "exp_avg_sq", "max_exp_avg_sq': "tensor", 'step': 'para',
+    adam={'param", "param_grad': "tensor", 'exp_avg", "max_exp_avg_sq': "tensor", 'exp_avg_sq': "tensor", 'step': 'para',
           "amsgrad": "para/key", "beta1": "para/key", "beta2": "para/key", "lr": "para/key", "weight_decay": "para/key", "eps": "para/key"},
     embedding={'input': 'tensor', 'weight': 'tensor/grad', "padding_idx": 'para/key', 'max_norm': 'para/key', "norm_type": 'para/key',
                'scale_grad_by_freq': 'para/key', 'sparse': 'para/key'},
@@ -152,7 +152,10 @@ saved_args = {"sigmoid": "0", 'softmax': '0', 'log_softmax': '0', 'tanh': '0', '
 requires_backward = {'cholesky_ex': '0'}
 gen_func = {'cholesky_ex/input': 'Genfunc.sym_mat', 'normal/std': 'Genfunc.positive',
             'adadelta/square_avg", "acc_delta': 'Genfunc.positive', "rsqrt/input": 'Genfunc.positive',
-            'multinomial/input': 'Genfunc.positive', 'batch_norm/running_var': 'Genfunc.positive'}
+            'multinomial/input': 'Genfunc.positive', 'batch_norm/running_var': 'Genfunc.positive',
+            'adamw/exp_avg_sq': 'Genfunc.positive', 'adam/exp_avg_sq': 'Genfunc.positive', "pow/exponent": 'Genfunc.positive',
+            "erfinv/input": 'dict(fn=Genfunc.uniform, low=-1, high=1)', "sqrt/input": 'Genfunc.positive',
+            'log/input': 'Genfunc.positive', 'log2/input': 'Genfunc.positive', 'log10/input': 'Genfunc.positive'}
 
 tensor_vide = "                    "
 para_vide = "            "
@@ -403,7 +406,18 @@ if __name__ == '__main__':
                          'slowfast_config': other_config.slowfast_r50_16x8x1_22e_sthv1_rgb_config,
                          'tsn_config': other_config.tsn_r50_1x1x8_50e_sthv1_rgb_config,
                          'llama_config': other_config.llama_config}
+    config_dict = cv_config_dict
+    for k, v in config_dict.items():
+        gen_config_code(v, "cv_configs/" + k)
+    
+    config_dict = det_config_dict
+    for k, v in config_dict.items():
+        gen_config_code(v, "det_configs/" + k)
+    
+    config_dict = seg_config_dict
+    for k, v in config_dict.items():
+        gen_config_code(v, "seg_configs/" + k)
+    
     config_dict = other_config_dict
     for k, v in config_dict.items():
         gen_config_code(v, "other_configs/" + k)
-    # gen_config_code(other_config.llama_config, "other_configs/" + 'llama_config')
