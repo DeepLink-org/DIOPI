@@ -226,14 +226,7 @@ device_configs = {
 
     'bmm': dict(
         name=['bmm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
+        atol=1e-1,
     ),
 
     'addcdiv': dict(
@@ -600,29 +593,10 @@ device_configs = {
 
     'argmax': dict(
         name=['argmax'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8)],
-
-                },
-            ],
-        ),
     ),
 
     'argmax_same_value': dict(
         name=['argmax'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32)],
-                },
-            ],
-        ),
     ),
 
     'adadelta': dict(
