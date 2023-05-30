@@ -153,7 +153,7 @@ requires_backward = {'cholesky_ex': '0'}
 gen_func = {'cholesky_ex/input': 'Genfunc.sym_mat', 'normal/std': 'Genfunc.positive',
             'adadelta/square_avg", "acc_delta': 'Genfunc.positive', "rsqrt/input": 'Genfunc.positive',
             'multinomial/input': 'Genfunc.positive', 'batch_norm/running_var': 'Genfunc.positive',
-            'adamw/exp_avg_sq': 'Genfunc.positive', 'adam/exp_avg_sq': 'Genfunc.positive', "pow/exponent": 'Genfunc.positive',
+            'adamw/exp_avg_sq': 'Genfunc.positive', 'adam/exp_avg_sq': 'Genfunc.positive',
             "erfinv/input": 'dict(fn=Genfunc.uniform, low=-1, high=1)', "sqrt/input": 'Genfunc.positive',
             'log/input': 'Genfunc.positive', 'log2/input': 'Genfunc.positive', 'log10/input': 'Genfunc.positive'}
 
@@ -294,6 +294,13 @@ def gen_config_code(config, file_name):
                     elif type_idx < len(type_list):
                         gen_func_key = name + '/' + k
                         gen_fn = gen_func[gen_func_key] if gen_func_key in gen_func.keys() else None
+                        
+                        # when pow's exponent is float, change input to positive input
+                        if name == 'pow' and 'input' in k and \
+                            ((len(type_list) > 1 and type_list[type_idx + 1] \
+                                in ['torch.cuda.HalfTensor', 'torch.cuda.FloatTensor', 'torch.cuda.DoubleTensor']) or \
+                                    (len(type_list) == 1 and len(list(filter(lambda x: x != int(x), para_list[1]))) > 0)):
+                            gen_fn = 'Genfunc.positive'
                         toDtype(type_list[type_idx], tensor_para, gen_fn)
                         type_idx += 1
                     tensor_para.append(para_vide + "    },\n")
