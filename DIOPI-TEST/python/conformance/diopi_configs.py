@@ -1169,8 +1169,8 @@ diopi_configs = {
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            alpha=[0.001, -0.01, 1],
-            beta=[0.001, -0.01, 1],
+            alpha=[0.001, -0.01, 1, 0, -3, 2.1, -1.2],
+            beta=[0.001, -0.01, 1, 2, 0, -1.2, 2.3],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -1178,15 +1178,15 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((2, 10), (768, ), (1, 400)),
+                    "shape": ((2, 10), (768, ), (1, 400), (), (1,), (3,), (1, 3)),
                 },
                 {
                     "ins": ["mat1"],
-                    "shape": ((2, 2048), (2, 768), (1, 2304)),
+                    "shape": ((2, 2048), (2, 768), (1, 2304), (4, 128), (2, 23), (2, 13), (0, 12)),
                 },
                 {
                     "ins": ["mat2"],
-                    "shape": ((2048, 10), (768, 768), (2304, 400)),
+                    "shape": ((2048, 10), (768, 768), (2304, 400), (128, 6), (23, 1), (13, 3), (12, 3)),
                 },
             ],
         ),
@@ -1939,15 +1939,17 @@ diopi_configs = {
         name=["log_softmax"],
         saved_args=dict(output=0),
         para=dict(
-            dim=[-1, 1, 0],
+            dim=[0, -1, 1, 2, -3,
+                 -1, 1, -2],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((78, 24), (2, 92, 29), (2, 150, 512, 512)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "shape": ((), (36,), (78, 24), (2, 92, 29), (2, 150, 512, 512),
+                              (0,), (0, 12), (17, 0, 9)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
             ],
