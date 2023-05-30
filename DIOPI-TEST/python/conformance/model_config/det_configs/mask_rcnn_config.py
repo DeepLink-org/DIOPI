@@ -1512,7 +1512,7 @@ mask_rcnn_config = {
                     "ins": ["index"],
                     "shape": [(1,), (7,)],
                     "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
+                    "gen_fn": Genfunc.zeros,
                 },
             ],
         ),
