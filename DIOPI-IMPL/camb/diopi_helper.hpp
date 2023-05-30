@@ -27,7 +27,7 @@ namespace camb {
 #define DIOPI_CHECK(cond, fmt, args...)                                          \
     do {                                                                         \
         if (!(cond)) {                                                           \
-            setLastErrorString(#fmt " at %s:%d", ##args, __FILE__, __LINE__); \
+            ::impl::camb::setLastErrorString(#fmt " at %s:%d", ##args, __FILE__, __LINE__); \
             return diopiErrorOccurred;                                           \
         }                                                                        \
     } while (false);
@@ -52,7 +52,7 @@ namespace camb {
     do {                                                                                                                                                  \
         diopiError_t ret = Expr;                                                                                                                          \
         if (diopiSuccess != ret) {                                                                                                                        \
-            setLastErrorString("%s: %s called by `%s` at %s:%d\n", getDiopiErrorStr(ret), cambGetLastErrorString(), __func__, __FILE__, __LINE__); \
+            ::impl::camb::setLastErrorString("%s: %s called by `%s` at %s:%d\n", ::impl::camb::getDiopiErrorStr(ret), ::impl::camb::cambGetLastErrorString(), __func__, __FILE__, __LINE__); \
             return ret;                                                                                                                                   \
         }                                                                                                                                                 \
     } while (false);
