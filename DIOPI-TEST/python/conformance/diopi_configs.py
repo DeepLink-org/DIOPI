@@ -69,17 +69,17 @@ diopi_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": ((32, 64, 16), (32, 64, 32), (168, 52, 64)),
+                    "shape": ((32, 64, 16), (32, 64, 32), (168, 52, 64), (2,), (0, 2)),
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["batch1"],
-                    "shape": ((32, 64, 32), (32, 64, 8), (168, 52, 38)),
+                    "shape": ((32, 64, 32), (32, 64, 8), (168, 52, 38), (2, 0, 4), (2, 0, 4)),
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["batch2"],
-                    "shape": ((32, 32, 16), (32, 8, 32), (168, 38, 64)),
+                    "shape": ((32, 32, 16), (32, 8, 32), (168, 38, 64), (2, 4, 2), (2, 4, 2)),
                     "gen_fn": Genfunc.randn,
                 },
             ]
@@ -202,7 +202,8 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((), (1024,), (2, 4096), (64, 28, 28),
-                              (32, 64, 112, 112), (64, 3, 7, 28, 28)),
+                              (32, 64, 112, 112), (64, 3, 7, 28, 28),
+                              (0,), (0, 8), (3, 0, 9)),
                     "requires_grad": [True],
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
@@ -697,7 +698,8 @@ diopi_configs = {
                     "ins": ['input'],
                     "requires_grad": [True],
                     "shape": ((182400,), (20267, 80), (8, 200, 304),
-                              (32, 16, 1, 1), (16, 32, 130, 130), ()),
+                              (32, 16, 1, 1), (16, 32, 130, 130), (),
+                              (0,), (0, 16), (8, 0, 17)),
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -4435,8 +4437,8 @@ diopi_configs = {
         name=["normal_"],
         no_output_ref=True,
         para=dict(
-            mean=[0, 2, 0.1, 0.5, True, False],
-            std=[0.5, 1, 2, 3.14, True, True],
+            mean=[0, 2, 0.1, 0.5, True, False, -0.3, -4, -1.3],
+            std=[0.5, 1, 2, 3.14, True, True, 0, 0.3, 4],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -4444,7 +4446,7 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": [(), (128,), (32, 8), (32, 8),
-                              (32, 8), (16, 64, 32)],
+                              (32, 8), (16, 64, 32), (0,), (0, 3), (2, 0, 5)],
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
             ]
@@ -4516,15 +4518,16 @@ diopi_configs = {
     'normalize': dict(
         name=["normalize"],
         para=dict(
-            p=[2.0, 1.0, 0, 1.5],
-            dim=[1, 2, -1, 0],
-            eps=[1e-12, 1e-12, 1e-11, 1e-12],
+            p=[2.0, 1.0, 0, 1.5, 2, 2, 2, 2, 2],
+            dim=[1, 2, -1, 0, 0, -1, -1, -2, 1],
+            eps=[1e-12, 1e-12, 1e-11, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((256, 256, 3, 3), (256, 128, 1, 1), (64, 32, 16), (32, 8)),
+                    "shape": ((256, 256, 3, 3), (256, 128, 1, 1), (64, 32, 16), (32, 8), (8,), (),
+                              (0,), (0, 8), (8, 0, 3)),
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 }
             ]
@@ -4566,7 +4569,7 @@ diopi_configs = {
                     "ins": ['tensors'],
                     "shape": (((8,), (8,), (8,)),
                               ((16,), (8,), ()),
-                              ((32,), (16,)), ((8,),)),
+                              ((32,), (16,)), ((8,), (0,))),
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64,
                               Dtype.int16, Dtype.int32, Dtype.int64,
                               Dtype.int8, Dtype.uint8, Dtype.bool],
@@ -4633,7 +4636,7 @@ diopi_configs = {
                         "ins": ['input'],
                         "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
                                 (256, 128, 3, 3),
-                                (2, 31, 512, 6, 40)),
+                                (2, 31, 512, 6, 40), (0,), (0, 9), (4, 0, 5)),
                     },
                 ],
             ),
@@ -4650,7 +4653,7 @@ diopi_configs = {
                         "ins": ['input'],
                         "shape": ((2,), (364800, 2), (2, 128, 2),
                                 (256, 128, 3, 2),
-                                (2, 31, 512, 6, 2)),
+                                (2, 31, 512, 6, 2), (0, 2), (4, 0, 2)),
                     },
                 ],
             ),
@@ -4684,7 +4687,8 @@ diopi_configs = {
         no_output_ref=True,
         para=dict(
             size=[(), (128,), (3, 64), (3, 16, 64),
-                  (4, 16, 8, 64), (2, 16, 1, 64, 5)],
+                  (4, 16, 8, 64), (2, 16, 1, 64, 5),
+                  (0,), (0, 16), (8, 0, 12)],
         ),
     ),
     
