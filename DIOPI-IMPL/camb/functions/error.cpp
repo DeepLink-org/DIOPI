@@ -15,7 +15,7 @@ char strLastError[8192] = {0};
 char strLastErrorOther[4096] = {0};
 std::mutex mtxLastError;
 
-const char* camb_get_last_error_string() {
+const char* cambGetLastErrorString() {
     // consider cnrt version cnrtGetLastErr or cnrtGetLaislhhstError
     ::cnrtRet_t err = ::cnrtGetLastError();
     std::lock_guard<std::mutex> lock(mtxLastError);
@@ -67,5 +67,5 @@ const char* getDiopiErrorStr(diopiError_t err) {
 
 
 const char* diopiGetLastErrorString() {
-    return impl::camb::camb_get_last_error_string();
+    return impl::camb::cambGetLastErrorString();
 }

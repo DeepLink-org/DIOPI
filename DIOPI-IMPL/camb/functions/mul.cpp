@@ -15,54 +15,55 @@ extern "C" {
 
 diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor other_tensor(other);
-    DiopiTensor out_tensor(out);
+    DiopiTensor inputTensor(input);
+    DiopiTensor otherTensor(other);
+    DiopiTensor outTensor(out);
 
-    DiopiTensor out_tensor_tmp = out_tensor;
-    if ((out_tensor.dtype() != diopi_dtype_float16) && (out_tensor.dtype() != diopi_dtype_float32)) {
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor_tmp, diopi_dtype_float32));
+
+    DiopiTensor outTensorTmp = outTensor;
+    if ((outTensor.dtype() != diopi_dtype_float16) && (outTensor.dtype() != diopi_dtype_float32)) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensorTmp, diopi_dtype_float32));
     }
-    DIOPI_CALL(dataTypeCast(ctx, input_tensor, out_tensor_tmp.dtype()));
-    DIOPI_CALL(dataTypeCast(ctx, other_tensor, out_tensor_tmp.dtype()));
+    DIOPI_CALL(dataTypeCast(ctx, inputTensor, outTensorTmp.dtype()));
+    DIOPI_CALL(dataTypeCast(ctx, otherTensor, outTensorTmp.dtype()));
 
-    DiopiTensor bcast_input_tensor;
-    broadcastHelper(ctx, input_tensor, out_tensor_tmp, &bcast_input_tensor);
-    DiopiTensor bcast_other_tensor;
-    broadcastHelper(ctx, other_tensor, out_tensor_tmp, &bcast_other_tensor);
+    DiopiTensor bcastInputTensor;
+    broadcastHelper(ctx, inputTensor, outTensorTmp, &bcastInputTensor);
+    DiopiTensor bcastOtherTensor;
+    broadcastHelper(ctx, otherTensor, outTensorTmp, &bcastOtherTensor);
 
-    CnnlTensorDesc bcast_input_desc(bcast_input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc bcast_other_desc(bcast_other_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc out_desc(out_tensor_tmp, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc bcastInputDesc(bcastInputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc bcastOtherDesc(bcastOtherTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(outTensorTmp, CNNL_LAYOUT_ARRAY);
 
-    cnnlTensorDescriptor_t input_descs[] = {bcast_input_desc.get(), bcast_other_desc.get()};
-    const void* inputs[] = {bcast_input_tensor.data(), bcast_other_tensor.data()};
+    cnnlTensorDescriptor_t inputDescs[] = {bcastInputDesc.get(), bcastOtherDesc.get()};
+    const void* inputs[] = {bcastInputTensor.data(), bcastOtherTensor.data()};
 
-    DIOPI_CALLCNNL(cnnlMulN(handle, input_descs, inputs, 2, out_desc.get(), out_tensor_tmp.data()))
-    if (out_tensor_tmp.dtype() != out_tensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor, out_tensor_tmp));
+    DIOPI_CALLCNNL(cnnlMulN(handle, inputDescs, inputs, 2, outDesc.get(), outTensorTmp.data()))
+    if (outTensorTmp.dtype() != outTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
     }
     return diopiSuccess;
 }
 
 diopiError_t diopiMulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
-    diopiMul(ctx, input, input, other);
+    DIOPI_CALL(diopiMul(ctx, input, input, other));
     return diopiSuccess;
 }
 
 diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor out_tensor(out);
-    DiopiTensor other_tensor_tmp;
-    makeTensorFromScalar(ctx, other, other_tensor_tmp);
-    auto other_tensor = other_tensor_tmp.tensorHandle();
-    diopiMul(ctx, out, input, diopiTensorHandle_t(other_tensor));
+    DiopiTensor inputTensor(input);
+    DiopiTensor outTensor(out);
+    DiopiTensor otherTensorTmp;
+    makeTensorFromScalar(ctx, other, otherTensorTmp);
+    auto otherTensor = otherTensorTmp.tensorHandle();
+    DIOPI_CALL(diopiMul(ctx, out, input, diopiTensorHandle_t(otherTensor)));
     return diopiSuccess;
 }
 
 diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
-    diopiMulScalar(ctx, input, input, other);
+    DIOPI_CALL(diopiMulScalar(ctx, input, input, other));
     return diopiSuccess;
 }
 

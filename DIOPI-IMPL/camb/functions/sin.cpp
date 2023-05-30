@@ -20,28 +20,28 @@ static diopiError_t sin(diopiContextHandle_t ctx, DiopiTensor& output, DiopiTens
     std::vector<DiopiTensor*> pTensors{&input};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
-    DiopiTensor output_tmp = output;
+    DiopiTensor outputTmp = output;
     if (input.dtype() != output.dtype()) {
-        output_tmp = requiresTensor(ctx, output.shape(), input.dtype());
+        outputTmp = requiresTensor(ctx, output.shape(), input.dtype());
     }
     CnnlTensorDesc desc(input, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlSin_v2(handle, CNNL_COMPUTATION_HIGH_PRECISION, desc.get(), input.data(), desc.get(), output_tmp.data()));
-    if (output_tmp.dtype() != output.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, output, output_tmp));
+    DIOPI_CALLCNNL(cnnlSin_v2(handle, CNNL_COMPUTATION_HIGH_PRECISION, desc.get(), input.data(), desc.get(), outputTmp.data()));
+    if (outputTmp.dtype() != output.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, output, outputTmp));
     }
     return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiSinInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    DiopiTensor input_tensor(input);
-    DIOPI_CALL(sin(ctx, input_tensor, input_tensor));
+    DiopiTensor inputTensor(input);
+    DIOPI_CALL(sin(ctx, inputTensor, inputTensor));
     return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiSin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    DiopiTensor input_tensor(input);
-    DiopiTensor output_tensor(out);
-    DIOPI_CALL(sin(ctx, output_tensor, input_tensor));
+    DiopiTensor inputTensor(input);
+    DiopiTensor outputTensor(out);
+    DIOPI_CALL(sin(ctx, outputTensor, inputTensor));
     return diopiSuccess;
 }
 

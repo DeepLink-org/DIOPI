@@ -46,8 +46,8 @@ def from_numpy_dtype(dtype: np.dtype) -> Dtype:
         return Dtype.float64
     elif dtype == np.bool_:
         return Dtype.bool
-    elif dtype == np.complex644:
-        return Dtype.complex6
+    elif dtype == np.complex64:
+        return Dtype.complex64
     elif dtype == np.complex128:
         return Dtype.complex128
     else:
@@ -165,16 +165,16 @@ class Context:
 
     def __init__(self):
         self.context_handle = ContextHandle()
-        self.__class__._c_lib._diopiCreateContext(byref(self.context_handle))
+        self.__class__._c_lib.diopiCreateContext(byref(self.context_handle))
 
     def __del__(self):
-        self.__class__._c_lib._diopiDestroyContext(self.context_handle)
+        self.__class__._c_lib.diopiDestroyContext(self.context_handle)
 
     def get_handle(self):
         return self.context_handle
 
     def clear_tensors(self):
-        return self.__class__._c_lib._diopiClearTensors(self.context_handle)
+        return self.__class__._c_lib.diopiClearTensors(self.context_handle)
 
 
 default_context = Context()
@@ -237,7 +237,7 @@ class Tensor:
     @classmethod
     def from_handle(cls, tensor_handle):
         ctx_handle = ContextHandle()
-        diopirt_lib._diopiTensorGetCtxHandle(tensor_handle, byref(ctx_handle))
+        diopirt_lib.diopiTensorGetCtxHandle(tensor_handle, byref(ctx_handle))
         return cls(size=None, dtype=None, context_handle=ctx_handle, tensor_handle=tensor_handle)
 
     def __str__(self):
@@ -299,7 +299,7 @@ class Tensor:
 
     def reset_shape(self, shape):
         assert isinstance(shape, (tuple, list))
-        diopirt_lib._diopiTensorResetShape(self.tensor_handle, byref(Sizes(tuple(shape))))
+        diopirt_lib.diopiTensorResetShape(self.tensor_handle, byref(Sizes(tuple(shape))))
 
     @classmethod
     def from_numpy(cls, darray):
@@ -310,9 +310,9 @@ class Tensor:
         stride = [int(darray.strides[i] / darray.itemsize)
                   for i in range(len(darray.strides))]
         tr = cls(size=darray.shape, dtype=dtype, stride=stride)
-        diopirt_lib._diopiTensorCopyFromBuffer(tr.context_handle,
-                                               c_void_p(darray.ctypes.data),
-                                               tr.tensor_handle)
+        diopirt_lib.diopiTensorCopyFromBuffer(tr.context_handle,
+                                              c_void_p(darray.ctypes.data),
+                                              tr.tensor_handle)
         return tr
 
     def numpy(self) -> np.ndarray:
@@ -321,9 +321,9 @@ class Tensor:
         stride = self.get_stride()
         strides = [int(stride[i] * itemsize) for i in range(len(stride))]
         darray = np.ndarray(shape=self.size(), dtype=dtype, strides=strides)
-        diopirt_lib._diopiTensorCopyToBuffer(self.context_handle,
-                                             self.tensor_handle,
-                                             c_void_p(darray.ctypes.data))
+        diopirt_lib.diopiTensorCopyToBuffer(self.context_handle,
+                                            self.tensor_handle,
+                                            c_void_p(darray.ctypes.data))
         return darray
 
 

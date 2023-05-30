@@ -14,15 +14,15 @@ namespace camb {
 
 extern "C" {
 
-diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t repeats_size) {
+diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t repeatsSize) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    DiopiTensor input_tensor(input);
-    DiopiTensor out_tensor(out);
-    CnnlTensorDesc inputDesc(input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc outDesc(out_tensor, CNNL_LAYOUT_ARRAY);
+    DiopiTensor inputTensor(input);
+    DiopiTensor outTensor(out);
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlTile(handle, inputDesc.get(), input_tensor.data(), outDesc.get(), out_tensor.data()));
+    DIOPI_CALLCNNL(cnnlTile(handle, inputDesc.get(), inputTensor.data(), outDesc.get(), outTensor.data()));
     return diopiSuccess;
 }
 
