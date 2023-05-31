@@ -16,52 +16,52 @@ namespace impl {
 
 namespace camb {
 
-void KernelNms(cnrtDim3_t k_dim, cnrtFunctionType_t k_type, cnrtQueue_t queue, const cnrtDataType_t data_type_input, const void *boxes_ptr,
-               const void *scores_ptr, const int input_num_boxes, const int max_output_boxes, const float iou_threshold, const float offset,
-               void *workspace_ptr, void *output_size_ptr, void *output_ptr);
+void kernelNms(cnrtDim3_t kDim, cnrtFunctionType_t kType, cnrtQueue_t queue, const cnrtDataType_t dataTypeInput, const void *boxesPtr, const void *scoresPtr,
+               const int inputNumBoxes, const int maxOutputBoxes, const float iouThreshold, const float offset, void *workspacePtr, void *outputSizePtr,
+               void *outputPtr);
 }  // namespace camb
 
 }  // namespace impl
 
-int selectUnionType(uint32_t use_job, int box_num_per_core) {
-    // the box_num_per_core should be at least 256, otherwise the real IO
+int selectUnionType(uint32_t useJob, int boxNumPerCore) {
+    // the boxNumPerCore should be at least 256, otherwise the real IO
     // bandwidth would be very low
-    while (box_num_per_core < 256 && use_job >= 4) {
-        box_num_per_core *= 2;
-        use_job /= 2;
+    while (boxNumPerCore < 256 && useJob >= 4) {
+        boxNumPerCore *= 2;
+        useJob /= 2;
     }
-    return use_job;
+    return useJob;
 }
 
-static cnnlStatus_t policyFunc(cnrtDim3_t *k_dim, cnrtFunctionType_t *k_type, int &core_num_per_class, const int input_box_num) {
-    uint32_t core_dim = impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
-    uint32_t cluster_number = impl::camb::getDeviceAttr(cnrtAttrClusterCount);
-    uint32_t job_limit = impl::camb::getJobLimitCapability();
-    uint32_t core_number = job_limit;
+static cnnlStatus_t policyFunc(cnrtDim3_t *kDim, cnrtFunctionType_t *kType, int &coreNumPerClass, const int inputBoxNum) {
+    uint32_t coreDim = impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
+    uint32_t clusterNumber = impl::camb::getDeviceAttr(cnrtAttrClusterCount);
+    uint32_t jobLimit = impl::camb::getJobLimitCapability();
+    uint32_t coreNumber = jobLimit;
 
-    int box_num_per_core = (input_box_num + core_number - 1) / core_number;
-    int use_job = selectUnionType(job_limit, box_num_per_core);
-    // initiate k_type as Union1
-    k_dim->x = core_dim;
-    k_dim->y = 1;
-    k_dim->z = 1;
-    *k_type = CNRT_FUNC_TYPE_UNION1;
-    switch (job_limit) {
+    int boxNumPerCore = (inputBoxNum + coreNumber - 1) / coreNumber;
+    int useJob = selectUnionType(jobLimit, boxNumPerCore);
+    // initiate kType as Union1
+    kDim->x = coreDim;
+    kDim->y = 1;
+    kDim->z = 1;
+    *kType = CNRT_FUNC_TYPE_UNION1;
+    switch (jobLimit) {
         case CN_KERNEL_CLASS_BLOCK:
         case CN_KERNEL_CLASS_UNION:
         case CN_KERNEL_CLASS_UNION2:
         case CN_KERNEL_CLASS_UNION4:
         case CN_KERNEL_CLASS_UNION8:
         case CN_KERNEL_CLASS_UNION16: {
-            if (use_job < 4) {
-                k_dim->x = 1;
-                *k_type = CNRT_FUNC_TYPE_BLOCK;
-            } else if (use_job == 4) {
-                k_dim->x = core_dim;
-                *k_type = CNRT_FUNC_TYPE_UNION1;
+            if (useJob < 4) {
+                kDim->x = 1;
+                *kType = CNRT_FUNC_TYPE_BLOCK;
+            } else if (useJob == 4) {
+                kDim->x = coreDim;
+                *kType = CNRT_FUNC_TYPE_UNION1;
             } else {
-                k_dim->x = use_job;
-                *k_type = (cnrtFunctionType_t)use_job;
+                kDim->x = useJob;
+                *kType = (cnrtFunctionType_t)useJob;
             }
         }; break;
         default:
@@ -73,76 +73,76 @@ static cnnlStatus_t policyFunc(cnrtDim3_t *k_dim, cnrtFunctionType_t *k_type, in
     return CNNL_STATUS_SUCCESS;
 }
 
-extern "C" DIOPI_API diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t *out_, diopiConstTensorHandle_t boxes_,
-                                               diopiConstTensorHandle_t scores_, double iou_threshold, int64_t offset) {
-    auto boxes = impl::camb::DiopiTensor(boxes_);
-    auto scores = impl::camb::DiopiTensor(scores_);
+extern "C" DIOPI_API diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t boxesTr,
+                                               diopiConstTensorHandle_t scoresTr, double iouThreshold, int64_t offset) {
+    auto boxes = impl::camb::DiopiTensor(boxesTr);
+    auto scores = impl::camb::DiopiTensor(scoresTr);
 
     if (boxes.numel() == 0) {
         diopiScalar_t scalar = {diopi_dtype_int64, 1};
-        auto temp_coors = impl::camb::requiresTensor(ctx, {1}, diopi_dtype_int64);
-        DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(temp_coors), &scalar));
-        *out_ = diopiTensorHandle_t(temp_coors);
+        auto tempOut = impl::camb::requiresTensor(ctx, {1}, diopi_dtype_int64);
+        DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(tempOut), &scalar));
+        *out = diopiTensorHandle_t(tempOut);
         return diopiSuccess;
     }
 
-    int input_num_boxes = boxes.size(0);
-    int max_output_boxes = boxes.size(0);
+    int inputNumBoxes = boxes.size(0);
+    int maxOutputBoxes = boxes.size(0);
 
-    cnrtDataType_t data_type_input = impl::camb::dtype2CnrtDtype(boxes.dtype());
-    cnrtDim3_t k_dim;
-    cnrtJobType_t k_type;
+    cnrtDataType_t dataTypeInput = impl::camb::dtype2CnrtDtype(boxes.dtype());
+    cnrtDim3_t kDim;
+    cnrtJobType_t kType;
 
-    int core_num_per_class;
-    policyFunc(&k_dim, &k_type, core_num_per_class, input_num_boxes);
+    int coreNumPerClass;
+    policyFunc(&kDim, &kType, coreNumPerClass, inputNumBoxes);
 
     // transpose boxes (n, 4) to (4, n) for better performance
-    auto boxes_t = impl::camb::requiresTensor(ctx, {boxes.size(1), boxes.size(0)}, boxes.dtype());
+    auto boxesT = impl::camb::requiresTensor(ctx, {boxes.size(1), boxes.size(0)}, boxes.dtype());
 
-    DIOPI_CALL(diopiTranspose(ctx, diopiTensorHandle_t(boxes_t), diopiTensorHandle_t(boxes), 0, 1));
-    auto output = impl::camb::requiresTensor(ctx, {max_output_boxes}, diopi_dtype_int32);
-    auto output_size = impl::camb::requiresTensor(ctx, {1}, diopi_dtype_int32);
+    DIOPI_CALL(diopiTranspose(ctx, diopiTensorHandle_t(boxesT), diopiTensorHandle_t(boxes), 0, 1));
+    auto output = impl::camb::requiresTensor(ctx, {maxOutputBoxes}, diopi_dtype_int32);
+    auto outputSize = impl::camb::requiresTensor(ctx, {1}, diopi_dtype_int32);
 
     // workspace
-    const int info_num = 5;  // x1, x2, y1, y2 and score
-    size_t space_size = 0;
+    const int infoNum = 5;  // x1, x2, y1, y2 and score
+    size_t spaceSize = 0;
     if (boxes.dtype() == diopi_dtype_float16) {
-        space_size = input_num_boxes * sizeof(int16_t) * info_num + sizeof(float);
+        spaceSize = inputNumBoxes * sizeof(int16_t) * infoNum + sizeof(float);
     } else {
-        space_size = input_num_boxes * sizeof(float) * info_num + sizeof(float);
+        spaceSize = inputNumBoxes * sizeof(float) * infoNum + sizeof(float);
     }
 #if __BANG_ARCH__ > 370
     int cluster_num = getCoreNumOfJobLimitCapability() / impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
-    space_size += cluster_number * sizeof(float) * 7;
+    spaceSize += clusterNumber * sizeof(float) * 7;
 #endif
-    auto workspace = impl::camb::requiresTensor(ctx, {space_size}, diopi_dtype_uint8);
+    auto workspace = impl::camb::requiresTensor(ctx, {static_cast<int64_t>(spaceSize)}, diopi_dtype_uint8);
 
     // get compute queue
     auto queue = impl::camb::getStream(ctx);
 
-    impl::camb::KernelNms(k_dim,
-                          k_type,
+    impl::camb::kernelNms(kDim,
+                          kType,
                           queue,
-                          data_type_input,
-                          boxes_t.data(),
+                          dataTypeInput,
+                          boxesT.data(),
                           scores.data(),
-                          input_num_boxes,
-                          max_output_boxes,
-                          iou_threshold,
+                          inputNumBoxes,
+                          maxOutputBoxes,
+                          iouThreshold,
                           offset,
                           workspace.data(),
-                          output_size.data(),
+                          outputSize.data(),
                           output.data());
 
-    int bytes = sizeof(int) * output_size.numel();
-    std::unique_ptr<char> output_size_cpu(new char[bytes]);
-    cnrtMemcpyAsync(output_size_cpu.get(), output_size.data(), bytes, impl::camb::getStream(ctx), cnrtMemcpyDevToHost);
+    int bytes = sizeof(int) * outputSize.numel();
+    std::unique_ptr<char> outputSizeCpu(new char[bytes]);
+    cnrtMemcpyAsync(outputSizeCpu.get(), outputSize.data(), bytes, impl::camb::getStream(ctx), cnrtMemcpyDevToHost);
     impl::camb::syncStreamInCtx(ctx);
-    int output_num = reinterpret_cast<int *>(output_size_cpu.get())[0];
+    int outputNum = reinterpret_cast<int *>(outputSizeCpu.get())[0];
 
-    auto temp_out = impl::camb::requiresTensor(ctx, {output_num}, output.dtype());
-    DIOPI_CALL(diopiSlice(ctx, diopiTensorHandle_t(temp_out), diopiTensorHandle_t(output), 0, 0, output_num, 1));
+    auto tempOut = impl::camb::requiresTensor(ctx, {outputNum}, output.dtype());
+    DIOPI_CALL(diopiSlice(ctx, diopiTensorHandle_t(tempOut), diopiTensorHandle_t(output), 0, 0, outputNum, 1));
 
-    *out_ = diopiTensorHandle_t(temp_out);
+    *out = diopiTensorHandle_t(tempOut);
     return diopiSuccess;
 }

@@ -52,12 +52,12 @@ static void policyFuncCalcPointsPerVoxel(cnrtDim3_t *kDim, cnrtFunctionType_t *k
     *kType = CNRT_FUNC_TYPE_BLOCK;
 }
 
-extern "C" diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t voxels_, diopiTensorHandle_t coors_,
+extern "C" diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t voxelsTr, diopiTensorHandle_t coorsTr,
                                               diopiTensorHandle_t numPointsPerVoxelTr, diopiTensorHandle_t voxelNumTr, diopiConstTensorHandle_t pointsTr,
                                               diopiConstTensorHandle_t voxelSizeTr, diopiConstTensorHandle_t coorsRangeTr, const int64_t maxPoints,
-                                              const int64_t maxVoxels, const int64_t NDim, const bool deterministic) {
-    auto voxels = impl::camb::DiopiTensor(voxels_);
-    auto coors = impl::camb::DiopiTensor(coors_);
+                                              const int64_t maxVoxels, const int64_t nDim, const bool deterministic) {
+    auto voxels = impl::camb::DiopiTensor(voxelsTr);
+    auto coors = impl::camb::DiopiTensor(coorsTr);
     auto numPointsPerVoxel = impl::camb::DiopiTensor(numPointsPerVoxelTr);
     auto voxelNum = impl::camb::DiopiTensor(voxelNumTr);
     auto points = impl::camb::DiopiTensor(pointsTr);
@@ -96,12 +96,12 @@ extern "C" diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx, diopiTen
     const float coorsYMax = coorsRangeV[4];
     const float coorsZMax = coorsRangeV[5];
 
-    const int gridX = round((coorsXMax - coorsXMin) / voxelX);
-    const int gridY = round((coorsYMax - coorsYMin) / voxelY);
-    const int gridZ = round((coorsZMax - coorsZMin) / voxelZ);
+    const int gridX = std::round((coorsXMax - coorsXMin) / voxelX);
+    const int gridY = std::round((coorsYMax - coorsYMin) / voxelY);
+    const int gridZ = std::round((coorsZMax - coorsZMin) / voxelZ);
 
     diopiScalar_t scalar = {diopi_dtype_int32, 0};
-    auto tempCoors = impl::camb::requiresTensor(ctx, {NDim, numPoints}, diopi_dtype_int32);
+    auto tempCoors = impl::camb::requiresTensor(ctx, {nDim, numPoints}, diopi_dtype_int32);
     DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(tempCoors), &scalar));
 
     impl::camb::kernelDynamicVoxelize(kDim,
@@ -134,9 +134,9 @@ extern "C" diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx, diopiTen
     impl::camb::kernelPoint2Voxel(kDim, kType, queue, tempCoors.data(), pointToPointidx.data(), pointToVoxelidx.data(), numPoints, maxPoints);
 
     // calculate task dimension
-    cnrtDim3_t k_dim_calc_points_per_voxel;
-    cnrtFunctionType_t k_type_calc_points_per_voxel;
-    policyFuncCalcPointsPerVoxel(&k_dim_calc_points_per_voxel, &k_type_calc_points_per_voxel, numPoints);
+    cnrtDim3_t kDimCalcPointsPerVoxel;
+    cnrtFunctionType_t kTypeCalcPointsPerVoxel;
+    policyFuncCalcPointsPerVoxel(&kDimCalcPointsPerVoxel, &kTypeCalcPointsPerVoxel, numPoints);
 
     // 3. determine voxel num and voxel's coor index
     auto coorToVoxelidx = impl::camb::requiresTensor(ctx, {numPoints}, diopi_dtype_int32);
@@ -144,8 +144,8 @@ extern "C" diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx, diopiTen
     auto voxelNumTrtmp = impl::camb::requiresTensor(ctx, {1}, diopi_dtype_int32);
     DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(voxelNumTrtmp), &scalar));
 
-    impl::camb::kernelCalcPointsPerVoxel(k_dim_calc_points_per_voxel,
-                                         k_type_calc_points_per_voxel,
+    impl::camb::kernelCalcPointsPerVoxel(kDimCalcPointsPerVoxel,
+                                         kTypeCalcPointsPerVoxel,
                                          queue,
                                          pointToPointidx.data(),
                                          pointToVoxelidx.data(),
