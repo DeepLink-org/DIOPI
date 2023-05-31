@@ -213,11 +213,10 @@ def check_returncode(returncode, throw_exception=True):
         if returncode == diopiError.diopi_no_implement:
             global cur_test_func
             raise FunctionNotImplementedError(cur_test_func + 'not implement')
-            return 
         error_info = f"Returncode: {returncode}"
         error_detail = get_last_error()
         error_info += ", Details: " + error_detail
-        if throw_exception :
+        if throw_exception:
             raise DiopiException(error_info)
         else:
             logger.info(error_info)
