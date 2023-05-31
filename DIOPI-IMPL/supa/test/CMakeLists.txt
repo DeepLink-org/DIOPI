@@ -10,3 +10,4 @@ set(TEST_SRC
 message("TEST_SRC:" ${TEST_SRC})
 
 add_library(${DIOPIRT} SHARED ${TEST_SRC})
+target_link_libraries(${DIOPIRT} supa-runtime)
