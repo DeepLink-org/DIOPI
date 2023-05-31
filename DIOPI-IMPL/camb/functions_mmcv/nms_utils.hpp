@@ -9,7 +9,7 @@
 #include "common_mlu_helper.hpp"
 
 #define NMS_SIZE (64)
-#define NMS_UP(x, y) (x / y + (int)(x % y > 0)) * y
+#define NMS_UP(x, y) (x / y + static_cast<int>(x % y > 0)) * y
 #define NMS_DOWN(x, y) (x / y) * y
 #define INFO_NUM (5)  // 5 means x1, x2, y1, y2 and score
 #define MEMORY_CORE (0x80)
@@ -41,18 +41,18 @@ static __mlu_func__ void computeReluN(T *nram_dst, T *nram_src, void *nram_tmp, 
         __bang_relun(nram_dst, nram_src, deal_num, threshold);
 #else
         int align_num = NFU_ALIGN_SIZE / sizeof(T);
-        T *nram_aux_a = (T *)nram_tmp;
+        T *nram_aux_a = reinterpret_cast<T *>(nram_tmp);
         T *nram_aux_b = nram_aux_a + deal_num;
         T *nram_zero = nram_aux_b + align_num;
         __bang_write_value(nram_aux_b, align_num, threshold);
         __bang_write_zero(nram_zero, align_num);
-        __bang_cycle_lt((T *)nram_aux_a, nram_src, (T *)nram_aux_b, deal_num, align_num);
-        __bang_mul(nram_dst, nram_src, (T *)nram_aux_a, deal_num);
-        __bang_cycle_eq((T *)nram_aux_a, (T *)nram_aux_a, (T *)nram_zero, deal_num, align_num);
-        __bang_cycle_mul((T *)nram_aux_a, (T *)nram_aux_a, (T *)nram_aux_b, deal_num, align_num);
-        __bang_add(nram_dst, nram_dst, (T *)nram_aux_a, deal_num);
-        __bang_cycle_gt((T *)nram_aux_a, nram_dst, (T *)nram_zero, deal_num, align_num);
-        __bang_mul(nram_dst, nram_dst, (T *)nram_aux_a, deal_num);
+        __bang_cycle_lt(reinterpret_cast<T *>(nram_aux_a), nram_src, reinterpret_cast<T *>(nram_aux_b), deal_num, align_num);
+        __bang_mul(nram_dst, nram_src, reinterpret_cast<T *>(nram_aux_a), deal_num);
+        __bang_cycle_eq(reinterpret_cast<T *>(nram_aux_a), reinterpret_cast<T *>(nram_aux_a), reinterpret_cast<T *>(nram_zero), deal_num, align_num);
+        __bang_cycle_mul(reinterpret_cast<T *>(nram_aux_a), reinterpret_cast<T *>(nram_aux_a), reinterpret_cast<T *>(nram_aux_b), deal_num, align_num);
+        __bang_add(nram_dst, nram_dst, reinterpret_cast<T *>(nram_aux_a), deal_num);
+        __bang_cycle_gt(reinterpret_cast<T *>(nram_aux_a), nram_dst, reinterpret_cast<T *>(nram_zero), deal_num, align_num);
+        __bang_mul(nram_dst, nram_dst, reinterpret_cast<T *>(nram_aux_a), deal_num);
 #endif
     } else {
 #if __BANG_ARCH__ >= 300
@@ -125,7 +125,7 @@ __mlu_func__ void findGlobalMaxBox(IN_DT *max_box, IN_DT *sram, IN_DT *inter_x1)
             __bang_write_zero(inter_x1, NMS_SIZE);
             __memcpy(inter_x1, sram, sizeof(IN_DT), SRAM2NRAM, sizeof(IN_DT), REDUCE_NUM * sizeof(IN_DT), clusterDim - 1);
             __bang_max(max_box, inter_x1, NMS_SIZE);
-            int max_cluster = (sizeof(IN_DT) == sizeof(half)) ? ((uint16_t *)max_box)[1] : ((uint32_t *)max_box)[1];
+            int max_cluster = (sizeof(IN_DT) == sizeof(half)) ? (reinterpret_cast<uint16_t *>(max_box))[1] : (reinterpret_cast<uint32_t *>(max_box))[1];
             __memcpy(max_box, sram + max_cluster * REDUCE_NUM, REDUCE_NUM * sizeof(IN_DT), SRAM2NRAM);
             __memcpy(sram, max_box, REDUCE_NUM * sizeof(IN_DT), NRAM2SRAM);
         }
@@ -173,9 +173,9 @@ __mlu_func__ void findCoreMaxBox(IN_DT *input_score_ptr, IN_DT *score, IN_DT *in
             if (inter_x1[0] > max_box[0]) {
                 max_box[0] = inter_x1[0];
                 if (sizeof(IN_DT) == sizeof(half)) {
-                    max_index = ((uint16_t *)inter_x1)[1] + input_offset + i * max_seg_pad;  // offset start from head of input_data
+                    max_index = (reinterpret_cast<uint16_t *>(inter_x1))[1] + input_offset + i * max_seg_pad;  // offset start from head of input_data
                 } else if (sizeof(IN_DT) == sizeof(float)) {
-                    max_index = ((uint32_t *)inter_x1)[1] + input_offset + i * max_seg_pad;  // offset start from head of input_data
+                    max_index = (reinterpret_cast<uint32_t *>(inter_x1))[1] + input_offset + i * max_seg_pad;  // offset start from head of input_data
                 }
             }
         }  // for repeat
@@ -184,7 +184,7 @@ __mlu_func__ void findCoreMaxBox(IN_DT *input_score_ptr, IN_DT *score, IN_DT *in
         max_box[2] = input_y1_ptr[max_index];
         max_box[3] = input_x2_ptr[max_index];
         max_box[4] = input_y2_ptr[max_index];
-        ((uint32_t *)(max_box + 5))[0] = max_index;
+        (reinterpret_cast<uint32_t *>(max_box + 5))[0] = max_index;
     }
 }
 
@@ -200,7 +200,7 @@ __mlu_func__ void findClusterMaxBox(IN_DT *sram, IN_DT *max_box, IN_DT *inter_x1
     __bang_write_zero(inter_x1, 64);
     __memcpy(inter_x1, sram, sizeof(IN_DT), SRAM2NRAM, sizeof(IN_DT), REDUCE_NUM * sizeof(IN_DT), coreDim - 1);
     __bang_max(max_box, inter_x1, 64);
-    int max_core = sizeof(IN_DT) == sizeof(half) ? ((uint16_t *)max_box)[1] : ((uint32_t *)max_box)[1];
+    int max_core = sizeof(IN_DT) == sizeof(half) ? (reinterpret_cast<uint16_t *>(max_box))[1] : (reinterpret_cast<uint32_t *>(max_box))[1];
     // copy the max box to max_box
     __memcpy(max_box, sram + max_core * REDUCE_NUM, REDUCE_NUM * sizeof(IN_DT), SRAM2NRAM);
 }
@@ -212,9 +212,10 @@ __mlu_func__ void findClusterMaxBox(IN_DT *sram, IN_DT *max_box, IN_DT *inter_x1
 template <typename IN_DT>
 __mlu_func__ void calMaxArea(IN_DT *max_box, const int algo, float offset, float &max_area) {
     if (algo == 0 || offset == 0.0) {
-        max_area = ((float)max_box[3] - (float)max_box[1]) * ((float)max_box[4] - (float)max_box[2]);
+        max_area = (static_cast<float>(max_box[3]) - static_cast<float>(max_box[1])) * (static_cast<float>(max_box[4]) - static_cast<float>(max_box[2]));
     } else {
-        max_area = ((float)max_box[3] - (float)max_box[1] + offset) * ((float)max_box[4] - (float)max_box[2] + offset);
+        max_area = (static_cast<float>(max_box[3]) - static_cast<float>(max_box[1]) + offset) *
+                   (static_cast<float>(max_box[4]) - static_cast<float>(max_box[2]) + offset);
     }
 }
 
@@ -223,17 +224,17 @@ __mlu_func__ void calMaxArea(IN_DT *max_box, const int algo, float offset, float
                              float &max_box_y2) {
     // the case of random inf will break the requirement of x1<=x2, y1<=y2
     // so exchange it if it happens.
-    max_box_x1 = float(max_box[1]);
-    max_box_x2 = float(max_box[3]);
+    max_box_x1 = static_cast<float>(max_box[1]);
+    max_box_x2 = static_cast<float>(max_box[3]);
     if (max_box[1] > max_box[3]) {
-        max_box_x1 = float(max_box[3]);
-        max_box_x2 = float(max_box[1]);
+        max_box_x1 = static_cast<float>(max_box[3]);
+        max_box_x2 = static_cast<float>(max_box[1]);
     }
-    max_box_y1 = float(max_box[2]);
-    max_box_y2 = float(max_box[4]);
+    max_box_y1 = static_cast<float>(max_box[2]);
+    max_box_y2 = static_cast<float>(max_box[4]);
     if (max_box[2] > max_box[4]) {
-        max_box_y1 = float(max_box[4]);
-        max_box_y2 = float(max_box[2]);
+        max_box_y1 = static_cast<float>(max_box[4]);
+        max_box_y2 = static_cast<float>(max_box[2]);
     }
     if (algo == 0 || offset == 0.0) {
         max_area = (max_box_x2 - max_box_x1) * (max_box_y2 - max_box_y1);
@@ -250,7 +251,7 @@ __mlu_func__ void storeResult(IN_DT *max_box, OUT_DT *nram_save, OUT_DT *&output
                               const int max_output_size, const float thresh_score, const int output_mode, int &nram_save_count, uint32_t &output_box_num) {
     /******NMS STORE START******/
     // store to nram
-    if (float(max_box[0]) > thresh_score) {
+    if (static_cast<float>(max_box[0]) > thresh_score) {
         OUT_DT *save_ptr;
         int save_offset = 0;
         int save_str_num = 0;
@@ -259,7 +260,7 @@ __mlu_func__ void storeResult(IN_DT *max_box, OUT_DT *nram_save, OUT_DT *&output
         save_str_num = nram_save_limit_count;
         if (clusterId == 0 && coreId == 0) {
             if (output_mode == 0) {  // index1, index2, ...
-                save_ptr[save_offset] = ((uint32_t *)(max_box + INFO_NUM))[0];
+                save_ptr[save_offset] = (reinterpret_cast<uint32_t *>(max_box + INFO_NUM))[0];
             } else if (output_mode == 1) {  // score, x1, y1, x2, y2
                 __memcpy(
                     save_ptr + save_offset * INFO_NUM, max_box, INFO_NUM * sizeof(IN_DT), NRAM2NRAM, INFO_NUM * sizeof(IN_DT), INFO_NUM * sizeof(IN_DT), 0);
@@ -273,7 +274,7 @@ __mlu_func__ void storeResult(IN_DT *max_box, OUT_DT *nram_save, OUT_DT *&output
 
     // store to sram/gdram
     if (output_box_num != 0) {
-        if ((nram_save_count == nram_save_limit_count) || (float(max_box[0]) <= thresh_score) || keep == max_output_size - 1) {
+        if ((nram_save_count == nram_save_limit_count) || (static_cast<float>(max_box[0]) <= thresh_score) || keep == max_output_size - 1) {
             if (nram_save_count != 0) {
                 if (clusterId == 0 && coreId == 0) {
                     if (output_mode == 0) {  // index1, index2, ...
@@ -338,7 +339,7 @@ __mlu_func__ void scoreUpdate(IN_DT *input_score_ptr, const mluMemcpyDirection_t
                      cpy_len * sizeof(IN_DT),
                      cpy_len * sizeof(IN_DT),
                      0);
-            __bang_half2float((float *)score, (half *)x1, seg_len);
+            __bang_half2float(reinterpret_cast<float *>(score), reinterpret_cast<half *>(x1), seg_len);
             dt_offset = max_seg_iou_compute;
         }
 #if __BANG_ARCH__ >= 300
@@ -351,64 +352,78 @@ __mlu_func__ void scoreUpdate(IN_DT *input_score_ptr, const mluMemcpyDirection_t
                  3);
 
         if (sizeof(IN_DT) == sizeof(half)) {
-            __bang_half2float((float *)inter_x1, (half *)inter_x1 + max_seg_iou_compute, seg_len);
-            __bang_half2float((float *)inter_y1, (half *)inter_y1 + max_seg_iou_compute, seg_len);
-            __bang_half2float((float *)inter_x2, (half *)inter_x2 + max_seg_iou_compute, seg_len);
-            __bang_half2float((float *)inter_y2, (half *)inter_y2 + max_seg_iou_compute, seg_len);
+            __bang_half2float(reinterpret_cast<float *>(inter_x1), reinterpret_cast<half *>(inter_x1) + max_seg_iou_compute, seg_len);
+            __bang_half2float(reinterpret_cast<float *>(inter_y1), reinterpret_cast<half *>(inter_y1) + max_seg_iou_compute, seg_len);
+            __bang_half2float(reinterpret_cast<float *>(inter_x2), reinterpret_cast<half *>(inter_x2) + max_seg_iou_compute, seg_len);
+            __bang_half2float(reinterpret_cast<float *>(inter_y2), reinterpret_cast<half *>(inter_y2) + max_seg_iou_compute, seg_len);
         }
         // box transfer
-        __bang_minequal((float *)x1, (float *)inter_x1, (float *)inter_x2, seg_len);
-        __bang_maxequal((float *)x2, (float *)inter_x1, (float *)inter_x2, seg_len);
-        __bang_minequal((float *)y1, (float *)inter_y1, (float *)inter_y2, seg_len);
-        __bang_maxequal((float *)y2, (float *)inter_y1, (float *)inter_y2, seg_len);
+        __bang_minequal(reinterpret_cast<float *>(x1), reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(inter_x2), seg_len);
+        __bang_maxequal(reinterpret_cast<float *>(x2), reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(inter_x2), seg_len);
+        __bang_minequal(reinterpret_cast<float *>(y1), reinterpret_cast<float *>(inter_y1), reinterpret_cast<float *>(inter_y2), seg_len);
+        __bang_maxequal(reinterpret_cast<float *>(y2), reinterpret_cast<float *>(inter_y1), reinterpret_cast<float *>(inter_y2), seg_len);
         // 1、 compute IOU
         // get the area_I
-        __bang_maxeq_scalar((float *)inter_x1, (float *)x1, max_box_x1,
+        __bang_maxeq_scalar(reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(x1), max_box_x1,
                             seg_len);  // inter_x1
-        __bang_mineq_scalar((float *)inter_x2, (float *)x2, max_box_x2,
+        __bang_mineq_scalar(reinterpret_cast<float *>(inter_x2), reinterpret_cast<float *>(x2), max_box_x2,
                             seg_len);  // inter_x2
-        __bang_sub((float *)inter_x1, (float *)inter_x2, (float *)inter_x1, seg_len);
+        __bang_sub(reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(inter_x2), reinterpret_cast<float *>(inter_x1), seg_len);
         if (algo == 1 && offset != 0.0) {
-            __bang_add_scalar((float *)inter_x1, (float *)inter_x1, offset, seg_len);
+            __bang_add_scalar(reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(inter_x1), offset, seg_len);
         }
-        computeReluN((float *)inter_x1, (float *)inter_x1, NULL,
+        computeReluN(reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(inter_x1), NULL,
                      seg_len);  // inter_w
-        __bang_maxeq_scalar((float *)inter_y1, (float *)y1, float(max_box_y1),
+        __bang_maxeq_scalar(reinterpret_cast<float *>(inter_y1), reinterpret_cast<float *>(y1), static_cast<float>(max_box_y1),
                             seg_len);  // inter_y1
-        __bang_mineq_scalar((float *)inter_y2, (float *)y2, float(max_box_y2),
+        __bang_mineq_scalar(reinterpret_cast<float *>(inter_y2), reinterpret_cast<float *>(y2), static_cast<float>(max_box_y2),
                             seg_len);  // inter_y2
-        __bang_sub((float *)inter_y1, (float *)inter_y2, (float *)inter_y1, seg_len);
+        __bang_sub(reinterpret_cast<float *>(inter_y1), reinterpret_cast<float *>(inter_y2), reinterpret_cast<float *>(inter_y1), seg_len);
         if (algo == 1 && offset != 0.0) {
-            __bang_add_scalar((float *)inter_y1, (float *)inter_y1, offset, seg_len);
+            __bang_add_scalar(reinterpret_cast<float *>(inter_y1), reinterpret_cast<float *>(inter_y1), offset, seg_len);
         }
-        computeReluN((float *)inter_y1, (float *)inter_y1, NULL,
+        computeReluN(reinterpret_cast<float *>(inter_y1), reinterpret_cast<float *>(inter_y1), NULL,
                      seg_len);  // inter_h
-        __bang_mul((float *)inter_x1, (float *)inter_x1, (float *)inter_y1,
+        __bang_mul(reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(inter_y1),
                    seg_len);  // area_I
         // get the area of input_box: area = (x2 - x1) * (y2 - y1);
         if (algo == 1 && offset != 0.0) {
-            __bang_fusion(FUSION_FSA, (float *)inter_y1, (float *)x2, (float *)x1, offset, seg_len, seg_len);
-            __bang_fusion(FUSION_FSA, (float *)inter_y2, (float *)y2, (float *)y1, offset, seg_len, seg_len);
-            __bang_mul((float *)inter_x2, (float *)inter_y1, (float *)inter_y2,
+            __bang_fusion(
+                FUSION_FSA, reinterpret_cast<float *>(inter_y1), reinterpret_cast<float *>(x2), reinterpret_cast<float *>(x1), offset, seg_len, seg_len);
+            __bang_fusion(
+                FUSION_FSA, reinterpret_cast<float *>(inter_y2), reinterpret_cast<float *>(y2), reinterpret_cast<float *>(y1), offset, seg_len, seg_len);
+            __bang_mul(reinterpret_cast<float *>(inter_x2), reinterpret_cast<float *>(inter_y1), reinterpret_cast<float *>(inter_y2),
                        seg_len);  // area
         } else {
-            __bang_sub((float *)inter_y1, (float *)x2, (float *)x1, seg_len);
-            __bang_fusion(FUSION_FSM, (float *)inter_x2, (float *)y2, (float *)y1, (float *)inter_y1, seg_len, seg_len);
+            __bang_sub(reinterpret_cast<float *>(inter_y1), reinterpret_cast<float *>(x2), reinterpret_cast<float *>(x1), seg_len);
+            __bang_fusion(FUSION_FSM,
+                          reinterpret_cast<float *>(inter_x2),
+                          reinterpret_cast<float *>(y2),
+                          reinterpret_cast<float *>(y1),
+                          reinterpret_cast<float *>(inter_y1),
+                          seg_len,
+                          seg_len);
         }
         // get the area_U: area + max_area - area_I
-        __bang_fusion(FUSION_FAS, (float *)inter_x2, (float *)inter_x2, max_area, (float *)inter_x1, seg_len, seg_len);
+        __bang_fusion(FUSION_FAS,
+                      reinterpret_cast<float *>(inter_x2),
+                      reinterpret_cast<float *>(inter_x2),
+                      max_area,
+                      reinterpret_cast<float *>(inter_x1),
+                      seg_len,
+                      seg_len);
         // 2、 select the box
         // if IOU greater than thres, set the score to zero, abort it: area_U >
         // area_I * (1 / thresh)?
         if (thresh_iou > 0.0) {
-            __bang_mul_scalar((float *)inter_x1, (float *)inter_x1, div_thresh_iou, seg_len);
+            __bang_mul_scalar(reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(inter_x1), div_thresh_iou, seg_len);
         } else {
-            __bang_mul_scalar((float *)inter_x2, (float *)inter_x2, thresh_iou, seg_len);
+            __bang_mul_scalar(reinterpret_cast<float *>(inter_x2), reinterpret_cast<float *>(inter_x2), thresh_iou, seg_len);
         }
         // process for nan
-        __bang_lt((float *)inter_x1, (float *)inter_x2, (float *)inter_x1, seg_len);
-        __bang_not((float *)inter_x1, (float *)inter_x1, seg_len);
-        __bang_mul((float *)score, (float *)score, (float *)inter_x1, seg_len);
+        __bang_lt(reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(inter_x2), reinterpret_cast<float *>(inter_x1), seg_len);
+        __bang_not(reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(inter_x1), seg_len);
+        __bang_mul(reinterpret_cast<float *>(score), reinterpret_cast<float *>(score), reinterpret_cast<float *>(inter_x1), seg_len);
 /******NMS COMPUTE END******/
 #else
         __memcpy(x1 + dt_offset,
@@ -419,71 +434,71 @@ __mlu_func__ void scoreUpdate(IN_DT *input_score_ptr, const mluMemcpyDirection_t
                  input_num_boxes * sizeof(IN_DT),
                  3);
         if (sizeof(IN_DT) == sizeof(half)) {
-            __bang_half2float((float *)x1, (half *)x1 + max_seg_iou_compute, seg_len);
-            __bang_half2float((float *)y1, (half *)y1 + max_seg_iou_compute, seg_len);
-            __bang_half2float((float *)x2, (half *)x2 + max_seg_iou_compute, seg_len);
-            __bang_half2float((float *)y2, (half *)y2 + max_seg_iou_compute, seg_len);
+            __bang_half2float(reinterpret_cast<float *>(x1), reinterpret_cast<half *>(x1) + max_seg_iou_compute, seg_len);
+            __bang_half2float(reinterpret_cast<float *>(y1), reinterpret_cast<half *>(y1) + max_seg_iou_compute, seg_len);
+            __bang_half2float(reinterpret_cast<float *>(x2), reinterpret_cast<half *>(x2) + max_seg_iou_compute, seg_len);
+            __bang_half2float(reinterpret_cast<float *>(y2), reinterpret_cast<half *>(y2) + max_seg_iou_compute, seg_len);
         }
         // 1、 compute IOU
         // get the area_I
-        __bang_write_value((float *)inter_y1, seg_len,
-                           float(max_box[1]));  // max_x1
-        __bang_maxequal((float *)inter_x1, (float *)x1, (float *)inter_y1,
+        __bang_write_value(reinterpret_cast<float *>(inter_y1), seg_len,
+                           static_cast<float>(max_box[1]));  // max_x1
+        __bang_maxequal(reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(x1), reinterpret_cast<float *>(inter_y1),
                         seg_len);  // inter_x1
-        __bang_write_value((float *)inter_y2, seg_len,
-                           float(max_box[3]));  // max_x2
-        __bang_minequal((float *)inter_x2, (float *)x2, (float *)inter_y2,
+        __bang_write_value(reinterpret_cast<float *>(inter_y2), seg_len,
+                           static_cast<float>(max_box[3]));  // max_x2
+        __bang_minequal(reinterpret_cast<float *>(inter_x2), reinterpret_cast<float *>(x2), reinterpret_cast<float *>(inter_y2),
                         seg_len);  // inter_x2
-        __bang_sub((float *)inter_x1, (float *)inter_x2, (float *)inter_x1, seg_len);
+        __bang_sub(reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(inter_x2), reinterpret_cast<float *>(inter_x1), seg_len);
         if (algo == 1 && offset != 0.0) {
-            __bang_add_scalar((float *)inter_x1, (float *)inter_x1, offset, seg_len);
+            __bang_add_scalar(reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(inter_x1), offset, seg_len);
         }
-        computeReluN((float *)inter_x1, (float *)inter_x1, NULL,
+        computeReluN(reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(inter_x1), NULL,
                      seg_len);  // inter_w
-        __bang_write_value((float *)inter_x2, seg_len,
-                           float(max_box[2]));  // max_y1
-        __bang_maxequal((float *)inter_y1, (float *)y1, (float *)inter_x2,
+        __bang_write_value(reinterpret_cast<float *>(inter_x2), seg_len,
+                           static_cast<float>(max_box[2]));  // max_y1
+        __bang_maxequal(reinterpret_cast<float *>(inter_y1), reinterpret_cast<float *>(y1), reinterpret_cast<float *>(inter_x2),
                         seg_len);  // inter_y1
-        __bang_write_value((float *)inter_x2, seg_len,
-                           float(max_box[4]));  // max_y2
-        __bang_minequal((float *)inter_y2, (float *)y2, (float *)inter_x2,
+        __bang_write_value(reinterpret_cast<float *>(inter_x2), seg_len,
+                           static_cast<float>(max_box[4]));  // max_y2
+        __bang_minequal(reinterpret_cast<float *>(inter_y2), reinterpret_cast<float *>(y2), reinterpret_cast<float *>(inter_x2),
                         seg_len);  // inter_y2
-        __bang_sub((float *)inter_y1, (float *)inter_y2, (float *)inter_y1, seg_len);
+        __bang_sub(reinterpret_cast<float *>(inter_y1), reinterpret_cast<float *>(inter_y2), reinterpret_cast<float *>(inter_y1), seg_len);
         if (algo == 1 && offset != 0.0) {
-            __bang_add_scalar((float *)inter_y1, (float *)inter_y1, offset, seg_len);
+            __bang_add_scalar(reinterpret_cast<float *>(inter_y1), reinterpret_cast<float *>(inter_y1), offset, seg_len);
         }
-        computeReluN((float *)inter_y1, (float *)inter_y1, NULL,
+        computeReluN(reinterpret_cast<float *>(inter_y1), reinterpret_cast<float *>(inter_y1), NULL,
                      seg_len);  // inter_h
-        __bang_mul((float *)inter_x1, (float *)inter_x1, (float *)inter_y1,
+        __bang_mul(reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(inter_y1),
                    seg_len);  // area_I
         // get the area of input_box: area = (x2 - x1) * (y2 - y1);
-        __bang_sub((float *)inter_y1, (float *)x2, (float *)x1, seg_len);
-        __bang_sub((float *)inter_y2, (float *)y2, (float *)y1, seg_len);
+        __bang_sub(reinterpret_cast<float *>(inter_y1), reinterpret_cast<float *>(x2), reinterpret_cast<float *>(x1), seg_len);
+        __bang_sub(reinterpret_cast<float *>(inter_y2), reinterpret_cast<float *>(y2), reinterpret_cast<float *>(y1), seg_len);
         if (algo == 1 && offset != 0.0) {
-            __bang_add_scalar((float *)inter_y1, (float *)inter_y1, offset, seg_len);
-            __bang_add_scalar((float *)inter_y2, (float *)inter_y2, offset, seg_len);
+            __bang_add_scalar(reinterpret_cast<float *>(inter_y1), reinterpret_cast<float *>(inter_y1), offset, seg_len);
+            __bang_add_scalar(reinterpret_cast<float *>(inter_y2), reinterpret_cast<float *>(inter_y2), offset, seg_len);
         }
-        __bang_mul((float *)inter_x2, (float *)inter_y1, (float *)inter_y2,
+        __bang_mul(reinterpret_cast<float *>(inter_x2), reinterpret_cast<float *>(inter_y1), reinterpret_cast<float *>(inter_y2),
                    seg_len);  // area
         // get the area_U: area + max_area - area_I
-        __bang_add_scalar((float *)inter_x2, (float *)inter_x2, float(max_area), seg_len);
-        __bang_sub((float *)inter_x2, (float *)inter_x2, (float *)inter_x1,
+        __bang_add_scalar(reinterpret_cast<float *>(inter_x2), reinterpret_cast<float *>(inter_x2), static_cast<float>(max_area), seg_len);
+        __bang_sub(reinterpret_cast<float *>(inter_x2), reinterpret_cast<float *>(inter_x2), reinterpret_cast<float *>(inter_x1),
                    seg_len);  // area_U
         // 2、 select the box
         // if IOU greater than thresh, set the score to zero, abort it: area_U >
         // area_I * (1 / thresh)?
         if (thresh_iou > 0.0) {
-            __bang_mul_scalar((float *)inter_x1, (float *)inter_x1, div_thresh_iou, seg_len);
+            __bang_mul_scalar(reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(inter_x1), div_thresh_iou, seg_len);
         } else {
-            __bang_mul_scalar((float *)inter_x2, (float *)inter_x2, thresh_iou, seg_len);
+            __bang_mul_scalar(reinterpret_cast<float *>(inter_x2), reinterpret_cast<float *>(inter_x2), thresh_iou, seg_len);
         }
-        __bang_ge((float *)inter_x1, (float *)inter_x2, (float *)inter_x1, seg_len);
-        __bang_mul((float *)score, (float *)score, (float *)inter_x1, seg_len);
+        __bang_ge(reinterpret_cast<float *>(inter_x1), reinterpret_cast<float *>(inter_x2), reinterpret_cast<float *>(inter_x1), seg_len);
+        __bang_mul(reinterpret_cast<float *>(score), reinterpret_cast<float *>(score), reinterpret_cast<float *>(inter_x1), seg_len);
 /******NMS COMPUTE END******/
 #endif
         // update the score
         if (sizeof(IN_DT) == sizeof(half)) {
-            convertFloat2half((half *)score, (float *)score, seg_len);
+            convertFloat2half(reinterpret_cast<half *>(score), reinterpret_cast<float *>(score), seg_len);
         }
         pvLock();
         __memcpy(input_score_ptr + input_offset + i * max_seg_iou_compute,
