@@ -11,10 +11,10 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 
-if(DEFINED ENV{SUPA_DIOPI_DIR})
-  set(SUPA_DIOPI_DIR $ENV{SUPA_DIOPI_DIR})
+if(DEFINED ENV{DIOPI_SUPA_DIR})
+  set(DIOPI_SUPA_DIR $ENV{DIOPI_SUPA_DIR})
 else()
-  set(SUPA_DIOPI_DIR /usr/local/supa)
+  set(DIOPI_SUPA_DIR /usr/local/supa)
 endif()
 
 if(NOT DEFINED ENV{SUPA_PATH})
@@ -32,8 +32,8 @@ endif()
 
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
-include_directories(${SUPA_DIOPI_DIR}/include)
-link_directories(${SUPA_PATH}/lib ${SUPA_DIOPI_DIR}/lib)
+include_directories(${DIOPI_SUPA_DIR}/include)
+link_directories(${SUPA_PATH}/lib ${DIOPI_SUPA_DIR}/lib)
 
 # add biren so
 target_link_libraries(${DEVICEIMPL} diopi_impl_br)
