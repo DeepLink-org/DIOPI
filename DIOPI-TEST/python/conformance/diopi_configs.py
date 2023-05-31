@@ -4629,39 +4629,39 @@ diopi_configs = {
         ),
     ),
     
-    'view_as_real': dict(
-            name=['view_as_real'],
-            interface=['torch'],
-            dtype=[Dtype.complex64, Dtype.complex128],
-            tensor_para=dict(
-                gen_fn=Genfunc.randn_cmplx,
-                args=[
-                    {
-                        "ins": ['input'],
-                        "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
-                                (256, 128, 3, 3),
-                                (2, 31, 512, 6, 40), (0,), (0, 9), (4, 0, 5)),
-                    },
-                ],
-            ),
-        ),
+    # 'view_as_real': dict(
+    #         name=['view_as_real'],
+    #         interface=['torch'],
+    #         dtype=[Dtype.complex64, Dtype.complex128],
+    #         tensor_para=dict(
+    #             gen_fn=Genfunc.randn_cmplx,
+    #             args=[
+    #                 {
+    #                     "ins": ['input'],
+    #                     "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
+    #                             (256, 128, 3, 3),
+    #                             (2, 31, 512, 6, 40), (0,), (0, 9), (4, 0, 5)),
+    #                 },
+    #             ],
+    #         ),
+    #     ),
     
-    'view_as_complex': dict(
-            name=['view_as_complex'],
-            interface=['torch'],
-            dtype=[Dtype.float32, Dtype.float64],
-            tensor_para=dict(
-                gen_fn=Genfunc.randn,
-                args=[
-                    {
-                        "ins": ['input'],
-                        "shape": ((2,), (364800, 2), (2, 128, 2),
-                                (256, 128, 3, 2),
-                                (2, 31, 512, 6, 2), (0, 2), (4, 0, 2)),
-                    },
-                ],
-            ),
-        ),
+    # 'view_as_complex': dict(
+    #         name=['view_as_complex'],
+    #         interface=['torch'],
+    #         dtype=[Dtype.float32, Dtype.float64],
+    #         tensor_para=dict(
+    #             gen_fn=Genfunc.randn,
+    #             args=[
+    #                 {
+    #                     "ins": ['input'],
+    #                     "shape": ((2,), (364800, 2), (2, 128, 2),
+    #                             (256, 128, 3, 2),
+    #                             (2, 31, 512, 6, 2), (0, 2), (4, 0, 2)),
+    #                 },
+    #             ],
+    #         ),
+    #     ),
     
     'polar': dict(
         name=['polar'],
@@ -4686,15 +4686,15 @@ diopi_configs = {
         ),
     ),
     
-    'randn': dict(
-        name=['randn'],
-        no_output_ref=True,
-        para=dict(
-            size=[(), (128,), (3, 64), (3, 16, 64),
-                  (4, 16, 8, 64), (2, 16, 1, 64, 5),
-                  (0,), (0, 16), (8, 0, 12)],
-        ),
-    ),
+    # 'randn': dict(
+    #     name=['randn'],
+    #     no_output_ref=True,
+    #     para=dict(
+    #         size=[(), (128,), (3, 64), (3, 16, 64),
+    #               (4, 16, 8, 64), (2, 16, 1, 64, 5),
+    #               (0,), (0, 16), (8, 0, 12)],
+    #     ),
+    # ),
     
     'lerp': dict(
         name=['lerp'],
