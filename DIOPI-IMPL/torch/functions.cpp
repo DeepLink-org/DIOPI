@@ -3550,7 +3550,8 @@ diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, diopiTensorHa
     return diopiSuccess;
 }
 
-diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t pad, const char* mode, const double* value) {
+diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t pad,
+                      const char* mode, const double* value) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atPad = impl::aten::buildAtIntArray(pad);

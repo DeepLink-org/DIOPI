@@ -3,6 +3,7 @@ project(torch_impl)
 
 option(HIP "Whether to use HIP when available" OFF)
 
+set(Torch_DIR /nvme/share/share/xt/pytorch1.10/pytorch/torch/share/cmake/Torch)
 find_package(Torch 1.10 REQUIRED)
 if (Torch_FOUND)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -std=c++14 -fPIC")
@@ -63,6 +64,10 @@ if (DYLOAD)
     endif()
     add_dependencies(${DEVICEIMPL} code_gen) # make sure to recompile once code_gen.py changed
     target_link_libraries(${REALIMPL} ${TORCH_LIBRARIES})
+    if (TEST)
+        add_dependencies(${REALIMPL} diopirt)
+        target_link_libraries(${REALIMPL} diopirt)
+    endif()
 else ()
     if(USE_HIP)
         hip_add_library(${DEVICEIMPL} SHARED ${REAL_IMPL_SRC})
