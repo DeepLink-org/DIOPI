@@ -1347,7 +1347,6 @@ def batch_norm(input, running_mean, running_var, weight, bias,
 
     out = raw_like(input)
     func = check_function("diopiBatchNorm")
-    # import pdb;pdb.set_trace()
     ret = func(input.context_handle, out.tensor_handle, save_mean.tensor_handle, save_invstd.tensor_handle,
                input.tensor_handle, weight.tensor_handle, bias.tensor_handle, running_mean, running_var, c_bool(training),
                c_double(momentum), c_double(eps))
