@@ -2,7 +2,6 @@
 from .diopi_runtime import Tensor, Dtype, Device, raw_like, diopiTensor, Context
 from .diopi_runtime import get_last_error, device
 from .diopi_runtime import from_numpy_dtype, to_numpy_dtype
-from .diopi_runtime import diopirt_lib, device_impl_lib
 from .diopi_configs import diopi_configs, ops_with_states
 from .config import Config
 from .conformance_test import ConformanceTest
@@ -23,13 +22,10 @@ bfloat16 = Dtype.bfloat16
 tfloat32 = Dtype.tfloat32
 complex64 = Dtype.complex64
 complex128 = Dtype.complex128
-
 bool = Dtype.bool
 
 
 __all__ = [
-    'diopirt_lib',
-    'device_impl_lib',
     'Config',
     'diopi_configs',
     'ops_with_states',
@@ -44,4 +40,5 @@ __all__ = [
     'to_numpy_dtype',
     'ConformanceTest',
     'diopiTensor',
+    'cur_test_func',
 ]

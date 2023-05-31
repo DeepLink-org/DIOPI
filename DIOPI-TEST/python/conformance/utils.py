@@ -1,17 +1,18 @@
 # Copyright (c) 2023, DeepLink.
 import logging
 from . import diopi_runtime
-from .diopi_runtime import get_last_error
-from .dtype import Dtype
+from .diopi_runtime import get_last_error, Dtype, diopiError
 import os
 import numpy as np
 import csv
 import pickle
 import ctypes
-import diopi_functions
+import export_functions
 
 
 cfg_file_name = "test_config.cfg"
+cur_test_func = ""
+
 
 default_cfg_dict = dict(
     default_option=dict(
@@ -209,22 +210,22 @@ class FunctionNotImplementedError(DiopiException):
 
 def check_returncode(returncode, throw_exception=True):
     if 0 != returncode:
+        if returncode == diopiError.diopi_no_implement:
+            global cur_test_func
+            raise FunctionNotImplementedError(cur_test_func + 'not implement')
+            return 
         error_info = f"Returncode: {returncode}"
         error_detail = get_last_error()
         error_info += ", Details: " + error_detail
-
-        if throw_exception:
+        if throw_exception :
             raise DiopiException(error_info)
         else:
             logger.info(error_info)
 
 
 def check_function(fn_name):
-    # import pdb
-    # pdb.set_trace()
     try:
-        func = eval(f"diopi_functions.{fn_name}")
-        # func = eval(f"diopi_runtime.diopirt_lib.{fn_name}")
+        func = eval(f"export_functions.{fn_name}")
     except AttributeError as e:
         raise FunctionNotImplementedError(e.args)
     return func

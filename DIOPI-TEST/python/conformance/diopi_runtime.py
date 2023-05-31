@@ -1,18 +1,10 @@
 # Copyright (c) 2023, DeepLink.
-import os
-from enum import Enum, unique
 import ctypes
-from ctypes import (CDLL, RTLD_GLOBAL, cdll, byref, Union, POINTER)
-from ctypes import (c_void_p, c_char_p, c_int64, c_double)
-from .dtype import Dtype
+from ctypes import c_void_p
 import numpy as np
 import atexit
-from diopi_runtime import diopiTensor, diopiSize, diopiScalar, Context, Device, diopi_tensor_copy_to_buffer, get_last_error_string
-
-# @unique
-# class Device(Enum):
-#     Host = 0
-#     AIChip = 1
+from export_runtime import diopiTensor , diopiSize, diopiScalar, diopiReduction, diopiRoundMode, diopiError, TensorP, Context, Device, Dtype, \
+                           diopi_tensor_copy_to_buffer, get_last_error_string, finalize_library, diopi_finalize
 
 
 def device(dev: str) -> Device:
@@ -20,6 +12,43 @@ def device(dev: str) -> Device:
         return Device.Host
     else:
         return Device.AIChip
+
+
+all_types = [Dtype.float16, Dtype.float32, Dtype.float64, Dtype.int32, Dtype.int64]
+float_types = [Dtype.float16, Dtype.float32, Dtype.float64]
+float_no_half_types = [Dtype.float32, Dtype.float64]
+int_types = [Dtype.int32, Dtype.int64]
+complex_types = [Dtype.complex64, Dtype.complex128]
+default = all_types
+
+
+def from_dtype_str(dtype_str: str) -> Dtype:
+    if dtype_str == 'int8':
+        return Dtype.int8
+    elif dtype_str == 'uint8':
+        return Dtype.uint8
+    elif dtype_str == 'int16':
+        return Dtype.int16
+    elif dtype_str == 'uint16':
+        return Dtype.uint16
+    elif dtype_str == 'int32':
+        return Dtype.int32
+    elif dtype_str == 'uint32':
+        return Dtype.uint32
+    elif dtype_str == 'int64':
+        return Dtype.int64
+    elif dtype_str == 'uint64':
+        return Dtype.uint64
+    elif dtype_str == 'float16':
+        return Dtype.float16
+    elif dtype_str == 'float32':
+        return Dtype.float32
+    elif dtype_str == 'float64':
+        return Dtype.float64
+    elif dtype_str == 'bool':
+        return Dtype.bool
+    else:
+        return None
 
 
 def from_numpy_dtype(dtype: np.dtype) -> Dtype:
@@ -135,16 +164,9 @@ def compute_nhwc_stride(size, itemsize=1, name=None):
         return compute_nhwc_stride_3d(size, itemsize)
 
 
-_cur_dir = os.path.dirname(os.path.abspath(__file__))
-diopirt_lib = CDLL(name=os.path.join(_cur_dir, "../../../DIOPI-IMPL/lib/libdiopirt.so"), mode=RTLD_GLOBAL)
-diopirt_lib.diopiInit()
-
-device_impl_lib = cdll.LoadLibrary(os.path.join(_cur_dir, "../../../DIOPI-IMPL/lib/libdiopi_impl.so"))
-
-
 def on_diopi_rt_exit():
-    diopirt_lib.finalizeLibrary()
-    diopirt_lib.diopiFinalize()
+    finalize_library()
+    diopi_finalize()
 
 
 atexit.register(on_diopi_rt_exit)

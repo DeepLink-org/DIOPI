@@ -10,11 +10,12 @@
 #include <pybind11/numpy.h>
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
+#include <conform_test.h>
 
 #include <litert.hpp>
 namespace py = pybind11;
 
-PYBIND11_MODULE(diopi_runtime, m) {
+PYBIND11_MODULE(export_runtime, m) {
     py::options options;
     options.disable_function_signatures();
     py::class_<diopiTensor, std::shared_ptr<diopiTensor>>(
@@ -80,6 +81,7 @@ PYBIND11_MODULE(diopi_runtime, m) {
         .value("diopi_no_registered_host2device_memory_copy_function", diopiError_t::diopiNoRegisteredHost2DeviceMemoryCopyFunction)
         .value("diopi_no_registered_get_last_error_function", diopiError_t::diopiNoRegisteredGetLastErrorFunction)
         .value("diopi_5d_not_supported", diopiError_t::diopi5DNotSupported)
+        .value("diopi_no_implement", diopiError_t::diopiNoImplement)
         .value("diopi_dtype_not_supported", diopiError_t::diopiDtypeNotSupported);
     py::enum_<diopiReduction_t>(m, "diopiReduction")
         .value("ReductionNone", diopiReduction_t::ReductionNone)
@@ -136,4 +138,6 @@ PYBIND11_MODULE(diopi_runtime, m) {
         });
     m.def("get_last_error_string", &diopiGetLastErrorString);
     m.def("diopi_init", &diopiInit);
+    m.def("diopi_finalize", &diopiFinalize);
+    m.def("finalize_library", &finalizeLibrary);
 }

@@ -4,13 +4,11 @@ import math
 import itertools
 
 from ctypes import c_double, byref
-from .diopi_runtime import Sizes, Scalar, Tensor, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d
+from .diopi_runtime import Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d
 from .utils import check_returncode, check_function, glob_vars, get_capsule
-from . import Dtype, raw_like
+from . import raw_like
 from collections import namedtuple
 import numpy as np
-from diopi_runtime import diopiReduction, diopiRoundMode
-from diopi_runtime import TensorP
 
 
 def broadcast_out_size(size1, size2):

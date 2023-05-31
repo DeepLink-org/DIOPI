@@ -128,6 +128,7 @@ def gen_functions(options):
                 idx += 1
             type_change, args, attr_types, paras_none, ins_vector, outs_vector, out_ptr = get_func_info(temp_content)
             call_args = copy.deepcopy(args)
+            type_change = True
             if type_change:
                 convert, out_copy = '', ''
                 for param_type in type_convert_dict:
@@ -179,7 +180,7 @@ def gen_functions(options):
                                                                    out_copy='', call_func=call_func)))
 
     output_path = options.get('output_dir')
-    output_file = os.path.join(output_path, 'diopi_functions.cpp')
+    output_file = os.path.join(output_path, 'export_functions.cpp')
     out_code = OT.operators_template.substitute(env=dict(export_functions=exports))
 
     with open(output_file, 'w') as file:

@@ -3,7 +3,7 @@ import copy
 import pickle
 
 from .utils import default_cfg_dict
-from .dtype import Dtype, default
+from .diopi_runtime import default
 
 
 class Genfunc(object):

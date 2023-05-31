@@ -13,10 +13,6 @@ from .utils import get_saved_pth_list, get_data_from_file
 from .utils import cfg_file_name
 from . import model_config
 
-# import pynvml
-# pynvml.nvmlInit()
-# handle = pynvml.nvmlDeviceGetHandleByIndex(0)
-
 
 def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dtype_list=[], filter_dtype_str_list=[]):
     tensor_info = []
@@ -445,11 +441,9 @@ class ConformanceTest(object):
                     np_inputs_orign = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
                     info = convert_input_tensors(function_paras, test_tag, nhwc_list, dtype_list, filter_dtype_str_list)
                     tensor_info = info if info else tensor_info
-                    # meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
-                    # logger.info(f"============================ before" + cfg_func_name + ":" + str(meminfo.used/1024**2))
+                    global cur_test_func
+                    cur_test_func = func_call.split('(')[0].split('.')[1]
                     output = eval(func_call)
-                    # meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
-                    # logger.info(f"============================ after" + cfg_func_name + ":" + str(meminfo.used/1024**2))
                     np_inputs_after_forward = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
                     passed, not_passed_name = np_allclose(np_inputs_orign, np_inputs_after_forward)
                     sum_to_compare = True if 'sorted' in kwargs and ~kwargs['sorted'] else False
@@ -499,31 +493,31 @@ class ConformanceTest(object):
                     for k, v in data["cfg"]['saved_args'].items():
                         backward_para[k] = output[v]
 
-                    # try:
-                    grad_input = eval(f"F.{cfg_func_name}_backward(**kwargs, **backward_para)")
-                    np_inputs_after_backward = get_np_inputs(kwargs, ignore_paras_for_input_check)
-                    passed, not_passed_name = np_allclose(np_inputs_orign, np_inputs_after_backward)
-                    passed = passed and compare_with_gen_output(grad_input, data['cfg'], backward_out_reference)
-                    if passed:
-                        logger.info(f"Run diopi_functions.{cfg_func_name}_backward succeed")
-                    else:
-                        input_compare_str = "" if not_passed_name == "" else f", because of inputs: {not_passed_name} changed"
-                        logger.error(f"Run diopi_functions.{cfg_func_name}_backward failed{input_compare_str}", tag=test_tag, info=tensor_info)
-                        if debug_level > 0:
-                            logger.error("failed config:\n%s", config_to_format_string(data['cfg']))
-                            if debug_level > 1:
-                                logger.error("failed arguments:")
-                                for key, arg in kwargs.items():
-                                    logger.error(f"{key}: {arg}")
-                                for key, arg in backward_para.items():
-                                    logger.error(f"{key}: {arg}")
-                                logger.error(f"grad_reference:\n{backward_out_reference}")
-                                logger.error(f"grad:\n{grad_input}")
-                    write_precision(data["cfg"], cfg_func_name + '_bp', passed)
-                    # except FunctionNotImplementedError as e:
-                    #     logger.error(f"NotImplemented: {e}")
-                    # except AttributeError as e:
-                    #     logger.error(f"AttributeError: {e}")
-                    # except Exception as e:
-                    #     logger.error(f"Failed: {e}")
+                    try:
+                        grad_input = eval(f"F.{cfg_func_name}_backward(**kwargs, **backward_para)")
+                        np_inputs_after_backward = get_np_inputs(kwargs, ignore_paras_for_input_check)
+                        passed, not_passed_name = np_allclose(np_inputs_orign, np_inputs_after_backward)
+                        passed = passed and compare_with_gen_output(grad_input, data['cfg'], backward_out_reference)
+                        if passed:
+                            logger.info(f"Run diopi_functions.{cfg_func_name}_backward succeed")
+                        else:
+                            input_compare_str = "" if not_passed_name == "" else f", because of inputs: {not_passed_name} changed"
+                            logger.error(f"Run diopi_functions.{cfg_func_name}_backward failed{input_compare_str}", tag=test_tag, info=tensor_info)
+                            if debug_level > 0:
+                                logger.error("failed config:\n%s", config_to_format_string(data['cfg']))
+                                if debug_level > 1:
+                                    logger.error("failed arguments:")
+                                    for key, arg in kwargs.items():
+                                        logger.error(f"{key}: {arg}")
+                                    for key, arg in backward_para.items():
+                                        logger.error(f"{key}: {arg}")
+                                    logger.error(f"grad_reference:\n{backward_out_reference}")
+                                    logger.error(f"grad:\n{grad_input}")
+                        write_precision(data["cfg"], cfg_func_name + '_bp', passed)
+                    except FunctionNotImplementedError as e:
+                        logger.error(f"NotImplemented: {e}")
+                    except AttributeError as e:
+                        logger.error(f"AttributeError: {e}")
+                    except Exception as e:
+                        logger.error(f"Failed: {e}")
             default_context.clear_tensors()

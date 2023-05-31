@@ -196,7 +196,7 @@ def gen_config_code(config, file_name):
     os.system(f"rm -f {file_name}.py")
     with open(f'{file_name}.py', 'a') as f:
         f.write("from ...config import Genfunc\n")
-        f.write("from ...dtype import Dtype\n\n")
+        f.write("from ...diopi_runtime import Dtype\n\n")
         f.write(file_name[file_name.find("/") + 1:] + " = {\n")
 
     for ele in content:

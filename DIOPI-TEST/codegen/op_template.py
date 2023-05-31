@@ -74,7 +74,7 @@ class OpTemplate(object):
 #include <diopi/diopirt.h>
 namespace py = pybind11;
 
-PYBIND11_MODULE(diopi_functions, m) {
+PYBIND11_MODULE(export_functions, m) {
     m.doc() = "pybind11 example-1 plugin"; // optional module docstring
     m.def("diopiGetVendorName", &diopiGetVendorName);
     m.def("diopiGetImplVersion", &diopiGetImplVersion);
@@ -87,10 +87,14 @@ PYBIND11_MODULE(diopi_functions, m) {
 
     function_template = CodeTemplate("""\
 m.def("${func_name}", [](${attrs}) {
-    ${convert}
-    diopiError_t ret = ${call_func};
-    ${out_copy}
-    return ret;
+    if (${func_name}) {
+        ${convert}
+        diopiError_t ret = ${call_func};
+        ${out_copy}
+        return ret;
+    } else {
+        return diopiError_t::diopiNoImplement;
+    }
 });
 """)
 

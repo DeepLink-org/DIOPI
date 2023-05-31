@@ -51,6 +51,7 @@ typedef enum {
     diopiNoRegisteredHost2DeviceMemoryCopyFunction = 10,
     diopiNoRegisteredGetLastErrorFunction = 11,
     diopi5DNotSupported = 12,
+    diopiNoImplement = 13,
     diopiDtypeNotSupported = 1000,
 } diopiError_t;
 

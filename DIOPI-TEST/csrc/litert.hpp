@@ -192,6 +192,8 @@ DIOPI_RT_API diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t      ctx,
                                                 void*                     dst);
 
 DIOPI_RT_API diopiError_t diopiInit();
+
+DIOPI_RT_API diopiError_t diopiFinalize();
 }  // extern "C"
 
 #endif  // DIOPI_IMPL_TORCH_TEST_INCLUDE_LITERT_HPP_  // NOLINT
