@@ -4629,22 +4629,22 @@ diopi_configs = {
         ),
     ),
     
-    # 'view_as_real': dict(
-    #         name=['view_as_real'],
-    #         interface=['torch'],
-    #         dtype=[Dtype.complex64, Dtype.complex128],
-    #         tensor_para=dict(
-    #             gen_fn=Genfunc.randn_cmplx,
-    #             args=[
-    #                 {
-    #                     "ins": ['input'],
-    #                     "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
-    #                             (256, 128, 3, 3),
-    #                             (2, 31, 512, 6, 40), (0,), (0, 9), (4, 0, 5)),
-    #                 },
-    #             ],
-    #         ),
-    #     ),
+    'view_as_real': dict(
+            name=['view_as_real'],
+            interface=['torch'],
+            dtype=[Dtype.complex64, Dtype.complex128],
+            tensor_para=dict(
+                gen_fn=Genfunc.randn_cmplx,
+                args=[
+                    {
+                        "ins": ['input'],
+                        "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
+                                (256, 128, 3, 3),
+                                (2, 31, 512, 6, 40), (0,), (0, 9), (4, 0, 5)),
+                    },
+                ],
+            ),
+        ),
     
     'view_as_complex': dict(
             name=['view_as_complex'],
