@@ -597,7 +597,7 @@ namespace impl {
 
 namespace camb {
 
-void KernelDynamicVoxelize(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
+void kernelDynamicVoxelize(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
                            cnrtQueue_t queue, const void *points, void *coors,
                            const float voxel_x, const float voxel_y,
                            const float voxel_z, const float coors_x_min,
@@ -613,7 +613,7 @@ void KernelDynamicVoxelize(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
       grid_y, grid_z, num_points, num_features);
 }
 
-void KernelPoint2Voxel(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
+void kernelPoint2Voxel(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
                        cnrtQueue_t queue, void *coors, void *point_to_pointidx,
                        void *point_to_voxelidx, const int32_t num_points,
                        const int32_t max_points) {
@@ -622,7 +622,7 @@ void KernelPoint2Voxel(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
       (int32_t *)point_to_voxelidx, num_points, max_points);
 }
 
-void KernelCalcPointsPerVoxel(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
+void kernelCalcPointsPerVoxel(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
                               cnrtQueue_t queue, void *point_to_pointidx,
                               void *point_to_voxelidx, void *coor_to_voxelidx,
                               void *num_points_per_voxel, void *voxel_num,
@@ -634,7 +634,7 @@ void KernelCalcPointsPerVoxel(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
       (int32_t *)voxel_num, max_voxels, num_points);
 }
 
-void KernelAssignVoxelsCoors(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
+void kernelAssignVoxelsCoors(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
                              cnrtQueue_t queue, const void *points,
                              void *temp_coors, void *point_to_voxelidx,
                              void *coor_to_voxelidx, void *voxels, void *coors,

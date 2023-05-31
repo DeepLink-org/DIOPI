@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef DIOPI_IMPL_CAMB_FUNCTIONS_MMCV_COMMON_NMS_UTILS_HPP_
-#define DIOPI_IMPL_CAMB_FUNCTIONS_MMCV_COMMON_NMS_UTILS_HPP_
+#ifndef DIOPI_IMPL_CAMB_FUNCTIONS_MMCV_NMS_UTILS_HPP_
+#define DIOPI_IMPL_CAMB_FUNCTIONS_MMCV_NMS_UTILS_HPP_
 #include "common_mlu_helper.hpp"
 
 #define NMS_SIZE (64)
@@ -497,4 +497,4 @@ __mlu_func__ void scoreUpdate(IN_DT *input_score_ptr, const mluMemcpyDirection_t
     }
 }
 
-#endif  // DIOPI_IMPL_CAMB_FUNCTIONS_MMCV_COMMON_NMS_UTILS_HPP_
+#endif  // DIOPI_IMPL_CAMB_FUNCTIONS_MMCV_NMS_UTILS_HPP_
