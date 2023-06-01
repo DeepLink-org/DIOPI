@@ -50,7 +50,7 @@ target_include_directories(${DEVICEIMPL} SYSTEM PUBLIC ${THIRD_PARTY_INCLUDE_DIR
 if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
     set(ADAPTOR_GEN_PATH "${CMAKE_SOURCE_DIR}/../DIOPI-ADAPTOR/codegen")
     add_custom_target(adaptor_code_gen COMMAND python3 ${ADAPTOR_GEN_PATH}/gen.py
-        --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${PROJECT_SOURCE_DIR}/test/include
+        --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${CMAKE_SOURCE_DIR}/../DIOPI-PROTO/include/diopi/
         --config_device=torch)
     set(USE_ADAPTOR "true")
     add_definitions(-DTEST_USE_ADAPTOR)
