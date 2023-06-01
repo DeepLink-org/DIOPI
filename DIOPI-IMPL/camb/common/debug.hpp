@@ -11,9 +11,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <vector>
+
 #include <iostream>
 #include <memory>
+#include <vector>
 
 #include "../diopi_helper.hpp"
 
@@ -82,7 +83,7 @@ void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor) {
     return;
 }
 
-template<typename T>
+template <typename T>
 void printVec(std::vector<T> vec) {
     for (int i = 0; i < vec.size(); ++i) {
         std::cout << vec[i] << " ";
