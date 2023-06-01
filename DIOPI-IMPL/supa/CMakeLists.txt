@@ -33,7 +33,9 @@ endif()
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
 include_directories(${DIOPI_SUPA_DIR}/include)
-link_directories(${SUPA_PATH}/lib ${DIOPI_SUPA_DIR}/lib)
+
+find_library(DIOPI_BR_LIB NAMES diopi_impl_br HINTS ${DIOPI_SUPA_DIR}/lib)
+message("BR-DIOPI LIB:${DIOPI_BR_LIB}")
 
 # add biren so
-target_link_libraries(${DEVICEIMPL} diopi_impl_br)
+target_link_libraries(${DEVICEIMPL} ${DIOPI_BR_LIB})

@@ -54,10 +54,6 @@ int32_t device_synchronize_stream(diopiStreamHandle_t streamHandle) {
 
 int32_t device_memcpy_h2d_async(diopiStreamHandle_t streamHandle, void* dst, const void* src, uint64_t bytes) {
     suStream_t stream = (suStream_t)streamHandle;
-    suError_t suMemcpyAsync(void *dst, const void *src, size_t size,
-                        suStream_t stream = NULL,
-                        suMemcpyKind kind = suMemcpyDefault);
-
     SUPA_CALL(suMemcpyAsync(dst, const_cast<void*>(src), bytes, stream, suMemcpyHostToDevice));
     return diopiSuccess;
 }
