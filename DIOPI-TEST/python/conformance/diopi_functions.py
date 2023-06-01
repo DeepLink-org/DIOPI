@@ -3686,3 +3686,19 @@ def lerp(input, end, weight) -> Tensor:
     ret = func(input.context_handle, out.tensor_handle, input.tensor_handle, end.tensor_handle, weight)
     check_returncode(ret)
     return out
+
+
+def sgn(input, inplace=False) -> Tensor:
+    call = "diopiSgn"
+    if inplace:
+        call += "Inp"
+        func = check_function(call)
+        ret = func(input.context_handle, input.tensor_handle)
+        check_returncode(ret)
+        return input
+    else:
+        out = Tensor(input.size(), input.get_dtype())
+        func = check_function(call)
+        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle)
+        check_returncode(ret)
+        return out
