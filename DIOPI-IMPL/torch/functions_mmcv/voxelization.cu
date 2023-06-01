@@ -4,13 +4,13 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <float.h>
 #include <ATen/ATen.h>
 #include <ATen/AccumulateType.h>
 #include <ATen/cuda/CUDAContext.h>
 #include <c10/cuda/CUDAGuard.h>
+#include <float.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <torch/library.h>
 
 #include "../cuda_helpers.h"
@@ -226,8 +226,8 @@ __global__ void nondeterministic_assign_point_voxel(
 }
 
 int HardVoxelizeForwardCUDAKernelLauncher(
-    const at::Tensor &points, at::Tensor &voxels, at::Tensor &coors,
-    at::Tensor &num_points_per_voxel, const std::vector<float> voxel_size,
+    const at::Tensor& points, at::Tensor& voxels, at::Tensor& coors,
+    at::Tensor& num_points_per_voxel, const std::vector<float> voxel_size,
     const std::vector<float> coors_range, const int max_points,
     const int max_voxels, const int NDim = 3) {
   // current version tooks about 0.04s for one frame on cpu
@@ -366,8 +366,8 @@ int HardVoxelizeForwardCUDAKernelLauncher(
 }
 
 int NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
-    const at::Tensor &points, at::Tensor &voxels, at::Tensor &coors,
-    at::Tensor &num_points_per_voxel, const std::vector<float> voxel_size,
+    const at::Tensor& points, at::Tensor& voxels, at::Tensor& coors,
+    at::Tensor& num_points_per_voxel, const std::vector<float> voxel_size,
     const std::vector<float> coors_range, const int max_points,
     const int max_voxels, const int NDim = 3) {
   at::cuda::CUDAGuard device_guard(points.device());
@@ -464,7 +464,7 @@ int NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
 }
 
 void DynamicVoxelizeForwardCUDAKernelLauncher(
-    const at::Tensor &points, at::Tensor &coors,
+    const at::Tensor& points, at::Tensor& coors,
     const std::vector<float> voxel_size, const std::vector<float> coors_range,
     const int NDim = 3) {
   // current version tooks about 0.04s for one frame on cpu

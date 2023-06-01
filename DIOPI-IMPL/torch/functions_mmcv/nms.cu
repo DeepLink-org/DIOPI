@@ -4,11 +4,11 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <float.h>
 #include <ATen/ATen.h>
 #include <ATen/AccumulateType.h>
 #include <ATen/cuda/CUDAContext.h>
 #include <c10/cuda/CUDAGuard.h>
+#include <float.h>
 #include <torch/library.h>
 
 #include "../cuda_helpers.h"
@@ -139,14 +139,14 @@ Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   nms_cuda<<<blocks, threads, 0, stream>>>(
       boxes_num, iou_threshold, offset, boxes_sorted.data_ptr<float>(),
-      (unsigned long long*)mask.data_ptr<int64_t>());
+      (unsigned long long *)mask.data_ptr<int64_t>());
 
   // Filter the boxes which should be kept.
   at::Tensor keep_t = at::zeros(
       {boxes_num}, boxes.options().dtype(at::kBool).device(at::kCUDA));
   gather_keep_from_mask<<<1, min(col_blocks, THREADS_PER_BLOCK),
                           col_blocks * sizeof(unsigned long long), stream>>>(
-      keep_t.data_ptr<bool>(), (unsigned long long*)mask.data_ptr<int64_t>(),
+      keep_t.data_ptr<bool>(), (unsigned long long *)mask.data_ptr<int64_t>(),
       boxes_num);
   AT_CUDA_CHECK(cudaGetLastError());
   return order_t.masked_select(keep_t);
