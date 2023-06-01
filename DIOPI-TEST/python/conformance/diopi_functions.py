@@ -484,14 +484,7 @@ def matmul(input, other) -> Tensor:
     return out
 
 
-def clamp(input, min=None, max=None, inplace=False) -> Tensor:
-    assert min is not None or max is not None,\
-        "min and max can not be None in the meantime"
-    if max is None:
-        return clamp_min(input, min, inplace)
-    if min is None:
-        return clamp_max(input, max, inplace)
-
+def clamp(input, min, max, inplace=False) -> Tensor:
     call = "diopiClamp"
     args = "input.context_handle, "
     if inplace:
