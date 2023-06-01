@@ -118,7 +118,6 @@ const char* deviceToStr(const diopiDevice_t device) {
 #undef _device2str
 }
 
-
 diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype,
                          diopiDevice_t device, diopiContextHandle_t context, const void* src) {
     assert(shape);
@@ -172,10 +171,6 @@ bool diopiTensor::resetShape(const diopiSize_t* size) {
         strideTemp *= size->data[i];
     }
     return true;
-}
-
-int64_t diopiTensor::elemSize() const {
-    return itemsize(this->dtype());
 }
 
 DIOPI_RT_API diopiError_t diopiGetTensorData(diopiTensorHandle_t th, void** pptr) {

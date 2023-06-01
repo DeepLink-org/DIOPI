@@ -21,7 +21,6 @@
 #include <set>
 
 namespace py = pybind11;
-
 template <class T>
 class PtrWrapper {
 public:
@@ -38,9 +37,9 @@ private:
     T* ptr;
 };
 
-
 extern "C" {
 
+int32_t itemsize(const diopiDtype_t dtype);
 class Storage final {
 private:
     malloc_func_t mallocFn_;
@@ -97,11 +96,13 @@ public:
     diopiDtype_t dtype() const { return dtype_; }
     diopiDevice_t device() const { return device_; }
     int64_t numel() const { return numel_; }
+    int64_t elemSize() const {
+        return itemsize(this->dtype());
+    }
 
     void* data() { return storage_->data(); }
     const void* data() const { return storage_->data(); }
     int64_t nbytes() const { return storage_->nbytes(); }
-    int64_t elemSize() const;
     py::buffer_info buffer() const noexcept {
         if (storage_ == nullptr) {
             return py::buffer_info();

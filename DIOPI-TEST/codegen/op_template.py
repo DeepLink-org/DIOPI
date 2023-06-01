@@ -69,7 +69,7 @@ class OpTemplate(object):
 #include <pybind11/pybind11.h>
 #include "litert.hpp"
 #ifdef TEST_USE_ADAPTOR
-#include <diopi_adaptors.hpp>
+#include <diopi/diopi_adaptors.hpp>
 #endif
 #include <diopi/diopirt.h>
 namespace py = pybind11;

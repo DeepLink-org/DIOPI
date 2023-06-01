@@ -7,7 +7,6 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 build)
 
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/test/include")
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/../third_party/pybind11/include")
-# include_directories(${PYTHON_INCLUDE_DIR})
 
 set(RUNTIME_SRC
     litert.cpp
@@ -35,7 +34,6 @@ add_custom_target(functions_copy ALL
     COMMAND ln -f ${FUNCTION_SAVE_PATH}/export_functions.cpp ${PROJECT_SOURCE_DIR}/test
     DEPENDS test_code_gen)
 
-# file(MAKE_DIRECTORY ${FUNCTION_SAVE_PATH})
 file(TOUCH export_functions.cpp)
 set(FUNCTIONS_SRC
     export_functions.cpp
@@ -44,7 +42,9 @@ set(FUNCTIONS_SRC
 pybind11_add_module(${DIOPIFUNCTIONS} SHARED ${FUNCTIONS_SRC})
 target_link_libraries(${DIOPIFUNCTIONS} PRIVATE diopirt)
 add_dependencies(${DIOPIFUNCTIONS} functions_copy)
-add_dependencies(${DIOPIFUNCTIONS} adaptor_code_gen)
+if(USE_ADAPTOR="true")
+    add_dependencies(${DIOPIFUNCTIONS} adaptor_code_gen)
+endif()
 
 
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/../DIOPI-TEST/python)

@@ -3,7 +3,6 @@ project(torch_impl)
 
 option(HIP "Whether to use HIP when available" OFF)
 
-set(Torch_DIR /nvme/share/share/xt/pytorch1.10/pytorch/torch/share/cmake/Torch)
 find_package(Torch 1.10 REQUIRED)
 if (Torch_FOUND)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -std=c++14 -fPIC")
@@ -81,7 +80,7 @@ endif()
 if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
     set(ADAPTOR_GEN_PATH "${CMAKE_SOURCE_DIR}/../DIOPI-ADAPTOR/codegen")
     add_custom_target(adaptor_code_gen COMMAND python3 ${ADAPTOR_GEN_PATH}/gen.py
-        --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${PROJECT_SOURCE_DIR}/test/include
+        --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${CMAKE_SOURCE_DIR}/../DIOPI-PROTO/include/diopi/
         --config_device=torch)
     set(USE_ADAPTOR "true")
     add_definitions(-DTEST_USE_ADAPTOR)

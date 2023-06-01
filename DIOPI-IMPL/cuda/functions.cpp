@@ -142,7 +142,7 @@ diopiError_t setTensorDesc(diopiDtype_t type, const diopiSize_t& shape,
 
 
 extern "C" diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-                                     diopiConstTensorHandle_t input, int64_t dim, diopiDtype_t dtype) {
+                                     diopiConstTensorHandle_t input, int64_t dim) {
     if (dim > 1) {
         impl::cuda::set_last_error_string("unkown dim error dim=%d at %s:%s", dim, __FILE__, __LINE__);
         return diopiErrorOccurred;
@@ -178,6 +178,8 @@ extern "C" diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle
     }
 
     impl::cuda::CudnnScalar alpha, beta;
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(input, &dtype);
     if (dtype == diopi_dtype_float64) {
         alpha.reset<double>(1.0);
         beta.reset<double>(0.0);
