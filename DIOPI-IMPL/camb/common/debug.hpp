@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <memory>
+#include <vector>
 
 #include "../diopi_helper.hpp"
 
@@ -37,7 +38,7 @@ void printDevDataInternal(diopiContextHandle_t ctx, void* data, int64_t len, int
     std::cout << std::endl;
 }
 
-void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor){
+void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor) {
     int64_t len = tensor.numel();
     void* dataIn = tensor.data();
     int64_t maxLen = 10;
@@ -82,8 +83,8 @@ void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor){
     return;
 }
 
-template<typename T>
-void printVec(std::vector<T> vec){
+template <typename T>
+void printVec(std::vector<T> vec) {
     for (int i = 0; i < vec.size(); ++i) {
         std::cout << vec[i] << " ";
     }
