@@ -15,93 +15,57 @@ namespace camb {
 extern "C" {
 
 diopiError_t diopiHardtanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* minVal,
-                                     const diopiScalar_t* maxVal) {
+                           const diopiScalar_t* maxVal) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-
     DiopiTensor inputTensor(input);
-    if (inputTensor.dtype() == diopi_dtype_float64) {
-        DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
-    }
-    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     DiopiTensor outTensor(out);
-    CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
+    DiopiTensor outTensorTmp = outTensor;
 
-    float min = minVal->fval;
-    float max = maxVal->fval;
-    if (min > max) {
-        min = max;
-    }
+    std::vector<DiopiTensor*> pTensors{&inputTensor, &outTensorTmp};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
-    if (outTensor.dtype() == diopi_dtype_float64) {
-        DiopiTensor out32Tensor = requiresTensor(ctx, outTensor.shape(), diopi_dtype_float32);
-        CnnlTensorDesc out32Desc(out32Tensor, CNNL_LAYOUT_ARRAY);
-        DIOPI_CALLCNNL(cnnlHardtanh(handle, inputDesc.get(), inputTensor.data(), max, min, out32Desc.get(), out32Tensor.data()));
-        DIOPI_CALL(dataTypeCast(ctx, outTensor, out32Tensor));
-    } else {
-        DIOPI_CALLCNNL(cnnlHardtanh(handle, inputDesc.get(), inputTensor.data(), max, min, outDesc.get(), outTensor.data()));
-    }
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(outTensorTmp, CNNL_LAYOUT_ARRAY);
+
+    auto min = DiopiDataType::isInteger(minVal->stype) ? minVal->ival : minVal->fval;
+    auto max = DiopiDataType::isInteger(maxVal->stype) ? maxVal->ival : maxVal->fval;
+    DIOPI_CHECK(max > min, "assert max.val > min.val");
+
+    DIOPI_CALLCNNL(cnnlHardtanh(handle, inputDesc.get(), inputTensor.data(), max, min, outDesc.get(), outTensor.data()));
+    DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
+
     return diopiSuccess;
 }
 
 diopiError_t diopiHardtanhInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* minVal, const diopiScalar_t* maxVal) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-
-    DiopiTensor inputTensor(input);
-    if (inputTensor.dtype() == diopi_dtype_float64) {
-        DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
-    }
-    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
-    DiopiTensor outTensor(input);
-
-    float min = minVal->fval;
-    float max = maxVal->fval;
-    if (min > max) {
-        min = max;
-    }
-
-    if (outTensor.dtype() == diopi_dtype_float64) {
-        DiopiTensor out32Tensor = requiresTensor(ctx, inputTensor.shape(), diopi_dtype_float32);
-        CnnlTensorDesc out32Desc(out32Tensor, CNNL_LAYOUT_ARRAY);
-        DIOPI_CALLCNNL(cnnlHardtanh(handle, inputDesc.get(), inputTensor.data(), max, min, out32Desc.get(), out32Tensor.data()));
-        DIOPI_CALL(dataTypeCast(ctx, outTensor, out32Tensor));
-    } else {
-        DIOPI_CALLCNNL(cnnlHardtanh(handle, inputDesc.get(), inputTensor.data(), max, min, inputDesc.get(), inputTensor.data()));
-    }
+    DIOPI_CALL(diopiHardtanh(ctx, input, input, minVal, maxVal));
     return diopiSuccess;
 }
 
-diopiError_t diopiHardtanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                             diopiConstTensorHandle_t input, const diopiScalar_t* minVal, const diopiScalar_t* maxVal) {
+diopiError_t diopiHardtanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
+                                   const diopiScalar_t* minVal, const diopiScalar_t* maxVal) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor(input);
-    if (inputTensor.dtype() == diopi_dtype_float64) {
-        DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
-    }
-    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    DiopiTensor gradInputTensor(gradInput);
     DiopiTensor gradOutTensor(gradOutput);
-    if (gradOutTensor.dtype() == diopi_dtype_float64) {
-        DIOPI_CALL(dataTypeCast(ctx, gradOutTensor, diopi_dtype_float32));
-    }
-    CnnlTensorDesc gradoutDesc(gradOutTensor, CNNL_LAYOUT_ARRAY);
-    DiopiTensor gradInTensor(gradInput);
-    CnnlTensorDesc gradinDesc(gradInTensor, CNNL_LAYOUT_ARRAY);
+    DiopiTensor gradInputTensorTmp(gradInput);
 
-    float min = minVal->fval;
-    float max = maxVal->fval;
-    if (min > max) {
-        min = max;
-    }
+    std::vector<DiopiTensor*> pTensors{&inputTensor, &gradInputTensorTmp, &gradOutTensor};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
-    if (gradInTensor.dtype() == diopi_dtype_float64) {
-        DiopiTensor gradIn32Tensor = requiresTensor(ctx, gradInTensor.shape(), diopi_dtype_float32);
-        CnnlTensorDesc gradin32Desc(gradIn32Tensor, CNNL_LAYOUT_ARRAY);
-        DIOPI_CALLCNNL(cnnlHardtanhBackward(
-            handle, inputDesc.get(), inputTensor.data(), gradoutDesc.get(), gradOutTensor.data(), max, min, gradin32Desc.get(), gradIn32Tensor.data()));
-        DIOPI_CALL(dataTypeCast(ctx, gradInTensor, gradIn32Tensor));
-    } else {
-        DIOPI_CALLCNNL(cnnlHardtanhBackward(
-            handle, inputDesc.get(), inputTensor.data(), gradoutDesc.get(), gradOutTensor.data(), max, min, gradinDesc.get(), gradInTensor.data()));
-    }
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradOutDesc(gradOutTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradInDesc(gradInputTensorTmp, CNNL_LAYOUT_ARRAY);
+
+    auto min = DiopiDataType::isInteger(minVal->stype) ? minVal->ival : minVal->fval;
+    auto max = DiopiDataType::isInteger(maxVal->stype) ? maxVal->ival : maxVal->fval;
+    DIOPI_CHECK(max > min, "assert max.val > min.val");
+
+    DIOPI_CALLCNNL(cnnlHardtanhBackward(
+        handle, inputDesc.get(), inputTensor.data(), gradOutDesc.get(), gradOutTensor.data(), max, min, gradInDesc.get(), gradInputTensorTmp.data()));
+    DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensorTmp));
     return diopiSuccess;
 }
 
