@@ -17,6 +17,7 @@ extern "C" {
 
 diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t dets, diopiConstTensorHandle_t scores,
                           double iouThreshold, int64_t offset) {
+    impl::aten::setCurCtx(ctx);
     auto atDets = impl::aten::buildATen(dets);
     auto atScores = impl::aten::buildATen(scores);
     auto atOut = mmcv::ops::NMSCUDAKernelLauncher(atDets, atScores, iouThreshold, offset);
@@ -26,6 +27,7 @@ diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t *out, di
 diopiError_t diopiRoiAlignMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t output_, diopiTensorHandle_t argmax_y_, diopiTensorHandle_t argmax_x_,
                                diopiConstTensorHandle_t input_, diopiConstTensorHandle_t rois_, int64_t aligned_height, int64_t aligned_width,
                                int64_t sampling_ratio, int64_t pool_mode, float spatial_scale, bool aligned) {
+    impl::aten::setCurCtx(ctx);
     auto input = impl::aten::buildATen(input_);
     auto rois = impl::aten::buildATen(rois_);
     auto output = impl::aten::buildATen(output_);
@@ -40,6 +42,7 @@ diopiError_t diopiRoiAlignBackwardMmcv(diopiContextHandle_t ctx, diopiTensorHand
                                        int64_t aligned_height, int64_t aligned_width, int64_t sampling_ratio, int64_t pool_mode, float spatial_scale,
                                        bool aligned) {
     return diopiErrorOccurred;
+    impl::aten::setCurCtx(ctx);
     auto grad_output = impl::aten::buildATen(grad_output_);
     auto rois = impl::aten::buildATen(rois_);
     auto argmax_y = impl::aten::buildATen(argmax_y_);
@@ -51,6 +54,7 @@ diopiError_t diopiRoiAlignBackwardMmcv(diopiContextHandle_t ctx, diopiTensorHand
 
 diopiError_t diopiSigmoidFocalLossMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t output_, diopiConstTensorHandle_t input_, diopiConstTensorHandle_t target_,
                                        diopiConstTensorHandle_t weight_, float gamma, float alpha) {
+    impl::aten::setCurCtx(ctx);
     auto output = impl::aten::buildATen(output_);
     auto input = impl::aten::buildATen(input_);
     auto target = impl::aten::buildATen(target_);
@@ -60,6 +64,7 @@ diopiError_t diopiSigmoidFocalLossMmcv(diopiContextHandle_t ctx, diopiTensorHand
 
 diopiError_t diopiSigmoidFocalLossBackwardMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input_, diopiConstTensorHandle_t input_,
                                                diopiConstTensorHandle_t target_, diopiConstTensorHandle_t weight_, float gamma, float alpha) {
+    impl::aten::setCurCtx(ctx);
     auto grad_input = impl::aten::buildATen(grad_input_);
     auto input = impl::aten::buildATen(input_);
     auto target = impl::aten::buildATen(target_);
@@ -71,6 +76,7 @@ diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t
                                    diopiTensorHandle_t voxel_num_, diopiConstTensorHandle_t points_, diopiConstTensorHandle_t voxel_size_,
                                    diopiConstTensorHandle_t coors_range_, const int64_t max_points, const int64_t max_voxels, const int64_t NDim,
                                    const bool deterministic) {
+    impl::aten::setCurCtx(ctx);
     auto voxels = impl::aten::buildATen(voxels_);
     auto coors = impl::aten::buildATen(coors_);
     auto num_points_per_voxel = impl::aten::buildATen(num_points_per_voxel_);
@@ -100,6 +106,7 @@ diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t
  */
 diopiError_t diopiDynamicVoxelizeMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t coors_, diopiConstTensorHandle_t points_,
                                       diopiConstTensorHandle_t voxel_size_, diopiConstTensorHandle_t coors_range_, const int64_t NDim) {
+    impl::aten::setCurCtx(ctx);
     auto coors = impl::aten::buildATen(coors_);
     auto points = impl::aten::buildATen(points_);
     auto voxel_size = impl::aten::buildATen(voxel_size_);
@@ -115,6 +122,7 @@ diopiError_t diopiModulatedDeformConvMmcv(diopiContextHandle_t ctx, diopiTensorH
                                           diopiConstTensorHandle_t offset_, diopiConstTensorHandle_t mask_, int64_t kernel_h, int64_t kernel_w,
                                           const int64_t stride_h, const int64_t stride_w, const int64_t pad_h, const int64_t pad_w, const int64_t dilation_h,
                                           const int64_t dilation_w, const int64_t group, const int64_t deformable_group, const bool with_bias) {
+    impl::aten::setCurCtx(ctx);
     auto output = impl::aten::buildATen(output_);
     auto columns = impl::aten::buildATen(columns_);
     auto ones = impl::aten::buildATen(ones_);
@@ -202,6 +210,7 @@ diopiError_t diopiModulatedDeformConvBackwardMmcv(diopiContextHandle_t ctx, diop
                                                   diopiConstTensorHandle_t columns_, diopiConstTensorHandle_t grad_output_, int64_t kernel_h, int64_t kernel_w,
                                                   int64_t stride_h, int64_t stride_w, int64_t pad_h, int64_t pad_w, int64_t dilation_h, int64_t dilation_w,
                                                   int64_t group, int64_t deformable_group, const bool with_bias) {
+    impl::aten::setCurCtx(ctx);
     auto grad_input = impl::aten::buildATen(grad_input_);
     auto grad_weight = impl::aten::buildATen(grad_weight_);
     auto grad_bias = impl::aten::buildATen(grad_bias_);
