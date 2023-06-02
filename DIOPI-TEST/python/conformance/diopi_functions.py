@@ -11,6 +11,9 @@ from collections import namedtuple
 import numpy as np
 
 
+GLOBAL_STATE = {}
+
+
 def broadcast_out_size(size1, size2):
     sizeO = size1 if len(size1) > len(size2) else size2
     length = len(size2) if len(size1) > len(size2) else len(size1)
@@ -1329,7 +1332,7 @@ def clip_grad_norm_(tensors, max_norm, norm_type=2.0, error_if_nonfinite=False):
 
 
 def batch_norm(input, running_mean, running_var, weight, bias,
-               training=False, momentum=0.1, eps=1e-05, backward=False) -> Tensor:
+               training=False, momentum=0.1, eps=1e-05) -> Tensor:
     dim = len(list(input.size()))
     dim = [0] + [i for i in range(2, dim)]
     dtype = Dtype.float32 if input.get_dtype() == Dtype.float16 else None
@@ -1348,8 +1351,8 @@ def batch_norm(input, running_mean, running_var, weight, bias,
                input.tensor_handle, weight.tensor_handle, bias.tensor_handle, running_mean, running_var, c_bool(training),
                c_double(momentum), c_double(eps))
     check_returncode(ret)
-    if backward:
-        return save_mean, save_invstd
+    GLOBAL_STATE['batch_norm_save_mean'] = save_mean
+    GLOBAL_STATE['batch_norm_save_invstd'] = save_invstd
     return out
 
 
@@ -2111,7 +2114,8 @@ def max_pool2d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
 def batch_norm_backward(input, grad_outputs, running_mean, running_var, weight, bias,
                         training=False, eps=1e-05, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
-    save_mean, save_invstd = batch_norm(input, running_mean, running_var, weight, bias, training, 0.1, eps, backward=True)
+    save_mean = GLOBAL_STATE.pop('batch_norm_save_mean')
+    save_invstd = GLOBAL_STATE.pop('batch_norm_save_invstd')
 
     grad_input = raw_like(input)
     grad_weight = raw_like(weight)
@@ -2768,7 +2772,7 @@ def norm(input, p, dim=None, keepdim=False, dtype=None):
     return out
 
 
-def group_norm(input, num_groups, weight=None, bias=None, eps=1e-05, backward=False):
+def group_norm(input, num_groups, weight=None, bias=None, eps=1e-05):
     dim = list(input.size())
     save_mean = Tensor((dim[0], num_groups), input.get_dtype())
     save_invstd = raw_like(save_mean)
@@ -2781,14 +2785,15 @@ def group_norm(input, num_groups, weight=None, bias=None, eps=1e-05, backward=Fa
     ret = func(input.context_handle, out.tensor_handle, save_mean.tensor_handle, save_invstd.tensor_handle,
                input.tensor_handle, weight, bias, c_int64(num_groups), c_double(eps))
     check_returncode(ret)
-    if backward:
-        return save_mean, save_invstd
+    GLOBAL_STATE['group_norm_save_mean'] = save_mean
+    GLOBAL_STATE['group_norm_save_invstd'] = save_invstd
     return out
 
 
 def group_norm_backward(input, grad_outputs, num_groups, weight=None, bias=None, eps=1e-05, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
-    save_mean, save_invstd = group_norm(input, num_groups, weight, bias, eps, backward=True)
+    save_mean = GLOBAL_STATE.pop('group_norm_save_mean')
+    save_invstd = GLOBAL_STATE.pop('group_norm_save_invstd')
     grad_input = raw_like(input)
     grad_weight = raw_like(weight)
     grad_bias = raw_like(bias)
@@ -2804,7 +2809,7 @@ def group_norm_backward(input, grad_outputs, num_groups, weight=None, bias=None,
     return out
 
 
-def layer_norm(input, normalized_shape, weight=None, bias=None, eps=1e-05, backward=False):
+def layer_norm(input, normalized_shape, weight=None, bias=None, eps=1e-05):
     sizeI = input.size()
     dims = len(sizeI) - len(normalized_shape)
     size = [i for i in sizeI[0:dims]]
@@ -2819,14 +2824,15 @@ def layer_norm(input, normalized_shape, weight=None, bias=None, eps=1e-05, backw
     ret = func(input.context_handle, out.tensor_handle, save_mean.tensor_handle, save_invstd.tensor_handle,
                input.tensor_handle, weight, bias, Sizes(normalized_shape), c_double(eps))
     check_returncode(ret)
-    if backward:
-        return save_mean, save_invstd
+    GLOBAL_STATE['layer_norm_save_mean'] = save_mean
+    GLOBAL_STATE['layer_norm_save_invstd'] = save_invstd
     return out
 
 
 def layer_norm_backward(input, grad_outputs, normalized_shape, weight=None, bias=None, eps=1e-05, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
-    save_mean, save_invstd = layer_norm(input, normalized_shape, weight, bias, eps, backward=True)
+    save_mean = GLOBAL_STATE.pop('layer_norm_save_mean')
+    save_invstd = GLOBAL_STATE.pop('layer_norm_save_invstd')
     grad_input = raw_like(input)
     out = {"input": grad_input}
 
@@ -3111,7 +3117,7 @@ def remainder(other, input=None, self=None):
     return out
 
 
-def ctc_loss(log_probs, targets, input_lengths, target_lengths, blank=0, reduction='mean', zero_infinity=False, backward=False):
+def ctc_loss(log_probs, targets, input_lengths, target_lengths, blank=0, reduction='mean', zero_infinity=False):
     sizeO = (1, )
     sizeI = list(log_probs.size())
     reduction_mode = convert_reduction(reduction)
@@ -3128,16 +3134,16 @@ def ctc_loss(log_probs, targets, input_lengths, target_lengths, blank=0, reducti
                log_alpha.tensor_handle, log_probs.tensor_handle, targets.tensor_handle, input_lengths.tensor_handle,
                target_lengths.tensor_handle, c_int64(blank), c_int64(reduction_mode), c_bool(zero_infinity))
     check_returncode(ret)
-    if backward:
-        return neg_log_likelihood, log_alpha
+    GLOBAL_STATE['ctc_loss_neg_log_likelihood'] = neg_log_likelihood
+    GLOBAL_STATE['ctc_loss_log_alpha'] = log_alpha
     return out
 
 
 def ctc_loss_backward(log_probs, grad_outputs, targets, input_lengths, target_lengths, blank=0, reduction='mean', zero_infinity=False) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(log_probs)
-    neg_log_likelihood, log_alpha = ctc_loss(log_probs, targets, input_lengths, target_lengths, blank, reduction,
-                                             zero_infinity, backward=True)
+    neg_log_likelihood = GLOBAL_STATE.pop('ctc_loss_neg_log_likelihood')
+    log_alpha = GLOBAL_STATE.pop('ctc_loss_log_alpha')
 
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiCTCLossBackward")
