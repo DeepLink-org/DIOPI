@@ -483,7 +483,8 @@ class CustomizedTest(object):
             tensor = torch.empty_like(grad)
             tensor.grad = grad
             parameters.append(tensor)
-        return torch.nn.utils.clip_grad_norm_(parameters, max_norm, norm_type, error_if_nonfinite)
+        out = torch.nn.utils.clip_grad_norm_(parameters, max_norm, norm_type, error_if_nonfinite)
+        return out, to_numpy(tensors)
 
 
 def transfer_tensor_to_device(function_paras: dict):
