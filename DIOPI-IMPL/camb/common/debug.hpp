@@ -3,7 +3,6 @@
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  */
-#include <vector>
 #ifndef DIOPI_IMPL_CAMB_COMMON_DEBUG_HPP_
 #define DIOPI_IMPL_CAMB_COMMON_DEBUG_HPP_
 
