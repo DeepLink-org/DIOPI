@@ -4,68 +4,69 @@
  * @copyright  (c) 2023, DeepLink
  */
 
-#include <diopi/functions.h>
 #include <cuda_runtime.h>
 #include <cudnn.h>
+#include <diopi/functions.h>
+
 #include <cstdio>
 #include <vector>
 
 #include "helper.hpp"
 
+#define DIOPI_CALLCUDNN(Expr)                                                                                                     \
+    {                                                                                                                             \
+        ::cudnnStatus_t ret = Expr;                                                                                               \
+        if (CUDNN_STATUS_SUCCESS != ret) {                                                                                        \
+            impl::cuda::set_last_error_string("cudnn error %d : %s at %s:%s", ret, cudnnGetErrorString(ret), __FILE__, __LINE__); \
+            return diopiErrorOccurred;                                                                                            \
+        }                                                                                                                         \
+    }
 
-#define DIOPI_CALLCUDNN(Expr) {                                                         \
-        ::cudnnStatus_t ret = Expr;                                                     \
-        if (CUDNN_STATUS_SUCCESS != ret) {                                              \
-            impl::cuda::set_last_error_string("cudnn error %d : %s at %s:%s",           \
-                    ret, cudnnGetErrorString(ret), __FILE__, __LINE__);                 \
-            return diopiErrorOccurred;                                                  \
-        }}                                                                              \
+#define DIOPI_CHECKCUDNN(Expr)                                                                                                    \
+    {                                                                                                                             \
+        ::cudnnStatus_t ret = Expr;                                                                                               \
+        if (CUDNN_STATUS_SUCCESS != ret) {                                                                                        \
+            impl::cuda::set_last_error_string("cudnn error %d : %s at %s:%s", ret, cudnnGetErrorString(ret), __FILE__, __LINE__); \
+        }                                                                                                                         \
+    }
 
-#define DIOPI_CHECKCUDNN(Expr) {                                                        \
-        ::cudnnStatus_t ret = Expr;                                                     \
-        if (CUDNN_STATUS_SUCCESS != ret) {                                              \
-            impl::cuda::set_last_error_string("cudnn error %d : %s at %s:%s",           \
-                    ret, cudnnGetErrorString(ret), __FILE__, __LINE__);                 \
-        }}                                                                              \
-
-static diopiError_t convertType(cudnnDataType_t *cudnnType, diopiDtype_t type) {
+static diopiError_t convertType(cudnnDataType_t* cudnnType, diopiDtype_t type) {
     switch (type) {
-    case diopi_dtype_int8:
-        *cudnnType = CUDNN_DATA_INT8;
-        break;
-    case diopi_dtype_uint8:
-        *cudnnType = CUDNN_DATA_UINT8;
-        break;
-    case diopi_dtype_int32:
-        *cudnnType = CUDNN_DATA_INT32;
-        break;
-    case diopi_dtype_float16:
-        *cudnnType = CUDNN_DATA_HALF;
-        break;
-    case diopi_dtype_float32:
-        *cudnnType = CUDNN_DATA_FLOAT;
-        break;
-    case diopi_dtype_float64:
-        *cudnnType = CUDNN_DATA_DOUBLE;
-        break;
+        case diopi_dtype_int8:
+            *cudnnType = CUDNN_DATA_INT8;
+            break;
+        case diopi_dtype_uint8:
+            *cudnnType = CUDNN_DATA_UINT8;
+            break;
+        case diopi_dtype_int32:
+            *cudnnType = CUDNN_DATA_INT32;
+            break;
+        case diopi_dtype_float16:
+            *cudnnType = CUDNN_DATA_HALF;
+            break;
+        case diopi_dtype_float32:
+            *cudnnType = CUDNN_DATA_FLOAT;
+            break;
+        case diopi_dtype_float64:
+            *cudnnType = CUDNN_DATA_DOUBLE;
+            break;
 #if CUDNN_VERSION >= 8400
-    case diopi_dtype_bool:
-        *cudnnType = CUDNN_DATA_BOOLEAN;
-        break;
-    case diopi_dtype_bfloat16:
-        *cudnnType = CUDNN_DATA_BFLOAT16;
-        break;
-    case diopi_dtype_int64:
-        *cudnnType = CUDNN_DATA_INT64;
-        break;
+        case diopi_dtype_bool:
+            *cudnnType = CUDNN_DATA_BOOLEAN;
+            break;
+        case diopi_dtype_bfloat16:
+            *cudnnType = CUDNN_DATA_BFLOAT16;
+            break;
+        case diopi_dtype_int64:
+            *cudnnType = CUDNN_DATA_INT64;
+            break;
 #endif  // CUDNN_VERSION >= 8400
-    default:
-        impl::cuda::set_last_error_string("unkown diopitype error %d at %s:%s", type, __FILE__, __LINE__);
-        return diopiDtypeNotSupported;
+        default:
+            impl::cuda::set_last_error_string("unkown diopitype error %d at %s:%s", type, __FILE__, __LINE__);
+            return diopiDtypeNotSupported;
     }
     return diopiSuccess;
 }
-
 
 namespace impl {
 
@@ -73,47 +74,38 @@ namespace cuda {
 
 class CudnnScalar final {
 public:
-    template<typename T>
+    template <typename T>
     void reset(const T& val) {
-        if (data_) delete [] data_;
+        if (data_) delete[] data_;
         data_ = new int8_t[sizeof(T)];
         T* ptr = reinterpret_cast<T*>(data_);
         *ptr = val;
     }
 
-    void* data() const {
-        return data_;
-    }
+    void* data() const { return data_; }
 
     ~CudnnScalar() {
-        if (data_) delete [] data_;
+        if (data_) delete[] data_;
     }
 
 protected:
-    int8_t* data_{ nullptr };
+    int8_t* data_{nullptr};
 };
 
-template<typename T, cudnnStatus_t(*fnCreate)(T*), cudnnStatus_t(*fnDestroy)(T)>
+template <typename T, cudnnStatus_t (*fnCreate)(T*), cudnnStatus_t (*fnDestroy)(T)>
 class CudnnResourceGuard final {
 public:
-    CudnnResourceGuard() {
-        DIOPI_CHECKCUDNN(fnCreate(&resource_));
-    }
+    CudnnResourceGuard() { DIOPI_CHECKCUDNN(fnCreate(&resource_)); }
 
-    ~CudnnResourceGuard() {
-        DIOPI_CHECKCUDNN(fnDestroy(resource_));
-    }
+    ~CudnnResourceGuard() { DIOPI_CHECKCUDNN(fnDestroy(resource_)); }
 
-    T& get() {
-        return resource_;
-    }
+    T& get() { return resource_; }
 
 protected:
-    T resource_ {0};
+    T resource_{0};
 };
 
-diopiError_t setTensorDesc(diopiDtype_t type, const diopiSize_t& shape,
-        const diopiSize_t& stride, cudnnTensorDescriptor_t desc) {
+diopiError_t setTensorDesc(diopiDtype_t type, const diopiSize_t& shape, const diopiSize_t& stride, cudnnTensorDescriptor_t desc) {
     cudnnDataType_t cudnnType;
     DIOPI_CALL(convertType(&cudnnType, type));
 
@@ -131,8 +123,7 @@ diopiError_t setTensorDesc(diopiDtype_t type, const diopiSize_t& shape,
         strideArray[i] = 1;
     }
 
-    DIOPI_CALLCUDNN(cudnnSetTensorNdDescriptor(desc,
-        cudnnType, size, shapeArray.data(), strideArray.data()));
+    DIOPI_CALLCUDNN(cudnnSetTensorNdDescriptor(desc, cudnnType, size, shapeArray.data(), strideArray.data()));
     return diopiSuccess;
 }
 
@@ -140,21 +131,18 @@ diopiError_t setTensorDesc(diopiDtype_t type, const diopiSize_t& shape,
 
 }  // namespace impl
 
-
-extern "C" diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out,
-                                     diopiConstTensorHandle_t input, int64_t dim) {
+extern "C" diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
     if (dim > 1) {
         impl::cuda::set_last_error_string("unkown dim error dim=%d at %s:%s", dim, __FILE__, __LINE__);
         return diopiErrorOccurred;
     }
 
     impl::cuda::CudnnResourceGuard<cudnnHandle_t, cudnnCreate, cudnnDestroy> handle;
-    impl::cuda::CudnnResourceGuard<cudnnTensorDescriptor_t,
-        cudnnCreateTensorDescriptor, cudnnDestroyTensorDescriptor> desc;
+    impl::cuda::CudnnResourceGuard<cudnnTensorDescriptor_t, cudnnCreateTensorDescriptor, cudnnDestroyTensorDescriptor> desc;
 
     auto trIn = impl::cuda::makeTensor(input);
     auto trOut = impl::cuda::makeTensor(out);
-    auto stream  = impl::cuda::getStream(ctx);
+    auto stream = impl::cuda::getStream(ctx);
     if (0 == dim) {
         diopiSize_t oldShape = trIn.shape();
         diopiSize_t oldStride = trIn.stride();
@@ -188,20 +176,16 @@ extern "C" diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle
         beta.reset<float>(0.f);
     }
     DIOPI_CALLCUDNN(cudnnSetStream(handle.get(), stream));
-    DIOPI_CALLCUDNN(cudnnSoftmaxForward(handle.get(),
-        CUDNN_SOFTMAX_ACCURATE, CUDNN_SOFTMAX_MODE_CHANNEL,
-        alpha.data(), desc.get(), trIn.data(),
-        beta.data(), desc.get(), trOut.data()));
+    DIOPI_CALLCUDNN(cudnnSoftmaxForward(
+        handle.get(), CUDNN_SOFTMAX_ACCURATE, CUDNN_SOFTMAX_MODE_CHANNEL, alpha.data(), desc.get(), trIn.data(), beta.data(), desc.get(), trOut.data()));
 
     return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     impl::cuda::CudnnResourceGuard<cudnnHandle_t, cudnnCreate, cudnnDestroy> handle;
-    impl::cuda::CudnnResourceGuard<cudnnTensorDescriptor_t,
-        cudnnCreateTensorDescriptor, cudnnDestroyTensorDescriptor> desc;
-    impl::cuda::CudnnResourceGuard<cudnnActivationDescriptor_t,
-        cudnnCreateActivationDescriptor, cudnnDestroyActivationDescriptor> descAct;
+    impl::cuda::CudnnResourceGuard<cudnnTensorDescriptor_t, cudnnCreateTensorDescriptor, cudnnDestroyTensorDescriptor> desc;
+    impl::cuda::CudnnResourceGuard<cudnnActivationDescriptor_t, cudnnCreateActivationDescriptor, cudnnDestroyActivationDescriptor> descAct;
 
     auto trIn = impl::cuda::makeTensor(input);
     auto trOut = impl::cuda::makeTensor(out);
@@ -219,8 +203,7 @@ extern "C" diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t 
         beta.reset<float>(0.f);
     }
     DIOPI_CALLCUDNN(cudnnSetStream(handle.get(), stream));
-    DIOPI_CALLCUDNN(cudnnActivationForward(handle.get(), descAct.get(), alpha.data(),
-        desc.get(), trIn.data(), beta.data(), desc.get(), trOut.data()));
+    DIOPI_CALLCUDNN(cudnnActivationForward(handle.get(), descAct.get(), alpha.data(), desc.get(), trIn.data(), beta.data(), desc.get(), trOut.data()));
 
     return diopiSuccess;
 }

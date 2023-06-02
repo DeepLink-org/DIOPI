@@ -5,51 +5,42 @@
  * @brief A reference implemention for DIOPI runtime, which is utilized to support conformance test suite of DIOPI
  */
 
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/numpy.h>
+#include <conform_test.h>
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
-#include <conform_test.h>
-
 #include <litert.hpp>
+#include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 namespace py = pybind11;
 
 PYBIND11_MODULE(export_runtime, m) {
     py::options options;
     options.disable_function_signatures();
-    py::class_<diopiTensor, std::shared_ptr<diopiTensor>>(
-            m, "diopiTensor", py::buffer_protocol())
-            .def(py::init([](diopiSize_t* shape, diopiSize_t* stride,
-                diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context, const void* src) {
-                auto tensor = diopiTensor(shape, stride, dtype, device, context, src);
-                return tensor;
-            }))
-            .def(py::init([](diopiSize_t* shape, diopiSize_t* stride,
-                diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context) {
-                auto tensor = diopiTensor(shape, stride, dtype, device, context, nullptr);
-                return tensor;
-            }))
-            .def(py::init([](){
-                auto tensor = diopiTensor();
-                return tensor;
-            }))
-            .def("shape", &diopiTensor::shape)
-            .def("get_stride", &diopiTensor::stride)
-            .def("get_dtype", &diopiTensor::dtype)
-            .def("get_device", &diopiTensor::device)
-            .def("numel", &diopiTensor::numel)
-            .def("reset_shape", &diopiTensor::resetShape)
-            .def("itemsize", &diopiTensor::elemSize)
-            .def("context", &diopiTensor::getCtx)
-            .def_buffer(&diopiTensor::buffer);
-    py::class_<diopiContext>(
-            m, "Context", py::buffer_protocol())
-            .def(py::init<>())
-            .def("clear_tensors", &diopiContext::clearTensors);
-    py::enum_<diopiDevice_t>(m, "Device")
-        .value("Host", diopiDevice_t::diopi_host)
-        .value("AIChip", diopiDevice_t::diopi_device);
+    py::class_<diopiTensor, std::shared_ptr<diopiTensor>>(m, "diopiTensor", py::buffer_protocol())
+        .def(py::init([](diopiSize_t* shape, diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context, const void* src) {
+            auto tensor = diopiTensor(shape, stride, dtype, device, context, src);
+            return tensor;
+        }))
+        .def(py::init([](diopiSize_t* shape, diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context) {
+            auto tensor = diopiTensor(shape, stride, dtype, device, context, nullptr);
+            return tensor;
+        }))
+        .def(py::init([]() {
+            auto tensor = diopiTensor();
+            return tensor;
+        }))
+        .def("shape", &diopiTensor::shape)
+        .def("get_stride", &diopiTensor::stride)
+        .def("get_dtype", &diopiTensor::dtype)
+        .def("get_device", &diopiTensor::device)
+        .def("numel", &diopiTensor::numel)
+        .def("reset_shape", &diopiTensor::resetShape)
+        .def("itemsize", &diopiTensor::elemSize)
+        .def("context", &diopiTensor::getCtx)
+        .def_buffer(&diopiTensor::buffer);
+    py::class_<diopiContext>(m, "Context", py::buffer_protocol()).def(py::init<>()).def("clear_tensors", &diopiContext::clearTensors);
+    py::enum_<diopiDevice_t>(m, "Device").value("Host", diopiDevice_t::diopi_host).value("AIChip", diopiDevice_t::diopi_device);
     py::enum_<diopiDtype_t>(m, "Dtype")
         .value("int8", diopiDtype_t::diopi_dtype_int8)
         .value("uint8", diopiDtype_t::diopi_dtype_uint8)
@@ -97,29 +88,26 @@ PYBIND11_MODULE(export_runtime, m) {
         .def(py::init<>())
         .def(py::init([](py::list& sizeList, int64_t nums) {
             int64_t* sizes = new int64_t[nums];
-            for (int i = 0; i < nums; ++i)
-                sizes[i] = sizeList[i].cast<int64_t>();
+            for (int i = 0; i < nums; ++i) sizes[i] = sizeList[i].cast<int64_t>();
             auto self = diopiSize_t(sizes, nums);
             return self;
         }))
         .def(py::init<const int64_t*, int64_t>())
         .def_property_readonly("len", &diopiSize_t::getLen)
-        .def_property_readonly(
-            "data", [](diopiSize_t& size){
-                std::vector<int64_t> data(size.len);
-                for (int i = 0; i < size.len; i++)
-                    data[i] = size.data[i];
-                return data;
-            });
+        .def_property_readonly("data", [](diopiSize_t& size) {
+            std::vector<int64_t> data(size.len);
+            for (int i = 0; i < size.len; i++) data[i] = size.data[i];
+            return data;
+        });
     py::class_<diopiScalar_t>(m, "diopiScalar")
         .def(py::init<>())
-        .def(py::init([](diopiDtype_t dtype, double val){
+        .def(py::init([](diopiDtype_t dtype, double val) {
             auto scalar = diopiScalar_t();
             scalar.stype = dtype;
             scalar.fval = val;
             return scalar;
         }))
-        .def(py::init([](diopiDtype_t dtype, int64_t val){
+        .def(py::init([](diopiDtype_t dtype, int64_t val) {
             auto scalar = diopiScalar_t();
             scalar.stype = dtype;
             scalar.ival = val;
@@ -127,15 +115,11 @@ PYBIND11_MODULE(export_runtime, m) {
         }))
         .def_property_readonly("type", &diopiScalar_t::type)
         .def_property_readonly("val", &diopiScalar_t::val);
-    py::class_<PtrWrapper<diopiTensor>>(m, "TensorP")
-        .def(py::init<diopiTensor*>())
-        .def(py::init<py::none>())
-        .def("data", &PtrWrapper<diopiTensor>::operator*);
-    m.def("diopi_tensor_copy_to_buffer", [](diopiContextHandle_t context, diopiConstTensorHandle_t tensor,
-        py::array_t<double>& arr) {
-            py::buffer_info buf = arr.request();
-            diopiTensorCopyToBuffer(context, tensor, buf.ptr);
-        });
+    py::class_<PtrWrapper<diopiTensor>>(m, "TensorP").def(py::init<diopiTensor*>()).def(py::init<py::none>()).def("data", &PtrWrapper<diopiTensor>::operator*);
+    m.def("diopi_tensor_copy_to_buffer", [](diopiContextHandle_t context, diopiConstTensorHandle_t tensor, py::array_t<double>& arr) {
+        py::buffer_info buf = arr.request();
+        diopiTensorCopyToBuffer(context, tensor, buf.ptr);
+    });
     m.def("get_last_error_string", &diopiGetLastErrorString);
     m.def("diopi_init", &diopiInit);
     m.def("diopi_finalize", &diopiFinalize);

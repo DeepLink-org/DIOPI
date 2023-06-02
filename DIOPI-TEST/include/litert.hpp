@@ -4,21 +4,22 @@
  * @copyright  (c) 2023, DeepLink Inc.
  * @brief A reference implemention for DIOPI runtime, which is utilized to support conformance test suite of DIOPI
  */
-#ifndef DIOPI_IMPL_TEST_INCLUDE_LITERT_HPP_ // NOLINT
-#define DIOPI_IMPL_TEST_INCLUDE_LITERT_HPP_ // NOLINT
+#ifndef DIOPI_IMPL_TEST_INCLUDE_LITERT_HPP_  // NOLINT
+#define DIOPI_IMPL_TEST_INCLUDE_LITERT_HPP_  // NOLINT
 
-#include <pybind11/pybind11.h>
-#include <diopi/diopirt.h>
 #include <conform_test.h>
+#include <diopi/diopirt.h>
 #include <diopi/functions.h>
+#include <pybind11/pybind11.h>
+
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
-#include <vector>
-#include <string>
 #include <set>
+#include <string>
+#include <vector>
 
 namespace py = pybind11;
 template <class T>
@@ -28,8 +29,8 @@ public:
     explicit PtrWrapper(py::none) : ptr(nullptr) {}
     explicit PtrWrapper(T* ptr) : ptr(ptr) {}
     PtrWrapper(const PtrWrapper& other) : ptr(other.ptr) {}
-    T& operator* () const { return *ptr; }
-    T* operator->() const { return  ptr; }
+    T& operator*() const { return *ptr; }
+    T* operator->() const { return ptr; }
     T* get() const { return ptr; }
     void destroy() { delete ptr; }
 
@@ -76,8 +77,7 @@ private:
     diopiContextHandle_t context_;
 
 public:
-    diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype,
-                         diopiDevice_t device, diopiContextHandle_t context, const void* src);
+    diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context, const void* src);
     diopiTensor() {}
     ~diopiTensor() {}
 
@@ -96,9 +96,7 @@ public:
     diopiDtype_t dtype() const { return dtype_; }
     diopiDevice_t device() const { return device_; }
     int64_t numel() const { return numel_; }
-    int64_t elemSize() const {
-        return itemsize(this->dtype());
-    }
+    int64_t elemSize() const { return itemsize(this->dtype()); }
 
     void* data() { return storage_->data(); }
     const void* data() const { return storage_->data(); }
@@ -109,7 +107,8 @@ public:
         }
         try {
             diopiStreamHandle_t stream;
-            auto ptr = malloc(nbytes());;
+            auto ptr = malloc(nbytes());
+            ;
             diopiGetStream(getCtx(), &stream);
             device_memcpy_d2h_async(stream, ptr, data(), nbytes());
             device_synchronize_stream(stream);
@@ -122,14 +121,13 @@ public:
             }
             static const char fmt[] = "bBhHiIlLefd?";
             auto temp = reinterpret_cast<double*>(ptr);
-            return py::buffer_info(
-                ptr,                        /* Pointer to buffer */
-                esize,                      /* Size of one scalar */
-                std::string(1, fmt[static_cast<size_t>(dtype())]), /* Python struct format descriptor */
-                shape().len,                  /* Number of dimensions */
-                buffer_shape,               /* Buffer dimensions */
-                buffer_strides              /* Strides (in bytes) for each index */
-            );  // NOLINT
+            return py::buffer_info(ptr,                                               /* Pointer to buffer */
+                                   esize,                                             /* Size of one scalar */
+                                   std::string(1, fmt[static_cast<size_t>(dtype())]), /* Python struct format descriptor */
+                                   shape().len,                                       /* Number of dimensions */
+                                   buffer_shape,                                      /* Buffer dimensions */
+                                   buffer_strides                                     /* Strides (in bytes) for each index */
+            );                                                                        // NOLINT
         } catch (const std::exception& e) {
             // XXX(xintian): return an invalid buffer to raise an exception.
             return py::buffer_info((char*){0}, -1);
@@ -188,9 +186,7 @@ public:
     }
 };
 
-DIOPI_RT_API diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t      ctx,
-                                                diopiConstTensorHandle_t tensor,
-                                                void*                     dst);
+DIOPI_RT_API diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diopiConstTensorHandle_t tensor, void* dst);
 
 DIOPI_RT_API diopiError_t diopiInit();
 
@@ -198,4 +194,3 @@ DIOPI_RT_API diopiError_t diopiFinalize();
 }  // extern "C"
 
 #endif  // DIOPI_IMPL_TORCH_TEST_INCLUDE_LITERT_HPP_  // NOLINT
-
