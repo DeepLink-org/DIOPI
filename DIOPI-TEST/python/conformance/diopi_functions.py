@@ -487,11 +487,6 @@ def matmul(input, other) -> Tensor:
 def clamp(input, min=None, max=None, inplace=False) -> Tensor:
     assert min is not None or max is not None,\
         "min and max can not be None in the meantime"
-    if max is None:
-        return clamp_min(input, min, inplace)
-    if min is None:
-        return clamp_max(input, max, inplace)
-
     call = "diopiClamp"
     args = "input.context_handle, "
     if inplace:
@@ -500,16 +495,39 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
     else:
         out = raw_like(input)
         args = args + "out.tensor_handle, "
-
-    if isinstance(min, Tensor):
-        assert (isinstance(max, Tensor)), 'min and max must have same type'
-        args += "input.tensor_handle, min.tensor_handle, max.tensor_handle"
+    if min is not None and max is not None:
+        if isinstance(min, Tensor):
+            assert (isinstance(max, Tensor)), 'min and max must have same type'
+            args += "input.tensor_handle, min.tensor_handle, max.tensor_handle"
+        else:
+            assert (~isinstance(max, Tensor)), 'min and max must have same type'
+            call = call + 'Scalar'
+            min = byref(Scalar(min))
+            max = byref(Scalar(max))
+            args = args + "input.tensor_handle, min, max"
+    elif min is not None:
+        if isinstance(min, Tensor):
+            max = c_void_p()
+            args += "input.tensor_handle, min.tensor_handle, max"
+        else:
+            call = call + 'Scalar'
+            min = byref(Scalar(min))
+            max = c_void_p()
+            args += "input.tensor_handle, min, max"
+    elif max is not None:
+        if isinstance(max, Tensor):
+            min = c_void_p()
+            args += "input.tensor_handle, min, max.tensor_handle"
+        else:
+            call = call + 'Scalar'
+            min = c_void_p()
+            max = byref(Scalar(max))
+            args += "input.tensor_handle, min, max"
     else:
-        assert (~isinstance(max, Tensor)), 'min and max must have same type'
         call = call + 'Scalar'
-        min = byref(Scalar(min))
-        max = byref(Scalar(max))
-        args = args + "input.tensor_handle, min, max"
+        min = c_void_p()
+        max = c_void_p()
+        args += "input.tensor_handle, min, max"
 
     func = check_function(call)
     ret = eval(f'func({args})')
