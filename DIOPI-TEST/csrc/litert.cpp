@@ -6,9 +6,10 @@
  * support conformance test suite of DIOPI
  */
 
-#include <diopi/diopirt.h>
 #include <conform_test.h>
+#include <diopi/diopirt.h>
 #include <diopi/functions.h>
+#include <litert.hpp>
 
 #include <cassert>
 #include <cinttypes>
@@ -19,7 +20,6 @@
 #include <memory>
 #include <set>
 #include <vector>
-#include <litert.hpp>
 
 extern "C" {
 
@@ -118,8 +118,8 @@ const char* deviceToStr(const diopiDevice_t device) {
 #undef _device2str
 }
 
-diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype,
-                         diopiDevice_t device, diopiContextHandle_t context, const void* src) {
+diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context,
+                         const void* src) {
     assert(shape);
     dtype_ = dtype;
     device_ = device;

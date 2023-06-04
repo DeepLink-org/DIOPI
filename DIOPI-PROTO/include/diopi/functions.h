@@ -23,9 +23,7 @@ typedef struct {
         double fval;
         int64_t ival;
     };
-    diopiDtype_t type() {
-        return stype;
-    }
+    diopiDtype_t type() { return stype; }
     double val() {
         if (stype == diopiDtype_t::diopi_dtype_float64)
             return fval;
