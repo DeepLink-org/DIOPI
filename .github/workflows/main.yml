@@ -40,7 +40,6 @@ jobs:
           git checkout ${{ github.sha }} &&  git merge --no-edit main
           fi
           cd DIOPI-TEST/third_party && rm -rf mmcv_diopi && git clone https://github.com/DeepLink-org/mmcv_diopi.git
-          cd ../../DIOPI-IMPL/third_party && rm -rf pybind11 &&  git clone https://github.com/pybind/pybind11.git
       - name: ci interruptible and support pr ci
         run: |
           cd ${GITHUB_WORKSPACE}/DIOPI && bash scripts/ci_interruptible.sh
@@ -86,7 +85,6 @@ jobs:
           export CI=true
           export DIOPI_BUILD_TESTRT=ON
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 bash -c 'cd DIOPI-IMPL && bash scripts/build_impl.sh torch' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
-          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/DIOPI-TEST/python && ls
           """
       - name: build-dyload
         run: |
@@ -97,7 +95,6 @@ jobs:
           export CI=true
           export DIOPI_BUILD_TESTRT=ON
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 bash -c 'cd DIOPI-IMPL && bash scripts/build_impl.sh torch_dyload' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST2} && exit 1 )
-          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/DIOPI-TEST/python && ls
           """
 
   Build-Camb:
@@ -168,8 +165,8 @@ jobs:
           set -e
           export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
-          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd DIOPI-TEST/python && ls && cd ../../
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode gen_data' \
+          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd DIOPI-TEST/python && ls &&
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'python main.py --mode gen_data' \
           || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           """
 
