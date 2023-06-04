@@ -8,10 +8,12 @@
 #include <conform_test.h>
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
-#include <litert.hpp>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+
+#include "litert.hpp"
+
 namespace py = pybind11;
 
 PYBIND11_MODULE(export_runtime, m) {

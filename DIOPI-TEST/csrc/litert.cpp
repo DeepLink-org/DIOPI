@@ -6,10 +6,11 @@
  * support conformance test suite of DIOPI
  */
 
+#include "litert.hpp"
+
 #include <conform_test.h>
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
-#include <litert.hpp>
 
 #include <cassert>
 #include <cinttypes>

@@ -108,7 +108,6 @@ public:
         try {
             diopiStreamHandle_t stream;
             auto ptr = malloc(nbytes());
-            ;
             diopiGetStream(getCtx(), &stream);
             device_memcpy_d2h_async(stream, ptr, data(), nbytes());
             device_synchronize_stream(stream);
