@@ -83,7 +83,7 @@ unet_config = {
                     "ins": ["running_var"],
                     "shape": [(64,), (128,), (256,), (512,), (1024,), (64,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
                 {
                     "ins": ["weight"],

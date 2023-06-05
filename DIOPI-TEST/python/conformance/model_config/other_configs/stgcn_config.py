@@ -72,7 +72,7 @@ stgcn_config = {
                     "ins": ["running_var"],
                     "shape": [(51,), (64,), (128,), (128,), (256,), (256,), (51,), (64,), (128,), (128,), (256,), (256,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
                 {
                     "ins": ["weight"],

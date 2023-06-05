@@ -3,7 +3,7 @@ model_list = ['resnet50', 'vgg16', 'resnet101', 'seresnet50', 'densenet', 'mobil
               'retinanet', 'faster_rcnn_r50', 'ssd300', 'yolov3', 'atss', 'fcos', 'mask_rcnn',
               'solo', 'centernet', 'cascade_rcnn', 'detr',
               'unet', 'upernet', 'pspnet', 'fcn', 'deeplabv3', 'deeplabv3plus',
-              'sar', 'dbnet', 'stgcn', 'crnn', 'hrnet', 'deeppose', 'tsn', 'slowfast']
+              'sar', 'dbnet', 'stgcn', 'crnn', 'hrnet', 'deeppose', 'tsn', 'slowfast', 'llama']
 
 model_op_list = {
     'resnet50': ['sgd', 'randperm', 'conv2d', 'add', 'batch_norm', 'relu', 'adaptive_avg_pool2d', 'linear', 'cross_entropy', 'sum', 'mean', 'mul', 'div', 'max_pool2d', 'softmax'],
@@ -70,4 +70,6 @@ model_op_list = {
                  'conv3d', 'max_pool3d', 'adaptive_avg_pool3d'],
     'deeppose': ['randperm', 'conv2d', 'add', 'batch_norm', 'relu', 'max_pool2d', 'adaptive_avg_pool2d', 'linear', 'sigmoid', 'sub', 'div', 'mul', 'leaky_relu', 'tanh', 'neg', 'exp', 'sum', 'expand', 'eq',
                  'all', 'cholesky_ex', 'permute', 'triangular_solve', 'pow', 'transpose', 'log', 'abs', 'mean', 'adam'],
+    'llama': ['ne', 'embedding', 'triu', 'pow', 'mean', 'add', 'rsqrt', 'mul', 'linear', 'view_as_complex', 'view_as_real', 'transpose', 'matmul', 'div', 'softmax', 'silu', 'sort', 'cumsum', 'sub', 'gt', 'sum',
+              'multinomial', 'gather', 'where']
 }

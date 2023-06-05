@@ -83,7 +83,7 @@ shufflenet_v2_config = {
                     "ins": ["running_var"],
                     "shape": [(24,), (24,), (58,), (58,), (116,), (116,), (232,), (232,), (1024,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
                 {
                     "ins": ["weight"],
