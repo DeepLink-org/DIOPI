@@ -495,27 +495,27 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
         out = raw_like(input)
         args = args + "out.tensor_handle, "
 
-    if (max and min): 
-        if isinstance(min, Tensor): 
+    if (max and min):
+        if isinstance(min, Tensor):
             assert (isinstance(max, Tensor)), 'min and max must have same type'
             args += "input.tensor_handle, min.tensor_handle, max.tensor_handle"
-        elif isinstance(min, (int, float)): 
+        elif isinstance(min, (int, float)):
             assert (isinstance(max, (int, float))), 'min and max must have same type'
             call = call + 'Scalar'
             min = byref(Scalar(min))
             max = byref(Scalar(max))
             args = args + "input.tensor_handle, min, max"
-    elif (max and not min): 
-        if isinstance(max, Tensor): 
+    elif (max and not min):
+        if isinstance(max, Tensor):
             args += "input.tensor_handle, None, max.tensor_handle"
-        if isinstance(max, (int, float)): 
+        if isinstance(max, (int, float)):
             call = call + 'Scalar'
             max = byref(Scalar(max))
             args = args + "input.tensor_handle, None, max"
     elif (min and not max):
-        if isinstance(min, Tensor): 
+        if isinstance(min, Tensor):
             args += "input.tensor_handle, min.tensor_handle, None"
-        if isinstance(min, (int, float)): 
+        if isinstance(min, (int, float)):
             call = call + 'Scalar'
             min = byref(Scalar(min))
             args = args + "input.tensor_handle, min, None"
