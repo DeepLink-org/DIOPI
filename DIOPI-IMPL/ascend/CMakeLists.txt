@@ -42,6 +42,7 @@ if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
         --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${CMAKE_SOURCE_DIR}/../DIOPI-PROTO/include/diopi/
         --config_device=torch)
     set(USE_ADAPTOR "true")
+    add_dependencies(${DEVICEIMPL} adaptor_code_gen)
     add_definitions(-DTEST_USE_ADAPTOR)
 else()
     set(USE_ADAPTOR "false")
