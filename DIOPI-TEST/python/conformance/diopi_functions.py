@@ -489,7 +489,7 @@ def matmul(input, other) -> Tensor:
 
 
 def clamp(input, min=None, max=None, inplace=False) -> Tensor:
-    assert(min is not None or max is not None), "At least one of \'min\' or \'max\' must not be None"
+    assert (min is not None or max is not None), "At least one of \'min\' or \'max\' must not be None"
     call = "diopiClamp"
     args = "input.context(), "
     if inplace:
