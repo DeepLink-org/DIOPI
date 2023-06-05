@@ -31,10 +31,6 @@ set(IMPL_SRC
     functions.cpp
 )
 
-if (TEST)
-    add_subdirectory(test)
-endif()
-
 link_directories(${NEUWARE_ROOT_DIR}/lib/llvm-mm/lib)
 link_directories(${NEUWARE_ROOT_DIR}/lib64)
 link_directories(${TORCH_INSTALL_PREFIX}/lib/)
@@ -46,3 +42,19 @@ target_link_libraries(${DEVICEIMPL} ${TORCH_LIBRARIES} ${TORCH_MLU_LIBRARIES})
 
 
 message(STATUS ".so used: ${TORCH_MLU_LIBRARIES}")
+
+if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
+    set(ADAPTOR_GEN_PATH "${CMAKE_SOURCE_DIR}/../DIOPI-ADAPTOR/codegen")
+    add_custom_target(adaptor_code_gen COMMAND python3 ${ADAPTOR_GEN_PATH}/gen.py
+        --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${CMAKE_SOURCE_DIR}/../DIOPI-PROTO/include/diopi/
+        --config_device=torch)
+    set(USE_ADAPTOR "true")
+    add_dependencies(${DEVICEIMPL} adaptor_code_gen)
+    add_definitions(-DTEST_USE_ADAPTOR)
+else()
+    set(USE_ADAPTOR "false")
+endif()
+
+if (TEST)
+    add_subdirectory(test)
+endif()

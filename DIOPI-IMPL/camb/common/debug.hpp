@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <memory>
+#include <vector>
 
 #include "../diopi_helper.hpp"
 

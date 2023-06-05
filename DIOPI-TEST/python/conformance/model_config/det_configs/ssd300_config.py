@@ -1,5 +1,5 @@
 from ...config import Genfunc
-from ...dtype import Dtype
+from ...diopi_runtime import Dtype
 
 ssd300_config = {
     'conv2d': dict(
@@ -122,7 +122,7 @@ ssd300_config = {
                     "ins": ["input"],
                     "shape": [(8, 1, 38, 38), (1, 1, 38, 38)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),
@@ -606,7 +606,7 @@ ssd300_config = {
                     "ins": ["input"],
                     "shape": [(71,), (19,), (13,), (34,), (2,), (8,), (17,), (30,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),
