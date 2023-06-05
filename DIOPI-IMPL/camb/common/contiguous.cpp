@@ -4,13 +4,17 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <iostream>
+#include <vector>
+
 #include "common.hpp"
+#include "debug.hpp"
 
 namespace impl {
 namespace camb {
 
-diopiError_t transpose(diopiContextHandle_t& ctx, DiopiTensor& in, DiopiTensor& out, cnnlTensorLayout_t layoutIn, cnnlTensorLayout_t layoutOut,
-                       std::vector<int> order) {
+static diopiError_t transpose(diopiContextHandle_t& ctx, DiopiTensor& in, DiopiTensor& out, cnnlTensorLayout_t layoutIn, cnnlTensorLayout_t layoutOut,
+                              std::vector<int32_t> order) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     CnnlTensorDesc inDesc(in, layoutIn);
     CnnlTensorDesc outDesc(out, layoutOut);
@@ -23,76 +27,105 @@ diopiError_t transpose(diopiContextHandle_t& ctx, DiopiTensor& in, DiopiTensor& 
     return diopiSuccess;
 }
 
-void generateLayoutOrder(int64_t dim, MemoryFormat memoryFormat, cnnlTensorLayout_t& layoutIn, cnnlTensorLayout_t& layoutOut, std::vector<int>& order) {
-    if (memoryFormat == MemoryFormat::Contiguous) {
-        if (dim == 4) {
-            layoutIn = CNNL_LAYOUT_NHWC;
-            layoutOut = CNNL_LAYOUT_NCHW;
-            order = {0, 3, 1, 2};
-        } else if (dim == 5) {
-            layoutIn = CNNL_LAYOUT_NDHWC;
-            layoutOut = CNNL_LAYOUT_NCDHW;
-            order = {0, 4, 1, 2, 3};
-        }
-    } else if (memoryFormat == MemoryFormat::ChannelsLast) {
-        if (dim == 4) {
-            layoutIn = CNNL_LAYOUT_NCHW;
-            layoutOut = CNNL_LAYOUT_NHWC;
-            order = {0, 2, 3, 1};
-        }
-    } else if (memoryFormat == MemoryFormat::ChannelsLast3d) {
-        if (dim == 5) {
-            layoutIn = CNNL_LAYOUT_NCDHW;
-            layoutOut = CNNL_LAYOUT_NDHWC;
-            order = {0, 2, 3, 4, 1};
-        }
+static diopiError_t calTensorMemoryFormat(const DiopiTensor& tensor, MemoryFormat& memoryFormatOut) {
+    if (tensor.isContiguous(MemoryFormat::ChannelsLast)) {
+        memoryFormatOut = MemoryFormat::ChannelsLast;
+    } else if (tensor.isContiguous(MemoryFormat::ChannelsLast3d)) {
+        memoryFormatOut = MemoryFormat::ChannelsLast3d;
+    } else if (tensor.isContiguous(MemoryFormat::Contiguous)) {
+        memoryFormatOut = MemoryFormat::Contiguous;
+    } else {
+        return diopiNoImplement;
     }
+    return diopiSuccess;
+}
+
+static diopiError_t calOrderAndSrcMemoryFormat(const DiopiTensor& src, MemoryFormat destMemoryFormat, MemoryFormat& srcMemoryFormatOut,
+                                               std::vector<int32_t>& orderOut) {
+    if (src.isContiguous(destMemoryFormat)) {
+        srcMemoryFormatOut = destMemoryFormat;
+        orderOut = {0, 1, 2, 3};
+        return diopiSuccess;
+    }
+    if (src.isContiguous(MemoryFormat::ChannelsLast) && destMemoryFormat == MemoryFormat::Contiguous) {
+        if (src.dim() != 4) {
+            setLastErrorString("the dim of the tensor should be 4, but now is %d", src.dim());
+            return diopiNoImplement;
+        }
+        srcMemoryFormatOut = MemoryFormat::ChannelsLast;
+        orderOut = {0, 3, 1, 2};
+    } else if (src.isContiguous(MemoryFormat::Contiguous) && destMemoryFormat == MemoryFormat::ChannelsLast) {
+        if (src.dim() != 4) {
+            setLastErrorString("the dim of the tensor should be 4, but now is %d", src.dim());
+            return diopiNoImplement;
+        }
+        srcMemoryFormatOut = MemoryFormat::Contiguous;
+        orderOut = {0, 2, 3, 1};
+    } else if (src.isContiguous(MemoryFormat::Contiguous) && destMemoryFormat == MemoryFormat::ChannelsLast3d) {
+        if (src.dim() != 5) {
+            setLastErrorString("the dim of the tensor should be 5, but now is %d", src.dim());
+            return diopiNoImplement;
+        }
+        srcMemoryFormatOut = MemoryFormat::Contiguous;
+        orderOut = {0, 2, 3, 4, 1};
+    } else if (src.isContiguous(MemoryFormat::ChannelsLast3d) && destMemoryFormat == MemoryFormat::Contiguous) {
+        if (src.dim() != 5) {
+            setLastErrorString("the dim of the tensor should be 5, but now is %d", src.dim());
+            return diopiNoImplement;
+        }
+        srcMemoryFormatOut = MemoryFormat::ChannelsLast3d;
+        orderOut = {0, 4, 1, 2, 3};
+    } else {
+        setLastErrorString("the memory format (%d) of tensor is not right!", static_cast<int32_t>(destMemoryFormat));
+        return diopiNoImplement;
+    }
+    return diopiSuccess;
+}
+
+diopiError_t calCnnlLayout(MemoryFormat memoryFormat, int64_t dim, cnnlTensorLayout_t& cnnlLayout) {
+    switch (memoryFormat) {
+        case MemoryFormat::ChannelsLast:
+            cnnlLayout = CNNL_LAYOUT_NHWC;
+            break;
+        case MemoryFormat::ChannelsLast3d:
+            cnnlLayout = CNNL_LAYOUT_NDHWC;
+            break;
+        case MemoryFormat::Contiguous:
+            if (dim == 4) {
+                cnnlLayout = CNNL_LAYOUT_NCHW;
+            } else if (dim == 5) {
+                cnnlLayout = CNNL_LAYOUT_NCDHW;
+            } else {
+                setLastErrorString("memoryFormat (%d) is not matched.", memoryFormat);
+                return diopiNoImplement;
+            }
+            break;
+        default:
+            setLastErrorString("memoryFormat (%d) is not matched.", memoryFormat);
+            return diopiNoImplement;
+    }
+    return diopiSuccess;
 }
 
 /* Inplace contiguous, support NCHW <-> NHWC, NCDHW <-> NDHWC */
 diopiError_t contiguous(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryFormat memoryFormat) {
-    if (src.isContiguous(memoryFormat)) return diopiSuccess;
-
+    if (src.isContiguous(memoryFormat)) {
+        return diopiSuccess;
+    };
     int64_t dim = src.dim();
     DIOPI_CHECK(dim == 4 || dim == 5, "only support 4d/5d tensor currently");
 
-    cnnlTensorLayout_t layoutIn, layoutOut;
-    std::vector<int> order;
-
-    generateLayoutOrder(dim, memoryFormat, layoutIn, layoutOut, order);
-
     DiopiTensor dest = requiresTensor(ctx, src.shape(), src.dtype(), memoryFormat);
-    DIOPI_CALL(transpose(ctx, src, dest, layoutIn, layoutOut, order));
-    // DIOPI_CALL(diopiCopyInp(ctx, src.tensorHandle(), dest.tensorHandle()));
+    MemoryFormat srcMemoryFormat;
+    std::vector<int32_t> order;
+    DIOPI_CALL(calOrderAndSrcMemoryFormat(src, memoryFormat, srcMemoryFormat, order));
+    cnnlTensorLayout_t srcLayout;
+    cnnlTensorLayout_t destLayout;
+    DIOPI_CALL(calCnnlLayout(srcMemoryFormat, dim, srcLayout));
+    DIOPI_CALL(calCnnlLayout(memoryFormat, dim, destLayout));
+    DIOPI_CALL(transpose(ctx, src, dest, srcLayout, destLayout, order));
     src = dest;
     return diopiSuccess;
 }
-
-/* Inplace contiguous, support special layout like CNNL_LAYOUT_HWCN */
-diopiError_t contiguous(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryFormat memoryFormat, cnnlTensorLayout_t layoutIn, cnnlTensorLayout_t layoutOut) {
-    if (src.isContiguous(memoryFormat)) return diopiSuccess;
-    DIOPI_CHECK(src.dim() == 4, "only support 4d tensor currently");
-
-    std::vector<int> order;
-    if (layoutIn == CNNL_LAYOUT_NHWC && layoutOut == CNNL_LAYOUT_HWCN) {
-        order = {1, 2, 3, 0};
-    } else if (layoutIn == CNNL_LAYOUT_NCHW && layoutOut == CNNL_LAYOUT_HWCN) {
-        order = {2, 3, 1, 0};
-    } else if (layoutIn == CNNL_LAYOUT_HWCN && layoutOut == CNNL_LAYOUT_NHWC) {
-        order = {3, 0, 1, 2};
-    } else if (layoutIn == CNNL_LAYOUT_HWCN && layoutOut == CNNL_LAYOUT_NCHW) {
-        order = {3, 2, 0, 1};
-    } else {
-        DIOPI_CHECK(false,
-                    "unkown layout error, layout should be "
-                    "in [CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_HWCN]");
-    }
-
-    DiopiTensor dest = requiresTensor(ctx, src.shape(), src.dtype(), memoryFormat);
-    DIOPI_CALL(transpose(ctx, src, dest, layoutIn, layoutOut, order));
-    src = dest;
-    return diopiSuccess;
-}
-
 }  // namespace camb
 }  // namespace impl
