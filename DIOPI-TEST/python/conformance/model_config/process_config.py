@@ -294,12 +294,9 @@ def gen_config_code(config, file_name):
                     elif type_idx < len(type_list):
                         gen_func_key = name + '/' + k
                         gen_fn = gen_func[gen_func_key] if gen_func_key in gen_func.keys() else None
-                        
+
                         # when pow's exponent is float, change input to positive input
-                        if name == 'pow' and 'input' in k and \
-                            ((len(type_list) > 1 and type_list[type_idx + 1] \
-                                in ['torch.cuda.HalfTensor', 'torch.cuda.FloatTensor', 'torch.cuda.DoubleTensor']) or \
-                                    (len(type_list) == 1 and len(list(filter(lambda x: x != int(x), para_list[1]))) > 0)):
+                        if name == 'pow' and 'input' in k and ((len(type_list) > 1 and type_list[type_idx + 1] in ['torch.cuda.HalfTensor', 'torch.cuda.FloatTensor', 'torch.cuda.DoubleTensor']) or (len(type_list) == 1 and len(list(filter(lambda x: x != int(x), para_list[1]))) > 0)):
                             gen_fn = 'Genfunc.positive'
                         toDtype(type_list[type_idx], tensor_para, gen_fn)
                         type_idx += 1
@@ -416,15 +413,15 @@ if __name__ == '__main__':
     config_dict = cv_config_dict
     for k, v in config_dict.items():
         gen_config_code(v, "cv_configs/" + k)
-    
+
     config_dict = det_config_dict
     for k, v in config_dict.items():
         gen_config_code(v, "det_configs/" + k)
-    
+
     config_dict = seg_config_dict
     for k, v in config_dict.items():
         gen_config_code(v, "seg_configs/" + k)
-    
+
     config_dict = other_config_dict
     for k, v in config_dict.items():
         gen_config_code(v, "other_configs/" + k)
