@@ -1,15 +1,18 @@
 # Copyright (c) 2023, DeepLink.
 import logging
 from . import diopi_runtime
-from .diopi_runtime import get_last_error
-from .dtype import Dtype
+from .diopi_runtime import get_last_error, Dtype, diopiError
 import os
 import numpy as np
 import csv
 import pickle
+import ctypes
+import export_functions
 
 
 cfg_file_name = "test_config.cfg"
+cur_test_func = ""
+
 
 default_cfg_dict = dict(
     default_option=dict(
@@ -207,10 +210,12 @@ class FunctionNotImplementedError(DiopiException):
 
 def check_returncode(returncode, throw_exception=True):
     if 0 != returncode:
+        if returncode == diopiError.diopi_no_implement:
+            global cur_test_func
+            raise FunctionNotImplementedError(cur_test_func + 'not implement')
         error_info = f"Returncode: {returncode}"
         error_detail = get_last_error()
         error_info += ", Details: " + error_detail
-
         if throw_exception:
             raise DiopiException(error_info)
         else:
@@ -219,7 +224,7 @@ def check_returncode(returncode, throw_exception=True):
 
 def check_function(fn_name):
     try:
-        func = eval(f"diopi_runtime.device_impl_lib.{fn_name}")
+        func = eval(f"export_functions.{fn_name}")
     except AttributeError as e:
         raise FunctionNotImplementedError(e.args)
     return func
@@ -354,3 +359,12 @@ def get_data_from_file(data_path, test_path, name=""):
     else:
         f.close()
     return data
+
+
+def get_capsule(src):
+    PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
+    PyCapsule_New = ctypes.pythonapi.PyCapsule_New
+    PyCapsule_New.restype = ctypes.py_object
+    PyCapsule_New.argtypes = (ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor)
+    capsule = PyCapsule_New(src, None, PyCapsule_Destructor(0))
+    return capsule
