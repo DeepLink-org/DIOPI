@@ -1835,7 +1835,6 @@ def conv2d_backward(input, grad_outputs, weight, bias=None, stride=1,
 
 
 def hardtanh_backward(input, grad_outputs, min_val=-1.0, max_val=1.0, **kwargs) -> Tensor:
-    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
     min_val = byref(Scalar(min_val))
     max_val = byref(Scalar(max_val))
