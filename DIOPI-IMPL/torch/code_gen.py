@@ -98,13 +98,8 @@ def gen_wrapper_func(content):
             if row.startswith("DIOPI_RT_API"):
                 arg_type = ["    const char* (*func)();\n"]
                 arg = "()"
-            else:
-                arg_type, arg = get_func_arg(temp_content)
-
-            for args in arg_type:
-                new_content.append(args)
-
-            if row.startswith("DIOPI_RT_API"):
+                for args in arg_type:
+                    new_content.append(args)
                 new_content.append("    " + 'func = reinterpret_cast<decltype(func)>(dlsym(handle, "' + func_name + '"));\n')
                 new_content.append("    " + "if (func != NULL) {\n")
                 new_content.append("    " + "    return (*func)" + arg + ";\n")
@@ -115,6 +110,9 @@ def gen_wrapper_func(content):
                 new_content.append("}\n")
                 new_content.append("\n")
             else:
+                arg_type, arg = get_func_arg(temp_content)
+                for args in arg_type:
+                    new_content.append(args)
                 new_content.append("    " + 'func = reinterpret_cast<decltype(func)>(dlsym(handle, "' + func_name + '"));\n')
                 new_content.append("    " + "if (func != NULL) {\n")
                 new_content.append("    " + "    return (*func)" + arg + ";\n")

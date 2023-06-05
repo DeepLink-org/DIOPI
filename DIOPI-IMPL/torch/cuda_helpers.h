@@ -10,9 +10,11 @@
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
 #include <c10/cuda/CUDAGuard.h>
+#include <cuda.h>
 
 #include <ATen/cuda/CUDAApplyUtils.cuh>
 #include <THC/THCAtomics.cuh>
+#include <algorithm>
 
 using at::Half;
 using at::Tensor;
@@ -21,27 +23,13 @@ using phalf = at::Half;
 #define __PHALF(x) (x)
 #define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
 
-namespace vision {
-namespace ops {
-
-#define CUDA_1D_KERNEL_LOOP_T(i, n, index_t) for (index_t i = (blockIdx.x * blockDim.x) + threadIdx.x; i < (n); i += (blockDim.x * gridDim.x))
-
-#define CUDA_1D_KERNEL_LOOP(i, n) CUDA_1D_KERNEL_LOOP_T(i, n, int)
+namespace cuda {
+namespace helper {
 
 template <typename integer>
 constexpr __host__ __device__ inline integer ceil_div(integer n, integer m) {
     return (n + m - 1) / m;
 }
-
-}  // namespace ops
-}  // namespace vision
-
-namespace mmcv {
-namespace ops {
-
-#include <cuda.h>
-
-#include <algorithm>
 
 #define CUDA_1D_KERNEL_LOOP(i, n) for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (n); i += blockDim.x * gridDim.x)
 
@@ -150,7 +138,7 @@ __device__ void bilinear_interpolate_gradient(const int height, const int width,
     return;
 }
 
-}  // namespace ops
-}  // namespace mmcv
+}  // namespace helper
+}  // namespace cuda
 
 #endif  // DIOPI_IMPL_TORCH_CUDA_HELPERS_H_
