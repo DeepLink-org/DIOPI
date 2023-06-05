@@ -110,7 +110,7 @@ diopiError_t calCnnlLayout(MemoryFormat memoryFormat, int64_t dim, cnnlTensorLay
 diopiError_t contiguous(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryFormat memoryFormat) {
     if (src.isContiguous(memoryFormat)) {
         return diopiSuccess;
-    };
+    }
     int64_t dim = src.dim();
     DIOPI_CHECK(dim == 4 || dim == 5, "only support 4d/5d tensor currently");
 
