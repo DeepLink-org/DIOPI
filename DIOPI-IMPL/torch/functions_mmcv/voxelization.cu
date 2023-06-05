@@ -21,8 +21,6 @@ namespace ops {
 
 using namespace at;
 
-typedef enum { SUM = 0, MEAN = 1, MAX = 2 } reduce_t;
-
 template <typename T, typename T_int>
 __global__ void dynamic_voxelize_kernel(
     const T* points, T_int* coors, const float voxel_x, const float voxel_y,
