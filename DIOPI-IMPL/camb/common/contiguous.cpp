@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "common.hpp"
-#include "debug.hpp"
 
 namespace impl {
 namespace camb {
