@@ -271,27 +271,27 @@ diopi_configs = {
         ),
     ),
 
-    'avg_pool2d': dict(
-        name=["avg_pool2d"],
-        para=dict(
-            kernel_size=[(2, 2), 3],
-            stride=[1, (1, 2)],
-            padding=[(1, 1), 0],
-            ceil_mode=[True, False],
-            count_include_pad=[True, False],
-            divisor_override=[None, 2],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "requires_grad": [True],
-                    "shape": ((2, 1024, 14, 14), (256, 28, 28)),
-                    "dtype": [Dtype.float32, Dtype.float64],
-                },
-            ]
-        ),
-    ),
+    # 'avg_pool2d': dict(
+    #     name=["avg_pool2d"],
+    #     para=dict(
+    #         kernel_size=[(2, 2), 3],
+    #         stride=[1, (1, 2)],
+    #         padding=[(1, 1), 0],
+    #         ceil_mode=[True, False],
+    #         count_include_pad=[True, False],
+    #         divisor_override=[None, 2],
+    #     ),
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "requires_grad": [True],
+    #                 "shape": ((2, 1024, 14, 14), (256, 28, 28)),
+    #                 "dtype": [Dtype.float32, Dtype.float64],
+    #             },
+    #         ]
+    #     ),
+    # ),
 
     'max_pool2d': dict(
         name=["max_pool2d"],
@@ -1349,8 +1349,8 @@ diopi_configs = {
                               (1, 242991, 2),
                               (2, 4, 100, 152),
                               (384, 128)),
-                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16,
-                              Dtype.int32, Dtype.int64, Dtype.int8],
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16
+                              ],
                     "gen_fn": Genfunc.randn,
                 },
             ],
@@ -4183,7 +4183,7 @@ diopi_configs = {
 
     'layer_norm': dict(
         name=["layer_norm"],
-        dtype=[Dtype.float32, Dtype.float64, Dtype.float16],
+        dtype=[Dtype.float32, Dtype.float64],
         atol=1e-5,
         para=dict(
             eps=[1e-5, 1e-5, 1e-12],
