@@ -1,5 +1,5 @@
 from ...config import Genfunc
-from ...dtype import Dtype
+from ...diopi_runtime import Dtype
 
 mobilenet_v2_config = {
     'randperm': dict(

@@ -1,3 +1,4 @@
+# Copyright (c) 2023, DeepLink.
 import copy
 from .config import _must_be_the_type, _must_exist, expand_cfg_by_name
 

@@ -10,7 +10,7 @@ from .utils import logger
 from .utils import need_process_func
 from .config import Genfunc, dict_elem_length, Config
 from . import diopi_configs
-from .dtype import from_dtype_str
+from .diopi_runtime import from_dtype_str
 from .utils import get_saved_pth_list, get_data_from_file, cfg_file_name
 import torch
 import torchvision

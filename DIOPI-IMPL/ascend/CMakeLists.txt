@@ -31,11 +31,22 @@ endif()
 file(GLOB_RECURSE IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions/*.cpp common/*.cpp)
 #list(APPEND IMPL_SRC acl_helper.cpp)
 
-if (TEST)
-  add_subdirectory(test)
-endif()
-
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
 
 target_link_libraries(${DEVICEIMPL} ascendcl acl_op_compiler)
+
+if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
+    set(ADAPTOR_GEN_PATH "${CMAKE_SOURCE_DIR}/../DIOPI-ADAPTOR/codegen")
+    add_custom_target(adaptor_code_gen COMMAND python3 ${ADAPTOR_GEN_PATH}/gen.py
+        --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${CMAKE_SOURCE_DIR}/../DIOPI-PROTO/include/diopi/
+        --config_device=torch)
+    set(USE_ADAPTOR "true")
+    add_definitions(-DTEST_USE_ADAPTOR)
+else()
+    set(USE_ADAPTOR "false")
+endif()
+
+if (TEST)
+    add_subdirectory(test)
+endif()

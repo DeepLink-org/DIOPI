@@ -1,5 +1,5 @@
 from ...config import Genfunc
-from ...dtype import Dtype
+from ...diopi_runtime import Dtype
 
 swin_transformer_config = {
     'linspace': dict(
