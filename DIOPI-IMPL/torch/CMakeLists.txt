@@ -35,12 +35,6 @@ set(REAL_IMPL_SRC ${REAL_IMPL_SRC}
                   functions_mmcv.cpp
                   error.cpp)
 
-if (TEST)
-    add_subdirectory(test)
-else ()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-version-script=${CMAKE_CURRENT_SOURCE_DIR}/diopi.map")
-endif()
-
 if(HIP)
     include(../cmake/LoadHIP.cmake)
 endif()
@@ -70,6 +64,10 @@ if (DYLOAD)
     endif()
     add_dependencies(${DEVICEIMPL} code_gen) # make sure to recompile once code_gen.py changed
     target_link_libraries(${REALIMPL} ${TORCH_LIBRARIES})
+    if (TEST)
+        add_dependencies(${REALIMPL} diopirt)
+        target_link_libraries(${REALIMPL} diopirt)
+    endif()
 else ()
     if(USE_HIP)
         hip_add_library(${DEVICEIMPL} SHARED ${REAL_IMPL_SRC})
@@ -78,4 +76,22 @@ else ()
         cuda_add_library(${DEVICEIMPL} SHARED ${REAL_IMPL_SRC})
         target_link_libraries(${DEVICEIMPL} ${CUDA_LIBRARIES} ${TORCH_LIBRARIES})
     endif()
+endif()
+
+if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
+    set(ADAPTOR_GEN_PATH "${CMAKE_SOURCE_DIR}/../DIOPI-ADAPTOR/codegen")
+    add_custom_target(adaptor_code_gen COMMAND python3 ${ADAPTOR_GEN_PATH}/gen.py
+        --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${CMAKE_SOURCE_DIR}/../DIOPI-PROTO/include/diopi/
+        --config_device=torch)
+    set(USE_ADAPTOR "true")
+    add_dependencies(${DEVICEIMPL} adaptor_code_gen)
+    add_definitions(-DTEST_USE_ADAPTOR)
+else()
+    set(USE_ADAPTOR "false")
+endif()
+
+if (TEST)
+    add_subdirectory(test)
+else ()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-version-script=${CMAKE_CURRENT_SOURCE_DIR}/diopi.map")
 endif()

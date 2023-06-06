@@ -1,5 +1,5 @@
 from ...config import Genfunc
-from ...dtype import Dtype
+from ...diopi_runtime import Dtype
 
 repvgg_config = {
     'randperm': dict(
@@ -83,7 +83,7 @@ repvgg_config = {
                     "ins": ["running_var"],
                     "shape": [(48,), (48,), (96,), (192,), (1280,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
                 {
                     "ins": ["weight"],

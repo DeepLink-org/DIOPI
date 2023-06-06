@@ -1,7 +1,7 @@
 # Copyright (c) 2023, DeepLink.
 
 from .device_config_helper import Skip
-from .dtype import Dtype
+from .diopi_runtime import Dtype
 
 device_configs = {
     'batch_norm': dict(

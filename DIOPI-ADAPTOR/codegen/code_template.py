@@ -1,3 +1,4 @@
+# Copyright (c) 2023, DeepLink.
 import re
 
 # match $identifier or ${identifier} and replace with value in env
