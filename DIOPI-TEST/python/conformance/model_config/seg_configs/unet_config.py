@@ -1,5 +1,5 @@
 from ...config import Genfunc
-from ...dtype import Dtype
+from ...diopi_runtime import Dtype
 
 unet_config = {
     'randperm': dict(
@@ -83,7 +83,7 @@ unet_config = {
                     "ins": ["running_var"],
                     "shape": [(64,), (128,), (256,), (512,), (1024,), (64,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
                 {
                     "ins": ["weight"],

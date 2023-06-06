@@ -8,6 +8,7 @@
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
+
 namespace impl {
 namespace camb {
 
@@ -33,6 +34,17 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     auto dim = inputTr.dim();
     DIOPI_CHECK(dim >= 2 && dim <= 5, "Input dim is out of range");
     DIOPI_CHECK(dim == outputTr.dim(), "Input dim != out dim");
+
+    if (!weightTr.defined()) {
+        diopiScalar_t val{diopi_dtype_float32, {1.0f}};
+        DiopiTensor weightTr = requiresTensor(ctx, inputTr.shape(), inputTr.dtype());
+        DIOPI_CALL(diopiFill(ctx, weightTr.tensorHandle(), &val))
+    }
+    if (!biasTr.defined()) {
+        diopiScalar_t val{diopi_dtype_float32, {0.0f}};
+        DiopiTensor biasTr = requiresTensor(ctx, inputTr.shape(), inputTr.dtype());
+        DIOPI_CALL(diopiFill(ctx, biasTr.tensorHandle(), &val))
+    }
 
     if (3 == dim) {
         inputTr.unsqueeze(3);

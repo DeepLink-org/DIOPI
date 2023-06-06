@@ -3,7 +3,7 @@ import copy
 import pickle
 
 from .utils import default_cfg_dict
-from .dtype import Dtype
+from .diopi_runtime import default
 
 
 class Genfunc(object):
@@ -18,6 +18,7 @@ class Genfunc(object):
     sym_mat = 8
     default = 9
     randn_cmplx = 10
+    uniform = 11
 
     @staticmethod
     def load(file_path):
@@ -280,7 +281,7 @@ def format_cfg(cases):
                 item["gen_num_range"] = []
         # gen_fn and dtype maybe set in global zone,
         # we don't recommend the set key in global zone.
-        check_and_set(case_v, "dtype", Dtype.default)
+        check_and_set(case_v, "dtype", default)
         check_and_set(case_v, "gen_fn", Genfunc.default)
 
         domain = f"{case_k}.tensor_para.args"

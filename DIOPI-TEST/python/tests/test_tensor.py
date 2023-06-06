@@ -10,7 +10,7 @@ class TestTensor(object):
         for dtype in self.dtypes:
             tensor = cf.Tensor(size=(2, 3, 5), dtype=dtype)
             assert tensor.numel() == 2 * 3 * 5
-            assert tensor.size() == (2, 3, 5)
+            assert tensor.size().data == [2, 3, 5]
             assert tensor.get_dtype() == dtype
             assert tensor.get_device() == Device.AIChip
 

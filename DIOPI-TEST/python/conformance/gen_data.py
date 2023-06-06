@@ -10,7 +10,7 @@ from .utils import logger
 from .utils import need_process_func
 from .config import Genfunc, dict_elem_length, Config
 from . import diopi_configs
-from .dtype import from_dtype_str
+from .diopi_runtime import from_dtype_str
 from .utils import get_saved_pth_list, get_data_from_file, cfg_file_name
 import torch
 import torchvision
@@ -197,12 +197,12 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
         shape = arg["shape"]
         if isinstance(arg["gen_fn"], int):
             gen_fn = arg["gen_fn"]
-            if gen_fn == Genfunc.randint:
+            if gen_fn == Genfunc.randint or gen_fn == Genfunc.uniform:
                 low = 0
                 high = 10
         else:
             gen_fn = arg["gen_fn"]["fn"]
-            assert (gen_fn == Genfunc.randint), "only randint needs args"
+            assert (gen_fn == Genfunc.randint or gen_fn == Genfunc.uniform), "only randint needs args"
             low = arg["gen_fn"].get("low", 0)
             high = arg["gen_fn"].get("high", 10)
         dtype = to_numpy_dtype(arg["dtype"])
@@ -214,6 +214,8 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
             value = np.array(np.random.randn(*shape)).astype(dtype)
         elif gen_fn == Genfunc.rand:
             value = np.array(np.random.rand(*shape)).astype(dtype)
+        elif gen_fn == Genfunc.uniform:
+            value = np.array(np.random.uniform(low=low, high=high, size=shape)).astype(dtype)
         elif gen_fn == Genfunc.ones:
             value = np.ones(shape, dtype=dtype)
         elif gen_fn == Genfunc.zeros:
@@ -227,9 +229,9 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
         elif gen_fn == Genfunc.positive:
             value = np.abs(np.array(np.random.randn(*shape)).astype(dtype))
         elif gen_fn == Genfunc.sym_mat:
-            axis = (0, 2, 1) if len(shape) == 3 else (0, 1)
+            axis = [i for i in range(len(shape) - 2)] + [-1, -2]
             mat = np.random.randn(*shape).astype(dtype)
-            value = mat @ mat.transpose(axis)
+            value = mat @ mat.transpose(axis) + 1e-3
         elif gen_fn == Genfunc.randn_cmplx:
             value = np.array(np.random.randn(*shape) + 1j * np.random.randn(*shape)).astype(dtype)
         else:
@@ -440,7 +442,8 @@ class CustomizedTest(object):
                                          lr=lr,
                                          rho=rho,
                                          eps=eps,
-                                         weight_decay=weight_decay)
+                                         weight_decay=weight_decay,
+                                         maximize=False)
         return param, param_grad, square_avg, acc_delta
 
     def rmsprop(param, param_grad, square_avg, grad_avg, momentum_buffer, lr, alpha, eps, weight_decay, momentum, centered):
@@ -591,7 +594,7 @@ class GenOutputData(object):
 
             if outputs is not None:
                 with open(os.path.join(outputs_dir_path, saved_pth), "wb") as f:
-                    pickle.dump(to_numpy(outputs), f)
+                    pickle.dump(to_numpy(outputs), f, protocol=4)
                     gen_counter += 1
 
             if function_paras["requires_grad"]:
@@ -614,7 +617,7 @@ class GenOutputData(object):
                     saved_grads = {k: v for k, v in zip(inputs_name_for_grad, grads)}
 
                 with open(os.path.join(outputs_dir_path, saved_backward_pth), "wb") as f:
-                    pickle.dump(to_numpy(saved_grads), f)
+                    pickle.dump(to_numpy(saved_grads), f, protocol=4)
 
                 logger_str = f"{logger_str} and backward"
 

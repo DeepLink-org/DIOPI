@@ -1,5 +1,5 @@
 from ...config import Genfunc
-from ...dtype import Dtype
+from ...diopi_runtime import Dtype
 
 fcos_config = {
     'conv2d': dict(
@@ -57,7 +57,7 @@ fcos_config = {
                     "ins": ["running_var"],
                     "shape": [(64,), (64,), (256,), (128,), (512,), (256,), (1024,), (512,), (2048,), (64,), (64,), (256,), (128,), (512,), (256,), (1024,), (512,), (2048,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
                 {
                     "ins": ["weight"],
@@ -900,7 +900,7 @@ fcos_config = {
                     "ins": ["input"],
                     "shape": [(411,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),
@@ -1009,7 +1009,7 @@ fcos_config = {
                     "ins": ["input"],
                     "shape": [(411,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),
