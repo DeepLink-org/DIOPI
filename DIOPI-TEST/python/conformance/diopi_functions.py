@@ -494,14 +494,14 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
         return clamp_min(input, min, inplace)
     if min is None:
         return clamp_max(input, max, inplace)
-
     call = "diopiClamp"
     args = "input.context_handle, "
     if inplace:
         out = input
         call = call + "Inp"
     else:
-        out = raw_like(input)
+        out = Tensor(input.size(), Dtype.float32)
+        # out = raw_like(input)
         args = args + "out.tensor_handle, "
 
     if isinstance(min, Tensor):
@@ -527,7 +527,9 @@ def clamp_min(input, min, inplace=False) -> Tensor:
         out = input
         call = call + "Inp"
     else:
-        out = raw_like(input)
+        # out = raw_like(input)
+        
+        out = Tensor(input.size(), Dtype.float32)
         args = args + "out.tensor_handle, "
 
     if isinstance(min, Tensor):
@@ -550,7 +552,8 @@ def clamp_max(input, max, inplace=False) -> Tensor:
         out = input
         call = call + "Inp"
     else:
-        out = raw_like(input)
+        # out = raw_like(input)
+        out = Tensor(input.size(), Dtype.float32)
         args = args + "out.tensor_handle, "
 
     if isinstance(max, Tensor):
@@ -2813,6 +2816,7 @@ def layer_norm(input, normalized_shape, weight=None, bias=None, eps=1e-05):
     sizeI = input.size()
     dims = len(sizeI) - len(normalized_shape)
     size = [i for i in sizeI[0:dims]]
+    # save_mean = Tensor(size, Dtype.float32)
     save_mean = Tensor(size, input.get_dtype())
     save_invstd = raw_like(save_mean)
 

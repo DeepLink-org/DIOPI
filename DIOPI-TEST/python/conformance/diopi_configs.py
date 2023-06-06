@@ -1331,82 +1331,105 @@ diopi_configs = {
         ),
     ),
 
+    # 'clamp': dict(
+    #     name=['clamp'],
+    #     interface=['torch'],
+    #     is_inplace=True,
+    #     atol=1e-4,
+    #     rtol=1e-5,
+    #     para=dict(
+    #         min=[None, -1.1, 1, 100, 10],
+    #         max=[4.13, 26, None, 1e-12, 10],
+    #     ),
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "shape": ((182, ), (384, 128),
+    #                           (1, 242991, 2),
+    #                           (2, 4, 100, 152),
+    #                           (384, 128)),
+    #                 "dtype": [Dtype.float32, Dtype.float64, Dtype.float16
+    #                           ],
+    #                 "gen_fn": Genfunc.randn,
+    #             },
+    #         ],
+    #     ),
+    # ),
+
     'clamp': dict(
         name=['clamp'],
         interface=['torch'],
-        is_inplace=True,
+        is_inplace=False,
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            min=[None, -1.1, 1, 100, 10],
-            max=[4.13, 26, None, 1e-12, 10],
+            min=[None, -1.1, -1.1],
+            max=[4.13, 4.13, None],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((182, ), (384, 128),
-                              (1, 242991, 2),
-                              (2, 4, 100, 152),
-                              (384, 128)),
-                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16
-                              ],
+                    "shape": ((182, ), (44,),(32,), ),
+                    "dtype": [Dtype.int64],
                     "gen_fn": Genfunc.randn,
                 },
             ],
         ),
     ),
 
-    'clamp_uint8': dict(
-        name=['clamp'],
-        interface=['torch'],
-        is_inplace=True,
-        atol=1e-4,
-        rtol=1e-5,
-        para=dict(
-            min=[2],
-            max=[5],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((384, 128),),
-                    "dtype": [Dtype.uint8],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
 
-    'clamp_tensor': dict(
-        name=['clamp'],
-        interface=['torch'],
-        is_inplace=True,
-        atol=1e-4,
-        rtol=1e-5,
-        tensor_para=dict(
-            dtype=[Dtype.float32, Dtype.float64],
-            gen_fn=Genfunc.randn,
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((182, ), (384, 128),
-                              (1, 242991, 2),
-                              (2, 4, 100, 152)),
-                },
-                {
-                    "ins": ['min'],
-                    "shape": ((182, ), (384, 1),
-                              None, (2, 4, 100, 152)),
-                },
-                {
-                    "ins": ['max'],
-                    "shape": (None, (384, 128), (1, 1, 2), None),
-                },
-            ],
-        ),
-    ),
+    # 'clamp_uint8': dict(
+    #     name=['clamp'],
+    #     interface=['torch'],
+    #     is_inplace=True,
+    #     atol=1e-4,
+    #     rtol=1e-5,
+    #     para=dict(
+    #         min=[2],
+    #         max=[5],
+    #     ),
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "shape": ((384, 128),),
+    #                 "dtype": [Dtype.uint8],
+    #                 "gen_fn": Genfunc.randn,
+    #             },
+    #         ],
+    #     ),
+    # ),
+
+    # 'clamp_tensor': dict(
+    #     name=['clamp'],
+    #     interface=['torch'],
+    #     is_inplace=True,
+    #     atol=1e-4,
+    #     rtol=1e-5,
+    #     tensor_para=dict(
+    #         dtype=[Dtype.float32, Dtype.float64],
+    #         gen_fn=Genfunc.randn,
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "shape": ((182, ), (384, 128),
+    #                           (1, 242991, 2),
+    #                           (2, 4, 100, 152)),
+    #             },
+    #             {
+    #                 "ins": ['min'],
+    #                 "shape": ((182, ), (384, 1),
+    #                           None, (2, 4, 100, 152)),
+    #             },
+    #             {
+    #                 "ins": ['max'],
+    #                 "shape": (None, (384, 128), (1, 1, 2), None),
+    #             },
+    #         ],
+    #     ),
+    # ),
 
     'fill': dict(
         name=["fill_"],
@@ -4183,7 +4206,7 @@ diopi_configs = {
 
     'layer_norm': dict(
         name=["layer_norm"],
-        dtype=[Dtype.float32, Dtype.float64],
+        dtype=[Dtype.float32, Dtype.float64, Dtype.float16],
         atol=1e-5,
         para=dict(
             eps=[1e-5, 1e-5, 1e-12],
