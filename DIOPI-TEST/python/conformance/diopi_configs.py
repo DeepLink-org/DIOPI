@@ -173,9 +173,29 @@ diopi_configs = {
         ),
     ),
 
-    'hardtanh': dict(
+    'hardtanh_inplace': dict(
         name=["hardtanh"],
         is_inplace=True,
+        para=dict(
+            min_val=[0.0, 0.0, 0.2, 1.4],
+            max_val=[6.0, 0.5, 0.2, 1.2],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((2, 4096), (64, 28, 28),
+                              (2, 96, 56, 56), (64, 3, 7, 28, 28)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'hardtanh_backward': dict(
+        name=["hardtanh"],
         para=dict(
             min_val=[0.0, 0.0, 0.2, 1.4],
             max_val=[6.0, 0.5, 0.2, 1.2],

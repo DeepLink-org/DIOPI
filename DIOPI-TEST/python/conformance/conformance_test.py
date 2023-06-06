@@ -425,16 +425,17 @@ class ConformanceTest(object):
             kwargs = function_paras['kwargs']
             func_call_list = []
             func_call_list.append(f"{module}.{test_func_name}(**kwargs)")
-            is_inplace = False
+            is_inplaces = []
             if "inplace" in kwargs.keys():
-                is_inplace = kwargs["inplace"]
+                is_inplaces.append(kwargs["inplace"])
             else:
-                is_inplace = data["cfg"].get("is_inplace", False)
-                if is_inplace:
+                is_inplaces.append(False)
+                if data["cfg"].get("is_inplace", False):
+                    is_inplaces.append(True)
                     func_call_list.append(f"{module}.{test_func_name}(**kwargs, inplace=True)")
 
             ignore_paras_for_input_check = ops_with_states.get(test_func_name, set())
-            for func_call in func_call_list:
+            for func_call, is_inplace in zip(func_call_list, is_inplaces):
                 if is_inplace:
                     if test_tag and test_tag[-1] == 'backward':
                         test_tag.pop()
