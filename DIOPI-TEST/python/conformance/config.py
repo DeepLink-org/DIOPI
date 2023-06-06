@@ -18,6 +18,7 @@ class Genfunc(object):
     sym_mat = 8
     default = 9
     randn_cmplx = 10
+    uniform = 11
 
     @staticmethod
     def load(file_path):

@@ -75,7 +75,7 @@ centernet_config = {
                     "ins": ["running_var"],
                     "shape": [(64,), (64,), (128,), (256,), (512,), (256,), (128,), (64,), (64,), (64,), (128,), (256,), (512,), (256,), (128,), (64,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
                 {
                     "ins": ["weight"],
@@ -695,7 +695,7 @@ centernet_config = {
                     "ins": ["input"],
                     "shape": [(16, 80, 128, 128)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),

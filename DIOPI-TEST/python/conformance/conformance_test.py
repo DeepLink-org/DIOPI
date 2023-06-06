@@ -223,7 +223,7 @@ class ManualTest(object):
         p_value = stats.kstest(out_numpy, 'norm', args=(mean, std))[1]
         assert p_value > 0.0005, "failed to execute normal_"
 
-    def test_multinomial(input, num_samples, replacement):
+    def test_multinomial(input, num_samples, replacement=False):
         out = F.multinomial(input, num_samples, replacement)
         out_numpy = out.numpy()
         has_duplicates = False

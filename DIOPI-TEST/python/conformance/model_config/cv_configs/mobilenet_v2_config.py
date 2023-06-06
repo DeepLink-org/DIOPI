@@ -83,7 +83,7 @@ mobilenet_v2_config = {
                     "ins": ["running_var"],
                     "shape": [(32,), (16,), (96,), (96,), (24,), (144,), (144,), (32,), (192,), (192,), (64,), (384,), (96,), (576,), (576,), (160,), (960,), (320,), (1280,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
                 {
                     "ins": ["weight"],
