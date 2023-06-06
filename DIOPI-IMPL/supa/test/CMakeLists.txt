@@ -5,7 +5,7 @@ include_directories(SYSTEM ${DIOPI_SUPA_DIR}/include)
 include_directories(SYSTEM ${SUPA_PATH}/include)
 
 find_library(SUPA_RUNTIME_LIB supa-runtime ${SUPA_PATH}/lib ${SUPA_PATH}/lib64)
-message("SUPA runtime lib: ${SUPA_RUNTIME_LIB}")
+message(STATUS "SUPA runtime lib: ${SUPA_RUNTIME_LIB}")
 
 set(TEST_SRC
     litert.cpp
