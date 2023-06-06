@@ -117,9 +117,13 @@ diopiError_t contiguous(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryForma
     }
     int64_t dim = src.dim();
     DIOPI_CHECK(dim == 4 || dim == 5, "only support 4d/5d tensor currently");
-
-    DiopiTensor dest = requiresTensor(ctx, src.shape(), src.dtype(), memoryFormat);
-
+    DiopiTensor dest;
+    if (hasZero(src.stride())) {
+        DIOPI_CALL(clone(ctx, src, dest, memoryFormat));
+        src = dest;
+        return diopiSuccess;
+    }
+    dest = requiresTensor(ctx, src.shape(), src.dtype(), memoryFormat);
     MemoryFormat srcMemoryFormat;
     std::vector<int32_t> order;
     DIOPI_CALL(calOrderAndSrcMemoryFormat(src, memoryFormat, srcMemoryFormat, order));
