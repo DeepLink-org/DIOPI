@@ -1615,11 +1615,11 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     impl::aten::setCurCtx(ctx);
     at::Tensor atInput = impl::aten::buildATen(input);
     c10::optional<at::Tensor> atMin = c10::optional<at::Tensor>();
-    if(min != nullptr){
+    if (min != nullptr) {
         atMin = impl::aten::buildATen(min);
     }
     c10::optional<at::Tensor> atMax = c10::optional<at::Tensor>();
-    if(max != nullptr){
+    if (max != nullptr) {
         atMax = impl::aten::buildATen(max);
     }
     at::Tensor atOut = impl::aten::buildATen(out);
