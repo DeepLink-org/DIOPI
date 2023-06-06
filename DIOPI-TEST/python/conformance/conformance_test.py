@@ -73,13 +73,24 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
         sum1 = tensor1.sum()
         sum2 = tensor2.sum()
         mask = np.isclose(tensor1, tensor2, rtol, atol, True)
+        count = np.count_nonzero(mask == False)  
         if tensor1.dtype == np.bool_:
             max_diff = 1
+            logger.info(f"The count of elements that do not meet the accuracy requirement is {count}.")
+            logger.info(f"Max of diff is {max_diff}.")
+            logger.debug(f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}, Max of diff is {max_diff}. \
+                     \n" + f"{var_name} is {tensor1},\n{var_name}_ref is {tensor2},\nMask is {mask}\n")            
         else:
+            diff = np.abs(tensor1 - tensor2)
             max_diff = np.abs(tensor1 - tensor2).max()
-        logger.info(f"Max of diff is {max_diff}.")
-        logger.debug(f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}, Max of diff is {max_diff}. \
-                     \n" + f"{var_name} is {tensor1},\n{var_name}_ref is {tensor2},\nMask is {mask}\n")
+            max_diff_index = np.unravel_index(np.argmax(diff), diff.shape)
+            max_diff_elem = tensor1[max_diff_index]
+            max_diff_elem_ref = tensor2[max_diff_index]
+            logger.info(f"The count of elements that do not meet the accuracy requirement is {count}.")
+            logger.info(f"The max of diff is {max_diff}. Specifically, the actual val is {max_diff_elem} and the expected is {max_diff_elem_ref}.")
+            logger.debug(f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}, Max of diff is {max_diff}. \
+                     \n" + f"{var_name} is {tensor1},\n{var_name}_ref is {tensor2},\nMask is {mask}\n")     
+            logger.debug(f"The max of diff is {max_diff}. Specifically, the actual val is {max_diff_elem} and the expected is {max_diff_elem_ref}.\n")          
     return passed
 
 
