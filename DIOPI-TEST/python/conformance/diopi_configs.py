@@ -1338,8 +1338,8 @@ diopi_configs = {
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            min=[None, None, 1, 100, None],
-            max=[4.13, 26, None, None, 10],
+            min=[None, None, 1, -2, None],
+            max=[4.13, 26, 10, 2, 10],
         ),
         tensor_para=dict(
             args=[
