@@ -3945,4 +3945,21 @@ DIOPI_API diopiError_t diopiLerpScalar(diopiContextHandle_t ctx, diopiTensorHand
     return diopiSuccess;
 }
 
+DIOPI_API diopiError_t diopiTriu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t diagonal) {
+    impl::aten::setCurCtx(ctx);
+    auto atOut = impl::aten::buildATen(out);
+    auto atInput = impl::aten::buildATen(input);
+    at::triu_out(atOut, atInput, diagonal);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiTriuInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, int64_t diagonal) {
+    impl::aten::setCurCtx(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    at::triu_out(atInput, atInput, diagonal);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
 }  // extern "C"

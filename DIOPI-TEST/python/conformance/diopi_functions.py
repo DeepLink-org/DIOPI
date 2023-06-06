@@ -3639,3 +3639,19 @@ def lerp(input, end, weight) -> Tensor:
     ret = func(input.context(), out, input, end, weight)
     check_returncode(ret)
     return out
+
+
+def triu(input, diagonal=0, inplace=False) -> Tensor:
+    call = "diopiTriu"
+    if inplace:
+        call += "Inp"
+        func = check_function(call)
+        ret = func(input.context(), input, diagonal)
+        check_returncode(ret)
+        return input
+    else:
+        out = Tensor(input.size(), input.get_dtype())
+        func = check_function(call)
+        ret = func(input.context(), out, input, diagonal)
+        check_returncode(ret)
+        return out
