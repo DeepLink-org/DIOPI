@@ -8,7 +8,7 @@ class OpTemplate(object):
  * @author OpenComputeLab
  * @copyright  (c) 2023, DeepLink.
  */
- 
+
 #ifndef DIOPI_ADAPTOR_HPP_
 #define DIOPI_ADAPTOR_HPP_
 #include <iostream>
@@ -50,7 +50,7 @@ inline std::vector<int64_t> calcStrides(int ndims, diopiSize_t size, diopiMemory
             }
         }
 
-    } 
+    }
     else {
         // PARROTS_THROW(InvalidArgs) <<
         //         "Invalid MemoryFormat " << memoryFormatName(format);
@@ -140,7 +140,6 @@ inline int castImpl(diopiContextHandle_t ctx, T src, T* dst,
             break;
         }
     }
-    bool contiguous = needContiguous && isContiguous(size, stride, memoryFormat);
     int convertType = 0;
     if (!convertFormat) {
         dstStride = stride;
@@ -159,7 +158,8 @@ inline int castImpl(diopiContextHandle_t ctx, T src, T* dst,
         *dst = src;
     }
     convertType = convertType << 1;
-    if (convertFormat || !contiguous) {
+    bool doContiguous = needContiguous && !isContiguous(size, stride, memoryFormat) || convertFormat;
+    if (doContiguous) {
         diopiTensorHandle_t tmp = nullptr;
         diopiRequireTensor(ctx, &tmp, &size, &stride, dstDtype, device);
         diopiCopyInp(ctx, *dst, tmp);
@@ -175,7 +175,7 @@ inline int castImpl(diopiContextHandle_t ctx, T src, T* dst,
 template <typename Adaptor, typename... Args>
 void dispatch_diopi(diopiContextHandle_t ctx, Args&&... args) {
     auto adaptor = Adaptor();
-    adaptor(ctx, std::forward<Args>(args)...); 
+    adaptor(ctx, std::forward<Args>(args)...);
 }
 
 template<class strategy = NoCast, bool isContiguous = false>
