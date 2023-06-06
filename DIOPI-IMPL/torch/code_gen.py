@@ -98,30 +98,24 @@ def gen_wrapper_func(content):
             if row.startswith("DIOPI_RT_API"):
                 arg_type = ["    const char* (*func)();\n"]
                 arg = "()"
-                for args in arg_type:
-                    new_content.append(args)
-                new_content.append("    " + 'func = reinterpret_cast<decltype(func)>(dlsym(handle, "' + func_name + '"));\n')
-                new_content.append("    " + "if (func != NULL) {\n")
-                new_content.append("    " + "    return (*func)" + arg + ";\n")
-                new_content.append("    " + "} else {\n")
-                new_content.append("    " + "    printf(\"[wrap_func] %s not implemented!\\n\", \"" + func_name + "\");\n")
-                new_content.append("    " + "    return \"" + func_name + " not implemented!\";\n")
-                new_content.append("    " + "}\n")
-                new_content.append("}\n")
-                new_content.append("\n")
             else:
                 arg_type, arg = get_func_arg(temp_content)
-                for args in arg_type:
-                    new_content.append(args)
-                new_content.append("    " + 'func = reinterpret_cast<decltype(func)>(dlsym(handle, "' + func_name + '"));\n')
-                new_content.append("    " + "if (func != NULL) {\n")
-                new_content.append("    " + "    return (*func)" + arg + ";\n")
-                new_content.append("    " + "} else {\n")
-                new_content.append("    " + "    printf(\"[wrap_func] %s not implemented!\\n\", \"" + func_name + "\");\n")
+
+            for args in arg_type:
+                new_content.append(args)
+
+            new_content.append("    " + 'func = reinterpret_cast<decltype(func)>(dlsym(handle, "' + func_name + '"));\n')
+            new_content.append("    " + "if (func != NULL) {\n")
+            new_content.append("    " + "    return (*func)" + arg + ";\n")
+            new_content.append("    " + "} else {\n")
+            new_content.append("    " + "    printf(\"[wrap_func] %s not implemented!\\n\", \"" + func_name + "\");\n")
+            if row.startswith("DIOPI_RT_API"):
+                new_content.append("    " + "    return \"" + func_name + " not implemented!\";\n")
+            else:
                 new_content.append("    " + "    return diopiErrorOccurred;\n")
-                new_content.append("    " + "}\n")
-                new_content.append("}\n")
-                new_content.append("\n")
+            new_content.append("    " + "}\n")
+            new_content.append("}\n")
+            new_content.append("\n")
 
 if __name__ == '__main__':
     print("open functions.h")
