@@ -2170,7 +2170,7 @@ diopi_configs = {
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            dim=[-1, 1, 0, -2, 1, -4],
+            dim=[-1, 1, 0, 2, 1, 1],
         ),
         tensor_para=dict(
             args=[
