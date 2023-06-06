@@ -1543,11 +1543,11 @@ diopiError_t diopiClampInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t i
     impl::aten::setCurCtx(ctx);
     at::Tensor atInput = impl::aten::buildATen(input);
     c10::optional<at::Scalar> atMin = c10::optional<at::Scalar>();
-    if(min != nullptr){
+    if (min != nullptr) {
         atMin = impl::aten::buildAtScalar(min);
     }
     c10::optional<at::Scalar> atMax = c10::optional<at::Scalar>();
-    if(max != nullptr){
+    if (max != nullptr) {
         atMax = impl::aten::buildAtScalar(max);
     }
     at::clamp_(atInput, atMin, atMax);
@@ -1560,11 +1560,11 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     impl::aten::setCurCtx(ctx);
     at::Tensor atInput = impl::aten::buildATen(input);
     c10::optional<at::Scalar> atMin = c10::optional<at::Scalar>();
-    if(min != nullptr){
+    if (min != nullptr) {
         atMin = impl::aten::buildAtScalar(min);
     }
     c10::optional<at::Scalar> atMax = c10::optional<at::Scalar>();
-    if(max != nullptr){
+    if (max != nullptr) {
         atMax = impl::aten::buildAtScalar(max);
     }
     at::Tensor atOut = impl::aten::buildATen(out);
@@ -1598,11 +1598,11 @@ diopiError_t diopiClampInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, 
     impl::aten::setCurCtx(ctx);
     at::Tensor atInput = impl::aten::buildATen(input);
     c10::optional<at::Tensor> atMin = c10::optional<at::Tensor>();
-    if(min != nullptr){
+    if (min != nullptr) {
         atMin = impl::aten::buildATen(min);
     }
     c10::optional<at::Tensor> atMax = c10::optional<at::Tensor>();
-    if(max != nullptr){
+    if (max != nullptr) {
         atMax = impl::aten::buildATen(max);
     }
     at::clamp_(atInput, atMin, atMax);
