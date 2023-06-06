@@ -208,7 +208,7 @@ public:
         return DiopiTensor(tensor);
     }
 
-    bool isContiguous(MemoryFormat format = MemoryFormat::Contiguous) {
+    bool isContiguous(MemoryFormat format = MemoryFormat::Contiguous) const {
         int64_t stride = 1;
         int64_t dim = this->dim();
         auto strides = this->stride();
@@ -251,7 +251,7 @@ public:
         return true;
     }
 
-    void asStrided(std::vector<int64_t>& shape, std::vector<int64_t>& stride) {
+    void asStrided(const std::vector<int64_t>& shape, const std::vector<int64_t>& stride) {
         this->shape_ = shape;
         this->stride_ = stride;
     }
