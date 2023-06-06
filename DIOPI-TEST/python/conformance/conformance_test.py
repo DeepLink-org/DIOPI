@@ -73,7 +73,7 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
         sum1 = tensor1.sum()
         sum2 = tensor2.sum()
         mask = np.isclose(tensor1, tensor2, rtol, atol, True)
-        if tensor1.dtype == np.bool:
+        if tensor1.dtype == np.bool_:
             max_diff = 1
         else:
             max_diff = np.abs(tensor1 - tensor2).max()
@@ -127,7 +127,7 @@ class ManualTest(object):
             real_ratio = np.sum(mask_numpy) / mask.numel()
             # check data
             if func == F.dropout2d:
-                tmp = np.ones(input.shape)
+                tmp = np.ones(input.shape().data)
                 mask_numpy = mask_numpy * tmp
             remains = out_numpy[mask_numpy == 1]
             ref = input_numpy[mask_numpy == 1]
@@ -231,11 +231,11 @@ class ManualTest(object):
         p_value = stats.kstest(out_numpy, 'norm', args=(mean, std))[1]
         assert p_value > 0.0005, "failed to execute normal_"
 
-    def test_multinomial(input, num_samples, replacement):
+    def test_multinomial(input, num_samples, replacement=False):
         out = F.multinomial(input, num_samples, replacement)
         out_numpy = out.numpy()
         has_duplicates = False
-        if len(out.size()) == 2:
+        if out.size().len == 2:
             has_duplicates = len(out_numpy[0]) != len(set(out_numpy[0]))
         else:
             has_duplicates = len(out_numpy) != len(set(out_numpy))
@@ -449,6 +449,8 @@ class ConformanceTest(object):
                     np_inputs_orign = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
                     info = convert_input_tensors(function_paras, test_tag, nhwc_list, dtype_list, filter_dtype_str_list)
                     tensor_info = info if info else tensor_info
+                    global cur_test_func
+                    cur_test_func = func_call.split('(')[0].split('.')[1]
                     output = eval(func_call)
                     np_inputs_after_forward = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
                     passed, not_passed_name = np_allclose(np_inputs_orign, np_inputs_after_forward)

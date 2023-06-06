@@ -1,6 +1,6 @@
 # Copyright (c) 2023, DeepLink.
 from .config import Genfunc
-from .dtype import Dtype
+from .diopi_runtime import Dtype
 
 ops_with_states = {"batch_norm": {"running_mean", "running_var"},
                    "sgd": {"buf", "param"},
