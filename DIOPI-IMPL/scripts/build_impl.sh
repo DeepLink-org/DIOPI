@@ -4,8 +4,6 @@ set -e
 CURRENT_DIR=$(cd $(dirname $0); pwd)
 DIOPI_TEST_PATH=${CURRENT_DIR}/../../DIOPI-TEST
 
-echo ${DIOPI_BUILD_TESTRT}
-
 case $1 in
   clean)
     rm -rf build;;
@@ -28,8 +26,8 @@ case $1 in
   ascend)
     mkdir -p build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=ascend -DTEST=${DIOPI_BUILD_TESTRT} && make -j8;;
   hip_pytorch)
-    mkdir build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=TORCH -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DHIP=ON && make -j8 \
-    || exit -1;;
+    mkdir build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=TORCH -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DHIP=ON \
+    && make -j8 || exit -1;;
   mmcv_ext)
     (cd third_party/mmcv_diopi && rm -rf build && mkdir build \
         && MMCV_WITH_DIOPI=1 MMCV_WITH_OPS=1 python setup.py build_ext -i) \

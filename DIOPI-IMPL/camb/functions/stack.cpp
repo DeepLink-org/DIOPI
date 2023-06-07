@@ -11,18 +11,16 @@ diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     std::vector<cnnlTensorDescriptor_t> inputsDescTmp(numTensors);
     std::vector<const void*> inputsData(numTensors);
 
+    dim += dim < 0 ? DiopiTensor(tensors[0]).shape().size() + 1 : 0;
+
     // insert a new dim to input_tensors
     for (int i = 0; i < numTensors; i++) {
         DiopiTensor tempTensor(tensors[i]);
         std::vector<int> catShape(tempTensor.shape().begin(), tempTensor.shape().end());
         cnnlDataType_t dtype;
         CnnlDataType::convertToCnnlType(&dtype, tempTensor.dtype());
-        if (dim == -1) {
-            dim = tempTensor.shape().size();
-        }
         catShape.insert(catShape.begin() + dim, 1);
         int catDimNb = catShape.size();
-
         inputsData[i] = tempTensor.data();
         inputsDesc[i].set(tempTensor, CNNL_LAYOUT_ARRAY);
         inputsDescTmp[i] = inputsDesc[i].get();

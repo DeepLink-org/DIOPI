@@ -1,19 +1,18 @@
- /**
+/**
  * @file
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  * @brief A reference implemention for DIOPI runtime, which is utilized to support conformance test suite of DIOPI
  */
 
-#ifndef DIOPI_IMPL_CAMB_TEST_INCLUDE_CONFORM_TEST_H_ // NOLINT
-#define DIOPI_IMPL_CAMB_TEST_INCLUDE_CONFORM_TEST_H_ // NOLINT
+#ifndef DIOPI_IMPL_CAMB_TEST_INCLUDE_CONFORM_TEST_H_  // NOLINT
+#define DIOPI_IMPL_CAMB_TEST_INCLUDE_CONFORM_TEST_H_  // NOLINT
 
 #include <diopi/diopirt.h>
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
 
 /**
  * typedef for functions
@@ -32,7 +31,6 @@ typedef void (*free_func_t)(void*);
 // typedef int32_t (*sync_stream_func_t)(diopiStreamHandle_t stream);
 
 // typedef const char* (*get_last_error_string_func_t)();
-
 
 /**
  * operations to register user-provided functions

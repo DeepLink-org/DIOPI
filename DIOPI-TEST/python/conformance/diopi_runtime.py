@@ -1,24 +1,54 @@
 # Copyright (c) 2023, DeepLink.
-import os
-from enum import Enum, unique
-from ctypes import (CDLL, RTLD_GLOBAL, cdll, byref, Structure, Union, POINTER)
-from ctypes import (c_void_p, c_char_p, c_int64, c_int32, c_double)
-from .dtype import Dtype
+import ctypes
+from ctypes import c_void_p
 import numpy as np
 import atexit
-
-
-@unique
-class Device(Enum):
-    Host = 0
-    AIChip = 1
+from export_runtime import diopiTensor, diopiSize, diopiScalar, diopiReduction, diopiRoundMode, diopiError, TensorP, Context, Device, Dtype, \
+    diopi_tensor_copy_to_buffer, get_last_error_string, finalize_library, diopi_finalize
 
 
 def device(dev: str) -> Device:
     if dev == "cpu" or dev == "host":
-        return Device(0)
+        return Device.Host
     else:
-        return Device(1)
+        return Device.AIChip
+
+
+all_types = [Dtype.float16, Dtype.float32, Dtype.float64, Dtype.int32, Dtype.int64]
+float_types = [Dtype.float16, Dtype.float32, Dtype.float64]
+float_no_half_types = [Dtype.float32, Dtype.float64]
+int_types = [Dtype.int32, Dtype.int64]
+complex_types = [Dtype.complex64, Dtype.complex128]
+default = all_types
+
+
+def from_dtype_str(dtype_str: str) -> Dtype:
+    if dtype_str == 'int8':
+        return Dtype.int8
+    elif dtype_str == 'uint8':
+        return Dtype.uint8
+    elif dtype_str == 'int16':
+        return Dtype.int16
+    elif dtype_str == 'uint16':
+        return Dtype.uint16
+    elif dtype_str == 'int32':
+        return Dtype.int32
+    elif dtype_str == 'uint32':
+        return Dtype.uint32
+    elif dtype_str == 'int64':
+        return Dtype.int64
+    elif dtype_str == 'uint64':
+        return Dtype.uint64
+    elif dtype_str == 'float16':
+        return Dtype.float16
+    elif dtype_str == 'float32':
+        return Dtype.float32
+    elif dtype_str == 'float64':
+        return Dtype.float64
+    elif dtype_str == 'bool':
+        return Dtype.bool
+    else:
+        return None
 
 
 def from_numpy_dtype(dtype: np.dtype) -> Dtype:
@@ -46,6 +76,10 @@ def from_numpy_dtype(dtype: np.dtype) -> Dtype:
         return Dtype.float64
     elif dtype == np.bool_:
         return Dtype.bool
+    elif dtype == np.complex64:
+        return Dtype.complex64
+    elif dtype == np.complex128:
+        return Dtype.complex128
     else:
         return None
 
@@ -75,6 +109,10 @@ def to_numpy_dtype(dtype: Dtype) -> np.dtype:
         return np.float64
     elif dtype == Dtype.bool:
         return np.bool_
+    elif dtype == Dtype.complex64:
+        return np.complex64
+    elif dtype == Dtype.complex128:
+        return np.complex128
     else:
         return None
 
@@ -126,111 +164,58 @@ def compute_nhwc_stride(size, itemsize=1, name=None):
         return compute_nhwc_stride_3d(size, itemsize)
 
 
-_cur_dir = os.path.dirname(os.path.abspath(__file__))
-diopirt_lib = CDLL(name=os.path.join(_cur_dir, "../../../DIOPI-IMPL/lib/libdiopirt.so"), mode=RTLD_GLOBAL)
-diopirt_lib.diopiInit()
-
-device_impl_lib = cdll.LoadLibrary(os.path.join(_cur_dir, "../../../DIOPI-IMPL/lib/libdiopi_impl.so"))
-
-
 def on_diopi_rt_exit():
-    diopirt_lib.finalizeLibrary()
-    diopirt_lib.diopiFinalize()
+    finalize_library()
+    diopi_finalize()
 
 
 atexit.register(on_diopi_rt_exit)
 
 
 def get_last_error():
-    device_impl_lib.diopiGetLastErrorString.restype = c_char_p
-    last_error_str = device_impl_lib.diopiGetLastErrorString()
-    last_error_str = last_error_str.decode("utf-8")
+    last_error_str = get_last_error_string()
     return last_error_str
-
-
-ContextHandle = c_void_p
-TensorHandle = c_void_p
-
-
-class Context:
-    _c_lib = diopirt_lib
-
-    def __init__(self):
-        self.context_handle = ContextHandle()
-        self.__class__._c_lib.diopiCreateContext(byref(self.context_handle))
-
-    def __del__(self):
-        self.__class__._c_lib.diopiDestroyContext(self.context_handle)
-
-    def get_handle(self):
-        return self.context_handle
-
-    def clear_tensors(self):
-        return self.__class__._c_lib.diopiClearTensors(self.context_handle)
 
 
 default_context = Context()
 
 
-class Sizes(Structure):
-    _fields_ = [("data", POINTER(c_int64)), ("len", c_int64)]
+class Sizes(diopiSize):
 
     def __init__(self, shape=()):
-        self.carray = (c_int64 * len(shape))(*shape)
-        super().__init__(self.carray, len(shape))
+        super(Sizes, self).__init__(list(shape), len(shape))
+        self.shape = self.data
 
 
-class ScalarUnion(Union):
-    _fields_ = [("fval", c_double), ("ival", c_int64)]
-
-
-class Scalar(Structure):
-    _fields_ = [("stype", c_int32), ("val", ScalarUnion)]
+class Scalar(diopiScalar):
 
     def __init__(self, value, dtype=None):
         if dtype is None:
             dtype = Dtype.int64 if isinstance(value, int) else Dtype.float64
-        self.stype = dtype.value
-        if dtype in [Dtype.float16, Dtype.float32, Dtype.float64]:
-            self.val.fval = value
-        else:
-            self.val.ival = value
-        super().__init__(dtype.value, self.val)
+        diopiScalar.__init__(self, dtype, value)
 
 
-class Tensor:
+class Tensor(diopiTensor):
     def __init__(
         self,
-        size,
-        dtype,
+        size=None,
+        dtype=None,
         stride=None,
-        context_handle=default_context.get_handle(),
-        tensor_handle=None,
+        context=default_context,
+        data_ptr=None
     ):
-        if tensor_handle is not None and size is None:
-            self.tensor_handle = tensor_handle
-            self.context_handle = context_handle
+        if size is None:
+            return diopiTensor.__init__(self)
+
+        if isinstance(size, (tuple, list)):
+            size = Sizes(list(size))
+
+        if data_ptr is None:
+            diopiTensor.__init__(self, size, stride, dtype,
+                                 Device.AIChip, context)
         else:
-            self.tensor_handle = TensorHandle()
-            self.context_handle = context_handle
-
-            assert isinstance(size, (tuple, list))
-            assert isinstance(dtype, Dtype)
-
-            diopirt_lib.diopiRequireTensor(
-                self.context_handle,
-                byref(self.tensor_handle),
-                byref(Sizes(tuple(size))),
-                None if stride is None else byref(Sizes(tuple(stride))),
-                dtype.value,
-                Device.AIChip.value
-            )
-
-    @classmethod
-    def from_handle(cls, tensor_handle):
-        ctx_handle = ContextHandle()
-        diopirt_lib.diopiTensorGetCtxHandle(tensor_handle, byref(ctx_handle))
-        return cls(size=None, dtype=None, context_handle=ctx_handle, tensor_handle=tensor_handle)
+            diopiTensor.__init__(self, size, stride, dtype,
+                                 Device.AIChip, context, data_ptr)
 
     def __str__(self):
         array = self.numpy()
@@ -244,78 +229,39 @@ class Tensor:
         stride = self.get_stride()
         dtype = self.get_dtype()
         return Tensor(size=size, dtype=dtype, stride=stride,
-                      context_handle=self.context_handle)
-
-    def numel(self):
-        numel = c_int64()
-        diopirt_lib.diopiGetTensorNumel(self.tensor_handle, byref(numel))
-        return numel.value
+                      context=self.context())
 
     def size(self):
-        cshape = Sizes()
-        diopirt_lib.diopiGetTensorShape(self.tensor_handle, byref(cshape))
-        shape = []
-        for i in range(cshape.len):
-            shape.append(cshape.data[i])
-        self.shape = tuple(shape)
-        return self.shape
-
-    def shape(self):
-        return self.size()
-
-    def get_stride(self):
-        cstride = Sizes()
-        diopirt_lib.diopiGetTensorStride(self.tensor_handle, byref(cstride))
-        stride = []
-        for i in range(cstride.len):
-            stride.append(cstride.data[i])
-        self.stride = tuple(stride)
-        return self.stride
-
-    def itemsize(self):
-        itemsize = c_int64()
-        diopirt_lib.diopiGetTensorElemSize(self.tensor_handle, byref(itemsize))
-        return itemsize.value
-
-    def get_device(self):
-        device = c_int32()
-        diopirt_lib.diopiGetTensorDevice(self.tensor_handle, byref(device))
-        self.device = Device(device.value)
-        return self.device
-
-    def get_dtype(self):
-        dtype = c_int32()
-        diopirt_lib.diopiGetTensorDtype(self.tensor_handle, byref(dtype))
-        self.dtype = Dtype(dtype.value)
-        return self.dtype
+        return self.shape()
 
     def reset_shape(self, shape):
         assert isinstance(shape, (tuple, list))
-        diopirt_lib.diopiTensorResetShape(self.tensor_handle, byref(Sizes(tuple(shape))))
+        self.reset_shape(Sizes(list(shape)))
 
     @classmethod
-    def from_numpy(cls, darray):
+    def from_numpy(cls, darray, context=None):
         if not isinstance(darray, (np.generic, np.ndarray)):
             raise TypeError(f"expected np.ndarray (got {type(darray)})")
-
         dtype = from_numpy_dtype(darray.dtype)
         stride = [int(darray.strides[i] / darray.itemsize)
                   for i in range(len(darray.strides))]
-        tr = cls(size=darray.shape, dtype=dtype, stride=stride)
-        diopirt_lib.diopiTensorCopyFromBuffer(tr.context_handle,
-                                              c_void_p(darray.ctypes.data),
-                                              tr.tensor_handle)
+
+        size = Sizes(list(darray.shape))
+        stride = Sizes(list(stride))
+        PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
+        PyCapsule_New = ctypes.pythonapi.PyCapsule_New
+        PyCapsule_New.restype = ctypes.py_object
+        PyCapsule_New.argtypes = (ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor)
+        capsule = PyCapsule_New(c_void_p(darray.ctypes.data), None, PyCapsule_Destructor(0))
+        if context:
+            tr = cls(size=size, dtype=dtype, stride=stride, data_ptr=capsule, context=context)
+        else:
+            tr = cls(size=size, dtype=dtype, stride=stride, data_ptr=capsule, )
         return tr
 
     def numpy(self) -> np.ndarray:
-        dtype = to_numpy_dtype(self.get_dtype())
-        itemsize = self.itemsize()
-        stride = self.get_stride()
-        strides = [int(stride[i] * itemsize) for i in range(len(stride))]
-        darray = np.ndarray(shape=self.size(), dtype=dtype, strides=strides)
-        diopirt_lib.diopiTensorCopyToBuffer(self.context_handle,
-                                            self.tensor_handle,
-                                            c_void_p(darray.ctypes.data))
+        darray = np.array(self, copy=False)
+        diopi_tensor_copy_to_buffer(self.context(), self, darray)
         return darray
 
 

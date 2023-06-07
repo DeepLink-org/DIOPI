@@ -1,7 +1,7 @@
 # Copyright (c) 2023, DeepLink.
 
 from .device_config_helper import Skip
-from .dtype import Dtype
+from .diopi_runtime import Dtype
 
 device_configs = {
     'batch_norm': dict(
@@ -43,14 +43,8 @@ device_configs = {
 
     'conv_2d': dict(
         name=["conv2d"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.float16)],
-                },
-            ]
-        ),
+        atol_half=1e-1,
+        rtol_half=5e-2,
     ),
 
     'hardswish': dict(
@@ -62,18 +56,6 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
             ],
-        ),
-    ),
-
-    'avg_pool2d': dict(
-        name=["avg_pool2d"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
         ),
     ),
 
@@ -175,18 +157,6 @@ device_configs = {
         ),
     ),
 
-    'div': dict(
-        name=['div'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
     'div_rounding_mode': dict(
         name=['div'],
         tensor_para=dict(
@@ -199,41 +169,9 @@ device_configs = {
         ),
     ),
 
-    'div_dtype_int_and_bool': dict(
-        name=['div'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'pointwise_binary_constant_with_alpha_and_no_contiguous': dict(
-        name=['add', 'sub'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
-
     'bmm': dict(
         name=['bmm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
+        atol=1e-1,
     ),
 
     'addcdiv': dict(
@@ -385,9 +323,9 @@ device_configs = {
     'embedding': dict(
         name=["embedding"],
         para=dict(
-            # The diopiEmbeddingRenorm_ function is temporarily unavailable due to the unsupported Cambrian operator.  
+            # The diopiEmbeddingRenorm_ function is temporarily unavailable due to the unsupported Cambrian operator.
             # Thus, to pass the test case, skip all non-None types of the max_norm parameter in the configuration file.
-            max_norm=[Skip(1.0)],   
+            max_norm=[Skip(1.0)],
         ),
     ),
 
@@ -600,29 +538,10 @@ device_configs = {
 
     'argmax': dict(
         name=['argmax'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8)],
-
-                },
-            ],
-        ),
     ),
 
     'argmax_same_value': dict(
         name=['argmax'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32)],
-                },
-            ],
-        ),
     ),
 
     'adadelta': dict(
@@ -1289,6 +1208,22 @@ device_configs = {
                 {
                     "ins": ['mean'],
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+            ]
+        ),
+    ),
+
+    'polar': dict(
+        name=["polar"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['abs'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                },
+                {
+                    "ins": ['angle'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
             ]
         ),

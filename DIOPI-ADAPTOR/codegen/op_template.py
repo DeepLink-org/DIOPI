@@ -1,3 +1,4 @@
+# Copyright (c) 2023, DeepLink.
 from code_template import CodeTemplate
 
 class OpTemplate(object):
@@ -7,7 +8,7 @@ class OpTemplate(object):
  * @author OpenComputeLab
  * @copyright  (c) 2023, DeepLink.
  */
- 
+
 #ifndef DIOPI_ADAPTOR_HPP_
 #define DIOPI_ADAPTOR_HPP_
 #include <iostream>
@@ -49,7 +50,7 @@ inline std::vector<int64_t> calcStrides(int ndims, diopiSize_t size, diopiMemory
             }
         }
 
-    } 
+    }
     else {
         // PARROTS_THROW(InvalidArgs) <<
         //         "Invalid MemoryFormat " << memoryFormatName(format);
@@ -115,8 +116,8 @@ static std::vector<diopiMemoryFormat_t> defaultFormats{diopiMemoryFormat_t::Cont
 
 ${cast_strategy}
 
-template<class T, class strategy = NoCast, bool needContiguous = false>
-inline int castImpl(diopiContextHandle_t ctx, T src, T* dst,
+template<class T, class strategy = NoCast>
+static int castImpl(diopiContextHandle_t ctx, T src, T* dst,
                     std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats) {
     if (src == nullptr || src == 0) {
         *dst = src;
@@ -131,20 +132,19 @@ inline int castImpl(diopiContextHandle_t ctx, T src, T* dst,
     diopiGetTensorDevice(src, &device);
 
     bool convertDtype = strategy::getDstDtype(srcDtype, dstDtype);
-    auto memoryFormat = probableMemoryFormat(src);
     bool convertFormat = true;
     for (int i = 0; i < supportMemoryFormat.size(); ++i) {
-        if (supportMemoryFormat[i] == memoryFormat) {
+        if (isContiguous(size, stride, supportMemoryFormat[i])) {
             convertFormat = false;
             break;
         }
     }
-    bool contiguous = needContiguous && isContiguous(size, stride, memoryFormat);
     int convertType = 0;
+    std::vector<int64_t> strides_v;
     if (!convertFormat) {
         dstStride = stride;
     } else {
-        auto strides_v = calcStrides(size.len, size, memoryFormat);
+        strides_v = calcStrides(size.len, size, supportMemoryFormat[0]);
         dstStride.len = strides_v.size();
         dstStride.data = strides_v.data();
     }
@@ -158,9 +158,9 @@ inline int castImpl(diopiContextHandle_t ctx, T src, T* dst,
         *dst = src;
     }
     convertType = convertType << 1;
-    if (convertFormat || !contiguous) {
+    if (convertFormat) {
         diopiTensorHandle_t tmp = nullptr;
-        diopiRequireTensor(ctx, &tmp, &size, &stride, dstDtype, device);
+        diopiRequireTensor(ctx, &tmp, &size, &dstStride, dstDtype, device);
         diopiCopyInp(ctx, *dst, tmp);
         *dst = tmp;
         convertType = convertType + 1;
@@ -174,10 +174,10 @@ inline int castImpl(diopiContextHandle_t ctx, T src, T* dst,
 template <typename Adaptor, typename... Args>
 void dispatch_diopi(diopiContextHandle_t ctx, Args&&... args) {
     auto adaptor = Adaptor();
-    adaptor(ctx, std::forward<Args>(args)...); 
+    adaptor(ctx, std::forward<Args>(args)...);
 }
 
-template<class strategy = NoCast, bool isContiguous = false>
+template<class strategy = NoCast>
 class DiopiTensorWrapper {
 private:
     diopiContextHandle_t ctx_;
@@ -190,7 +190,7 @@ public:
                        std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats)
                        : ctx_(ctx)
                        , payload_(payload) {
-        convertType_ = castImpl<diopiTensorHandle_t, strategy, isContiguous>(ctx, payload_, &tmp_, supportMemoryFormat);
+        convertType_ = castImpl<diopiTensorHandle_t, strategy>(ctx, payload_, &tmp_, supportMemoryFormat);
     }
 
     ~DiopiTensorWrapper() {

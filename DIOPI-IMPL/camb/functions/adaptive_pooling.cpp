@@ -47,23 +47,20 @@ diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_
     CnnlTensorDesc outputDesc(outputChannelLast, layout);
 
     cnnlPoolingMode_t mode = CNNL_POOLING_AVERAGE_COUNT_INCLUDE_PADDING;
+
+#if (CNNL_MAJOR >= 1 && CNNL_MINOR >= 15 && CNNL_PATCHLEVEL >= 2)
     size_t workspaceSize = 0;
     DIOPI_CALLCNNL(cnnlGetAdaptivePoolingForwardWorkspaceSize(handle, inputDesc.get(), mode, outputDesc.get(), &workspaceSize));
 
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
     /* call adaptive pooling */
-    DIOPI_CALLCNNL(cnnlAdaptivePoolingForward_v2(handle,
-                                                 inputDesc.get(),
-                                                 inputChannelLast.data(),
-                                                 mode,
-                                                 workspacePtr,
-                                                 workspaceSize,
-                                                 outputDesc.get(),
-                                                 outputChannelLast.data(),
-                                                 nullptr,
-                                                 nullptr));
-
+    DIOPI_CALLCNNL(cnnlAdaptivePoolingForward_v2(
+        handle, inputDesc.get(), inputChannelLast.data(), mode, workspacePtr, workspaceSize, outputDesc.get(), outputChannelLast.data(), nullptr, nullptr));
+#else
+    DIOPI_CALLCNNL(
+        cnnlAdaptivePoolingForward(handle, inputDesc.get(), inputChannelLast.data(), mode, outputDesc.get(), outputChannelLast.data(), nullptr, nullptr));
+#endif
     // NHWC -> NCHW
     DIOPI_CALL(cnnlTranspose(ctx, handle, outputChannelLast, outputTmpTr, CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW));
 
