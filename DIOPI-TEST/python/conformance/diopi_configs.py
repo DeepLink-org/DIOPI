@@ -2085,15 +2085,35 @@ diopi_configs = {
         name=["log_softmax"],
         saved_args=dict(output=0),
         para=dict(
-            dim=[-1, 1, 0],
+            dim=[-1, 0, -2, 1, 3, -1, 1, -2],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((78, 24), (2, 92, 29), (2, 150, 512, 512)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "shape": ((), (13,), (78, 24), (2, 92, 29), (2, 150, 512, 512),
+                              (0,), (0, 15), (5, 0, 13)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'log_softmax_specific': dict(
+        name=["log_softmax"],
+        saved_args=dict(output=0),
+        para=dict(
+            dim=[-1, 0, -2, 1, 2],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((), (1,), (1, 24), (2, 1, 29), (2, 150, 1, 512),),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
             ],
