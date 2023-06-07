@@ -211,7 +211,7 @@ class ManualTest(object):
             mean = 0.0
             std = 1.
         out_numpy = out_numpy.flatten()
-        if len(out_numpy) == 0:
+        if len(out_numpy) == 0 and size is not None:
             return True
         p_value = stats.kstest(out_numpy, 'norm', args=(mean, std + 1e-22))[1]
         # pytorch use 0.0001, but stats.kstest use 0.05 as threshold
@@ -219,10 +219,12 @@ class ManualTest(object):
 
     def test_normal_(input, mean, std, shape=None):
         from scipy import stats
+        input_size = 0 in input.size().data
         out = F.normal_(input, mean, std, shape)
+        out_size = out.size().data
         out_numpy = out.numpy()
         out_numpy = out_numpy.flatten()
-        if len(out_numpy) == 0:
+        if len(out_numpy) == 0 and input_size:
             return True
         p_value = stats.kstest(out_numpy, 'norm', args=(mean, std))[1]
         assert p_value > 0.0005, "failed to execute normal_"
