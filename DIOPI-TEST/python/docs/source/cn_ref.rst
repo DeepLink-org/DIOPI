@@ -1,4 +1,4 @@
-DIOPI 函数
+DIOPI Python API
 ===================
 .. currentmodule:: docs.CN_doc
 

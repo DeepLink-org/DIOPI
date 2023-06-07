@@ -45,11 +45,11 @@ cast_strategy = {
         'float64' : 'float32',
         'bool' : 'int32'
     },
-    
+
     'CastFloatOnly' : {
         'int64': 'int32'
     },
-    
+
     'LogicOp' : {
         'int64': 'int32',
         'float64' : 'int32'
@@ -98,7 +98,7 @@ def get_func_info(content):
     ins_v = {}
     for row in content:
         row = row.replace('\n', '').replace('(', '').replace(');', '')
-        args.extend(row.split(',')) 
+        args.extend(row.split(','))
     args = [arg.rstrip(' ').lstrip(' ') for arg in args if arg != '']
     for i, arg in enumerate(args):
         tensor_name = arg.split(' ')[1]
@@ -144,7 +144,7 @@ def get_functions_support(source_dir):
                 row1 = content[idx + 1]
                 idx2 = row1.find("]")
                 dtypes_str = r.group(1) + row1[:idx2].lstrip()
-            else:  
+            else:
                 dtypes_str = r.group(1)
             dtypes = dtypes_str.replace(' ', '').split(',')
             param_dtypes[param_name] = dtypes
@@ -226,7 +226,7 @@ def deal_dtype(op_name, dtype_config, func_infos, tensor_name = None):
         if len(r.groups()) != 2:
             from_dtypes = [d]
             to_dtype = default_cast_dtype[d]
-        else: 
+        else:
             from_dtypes = r.group(1).replace(' ', '').split(',')
             to_dtype = r.group(2)
         for f in from_dtypes:
@@ -251,7 +251,7 @@ def deal_dtype(op_name, dtype_config, func_infos, tensor_name = None):
         strategy_name = op_name + 'Cast'
     cast_strategy[strategy_name] = strategy
     return strategy_name
-    
+
 
 def analysis_configs(config, funcs_info):
     common_cast = ''
@@ -287,10 +287,12 @@ def analysis_configs(config, funcs_info):
                         assert tensor in funcs_info[op_name]['ins'].keys() or  tensor in funcs_info[op_name]['outs'].keys()
                         tensor_cast = deal_dtype(op_name, op_cfg['tensor_dtype'][tensor], funcs_info, tensor)
                         op_tensor[tensor] = {}
-                        op_tensor[tensor]['cast'] = tensor_cast 
+                        op_tensor[tensor]['cast'] = tensor_cast
                 if 'layout' in op_cfg.keys():
                     layouts = op_cfg['layout'].replace(' ', '').split(',')
                     for layout in layouts:
+                        if layout == '':
+                            continue
                         if layout == 'NHWC' or layout == 'NCHW':
                             op_layouts.append(layout)
                         else:
@@ -298,15 +300,15 @@ def analysis_configs(config, funcs_info):
                             tensor_name = r.group(1)
                             tensor_layout = r.group(2)
                             if tensor_name not in op_tensor.keys():
-                                op_tensor[tensor] = {}
-                                op_tensor[tensor]['layout'] = tensor_layout
+                                op_tensor[tensor_name] = {}
+                                op_tensor[tensor_name]['layout'] = tensor_layout
                     op_dict[op_name]['layout'] = op_layouts
                 if 'contiguous' in op_cfg.keys():
                     contiguous_tensor = op_cfg['contiguous'].replace(' ', '').split(',')
                     for tensor_name in contiguous_tensor:
                         if tensor_name not in op_tensor.keys():
-                            op_tensor[tensor] = {}
-                        op_tensor[tensor]['contiguous'] = True
+                            op_tensor[tensor_name] = {}
+                        op_tensor[tensor_name]['contiguous'] = True
                 for tensor in list(funcs_info[op_name]['ins'].keys())+list(funcs_info[op_name]['outs'].keys()):
                     if tensor not in op_tensor.keys():
                         op_tensor[tensor] = {}
@@ -318,11 +320,11 @@ def analysis_configs(config, funcs_info):
                         op_tensor[tensor]['layout'] = op_layouts if len(op_layouts) else common_layout
                 op_dict[op_name]['tensor'] = op_tensor
     return op_dict
-    
+
 
 def autogen_cast_strategy():
     cast_code = []
-    
+
     for strategy in cast_strategy:
         cases = []
         for dtype in cast_strategy[strategy]:
@@ -335,13 +337,14 @@ def autogen_cast_strategy():
 
 
 def memory_format_to_str(memory_format):
+    if len(memory_format) == 0:
+        return ''
     default_format = ['NHWC', 'NCHW']
-    memory_format = memory_format[0].split(',')
     memory_format = [format.strip(' ') for format in memory_format]
     is_default = [format in default_format for format in memory_format] and len(memory_format) == len(default_format)
     if len(memory_format) == 0 or is_default:
         return ''
-    
+
     formats = []
     for format in memory_format:
         formats.append(str_to_diopi_format[format])
@@ -356,7 +359,7 @@ def autogen_op_adaptor(op_configs, func_infos):
     for func in func_infos:
         op_name = func.lstrip('diopi')
         if (func not in op_configs.keys() and 'Common' not in op_configs.keys()) or len(list(func_infos[func].keys())) == 1:
-            call_args = [arg.split(' ')[-1] for arg in func_infos[func]['call_args']] 
+            call_args = [arg.split(' ')[-1] for arg in func_infos[func]['call_args']]
             adaptors_code.append(OT.adaptor_template.substitute(env=dict(op_name=op_name, attrs=func_infos[func]['call_args'],
                              new_input='', cast_input='', cast_output='', call_func=func+'('+', '.join(call_args)+');')))
         else:
@@ -378,7 +381,7 @@ def autogen_op_adaptor(op_configs, func_infos):
                         new_ins_vector_template = CodeTemplate("""\
 std::vector<diopiConstTensorHandle_t> ${newinput}(${num}, diopiConstTensorHandle_t());
 for (int i = 0; i < ${num}; ++i) {
-    castImpl<diopiConstTensorHandle_t${cast}${contiguous}>(ctx, ${input}[i], &${newinput}[i]${memory_format});
+    castImpl<diopiConstTensorHandle_t${cast}>(ctx, ${input}[i], &${newinput}[i]${memory_format});
 }
 """)
                         new_input.append(new_ins_vector_template.substitute(env=dict(input=tensor, newinput='new'+tensor.capitalize(), num=func_infos[func]['ins_vector'][tensor],
@@ -386,12 +389,12 @@ for (int i = 0; i < ${num}; ++i) {
                     else:
                         new_in = 'new' + tensor.capitalize()
                         new_ins.append(new_in)
-                        cast_impl = 'castImpl<diopiConstTensorHandle_t{cast}{contiguous}>(ctx, {tensor}, &{new_tensor}{memory_format});'.format(
+                        cast_impl = 'castImpl<diopiConstTensorHandle_t{cast}>(ctx, {tensor}, &{new_tensor}{memory_format});'.format(
                                     cast=', ' + cast_method if cast_method else '', memory_format=format_str if format_str else '', tensor=tensor, new_tensor=new_in, contiguous=contiguous_str)
                         cast_ins.append(cast_impl)
                 outs = func_infos[func]['outs']
                 if tensor in outs:
-                    cast_impl = 'auto {tensor}Wrapper = DiopiTensorWrapper<{cast}{contiguous}>(ctx, {tensor}{memory_format});'.format(
+                    cast_impl = 'auto {tensor}Wrapper = DiopiTensorWrapper<{cast}>(ctx, {tensor}{memory_format});'.format(
                                 cast=cast_method, memory_format=format_str if format_str else '', tensor=tensor, contiguous=contiguous_str)
                     cast_outs.append(cast_impl)
             new_input.append('diopiConstTensorHandle_t ' + ','.join(new_ins) + ';') if len(new_ins) else ''
@@ -407,7 +410,7 @@ for (int i = 0; i < ${num}; ++i) {
                 else:
                     new_name = name
                 call_args.append(new_name)
-            
+
             adaptors_code.append(OT.adaptor_template.substitute(env=dict(op_name=op_name, attrs=', '.join(func_infos[func]['call_args']),
                                 new_input=new_input, cast_input=cast_ins, cast_output=cast_outs, call_func=func+'('+', '.join(call_args)+');')))
     return adaptors_code
@@ -421,7 +424,7 @@ def gen_autogen_operators(dirs, adaptor_fm):
     except Exception as e:
         print(e)
         return
-    
+
     funcs_info = get_functions_support(dirs.get('source'))
     op_configs = analysis_configs(configs, funcs_info)
     adaptors_code = autogen_op_adaptor(op_configs, funcs_info)
