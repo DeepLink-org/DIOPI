@@ -4577,28 +4577,28 @@ diopi_configs = {
         ),
     ),
 
-    # 'polar': dict(
-    #     name=['polar'],
-    #     interface=['torch'],
-    #     dtype=[Dtype.float32, Dtype.float64],
-    #     tensor_para=dict(
-    #         gen_fn=Genfunc.randn,
-    #         args=[
-    #             {
-    #                 "ins": ['abs'],
-    #                 "shape": ((), (1024, ), (384, 128),
-    #                           (64, 1, 128), (128, 64, 3, 3),
-    #                           (2, 32, 130, 130)),
-    #             },
-    #             {
-    #                 "ins": ['angle'],
-    #                 "shape": ((), (1024, ), (384, 128),
-    #                           (32, 64, 8, 128), (1, ),
-    #                           (2, 32, 1, 1)),
-    #             },
-    #         ],
-    #     ),
-    # ),
+    'polar': dict(
+        name=['polar'],
+        interface=['torch'],
+        dtype=[Dtype.float32, Dtype.float64],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['abs'],
+                    "shape": ((1024, ),(384, 128),
+                              (64, 1, 128), (128, 64, 3, 3),
+                              (2, 32, 130, 130)),
+                },
+                {
+                    "ins": ['angle'],
+                    "shape": ((1024, ), (384, 128),
+                              (32, 64, 8, 128), (1, ),
+                              (2, 32, 1, 1)),
+                },
+            ],
+        ),
+    ),
 
     'lerp': dict(
         name=['lerp'],

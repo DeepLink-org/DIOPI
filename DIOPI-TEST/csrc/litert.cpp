@@ -174,6 +174,38 @@ bool diopiTensor::resetShape(const diopiSize_t* size) {
     return true;
 }
 
+py::buffer_info diopiTensor::buffer() const {
+    if (storage_ == nullptr) {
+        return py::buffer_info();
+    }
+    try {
+        diopiStreamHandle_t stream;
+        auto ptr = malloc(nbytes());
+        diopiGetStream(getCtx(), &stream);
+        device_memcpy_d2h_async(stream, ptr, data(), nbytes());
+        device_synchronize_stream(stream);
+        ssize_t esize = elemSize();
+        std::vector<ssize_t> buffer_shape;
+        std::vector<ssize_t> buffer_strides;
+        for (int64_t i = 0; i < shape().len; ++i) {
+            buffer_shape.push_back(shape().data[i]);
+            buffer_strides.push_back(stride().data[i] * esize);
+        }
+        static const char fmt[] = "bBhHiIlLefd?";
+        auto temp = reinterpret_cast<double*>(ptr);
+        return py::buffer_info(ptr,                                               /* Pointer to buffer */
+                                esize,                                             /* Size of one scalar */
+                                std::string(1, fmt[static_cast<size_t>(dtype())]), /* Python struct format descriptor */
+                                shape().len,                                       /* Number of dimensions */
+                                buffer_shape,                                      /* Buffer dimensions */
+                                buffer_strides                                     /* Strides (in bytes) for each index */
+        );                                                                        // NOLINT
+    } catch (const std::exception& e) {
+        // XXX(xintian): return an invalid buffer to raise an exception.
+        return py::buffer_info((char*){0}, -1);
+    }
+}
+
 DIOPI_RT_API diopiError_t diopiGetTensorData(diopiTensorHandle_t th, void** pptr) {
     *pptr = th->data();
     return diopiSuccess;

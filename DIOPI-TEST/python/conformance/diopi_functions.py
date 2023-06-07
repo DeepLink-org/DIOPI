@@ -3598,8 +3598,7 @@ def polar(abs, angle) -> Tensor:
         out = Tensor(out_shape, Dtype.complex64)
     func = check_function(call)
     ret = func(abs.context(), out, abs, angle)
-    import pdb
-    pdb.set_trace()
+
     check_returncode(ret)
     return out
 
