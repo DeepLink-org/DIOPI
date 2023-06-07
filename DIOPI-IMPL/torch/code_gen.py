@@ -20,6 +20,7 @@ new_content.append('/**\n\
  * @copyright  (c) 2023, DeepLink.\n\
  */\n\
 #include <diopi/functions.h>\n\
+#include <diopi/functions_mmcv.h>\n\
 #include <stdio.h>\n\
 #include <dlfcn.h>\n\
 \n\
@@ -60,6 +61,8 @@ def get_func_arg(content):
             arg_type += row[idx0:idx1] + ','
             idx0 = idx2 + 1
             idx2 = row.find(",", idx0)
+        if row == '(':
+            arg_type += row
         new_content.append(arg_type + '\n')
         arg_type = "        "
 
@@ -69,13 +72,7 @@ def get_func_arg(content):
     new_content[-1] = new_content[-1].replace('\n', row[idx0:idx1] + ');\n')
     return new_content, arg
 
-
-if __name__ == '__main__':
-    print("here")
-    _cur_dir = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(_cur_dir, '../proto/include/diopi/functions.h'), 'r')as f:
-        content = f.readlines()
-    print("here")
+def gen_wrapper_func(content):
     for idx, row in enumerate(content):
         if row.startswith("DIOPI"):
             temp_content = []
@@ -104,17 +101,37 @@ if __name__ == '__main__':
             else:
                 arg_type, arg = get_func_arg(temp_content)
 
-            for row in arg_type:
-                new_content.append(row)
+            for args in arg_type:
+                new_content.append(args)
 
             new_content.append("    " + 'func = reinterpret_cast<decltype(func)>(dlsym(handle, "' + func_name + '"));\n')
-            new_content.append("    " + "return (*func)" + arg + ";\n")
+            new_content.append("    " + "if (func != NULL) {\n")
+            new_content.append("    " + "    return (*func)" + arg + ";\n")
+            new_content.append("    " + "} else {\n")
+            new_content.append("    " + "    printf(\"[wrap_func] %s not implemented!\\n\", \"" + func_name + "\");\n")
+            if row.startswith("DIOPI_RT_API"):
+                new_content.append("    " + "    return \"" + func_name + " not implemented!\";\n")
+            else:
+                new_content.append("    " + "    return diopiErrorOccurred;\n")
+            new_content.append("    " + "}\n")
             new_content.append("}\n")
             new_content.append("\n")
 
+if __name__ == '__main__':
+    print("open functions.h")
+    _cur_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(_cur_dir, '../proto/include/diopi/functions.h'), 'r')as f:
+        content = f.readlines()
+    print("generate for functions.h")
+    gen_wrapper_func(content)
+    print("open functions_mmcv.h")
+    with open(os.path.join(_cur_dir, '../proto/include/diopi/functions_mmcv.h'), 'r') as f:
+        content_mmcv = f.readlines()
+    print("generate for functions_mmcv.h")
+    gen_wrapper_func(content_mmcv)
     os.system("rm -f wrap_func.cpp")
-    print("here")
+    print("generate wrap_func.cpp")
     with open('wrap_func.cpp', 'w') as f:
         for row in new_content:
             f.write(row)
-    print("here")
+    print("finish codegen")

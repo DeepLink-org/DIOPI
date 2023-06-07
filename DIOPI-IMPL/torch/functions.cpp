@@ -19,7 +19,7 @@
 
 #define FLT_MIN __FLT_MIN__
 
-static thread_local diopiContextHandle_t context = nullptr;
+#include "context.h"
 #include "helper.hpp"
 #include "vision_kernel.h"
 
