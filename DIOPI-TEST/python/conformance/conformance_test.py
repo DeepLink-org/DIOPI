@@ -221,7 +221,6 @@ class ManualTest(object):
         from scipy import stats
         input_size = 0 in input.size().data
         out = F.normal_(input, mean, std, shape)
-        out_size = out.size().data
         out_numpy = out.numpy()
         out_numpy = out_numpy.flatten()
         if len(out_numpy) == 0 and input_size:
