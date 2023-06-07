@@ -112,12 +112,12 @@ inline bool isContiguous(diopiSize_t size, diopiSize_t stride, diopiMemoryFormat
     return true;
 }
 
-static std::vector<diopiMemoryFormat_t> defaultFormats{diopiMemoryFormat_t::Contiguous, diopiMemoryFormat_t::ChannelsLast};
+static std::vector<diopiMemoryFormat_t> defaultFormats{};
 
 ${cast_strategy}
 
 template<class T, class strategy = NoCast>
-static int castImpl(diopiContextHandle_t ctx, T src, T* dst,
+inline int castImpl(diopiContextHandle_t ctx, T src, T* dst,
                     std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats) {
     if (src == nullptr || src == 0) {
         *dst = src;
@@ -133,10 +133,14 @@ static int castImpl(diopiContextHandle_t ctx, T src, T* dst,
 
     bool convertDtype = strategy::getDstDtype(srcDtype, dstDtype);
     bool convertFormat = true;
-    for (int i = 0; i < supportMemoryFormat.size(); ++i) {
-        if (isContiguous(size, stride, supportMemoryFormat[i])) {
-            convertFormat = false;
-            break;
+    if (supportMemoryFormat.size() == 0) {
+        convertFormat = false;
+    } else {
+        for (int i = 0; i < supportMemoryFormat.size(); ++i) {
+            if (isContiguous(size, stride, supportMemoryFormat[i])) {
+                convertFormat = false;
+                break;
+            }
         }
     }
     int convertType = 0;
@@ -150,7 +154,7 @@ static int castImpl(diopiContextHandle_t ctx, T src, T* dst,
     }
     if (convertDtype) {
         diopiTensorHandle_t tmp = nullptr;
-        diopiRequireTensor(ctx, &tmp, &size, &stride, dstDtype, device);
+        diopiRequireTensor(ctx, &tmp, &size, &dstStride, dstDtype, device);
         diopiCastDtype(ctx, tmp, src);
         *dst = tmp;
         convertType = 1;
