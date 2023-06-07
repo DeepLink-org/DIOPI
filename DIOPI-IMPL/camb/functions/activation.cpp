@@ -222,11 +222,11 @@ extern "C" diopiError_t diopiSiluInp(diopiContextHandle_t ctx, diopiTensorHandle
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiSiluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+extern "C" diopiError_t diopiSiluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                           diopiConstTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor gradInputTensor(grad_input);
-    DiopiTensor gradOutputTensor(grad_output);
+    DiopiTensor gradInputTensor(gradInput);
+    DiopiTensor gradOutputTensor(gradOutput);
     DiopiTensor inputTensor(input);
 
     CnnlAttribute attr;
