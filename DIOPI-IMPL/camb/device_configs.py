@@ -212,18 +212,6 @@ device_configs = {
         ),
     ),
 
-    'pointwise_binary_constant_with_alpha_and_no_contiguous': dict(
-        name=['add', 'sub'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
-
     'bmm': dict(
         name=['bmm'],
         atol=1e-1,
@@ -378,9 +366,9 @@ device_configs = {
     'embedding': dict(
         name=["embedding"],
         para=dict(
-            # The diopiEmbeddingRenorm_ function is temporarily unavailable due to the unsupported Cambrian operator.  
+            # The diopiEmbeddingRenorm_ function is temporarily unavailable due to the unsupported Cambrian operator.
             # Thus, to pass the test case, skip all non-None types of the max_norm parameter in the configuration file.
-            max_norm=[Skip(1.0)],   
+            max_norm=[Skip(1.0)],
         ),
     ),
 
