@@ -37,12 +37,12 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 
     if (!weightTr.defined()) {
         diopiScalar_t val{diopi_dtype_float32, {1.0f}};
-        DiopiTensor weightTr = requiresTensor(ctx, inputTr.shape(), inputTr.dtype());
+        weightTr = requiresTensor(ctx, inputTr.shape(), inputTr.dtype());
         DIOPI_CALL(diopiFill(ctx, weightTr.tensorHandle(), &val))
     }
     if (!biasTr.defined()) {
         diopiScalar_t val{diopi_dtype_float32, {0.0f}};
-        DiopiTensor biasTr = requiresTensor(ctx, inputTr.shape(), inputTr.dtype());
+        biasTr = requiresTensor(ctx, inputTr.shape(), inputTr.dtype());
         DIOPI_CALL(diopiFill(ctx, biasTr.tensorHandle(), &val))
     }
 
