@@ -41,7 +41,6 @@ diopiError_t diopiRoiAlignBackwardMmcv(diopiContextHandle_t ctx, diopiTensorHand
                                        diopiConstTensorHandle_t rois_, diopiConstTensorHandle_t argmax_y_, diopiConstTensorHandle_t argmax_x_,
                                        int64_t aligned_height, int64_t aligned_width, int64_t sampling_ratio, int64_t pool_mode, float spatial_scale,
                                        bool aligned) {
-    return diopiErrorOccurred;
     impl::aten::setCurCtx(ctx);
     auto grad_output = impl::aten::buildATen(grad_output_);
     auto rois = impl::aten::buildATen(rois_);
