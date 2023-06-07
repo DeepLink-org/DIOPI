@@ -173,9 +173,29 @@ diopi_configs = {
         ),
     ),
 
-    'hardtanh': dict(
+    'hardtanh_inplace': dict(
         name=["hardtanh"],
         is_inplace=True,
+        para=dict(
+            min_val=[0.0, 0.0, 0.2, 1.4],
+            max_val=[6.0, 0.5, 0.2, 1.2],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((2, 4096), (64, 28, 28),
+                              (2, 96, 56, 56), (64, 3, 7, 28, 28)),
+                    "dtype": [Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'hardtanh_backward': dict(
+        name=["hardtanh"],
         para=dict(
             min_val=[0.0, 0.0, 0.2, 1.4],
             max_val=[6.0, 0.5, 0.2, 1.2],
@@ -1331,15 +1351,15 @@ diopi_configs = {
         ),
     ),
 
-    'clamp': dict(
+    'clamp_scalar': dict(
         name=['clamp'],
         interface=['torch'],
         is_inplace=True,
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            min=[None, -1.1, 1, 100, 10],
-            max=[4.13, 26, None, 1e-12, 10],
+            min=[None, None, 1, -2, None],
+            max=[4.13, 26, 10, 2, 10],
         ),
         tensor_para=dict(
             args=[
@@ -1357,45 +1377,50 @@ diopi_configs = {
         ),
     ),
 
-    # 'clamp': dict(
-    #     name=['clamp'],
-    #     interface=['torch'],
-    #     is_inplace=False,
-    #     atol=1e-4,
-    #     rtol=1e-5,
-    #     para=dict(
-    #         min=[None, -1.1, -1.1],
-    #         max=[4.13, 4.13, None],
-    #     ),
-    #     tensor_para=dict(
-    #         args=[
-    #             {
-    #                 "ins": ['input'],
-    #                 "shape": ((182, ), (44,),(32,), ),
-    #                 "dtype": [Dtype.int64],
-    #                 "gen_fn": Genfunc.randn,
-    #             },
-    #         ],
-    #     ),
-    # ),
-
-
-    'clamp_uint8': dict(
-        name=['clamp'],
+    'clamp_max_scalar': dict(
+        name=['clamp_max'],
         interface=['torch'],
         is_inplace=True,
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            min=[2],
-            max=[5],
+            max=[4.13, 26, 2, 1e-12, 10],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((384, 128),),
-                    "dtype": [Dtype.uint8],
+                    "shape": ((182, ), (384, 128),
+                              (1, 242991, 2),
+                              (2, 4, 100, 152),
+                              (384, 128)),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16,
+                              Dtype.int32, Dtype.int64, Dtype.int8],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'clamp_min_scalar': dict(
+        name=['clamp_min'],
+        interface=['torch'],
+        is_inplace=True,
+        atol=1e-4,
+        rtol=1e-5,
+        para=dict(
+            min=[1.2, -1.1, 1, 100, 10],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((182, ), (384, 128),
+                              (1, 242991, 2),
+                              (2, 4, 100, 152),
+                              (384, 128)),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16,
+                              Dtype.int32, Dtype.int64, Dtype.int8],
                     "gen_fn": Genfunc.randn,
                 },
             ],
@@ -1414,18 +1439,66 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((182, ), (384, 128),
-                              (1, 242991, 2),
+                    "shape": ((182,), (384, 128),
+                              (1, 242991, 2,),
                               (2, 4, 100, 152)),
                 },
                 {
                     "ins": ['min'],
-                    "shape": ((182, ), (384, 1),
-                              None, (2, 4, 100, 152)),
+                    "shape": ((1, ), (1, ),
+                              None, (1, )),
                 },
                 {
                     "ins": ['max'],
-                    "shape": (None, (384, 128), (1, 1, 2), None),
+                    "shape": (None, (1, ), (1, ), None),
+                },
+            ],
+        ),
+    ),
+
+    'clamp_max_tensor': dict(
+        name=['clamp_max'],
+        interface=['torch'],
+        is_inplace=True,
+        atol=1e-4,
+        rtol=1e-5,
+        tensor_para=dict(
+            dtype=[Dtype.float32, Dtype.float64],
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((182,), (384, 128),
+                              (1, 242991, 2,),
+                              (2, 4, 100, 152)),
+                },
+                {
+                    "ins": ['max'],
+                    "shape": ((1,), (1, ), (1, 1, 1), (1,)),
+                },
+            ],
+        ),
+    ),
+
+    'clamp_min_tensor': dict(
+        name=['clamp_min'],
+        interface=['torch'],
+        is_inplace=True,
+        atol=1e-4,
+        rtol=1e-5,
+        tensor_para=dict(
+            dtype=[Dtype.float32, Dtype.float64],
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((182,), (384, 128),
+                              (1, 242991, 2,),
+                              (2, 4, 100, 152)),
+                },
+                {
+                    "ins": ['min'],
+                    "shape": ((1,), (1, ), (1, 1, 1), (1,)),
                 },
             ],
         ),
@@ -1988,14 +2061,14 @@ diopi_configs = {
         name=["log_softmax"],
         saved_args=dict(output=0),
         para=dict(
-            dim=[-1, 1, 0],
+            dim=[-1, 1, 0, -1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((78, 24), (2, 92, 29), (2, 150, 512, 512)),
+                    "shape": ((78, 24), (2, 92, 29), (2, 150, 512, 512), (4, 12, 577, 577)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -2009,14 +2082,14 @@ diopi_configs = {
         rtol=1e-5,
         saved_args=dict(output=0),
         para=dict(
-            dim=[-1, 1, 0],
+            dim=[-1, 1, 0, -1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((2, 24), (2, 128, 24), (8, 16, 49, 49)),
+                    "shape": ((2, 24), (2, 128, 24), (8, 16, 49, 49), (4, 12, 577, 577)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },

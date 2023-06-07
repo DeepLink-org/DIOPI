@@ -21,15 +21,12 @@
 
 #include "error.hpp"
 
-namespace impl {
-namespace camb {
-
-#define DIOPI_CHECK(cond, fmt, args...)                                       \
-    do {                                                                      \
-        if (!(cond)) {                                                        \
-            setLastErrorString(#fmt " at %s:%d", ##args, __FILE__, __LINE__); \
-            return diopiErrorOccurred;                                        \
-        }                                                                     \
+#define DIOPI_CHECK(cond, fmt, args...)                                                   \
+    do {                                                                                  \
+        if (!(cond)) {                                                                    \
+            impl::camb::setLastErrorString(#fmt " at %s:%d", ##args, __FILE__, __LINE__); \
+            return diopiErrorOccurred;                                                    \
+        }                                                                                 \
     } while (false);
 
 #define DIOPI_CHECK_NULLPTR_ABORT(variable)                                                      \
@@ -48,14 +45,22 @@ namespace camb {
         }                                                        \
     } while (false);
 
-#define DIOPI_CALL(Expr)                                                                                                                           \
-    do {                                                                                                                                           \
-        diopiError_t ret = Expr;                                                                                                                   \
-        if (diopiSuccess != ret) {                                                                                                                 \
-            setLastErrorString("%s: %s called by `%s` at %s:%d\n", getDiopiErrorStr(ret), cambGetLastErrorString(), __func__, __FILE__, __LINE__); \
-            return ret;                                                                                                                            \
-        }                                                                                                                                          \
+#define DIOPI_CALL(Expr)                                                           \
+    do {                                                                           \
+        diopiError_t ret = Expr;                                                   \
+        if (diopiSuccess != ret) {                                                 \
+            impl::camb::setLastErrorString("%s: %s called by `%s` at %s:%d\n",     \
+                                           ::impl::camb::getDiopiErrorStr(ret),    \
+                                           ::impl::camb::cambGetLastErrorString(), \
+                                           __func__,                               \
+                                           __FILE__,                               \
+                                           __LINE__);                              \
+            return ret;                                                            \
+        }                                                                          \
     } while (false);
+
+namespace impl {
+namespace camb {
 
 enum class MemoryFormat : size_t { Contiguous = 0, ChannelsLast = 1, ChannelsLast3d = 2, Preserve = 3 };
 

@@ -489,12 +489,7 @@ def matmul(input, other) -> Tensor:
 
 
 def clamp(input, min=None, max=None, inplace=False) -> Tensor:
-    assert min is not None or max is not None,\
-        "min and max can not be None in the meantime"
-    if max is None:
-        return clamp_min(input, min, inplace)
-    if min is None:
-        return clamp_max(input, max, inplace)
+    assert (min is not None or max is not None), "At least one of \'min\' or \'max\' must not be None"
     call = "diopiClamp"
     args = "input.context(), "
     if inplace:
@@ -505,15 +500,30 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
         # out = raw_like(input)
         args = args + "out, "
 
-    if isinstance(min, Tensor):
-        assert (isinstance(max, Tensor)), 'min and max must have same type'
-        args += "input, min, max"
-    else:
-        assert (~isinstance(max, Tensor)), 'min and max must have same type'
-        call = call + 'Scalar'
-        min = Scalar(min)
-        max = Scalar(max)
-        args = args + "input, min, max"
+    if (max and min):
+        if isinstance(min, Tensor):
+            assert (isinstance(max, Tensor)), 'min and max must have same type'
+            args += "input, min, max"
+        elif isinstance(min, (int, float)):
+            assert (isinstance(max, (int, float))), 'min and max must have same type'
+            call = call + 'Scalar'
+            min = Scalar(min)
+            max = Scalar(max)
+            args = args + "input, min, max"
+    elif (max and not min):
+        if isinstance(max, Tensor):
+            args += "input, None, max"
+        if isinstance(max, (int, float)):
+            call = call + 'Scalar'
+            max = Scalar(max)
+            args = args + "input, None, max"
+    elif (min and not max):
+        if isinstance(min, Tensor):
+            args += "input, min, None"
+        if isinstance(min, (int, float)):
+            call = call + 'Scalar'
+            min = Scalar(min)
+            args = args + "input, min, None"
 
     func = check_function(call)
     ret = eval(f'func({args})')
