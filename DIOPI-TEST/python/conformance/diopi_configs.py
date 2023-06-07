@@ -1351,15 +1351,15 @@ diopi_configs = {
         ),
     ),
 
-    'clamp': dict(
+    'clamp_scalar': dict(
         name=['clamp'],
         interface=['torch'],
         is_inplace=True,
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            min=[None, -1.1, 1, 100, 10],
-            max=[4.13, 26, None, 1e-12, 10],
+            min=[None, None, 1, -2, None],
+            max=[4.13, 26, 10, 2, 10],
         ),
         tensor_para=dict(
             args=[
@@ -1377,22 +1377,50 @@ diopi_configs = {
         ),
     ),
 
-    'clamp_uint8': dict(
-        name=['clamp'],
+    'clamp_max_scalar': dict(
+        name=['clamp_max'],
         interface=['torch'],
         is_inplace=True,
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            min=[2],
-            max=[5],
+            max=[4.13, 26, 2, 1e-12, 10],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((384, 128),),
-                    "dtype": [Dtype.uint8],
+                    "shape": ((182, ), (384, 128),
+                              (1, 242991, 2),
+                              (2, 4, 100, 152),
+                              (384, 128)),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16,
+                              Dtype.int32, Dtype.int64, Dtype.int8],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'clamp_min_scalar': dict(
+        name=['clamp_min'],
+        interface=['torch'],
+        is_inplace=True,
+        atol=1e-4,
+        rtol=1e-5,
+        para=dict(
+            min=[1.2, -1.1, 1, 100, 10],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((182, ), (384, 128),
+                              (1, 242991, 2),
+                              (2, 4, 100, 152),
+                              (384, 128)),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16,
+                              Dtype.int32, Dtype.int64, Dtype.int8],
                     "gen_fn": Genfunc.randn,
                 },
             ],
@@ -1411,18 +1439,66 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((182, ), (384, 128),
-                              (1, 242991, 2),
+                    "shape": ((182,), (384, 128),
+                              (1, 242991, 2,),
                               (2, 4, 100, 152)),
                 },
                 {
                     "ins": ['min'],
-                    "shape": ((182, ), (384, 1),
-                              None, (2, 4, 100, 152)),
+                    "shape": ((1, ), (1, ),
+                              None, (1, )),
                 },
                 {
                     "ins": ['max'],
-                    "shape": (None, (384, 128), (1, 1, 2), None),
+                    "shape": (None, (1, ), (1, ), None),
+                },
+            ],
+        ),
+    ),
+
+    'clamp_max_tensor': dict(
+        name=['clamp_max'],
+        interface=['torch'],
+        is_inplace=True,
+        atol=1e-4,
+        rtol=1e-5,
+        tensor_para=dict(
+            dtype=[Dtype.float32, Dtype.float64],
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((182,), (384, 128),
+                              (1, 242991, 2,),
+                              (2, 4, 100, 152)),
+                },
+                {
+                    "ins": ['max'],
+                    "shape": ((1,), (1, ), (1, 1, 1), (1,)),
+                },
+            ],
+        ),
+    ),
+
+    'clamp_min_tensor': dict(
+        name=['clamp_min'],
+        interface=['torch'],
+        is_inplace=True,
+        atol=1e-4,
+        rtol=1e-5,
+        tensor_para=dict(
+            dtype=[Dtype.float32, Dtype.float64],
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((182,), (384, 128),
+                              (1, 242991, 2,),
+                              (2, 4, 100, 152)),
+                },
+                {
+                    "ins": ['min'],
+                    "shape": ((1,), (1, ), (1, 1, 1), (1,)),
                 },
             ],
         ),
