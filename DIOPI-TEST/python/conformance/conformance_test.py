@@ -87,9 +87,15 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
             max_diff_elem = tensor1[max_diff_index]
             max_diff_elem_ref = tensor2[max_diff_index]
             logger.info(f"The count of elements that do not meet the accuracy requirement is {count}.")
+            logger.info(f"The dtype of {var_name} is {tensor1.dtype}.")
+            logger.info(f"The shape of {var_name} is {tensor1.shape}.")
+            logger.info(f"The stride of {var_name} is {np.divide(tensor1.strides, tensor1.itemsize).astype(np.int32)}.")
             logger.info(f"The max of diff is {max_diff}. Specifically, the actual val is {max_diff_elem} and the expected is {max_diff_elem_ref}.")
             logger.debug(f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}, Max of diff is {max_diff}. \
                     \n" + f"{var_name} is {tensor1},\n{var_name}_ref is {tensor2},\nMask is {mask}\n")
+            logger.debug(f"The dtype of {var_name} is {tensor1.dtype}.")
+            logger.debug(f"The shape of {var_name} is {tensor1.shape}.")
+            logger.debug(f"The stride of {var_name} is {np.divide(tensor1.strides, tensor1.itemsize).astype(np.int32)}.")
             logger.debug(f"The max of diff is {max_diff}. Specifically, the actual val is {max_diff_elem} and the expected is {max_diff_elem_ref}.\n")
     return passed
 
