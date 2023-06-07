@@ -75,8 +75,9 @@ static diopiError_t calOrderAndSrcMemoryFormat(const DiopiTensor& src, MemoryFor
         srcMemoryFormatOut = MemoryFormat::ChannelsLast3d;
         orderOut = {0, 4, 1, 2, 3};
     } else {
-        setLastErrorString("the memory format (%d) of tensor is not right!", static_cast<int32_t>(destMemoryFormat));
-        return diopiNoImplement;
+        // convert to contiguous format
+        srcMemoryFormatOut = MemoryFormat::Preserve;
+        return diopi;
     }
     return diopiSuccess;
 }
@@ -117,16 +118,17 @@ diopiError_t contiguous(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryForma
     }
     int64_t dim = src.dim();
     DIOPI_CHECK(dim == 4 || dim == 5, "only support 4d/5d tensor currently");
+    MemoryFormat srcMemoryFormat;
+    std::vector<int32_t> order;
     DiopiTensor dest;
-    if (hasZero(src.stride())) {
+    DIOPI_CALL(calOrderAndSrcMemoryFormat(src, memoryFormat, srcMemoryFormat, order));
+    if (srcMemoryFormat == MemoryFormat::Preserve) {
         DIOPI_CALL(clone(ctx, src, dest, memoryFormat));
         src = dest;
         return diopiSuccess;
     }
     dest = requiresTensor(ctx, src.shape(), src.dtype(), memoryFormat);
-    MemoryFormat srcMemoryFormat;
-    std::vector<int32_t> order;
-    DIOPI_CALL(calOrderAndSrcMemoryFormat(src, memoryFormat, srcMemoryFormat, order));
+
     cnnlTensorLayout_t srcLayout;
     cnnlTensorLayout_t destLayout;
     DIOPI_CALL(calCnnlLayout(srcMemoryFormat, dim, srcLayout));
