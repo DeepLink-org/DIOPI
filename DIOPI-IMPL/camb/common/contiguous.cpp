@@ -77,7 +77,7 @@ static diopiError_t calOrderAndSrcMemoryFormat(const DiopiTensor& src, MemoryFor
     } else {
         // convert to contiguous format
         srcMemoryFormatOut = MemoryFormat::Preserve;
-        return diopi;
+        return diopiSuccess;
     }
     return diopiSuccess;
 }
