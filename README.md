@@ -57,7 +57,7 @@ DIOPI主要包含以下几个组件：
 
     在设备相关目录下提供相应的编译文件，通过以下参考命令进行编译：
     ```
-    cd DIOPI-IMPL && sh scripts/diopi_impl.sh torch
+    cd DIOPI-IMPL && sh scripts/build_impl.sh torch
     ```
 
 ## 校验适配算子 <a id="test_tutor"></a>
@@ -70,7 +70,7 @@ DIOPI主要包含以下几个组件：
       ```
   2. 进入DIOPI-IMPL编译算子实现, 通过以下参考命令进行编译：
       ```
-      export DIOPI_BUILD_TESTRT=ON && cd DIOPI-IMPL && sh scripts/diopi_impl.sh torch
+      export DIOPI_BUILD_TESTRT=ON && cd DIOPI-IMPL && sh scripts/build_impl.sh torch
       ```
   2. 进入python目录，生成基准数据(需准备nv机器和pytorch1.10环境)
 
