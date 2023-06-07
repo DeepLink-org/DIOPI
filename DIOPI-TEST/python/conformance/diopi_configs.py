@@ -4606,7 +4606,7 @@ diopi_configs = {
         dtype=[Dtype.float64, Dtype.float32, Dtype.float16],
         para=dict(
             weight=[-1, 0, 1, -2.342, 0.028, True, False],
-        ),
+        )
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[

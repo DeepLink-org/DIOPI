@@ -260,8 +260,8 @@ class Tensor(diopiTensor):
         return tr
 
     def numpy(self) -> np.ndarray:
-        darray = np.empty(list(self.size().data),to_numpy_dtype(self.get_dtype()))
-        
+        darray = np.empty(list(self.size().data), to_numpy_dtype(self.get_dtype()))
+
         PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
         PyCapsule_New = ctypes.pythonapi.PyCapsule_New
         PyCapsule_New.restype = ctypes.py_object
