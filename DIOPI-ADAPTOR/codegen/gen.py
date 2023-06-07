@@ -291,6 +291,8 @@ def analysis_configs(config, funcs_info):
                 if 'layout' in op_cfg.keys():
                     layouts = op_cfg['layout'].replace(' ', '').split(',')
                     for layout in layouts:
+                        if layout == '':
+                            continue
                         if layout == 'NHWC' or layout == 'NCHW':
                             op_layouts.append(layout)
                         else:
@@ -298,15 +300,15 @@ def analysis_configs(config, funcs_info):
                             tensor_name = r.group(1)
                             tensor_layout = r.group(2)
                             if tensor_name not in op_tensor.keys():
-                                op_tensor[tensor] = {}
-                                op_tensor[tensor]['layout'] = tensor_layout
+                                op_tensor[tensor_name] = {}
+                                op_tensor[tensor_name]['layout'] = tensor_layout
                     op_dict[op_name]['layout'] = op_layouts
                 if 'contiguous' in op_cfg.keys():
                     contiguous_tensor = op_cfg['contiguous'].replace(' ', '').split(',')
                     for tensor_name in contiguous_tensor:
                         if tensor_name not in op_tensor.keys():
-                            op_tensor[tensor] = {}
-                        op_tensor[tensor]['contiguous'] = True
+                            op_tensor[tensor_name] = {}
+                        op_tensor[tensor_name]['contiguous'] = True
                 for tensor in list(funcs_info[op_name]['ins'].keys())+list(funcs_info[op_name]['outs'].keys()):
                     if tensor not in op_tensor.keys():
                         op_tensor[tensor] = {}
@@ -338,7 +340,6 @@ def memory_format_to_str(memory_format):
     if len(memory_format) == 0:
         return ''
     default_format = ['NHWC', 'NCHW']
-    memory_format = memory_format[0].split(',')
     memory_format = [format.strip(' ') for format in memory_format]
     is_default = [format in default_format for format in memory_format] and len(memory_format) == len(default_format)
     if len(memory_format) == 0 or is_default:
@@ -380,7 +381,7 @@ def autogen_op_adaptor(op_configs, func_infos):
                         new_ins_vector_template = CodeTemplate("""\
 std::vector<diopiConstTensorHandle_t> ${newinput}(${num}, diopiConstTensorHandle_t());
 for (int i = 0; i < ${num}; ++i) {
-    castImpl<diopiConstTensorHandle_t${cast}${contiguous}>(ctx, ${input}[i], &${newinput}[i]${memory_format});
+    castImpl<diopiConstTensorHandle_t${cast}>(ctx, ${input}[i], &${newinput}[i]${memory_format});
 }
 """)
                         new_input.append(new_ins_vector_template.substitute(env=dict(input=tensor, newinput='new'+tensor.capitalize(), num=func_infos[func]['ins_vector'][tensor],
@@ -388,12 +389,12 @@ for (int i = 0; i < ${num}; ++i) {
                     else:
                         new_in = 'new' + tensor.capitalize()
                         new_ins.append(new_in)
-                        cast_impl = 'castImpl<diopiConstTensorHandle_t{cast}{contiguous}>(ctx, {tensor}, &{new_tensor}{memory_format});'.format(
+                        cast_impl = 'castImpl<diopiConstTensorHandle_t{cast}>(ctx, {tensor}, &{new_tensor}{memory_format});'.format(
                                     cast=', ' + cast_method if cast_method else '', memory_format=format_str if format_str else '', tensor=tensor, new_tensor=new_in, contiguous=contiguous_str)
                         cast_ins.append(cast_impl)
                 outs = func_infos[func]['outs']
                 if tensor in outs:
-                    cast_impl = 'auto {tensor}Wrapper = DiopiTensorWrapper<{cast}{contiguous}>(ctx, {tensor}{memory_format});'.format(
+                    cast_impl = 'auto {tensor}Wrapper = DiopiTensorWrapper<{cast}>(ctx, {tensor}{memory_format});'.format(
                                 cast=cast_method, memory_format=format_str if format_str else '', tensor=tensor, contiguous=contiguous_str)
                     cast_outs.append(cast_impl)
             new_input.append('diopiConstTensorHandle_t ' + ','.join(new_ins) + ';') if len(new_ins) else ''

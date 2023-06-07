@@ -2,3 +2,6 @@
     dtype: (int64)->int32, (float64)->float32
     contiguous: True
 
+- diopiAdd:
+    dtype: (int64)->int32, (float64)->float32
+    layout: NCHW
