@@ -131,18 +131,6 @@ device_configs = {
         ),
     ),
 
-    'silu': dict(
-        name=["silu"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
-
     'pointwise_binary': dict(
         name=['mul'],
         tensor_para=dict(
