@@ -139,8 +139,8 @@ public:
         cnnlDataType_t dtype;
         DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, t.dtype()));
         if (dims.size() == 0) {
-            std::vector<int> dims_tmp(1, 1);
-            DIOPI_CALLCNNL(cnnlSetTensorDescriptor(get(), layout, dtype, dims_tmp.size(), dims_tmp.data()));
+            std::vector<int> dimsTmp(1, 1);
+            DIOPI_CALLCNNL(cnnlSetTensorDescriptor(get(), layout, dtype, dimsTmp.size(), dimsTmp.data()));
         } else {
             DIOPI_CALLCNNL(cnnlSetTensorDescriptor(get(), layout, dtype, dims.size(), dims.data()));
         }
