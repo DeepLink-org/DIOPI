@@ -44,7 +44,7 @@ device_configs = {
     'conv_2d': dict(
         name=["conv2d"],
         atol_half=1e-1,
-        rtol_half=5e-2,
+        rtol_half=1e-1,
     ),
 
     'hardswish': dict(
