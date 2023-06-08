@@ -261,7 +261,7 @@ class Tensor(diopiTensor):
 
     def numpy(self) -> np.ndarray:
         darray = np.empty(list(self.size().data), to_numpy_dtype(self.get_dtype()))
-        
+
         PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
         PyCapsule_New = ctypes.pythonapi.PyCapsule_New
         PyCapsule_New.restype = ctypes.py_object
@@ -269,8 +269,8 @@ class Tensor(diopiTensor):
         capsule = PyCapsule_New(c_void_p(darray.ctypes.data), None, PyCapsule_Destructor(0))
         diopi_tensor_copy_to_buffer(self.context(), self, capsule)
         strides = [int(stride * darray.itemsize)
-                  for stride in self.get_stride().data]
-        darray =  np.lib.stride_tricks.as_strided(darray, shape=list(self.size().data), strides=strides)
+                   for stride in self.get_stride().data]
+        darray = np.lib.stride_tricks.as_strided(darray, shape=list(self.size().data), strides=strides)
         return darray
 
 

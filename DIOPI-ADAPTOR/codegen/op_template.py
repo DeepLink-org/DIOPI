@@ -117,7 +117,7 @@ static std::vector<diopiMemoryFormat_t> defaultFormats{};
 ${cast_strategy}
 
 template<class T, class strategy = NoCast>
-inline int castImpl(diopiContextHandle_t ctx, T src, T* dst,
+static int castImpl(diopiContextHandle_t ctx, T src, T* dst,
                     std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats) {
     if (src == nullptr || src == 0) {
         *dst = src;

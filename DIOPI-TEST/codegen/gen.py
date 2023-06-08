@@ -39,8 +39,6 @@ def prepare():
     source_dir = os.path.join(_cur_dir, '../../DIOPI-PROTO/include/diopi/')
     output_dir = os.path.join(_cur_dir, '../csrc')
     use_adaptor = True if options.use_adaptor == 'true' else False
-    print(options.use_adaptor)
-    print(use_adaptor)
     options = dict(source_dir=source_dir,
                    output_dir=output_dir,
                    use_adaptor=use_adaptor)
