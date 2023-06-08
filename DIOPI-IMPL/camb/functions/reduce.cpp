@@ -20,7 +20,7 @@ eg: getRealDims({-1,1,2,3,-2}, 5) -> {1,2,3,4}
 */
 std::vector<int64_t> getRealDims(std::vector<int64_t> inputDim, int64_t tDim) {
     // handle negative dims
-    for (int64_t & i : inputDim) {
+    for (int64_t& i : inputDim) {
         if (i < 0) {
             i = i + tDim;
         }
@@ -63,8 +63,8 @@ static std::unordered_map<cnnlReduceOp_t, std::set<diopiDtype_t>, HashCnnlReduce
     {CNNL_REDUCE_NORM1, {diopi_dtype_float16, diopi_dtype_float32}},
     {CNNL_REDUCE_NORM2, {diopi_dtype_float16, diopi_dtype_float32}}};
 
-diopiError_t reduceInternal(diopiContextHandle_t ctx, DiopiTensor& inputTr, DiopiTensor& outputTr, DiopiTensor& indexTr,
-                             const std::vector<int64_t> reduceDim, cnnlReduceOp_t reduceOp) {
+diopiError_t reduceInternal(diopiContextHandle_t ctx, DiopiTensor& inputTr, DiopiTensor& outputTr, DiopiTensor& indexTr, const std::vector<int64_t> reduceDim,
+                            cnnlReduceOp_t reduceOp) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DIOPI_CHECK(inputTr.isContiguous(), "input tensor should be contiguous");
@@ -143,7 +143,7 @@ diopiError_t reduceImpl(diopiContextHandle_t ctx, DiopiTensor& outputTr, DiopiTe
 }
 
 diopiError_t reduceDimImpl(diopiContextHandle_t ctx, DiopiTensor& outputTr, DiopiTensor& indexTr, DiopiTensor& inputTr, const std::vector<int64_t> dimVec,
-                             const bool keepdim, cnnlReduceOp_t reduceOp) {
+                           const bool keepdim, cnnlReduceOp_t reduceOp) {
     std::vector<int64_t> reduceDim = getRealDims(dimVec, inputTr.dim());
     auto supportedDtypes = supportedTypeTable.find(reduceOp);
     std::vector<DiopiTensor*> pTensors{&inputTr};
@@ -254,7 +254,6 @@ diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
 }
 
 diopiError_t diopiAll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim) {
-
     auto inputTr = DiopiTensor(input);
     auto outputTr = DiopiTensor(out);
     auto indexTr = requiresTensor(ctx, {1}, diopi_dtype_int32);
@@ -262,7 +261,6 @@ diopiError_t diopiAll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     reduceDimImpl(ctx, outputTr, indexTr, inputTr, {*dim}, false, CNNL_REDUCE_AND);
 
     return diopiSuccess;
-
 }
 
 diopiError_t diopiAny(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim) {
