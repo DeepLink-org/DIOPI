@@ -3623,6 +3623,7 @@ diopi_configs = {
 
     'ctc_loss': dict(
         name=["ctc_loss"],
+        interface=['CustomizedTest'],
         atol=1e-4,
         rtol=1e-5,
         para=dict(
