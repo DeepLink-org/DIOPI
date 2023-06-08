@@ -253,6 +253,28 @@ diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     return diopiSuccess;
 }
 
+diopiError_t diopiAll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim) {
+
+    auto inputTr = DiopiTensor(input);
+    auto outputTr = DiopiTensor(out);
+    auto indexTr = requiresTensor(ctx, {1}, diopi_dtype_int32);
+
+    reduceDimImpl(ctx, outputTr, indexTr, inputTr, {*dim}, false, CNNL_REDUCE_AND);
+
+    return diopiSuccess;
+
+}
+
+diopiError_t diopiAny(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim) {
+    auto inputTr = DiopiTensor(input);
+    auto outputTr = DiopiTensor(out);
+    auto indexTr = requiresTensor(ctx, {1}, diopi_dtype_int32);
+
+    reduceDimImpl(ctx, outputTr, indexTr, inputTr, {*dim}, false, CNNL_REDUCE_OR);
+
+    return diopiSuccess;
+}
+
 }  // extern "C"
 
 }  // namespace camb
