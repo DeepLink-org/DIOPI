@@ -22,13 +22,13 @@
 namespace impl {
 namespace camb {
 
-#define DIOPI_CALLCNNL(Expr)                                                                                          \
-    do {                                                                                                              \
-        ::cnnlStatus_t ret = Expr;                                                                                    \
-        if (ret != ::CNNL_STATUS_SUCCESS) {                                                                           \
+#define DIOPI_CALLCNNL(Expr)                                                                                       \
+    do {                                                                                                           \
+        ::cnnlStatus_t ret = Expr;                                                                                 \
+        if (ret != ::CNNL_STATUS_SUCCESS) {                                                                        \
             setLastErrorString("cnnl error %d : %s at %s:%d", ret, ::cnnlGetErrorString(ret), __FILE__, __LINE__); \
-            return diopiErrorOccurred;                                                                                \
-        }                                                                                                             \
+            return diopiErrorOccurred;                                                                             \
+        }                                                                                                          \
     } while (false);
 
 #define DIOPI_CHECKCNNL(Expr)                                                                          \
@@ -138,7 +138,12 @@ public:
     diopiError_t set(T& t, cnnlTensorLayout_t layout, std::vector<int> dims) {
         cnnlDataType_t dtype;
         DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, t.dtype()));
-        DIOPI_CALLCNNL(cnnlSetTensorDescriptor(get(), layout, dtype, dims.size(), dims.data()));
+        if (dims.size() == 0) {
+            std::vector<int> dims_tmp(1, 1);
+            DIOPI_CALLCNNL(cnnlSetTensorDescriptor(get(), layout, dtype, dims_tmp.size(), dims_tmp.data()));
+        } else {
+            DIOPI_CALLCNNL(cnnlSetTensorDescriptor(get(), layout, dtype, dims.size(), dims.data()));
+        }
         return diopiSuccess;
     }
 };
@@ -204,7 +209,7 @@ public:
 };
 
 diopiError_t cnnlTranspose(diopiContextHandle_t& ctx, cnnlHandle_t& handle, DiopiTensor& in, DiopiTensor& out, cnnlTensorLayout_t layoutIn,
-                            cnnlTensorLayout_t layoutOut);
+                           cnnlTensorLayout_t layoutOut);
 
 struct HashCnnlCastDType {
     size_t operator()(const std::vector<diopiDtype_t>& vec) const {
