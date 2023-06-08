@@ -87,7 +87,7 @@ diopiError_t cnnlActivationInternal(diopiContextHandle_t ctx, DiopiTensor input,
 }
 
 diopiError_t cnnlActivationBackwardInternal(diopiContextHandle_t ctx, DiopiTensor gradInput, DiopiTensor gradOutput, DiopiTensor input, DiopiTensor output,
-                                               CnnlAttribute attr) {
+                                            CnnlAttribute attr) {
     auto handle = cnnlHandlePool.get(ctx);
     auto mode = attr.get<cnnlActivationMode_t>("mode", CNNL_ACTIVATION_SIGMOID);
     auto perf = attr.get<cnnlActivationPreference_t>("perf", CNNL_ACTIVATION_HIGH_PRECISION);
@@ -198,6 +198,40 @@ extern "C" diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTens
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_SIGMOID);
     DIOPI_CALL(cnnlActivationBackwardInternal(ctx, gradInputTensor, gradOutputTensor, {}, outputTensor, attr));
+    return diopiSuccess;
+}
+
+extern "C" diopiError_t diopiSilu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    DiopiTensor inputTensor(input);
+    DiopiTensor outputTensor(out);
+
+    CnnlAttribute attr;
+    attr.set("mode", CNNL_ACTIVATION_SILU);
+    DIOPI_CALL(cnnlActivationInternal(ctx, inputTensor, outputTensor, attr));
+    return diopiSuccess;
+}
+
+extern "C" diopiError_t diopiSiluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    DiopiTensor inputTensor(input);
+
+    CnnlAttribute attr;
+    attr.set("mode", CNNL_ACTIVATION_SILU);
+    DIOPI_CALL(cnnlActivationInternal(ctx, inputTensor, inputTensor, attr));
+    return diopiSuccess;
+}
+
+extern "C" diopiError_t diopiSiluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                          diopiConstTensorHandle_t input) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    DiopiTensor gradInputTensor(gradInput);
+    DiopiTensor gradOutputTensor(gradOutput);
+    DiopiTensor inputTensor(input);
+
+    CnnlAttribute attr;
+    attr.set("mode", CNNL_ACTIVATION_SILU);
+    DIOPI_CALL(cnnlActivationBackwardInternal(ctx, gradInputTensor, gradOutputTensor, inputTensor, {}, attr));
     return diopiSuccess;
 }
 

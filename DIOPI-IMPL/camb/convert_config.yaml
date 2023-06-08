@@ -1,7 +1,11 @@
 - common_config:
     dtype: (int64)->int32, (float64)->float32
-    contiguous: True
+    layout: NCHW
 
 - diopiAdd:
+    dtype: (int64)->int32, (float64)->float32
+    layout: NCHW
+
+- diopiAddScalar:
     dtype: (int64)->int32, (float64)->float32
     layout: NCHW
