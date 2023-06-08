@@ -138,7 +138,7 @@ public:
     diopiError_t set(T& t, cnnlTensorLayout_t layout, std::vector<int> dims) {
         cnnlDataType_t dtype;
         DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, t.dtype()));
-        if (dims.size() == 0) {
+        if (dims.empty()) {
             std::vector<int> dimsTmp(1, 1);
             DIOPI_CALLCNNL(cnnlSetTensorDescriptor(get(), layout, dtype, dimsTmp.size(), dimsTmp.data()));
         } else {
