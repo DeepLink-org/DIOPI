@@ -3772,7 +3772,7 @@ diopi_configs = {
                     "ins": ['other'],
                     "shape": ((6, ), (4, 1), (1, 28, 28),
                               (16, 3, 7, 14, 14), (1, 28, 28), (1, 28, 28)),
-                    "dtype": [Dtype.float32,Dtype.float16],
+                    "dtype": [Dtype.float32, Dtype.float16],
                     "gen_fn": Genfunc.randn,
                 },
             ],
