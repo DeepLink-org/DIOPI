@@ -607,17 +607,11 @@ device_configs = {
         ),
     ),
 
-    'mm': dict(
-        name=['mm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
+    # 'mm': dict(
+    #     name=['mm'],
+    #     atol=1e-1,
+    #     rtol=1e-1
+    # ),
 
     'index_fill': dict(
         name=['index_fill'],
