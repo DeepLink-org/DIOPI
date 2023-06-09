@@ -23,6 +23,13 @@ typedef struct {
         double fval;
         int64_t ival;
     };
+    diopiDtype_t type() { return stype; }
+    double val() {
+        if (stype == diopiDtype_t::diopi_dtype_float64)
+            return fval;
+        else if (stype == diopiDtype_t::diopi_dtype_int64)
+            return ival;
+    }
 } diopiScalar_t;
 
 typedef enum { Contiguous = 0, ChannelsLast = 1, ChannelsLast3d = 2, Preserve = 3 } diopiMemoryFormat_t;
@@ -1681,9 +1688,9 @@ DIOPI_API diopiError_t diopiIndexFillScalar(diopiContextHandle_t ctx, diopiTenso
                                             diopiConstTensorHandle_t index, const diopiScalar_t* value);
 DIOPI_API diopiError_t diopiIndexFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim,
                                       diopiConstTensorHandle_t index, diopiConstTensorHandle_t value);
-DIOPI_API diopiError_t diopiIndexFillInpScalar(diopiContextHandle_t ctx, diopiConstTensorHandle_t input, int64_t dim, diopiConstTensorHandle_t index,
+DIOPI_API diopiError_t diopiIndexFillInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, int64_t dim, diopiConstTensorHandle_t index,
                                                const diopiScalar_t* value);
-DIOPI_API diopiError_t diopiIndexFillInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t input, int64_t dim, diopiConstTensorHandle_t index,
+DIOPI_API diopiError_t diopiIndexFillInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, int64_t dim, diopiConstTensorHandle_t index,
                                          diopiConstTensorHandle_t value);
 
 /**
@@ -1715,7 +1722,7 @@ DIOPI_API diopiError_t diopiPermute(diopiContextHandle_t ctx, diopiTensorHandle_
  * @param[out] out the output tensor. type=[float32, float64, float16].
  */
 DIOPI_API diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t pad, const char* mode,
-                                double* value);
+                                const double* value);
 
 /**
  * @brief Roll the tensor along the given dimension(s).

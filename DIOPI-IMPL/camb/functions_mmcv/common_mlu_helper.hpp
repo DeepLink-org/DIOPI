@@ -13,10 +13,8 @@
 #define REM_FOR_STACK (128 * 1024)  // 128KB reserved for cncc
 
 #ifdef __BANG_ARCH__
-#define MAX_NRAM_SIZE \
-  (__MLU_NRAM_SIZE__ * 1024 - REM_FOR_STACK)  // 128KB reserved for cncc
-#define MAX_SRAM_SIZE \
-  (__MLU_SRAM_SIZE__ * 1024 - REM_FOR_STACK)  // 128KB reserved for cncc
+#define MAX_NRAM_SIZE (__MLU_NRAM_SIZE__ * 1024 - REM_FOR_STACK)  // 128KB reserved for cncc
+#define MAX_SRAM_SIZE (__MLU_SRAM_SIZE__ * 1024 - REM_FOR_STACK)  // 128KB reserved for cncc
 #else
 #define MAX_NRAM_SIZE (384 * 1024)   // 384KB,  initialization value
 #define MAX_SRAM_SIZE (1920 * 1024)  // 1920KB, initialization value
@@ -34,12 +32,12 @@
 
 template <typename scalar_t>
 __mlu_func__ inline scalar_t min(scalar_t a, scalar_t b) {
-  return a < b ? a : b;
+    return a < b ? a : b;
 }
 
 template <typename scalar_t>
 __mlu_func__ inline scalar_t max(scalar_t a, scalar_t b) {
-  return a > b ? a : b;
+    return a > b ? a : b;
 }
 
 /*!
@@ -59,24 +57,19 @@ __mlu_func__ inline scalar_t max(scalar_t a, scalar_t b) {
  *   The total count of data segments in the lower dimension.
  */
 template <typename T>
-__mlu_func__ void loadStr2D(T *dst, T *src, const int size, const int dst_str,
-                            const int src_str, const int seg_num) {
-  if (dst_str == src_str && size == src_str) {
-    __memcpy(dst, src, src_str * seg_num * sizeof(T), GDRAM2NRAM);
-  } else if ((size == src_str || src_str <= dst_str) &&
-             src_str * sizeof(T) <= 512) {
-    // gather data less than 512Bytes to improve IO efficiency
-    T *tmp = reinterpret_cast<T *>(dst) + (dst_str - src_str) * seg_num;
-    __memcpy(tmp, src, (src_str * (seg_num - 1) + size) * sizeof(T),
-             GDRAM2NRAM);
-    if (dst_str != src_str) {
-      __memcpy(dst, tmp, size * sizeof(T), NRAM2NRAM, dst_str * sizeof(T),
-               src_str * sizeof(T), seg_num - 1);
+__mlu_func__ void loadStr2D(T *dst, T *src, const int size, const int dst_str, const int src_str, const int seg_num) {
+    if (dst_str == src_str && size == src_str) {
+        __memcpy(dst, src, src_str * seg_num * sizeof(T), GDRAM2NRAM);
+    } else if ((size == src_str || src_str <= dst_str) && src_str * sizeof(T) <= 512) {
+        // gather data less than 512Bytes to improve IO efficiency
+        T *tmp = reinterpret_cast<T *>(dst) + (dst_str - src_str) * seg_num;
+        __memcpy(tmp, src, (src_str * (seg_num - 1) + size) * sizeof(T), GDRAM2NRAM);
+        if (dst_str != src_str) {
+            __memcpy(dst, tmp, size * sizeof(T), NRAM2NRAM, dst_str * sizeof(T), src_str * sizeof(T), seg_num - 1);
+        }
+    } else {
+        __memcpy(dst, src, size * sizeof(T), GDRAM2NRAM, dst_str * sizeof(T), src_str * sizeof(T), seg_num - 1);
     }
-  } else {
-    __memcpy(dst, src, size * sizeof(T), GDRAM2NRAM, dst_str * sizeof(T),
-             src_str * sizeof(T), seg_num - 1);
-  }
 }
 
 /*!
@@ -102,18 +95,16 @@ __mlu_func__ void loadStr2D(T *dst, T *src, const int size, const int dst_str,
  *   The data stride in bytes between segments in the middle dimension of src.
  */
 template <typename T>
-__mlu_func__ void loadStr3D(T *dst, T *src, const int size,
-                            const int seg_num_in, const int seg_num_out,
-                            const int dst_str_in, const int dst_str_out,
+__mlu_func__ void loadStr3D(T *dst, T *src, const int size, const int seg_num_in, const int seg_num_out, const int dst_str_in, const int dst_str_out,
                             const int src_str_in, const int src_str_out) {
-  T *tmp_dst = dst;
-  T *tmp_src = src;
+    T *tmp_dst = dst;
+    T *tmp_src = src;
 
-  for (int i = 0; i < seg_num_out; ++i) {
-    loadStr2D(tmp_dst, tmp_src, size, dst_str_in, src_str_in, seg_num_in);
-    tmp_src += src_str_out;
-    tmp_dst += dst_str_out;
-  }
+    for (int i = 0; i < seg_num_out; ++i) {
+        loadStr2D(tmp_dst, tmp_src, size, dst_str_in, src_str_in, seg_num_in);
+        tmp_src += src_str_out;
+        tmp_dst += dst_str_out;
+    }
 }
 
 /*!
@@ -133,19 +124,16 @@ __mlu_func__ void loadStr3D(T *dst, T *src, const int size,
  *   The total count of data segments in the lower dimension.
  */
 template <typename T>
-__mlu_func__ void storeStr2D(T *dst, T *src, const int size, const int seg_num,
-                             const int dst_str, const int src_str) {
-  if ((size == dst_str && dst_str <= src_str) && dst_str * sizeof(T) <= 512) {
-    // gather data less than 512Bytes to improve IO efficiency
-    if (dst_str != src_str) {
-      __memcpy(src, src, size * sizeof(T), NRAM2NRAM, dst_str * sizeof(T),
-               src_str * sizeof(T), seg_num - 1);
+__mlu_func__ void storeStr2D(T *dst, T *src, const int size, const int seg_num, const int dst_str, const int src_str) {
+    if ((size == dst_str && dst_str <= src_str) && dst_str * sizeof(T) <= 512) {
+        // gather data less than 512Bytes to improve IO efficiency
+        if (dst_str != src_str) {
+            __memcpy(src, src, size * sizeof(T), NRAM2NRAM, dst_str * sizeof(T), src_str * sizeof(T), seg_num - 1);
+        }
+        __memcpy(dst, src, size * seg_num * sizeof(T), NRAM2GDRAM);
+    } else {
+        __memcpy(dst, src, size * sizeof(T), NRAM2GDRAM, dst_str * sizeof(T), src_str * sizeof(T), seg_num - 1);
     }
-    __memcpy(dst, src, size * seg_num * sizeof(T), NRAM2GDRAM);
-  } else {
-    __memcpy(dst, src, size * sizeof(T), NRAM2GDRAM, dst_str * sizeof(T),
-             src_str * sizeof(T), seg_num - 1);
-  }
 }
 
 /*!
@@ -171,17 +159,15 @@ __mlu_func__ void storeStr2D(T *dst, T *src, const int size, const int seg_num,
  *   The data stride in bytes between segments in the middle dimension of src.
  */
 template <typename T>
-__mlu_func__ void storeStr3D(T *dst, T *src, const int size,
-                             const int seg_num_in, const int seg_num_out,
-                             const int dst_str_in, const int dst_str_out,
+__mlu_func__ void storeStr3D(T *dst, T *src, const int size, const int seg_num_in, const int seg_num_out, const int dst_str_in, const int dst_str_out,
                              const int src_str_in, const int src_str_out) {
-  T *tmp_dst = dst;
-  T *tmp_src = src;
-  for (int i = 0; i < seg_num_out; ++i) {
-    storeStr2D(tmp_dst, tmp_src, size, seg_num_in, dst_str_in, src_str_in);
-    tmp_src += src_str_out;
-    tmp_dst += dst_str_out;
-  }
+    T *tmp_dst = dst;
+    T *tmp_src = src;
+    for (int i = 0; i < seg_num_out; ++i) {
+        storeStr2D(tmp_dst, tmp_src, size, seg_num_in, dst_str_in, src_str_in);
+        tmp_src += src_str_out;
+        tmp_dst += dst_str_out;
+    }
 }
 
 /*!
@@ -200,63 +186,54 @@ __mlu_func__ void storeStr3D(T *dst, T *src, const int size,
  * @param[in] src_count
  *   The count of elements in src.
  */
-__mlu_func__ void convertInt2Float(float *dst, float *dst_addition, int *src,
-                                   float *src_addition, const int src_count) {
+__mlu_func__ void convertInt2Float(float *dst, float *dst_addition, int *src, float *src_addition, const int src_count) {
 #if __BANG_ARCH__ >= 300
-  __bang_int2float(reinterpret_cast<float *>(dst), reinterpret_cast<int32_t *>(src), src_count, 0);
+    __bang_int2float(reinterpret_cast<float *>(dst), reinterpret_cast<int32_t *>(src), src_count, 0);
 #else
-  // get sign bit
-  const float move_23bit = 8388608.0;
-  // 0x80000000 = 1,000000000,0000000000000000000000000000
-  __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float),
-                     0x80000000);
-  __bang_cycle_band(reinterpret_cast<char *>(dst_addition), reinterpret_cast<char *>(src), reinterpret_cast<char *>(src_addition),
-                    src_count * sizeof(float), NFU_ALIGN_SIZE);
-  // get 1 or 0 from sign bit
-  // judg is Odd
-  __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float),
-                     0x00000001);
-  __bang_cycle_bor(reinterpret_cast<char *>(dst_addition), reinterpret_cast<char *>(dst_addition),
-                   reinterpret_cast<char *>(src_addition), src_count * sizeof(float),
-                   NFU_ALIGN_SIZE);
-  __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float),
-                     0x80000001);
-  __bang_cycle_eq(dst_addition, dst_addition, src_addition, src_count,
-                  NFU_ALIGN_SIZE / sizeof(float));
-  // minus xor, positive num invariant
-  __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float),
-                     0xffffffff);
-  __bang_cycle_mul(dst, dst_addition, src_addition, src_count,
-                   NFU_ALIGN_SIZE / sizeof(float));
-  __bang_bxor(reinterpret_cast<char *>(dst), reinterpret_cast<char *>(src), reinterpret_cast<char *>(dst), src_count * sizeof(float));
-  // convert int32 to float32
-  __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float),
-                     0x7fffff);
-  __bang_cycle_band(reinterpret_cast<char *>(dst), reinterpret_cast<char *>(dst), reinterpret_cast<char *>(src_addition),
-                    src_count * sizeof(float), NFU_ALIGN_SIZE);
-  __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float),
-                     0x4b000000);
-  __bang_cycle_bor(reinterpret_cast<char *>(dst), reinterpret_cast<char *>(dst), reinterpret_cast<char *>(src_addition),
-                   src_count * sizeof(float), NFU_ALIGN_SIZE);
-  __bang_sub_scalar(dst, dst, move_23bit, src_count);
-  // add one
-  __bang_add(dst, dst, dst_addition, src_count);
-  // set sign for float32
-  __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float),
-                     0xffffffff);
-  __bang_cycle_mul(dst_addition, dst_addition, src_addition, src_count,
-                   NFU_ALIGN_SIZE / sizeof(float));
+    // get sign bit
+    const float move_23bit = 8388608.0;
+    // 0x80000000 = 1,000000000,0000000000000000000000000000
+    __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float), 0x80000000);
+    __bang_cycle_band(reinterpret_cast<char *>(dst_addition),
+                      reinterpret_cast<char *>(src),
+                      reinterpret_cast<char *>(src_addition),
+                      src_count * sizeof(float),
+                      NFU_ALIGN_SIZE);
+    // get 1 or 0 from sign bit
+    // judg is Odd
+    __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float), 0x00000001);
+    __bang_cycle_bor(reinterpret_cast<char *>(dst_addition),
+                     reinterpret_cast<char *>(dst_addition),
+                     reinterpret_cast<char *>(src_addition),
+                     src_count * sizeof(float),
+                     NFU_ALIGN_SIZE);
+    __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float), 0x80000001);
+    __bang_cycle_eq(dst_addition, dst_addition, src_addition, src_count, NFU_ALIGN_SIZE / sizeof(float));
+    // minus xor, positive num invariant
+    __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float), 0xffffffff);
+    __bang_cycle_mul(dst, dst_addition, src_addition, src_count, NFU_ALIGN_SIZE / sizeof(float));
+    __bang_bxor(reinterpret_cast<char *>(dst), reinterpret_cast<char *>(src), reinterpret_cast<char *>(dst), src_count * sizeof(float));
+    // convert int32 to float32
+    __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float), 0x7fffff);
+    __bang_cycle_band(
+        reinterpret_cast<char *>(dst), reinterpret_cast<char *>(dst), reinterpret_cast<char *>(src_addition), src_count * sizeof(float), NFU_ALIGN_SIZE);
+    __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float), 0x4b000000);
+    __bang_cycle_bor(
+        reinterpret_cast<char *>(dst), reinterpret_cast<char *>(dst), reinterpret_cast<char *>(src_addition), src_count * sizeof(float), NFU_ALIGN_SIZE);
+    __bang_sub_scalar(dst, dst, move_23bit, src_count);
+    // add one
+    __bang_add(dst, dst, dst_addition, src_count);
+    // set sign for float32
+    __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float), 0xffffffff);
+    __bang_cycle_mul(dst_addition, dst_addition, src_addition, src_count, NFU_ALIGN_SIZE / sizeof(float));
 
-  __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float),
-                     0x00000001);
-  __bang_cycle_add(dst_addition, dst_addition, src_addition, src_count,
-                   NFU_ALIGN_SIZE / sizeof(float));
+    __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float), 0x00000001);
+    __bang_cycle_add(dst_addition, dst_addition, src_addition, src_count, NFU_ALIGN_SIZE / sizeof(float));
 
-  __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float),
-                     0x80000000);
-  __bang_cycle_band(reinterpret_cast<char *>(dst_addition), reinterpret_cast<char *>(dst_addition),
-                    reinterpret_cast<char *>(src_addition), src_count * 4, 128);
-  __bang_bor(reinterpret_cast<char *>(dst), reinterpret_cast<char *>(dst), reinterpret_cast<char *>(dst_addition), src_count * 4);
+    __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float), 0x80000000);
+    __bang_cycle_band(
+        reinterpret_cast<char *>(dst_addition), reinterpret_cast<char *>(dst_addition), reinterpret_cast<char *>(src_addition), src_count * 4, 128);
+    __bang_bor(reinterpret_cast<char *>(dst), reinterpret_cast<char *>(dst), reinterpret_cast<char *>(dst_addition), src_count * 4);
 #endif  // __BANG_ARCH__ >= 300
 }
 
@@ -276,66 +253,59 @@ __mlu_func__ void convertInt2Float(float *dst, float *dst_addition, int *src,
  * @param[in] src_count
  *   The count of elements in src.
  */
-__mlu_func__ void convertFloat2Int(int *dst, float *dst_addition, float *src,
-                                   float *src_addition, const int src_count) {
+__mlu_func__ void convertFloat2Int(int *dst, float *dst_addition, float *src, float *src_addition, const int src_count) {
 #if __BANG_ARCH__ >= 300
-  __bang_float2int_tz(reinterpret_cast<int32_t *>(dst), reinterpret_cast<float *>(src), src_count, 0);
+    __bang_float2int_tz(reinterpret_cast<int32_t *>(dst), reinterpret_cast<float *>(src), src_count, 0);
 #else
-  // sign ===> src_addition
-  // dst=-1.0 : when src[i] is a negative number
-  // dst=+1.0 : when src[i] is a positive number
-  const int floatDchar = sizeof(float) / sizeof(char);
-  __bang_active_sign(reinterpret_cast<float *>(dst), src, src_count);
-  // dst_addition = abs(src)
-  __bang_mul(dst_addition, src, reinterpret_cast<float *>(dst), src_count);
-  // if dst_addition < 1.0 , then src_addition + 1, to fix add error.
-  __bang_write_value(reinterpret_cast<float *>(src_addition), NFU_ALIGN_SIZE / sizeof(float),
-                     1.0f);
-  __bang_cycle_lt(dst_addition, dst_addition, reinterpret_cast<float *>(src_addition), src_count,
-                  NFU_ALIGN_SIZE / sizeof(float));
-  __bang_add_tz(reinterpret_cast<float *>(dst), reinterpret_cast<float *>(dst), reinterpret_cast<float *>(dst_addition), src_count);
-  __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float),
-                     0xbf800000);
-  // set negative flag -1.0 = 0xbf80000
-  __bang_cycle_eq(
-      reinterpret_cast<float *>(dst), reinterpret_cast<float *>(dst), reinterpret_cast<float *>(src_addition), src_count,
-      NFU_ALIGN_SIZE / sizeof(float));  //  to mark all src in [x<-1.0]
-  __bang_active_abs(dst_addition, src, src_count);
-  __bang_write_value(reinterpret_cast<float *>(src_addition), NFU_ALIGN_SIZE / sizeof(float),
-                     8388608.0f);
-  // mask shift move 23
-  __bang_cycle_add_tz(
-      dst_addition, dst_addition, src_addition, src_count,
-      NFU_ALIGN_SIZE / sizeof(float));  // right shift move 23bit
-  // two`s complement for negatibe
-  // dst=1.0 , when src <-1.0
-  // dst=0.0 , when src >=-1.0
-  __bang_sub(dst_addition, dst_addition, reinterpret_cast<float *>(dst), src_count);
-  // to fix max value
-  // 0 1001 0110 111 1111 1111 1111 1111 1111 <=> 0xcb7fffff <=> 16777215.0,
-  // means max value.
-  __bang_mul_scalar(reinterpret_cast<float *>(dst), reinterpret_cast<float *>(dst), 16777215.0, src_count);
-  __bang_bxor(reinterpret_cast<char *>(dst_addition), reinterpret_cast<char *>(dst_addition), reinterpret_cast<char *>(dst),
-              src_count * floatDchar);
-  // get low 23bit
-  __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float),
-                     (unsigned)0x007fffff);
-  // mask low 23bit is 1
-  __bang_cycle_band(reinterpret_cast<char *>(dst_addition), reinterpret_cast<char *>(dst_addition),
-                    reinterpret_cast<char *>(src_addition), src_count * floatDchar,
-                    NFU_ALIGN_SIZE / sizeof(char));
-  // set 9 high bit ===> dst
-  // -2.0 <=> 0xc0000000 <=> 1100 0000 0000 0000 0000 0000 0000 0000
-  //  1.0 <=> 0x3f800000 <=> 0011 1111 1000 0000 0000 0000 0000 0000
-  __bang_write_value(src_addition, NFU_ALIGN_SIZE / sizeof(float), 0x3f800000);
-  __bang_cycle_and(reinterpret_cast<float *>(dst), reinterpret_cast<float *>(dst), src_addition, src_count,
-                   NFU_ALIGN_SIZE / sizeof(float));
-  // src or dst_addition
-  __bang_bor(reinterpret_cast<char *>(dst_addition), reinterpret_cast<char *>(dst), reinterpret_cast<char *>(dst_addition),
-             src_count * floatDchar);
-  __bang_mul_scalar(reinterpret_cast<float *>(dst), reinterpret_cast<float *>(dst), -2.0, src_count);
-  __bang_bor(reinterpret_cast<char *>(dst), reinterpret_cast<char *>(dst), reinterpret_cast<char *>(dst_addition),
-             src_count * floatDchar);
+    // sign ===> src_addition
+    // dst=-1.0 : when src[i] is a negative number
+    // dst=+1.0 : when src[i] is a positive number
+    const int floatDchar = sizeof(float) / sizeof(char);
+    __bang_active_sign(reinterpret_cast<float *>(dst), src, src_count);
+    // dst_addition = abs(src)
+    __bang_mul(dst_addition, src, reinterpret_cast<float *>(dst), src_count);
+    // if dst_addition < 1.0 , then src_addition + 1, to fix add error.
+    __bang_write_value(reinterpret_cast<float *>(src_addition), NFU_ALIGN_SIZE / sizeof(float), 1.0f);
+    __bang_cycle_lt(dst_addition, dst_addition, reinterpret_cast<float *>(src_addition), src_count, NFU_ALIGN_SIZE / sizeof(float));
+    __bang_add_tz(reinterpret_cast<float *>(dst), reinterpret_cast<float *>(dst), reinterpret_cast<float *>(dst_addition), src_count);
+    __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float), 0xbf800000);
+    // set negative flag -1.0 = 0xbf80000
+    __bang_cycle_eq(reinterpret_cast<float *>(dst),
+                    reinterpret_cast<float *>(dst),
+                    reinterpret_cast<float *>(src_addition),
+                    src_count,
+                    NFU_ALIGN_SIZE / sizeof(float));  //  to mark all src in [x<-1.0]
+    __bang_active_abs(dst_addition, src, src_count);
+    __bang_write_value(reinterpret_cast<float *>(src_addition), NFU_ALIGN_SIZE / sizeof(float), 8388608.0f);
+    // mask shift move 23
+    __bang_cycle_add_tz(dst_addition, dst_addition, src_addition, src_count,
+                        NFU_ALIGN_SIZE / sizeof(float));  // right shift move 23bit
+    // two`s complement for negatibe
+    // dst=1.0 , when src <-1.0
+    // dst=0.0 , when src >=-1.0
+    __bang_sub(dst_addition, dst_addition, reinterpret_cast<float *>(dst), src_count);
+    // to fix max value
+    // 0 1001 0110 111 1111 1111 1111 1111 1111 <=> 0xcb7fffff <=> 16777215.0,
+    // means max value.
+    __bang_mul_scalar(reinterpret_cast<float *>(dst), reinterpret_cast<float *>(dst), 16777215.0, src_count);
+    __bang_bxor(reinterpret_cast<char *>(dst_addition), reinterpret_cast<char *>(dst_addition), reinterpret_cast<char *>(dst), src_count * floatDchar);
+    // get low 23bit
+    __bang_write_value(reinterpret_cast<unsigned *>(src_addition), NFU_ALIGN_SIZE / sizeof(float), (unsigned)0x007fffff);
+    // mask low 23bit is 1
+    __bang_cycle_band(reinterpret_cast<char *>(dst_addition),
+                      reinterpret_cast<char *>(dst_addition),
+                      reinterpret_cast<char *>(src_addition),
+                      src_count * floatDchar,
+                      NFU_ALIGN_SIZE / sizeof(char));
+    // set 9 high bit ===> dst
+    // -2.0 <=> 0xc0000000 <=> 1100 0000 0000 0000 0000 0000 0000 0000
+    //  1.0 <=> 0x3f800000 <=> 0011 1111 1000 0000 0000 0000 0000 0000
+    __bang_write_value(src_addition, NFU_ALIGN_SIZE / sizeof(float), 0x3f800000);
+    __bang_cycle_and(reinterpret_cast<float *>(dst), reinterpret_cast<float *>(dst), src_addition, src_count, NFU_ALIGN_SIZE / sizeof(float));
+    // src or dst_addition
+    __bang_bor(reinterpret_cast<char *>(dst_addition), reinterpret_cast<char *>(dst), reinterpret_cast<char *>(dst_addition), src_count * floatDchar);
+    __bang_mul_scalar(reinterpret_cast<float *>(dst), reinterpret_cast<float *>(dst), -2.0, src_count);
+    __bang_bor(reinterpret_cast<char *>(dst), reinterpret_cast<char *>(dst), reinterpret_cast<char *>(dst_addition), src_count * floatDchar);
 #endif  // __BANG_ARCH__ >= 300
 }
 
@@ -350,12 +320,11 @@ __mlu_func__ void convertFloat2Int(int *dst, float *dst_addition, float *src,
  * @param[in] src_count
  *   The count of elements in src.
  */
-__mlu_func__ inline void convertFloat2half(half *dst, float *src,
-                                           int src_count) {
+__mlu_func__ inline void convertFloat2half(half *dst, float *src, int src_count) {
 #if __BANG_ARCH__ >= 300
-  __bang_float2half_rn(dst, src, src_count);
+    __bang_float2half_rn(dst, src, src_count);
 #else
-  __bang_float2half_rd(dst, src, src_count);
+    __bang_float2half_rd(dst, src, src_count);
 #endif
 }
 
@@ -371,25 +340,28 @@ __mlu_func__ inline void convertFloat2half(half *dst, float *src,
  *     Which is the high_dim of sumpool per time.
  ******************************************************************************/
 template <typename T>
-__mlu_func__ void recursiveSumPool(T *dst, int low_dim, int high_dim,
-                                   int kernel_limit) {
-  for (; high_dim > 1;) {
-    int repeat_s = high_dim / kernel_limit;
-    int remain_s = high_dim % kernel_limit;
+__mlu_func__ void recursiveSumPool(T *dst, int low_dim, int high_dim, int kernel_limit) {
+    for (; high_dim > 1;) {
+        int repeat_s = high_dim / kernel_limit;
+        int remain_s = high_dim % kernel_limit;
 
-    if (remain_s) {
-      __bang_sumpool(reinterpret_cast<T *>(dst), reinterpret_cast<T *>(dst), low_dim, 1, remain_s, 1, remain_s, 1,
-                     1);
+        if (remain_s) {
+            __bang_sumpool(reinterpret_cast<T *>(dst), reinterpret_cast<T *>(dst), low_dim, 1, remain_s, 1, remain_s, 1, 1);
+        }
+        if (repeat_s) {
+            __bang_sumpool(reinterpret_cast<T *>(dst) + (remain_s > 0 ? low_dim : 0),
+                           reinterpret_cast<T *>(dst) + remain_s * low_dim,
+                           low_dim,
+                           kernel_limit * repeat_s,
+                           1,
+                           kernel_limit,
+                           1,
+                           1,
+                           kernel_limit);
+        }
+        high_dim = repeat_s + static_cast<bool>(remain_s);
     }
-    if (repeat_s) {
-      __bang_sumpool(reinterpret_cast<T *>(dst) + (remain_s > 0 ? low_dim : 0),
-                     reinterpret_cast<T *>(dst) + remain_s * low_dim, low_dim,
-                     kernel_limit * repeat_s, 1, kernel_limit, 1, 1,
-                     kernel_limit);
-    }
-    high_dim = repeat_s + static_cast<bool>(remain_s);
-  }
-  return;
+    return;
 }
 
 #endif  // DIOPI_IMPL_CAMB_FUNCTIONS_MMCV_COMMON_MLU_HELPER_HPP_

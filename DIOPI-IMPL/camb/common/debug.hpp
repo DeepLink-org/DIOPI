@@ -14,43 +14,83 @@
 
 #include <iostream>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "../diopi_helper.hpp"
 
 namespace impl {
 namespace camb {
 
+namespace {
+
 // print the data on dev
 // T is the dtype such as  float, int64_t, double.
+template <typename RealT, typename CastT>
+void printDevDataInternal(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max_len) {
+    int bytes = sizeof(RealT) * len;
+    std::unique_ptr<char> ptr(new char[bytes]);
+    std::cout << "data address:" << data << std::endl;
+    cnrtMemcpyAsync(ptr.get(), data, bytes, getStream(ctx), cnrtMemcpyDevToHost);
+    syncStreamInCtx(ctx);
+    for (int i = 0; i < len && i < max_len; ++i) {
+        std::cout << static_cast<CastT>(reinterpret_cast<RealT*>(ptr.get())[i]) << " ";
+    }
+    std::cout << std::endl;
+}
+
+void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor) {
+    int64_t len = tensor.numel();
+    void* dataIn = tensor.data();
+    int64_t maxLen = 10;
+    switch (tensor.dtype()) {
+        case diopi_dtype_bool:
+            printDevDataInternal<bool, int32_t>(ctx, dataIn, len, maxLen);
+            break;
+        case diopi_dtype_uint8:
+            printDevDataInternal<uint8_t, int32_t>(ctx, dataIn, len, maxLen);
+            break;
+        case diopi_dtype_int8:
+            printDevDataInternal<int8_t, int32_t>(ctx, dataIn, len, maxLen);
+            break;
+        case diopi_dtype_uint16:
+            printDevDataInternal<uint16_t, uint16_t>(ctx, dataIn, len, maxLen);
+            break;
+        case diopi_dtype_int16:
+            printDevDataInternal<int16_t, int16_t>(ctx, dataIn, len, maxLen);
+            break;
+        case diopi_dtype_uint32:
+            printDevDataInternal<uint32_t, uint32_t>(ctx, dataIn, len, maxLen);
+            break;
+        case diopi_dtype_int32:
+            printDevDataInternal<int32_t, int32_t>(ctx, dataIn, len, maxLen);
+            break;
+        case diopi_dtype_uint64:
+            printDevDataInternal<uint64_t, uint64_t>(ctx, dataIn, len, maxLen);
+            break;
+        case diopi_dtype_int64:
+            printDevDataInternal<int64_t, int64_t>(ctx, dataIn, len, maxLen);
+            break;
+        case diopi_dtype_float32:
+            printDevDataInternal<float, float>(ctx, dataIn, len, maxLen);
+            break;
+        case diopi_dtype_float64:
+            printDevDataInternal<double, double>(ctx, dataIn, len, maxLen);
+            break;
+        default:
+            std::cout << "unsupported dtype" << std::endl;
+            break;
+    }
+    return;
+}
+
 template <typename T>
-void printDevData(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max_len, T) {
-    int bytes = sizeof(T) * len;
-    std::unique_ptr<char> ptr(new char[bytes]);
-    std::cout << "data address:" << data << std::endl;
-    cnrtMemcpyAsync(ptr.get(), data, bytes, getStream(ctx), cnrtMemcpyDevToHost);
-    syncStreamInCtx(ctx);
-    for (int i = 0; i < len && i < max_len; ++i) {
-        std::cout << reinterpret_cast<T*>(ptr.get())[i] << " ";
+void printVec(const std::string& str, std::vector<T> vec) {
+    std::cout << str << ": ";
+    for (int i = 0; i < vec.size(); ++i) {
+        std::cout << vec[i] << " ";
     }
     std::cout << std::endl;
-}
-
-template <>
-void printDevData<int8_t>(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max_len, int8_t _) {
-    int bytes = len;
-    std::unique_ptr<char> ptr(new char[bytes]);
-    std::cout << "data address:" << data << std::endl;
-    cnrtMemcpyAsync(ptr.get(), data, bytes, getStream(ctx), cnrtMemcpyDevToHost);
-    syncStreamInCtx(ctx);
-    for (int i = 0; i < len && i < max_len; ++i) {
-        std::cout << static_cast<int32>(reinterpret_cast<T*>(ptr.get())[i]) << " ";
-    }
-    std::cout << std::endl;
-}
-
-template <>
-void printDevData<uint8_t>(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max_len, uint8_t _) {
-    printDevData<int8_t>(ctx, data, len, max_len, static_cast<int8_t>(_));
 }
 
 static void print_backtrace() {
@@ -79,6 +119,7 @@ static void print_backtrace() {
     free(stack_strings);
 }
 
+}  // namespace
 }  // namespace camb
 }  // namespace impl
 
