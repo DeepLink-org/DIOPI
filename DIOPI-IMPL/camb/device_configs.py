@@ -8,6 +8,14 @@ device_configs = {
         name=["batch_norm"],
         atol=1e-2,
         rtol=1e-3,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "dtype": [Skip(Dtype.float16)]
+                },
+            ]
+        ),
     ),
 
     'nll_loss': dict(
