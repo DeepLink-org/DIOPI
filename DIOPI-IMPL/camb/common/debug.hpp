@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "../diopi_helper.hpp"
@@ -84,7 +85,8 @@ void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor) {
 }
 
 template <typename T>
-void printVec(std::vector<T> vec) {
+void printVec(const std::string& str, std::vector<T> vec) {
+    std::cout << str << ": ";
     for (int i = 0; i < vec.size(); ++i) {
         std::cout << vec[i] << " ";
     }
