@@ -15,55 +15,48 @@ extern "C" {
 
 DIOPI_API diopiError_t diopiRemainderTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor other_tensor(other);
-    DiopiTensor out_tensor(out);
+    DiopiTensor inputTensor(input);
+    DiopiTensor otherTensor(other);
+    DiopiTensor outTensor(out);
 
-    DiopiTensor out_tensor_temp = out_tensor;
-    std::vector<DiopiTensor *> pTensors{&input_tensor, &other_tensor, &out_tensor_temp};
+    DiopiTensor outTensorTemp = outTensor;
+    std::vector<DiopiTensor *> pTensors{&inputTensor, &otherTensor, &outTensorTemp};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_int32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
-    CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc other_desc(other_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc out_desc(out_tensor_temp, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc otherDesc(otherTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(outTensorTemp, CNNL_LAYOUT_ARRAY);
 
-    size_t workspace_size = 0;
-    DIOPI_CALLCNNL(cnnlGetFloorModWorkspaceSize(handle, input_desc.get(), other_desc.get(), out_desc.get(), &workspace_size));
+    size_t workspaceSize = 0;
+    DIOPI_CALLCNNL(cnnlGetFloorModWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outDesc.get(), &workspaceSize));
     void *workspace = nullptr;
-    if (workspace_size != 0) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
+    if (workspaceSize != 0) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlFloorMod(handle,
-                                input_desc.get(),
-                                input_tensor.data(),
-                                other_desc.get(),
-                                other_tensor.data(),
-                                out_desc.get(),
-                                out_tensor_temp.data(),
-                                workspace,
-                                workspace_size));
+    DIOPI_CALLCNNL(cnnlFloorMod(
+        handle, inputDesc.get(), inputTensor.data(), otherDesc.get(), otherTensor.data(), outDesc.get(), outTensorTemp.data(), workspace, workspaceSize));
 
-    if (out_tensor.dtype() != out_tensor_temp.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor, out_tensor_temp));
+    if (outTensor.dtype() != outTensorTemp.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTemp));
     }
     return diopiSuccess;
 }
 
 DIOPI_API diopiError_t diopiRemainderScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t *other) {
-    DiopiTensor other_tensor;
-    makeTensorFromScalar(ctx, other, other_tensor);
-    diopiTensorHandle_t other_tensor_ptr = other_tensor.tensorHandle();
-    DIOPI_CALL(diopiRemainderTensor(ctx, out, input, other_tensor_ptr));
+    DiopiTensor otherTensor;
+    makeTensorFromScalar(ctx, other, otherTensor);
+    diopiTensorHandle_t otherTensorPtr = otherTensor.tensorHandle();
+    DIOPI_CALL(diopiRemainderTensor(ctx, out, input, otherTensorPtr));
     return diopiSuccess;
 }
 
 DIOPI_API diopiError_t diopiRemainder(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiScalar_t *input, diopiConstTensorHandle_t other) {
-    DiopiTensor input_tensor;
-    makeTensorFromScalar(ctx, input, input_tensor);
-    diopiTensorHandle_t input_tensor_ptr = input_tensor.tensorHandle();
-    DIOPI_CALL(diopiRemainderTensor(ctx, out, input_tensor_ptr, other));
+    DiopiTensor inputTensor;
+    makeTensorFromScalar(ctx, input, inputTensor);
+    diopiTensorHandle_t inputTensorPtr = inputTensor.tensorHandle();
+    DIOPI_CALL(diopiRemainderTensor(ctx, out, inputTensorPtr, other));
     return diopiSuccess;
 }
 }  // extern "C"
