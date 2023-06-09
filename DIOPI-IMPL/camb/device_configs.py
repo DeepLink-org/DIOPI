@@ -845,62 +845,6 @@ device_configs = {
         ),
     ),
 
-    'remainder': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['other'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'remainder_tensor': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8)],
-                },
-            ],
-        ),
-    ),
-
-    'remainder_other_zero': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8)],
-                },
-            ],
-        ),
-    ),
-
-    'remainder_scalar': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
     'scatter': dict(
         name=['scatter'],
         tensor_para=dict(
