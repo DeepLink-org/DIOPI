@@ -177,9 +177,9 @@ class ManualTest(object):
 
     def test_uniform(input, start=0, end=1):
         out = F.uniform(input, start, end)
+        epsilon = 1e-5   # eliminate minor precision error
         out_numpy = out.numpy()
-
-        assert (out_numpy <= end).all() and (out_numpy >= start).all(),\
+        assert (out_numpy <= (end+epsilon)).all() and (out_numpy >= (start-epsilon)).all(),\
             "failed to execute uniform"
         if out.numel() > 100:
             assert abs(out_numpy.mean() - (end + start) / 2) < 1e-1,\
