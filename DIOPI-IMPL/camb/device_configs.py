@@ -607,11 +607,11 @@ device_configs = {
         ),
     ),
 
-    'mm': dict(
-        name=['mm'],
-        atol=1e-1,
-        rtol=1e-1
-    ),
+    # 'mm': dict(
+    #     name=['mm'],
+    #     atol=1e-1,
+    #     rtol=1e-1
+    # ),
 
     'index_fill': dict(
         name=['index_fill'],
