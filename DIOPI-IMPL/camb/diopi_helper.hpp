@@ -79,9 +79,9 @@ public:
             case diopi_dtype_uint16:
                 return "diopi_dtype_uint16";
             case diopi_dtype_int32:
-                return "diopi_dtype_uint32";
-            case diopi_dtype_uint32:
                 return "diopi_dtype_int32";
+            case diopi_dtype_uint32:
+                return "diopi_dtype_uint32";
             case diopi_dtype_int64:
                 return "diopi_dtype_int64";
             case diopi_dtype_uint64:

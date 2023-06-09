@@ -198,7 +198,10 @@ diopiError_t diopiMin(diopiContextHandle_t ctx, diopiTensorHandle_t min, diopiTe
     DiopiTensor outputTr(min);
     DiopiTensor indexTr(minIndices);
     // Note: camb index out is int32 dtype
-    auto indexTmpTr = requiresTensor(ctx, indexTr.shape(), diopi_dtype_int32);
+    auto indexTmpTr = indexTr;
+    if (indexTmpTr.dtype() != diopi_dtype_int32) {
+        indexTmpTr = requiresTensor(ctx, indexTr.shape(), diopi_dtype_int32);
+    }
 
     DIOPI_CALL(reduceDimImpl(ctx, outputTr, indexTmpTr, inputTr, {dim}, false, CNNL_REDUCE_MIN));
 
@@ -220,7 +223,10 @@ diopiError_t diopiMax(diopiContextHandle_t ctx, diopiTensorHandle_t max, diopiTe
     DiopiTensor inputTr(input);
     DiopiTensor outputTr(max);
     DiopiTensor indexTr(maxIndices);
-    auto indexTmpTr = requiresTensor(ctx, indexTr.shape(), diopi_dtype_int32);
+    auto indexTmpTr = indexTr;
+    if (indexTmpTr.dtype() != diopi_dtype_int32) {
+        indexTmpTr = requiresTensor(ctx, indexTr.shape(), diopi_dtype_int32);
+    }
 
     DIOPI_CALL(reduceDimImpl(ctx, outputTr, indexTmpTr, inputTr, {dim}, false, CNNL_REDUCE_MAX));
 
