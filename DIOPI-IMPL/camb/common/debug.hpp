@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "../diopi_helper.hpp"
+#include "float16.hpp"
 
 namespace impl {
 namespace camb {
@@ -41,7 +42,7 @@ void printDevDataInternal(diopiContextHandle_t ctx, void* data, int64_t len, int
 void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor) {
     int64_t len = tensor.numel();
     void* dataIn = tensor.data();
-    int64_t maxLen = 10;
+    int64_t maxLen = 1000;
     switch (tensor.dtype()) {
         case diopi_dtype_bool:
             printDevDataInternal<bool, int32_t>(ctx, dataIn, len, maxLen);
@@ -69,6 +70,9 @@ void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor) {
             break;
         case diopi_dtype_int64:
             printDevDataInternal<int64_t, int64_t>(ctx, dataIn, len, maxLen);
+            break;
+        case diopi_dtype_float16:
+            printDevDataInternal<half_float::half, float>(ctx, dataIn, len, maxLen);
             break;
         case diopi_dtype_float32:
             printDevDataInternal<float, float>(ctx, dataIn, len, maxLen);
