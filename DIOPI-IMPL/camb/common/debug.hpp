@@ -22,24 +22,21 @@
 namespace impl {
 namespace camb {
 
-namespace {
-
 // print the data on dev
-// T is the dtype such as  float, int64_t, double.
 template <typename RealT, typename CastT>
-void printDevDataInternal(diopiContextHandle_t ctx, void* data, int64_t len, int64_t max_len) {
+void printDevDataInternal(diopiContextHandle_t ctx, void* data, int64_t len, int64_t maxLen) {
     int bytes = sizeof(RealT) * len;
     std::unique_ptr<char> ptr(new char[bytes]);
     std::cout << "data address:" << data << std::endl;
     cnrtMemcpyAsync(ptr.get(), data, bytes, getStream(ctx), cnrtMemcpyDevToHost);
     syncStreamInCtx(ctx);
-    for (int i = 0; i < len && i < max_len; ++i) {
+    for (int i = 0; i < len && i < maxLen; ++i) {
         std::cout << static_cast<CastT>(reinterpret_cast<RealT*>(ptr.get())[i]) << " ";
     }
     std::cout << std::endl;
 }
 
-void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor) {
+inline void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor) {
     int64_t len = tensor.numel();
     void* dataIn = tensor.data();
     int64_t maxLen = 10;
@@ -95,33 +92,32 @@ void printVec(std::vector<T> vec) {
     std::cout << std::endl;
 }
 
-static void print_backtrace() {
-    const int MAX_STACK_FRAMES = 64;
-    void* stack_traces[MAX_STACK_FRAMES];
-    int stack_frames = backtrace(stack_traces, MAX_STACK_FRAMES);
+inline void printBacktrace() {
+    const int maxStackFrames = 64;
+    void* stackTraces[maxStackFrames];
+    int stackFrames = backtrace(stackTraces, maxStackFrames);
 
-    char** stack_strings = backtrace_symbols(stack_traces, stack_frames);  // do not forget to free stack_strings
-    for (int i = 0; i < stack_frames; i++) {
-        printf("%s\n", stack_strings[i]);
+    char** stackStrings = backtrace_symbols(stackTraces, stackFrames);  // do not forget to free stack_strings
+    for (int i = 0; i < stackFrames; i++) {
+        printf("%s\n", stackStrings[i]);
 
         // Try to demangle the symbol name
-        char* symbol = stack_strings[i];
-        char* mangled_start = strchr(symbol, '(');
-        char* mangled_end = strchr(mangled_start, '+');
-        if (mangled_start && mangled_end) {
-            *mangled_start++ = '\0';
-            *mangled_end = '\0';
+        char* symbol = stackStrings[i];
+        char* mangledStart = strchr(symbol, '(');
+        char* mangledEnd = strchr(mangledStart, '+');
+        if (mangledStart && mangledEnd) {
+            *mangledStart++ = '\0';
+            *mangledEnd = '\0';
             int status;
-            char* demangled = abi::__cxa_demangle(mangled_start, nullptr, nullptr, &status);
+            char* demangled = abi::__cxa_demangle(mangledStart, nullptr, nullptr, &status);
             if (status == 0) {
                 printf("  %s\n", demangled);
             }
         }
     }
-    free(stack_strings);
+    free(stackStrings);
 }
 
-}  // namespace
 }  // namespace camb
 }  // namespace impl
 
