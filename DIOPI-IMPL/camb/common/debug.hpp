@@ -42,7 +42,7 @@ void printDevDataInternal(diopiContextHandle_t ctx, void* data, int64_t len, int
 void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor) {
     int64_t len = tensor.numel();
     void* dataIn = tensor.data();
-    int64_t maxLen = 1000;
+    int64_t maxLen = 10;
     switch (tensor.dtype()) {
         case diopi_dtype_bool:
             printDevDataInternal<bool, int32_t>(ctx, dataIn, len, maxLen);
