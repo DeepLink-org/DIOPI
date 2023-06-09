@@ -16,33 +16,33 @@ namespace camb {
 
 static diopiError_t cos(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor& output) {
     auto handle = cnnlHandlePool.get(ctx);
-    auto input_tensor = DiopiTensor(input);
+    auto inputTensor = DiopiTensor(input);
     std::vector<DiopiTensor*> pTensors{&input};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
-    DiopiTensor output_tmp = output;
+    DiopiTensor outputTmp = output;
     if (input.dtype() != output.dtype()) {
-        output_tmp = requiresTensor(ctx, output.shape(), input.dtype());
+        outputTmp = requiresTensor(ctx, output.shape(), input.dtype());
     }
-    CnnlTensorDesc input_desc(input, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc output_tmp_desc(output_tmp, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlCos_v2(handle, CNNL_COMPUTATION_HIGH_PRECISION, input_desc.get(), input.data(), output_tmp_desc.get(), output_tmp.data()));
-    if (output_tmp.dtype() != output.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, output, output_tmp));
+    CnnlTensorDesc inputDesc(input, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outputTmpDesc(outputTmp, CNNL_LAYOUT_ARRAY);
+    DIOPI_CALLCNNL(cnnlCos_v2(handle, CNNL_COMPUTATION_HIGH_PRECISION, inputDesc.get(), input.data(), outputTmpDesc.get(), outputTmp.data()));
+    if (outputTmp.dtype() != output.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, output, outputTmp));
     }
     return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiCosInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    DiopiTensor input_tensor(input);
-    DIOPI_CALL(cos(ctx, input_tensor, input_tensor));
+    DiopiTensor inputTensor(input);
+    DIOPI_CALL(cos(ctx, inputTensor, inputTensor));
     return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiCos(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    DiopiTensor input_tensor(input);
-    DiopiTensor output_tensor(out);
-    DIOPI_CALL(cos(ctx, input_tensor, output_tensor));
+    DiopiTensor inputTensor(input);
+    DiopiTensor outputTensor(out);
+    DIOPI_CALL(cos(ctx, inputTensor, outputTensor));
     return diopiSuccess;
 }
 

@@ -22,17 +22,17 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
 
     // TODO(waiting for dispatch): support broadcast, dealing with uncontiguous
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor dest_tr(dest);
-    DiopiTensor src_tr(src);
+    DiopiTensor destTr(dest);
+    DiopiTensor srcTr(src);
 
-    if (src_tr.dtype() != dest_tr.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, src_tr, dest_tr.dtype()));
+    if (srcTr.dtype() != destTr.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, srcTr, destTr.dtype()));
     }
 
-    CnnlTensorDesc input_desc(dest_tr, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc src_desc(src_tr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputDesc(destTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc srcDesc(srcTr, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlCopy(handle, src_desc.get(), src_tr.data(), input_desc.get(), dest_tr.data()));
+    DIOPI_CALLCNNL(cnnlCopy(handle, srcDesc.get(), srcTr.data(), inputDesc.get(), destTr.data()));
 
     return diopiSuccess;
 }

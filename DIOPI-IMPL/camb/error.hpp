@@ -10,8 +10,9 @@
 #include <cnrt.h>
 #include <diopi/diopirt.h>
 
-#include <string>
+#include <cstring>
 #include <mutex>
+#include <string>
 #include <utility>
 
 namespace impl {
@@ -19,16 +20,17 @@ namespace impl {
 namespace camb {
 
 extern char strLastError[8192];
-extern char strLastErrorOther[4096];
+extern int32_t curIdxError;
 extern std::mutex mtxLastError;
 
 template <typename... Types>
-inline void set_last_error_string(const char* szFmt, Types&&... args) {
+inline void setLastErrorString(const char* szFmt, Types&&... args) {
     std::lock_guard<std::mutex> lock(mtxLastError);
-    sprintf(strLastErrorOther, szFmt, std::forward<Types>(args)...);
+    sprintf(strLastError, szFmt, std::forward<Types>(args)...);
+    curIdxError = strlen(strLastError);
 }
 
-const char* camb_get_last_error_string();
+const char* cambGetLastErrorString();
 
 const char* getDiopiErrorStr(diopiError_t err);
 

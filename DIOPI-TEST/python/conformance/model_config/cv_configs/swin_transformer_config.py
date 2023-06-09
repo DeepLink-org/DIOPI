@@ -1,5 +1,5 @@
 from ...config import Genfunc
-from ...dtype import Dtype
+from ...diopi_runtime import Dtype
 
 swin_transformer_config = {
     'linspace': dict(
@@ -942,10 +942,16 @@ swin_transformer_config = {
                     "gen_fn": Genfunc.randn,
                 },
                 {
-                    "ins": ["exp_avg", "exp_avg_sq", "max_exp_avg_sq"],
+                    "ins": ["exp_avg", "max_exp_avg_sq"],
                     "shape": [(128, 3, 4, 4), (384, 128), (128, 128), (512, 128), (128, 512), (256, 512), (768, 256), (256, 256), (1024, 256), (256, 1024), (512, 1024), (1536, 512), (512, 512), (2048, 512), (512, 2048), (1024, 2048), (3072, 1024), (1024, 1024), (4096, 1024), (1024, 4096), (1000, 1024)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["exp_avg_sq"],
+                    "shape": [(128, 3, 4, 4), (384, 128), (128, 128), (512, 128), (128, 512), (256, 512), (768, 256), (256, 256), (1024, 256), (256, 1024), (512, 1024), (1536, 512), (512, 512), (2048, 512), (512, 2048), (1024, 2048), (3072, 1024), (1024, 1024), (4096, 1024), (1024, 4096), (1000, 1024)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),
@@ -972,10 +978,16 @@ swin_transformer_config = {
                     "gen_fn": Genfunc.randn,
                 },
                 {
-                    "ins": ["exp_avg", "exp_avg_sq", "max_exp_avg_sq"],
+                    "ins": ["exp_avg", "max_exp_avg_sq"],
                     "shape": [(128,), (169, 4), (384,), (512,), (256,), (169, 8), (768,), (1024,), (169, 16), (1536,), (2048,), (169, 32), (3072,), (4096,), (1000,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["exp_avg_sq"],
+                    "shape": [(128,), (169, 4), (384,), (512,), (256,), (169, 8), (768,), (1024,), (169, 16), (1536,), (2048,), (169, 32), (3072,), (4096,), (1000,)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),

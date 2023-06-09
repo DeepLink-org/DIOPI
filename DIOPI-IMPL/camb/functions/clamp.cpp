@@ -6,14 +6,14 @@ namespace impl {
 namespace camb {
 extern "C" {
 
-diopiError_t getClampBoundPtr(diopiContextHandle_t ctx, diopiConstTensorHandle_t bound, diopiDtype_t desire_dtype, void** out) {
+diopiError_t getClampBoundPtr(diopiContextHandle_t ctx, diopiConstTensorHandle_t bound, diopiDtype_t desireDtype, void** out) {
     if (nullptr != bound) {
-        DiopiTensor bound_tensor(bound);
-        DIOPI_CHECK(bound_tensor.numel() == 1, "only supported when min and max are scalar or one element Tensor currently");
-        if (desire_dtype != bound_tensor.dtype()) {
-            DIOPI_CALL(dataTypeCast(ctx, bound_tensor, desire_dtype));
+        DiopiTensor boundTensor(bound);
+        DIOPI_CHECK(boundTensor.numel() == 1, "only supported when min and max are scalar or one element Tensor currently");
+        if (desireDtype != boundTensor.dtype()) {
+            DIOPI_CALL(dataTypeCast(ctx, boundTensor, desireDtype));
         }
-        *out = bound_tensor.data();
+        *out = boundTensor.data();
         return diopiSuccess;
     }
     *out = nullptr;
@@ -24,74 +24,99 @@ diopiError_t clampCommon(diopiContextHandle_t ctx, diopiConstTensorHandle_t inpu
                          diopiConstTensorHandle_t max) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    DiopiTensor input_tensor(input);
-    DiopiTensor output_tensor(out);
-    DIOPI_CHECK(input_tensor.dtype() == output_tensor.dtype(), "the dtype of input and output must be the same")
+    DiopiTensor inputTensor(input);
+    DiopiTensor outputTensor(out);
+    DIOPI_CHECK(inputTensor.dtype() == outputTensor.dtype(), "the dtype of input and output must be the same")
 
-    DiopiTensor output32_tensor = output_tensor;
-    if (DiopiDataType::isInteger(input_tensor.dtype())) {
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_int32));
-        DIOPI_CALL(dataTypeCast(ctx, output32_tensor, diopi_dtype_int32));
-    } else if (input_tensor.dtype() == diopi_dtype_float64) {
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_float32));
-        DIOPI_CALL(dataTypeCast(ctx, output32_tensor, diopi_dtype_float32));
+    DiopiTensor output32Tensor = outputTensor;
+    if (DiopiDataType::isInteger(inputTensor.dtype())) {
+        DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_int32));
+        DIOPI_CALL(dataTypeCast(ctx, output32Tensor, diopi_dtype_int32));
+    } else if (inputTensor.dtype() == diopi_dtype_float64) {
+        DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, output32Tensor, diopi_dtype_float32));
     }
-    CnnlTensorDesc inputDesc(input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc output32Desc(output32_tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc output32Desc(output32Tensor, CNNL_LAYOUT_ARRAY);
 
-    void* min_ptr = nullptr;
-    void* max_ptr = nullptr;
-    DIOPI_CALL(getClampBoundPtr(ctx, min, input_tensor.dtype(), &min_ptr));
-    DIOPI_CALL(getClampBoundPtr(ctx, max, input_tensor.dtype(), &max_ptr));
+    void* minPtr = nullptr;
+    void* maxPtr = nullptr;
+    DIOPI_CALL(getClampBoundPtr(ctx, min, inputTensor.dtype(), &minPtr));
+    DIOPI_CALL(getClampBoundPtr(ctx, max, inputTensor.dtype(), &maxPtr));
 
     DIOPI_CALLCNNL(
-        cnnlClip_v2(handle, CNNL_POINTER_MODE_DEVICE, inputDesc.get(), input_tensor.data(), min_ptr, max_ptr, output32Desc.get(), output32_tensor.data()));
-    if (output_tensor.dtype() != output32_tensor.dtype()) {
-        if (output_tensor.dtype() != diopi_dtype_uint8) {
-            DIOPI_CALL(dataTypeCast(ctx, output_tensor, output32_tensor));
+        cnnlClip_v2(handle, CNNL_POINTER_MODE_DEVICE, inputDesc.get(), inputTensor.data(), minPtr, maxPtr, output32Desc.get(), output32Tensor.data()));
+    if (outputTensor.dtype() != output32Tensor.dtype()) {
+        if (outputTensor.dtype() != diopi_dtype_uint8) {
+            DIOPI_CALL(dataTypeCast(ctx, outputTensor, output32Tensor));
+
         } else {
-            DIOPI_CALL(dataTypeCast(ctx, output32_tensor, diopi_dtype_float32));
-            DIOPI_CALL(dataTypeCast(ctx, output_tensor, output32_tensor));
+            DIOPI_CALL(dataTypeCast(ctx, output32Tensor, diopi_dtype_float32));
+            DIOPI_CALL(dataTypeCast(ctx, outputTensor, output32Tensor));
         }
     }
     return diopiSuccess;
 }
 
 diopiError_t diopiClampInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* min, const diopiScalar_t* max) {
-    DiopiTensor min_tensor_tmp;
-    DiopiTensor max_tensor_tmp;
-    makeTensorFromScalar(ctx, min, min_tensor_tmp);
-    makeTensorFromScalar(ctx, max, max_tensor_tmp);
-    diopiTensorHandle_t min_tensor = min_tensor_tmp.tensorHandle();
-    diopiTensorHandle_t max_tensor = max_tensor_tmp.tensorHandle();
-    return clampCommon(ctx, input, input, min_tensor, max_tensor);
+    DIOPI_CHECK(min != nullptr || max != nullptr, "At least one of \'min\' or \'max\' must not be None");
+    if (min == nullptr) {
+        return diopiClampMaxInpScalar(ctx, input, max);
+    } else if (max == nullptr) {
+        return diopiClampMinInpScalar(ctx, input, min);
+    }
+    DiopiTensor minTensorTmp;
+    DiopiTensor maxTensorTmp;
+    makeTensorFromScalar(ctx, min, minTensorTmp);
+    makeTensorFromScalar(ctx, max, maxTensorTmp);
+    diopiTensorHandle_t minTensor = minTensorTmp.tensorHandle();
+    diopiTensorHandle_t maxTensor = maxTensorTmp.tensorHandle();
+    return clampCommon(ctx, input, input, minTensor, maxTensor);
 }
 
 diopiError_t diopiClampInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t min, diopiConstTensorHandle_t max) {
+    DIOPI_CHECK(min != nullptr || max != nullptr, "At least one of \'min\' or \'max\' must not be None");
+    if (min == nullptr) {
+        return diopiClampMaxInp(ctx, input, max);
+    } else if (max == nullptr) {
+        return diopiClampMinInp(ctx, input, min);
+    }
     return clampCommon(ctx, input, input, min, max);
 }
 
 diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* min,
                               const diopiScalar_t* max) {
-    DiopiTensor min_tensor_tmp;
-    DiopiTensor max_tensor_tmp;
-    makeTensorFromScalar(ctx, min, min_tensor_tmp);
-    makeTensorFromScalar(ctx, max, max_tensor_tmp);
-    diopiTensorHandle_t min_tensor = min_tensor_tmp.tensorHandle();
-    diopiTensorHandle_t max_tensor = max_tensor_tmp.tensorHandle();
-    return clampCommon(ctx, input, out, min_tensor, max_tensor);
+    DIOPI_CHECK(min != nullptr || max != nullptr, "At least one of \'min\' or \'max\' must not be None");
+    if (min == nullptr) {
+        return diopiClampMaxScalar(ctx, out, input, max);
+    } else if (max == nullptr) {
+        return diopiClampMinScalar(ctx, out, input, min);
+    }
+    DiopiTensor minTensorTmp;
+    DiopiTensor maxTensorTmp;
+    makeTensorFromScalar(ctx, min, minTensorTmp);
+    makeTensorFromScalar(ctx, max, maxTensorTmp);
+    diopiTensorHandle_t minTensor = minTensorTmp.tensorHandle();
+    diopiTensorHandle_t maxTensor = maxTensorTmp.tensorHandle();
+    return clampCommon(ctx, input, out, minTensor, maxTensor);
 }
 
 diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t min,
                         diopiConstTensorHandle_t max) {
+    DIOPI_CHECK(min != nullptr || max != nullptr, "At least one of \'min\' or \'max\' must not be None");
+    if (min == nullptr) {
+        return diopiClampMax(ctx, out, input, max);
+    } else if (max == nullptr) {
+        return diopiClampMin(ctx, out, input, min);
+    }
     return clampCommon(ctx, input, out, min, max);
 }
 
 diopiError_t diopiClampMaxInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* max) {
-    DiopiTensor max_tensor_tmp;
-    makeTensorFromScalar(ctx, max, max_tensor_tmp);
-    diopiTensorHandle_t max_tensor = max_tensor_tmp.tensorHandle();
-    return clampCommon(ctx, input, input, nullptr, max_tensor);
+    DiopiTensor maxTensorTmp;
+    makeTensorFromScalar(ctx, max, maxTensorTmp);
+    diopiTensorHandle_t maxTensor = maxTensorTmp.tensorHandle();
+    return clampCommon(ctx, input, input, nullptr, maxTensor);
 }
 
 diopiError_t diopiClampMaxInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t max) {
@@ -99,10 +124,10 @@ diopiError_t diopiClampMaxInp(diopiContextHandle_t ctx, diopiTensorHandle_t inpu
 }
 
 diopiError_t diopiClampMaxScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* max) {
-    DiopiTensor max_tensor_tmp;
-    makeTensorFromScalar(ctx, max, max_tensor_tmp);
-    diopiTensorHandle_t max_tensor = max_tensor_tmp.tensorHandle();
-    return clampCommon(ctx, input, out, nullptr, max_tensor);
+    DiopiTensor maxTensorTmp;
+    makeTensorFromScalar(ctx, max, maxTensorTmp);
+    diopiTensorHandle_t maxTensor = maxTensorTmp.tensorHandle();
+    return clampCommon(ctx, input, out, nullptr, maxTensor);
 }
 
 diopiError_t diopiClampMax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t max) {
@@ -110,10 +135,10 @@ diopiError_t diopiClampMax(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
 }
 
 diopiError_t diopiClampMinInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* min) {
-    DiopiTensor min_tensor_tmp;
-    makeTensorFromScalar(ctx, min, min_tensor_tmp);
-    diopiTensorHandle_t min_tensor = min_tensor_tmp.tensorHandle();
-    return clampCommon(ctx, input, input, min_tensor, nullptr);
+    DiopiTensor minTensorTmp;
+    makeTensorFromScalar(ctx, min, minTensorTmp);
+    diopiTensorHandle_t minTensor = minTensorTmp.tensorHandle();
+    return clampCommon(ctx, input, input, minTensor, nullptr);
 }
 
 diopiError_t diopiClampMinInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t min) {
@@ -121,10 +146,10 @@ diopiError_t diopiClampMinInp(diopiContextHandle_t ctx, diopiTensorHandle_t inpu
 }
 
 diopiError_t diopiClampMinScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* min) {
-    DiopiTensor min_tensor_tmp;
-    makeTensorFromScalar(ctx, min, min_tensor_tmp);
-    diopiTensorHandle_t min_tensor = min_tensor_tmp.tensorHandle();
-    return clampCommon(ctx, input, out, min_tensor, nullptr);
+    DiopiTensor minTensorTmp;
+    makeTensorFromScalar(ctx, min, minTensorTmp);
+    diopiTensorHandle_t minTensor = minTensorTmp.tensorHandle();
+    return clampCommon(ctx, input, out, minTensor, nullptr);
 }
 
 diopiError_t diopiClampMin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t min) {

@@ -9,53 +9,53 @@ namespace camb {
 
 extern "C" {
 
-diopiError_t nonzeroCount(diopiContextHandle_t ctx, DiopiTensor input_tensor, DiopiTensor* num_true) {
+diopiError_t nonzeroCount(diopiContextHandle_t ctx, DiopiTensor inputTensor, DiopiTensor* numTrue) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    CnnlTensorDesc inputDesc(input_tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     std::vector<int64_t> shape = {1};
-    *num_true = requiresTensor(ctx, shape, diopi_dtype_int32);
-    CnnlTensorDesc num_trueDesc(*num_true, CNNL_LAYOUT_ARRAY);
+    *numTrue = requiresTensor(ctx, shape, diopi_dtype_int32);
+    CnnlTensorDesc numTrueDesc(*numTrue, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlNumTrue_v2(handle, inputDesc.get(), input_tensor.data(), num_trueDesc.get(), num_true->data()));
+    DIOPI_CALLCNNL(cnnlNumTrue_v2(handle, inputDesc.get(), inputTensor.data(), numTrueDesc.get(), numTrue->data()));
     return diopiSuccess;
 }
 
 diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    DiopiTensor input_tensor(input);
-    if (DiopiDataType::isInteger(input_tensor.dtype())) {
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_int32));
-    } else if (input_tensor.dtype() == diopi_dtype_float64) {
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor, diopi_dtype_float32));
+    DiopiTensor inputTensor(input);
+    if (DiopiDataType::isInteger(inputTensor.dtype())) {
+        DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_int32));
+    } else if (inputTensor.dtype() == diopi_dtype_float64) {
+        DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
     }
-    CnnlTensorDesc inputDesc(input_tensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
 
-    DiopiTensor num_true;
-    nonzeroCount(ctx, input_tensor, &num_true);
-    CnnlTensorDesc num_trueDesc(num_true, CNNL_LAYOUT_ARRAY);
+    DiopiTensor numTrue;
+    nonzeroCount(ctx, inputTensor, &numTrue);
+    CnnlTensorDesc numTrueDesc(numTrue, CNNL_LAYOUT_ARRAY);
 
-    size_t workspace_size(0);
-    DIOPI_CALLCNNL(cnnlGetWhereWorkspaceSize(handle, num_trueDesc.get(), &workspace_size));
+    size_t workspaceSize(0);
+    DIOPI_CALLCNNL(cnnlGetWhereWorkspaceSize(handle, numTrueDesc.get(), &workspaceSize));
     void* workspace = nullptr;
-    if (0 != workspace_size) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
+    if (0 != workspaceSize) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
     syncStreamInCtx(ctx);
     int32_t count = 0;
-    cnrtMemcpy(&count, num_true.data(), sizeof(int32_t), CNRT_MEM_TRANS_DIR_DEV2HOST);
+    cnrtMemcpy(&count, numTrue.data(), sizeof(int32_t), CNRT_MEM_TRANS_DIR_DEV2HOST);
 
     std::vector<int64_t> shape(2);
     shape[0] = count;
-    shape[1] = input_tensor.dim();
-    auto out_tensor = requiresTensor(ctx, shape, diopi_dtype_int32);
-    CnnlTensorDesc outDesc(out_tensor, CNNL_LAYOUT_ARRAY);
+    shape[1] = inputTensor.dim();
+    auto outTensor = requiresTensor(ctx, shape, diopi_dtype_int32);
+    CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
 
     DIOPI_CALLCNNL(cnnlWhere_v2(
-        handle, inputDesc.get(), input_tensor.data(), num_trueDesc.get(), num_true.data(), false, workspace, workspace_size, outDesc.get(), out_tensor.data()));
-    *out = diopiTensorHandle_t(out_tensor);
+        handle, inputDesc.get(), inputTensor.data(), numTrueDesc.get(), numTrue.data(), false, workspace, workspaceSize, outDesc.get(), outTensor.data()));
+    *out = diopiTensorHandle_t(outTensor);
     return diopiSuccess;
 }
 
