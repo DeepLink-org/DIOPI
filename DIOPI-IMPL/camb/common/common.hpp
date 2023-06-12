@@ -11,10 +11,10 @@
 #include <vector>
 
 #include "../cnnl_helper.hpp"
+#include "debug.hpp"
 
 namespace impl {
 namespace camb {
-
 
 diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& src, diopiDtype_t destDtype);
 
@@ -32,11 +32,11 @@ diopiError_t contiguous(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryForma
 
 diopiError_t contiguous(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryFormat memoryFormat, cnnlTensorLayout_t layoutIn, cnnlTensorLayout_t layoutOut);
 
-template<typename T1 = double, typename T2 = double, typename T3 = double>
+template <typename T1 = double, typename T2 = double, typename T3 = double>
 diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor other, DiopiTensor out, cnnlOpTensorDesc_t opType, T1 alpha1 = 1.0,
-                            T2 alpha2 = 1.0, T3 beta = 0.0);
+                          T2 alpha2 = 1.0, T3 beta = 0.0);
 
-diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiTensor& outTensor);
+diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiTensor& outTensor, MemoryFormat memoryFormat = MemoryFormat::Preserve);
 
 }  // namespace camb
 }  // namespace impl

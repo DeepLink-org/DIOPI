@@ -19,8 +19,8 @@
 namespace impl {
 namespace camb {
 
-extern "C" diopiError_t
-diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha) {
+extern "C" diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
+                                 const diopiScalar_t* alpha) {
     DiopiTensor trInput(input);
     DiopiTensor trOtherOrigin(other);
     DiopiTensor trOther(other);
@@ -51,14 +51,14 @@ diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHand
     std::unique_ptr<void, void (*)(void*)> pBetaIn(malloc(4), free);
     if (CnnlDataType::isInteger(dtype)) {
         *reinterpret_cast<int32_t*>(pBetaIn.get()) = 0;
-        if (alpha->stype <= 7) {
+        if (DiopiDataType::isInteger(alpha->stype)) {
             *reinterpret_cast<int32_t*>(pAlphaIn.get()) = static_cast<int32_t>(alpha->ival);
         } else {
             *reinterpret_cast<int32_t*>(pAlphaIn.get()) = static_cast<int32_t>(static_cast<float>(alpha->fval));
         }
     } else {
         *reinterpret_cast<float*>(pBetaIn.get()) = 0.0f;
-        if (alpha->stype <= 7) {
+        if (DiopiDataType::isInteger(alpha->stype)) {
             *reinterpret_cast<float*>(pAlphaIn.get()) = static_cast<float>(static_cast<int32_t>(alpha->ival));
         } else {
             *reinterpret_cast<float*>(pAlphaIn.get()) = static_cast<float>(alpha->fval);
@@ -93,18 +93,15 @@ extern "C" diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_
     return diopiSuccess;
 }
 
-extern "C" diopiError_t
-diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
+extern "C" diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
+                                       const diopiScalar_t* alpha) {
     DiopiTensor trOther;
     makeTensorFromScalar(ctx, other, trOther);
     DIOPI_CALL(diopiAdd(ctx, out, input, static_cast<diopiTensorHandle_t>(trOther), alpha));
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx,
-                                                    diopiTensorHandle_t input,
-                                                    const diopiScalar_t* other,
-                                                    const diopiScalar_t* alpha) {
+extern "C" diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
     diopiAddScalar(ctx, input, input, other, alpha);
     return diopiSuccess;
 }

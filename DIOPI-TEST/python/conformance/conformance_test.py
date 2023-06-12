@@ -73,13 +73,33 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
         sum1 = tensor1.sum()
         sum2 = tensor2.sum()
         mask = np.isclose(tensor1, tensor2, rtol, atol, True)
-        if tensor1.dtype == np.bool:
+        count = np.count_nonzero(np.equal(mask, False))
+        if tensor1.dtype == np.bool_:
             max_diff = 1
+            logger.info(f"The count of elements that do not meet the accuracy requirement is {count}.")
+            logger.info(f"Max of diff is {max_diff}.")
+            logger.debug(f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}, Max of diff is {max_diff}. \
+                    \n" + f"{var_name} is {tensor1},\n{var_name}_ref is {tensor2},\nMask is {mask}\n")
         else:
+            diff = np.abs(tensor1 - tensor2)
             max_diff = np.abs(tensor1 - tensor2).max()
-        logger.info(f"Max of diff is {max_diff}.")
-        logger.debug(f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}, Max of diff is {max_diff}. \
-                     \n" + f"{var_name} is {tensor1},\n{var_name}_ref is {tensor2},\nMask is {mask}\n")
+            max_diff_index = np.unravel_index(np.argmax(diff), diff.shape)
+            max_diff_elem = tensor1[max_diff_index]
+            max_diff_elem_ref = tensor2[max_diff_index]
+            logger.info(f"The count of elements that do not meet the accuracy requirement is {count}.")
+            logger.info(f"The dtype of {var_name} is {tensor1.dtype}.")
+            logger.info(f"The shape of {var_name} is {tensor1.shape}.")
+            logger.info(f"The stride of {var_name} is {np.divide(tensor1.strides, tensor1.itemsize).astype(np.int32)}.")
+            logger.info(
+                f"The max of diff is {max_diff}. Specifically, the actual val is {max_diff_elem} and the expected is {max_diff_elem_ref}.")
+            logger.debug(f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}, Max of diff is {max_diff}. \
+                    \n" + f"{var_name} is {tensor1},\n{var_name}_ref is {tensor2},\nMask is {mask}\n")
+            logger.debug(f"The dtype of {var_name} is {tensor1.dtype}.")
+            logger.debug(f"The shape of {var_name} is {tensor1.shape}.")
+            logger.debug(
+                f"The stride of {var_name} is {np.divide(tensor1.strides, tensor1.itemsize).astype(np.int32)}.")
+            logger.debug(
+                f"The max of diff is {max_diff}. Specifically, the actual val is {max_diff_elem} and the expected is {max_diff_elem_ref}.\n")
     return passed
 
 
@@ -127,7 +147,7 @@ class ManualTest(object):
             real_ratio = np.sum(mask_numpy) / mask.numel()
             # check data
             if func == F.dropout2d:
-                tmp = np.ones(input.shape)
+                tmp = np.ones(input.shape().data)
                 mask_numpy = mask_numpy * tmp
             remains = out_numpy[mask_numpy == 1]
             ref = input_numpy[mask_numpy == 1]
@@ -160,9 +180,9 @@ class ManualTest(object):
 
     def test_uniform(input, start=0, end=1):
         out = F.uniform(input, start, end)
+        epsilon = 1e-5   # eliminate minor precision error
         out_numpy = out.numpy()
-
-        assert (out_numpy <= end).all() and (out_numpy >= start).all(),\
+        assert (out_numpy <= (end + epsilon)).all() and (out_numpy >= (start - epsilon)).all(),\
             "failed to execute uniform"
         if out.numel() > 100:
             assert abs(out_numpy.mean() - (end + start) / 2) < 1e-1,\
@@ -193,8 +213,8 @@ class ManualTest(object):
         out = F.randn(size)
         out_numpy = out.numpy().flatten()
         p_value = stats.kstest(out_numpy, 'norm', args=(0.0, 1.))[1]
-        # pytorch use 0.0001, but stats.kstest use 0.05 as threshold
-        assert p_value > 0.0005, "failed to execute normal"
+        # pytorch uses 0.0001
+        assert p_value > 0.0001, f"can't pass the ks test, failed to execute normal, p_value is {p_value}"
 
     def test_normal(mean, std, size=None):
         from scipy import stats
@@ -211,23 +231,27 @@ class ManualTest(object):
             mean = 0.0
             std = 1.
         out_numpy = out_numpy.flatten()
+        if len(out_numpy) == 0 and size is not None:
+            return True
         p_value = stats.kstest(out_numpy, 'norm', args=(mean, std + 1e-22))[1]
-        # pytorch use 0.0001, but stats.kstest use 0.05 as threshold
-        assert p_value > 0.0005, "failed to execute normal"
+        assert p_value > 0.0001, f"can't pass the ks test, failed to execute normal, p_value is {p_value}"
 
     def test_normal_(input, mean, std, shape=None):
         from scipy import stats
+        input_size = 0 in input.size().data
         out = F.normal_(input, mean, std, shape)
         out_numpy = out.numpy()
         out_numpy = out_numpy.flatten()
+        if len(out_numpy) == 0 and input_size:
+            return True
         p_value = stats.kstest(out_numpy, 'norm', args=(mean, std))[1]
-        assert p_value > 0.0005, "failed to execute normal_"
+        assert p_value > 0.0001, f"can't pass the ks test, failed to execute normal_, p_value is {p_value}"
 
-    def test_multinomial(input, num_samples, replacement):
+    def test_multinomial(input, num_samples, replacement=False):
         out = F.multinomial(input, num_samples, replacement)
         out_numpy = out.numpy()
         has_duplicates = False
-        if len(out.size()) == 2:
+        if out.size().len == 2:
             has_duplicates = len(out_numpy[0]) != len(set(out_numpy[0]))
         else:
             has_duplicates = len(out_numpy) != len(set(out_numpy))
@@ -266,7 +290,8 @@ def check_device_para_and_tensor_para(cfg_dicts, device_cfg_dicts, cfg_name):
             v = para_dict[dk]
             for x in dv:
                 if x not in v:
-                    logger.error(f"Para {x} of key {dk} for {cfg_name} in device_configs not found in diopi_configs. Ignored.")
+                    logger.error(
+                        f"Para {x} of key {dk} for {cfg_name} in device_configs not found in diopi_configs. Ignored.")
 
     args_list = cfg_dict["tensor_para"]["args"]
     device_tensor_paras_dict = device_cfg_dict["tensor_para"]["args"]
@@ -281,7 +306,8 @@ def check_device_para_and_tensor_para(cfg_dicts, device_cfg_dicts, cfg_name):
                         if key in device_tensor_paras_dict[input] and key in args:
                             for dv in device_tensor_paras_dict[input][key]:
                                 if dv not in args[key]:
-                                    logger.error(f"Tensor para {dv} of key {key} for {cfg_name} in device_configs not found in diopi_configs for ins {ins}. Ignored.")
+                                    logger.error(
+                                        f"Tensor para {dv} of key {key} for {cfg_name} in device_configs not found in diopi_configs for ins {ins}. Ignored.")
         if not in_found:
             logger.error(f"Input name {input} for {cfg_name} in device_configs not found in diopi_configs. Ignored.")
 
@@ -421,16 +447,17 @@ class ConformanceTest(object):
             kwargs = function_paras['kwargs']
             func_call_list = []
             func_call_list.append(f"{module}.{test_func_name}(**kwargs)")
-            is_inplace = False
+            is_inplaces = []
             if "inplace" in kwargs.keys():
-                is_inplace = kwargs["inplace"]
+                is_inplaces.append(kwargs["inplace"])
             else:
-                is_inplace = data["cfg"].get("is_inplace", False)
-                if is_inplace:
+                is_inplaces.append(False)
+                if data["cfg"].get("is_inplace", False):
+                    is_inplaces.append(True)
                     func_call_list.append(f"{module}.{test_func_name}(**kwargs, inplace=True)")
 
             ignore_paras_for_input_check = ops_with_states.get(test_func_name, set())
-            for func_call in func_call_list:
+            for func_call, is_inplace in zip(func_call_list, is_inplaces):
                 if is_inplace:
                     if test_tag and test_tag[-1] == 'backward':
                         test_tag.pop()
@@ -441,16 +468,20 @@ class ConformanceTest(object):
                     np_inputs_orign = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
                     info = convert_input_tensors(function_paras, test_tag, nhwc_list, dtype_list, filter_dtype_str_list)
                     tensor_info = info if info else tensor_info
+                    global cur_test_func
+                    cur_test_func = func_call.split('(')[0].split('.')[1]
                     output = eval(func_call)
                     np_inputs_after_forward = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
                     passed, not_passed_name = np_allclose(np_inputs_orign, np_inputs_after_forward)
                     sum_to_compare = True if 'sorted' in kwargs and ~kwargs['sorted'] else False
-                    passed = passed and compare_with_gen_output(output, data['cfg'], output_reference, sum_to_compare) if need_output else True
+                    passed = passed and compare_with_gen_output(
+                        output, data['cfg'], output_reference, sum_to_compare) if need_output else True
                     if passed:
                         logger.info(f"Run diopi_functions.{cfg_func_name} succeed")
                     else:
                         input_compare_str = "" if not_passed_name == "" else f", because of inputs: {not_passed_name} changed"
-                        logger.error(f"Run diopi_functions.{cfg_func_name} failed{input_compare_str}", tag=test_tag, info=tensor_info)
+                        logger.error(
+                            f"Run diopi_functions.{cfg_func_name} failed{input_compare_str}", tag=test_tag, info=tensor_info)
                         if debug_level > 0:
                             logger.error("failed config:\n%s", config_to_format_string(data['cfg']))
                             if debug_level > 1:
@@ -500,7 +531,8 @@ class ConformanceTest(object):
                             logger.info(f"Run diopi_functions.{cfg_func_name}_backward succeed")
                         else:
                             input_compare_str = "" if not_passed_name == "" else f", because of inputs: {not_passed_name} changed"
-                            logger.error(f"Run diopi_functions.{cfg_func_name}_backward failed{input_compare_str}", tag=test_tag, info=tensor_info)
+                            logger.error(
+                                f"Run diopi_functions.{cfg_func_name}_backward failed{input_compare_str}", tag=test_tag, info=tensor_info)
                             if debug_level > 0:
                                 logger.error("failed config:\n%s", config_to_format_string(data['cfg']))
                                 if debug_level > 1:

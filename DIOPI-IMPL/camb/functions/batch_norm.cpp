@@ -8,6 +8,7 @@
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
+
 namespace impl {
 namespace camb {
 
@@ -26,6 +27,10 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     DiopiTensor runningVarTr(runningVar);
     DiopiTensor outputTr(out);
 
+    DiopiTensor runningMeanTrOrigin(runningMean);
+    DiopiTensor runningVarTrOrigin(runningVar);
+
+    DIOPI_CHECK(inputTr.shape().size() >= 2, "input's dim should be greater than 2.")
     /* Some basic check */
     if (runningMeanTr.defined() && runningVarTr.defined()) {
         DIOPI_CHECK(runningMeanTr.dtype() == runningVarTr.dtype(), "running_mean and running_var need to have the same data types");
@@ -33,6 +38,17 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     auto dim = inputTr.dim();
     DIOPI_CHECK(dim >= 2 && dim <= 5, "Input dim is out of range");
     DIOPI_CHECK(dim == outputTr.dim(), "Input dim != out dim");
+
+    if (!weightTr.defined()) {
+        diopiScalar_t val{diopi_dtype_float32, {1.0f}};
+        weightTr = requiresTensor(ctx, {inputTr.shape()[1]}, inputTr.dtype());
+        DIOPI_CALL(diopiFill(ctx, weightTr.tensorHandle(), &val))
+    }
+    if (!biasTr.defined()) {
+        diopiScalar_t val{diopi_dtype_float32, {0.0f}};
+        biasTr = requiresTensor(ctx, {inputTr.shape()[1]}, inputTr.dtype());
+        DIOPI_CALL(diopiFill(ctx, biasTr.tensorHandle(), &val))
+    }
 
     if (3 == dim) {
         inputTr.unsqueeze(3);
@@ -122,6 +138,8 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     DIOPI_CALL(contiguous(ctx, outputTmpTr, MemoryFormat::Contiguous));
     // Copy back to origin
     DIOPI_CALL(diopiCopyInp(ctx, outputTmpTr.tensorHandle(), outputTr.tensorHandle()));
+    DIOPI_CALL(diopiCopyInp(ctx, runningMeanTr.tensorHandle(), runningMeanTrOrigin.tensorHandle()));
+    DIOPI_CALL(diopiCopyInp(ctx, runningVarTr.tensorHandle(), runningVarTrOrigin.tensorHandle()));
 
     return diopiSuccess;
 }

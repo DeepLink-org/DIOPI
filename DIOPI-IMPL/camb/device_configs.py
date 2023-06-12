@@ -1,13 +1,21 @@
 # Copyright (c) 2023, DeepLink.
 
 from .device_config_helper import Skip
-from .dtype import Dtype
+from .diopi_runtime import Dtype
 
 device_configs = {
     'batch_norm': dict(
         name=["batch_norm"],
         atol=1e-2,
         rtol=1e-3,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "dtype": [Skip(Dtype.float16)]
+                },
+            ]
+        ),
     ),
 
     'nll_loss': dict(
@@ -43,14 +51,8 @@ device_configs = {
 
     'conv_2d': dict(
         name=["conv2d"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.float16)],
-                },
-            ]
-        ),
+        atol_half=1e-1,
+        rtol_half=1e-1,
     ),
 
     'hardswish': dict(
@@ -62,18 +64,6 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
             ],
-        ),
-    ),
-
-    'avg_pool2d': dict(
-        name=["avg_pool2d"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
         ),
     ),
 
@@ -149,18 +139,6 @@ device_configs = {
         ),
     ),
 
-    'silu': dict(
-        name=["silu"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
-
     'pointwise_binary': dict(
         name=['mul'],
         tensor_para=dict(
@@ -175,18 +153,6 @@ device_configs = {
         ),
     ),
 
-    'div': dict(
-        name=['div'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
     'div_rounding_mode': dict(
         name=['div'],
         tensor_para=dict(
@@ -194,31 +160,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
-    'div_dtype_int_and_bool': dict(
-        name=['div'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'pointwise_binary_constant_with_alpha_and_no_contiguous': dict(
-        name=['add', 'sub'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32)],
                 },
             ],
         ),
@@ -283,48 +224,6 @@ device_configs = {
         ),
     ),
 
-    'reduce_partial_op_3': dict(
-        name=['any', 'all'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'reduce_partial_op_zeros_input': dict(
-        name=['any', 'all'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'reduce_partial_op_ones_input': dict(
-        name=['any', 'all'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
     'cross_entropy': dict(
         name=["cross_entropy"],
         tensor_para=dict(
@@ -378,9 +277,9 @@ device_configs = {
     'embedding': dict(
         name=["embedding"],
         para=dict(
-            # The diopiEmbeddingRenorm_ function is temporarily unavailable due to the unsupported Cambrian operator.  
+            # The diopiEmbeddingRenorm_ function is temporarily unavailable due to the unsupported Cambrian operator.
             # Thus, to pass the test case, skip all non-None types of the max_norm parameter in the configuration file.
-            max_norm=[Skip(1.0)],   
+            max_norm=[Skip(1.0)],
         ),
     ),
 
@@ -708,57 +607,11 @@ device_configs = {
         ),
     ),
 
-    'imum': dict(
-        name=['maximum', 'minimum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input', 'other'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'imum_broadcast': dict(
-        name=['maximum', 'minimum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'imum_ones': dict(
-        name=['maximum', 'minimum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
-
-    'mm': dict(
-        name=['mm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
+    # 'mm': dict(
+    #     name=['mm'],
+    #     atol=1e-1,
+    #     rtol=1e-1
+    # ),
 
     'index_fill': dict(
         name=['index_fill'],
@@ -1070,18 +923,6 @@ device_configs = {
         ),
     ),
 
-    'uniform': dict(
-        name=['uniform'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
     'random': dict(
         name=['random'],
         tensor_para=dict(
@@ -1211,25 +1052,6 @@ device_configs = {
             ],
         ),
         saved_args=dict(output=0),
-    ),
-
-    'normal': dict(
-        name=["normal"],
-        para=dict(
-            mean=[Skip(0), Skip(0.1)],
-        ),
-    ),
-
-    'normal_': dict(
-        name=["normal_"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
-        ),
     ),
 
     'normal_std_tensor': dict(

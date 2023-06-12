@@ -1,5 +1,5 @@
 from ...config import Genfunc
-from ...dtype import Dtype
+from ...diopi_runtime import Dtype
 
 yolov3_config = {
     'conv2d': dict(
@@ -57,7 +57,7 @@ yolov3_config = {
                     "ins": ["running_var"],
                     "shape": [(32,), (64,), (32,), (128,), (64,), (256,), (128,), (512,), (256,), (1024,), (512,), (512,), (1024,), (256,), (256,), (512,), (128,), (128,), (256,), (32,), (64,), (32,), (128,), (64,), (256,), (128,), (512,), (256,), (1024,), (512,), (256,), (128,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
                 {
                     "ins": ["weight"],
@@ -752,7 +752,7 @@ yolov3_config = {
                     "ins": ["input"],
                     "shape": [(1,), (4,), (10,), (2,), (3,)],
                     "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),
