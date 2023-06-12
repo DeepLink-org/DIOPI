@@ -3657,13 +3657,13 @@ def sgn(input, inplace=False) -> Tensor:
     if inplace:
         call += "Inp"
         func = check_function(call)
-        ret = func(input.context_handle, input.tensor_handle)
+        ret = func(input.context(), input)
         check_returncode(ret)
         return input
     else:
         out = Tensor(input.size(), input.get_dtype())
         func = check_function(call)
-        ret = func(input.context_handle, out.tensor_handle, input.tensor_handle)
+        ret = func(input.context(), out, input)
         check_returncode(ret)
         return out
 
