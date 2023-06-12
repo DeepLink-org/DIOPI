@@ -472,7 +472,7 @@ def matmul(input, other) -> Tensor:
         max_dim = len(sizeI) if len(sizeI) > len(sizeO) else len(sizeO)
         sizeI = [1] * (max_dim - len(sizeI)) + sizeI
         sizeO = [1] * (max_dim - len(sizeO)) + sizeO
-        out_size = [sizeI[i] if sizeI[i] > sizeO[i] else sizeO[i] for i in range(max_dim-2)] + [sizeI[-2], sizeO[-1]]
+        out_size = [sizeI[i] if sizeI[i] > sizeO[i] else sizeO[i] for i in range(max_dim - 2)] + [sizeI[-2], sizeO[-1]]
         out = Tensor(out_size, input.get_dtype())
     func = check_function("diopiMatmul")
     ret = func(input.context(), out,
