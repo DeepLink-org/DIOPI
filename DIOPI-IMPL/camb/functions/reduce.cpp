@@ -189,7 +189,11 @@ diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     DiopiTensor outputTr(out);
     auto indexTr = requiresTensor(ctx, {1}, diopi_dtype_int32);
 
-    DIOPI_CALL(reduceDimImpl(ctx, outputTr, indexTr, inputTr, {*dim}, false, CNNL_REDUCE_MUL));
+    if (dim) {
+        reduceDimImpl(ctx, outputTr, indexTr, inputTr, {*dim}, false, CNNL_REDUCE_MUL);
+    } else {
+        reduceImpl(ctx, outputTr, indexTr, inputTr, CNNL_REDUCE_MUL);
+    }
     return diopiSuccess;
 }
 
@@ -258,7 +262,11 @@ diopiError_t diopiAll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     auto outputTr = DiopiTensor(out);
     auto indexTr = requiresTensor(ctx, {1}, diopi_dtype_int32);
 
-    reduceDimImpl(ctx, outputTr, indexTr, inputTr, {*dim}, false, CNNL_REDUCE_AND);
+    if (dim) {
+        reduceDimImpl(ctx, outputTr, indexTr, inputTr, {*dim}, false, CNNL_REDUCE_AND);
+    } else {
+        reduceImpl(ctx, outputTr, indexTr, inputTr, CNNL_REDUCE_AND);
+    }
 
     return diopiSuccess;
 }
@@ -268,7 +276,11 @@ diopiError_t diopiAny(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     auto outputTr = DiopiTensor(out);
     auto indexTr = requiresTensor(ctx, {1}, diopi_dtype_int32);
 
-    reduceDimImpl(ctx, outputTr, indexTr, inputTr, {*dim}, false, CNNL_REDUCE_OR);
+    if (dim) {
+        reduceDimImpl(ctx, outputTr, indexTr, inputTr, {*dim}, false, CNNL_REDUCE_OR);
+    } else {
+        reduceImpl(ctx, outputTr, indexTr, inputTr, CNNL_REDUCE_OR);
+    }
 
     return diopiSuccess;
 }
