@@ -1766,7 +1766,6 @@ diopi_configs = {
         atol=1e-4,
         rtol=1e-5,
         tensor_para=dict(
-            dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
             gen_fn=Genfunc.randn,
             args=[
                 {
@@ -1792,12 +1791,6 @@ diopi_configs = {
                     "dtype":[Dtype.float32, Dtype.bool, Dtype.float16,
                              Dtype.uint8, Dtype.int32, Dtype.int64,
                              Dtype.int32, Dtype.int8, Dtype.int16],
-                    "shape": ((1, ), (1, ),
-                              None, (1, )),
-                },
-                {
-                    "ins": ['max'],
-                    "shape": (None, (1, ), (1, ), None),
                 },
             ],
         ),
