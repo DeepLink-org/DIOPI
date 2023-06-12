@@ -1161,9 +1161,9 @@ def topk(input, k, dim=-1, largest=True, sorted=True):
 
 def transpose(input, dim0, dim1) -> Tensor:
     sizeI = input.size().data
-    sizeI[dim0], sizeI[dim1] = sizeI[dim1], sizeI[dim0]
+    if len(sizeI) > 0:
+        sizeI[dim0], sizeI[dim1] = sizeI[dim1], sizeI[dim0]
     out = Tensor(sizeI, input.get_dtype())
-
     func = check_function("diopiTranspose")
     ret = func(input.context(), out,
                input, dim0, dim1)
