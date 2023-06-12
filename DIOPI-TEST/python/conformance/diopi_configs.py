@@ -62,8 +62,8 @@ diopi_configs = {
         is_inplace=True,
         dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
         para=dict(
-            beta=[1, 0.5, 0.1, 0.2],
-            alpha=[0.1, 0.2, 0.5, -2.1],
+            beta=[1, 0.5, -0.1, False],
+            alpha=[0.1, 2, True, -2.1],
         ),
         tensor_para=dict(
             args=[
@@ -92,11 +92,11 @@ diopi_configs = {
         dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
         para=dict(
             beta=[1, -0.34, 0,
-                  2, 0, -1.33,
+                  True, 0, -1.33,
                   1, 0.5, 0.1,
                   0, -0.3],
             alpha=[1, 1.33, 2,
-                   0, -2, 3.2,
+                   False, -2, 3.2,
                    0.1, 0.2, -0.5,
                    -1.2, 0],
         ),
