@@ -231,14 +231,19 @@ class ManualTest(object):
             mean = 0.0
             std = 1.
         out_numpy = out_numpy.flatten()
+        if len(out_numpy) == 0 and size is not None:
+            return True
         p_value = stats.kstest(out_numpy, 'norm', args=(mean, std + 1e-22))[1]
         assert p_value > 0.0001, f"can't pass the ks test, failed to execute normal, p_value is {p_value}"
 
     def test_normal_(input, mean, std, shape=None):
         from scipy import stats
+        input_size = 0 in input.size().data
         out = F.normal_(input, mean, std, shape)
         out_numpy = out.numpy()
         out_numpy = out_numpy.flatten()
+        if len(out_numpy) == 0 and input_size:
+            return True
         p_value = stats.kstest(out_numpy, 'norm', args=(mean, std))[1]
         assert p_value > 0.0001, f"can't pass the ks test, failed to execute normal_, p_value is {p_value}"
 
