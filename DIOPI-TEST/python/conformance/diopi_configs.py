@@ -500,7 +500,8 @@ diopi_configs = {
     'pointwise_op_mask': dict(
         name=['logical_not', 'bitwise_not'],
         interface=['torch'],
-        dtype=[Dtype.int16, Dtype.int32, Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
+        dtype=[Dtype.int16, Dtype.int32, Dtype.int64,
+               Dtype.uint8, Dtype.int8, Dtype.bool],
         tensor_para=dict(
             gen_fn=dict(fn=Genfunc.randint, low=0, high=2),
             args=[
@@ -607,7 +608,8 @@ diopi_configs = {
     'tanh_not_float': dict(
         name=['tanh'],
         interface=['torch'],
-        dtype=[Dtype.int16, Dtype.int32, Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
+        dtype=[Dtype.int16, Dtype.int32, Dtype.int64,
+               Dtype.uint8, Dtype.int8, Dtype.bool],
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
@@ -875,7 +877,8 @@ diopi_configs = {
               'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
         interface=['torch'],
         is_inplace=True,
-        dtype=[Dtype.float64, Dtype.float32, Dtype.float16, Dtype.int64, Dtype.int32, Dtype.int16, Dtype.int8, Dtype.uint8],
+        dtype=[Dtype.float64, Dtype.float32, Dtype.float16, Dtype.int64,
+               Dtype.int32, Dtype.int16, Dtype.int8, Dtype.uint8],
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
@@ -1036,7 +1039,8 @@ diopi_configs = {
     'div_dtype_int_and_bool': dict(
         name=['div'],
         interface=['torch'],
-        dtype=[Dtype.int8, Dtype.int16, Dtype.int32, Dtype.int64, Dtype.uint8, Dtype.bool],
+        dtype=[Dtype.int8, Dtype.int16, Dtype.int32,
+               Dtype.int64, Dtype.uint8, Dtype.bool],
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
@@ -2131,7 +2135,8 @@ diopi_configs = {
         para=dict(
             max_norm=[1.0, 5, 2.0, 10, 8],
             norm_type=[2.0, 3.0, 2.0, 2.0, float("inf")],
-            error_if_nonfinite=[True, False, False, True, True],  # 1.7 not support
+            error_if_nonfinite=[True, False, False,
+                                True, True],  # 1.7 not support
         ),
         tensor_para=dict(
             args=[
@@ -2216,7 +2221,8 @@ diopi_configs = {
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            split_size_or_sections=[[1, 1, 1, 1], [15200, 3800, 950, 247, 70], 3],
+            split_size_or_sections=[[1, 1, 1, 1],
+                                    [15200, 3800, 950, 247, 70], 3],
             dim=[-1, 0, 1]
         ),
         tensor_para=dict(
@@ -2240,7 +2246,8 @@ diopi_configs = {
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            split_size_or_sections=[[1, 1, 1, 1], [15200, 3800, 950, 247, 70], 3],
+            split_size_or_sections=[[1, 1, 1, 1],
+                                    [15200, 3800, 950, 247, 70], 3],
             dim=[-1, 0, 1]
         ),
         tensor_para=dict(
@@ -2621,7 +2628,8 @@ diopi_configs = {
         interface=["CustomizedTest"],
         dtype=[Dtype.float32, Dtype.float64],
         para=dict(
-            index=(slice(0, 3, 1), slice(0, 3, 1), slice(0, 4, 2), slice(-3, -2, 1)),
+            index=(slice(0, 3, 1), slice(0, 3, 1),
+                   slice(0, 4, 2), slice(-3, -2, 1)),
             dim=[0, 1, 2, 0],
         ),
         tensor_para=dict(
@@ -2729,7 +2737,8 @@ diopi_configs = {
         interface=["torch"],
         is_inplace=True,
         para=dict(
-            value=[-100, 0.0, float("-inf"), -100, 0.0, float("-inf"), 23.4, 5, float("nan")],
+            value=[-100, 0.0, float("-inf"), -100, 0.0,
+                   float("-inf"), 23.4, 5, float("nan")],
         ),
         tensor_para=dict(
             args=[
@@ -3022,7 +3031,8 @@ diopi_configs = {
                     "ins": ['x1'],
                     "requires_grad": [True],
                     "shape": ((5, 4), (2, 256, 256), (2, 16, 256), (5, 4, 256, 256),
-                              (3, 5, 4), (2, 256, 256), (3, 2, 16, 256), (5, 4, 26, 256),
+                              (3, 5, 4), (2, 256, 256), (3,
+                                                         2, 16, 256), (5, 4, 26, 256),
                               (5, 4), (2, 256, 256), (2, 16, 256), (5, 4, 256, 256),),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
@@ -3030,7 +3040,8 @@ diopi_configs = {
                 {
                     "ins": ['x2'],
                     "shape": ((3, 4), (2, 16, 256), (2, 26, 256), (2, 5, 4, 256, 256),
-                              (3, 4), (2, 16, 256), (2, 26, 256), (2, 5, 4, 256, 256),
+                              (3, 4), (2, 16, 256), (2, 26,
+                                                     256), (2, 5, 4, 256, 256),
                               (4, 3, 4), (2, 16, 256), (4, 2, 26, 256), (2, 5, 4, 256, 256),),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
@@ -3517,7 +3528,8 @@ diopi_configs = {
         name=['permute'],
         interface=['torch'],
         para=dict(
-            dims=[(0, 1, 3, 2, 4, 5), (2, 0, 1), (0, 2, 3, 1), (1, 0), (0, -2, -1), (0,), (0,)],
+            dims=[(0, 1, 3, 2, 4, 5), (2, 0, 1), (0, 2, 3, 1),
+                  (1, 0), (0, -2, -1), (0,), (0,)],
         ),
         tensor_para=dict(
             args=[
@@ -4191,7 +4203,7 @@ diopi_configs = {
             step=[13, 1, 1, 0.1, 1, 0.5],
         ),
     ),
-    
+
     'arange_default': dict(
         name=['arange'],
         interface=['torch'],
@@ -4361,9 +4373,12 @@ diopi_configs = {
         name=["interpolate"],
         dtype=[Dtype.float32, Dtype.float64, Dtype.float16],
         para=dict(
-            mode=['nearest', 'bilinear', 'nearest', 'bicubic', 'trilinear', 'linear', 'nearest', 'nearest'],
-            size=[(50, 76), (25, 38), (4, 224, 224), (64, 64), (4, 224, 112), (64, ), None, 32],
-            scale_factor=[None, None, None, None, None, None, (3.0, 3.0), None],
+            mode=['nearest', 'bilinear', 'nearest', 'bicubic',
+                  'trilinear', 'linear', 'nearest', 'nearest'],
+            size=[(50, 76), (25, 38), (4, 224, 224),
+                  (64, 64), (4, 224, 112), (64, ), None, 32],
+            scale_factor=[None, None, None, None,
+                          None, None, (3.0, 3.0), None],
             align_corners=[None, False, None, True, True, False, None, None],
             # recompute_scale_factor=[False, False, False, False, False, False, True, False]
 
