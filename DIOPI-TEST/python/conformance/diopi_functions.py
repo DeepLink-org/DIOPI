@@ -489,13 +489,7 @@ def matmul(input, other) -> Tensor:
 
 
 def clamp(input, min=None, max=None, inplace=False) -> Tensor:
-    assert min is not None or max is not None,\
-        "min and max can not be None in the meantime"
-    if max is None:
-        return clamp_min(input, min, inplace)
-    if min is None:
-        return clamp_max(input, max, inplace)
-
+    assert (min is not None or max is not None), "At least one of \'min\' or \'max\' must not be None"
     call = "diopiClamp"
     args = "input.context(), "
     if inplace:
@@ -505,15 +499,30 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
         out = raw_like(input)
         args = args + "out, "
 
-    if isinstance(min, Tensor):
-        assert (isinstance(max, Tensor)), 'min and max must have same type'
-        args += "input, min, max"
-    else:
-        assert (~isinstance(max, Tensor)), 'min and max must have same type'
-        call = call + 'Scalar'
-        min = Scalar(min)
-        max = Scalar(max)
-        args = args + "input, min, max"
+    if (max and min):
+        if isinstance(min, Tensor):
+            assert (isinstance(max, Tensor)), 'min and max must have same type'
+            args += "input, min, max"
+        elif isinstance(min, (int, float)):
+            assert (isinstance(max, (int, float))), 'min and max must have same type'
+            call = call + 'Scalar'
+            min = Scalar(min)
+            max = Scalar(max)
+            args = args + "input, min, max"
+    elif (max and not min):
+        if isinstance(max, Tensor):
+            args += "input, None, max"
+        if isinstance(max, (int, float)):
+            call = call + 'Scalar'
+            max = Scalar(max)
+            args = args + "input, None, max"
+    elif (min and not max):
+        if isinstance(min, Tensor):
+            args += "input, min, None"
+        if isinstance(min, (int, float)):
+            call = call + 'Scalar'
+            min = Scalar(min)
+            args = args + "input, min, None"
 
     func = check_function(call)
     ret = eval(f'func({args})')
@@ -3070,8 +3079,9 @@ def remainder(other, input=None, self=None):
 
 
 def ctc_loss(log_probs, targets, input_lengths, target_lengths, blank=0, reduction='mean', zero_infinity=False):
+    log_probs_ = log_softmax(log_probs, 2)
     sizeO = (1, )
-    sizeI = list(log_probs.size().data)
+    sizeI = list(log_probs_.size().data)
     reduction_mode = convert_reduction(reduction)
     max_target_length = int(max(target_lengths, 0)[0].numpy())
     max_target_length = 2 * max_target_length + 1
@@ -3083,7 +3093,7 @@ def ctc_loss(log_probs, targets, input_lengths, target_lengths, blank=0, reducti
 
     func = check_function("diopiCTCLoss")
     ret = func(log_probs.context(), out, neg_log_likelihood,
-               log_alpha, log_probs, targets, input_lengths,
+               log_alpha, log_probs_, targets, input_lengths,
                target_lengths, blank, reduction_mode, zero_infinity)
     check_returncode(ret)
     GLOBAL_STATE['ctc_loss_neg_log_likelihood'] = neg_log_likelihood
@@ -3093,17 +3103,18 @@ def ctc_loss(log_probs, targets, input_lengths, target_lengths, blank=0, reducti
 
 def ctc_loss_backward(log_probs, grad_outputs, targets, input_lengths, target_lengths, blank=0, reduction='mean', zero_infinity=False) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
-    grad_input = raw_like(log_probs)
+    log_probs_ = log_softmax(log_probs, 2)
+    grad_input = raw_like(log_probs_)
     neg_log_likelihood = GLOBAL_STATE.pop('ctc_loss_neg_log_likelihood')
     log_alpha = GLOBAL_STATE.pop('ctc_loss_log_alpha')
 
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiCTCLossBackward")
-    ret = func(log_probs.context(), grad_input, grad_outputs[0], log_probs,
+    ret = func(log_probs_.context(), grad_input, grad_outputs[0], log_probs_,
                targets, input_lengths, target_lengths, neg_log_likelihood,
                log_alpha, blank, reduction_mode, zero_infinity)
     check_returncode(ret)
-    return {"log_probs": grad_input}
+    return {"log_probs": log_softmax_backward(log_probs, [grad_input], log_probs_, 2)}
 
 
 def index_put(input, values, indices1, indices2=None, accumulate=False, inplace=False):
@@ -3639,3 +3650,19 @@ def lerp(input, end, weight) -> Tensor:
     ret = func(input.context(), out, input, end, weight)
     check_returncode(ret)
     return out
+
+
+def triu(input, diagonal=0, inplace=False) -> Tensor:
+    call = "diopiTriu"
+    if inplace:
+        call += "Inp"
+        func = check_function(call)
+        ret = func(input.context(), input, diagonal)
+        check_returncode(ret)
+        return input
+    else:
+        out = Tensor(input.size(), input.get_dtype())
+        func = check_function(call)
+        ret = func(input.context(), out, input, diagonal)
+        check_returncode(ret)
+        return out
