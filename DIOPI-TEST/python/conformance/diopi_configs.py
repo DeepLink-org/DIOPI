@@ -657,7 +657,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'neg_without_inplace_zero': dict(
         name=['neg'],
         interface=['torch'],
@@ -4518,7 +4518,7 @@ diopi_configs = {
             ]
         ),
     ),
-    
+
     # 'normalize': dict(
     #     name=["normalize"],
     #     para=dict(
@@ -4537,7 +4537,7 @@ diopi_configs = {
     #         ]
     #     )
     # ),
-    
+
     # 'normalize_p': dict(
     #     name=['normalize'],
     #     para=dict(
@@ -4627,7 +4627,7 @@ diopi_configs = {
             ]
         ),
     ),
-    
+
     # 'view_as_real': dict(
     #         name=['view_as_real'],
     #         interface=['torch'],
@@ -4644,7 +4644,7 @@ diopi_configs = {
     #             ],
     #         ),
     #     ),
-    
+
     # 'view_as_complex': dict(
     #         name=['view_as_complex'],
     #         interface=['torch'],
@@ -4661,7 +4661,7 @@ diopi_configs = {
     #             ],
     #         ),
     #     ),
-    
+
     'polar': dict(
         name=['polar'],
         interface=['torch'],
@@ -4684,7 +4684,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     # 'randn': dict(
     #     name=['randn'],
     #     no_output_ref=True,
@@ -4694,7 +4694,7 @@ diopi_configs = {
     #               (0,), (0, 16), (8, 0, 12)],
     #     ),
     # ),
-    
+
     'lerp': dict(
         name=['lerp'],
         interface=['torch'],
@@ -4720,7 +4720,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'lerp_tensor': dict(
         name=['lerp'],
         interface=['torch'],
