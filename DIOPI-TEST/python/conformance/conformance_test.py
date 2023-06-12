@@ -90,13 +90,16 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
             logger.info(f"The dtype of {var_name} is {tensor1.dtype}.")
             logger.info(f"The shape of {var_name} is {tensor1.shape}.")
             logger.info(f"The stride of {var_name} is {np.divide(tensor1.strides, tensor1.itemsize).astype(np.int32)}.")
-            logger.info(f"The max of diff is {max_diff}. Specifically, the actual val is {max_diff_elem} and the expected is {max_diff_elem_ref}.")
+            logger.info(
+                f"The max of diff is {max_diff}. Specifically, the actual val is {max_diff_elem} and the expected is {max_diff_elem_ref}.")
             logger.debug(f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}, Max of diff is {max_diff}. \
                     \n" + f"{var_name} is {tensor1},\n{var_name}_ref is {tensor2},\nMask is {mask}\n")
             logger.debug(f"The dtype of {var_name} is {tensor1.dtype}.")
             logger.debug(f"The shape of {var_name} is {tensor1.shape}.")
-            logger.debug(f"The stride of {var_name} is {np.divide(tensor1.strides, tensor1.itemsize).astype(np.int32)}.")
-            logger.debug(f"The max of diff is {max_diff}. Specifically, the actual val is {max_diff_elem} and the expected is {max_diff_elem_ref}.\n")
+            logger.debug(
+                f"The stride of {var_name} is {np.divide(tensor1.strides, tensor1.itemsize).astype(np.int32)}.")
+            logger.debug(
+                f"The max of diff is {max_diff}. Specifically, the actual val is {max_diff_elem} and the expected is {max_diff_elem_ref}.\n")
     return passed
 
 
@@ -179,7 +182,7 @@ class ManualTest(object):
         out = F.uniform(input, start, end)
         epsilon = 1e-5   # eliminate minor precision error
         out_numpy = out.numpy()
-        assert (out_numpy <= (end+epsilon)).all() and (out_numpy >= (start-epsilon)).all(),\
+        assert (out_numpy <= (end + epsilon)).all() and (out_numpy >= (start - epsilon)).all(),\
             "failed to execute uniform"
         if out.numel() > 100:
             assert abs(out_numpy.mean() - (end + start) / 2) < 1e-1,\
@@ -282,7 +285,8 @@ def check_device_para_and_tensor_para(cfg_dicts, device_cfg_dicts, cfg_name):
             v = para_dict[dk]
             for x in dv:
                 if x not in v:
-                    logger.error(f"Para {x} of key {dk} for {cfg_name} in device_configs not found in diopi_configs. Ignored.")
+                    logger.error(
+                        f"Para {x} of key {dk} for {cfg_name} in device_configs not found in diopi_configs. Ignored.")
 
     args_list = cfg_dict["tensor_para"]["args"]
     device_tensor_paras_dict = device_cfg_dict["tensor_para"]["args"]
@@ -297,7 +301,8 @@ def check_device_para_and_tensor_para(cfg_dicts, device_cfg_dicts, cfg_name):
                         if key in device_tensor_paras_dict[input] and key in args:
                             for dv in device_tensor_paras_dict[input][key]:
                                 if dv not in args[key]:
-                                    logger.error(f"Tensor para {dv} of key {key} for {cfg_name} in device_configs not found in diopi_configs for ins {ins}. Ignored.")
+                                    logger.error(
+                                        f"Tensor para {dv} of key {key} for {cfg_name} in device_configs not found in diopi_configs for ins {ins}. Ignored.")
         if not in_found:
             logger.error(f"Input name {input} for {cfg_name} in device_configs not found in diopi_configs. Ignored.")
 
@@ -464,12 +469,14 @@ class ConformanceTest(object):
                     np_inputs_after_forward = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
                     passed, not_passed_name = np_allclose(np_inputs_orign, np_inputs_after_forward)
                     sum_to_compare = True if 'sorted' in kwargs and ~kwargs['sorted'] else False
-                    passed = passed and compare_with_gen_output(output, data['cfg'], output_reference, sum_to_compare) if need_output else True
+                    passed = passed and compare_with_gen_output(
+                        output, data['cfg'], output_reference, sum_to_compare) if need_output else True
                     if passed:
                         logger.info(f"Run diopi_functions.{cfg_func_name} succeed")
                     else:
                         input_compare_str = "" if not_passed_name == "" else f", because of inputs: {not_passed_name} changed"
-                        logger.error(f"Run diopi_functions.{cfg_func_name} failed{input_compare_str}", tag=test_tag, info=tensor_info)
+                        logger.error(
+                            f"Run diopi_functions.{cfg_func_name} failed{input_compare_str}", tag=test_tag, info=tensor_info)
                         if debug_level > 0:
                             logger.error("failed config:\n%s", config_to_format_string(data['cfg']))
                             if debug_level > 1:
@@ -519,7 +526,8 @@ class ConformanceTest(object):
                             logger.info(f"Run diopi_functions.{cfg_func_name}_backward succeed")
                         else:
                             input_compare_str = "" if not_passed_name == "" else f", because of inputs: {not_passed_name} changed"
-                            logger.error(f"Run diopi_functions.{cfg_func_name}_backward failed{input_compare_str}", tag=test_tag, info=tensor_info)
+                            logger.error(
+                                f"Run diopi_functions.{cfg_func_name}_backward failed{input_compare_str}", tag=test_tag, info=tensor_info)
                             if debug_level > 0:
                                 logger.error("failed config:\n%s", config_to_format_string(data['cfg']))
                                 if debug_level > 1:
