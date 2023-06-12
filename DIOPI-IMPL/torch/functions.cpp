@@ -3291,14 +3291,8 @@ diopiError_t diopiCTCLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     auto atTarget = impl::aten::buildATen(targets);
     auto atInputLength = impl::aten::buildATen(input_lengths).to(at::Device(at::kCPU), at::kLong).contiguous();
     auto atTargetLength = impl::aten::buildATen(target_lengths).to(at::Device(at::kCPU), at::kLong).contiguous();
-    std::vector<int64_t> inputL;
-    std::vector<int64_t> targetL;
-    for (int i = 0; i < atInputLength.numel(); ++i) {
-        inputL.push_back(atInputLength.data_ptr<int64_t>()[i]);
-        targetL.push_back(atTargetLength.data_ptr<int64_t>()[i]);
-    }
-    at::IntArrayRef il(inputL);
-    at::IntArrayRef tl(targetL);
+    at::IntArrayRef il(atInputLength.data_ptr<int64_t>(), atInputLength.numel());
+    at::IntArrayRef tl(atTargetLength.data_ptr<int64_t>(), atTargetLength.numel());
     auto atOut = at::native::ctc_loss_gpu(atLogProbs, atTarget, il, tl, blank, zero_infinity);
     impl::aten::updateATen2Tensor(ctx, std::get<0>(atOut), neg_log_likelihood);
     impl::aten::updateATen2Tensor(ctx, std::get<1>(atOut), log_alpha);
@@ -3326,15 +3320,8 @@ diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto atTarget = impl::aten::buildATen(targets);
     auto atInputLength = impl::aten::buildATen(input_lengths).to(at::Device(at::kCPU), at::kLong).contiguous();
     auto atTargetLength = impl::aten::buildATen(target_lengths).to(at::Device(at::kCPU), at::kLong).contiguous();
-    std::vector<int64_t> inputL;
-    std::vector<int64_t> targetL;
-    for (int i = 0; i < atInputLength.numel(); ++i) {
-        inputL.push_back(atInputLength.data_ptr<int64_t>()[i]);
-        targetL.push_back(atTargetLength.data_ptr<int64_t>()[i]);
-    }
-    at::IntArrayRef il(inputL);
-    at::IntArrayRef tl(targetL);
-
+    at::IntArrayRef il(atInputLength.data_ptr<int64_t>(), atInputLength.numel());
+    at::IntArrayRef tl(atTargetLength.data_ptr<int64_t>(), atTargetLength.numel());
     int64_t batch_size = atLogProbs.size(1);
     std::vector<int64_t> expand_shape = {batch_size};
     at::IntArrayRef shape(expand_shape.data(), expand_shape.size());
