@@ -45,7 +45,8 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
             DIOPI_CHECK(indiceTensor.dim() > 0, "zero-dimensional tensor cannot be concatenated");
             DIOPI_CHECK(indiceTensor.dtype() == diopi_dtype_int32 || indiceTensor.dtype() == diopi_dtype_bool || indiceTensor.dtype() == diopi_dtype_uint8,
                         "indiceTensor's dtype should be `int`, `bool` or `uint8`");
-            DIOPI_CHECK(!(accumulate && indiceTensor.dtype() == diopi_dtype_bool), "when accumulate is true, and indices dtype is bool, the result is not corrected in camb");
+            DIOPI_CHECK(!(accumulate && indiceTensor.dtype() == diopi_dtype_bool),
+                        "when accumulate is true, and indices dtype is bool, the result is not corrected in camb");
             savedIndicesTensors.emplace_back(indiceTensor);
             indicesPtrList.emplace_back(indiceTensor.data());
             savedIndicesDescs[i].set(indiceTensor, layout);
