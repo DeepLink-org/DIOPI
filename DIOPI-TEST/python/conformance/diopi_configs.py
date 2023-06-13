@@ -292,7 +292,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'gelu_specific': dict(
         name=['gelu'],
         atol=1e-4,
@@ -2261,7 +2261,7 @@ diopi_configs = {
     ),
 
     'cat_diff_size': dict(
-        name=['cat',],
+        name=['cat'],
         interface=['torch'],
         atol=1e-4,
         rtol=1e-5,
@@ -2425,7 +2425,7 @@ diopi_configs = {
         name=['transpose'],
         interface=['torch'],
         para=dict(
-            dim0=[0, -1, 1, 1, -2, 0, 1, 0,],
+            dim0=[0, -1, 1, 1, -2, 0, 1, 0],
             dim1=[-1, -1, 2, -1, -1, -1, 0, 2],
         ),
         tensor_para=dict(

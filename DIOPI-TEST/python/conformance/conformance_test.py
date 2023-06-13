@@ -141,7 +141,7 @@ class ManualTest(object):
         name = 'dropout' if func == F.dropout else 'dropout2d'
         out_numpy = out.numpy()
         mask_numpy = mask.numpy()
-        
+
         rtol = 1e-2 if input_numpy.dtype == np.float16 else 1e-4
         atol = 1e-2 if input_numpy.dtype == np.float16 else 1e-5
 
