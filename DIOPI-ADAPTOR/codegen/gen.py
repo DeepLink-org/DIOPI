@@ -339,11 +339,7 @@ def autogen_cast_strategy():
 def memory_format_to_str(memory_format):
     if len(memory_format) == 0:
         return ''
-    default_format = ['NHWC', 'NCHW']
     memory_format = [format.strip(' ') for format in memory_format]
-    is_default = [format in default_format for format in memory_format] and len(memory_format) == len(default_format)
-    if len(memory_format) == 0 or is_default:
-        return ''
 
     formats = []
     for format in memory_format:
