@@ -952,7 +952,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'bitwise_op': dict(
         name=['bitwise_and', 'bitwise_or'],
         interface=['torch'],
@@ -3569,7 +3569,7 @@ diopi_configs = {
             ]
         ),
     ),
-    
+
     'index_fill_scalar_specific': dict(
         name=['index_fill'],
         interface=['torch'],
