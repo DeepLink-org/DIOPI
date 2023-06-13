@@ -107,6 +107,11 @@ public:
 class DiopiTensor final {
 public:
     DiopiTensor() = default;
+
+    // default shallow copy/assignment, it will not change the address of tensor_
+    DiopiTensor(const DiopiTensor&) = default; 
+    DiopiTensor& operator=(const DiopiTensor&) = default;
+
     explicit DiopiTensor(const diopiTensorHandle_t& tensor) : tensor_(tensor) {
         if (tensor_ != nullptr) {
             diopiSize_t diopiShape;
