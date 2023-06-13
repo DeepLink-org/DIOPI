@@ -1439,8 +1439,8 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((182,), (384, 128),
-                              (1, 242991, 2,),
+                    "shape": ((182, ), (384, 128),
+                              (1, 242991, 2),
                               (2, 4, 100, 152)),
                 },
                 {
@@ -3719,6 +3719,7 @@ diopi_configs = {
 
     'ctc_loss': dict(
         name=["ctc_loss"],
+        interface=['CustomizedTest'],
         atol=1e-4,
         rtol=1e-5,
         para=dict(
@@ -4192,6 +4193,14 @@ diopi_configs = {
         ),
     ),
 
+    'arange_default': dict(
+        name=['arange'],
+        interface=['torch'],
+        para=dict(
+            end=[5, 10, 4.0, 9.0],
+        ),
+    ),
+
     'randperm': dict(
         name=['randperm'],
         no_output_ref=True,
@@ -4538,8 +4547,8 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [(), (128,), (32, 8), (32, 8),
-                              (32, 8), (16, 64, 32)],
+                    "shape": [(), (128, 0), (32, 8), (32, 8),
+                              (0, 8), (16, 64, 32)],
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
             ]
@@ -4673,28 +4682,28 @@ diopi_configs = {
         ),
     ),
 
-    # 'polar': dict(
-    #     name=['polar'],
-    #     interface=['torch'],
-    #     dtype=[Dtype.float32, Dtype.float64],
-    #     tensor_para=dict(
-    #         gen_fn=Genfunc.randn,
-    #         args=[
-    #             {
-    #                 "ins": ['abs'],
-    #                 "shape": ((), (1024, ), (384, 128),
-    #                           (64, 1, 128), (128, 64, 3, 3),
-    #                           (2, 32, 130, 130)),
-    #             },
-    #             {
-    #                 "ins": ['angle'],
-    #                 "shape": ((), (1024, ), (384, 128),
-    #                           (32, 64, 8, 128), (1, ),
-    #                           (2, 32, 1, 1)),
-    #             },
-    #         ],
-    #     ),
-    # ),
+    'polar': dict(
+        name=['polar'],
+        interface=['torch'],
+        dtype=[Dtype.float32, Dtype.float64],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['abs'],
+                    "shape": ((1024, ), (384, 128),
+                              (64, 1, 128), (128, 64, 3, 3),
+                              (2, 32, 130, 130)),
+                },
+                {
+                    "ins": ['angle'],
+                    "shape": ((1024, ), (384, 128),
+                              (32, 64, 8, 128), (1, ),
+                              (2, 32, 1, 1)),
+                },
+            ],
+        ),
+    ),
 
     'lerp': dict(
         name=['lerp'],
@@ -4743,6 +4752,27 @@ diopi_configs = {
                     "ins": ['weight'],
                     "shape": ((), (1024, ), (3, 1, 128), (64, 1),
                               (1, ), (64, 1, 128), (2, 32, 1, 130)),
+                },
+            ],
+        ),
+    ),
+
+    'triu': dict(
+        name=['triu'],
+        interface=['torch'],
+        is_inplace=True,
+        dtype=[Dtype.float64, Dtype.float32, Dtype.float16],
+        para=dict(
+            diagonal=[0, 1, 2, -1, 3],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1024, 64), (384, 128),
+                              (64, 1, 128), (128, 64, 3, 3),
+                              (2, 32, 130, 130)),
                 },
             ],
         ),

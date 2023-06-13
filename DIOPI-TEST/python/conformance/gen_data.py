@@ -489,6 +489,11 @@ class CustomizedTest(object):
             parameters.append(tensor)
         return torch.nn.utils.clip_grad_norm_(parameters, max_norm, norm_type, error_if_nonfinite)
 
+    def ctc_loss(log_probs, targets, input_lengths, target_lengths, blank=0, reduction='mean', zero_infinity=False):
+        log_probs_ = log_probs.log_softmax(2)
+        loss = torch.nn.functional.ctc_loss(log_probs_, targets, input_lengths, target_lengths, blank=blank, reduction=reduction, zero_infinity=zero_infinity)
+        return loss
+
 
 def transfer_tensor_to_device(function_paras: dict):
     for para in function_paras["kwargs"].keys():
