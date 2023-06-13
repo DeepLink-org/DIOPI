@@ -15,6 +15,10 @@ extern "C" diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor tensor(out);
+    if (!tensor.defined()) {
+        return diopiSuccess;
+    }
+
     cnnlDataType_t dtype;
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, tensor.dtype()));
     cnnlRandGenerator_t generator;
@@ -30,6 +34,10 @@ extern "C" diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHand
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor tensor(inout);
+    if (!tensor.defined()) {
+        return diopiSuccess;
+    }
+
     cnnlDataType_t dtype;
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, tensor.dtype()));
     cnnlRandGenerator_t generator;

@@ -809,15 +809,16 @@ device_configs = {
         ),
     ),
 
+    # When not performing a reduce operation, the accuracy comparison of scatter needs to be performed on the CPU
+    # Currently, the shape of src tensor and index tensor must be the same
     'scatter': dict(
         name=['scatter'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float64), Skip(Dtype.float16), Skip(Dtype.int16),
+                              Skip(Dtype.int32), Skip(Dtype.int64), Skip(Dtype.uint8), Skip(Dtype.int8), Skip(Dtype.bool)],
                 },
             ]
         ),
@@ -825,23 +826,21 @@ device_configs = {
 
     'scatter_reduce': dict(
         name=['scatter'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
+        para=dict(
+            # The reduction operation of multiply is not supported by cnnl
+            reduce=[Skip('multiply')], 
         ),
     ),
 
+    # When not performing a reduce operation, the accuracy comparison of scatter needs to be performed on the CPU
+    # Currently, the shape of src tensor and index tensor must be the same
     'scatter_scalar': dict(
         name=['scatter'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float64)],
                 },
             ]
         ),
@@ -849,13 +848,9 @@ device_configs = {
 
     'scatter_reduce_scalar': dict(
         name=['scatter'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
+        para=dict(
+            # The reduction operation of multiply is not supported by cnnl
+            reduce=[Skip('multiply')],
         ),
     ),
 

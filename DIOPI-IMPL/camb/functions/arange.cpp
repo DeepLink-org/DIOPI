@@ -32,8 +32,8 @@ diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t out, cons
             DIOPI_CALL(dataTypeCast(ctx, outTensor, out32Tensor));
         }
     } else if (CnnlDataType::isFloatPoint(dtype)) {
-        float startVal = start->fval;
-        float stepVal = step->fval;
+        float startVal = DiopiDataType::isInteger(start->stype) ? start->ival : start->fval;
+        float stepVal = DiopiDataType::isInteger(step->stype) ? step->ival : step->fval;
         DIOPI_CALLCNNL(cnnlArange_v2(handle, CNNL_COMPUTATION_ULTRAHIGH_PRECISION, &(startVal), &(stepVal), outDesc.get(), out32Tensor.data()));
     }
 
