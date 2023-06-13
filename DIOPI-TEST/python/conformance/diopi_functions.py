@@ -3118,8 +3118,6 @@ def ctc_loss_backward(log_probs, grad_outputs, targets, input_lengths, target_le
 
 
 def index_put(input, values, indices1, indices2=None, accumulate=False, inplace=False):
-    import pdb
-    pdb.set_trace()
     if indices2 is not None:
         c_tensors = [TensorP(indices1), TensorP(indices2)]
         indices_counts = 2
