@@ -1,0 +1,2399 @@
+\hypertarget{functions__mmcv_8h}{\section{functions\-\_\-mmcv.\-h 文件参考}
+\label{functions__mmcv_8h}\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}}
+}
+{\ttfamily \#include $<$diopi/diopirt.\-h$>$}\\*
+\subsection*{函数}
+\begin{DoxyCompactItemize}
+\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a930efba3434c54b01f8b28c6dd4a2d31}{diopi\-Assign\-Score\-Withk\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Const\-Tensor\-Handle\-\_\-t points, diopi\-Const\-Tensor\-Handle\-\_\-t centers, diopi\-Const\-Tensor\-Handle\-\_\-t scores, diopi\-Const\-Tensor\-Handle\-\_\-t knn\-\_\-idx, int64\-\_\-t B, int64\-\_\-t N, int64\-\_\-t npoint, int64\-\_\-t M, int64\-\_\-t K, int64\-\_\-t out\-\_\-dim, int64\-\_\-t aggregate)
+\begin{DoxyCompactList}\small\item\em Perform weighted sum to generate output features according to scores. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a94a9ae1f922ca3c1a8528964271eb95a}{diopi\-Assign\-Score\-Withk\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-points, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-centers, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-scores, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-out, diopi\-Const\-Tensor\-Handle\-\_\-t points, diopi\-Const\-Tensor\-Handle\-\_\-t centers, diopi\-Const\-Tensor\-Handle\-\_\-t scores, diopi\-Const\-Tensor\-Handle\-\_\-t knn\-\_\-idx, int64\-\_\-t B, int64\-\_\-t N, int64\-\_\-t npoint, int64\-\_\-t M, int64\-\_\-t K, int64\-\_\-t out\-\_\-dim, int64\-\_\-t aggregate)
+\begin{DoxyCompactList}\small\item\em Backward function for perform weighted sum to generate output features according to scores. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a79d4807093fd7ad47a8508a3d40c0fb8}{diopi\-Ball\-Query\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t idx, diopi\-Const\-Tensor\-Handle\-\_\-t center\-\_\-xyz, diopi\-Const\-Tensor\-Handle\-\_\-t xyz, int64\-\_\-t B, int64\-\_\-t N, int64\-\_\-t npoint, int64\-\_\-t sample\-\_\-num, float min\-\_\-radius, float max\-\_\-radius)
+\begin{DoxyCompactList}\small\item\em Find nearby points in spherical space. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a9cd1a10cfd448d4bbb2eaaf8025ddcde}{diopi\-Stack\-Ball\-Query\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t idx, diopi\-Const\-Tensor\-Handle\-\_\-t center\-\_\-xyz, diopi\-Const\-Tensor\-Handle\-\_\-t center\-\_\-xyz\-\_\-batch\-\_\-cnt, diopi\-Const\-Tensor\-Handle\-\_\-t xyz, diopi\-Const\-Tensor\-Handle\-\_\-t xyz\-\_\-batch\-\_\-cnt, float max\-\_\-radius, int64\-\_\-t sample\-\_\-num)
+\begin{DoxyCompactList}\small\item\em Find nearby points in spherical space.(Stacked method) \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a1a0cfcaecfdcf5943f95f8a8dc2b5336}{diopi\-Bbox\-Overlaps\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t ious, diopi\-Const\-Tensor\-Handle\-\_\-t bboxes1, diopi\-Const\-Tensor\-Handle\-\_\-t bboxes2, int64\-\_\-t mode, int64\-\_\-t offset, bool aligned)
+\begin{DoxyCompactList}\small\item\em Calculate overlap between two set of bboxes. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a34753b468b88b16fe96f4e0e92ba3965}{diopi\-Border\-Align\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Tensor\-Handle\-\_\-t argmax\-\_\-idx, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t boxes, int64\-\_\-t pool\-\_\-size)
+\begin{DoxyCompactList}\small\item\em Border align pooling layer. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_abe415540ff598d57b65fe020054d7509}{diopi\-Border\-Align\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-input, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-output, diopi\-Const\-Tensor\-Handle\-\_\-t boxes, diopi\-Const\-Tensor\-Handle\-\_\-t argmax\-\_\-idx, int64\-\_\-t pool\-\_\-size)
+\begin{DoxyCompactList}\small\item\em Backward function for border align pooling layer. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a9b6f91ca54352393c2677a6d42735b18}{diopi\-Box\-Iou\-Rotated\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t ious, diopi\-Const\-Tensor\-Handle\-\_\-t bboxes1, diopi\-Const\-Tensor\-Handle\-\_\-t bboxes2, int64\-\_\-t mode, bool aligned)
+\begin{DoxyCompactList}\small\item\em Return intersection-\/over-\/union (Jaccard index) of boxes(\-Box\-Iou\-Rotated). \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a6d074db1045543f87e400cbf85272539}{diopi\-Box\-Iou\-Quadri\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t ious, diopi\-Const\-Tensor\-Handle\-\_\-t bboxes1, diopi\-Const\-Tensor\-Handle\-\_\-t bboxes2, int64\-\_\-t mode, bool aligned)
+\begin{DoxyCompactList}\small\item\em Return intersection-\/over-\/union (Jaccard index) of boxes(\-Box\-Iou\-Quadri). \end{DoxyCompactList}\item 
+\hypertarget{functions__mmcv_8h_abe48f2594212ec3e9c5c68390b29ad75}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_abe48f2594212ec3e9c5c68390b29ad75}{diopi\-Carafe\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t rfeatures, diopi\-Tensor\-Handle\-\_\-t routput, diopi\-Tensor\-Handle\-\_\-t rmasks, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Const\-Tensor\-Handle\-\_\-t features, diopi\-Const\-Tensor\-Handle\-\_\-t masks, int64\-\_\-t kernel\-\_\-size, int64\-\_\-t group\-\_\-size, int64\-\_\-t scale\-\_\-factor)}\label{functions__mmcv_8h_abe48f2594212ec3e9c5c68390b29ad75}
+
+\begin{DoxyCompactList}\small\item\em Content-\/\-Aware Re\-Assembly of F\-Eatures. Please refer to {\ttfamily C\-A\-R\-A\-F\-E\-: Content-\/\-Aware Re\-Assembly of F\-Eatures $<$\href{https://arxiv.org/abs/1905.02188}{\tt https\-://arxiv.\-org/abs/1905.\-02188}$>$}\-\_\- for more details. \end{DoxyCompactList}\item 
+\hypertarget{functions__mmcv_8h_ac3129395568108dda100e5cd0e766f31}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Carafe\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t rtop\-\_\-grad, diopi\-Tensor\-Handle\-\_\-t rbottom\-\_\-grad\-\_\-hs, diopi\-Tensor\-Handle\-\_\-t rbottom\-\_\-grad, diopi\-Tensor\-Handle\-\_\-t rmask\-\_\-grad, diopi\-Tensor\-Handle\-\_\-t bottom\-\_\-grad, diopi\-Tensor\-Handle\-\_\-t mask\-\_\-grad, diopi\-Const\-Tensor\-Handle\-\_\-t top\-\_\-grad, diopi\-Const\-Tensor\-Handle\-\_\-t rfeatures, diopi\-Const\-Tensor\-Handle\-\_\-t masks, int64\-\_\-t kernel\-\_\-size, int64\-\_\-t group\-\_\-size, int64\-\_\-t scale\-\_\-factor)}\label{functions__mmcv_8h_ac3129395568108dda100e5cd0e766f31}
+
+\item 
+\hypertarget{functions__mmcv_8h_a634b1f27b3acd5a64cb0bc5b95623b7d}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Carafe\-Naive\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Const\-Tensor\-Handle\-\_\-t features, diopi\-Const\-Tensor\-Handle\-\_\-t masks, int64\-\_\-t kernel\-\_\-size, int64\-\_\-t group\-\_\-size, int64\-\_\-t scale\-\_\-factor)}\label{functions__mmcv_8h_a634b1f27b3acd5a64cb0bc5b95623b7d}
+
+\item 
+\hypertarget{functions__mmcv_8h_afde08f01a9392027b421dd155f363c8f}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Carafe\-Naive\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t bottom\-\_\-grad, diopi\-Tensor\-Handle\-\_\-t mask\-\_\-grad, diopi\-Const\-Tensor\-Handle\-\_\-t top\-\_\-grad, diopi\-Const\-Tensor\-Handle\-\_\-t features, diopi\-Const\-Tensor\-Handle\-\_\-t masks, int64\-\_\-t kernel\-\_\-size, int64\-\_\-t group\-\_\-size, int64\-\_\-t scale\-\_\-factor)}\label{functions__mmcv_8h_afde08f01a9392027b421dd155f363c8f}
+
+\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_abc01973ebeb0e1064cefdb0d5d0ad325}{diopi\-Correlation\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Const\-Tensor\-Handle\-\_\-t input1, diopi\-Const\-Tensor\-Handle\-\_\-t input2, int64\-\_\-t k\-H, int64\-\_\-t k\-W, int64\-\_\-t patch\-H, int64\-\_\-t patch\-W, int64\-\_\-t pad\-H, int64\-\_\-t pad\-W, int64\-\_\-t dilation\-H, int64\-\_\-t dilation\-W, int64\-\_\-t dilation\-\_\-patch\-H, int64\-\_\-t dilation\-\_\-patch\-W, int64\-\_\-t d\-H, int64\-\_\-t d\-W)
+\begin{DoxyCompactList}\small\item\em This correlation operator works for optical flow correlation computation. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_ae5e3c750f77dd53e565eaef4521cd932}{diopi\-Correlation\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-input1, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-input2, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-output, diopi\-Const\-Tensor\-Handle\-\_\-t input1, diopi\-Const\-Tensor\-Handle\-\_\-t input2, int64\-\_\-t k\-H, int64\-\_\-t k\-W, int64\-\_\-t patch\-H, int64\-\_\-t patch\-W, int64\-\_\-t pad\-H, int64\-\_\-t pad\-W, int64\-\_\-t dilation\-H, int64\-\_\-t dilation\-W, int64\-\_\-t dilation\-\_\-patch\-H, int64\-\_\-t dilation\-\_\-patch\-W, int64\-\_\-t d\-H, int64\-\_\-t d\-W)
+\begin{DoxyCompactList}\small\item\em Backward function for the correlation operator works for optical flow correlation computation. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_afda6ba6a135365697156ed31be41edbb}{diopi\-Deform\-Conv\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Tensor\-Handle\-\_\-t columns, diopi\-Tensor\-Handle\-\_\-t ones, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t weight, diopi\-Const\-Tensor\-Handle\-\_\-t offset, int64\-\_\-t k\-W, int64\-\_\-t k\-H, int64\-\_\-t d\-W, int64\-\_\-t d\-H, int64\-\_\-t pad\-W, int64\-\_\-t pad\-H, int64\-\_\-t dilation\-W, int64\-\_\-t dilation\-H, int64\-\_\-t groups, int64\-\_\-t deform\-\_\-groups, int64\-\_\-t im2col\-\_\-step)
+\begin{DoxyCompactList}\small\item\em Deformable 2\-D convolution. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_aa05775d9c1d58cdd503b7de7c4ab255d}{diopi\-Deform\-Conv\-Backward\-Input\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-Input, diopi\-Tensor\-Handle\-\_\-t grad\-Offset, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t offset, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-Output, diopi\-Const\-Tensor\-Handle\-\_\-t weight, diopi\-Const\-Tensor\-Handle\-\_\-t columns, int64\-\_\-t k\-W, int64\-\_\-t k\-H, int64\-\_\-t d\-W, int64\-\_\-t d\-H, int64\-\_\-t pad\-W, int64\-\_\-t pad\-H, int64\-\_\-t dilation\-W, int64\-\_\-t dilation\-H, int64\-\_\-t groups, int64\-\_\-t deform\-\_\-groups, int64\-\_\-t im2col\-\_\-step)
+\begin{DoxyCompactList}\small\item\em Backward function for Deformable 2\-D convolution(for input and offset). \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_ab7a85d1457181335fae05cae5fcb04d6}{diopi\-Deform\-Conv\-Backward\-Parameters\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-Output, diopi\-Tensor\-Handle\-\_\-t grad\-Weight, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t offset, diopi\-Const\-Tensor\-Handle\-\_\-t columns, diopi\-Const\-Tensor\-Handle\-\_\-t ones, int64\-\_\-t k\-W, int64\-\_\-t k\-H, int64\-\_\-t d\-W, int64\-\_\-t d\-H, int64\-\_\-t pad\-W, int64\-\_\-t pad\-H, int64\-\_\-t dilation\-W, int64\-\_\-t dilation\-H, int64\-\_\-t groups, int64\-\_\-t deform\-\_\-groups, int64\-\_\-t im2col\-\_\-step, float scale)
+\begin{DoxyCompactList}\small\item\em Backward function for Deformable 2\-D convolution(for weight). \end{DoxyCompactList}\item 
+\hypertarget{functions__mmcv_8h_ae3988f214d47d54cefbb43839b30cf25}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_ae3988f214d47d54cefbb43839b30cf25}{diopi\-Deform\-Roi\-Pool\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t rois, diopi\-Const\-Tensor\-Handle\-\_\-t offset, int64\-\_\-t pooled\-\_\-height, int64\-\_\-t pooled\-\_\-width, int64\-\_\-t sampling\-\_\-ratio, float spatial\-\_\-scale, float gamma)}\label{functions__mmcv_8h_ae3988f214d47d54cefbb43839b30cf25}
+
+\begin{DoxyCompactList}\small\item\em Deformable Roi\-Pool. \end{DoxyCompactList}\item 
+\hypertarget{functions__mmcv_8h_ac877283e47f6396c59b417349715682c}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Deform\-Roi\-Pool\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-input, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-offset, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-output, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t rois, diopi\-Const\-Tensor\-Handle\-\_\-t offset, int64\-\_\-t pooled\-\_\-height, int64\-\_\-t pooled\-\_\-width, int64\-\_\-t sampling\-\_\-ratio, float spatial\-\_\-scale, float gamma)}\label{functions__mmcv_8h_ac877283e47f6396c59b417349715682c}
+
+\item 
+\hypertarget{functions__mmcv_8h_a47fe817c07d2ee2842b03905441afe5c}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a47fe817c07d2ee2842b03905441afe5c}{diopi\-Sigmoid\-Focal\-Loss\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t target, diopi\-Const\-Tensor\-Handle\-\_\-t weight, float gamma, float alpha)}\label{functions__mmcv_8h_a47fe817c07d2ee2842b03905441afe5c}
+
+\begin{DoxyCompactList}\small\item\em Sigmoid\-Focal\-Loss. \end{DoxyCompactList}\item 
+\hypertarget{functions__mmcv_8h_a765df9061d8b861bfe316aa9a9510654}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Sigmoid\-Focal\-Loss\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-input, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t target, diopi\-Const\-Tensor\-Handle\-\_\-t weight, float gamma, float alpha)}\label{functions__mmcv_8h_a765df9061d8b861bfe316aa9a9510654}
+
+\item 
+\hypertarget{functions__mmcv_8h_a86bbafff4085132d2bf25b27989be37a}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a86bbafff4085132d2bf25b27989be37a}{diopi\-Softmax\-Focal\-Loss\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Const\-Tensor\-Handle\-\_\-t softmax, diopi\-Const\-Tensor\-Handle\-\_\-t target, diopi\-Const\-Tensor\-Handle\-\_\-t weight, float gamma, float alpha)}\label{functions__mmcv_8h_a86bbafff4085132d2bf25b27989be37a}
+
+\begin{DoxyCompactList}\small\item\em Softmax\-Focal\-Loss. \end{DoxyCompactList}\item 
+\hypertarget{functions__mmcv_8h_ac6809996c36d59234d42d614bc82138e}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Softmax\-Focal\-Loss\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-input, diopi\-Tensor\-Handle\-\_\-t buff, diopi\-Const\-Tensor\-Handle\-\_\-t softmax, diopi\-Const\-Tensor\-Handle\-\_\-t target, diopi\-Const\-Tensor\-Handle\-\_\-t weight, float gamma, float alpha)}\label{functions__mmcv_8h_ac6809996c36d59234d42d614bc82138e}
+
+\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_afe6833e557fc39ea9d5f9fcdd7196ea5}{diopi\-Furthest\-Point\-Sampling\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t temp\-\_\-tensor, diopi\-Tensor\-Handle\-\_\-t idx\-\_\-tensor, diopi\-Const\-Tensor\-Handle\-\_\-t points\-\_\-xyz, int64\-\_\-t B, int64\-\_\-t N, int64\-\_\-t num\-\_\-points)
+\begin{DoxyCompactList}\small\item\em Uses iterative furthest point sampling to select a set of features whose corresponding points have the furthest distance. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_ab4d154086e0ec5daaf9eb368d963a8df}{diopi\-Furthest\-Point\-Sampling\-With\-Dist\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t temp\-\_\-tensor, diopi\-Tensor\-Handle\-\_\-t idx\-\_\-tensor, diopi\-Const\-Tensor\-Handle\-\_\-t points\-\_\-dist, int64\-\_\-t B, int64\-\_\-t N, int64\-\_\-t num\-\_\-points)
+\begin{DoxyCompactList}\small\item\em Uses iterative furthest point sampling to select a set of features whose corresponding points have the furthest distance(with dist version). \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a39ee4c1bbce0e96ae1c690b264c541af}{diopi\-Fused\-Bias\-Leakyrelu\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t $\ast$out, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t bias, diopi\-Const\-Tensor\-Handle\-\_\-t refer, int64\-\_\-t act, int64\-\_\-t grad, float alpha, float scale)
+\begin{DoxyCompactList}\small\item\em Calculate second order deviation. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a21d5bc1bcd8d166f0fa4a1d08760acd4}{diopi\-Gather\-Points\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t out, diopi\-Const\-Tensor\-Handle\-\_\-t points, diopi\-Const\-Tensor\-Handle\-\_\-t idx, int64\-\_\-t b, int64\-\_\-t c, int64\-\_\-t n, int64\-\_\-t npoints)
+\begin{DoxyCompactList}\small\item\em Gather points with given index. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a562605c9d23bd4dce2d70a8a02bb7db3}{diopi\-Gather\-Points\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-points, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-out, diopi\-Const\-Tensor\-Handle\-\_\-t idx, int64\-\_\-t b, int64\-\_\-t c, int64\-\_\-t n, int64\-\_\-t npoints)
+\begin{DoxyCompactList}\small\item\em Backward function for Gather points with given index. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_abf90824daa18269450bff49ac317a33b}{diopi\-Group\-Points\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t out, diopi\-Const\-Tensor\-Handle\-\_\-t points, diopi\-Const\-Tensor\-Handle\-\_\-t idx, int64\-\_\-t b, int64\-\_\-t c, int64\-\_\-t n, int64\-\_\-t npoints, int64\-\_\-t nsample)
+\begin{DoxyCompactList}\small\item\em Groups points with a ball query of radius. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a78ec9fbaaa4ced7cdd92e9df6a2d690f}{diopi\-Group\-Points\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-points, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-out, diopi\-Const\-Tensor\-Handle\-\_\-t idx, int64\-\_\-t b, int64\-\_\-t c, int64\-\_\-t n, int64\-\_\-t npoints, int64\-\_\-t nsample)
+\begin{DoxyCompactList}\small\item\em Backward function for Groups points with a ball query of radius. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a45a3927123d79797e806828400faf346}{diopi\-Stack\-Group\-Points\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t out\-\_\-tensor, diopi\-Const\-Tensor\-Handle\-\_\-t features\-\_\-tensor, diopi\-Const\-Tensor\-Handle\-\_\-t features\-\_\-batch\-\_\-cnt\-\_\-tensor, diopi\-Const\-Tensor\-Handle\-\_\-t idx\-\_\-tensor, diopi\-Const\-Tensor\-Handle\-\_\-t idx\-\_\-batch\-\_\-cnt\-\_\-tensor, int64\-\_\-t b, int64\-\_\-t c, int64\-\_\-t m, int64\-\_\-t nsample)
+\begin{DoxyCompactList}\small\item\em Groups points with a ball query of radius(stacked input). \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_ae73226295bcb12575eb9ad88182f2b70}{diopi\-Stack\-Group\-Points\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-features\-\_\-tensor, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-out\-\_\-tensor, diopi\-Const\-Tensor\-Handle\-\_\-t idx\-\_\-tensor, diopi\-Const\-Tensor\-Handle\-\_\-t idx\-\_\-batch\-\_\-cnt\-\_\-tensor, diopi\-Const\-Tensor\-Handle\-\_\-t features\-\_\-batch\-\_\-cnt\-\_\-tensor, int64\-\_\-t b, int64\-\_\-t c, int64\-\_\-t m, int64\-\_\-t n, int64\-\_\-t nsample)
+\begin{DoxyCompactList}\small\item\em Backward function for Groups points with a ball query of radius(stacked input). \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a17226b599b06037020bc20247c92701d}{diopi\-Iou3d\-Boxes\-Overlap\-Bev\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t ans\-\_\-overlap, diopi\-Const\-Tensor\-Handle\-\_\-t boxes\-\_\-a, diopi\-Const\-Tensor\-Handle\-\_\-t boxes\-\_\-b)
+\begin{DoxyCompactList}\small\item\em Calculate boxes B\-E\-V overlap. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a6062a48d0a84817585db148ee9c7f1b5}{diopi\-Iou3d\-Nms3d\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t keep, diopi\-Tensor\-Handle\-\_\-t keep\-\_\-num, diopi\-Const\-Tensor\-Handle\-\_\-t boxes, float nms\-\_\-overlap\-\_\-thresh)
+\begin{DoxyCompactList}\small\item\em 3\-D N\-M\-S function G\-P\-U implementation (for B\-E\-V boxes). \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a78982080fd88c8b1b422942ae9cd82eb}{diopi\-Iou3d\-Nms3d\-Normal\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t keep, diopi\-Tensor\-Handle\-\_\-t keep\-\_\-num, diopi\-Const\-Tensor\-Handle\-\_\-t boxes, float nms\-\_\-overlap\-\_\-thresh)
+\begin{DoxyCompactList}\small\item\em Normal 3\-D N\-M\-S function G\-P\-U implementation. The overlap of two boxes for Io\-U calculation is defined as the exact overlapping area of the two boxes W\-I\-T\-H their yaw angle set to 0. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a0f15c4534128996403127c81bcfff1b7}{diopi\-Knn\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t idx\-\_\-tensor, diopi\-Tensor\-Handle\-\_\-t dist2\-\_\-tensor, diopi\-Const\-Tensor\-Handle\-\_\-t xyz\-\_\-tensor, diopi\-Const\-Tensor\-Handle\-\_\-t new\-\_\-xyz\-\_\-tensor, int64\-\_\-t b, int64\-\_\-t n, int64\-\_\-t m, int64\-\_\-t nsample)
+\begin{DoxyCompactList}\small\item\em K\-N\-N based on heap data structure. \end{DoxyCompactList}\item 
+\hypertarget{functions__mmcv_8h_ae9137f9d6688c5185d8a233ea72eb611}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_ae9137f9d6688c5185d8a233ea72eb611}{diopi\-Masked\-Im2col\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t col, diopi\-Const\-Tensor\-Handle\-\_\-t im, diopi\-Const\-Tensor\-Handle\-\_\-t mask\-\_\-h\-\_\-idx, diopi\-Const\-Tensor\-Handle\-\_\-t mask\-\_\-w\-\_\-idx, int64\-\_\-t kernel\-\_\-h, int64\-\_\-t kernel\-\_\-w, int64\-\_\-t pad\-\_\-h, int64\-\_\-t pad\-\_\-w)}\label{functions__mmcv_8h_ae9137f9d6688c5185d8a233ea72eb611}
+
+\begin{DoxyCompactList}\small\item\em A Masked\-Conv2d which inherits the official Conv2d. The masked forward doesn't implement the backward function and only supports the stride parameter to be 1 currently. \end{DoxyCompactList}\item 
+\hypertarget{functions__mmcv_8h_a88514772a675cfdd809efb2a334f7fe5}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Masked\-Col2im\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t im, diopi\-Const\-Tensor\-Handle\-\_\-t col, diopi\-Const\-Tensor\-Handle\-\_\-t mask\-\_\-h\-\_\-idx, diopi\-Const\-Tensor\-Handle\-\_\-t mask\-\_\-w\-\_\-idx, int64\-\_\-t height, int64\-\_\-t width, int64\-\_\-t channels)}\label{functions__mmcv_8h_a88514772a675cfdd809efb2a334f7fe5}
+
+\item 
+\hypertarget{functions__mmcv_8h_afcb66f2de65c1aa4b3d239bf2c271d14}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_afcb66f2de65c1aa4b3d239bf2c271d14}{diopi\-Modulated\-Deform\-Conv\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Tensor\-Handle\-\_\-t columns, diopi\-Tensor\-Handle\-\_\-t ones, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t weight, diopi\-Const\-Tensor\-Handle\-\_\-t bias, diopi\-Const\-Tensor\-Handle\-\_\-t offset, diopi\-Const\-Tensor\-Handle\-\_\-t mask, int64\-\_\-t kernel\-\_\-h, int64\-\_\-t kernel\-\_\-w, const int64\-\_\-t stride\-\_\-h, const int64\-\_\-t stride\-\_\-w, const int64\-\_\-t pad\-\_\-h, const int64\-\_\-t pad\-\_\-w, const int64\-\_\-t dilation\-\_\-h, const int64\-\_\-t dilation\-\_\-w, const int64\-\_\-t group, const int64\-\_\-t deformable\-\_\-group, const bool with\-\_\-bias)}\label{functions__mmcv_8h_afcb66f2de65c1aa4b3d239bf2c271d14}
+
+\begin{DoxyCompactList}\small\item\em A Modulated\-Deformable Conv Encapsulation that acts as normal Conv layers. \end{DoxyCompactList}\item 
+\hypertarget{functions__mmcv_8h_aa34d25e9a9b963f6dad280c05004d8a7}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Modulated\-Deform\-Conv\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-input, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-weight, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-bias, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-offset, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-mask, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t weight, diopi\-Const\-Tensor\-Handle\-\_\-t bias, diopi\-Const\-Tensor\-Handle\-\_\-t ones, diopi\-Const\-Tensor\-Handle\-\_\-t offset, diopi\-Const\-Tensor\-Handle\-\_\-t mask, diopi\-Const\-Tensor\-Handle\-\_\-t columns, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-output, int64\-\_\-t kernel\-\_\-h, int64\-\_\-t kernel\-\_\-w, int64\-\_\-t stride\-\_\-h, int64\-\_\-t stride\-\_\-w, int64\-\_\-t pad\-\_\-h, int64\-\_\-t pad\-\_\-w, int64\-\_\-t dilation\-\_\-h, int64\-\_\-t dilation\-\_\-w, int64\-\_\-t group, int64\-\_\-t deformable\-\_\-group, const bool with\-\_\-bias)}\label{functions__mmcv_8h_aa34d25e9a9b963f6dad280c05004d8a7}
+
+\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a985e39cc25a0ccacff005468330ae88e}{diopi\-Ms\-Deform\-Attn\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t $\ast$out, diopi\-Const\-Tensor\-Handle\-\_\-t value, diopi\-Const\-Tensor\-Handle\-\_\-t spatial\-\_\-shapes, diopi\-Const\-Tensor\-Handle\-\_\-t level\-\_\-start\-\_\-index, diopi\-Const\-Tensor\-Handle\-\_\-t sampling\-\_\-loc, diopi\-Const\-Tensor\-Handle\-\_\-t attn\-\_\-weight, int64\-\_\-t im2col\-\_\-step)
+\begin{DoxyCompactList}\small\item\em An attention module used in Deformable-\/\-Detr. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_ac02b087b711a5dc6fcac55571af2e54b}{diopi\-Ms\-Deform\-Attn\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-value, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-sampling\-\_\-loc, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-attn\-\_\-weight, diopi\-Const\-Tensor\-Handle\-\_\-t value, diopi\-Const\-Tensor\-Handle\-\_\-t spatial\-\_\-shapes, diopi\-Const\-Tensor\-Handle\-\_\-t level\-\_\-start\-\_\-index, diopi\-Const\-Tensor\-Handle\-\_\-t sampling\-\_\-loc, diopi\-Const\-Tensor\-Handle\-\_\-t attn\-\_\-weight, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-output, int64\-\_\-t im2col\-\_\-step)
+\begin{DoxyCompactList}\small\item\em Backward function for An attention module used in Deformable-\/\-Detr. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a2ef2ff08ac9fdf4d817707343a5e567f}{diopi\-Nms\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t $\ast$out, diopi\-Const\-Tensor\-Handle\-\_\-t dets, diopi\-Const\-Tensor\-Handle\-\_\-t scores, double iou\-\_\-threshold, int64\-\_\-t offset)
+\begin{DoxyCompactList}\small\item\em N\-M\-S from mmcv. This function is modified from\-: \href{https://github.com/pytorch/vision/}{\tt https\-://github.\-com/pytorch/vision/}. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_af6cae98a1886c8a73e4acbd332de4a3f}{diopi\-Nms\-Rotated\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t $\ast$out, diopi\-Const\-Tensor\-Handle\-\_\-t dets, diopi\-Const\-Tensor\-Handle\-\_\-t scores, diopi\-Const\-Tensor\-Handle\-\_\-t order\-\_\-t, diopi\-Const\-Tensor\-Handle\-\_\-t dets\-\_\-sorted, double iou\-\_\-threshold, int64\-\_\-t multi\-\_\-label)
+\begin{DoxyCompactList}\small\item\em Performs non-\/maximum suppression (N\-M\-S) on the rotated boxes according to their intersection-\/over-\/union (Io\-U). \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a62193f21fb14a693add32d0f233abdf2}{diopi\-Points\-In\-Boxes\-Part\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t box\-\_\-idx\-\_\-of\-\_\-points, diopi\-Const\-Tensor\-Handle\-\_\-t boxes, diopi\-Const\-Tensor\-Handle\-\_\-t pts)
+\begin{DoxyCompactList}\small\item\em Find the box in which each point is(\-Part). \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a8288e33206c62174dbe85253cbbf6ca9}{diopi\-Points\-In\-Boxes\-All\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t box\-\_\-idx\-\_\-of\-\_\-points, diopi\-Const\-Tensor\-Handle\-\_\-t boxes, diopi\-Const\-Tensor\-Handle\-\_\-t pts)
+\begin{DoxyCompactList}\small\item\em Find the box in which each point is(\-All). \end{DoxyCompactList}\item 
+\hypertarget{functions__mmcv_8h_a41729e0d86377c7310255a9568bd7877}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a41729e0d86377c7310255a9568bd7877}{diopi\-Psamask\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Const\-Tensor\-Handle\-\_\-t input, int64\-\_\-t psa\-\_\-type, int64\-\_\-t num\-\_\-, int64\-\_\-t h\-\_\-feature, int64\-\_\-t w\-\_\-feature, int64\-\_\-t h\-\_\-mask, int64\-\_\-t w\-\_\-mask, int64\-\_\-t half\-\_\-h\-\_\-mask, int64\-\_\-t half\-\_\-w\-\_\-mask)}\label{functions__mmcv_8h_a41729e0d86377c7310255a9568bd7877}
+
+\begin{DoxyCompactList}\small\item\em Psamask. Modified from \href{https://github.com/hszhao/semseg/blob/master/lib/psa}{\tt https\-://github.\-com/hszhao/semseg/blob/master/lib/psa}. \end{DoxyCompactList}\item 
+\hypertarget{functions__mmcv_8h_a2aa5f949ce83d694b03f8e1f22f1b80e}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Psamask\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-input, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-output, int64\-\_\-t psa\-\_\-type, int64\-\_\-t num\-\_\-, int64\-\_\-t h\-\_\-feature, int64\-\_\-t w\-\_\-feature, int64\-\_\-t h\-\_\-mask, int64\-\_\-t w\-\_\-mask, int64\-\_\-t half\-\_\-h\-\_\-mask, int64\-\_\-t half\-\_\-w\-\_\-mask)}\label{functions__mmcv_8h_a2aa5f949ce83d694b03f8e1f22f1b80e}
+
+\item 
+\hypertarget{functions__mmcv_8h_a8fd25011b010b44739990b7d46cae44d}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a8fd25011b010b44739990b7d46cae44d}{diopi\-Roi\-Align\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Tensor\-Handle\-\_\-t argmax\-\_\-y, diopi\-Tensor\-Handle\-\_\-t argmax\-\_\-x, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t rois, int64\-\_\-t aligned\-\_\-height, int64\-\_\-t aligned\-\_\-width, int64\-\_\-t sampling\-\_\-ratio, int64\-\_\-t pool\-\_\-mode, float spatial\-\_\-scale, bool aligned)}\label{functions__mmcv_8h_a8fd25011b010b44739990b7d46cae44d}
+
+\begin{DoxyCompactList}\small\item\em Ro\-I align pooling layer. \end{DoxyCompactList}\item 
+\hypertarget{functions__mmcv_8h_a0609fea1a6fbeea0af8532be79225631}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Roi\-Align\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-input, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-output, diopi\-Const\-Tensor\-Handle\-\_\-t rois, diopi\-Const\-Tensor\-Handle\-\_\-t argmax\-\_\-y, diopi\-Const\-Tensor\-Handle\-\_\-t argmax\-\_\-x, int64\-\_\-t aligned\-\_\-height, int64\-\_\-t aligned\-\_\-width, int64\-\_\-t sampling\-\_\-ratio, int64\-\_\-t pool\-\_\-mode, float spatial\-\_\-scale, bool aligned)}\label{functions__mmcv_8h_a0609fea1a6fbeea0af8532be79225631}
+
+\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a2519124444d3088050911f366d4dd80d}{diopi\-Roi\-Align\-Rotated\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t rois, int64\-\_\-t aligned\-\_\-height, int64\-\_\-t aligned\-\_\-width, int64\-\_\-t sampling\-\_\-ratio, float spatial\-\_\-scale, bool aligned, bool clockwise)
+\begin{DoxyCompactList}\small\item\em Ro\-I align pooling layer for rotated proposals for mmcv. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_afd3c8451e94ff640eb8515f4c4568e7a}{diopi\-Roi\-Align\-Rotated\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t bottom\-\_\-grad, diopi\-Const\-Tensor\-Handle\-\_\-t top\-\_\-grad, diopi\-Const\-Tensor\-Handle\-\_\-t rois, int64\-\_\-t aligned\-\_\-height, int64\-\_\-t aligned\-\_\-width, int64\-\_\-t sampling\-\_\-ratio, float spatial\-\_\-scale, bool aligned, bool clockwise)
+\begin{DoxyCompactList}\small\item\em Backward function for Ro\-I align pooling layer for rotated proposals for mmcv. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_aeed72f619395388da087def32b3da49e}{diopi\-Riroi\-Align\-Rotated\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Const\-Tensor\-Handle\-\_\-t features, diopi\-Const\-Tensor\-Handle\-\_\-t rois, int64\-\_\-t pooled\-\_\-height, int64\-\_\-t pooled\-\_\-width, int64\-\_\-t num\-\_\-samples, int64\-\_\-t num\-\_\-orientations, float spatial\-\_\-scale, bool clockwise)
+\begin{DoxyCompactList}\small\item\em Rotation-\/invariant Ro\-I align pooling layer for rotated proposals. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a9ca0c1972fa7aaba8e4c768b7820039d}{diopi\-Riroi\-Align\-Rotated\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t bottom\-\_\-grad, diopi\-Const\-Tensor\-Handle\-\_\-t top\-\_\-grad, diopi\-Const\-Tensor\-Handle\-\_\-t rois, int64\-\_\-t pooled\-\_\-height, int64\-\_\-t pooled\-\_\-width, int64\-\_\-t num\-\_\-samples, int64\-\_\-t num\-\_\-orientations, float spatial\-\_\-scale, bool clockwise)
+\begin{DoxyCompactList}\small\item\em Backward function for Rotation-\/invariant Ro\-I align pooling layer for rotated proposals. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a4c305589e37673b62c1171b56060e9b9}{diopi\-Roiaware\-Pool3d\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t argmax, diopi\-Tensor\-Handle\-\_\-t pts\-\_\-idx\-\_\-of\-\_\-voxels, diopi\-Tensor\-Handle\-\_\-t pooled\-\_\-features, diopi\-Const\-Tensor\-Handle\-\_\-t rois, diopi\-Const\-Tensor\-Handle\-\_\-t pts, diopi\-Const\-Tensor\-Handle\-\_\-t pts\-\_\-feature, int64\-\_\-t pool\-\_\-method)
+\begin{DoxyCompactList}\small\item\em Encode the geometry-\/specific features of each 3\-D proposal. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a5e6ecb802bceeecba4d6c38fee71a2bf}{diopi\-Roiaware\-Pool3d\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-in, diopi\-Const\-Tensor\-Handle\-\_\-t pts\-\_\-idx\-\_\-of\-\_\-voxels, diopi\-Const\-Tensor\-Handle\-\_\-t argmax, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-out, int64\-\_\-t pool\-\_\-method)
+\begin{DoxyCompactList}\small\item\em Backward function for Encode the geometry-\/specific features of each 3\-D proposal. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_af78e12ab3fb30cafffc867beb5ad5f30}{diopi\-Roipoint\-Pool3d\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t pooled\-\_\-features, diopi\-Tensor\-Handle\-\_\-t pooled\-\_\-empty\-\_\-flag, diopi\-Const\-Tensor\-Handle\-\_\-t xyz, diopi\-Const\-Tensor\-Handle\-\_\-t boxes3d, diopi\-Const\-Tensor\-Handle\-\_\-t pts\-\_\-feature)
+\begin{DoxyCompactList}\small\item\em Encode the geometry-\/specific features of each 3\-D proposal. \end{DoxyCompactList}\item 
+\hypertarget{functions__mmcv_8h_a45d1722c662f9b4d159b8020313a6bef}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a45d1722c662f9b4d159b8020313a6bef}{diopi\-Roi\-Pool\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Tensor\-Handle\-\_\-t argmax, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t rois, int64\-\_\-t pooled\-\_\-height, int64\-\_\-t pooled\-\_\-width, float spatial\-\_\-scale)}\label{functions__mmcv_8h_a45d1722c662f9b4d159b8020313a6bef}
+
+\begin{DoxyCompactList}\small\item\em Roi\-Pool. \end{DoxyCompactList}\item 
+\hypertarget{functions__mmcv_8h_a7033e708883e8094c3c106a192d5b830}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Roi\-Pool\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-input, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-output, diopi\-Const\-Tensor\-Handle\-\_\-t rois, diopi\-Const\-Tensor\-Handle\-\_\-t argmax, int64\-\_\-t pooled\-\_\-height, int64\-\_\-t pooled\-\_\-width, float spatial\-\_\-scale)}\label{functions__mmcv_8h_a7033e708883e8094c3c106a192d5b830}
+
+\item 
+\hypertarget{functions__mmcv_8h_a5d2fb9e29c9877467f86a2bb00cb7fd6}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a5d2fb9e29c9877467f86a2bb00cb7fd6}{diopi\-Dynamic\-Point\-To\-Voxel\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t $\ast$outlist, diopi\-Const\-Tensor\-Handle\-\_\-t feats, diopi\-Const\-Tensor\-Handle\-\_\-t coors, int64\-\_\-t reduce\-\_\-type)}\label{functions__mmcv_8h_a5d2fb9e29c9877467f86a2bb00cb7fd6}
+
+\begin{DoxyCompactList}\small\item\em Scatters points into voxels, used in the voxel encoder with dynamic voxelization. \end{DoxyCompactList}\item 
+\hypertarget{functions__mmcv_8h_a7bf0ada9f96486d3aeea1fb1b16a4116}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Dynamic\-Point\-To\-Voxel\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-feats, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-reduced\-\_\-feats, diopi\-Const\-Tensor\-Handle\-\_\-t feats, diopi\-Const\-Tensor\-Handle\-\_\-t reduced\-\_\-feats, diopi\-Const\-Tensor\-Handle\-\_\-t coors\-\_\-idx, diopi\-Const\-Tensor\-Handle\-\_\-t reduce\-\_\-count, int64\-\_\-t reduce\-\_\-type)}\label{functions__mmcv_8h_a7bf0ada9f96486d3aeea1fb1b16a4116}
+
+\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_acbbf67e2735448c3df46657a0f6aafce}{diopi\-Sync\-Bn\-Mean\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t mean, diopi\-Const\-Tensor\-Handle\-\_\-t input)
+\begin{DoxyCompactList}\small\item\em Synchronized Batch Normalization. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a109a45dee8fbaf54e2ce2d019cf12ae1}{diopi\-Sync\-Bn\-Var\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t var, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t mean)
+\begin{DoxyCompactList}\small\item\em Synchronized Batch Normalization. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a9a7b4e53fef59dc3f4276bd50dc80fb0}{diopi\-Sync\-Bn\-Output\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t running\-\_\-mean, diopi\-Tensor\-Handle\-\_\-t running\-\_\-var, diopi\-Tensor\-Handle\-\_\-t norm, diopi\-Tensor\-Handle\-\_\-t std, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t mean, diopi\-Const\-Tensor\-Handle\-\_\-t var, diopi\-Const\-Tensor\-Handle\-\_\-t weight, diopi\-Const\-Tensor\-Handle\-\_\-t bias, float eps, float momentum, int64\-\_\-t group\-\_\-size)
+\begin{DoxyCompactList}\small\item\em Synchronized Batch Normalization. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_ac064830d4cad613cc9fa7f9c75c88a10}{diopi\-Sync\-Bn\-Backward\-Param\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-weight, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-bias, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-output, diopi\-Const\-Tensor\-Handle\-\_\-t norm)
+\begin{DoxyCompactList}\small\item\em Backward function for Synchronized Batch Normalization(grad for param). \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a60baab39e14254b02c22485cc9dc6b93}{diopi\-Sync\-Bn\-Backward\-Data\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-input, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-output, diopi\-Const\-Tensor\-Handle\-\_\-t weight, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-weight, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-bias, diopi\-Const\-Tensor\-Handle\-\_\-t norm, diopi\-Const\-Tensor\-Handle\-\_\-t std)
+\begin{DoxyCompactList}\small\item\em Backward function for Synchronized Batch Normalization(grad for input). \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a0eea45d5cd34ca9b70a2021643243f3c}{diopi\-Three\-Interpolate\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t out, diopi\-Const\-Tensor\-Handle\-\_\-t points, diopi\-Const\-Tensor\-Handle\-\_\-t idx, diopi\-Const\-Tensor\-Handle\-\_\-t weight, int64\-\_\-t b, int64\-\_\-t c, int64\-\_\-t m, int64\-\_\-t n)
+\begin{DoxyCompactList}\small\item\em Performs weighted linear interpolation on 3 features. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a821110f5ce08386984bb8da65dab13df}{diopi\-Three\-Interpolate\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-points, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-out, diopi\-Const\-Tensor\-Handle\-\_\-t idx, diopi\-Const\-Tensor\-Handle\-\_\-t weight, int64\-\_\-t b, int64\-\_\-t c, int64\-\_\-t n, int64\-\_\-t m)
+\begin{DoxyCompactList}\small\item\em Backward function for Performs weighted linear interpolation on 3 features. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a8c56ce06eb2e375562ffc00c11adbbc0}{diopi\-Three\-Nn\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t dist2, diopi\-Tensor\-Handle\-\_\-t idx, diopi\-Const\-Tensor\-Handle\-\_\-t unknown, diopi\-Const\-Tensor\-Handle\-\_\-t known, int64\-\_\-t b, int64\-\_\-t n, int64\-\_\-t m)
+\begin{DoxyCompactList}\small\item\em Find the top-\/3 nearest neighbors of the target set from the source set. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_afb2ea8fc1db3e6fccadfa1c3895672e3}{diopi\-Tin\-Shift\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t shift)
+\begin{DoxyCompactList}\small\item\em Temporal Interlace Shift. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_ad0b8e89faac55adf1a2b5adfbf4b28d4}{diopi\-Tin\-Shift\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-input, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-output, diopi\-Const\-Tensor\-Handle\-\_\-t shift)
+\begin{DoxyCompactList}\small\item\em Backward function for Temporal Interlace Shift. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a5fcbf86b41be3fa915a933dfd4da3a91}{diopi\-Upfirdn2d\-Op\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t $\ast$out, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t kernel, int64\-\_\-t up\-\_\-x, int64\-\_\-t up\-\_\-y, int64\-\_\-t down\-\_\-x, int64\-\_\-t down\-\_\-y, int64\-\_\-t pad\-\_\-x0, int64\-\_\-t pad\-\_\-x1, int64\-\_\-t pad\-\_\-y0, int64\-\_\-t pad\-\_\-y1)
+\begin{DoxyCompactList}\small\item\em Up\-F\-R\-I\-Dn for 2d features. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_acec6bb95535bffc818a6e33f8d530ed5}{diopi\-Hard\-Voxelize\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t voxels, diopi\-Tensor\-Handle\-\_\-t coors, diopi\-Tensor\-Handle\-\_\-t num\-\_\-points\-\_\-per\-\_\-voxel, diopi\-Tensor\-Handle\-\_\-t voxel\-\_\-num, diopi\-Const\-Tensor\-Handle\-\_\-t points, diopi\-Const\-Tensor\-Handle\-\_\-t voxel\-\_\-size, diopi\-Const\-Tensor\-Handle\-\_\-t coors\-\_\-range, const int64\-\_\-t max\-\_\-points, const int64\-\_\-t max\-\_\-voxels, const int64\-\_\-t N\-Dim, const bool deterministic)
+\begin{DoxyCompactList}\small\item\em Convert kitti points(N, $>$=3) to voxels. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a354b8b75598f8d45de7ea3f51a09c25d}{diopi\-Dynamic\-Voxelize\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t coors, diopi\-Const\-Tensor\-Handle\-\_\-t points, diopi\-Const\-Tensor\-Handle\-\_\-t voxel\-\_\-size, diopi\-Const\-Tensor\-Handle\-\_\-t coors\-\_\-range, const int64\-\_\-t N\-Dim)
+\begin{DoxyCompactList}\small\item\em Convert kitti points(N, $>$=3) to voxels(max\-\_\-points == -\/1 or max\-\_\-voxels == -\/1). \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a35f5bf9a626bb8d285b67368280e85f8}{diopi\-Rotated\-Feature\-Align\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Const\-Tensor\-Handle\-\_\-t features, diopi\-Const\-Tensor\-Handle\-\_\-t best\-\_\-bboxes, float spatial\-\_\-scale, int64\-\_\-t points)
+\begin{DoxyCompactList}\small\item\em Using the feature interpolation to obtain the position information correspond to the refined rotate anchors and reconstruct the feature maps in pixel-\/wise manner to achieve feature alignment. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a9f14672c020e4fb80048d705df96dfb1}{diopi\-Rotated\-Feature\-Align\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t bottom\-\_\-grad, diopi\-Const\-Tensor\-Handle\-\_\-t top\-\_\-grad, diopi\-Const\-Tensor\-Handle\-\_\-t best\-\_\-bboxes, float spatial\-\_\-scale, int64\-\_\-t points)
+\begin{DoxyCompactList}\small\item\em Backward function for Using the feature interpolation to obtain the position information correspond to the refined rotate anchors and reconstruct the feature maps in pixel-\/wise manner to achieve feature alignment. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a92bc4ed9919ad6858a68b46f3f1a84e7}{diopi\-Points\-In\-Polygons\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Const\-Tensor\-Handle\-\_\-t points, diopi\-Const\-Tensor\-Handle\-\_\-t polygons)
+\begin{DoxyCompactList}\small\item\em Judging whether points are inside polygons, which is used in the A\-T\-S\-S assignment for the rotated boxes. \end{DoxyCompactList}\item 
+\hypertarget{functions__mmcv_8h_a3ff1d1eb43acffa77c980d93a9c76e00}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a3ff1d1eb43acffa77c980d93a9c76e00}{diopi\-Indice\-Maxpool\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t $\ast$out, diopi\-Const\-Tensor\-Handle\-\_\-t features, diopi\-Const\-Tensor\-Handle\-\_\-t indice\-Pairs, diopi\-Const\-Tensor\-Handle\-\_\-t indice\-Num, int64\-\_\-t num\-Act)}\label{functions__mmcv_8h_a3ff1d1eb43acffa77c980d93a9c76e00}
+
+\begin{DoxyCompactList}\small\item\em Sparse ops.(only support pytorch now) \end{DoxyCompactList}\item 
+\hypertarget{functions__mmcv_8h_a6f5f6dfd6b7da0b9d7ac17b1e7b56c8b}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Indice\-Maxpool\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t $\ast$out, diopi\-Const\-Tensor\-Handle\-\_\-t features, diopi\-Const\-Tensor\-Handle\-\_\-t out\-Features, diopi\-Const\-Tensor\-Handle\-\_\-t out\-Grad, diopi\-Const\-Tensor\-Handle\-\_\-t indice\-Pairs, diopi\-Const\-Tensor\-Handle\-\_\-t indice\-Num)}\label{functions__mmcv_8h_a6f5f6dfd6b7da0b9d7ac17b1e7b56c8b}
+
+\item 
+\hypertarget{functions__mmcv_8h_afd7d14d8026e2ab55ce796f3bcfc2e96}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Indice\-Conv\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t $\ast$out, diopi\-Const\-Tensor\-Handle\-\_\-t features, diopi\-Const\-Tensor\-Handle\-\_\-t filters, diopi\-Const\-Tensor\-Handle\-\_\-t indice\-Pairs, diopi\-Const\-Tensor\-Handle\-\_\-t indice\-Num, int64\-\_\-t num\-Act\-Out, int64\-\_\-t \-\_\-inverse, int64\-\_\-t \-\_\-sub\-M)}\label{functions__mmcv_8h_afd7d14d8026e2ab55ce796f3bcfc2e96}
+
+\item 
+\hypertarget{functions__mmcv_8h_abd03e4a12b00fedfac13e948eea63869}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Indice\-Conv\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t $\ast$outlist, diopi\-Const\-Tensor\-Handle\-\_\-t features, diopi\-Const\-Tensor\-Handle\-\_\-t filters, diopi\-Const\-Tensor\-Handle\-\_\-t out\-Grad, diopi\-Const\-Tensor\-Handle\-\_\-t indice\-Pairs, diopi\-Const\-Tensor\-Handle\-\_\-t indice\-Num, int64\-\_\-t \-\_\-inverse, int64\-\_\-t \-\_\-sub\-M)}\label{functions__mmcv_8h_abd03e4a12b00fedfac13e948eea63869}
+
+\item 
+\hypertarget{functions__mmcv_8h_a693e62f85231681592a827ef8017e65a}{D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Fused\-Indice\-Conv\-Batchnorm\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t $\ast$out, diopi\-Const\-Tensor\-Handle\-\_\-t features, diopi\-Const\-Tensor\-Handle\-\_\-t filters, diopi\-Const\-Tensor\-Handle\-\_\-t bias, diopi\-Const\-Tensor\-Handle\-\_\-t indice\-Pairs, diopi\-Const\-Tensor\-Handle\-\_\-t indice\-Num, int64\-\_\-t num\-Act\-Out, int64\-\_\-t \-\_\-inverse, int64\-\_\-t \-\_\-sub\-M)}\label{functions__mmcv_8h_a693e62f85231681592a827ef8017e65a}
+
+\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_ab77eca8de69b126f152f043e1b58087a}{diopi\-Min\-Area\-Polygons\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t polygons, diopi\-Const\-Tensor\-Handle\-\_\-t pointsets)
+\begin{DoxyCompactList}\small\item\em Find the smallest polygons that surrounds all points in the point sets. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a10522df68c1336f6b47239af9adf3022}{diopi\-Active\-Rotated\-Filter\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t indices)
+\begin{DoxyCompactList}\small\item\em Encoding the orientation information and generating orientation-\/sensitive features. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a5e18748488a4e613b00e65894b61d2cc}{diopi\-Active\-Rotated\-Filter\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-in, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-out, diopi\-Const\-Tensor\-Handle\-\_\-t indices)
+\begin{DoxyCompactList}\small\item\em Backward function for Encoding the orientation information and generating orientation-\/sensitive features. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a43c3866512af6d76616a37a72aad8e81}{diopi\-Convex\-Iou\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t ious, diopi\-Const\-Tensor\-Handle\-\_\-t pointsets, diopi\-Const\-Tensor\-Handle\-\_\-t polygons)
+\begin{DoxyCompactList}\small\item\em Return generalized intersection-\/over-\/union (Jaccard index) between point sets and polygons(\-Convex\-Iou version). \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_ad4c355a11fa6dee0ca1d29a2890ca3bc}{diopi\-Convex\-Giou\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Const\-Tensor\-Handle\-\_\-t pointsets, diopi\-Const\-Tensor\-Handle\-\_\-t polygons)
+\begin{DoxyCompactList}\small\item\em Return generalized intersection-\/over-\/union (Jaccard index) between point sets and polygons(\-Convex\-Giou version). \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a8d784a0fd34860c0ccd14ba95ee13b69}{diopi\-Diff\-Iou\-Rotated\-Sort\-Vertices\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t $\ast$out, diopi\-Const\-Tensor\-Handle\-\_\-t vertices, diopi\-Const\-Tensor\-Handle\-\_\-t mask, diopi\-Const\-Tensor\-Handle\-\_\-t num\-\_\-valid)
+\begin{DoxyCompactList}\small\item\em Sort indices. Note\-: why 9? the polygon has maximal 8 vertices. +1 to duplicate the first element. the index should have following structure\-: (A, B, C, ... , A, X, X, X) and X indicates the index of arbitrary elements in the last 16 (intersections not corners) with value 0 and mask False. (cause they have zero value and zero gradient) \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a2806461d9c23b2066a215866f23d6cf2}{diopi\-Chamfer\-Distance\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t dist1, diopi\-Tensor\-Handle\-\_\-t dist2, diopi\-Tensor\-Handle\-\_\-t idx1, diopi\-Tensor\-Handle\-\_\-t idx2, diopi\-Const\-Tensor\-Handle\-\_\-t xyz1, diopi\-Const\-Tensor\-Handle\-\_\-t xyz2)
+\begin{DoxyCompactList}\small\item\em This is an implementation of the 2\-D Chamfer Distance. It has been used in the paper {\ttfamily Oriented Rep\-Points for Aerial Object Detection (C\-V\-P\-R 2022) $<$\href{https://arxiv.org/abs/2105.11111}{\tt https\-://arxiv.\-org/abs/2105.\-11111}$>$\-\_\-}. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a518fccad67c604aa189e8a3dd76604cc}{diopi\-Chamfer\-Distance\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-xyz1, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-xyz2, diopi\-Const\-Tensor\-Handle\-\_\-t xyz1, diopi\-Const\-Tensor\-Handle\-\_\-t xyz2, diopi\-Const\-Tensor\-Handle\-\_\-t idx1, diopi\-Const\-Tensor\-Handle\-\_\-t idx2, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-dist1, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-dist2)
+\begin{DoxyCompactList}\small\item\em Backward function for the 2\-D Chamfer Distance. It has been used in the paper {\ttfamily Oriented Rep\-Points for Aerial Object Detection (C\-V\-P\-R 2022) $<$\href{https://arxiv.org/abs/2105.11111}{\tt https\-://arxiv.\-org/abs/2105.\-11111}$>$\-\_\-}. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a1748375ea8852960f3ed2ece6967628c}{diopi\-Prroi\-Pool\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t output, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t rois, int64\-\_\-t pooled\-\_\-height, int64\-\_\-t pooled\-\_\-width, float spatial\-\_\-scale)
+\begin{DoxyCompactList}\small\item\em The operation of precision Ro\-I pooling. The implementation of Pr\-Ro\-I\-Pool is modified from \href{https://github.com/vacancy/PreciseRoIPooling/}{\tt https\-://github.\-com/vacancy/\-Precise\-Ro\-I\-Pooling/}. \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_a80414a2b33de37a4f81afac19f55eb52}{diopi\-Prroi\-Poolbackward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-input, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-output, diopi\-Const\-Tensor\-Handle\-\_\-t rois, int64\-\_\-t pooled\-\_\-height, int64\-\_\-t pooled\-\_\-width, float spatial\-\_\-scale)
+\begin{DoxyCompactList}\small\item\em Backward function for the operation of precision Ro\-I pooling. The implementation of Pr\-Ro\-I\-Pool is modified from \href{https://github.com/vacancy/PreciseRoIPooling/}{\tt https\-://github.\-com/vacancy/\-Precise\-Ro\-I\-Pooling/}(grad of input) \end{DoxyCompactList}\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{functions__mmcv_8h_aaa988a583eca2bfc57486008cd3665b0}{diopi\-Prroi\-Pool\-Coor\-Backward\-Mmcv} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t grad\-\_\-rois, diopi\-Const\-Tensor\-Handle\-\_\-t output, diopi\-Const\-Tensor\-Handle\-\_\-t grad\-\_\-output, diopi\-Const\-Tensor\-Handle\-\_\-t input, diopi\-Const\-Tensor\-Handle\-\_\-t rois, int64\-\_\-t pooled\-\_\-height, int64\-\_\-t pooled\-\_\-width, float spatial\-\_\-scale)
+\begin{DoxyCompactList}\small\item\em The operation of precision Ro\-I pooling. The implementation of Pr\-Ro\-I\-Pool is modified from \href{https://github.com/vacancy/PreciseRoIPooling/}{\tt https\-://github.\-com/vacancy/\-Precise\-Ro\-I\-Pooling/}(grad of rois) \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{详细描述}
+\begin{DoxyAuthor}{作者}
+Open\-Compute\-Lab 
+\end{DoxyAuthor}
+\begin{DoxyCopyright}{版权所有}
+(c) 2023, Open\-Compute\-Lab. 
+\end{DoxyCopyright}
+
+
+\subsection{函数说明}
+\hypertarget{functions__mmcv_8h_a5e18748488a4e613b00e65894b61d2cc}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Active\-Rotated\-Filter\-Backward\-Mmcv@{diopi\-Active\-Rotated\-Filter\-Backward\-Mmcv}}
+\index{diopi\-Active\-Rotated\-Filter\-Backward\-Mmcv@{diopi\-Active\-Rotated\-Filter\-Backward\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Active\-Rotated\-Filter\-Backward\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Active\-Rotated\-Filter\-Backward\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-in, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-out, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{indices}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a5e18748488a4e613b00e65894b61d2cc}
+
+
+Backward function for Encoding the orientation information and generating orientation-\/sensitive features. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em grad\-\_\-out} & the gradient of {\ttfamily output}. \\
+\hline
+\mbox{\tt out}  & {\em grad\-\_\-in} & the gradient of {\ttfamily input}. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Active\-Rotated\-Filter(). 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_a10522df68c1336f6b47239af9adf3022}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Active\-Rotated\-Filter\-Mmcv@{diopi\-Active\-Rotated\-Filter\-Mmcv}}
+\index{diopi\-Active\-Rotated\-Filter\-Mmcv@{diopi\-Active\-Rotated\-Filter\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Active\-Rotated\-Filter\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Active\-Rotated\-Filter\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{input, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{indices}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a10522df68c1336f6b47239af9adf3022}
+
+
+Encoding the orientation information and generating orientation-\/sensitive features. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em input} & Input features with shape \mbox{[}num\-\_\-output\-\_\-planes, num\-\_\-input\-\_\-planes, num\-\_\-orientations, H, W\mbox{]}. \\
+\hline
+ & {\em indices} & Indices with shape \mbox{[}num\-\_\-orientations, H, W, num\-\_\-rotations\mbox{]}. \\
+\hline
+\mbox{\tt out}  & {\em output} & Refined features with shape \mbox{[}num\-\_\-output\-\_\-planes $\ast$ num\-\_\-rotations, num\-\_\-input\-\_\-planes $\ast$ num\-\_\-orientations, H, W\mbox{]}. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a94a9ae1f922ca3c1a8528964271eb95a}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Assign\-Score\-Withk\-Backward\-Mmcv@{diopi\-Assign\-Score\-Withk\-Backward\-Mmcv}}
+\index{diopi\-Assign\-Score\-Withk\-Backward\-Mmcv@{diopi\-Assign\-Score\-Withk\-Backward\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Assign\-Score\-Withk\-Backward\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Assign\-Score\-Withk\-Backward\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-points, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-centers, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-scores, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-out, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{points, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{centers, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{scores, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{knn\-\_\-idx, }
+\item[{int64\-\_\-t}]{B, }
+\item[{int64\-\_\-t}]{N, }
+\item[{int64\-\_\-t}]{npoint, }
+\item[{int64\-\_\-t}]{M, }
+\item[{int64\-\_\-t}]{K, }
+\item[{int64\-\_\-t}]{out\-\_\-dim, }
+\item[{int64\-\_\-t}]{aggregate}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a94a9ae1f922ca3c1a8528964271eb95a}
+
+
+Backward function for perform weighted sum to generate output features according to scores. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em grad\-\_\-out} & the gradient of {\ttfamily output} \\
+\hline
+\mbox{\tt out}  & {\em grad\-\_\-points} & the gradient of {\ttfamily points}. \\
+\hline
+ & {\em grad\-\_\-scores} & the gradient of {\ttfamily scores}. \\
+\hline
+ & {\em grad\-\_\-centers} & the gradient of {\ttfamily centers} \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Assign\-Score\-Withk() 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_a930efba3434c54b01f8b28c6dd4a2d31}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Assign\-Score\-Withk\-Mmcv@{diopi\-Assign\-Score\-Withk\-Mmcv}}
+\index{diopi\-Assign\-Score\-Withk\-Mmcv@{diopi\-Assign\-Score\-Withk\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Assign\-Score\-Withk\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Assign\-Score\-Withk\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{points, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{centers, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{scores, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{knn\-\_\-idx, }
+\item[{int64\-\_\-t}]{B, }
+\item[{int64\-\_\-t}]{N, }
+\item[{int64\-\_\-t}]{npoint, }
+\item[{int64\-\_\-t}]{M, }
+\item[{int64\-\_\-t}]{K, }
+\item[{int64\-\_\-t}]{out\-\_\-dim, }
+\item[{int64\-\_\-t}]{aggregate}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a930efba3434c54b01f8b28c6dd4a2d31}
+
+
+Perform weighted sum to generate output features according to scores. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em scores} & (B, npoint, K, M), predicted scores to aggregate weight matrices in the weight bank. {\ttfamily npoint} is the number of sampled centers. {\ttfamily K} is the number of queried neighbors. {\ttfamily M} is the number of weight matrices in the weight bank. \\
+\hline
+ & {\em points} & (B, N, M, out\-\_\-dim) Pre-\/computed point features to be aggregated. \\
+\hline
+ & {\em centers} & (B, N, M, out\-\_\-dim) Pre-\/computed center features to be aggregated. \\
+\hline
+ & {\em knn\-\_\-idx} & (B, npoint, K), index of sampled k\-N\-N. We assume the first idx in each row is the idx of the center. \\
+\hline
+ & {\em B,N,npoint,M,K,out\-\_\-dim} & scores\-: (B, npoint, K, M); points\-: (B, N, M, out\-\_\-dim) \\
+\hline
+ & {\em aggregate} & (str, optional)\-: Aggregation method. Can be 'sum', 'avg' or 'max'. Defaults\-: 'sum'. \\
+\hline
+\mbox{\tt out}  & {\em output} & (B, out\-\_\-dim, npoint, K), the aggregated features. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a79d4807093fd7ad47a8508a3d40c0fb8}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Ball\-Query\-Mmcv@{diopi\-Ball\-Query\-Mmcv}}
+\index{diopi\-Ball\-Query\-Mmcv@{diopi\-Ball\-Query\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Ball\-Query\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Ball\-Query\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{idx, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{center\-\_\-xyz, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{xyz, }
+\item[{int64\-\_\-t}]{B, }
+\item[{int64\-\_\-t}]{N, }
+\item[{int64\-\_\-t}]{npoint, }
+\item[{int64\-\_\-t}]{sample\-\_\-num, }
+\item[{float}]{min\-\_\-radius, }
+\item[{float}]{max\-\_\-radius}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a79d4807093fd7ad47a8508a3d40c0fb8}
+
+
+Find nearby points in spherical space. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em min\-\_\-radius} & float\-: minimum radius of the balls. \\
+\hline
+ & {\em max\-\_\-radius} & float\-: maximum radius of the balls. \\
+\hline
+ & {\em sample\-\_\-num} & int\-: maximum number of features in the balls. \\
+\hline
+ & {\em xyz} & (B, N, 3) xyz coordinates of the features, or staked input (N1 + N2 ..., 3). \\
+\hline
+ & {\em center\-\_\-xyz} & (B, npoint, 3) centers of the ball query, or staked input (M1 + M2 ..., 3). \\
+\hline
+ & {\em B,N,npoint} & xyz (B, N, 3), center\-\_\-xyz (B, npoint, 3) \\
+\hline
+\mbox{\tt out}  & {\em idx} & (B, npoint, nsample) tensor with the indices of the features that form the query balls. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a1a0cfcaecfdcf5943f95f8a8dc2b5336}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Bbox\-Overlaps\-Mmcv@{diopi\-Bbox\-Overlaps\-Mmcv}}
+\index{diopi\-Bbox\-Overlaps\-Mmcv@{diopi\-Bbox\-Overlaps\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Bbox\-Overlaps\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Bbox\-Overlaps\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{ious, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{bboxes1, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{bboxes2, }
+\item[{int64\-\_\-t}]{mode, }
+\item[{int64\-\_\-t}]{offset, }
+\item[{bool}]{aligned}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a1a0cfcaecfdcf5943f95f8a8dc2b5336}
+
+
+Calculate overlap between two set of bboxes. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em bboxes1} & shape (m, 4) in $<$x1, y1, x2, y2$>$ format or empty. \\
+\hline
+ & {\em bboxes2} & shape (n, 4) in $<$x1, y1, x2, y2$>$ format or empty. If aligned is {\ttfamily True}, then m and n must be equal. \\
+\hline
+ & {\em mode} & (str)\-: \char`\"{}iou\char`\"{} (intersection over union) or iof (intersection over foreground). \\
+\hline
+ & {\em aligned} & bool, determine the way how {\ttfamily ious} is calculated. \\
+\hline
+ & {\em offset} & offset is 0 or 1. \\
+\hline
+\mbox{\tt out}  & {\em ious} & the ious betweens boxes. If {\ttfamily aligned} is {\ttfamily False}, the shape of ious is (m, n) else (m, 1). \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_abe415540ff598d57b65fe020054d7509}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Border\-Align\-Backward\-Mmcv@{diopi\-Border\-Align\-Backward\-Mmcv}}
+\index{diopi\-Border\-Align\-Backward\-Mmcv@{diopi\-Border\-Align\-Backward\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Border\-Align\-Backward\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Border\-Align\-Backward\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-input, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{boxes, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{argmax\-\_\-idx, }
+\item[{int64\-\_\-t}]{pool\-\_\-size}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_abe415540ff598d57b65fe020054d7509}
+
+
+Backward function for border align pooling layer. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em grad\-\_\-output} & the gradient of {\ttfamily output} \\
+\hline
+\mbox{\tt out}  & {\em grad\-\_\-input} & the gradient of {\ttfamily input} \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Border\-Align() 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_a34753b468b88b16fe96f4e0e92ba3965}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Border\-Align\-Mmcv@{diopi\-Border\-Align\-Mmcv}}
+\index{diopi\-Border\-Align\-Mmcv@{diopi\-Border\-Align\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Border\-Align\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Border\-Align\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{output, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{argmax\-\_\-idx, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{input, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{boxes, }
+\item[{int64\-\_\-t}]{pool\-\_\-size}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a34753b468b88b16fe96f4e0e92ba3965}
+
+
+Border align pooling layer. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em input} & Features with shape \mbox{[}N,4\-C,H,W\mbox{]}. Channels ranged in \mbox{[}0,C), \mbox{[}C,2\-C), \mbox{[}2\-C,3\-C), \mbox{[}3\-C,4\-C) represent the top, left, bottom, right features respectively. \\
+\hline
+ & {\em boxes} & Boxes with shape \mbox{[}N,H$\ast$\-W,4\mbox{]}. Coordinate format (x1,y1,x2,y2). \\
+\hline
+ & {\em pool\-\_\-size} & int\-: number of positions sampled over the boxes' borders (e.\-g. top, bottom, left, right). \\
+\hline
+\mbox{\tt out}  & {\em output} & Pooled features with shape \mbox{[}N,C,H$\ast$\-W,4\mbox{]}. The order is (top,left,bottom,right) for the last dimension. \\
+\hline
+ & {\em argmax\-\_\-idx} & {\ttfamily argmax\-\_\-idx} only used for backward. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a6d074db1045543f87e400cbf85272539}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Box\-Iou\-Quadri\-Mmcv@{diopi\-Box\-Iou\-Quadri\-Mmcv}}
+\index{diopi\-Box\-Iou\-Quadri\-Mmcv@{diopi\-Box\-Iou\-Quadri\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Box\-Iou\-Quadri\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Box\-Iou\-Quadri\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{ious, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{bboxes1, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{bboxes2, }
+\item[{int64\-\_\-t}]{mode, }
+\item[{bool}]{aligned}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a6d074db1045543f87e400cbf85272539}
+
+
+Return intersection-\/over-\/union (Jaccard index) of boxes(\-Box\-Iou\-Quadri). 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Box\-Iou\-Rotated() 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_a9b6f91ca54352393c2677a6d42735b18}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Box\-Iou\-Rotated\-Mmcv@{diopi\-Box\-Iou\-Rotated\-Mmcv}}
+\index{diopi\-Box\-Iou\-Rotated\-Mmcv@{diopi\-Box\-Iou\-Rotated\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Box\-Iou\-Rotated\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Box\-Iou\-Rotated\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{ious, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{bboxes1, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{bboxes2, }
+\item[{int64\-\_\-t}]{mode, }
+\item[{bool}]{aligned}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a9b6f91ca54352393c2677a6d42735b18}
+
+
+Return intersection-\/over-\/union (Jaccard index) of boxes(\-Box\-Iou\-Rotated). 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em bboxes1} & quadrilateral bboxes 1. It has shape (N, 8), indicating (x1, y1, ..., x4, y4) for each row. \\
+\hline
+ & {\em bboxes2} & quadrilateral bboxes 2. It has shape (M, 8), indicating (x1, y1, ..., x4, y4) for each row. \\
+\hline
+ & {\em mode} & (str) \char`\"{}iou\char`\"{} (intersection over union) or iof (intersection over foreground). \\
+\hline
+ & {\em aligned} & If {\ttfamily aligned} is {\ttfamily False}, then calculate the ious between each bbox of bboxes1 and bboxes2, otherwise the ious between each aligned pair of bboxes1 and bboxes2. \\
+\hline
+\mbox{\tt out}  & {\em ious} & the ious betweens boxes. If {\ttfamily aligned} is {\ttfamily False}, the shape of ious is (N, M) else (N,). \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a518fccad67c604aa189e8a3dd76604cc}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Chamfer\-Distance\-Backward\-Mmcv@{diopi\-Chamfer\-Distance\-Backward\-Mmcv}}
+\index{diopi\-Chamfer\-Distance\-Backward\-Mmcv@{diopi\-Chamfer\-Distance\-Backward\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Chamfer\-Distance\-Backward\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Chamfer\-Distance\-Backward\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-xyz1, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-xyz2, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{xyz1, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{xyz2, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{idx1, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{idx2, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-dist1, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-dist2}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a518fccad67c604aa189e8a3dd76604cc}
+
+
+Backward function for the 2\-D Chamfer Distance. It has been used in the paper {\ttfamily Oriented Rep\-Points for Aerial Object Detection (C\-V\-P\-R 2022) $<$\href{https://arxiv.org/abs/2105.11111}{\tt https\-://arxiv.\-org/abs/2105.\-11111}$>$\-\_\-}. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em grad\-\_\-dist1} & the gradient of {\ttfamily dist1}. \\
+\hline
+ & {\em grad\-\_\-dist2} & the gradient of {\ttfamily dist2}. \\
+\hline
+\mbox{\tt out}  & {\em grad\-\_\-xyz1} & the gradient of {\ttfamily xyz1}. \\
+\hline
+ & {\em grad\-\_\-xyz2} & the gradient of {\ttfamily xyz2}. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Chamfer\-Distance(). 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_a2806461d9c23b2066a215866f23d6cf2}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Chamfer\-Distance\-Mmcv@{diopi\-Chamfer\-Distance\-Mmcv}}
+\index{diopi\-Chamfer\-Distance\-Mmcv@{diopi\-Chamfer\-Distance\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Chamfer\-Distance\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Chamfer\-Distance\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{dist1, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{dist2, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{idx1, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{idx2, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{xyz1, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{xyz2}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a2806461d9c23b2066a215866f23d6cf2}
+
+
+This is an implementation of the 2\-D Chamfer Distance. It has been used in the paper {\ttfamily Oriented Rep\-Points for Aerial Object Detection (C\-V\-P\-R 2022) $<$\href{https://arxiv.org/abs/2105.11111}{\tt https\-://arxiv.\-org/abs/2105.\-11111}$>$\-\_\-}. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em xyz1} & (Tensor)\-: Point set with shape (B, N, 2). \\
+\hline
+ & {\em xyz2} & (Tensor)\-: Point set with shape (B, N, 2). \\
+\hline
+\mbox{\tt out}  & {\em dist1,dist2,idx1,idx2} & out sequence\mbox{[}Tensor\mbox{]}\-:
+\begin{DoxyItemize}
+\item dist1 (Tensor)\-: Chamfer distance (xyz1 to xyz2) with shape (B, N).
+\item dist2 (Tensor)\-: Chamfer distance (xyz2 to xyz1) with shape (B, N).
+\item idx1 (Tensor)\-: Index of chamfer distance (xyz1 to xyz2) with shape (B, N), which be used in compute gradient.
+\item idx2 (Tensor)\-: Index of chamfer distance (xyz2 to xyz2) with shape (B, N), which be used in compute gradient. 
+\end{DoxyItemize}\\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_ad4c355a11fa6dee0ca1d29a2890ca3bc}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Convex\-Giou\-Mmcv@{diopi\-Convex\-Giou\-Mmcv}}
+\index{diopi\-Convex\-Giou\-Mmcv@{diopi\-Convex\-Giou\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Convex\-Giou\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Convex\-Giou\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{pointsets, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{polygons}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_ad4c355a11fa6dee0ca1d29a2890ca3bc}
+
+
+Return generalized intersection-\/over-\/union (Jaccard index) between point sets and polygons(\-Convex\-Giou version). 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+\mbox{\tt out}  & {\em output} & The first element is the gious between point sets and polygons with the shape (N,). The second element is the gradient of point sets with the shape (N, 18). \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Convex\-Iou(). 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_a43c3866512af6d76616a37a72aad8e81}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Convex\-Iou\-Mmcv@{diopi\-Convex\-Iou\-Mmcv}}
+\index{diopi\-Convex\-Iou\-Mmcv@{diopi\-Convex\-Iou\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Convex\-Iou\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Convex\-Iou\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{ious, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{pointsets, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{polygons}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a43c3866512af6d76616a37a72aad8e81}
+
+
+Return generalized intersection-\/over-\/union (Jaccard index) between point sets and polygons(\-Convex\-Iou version). 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em pointsets} & It has shape (N, 18), indicating (x1, y1, x2, y2, ..., x9, y9) for each row. \\
+\hline
+ & {\em polygons} & It has shape (N, 8), indicating (x1, y1, x2, y2, x3, y3, x4, y4) for each row. \\
+\hline
+\mbox{\tt out}  & {\em ious} & Return the ious between point sets and polygons with the shape (N, K). \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_ae5e3c750f77dd53e565eaef4521cd932}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Correlation\-Backward\-Mmcv@{diopi\-Correlation\-Backward\-Mmcv}}
+\index{diopi\-Correlation\-Backward\-Mmcv@{diopi\-Correlation\-Backward\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Correlation\-Backward\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Correlation\-Backward\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-input1, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-input2, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{input1, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{input2, }
+\item[{int64\-\_\-t}]{k\-H, }
+\item[{int64\-\_\-t}]{k\-W, }
+\item[{int64\-\_\-t}]{patch\-H, }
+\item[{int64\-\_\-t}]{patch\-W, }
+\item[{int64\-\_\-t}]{pad\-H, }
+\item[{int64\-\_\-t}]{pad\-W, }
+\item[{int64\-\_\-t}]{dilation\-H, }
+\item[{int64\-\_\-t}]{dilation\-W, }
+\item[{int64\-\_\-t}]{dilation\-\_\-patch\-H, }
+\item[{int64\-\_\-t}]{dilation\-\_\-patch\-W, }
+\item[{int64\-\_\-t}]{d\-H, }
+\item[{int64\-\_\-t}]{d\-W}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_ae5e3c750f77dd53e565eaef4521cd932}
+
+
+Backward function for the correlation operator works for optical flow correlation computation. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em grad\-\_\-output} & the gradient of {\ttfamily output} \\
+\hline
+\mbox{\tt out}  & {\em grad\-\_\-input1,grad\-\_\-input2} & the gradient of input tensors \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Correlation() 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_abc01973ebeb0e1064cefdb0d5d0ad325}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Correlation\-Mmcv@{diopi\-Correlation\-Mmcv}}
+\index{diopi\-Correlation\-Mmcv@{diopi\-Correlation\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Correlation\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Correlation\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{input1, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{input2, }
+\item[{int64\-\_\-t}]{k\-H, }
+\item[{int64\-\_\-t}]{k\-W, }
+\item[{int64\-\_\-t}]{patch\-H, }
+\item[{int64\-\_\-t}]{patch\-W, }
+\item[{int64\-\_\-t}]{pad\-H, }
+\item[{int64\-\_\-t}]{pad\-W, }
+\item[{int64\-\_\-t}]{dilation\-H, }
+\item[{int64\-\_\-t}]{dilation\-W, }
+\item[{int64\-\_\-t}]{dilation\-\_\-patch\-H, }
+\item[{int64\-\_\-t}]{dilation\-\_\-patch\-W, }
+\item[{int64\-\_\-t}]{d\-H, }
+\item[{int64\-\_\-t}]{d\-W}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_abc01973ebeb0e1064cefdb0d5d0ad325}
+
+
+This correlation operator works for optical flow correlation computation. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em input1,input2} & input tensor \\
+\hline
+ & {\em k\-H,k\-W} & kernel\-\_\-size int\-: The size of sliding window i.\-e. local neighborhood representing the center points and involved in correlation computation. Defaults to 1. k\-H, k\-W = \-\_\-pair(kernel\-\_\-size). \\
+\hline
+ & {\em patch\-H,patch\-W} & max\-\_\-displacement int\-: The radius for computing correlation volume, but the actual working space can be dilated by dilation\-\_\-patch. Defaults to 1. patch\-\_\-size = max\-\_\-displacement $\ast$ 2 + 1. patch\-H, patch\-W = \-\_\-pair(patch\-\_\-size) \\
+\hline
+ & {\em d\-H,d\-W} & stride int\-: The stride of the sliding blocks in the input spatial dimensions. Defaults to 1. d\-H, d\-W = \-\_\-pair(stride) \\
+\hline
+ & {\em pad\-H,pad\-W} & padding int\-: Zero padding added to all four sides of the input1. Defaults to 0. pad\-H, pad\-W = \-\_\-pair(padding). \\
+\hline
+ & {\em dilation\-H,dilation\-W} & dilation int\-: The spacing of local neighborhood that will involved in correlation. Defaults to 1. dilation\-H, dilation\-W = \-\_\-pair(dilation). \\
+\hline
+ & {\em dilation\-\_\-patch\-H,dilation\-\_\-patch\-W} & dilation\-\_\-patch int\-: The spacing between position need to compute correlation. Defaults to 1. dilation\-\_\-patch\-H, dilation\-\_\-patch\-W = \-\_\-pair( dilation\-\_\-patch) \\
+\hline
+\mbox{\tt out}  & {\em output} & correlation operator out tensor for input tensor \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_aa05775d9c1d58cdd503b7de7c4ab255d}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Deform\-Conv\-Backward\-Input\-Mmcv@{diopi\-Deform\-Conv\-Backward\-Input\-Mmcv}}
+\index{diopi\-Deform\-Conv\-Backward\-Input\-Mmcv@{diopi\-Deform\-Conv\-Backward\-Input\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Deform\-Conv\-Backward\-Input\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Deform\-Conv\-Backward\-Input\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-Input, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-Offset, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{input, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{offset, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-Output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{weight, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{columns, }
+\item[{int64\-\_\-t}]{k\-W, }
+\item[{int64\-\_\-t}]{k\-H, }
+\item[{int64\-\_\-t}]{d\-W, }
+\item[{int64\-\_\-t}]{d\-H, }
+\item[{int64\-\_\-t}]{pad\-W, }
+\item[{int64\-\_\-t}]{pad\-H, }
+\item[{int64\-\_\-t}]{dilation\-W, }
+\item[{int64\-\_\-t}]{dilation\-H, }
+\item[{int64\-\_\-t}]{groups, }
+\item[{int64\-\_\-t}]{deform\-\_\-groups, }
+\item[{int64\-\_\-t}]{im2col\-\_\-step}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_aa05775d9c1d58cdd503b7de7c4ab255d}
+
+
+Backward function for Deformable 2\-D convolution(for input and offset). 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em grad\-Output} & the gradient of {\ttfamily output}. \\
+\hline
+\mbox{\tt out}  & {\em grad\-Input,grad\-Offset} & the gradient of input tensors {\ttfamily input} and {\ttfamily offset} \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Deform\-Conv() 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_ab7a85d1457181335fae05cae5fcb04d6}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Deform\-Conv\-Backward\-Parameters\-Mmcv@{diopi\-Deform\-Conv\-Backward\-Parameters\-Mmcv}}
+\index{diopi\-Deform\-Conv\-Backward\-Parameters\-Mmcv@{diopi\-Deform\-Conv\-Backward\-Parameters\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Deform\-Conv\-Backward\-Parameters\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Deform\-Conv\-Backward\-Parameters\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-Output, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-Weight, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{input, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{offset, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{columns, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{ones, }
+\item[{int64\-\_\-t}]{k\-W, }
+\item[{int64\-\_\-t}]{k\-H, }
+\item[{int64\-\_\-t}]{d\-W, }
+\item[{int64\-\_\-t}]{d\-H, }
+\item[{int64\-\_\-t}]{pad\-W, }
+\item[{int64\-\_\-t}]{pad\-H, }
+\item[{int64\-\_\-t}]{dilation\-W, }
+\item[{int64\-\_\-t}]{dilation\-H, }
+\item[{int64\-\_\-t}]{groups, }
+\item[{int64\-\_\-t}]{deform\-\_\-groups, }
+\item[{int64\-\_\-t}]{im2col\-\_\-step, }
+\item[{float}]{scale}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_ab7a85d1457181335fae05cae5fcb04d6}
+
+
+Backward function for Deformable 2\-D convolution(for weight). 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em grad\-Output} & the gradient of {\ttfamily output}. \\
+\hline
+\mbox{\tt out}  & {\em grad\-Weight} & the gradient of input tensors {\ttfamily weight} \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Deform\-Conv() 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_afda6ba6a135365697156ed31be41edbb}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Deform\-Conv\-Mmcv@{diopi\-Deform\-Conv\-Mmcv}}
+\index{diopi\-Deform\-Conv\-Mmcv@{diopi\-Deform\-Conv\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Deform\-Conv\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Deform\-Conv\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{output, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{columns, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{ones, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{input, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{weight, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{offset, }
+\item[{int64\-\_\-t}]{k\-W, }
+\item[{int64\-\_\-t}]{k\-H, }
+\item[{int64\-\_\-t}]{d\-W, }
+\item[{int64\-\_\-t}]{d\-H, }
+\item[{int64\-\_\-t}]{pad\-W, }
+\item[{int64\-\_\-t}]{pad\-H, }
+\item[{int64\-\_\-t}]{dilation\-W, }
+\item[{int64\-\_\-t}]{dilation\-H, }
+\item[{int64\-\_\-t}]{groups, }
+\item[{int64\-\_\-t}]{deform\-\_\-groups, }
+\item[{int64\-\_\-t}]{im2col\-\_\-step}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_afda6ba6a135365697156ed31be41edbb}
+
+
+Deformable 2\-D convolution. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em input} & Input feature, shape (B, C\-\_\-in, H\-\_\-in, W\-\_\-in) \\
+\hline
+ & {\em weight} & weight tensor, \\
+\hline
+ & {\em offset} & Offset for deformable convolution, shape (B, deform\-\_\-groups$\ast$kernel\-\_\-size\mbox{[}0\mbox{]}$\ast$kernel\-\_\-size\mbox{[}1\mbox{]}$\ast$2, H\-\_\-out, W\-\_\-out), H\-\_\-out, W\-\_\-out are equal to the output's. kernel\-\_\-size(int, tuple)\-: Size of the convolving kernel. An offset is like {\ttfamily \mbox{[}y0, x0, y1, x1, y2, x2, ..., y8, x8\mbox{]}}. The spatial arrangement is like\-: .. code\-:\-: text (x0, y0) (x1, y1) (x2, y2) (x3, y3) (x4, y4) (x5, y5) (x6, y6) (x7, y7) (x8, y8) \\
+\hline
+ & {\em k\-H,k\-W} & k\-H=weight.\-size(2),k\-W=weight.\-size(3) \\
+\hline
+ & {\em d\-H,d\-W} & stride (int, tuple)\-: Stride of the convolution. Default\-: 1. d\-W=stride\mbox{[}1\mbox{]}, d\-H=stride\mbox{[}0\mbox{]} \\
+\hline
+ & {\em pad\-H,pad\-W} & padding (int or tuple)\-: Zero-\/padding added to both sides of the input. Default\-: 0. pad\-W=padding\mbox{[}1\mbox{]}, pad\-H=padding\mbox{[}0\mbox{]}, \\
+\hline
+ & {\em dilation\-H,dilation\-W} & dilation (int or tuple)\-: Spacing between kernel elements. Default\-: 1. dilation\-W= dilation\mbox{[}1\mbox{]}, dilation\-H= dilation\mbox{[}0\mbox{]} \\
+\hline
+ & {\em groups} & int\-: Number of blocked connections from input. channels to output channels. Default\-: 1. \\
+\hline
+ & {\em deform\-\_\-groups} & int\-: Number of deformable group partitions. \\
+\hline
+ & {\em im2col\-\_\-step} & int\-: Number of samples processed by im2col\-\_\-cuda\-\_\-kernel per call. It will work when {\ttfamily batch\-\_\-size} $>$ {\ttfamily im2col\-\_\-step}, but {\ttfamily batch\-\_\-size} must be divisible by {\ttfamily im2col\-\_\-step}. Default\-: 32. {\ttfamily New in version 1.\-3.\-17.} \\
+\hline
+\mbox{\tt out}  & {\em output,columns,ones} & Output of the layer. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a8d784a0fd34860c0ccd14ba95ee13b69}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Diff\-Iou\-Rotated\-Sort\-Vertices\-Mmcv@{diopi\-Diff\-Iou\-Rotated\-Sort\-Vertices\-Mmcv}}
+\index{diopi\-Diff\-Iou\-Rotated\-Sort\-Vertices\-Mmcv@{diopi\-Diff\-Iou\-Rotated\-Sort\-Vertices\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Diff\-Iou\-Rotated\-Sort\-Vertices\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Diff\-Iou\-Rotated\-Sort\-Vertices\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t $\ast$}]{out, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{vertices, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{mask, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{num\-\_\-valid}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a8d784a0fd34860c0ccd14ba95ee13b69}
+
+
+Sort indices. Note\-: why 9? the polygon has maximal 8 vertices. +1 to duplicate the first element. the index should have following structure\-: (A, B, C, ... , A, X, X, X) and X indicates the index of arbitrary elements in the last 16 (intersections not corners) with value 0 and mask False. (cause they have zero value and zero gradient) 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em vertices} & (B, N, 24, 2) Box vertices. \\
+\hline
+ & {\em mask} & (B, N, 24) Mask. \\
+\hline
+ & {\em num\-\_\-valid} & (B, N) sum of mask, dim=2. \\
+\hline
+\mbox{\tt out}  & {\em out} & (B, N, 9) Sorted indices. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a354b8b75598f8d45de7ea3f51a09c25d}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Dynamic\-Voxelize\-Mmcv@{diopi\-Dynamic\-Voxelize\-Mmcv}}
+\index{diopi\-Dynamic\-Voxelize\-Mmcv@{diopi\-Dynamic\-Voxelize\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Dynamic\-Voxelize\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Dynamic\-Voxelize\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{coors, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{points, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{voxel\-\_\-size, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{coors\-\_\-range, }
+\item[{const int64\-\_\-t}]{N\-Dim}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a354b8b75598f8d45de7ea3f51a09c25d}
+
+
+Convert kitti points(N, $>$=3) to voxels(max\-\_\-points == -\/1 or max\-\_\-voxels == -\/1). 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Hard\-Voxelize(). 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_afe6833e557fc39ea9d5f9fcdd7196ea5}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Furthest\-Point\-Sampling\-Mmcv@{diopi\-Furthest\-Point\-Sampling\-Mmcv}}
+\index{diopi\-Furthest\-Point\-Sampling\-Mmcv@{diopi\-Furthest\-Point\-Sampling\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Furthest\-Point\-Sampling\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Furthest\-Point\-Sampling\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{temp\-\_\-tensor, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{idx\-\_\-tensor, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{points\-\_\-xyz, }
+\item[{int64\-\_\-t}]{B, }
+\item[{int64\-\_\-t}]{N, }
+\item[{int64\-\_\-t}]{num\-\_\-points}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_afe6833e557fc39ea9d5f9fcdd7196ea5}
+
+
+Uses iterative furthest point sampling to select a set of features whose corresponding points have the furthest distance. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em points\-\_\-xyz} & (B, N, 3) where N $>$ num\-\_\-points. \\
+\hline
+ & {\em num\-\_\-points} & int\-: Number of points in the sampled set. \\
+\hline
+ & {\em points\-\_\-dist} & (B, N, N) Distance between each point pair. \\
+\hline
+ & {\em B,N} & points\-\_\-xyz (B, N, 3) \\
+\hline
+ & {\em num\-\_\-points} & int\-: Number of points in the sampled set. \\
+\hline
+\mbox{\tt out}  & {\em idx\-\_\-tensor} & (B, num\-\_\-points) indices of the sampled points. \\
+\hline
+ & {\em temp\-\_\-tensor} & tmp result tensor for calculations. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_ab4d154086e0ec5daaf9eb368d963a8df}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Furthest\-Point\-Sampling\-With\-Dist\-Mmcv@{diopi\-Furthest\-Point\-Sampling\-With\-Dist\-Mmcv}}
+\index{diopi\-Furthest\-Point\-Sampling\-With\-Dist\-Mmcv@{diopi\-Furthest\-Point\-Sampling\-With\-Dist\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Furthest\-Point\-Sampling\-With\-Dist\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Furthest\-Point\-Sampling\-With\-Dist\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{temp\-\_\-tensor, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{idx\-\_\-tensor, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{points\-\_\-dist, }
+\item[{int64\-\_\-t}]{B, }
+\item[{int64\-\_\-t}]{N, }
+\item[{int64\-\_\-t}]{num\-\_\-points}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_ab4d154086e0ec5daaf9eb368d963a8df}
+
+
+Uses iterative furthest point sampling to select a set of features whose corresponding points have the furthest distance(with dist version). 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em points\-\_\-dist} & (B, N, N) Distance between each point pair. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Furthest\-Point\-Sampling() 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_a39ee4c1bbce0e96ae1c690b264c541af}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Fused\-Bias\-Leakyrelu\-Mmcv@{diopi\-Fused\-Bias\-Leakyrelu\-Mmcv}}
+\index{diopi\-Fused\-Bias\-Leakyrelu\-Mmcv@{diopi\-Fused\-Bias\-Leakyrelu\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Fused\-Bias\-Leakyrelu\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Fused\-Bias\-Leakyrelu\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t $\ast$}]{out, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{input, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{bias, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{refer, }
+\item[{int64\-\_\-t}]{act, }
+\item[{int64\-\_\-t}]{grad, }
+\item[{float}]{alpha, }
+\item[{float}]{scale}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a39ee4c1bbce0e96ae1c690b264c541af}
+
+
+Calculate second order deviation. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em input} & Input feature map. \\
+\hline
+ & {\em bias} & (nn.\-Parameter)\-: The bias from convolution operation. \\
+\hline
+ & {\em refer} & empty tensor for calculations. \\
+\hline
+ & {\em scale} & (float, optional)\-: A scalar to adjust the variance of the feature map. Defaults to 2$\ast$$\ast$0.5. \\
+\hline
+ & {\em act} & =3 \\
+\hline
+ & {\em grad} & =0 \\
+\hline
+ & {\em alpha} & negative\-\_\-slope (float, optional)\-: Same as nn.\-Leaky\-Relu. Defaults to 0.\-2. alpha=negative\-\_\-slope. \\
+\hline
+\mbox{\tt out}  & {\em out,\-:} & Feature map after non-\/linear activation. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a562605c9d23bd4dce2d70a8a02bb7db3}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Gather\-Points\-Backward\-Mmcv@{diopi\-Gather\-Points\-Backward\-Mmcv}}
+\index{diopi\-Gather\-Points\-Backward\-Mmcv@{diopi\-Gather\-Points\-Backward\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Gather\-Points\-Backward\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Gather\-Points\-Backward\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-points, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-out, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{idx, }
+\item[{int64\-\_\-t}]{b, }
+\item[{int64\-\_\-t}]{c, }
+\item[{int64\-\_\-t}]{n, }
+\item[{int64\-\_\-t}]{npoints}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a562605c9d23bd4dce2d70a8a02bb7db3}
+
+
+Backward function for Gather points with given index. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em grad\-\_\-out} & the gradient of {\ttfamily out}. \\
+\hline
+\mbox{\tt out}  & {\em grad\-\_\-points} & the gradient of {\ttfamily points}. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Gather\-Points() 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_a21d5bc1bcd8d166f0fa4a1d08760acd4}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Gather\-Points\-Mmcv@{diopi\-Gather\-Points\-Mmcv}}
+\index{diopi\-Gather\-Points\-Mmcv@{diopi\-Gather\-Points\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Gather\-Points\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Gather\-Points\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{out, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{points, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{idx, }
+\item[{int64\-\_\-t}]{b, }
+\item[{int64\-\_\-t}]{c, }
+\item[{int64\-\_\-t}]{n, }
+\item[{int64\-\_\-t}]{npoints}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a21d5bc1bcd8d166f0fa4a1d08760acd4}
+
+
+Gather points with given index. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em points} & features (B, C, N) features to gather. points = features \\
+\hline
+ & {\em idx} & indices (B, M) where M is the number of points. idx = indices \\
+\hline
+ & {\em b,c,n} & points (b, c, n) features. \\
+\hline
+\mbox{\tt out}  & {\em out} & (B, C, M) where M is the number of points. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a78ec9fbaaa4ced7cdd92e9df6a2d690f}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Group\-Points\-Backward\-Mmcv@{diopi\-Group\-Points\-Backward\-Mmcv}}
+\index{diopi\-Group\-Points\-Backward\-Mmcv@{diopi\-Group\-Points\-Backward\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Group\-Points\-Backward\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Group\-Points\-Backward\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-points, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-out, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{idx, }
+\item[{int64\-\_\-t}]{b, }
+\item[{int64\-\_\-t}]{c, }
+\item[{int64\-\_\-t}]{n, }
+\item[{int64\-\_\-t}]{npoints, }
+\item[{int64\-\_\-t}]{nsample}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a78ec9fbaaa4ced7cdd92e9df6a2d690f}
+
+
+Backward function for Groups points with a ball query of radius. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em grad\-\_\-out} & the gradient of {\ttfamily out}. \\
+\hline
+\mbox{\tt out}  & {\em grad\-\_\-points} & the gradient of {\ttfamily points}. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Group\-Points() 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_abf90824daa18269450bff49ac317a33b}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Group\-Points\-Mmcv@{diopi\-Group\-Points\-Mmcv}}
+\index{diopi\-Group\-Points\-Mmcv@{diopi\-Group\-Points\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Group\-Points\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Group\-Points\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{out, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{points, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{idx, }
+\item[{int64\-\_\-t}]{b, }
+\item[{int64\-\_\-t}]{c, }
+\item[{int64\-\_\-t}]{n, }
+\item[{int64\-\_\-t}]{npoints, }
+\item[{int64\-\_\-t}]{nsample}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_abf90824daa18269450bff49ac317a33b}
+
+
+Groups points with a ball query of radius. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em points} & features (Tensor)\-: Tensor of features to group, input shape is (B, C, N) or stacked inputs (N1 + N2 ..., C). points=features/features\-\_\-tensor. \\
+\hline
+ & {\em idx} & indices (Tensor)\-: The indices of features to group with, input shape is (B, npoint, nsample) or stacked inputs (M1 + M2 ..., nsample). idx=indices. \\
+\hline
+ & {\em b,c,n} & points (b, c, n) \\
+\hline
+ & {\em npoints,nsample} & idx (B, npoint, nsample) \\
+\hline
+\mbox{\tt out}  & {\em out} & Grouped features, the shape is (B, C, npoint, nsample) or (M1 + M2 ..., C, nsample). \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_acec6bb95535bffc818a6e33f8d530ed5}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Hard\-Voxelize\-Mmcv@{diopi\-Hard\-Voxelize\-Mmcv}}
+\index{diopi\-Hard\-Voxelize\-Mmcv@{diopi\-Hard\-Voxelize\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Hard\-Voxelize\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Hard\-Voxelize\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{voxels, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{coors, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{num\-\_\-points\-\_\-per\-\_\-voxel, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{voxel\-\_\-num, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{points, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{voxel\-\_\-size, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{coors\-\_\-range, }
+\item[{const int64\-\_\-t}]{max\-\_\-points, }
+\item[{const int64\-\_\-t}]{max\-\_\-voxels, }
+\item[{const int64\-\_\-t}]{N\-Dim, }
+\item[{const bool}]{deterministic}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_acec6bb95535bffc818a6e33f8d530ed5}
+
+
+Convert kitti points(N, $>$=3) to voxels. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em points} & \mbox{[}N, ndim\mbox{]}. Points\mbox{[}\-:, \-:3\mbox{]} contain xyz points and points\mbox{[}\-:, 3\-:\mbox{]} contain other information like reflectivity. \\
+\hline
+ & {\em voxel\-\_\-size} & (tuple or float)\-: The size of voxel with the shape of \mbox{[}3\mbox{]}. \\
+\hline
+ & {\em coors\-\_\-range} & (tuple or float)\-: The coordinate range of voxel with the shape of \mbox{[}6\mbox{]}. \\
+\hline
+ & {\em max\-\_\-points} & (int, optional)\-: maximum points contained in a voxel. if max\-\_\-points=-\/1, it means using dynamic\-\_\-voxelize. Default\-: 35. \\
+\hline
+ & {\em max\-\_\-voxels} & (int, optional)\-: maximum voxels this function create. for second, 20000 is a good choice. Users should shuffle points before call this function because max\-\_\-voxels may drop points. Default\-: 20000. \\
+\hline
+ & {\em N\-Dim} & =3. \\
+\hline
+ & {\em deterministic} & bool. whether to invoke the non-\/deterministic version of hard-\/voxelization implementations. non-\/deterministic version is considerablly fast but is not deterministic. only affects hard voxelization. default True. for more information of this argument and the implementation insights, please refer to the following links\-: \href{https://github.com/open-mmlab/mmdetection3d/issues/894}{\tt https\-://github.\-com/open-\/mmlab/mmdetection3d/issues/894} \href{https://github.com/open-mmlab/mmdetection3d/pull/904}{\tt https\-://github.\-com/open-\/mmlab/mmdetection3d/pull/904} it is an experimental feature and we will appreciate it if you could share with us the failing cases. \\
+\hline
+\mbox{\tt out}  & {\em voxels,coors,num\-\_\-points\-\_\-per\-\_\-voxel,voxel\-\_\-num} & A tuple contains three elements. The first one is the output voxels with the shape of \mbox{[}M, max\-\_\-points, n\-\_\-dim\mbox{]}, which only contain points and returned when max\-\_\-points != -\/1. The second is the voxel coordinates with shape of \mbox{[}M, 3\mbox{]}. The last is number of point per voxel with the shape of \mbox{[}M\mbox{]}, which only returned when max\-\_\-points != -\/1. voxel\-\_\-num is for index select. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a17226b599b06037020bc20247c92701d}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Iou3d\-Boxes\-Overlap\-Bev\-Mmcv@{diopi\-Iou3d\-Boxes\-Overlap\-Bev\-Mmcv}}
+\index{diopi\-Iou3d\-Boxes\-Overlap\-Bev\-Mmcv@{diopi\-Iou3d\-Boxes\-Overlap\-Bev\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Iou3d\-Boxes\-Overlap\-Bev\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Iou3d\-Boxes\-Overlap\-Bev\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{ans\-\_\-overlap, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{boxes\-\_\-a, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{boxes\-\_\-b}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a17226b599b06037020bc20247c92701d}
+
+
+Calculate boxes B\-E\-V overlap. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em boxes\-\_\-a,\-:} & Input boxes a with shape (M, 7). \\
+\hline
+ & {\em boxes\-\_\-b,\-:} & Input boxes b with shape (N, 7). \\
+\hline
+\mbox{\tt out}  & {\em ans\-\_\-overlap,\-:} & B\-E\-V overlap result with shape (M, N). \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a6062a48d0a84817585db148ee9c7f1b5}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Iou3d\-Nms3d\-Mmcv@{diopi\-Iou3d\-Nms3d\-Mmcv}}
+\index{diopi\-Iou3d\-Nms3d\-Mmcv@{diopi\-Iou3d\-Nms3d\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Iou3d\-Nms3d\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Iou3d\-Nms3d\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{keep, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{keep\-\_\-num, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{boxes, }
+\item[{float}]{nms\-\_\-overlap\-\_\-thresh}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a6062a48d0a84817585db148ee9c7f1b5}
+
+
+3\-D N\-M\-S function G\-P\-U implementation (for B\-E\-V boxes). 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em boxes} & Input boxes with the shape of (N, 7) (\mbox{[}x, y, z, dx, dy, dz, heading\mbox{]}). \\
+\hline
+ & {\em nms\-\_\-overlap\-\_\-thresh} & float\-: Overlap threshold of N\-M\-S. \\
+\hline
+\mbox{\tt out}  & {\em keep} & Indexes after N\-M\-S. \\
+\hline
+ & {\em keep\-\_\-num} & num\-\_\-out for keep \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a78982080fd88c8b1b422942ae9cd82eb}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Iou3d\-Nms3d\-Normal\-Mmcv@{diopi\-Iou3d\-Nms3d\-Normal\-Mmcv}}
+\index{diopi\-Iou3d\-Nms3d\-Normal\-Mmcv@{diopi\-Iou3d\-Nms3d\-Normal\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Iou3d\-Nms3d\-Normal\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Iou3d\-Nms3d\-Normal\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{keep, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{keep\-\_\-num, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{boxes, }
+\item[{float}]{nms\-\_\-overlap\-\_\-thresh}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a78982080fd88c8b1b422942ae9cd82eb}
+
+
+Normal 3\-D N\-M\-S function G\-P\-U implementation. The overlap of two boxes for Io\-U calculation is defined as the exact overlapping area of the two boxes W\-I\-T\-H their yaw angle set to 0. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Iou3d\-Nms3d() 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_a0f15c4534128996403127c81bcfff1b7}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Knn\-Mmcv@{diopi\-Knn\-Mmcv}}
+\index{diopi\-Knn\-Mmcv@{diopi\-Knn\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Knn\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Knn\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{idx\-\_\-tensor, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{dist2\-\_\-tensor, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{xyz\-\_\-tensor, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{new\-\_\-xyz\-\_\-tensor, }
+\item[{int64\-\_\-t}]{b, }
+\item[{int64\-\_\-t}]{n, }
+\item[{int64\-\_\-t}]{m, }
+\item[{int64\-\_\-t}]{nsample}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a0f15c4534128996403127c81bcfff1b7}
+
+
+K\-N\-N based on heap data structure. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em xyz\-\_\-tensor} & (B, N, 3) if transposed == False, else (B, 3, N). xyz coordinates of the features. \\
+\hline
+ & {\em new\-\_\-xyz\-\_\-tensor} & (B, npoint, 3) if transposed is False, else (B, 3, npoint). centers of the knn query. Default\-: None. \\
+\hline
+ & {\em nsample} & int, number of nearest neighbors. \\
+\hline
+ & {\em b,n} & xyz\-\_\-tensor (b, n, 3) \\
+\hline
+ & {\em m} & = npoint \\
+\hline
+\mbox{\tt out}  & {\em idx\-\_\-tensor} & (B, npoint, k) tensor with the indices of the features that form k-\/nearest neighbours. \\
+\hline
+ & {\em dist2\-\_\-tensor} & (B, npoint, k) distance tensors after calculations. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_ab77eca8de69b126f152f043e1b58087a}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Min\-Area\-Polygons\-Mmcv@{diopi\-Min\-Area\-Polygons\-Mmcv}}
+\index{diopi\-Min\-Area\-Polygons\-Mmcv@{diopi\-Min\-Area\-Polygons\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Min\-Area\-Polygons\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Min\-Area\-Polygons\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{polygons, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{pointsets}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_ab77eca8de69b126f152f043e1b58087a}
+
+
+Find the smallest polygons that surrounds all points in the point sets. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em pointsets} & point sets with shape (N, 18). \\
+\hline
+\mbox{\tt out}  & {\em polygons} & Return the smallest polygons with shape (N, 8). \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_ac02b087b711a5dc6fcac55571af2e54b}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Ms\-Deform\-Attn\-Backward\-Mmcv@{diopi\-Ms\-Deform\-Attn\-Backward\-Mmcv}}
+\index{diopi\-Ms\-Deform\-Attn\-Backward\-Mmcv@{diopi\-Ms\-Deform\-Attn\-Backward\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Ms\-Deform\-Attn\-Backward\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Ms\-Deform\-Attn\-Backward\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-value, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-sampling\-\_\-loc, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-attn\-\_\-weight, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{value, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{spatial\-\_\-shapes, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{level\-\_\-start\-\_\-index, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{sampling\-\_\-loc, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{attn\-\_\-weight, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-output, }
+\item[{int64\-\_\-t}]{im2col\-\_\-step}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_ac02b087b711a5dc6fcac55571af2e54b}
+
+
+Backward function for An attention module used in Deformable-\/\-Detr. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em grad\-\_\-output} & the gradient of {\ttfamily out}. \\
+\hline
+\mbox{\tt out}  & {\em grad\-\_\-value,grad\-\_\-sampling\-\_\-loc,grad\-\_\-attn\-\_\-weight} & the gradient of {\ttfamily value},{\ttfamily sampling\-\_\-loc},{\ttfamily attn\-\_\-weight}. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Ms\-Deform\-Attn() 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_a985e39cc25a0ccacff005468330ae88e}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Ms\-Deform\-Attn\-Mmcv@{diopi\-Ms\-Deform\-Attn\-Mmcv}}
+\index{diopi\-Ms\-Deform\-Attn\-Mmcv@{diopi\-Ms\-Deform\-Attn\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Ms\-Deform\-Attn\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Ms\-Deform\-Attn\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t $\ast$}]{out, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{value, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{spatial\-\_\-shapes, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{level\-\_\-start\-\_\-index, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{sampling\-\_\-loc, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{attn\-\_\-weight, }
+\item[{int64\-\_\-t}]{im2col\-\_\-step}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a985e39cc25a0ccacff005468330ae88e}
+
+
+An attention module used in Deformable-\/\-Detr. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em value} & The value has shape (bs, num\-\_\-keys, mum\-\_\-heads, embed\-\_\-dims//num\-\_\-heads) \\
+\hline
+ & {\em spatial\-\_\-shapes} & Spatial shape of each feature map, has shape (num\-\_\-levels, 2), last dimension 2 represent (h, w). \\
+\hline
+ & {\em level\-\_\-start\-\_\-index,\-:} & level\-\_\-start\-\_\-index input tensor. \\
+\hline
+ & {\em sampling\-\_\-loc} & The location of sampling points, has shape (bs ,num\-\_\-queries, num\-\_\-heads, num\-\_\-levels, num\-\_\-points, 2), the last dimension 2 represent (x, y). \\
+\hline
+ & {\em attn\-\_\-weight} & The weight of sampling points used when calculate the attention, has shape (bs ,num\-\_\-queries, num\-\_\-heads, num\-\_\-levels, num\-\_\-points). \\
+\hline
+ & {\em im2col\-\_\-step} & The step used in image to column. \\
+\hline
+\mbox{\tt out}  & {\em out} & attention module out which has shape (bs, num\-\_\-queries, embed\-\_\-dims) \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a2ef2ff08ac9fdf4d817707343a5e567f}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Nms\-Mmcv@{diopi\-Nms\-Mmcv}}
+\index{diopi\-Nms\-Mmcv@{diopi\-Nms\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Nms\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Nms\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t $\ast$}]{out, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{dets, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{scores, }
+\item[{double}]{iou\-\_\-threshold, }
+\item[{int64\-\_\-t}]{offset}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a2ef2ff08ac9fdf4d817707343a5e567f}
+
+
+N\-M\-S from mmcv. This function is modified from\-: \href{https://github.com/pytorch/vision/}{\tt https\-://github.\-com/pytorch/vision/}. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em dets} & boxes boxes in shape (N, 4). dets=boxes. \\
+\hline
+ & {\em scores} & scores in shape (N, ). \\
+\hline
+ & {\em iou\-\_\-threshold} & float\-: Io\-U threshold for N\-M\-S. \\
+\hline
+ & {\em offset} & (int, 0 or 1)\-: boxes' width or height is (x2 -\/ x1 + offset). \\
+\hline
+\mbox{\tt out}  & {\em out} & indice, which always have the same data type as the input. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_af6cae98a1886c8a73e4acbd332de4a3f}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Nms\-Rotated\-Mmcv@{diopi\-Nms\-Rotated\-Mmcv}}
+\index{diopi\-Nms\-Rotated\-Mmcv@{diopi\-Nms\-Rotated\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Nms\-Rotated\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Nms\-Rotated\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t $\ast$}]{out, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{dets, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{scores, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{order\-\_\-t, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{dets\-\_\-sorted, }
+\item[{double}]{iou\-\_\-threshold, }
+\item[{int64\-\_\-t}]{multi\-\_\-label}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_af6cae98a1886c8a73e4acbd332de4a3f}
+
+
+Performs non-\/maximum suppression (N\-M\-S) on the rotated boxes according to their intersection-\/over-\/union (Io\-U). 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em dets} & Rotated boxes in shape (N, 5). They are expected to be in (x\-\_\-ctr, y\-\_\-ctr, width, height, angle\-\_\-radian) format. \\
+\hline
+ & {\em order\-\_\-t,dets\-\_\-sorted} & order tensor and ordered dets \\
+\hline
+ & {\em scores} & scores in shape (N, ). \\
+\hline
+ & {\em iou\-\_\-threshold} & float\-: Io\-U thresh for N\-M\-S. \\
+\hline
+ & {\em multi\-\_\-label} & boxes' label in shape (N,). \\
+\hline
+ & {\em out} & indice, which is always the same data type as the input. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a8288e33206c62174dbe85253cbbf6ca9}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Points\-In\-Boxes\-All\-Mmcv@{diopi\-Points\-In\-Boxes\-All\-Mmcv}}
+\index{diopi\-Points\-In\-Boxes\-All\-Mmcv@{diopi\-Points\-In\-Boxes\-All\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Points\-In\-Boxes\-All\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Points\-In\-Boxes\-All\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{box\-\_\-idx\-\_\-of\-\_\-points, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{boxes, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{pts}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a8288e33206c62174dbe85253cbbf6ca9}
+
+
+Find the box in which each point is(\-All). 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em pts} & points \mbox{[}B, M, 3\mbox{]}, \mbox{[}x, y, z\mbox{]} in Li\-D\-A\-R/\-D\-E\-P\-T\-H coordinate. pts=points \\
+\hline
+ & {\em boxes} & \mbox{[}B, T, 7\mbox{]}, num\-\_\-valid\-\_\-boxes $<$= T, \mbox{[}x, y, z, x\-\_\-size, y\-\_\-size, z\-\_\-size, rz\mbox{]} in Li\-D\-A\-R/\-D\-E\-P\-T\-H coordinate, (x, y, z) is the bottom center. \\
+\hline
+\mbox{\tt out}  & {\em box\-\_\-idx\-\_\-of\-\_\-points} & Return the box indices of points with the shape of (B, M). Default background = -\/1. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a62193f21fb14a693add32d0f233abdf2}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Points\-In\-Boxes\-Part\-Mmcv@{diopi\-Points\-In\-Boxes\-Part\-Mmcv}}
+\index{diopi\-Points\-In\-Boxes\-Part\-Mmcv@{diopi\-Points\-In\-Boxes\-Part\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Points\-In\-Boxes\-Part\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Points\-In\-Boxes\-Part\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{box\-\_\-idx\-\_\-of\-\_\-points, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{boxes, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{pts}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a62193f21fb14a693add32d0f233abdf2}
+
+
+Find the box in which each point is(\-Part). 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em pts} & points \mbox{[}B, M, 3\mbox{]}, \mbox{[}x, y, z\mbox{]} in Li\-D\-A\-R/\-D\-E\-P\-T\-H coordinate. pts=points \\
+\hline
+ & {\em boxes} & \mbox{[}B, T, 7\mbox{]}, num\-\_\-valid\-\_\-boxes $<$= T, \mbox{[}x, y, z, x\-\_\-size, y\-\_\-size, z\-\_\-size, rz\mbox{]} in Li\-D\-A\-R/\-D\-E\-P\-T\-H coordinate, (x, y, z) is the bottom center. \\
+\hline
+\mbox{\tt out}  & {\em box\-\_\-idx\-\_\-of\-\_\-points} & Return the box indices of points with the shape of (B, M). Default background = -\/1. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a92bc4ed9919ad6858a68b46f3f1a84e7}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Points\-In\-Polygons\-Mmcv@{diopi\-Points\-In\-Polygons\-Mmcv}}
+\index{diopi\-Points\-In\-Polygons\-Mmcv@{diopi\-Points\-In\-Polygons\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Points\-In\-Polygons\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Points\-In\-Polygons\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{points, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{polygons}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a92bc4ed9919ad6858a68b46f3f1a84e7}
+
+
+Judging whether points are inside polygons, which is used in the A\-T\-S\-S assignment for the rotated boxes. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em points} & It has shape (B, 2), indicating (x, y). M means the number of predicted points. \\
+\hline
+ & {\em polygons} & It has shape (M, 8), indicating (x1, y1, x2, y2, x3, y3, x4, y4). M means the number of ground truth polygons. \\
+\hline
+\mbox{\tt out}  & {\em output} & Return the result with the shape of (B, M), 1 indicates that the point is inside the polygon, 0 indicates that the point is outside the polygon. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a80414a2b33de37a4f81afac19f55eb52}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Prroi\-Poolbackward\-Mmcv@{diopi\-Prroi\-Poolbackward\-Mmcv}}
+\index{diopi\-Prroi\-Poolbackward\-Mmcv@{diopi\-Prroi\-Poolbackward\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Prroi\-Poolbackward\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Prroi\-Poolbackward\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-input, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{rois, }
+\item[{int64\-\_\-t}]{pooled\-\_\-height, }
+\item[{int64\-\_\-t}]{pooled\-\_\-width, }
+\item[{float}]{spatial\-\_\-scale}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a80414a2b33de37a4f81afac19f55eb52}
+
+
+Backward function for the operation of precision Ro\-I pooling. The implementation of Pr\-Ro\-I\-Pool is modified from \href{https://github.com/vacancy/PreciseRoIPooling/}{\tt https\-://github.\-com/vacancy/\-Precise\-Ro\-I\-Pooling/}(grad of input) 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em grad\-\_\-output} & the gradient of {\ttfamily output}. \\
+\hline
+\mbox{\tt out}  & {\em grad\-\_\-input} & the gradient of {\ttfamily input}. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Prroi\-Pool(). 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_aaa988a583eca2bfc57486008cd3665b0}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Prroi\-Pool\-Coor\-Backward\-Mmcv@{diopi\-Prroi\-Pool\-Coor\-Backward\-Mmcv}}
+\index{diopi\-Prroi\-Pool\-Coor\-Backward\-Mmcv@{diopi\-Prroi\-Pool\-Coor\-Backward\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Prroi\-Pool\-Coor\-Backward\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Prroi\-Pool\-Coor\-Backward\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-rois, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{input, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{rois, }
+\item[{int64\-\_\-t}]{pooled\-\_\-height, }
+\item[{int64\-\_\-t}]{pooled\-\_\-width, }
+\item[{float}]{spatial\-\_\-scale}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_aaa988a583eca2bfc57486008cd3665b0}
+
+
+The operation of precision Ro\-I pooling. The implementation of Pr\-Ro\-I\-Pool is modified from \href{https://github.com/vacancy/PreciseRoIPooling/}{\tt https\-://github.\-com/vacancy/\-Precise\-Ro\-I\-Pooling/}(grad of rois) 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+\mbox{\tt out}  & {\em grad\-\_\-rois} & the gradient of {\ttfamily rois}. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Prroi\-Pool(), diopi\-Prroi\-Poolbackward(). 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_a1748375ea8852960f3ed2ece6967628c}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Prroi\-Pool\-Mmcv@{diopi\-Prroi\-Pool\-Mmcv}}
+\index{diopi\-Prroi\-Pool\-Mmcv@{diopi\-Prroi\-Pool\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Prroi\-Pool\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Prroi\-Pool\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{input, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{rois, }
+\item[{int64\-\_\-t}]{pooled\-\_\-height, }
+\item[{int64\-\_\-t}]{pooled\-\_\-width, }
+\item[{float}]{spatial\-\_\-scale}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a1748375ea8852960f3ed2ece6967628c}
+
+
+The operation of precision Ro\-I pooling. The implementation of Pr\-Ro\-I\-Pool is modified from \href{https://github.com/vacancy/PreciseRoIPooling/}{\tt https\-://github.\-com/vacancy/\-Precise\-Ro\-I\-Pooling/}. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em input} & (torch.\-Tensor)\-: The feature map. \\
+\hline
+ & {\em rois} & (torch.\-Tensor)\-: The Ro\-I bboxes in \mbox{[}tl\-\_\-x, tl\-\_\-y, br\-\_\-x, br\-\_\-y\mbox{]} format. \\
+\hline
+ & {\em pooled\-\_\-height,pooled\-\_\-width} & output\-\_\-size (Union\mbox{[}int, tuple\mbox{]})\-: h, w. pooled\-\_\-height=h pooled\-\_\-width=w. \\
+\hline
+ & {\em spatial\-\_\-scale} & (float, optional)\-: scale the input boxes by this number. Defaults to 1.\-0. \\
+\hline
+\mbox{\tt out}  & {\em output} & The pooled results. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a9ca0c1972fa7aaba8e4c768b7820039d}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Riroi\-Align\-Rotated\-Backward\-Mmcv@{diopi\-Riroi\-Align\-Rotated\-Backward\-Mmcv}}
+\index{diopi\-Riroi\-Align\-Rotated\-Backward\-Mmcv@{diopi\-Riroi\-Align\-Rotated\-Backward\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Riroi\-Align\-Rotated\-Backward\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Riroi\-Align\-Rotated\-Backward\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{bottom\-\_\-grad, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{top\-\_\-grad, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{rois, }
+\item[{int64\-\_\-t}]{pooled\-\_\-height, }
+\item[{int64\-\_\-t}]{pooled\-\_\-width, }
+\item[{int64\-\_\-t}]{num\-\_\-samples, }
+\item[{int64\-\_\-t}]{num\-\_\-orientations, }
+\item[{float}]{spatial\-\_\-scale, }
+\item[{bool}]{clockwise}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a9ca0c1972fa7aaba8e4c768b7820039d}
+
+
+Backward function for Rotation-\/invariant Ro\-I align pooling layer for rotated proposals. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em top\-\_\-grad} & the gradient of {\ttfamily output}. \\
+\hline
+\mbox{\tt out}  & {\em bottom\-\_\-grad} & the gradient of {\ttfamily features}. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Riroi\-Align\-Rotated() 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_aeed72f619395388da087def32b3da49e}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Riroi\-Align\-Rotated\-Mmcv@{diopi\-Riroi\-Align\-Rotated\-Mmcv}}
+\index{diopi\-Riroi\-Align\-Rotated\-Mmcv@{diopi\-Riroi\-Align\-Rotated\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Riroi\-Align\-Rotated\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Riroi\-Align\-Rotated\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{features, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{rois, }
+\item[{int64\-\_\-t}]{pooled\-\_\-height, }
+\item[{int64\-\_\-t}]{pooled\-\_\-width, }
+\item[{int64\-\_\-t}]{num\-\_\-samples, }
+\item[{int64\-\_\-t}]{num\-\_\-orientations, }
+\item[{float}]{spatial\-\_\-scale, }
+\item[{bool}]{clockwise}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_aeed72f619395388da087def32b3da49e}
+
+
+Rotation-\/invariant Ro\-I align pooling layer for rotated proposals. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em features} & input a feature map of shape (N, C, H, W) features=input \\
+\hline
+ & {\em rois} & rois with shape (n, 6) with each roi decoded as (batch\-\_\-index, center\-\_\-x, center\-\_\-y, w, h, angle). The angle is in radian. \\
+\hline
+ & {\em pooled\-\_\-height,pooled\-\_\-width} & out\-\_\-size (tuple)\-: fixed dimensional Ro\-I output with shape (h, w). pooled\-\_\-height=h, pooled\-\_\-width=w \\
+\hline
+ & {\em spatial\-\_\-scale} & float\-: scale the input boxes by this number \\
+\hline
+ & {\em num\-\_\-samples} & int\-: number of inputs samples to take for each output sample. 0 to take samples densely for current models. \\
+\hline
+ & {\em num\-\_\-orientations} & int\-: number of oriented channels. \\
+\hline
+ & {\em clockwise} & (bool)\-: If True, the angle in each proposal follows a clockwise fashion in image space, otherwise, the angle is counterclockwise. Default\-: False. \\
+\hline
+\mbox{\tt out}  & {\em output} & Rotation-\/invariant Ro\-I align pooling layer output. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_afd3c8451e94ff640eb8515f4c4568e7a}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Roi\-Align\-Rotated\-Backward\-Mmcv@{diopi\-Roi\-Align\-Rotated\-Backward\-Mmcv}}
+\index{diopi\-Roi\-Align\-Rotated\-Backward\-Mmcv@{diopi\-Roi\-Align\-Rotated\-Backward\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Roi\-Align\-Rotated\-Backward\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Roi\-Align\-Rotated\-Backward\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{bottom\-\_\-grad, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{top\-\_\-grad, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{rois, }
+\item[{int64\-\_\-t}]{aligned\-\_\-height, }
+\item[{int64\-\_\-t}]{aligned\-\_\-width, }
+\item[{int64\-\_\-t}]{sampling\-\_\-ratio, }
+\item[{float}]{spatial\-\_\-scale, }
+\item[{bool}]{aligned, }
+\item[{bool}]{clockwise}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_afd3c8451e94ff640eb8515f4c4568e7a}
+
+
+Backward function for Ro\-I align pooling layer for rotated proposals for mmcv. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em top\-\_\-grad} & the gradient of {\ttfamily output}. \\
+\hline
+\mbox{\tt out}  & {\em bottom\-\_\-grad} & the gradient of {\ttfamily input}. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Roi\-Align\-Rotated() 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_a2519124444d3088050911f366d4dd80d}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Roi\-Align\-Rotated\-Mmcv@{diopi\-Roi\-Align\-Rotated\-Mmcv}}
+\index{diopi\-Roi\-Align\-Rotated\-Mmcv@{diopi\-Roi\-Align\-Rotated\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Roi\-Align\-Rotated\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Roi\-Align\-Rotated\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{input, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{rois, }
+\item[{int64\-\_\-t}]{aligned\-\_\-height, }
+\item[{int64\-\_\-t}]{aligned\-\_\-width, }
+\item[{int64\-\_\-t}]{sampling\-\_\-ratio, }
+\item[{float}]{spatial\-\_\-scale, }
+\item[{bool}]{aligned, }
+\item[{bool}]{clockwise}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a2519124444d3088050911f366d4dd80d}
+
+
+Ro\-I align pooling layer for rotated proposals for mmcv. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em input} & a feature map of shape (N, C, H, W) \\
+\hline
+ & {\em rois} & rois with shape (n, 6) with each roi decoded as (batch\-\_\-index, center\-\_\-x, center\-\_\-y, w, h, angle). The angle is in radian. \\
+\hline
+ & {\em aligned\-\_\-height,aligned\-\_\-width} & output\-\_\-size (tuple)\-: h, w. aligned\-\_\-height=output\-\_\-size\mbox{[}0\mbox{]}, aligned\-\_\-width=output\-\_\-size\mbox{[}1\mbox{]} \\
+\hline
+ & {\em spatial\-\_\-scale} & float\-: scale the input boxes by this number \\
+\hline
+ & {\em sampling\-\_\-ratio} & int number of inputs samples to take for each output sample. 0 to take samples densely for current models. \\
+\hline
+ & {\em aligned} & (bool)\-: if False, use the legacy implementation in M\-M\-Detection. If True, align the results more perfectly. Default\-: True. \\
+\hline
+ & {\em clockwise} & (bool)\-: If True, the angle in each proposal follows a clockwise fashion in image space, otherwise, the angle is counterclockwise. Default\-: False. \\
+\hline
+\mbox{\tt out}  & {\em output} & Ro\-I align pooling layer output. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a5e6ecb802bceeecba4d6c38fee71a2bf}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Roiaware\-Pool3d\-Backward\-Mmcv@{diopi\-Roiaware\-Pool3d\-Backward\-Mmcv}}
+\index{diopi\-Roiaware\-Pool3d\-Backward\-Mmcv@{diopi\-Roiaware\-Pool3d\-Backward\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Roiaware\-Pool3d\-Backward\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Roiaware\-Pool3d\-Backward\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-in, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{pts\-\_\-idx\-\_\-of\-\_\-voxels, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{argmax, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-out, }
+\item[{int64\-\_\-t}]{pool\-\_\-method}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a5e6ecb802bceeecba4d6c38fee71a2bf}
+
+
+Backward function for Encode the geometry-\/specific features of each 3\-D proposal. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em grad\-\_\-out} & the gradient of {\ttfamily pooled\-\_\-features}. \\
+\hline
+\mbox{\tt out}  & {\em grad\-\_\-in} & the gradient of {\ttfamily pts\-\_\-feature}. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Roiaware\-Pool3d() 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_a4c305589e37673b62c1171b56060e9b9}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Roiaware\-Pool3d\-Mmcv@{diopi\-Roiaware\-Pool3d\-Mmcv}}
+\index{diopi\-Roiaware\-Pool3d\-Mmcv@{diopi\-Roiaware\-Pool3d\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Roiaware\-Pool3d\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Roiaware\-Pool3d\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{argmax, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{pts\-\_\-idx\-\_\-of\-\_\-voxels, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{pooled\-\_\-features, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{rois, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{pts, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{pts\-\_\-feature, }
+\item[{int64\-\_\-t}]{pool\-\_\-method}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a4c305589e37673b62c1171b56060e9b9}
+
+
+Encode the geometry-\/specific features of each 3\-D proposal. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em rois} & \-: \mbox{[}N, 7\mbox{]}, in Li\-D\-A\-R coordinate, (x, y, z) is the bottom center of rois. \\
+\hline
+ & {\em pts} & \-: \mbox{[}npoints, 3\mbox{]}, coordinates of input points. \\
+\hline
+ & {\em pts\-\_\-feature} & \-: \mbox{[}npoints, C\mbox{]}, features of input points. \\
+\hline
+ & {\em pool\-\_\-method} & int\-: Pooling method of Ro\-I\-Aware, 0 (max pool) or 1 (average pool). \\
+\hline
+\mbox{\tt out}  & {\em pooled\-\_\-features,\-:} & Pooled features whose shape is \mbox{[}N, out\-\_\-x, out\-\_\-y, out\-\_\-z, C\mbox{]}. \\
+\hline
+ & {\em argmax,pts\-\_\-idx\-\_\-of\-\_\-voxels,\-:} & used in backward function. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_af78e12ab3fb30cafffc867beb5ad5f30}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Roipoint\-Pool3d\-Mmcv@{diopi\-Roipoint\-Pool3d\-Mmcv}}
+\index{diopi\-Roipoint\-Pool3d\-Mmcv@{diopi\-Roipoint\-Pool3d\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Roipoint\-Pool3d\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Roipoint\-Pool3d\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{pooled\-\_\-features, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{pooled\-\_\-empty\-\_\-flag, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{xyz, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{boxes3d, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{pts\-\_\-feature}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_af78e12ab3fb30cafffc867beb5ad5f30}
+
+
+Encode the geometry-\/specific features of each 3\-D proposal. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em xyz} & Input points whose shape is (B, N, C). \\
+\hline
+ & {\em pts\-\_\-feature} & Features of input points whose shape is (B, N, C). \\
+\hline
+ & {\em boxes3d} & (B, M, 7), Input bounding boxes whose shape is (B, M, 7). \\
+\hline
+\mbox{\tt out}  & {\em pooled\-\_\-features,pooled\-\_\-empty\-\_\-flag} & A tuple contains two elements. The first one is the pooled features whose shape is (B, M, 512, 3 + C). The second is an empty flag whose shape is (B, M). \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a9f14672c020e4fb80048d705df96dfb1}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Rotated\-Feature\-Align\-Backward\-Mmcv@{diopi\-Rotated\-Feature\-Align\-Backward\-Mmcv}}
+\index{diopi\-Rotated\-Feature\-Align\-Backward\-Mmcv@{diopi\-Rotated\-Feature\-Align\-Backward\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Rotated\-Feature\-Align\-Backward\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Rotated\-Feature\-Align\-Backward\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{bottom\-\_\-grad, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{top\-\_\-grad, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{best\-\_\-bboxes, }
+\item[{float}]{spatial\-\_\-scale, }
+\item[{int64\-\_\-t}]{points}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a9f14672c020e4fb80048d705df96dfb1}
+
+
+Backward function for Using the feature interpolation to obtain the position information correspond to the refined rotate anchors and reconstruct the feature maps in pixel-\/wise manner to achieve feature alignment. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em top\-\_\-grad} & the gradient of {\ttfamily output}. \\
+\hline
+\mbox{\tt out}  & {\em bottom\-\_\-grad} & the gradient of {\ttfamily features}. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Rotated\-Feature\-Align(). 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_a35f5bf9a626bb8d285b67368280e85f8}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Rotated\-Feature\-Align\-Mmcv@{diopi\-Rotated\-Feature\-Align\-Mmcv}}
+\index{diopi\-Rotated\-Feature\-Align\-Mmcv@{diopi\-Rotated\-Feature\-Align\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Rotated\-Feature\-Align\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Rotated\-Feature\-Align\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{features, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{best\-\_\-bboxes, }
+\item[{float}]{spatial\-\_\-scale, }
+\item[{int64\-\_\-t}]{points}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a35f5bf9a626bb8d285b67368280e85f8}
+
+
+Using the feature interpolation to obtain the position information correspond to the refined rotate anchors and reconstruct the feature maps in pixel-\/wise manner to achieve feature alignment. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em features} & Input features with shape \mbox{[}N,C,H,W\mbox{]}. \\
+\hline
+ & {\em best\-\_\-bboxes} & Refined rotate anchors with shape \mbox{[}N,H,W,5\mbox{]}. Coordinate format (cx,cx,h,w,a). \\
+\hline
+ & {\em spatial\-\_\-scale} & float\-: The scale of feature map size and input image size. \\
+\hline
+ & {\em points} & (int, optional)\-: The number of sample points. Only 1 and 5 are supported. Defaults to 1. \\
+\hline
+\mbox{\tt out}  & {\em output} & Refined features with shape \mbox{[}N,C,H,W\mbox{]}. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a9cd1a10cfd448d4bbb2eaaf8025ddcde}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Stack\-Ball\-Query\-Mmcv@{diopi\-Stack\-Ball\-Query\-Mmcv}}
+\index{diopi\-Stack\-Ball\-Query\-Mmcv@{diopi\-Stack\-Ball\-Query\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Stack\-Ball\-Query\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Stack\-Ball\-Query\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{idx, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{center\-\_\-xyz, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{center\-\_\-xyz\-\_\-batch\-\_\-cnt, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{xyz, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{xyz\-\_\-batch\-\_\-cnt, }
+\item[{float}]{max\-\_\-radius, }
+\item[{int64\-\_\-t}]{sample\-\_\-num}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a9cd1a10cfd448d4bbb2eaaf8025ddcde}
+
+
+Find nearby points in spherical space.(Stacked method) 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em xyz\-\_\-batch\-\_\-cnt} & (batch\-\_\-size)\-: Stacked input xyz coordinates nums in each batch, just like (N1, N2, ...). Defaults to None. New in version 1.\-7.\-0. \\
+\hline
+ & {\em center\-\_\-xyz\-\_\-batch\-\_\-cnt} & (batch\-\_\-size)\-: Stacked centers coordinates nums in each batch, just line (M1, M2, ...). Defaults to None. New in version 1.\-7.\-0. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Ball\-Query() 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_ae73226295bcb12575eb9ad88182f2b70}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Stack\-Group\-Points\-Backward\-Mmcv@{diopi\-Stack\-Group\-Points\-Backward\-Mmcv}}
+\index{diopi\-Stack\-Group\-Points\-Backward\-Mmcv@{diopi\-Stack\-Group\-Points\-Backward\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Stack\-Group\-Points\-Backward\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Stack\-Group\-Points\-Backward\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-features\-\_\-tensor, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-out\-\_\-tensor, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{idx\-\_\-tensor, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{idx\-\_\-batch\-\_\-cnt\-\_\-tensor, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{features\-\_\-batch\-\_\-cnt\-\_\-tensor, }
+\item[{int64\-\_\-t}]{b, }
+\item[{int64\-\_\-t}]{c, }
+\item[{int64\-\_\-t}]{m, }
+\item[{int64\-\_\-t}]{n, }
+\item[{int64\-\_\-t}]{nsample}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_ae73226295bcb12575eb9ad88182f2b70}
+
+
+Backward function for Groups points with a ball query of radius(stacked input). 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em grad\-\_\-out\-\_\-tensor} & the gradient of {\ttfamily out}. \\
+\hline
+\mbox{\tt out}  & {\em grad\-\_\-features\-\_\-tensor} & the gradient of {\ttfamily features\-\_\-tensor}. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Stack\-Group\-Points() 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_a45a3927123d79797e806828400faf346}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Stack\-Group\-Points\-Mmcv@{diopi\-Stack\-Group\-Points\-Mmcv}}
+\index{diopi\-Stack\-Group\-Points\-Mmcv@{diopi\-Stack\-Group\-Points\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Stack\-Group\-Points\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Stack\-Group\-Points\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{out\-\_\-tensor, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{features\-\_\-tensor, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{features\-\_\-batch\-\_\-cnt\-\_\-tensor, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{idx\-\_\-tensor, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{idx\-\_\-batch\-\_\-cnt\-\_\-tensor, }
+\item[{int64\-\_\-t}]{b, }
+\item[{int64\-\_\-t}]{c, }
+\item[{int64\-\_\-t}]{m, }
+\item[{int64\-\_\-t}]{nsample}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a45a3927123d79797e806828400faf346}
+
+
+Groups points with a ball query of radius(stacked input). 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em features\-\_\-tensor} & features (Tensor)\-: Tensor of features to group, stacked input shape (N1 + N2 ..., C). features\-\_\-tensor=features \\
+\hline
+ & {\em idx\-\_\-tensor} & indices (Tensor)\-: The indices of features to group with, stacked inputs (M1 + M2 ..., nsample). idx\-\_\-tensor = indices. \\
+\hline
+ & {\em features\-\_\-batch\-\_\-cnt\-\_\-tensor} & (Tensor, optional)\-: Input features nums in each batch, just like (N1, N2, ...). Defaults to None. New in version 1.\-7.\-0. . \\
+\hline
+ & {\em idx\-\_\-batch\-\_\-cnt\-\_\-tensor} & (Tensor, optional)\-: Input indices nums in each batch, just like (M1, M2, ...). Defaults to None. New in version 1.\-7.\-0. \\
+\hline
+ & {\em n,c} & features\-\_\-tensor (n, c) \\
+\hline
+ & {\em b} & idx\-\_\-batch\-\_\-cnt\-\_\-tensor.\-shape\mbox{[}0\mbox{]} \\
+\hline
+ & {\em nsample} & idx\-\_\-tensor (m, nsample) \\
+\hline
+\mbox{\tt out}  & {\em out\-\_\-tensor} & Grouped features, the shape is (B, C, npoint, nsample) or (M1 + M2 ..., C, nsample). \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a60baab39e14254b02c22485cc9dc6b93}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Sync\-Bn\-Backward\-Data\-Mmcv@{diopi\-Sync\-Bn\-Backward\-Data\-Mmcv}}
+\index{diopi\-Sync\-Bn\-Backward\-Data\-Mmcv@{diopi\-Sync\-Bn\-Backward\-Data\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Sync\-Bn\-Backward\-Data\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Sync\-Bn\-Backward\-Data\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-input, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{weight, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-weight, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-bias, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{norm, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{std}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a60baab39e14254b02c22485cc9dc6b93}
+
+
+Backward function for Synchronized Batch Normalization(grad for input). 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+\mbox{\tt out}  & {\em grad\-\_\-input} & the gradient of {\ttfamily input}. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Sync\-Bn\-Mean(), diopi\-Sync\-Bn\-Output(). 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_ac064830d4cad613cc9fa7f9c75c88a10}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Sync\-Bn\-Backward\-Param\-Mmcv@{diopi\-Sync\-Bn\-Backward\-Param\-Mmcv}}
+\index{diopi\-Sync\-Bn\-Backward\-Param\-Mmcv@{diopi\-Sync\-Bn\-Backward\-Param\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Sync\-Bn\-Backward\-Param\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Sync\-Bn\-Backward\-Param\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-weight, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-bias, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{norm}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_ac064830d4cad613cc9fa7f9c75c88a10}
+
+
+Backward function for Synchronized Batch Normalization(grad for param). 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em grad\-\_\-output} & the gradient of {\ttfamily output}. \\
+\hline
+\mbox{\tt out}  & {\em grad\-\_\-weight} & the gradient of {\ttfamily weight}. \\
+\hline
+ & {\em grad\-\_\-bias} & the gradient of {\ttfamily bias}. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Sync\-Bn\-Output(). 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_acbbf67e2735448c3df46657a0f6aafce}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Sync\-Bn\-Mean\-Mmcv@{diopi\-Sync\-Bn\-Mean\-Mmcv}}
+\index{diopi\-Sync\-Bn\-Mean\-Mmcv@{diopi\-Sync\-Bn\-Mean\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Sync\-Bn\-Mean\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Sync\-Bn\-Mean\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{mean, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{input}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_acbbf67e2735448c3df46657a0f6aafce}
+
+
+Synchronized Batch Normalization. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em input} & input feature. \\
+\hline
+\mbox{\tt out}  & {\em mean} & initialized as zeros tensors. mean feature tensor calculated from diopi\-Sync\-Bn\-Mean(). \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a9a7b4e53fef59dc3f4276bd50dc80fb0}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Sync\-Bn\-Output\-Mmcv@{diopi\-Sync\-Bn\-Output\-Mmcv}}
+\index{diopi\-Sync\-Bn\-Output\-Mmcv@{diopi\-Sync\-Bn\-Output\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Sync\-Bn\-Output\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Sync\-Bn\-Output\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{running\-\_\-mean, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{running\-\_\-var, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{norm, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{std, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{input, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{mean, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{var, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{weight, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{bias, }
+\item[{float}]{eps, }
+\item[{float}]{momentum, }
+\item[{int64\-\_\-t}]{group\-\_\-size}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a9a7b4e53fef59dc3f4276bd50dc80fb0}
+
+
+Synchronized Batch Normalization. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em input,weight,bias} & input featire. \\
+\hline
+ & {\em eps} & (float, optional)\-: a value added to the denominator for numerical stability. Defaults to 1e-\/5. \\
+\hline
+ & {\em momentum} & (float, optional)\-: the value used for the running\-\_\-mean and running\-\_\-var computation. Defaults to 0.\-1. \\
+\hline
+ & {\em group\-\_\-size} & group\-\_\-size. \\
+\hline
+\mbox{\tt out}  & {\em norm,std} & initialized as zeros tensors. feature tensor calculated from diopi\-Sync\-Bn\-Output() after diopi\-Sync\-Bn\-Mean() and iopi\-Sync\-Bn\-Var(). \\
+\hline
+ & {\em running\-\_\-mean,running\-\_\-var} & calculated mean and var during forward function. \\
+\hline
+ & {\em output} & Synchronized Batch Normalization output tensor. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Sync\-Bn\-Mean(), diopi\-Sync\-Bn\-Mean(). 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_a109a45dee8fbaf54e2ce2d019cf12ae1}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Sync\-Bn\-Var\-Mmcv@{diopi\-Sync\-Bn\-Var\-Mmcv}}
+\index{diopi\-Sync\-Bn\-Var\-Mmcv@{diopi\-Sync\-Bn\-Var\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Sync\-Bn\-Var\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Sync\-Bn\-Var\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{var, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{input, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{mean}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a109a45dee8fbaf54e2ce2d019cf12ae1}
+
+
+Synchronized Batch Normalization. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em input,mean} & input featire. \\
+\hline
+\mbox{\tt out}  & {\em var} & initialized as zeros tensors. var feature tensor calculated from diopi\-Sync\-Bn\-Var() after diopi\-Sync\-Bn\-Mean(). \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Sync\-Bn\-Mean() 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_a821110f5ce08386984bb8da65dab13df}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Three\-Interpolate\-Backward\-Mmcv@{diopi\-Three\-Interpolate\-Backward\-Mmcv}}
+\index{diopi\-Three\-Interpolate\-Backward\-Mmcv@{diopi\-Three\-Interpolate\-Backward\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Three\-Interpolate\-Backward\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Three\-Interpolate\-Backward\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-points, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-out, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{idx, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{weight, }
+\item[{int64\-\_\-t}]{b, }
+\item[{int64\-\_\-t}]{c, }
+\item[{int64\-\_\-t}]{n, }
+\item[{int64\-\_\-t}]{m}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a821110f5ce08386984bb8da65dab13df}
+
+
+Backward function for Performs weighted linear interpolation on 3 features. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em grad\-\_\-out} & the gradient of {\ttfamily out}. \\
+\hline
+\mbox{\tt out}  & {\em grad\-\_\-points} & the gradient of {\ttfamily points}. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Three\-Interpolate(). 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_a0eea45d5cd34ca9b70a2021643243f3c}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Three\-Interpolate\-Mmcv@{diopi\-Three\-Interpolate\-Mmcv}}
+\index{diopi\-Three\-Interpolate\-Mmcv@{diopi\-Three\-Interpolate\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Three\-Interpolate\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Three\-Interpolate\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{out, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{points, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{idx, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{weight, }
+\item[{int64\-\_\-t}]{b, }
+\item[{int64\-\_\-t}]{c, }
+\item[{int64\-\_\-t}]{m, }
+\item[{int64\-\_\-t}]{n}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a0eea45d5cd34ca9b70a2021643243f3c}
+
+
+Performs weighted linear interpolation on 3 features. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em points} & (B, C, M) Features descriptors to be interpolated. \\
+\hline
+ & {\em idx} & (B, n, 3) indices of three nearest neighbor features for the target features. \\
+\hline
+ & {\em weight} & (B, n, 3) weights of three nearest neighbor features for the target features. \\
+\hline
+ & {\em b,c,n,m} & points (b, c, m) idx (b, n, 3) \\
+\hline
+\mbox{\tt out}  & {\em out} & (B, C, N) tensor of the interpolated features \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a8c56ce06eb2e375562ffc00c11adbbc0}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Three\-Nn\-Mmcv@{diopi\-Three\-Nn\-Mmcv}}
+\index{diopi\-Three\-Nn\-Mmcv@{diopi\-Three\-Nn\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Three\-Nn\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Three\-Nn\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{dist2, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{idx, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{unknown, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{known, }
+\item[{int64\-\_\-t}]{b, }
+\item[{int64\-\_\-t}]{n, }
+\item[{int64\-\_\-t}]{m}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a8c56ce06eb2e375562ffc00c11adbbc0}
+
+
+Find the top-\/3 nearest neighbors of the target set from the source set. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em unknown} & shape (B, N, 3), points set that needs to find the nearest neighbors. \\
+\hline
+ & {\em known} & shape (B, M, 3), points set that is used to find the nearest neighbors of points in target set. \\
+\hline
+ & {\em b,n,m} & unknown \-: shape (b, n, 3) known \-: shape (b, m, 3) \\
+\hline
+\mbox{\tt out}  & {\em dist2} & shape (B, N, 3), L2 distance of each point in target set to their corresponding top three nearest neighbors. \\
+\hline
+ & {\em idx} & index tensor for reference. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_ad0b8e89faac55adf1a2b5adfbf4b28d4}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Tin\-Shift\-Backward\-Mmcv@{diopi\-Tin\-Shift\-Backward\-Mmcv}}
+\index{diopi\-Tin\-Shift\-Backward\-Mmcv@{diopi\-Tin\-Shift\-Backward\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Tin\-Shift\-Backward\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Tin\-Shift\-Backward\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{grad\-\_\-input, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{grad\-\_\-output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{shift}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_ad0b8e89faac55adf1a2b5adfbf4b28d4}
+
+
+Backward function for Temporal Interlace Shift. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em grad\-\_\-output} & the gradient of {\ttfamily output}. \\
+\hline
+\mbox{\tt out}  & {\em grad\-\_\-input} & the gradient of {\ttfamily input}. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{参见}
+definition of other parameters, refer to diopi\-Tin\-Shift(). 
+\end{DoxySeeAlso}
+\hypertarget{functions__mmcv_8h_afb2ea8fc1db3e6fccadfa1c3895672e3}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Tin\-Shift\-Mmcv@{diopi\-Tin\-Shift\-Mmcv}}
+\index{diopi\-Tin\-Shift\-Mmcv@{diopi\-Tin\-Shift\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Tin\-Shift\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Tin\-Shift\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{output, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{input, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{shift}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_afb2ea8fc1db3e6fccadfa1c3895672e3}
+
+
+Temporal Interlace Shift. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em input} & Feature map with shape \mbox{[}N, num\-\_\-segments, C, H $\ast$ W\mbox{]}. \\
+\hline
+ & {\em shift} & Shift tensor with shape \mbox{[}N, num\-\_\-segments\mbox{]}. \\
+\hline
+\mbox{\tt out}  & {\em output} & Feature map after temporal interlace shift. \\
+\hline
+\end{DoxyParams}
+\hypertarget{functions__mmcv_8h_a5fcbf86b41be3fa915a933dfd4da3a91}{\index{functions\-\_\-mmcv.\-h@{functions\-\_\-mmcv.\-h}!diopi\-Upfirdn2d\-Op\-Mmcv@{diopi\-Upfirdn2d\-Op\-Mmcv}}
+\index{diopi\-Upfirdn2d\-Op\-Mmcv@{diopi\-Upfirdn2d\-Op\-Mmcv}!functions_mmcv.h@{functions\-\_\-mmcv.\-h}}
+\subsubsection[{diopi\-Upfirdn2d\-Op\-Mmcv}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Upfirdn2d\-Op\-Mmcv (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{diopi\-Tensor\-Handle\-\_\-t $\ast$}]{out, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{input, }
+\item[{diopi\-Const\-Tensor\-Handle\-\_\-t}]{kernel, }
+\item[{int64\-\_\-t}]{up\-\_\-x, }
+\item[{int64\-\_\-t}]{up\-\_\-y, }
+\item[{int64\-\_\-t}]{down\-\_\-x, }
+\item[{int64\-\_\-t}]{down\-\_\-y, }
+\item[{int64\-\_\-t}]{pad\-\_\-x0, }
+\item[{int64\-\_\-t}]{pad\-\_\-x1, }
+\item[{int64\-\_\-t}]{pad\-\_\-y0, }
+\item[{int64\-\_\-t}]{pad\-\_\-y1}
+\end{DoxyParamCaption}
+)}}\label{functions__mmcv_8h_a5fcbf86b41be3fa915a933dfd4da3a91}
+
+
+Up\-F\-R\-I\-Dn for 2d features. 
+
+
+\begin{DoxyParams}[1]{参数}
+\mbox{\tt in}  & {\em ctx} & diopi context. \\
+\hline
+ & {\em input} & Tensor with shape of (n, c, h, w). \\
+\hline
+ & {\em kernel} & Filter kernel. \\
+\hline
+ & {\em up\-\_\-x,up\-\_\-y} & up (int $|$ tuple\mbox{[}int\mbox{]}, optional)\-: Upsampling factor. If given a number, we will use this factor for the both height and width side. Defaults to 1. up\-\_\-x, up\-\_\-y = up \\
+\hline
+ & {\em down\-\_\-x,down\-\_\-y} & down (int $|$ tuple\mbox{[}int\mbox{]}, optional)\-: Downsampling factor. If given a number, we will use this factor for the both height and width side. Defaults to 1. down\-\_\-x, down\-\_\-y = down \\
+\hline
+ & {\em pad\-\_\-x0,pad\-\_\-x1,pad\-\_\-y0,pad\-\_\-y1} & pad (tuple\mbox{[}int\mbox{]}, optional)\-: Padding for tensors, (x\-\_\-pad, y\-\_\-pad) or (x\-\_\-pad\-\_\-0, x\-\_\-pad\-\_\-1, y\-\_\-pad\-\_\-0, y\-\_\-pad\-\_\-1). Defaults to (0, 0). pad\-\_\-x0, pad\-\_\-x1, pad\-\_\-y0, pad\-\_\-y1 = pad \\
+\hline
+\mbox{\tt out}  & {\em out} & Tensor after Up\-F\-I\-R\-Dn. \\
+\hline
+\end{DoxyParams}

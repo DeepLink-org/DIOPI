@@ -1,0 +1,172 @@
+\hypertarget{diopirt_8h}{\section{diopirt.\-h 文件参考}
+\label{diopirt_8h}\index{diopirt.\-h@{diopirt.\-h}}
+}
+{\ttfamily \#include $<$stdint.\-h$>$}\\*
+\subsection*{类}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structdiopiSize__t__}{diopi\-Size\-\_\-t\-\_\-}
+\end{DoxyCompactItemize}
+\subsection*{宏定义}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{diopirt_8h_a65aea6f0435043f722b831cb72c971ba}{\#define {\bfseries D\-I\-O\-P\-I\-\_\-\-A\-P\-I}}\label{diopirt_8h_a65aea6f0435043f722b831cb72c971ba}
+
+\item 
+\hypertarget{diopirt_8h_a57f13a5cc0fa9febd001e61320c53577}{\#define {\bfseries D\-I\-O\-P\-I\-\_\-\-R\-T\-\_\-\-A\-P\-I}}\label{diopirt_8h_a57f13a5cc0fa9febd001e61320c53577}
+
+\item 
+\hypertarget{diopirt_8h_add86192692cab0953e0687d938fe14d8}{\#define {\bfseries D\-I\-O\-P\-I\-\_\-\-V\-E\-R\-\_\-\-M\-A\-J\-O\-R}~1}\label{diopirt_8h_add86192692cab0953e0687d938fe14d8}
+
+\item 
+\hypertarget{diopirt_8h_a2abbdda7f33ae4966d644b6d854948fb}{\#define {\bfseries D\-I\-O\-P\-I\-\_\-\-V\-E\-R\-\_\-\-M\-I\-N\-O\-R}~0}\label{diopirt_8h_a2abbdda7f33ae4966d644b6d854948fb}
+
+\item 
+\hypertarget{diopirt_8h_accea3037ed7fe2fa66742cdfe184300d}{\#define {\bfseries D\-I\-O\-P\-I\-\_\-\-V\-E\-R\-\_\-\-P\-A\-T\-C\-H}~0}\label{diopirt_8h_accea3037ed7fe2fa66742cdfe184300d}
+
+\item 
+\hypertarget{diopirt_8h_ab75bd492e6cbd5a1cd225fe330b74d41}{\#define {\bfseries D\-I\-O\-P\-I\-\_\-\-V\-E\-R\-S\-I\-O\-N}~(D\-I\-O\-P\-I\-\_\-\-V\-E\-R\-\_\-\-M\-A\-J\-O\-R $\ast$ 1000 + D\-I\-O\-P\-I\-\_\-\-V\-E\-R\-\_\-\-M\-I\-N\-O\-R $\ast$ 100 + D\-I\-O\-P\-I\-\_\-\-V\-E\-R\-\_\-\-P\-A\-T\-C\-H)}\label{diopirt_8h_ab75bd492e6cbd5a1cd225fe330b74d41}
+
+\end{DoxyCompactItemize}
+\subsection*{类型定义}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{diopirt_8h_a39346f57844105cc000030d40dd93525}{typedef struct \hyperlink{structdiopiSize__t__}{diopi\-Size\-\_\-t\-\_\-} {\bfseries diopi\-Size\-\_\-t}}\label{diopirt_8h_a39346f57844105cc000030d40dd93525}
+
+\item 
+\hypertarget{diopirt_8h_a4e9cb4bfe73c4a51231f9669c6929247}{typedef struct diopi\-Context $\ast$ {\bfseries diopi\-Context\-Handle\-\_\-t}}\label{diopirt_8h_a4e9cb4bfe73c4a51231f9669c6929247}
+
+\item 
+\hypertarget{diopirt_8h_a4374e54817c6157183d5bbd594940932}{typedef struct diopi\-Tensor $\ast$ {\bfseries diopi\-Tensor\-Handle\-\_\-t}}\label{diopirt_8h_a4374e54817c6157183d5bbd594940932}
+
+\item 
+\hypertarget{diopirt_8h_acfb81dad111e26a0ca0ac06996598620}{typedef struct diopi\-Tensor $\ast$ {\bfseries diopi\-Const\-Tensor\-Handle\-\_\-t}}\label{diopirt_8h_acfb81dad111e26a0ca0ac06996598620}
+
+\item 
+typedef void $\ast$ \hyperlink{diopirt_8h_a978d34b7c4c1c748d80e55092ec56f4e}{diopi\-Stream\-Handle\-\_\-t}
+\end{DoxyCompactItemize}
+\subsection*{枚举}
+\begin{DoxyCompactItemize}
+\item 
+enum {\bfseries diopi\-Error\-\_\-t} \{ \\*
+{\bfseries diopi\-Success} = 0, 
+{\bfseries diopi\-Error\-Occurred} = 1, 
+{\bfseries diopi\-Not\-Inited} = 2, 
+{\bfseries diopi\-No\-Registered\-Stream\-Create\-Function} = 3, 
+\\*
+{\bfseries diopi\-No\-Registered\-Stream\-Destory\-Function} = 4, 
+{\bfseries diopi\-No\-Registered\-Stream\-Sync\-Function} = 5, 
+{\bfseries diopi\-No\-Registered\-Device\-Memory\-Malloc\-Function} = 6, 
+{\bfseries diopi\-No\-Registered\-Device\-Memory\-Free\-Function} = 7, 
+\\*
+{\bfseries diopi\-No\-Registered\-Device2\-Ddevice\-Memory\-Copy\-Function} = 8, 
+{\bfseries diopi\-No\-Registered\-Device2\-Host\-Memory\-Copy\-Function} = 9, 
+{\bfseries diopi\-No\-Registered\-Host2\-Device\-Memory\-Copy\-Function} = 10, 
+{\bfseries diopi\-No\-Registered\-Get\-Last\-Error\-Function} = 11, 
+\\*
+{\bfseries diopi5\-D\-Not\-Supported} = 12, 
+{\bfseries diopi\-Dtype\-Not\-Supported} = 1000
+ \}
+\item 
+enum {\bfseries diopi\-Device\-\_\-t} \{ {\bfseries diopi\-\_\-host} = 0, 
+{\bfseries diopi\-\_\-device} = 1
+ \}
+\item 
+enum {\bfseries diopi\-Dtype\-\_\-t} \{ \\*
+{\bfseries diopi\-\_\-dtype\-\_\-int8} = 0, 
+{\bfseries diopi\-\_\-dtype\-\_\-uint8} = 1, 
+{\bfseries diopi\-\_\-dtype\-\_\-int16} = 2, 
+{\bfseries diopi\-\_\-dtype\-\_\-uint16} = 3, 
+\\*
+{\bfseries diopi\-\_\-dtype\-\_\-int32} = 4, 
+{\bfseries diopi\-\_\-dtype\-\_\-uint32} = 5, 
+{\bfseries diopi\-\_\-dtype\-\_\-int64} = 6, 
+{\bfseries diopi\-\_\-dtype\-\_\-uint64} = 7, 
+\\*
+{\bfseries diopi\-\_\-dtype\-\_\-float16} = 8, 
+{\bfseries diopi\-\_\-dtype\-\_\-float32} = 9, 
+{\bfseries diopi\-\_\-dtype\-\_\-float64} = 10, 
+{\bfseries diopi\-\_\-dtype\-\_\-bool} = 11, 
+\\*
+{\bfseries diopi\-\_\-dtype\-\_\-bfloat16} = 12, 
+{\bfseries diopi\-\_\-dtype\-\_\-tfloat32} = 13
+ \}
+\end{DoxyCompactItemize}
+\subsection*{函数}
+\begin{DoxyCompactItemize}
+\item 
+D\-I\-O\-P\-I\-\_\-\-A\-P\-I const char $\ast$ \hyperlink{diopirt_8h_a6be57cc7f5c92c6c58fb9549712c65cc}{diopi\-Get\-Version} ()
+\item 
+D\-I\-O\-P\-I\-\_\-\-R\-T\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{diopirt_8h_a84398b0ca184fcab3e4447db88140c7a}{diopi\-Get\-Tensor\-Data} (diopi\-Tensor\-Handle\-\_\-t th, void $\ast$$\ast$)
+\item 
+\hypertarget{diopirt_8h_afbaafd59a9ae17b240d72dfa92105d85}{D\-I\-O\-P\-I\-\_\-\-R\-T\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Get\-Tensor\-Data\-Const} (diopi\-Const\-Tensor\-Handle\-\_\-t th, const void $\ast$$\ast$)}\label{diopirt_8h_afbaafd59a9ae17b240d72dfa92105d85}
+
+\item 
+\hypertarget{diopirt_8h_a8157896d942e6072ce922f0862e75487}{D\-I\-O\-P\-I\-\_\-\-R\-T\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Get\-Tensor\-Shape} (diopi\-Const\-Tensor\-Handle\-\_\-t th, \hyperlink{structdiopiSize__t__}{diopi\-Size\-\_\-t} $\ast$size)}\label{diopirt_8h_a8157896d942e6072ce922f0862e75487}
+
+\item 
+\hypertarget{diopirt_8h_aba65e72605385359883e1ac0e5fb6a2c}{D\-I\-O\-P\-I\-\_\-\-R\-T\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Get\-Tensor\-Stride} (diopi\-Const\-Tensor\-Handle\-\_\-t th, \hyperlink{structdiopiSize__t__}{diopi\-Size\-\_\-t} $\ast$stride)}\label{diopirt_8h_aba65e72605385359883e1ac0e5fb6a2c}
+
+\item 
+\hypertarget{diopirt_8h_aa4cc7c11b670fed2548fbbe0a86c91bb}{D\-I\-O\-P\-I\-\_\-\-R\-T\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Get\-Tensor\-Dtype} (diopi\-Const\-Tensor\-Handle\-\_\-t th, diopi\-Dtype\-\_\-t $\ast$dtype)}\label{diopirt_8h_aa4cc7c11b670fed2548fbbe0a86c91bb}
+
+\item 
+\hypertarget{diopirt_8h_a437eae4b60f7a95899fccb3ffada804b}{D\-I\-O\-P\-I\-\_\-\-R\-T\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Get\-Tensor\-Device} (diopi\-Const\-Tensor\-Handle\-\_\-t th, diopi\-Device\-\_\-t $\ast$device)}\label{diopirt_8h_a437eae4b60f7a95899fccb3ffada804b}
+
+\item 
+\hypertarget{diopirt_8h_a020f7de251a11f48848f6b1e0f67443c}{D\-I\-O\-P\-I\-\_\-\-R\-T\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Get\-Tensor\-Numel} (diopi\-Const\-Tensor\-Handle\-\_\-t th, int64\-\_\-t $\ast$numel)}\label{diopirt_8h_a020f7de251a11f48848f6b1e0f67443c}
+
+\item 
+\hypertarget{diopirt_8h_a14906111c737206e93b55c431211db13}{D\-I\-O\-P\-I\-\_\-\-R\-T\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Get\-Tensor\-Elem\-Size} (diopi\-Const\-Tensor\-Handle\-\_\-t th, int64\-\_\-t $\ast$itemsize)}\label{diopirt_8h_a14906111c737206e93b55c431211db13}
+
+\item 
+D\-I\-O\-P\-I\-\_\-\-R\-T\-\_\-\-A\-P\-I diopi\-Error\-\_\-t \hyperlink{diopirt_8h_ae47d3206f9a4cd4b7bd38cc62449c0b8}{diopi\-Get\-Stream} (diopi\-Context\-Handle\-\_\-t ctx, \hyperlink{diopirt_8h_a978d34b7c4c1c748d80e55092ec56f4e}{diopi\-Stream\-Handle\-\_\-t} $\ast$stream)
+\item 
+\hypertarget{diopirt_8h_ab622bb80e4814b9d81d0fc9a323ba9b1}{D\-I\-O\-P\-I\-\_\-\-R\-T\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Require\-Tensor} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t $\ast$tensor, const \hyperlink{structdiopiSize__t__}{diopi\-Size\-\_\-t} $\ast$size, const \hyperlink{structdiopiSize__t__}{diopi\-Size\-\_\-t} $\ast$stride, const diopi\-Dtype\-\_\-t dtype, const diopi\-Device\-\_\-t device)}\label{diopirt_8h_ab622bb80e4814b9d81d0fc9a323ba9b1}
+
+\item 
+\hypertarget{diopirt_8h_ad5254d45e6397f1888729750fb9d46f7}{D\-I\-O\-P\-I\-\_\-\-R\-T\-\_\-\-A\-P\-I diopi\-Error\-\_\-t {\bfseries diopi\-Require\-Buffer} (diopi\-Context\-Handle\-\_\-t ctx, diopi\-Tensor\-Handle\-\_\-t $\ast$tensor, int64\-\_\-t num\-\_\-bytes, diopi\-Device\-\_\-t device)}\label{diopirt_8h_ad5254d45e6397f1888729750fb9d46f7}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{详细描述}
+\begin{DoxyAuthor}{作者}
+Open\-Compute\-Lab 
+\end{DoxyAuthor}
+\begin{DoxyCopyright}{版权所有}
+(c) 2023, Open\-Compute\-Lab. 
+\end{DoxyCopyright}
+
+
+\subsection{类型定义说明}
+\hypertarget{diopirt_8h_a978d34b7c4c1c748d80e55092ec56f4e}{\index{diopirt.\-h@{diopirt.\-h}!diopi\-Stream\-Handle\-\_\-t@{diopi\-Stream\-Handle\-\_\-t}}
+\index{diopi\-Stream\-Handle\-\_\-t@{diopi\-Stream\-Handle\-\_\-t}!diopirt.h@{diopirt.\-h}}
+\subsubsection[{diopi\-Stream\-Handle\-\_\-t}]{\setlength{\rightskip}{0pt plus 5cm}typedef void$\ast$ {\bf diopi\-Stream\-Handle\-\_\-t}}}\label{diopirt_8h_a978d34b7c4c1c748d80e55092ec56f4e}
+Opaque pointer of Stream 
+
+\subsection{函数说明}
+\hypertarget{diopirt_8h_ae47d3206f9a4cd4b7bd38cc62449c0b8}{\index{diopirt.\-h@{diopirt.\-h}!diopi\-Get\-Stream@{diopi\-Get\-Stream}}
+\index{diopi\-Get\-Stream@{diopi\-Get\-Stream}!diopirt.h@{diopirt.\-h}}
+\subsubsection[{diopi\-Get\-Stream}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-R\-T\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Get\-Stream (
+\begin{DoxyParamCaption}
+\item[{diopi\-Context\-Handle\-\_\-t}]{ctx, }
+\item[{{\bf diopi\-Stream\-Handle\-\_\-t} $\ast$}]{stream}
+\end{DoxyParamCaption}
+)}}\label{diopirt_8h_ae47d3206f9a4cd4b7bd38cc62449c0b8}
+operations to require Stream and Tensor instances from a Context handle \hypertarget{diopirt_8h_a84398b0ca184fcab3e4447db88140c7a}{\index{diopirt.\-h@{diopirt.\-h}!diopi\-Get\-Tensor\-Data@{diopi\-Get\-Tensor\-Data}}
+\index{diopi\-Get\-Tensor\-Data@{diopi\-Get\-Tensor\-Data}!diopirt.h@{diopirt.\-h}}
+\subsubsection[{diopi\-Get\-Tensor\-Data}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-R\-T\-\_\-\-A\-P\-I diopi\-Error\-\_\-t diopi\-Get\-Tensor\-Data (
+\begin{DoxyParamCaption}
+\item[{diopi\-Tensor\-Handle\-\_\-t}]{th, }
+\item[{void $\ast$$\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{diopirt_8h_a84398b0ca184fcab3e4447db88140c7a}
+operations to manipulate Tensor objects \hypertarget{diopirt_8h_a6be57cc7f5c92c6c58fb9549712c65cc}{\index{diopirt.\-h@{diopirt.\-h}!diopi\-Get\-Version@{diopi\-Get\-Version}}
+\index{diopi\-Get\-Version@{diopi\-Get\-Version}!diopirt.h@{diopirt.\-h}}
+\subsubsection[{diopi\-Get\-Version}]{\setlength{\rightskip}{0pt plus 5cm}D\-I\-O\-P\-I\-\_\-\-A\-P\-I const char$\ast$ diopi\-Get\-Version (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{diopirt_8h_a6be57cc7f5c92c6c58fb9549712c65cc}
+get the version of the Device-\/\-Independent Operator Inetrface 
