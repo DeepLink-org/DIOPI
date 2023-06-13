@@ -3118,6 +3118,8 @@ def ctc_loss_backward(log_probs, grad_outputs, targets, input_lengths, target_le
 
 
 def index_put(input, values, indices1, indices2=None, accumulate=False, inplace=False):
+    import pdb
+    pdb.set_trace()
     if indices2 is not None:
         c_tensors = [TensorP(indices1), TensorP(indices2)]
         indices_counts = 2
@@ -3281,8 +3283,7 @@ def unique(input, sorted=True, return_inverse=False, return_counts=False, dim=No
         func(input.context(), out_ptr, input, dim, sorted,
              return_counts, indices, counts_ptr)
     check_returncode(ret)
-    import pdb
-    pdb.set_trace()
+
     out = out_ptr.data()
     if return_counts:
         counts = counts_ptr.data()
