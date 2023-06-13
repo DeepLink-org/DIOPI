@@ -119,7 +119,7 @@ PYBIND11_MODULE(export_runtime, m) {
         .def_property_readonly("val", &diopiScalar_t::val);
     py::class_<PtrWrapper<diopiTensor>>(m, "TensorP").def(py::init<diopiTensor*>()).def(py::init<py::none>()).def("data", &PtrWrapper<diopiTensor>::operator*);
     m.def("diopi_tensor_copy_to_buffer",
-        [](diopiContextHandle_t context, diopiConstTensorHandle_t tensor, void* ptr) { diopiTensorCopyToBuffer(context, tensor, ptr); });
+          [](diopiContextHandle_t context, diopiConstTensorHandle_t tensor, void* ptr) { diopiTensorCopyToBuffer(context, tensor, ptr); });
     m.def("get_last_error_string", &diopiGetLastErrorString);
     m.def("diopi_init", &diopiInit);
     m.def("diopi_finalize", &diopiFinalize);
