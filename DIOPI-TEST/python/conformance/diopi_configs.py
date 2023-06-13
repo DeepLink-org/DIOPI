@@ -4460,6 +4460,14 @@ diopi_configs = {
         ),
     ),
 
+    'arange_default': dict(
+        name=['arange'],
+        interface=['torch'],
+        para=dict(
+            end=[5, 10, 4.0, 9.0],
+        ),
+    ),
+
     'randperm': dict(
         name=['randperm'],
         no_output_ref=True,
