@@ -3667,6 +3667,7 @@ def sgn(input, inplace=False) -> Tensor:
         check_returncode(ret)
         return out
 
+
 def triu(input, diagonal=0, inplace=False) -> Tensor:
     call = "diopiTriu"
     if inplace:
