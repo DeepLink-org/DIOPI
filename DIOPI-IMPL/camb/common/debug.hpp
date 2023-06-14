@@ -31,16 +31,28 @@ void printDevDataInternal(diopiContextHandle_t ctx, void* data, int64_t len, int
     std::cout << "data address:" << data << std::endl;
     cnrtMemcpyAsync(ptr.get(), data, bytes, getStream(ctx), cnrtMemcpyDevToHost);
     syncStreamInCtx(ctx);
+    std::cout << "[";
     for (int i = 0; i < len && i < maxLen; ++i) {
         std::cout << static_cast<CastT>(reinterpret_cast<RealT*>(ptr.get())[i]) << " ";
     }
-    std::cout << std::endl;
+    std::cout << "]" << std::endl;
 }
 
-inline void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor) {
+inline void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor, std::string name = "name") {
     int64_t len = tensor.numel();
     void* dataIn = tensor.data();
-    int64_t maxLen = 10;
+    int64_t maxLen = 20;
+    int dim = tensor.dim();
+    std::cout << "DiopiTensor[" << name << "]: dim" << dim << ", dtype: " << DiopiDataType::dataTypeStr(tensor.dtype()) << ", shape: [";
+    for (size_t i = 0; i < dim; i++) {
+        std::cout << tensor.shape()[i] << ", ";
+    }
+    std::cout << "], stride: [";
+    for (size_t i = 0; i < dim; i++) {
+        std::cout << tensor.stride()[i] << ", ";
+    }
+    std::cout << "], is_contiguous: " << tensor.isContiguous();
+    std::cout << ", is_contiguous(channelsLast): " << tensor.isContiguous(MemoryFormat::ChannelsLast) << std::endl;
     switch (tensor.dtype()) {
         case diopi_dtype_bool:
             printDevDataInternal<bool, int32_t>(ctx, dataIn, len, maxLen);
