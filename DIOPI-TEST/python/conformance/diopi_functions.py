@@ -66,7 +66,6 @@ def common_dtype(input, other) -> Dtype:
         dtype1 = Dtype.float32
     else:
         assert 0, "not supported type of input"
-
     if isinstance(other, Tensor):
         dtype2 = other.get_dtype()
     elif isinstance(other, int):
@@ -75,7 +74,6 @@ def common_dtype(input, other) -> Dtype:
         dtype2 = Dtype.float32
     else:
         assert 0, "not supported type of other"
-
     float_types = [Dtype.float16, Dtype.float32, Dtype.float64]
     if dtype1 in float_types and dtype2 not in float_types:
         return dtype1
@@ -86,6 +84,10 @@ def common_dtype(input, other) -> Dtype:
     elif dtype1 == Dtype.bool:
         return dtype2
     elif dtype2 == Dtype.bool:
+        return dtype1
+    elif isinstance(input, Tensor) and len(input.size().data) == 0:
+        return dtype2
+    elif isinstance(other, Tensor) and len(other.size().data) == 0:
         return dtype1
     return dtype1 if dtype1.value >= dtype2.value else dtype2
 
