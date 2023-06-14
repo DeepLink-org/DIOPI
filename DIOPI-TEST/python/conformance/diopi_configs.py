@@ -2636,16 +2636,17 @@ diopi_configs = {
         rtol=1e-5,
         is_inplace=True,
         para=dict(
-            negative_slope=[0.01, 0.1, 10, 1]
+            negative_slope=[-5, -1, 0, 0.01, 0.1, 10, 1, 0.0, -1.5]
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((16, 7), (64, 28, 28),
-                              (2, 32, 208, 304), (64, 3, 7, 28, 28)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "shape": ((), (128,), (16, 7), (64, 28, 28),
+                              (2, 32, 208, 304), (64, 3, 7, 28, 28),
+                              (0,), (0, 8), (16, 0, 8)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
             ],
