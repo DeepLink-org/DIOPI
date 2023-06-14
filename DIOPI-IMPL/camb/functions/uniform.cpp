@@ -15,6 +15,9 @@ extern "C" diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHan
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor tensor(inout);
+    if (!tensor.defined()) {
+        return diopiSuccess;
+    }
     cnnlDataType_t dtype;
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, tensor.dtype()));
     cnnlRandGenerator_t generator;
