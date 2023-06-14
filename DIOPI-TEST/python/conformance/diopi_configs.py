@@ -198,7 +198,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'hardtanh_int': dict(
         name=["hardtanh"],
         is_inplace=True,
@@ -220,7 +220,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'hardtanh_uint': dict(
         name=["hardtanh"],
         is_inplace=True,
@@ -301,7 +301,7 @@ diopi_configs = {
             ]
         ),
     ),
-    
+
     'threshold_int': dict(
         name=["threshold"],
         is_inplace=True,
@@ -323,7 +323,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'threshold_uint': dict(
         name=["threshold"],
         is_inplace=True,
@@ -820,7 +820,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'pow_int': dict(
         name=['pow'],
         interface=['torch'],
@@ -841,7 +841,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'pow_int_inplace': dict(
         name=['pow'],
         interface=['torch'],
@@ -863,7 +863,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'pow_bool': dict(
         name=['pow'],
         interface=['torch'],
@@ -884,7 +884,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'pow_bool_inplace': dict(
         name=['pow'],
         interface=['torch'],
@@ -992,7 +992,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'pow_broadcast': dict(
         name=['pow'],
         interface=['torch'],
@@ -1618,7 +1618,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'addcdiv_addcmul_broadcast_inplace': dict(
         name=["addcdiv", "addcmul"],
         interface=['torch'],
