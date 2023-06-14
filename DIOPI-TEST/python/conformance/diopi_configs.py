@@ -177,42 +177,66 @@ diopi_configs = {
         ),
     ),
 
-    'hardtanh_inplace': dict(
+    'hardtanh': dict(
         name=["hardtanh"],
         is_inplace=True,
         para=dict(
-            min_val=[0.0, 0.0, 0.2, 1.4],
-            max_val=[6.0, 0.5, 0.2, 1.2],
+            min_val=[0, -1, 0.0, 0.0, -0.2, 1.2, -2, 1, -2.1],
+            max_val=[0.4, 1, 6, 0.5, 0.2, 1.2, 0, 0.0, -2.5],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((2, 4096), (64, 28, 28),
-                              (2, 96, 56, 56), (64, 3, 7, 28, 28)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "shape": ((), (128,), (2, 4096), (64, 28, 28),
+                              (2, 96, 56, 56), (64, 3, 7, 28, 28),
+                              (0,), (0, 8), (16, 0, 8)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
             ],
         ),
     ),
-
-    'hardtanh_backward': dict(
+    
+    'hardtanh_int': dict(
         name=["hardtanh"],
+        is_inplace=True,
         para=dict(
-            min_val=[0.0, 0.0, 0.2, 1.4],
-            max_val=[6.0, 0.5, 0.2, 1.2],
+            min_val=[0, -1, 0.0, 0.0, -4.5, 2, -2, 1, -2.1],
+            max_val=[0.4, 5, -6, 0.5, 6.5, 2, 0, 0.0, -2.5],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "requires_grad": [True],
-                    "shape": ((2, 4096), (64, 28, 28),
-                              (2, 96, 56, 56), (64, 3, 7, 28, 28)),
-                    "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
+                    "shape": ((), (128,), (2, 4096), (64, 28, 28),
+                              (2, 96, 56, 56), (64, 3, 7, 28, 28),
+                              (0,), (0, 8), (16, 0, 8)),
+                    "dtype": [Dtype.int16, Dtype.int32, Dtype.int64,
+                              Dtype.int8],
+                    "gen_fn": dict(fn=Genfunc.randint, low=-10, high=10),
+                },
+            ],
+        ),
+    ),
+    
+    'hardtanh_uint': dict(
+        name=["hardtanh"],
+        is_inplace=True,
+        para=dict(
+            min_val=[0, -1, 20, 0.0, -20, 20, -2, 1, -5],
+            max_val=[0.4, 5, -50, 0.5, 70.5, 20, 0, 0.0, -10],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (128,), (2, 4096), (64, 28, 28),
+                              (2, 96, 56, 56), (64, 3, 7, 28, 28),
+                              (0,), (0, 8), (16, 0, 8)),
+                    "dtype": [Dtype.uint8],
+                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=256),
                 },
             ],
         ),
@@ -248,7 +272,7 @@ diopi_configs = {
                               (32, 64, 112, 112), (64, 3, 7, 28, 28)),
                     "requires_grad": [True],
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
-                    "gen_fn": dict(fn=Genfunc.randint, low=-6, high=6),
+                    "gen_fn": dict(fn=Genfunc.uniform, low=-6, high=6),
                 },
             ],
         ),
