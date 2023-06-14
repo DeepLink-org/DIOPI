@@ -101,7 +101,7 @@ public:
     void* data() { return storage_->data(); }
     const void* data() const { return storage_->data(); }
     int64_t nbytes() const { return storage_->nbytes(); }
-    py::buffer_info buffer() const noexcept {
+    py::buffer_info buffer() const {
         if (storage_ == nullptr) {
             return py::buffer_info();
         }
