@@ -1859,15 +1859,16 @@ diopi_configs = {
         name=["fill_"],
         interface=["torch.Tensor"],
         para=dict(
-            value=[-100, 0.0, float("-inf"), -100, 0.0, float("-inf"),
-                   3.0, 3, bool(3), float("inf"), float("nan")],
+            value=[True, -100, 0.0, float("-inf"), 100, -2.4, float("-inf"),
+                   3.0, 3, bool(3), float("inf"), float("nan"), False, 2.1, 5],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((1,), (64,), (4, 49), (1276, 49, 49), (2, 8, 726, 726), (2, 31, 6, 40, 1),
-                              (1,), (64,), (4, 49), (1276, 49, 49), (2, 8, 726, 726)),
+                    "shape": ((), (1,), (64,), (4, 49), (1276, 49, 49), (2, 8, 726, 726), (2, 31, 6, 40, 1),
+                              (1,), (64,), (4, 49), (1276, 49, 49), (2, 8, 726, 726),
+                              (0,), (0, 5), (3, 0, 6)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                     "gen_fn": Genfunc.randn,
                 },
@@ -1879,13 +1880,13 @@ diopi_configs = {
         name=["fill_"],
         interface=["torch.Tensor"],
         para=dict(
-            value=[3.0, 3, bool(3), 4.8, -10],
+            value=[0.234, 3.0, 3, bool(3), 4.8, -10, False, 5, 0.23],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((1,), (64,), (4, 49), (1276, 49, 49), (2, 8, 726, 726)),
+                    "shape": ((), (1,), (64,), (4, 49), (1276, 49, 49), (2, 8, 726, 726), (0,), (0, 5), (3, 0, 6)),
                     "dtype": [Dtype.int16, Dtype.int32, Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
                     "gen_fn": Genfunc.randn,
                 },
