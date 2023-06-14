@@ -181,8 +181,8 @@ diopi_configs = {
         name=["hardtanh"],
         is_inplace=True,
         para=dict(
-            min_val=[0, -1, 0.0, 0.0, -0.2, 1.2, -2, 1, -2.1],
-            max_val=[0.4, 1, 6, 0.5, 0.2, 1.2, 0, 0.0, -2.5],
+            min_val=[False, -1, 0.0, 0.0, -0.2, 1.2, -2, 1, -2.1],
+            max_val=[0.4, True, 6, -0.5, 0.2, 1.2, 0, 0.0, -2.5],
         ),
         tensor_para=dict(
             args=[
@@ -282,8 +282,8 @@ diopi_configs = {
         name=["threshold"],
         is_inplace=True,
         para=dict(
-            threshold=[2, 0, 2.0, -3.1, 4.7, 2, -1, 1, -2.1],
-            value=[0, -5.34, 0.0, 33, 12, 0, 0.0, -2.5, -2.1],
+            threshold=[2, False, 2.0, -3.1, 4.7, 2, -1, 1, -2.1],
+            value=[0, -5.34, 0.0, 33, 12, True, 0.0, -2.5, -2.1],
         ),
         tensor_para=dict(
             genfunc=Genfunc.randn,
@@ -2862,7 +2862,7 @@ diopi_configs = {
         rtol=1e-5,
         is_inplace=True,
         para=dict(
-            negative_slope=[-5, -1, 0, 0.01, 0.1, 10, 1, 0.0, -1.5]
+            negative_slope=[-5, -1, False, 0.01, 0.1, 10, 1, 0.0, -1.5]
         ),
         tensor_para=dict(
             args=[
