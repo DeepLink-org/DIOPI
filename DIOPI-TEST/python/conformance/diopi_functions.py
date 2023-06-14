@@ -2166,17 +2166,19 @@ def bernoulli(input, inplace=False, p=None) -> Tensor:
 def masked_fill(input, mask, value, inplace=False) -> Tensor:
     assert mask.get_dtype() == Dtype.bool, "mask must be bool tensor"
     out = raw_like(input)
-
     call = "diopiMaskedFill"
-
     call_scalar = False
     if isinstance(value, Tensor):
         value_res = value
     else:
         value_res = Scalar(value)
         call_scalar = True
-
+        
+    out_size = infer_size(input.size().data, mask.size().data)
     if inplace:
+        input_np = input.numpy()
+        input_np = np.resize(input_np, out_size)
+        input = Tensor.from_numpy(input_np)
         out = input
         call = call + "Inp"
         if call_scalar:
@@ -2184,7 +2186,7 @@ def masked_fill(input, mask, value, inplace=False) -> Tensor:
         func = check_function(call)
         ret = func(input.context(), input, mask, value_res)
     else:
-        out = raw_like(input)
+        out = Tensor(out_size, input.get_dtype())
         if call_scalar:
             call = call + "Scalar"
         func = check_function(call)
