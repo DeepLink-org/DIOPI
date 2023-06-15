@@ -15,7 +15,9 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, dio
 
     // input_tensor
     DiopiTensor inputTensor(input);
-    int realDim = -1;  // If dim is set to -1, the unique of the flattened input is to apply in CNNL.
+
+    // If dim is set to -1, the unique of the flattened input is to apply in CNNL.
+    int realDim = -1;
     if (dim != nullptr) {
         realDim = ((*dim) < 0) ? (*dim + inputTensor.dim()) : *dim;
     }
@@ -23,10 +25,11 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, dio
     // dtype cast
     diopiDtype_t originInputDtype = inputTensor.dtype();
     std::vector<DiopiTensor *> pTensors{&inputTensor};
-    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32, diopi_dtype_int32};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32, diopi_dtype_int32, diopi_dtype_int64};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
     // output_tensor
+    // require larger dimsize for output_tensor, it will be sliced to get final result
     DiopiTensor outputTensor =
         (realDim != -1) ? requiresTensor(ctx, {inputTensor.shape()}, inputTensor.dtype()) : requiresTensor(ctx, {inputTensor.numel()}, inputTensor.dtype());
     // index_tensor
@@ -91,15 +94,23 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, dio
     if (realDim != -1) {
         trueOutShape[realDim] = outlenHost;
     } else {
-        trueOutShape[0] = outlenHost;
+        trueOutShape = {outlenHost};
     }
-    DiopiTensor slicedOutputTensor = requiresTensor(ctx, trueOutShape, outputTensor.dtype());
-    DiopiTensor slicedCountsTensor = requiresTensor(ctx, {outlenHost}, diopi_dtype_int32);
 
-    diopiSlice(ctx, diopiTensorHandle_t(slicedOutputTensor), diopiTensorHandle_t(outputTensor), realDim, 0, outlenHost, 1);
-    diopiSlice(ctx, diopiTensorHandle_t(slicedCountsTensor), diopiTensorHandle_t(countsTensor), 0, 0, outlenHost, 1);
+    DiopiTensor slicedOutputTensor = requiresTensor(ctx, trueOutShape, outputTensor.dtype());
+    slicedOutputTensor.reshape({slicedOutputTensor.numel()});
+    CnnlTensorDesc slicedOutputDesc(slicedOutputTensor, CNNL_LAYOUT_ARRAY);
+    outputTensor.reshape({outputTensor.numel()});
+    CnnlTensorDesc newOutputDesc(outputTensor, CNNL_LAYOUT_ARRAY);
+
+    int begin[] = {0};
+    int end[] = {static_cast<int>(slicedOutputTensor.numel())};
+    int step[] = {1};
+    // slice
+    DIOPI_CALLCNNL(cnnlStridedSlice(handle, newOutputDesc.get(), outputTensor.data(), begin, end, step, slicedOutputDesc.get(), slicedOutputTensor.data()));
 
     *out = diopiTensorHandle_t(slicedOutputTensor);
+
     if (returnIndices) {
         DiopiTensor trueIndexTensor(indices);
         CnnlTensorDesc trueIndexDesc(trueIndexTensor, CNNL_LAYOUT_ARRAY);
@@ -108,8 +119,12 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, dio
         DIOPI_CALLCNNL(cnnlCopy(handle, indexDesc64.get(), indexTensor.data(), trueIndexDesc.get(), trueIndexTensor.data()));
     }
     if (returnCounts) {
+        DiopiTensor slicedCountsTensor = requiresTensor(ctx, {outlenHost}, diopi_dtype_int32);
+        diopiSlice(ctx, diopiTensorHandle_t(slicedCountsTensor), diopiTensorHandle_t(countsTensor), 0, 0, outlenHost, 1);
+        DIOPI_CALL(dataTypeCast(ctx, slicedCountsTensor, diopi_dtype_int64));
         *counts = diopiTensorHandle_t(slicedCountsTensor);
     }
+
     return diopiSuccess;
 }
 }  // extern "C"
