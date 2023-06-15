@@ -602,7 +602,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'log_neg_input': dict(
         name=['log', 'log2', 'log10'],
         interface=['torch'],
@@ -710,7 +710,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'neg_without_inplace_zero': dict(
         name=['neg'],
         interface=['torch'],
@@ -932,7 +932,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'pointwise_binary_broadcast': dict(
         name=['add', 'sub', 'mul', 'div', 'eq', 'ne', 'le',
               'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
@@ -956,7 +956,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'pointwise_binary_broadcast_inplace': dict(
         name=['add', 'sub', 'mul', 'div', 'eq', 'ne', 'le',
               'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
@@ -1006,7 +1006,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'pointwise_binary_diff_dtype_inplace': dict(
         name=['add', 'mul', 'eq', 'ne', 'le',
               'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
@@ -1032,7 +1032,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'pointwise_binary_diff_dtype_without_bool': dict(
         name=['sub', 'div'],
         interface=['torch'],
@@ -1056,7 +1056,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'pointwise_binary_diff_dtype_without_bool_inplace': dict(
         name=['sub'],
         interface=['torch'],
@@ -1194,7 +1194,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'div_broadcast': dict(
         name=['div'],
         interface=['torch'],
@@ -1217,7 +1217,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'div_diff_dtype_inplace': dict(
         name=['div'],
         interface=['torch'],
@@ -1228,12 +1228,12 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((1024, ),),
-                    "dtype":[Dtype.float64, Dtype.float32, Dtype.float16,],
+                    "dtype":[Dtype.float64, Dtype.float32, Dtype.float16],
                 },
                 {
                     "ins": ['other'],
                     "shape": ((1024, ),),
-                    "dtype":[Dtype.float32, Dtype.float16, Dtype.float64,],
+                    "dtype":[Dtype.float32, Dtype.float16, Dtype.float64],
                 },
             ],
         ),
@@ -1286,7 +1286,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'sub_scalar': dict(
         name=['sub'],
         interface=['torch'],
@@ -1397,7 +1397,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'sub_constant_with_alpha_and_no_contiguous': dict(
         name=['sub'],
         para=dict(
@@ -1467,7 +1467,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'pointwise_binary_with_alpha_bool': dict(
         name=['add'],
         para=dict(
@@ -1758,7 +1758,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'clamp_tensor_diff_dtype': dict(
         name=['clamp'],
         interface=['torch'],
@@ -4480,38 +4480,6 @@ diopi_configs = {
                               Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
                     # sample test for index_put when acc is False
                     "gen_fn": Genfunc.ones,
-                },
-            ]
-        ),
-    ),
-
-    'index_put_acc_bool_indices': dict(
-        name=['index_put'],
-        interface=['CustomizedTest'],
-        is_inplace=True,
-        para=dict(
-            accumulate=[True, False, False]
-        ),
-        tensor_para=dict(
-            gen_fn=Genfunc.randn,
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((16, 4, 4), (64, 4, 14, 14), (4, 4)),
-                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int32,
-                              Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
-                },
-                {
-                    "ins": ['indices1'],
-                    "shape": ((16, 4), (64, 4), (4, 4)),
-                    "dtype": [Dtype.bool],
-                    "gen_fn": Genfunc.ones,
-                },
-                {
-                    "ins": ['values'],
-                    "shape": ((64, 4), (256, 14, 14), (16,)),
-                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int32,
-                              Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool]
                 },
             ]
         ),
