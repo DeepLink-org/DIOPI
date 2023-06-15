@@ -20,7 +20,7 @@ namespace camb {
 extern "C" {
 
 diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mat1,
-                                  diopiConstTensorHandle_t mat2, const diopiScalar_t* beta, const diopiScalar_t* alpha) {
+                        diopiConstTensorHandle_t mat2, const diopiScalar_t* beta, const diopiScalar_t* alpha) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor mat1Tensor(mat1);
@@ -79,14 +79,14 @@ diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     }
 
     float alphaTmp;
-    if (alpha->stype <= 7) {
+    if (DiopiDataType::isInteger(alpha->stype)) {
         alphaTmp = alpha->ival;
     } else {
         alphaTmp = alpha->fval;
     }
 
     float betaTmp;
-    if (beta->stype <= 7) {
+    if (DiopiDataType::isInteger(beta->stype)) {
         betaTmp = beta->ival;
     } else {
         betaTmp = beta->fval;

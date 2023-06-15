@@ -3281,6 +3281,7 @@ def unique(input, sorted=True, return_inverse=False, return_counts=False, dim=No
         func(input.context(), out_ptr, input, dim, sorted,
              return_counts, indices, counts_ptr)
     check_returncode(ret)
+
     out = out_ptr.data()
     if return_counts:
         counts = counts_ptr.data()
@@ -3609,8 +3610,7 @@ def polar(abs, angle) -> Tensor:
         out = Tensor(out_shape, Dtype.complex64)
     func = check_function(call)
     ret = func(abs.context(), out, abs, angle)
-    import pdb
-    pdb.set_trace()
+
     check_returncode(ret)
     return out
 
@@ -3650,3 +3650,19 @@ def lerp(input, end, weight) -> Tensor:
     ret = func(input.context(), out, input, end, weight)
     check_returncode(ret)
     return out
+
+
+def triu(input, diagonal=0, inplace=False) -> Tensor:
+    call = "diopiTriu"
+    if inplace:
+        call += "Inp"
+        func = check_function(call)
+        ret = func(input.context(), input, diagonal)
+        check_returncode(ret)
+        return input
+    else:
+        out = Tensor(input.size(), input.get_dtype())
+        func = check_function(call)
+        ret = func(input.context(), out, input, diagonal)
+        check_returncode(ret)
+        return out

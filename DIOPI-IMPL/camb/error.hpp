@@ -11,6 +11,7 @@
 #include <diopi/diopirt.h>
 
 #include <cstring>
+#include <iostream>
 #include <mutex>
 #include <string>
 #include <utility>
@@ -26,7 +27,7 @@ extern std::mutex mtxLastError;
 template <typename... Types>
 inline void setLastErrorString(const char* szFmt, Types&&... args) {
     std::lock_guard<std::mutex> lock(mtxLastError);
-    sprintf(strLastError, szFmt, std::forward<Types>(args)...);
+    sprintf(strLastError + curIdxError, szFmt, std::forward<Types>(args)...);
     curIdxError = strlen(strLastError);
 }
 
