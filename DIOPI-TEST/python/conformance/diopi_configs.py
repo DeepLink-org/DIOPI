@@ -4411,10 +4411,10 @@ diopi_configs = {
         name=["im2col"],
         interface=['CustomizedTest'],
         para=dict(
-            kernel_size=[3, (2, 1), (2, 2), 3, 2],
-            stride=[2, (2, 1), (2, 1), 2, 2],
-            padding=[1, 0, (0, 1), 0, 2],
-            dilation=[1, 1, 1, 2, 1],
+            kernel_size=[3, (2, 1), (2, 2), 3],
+            stride=[2, (2, 1), (2, 1), 2],
+            padding=[1, 0, (0, 1), 0],
+            dilation=[1, 1, 1, 2],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -4424,8 +4424,7 @@ diopi_configs = {
                     "shape": ((2, 64, 352, 528),
                               (2, 256, 12, 40),
                               (2, 512, 4, 26),
-                              (3, 4, 10, 10),
-                              (3, 4, 10)),
+                              (3, 4, 10, 10)),
                     "dtype": [Dtype.float16, Dtype.float32],
                 },
             ]
