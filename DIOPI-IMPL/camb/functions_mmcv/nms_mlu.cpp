@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "../common/common.hpp"
 #include "../diopi_helper.hpp"
 #include "../mlu_helper.hpp"
 
@@ -142,7 +143,7 @@ extern "C" DIOPI_API diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTe
 
     auto tempOut = impl::camb::requiresTensor(ctx, {outputNum}, output.dtype());
     DIOPI_CALL(diopiSlice(ctx, diopiTensorHandle_t(tempOut), diopiTensorHandle_t(output), 0, 0, outputNum, 1));
-
+    DIOPI_CALL(impl::camb::dataTypeCast(ctx, tempOut, diopi_dtype_int64));
     *out = diopiTensorHandle_t(tempOut);
     return diopiSuccess;
 }

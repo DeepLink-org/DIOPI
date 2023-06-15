@@ -104,7 +104,9 @@ class DiopiTensor final {
 public:
     DiopiTensor() = default;
 
-    // friend DiopiTensor makeFakeTensor(diopiDtype_t dtype, std::vector<int64_t>shape, std::vector<int64_t>stride);
+    // default shallow copy/assignment, it will not change the address of tensor_
+    DiopiTensor(const DiopiTensor&) = default;
+    DiopiTensor& operator=(const DiopiTensor&) = default;
 
     explicit DiopiTensor(const diopiTensorHandle_t& tensor) : tensor_(tensor) {
         if (tensor_ != nullptr) {
@@ -318,14 +320,6 @@ protected:
     std::vector<int64_t> shape_{0};
     std::vector<int64_t> stride_{0};
 };
-
-// inline DiopiTensor makeFakeTensor(diopiDtype_t dtype, std::vector<int64_t>shape, std::vector<int64_t>stride){
-//     DiopiTensor tensor;
-//     tensor.dtype_ = dtype;
-//     tensor.shape_ = shape;
-//     tensor.stride_ = stride;
-//     return tensor;
-// }
 
 inline auto makeTensor(diopiContextHandle_t ctx, const diopiScalar_t* pScalar) -> DiopiTensor {
     diopiTensorHandle_t tensor = nullptr;
