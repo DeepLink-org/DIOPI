@@ -810,7 +810,6 @@ device_configs = {
     ),
 
     # When not performing a reduce operation, the accuracy comparison of scatter needs to be performed on the CPU
-    # Currently, the shape of src tensor and index tensor must be the same
     'scatter': dict(
         name=['scatter'],
         tensor_para=dict(
@@ -833,7 +832,6 @@ device_configs = {
     ),
 
     # When not performing a reduce operation, the accuracy comparison of scatter needs to be performed on the CPU
-    # Currently, the shape of src tensor and index tensor must be the same
     'scatter_scalar': dict(
         name=['scatter'],
         tensor_para=dict(
