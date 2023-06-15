@@ -21,6 +21,7 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     DiopiTensor valuesTensor(values);
     DiopiTensor outputTensor(out);
 
+    DIOPI_CHECK(indicesCounts <= inputTensor.dim(), "indices have more indices than self dim");
     DIOPI_CHECK(inputTensor.isContiguous(), "input tensor should be contiguous");
     DIOPI_CHECK(valuesTensor.isContiguous(), "values tensor should be contiguous");
     DIOPI_CHECK(outputTensor.isContiguous(), "output tensor should be contiguous");

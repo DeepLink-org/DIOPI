@@ -39,6 +39,10 @@ void printDevDataInternal(diopiContextHandle_t ctx, void* data, int64_t len, int
 }
 
 inline void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor, std::string name = "name") {
+    if (!tensor.defined()) {
+        std::cout << "Tensor " << name << " is not defined. Please check it before using `printDevData`." << std::endl;
+        return;
+    }
     int64_t len = tensor.numel();
     void* dataIn = tensor.data();
     int64_t maxLen = 20;
