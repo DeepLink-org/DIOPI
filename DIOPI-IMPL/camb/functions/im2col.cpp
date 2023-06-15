@@ -134,10 +134,7 @@ extern "C" diopiError_t diopiIm2Col(diopiContextHandle_t ctx, diopiTensorHandle_
     int32_t strideWidth = strideVec[1];
     DIOPI_CALL(im2colShapeCheck(inputTr, kernelHeight, kernelWidth, dilationHeight, dilationWidth, padHeight, padWidth, strideHeight, strideWidth));
 
-    bool batchedInput = true;
-
     if (inputTr.dim() == 3) {
-        batchedInput = false;
         inputTr.unsqueeze(0);
     }
 
