@@ -973,19 +973,6 @@ device_configs = {
             ]
         ),
     ),
-
-    'im2col': dict(
-        name=["im2col"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ]
-        ),
-    ),
-
     'cholesky': dict(
         name=['cholesky_ex'],
         tensor_para=dict(
