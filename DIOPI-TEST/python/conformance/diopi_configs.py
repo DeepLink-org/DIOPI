@@ -4781,7 +4781,7 @@ diopi_configs = {
     'sgn': dict(
         name=['sgn'],
         interface=['torch'],
-        dtype= [Dtype.complex64, Dtype.complex128, Dtype.float16, Dtype.float32, Dtype.float64,
+        dtype=[Dtype.complex64, Dtype.complex128, Dtype.float16, Dtype.float32, Dtype.float64,
                 Dtype.int16, Dtype.int32, Dtype.int64,
                 Dtype.int8, Dtype.uint8, Dtype.bool],
         tensor_para=dict(
