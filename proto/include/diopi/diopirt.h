@@ -121,6 +121,7 @@ extern DIOPI_RT_API diopiError_t diopiRequireTensor(diopiContextHandle_t ctx, di
                                                     const diopiDtype_t dtype, const diopiDevice_t device);
 extern DIOPI_RT_API diopiError_t diopiRequireBuffer(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor, int64_t num_bytes, diopiDevice_t device);
 
+extern DIOPI_RT_API diopiError_t diopiReplaceTensorStorage(diopiTensorHandle_t th, void* ptr, void (*deleter)(void*));
 #if defined(__cplusplus)
 }
 #endif
