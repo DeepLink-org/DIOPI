@@ -1238,7 +1238,7 @@ DIOPI_API diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, bool unbiased);
 
 /**
- * @brief Returns the minimum value of all elements in the input tensor.
+ * @brief Return the minimum value of each row in the input tensor along the given dimension dim.
  * @param[in] ctx Context environment.
  * @param input the input tensor, type = [float32, float64, float16, int16, int32, int64, uint8, int8, bool]
  * @param dim The dimension along which to reduce. type = [int64]
@@ -1256,7 +1256,7 @@ DIOPI_API diopiError_t diopiMin(diopiContextHandle_t ctx, diopiTensorHandle_t mi
 DIOPI_API diopiError_t diopiMinAll(diopiContextHandle_t ctx, diopiTensorHandle_t min, diopiConstTensorHandle_t input);
 
 /**
- * @brief Returns the maximum value of all elements in the input tensor.
+ * @brief Return the maximum value of each row in the input tensor along the given dimension dim.
  * @param[in] ctx Context environment.
  * @param input the input tensor, type = [float32, float64, float16, int16, int32, int64, uint8, int8, bool]
  * @param dim The dimension along which to reduce. type = [int64]
@@ -1473,9 +1473,22 @@ DIOPI_API diopiError_t diopiEmbeddingRenorm_(diopiContextHandle_t ctx, diopiTens
                                              double norm_type);
 /**
  * @brief A simple lookup table that looks up embeddings in a fixed dictionary and size.
+ * @param[in] ctx Context environment.
+ * @param weight the embedding tensor. type = [float32, float64].
+ * @param indices the indices tensor. type = [int64].
+ * @param padding_idx padding_idx. type = [int64].
+ * @param scale_grad_byfreq boolean, whether to scale grad by freq.
+ * @param sparse boolean, whether to use sparse update.
+ * @param[out] out the output tensor. type = [float32, float64].
  */
 DIOPI_API diopiError_t diopiEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t indices,
                                       int64_t padding_idx, bool scale_grad_byfreq, bool sparse);
+/**
+ * @brief compute the backward pass of diopiEmbedding().
+ * @param[in] grad the grad of output. type = [float32, float64].
+ * @param[out] grad_weight the grad of weight. type = [float32, float64].
+ * @sa Other parameters refer to diopiEmbedding().
+ */
 DIOPI_API diopiError_t diopiEmbeddingBackward(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t grad,
                                               diopiConstTensorHandle_t indices, int64_t num_weights, int64_t padding_idx, bool scale_grad_byfreq, bool sparse);
 
@@ -1726,7 +1739,7 @@ DIOPI_API diopiError_t diopiCdistBackward(diopiContextHandle_t ctx, diopiTensorH
  * @param keepdim whether the output tensor has dim retained or not.
  * @param[out] out the output tensor. type=[int32, int64].
  */
-* / DIOPI_API diopiError_t diopiArgmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim, bool keepdim);
+DIOPI_API diopiError_t diopiArgmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim, bool keepdim);
 
 /**
  * \brief Implements Adadelta algorithm.
@@ -2091,7 +2104,10 @@ DIOPI_API diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTen
                                               diopiConstTensorHandle_t rstd, diopiSize_t normalized_shape);
 
 /**
- * \brief Copies the elements from src into dest tensor.
+ * @brief Copies the elements from src into dest tensor.
+ * @param[in] ctx Context environment.
+ * @param src the source tensor.type = [float32, float64, float16, bool, int64, int32, int16, int8, uint8].
+ * @param[out] dest the destination tensor.type = [float32, float64, float16, bool, int64, int32, int16, int8, uint8].
  */
 DIOPI_API diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiTensorHandle_t dest);
 
