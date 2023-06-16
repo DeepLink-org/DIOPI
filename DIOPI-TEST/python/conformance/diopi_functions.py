@@ -304,23 +304,23 @@ def eq(input, other, inplace=False) -> Tensor:
 
 
 def ne(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(input, other, inplace, 'diopiNe', dtype=Dtype.bool)
+    return binary_op_scalar(input, other, inplace, 'diopiNe', dtype=None)
 
 
 def ge(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(input, other, inplace, 'diopiGe', dtype=Dtype.bool)
+    return binary_op_scalar(input, other, inplace, 'diopiGe', dtype=None)
 
 
 def gt(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(input, other, inplace, 'diopiGt', dtype=Dtype.bool)
+    return binary_op_scalar(input, other, inplace, 'diopiGt', dtype=None)
 
 
 def le(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(input, other, inplace, 'diopiLe', dtype=Dtype.bool)
+    return binary_op_scalar(input, other, inplace, 'diopiLe', dtype=None)
 
 
 def lt(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(input, other, inplace, 'diopiLt', dtype=Dtype.bool)
+    return binary_op_scalar(input, other, inplace, 'diopiLt', dtype=None)
 
 
 def mul(input, other, inplace=False) -> Tensor:
