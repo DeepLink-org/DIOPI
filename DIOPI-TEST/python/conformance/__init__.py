@@ -39,6 +39,5 @@ __all__ = [
     'from_numpy_dtype',
     'to_numpy_dtype',
     'ConformanceTest',
-    'diopiTensor',
-    'cur_test_func',
+    'diopiTensor'
 ]
