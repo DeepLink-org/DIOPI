@@ -1050,4 +1050,64 @@ device_configs = {
         ),
     ),
 
+    'lerp': dict(
+        name=['lerp'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+                {
+                    "ins": ['end'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+            ],
+        ),
+    ),
+
+    'lerp_tensor': dict(
+        name=['lerp'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+                {
+                    "ins": ['end'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+                {
+                    "ins": ['weight'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+            ],
+        ),
+    ),
+
+    'triu': dict(
+        name=['triu'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+            ],
+        ),
+    ),
+
+    'sgn': dict(
+        name=['sgn'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.complex64), Skip(Dtype.complex128), Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.int16)],
+                },
+            ],
+        ),
+    ),
+
 }
