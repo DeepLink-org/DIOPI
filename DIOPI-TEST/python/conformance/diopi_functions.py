@@ -1242,7 +1242,7 @@ def split(tensor, split_size_or_sections, dim=0):
 def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
     def infer_out_dtype(input, exponent):
         if input is None and self is not None:
-             return common_dtype(self, exponent, True)
+            return common_dtype(self, exponent, True)
         if exponent is None:
             return input.get_dtype()
         if exponent is not None and isinstance(exponent, Tensor):
@@ -2194,7 +2194,6 @@ def masked_fill(input, mask, value, inplace=False) -> Tensor:
     else:
         value_res = Scalar(value)
         call_scalar = True
-        
     out_size = infer_size(input.size().data, mask.size().data)
     if inplace:
         input_np = input.numpy()
