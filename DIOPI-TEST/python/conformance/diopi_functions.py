@@ -4,7 +4,7 @@ import math
 import itertools
 
 from ctypes import c_double, byref
-from .diopi_runtime import Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d
+from .diopi_runtime import Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d, to_numpy_dtype
 from .utils import check_returncode, check_function, glob_vars, get_capsule
 from . import raw_like
 from collections import namedtuple
@@ -57,7 +57,7 @@ def reduce_op_process(input, dim=None, keepdim=False, dtype=None):
     return dim_list, out
 
 
-def common_dtype(input, other) -> Dtype:
+def common_dtype(input, other, cast_to_input=False) -> Dtype:
     if isinstance(input, Tensor):
         dtype1 = input.get_dtype()
     elif isinstance(input, int):
@@ -75,6 +75,8 @@ def common_dtype(input, other) -> Dtype:
     else:
         assert 0, "not supported type of other"
     float_types = [Dtype.float16, Dtype.float32, Dtype.float64]
+    int_types = [Dtype.int8, Dtype.int16, Dtype.int32, Dtype.int64]
+    uint_types = [Dtype.uint8]
     if dtype1 in float_types and dtype2 not in float_types:
         return dtype1
     if dtype1 not in float_types and dtype2 in float_types:
@@ -85,11 +87,15 @@ def common_dtype(input, other) -> Dtype:
         return dtype2
     elif dtype2 == Dtype.bool:
         return dtype1
+    elif dtype1 in int_types and dtype2 in uint_types:
+        return dtype1 if dtype1 != Dtype.int8 else Dtype.int16
+    elif dtype1 in uint_types and dtype2 in int_types and not cast_to_input:
+        return dtype2 if dtype2 != Dtype.int8 else Dtype.int16
     elif isinstance(input, Tensor) and len(input.size().data) == 0:
         return dtype2
     elif isinstance(other, Tensor) and len(other.size().data) == 0:
         return dtype1
-    return dtype1 if dtype1.value >= dtype2.value else dtype2
+    return dtype1 if dtype1.value >= dtype2.value or cast_to_input else dtype2
 
 
 def promote_type(input: Tensor, promoted_dtype: Dtype) -> Dtype:
@@ -158,10 +164,11 @@ def binary_op(input, other, inplace, call) -> Tensor:
 def binary_op_scalar(input, other, inplace, call, alpha=None, dtype=None) -> Tensor:
     args = "input.context(), "
     if dtype is None:
-        dtype = common_dtype(input, other)
-
+        dtype = common_dtype(input, other, cast_to_input=True)
     if inplace:
         call = call + "Inp"
+        input_np = input.numpy()
+        input = Tensor.from_numpy(input_np.astype(to_numpy_dtype(dtype)))
         out = input
     else:
         sizeI = input.size().data
@@ -315,7 +322,7 @@ def lt(input, other, inplace=False) -> Tensor:
 
 
 def mul(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(input, other, inplace, 'diopiMul', dtype=promote_type(input, Dtype.float32))
+    return binary_op_scalar(input, other, inplace, 'diopiMul', dtype=None)
 
 
 def div(input, other, inplace=False, rounding_mode=None) -> Tensor:
@@ -1233,18 +1240,24 @@ def split(tensor, split_size_or_sections, dim=0):
 
 
 def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
-    float_types = [Dtype.float16, Dtype.float32, Dtype.float64]
+    def infer_out_dtype(input, exponent):
+        if input is None and self is not None:
+             return common_dtype(self, exponent, True)
+        if exponent is None:
+            return input.get_dtype()
+        if exponent is not None and isinstance(exponent, Tensor):
+            return common_dtype(input, exponent, True)
+        if exponent is not None and isinstance(exponent, Scalar):
+            return input.get_dtype()
+        if exponent is not None and isinstance(exponent, (int, float)):
+            return common_dtype(input, exponent, True)
+        return input.get_dtype()
+    out_dtype = infer_out_dtype(input, exponent)
     if input is None and self is not None:
         assert isinstance(exponent, Tensor),\
             "exponent must be tensor when input is scalar"
         func = check_function("diopiPowScalar")
         # todo: return type = input type or float
-        out_dtype = None
-        exponent_dtype = exponent.get_dtype()
-        if isinstance(self, float) or exponent_dtype in float_types:
-            out_dtype = exponent_dtype if exponent_dtype in float_types else Dtype.float32
-        else:
-            out_dtype = exponent_dtype
         out = Tensor(exponent.size().data, out_dtype)
         self = Scalar(self)
         ret = func(exponent.context(), out, self, exponent)
@@ -1254,26 +1267,32 @@ def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
         temp_exponent = Scalar(exponent)
         if inplace:
             func = check_function("diopiPowInp")
+            input_np = input.numpy()
+            input_np = input_np.astype(to_numpy_dtype(out_dtype))
+            input = Tensor.from_numpy(input_np)
             ret = func(input.context(), input, temp_exponent)
         else:
             func = check_function("diopiPow")
-            input_dtype = input.get_dtype()
-            out_dtype = Dtype.float32 if input_dtype not in float_types else input_dtype
             out = Tensor(input.size().data, out_dtype)
             ret = func(input.context(), out, input, temp_exponent)
     elif inplace:
         func = check_function("diopiPowInpTensor")
+        input_np = input.numpy()
+        input_np = input_np.astype(to_numpy_dtype(out_dtype))
+        input = Tensor.from_numpy(input_np)
         ret = func(input.context(), input, exponent)
     else:
         sizeI = input.size().data
         sizeE = exponent.size().data
         sizeO = broadcast_out_size(sizeI, sizeE)
-        out_dtype = common_dtype(input, exponent)
         out = Tensor(sizeO, out_dtype)
         func = check_function("diopiPowTensor")
         ret = func(input.context(), out,
                    input, exponent)
     if inplace:
+        input_np = input.numpy()
+        input_np = input_np.astype(to_numpy_dtype(out_dtype))
+        input = Tensor.from_numpy(input_np)
         out = input
 
     check_returncode(ret)
@@ -3053,12 +3072,7 @@ def remainder(other, input=None, self=None):
             call += "Tensor"
             sizeO = list(input.size().data)
             sizeOther = list(other.size().data)
-            for i in range(0, len(sizeOther)):
-                if sizeO[i] != sizeOther[i]:
-                    assert sizeO[i] == 1 or sizeOther[i] == 1, \
-                        "input and other must Supports broadcasting to a common shape"
-                    if sizeO[i] == 1:
-                        sizeO[i] = sizeOther[i]
+            sizeO = infer_size(sizeO, sizeOther)
             out_dtype = common_dtype(input, other)
             out = Tensor(sizeO, out_dtype)
             input = input
