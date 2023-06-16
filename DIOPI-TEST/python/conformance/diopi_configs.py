@@ -130,6 +130,7 @@ diopi_configs = {
         atol=1e-3,
         rtol=1e-3,
         dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
+        # out = (in - (dilation * (kernel_size - 1) + 1) + 2 * padding) / stride + 1
         para=dict(
             stride=[2, 1, 1, (2, 2)],
             padding=[0, 12, 0, (0, 0)],
