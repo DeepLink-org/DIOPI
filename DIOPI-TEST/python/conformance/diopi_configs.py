@@ -2348,8 +2348,8 @@ diopi_configs = {
         name=['transpose'],
         interface=['torch'],
         para=dict(
-            dim0=[0, -2],
-            dim1=[-1, -1],
+            dim0=[0, -2, 0],
+            dim1=[-1, -1, -1],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -2358,8 +2358,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((),
-                              (660, 6, 49, 32)),
+                    "shape": ((), (660, 6, 49, 32), (2, 1536, 950)),
                 },
             ],
         ),
