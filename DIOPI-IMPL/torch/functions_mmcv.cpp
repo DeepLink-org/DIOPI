@@ -17,6 +17,11 @@ extern "C" {
 
 diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t dets, diopiConstTensorHandle_t scores,
                           double iouThreshold, int64_t offset) {
+    // fix just for one-iter-test tools on cuda device with DIPU_MOCK_CUDA=False
+    const char *mode = std::getenv("DIPU_MOCK_CUDA");
+    if (mode != nullptr && (strcmp(mode, "False") == 0)) {
+        return diopiErrorOccurred;
+    }
     impl::aten::setCurCtx(ctx);
     auto atDets = impl::aten::buildATen(dets);
     auto atScores = impl::aten::buildATen(scores);
