@@ -4875,4 +4875,21 @@ diopi_configs = {
             ],
         ),
     ),
+
+    'sgn': dict(
+        name=['sgn'],
+        interface=['torch'],
+        dtype=[Dtype.complex64, Dtype.complex128, Dtype.float64, Dtype.float32, Dtype.int16],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn_cmplx,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (1024, ), (384, 128),
+                              (64, 1, 128), (128, 64, 3, 3),
+                              (2, 32, 130, 130)),
+                },
+            ],
+        ),
+    ),
 }
