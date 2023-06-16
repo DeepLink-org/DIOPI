@@ -164,11 +164,14 @@ def binary_op(input, other, inplace, call) -> Tensor:
 def binary_op_scalar(input, other, inplace, call, alpha=None, dtype=None) -> Tensor:
     args = "input.context(), "
     if dtype is None:
-        dtype = common_dtype(input, other, cast_to_input=True)
+        dtype = common_dtype(input, other, cast_to_input=False)
     if inplace:
         call = call + "Inp"
         input_np = input.numpy()
         input = Tensor.from_numpy(input_np.astype(to_numpy_dtype(dtype)))
+        if isinstance(other, (Tensor, Scalar)):
+            other_np = other.numpy()
+            other = Tensor.from_numpy(other_np.astype(to_numpy_dtype(dtype)))
         out = input
     else:
         sizeI = input.size().data
@@ -190,7 +193,6 @@ def binary_op_scalar(input, other, inplace, call, alpha=None, dtype=None) -> Ten
     if alpha is not None:
         alpha = Scalar(alpha)
         args = args + ", alpha"
-
     func = check_function(call)
     ret = eval(f'func({args})')
 
@@ -298,7 +300,7 @@ def sub(input, other, inplace=False, alpha=1) -> Tensor:
 
 
 def eq(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(input, other, inplace, 'diopiEq', dtype=Dtype.bool)
+    return binary_op_scalar(input, other, inplace, 'diopiEq', dtype=None)
 
 
 def ne(input, other, inplace=False) -> Tensor:
