@@ -127,32 +127,31 @@ diopi_configs = {
 
     'conv_2d': dict(
         name=["conv2d"],
-        atol=1e-3,
         rtol=1e-3,
         dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
         # out = (in - (dilation * (kernel_size - 1) + 1) + 2 * padding) / stride + 1
         para=dict(
-            stride=[2, 1, 1, (2, 2)],
-            padding=[0, 12, 0, (0, 0)],
-            dilation=[1, 12, 1, (1, 1)],
-            groups=[1, 2048, 1, 1],
+            stride=[1, 2, (2, 3), 2, 1, 1, (2, 2), 1],
+            padding=[0, (2, 1), (2, 3), 0, 12, 0, (0, 0), 0],
+            dilation=[1, (2, 9), (2, 1), 1, 12, 1, (1, 1), 1],
+            groups=[1, 2, 3, 1, 2048, 1, 1, 1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
                     "requires_grad": [True],
-                    "shape": ((2, 256, 200, 304), (2, 2048, 64, 64), (2, 2048, 1, 1), (2, 256, 200, 304)),
+                    "shape": ((4, 7, 12, 13), (6, 16, 19, 8), (6, 27, 12, 8), (2, 256, 200, 304), (2, 2048, 64, 64), (2, 2048, 1, 1), (2, 256, 200, 304), (0, 6, 5, 10)),
                 },
                 {
                     "ins": ["weight"],
                     "requires_grad": [True],
-                    "shape": ((12, 256, 1, 1), (2048, 1, 3, 3), (512, 2048, 1, 1), (12, 256, 1, 1)),
+                    "shape": ((2, 7, 6, 5), (18, 8, 12, 2), (6, 9, 3, 5), (12, 256, 1, 1), (2048, 1, 3, 3), (512, 2048, 1, 1), (12, 256, 1, 1), (2, 6, 2, 3)),
                 },
                 {
                     "ins": ["bias"],
                     "requires_grad": [True],
-                    "shape": ((12, ), None, None, (12, )),
+                    "shape": (None, (18, ), (6,), (12, ), None, None, (12, ), (2,)),
                 },
             ]
         ),
@@ -2880,30 +2879,35 @@ diopi_configs = {
         atol=1e-5,
         atol_half=1e2,
         rtol_half=1e2,
+        # out = (in - 1) * stride - 2 * padding + dilation * (kernel_size - 1) + output_padding + 1
         para=dict(
-            stride=[1, 2, 1, 2, (2, 2)],
-            padding=[0, 1, 0, 1, (1, 0)],
-            output_padding=[0, 1, 0, 1, (0, 1)],
-            groups=[1, 8, 1, 1, 1],
-            dilation=[1, 2, 1, 2, (1, 2)],
+            stride=[1, 2, (1, 3), 1, 2, 1, 2, (2, 2), 1],
+            padding=[0, (4, 3), (5, 4), 0, 1, 0, 1, (1, 0), 0],
+            output_padding=[0, (2, 1), (3, 2), 0, 1, 0, 1, (0, 1), 0],
+            groups=[1, 2, 3, 1, 8, 1, 1, 1, 1],
+            dilation=[1, (3, 5), (4, 5), 1, 2, 1, 2, (1, 2), 1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": ((2, 256, 14, 14), (2, 128, 32, 32),
-                              (2, 64, 160, 160), (2, 64, 320, 320), (2, 64, 320, 320)),
+                    "shape": ((6, 16, 20, 8), (6, 2, 4, 3), (6, 18, 4, 3),
+                              (2, 256, 14, 14), (2, 128, 32, 32),
+                              (2, 64, 160, 160), (2, 64, 320, 320), (2, 64, 320, 320),
+                              (0, 16, 20, 8)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                 },
                 {
                     "ins": ["weight"],
-                    "shape": ((256, 256, 2, 2), (128, 128, 4, 4),
-                              (64, 64, 2, 2), (64, 1, 2, 2), (64, 1, 2, 2)),
+                    "shape": ((16, 2, 12, 2), (2, 4, 12, 16), (18, 3, 2, 1),
+                              (256, 256, 2, 2), (128, 128, 4, 4),
+                              (64, 64, 2, 2), (64, 1, 2, 2), (64, 1, 2, 2),
+                              (16, 2, 12, 2)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                 },
                 {
                     "ins": ["bias"],
-                    "shape": ((256,), None, (64,), (1,), (1,)),
+                    "shape": (None, (8,), (9,), (256,), None, (64,), (1,), (1,), None),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                 },
             ]
@@ -3201,32 +3205,38 @@ diopi_configs = {
         atol_half=1e-2,
         rtol_half=1e-2,
         interface=['torch'],
+        # out = (in - (dilation * (kernel_size - 1) + 1) + 2 * padding) / stride + 1
         para=dict(
-            stride=[1, (2, 1, 1), 3, 1],
-            padding=[0, (1, 0, 1), 0, (1, 0, 1)],
-            dilation=[1, (2, 1, 1), 1, (2, 1, 1)],
-            groups=[1, 2, 2, 1],
+            stride=[1, 2, (2, 3, 4), 1, (2, 1, 1), 3, 1, 1],
+            padding=[0, (2, 1, 3), (2, 3, 4), 0, (1, 0, 1), 0, (1, 0, 1), 0],
+            dilation=[1, (2, 9, 5), (2, 1, 3), 1, (2, 1, 1), 1, (2, 1, 1), 1],
+            groups=[1, 2, 3, 1, 2, 2, 1, 1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
                     "requires_grad": [True],
-                    "shape": ((1, 3, 4, 224, 224), (1, 16, 32, 56, 56),
-                              (1, 128, 4, 56, 56), (1, 256, 4, 56, 56)),
+                    "shape": ((4, 7, 12, 13, 9), (6, 16, 19, 8, 10), (6, 27, 22, 12, 20), 
+                              (1, 3, 4, 224, 224), (1, 16, 32, 56, 56),
+                              (1, 128, 4, 56, 56), (1, 256, 4, 56, 56),
+                              (0, 6, 5, 10, 9)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                 },
                 {
                     "ins": ["weight"],
                     "requires_grad": [True],
-                    "shape": ((64, 3, 1, 7, 7), (16, 8, 5, 1, 1),
-                              (64, 64, 1, 3, 3), (64, 256, 1, 1, 1)),
+                    "shape": ((2, 7, 6, 5, 2), (2, 8, 12, 2, 4), (6, 9, 12, 2, 4), 
+                              (64, 3, 1, 7, 7), (16, 8, 5, 1, 1),
+                              (64, 64, 1, 3, 3), (64, 256, 1, 1, 1),
+                              (2, 6, 2, 3, 1)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                 },
                 {
                     "ins": ["bias"],
                     "requires_grad": [True],
-                    "shape": (None, (16,), (64,), (64,)),
+                    "shape": (None, (2, ), (6,), 
+                              None, (16,), (64,), (64,), (2,)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                 },
             ]
