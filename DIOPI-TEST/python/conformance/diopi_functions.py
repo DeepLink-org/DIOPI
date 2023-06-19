@@ -460,12 +460,16 @@ def matmul(input, other) -> Tensor:
     out = raw_like(input)
     sizeI = input.size().data
     sizeO = other.size().data
+    # vector x vector
     if len(sizeI) == 1 and len(sizeO) == 1:
         out = Tensor((), input.get_dtype())
+    # matrix x vector
     elif len(sizeI) > 1 and len(sizeO) == 1:
         out = Tensor(sizeI[:-1], input.get_dtype())
+    # vector x matrix
     elif len(sizeI) == 1 and len(sizeO) > 1:
         out = Tensor(sizeO[:-2] + [sizeO[-1]], input.get_dtype())
+    # (batched) matrix x (batched)matrix
     else:
         assert len(sizeI) > 1 and len(sizeO) > 1, "Inputs must be at least 2-dimensional for matrix multiplication"
         assert sizeI[-1] == sizeO[-2], "Last dimension of the first input must match second to last dimension of the second input"
