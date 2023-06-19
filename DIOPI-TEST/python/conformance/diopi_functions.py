@@ -2133,7 +2133,7 @@ def arange(end, start=0, step=1, dtype=None) -> Tensor:
         else:
             dtype = glob_vars.int_type
 
-    numel = int((end - start) / step)
+    numel = int((end - start) / step + (((end - start) / step) > int((end - start) / step)))
     out = Tensor((numel,), dtype)
 
     func = check_function("diopiArange")
