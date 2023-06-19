@@ -215,11 +215,11 @@ class CnnlInterpDescriptor final : public CnnlDescBase<cnnlInterpDescriptor_t, c
 public:
     CnnlInterpDescriptor() = default;
 
-    diopiError_t set(const cnnlTensorDescriptor_t input_desc, const cnnlInterpMode_t mode, const cnnlInterpCoordinateTransformationMode_t coordinate_trans_mode,
+    diopiError_t set(const cnnlTensorDescriptor_t inputDesc, const cnnlInterpMode_t mode, const cnnlInterpCoordinateTransformationMode_t coordinateTransMode,
                      float* scales) {
-        DIOPI_CALLCNNL(cnnlSetInterpDescriptor(this->get(), mode, coordinate_trans_mode));
-        cnnlInterpRoundMode_t round_mode = CNNL_INTERP_FLOOR;
-        DIOPI_CALLCNNL(cnnlSetInterpDescriptorEx(this->get(), input_desc, round_mode, scales, nullptr, -0.75, false));
+        DIOPI_CALLCNNL(cnnlSetInterpDescriptor(this->get(), mode, coordinateTransMode));
+        cnnlInterpRoundMode_t roundMode = CNNL_INTERP_FLOOR;
+        DIOPI_CALLCNNL(cnnlSetInterpDescriptorEx(this->get(), inputDesc, roundMode, scales, nullptr, -0.75, false));
         return diopiSuccess;
     }
 };

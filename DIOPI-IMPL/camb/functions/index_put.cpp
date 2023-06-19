@@ -44,7 +44,7 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
         if (indiceTensor.defined()) {
             DIOPI_CHECK(indiceTensor.isContiguous(), "indice tensor should be contiguous");
 #if (CNNL_MAJOR <= 1 && CNNL_MINOR < 18)
-            DIOPI_CHECK(!indiceTensor.dtype() == diopi_dtype_bool,
+            DIOPI_CHECK(!(indiceTensor.dtype() == diopi_dtype_bool),
                         "There are bugs in camb kernel when indices dtype is bool, please upgrade your cnnl version to 1.18 at least.");
 #endif
             DIOPI_CHECK(indiceTensor.dim() > 0, "zero-dimensional tensor cannot be concatenated");
