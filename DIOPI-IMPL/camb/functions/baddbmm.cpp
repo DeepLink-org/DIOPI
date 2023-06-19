@@ -21,7 +21,7 @@ extern "C" {
 /**
  * @brief Broadcast input add batch matmul.
  * @param[in] ctx Context environment.
- * @param input 
+ * @param input the broadcastable tensor to add, and it would be inout tensor for camb cnnl.
  * @param batch1 the first batch of matrices to be multiplied. type = [float16, float32, float64].
  * @param batch2 the second batch of matrices to be multiplied. type = [float16, float32, float64].
  * @param beta the offset coeff
@@ -29,8 +29,7 @@ extern "C" {
  * @param[out] out the output tensor. type = [float16, float32, float64].
  */
 
-static diopiError_t batchAddBatchMatmul(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor batch1,
-                                        DiopiTensor batch2, float beta, float alpha) {
+static diopiError_t batchAddBatchMatmul(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor batch1, DiopiTensor batch2, float beta, float alpha) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     CnnlTensorDesc batch1Desc(batch1, CNNL_LAYOUT_ARRAY);
@@ -65,7 +64,7 @@ static diopiError_t batchAddBatchMatmul(diopiContextHandle_t ctx, DiopiTensor in
                                                    matmulDesc,
                                                    batch1Desc.get(),
                                                    batch2Desc.get(),
-                                                   inputDesc.get(), 
+                                                   inputDesc.get(),
                                                    nullptr,  // preference not supported.
                                                    requestAlgoCount,
                                                    &matmulHr,
@@ -94,16 +93,15 @@ static diopiError_t batchAddBatchMatmul(diopiContextHandle_t ctx, DiopiTensor in
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiBaddbmmInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t batch1,
-                                       diopiConstTensorHandle_t batch2, double beta, double alpha) {
+DIOPI_API diopiError_t diopiBaddbmmInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t batch1, diopiConstTensorHandle_t batch2, double beta, double alpha) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor inputTensor(input);
     DiopiTensor batch1Tensor(batch1);
     DiopiTensor batch2Tensor(batch2);
 
-    std::vector<DiopiTensor *> tensorsVecPtr {&batch1Tensor, &batch2Tensor, &inputTensor};
-    std::set<diopiDtype_t> supportedDtypes {diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64};
+    std::vector<DiopiTensor *> tensorsVecPtr{&batch1Tensor, &batch2Tensor, &inputTensor};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64};
     DIOPI_CALL(autoCastTensorType(ctx, tensorsVecPtr, supportedDtypes));
 
     DiopiTensor batch1CastedTensor = *tensorsVecPtr[0];
@@ -115,8 +113,7 @@ DIOPI_API diopiError_t diopiBaddbmmInp(diopiContextHandle_t ctx, diopiTensorHand
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
-                                    diopiConstTensorHandle_t batch1, diopiConstTensorHandle_t batch2, double beta, double alpha) {
+DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t batch1, diopiConstTensorHandle_t batch2, double beta, double alpha) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor batch1Tensor(batch1);
@@ -126,8 +123,8 @@ DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_
 
     DIOPI_CALL(broadcast(ctx, outTensor, inputTensor));
 
-    std::vector<DiopiTensor *> tensorsVecPtr {&batch1Tensor, &batch2Tensor, &outTensor};
-    std::set<diopiDtype_t> supportedDtypes {diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64};
+    std::vector<DiopiTensor *> tensorsVecPtr{&batch1Tensor, &batch2Tensor, &outTensor};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64};
     DIOPI_CALL(autoCastTensorType(ctx, tensorsVecPtr, supportedDtypes));
 
     DiopiTensor batch1CastedTensor = *tensorsVecPtr[0];
@@ -139,6 +136,6 @@ DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_
     return diopiSuccess;
 }
 
-} // extern "C"
-} // namespace camb
-} // namespace impl
+}
+}
+}
