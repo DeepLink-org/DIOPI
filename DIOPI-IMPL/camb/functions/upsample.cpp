@@ -30,39 +30,61 @@ extern "C" diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTens
         return diopiSuccess;
     }
 
-    DIOPI_CHECK(inputTensor.dim() == 4 || inputTensor.dim() == 3, "Camb only supports UpsampleNearest 2d.")
+    DIOPI_CHECK(inputTensor.dim() == 4 || inputTensor.dim() == 3, "Camb kernel only supports UpsampleNearest 2d now.")
     DIOPI_CHECK(inputTensor.isContiguous(), "inputTensor should be contiguous");
-    DIOPI_CHECK(outputTensor.isContiguous(), "inputTensor should be contiguous");
+    DIOPI_CHECK(outputTensor.isContiguous(), "outputTensor should be contiguous");
 
-    cnnlTensorLayout_t layout = CNNL_LAYOUT_NHWC;
+    MemoryFormat format = inputTensor.dim() > 4 ? MemoryFormat::ChannelsLast3d : MemoryFormat::ChannelsLast;
+    cnnlTensorLayout_t layout = inputTensor.dim() > 4 ? CNNL_LAYOUT_NDHWC : CNNL_LAYOUT_NHWC;
+    DIOPI_CALL(contiguous(ctx, inputTensor, format));
+    DiopiTensor outputTmpTensor = requiresTensor(ctx, outputTensor.shape(), outputTensor.dtype(), format);
+
     CnnlTensorDesc inputDesc(inputTensor, layout);
-    CnnlTensorDesc outputDesc(outputTensor, layout);
-
-    /* DescData *input_desc_ptr = (DescData *)inputDesc.get();
-    DescData *output_desc_ptr = (DescData *)outputDesc.get();
-
-    std::cout << "input_desc_ptr shape:" << input_desc_ptr->dims[0] << " " << input_desc_ptr->dims[1] << " " << input_desc_ptr->dims[2] << " "
-              << input_desc_ptr->dims[3] << " " << input_desc_ptr->dims[4] << " " << input_desc_ptr->dims[5] << " " << input_desc_ptr->dims[6] << " "
-              << input_desc_ptr->dims[7] << std::endl;
-    std::cout << "output_desc_ptr shape:" << output_desc_ptr->dims[0] << " " << output_desc_ptr->dims[1] << " " << output_desc_ptr->dims[2] << " "
-              << output_desc_ptr->dims[3] << " " << output_desc_ptr->dims[4] << " " << output_desc_ptr->dims[5] << " " << output_desc_ptr->dims[6] << " "
-              << output_desc_ptr->dims[7] << std::endl; */
+    CnnlTensorDesc outputDesc(outputTmpTensor, layout);
 
     CnnlInterpDescriptor interpDesc;
 
-    /* float scale_h = static_cast<float>(outputTensor.shape()[2]) / static_cast<float>(inputTensor.shape()[2]);
-    float scale_w = static_cast<float>(outputTensor.shape()[3]) / static_cast<float>(inputTensor.shape()[3]); */
-
-    // std::vector<float> scales = {scale_h, scale_w};
-    std::vector<float> scales;
-
-    DIOPI_CALL(interpDesc.set(inputDesc.get(), CNNL_INTERP_NEAREST, CNNL_INTERP_COORDINATE_TRANSFORMATION_ALGO3, scales.data()));
+    DIOPI_CALL(interpDesc.set(inputDesc.get(), CNNL_INTERP_NEAREST, CNNL_INTERP_COORDINATE_TRANSFORMATION_ALGO3, nullptr));
 
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DIOPI_CALLCNNL(cnnlInterp_v3(handle, interpDesc.get(), inputDesc.get(), inputTensor.data(), outputDesc.get(), outputTensor.data()));
+    DIOPI_CALLCNNL(cnnlInterp_v3(handle, interpDesc.get(), inputDesc.get(), inputTensor.data(), outputDesc.get(), outputTmpTensor.data()));
 
-    printDevData(ctx, inputTensor, "inputTensor");
-    printDevData(ctx, outputTensor, "outputTensor");
+    // channels last -> contiguous
+    DIOPI_CALL(contiguous(ctx, outputTmpTensor, MemoryFormat::Contiguous));
+    // Copy back to origin
+    DIOPI_CALL(diopiCopyInp(ctx, outputTmpTensor.tensorHandle(), outputTensor.tensorHandle()));
+
+    return diopiSuccess;
+}
+
+extern "C" diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                                     diopiSize_t out_size, diopiSize_t in_size) {
+    DiopiTensor inputTensor(grad_output);
+    DiopiTensor outputTensor(grad_input);
+
+    if (inputTensor.numel() == 0) {
+        return diopiSuccess;
+    }
+
+    DIOPI_CHECK(inputTensor.dim() == 4 || inputTensor.dim() == 3, "Camb kernel only supports UpsampleNearest 2d now.")
+    DIOPI_CHECK(inputTensor.isContiguous(), "inputTensor should be contiguous");
+    DIOPI_CHECK(outputTensor.isContiguous(), "outputTensor should be contiguous");
+
+    MemoryFormat format = inputTensor.dim() > 4 ? MemoryFormat::ChannelsLast3d : MemoryFormat::ChannelsLast;
+    cnnlTensorLayout_t layout = inputTensor.dim() > 4 ? CNNL_LAYOUT_NDHWC : CNNL_LAYOUT_NHWC;
+    DIOPI_CALL(contiguous(ctx, inputTensor, format));
+    DiopiTensor outputTmpTensor = requiresTensor(ctx, outputTensor.shape(), outputTensor.dtype(), format);
+
+    CnnlTensorDesc inputDesc(inputTensor, layout);
+    CnnlTensorDesc outputDesc(outputTmpTensor, layout);
+
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    DIOPI_CALLCNNL(cnnlInterpBackward_v2(handle, false, false, CNNL_INTERP_BACKWARD_NEAREST, nullptr, true, inputDesc.get(), inputTensor.data(), outputDesc.get(), outputTmpTensor.data()));
+
+    // channels last -> contiguous
+    DIOPI_CALL(contiguous(ctx, outputTmpTensor, MemoryFormat::Contiguous));
+    // Copy back to origin
+    DIOPI_CALL(diopiCopyInp(ctx, outputTmpTensor.tensorHandle(), outputTensor.tensorHandle()));
 
     return diopiSuccess;
 }

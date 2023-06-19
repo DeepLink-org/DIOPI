@@ -952,11 +952,15 @@ device_configs = {
 
     'interpolate': dict(
         name=["interpolate"],
+        para=dict(
+            mode=[Skip('bilinear'), Skip('bicubic'), Skip('trilinear'), Skip('linear')]
+        ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    # camb not supports 5d upsample
+                    "shape": [Skip((1, 3, 32, 224, 224))],
                 },
             ]
         )
@@ -973,6 +977,19 @@ device_configs = {
             ]
         ),
     ),
+
+    'im2col': dict(
+        name=["im2col"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+            ]
+        ),
+    ),
+
     'cholesky': dict(
         name=['cholesky_ex'],
         tensor_para=dict(
