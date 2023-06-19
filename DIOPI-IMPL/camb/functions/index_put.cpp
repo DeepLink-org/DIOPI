@@ -39,6 +39,7 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     std::vector<cnnlTensorDescriptor_t> indicesDescs;
     std::vector<void*> indicesPtrList;
 
+    bool indicesAllNull = true;
     for (auto i = 0; i < indicesCounts; ++i) {
         DiopiTensor indiceTensor(indices[i]);
         if (indiceTensor.defined()) {
@@ -52,10 +53,15 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
             indicesPtrList.emplace_back(indiceTensor.data());
             savedIndicesDescs[i].set(indiceTensor, layout);
             indicesDescs.emplace_back(savedIndicesDescs[i].get());
+            indicesAllNull = false;
         } else {
             indicesPtrList.emplace_back(nullptr);
             indicesDescs.emplace_back(nullptr);
         }
+    }
+    if (indicesAllNull) {
+        // cnnl can't support all of the indices are nullptr
+        return diopiSuccess;
     }
 
     size_t workspaceSize = 0;

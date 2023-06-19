@@ -3652,6 +3652,22 @@ def lerp(input, end, weight) -> Tensor:
     return out
 
 
+def sgn(input, inplace=False) -> Tensor:
+    call = "diopiSgn"
+    if inplace:
+        call += "Inp"
+        func = check_function(call)
+        ret = func(input.context(), input)
+        check_returncode(ret)
+        return input
+    else:
+        out = Tensor(input.size(), input.get_dtype())
+        func = check_function(call)
+        ret = func(input.context(), out, input)
+        check_returncode(ret)
+        return out
+
+
 def triu(input, diagonal=0, inplace=False) -> Tensor:
     call = "diopiTriu"
     if inplace:
