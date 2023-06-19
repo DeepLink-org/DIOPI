@@ -12,16 +12,6 @@
 namespace impl {
 namespace camb {
 
-namespace {
-struct DescData {
-    int dim;
-    uint64_t total_num;
-    uint64_t total_size;
-    int dims[8];
-};
-
-}  // namespace
-
 extern "C" diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size) {
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
@@ -57,10 +47,10 @@ extern "C" diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTens
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                                     diopiSize_t out_size, diopiSize_t in_size) {
-    DiopiTensor inputTensor(grad_output);
-    DiopiTensor outputTensor(grad_input);
+extern "C" diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                                     diopiSize_t outSize, diopiSize_t inSize) {
+    DiopiTensor inputTensor(gradOutput);
+    DiopiTensor outputTensor(gradInput);
 
     if (inputTensor.numel() == 0) {
         return diopiSuccess;
