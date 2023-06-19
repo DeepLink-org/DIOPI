@@ -79,7 +79,8 @@ extern "C" diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, d
     CnnlTensorDesc outputDesc(outputTmpTensor, layout);
 
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DIOPI_CALLCNNL(cnnlInterpBackward_v2(handle, false, false, CNNL_INTERP_BACKWARD_NEAREST, nullptr, true, inputDesc.get(), inputTensor.data(), outputDesc.get(), outputTmpTensor.data()));
+    DIOPI_CALLCNNL(cnnlInterpBackward_v2(
+        handle, false, false, CNNL_INTERP_BACKWARD_NEAREST, nullptr, true, inputDesc.get(), inputTensor.data(), outputDesc.get(), outputTmpTensor.data()));
 
     // channels last -> contiguous
     DIOPI_CALL(contiguous(ctx, outputTmpTensor, MemoryFormat::Contiguous));
