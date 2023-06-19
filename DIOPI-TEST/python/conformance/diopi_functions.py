@@ -3161,16 +3161,18 @@ def index_put(input, values, indices1, indices2=None, accumulate=False, inplace=
 
 def scatter(input, dim, index, src=None, value=None, reduce=None, inplace=False):
     assert isinstance(dim, int), "dim must be int"
-    assert input.size().len == index.size().len, \
-        "input and index must have the same number of dimensions"
+    if input.size().len != 0 and index.size().len != 0:
+        assert input.size().len == index.size().len, \
+            "input and index must have the same number of dimensions"
     assert (src is not None) or (value is not None)
     if reduce is not None:
         assert reduce == 'add' or reduce == 'multiply', "reduce argument must be either add or multiply."
     else:
         reduce = ""
     if src is not None:
-        assert input.size().len == src.size().len, \
-            "input and src must have the same number of dimensions"
+        if input.size().len != 0 and src.size().len != 0:
+            assert input.size().len == src.size().len, \
+                "input and src must have the same number of dimensions"
     else:
         src = value
     out = raw_like(input)
