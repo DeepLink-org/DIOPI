@@ -29,7 +29,7 @@ extern "C" {
  * @param[out] out the output tensor. type = [float16, float32, float64].
  */
 
-static diopiError_t batchAddBatchMatmul(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor batch1, 
+static diopiError_t batchAddBatchMatmul(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor batch1,
                                         DiopiTensor batch2, float beta, float alpha) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
@@ -115,7 +115,7 @@ DIOPI_API diopiError_t diopiBaddbmmInp(diopiContextHandle_t ctx, diopiTensorHand
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, 
+DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
                                     diopiConstTensorHandle_t batch1, diopiConstTensorHandle_t batch2, double beta, double alpha) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
