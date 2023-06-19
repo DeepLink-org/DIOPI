@@ -24,7 +24,7 @@ extern "C" diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTens
     DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast), "inputTensor's memory format should be channelsLast");
     DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast), "outputTensor's memory format should be channelsLast");
 
-    cnnlTensorLayout_t layout = inputTensor.dim() > 4 ? CNNL_LAYOUT_NDHWC : CNNL_LAYOUT_NHWC;
+    cnnlTensorLayout_t layout = CNNL_LAYOUT_NHWC;
 
     CnnlTensorDesc inputDesc(inputTensor, layout);
     CnnlTensorDesc outputDesc(outputTensor, layout);
@@ -52,7 +52,7 @@ extern "C" diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, d
     DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast), "inputTensor's memory format should be channelsLast");
     DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast), "outputTensor's memory format should be channelsLast");
 
-    cnnlTensorLayout_t layout = inputTensor.dim() > 4 ? CNNL_LAYOUT_NDHWC : CNNL_LAYOUT_NHWC;
+    cnnlTensorLayout_t layout = CNNL_LAYOUT_NHWC;
 
     CnnlTensorDesc inputDesc(inputTensor, layout);
     CnnlTensorDesc outputDesc(outputTensor, layout);
