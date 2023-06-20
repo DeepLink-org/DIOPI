@@ -87,58 +87,60 @@ diopiError_t scatter(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTenso
 
 diopiError_t diopiScatter(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim, diopiConstTensorHandle_t src,
                           diopiConstTensorHandle_t index, const char* reduce) {
+    DIOPI_CHECK(reduce != nullptr, "reduce can not be nullptr");
+    DIOPI_CHECK(strcmp(reduce, "") == 0 || strcmp(reduce, "add") == 0, "The reduction operation of multiply is not supported by cnnl");
+
     DiopiTensor outTensor(out);
     DiopiTensor inputTensor(input);
     DiopiTensor srcTensor(src);
     DiopiTensor indexTensor(index);
 
-    DIOPI_CHECK(reduce != nullptr, "reduce can not be nullptr");
-    DIOPI_CHECK(strcmp(reduce, "") == 0 || strcmp(reduce, "add") == 0, "The reduction operation of multiply is not supported by cnnl");
     DIOPI_CALL(scatter(ctx, outTensor, inputTensor, dim, srcTensor, indexTensor, reduce));
     return diopiSuccess;
 }
 
 diopiError_t diopiScatterInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, int64_t dim, diopiConstTensorHandle_t src, diopiConstTensorHandle_t index,
                              const char* reduce) {
+    DIOPI_CHECK(reduce != nullptr, "reduce can not be nullptr");
+    DIOPI_CHECK(strcmp(reduce, "") == 0 || strcmp(reduce, "add") == 0, "The reduction operation of multiply is not supported by cnnl");
+
     DiopiTensor outTensor(input);
     DiopiTensor inputTensor(input);
     DiopiTensor srcTensor(src);
     DiopiTensor indexTensor(index);
 
-    DIOPI_CHECK(reduce != nullptr, "reduce can not be nullptr");
-    DIOPI_CHECK(strcmp(reduce, "") == 0 || strcmp(reduce, "add") == 0, "The reduction operation of multiply is not supported by cnnl");
     DIOPI_CALL(scatter(ctx, outTensor, inputTensor, dim, srcTensor, indexTensor, reduce));
     return diopiSuccess;
 }
 
 diopiError_t diopiScatterScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim, const diopiScalar_t* value,
                                 diopiConstTensorHandle_t index, const char* reduce) {
+    DIOPI_CHECK(reduce != nullptr, "reduce can not be nullptr");
+    DIOPI_CHECK(strcmp(reduce, "") == 0 || strcmp(reduce, "add") == 0, "The reduction operation of multiply is not supported by cnnl");
+
     DiopiTensor outTensor(out);
     DiopiTensor inputTensor(input);
     DiopiTensor indexTensor(index);
-    DiopiTensor srcTensor(index);
-    DIOPI_CALL(dataTypeCast(ctx, srcTensor, inputTensor.dtype()));
+    DiopiTensor srcTensor = requiresTensor(ctx, indexTensor.shape(), inputTensor.dtype());
+
     diopiTensorHandle_t src = srcTensor.tensorHandle();
     DIOPI_CALL(diopiFill(ctx, src, value));
-
-    DIOPI_CHECK(reduce != nullptr, "reduce can not be nullptr");
-    DIOPI_CHECK(strcmp(reduce, "") == 0 || strcmp(reduce, "add") == 0, "The reduction operation of multiply is not supported by cnnl");
     DIOPI_CALL(scatter(ctx, outTensor, inputTensor, dim, srcTensor, indexTensor, reduce));
     return diopiSuccess;
 }
 
 diopiError_t diopiScatterInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, int64_t dim, const diopiScalar_t* value, diopiConstTensorHandle_t index,
                                    const char* reduce) {
+    DIOPI_CHECK(reduce != nullptr, "reduce can not be nullptr");
+    DIOPI_CHECK(strcmp(reduce, "") == 0 || strcmp(reduce, "add") == 0, "The reduction operation of multiply is not supported by cnnl");
+
     DiopiTensor outTensor(input);
     DiopiTensor inputTensor(input);
     DiopiTensor indexTensor(index);
-    DiopiTensor srcTensor(index);
-    DIOPI_CALL(dataTypeCast(ctx, srcTensor, inputTensor.dtype()));
+    DiopiTensor srcTensor = requiresTensor(ctx, indexTensor.shape(), inputTensor.dtype());
+
     diopiTensorHandle_t src = srcTensor.tensorHandle();
     DIOPI_CALL(diopiFill(ctx, src, value));
-
-    DIOPI_CHECK(reduce != nullptr, "reduce can not be nullptr");
-    DIOPI_CHECK(strcmp(reduce, "") == 0 || strcmp(reduce, "add") == 0, "The reduction operation of multiply is not supported by cnnl");
     DIOPI_CALL(scatter(ctx, outTensor, inputTensor, dim, srcTensor, indexTensor, reduce));
     return diopiSuccess;
 }

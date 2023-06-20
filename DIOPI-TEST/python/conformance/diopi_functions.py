@@ -471,27 +471,24 @@ def matmul(input, other) -> Tensor:
     out = raw_like(input)
     sizeI = input.size().data
     sizeO = other.size().data
-
     # vector x vector
     if len(sizeI) == 1 and len(sizeO) == 1:
         out = Tensor((), input.get_dtype())
-    # (batched) matrix x vector
-    elif len(sizeO) == 1:
-        sizeI[-1] = 1
-        out = Tensor(sizeI, input.get_dtype())
-    # pretended matrix x (batched) matrix
-    elif len(sizeI) == 1:
-        sizeO[-2] = 1
-        out = Tensor(sizeO, input.get_dtype())
-    # (batched) matrix x (batched) matrix
+    # matrix x vector
+    elif len(sizeI) > 1 and len(sizeO) == 1:
+        out = Tensor(sizeI[:-1], input.get_dtype())
+    # vector x matrix
+    elif len(sizeI) == 1 and len(sizeO) > 1:
+        out = Tensor(sizeO[:-2] + [sizeO[-1]], input.get_dtype())
+    # (batched) matrix x (batched)matrix
     else:
-        sizeI[-1] = sizeO[-1]
-        if len(sizeI) > 3 and len(sizeO) > 2:
-            assert sizeI[-3] == sizeO[-3] or sizeI[-3] == 1 or sizeO[-3] == 1,\
-                'input and other should be broadcastable'
-            sizeI[-3] = sizeI[-3] if sizeI[-3] == 1 else sizeO[-3]
-        out = Tensor(sizeI, input.get_dtype())
-
+        assert len(sizeI) > 1 and len(sizeO) > 1, "Inputs must be at least 2-dimensional for matrix multiplication"
+        assert sizeI[-1] == sizeO[-2], "Last dimension of the first input must match second to last dimension of the second input"
+        max_dim = len(sizeI) if len(sizeI) > len(sizeO) else len(sizeO)
+        sizeI = [1] * (max_dim - len(sizeI)) + sizeI
+        sizeO = [1] * (max_dim - len(sizeO)) + sizeO
+        out_size = [sizeI[i] if sizeI[i] > sizeO[i] else sizeO[i] for i in range(max_dim - 2)] + [sizeI[-2], sizeO[-1]]
+        out = Tensor(out_size, input.get_dtype())
     func = check_function("diopiMatmul")
     ret = func(input.context(), out,
                input, other)
@@ -1178,9 +1175,9 @@ def topk(input, k, dim=-1, largest=True, sorted=True):
 
 def transpose(input, dim0, dim1) -> Tensor:
     sizeI = input.size().data
-    sizeI[dim0], sizeI[dim1] = sizeI[dim1], sizeI[dim0]
+    if len(sizeI) > 0:
+        sizeI[dim0], sizeI[dim1] = sizeI[dim1], sizeI[dim0]
     out = Tensor(sizeI, input.get_dtype())
-
     func = check_function("diopiTranspose")
     ret = func(input.context(), out,
                input, dim0, dim1)
