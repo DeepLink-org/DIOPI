@@ -3618,27 +3618,25 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t* out, dio
 diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight, diopiTensorHandle_t grad_bias,
                                  diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight) {
     impl::aten::setCurCtx(ctx);
-    
+
     auto atGradOutput = impl::aten::buildATen(grad_output);
     auto atInput = impl::aten::buildATen(input);
     auto atWeight = impl::aten::buildATen(weight);
     at::Tensor atGradInput;
-    if(atGradOutput.dim() == 1 && atWeight.dim() == 1) {
+    if (atGradOutput.dim() == 1 && atWeight.dim() == 1) {
         atGradInput = at::mul(atGradOutput, atWeight);
-    }
-    else{
+    } else {
         atGradInput = at::matmul(atGradOutput, atWeight);
     }
 
     impl::aten::updateATen2Tensor(ctx, atGradInput, grad_input);
-    
+
     int64_t dims = atInput.dim();
     if (grad_weight) {
         at::Tensor atGradWeight;
-        if(atInput.dim() == 1 && atGradOutput.dim() == 1) {
+        if (atInput.dim() == 1 && atGradOutput.dim() == 1) {
             atGradWeight = at::mul(atInput.transpose(dims - 2, dims - 1), atGradOutput);
-        }
-        else{
+        } else {
             atGradWeight = at::matmul(atInput.transpose(dims - 2, dims - 1), atGradOutput);
         }
         atGradWeight = atGradWeight.transpose(dims - 2, dims - 1);
