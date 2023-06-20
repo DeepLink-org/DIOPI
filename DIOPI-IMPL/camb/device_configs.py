@@ -320,7 +320,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float64)],
-                    "shape":[Skip(())],
                 },
             ],
         ),
