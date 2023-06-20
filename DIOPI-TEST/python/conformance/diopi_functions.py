@@ -1048,7 +1048,6 @@ def linear(input, weight, bias=None) -> Tensor:
         bias = bias
     else:
         bias = None
-
     sizeI = input.size().data
     sizeW = weight.size().data
     sizeI[-1] = sizeW[-2] if len(sizeW) == 2 else 1

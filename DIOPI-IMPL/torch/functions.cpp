@@ -3639,12 +3639,25 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
     auto atGradOutput = impl::aten::buildATen(grad_output);
     auto atInput = impl::aten::buildATen(input);
     auto atWeight = impl::aten::buildATen(weight);
-    auto atGradInput = at::matmul(atGradOutput, atWeight);
-    impl::aten::updateATen2Tensor(ctx, atGradInput, grad_input);
+    at::Tensor atGradInput;
+    if(atGradOutput.dim() == 1 && atWeight.dim() == 1) {
+        atGradInput = at::mul(atGradOutput, atWeight);
+    }
+    else{
+        atGradInput = at::matmul(atGradOutput, atWeight);
+    }
 
+    impl::aten::updateATen2Tensor(ctx, atGradInput, grad_input);
+    
     int64_t dims = atInput.dim();
     if (grad_weight) {
-        auto atGradWeight = at::matmul(atInput.transpose(dims - 2, dims - 1), atGradOutput);
+        at::Tensor atGradWeight;
+        if(atInput.dim() == 1 && atGradOutput.dim() == 1) {
+            atGradWeight = at::mul(atInput.transpose(dims - 2, dims - 1), atGradOutput);
+        }
+        else{
+            atGradWeight = at::matmul(atInput.transpose(dims - 2, dims - 1), atGradOutput);
+        }
         atGradWeight = atGradWeight.transpose(dims - 2, dims - 1);
         if (dims > 2) {
             std::vector<int64_t> sumDim;
