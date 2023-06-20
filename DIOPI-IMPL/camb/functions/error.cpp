@@ -20,7 +20,7 @@ const char* cambGetLastErrorString() {
     ::cnrtRet_t err = ::cnrtGetLastError();
     std::lock_guard<std::mutex> lock(mtxLastError);
     if (cnrtSuccess != err) {
-        sprintf(strLastError, "camb error: %s, more infos: %s", ::cnrtGetErrorStr(err), strLastError);
+        sprintf(strLastError + curIdxError, "camb error: %s, more infos: %s", ::cnrtGetErrorStr(err), strLastError);
     }
     curIdxError = 0;
     return strLastError;

@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - main
+      - dev_v0.25
       - wgs/*
     if: 'contains(github.event.head_commit.message, "ci") || contains(github.event.head_commit.message, "CI")'
   pull_request:
     branches:
       - main
+      - dev_v0.25
 
 env:
   NFS_PATH: '/mnt/cache/share/parrotsci/github/cibuild/${{ github.repository }}'
@@ -35,9 +37,9 @@ jobs:
         run: |
           cd ${GITHUB_WORKSPACE} && rm -rf DIOPI && git clone https://github.com/DeepLink-org/DIOPI.git && cd DIOPI
           if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
-          git checkout ${{ github.event.pull_request.head.sha }} && git merge --no-edit main
+          git checkout ${{ github.event.pull_request.head.sha }} && git merge --no-edit ${{ github.base_ref }} 
           else
-          git checkout ${{ github.sha }} &&  git merge --no-edit main
+          git checkout ${{ github.sha }}
           fi
           cd DIOPI-TEST/third_party && rm -rf mmcv_diopi && git clone https://github.com/DeepLink-org/mmcv_diopi.git
       - name: ci interruptible and support pr ci
