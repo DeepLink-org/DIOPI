@@ -3615,24 +3615,6 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t* out, dio
     return diopiSuccess;
 }
 
-diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim) {
-    impl::aten::setCurCtx(ctx);
-    auto atInput = impl::aten::buildATen(input);
-    auto atOut = impl::aten::buildATen(out);
-    if (dim == nullptr) {
-        auto atTmp = at::prod(atInput);
-        impl::aten::updateATen2Tensor(ctx, atTmp, out);
-    } else {
-        bool keepdim = false;
-        if (atInput.dim() == atOut.dim()) {
-            keepdim = true;
-        }
-        at::prod_out(atOut, atInput, *dim, keepdim);
-    }
-    impl::aten::unsetCurCtx();
-    return diopiSuccess;
-}
-
 diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight, diopiTensorHandle_t grad_bias,
                                  diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight) {
     impl::aten::setCurCtx(ctx);
@@ -3679,6 +3661,24 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
         at::IntArrayRef atSumDim(sumDim.data(), sumDim.size());
         auto atGradBias = at::sum(atGradOutput, atSumDim);
         impl::aten::updateATen2Tensor(ctx, atGradBias, grad_bias);
+    }
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
+diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim) {
+    impl::aten::setCurCtx(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = impl::aten::buildATen(out);
+    if (dim == nullptr) {
+        auto atTmp = at::prod(atInput);
+        impl::aten::updateATen2Tensor(ctx, atTmp, out);
+    } else {
+        bool keepdim = false;
+        if (atInput.dim() == atOut.dim()) {
+            keepdim = true;
+        }
+        at::prod_out(atOut, atInput, *dim, keepdim);
     }
     impl::aten::unsetCurCtx();
     return diopiSuccess;
