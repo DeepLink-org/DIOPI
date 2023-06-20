@@ -208,9 +208,12 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((2, 4096), (64, 28, 28),
-                              (32, 64, 112, 112), (64, 3, 7, 28, 28)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "shape": ((), (1024,), (2, 4096), (64, 28, 28),
+                              (32, 64, 112, 112), (64, 3, 7, 28, 28),
+                              (0,), (256, 0), (8, 0, 128)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64,
+                              Dtype.int16, Dtype.int32, Dtype.int64,
+                              Dtype.uint8, Dtype.int8],
                     "gen_fn": Genfunc.randn,
                 },
             ],
@@ -742,9 +745,28 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((182400,), (20267, 80), (8, 200, 304),
-                              (32, 16, 1, 1), (16, 32, 130, 130)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "shape": ((), (182400,), (20267, 80), (8, 200, 304),
+                              (32, 16, 1, 1), (16, 32, 130, 130),
+                              (0,), (256, 0), (8, 0, 128)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'sigmoid_int': dict(
+        name=["sigmoid"],
+        interface=['torch'],
+        # is_inplace=True,
+        saved_args=dict(output=0),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((8, 200, 304),),
+                    "dtype": [Dtype.int16, Dtype.int32, Dtype.int64,
+                              Dtype.uint8, Dtype.int8],
                     "gen_fn": Genfunc.randn,
                 },
             ],
@@ -2126,15 +2148,16 @@ diopi_configs = {
         rtol=1e-5,
         saved_args=dict(output=0),
         para=dict(
-            dim=[-1, 1, 0, -1],
+            dim=[-1, 0, -1, 1, 0, -1, -1, 1, -2],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((2, 24), (2, 128, 24), (8, 16, 49, 49), (4, 12, 577, 577)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "shape": ((), (16,), (2, 24), (2, 128, 24), (8, 16, 49, 49), (4, 12, 577, 577),
+                              (0,), (0, 12), (16, 0, 7)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
             ],
