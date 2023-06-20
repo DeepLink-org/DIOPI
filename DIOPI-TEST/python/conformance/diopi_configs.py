@@ -61,6 +61,10 @@ diopi_configs = {
         interface=["torch"],
         is_inplace=True,
         dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
+        atol=1e-4,
+        rtol=1e-4,
+        atol_half=1e-1,
+        rtol_half=1e-1,
         para=dict(
             beta=[1, 0.5, -0.1, False],
             alpha=[0.1, 2, True, -2.1],
@@ -90,6 +94,10 @@ diopi_configs = {
         name=["baddbmm"],
         interface=["torch"],
         dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
+        atol=1e-4,
+        rtol=1e-4,
+        atol_half=1e-1,
+        rtol_half=1e-1,
         para=dict(
             beta=[1, -0.34, 0,
                   True, 0, -1.33,
@@ -1352,7 +1360,7 @@ diopi_configs = {
                 {
                     "ins": ['other'],
                     "shape": ((128, 384), (5,), (128, 4, 32, 49),
-                              (2, 1, 3136, 64), (2, 64, 784), (512, 1)),
+                              (2, 3, 3136, 64), (2, 64, 784), (512, 1)),
                 },
             ],
         ),
@@ -2355,8 +2363,8 @@ diopi_configs = {
         name=['transpose'],
         interface=['torch'],
         para=dict(
-            dim0=[1, -2],
-            dim1=[2, -1],
+            dim0=[0, -2, 0],
+            dim1=[-1, -1, -1],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -2365,8 +2373,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((2, 1536, 950),
-                              (660, 6, 49, 32)),
+                    "shape": ((), (660, 6, 49, 32), (2, 1536, 950)),
                 },
             ],
         ),

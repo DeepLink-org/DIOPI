@@ -88,9 +88,9 @@ diopiError_t cnnlActivationInternal(diopiContextHandle_t ctx, DiopiTensor input,
 
 diopiError_t cnnlActivationBackwardInternal(diopiContextHandle_t ctx, DiopiTensor gradInput, DiopiTensor gradOutput, DiopiTensor input, DiopiTensor output,
                                             CnnlAttribute attr) {
-    if (!input.defined()) {
-        return diopiSuccess;
-    }
+    // if (!input.defined()) {
+    //     return diopiSuccess;
+    // }
     auto handle = cnnlHandlePool.get(ctx);
     auto mode = attr.get<cnnlActivationMode_t>("mode", CNNL_ACTIVATION_SIGMOID);
     auto perf = attr.get<cnnlActivationPreference_t>("perf", CNNL_ACTIVATION_HIGH_PRECISION);

@@ -24,31 +24,6 @@ device_configs = {
         rtol=1e-4,
     ),
 
-    'baddbmm': dict(
-        name=["baddbmm"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ]
-        ),
-    ),
-
-    'baddbmm_without_inplace': dict(
-        name=["baddbmm"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-
-            ]
-        ),
-    ),
-
     'conv_2d': dict(
         name=["conv2d"],
         atol_half=1e-1,
