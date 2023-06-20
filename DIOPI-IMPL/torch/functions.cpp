@@ -2358,6 +2358,12 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     auto atIndices = impl::aten::buildATen(indices);
     auto atGradInput = impl::aten::buildATen(grad_input);
     at::max_pool2d_with_indices_backward_out(atGradInput, atGradOutput, atInput, atKernelSize, atStride, atPadding, atDilation, ceil_mode, atIndices);
+    // if (indices) {
+    //     at::max_pool2d_with_indices_backward_out(atGradInput, atGradOutput, atInput, atKernelSize, atStride, atPadding, atDilation, ceil_mode, atIndices);
+    // } else {
+    //     atGradInput = at::max_pool2d_backward(atGradOutput, atInput, atKernelSize, atStride, atPadding, atDilation, ceil_mode);
+    // }
+
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
