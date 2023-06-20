@@ -211,6 +211,19 @@ public:
     }
 };
 
+class CnnlInterpDescriptor final : public CnnlDescBase<cnnlInterpDescriptor_t, cnnlCreateInterpDescriptor, cnnlDestroyInterpDescriptor> {
+public:
+    CnnlInterpDescriptor() = default;
+
+    diopiError_t set(cnnlTensorDescriptor_t inputDesc, const cnnlInterpMode_t mode, const cnnlInterpCoordinateTransformationMode_t coordinateTransMode,
+                     float* scales) {
+        DIOPI_CALLCNNL(cnnlSetInterpDescriptor(this->get(), mode, coordinateTransMode));
+        cnnlInterpRoundMode_t roundMode = CNNL_INTERP_FLOOR;
+        DIOPI_CALLCNNL(cnnlSetInterpDescriptorEx(this->get(), inputDesc, roundMode, scales, nullptr, -0.75, false));
+        return diopiSuccess;
+    }
+};
+
 diopiError_t cnnlTranspose(diopiContextHandle_t& ctx, cnnlHandle_t& handle, DiopiTensor& in, DiopiTensor& out, cnnlTensorLayout_t layoutIn,
                            cnnlTensorLayout_t layoutOut);
 
