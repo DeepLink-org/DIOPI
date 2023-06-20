@@ -1367,10 +1367,24 @@ DIOPI_API diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTe
                                                diopiConstTensorHandle_t output, int64_t dim);
 
 /**
- * \brief Returns a new tensor which indexes the input tensor along dimension dim using the entries in index.
+ * @brief Returns a new tensor which indexes the input tensor along dimension dim using the entries in index.
+ * @param[in] ctx Context environment.
+ * @param[out] out Output tensor.type = [float32, float64]
+ * @param input Input tensor.type = [float32, float64]
+ * @param indices Array of index tensors.
+ * @param nums the int64 value for Number of index tensors.
  */
 DIOPI_API diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t* indices,
                                   int64_t nums);
+/**
+ * @brief Performs backward indexing operation on the gradient tensor.
+ * @param[in] ctx Context environment.
+ * @param[in,out] grad_input Gradient input tensor. type = [float16, float32, float64]
+ * @param zeros_like_input Tensor of zeros with the same shape as the input tensor.
+ * @param indices Array of index tensors.
+ * @param nums the int64 value for Number of index tensors.
+ * @param grad Gradient tensor.
+ */
 DIOPI_API diopiError_t diopiIndexBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t zeros_like_input,
                                           diopiConstTensorHandle_t* indices, int64_t nums, diopiConstTensorHandle_t grad);
 /**
