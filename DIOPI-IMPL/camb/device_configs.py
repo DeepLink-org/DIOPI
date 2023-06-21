@@ -62,6 +62,24 @@ device_configs = {
         ),
     ),
 
+    'pow_float_tensor': dict(
+        name=['pow'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((2, 512, 38, 38))),
+                    "dtype": [Skip(Dtype.float64)],
+                },
+                {
+                    "ins": ['exponent'],
+                    "shape": (Skip((2, 512, 38, 38))),
+                    "dtype": [Skip(Dtype.float64)],
+                },
+            ],
+        ),
+    ),
+
     'hardswish_domain': dict(
         name=["hardswish"],
         tensor_para=dict(
