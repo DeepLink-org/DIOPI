@@ -68,12 +68,12 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": (Skip((2, 512, 38, 38))),
+                    "shape": [Skip((2, 512, 38, 38))],
                     "dtype": [Skip(Dtype.float64)],
                 },
                 {
                     "ins": ['exponent'],
-                    "shape": (Skip((2, 512, 38, 38))),
+                    "shape": [Skip((2, 512, 38, 38))],
                     "dtype": [Skip(Dtype.float64)],
                 },
             ],
