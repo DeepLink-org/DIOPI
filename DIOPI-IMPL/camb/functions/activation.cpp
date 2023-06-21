@@ -374,6 +374,7 @@ extern "C" diopiError_t diopiHardswishBackward(diopiContextHandle_t ctx, diopiTe
     CnnlAttribute attr;
     attr.set("mode", CNNL_ACTIVATION_HARDSWISH);
     DIOPI_CALL(cnnlActivationBackwardInternal(ctx, gradInputTensor, gradOutputTensor, inputTensor, {}, attr));
+
     return diopiSuccess;
 }
 
