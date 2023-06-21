@@ -48,6 +48,14 @@ device_configs = {
         name=["conv2d"],
         atol_half=1e-1,
         rtol_half=1e-1,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["weight"],
+                    "shape": [Skip((2048, 1, 3, 3))],
+                },
+            ]
+        ),
     ),
 
     'hardswish': dict(
@@ -1062,6 +1070,14 @@ device_configs = {
             ],
         ),
         saved_args=dict(output=0),
+    ),
+
+    'normal_': dict(
+        name=["normal_"],
+        para=dict(
+            mean=[Skip(0.1)],
+            std=[Skip(2)],
+        ),
     ),
 
     'normal_std_tensor': dict(
