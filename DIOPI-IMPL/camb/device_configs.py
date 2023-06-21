@@ -30,18 +30,6 @@ device_configs = {
         rtol_half=1e-1,
     ),
 
-    'hardswish': dict(
-        name=["hardswish"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
-
     'max_pool2d': dict(
         name=["max_pool2d"],
         tensor_para=dict(
