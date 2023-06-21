@@ -6,15 +6,12 @@
 
 #include <cstdio>
 #include <mutex>
+#include <cassert>
 
 #include <supa.h>
 #include <diopi/diopirt.h>
+
 #include <conform_test.h>
-
-
-
-namespace impl {
-namespace supa {
 
 #define SUPA_CALL(Expr)                                                               \
     {                                                                                 \
@@ -24,14 +21,40 @@ namespace supa {
         }                                                                             \
     }
 
-extern "C" {
-void* device_malloc(uint64_t bytes) {
-    void* ptr;
+// provide a plain memory alloc/free interface as default.
+static void* plain_device_malloc(uint64_t bytes) {
+    void* ptr = nullptr;
     SUPA_CALL(suMallocDevice(&ptr, bytes));
     return ptr;
 }
 
-void device_free(void* ptr) { SUPA_CALL(suFree(ptr)); }
+static void plain_device_free(void* ptr) {
+    SUPA_CALL(suFree(ptr));
+}
+
+typedef void* (*Allocator)(uint64_t);
+typedef void (*Deleter)(void*);
+
+static Allocator DeviceMalloc = plain_device_malloc;
+static Deleter DeviceFree = plain_device_free;
+
+// api for register mem api.
+extern "C" DIOPI_RT_API void diopiRegisterMemApi(Allocator allocator, Deleter deleter){
+    assert(allocator);
+    assert(deleter);
+    DeviceMalloc = allocator;
+    DeviceFree = deleter;
+}
+
+
+void* device_malloc(uint64_t bytes) {
+    return DeviceMalloc(bytes);
+}
+
+void device_free(void* ptr) {
+    DeviceFree(ptr);
+}
+
 
 int32_t device_make_stream(diopiStreamHandle_t* streamHandlePtr) {
     suStream_t stream = nullptr;
@@ -71,8 +94,3 @@ int32_t device_memcpy_d2d_async(diopiStreamHandle_t streamHandle, void* dst, con
 }
 
 int32_t finalizeLibrary() { return diopiSuccess; }
-
-}  // extern "C"
-
-}  // namespace camb
-}  // namespace impl
