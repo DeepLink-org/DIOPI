@@ -24,31 +24,6 @@ device_configs = {
         rtol=1e-4,
     ),
 
-    'baddbmm': dict(
-        name=["baddbmm"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ]
-        ),
-    ),
-
-    'baddbmm_without_inplace': dict(
-        name=["baddbmm"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-
-            ]
-        ),
-    ),
-
     'conv_2d': dict(
         name=["conv2d"],
         atol_half=1e-1,
@@ -328,6 +303,7 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float64)],
+                    "shape": [Skip(())],
                 },
             ],
         ),
@@ -713,20 +689,6 @@ device_configs = {
         ),
     ),
 
-    'unique': dict(
-        name=['unique'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
     'prod': dict(
         name=['prod'],
         tensor_para=dict(
@@ -810,7 +772,6 @@ device_configs = {
     ),
 
     # When not performing a reduce operation, the accuracy comparison of scatter needs to be performed on the CPU
-    # Currently, the shape of src tensor and index tensor must be the same
     'scatter': dict(
         name=['scatter'],
         tensor_para=dict(
@@ -833,7 +794,6 @@ device_configs = {
     ),
 
     # When not performing a reduce operation, the accuracy comparison of scatter needs to be performed on the CPU
-    # Currently, the shape of src tensor and index tensor must be the same
     'scatter_scalar': dict(
         name=['scatter'],
         tensor_para=dict(
@@ -854,44 +814,20 @@ device_configs = {
         ),
     ),
 
-    'index_put_acc': dict(
-        name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
-        ),
-    ),
-
-    'index_put_acc_one_indices': dict(
-        name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
-        ),
-    ),
-
     'index_put': dict(
         name=['index_put'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                    "dtype": [Skip(Dtype.uint8),    # overflow issue 
+                              Skip(Dtype.bool)],    # not supported by camb kernel when accumulate is true
                 },
             ]
         ),
     ),
 
+    # when accumulate is True and dtype of indices is bool, can't get the correct result
     'index_put_acc_bool_indices': dict(
         name=['index_put'],
         tensor_para=dict(
@@ -901,18 +837,6 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
                               Skip(Dtype.int64), Skip(Dtype.int32),
                               Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ]
-        ),
-    ),
-
-    'index_put_one_indices': dict(
-        name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
             ]
         ),
@@ -988,11 +912,15 @@ device_configs = {
 
     'interpolate': dict(
         name=["interpolate"],
+        para=dict(
+            mode=[Skip('bilinear'), Skip('bicubic'), Skip('trilinear'), Skip('linear')]
+        ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    # camb not supports 5d upsample
+                    "shape": [Skip((1, 3, 32, 224, 224))],
                 },
             ]
         )
@@ -1000,18 +928,6 @@ device_configs = {
 
     'col2im': dict(
         name=["col2im"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ]
-        ),
-    ),
-
-    'im2col': dict(
-        name=["im2col"],
         tensor_para=dict(
             args=[
                 {

@@ -48,28 +48,28 @@ static diopiError_t calOrderAndSrcMemoryFormat(const DiopiTensor& src, MemoryFor
     }
     if (src.isContiguous(MemoryFormat::ChannelsLast) && destMemoryFormat == MemoryFormat::Contiguous) {
         if (src.dim() != 4) {
-            setLastErrorString("the dim of the tensor should be 4, but now is %d", src.dim());
+            setLastErrorString("the dim of the tensor should be 4, but now is %d.", src.dim());
             return diopiNoImplement;
         }
         srcMemoryFormatOut = MemoryFormat::ChannelsLast;
         orderOut = {0, 3, 1, 2};
     } else if (src.isContiguous(MemoryFormat::Contiguous) && destMemoryFormat == MemoryFormat::ChannelsLast) {
         if (src.dim() != 4) {
-            setLastErrorString("the dim of the tensor should be 4, but now is %d", src.dim());
+            setLastErrorString("the dim of the tensor should be 4, but now is %d.", src.dim());
             return diopiNoImplement;
         }
         srcMemoryFormatOut = MemoryFormat::Contiguous;
         orderOut = {0, 2, 3, 1};
     } else if (src.isContiguous(MemoryFormat::Contiguous) && destMemoryFormat == MemoryFormat::ChannelsLast3d) {
         if (src.dim() != 5) {
-            setLastErrorString("the dim of the tensor should be 5, but now is %d", src.dim());
+            setLastErrorString("the dim of the tensor should be 5, but now is %d.", src.dim());
             return diopiNoImplement;
         }
         srcMemoryFormatOut = MemoryFormat::Contiguous;
         orderOut = {0, 2, 3, 4, 1};
     } else if (src.isContiguous(MemoryFormat::ChannelsLast3d) && destMemoryFormat == MemoryFormat::Contiguous) {
         if (src.dim() != 5) {
-            setLastErrorString("the dim of the tensor should be 5, but now is %d", src.dim());
+            setLastErrorString("the dim of the tensor should be 5, but now is %d.", src.dim());
             return diopiNoImplement;
         }
         srcMemoryFormatOut = MemoryFormat::ChannelsLast3d;
@@ -112,7 +112,7 @@ static bool hasZero(std::vector<int64_t> vec) {
 }
 
 /* Inplace contiguous, support NCHW <-> NHWC, NCDHW <-> NDHWC */
-diopiError_t contiguous(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryFormat memoryFormat) {
+diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, MemoryFormat memoryFormat) {
     if (src.isContiguous(memoryFormat)) {
         return diopiSuccess;
     }

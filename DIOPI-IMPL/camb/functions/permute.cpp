@@ -26,9 +26,8 @@ extern "C" diopiError_t diopiPermute(diopiContextHandle_t ctx, diopiTensorHandle
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outputDesc(outputTensor, CNNL_LAYOUT_ARRAY);
 
-
     std::vector<int> permData{dims.data, dims.data + dims.len};
-    for (int & i : permData) {
+    for (int& i : permData) {
         if (i < 0) {
             i += inputTensor.dim();
         }
@@ -47,8 +46,8 @@ extern "C" diopiError_t diopiPermute(diopiContextHandle_t ctx, diopiTensorHandle
     }
 
     if (inputTensor.dtype() == outputTensor.dtype()) {
-        DIOPI_CALLCNNL(cnnlTranspose_v2(
-            handle, transDesc.get(), inputDesc.get(), inputTensor.data(), outputDesc.get(), outputTensor.data(), workspace, workspaceSize));
+        DIOPI_CALLCNNL(
+            cnnlTranspose_v2(handle, transDesc.get(), inputDesc.get(), inputTensor.data(), outputDesc.get(), outputTensor.data(), workspace, workspaceSize));
     } else {
         DiopiTensor outTemp = requiresTensor(ctx, outputTensor.shape(), inputTensor.dtype());
         CnnlTensorDesc outTempDesc(outTemp, CNNL_LAYOUT_ARRAY);
