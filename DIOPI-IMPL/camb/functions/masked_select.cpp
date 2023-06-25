@@ -9,75 +9,75 @@ namespace camb {
 
 extern "C" {
 
-diopiError_t nonzeroCount(diopiContextHandle_t ctx, DiopiTensor input_tensor, DiopiTensor *num_true);
+diopiError_t nonzeroCount(diopiContextHandle_t ctx, DiopiTensor inputTensor, DiopiTensor *numTrue);
 
 diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor mask_tensor(mask);
+    DiopiTensor inputTensor(input);
+    DiopiTensor maskTensor(mask);
 
-    std::vector<DiopiTensor *> pmask{&mask_tensor};
-    std::set<diopiDtype_t> mask_dtypes{diopi_dtype_bool, diopi_dtype_float16, diopi_dtype_float32};
-    DIOPI_CALL(autoCastTensorType(ctx, pmask, mask_dtypes));
+    std::vector<DiopiTensor *> pmask{&maskTensor};
+    std::set<diopiDtype_t> maskDtypes{diopi_dtype_bool, diopi_dtype_float16, diopi_dtype_float32};
+    DIOPI_CALL(autoCastTensorType(ctx, pmask, maskDtypes));
     // When the data type of masked tensor is not bool, the data type of input
     // tensor must be same with the data type of the masked tensor.
-    diopiDtype_t origin_dtype = input_tensor.dtype();
+    diopiDtype_t originDtype = inputTensor.dtype();
 
-    if (mask_tensor.dtype() != diopi_dtype_bool) {
-        DIOPI_CALL(dataTypeCast(ctx, input_tensor, mask_tensor.dtype()))
+    if (maskTensor.dtype() != diopi_dtype_bool) {
+        DIOPI_CALL(dataTypeCast(ctx, inputTensor, maskTensor.dtype()))
     } else {
-        std::vector<DiopiTensor *> pinput{&input_tensor};
-        std::set<diopiDtype_t> input_dtypes{
+        std::vector<DiopiTensor *> pinput{&inputTensor};
+        std::set<diopiDtype_t> inputDtypes{
             diopi_dtype_bool, diopi_dtype_int8, diopi_dtype_uint8, diopi_dtype_int16, diopi_dtype_int32, diopi_dtype_float16, diopi_dtype_float32};
-        DIOPI_CALL(autoCastTensorType(ctx, pinput, input_dtypes));
+        DIOPI_CALL(autoCastTensorType(ctx, pinput, inputDtypes));
     }
 
-    std::vector<int64_t> input_numel(1, int64_t(input_tensor.numel()));
-    auto temp_output_tensor = requiresTensor(ctx, input_numel, input_tensor.dtype());
+    std::vector<int64_t> inputNumel(1, int64_t(inputTensor.numel()));
+    auto tempOutputTensor = requiresTensor(ctx, inputNumel, inputTensor.dtype());
 
-    CnnlTensorDesc input_desc(input_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc mask_desc(mask_tensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc out_desc(temp_output_tensor, CNNL_LAYOUT_ARRAY);
-    cnnlMaskedOp_t masked_mode = CNNL_MASKED_SELECT;
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc maskDesc(maskTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(tempOutputTensor, CNNL_LAYOUT_ARRAY);
+    cnnlMaskedOp_t maskMode = CNNL_MASKED_SELECT;
 
-    size_t workspace_size = 0;
-    DIOPI_CALLCNNL(cnnlGetMaskedWorkspaceSize(handle, masked_mode, input_desc.get(), mask_desc.get(), nullptr, out_desc.get(), &workspace_size));
+    size_t workspaceSize = 0;
+    DIOPI_CALLCNNL(cnnlGetMaskedWorkspaceSize(handle, maskMode, inputDesc.get(), maskDesc.get(), nullptr, outDesc.get(), &workspaceSize));
     void *workspace = nullptr;
-    if (0 != workspace_size) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
+    if (0 != workspaceSize) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    std::vector<int64_t> num_true_shape(1, 1);
-    auto num_true = requiresTensor(ctx, num_true_shape, diopi_dtype_uint32);
+    std::vector<int64_t> numTrueShape(1, 1);
+    auto numTrue = requiresTensor(ctx, numTrueShape, diopi_dtype_uint32);
     DIOPI_CALLCNNL(cnnlMasked_v4(handle,
-                                 masked_mode,
-                                 input_desc.get(),
-                                 input_tensor.data(),
-                                 mask_desc.get(),
-                                 mask_tensor.data(),
+                                 maskMode,
+                                 inputDesc.get(),
+                                 inputTensor.data(),
+                                 maskDesc.get(),
+                                 maskTensor.data(),
                                  nullptr,
                                  nullptr,
                                  nullptr,
                                  workspace,
-                                 workspace_size,
-                                 out_desc.get(),
-                                 temp_output_tensor.data(),
-                                 static_cast<uint32_t *>(num_true.data())));
+                                 workspaceSize,
+                                 outDesc.get(),
+                                 tempOutputTensor.data(),
+                                 static_cast<uint32_t *>(numTrue.data())));
 
     syncStreamInCtx(ctx);
-    int64_t num_true_host = 0;
-    cnrtMemcpy(&num_true_host, num_true.data(), sizeof(num_true.dtype()), CNRT_MEM_TRANS_DIR_DEV2HOST);
-    std::vector<int64_t> output_shape(1, num_true_host);
-    auto output_tensor = requiresTensor(ctx, output_shape, temp_output_tensor.dtype());
+    int64_t numTrueHost = 0;
+    cnrtMemcpy(&numTrueHost, numTrue.data(), sizeof(numTrue.dtype()), CNRT_MEM_TRANS_DIR_DEV2HOST);
+    std::vector<int64_t> outputShape(1, numTrueHost);
+    auto outputTensor = requiresTensor(ctx, outputShape, tempOutputTensor.dtype());
 
-    DIOPI_CALL(diopiSlice(ctx, diopiTensorHandle_t(output_tensor), diopiTensorHandle_t(temp_output_tensor), 0, 0, num_true_host, 1));
-    *out = diopiTensorHandle_t(output_tensor);
+    DIOPI_CALL(diopiSlice(ctx, diopiTensorHandle_t(outputTensor), diopiTensorHandle_t(tempOutputTensor), 0, 0, numTrueHost, 1));
+    *out = diopiTensorHandle_t(outputTensor);
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+DIOPI_API diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                                  diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask) {
-    DIOPI_CALL(diopiMul(ctx, grad_input, mask, mask); return diopiSuccess;)
+    DIOPI_CALL(diopiMul(ctx, gradInput, mask, mask); return diopiSuccess;)
 }
 }  // extern "C"
 
