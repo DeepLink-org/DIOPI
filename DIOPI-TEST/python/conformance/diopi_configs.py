@@ -3770,8 +3770,8 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['other'],
-                    "shape": ((6, ), (4, 1), (1, 28, 28),
-                              (16, 3, 7, 14, 14), (1, 28, 28), (1, 28, 28)),
+                    "shape": ((6, ), (4, 1), (1, 2, 8),
+                              (1, 3, 1, 4), (1, 2, 8), (1, 8, 4)),
                     "dtype": [Dtype.float32, Dtype.float16],
                     "gen_fn": Genfunc.randn,
                 },
@@ -3792,8 +3792,8 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['other'],
-                    "shape": ((6, ), (4, 1), (1, 28, 28),
-                              (16, 3, 7, 14, 14), (1, 28, 28), (1, 28, 28)),
+                    "shape": ((6, ), (4, 1), (1, 2, 8),
+                              (1, 3, 1, 4), (1, 2, 8), (1, 8, 4)),
                     "dtype": [Dtype.int16, Dtype.int32, Dtype.int64, Dtype.int8, Dtype.bool],
                     "gen_fn": dict(fn=Genfunc.randint, low=1, high=4),
                 },
@@ -3811,16 +3811,16 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((6, ), (4, 5), (14, 28, 28),
-                              (16, 1, 7, 14, 14)),
+                    "shape": ((6, ), (4, 1), (1, 2, 8),
+                              (1, 3, 1, 4), (1, 2, 8), (1, 8, 4)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,
                               Dtype.int64, Dtype.uint8, Dtype.int8],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ['other'],
-                    "shape": ((6, ), (4, 1), (1, 28, 28),
-                              (16, 3, 7, 14, 14)),
+                    "shape": ((6, ), (4, 1), (1, 2, 8),
+                              (1, 3, 1, 4), (1, 2, 8), (1, 8, 4)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,
                               Dtype.int64, Dtype.uint8, Dtype.int8],
                     "gen_fn": dict(fn=Genfunc.randint, low=1, high=4),
