@@ -3687,7 +3687,7 @@ diopi_configs = {
             sorted=[True, False, True, False],
             return_inverse=[True, False, True, False],
             return_counts=[True, False, True, False],
-            dim=[-1, 0, -1, 0],
+            dim=[-1, 0, None, 0],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
