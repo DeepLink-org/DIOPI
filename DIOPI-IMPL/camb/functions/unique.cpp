@@ -33,11 +33,11 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, dio
     DiopiTensor outputTensor =
         (realDim != -1) ? requiresTensor(ctx, {inputTensor.shape()}, inputTensor.dtype()) : requiresTensor(ctx, {inputTensor.numel()}, inputTensor.dtype());
     // index_tensor
-    DiopiTensor indexTensor = (realDim != -1) ? requiresTensor(ctx, {inputTensor.shape()[realDim]}, diopi_dtype_int32)
-                                              : requiresTensor(ctx, {inputTensor.shape()}, diopi_dtype_int32);
+    DiopiTensor indexTensor =
+        (realDim != -1) ? requiresTensor(ctx, {inputTensor.shape()[realDim]}, diopi_dtype_int32) : requiresTensor(ctx, inputTensor.shape(), diopi_dtype_int32);
     // counts_tensor
     DiopiTensor countsTensor = (realDim != -1) ? requiresTensor(ctx, {outputTensor.shape()[realDim]}, diopi_dtype_int32)
-                                               : requiresTensor(ctx, {outputTensor.shape()}, diopi_dtype_int32);
+                                               : requiresTensor(ctx, outputTensor.shape(), diopi_dtype_int32);
 
     // Tensor Desc
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
