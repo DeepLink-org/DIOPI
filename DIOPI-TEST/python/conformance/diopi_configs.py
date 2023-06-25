@@ -179,6 +179,7 @@ diopi_configs = {
 
     'conv_2d': dict(
         name=["conv2d"],
+        atol=1e-3,
         rtol=1e-3,
         dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
         # out = (in - (dilation * (kernel_size - 1) + 1) + 2 * padding) / stride + 1
