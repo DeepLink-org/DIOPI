@@ -27,6 +27,7 @@ env:
   BUILD_TEST2: build_test_dy
   BUILD_TEST3: build_mmcv_ext
   GEN_DATA: DIOPI-TEST/python/data
+  NV_PVC_PATH: '/nvme/share/share/github/cibuild/${{ github.repository }}'
 
 jobs:
   Rsync:
@@ -123,6 +124,30 @@ jobs:
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 bash -c 'cd DIOPI-IMPL && bash scripts/ci_script.sh clang-tidy' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
           """
+
+  Clone:
+    name: clone code on cuda
+    # needs: [Rsync]
+    runs-on: tps-pytorch-ci
+    steps:
+      - name: clone repo
+        run: |
+          set -e
+          cd ${NV_PVC_PATH} && find ${NV_PVC_PATH}/ -maxdepth 1 -ctime 1 -type d |xargs rm -rf
+          rm -rf ${GITHUB_RUN_NUMBER} && mkdir -p ${GITHUB_RUN_NUMBER} && cd ${GITHUB_RUN_NUMBER}
+          rm -rf dipu && git clone https://github.com/DeepLink-org/dipu.git && cd dipu
+          if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
+            git checkout origin/${{ github.base_ref }}
+          fi
+
+          cd ${NV_PVC_PATH}/${GITHUB_RUN_NUMBER}
+    
+          cd ${NV_PVC_PATH}/${GITHUB_RUN_NUMBER}/dipu/third_party && rm -rf DIOPI && git clone https://github.com/DeepLink-org/DIOPI.git && cd DIOPI
+          if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
+          git checkout ${{ github.event.pull_request.head.sha }} && git merge --no-edit ${{ github.base_ref }} 
+          else
+          git checkout ${{ github.sha }}
+          fi
 
   Build-Mmcv-Ext-Nvidia:
     name: Build-Mmcv-Ext-Nvidia
