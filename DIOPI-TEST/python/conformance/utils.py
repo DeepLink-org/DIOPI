@@ -11,7 +11,6 @@ import export_functions
 
 
 cfg_file_name = "test_config.cfg"
-cur_test_func = ""
 
 
 default_cfg_dict = dict(
@@ -103,6 +102,7 @@ class glob_var(object):
         self.four_bytes = four_bytes
         self.int_type = Dtype.int64
         self.float_type = Dtype.float64
+        self._cur_test_func = ''
 
     def set_nhwc(self):
         self.nhwc = True
@@ -120,6 +120,14 @@ class glob_var(object):
 
     def get_four_bytes(self):
         return self.four_bytes
+
+    @property
+    def cur_test_func(self):
+        return self._cur_test_func
+
+    @cur_test_func.setter
+    def cur_test_func(self, func):
+        self._cur_test_func = func
 
 
 glob_vars = glob_var()
@@ -211,8 +219,7 @@ class FunctionNotImplementedError(DiopiException):
 def check_returncode(returncode, throw_exception=True):
     if 0 != returncode:
         if returncode == diopiError.diopi_no_implement:
-            global cur_test_func
-            raise FunctionNotImplementedError(cur_test_func + 'not implement')
+            raise FunctionNotImplementedError(glob_vars.cur_test_func + ' not implement')
         error_info = f"Returncode: {returncode}"
         error_detail = get_last_error()
         error_info += ", Details: " + error_detail
