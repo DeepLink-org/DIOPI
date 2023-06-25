@@ -189,13 +189,9 @@ device_configs = {
 
     'cross_entropy': dict(
         name=["cross_entropy"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
+        para=dict(
+            # label_smoothing is not supported by camb kernel
+            label_smoothing=[Skip(0.5)],
         ),
     ),
 
