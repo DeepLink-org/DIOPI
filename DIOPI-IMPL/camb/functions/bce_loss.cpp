@@ -29,7 +29,7 @@ extern "C" {
  */
 
 static diopiError_t convertBCEReduction(cnnlBceLossReduction_t *bceReduction, const diopiReduction_t reduction) {
-        switch(reduction) {
+    switch (reduction) {
         case ReductionNone:
             *bceReduction = CNNL_BCE_LOSS_NONE;
             break;
@@ -55,7 +55,7 @@ DIOPI_API diopiError_t diopiBCELoss(diopiContextHandle_t ctx, diopiTensorHandle_
     DiopiTensor weightTensor(weight);
     DiopiTensor outTensor(out);
 
-    if(!weightTensor.defined()) {
+    if (!weightTensor.defined()) {
         weightTensor = ones(ctx, inputTensor.shape(), inputTensor.dtype());
     }
     DIOPI_CALL(broadcastHelper(ctx, weightTensor, inputTensor, &weightTensor));
@@ -76,7 +76,7 @@ DIOPI_API diopiError_t diopiBCELoss(diopiContextHandle_t ctx, diopiTensorHandle_
     size_t workspaceSize = 0;
     void *workspace = nullptr;
     DIOPI_CALLCNNL(cnnlGetBceLossWorkspaceSize(handle, inputDesc.get(), weightDesc.get(), &workspaceSize));
-    if(workspaceSize > 0) {
+    if (workspaceSize > 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
@@ -99,7 +99,7 @@ DIOPI_API diopiError_t diopiBCELoss(diopiContextHandle_t ctx, diopiTensorHandle_
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiBCELossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+DIOPI_API diopiError_t diopiBCELossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
                                             diopiReduction_t reduction) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -107,10 +107,10 @@ DIOPI_API diopiError_t diopiBCELossBackward(diopiContextHandle_t ctx, diopiTenso
     DiopiTensor inputTensor(input);
     DiopiTensor targetTensor(target);
     DiopiTensor weightTensor(weight);
-    DiopiTensor gradInputTensor(grad_input);
-    DiopiTensor gradOutputTensor(grad_output);
+    DiopiTensor gradInputTensor(gradInput);
+    DiopiTensor gradOutputTensor(gradOutput);
 
-    if(!weightTensor.defined()) {
+    if (!weightTensor.defined()) {
         weightTensor = ones(ctx, targetTensor.shape(), targetTensor.dtype());
     }
     DIOPI_CALL(broadcastHelper(ctx, weightTensor, inputTensor, &weightTensor));
@@ -133,7 +133,7 @@ DIOPI_API diopiError_t diopiBCELossBackward(diopiContextHandle_t ctx, diopiTenso
     size_t workspaceSize = 0;
     void *workspace = nullptr;
     DIOPI_CALLCNNL(cnnlGetBceLossBackwardWorkspaceSize(handle, targetDesc.get(), weightDesc.get(), &workspaceSize));
-    if(workspaceSize > 0) {
+    if (workspaceSize > 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
