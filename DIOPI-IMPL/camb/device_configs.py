@@ -897,13 +897,13 @@ device_configs = {
     'interpolate': dict(
         name=["interpolate"],
         para=dict(
-            mode=[Skip('bilinear'), Skip('bicubic'), Skip('trilinear'), Skip('linear')]
+            mode=[Skip('trilinear'), Skip('linear')]
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    # camb not supports 5d upsample
+                    # camb not supports 5d upsample nearest
                     "shape": [Skip((1, 3, 32, 224, 224))],
                 },
             ]
