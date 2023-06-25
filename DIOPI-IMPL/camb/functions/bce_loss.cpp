@@ -41,7 +41,7 @@ static diopiError_t convertBCEReduction(cnnlBceLossReduction_t *bceReduction, co
             break;
         default:
             DIOPI_CHECK(false, "[diopiBCELoss] unexpected bce_loss reduciton mode");
-            return diopiErrorOccurred;       
+            return diopiErrorOccurred;
     }
     return diopiSuccess;
 }
@@ -60,7 +60,7 @@ DIOPI_API diopiError_t diopiBCELoss(diopiContextHandle_t ctx, diopiTensorHandle_
     }
     DIOPI_CALL(broadcastHelper(ctx, weightTensor, inputTensor, &weightTensor));
 
-    std::vector<DiopiTensor *> tensorsVecPtr{&inputTensor, &targetTensor, &weightTensor, &outTensor}; 
+    std::vector<DiopiTensor *> tensorsVecPtr{&inputTensor, &targetTensor, &weightTensor, &outTensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32, diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, tensorsVecPtr, supportedDtypes));
     inputTensor = *tensorsVecPtr[0];
@@ -140,7 +140,7 @@ DIOPI_API diopiError_t diopiBCELossBackward(diopiContextHandle_t ctx, diopiTenso
     cnnlBceLossReduction_t bceReduction;
     convertBCEReduction(&bceReduction, reduction);
 
-    DIOPI_CALLCNNL(cnnlBceLossBackward(handle, 
+    DIOPI_CALLCNNL(cnnlBceLossBackward(handle,
                                        gradOutputDesc.get(),
                                        gradOutputTensor.data(),
                                        inputDesc.get(),
