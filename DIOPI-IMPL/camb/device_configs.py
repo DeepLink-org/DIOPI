@@ -56,14 +56,8 @@ device_configs = {
 
     'binary_cross_entropy': dict(
         name=["binary_cross_entropy"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
+        atol=1e-2,
+        rtol=1e-2,
     ),
 
     'binary_cross_entropy_with_logits': dict(
