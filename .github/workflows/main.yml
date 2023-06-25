@@ -209,7 +209,7 @@ jobs:
           export PYTHONPATH=${basic_path}/mmcv:$PYTHONPATH
           echo  "python path : $PYTHONPATH"
           cd ${basic_path}/mmcv
-          python -m pytest -s tests/test_ops/test_nms.py -k test_nms_allclose
+          python -m pytest -s tests/test_ops/test_focal_loss.py -k sigmoid
 
   Test-One-Iter_Cuda:
     name: test-one-iter-cuda
