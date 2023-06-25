@@ -133,6 +133,7 @@ jobs:
       - name: clone repo
         run: |
           set -e
+          mkdir -p ${NV_PVC_PATH}
           cd ${NV_PVC_PATH} && find ${NV_PVC_PATH}/ -maxdepth 1 -ctime 1 -type d |xargs rm -rf
           rm -rf ${GITHUB_RUN_NUMBER} && mkdir -p ${GITHUB_RUN_NUMBER} && cd ${GITHUB_RUN_NUMBER}
           rm -rf dipu && git clone https://github.com/DeepLink-org/dipu.git && cd dipu
@@ -148,6 +149,56 @@ jobs:
           else
           git checkout ${{ github.sha }}
           fi
+
+  # Build-POC-Cuda:
+  #   name: Build dipu cuda
+  #   needs: [Clone]
+  #   runs-on: tps-pytorch-ci
+  #   steps:
+  #     - name: Build dipu
+  #       run: |
+  #         set -e
+  #         cd ${NV_PVC_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${GITHUB_JOB} && cp -R dipu ${GITHUB_JOB}  && cd ${GITHUB_JOB}
+  #         source scripts/ci_nv_env.sh
+  #         bash scripts/ci_nv_script.sh build_dipu \
+  #         || ( cd ${NV_PVC_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} && exit 1 )
+
+  # Test-One-Iter_Cuda:
+  #   name: test-one-iter-cuda
+  #   needs: [Build-POC-Cuda]
+  #   runs-on: tps-pytorch-ci
+  #   steps:
+  #     - name: build some env
+  #       run: |
+  #         set -e
+  #         cd ${NV_PVC_PATH}/${GITHUB_RUN_NUMBER}/ && cd Build-POC-Cuda
+  #         source scripts/ci_nv_env.sh
+  #         basic_path=${NV_PVC_PATH}/${GITHUB_RUN_NUMBER}/Build-POC-Cuda
+  #         export PYTHONPATH=${basic_path}/mmengine:$PYTHONPATH
+  #         export PYTHONPATH=${basic_path}/mmcv:$PYTHONPATH
+  #         bash scripts/ci_one_iter.sh build_cuda
+
+  #     - name: run-one-iter-tools
+  #       run: |
+  #         set -e
+  #         cd ${NV_PVC_PATH}/${GITHUB_RUN_NUMBER}/ && cd Build-POC-Cuda
+  #         source scripts/ci_nv_env.sh
+  #         basic_path=${NV_PVC_PATH}/${GITHUB_RUN_NUMBER}/Build-POC-Cuda
+  #         export PYTHONPATH=${basic_path}/mmpose:$PYTHONPATH
+  #         export PYTHONPATH=${basic_path}/mmaction2:$PYTHONPATH
+  #         export PYTHONPATH=${basic_path}/mmpretrain:$PYTHONPATH
+  #         export PYTHONPATH=${basic_path}/mmocr:$PYTHONPATH
+  #         export PYTHONPATH=${basic_path}/mmsegmentation:$PYTHONPATH
+  #         export PYTHONPATH=${basic_path}/mmdetection3d:$PYTHONPATH
+  #         export PYTHONPATH=${basic_path}/mmdetection:$PYTHONPATH
+  #         export PYTHONPATH=${basic_path}/mmagic:$PYTHONPATH
+  #         export PYTHONPATH=${basic_path}/data/stable-diffusion-v1-5:$PYTHONPATH
+  #         export PYTHONPATH=${basic_path}/mmagic/mmagic/models/editors/stable_diffusion:$PYTHONPATH
+  #         export PYTHONPATH=${basic_path}/mmengine:$PYTHONPATH
+  #         export PYTHONPATH=${basic_path}/mmcv:$PYTHONPATH
+  #         export PYTHONPATH=${basic_path}/SMART/tools/one_iter_tool/one_iter:$PYTHONPATH
+  #         echo  "python path : $PYTHONPATH"
+  #         bash scripts/ci_nv_run_one_iter.sh && rm -rf one_iter_data || (rm -rf one_iter_data && exit 1)
 
   Build-Mmcv-Ext-Nvidia:
     name: Build-Mmcv-Ext-Nvidia
