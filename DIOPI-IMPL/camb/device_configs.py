@@ -24,47 +24,10 @@ device_configs = {
         rtol=1e-4,
     ),
 
-    'baddbmm': dict(
-        name=["baddbmm"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ]
-        ),
-    ),
-
-    'baddbmm_without_inplace': dict(
-        name=["baddbmm"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-
-            ]
-        ),
-    ),
-
     'conv_2d': dict(
         name=["conv2d"],
         atol_half=1e-1,
         rtol_half=1e-1,
-    ),
-
-    'hardswish': dict(
-        name=["hardswish"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
     ),
 
     'max_pool2d': dict(
@@ -328,6 +291,7 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float64)],
+                    "shape": [Skip(())],
                 },
             ],
         ),
@@ -713,20 +677,6 @@ device_configs = {
         ),
     ),
 
-    'unique': dict(
-        name=['unique'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
     'prod': dict(
         name=['prod'],
         tensor_para=dict(
@@ -950,11 +900,15 @@ device_configs = {
 
     'interpolate': dict(
         name=["interpolate"],
+        para=dict(
+            mode=[Skip('bilinear'), Skip('bicubic'), Skip('trilinear'), Skip('linear')]
+        ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    # camb not supports 5d upsample
+                    "shape": [Skip((1, 3, 32, 224, 224))],
                 },
             ]
         )
@@ -971,6 +925,7 @@ device_configs = {
             ]
         ),
     ),
+
     'cholesky': dict(
         name=['cholesky_ex'],
         tensor_para=dict(
