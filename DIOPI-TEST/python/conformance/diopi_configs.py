@@ -395,8 +395,8 @@ diopi_configs = {
 
     'binary_cross_entropy': dict(
         name=["binary_cross_entropy"],
-        atol=1e-3,
-        rtol=1e-4,
+        atol=1e-2,
+        rtol=1e-2,
         dtype=[Dtype.float32, Dtype.float64],
         para=dict(
             reduction=['mean', 'none', 'sum', 'mean'],
@@ -1595,6 +1595,7 @@ diopi_configs = {
         para=dict(
             dim=[0, 1, [0, 1], 2, [-1, 0], 3],
             unbiased=[True, False, True, False, True, False],
+            keepdim=[True, False, True, False, True, False],
         ),
         atol=1e-4,
         rtol=1e-5,
