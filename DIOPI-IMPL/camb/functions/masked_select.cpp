@@ -49,12 +49,13 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t *ou
 
     std::vector<int64_t> num_true_shape(1, 1);
     auto num_true = requiresTensor(ctx, num_true_shape, diopi_dtype_uint32);
-    DIOPI_CALLCNNL(cnnlMasked_v3(handle,
+    DIOPI_CALLCNNL(cnnlMasked_v4(handle,
                                  masked_mode,
                                  input_desc.get(),
                                  input_tensor.data(),
                                  mask_desc.get(),
                                  mask_tensor.data(),
+                                 nullptr,
                                  nullptr,
                                  nullptr,
                                  workspace,
@@ -76,27 +77,7 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t *ou
 
 DIOPI_API diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                                  diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor Gradinput_tensor(grad_input);
-    DiopiTensor Gradoutput_tensor(grad_output);
-    DiopiTensor mask_tensor(mask);
-
-    if (not Gradinput_tensor.defined()) {
-        std::cout << "grad_input not defined !!!" << std::endl;
-        return diopiSuccess;
-    }
-
-    if (not Gradoutput_tensor.defined()) {
-        std::cout << "grad_output not defined !!!" << std::endl;
-        return diopiSuccess;
-    }
-
-    if (not mask_tensor.defined()) {
-        std::cout << "mask not defined !!!" << std::endl;
-        return diopiSuccess;
-    }
-
-    DIOPI_CALL(diopiMul(ctx, grad_input, mask, grad_output); return diopiSuccess;)
+    DIOPI_CALL(diopiMul(ctx, grad_input, mask, mask); return diopiSuccess;)
 }
 }  // extern "C"
 
