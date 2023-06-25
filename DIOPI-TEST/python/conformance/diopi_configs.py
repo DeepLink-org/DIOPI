@@ -1788,27 +1788,27 @@ diopi_configs = {
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            reduction=['none', 'mean', 'sum'],
-            ignore_index=[-100, 92, 255],
+            reduction=['none', 'mean', 'sum', 'none'],
+            ignore_index=[-100, 92, 255, 0],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((200, 81), (2, 92, 29), (2, 150, 512, 512)),
+                    "shape": ((200, 81), (2, 92, 29), (2, 150, 512, 512), (2, 150, 512, 512)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ['target'],
-                    "shape": ((200, ), (2, 29), (2, 512, 512)),
+                    "shape": ((200, ), (2, 29), (2, 512, 512), (2, 512, 512)),
                     "dtype": [Dtype.int64],
                     "gen_fn": dict(fn=Genfunc.randint, low=0, high=80),
                 },
                 {
                     "ins": ['weight'],
-                    "shape": ((81, ), (92, ), None),
+                    "shape": ((81, ), (92, ), None, None),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.ones,
                 },
