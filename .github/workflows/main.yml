@@ -162,8 +162,8 @@ jobs:
           bash scripts/ci_nv_script.sh build_dipu \
           || ( cd ${NV_PVC_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} && exit 1 )
 
-  Build-Mmcv-env:
-    name: build-mmcv-env
+  Test-MMCV-ext-ops_Cuda:
+    name: test-mmcv-ext-ops-cuda
     needs: [Build-Dipu-Cuda]
     runs-on: tps-pytorch-ci
     steps:
@@ -178,11 +178,6 @@ jobs:
           cd mmcv
           MMCV_WITH_DIOPI=1 MMCV_WITH_OPS=1 python setup.py build_ext -i
 
-  Test-MMCV-ext-ops_Cuda:
-    name: test-mmcv-ext-ops-cuda
-    needs: [Build-Mmcv-env]
-    runs-on: tps-pytorch-ci
-    steps:
       - name: test mmcv ext ops on nv
         run: |
           set -e
