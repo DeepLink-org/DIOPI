@@ -562,7 +562,6 @@ DIOPI_API diopiError_t diopiTanh(diopiContextHandle_t ctx, diopiTensorHandle_t o
 DIOPI_API diopiError_t diopiTanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                          diopiConstTensorHandle_t output);
 
-
 DIOPI_API diopiError_t diopiAtan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
 DIOPI_API diopiError_t diopiAtanInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
