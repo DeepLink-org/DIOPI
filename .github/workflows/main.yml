@@ -26,9 +26,6 @@ env:
   BUILD_TEST2: build_test_dy
   GEN_DATA: DIOPI-TEST/python/data
   NV_PVC_PATH: '/nvme/share/share/github/cibuild/${{ github.repository }}'
-  PYTORCH_COMMIT: c263bd43e8e8502d4726643bc6fd046f0130ac0e
-  PYTORCH_BASE_DIR: '/mnt/lustre/share/parrotsci/github/cibuild/pytorchbase_diopi'
-  CI_BUILD_FLAG: "ci_build_flag"
 
 jobs:
   Rsync:
