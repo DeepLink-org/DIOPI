@@ -9,15 +9,15 @@
 #include <supa.h>
 
 #include <cassert>
-#include <cstdio>
+#include <iostream>
 #include <mutex>
 
-#define SUPA_CALL(Expr)                                                             \
-    {                                                                               \
-        suError_t ret = Expr;                                                       \
-        if (ret != suSuccess) {                                                     \
-            printf("call a supa function (%s) failed. return code=%d", #Expr, ret); \
-        }                                                                           \
+#define SUPA_CALL(Expr)                                                                              \
+    {                                                                                                \
+        suError_t ret = Expr;                                                                        \
+        if (ret != suSuccess) {                                                                      \
+            std::cout << "Supa function (" << #Expr << ") failed. return code=" << ret << std::endl; \
+        }                                                                                            \
     }
 
 extern "C" {
