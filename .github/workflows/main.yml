@@ -248,7 +248,7 @@ jobs:
 
   Rsync-Camb:
     name: Rsync code camb
-    runs-on: github-poc-ci
+    runs-on: tps-diopi-ci
     needs: [Rsync]
     steps:
       - name: clone repo
@@ -266,7 +266,8 @@ jobs:
           else
           git checkout ${{ github.sha }}
           fi
-
+      env:
+          GITHUB_TOKEN: "${{ secrets.CI_TOKEN }}"
       - name: Rsync to Server
         run: |
           echo ${GITHUB_WORKSPACE}
@@ -297,7 +298,7 @@ jobs:
   Build-Pytorch:
     name: Build pytorch
     needs: [Rsync-Camb]
-    runs-on: github-poc-ci
+    runs-on: tps-diopi-ci
     env:
       MLU_REQUESTS: 0
     steps:
