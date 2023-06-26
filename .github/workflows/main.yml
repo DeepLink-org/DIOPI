@@ -149,7 +149,7 @@ jobs:
           rm -rf mmengine && git clone https://github.com/open-mmlab/mmengine.git # latest
           rm -rf mmcv && git clone https://github.com/open-mmlab/mmcv.git # latest
 
-  Build-Dipu-Cuda:
+  Build-POC-Cuda:
     name: Build dipu cuda
     needs: [Clone]
     runs-on: tps-pytorch-ci
@@ -164,7 +164,7 @@ jobs:
 
   Test-MMCV-ext-ops_Cuda:
     name: test-mmcv-ext-ops-cuda
-    needs: [Build-Dipu-Cuda]
+    needs: [Build-POC-Cuda]
     runs-on: tps-pytorch-ci
     steps:
       - name: build mmcv
@@ -277,4 +277,62 @@ jobs:
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode utest' \
           """
 
+  Rsync-Camb:
+    name: Rsync code camb
+    runs-on: github-poc-ci
+    steps:
+      - name: clone repo
+        run: |
+          echo ${GITHUB_WORKSPACE}
+          echo ${{ github.repository }}
+          echo ${CLUSTER_CAMB}
+          echo `pwd`
+      #     cd ${GITHUB_WORKSPACE} && rm -rf dipu dipu_diopi && git clone https://github.com/DeepLink-org/dipu.git && cd dipu
+      #     if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
+      #       echo "${{ github.base_ref }} "
+      #       git checkout ${{ github.event.pull_request.head.sha }} && git merge --no-edit origin/${{ github.base_ref }}
+      #     else
+      #       echo $GITHUB_EVENT_NAME
+      #       git checkout ${{ github.sha }}
+      #     fi
+      #     cd ${GITHUB_WORKSPACE} && cp -R dipu dipu_diopi
+      #     cd ${GITHUB_WORKSPACE}/dipu && rm -rf third_party/DIOPI && git submodule update --init --recursive
 
+      #     #  dipu_diopi depend on latest target diopi branch, not diopi in submodule. here assume diopi and dipu use same  'target branch' " github.base_ref "
+      #     cd ${GITHUB_WORKSPACE}/dipu_diopi/third_party && rm -rf DIOPI && git clone https://github.com/DeepLink-org/DIOPI.git
+      #     if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
+      #       cd ./DIOPI && git checkout ${{ github.base_ref }}
+      #     fi
+
+      # - name: ci interruptible and support pr ci
+      #   run: |
+      #     cd ${GITHUB_WORKSPACE}/dipu && bash scripts/ci_interruptible.sh
+      #   env:
+      #     GITHUB_TOKEN: "${{ secrets.CI_TOKEN }}"
+      # - name: Rsync to Server
+      #   run: |
+      #     echo ${GITHUB_WORKSPACE}
+      #     echo ${{ github.repository }}
+      #     echo ${CLUSTER_CAMB}
+      #     echo `pwd`
+      #     cd /home/autolink/rsync/sourcecode/pytorch && git checkout master && git pull \
+      #     && git checkout ${PYTORCH_COMMIT} && git submodule update --init --recursive
+      #     ssh ${CLUSTER_CAMB} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source-main"
+      #     rsync -a --delete ${GITHUB_WORKSPACE}/dipu/ ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
+      #     rsync -a --delete ${GITHUB_WORKSPACE}/dipu_diopi/ ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source-main/
+      #     result=`ssh ${CLUSTER_CAMB} """
+      #             mkdir -p ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
+      #             cd ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
+      #             if [ ! -f ${CI_BUILD_FLAG} ]; then
+      #               touch ${CI_BUILD_FLAG}
+      #             fi
+      #             cat ${CI_BUILD_FLAG}
+      #             """`
+      #     echo "result:${result}"
+      #     if [ "${result}x" = "${PYTORCH_COMMIT}"x ]; then
+      #       echo "pytorch:${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT} exist."
+      #     else
+      #       echo "pytorch not exist, copy pytorch to ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}"
+      #       ssh ${CLUSTER_CAMB} "rm -rf ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}"
+      #       rsync -a --delete /home/autolink/rsync/sourcecode/pytorch/* ${CLUSTER_CAMB}:${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}/
+      #     fi
