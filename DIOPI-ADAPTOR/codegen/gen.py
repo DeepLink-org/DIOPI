@@ -390,8 +390,14 @@ for (int i = 0; i < ${num}; ++i) {
                         cast_ins.append(cast_impl)
                 outs = func_infos[func]['outs']
                 if tensor in outs:
-                    cast_impl = 'auto {tensor}Wrapper = DiopiTensorWrapper<{cast}>(ctx, {tensor}{memory_format});'.format(
-                                cast=cast_method, memory_format=format_str if format_str else '', tensor=tensor, contiguous=contiguous_str)
+                    if op_name[-3:] == 'Inp':
+                        is_inplace = 'true'
+                    else:
+                        is_inplace = 'false'
+                    cast_impl = 'auto {tensor}Wrapper = DiopiTensorWrapper<{cast}>(ctx, {tensor}, {is_inplace}{memory_format});'.format(
+                                cast=cast_method, memory_format=format_str if format_str else '', tensor=tensor, is_inplace=is_inplace, contiguous=contiguous_str)
+                    # import pdb
+                    # pdb.set_trace()
                     cast_outs.append(cast_impl)
             new_input.append('diopiConstTensorHandle_t ' + ','.join(new_ins) + ';') if len(new_ins) else ''
             call_args = []
