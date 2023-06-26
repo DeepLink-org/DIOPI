@@ -302,20 +302,21 @@ diopi_configs = {
     'avg_pool2d': dict(
         name=["avg_pool2d"],
         para=dict(
-            kernel_size=[(2, 2), 3],
-            stride=[1, (1, 2)],
-            padding=[(1, 1), 0],
-            ceil_mode=[True, False],
-            count_include_pad=[True, False],
-            divisor_override=[None, 2],
+            kernel_size=[2, (2, 2), (20, 13), (2, 2), 3],
+            stride=[None, None, 3, 1, (1, 2)],
+            padding=[0, (0, 0), (2, 3), (1, 1), 0],
+            ceil_mode=[False, True, False, True, False],
+            count_include_pad=[True, True, False, True, False],
+            divisor_override=[None, None, -3, None, 2],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((2, 1024, 14, 14), (256, 28, 28)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "shape": ((2, 16, 7), (5, 2, 16, 7), (3, 4, 16, 7),
+                              (2, 1024, 14, 14), (256, 28, 28)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
             ]
         ),
@@ -324,12 +325,12 @@ diopi_configs = {
     'max_pool2d': dict(
         name=["max_pool2d"],
         para=dict(
-            kernel_size=[3, (2, 1), (2, 2), 3],
-            stride=[2, (2, 1), (2, 1), 2],
-            padding=[1, 0, (0, 1), 0],
-            dilation=[1, 1, 1, 2],
-            ceil_mode=[False, True, False, True],
-            return_indices=[False, False, False, False],
+            kernel_size=[6, (6, 12), (6, 8), (6, 8), 3, (2, 1), (2, 2), 3],
+            stride=[None, (3, 100), (3, 2), (3, 2), 2, (2, 1), (2, 1), 2],
+            padding=[0, (2, 6), (2, 3), (2, 3), 1, 0, (0, 1), 0],
+            dilation=[1, (4, 3), (2, 3), (2, 3), 1, (1, 1), 1, 2],
+            ceil_mode=[False, True, False, True, False, True, False, True],
+            return_indices=[False, False, False, False, False, False, False, False],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -337,11 +338,36 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((2, 64, 352, 528),
+                    "shape": ((3, 12, 20), (5, 4, 17, 22),
+                              (6, 17, 23), (1, 4, 17, 23),
+                              (2, 64, 352, 528),
                               (2, 256, 12, 40),
                               (2, 512, 4, 26),
                               (3, 4, 10)),
-                    "dtype": [Dtype.float16, Dtype.float32],
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
+                },
+            ]
+        ),
+    ),
+
+    'max_pool2d_return_indices': dict(
+        name=["max_pool2d"],
+        para=dict(
+            kernel_size=[6, (6, 12), (6, 8), (6, 8)],
+            stride=[None, (3, 100), (3, 2), (3, 2)],
+            padding=[0, (2, 6), (2, 3), (2, 3)],
+            dilation=[1, (4, 3), (2, 3), (2, 3)],
+            ceil_mode=[False, True, False, True],
+            return_indices=[True, True, True, True],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((3, 12, 20), (5, 4, 17, 22),
+                              (6, 17, 23), (1, 4, 17, 23),),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
             ]
         ),
@@ -354,7 +380,8 @@ diopi_configs = {
         atol_half=1e-2,
         rtol_half=1e-2,
         para=dict(
-            output_size=[(1, 1), 2, (None, 3), (3, 4), (7, 7), (10, 10)],
+            output_size=[5, (26, 40), (None, None), (1, 1), 2,
+                         (None, 3), (3, 4), (7, 7), (10, 10), 0],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -362,9 +389,10 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((2, 2048, 8, 6), (2, 288, 33, 33),
+                    "shape": ((3, 16, 8), (4, 7, 27, 39), (4, 16, 12),
+                              (2, 2048, 8, 6), (2, 288, 33, 33),
                               (2, 144, 65, 65), (2, 1280, 7, 7),
-                              (2, 265, 7, 7), (2, 265, 7, 7)),
+                              (2, 265, 7, 7), (2, 265, 7, 7), (4, 7, 27, 39)),
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
             ]
@@ -376,8 +404,8 @@ diopi_configs = {
         atol=1e-5,
         rtol=1e-4,
         para=dict(
-            output_size=[2, (1, 3), (3, 4), (33, 33), (40, 40)],
-            return_indices=[False, False, False, False, False]
+            output_size=[5, (26, 40), (None, None), 2, (1, 3), (3, 4), (33, 33), (40, 40)],
+            return_indices=[False, False, False, False, False, False, False, False]
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -385,8 +413,29 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((288, 33, 33), (2, 144, 33, 33), (2, 16, 130, 130),
+                    "shape": ((3, 16, 8), (4, 7, 27, 39), (4, 16, 12),
+                              (288, 33, 33), (2, 144, 33, 33), (2, 16, 130, 130),
                               (2, 144, 33, 33), (2, 144, 33, 33)),
+                    "dtype": [Dtype.float32, Dtype.float16, Dtype.float64],
+                },
+            ]
+        ),
+    ),
+
+    'adaptive_max_pool2d_return_indices': dict(
+        name=["adaptive_max_pool2d"],
+        atol=1e-5,
+        rtol=1e-4,
+        para=dict(
+            output_size=[5, (26, 40), (None, None), (0, 0)],
+            return_indices=[True, True, True, True]
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((3, 16, 8), (4, 7, 27, 39), (4, 16, 12), (4, 16, 12)),
                     "dtype": [Dtype.float32, Dtype.float16, Dtype.float64],
                 },
             ]
@@ -3242,11 +3291,12 @@ diopi_configs = {
     'max_pool3d': dict(
         name=['max_pool3d'],
         para=dict(
-            kernel_size=[(3, 2, 2), (1, 2, 3), 1],
-            stride=[(2, 1, 2), 2, (2, 3, 4)],
-            dilation=[2, (2, 1, 3), (2, 2, 2)],
-            ceil_mode=[False, False, False],
-            return_indices=[False, False, False],
+            kernel_size=[6, (8, 6, 12), (6, 3, 8), (6, 3, 8), (3, 2, 2), (1, 2, 3), 1],
+            stride=[None, (50, 3, 100), (3, 4, 2), (3, 4, 2), (2, 1, 2), 2, (2, 3, 4)],
+            padding=[0, (3, 2, 6), (2, 1, 3), (2, 1, 3), 0, (0, 1, 1), 0],
+            dilation=[1, (2, 4, 3), (2, 4, 3), (2, 4, 3), 2, (2, 1, 3), (2, 2, 2)],
+            ceil_mode=[False, True, False, True, False, False, False],
+            return_indices=[False, False, False, False, False, False, False],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -3254,10 +3304,35 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((9, 6, 6, 8, 6),
+                    "shape": ((5, 15, 12, 20), (5, 4, 9, 17, 22),
+                              (6, 17, 10, 23), (1, 4, 17, 10, 23),
+                              (9, 6, 6, 8, 6),
                               (4, 6, 8, 9, 12),
                               (6, 9, 8, 10, 7)),
-                    "dtype": [Dtype.float16, Dtype.float32],
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
+                },
+            ]
+        ),
+    ),
+
+    'max_pool3d_return_indices': dict(
+        name=['max_pool3d'],
+        para=dict(
+            kernel_size=[6, (8, 6, 12), (6, 3, 8), (6, 3, 8)],
+            stride=[None, (50, 3, 100), (3, 4, 2), (3, 4, 2)],
+            padding=[0, (3, 2, 6), (2, 1, 3), (2, 1, 3)],
+            dilation=[1, (2, 4, 3), (2, 4, 3), (2, 4, 3)],
+            ceil_mode=[False, True, False, True],
+            return_indices=[True, True, True, True],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((5, 15, 12, 20), (5, 4, 9, 17, 22),
+                              (6, 17, 10, 23), (1, 4, 17, 10, 23)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
             ]
         ),
@@ -3268,7 +3343,8 @@ diopi_configs = {
         atol=1e-5,
         rtol=1e-4,
         para=dict(
-            output_size=[(1, 1, 1), 2, (None, 14, 14), (3, 20, 20)],
+            output_size=[4, (15, 9, 21), (None, None, None), (1, 1, 1),
+                         2, (None, 14, 14), (3, 20, 20)],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -3276,7 +3352,9 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((1, 2048, 4, 7, 7), (2, 512, 4, 4),
+                    "shape": ((2, 5, 12, 4, 8),
+                              (4, 16, 9, 20), (12, 16, 32, 16),
+                              (1, 2048, 4, 7, 7), (2, 512, 4, 4),
                               (2, 1024, 14, 14), (2, 720, 17, 17)),
                     "dtype": [Dtype.float32, Dtype.float16, Dtype.float64],
                 },
@@ -3289,8 +3367,10 @@ diopi_configs = {
         atol=1e-5,
         rtol=1e-4,
         para=dict(
-            output_size=[2, (1, 3, 2), (3, 4, 4), (3, 14, 14), (3, 20, 20)],
-            return_indices=[False, False, False, False, False]
+            output_size=[4, (15, 9, 21), (None, None, None),
+                         2, (1, 3, 2), (3, 4, 4), (3, 14, 14), (3, 20, 20)],
+            return_indices=[False, False, False, False,
+                            False, False, False, False]
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -3298,8 +3378,31 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((1, 2048, 4, 7, 7), (2, 512, 4, 4), (2, 1024, 14, 14),
+                    "shape": ((2, 5, 12, 4, 8),
+                              (4, 16, 9, 20), (12, 16, 32, 16),
+                              (1, 2048, 4, 7, 7), (2, 512, 4, 4), (2, 1024, 14, 14),
                               (2, 1024, 14, 14), (2, 1024, 14, 14)),
+                    "dtype": [Dtype.float32, Dtype.float16, Dtype.float64],
+                },
+            ]
+        ),
+    ),
+
+    'adaptive_max_pool3d_return_indices': dict(
+        name=["adaptive_max_pool3d"],
+        atol=1e-5,
+        rtol=1e-4,
+        para=dict(
+            output_size=[4, (15, 9, 21), (None, None, None)],
+            return_indices=[True, True, True]
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 5, 12, 4, 8),
+                              (4, 16, 9, 20), (12, 16, 32, 16)),
                     "dtype": [Dtype.float32, Dtype.float16, Dtype.float64],
                 },
             ]
