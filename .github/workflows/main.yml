@@ -27,6 +27,9 @@ env:
   BUILD_TEST2: build_test_dy
   BUILD_TEST3: build_mmcv_ext
   GEN_DATA: DIOPI-TEST/python/data
+  PYTORCH_COMMIT: c263bd43e8e8502d4726643bc6fd046f0130ac0e
+  PYTORCH_BASE_DIR: '/mnt/lustre/share/parrotsci/github/cibuild/pytorchbase_diopi'
+  CI_BUILD_FLAG: "ci_build_flag"
 
 jobs:
   Rsync:
@@ -243,4 +246,77 @@ jobs:
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode utest' \
           """
 
+  Rsync-Camb:
+    name: Rsync code camb
+    runs-on: github-poc-ci
+    needs: [Rsync]
+    steps:
+      - name: clone repo
+        run: |
+          echo ${GITHUB_WORKSPACE}
+          echo ${{ github.repository }}
+          echo ${CLUSTER_CAMB}
+          echo `pwd`
+          mkdir -p ${GITHUB_WORKSPACE} 
+          cd ${GITHUB_WORKSPACE} && rm -rf dipu && git clone https://github.com/DeepLink-org/dipu.git && cd dipu # latest
 
+          cd ${GITHUB_WORKSPACE}/dipu/third_party && rm -rf DIOPI && git clone https://github.com/DeepLink-org/DIOPI.git && cd DIOPI
+          if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
+          git checkout ${{ github.event.pull_request.head.sha }} && git merge --no-edit ${{ github.base_ref }} 
+          else
+          git checkout ${{ github.sha }}
+          fi
+
+      - name: Rsync to Server
+        run: |
+          echo ${GITHUB_WORKSPACE}
+          echo ${{ github.repository }}
+          echo ${CLUSTER_CAMB}
+          echo `pwd`
+          cd /home/autolink/rsync/sourcecode/pytorch && git checkout master && git pull \
+          && git checkout ${PYTORCH_COMMIT} && git submodule update --init --recursive
+          ssh ${CLUSTER_CAMB} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
+          rsync -a --delete ${GITHUB_WORKSPACE}/dipu/ ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
+          result=`ssh ${CLUSTER_CAMB} """
+                  mkdir -p ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
+                  cd ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
+                  if [ ! -f ${CI_BUILD_FLAG} ]; then
+                    touch ${CI_BUILD_FLAG}
+                  fi
+                  cat ${CI_BUILD_FLAG}
+                  """`
+          echo "result:${result}"
+          if [ "${result}x" = "${PYTORCH_COMMIT}"x ]; then
+            echo "pytorch:${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT} exist."
+          else
+            echo "pytorch not exist, copy pytorch to ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}"
+            ssh ${CLUSTER_CAMB} "rm -rf ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}"
+            rsync -a --delete /home/autolink/rsync/sourcecode/pytorch/* ${CLUSTER_CAMB}:${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}/
+          fi
+
+  Build-Pytorch:
+    name: Build pytorch
+    needs: [Rsync-Camb]
+    runs-on: github-poc-ci
+    env:
+      MLU_REQUESTS: 0
+    steps:
+      - name: Build pytorch
+        run: |
+          ssh ${CLUSTER_CAMB} """
+          set -e
+          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source
+          source scripts/ci_camb_env.sh
+          cd ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
+          echo "pwd: $(pwd)"
+          if [ -f ${CI_BUILD_FLAG} ]; then
+            echo "${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT} has been successfully compiled."
+          else
+            mkdir -p build && make clean
+            export CMAKE_PREFIX_PATH=${CONDA_PREFIX:-"$(dirname $(which conda))/../"}
+            BUILD_BINARY=0 USE_PRECOMPILED_HEADERS=1 BUILD_TEST=0
+            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=40 \
+            --gres=mlu:${MLU_REQUESTS} python setup.py install --prefix=./install_path
+            echo "${PYTORCH_COMMIT}" > ${CI_BUILD_FLAG}
+          fi
+          """
