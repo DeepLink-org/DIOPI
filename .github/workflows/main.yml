@@ -28,7 +28,7 @@ env:
   BUILD_TEST3: build_mmcv_ext
   GEN_DATA: DIOPI-TEST/python/data
   PYTORCH_COMMIT: c263bd43e8e8502d4726643bc6fd046f0130ac0e
-  PYTORCH_BASE_DIR: '/mnt/lustre/share/parrotsci/github/cibuild/pytorchbase_diopi'
+  PYTORCH_BASE_DIR: '/mnt/lustre/share/parrotsci/github/cibuild/pytorchbase'
   CI_BUILD_FLAG: "ci_build_flag"
 
 jobs:
@@ -276,22 +276,6 @@ jobs:
           && git checkout ${PYTORCH_COMMIT} && git submodule update --init --recursive
           ssh ${CLUSTER_CAMB} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
           rsync -a --delete ${GITHUB_WORKSPACE}/dipu/ ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
-          result=`ssh ${CLUSTER_CAMB} """
-                  mkdir -p ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
-                  cd ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
-                  if [ ! -f ${CI_BUILD_FLAG} ]; then
-                    touch ${CI_BUILD_FLAG}
-                  fi
-                  cat ${CI_BUILD_FLAG}
-                  """`
-          echo "result:${result}"
-          if [ "${result}x" = "${PYTORCH_COMMIT}"x ]; then
-            echo "pytorch:${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT} exist."
-          else
-            echo "pytorch not exist, copy pytorch to ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}"
-            ssh ${CLUSTER_CAMB} "rm -rf ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}"
-            rsync -a --delete /home/autolink/rsync/sourcecode/pytorch/* ${CLUSTER_CAMB}:${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}/
-          fi
 
   Build-Pytorch:
     name: Build pytorch
