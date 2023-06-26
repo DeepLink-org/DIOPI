@@ -78,7 +78,7 @@ DIOPI_API diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopi
     DiopiTensor maskTensor(mask);              // mask
     DiopiTensor tempGradInputTensor = ones(ctx, gradInputTensor.shape(), gradInputTensor.dtype());
 
-    if (! gradOutputTensor.defined()) {  // if mask is full-zero, output is empty
+    if (!gradOutputTensor.defined()) {  // if mask is full-zero, output is empty
         DIOPI_CALL(diopiMul(ctx, gradInput, mask, mask));
     }
 
