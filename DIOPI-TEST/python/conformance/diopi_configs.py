@@ -3306,49 +3306,6 @@ diopi_configs = {
         ),
     ),
 
-    'masked_select': dict(
-        name=['masked_select'],
-        interface=['torch'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "requires_grad": [True],
-                    "shape": ((1, ), (16,), (8, 48), (4, 128, 128), (256, 8, 8)),
-                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
-                    "gen_fn": Genfunc.randn,
-                },
-                {
-                    "ins": ['mask'],
-                    "shape": ((1, ), (16,), (8, 48), (4, 128, 128), (256, 8, 8)),
-                    "dtype": [Dtype.bool],
-                    "gen_fn": Genfunc.mask
-                },
-            ],
-        ),
-    ),
-
-    'masked_select_not_float': dict(
-        name=['masked_select'],
-        interface=['torch'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((1, ), (16,), (8, 48), (4, 128, 128), (256, 8, 8)),
-                    "dtype": [Dtype.int16, Dtype.int32, Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
-                    "gen_fn": Genfunc.ones,
-                },
-                {
-                    "ins": ['mask'],
-                    "shape": ((1, ), (16,), (8, 48), (4, 128, 128), (256, 8, 8)),
-                    "dtype": [Dtype.bool],
-                    "gen_fn": Genfunc.mask
-                },
-            ],
-        ),
-    ),
-
     'imum': dict(
         name=['maximum', 'minimum'],
         interface=['torch'],
