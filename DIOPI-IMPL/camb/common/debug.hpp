@@ -38,14 +38,13 @@ void printDevDataInternal(diopiContextHandle_t ctx, void* data, int64_t len, int
     std::cout << "]" << std::endl;
 }
 
-inline void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor, std::string name = "name") {
+inline void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor, std::string name = "name", int maxLen = 20) {
     if (!tensor.defined()) {
         std::cout << "Tensor " << name << " is not defined. Please check it before using `printDevData`." << std::endl;
         return;
     }
     int64_t len = tensor.numel();
     void* dataIn = tensor.data();
-    int64_t maxLen = 20;
     int dim = tensor.dim();
     std::cout << "DiopiTensor[" << name << "]: dim" << dim << ", dtype: " << DiopiDataType::dataTypeStr(tensor.dtype()) << ", shape: [";
     for (size_t i = 0; i < dim; i++) {

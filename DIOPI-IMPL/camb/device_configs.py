@@ -191,13 +191,9 @@ device_configs = {
 
     'cross_entropy_prob_target': dict(
         name=["cross_entropy"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32)],
-                },
-            ],
+        para=dict(
+            # label_smoothing is not supported by camb kernel
+            label_smoothing=[Skip(0.1), Skip(0.3), Skip(0.5)],
         ),
     ),
 
@@ -891,13 +887,13 @@ device_configs = {
     'interpolate': dict(
         name=["interpolate"],
         para=dict(
-            mode=[Skip('bilinear'), Skip('bicubic'), Skip('trilinear'), Skip('linear')]
+            mode=[Skip('trilinear'), Skip('linear')]
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    # camb not supports 5d upsample
+                    # camb not supports 5d upsample nearest
                     "shape": [Skip((1, 3, 32, 224, 224))],
                 },
             ]
