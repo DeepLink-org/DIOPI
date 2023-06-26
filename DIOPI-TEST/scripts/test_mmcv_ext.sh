@@ -8,18 +8,15 @@ then
 fi
 
 DEVICE=${1}
+echo $MMCV_TEST_HOME
 
 if [[ $DEVICE == "CUDA" ]]; then
-    MMCV_TEST_LIST=(test_active_rotated_filter.py \
-    test_assign_score_withk.py \
-    test_bbox.py \
-    test_deform_roi_pool.py \
-    test_knn.py \
-    test_convex_iou.py \
-    test_min_area_polygons.py \
-    test_prroi_pool.py \
-    test_chamfer_distance.py \
-    test_border_align.py
+    MMCV_TEST_LIST=(tests/test_ops/test_nms.py -k test_nms_allclose \
+    tests/test_ops/test_roi_align.py \
+    tests/test_ops/test_focal_loss.py -k sigmoid \
+    tests/test_ops/test_voxelization.py \
+    tests/test_ops/test_modulated_deform_conv.py::TestMdconv::test_mdconv_float \
+    tests/test_ops/test_modulated_deform_conv.py::TestMdconv::test_mdconv_double
     )
 elif [[ $DEVICE == "MLU" ]]; then
     MMCV_TEST_LIST=()
@@ -28,9 +25,7 @@ else
     exit 1
 fi
 
-cd third_party/mmcv_diopi
-export PYTHONPATH=${PWD}:$PYTHONPATH
-cd tests/test_ops
+cd $MMCV_TEST_HOME
 
 for elem in ${MMCV_TEST_LIST[@]}
 do

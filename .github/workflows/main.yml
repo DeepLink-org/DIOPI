@@ -194,9 +194,9 @@ jobs:
           basic_path=${NV_PVC_PATH}/${GITHUB_RUN_NUMBER}/Build-POC-Cuda
           export PYTHONPATH=${basic_path}/mmengine:$PYTHONPATH
           export PYTHONPATH=${basic_path}/mmcv:$PYTHONPATH
+          export MMCV_TEST_HOME=${basic_path}/mmcv
           echo  "python path : $PYTHONPATH"
-          cd ${basic_path}/mmcv
-          python -m pytest -s tests/test_ops/test_focal_loss.py -k sigmoid
+          cd third_party/DIOPI/DIOPI-TEST && bash scripts/test_mmcv_ext.sh CUDA 
 
   Build-Mmcv-Ext-Nvidia:
     name: Build-Mmcv-Ext-Nvidia
