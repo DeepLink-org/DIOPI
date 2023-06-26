@@ -2897,18 +2897,21 @@ diopi_configs = {
             args=[
                 {
                     "ins": ["input"],
+                    "requires_grad": [True],
                     "shape": ((2, 256, 14, 14), (2, 128, 32, 32),
                               (2, 64, 160, 160), (2, 64, 320, 320), (2, 64, 320, 320)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                 },
                 {
                     "ins": ["weight"],
+                    "requires_grad": [True],
                     "shape": ((256, 256, 2, 2), (128, 128, 4, 4),
                               (64, 64, 2, 2), (64, 1, 2, 2), (64, 1, 2, 2)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                 },
                 {
                     "ins": ["bias"],
+                    "requires_grad": [True],
                     "shape": ((256,), None, (64,), (1,), (1,)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                 },
