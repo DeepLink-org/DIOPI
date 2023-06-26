@@ -78,8 +78,11 @@ DIOPI_API diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopi
     DiopiTensor maskTensor(mask);              // mask
     DiopiTensor tempGradInputTensor = ones(ctx, gradInputTensor.shape(), gradInputTensor.dtype());
 
-    if (!gradOutputTensor.defined()) {  // if mask is full-zero, output is empty
-        DIOPI_CALL(diopiMul(ctx, gradInput, mask, mask));
+    if (!gradOutputTensor.defined()) {  // if mask is full-zero, output is empty, gradInput is full-zero
+        auto scalar = diopiScalar_t();
+        scalar.stype = gradInputTensor.dtype();
+        scalar.ival = 0;
+        diopiFill(ctx, gradInput, &scalar);
     }
 
     std::vector<DiopiTensor *> pmask{&maskTensor};
