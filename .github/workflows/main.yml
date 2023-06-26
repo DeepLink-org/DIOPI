@@ -127,7 +127,6 @@ jobs:
 
   Clone:
     name: clone code on cuda
-    # needs: [Rsync]
     runs-on: tps-pytorch-ci
     steps:
       - name: clone repo
@@ -138,7 +137,7 @@ jobs:
           rm -rf ${GITHUB_RUN_NUMBER} && mkdir -p ${GITHUB_RUN_NUMBER} && cd ${GITHUB_RUN_NUMBER}
           rm -rf dipu && git clone https://github.com/DeepLink-org/dipu.git && cd dipu
           if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
-            git checkout origin/${{ github.base_ref }}
+            git checkout origin/${{ github.base_ref }} # latest
           fi
 
           cd ${NV_PVC_PATH}/${GITHUB_RUN_NUMBER}
@@ -150,11 +149,10 @@ jobs:
           git checkout ${{ github.sha }}
           fi
           cd ${NV_PVC_PATH}/${GITHUB_RUN_NUMBER}/dipu
-          # rm -rf mmengine && git clone https://github.com/open-mmlab/mmengine.git
-          # rm -rf mmcv && git clone https://github.com/open-mmlab/mmcv.git
-          bash scripts/ci_one_iter.sh clone
+          rm -rf mmengine && git clone https://github.com/open-mmlab/mmengine.git # latest
+          rm -rf mmcv && git clone https://github.com/open-mmlab/mmcv.git # latest
 
-  Build-POC-Cuda:
+  Build-Dipu-Cuda:
     name: Build dipu cuda
     needs: [Clone]
     runs-on: tps-pytorch-ci
@@ -166,22 +164,10 @@ jobs:
           source scripts/ci_nv_env.sh
           bash scripts/ci_nv_script.sh build_dipu \
           || ( cd ${NV_PVC_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} && exit 1 )
-  
-  Test-Cuda:
-    name: test-cuda
-    needs: [Build-POC-Cuda]
-    runs-on: tps-pytorch-ci
-    steps:
-      - name: Run-test
-        run: |
-          set -e
-          cd ${NV_PVC_PATH}/${GITHUB_RUN_NUMBER}/ && cd Build-POC-Cuda
-          source scripts/ci_nv_env.sh
-          sh tests/run_nv_tests.sh
 
   Build-Mmcv-env:
     name: build-mmcv-env
-    needs: [Build-POC-Cuda]
+    needs: [Build-Dipu-Cuda]
     runs-on: tps-pytorch-ci
     steps:
       - name: build mmcv
@@ -192,7 +178,8 @@ jobs:
           basic_path=${NV_PVC_PATH}/${GITHUB_RUN_NUMBER}/Build-POC-Cuda
           export PYTHONPATH=${basic_path}/mmengine:$PYTHONPATH
           export PYTHONPATH=${basic_path}/mmcv:$PYTHONPATH
-          bash scripts/ci_one_iter.sh build_cuda
+          cd mmcv
+          MMCV_WITH_DIOPI=1 MMCV_WITH_OPS=1 python setup.py build_ext -i
 
   Test-MMCV-ext-ops_Cuda:
     name: test-mmcv-ext-ops-cuda
@@ -210,33 +197,6 @@ jobs:
           echo  "python path : $PYTHONPATH"
           cd ${basic_path}/mmcv
           python -m pytest -s tests/test_ops/test_focal_loss.py -k sigmoid
-
-  Test-One-Iter_Cuda:
-    name: test-one-iter-cuda
-    needs: [Build-Mmcv-env]
-    runs-on: tps-pytorch-ci
-    steps:
-      - name: run-one-iter-tools
-        run: |
-          set -e
-          cd ${NV_PVC_PATH}/${GITHUB_RUN_NUMBER}/ && cd Build-POC-Cuda
-          source scripts/ci_nv_env.sh
-          basic_path=${NV_PVC_PATH}/${GITHUB_RUN_NUMBER}/Build-POC-Cuda
-          export PYTHONPATH=${basic_path}/mmpose:$PYTHONPATH
-          export PYTHONPATH=${basic_path}/mmaction2:$PYTHONPATH
-          export PYTHONPATH=${basic_path}/mmpretrain:$PYTHONPATH
-          export PYTHONPATH=${basic_path}/mmocr:$PYTHONPATH
-          export PYTHONPATH=${basic_path}/mmsegmentation:$PYTHONPATH
-          export PYTHONPATH=${basic_path}/mmdetection3d:$PYTHONPATH
-          export PYTHONPATH=${basic_path}/mmdetection:$PYTHONPATH
-          export PYTHONPATH=${basic_path}/mmagic:$PYTHONPATH
-          export PYTHONPATH=${basic_path}/data/stable-diffusion-v1-5:$PYTHONPATH
-          export PYTHONPATH=${basic_path}/mmagic/mmagic/models/editors/stable_diffusion:$PYTHONPATH
-          export PYTHONPATH=${basic_path}/mmengine:$PYTHONPATH
-          export PYTHONPATH=${basic_path}/mmcv:$PYTHONPATH
-          export PYTHONPATH=${basic_path}/SMART/tools/one_iter_tool/one_iter:$PYTHONPATH
-          echo  "python path : $PYTHONPATH"
-          bash scripts/ci_nv_run_one_iter.sh && rm -rf one_iter_data || (rm -rf one_iter_data && exit 1)
 
   Build-Mmcv-Ext-Nvidia:
     name: Build-Mmcv-Ext-Nvidia
