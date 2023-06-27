@@ -70,11 +70,8 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
     if sum_to_compare:
         passed = np.allclose(tensor1, tensor2, rtol, atol, True)
     else:
-        print("in allclsoe() useing isclose()")
         matched = np.isclose(tensor1, tensor2, rtol, atol, True)
         mismatched_num = matched.size - np.sum(matched)
-        print("mismatched_num = ", mismatched_num)
-        print("matched.size = ", matched.size)
         passed = mismatched_num < default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
     if record:
         save_precision(cfg, tensor1, tensor2, passed, var_name)
@@ -340,7 +337,6 @@ def np_allclose(np_values1: dict, np_values2: dict):
     for name, value in np_values1.items():
         assert name in np_values2.keys(), f"{name} not exist in np_values2"
         # passed = np.allclose(value, np_values2[name])
-        print("in np_allclose() using isclose()")
         matched = np.isclose(value, np_values2[name])
         mismatched_num = matched.size - np.sum(matched)
         passed = mismatched_num < default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
