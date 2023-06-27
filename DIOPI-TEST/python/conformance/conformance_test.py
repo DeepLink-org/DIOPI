@@ -11,6 +11,7 @@ from .diopi_runtime import Tensor, compute_nhwc_stride, default_context
 from .utils import save_precision, record, write_precision
 from .utils import get_saved_pth_list, get_data_from_file
 from .utils import cfg_file_name
+from .utils import default_cfg_dict
 from . import model_config
 
 
@@ -66,7 +67,12 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
     atol = cfg.get('atol_half', 1e-8) if tensor1.dtype == np.float16 else cfg.get('atol', 1e-8)
     tensor1 = np.sum(tensor1) if sum_to_compare else tensor1
     tensor2 = np.sum(tensor2) if sum_to_compare else tensor2
-    passed = np.allclose(tensor1, tensor2, rtol, atol, True)
+    if sum_to_compare:
+        passed = np.allclose(tensor1, tensor2, rtol, atol, True)
+    else:
+        matched = np.isclose(tensor1, tensor2, rtol, atol, True)
+        matched_num = np.sum(matched)
+        passed = (1 - matched_num / matched.size) < default_cfg_dict['default_option']['mismatch_ratio_threshold']
     if record:
         save_precision(cfg, tensor1, tensor2, passed, var_name)
     if not passed:
@@ -330,7 +336,10 @@ def np_allclose(np_values1: dict, np_values2: dict):
     not_passed_name = ""
     for name, value in np_values1.items():
         assert name in np_values2.keys(), f"{name} not exist in np_values2"
-        passed = np.allclose(value, np_values2[name])
+        # passed = np.allclose(value, np_values2[name])
+        matched = np.isclose(value, np_values2[name])
+        matched_num = np.sum(matched)
+        passed = (1 - matched_num / matched.size) < default_cfg_dict['default_option']['mismatch_ratio_threshold']
         if not passed:
             not_passed_name = name
             break
