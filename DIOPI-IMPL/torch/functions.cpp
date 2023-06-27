@@ -2134,10 +2134,7 @@ diopiError_t diopiConvTranspose2dBackward(diopiContextHandle_t ctx, diopiTensorH
 #ifdef USE_HIP
     impl::aten::invokeATenFuncRet(
         ctx, at::cudnn_convolution_transpose_backward, vecOut, atInput, atGrad, atWeight, atPadding, atOutputPadding, atStride, atDilation, groups, false, false, grad_input_mask);
-    impl::aten::updateATen2Tensor(ctx, inp_grad_input, grad_input);
-    impl::aten::updateATen2Tensor(ctx, inp_grad_weight, grad_weight);
 #else
-
     impl::aten::invokeATenFuncRet(
         ctx, at::cudnn_convolution_transpose_backward, vecOut, atInput, atGrad, atWeight, atPadding, atOutputPadding, atStride, atDilation, groups, false, false, false, grad_input_mask);
 #endif
