@@ -11,6 +11,7 @@ namespace camb {
 extern "C" {
 diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t input, const int64_t *dim, bool sorted, bool returnCounts,
                          diopiTensorHandle_t indices, diopiTensorHandle_t *counts) {
+#if (CNNL_MAJOR >= 1 && CNNL_MINOR >= 15 && CNNL_PATCHLEVEL >= 2)
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     // input_tensor
@@ -126,6 +127,9 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, dio
     }
 
     return diopiSuccess;
+#else
+    DIOPI_CHECK(false, "not implemented in low version cnnl")
+#endif
 }
 }  // extern "C"
 
