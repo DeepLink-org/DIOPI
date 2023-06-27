@@ -4374,7 +4374,11 @@ diopi_configs = {
         dtype=[Dtype.float32, Dtype.float64, Dtype.float16],
         para=dict(
             mode=['nearest', 'bilinear', 'nearest', 'bicubic', 'trilinear', 'linear', 'nearest', 'nearest'],
-            size=[(50, 76), (25, 38), (4, 224, 224), (64, 64), (4, 224, 112), (64, ), None, 32],
+            # For bicubic, do not use big size like (64, 64), which will cause accuracy error in float16.
+            # Additionally, according to pytorch website(https://pytorch.org/docs/stable/generated/torch.nn.functional.interpolate.html)
+            # "This operation may produce nondeterministic gradients when given tensors on a CUDA device."
+            # So if you are facing a value error in backward, try to figure out whether this is a problem of pytorch.
+            size=[(50, 76), (25, 38), (4, 224, 224), (32, 32), (4, 224, 112), (64, ), None, 32],
             scale_factor=[None, None, None, None, None, None, (3.0, 3.0), None],
             align_corners=[None, False, None, True, True, False, None, None],
             # recompute_scale_factor=[False, False, False, False, False, False, True, False]
