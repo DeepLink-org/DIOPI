@@ -1481,10 +1481,10 @@ diopiError_t diopiSigmoidFocalLoss(diopiContextHandle_t ctx, diopiTensorHandle_t
     return diopiSuccess;
 }
 
-diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean,
-        diopiTensorHandle_t save_invstd, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
-        diopiConstTensorHandle_t bias, diopiConstTensorHandle_t running_mean,
-        diopiConstTensorHandle_t running_var, bool training, double momentum, double eps) {
+diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean, diopiTensorHandle_t save_invstd,
+                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias,
+                            diopiConstTensorHandle_t running_mean, diopiConstTensorHandle_t running_var,
+                            bool training, double momentum, double eps) {
     camb::aten::setCurCtx(ctx);
     at::Tensor atInput = camb::aten::buildATen(input);
     at::Tensor atWeight = camb::aten::buildATen(weight);
