@@ -2133,7 +2133,7 @@ diopiError_t diopiConvTranspose2dBackward(diopiContextHandle_t ctx, diopiTensorH
     auto grad_input_mask = std::array<bool, 2>{true, true};
 #ifdef USE_HIP
     impl::aten::invokeATenFuncRet(ctx,
-                                  at::cudnn_convolution_transpose_backward,
+                                  at::miopen_convolution_transpose_backward,
                                   vecOut,
                                   atInput,
                                   atGrad,
