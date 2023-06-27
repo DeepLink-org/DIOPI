@@ -2132,11 +2132,36 @@ diopiError_t diopiConvTranspose2dBackward(diopiContextHandle_t ctx, diopiTensorH
     diopi_tensor_list vecOut = {grad_input, grad_weight};
     auto grad_input_mask = std::array<bool, 2>{true, true};
 #ifdef USE_HIP
-    impl::aten::invokeATenFuncRet(
-        ctx, at::cudnn_convolution_transpose_backward, vecOut, atInput, atGrad, atWeight, atPadding, atOutputPadding, atStride, atDilation, groups, false, false, grad_input_mask);
+    impl::aten::invokeATenFuncRet(ctx,
+                                  at::cudnn_convolution_transpose_backward,
+                                  vecOut,
+                                  atInput,
+                                  atGrad,
+                                  atWeight,
+                                  atPadding,
+                                  atOutputPadding,
+                                  atStride,
+                                  atDilation,
+                                  groups,
+                                  false,
+                                  false,
+                                  grad_input_mask);
 #else
-    impl::aten::invokeATenFuncRet(
-        ctx, at::cudnn_convolution_transpose_backward, vecOut, atInput, atGrad, atWeight, atPadding, atOutputPadding, atStride, atDilation, groups, false, false, false, grad_input_mask);
+    impl::aten::invokeATenFuncRet(ctx,
+                                  at::cudnn_convolution_transpose_backward,
+                                  vecOut,
+                                  atInput,
+                                  atGrad,
+                                  atWeight,
+                                  atPadding,
+                                  atOutputPadding,
+                                  atStride,
+                                  atDilation,
+                                  groups,
+                                  false,
+                                  false,
+                                  false,
+                                  grad_input_mask);
 #endif
     if (bias_sizes != nullptr && grad_bias != nullptr) {
         auto atBias = impl::aten::buildATen(grad_bias);
