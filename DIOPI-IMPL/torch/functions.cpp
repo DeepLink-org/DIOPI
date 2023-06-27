@@ -2118,9 +2118,9 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
 }
 
 diopiError_t diopiConvTranspose2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight, diopiTensorHandle_t grad3,
-                                        diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
-                                        diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, 
-                                        diopiSize_t output_padding, int64_t groups) {
+                                          diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
+                                          diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, diopiSize_t output_padding,
+                                          int64_t groups) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atGrad = impl::aten::buildATen(grad_output);
@@ -2132,13 +2132,15 @@ diopiError_t diopiConvTranspose2dBackward(diopiContextHandle_t ctx, diopiTensorH
     diopi_tensor_list vecOut = {grad_input, grad_weight};
 #ifdef USE_HIP
     auto inp_grad_input = at::miopen_convolution_transpose_backward_input(atGrad, atWeight, atPadding, atStride, atDilation, groups, false, false);
-    auto inp_grad_weight = at::miopen_convolution_transpose_backward_weight(atWeight.sizes(), atGrad, atInput, atPadding, atStride, atDilation, groups, false, false);
+    auto inp_grad_weight =
+        at::miopen_convolution_transpose_backward_weight(atWeight.sizes(), atGrad, atInput, atPadding, atStride, atDilation, groups, false, false);
     // auto inp_grad_bias = at::miopen_convolution_backward_bias(grad_output);
     impl::aten::updateATen2Tensor(ctx, inp_grad_input, grad_input);
     impl::aten::updateATen2Tensor(ctx, inp_grad_weight, grad_weight);
 #else
     auto inp_grad_input = at::cudnn_convolution_transpose_backward_input(atGrad, atWeight, atPadding, atStride, atDilation, groups, false, false, false);
-    auto inp_grad_weight = at::cudnn_convolution_transpose_backward_weight(atWeight.sizes(), atGrad, atInput, atPadding, atStride, atDilation, groups, false, false, false);
+    auto inp_grad_weight =
+        at::cudnn_convolution_transpose_backward_weight(atWeight.sizes(), atGrad, atInput, atPadding, atStride, atDilation, groups, false, false, false);
     impl::aten::updateATen2Tensor(ctx, inp_grad_input, grad_input);
     impl::aten::updateATen2Tensor(ctx, inp_grad_weight, grad_weight);
 #endif
