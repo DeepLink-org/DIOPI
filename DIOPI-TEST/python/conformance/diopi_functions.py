@@ -1818,8 +1818,8 @@ def conv2d_backward(input, grad_outputs, weight, bias=None, stride=1,
     check_returncode(ret)
     return out
 
-def conv_transpose2d_backward(input, grad_outputs, weight, bias=None, stride=1,
-                    padding=0, dilation=1, groups=1, **kwargs) -> Tensor:
+
+def conv_transpose2d_backward(input, grad_outputs, weight, bias=None, stride=1,padding=0, dilation=1, groups=1, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     sizeI = input.size().data
     sizeW = weight.size().data
@@ -1849,7 +1849,6 @@ def conv_transpose2d_backward(input, grad_outputs, weight, bias=None, stride=1,
         grad_bias = gradBias
         sizeBias = bias.size()
         out.update({"bias": grad_bias})
-
 
     output_padding = Sizes(list([0, 0]))
 
