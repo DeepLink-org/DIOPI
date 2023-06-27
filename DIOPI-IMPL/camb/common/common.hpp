@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "../cnnl_helper.hpp"
+#include "debug.hpp"
 
 namespace impl {
 namespace camb {
@@ -27,15 +28,17 @@ diopiError_t broadcast(diopiContextHandle_t ctx, DiopiTensor& out, const DiopiTe
 
 diopiError_t broadcastHelper(diopiContextHandle_t ctx, DiopiTensor inputTensor, DiopiTensor targetTensor, DiopiTensor* outTensor);
 
-diopiError_t contiguous(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryFormat memoryFormat);
+diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, MemoryFormat memoryFormat = MemoryFormat::Contiguous);
 
-diopiError_t contiguous(diopiContextHandle_t& ctx, DiopiTensor& src, MemoryFormat memoryFormat, cnnlTensorLayout_t layoutIn, cnnlTensorLayout_t layoutOut);
+diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, MemoryFormat memoryFormat, cnnlTensorLayout_t layoutIn, cnnlTensorLayout_t layoutOut);
 
 template <typename T1 = double, typename T2 = double, typename T3 = double>
 diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor other, DiopiTensor out, cnnlOpTensorDesc_t opType, T1 alpha1 = 1.0,
                           T2 alpha2 = 1.0, T3 beta = 0.0);
 
 diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiTensor& outTensor, MemoryFormat memoryFormat = MemoryFormat::Preserve);
+
+diopiError_t transpose(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor input, int64_t dim0, int64_t dim1);
 
 }  // namespace camb
 }  // namespace impl

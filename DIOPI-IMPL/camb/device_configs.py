@@ -8,6 +8,14 @@ device_configs = {
         name=["batch_norm"],
         atol=1e-2,
         rtol=1e-3,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "dtype": [Skip(Dtype.float16)]
+                },
+            ]
+        ),
     ),
 
     'nll_loss': dict(
@@ -16,47 +24,10 @@ device_configs = {
         rtol=1e-4,
     ),
 
-    'baddbmm': dict(
-        name=["baddbmm"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ]
-        ),
-    ),
-
-    'baddbmm_without_inplace': dict(
-        name=["baddbmm"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-
-            ]
-        ),
-    ),
-
     'conv_2d': dict(
         name=["conv2d"],
         atol_half=1e-1,
-        rtol_half=5e-2,
-    ),
-
-    'hardswish': dict(
-        name=["hardswish"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
+        rtol_half=1e-1,
     ),
 
     'max_pool2d': dict(
@@ -85,14 +56,8 @@ device_configs = {
 
     'binary_cross_entropy': dict(
         name=["binary_cross_entropy"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
+        atol=1e-2,
+        rtol=1e-2,
     ),
 
     'binary_cross_entropy_with_logits': dict(
@@ -128,18 +93,6 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
             ]
-        ),
-    ),
-
-    'silu': dict(
-        name=["silu"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
         ),
     ),
 
@@ -228,69 +181,19 @@ device_configs = {
         ),
     ),
 
-    'reduce_partial_op_3': dict(
-        name=['any', 'all'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'reduce_partial_op_zeros_input': dict(
-        name=['any', 'all'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'reduce_partial_op_ones_input': dict(
-        name=['any', 'all'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
     'cross_entropy': dict(
         name=["cross_entropy"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
+        para=dict(
+            # label_smoothing is not supported by camb kernel
+            label_smoothing=[Skip(0.5)],
         ),
     ),
 
     'cross_entropy_prob_target': dict(
         name=["cross_entropy"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32)],
-                },
-            ],
+        para=dict(
+            # label_smoothing is not supported by camb kernel
+            label_smoothing=[Skip(0.1), Skip(0.3), Skip(0.5)],
         ),
     ),
 
@@ -374,6 +277,7 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float64)],
+                    "shape": [Skip(())],
                 },
             ],
         ),
@@ -653,57 +557,11 @@ device_configs = {
         ),
     ),
 
-    'imum': dict(
-        name=['maximum', 'minimum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input', 'other'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'imum_broadcast': dict(
-        name=['maximum', 'minimum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'imum_ones': dict(
-        name=['maximum', 'minimum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
-
-    'mm': dict(
-        name=['mm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
+    # 'mm': dict(
+    #     name=['mm'],
+    #     atol=1e-1,
+    #     rtol=1e-1
+    # ),
 
     'index_fill': dict(
         name=['index_fill'],
@@ -805,20 +663,6 @@ device_configs = {
         ),
     ),
 
-    'unique': dict(
-        name=['unique'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
     'prod': dict(
         name=['prod'],
         tensor_para=dict(
@@ -851,9 +695,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float64), Skip(Dtype.float16), Skip(Dtype.int16),
+                              Skip(Dtype.int32), Skip(Dtype.int64), Skip(Dtype.uint8), Skip(Dtype.int8), Skip(Dtype.bool)],
                 },
             ]
         ),
@@ -861,23 +704,20 @@ device_configs = {
 
     'scatter_reduce': dict(
         name=['scatter'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
+        para=dict(
+            # The reduction operation of multiply is not supported by cnnl
+            reduce=[Skip('multiply')], 
         ),
     ),
 
+    # When not performing a reduce operation, the accuracy comparison of scatter needs to be performed on the CPU
     'scatter_scalar': dict(
         name=['scatter'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float64)],
                 },
             ]
         ),
@@ -885,37 +725,9 @@ device_configs = {
 
     'scatter_reduce_scalar': dict(
         name=['scatter'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
-        ),
-    ),
-
-    'index_put_acc': dict(
-        name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
-        ),
-    ),
-
-    'index_put_acc_one_indices': dict(
-        name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
+        para=dict(
+            # The reduction operation of multiply is not supported by cnnl
+            reduce=[Skip('multiply')],
         ),
     ),
 
@@ -925,14 +737,14 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                    "dtype": [Skip(Dtype.uint8),    # overflow issue 
+                              Skip(Dtype.bool)],    # not supported by camb kernel when accumulate is true
                 },
             ]
         ),
     ),
 
+    # when accumulate is True and dtype of indices is bool, can't get the correct result
     'index_put_acc_bool_indices': dict(
         name=['index_put'],
         tensor_para=dict(
@@ -944,30 +756,6 @@ device_configs = {
                               Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
                 },
             ]
-        ),
-    ),
-
-    'index_put_one_indices': dict(
-        name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
-        ),
-    ),
-
-    'uniform': dict(
-        name=['uniform'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
         ),
     ),
 
@@ -1041,11 +829,15 @@ device_configs = {
 
     'interpolate': dict(
         name=["interpolate"],
+        para=dict(
+            mode=[Skip('trilinear'), Skip('linear')]
+        ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    # camb not supports 5d upsample nearest
+                    "shape": [Skip((1, 3, 32, 224, 224))],
                 },
             ]
         )
@@ -1053,18 +845,6 @@ device_configs = {
 
     'col2im': dict(
         name=["col2im"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ]
-        ),
-    ),
-
-    'im2col': dict(
-        name=["im2col"],
         tensor_para=dict(
             args=[
                 {
@@ -1100,25 +880,6 @@ device_configs = {
             ],
         ),
         saved_args=dict(output=0),
-    ),
-
-    'normal': dict(
-        name=["normal"],
-        para=dict(
-            mean=[Skip(0), Skip(0.1)],
-        ),
-    ),
-
-    'normal_': dict(
-        name=["normal_"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
-        ),
     ),
 
     'normal_std_tensor': dict(

@@ -3291,14 +3291,8 @@ diopiError_t diopiCTCLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     auto atTarget = impl::aten::buildATen(targets);
     auto atInputLength = impl::aten::buildATen(input_lengths).to(at::Device(at::kCPU), at::kLong).contiguous();
     auto atTargetLength = impl::aten::buildATen(target_lengths).to(at::Device(at::kCPU), at::kLong).contiguous();
-    std::vector<int64_t> inputL;
-    std::vector<int64_t> targetL;
-    for (int i = 0; i < atInputLength.numel(); ++i) {
-        inputL.push_back(atInputLength.data_ptr<int64_t>()[i]);
-        targetL.push_back(atTargetLength.data_ptr<int64_t>()[i]);
-    }
-    at::IntArrayRef il(inputL);
-    at::IntArrayRef tl(targetL);
+    at::IntArrayRef il(atInputLength.data_ptr<int64_t>(), atInputLength.numel());
+    at::IntArrayRef tl(atTargetLength.data_ptr<int64_t>(), atTargetLength.numel());
     auto atOut = at::native::ctc_loss_gpu(atLogProbs, atTarget, il, tl, blank, zero_infinity);
     impl::aten::updateATen2Tensor(ctx, std::get<0>(atOut), neg_log_likelihood);
     impl::aten::updateATen2Tensor(ctx, std::get<1>(atOut), log_alpha);
@@ -3326,15 +3320,8 @@ diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto atTarget = impl::aten::buildATen(targets);
     auto atInputLength = impl::aten::buildATen(input_lengths).to(at::Device(at::kCPU), at::kLong).contiguous();
     auto atTargetLength = impl::aten::buildATen(target_lengths).to(at::Device(at::kCPU), at::kLong).contiguous();
-    std::vector<int64_t> inputL;
-    std::vector<int64_t> targetL;
-    for (int i = 0; i < atInputLength.numel(); ++i) {
-        inputL.push_back(atInputLength.data_ptr<int64_t>()[i]);
-        targetL.push_back(atTargetLength.data_ptr<int64_t>()[i]);
-    }
-    at::IntArrayRef il(inputL);
-    at::IntArrayRef tl(targetL);
-
+    at::IntArrayRef il(atInputLength.data_ptr<int64_t>(), atInputLength.numel());
+    at::IntArrayRef tl(atTargetLength.data_ptr<int64_t>(), atTargetLength.numel());
     int64_t batch_size = atLogProbs.size(1);
     std::vector<int64_t> expand_shape = {batch_size};
     at::IntArrayRef shape(expand_shape.data(), expand_shape.size());
@@ -3965,6 +3952,40 @@ DIOPI_API diopiError_t diopiLerpScalar(diopiContextHandle_t ctx, diopiTensorHand
     auto atEnd = impl::aten::buildATen(end);
     at::Scalar atWeight = impl::aten::buildAtScalar(weight);
     at::lerp_out(atOut, atInput, atEnd, atWeight);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiTriu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t diagonal) {
+    impl::aten::setCurCtx(ctx);
+    auto atOut = impl::aten::buildATen(out);
+    auto atInput = impl::aten::buildATen(input);
+    at::triu_out(atOut, atInput, diagonal);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiTriuInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, int64_t diagonal) {
+    impl::aten::setCurCtx(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    at::triu_out(atInput, atInput, diagonal);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiSgn(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    impl::aten::setCurCtx(ctx);
+    auto atOut = impl::aten::buildATen(out);
+    auto atInput = impl::aten::buildATen(input);
+    at::sgn_out(atOut, atInput);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiSgnInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atInput = impl::aten::buildATen(input);
+    impl::aten::invokeATenFuncInp(ctx, at::sgn_out, atInput, atInput);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
