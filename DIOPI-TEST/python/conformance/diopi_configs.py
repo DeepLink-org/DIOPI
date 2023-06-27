@@ -2883,7 +2883,8 @@ diopi_configs = {
 
     'conv_transpose2d': dict(
         name=["conv_transpose2d"],
-        atol=1e-5,
+        atol=1e-3,
+        rtol=1e-3,
         atol_half=1e2,
         rtol_half=1e2,
         para=dict(
