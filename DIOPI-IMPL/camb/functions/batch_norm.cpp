@@ -15,8 +15,8 @@ namespace camb {
 extern "C" {
 
 diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t saveMean, diopiTensorHandle_t saveInvstd,
-                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiTensorHandle_t runningMean,
-                            diopiTensorHandle_t runningVar, bool training, double momentum, double eps) {
+                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiConstTensorHandle_t runningMean,
+                            diopiConstTensorHandle_t runningVar, bool training, double momentum, double eps) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor saveMeanTr(saveMean);
     DiopiTensor saveInvstdTr(saveInvstd);

@@ -390,7 +390,7 @@ for (int i = 0; i < ${num}; ++i) {
                         cast_ins.append(cast_impl)
                 outs = func_infos[func]['outs']
                 if tensor in outs:
-                    if op_name[-3:] == 'Inp':
+                    if 'Inp' in op_name and tensor == 'input':
                         is_inplace = 'true'
                     else:
                         is_inplace = 'false'
