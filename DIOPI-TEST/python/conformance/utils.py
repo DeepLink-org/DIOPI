@@ -20,6 +20,7 @@ default_cfg_dict = dict(
         rtol=1e-5,
         atol_half=1e-2,
         rtol_half=5e-2,
+        mismatch_ratio_threshold=1e-3,
         memory_format="NCHW",
         fp16_exact_match=False,
         train=True,
