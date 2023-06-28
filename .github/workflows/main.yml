@@ -248,7 +248,7 @@ jobs:
 
   Rsync-Camb:
     name: Rsync code camb
-    runs-on: tps-diopi-ci
+    runs-on: github-poc-ci
     # needs: [Rsync]
     steps:
       - name: clone repo
