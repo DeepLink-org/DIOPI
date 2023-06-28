@@ -21,12 +21,12 @@
 
 #include "error.hpp"
 
-#define DIOPI_CHECK(cond, fmt, args...)                                                   \
-    do {                                                                                  \
-        if (!(cond)) {                                                                    \
-            impl::camb::setLastErrorString(#fmt " at %s:%d", ##args, __FILE__, __LINE__); \
-            return diopiErrorOccurred;                                                    \
-        }                                                                                 \
+#define DIOPI_CHECK(cond, fmt, args...)                                                      \
+    do {                                                                                     \
+        if (!(cond)) {                                                                       \
+            impl::camb::setLastErrorString(#fmt " at %s:%d.\n", ##args, __FILE__, __LINE__); \
+            return diopiErrorOccurred;                                                       \
+        }                                                                                    \
     } while (false);
 
 #define DIOPI_CHECK_NULLPTR_ABORT(variable)                                                      \
@@ -45,18 +45,13 @@
         }                                                        \
     } while (false);
 
-#define DIOPI_CALL(Expr)                                                           \
-    do {                                                                           \
-        diopiError_t ret = Expr;                                                   \
-        if (diopiSuccess != ret) {                                                 \
-            impl::camb::setLastErrorString("%s: %s called by `%s` at %s:%d\n",     \
-                                           ::impl::camb::getDiopiErrorStr(ret),    \
-                                           ::impl::camb::cambGetLastErrorString(), \
-                                           __func__,                               \
-                                           __FILE__,                               \
-                                           __LINE__);                              \
-            return ret;                                                            \
-        }                                                                          \
+#define DIOPI_CALL(Expr)                                                                                                            \
+    do {                                                                                                                            \
+        diopiError_t ret = Expr;                                                                                                    \
+        if (diopiSuccess != ret) {                                                                                                  \
+            impl::camb::setLastErrorString("%s: %s at %s:%d\n", ::impl::camb::getDiopiErrorStr(ret), __func__, __FILE__, __LINE__); \
+            return ret;                                                                                                             \
+        }                                                                                                                           \
     } while (false);
 
 namespace impl {
@@ -79,9 +74,9 @@ public:
             case diopi_dtype_uint16:
                 return "diopi_dtype_uint16";
             case diopi_dtype_int32:
-                return "diopi_dtype_uint32";
-            case diopi_dtype_uint32:
                 return "diopi_dtype_int32";
+            case diopi_dtype_uint32:
+                return "diopi_dtype_uint32";
             case diopi_dtype_int64:
                 return "diopi_dtype_int64";
             case diopi_dtype_uint64:
@@ -99,26 +94,36 @@ public:
             case diopi_dtype_tfloat32:
                 return "diopi_dtype_tfloat32";
             default:
-                setLastErrorString("dtype:%d is not support at %s:%d", dtype, __FILE__, __LINE__);
+                setLastErrorString("dtype:%d is not support at %s:%d.\n", dtype, __FILE__, __LINE__);
         }
         return "";
     }
 };
+
 class DiopiTensor final {
 public:
     DiopiTensor() = default;
+
+    // default shallow copy/assignment, it will not change the address of tensor_
+    DiopiTensor(const DiopiTensor&) = default;
+    DiopiTensor& operator=(const DiopiTensor&) = default;
+
     explicit DiopiTensor(const diopiTensorHandle_t& tensor) : tensor_(tensor) {
         if (tensor_ != nullptr) {
             diopiSize_t diopiShape;
             diopiSize_t diopiStride;
+            diopiDtype_t diopiDtype;
             diopiGetTensorShape(tensor_, &diopiShape);
             std::vector<int64_t> shapeTmp(diopiShape.data, diopiShape.data + diopiShape.len);
             diopiGetTensorStride(tensor_, &diopiStride);
             std::vector<int64_t> strideTmp(diopiStride.data, diopiStride.data + diopiStride.len);
+            diopiGetTensorDtype(tensor_, &diopiDtype);
             shape_ = std::move(shapeTmp);
             stride_ = std::move(strideTmp);
+            dtype_ = diopiDtype;
         }
     }
+
     explicit DiopiTensor(const diopiConstTensorHandle_t& tensor) : DiopiTensor(const_cast<diopiTensorHandle_t>(tensor)) {}
 
     explicit operator diopiTensorHandle_t() { return tensor_; }
@@ -129,19 +134,14 @@ public:
         diopiGetTensorDevice(tensor_, &device);
         return device;
     }
-    diopiDtype_t dtype() const {
-        DIOPI_CHECK_NULLPTR_ABORT(tensor_);
-        diopiDtype_t dtype;
-        diopiGetTensorDtype(tensor_, &dtype);
-        return dtype;
-    }
+    diopiDtype_t dtype() const { return dtype_; }
 
     const std::vector<int64_t>& shape() const {
         DIOPI_CHECK_NULLPTR_ABORT(tensor_);
         return shape_;
     }
 
-    int64_t size(int i) { return shape()[i]; }
+    int64_t size(int i) const { return shape()[i]; }
 
     const std::vector<int64_t>& stride() const {
         DIOPI_CHECK_NULLPTR_ABORT(tensor_);
@@ -316,6 +316,7 @@ public:
 
 protected:
     diopiTensorHandle_t tensor_ = nullptr;
+    diopiDtype_t dtype_{diopi_dtype_float32};
     std::vector<int64_t> shape_{0};
     std::vector<int64_t> stride_{0};
 };
@@ -414,7 +415,7 @@ inline cnrtQueue_t getStream(diopiContextHandle_t ctx) {
 }
 
 template <typename T>
-inline std::vector<T> diopiSizeT2Vector(diopiSize_t size, T) {
+std::vector<T> diopiSizeT2Vector(diopiSize_t size) {
     return std::vector<T>(size.data, size.data + size.len);
 }
 

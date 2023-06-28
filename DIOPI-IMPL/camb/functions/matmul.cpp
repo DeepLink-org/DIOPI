@@ -173,7 +173,7 @@ static diopiError_t matMulVector(diopiContextHandle_t ctx, DiopiTensor outTensor
     return diopiSuccess;
 }
 
-static diopiError_t transpose(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor input, int64_t dim0, int64_t dim1) {
+static diopiError_t transposeInternal(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor input, int64_t dim0, int64_t dim1) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     diopiTensorHandle_t out = (diopiTensorHandle_t)outTensor;
 
@@ -273,7 +273,7 @@ static diopiError_t tensorMatmulTensor(diopiContextHandle_t ctx, DiopiTensor out
         shape[0] = otherTensor.shape()[1];
         shape[1] = otherTensor.shape()[0];
         DiopiTensor otherT = requiresTensor(ctx, shape, otherTensor.dtype());
-        DIOPI_CALL(transpose(ctx, otherT, otherTensor, 0, 1))
+        DIOPI_CALL(transposeInternal(ctx, otherT, otherTensor, 0, 1))
         DIOPI_CALL(matMulVector(ctx, outTensor, otherT, inputTensor));
         return diopiSuccess;
     } else if (inputTensor.dim() == 2 && otherTensor.dim() == 2) {
@@ -312,12 +312,12 @@ static diopiError_t tensorMatmulTensor(diopiContextHandle_t ctx, DiopiTensor out
         otherShape[otherTensor.shape().size() - 1] = otherTensor.shape()[otherTensor.shape().size() - 2];
         otherShape[otherTensor.shape().size() - 2] = otherTensor.shape()[otherTensor.shape().size() - 1];
         DiopiTensor otherTTensor = requiresTensor(ctx, otherShape, otherTensor.dtype());
-        DIOPI_CALL(transpose(ctx, otherTTensor, otherTensor, -1, -2))
+        DIOPI_CALL(transposeInternal(ctx, otherTTensor, otherTensor, -1, -2))
         std::vector<int64_t> inputShape(inputTensor.shape());
         inputShape[0] = inputTensor.shape()[1];
         inputShape[1] = inputTensor.shape()[0];
         DiopiTensor inputTTensor = requiresTensor(ctx, inputShape, inputTensor.dtype());
-        DIOPI_CALL(transpose(ctx, inputTTensor, inputTensor, 0, 1))
+        DIOPI_CALL(transposeInternal(ctx, inputTTensor, inputTensor, 0, 1))
 
         if (inputDim == 1) {
             DIOPI_CALL(tensorMatmulTensor(ctx, outTensor, otherTTensor, inputTTensor));
@@ -327,7 +327,7 @@ static diopiError_t tensorMatmulTensor(diopiContextHandle_t ctx, DiopiTensor out
             DiopiTensor outTemp = requiresTensor(ctx, shape, outTensor.dtype());
 
             DIOPI_CALL(tensorMatmulTensor(ctx, outTemp, otherTTensor, inputTTensor));
-            DIOPI_CALL(transpose(ctx, outTensor, outTemp, -1, -2));
+            DIOPI_CALL(transposeInternal(ctx, outTensor, outTemp, -1, -2));
         }
 
         return diopiSuccess;
