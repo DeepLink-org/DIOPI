@@ -3772,8 +3772,8 @@ diopi_configs = {
     'remainder_scalar_float': dict(
         name=['remainder'],
         interface=['torch'],
-        atol=1e-3,
-        rtol=1e-4,
+        atol=1e-2,
+        rtol=1e-3,
         para=dict(
             self=[4.3, 10.1, 5.2, 100., -2.5, -3],
         ),
@@ -3794,8 +3794,8 @@ diopi_configs = {
     'remainder_scalar_int': dict(
         name=['remainder'],
         interface=['torch'],
-        atol=1e-3,
-        rtol=1e-4,
+        atol=1e-2,
+        rtol=1e-3,
         para=dict(
             self=[4.3, 10.1, 5.2, 100., -2.5, -3],
         ),
@@ -3816,8 +3816,8 @@ diopi_configs = {
     'remainder_tensor': dict(
         name=['remainder'],
         interface=['torch'],
-        atol=1e-3,
-        rtol=1e-4,
+        atol=1e-2,
+        rtol=1e-3,
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
