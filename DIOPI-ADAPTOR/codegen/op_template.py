@@ -51,6 +51,18 @@ inline std::vector<int64_t> calcStrides(int ndims, diopiSize_t size, diopiMemory
         }
 
     }
+    else if(format == diopiMemoryFormat_t::ChannelsLast1d){
+        for (auto k : {1, 2, 0}) {
+            strides[k] = st;
+            if (size.data[k] == 0) {
+                continue;
+            }
+            if (size.data[k] == -1) st = -1;
+            if (st != -1) {
+                st *= size.data[k];
+            }
+        }
+    }
     else {
         // PARROTS_THROW(InvalidArgs) <<
         //         "Invalid MemoryFormat " << memoryFormatName(format);
@@ -117,7 +129,7 @@ static std::vector<diopiMemoryFormat_t> defaultFormats{};
 ${cast_strategy}
 
 template<class T, class strategy = NoCast>
-static int castImpl(diopiContextHandle_t ctx, T src, T* dst,
+inline int castImpl(diopiContextHandle_t ctx, T src, T* dst,
                     std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats) {
     if (src == nullptr || src == 0) {
         *dst = src;
