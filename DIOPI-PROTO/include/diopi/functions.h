@@ -1671,11 +1671,43 @@ DIOPI_API diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t 
                                   float weight_decay, int64_t step, bool amsgrad);
 
 /**
- * \brief Applies a 2D transposed convolution operator over an input image composed of several input planes, sometimes also called “deconvolution”.
+ * @brief Applies a 2D transposed convolution operator over an input image composed of several input planes, sometimes also called “deconvolution”.
+ * @param[in] ctx Context environment.
+ * @param input the input tensor. type = [float32, float16, float64].
+ * @param weight the weight tensor; dimension of kernel_size must match the number of input spatial dimensions.
+ * type = [float32, float16, float64].
+ * @param bias bias tensor. type = [float32, float16, float64].
+ * @param stride an array with dimension matching the number of input spatial dimensions. type = [int32, int64].
+ * @param padding an array with dimension matching the number of input spatial dimensions. type = [int32, int64].
+ * @param output_padding an array, dimension == number of input spatial dimensions; only supported when transposed is true. type = [int32, int64].
+ * @param dilation an array with dimension matching the number of input spatial dimensions. type = [int32, int64].
+ * @param groups number of groups for grouped convolution. type = [int64].
+ * @param[out] out the result tensor. type = [float32, float16, float64].
  */
 DIOPI_API diopiError_t diopiConvTranspose2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                             diopiConstTensorHandle_t bias, diopiSize_t stride, diopiSize_t padding, diopiSize_t output_padding, int64_t groups,
                                             diopiSize_t dilation);
+
+/**
+ * @brief Backward pass for ConvTranspose2dBackward. Computes gradients for input, weight, and bias.
+ * @param[in] grad_output the grad tensor of output. type = [float32, float16, float64].
+ * @param bias_sizes an array, indicates that a bias was used in the forward pass and contains the shape of the bias. type = [int32, int64].
+ * @param output_padding an array, dimension == number of input spatial dimensions; only supported when transposed is true. type = [int32, int64].
+ * @param[out] grad_input the grad of input. type = [float32, float16, float64].
+ * @param grad_weight the grad of weight. type = [float32, float16, float64].
+ * @param grad_bias the grad of bias. type = [float32, float16, float64].
+ * @param input the input tensor. type = [float32, float16, float64].
+ * @param weight the weight tensor; dimension of kernel_size must match the number of input spatial dimensions.
+ * @param stride an array with dimension matching the number of input spatial dimensions. type = [int32, int64].
+ * @param padding an array with dimension matching the number of input spatial dimensions. type = [int32, int64].
+ * @param output_padding an array, dimension == number of input spatial dimensions; only supported when transposed is true. type = [int32, int64].
+ * @param dilation an array with dimension matching the number of input spatial dimensions. type = [int32, int64].
+ * @param groups number of groups for grouped convolution. type = [int64].
+ */
+DIOPI_API diopiError_t diopiConvTranspose2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
+                                                    diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
+                                                    diopiConstTensorHandle_t weight, diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding,
+                                                    diopiSize_t dilation, diopiSize_t output_padding, int64_t groups);
 
 /**
  * @brief Extracts sliding local blocks from a batched input tensor.

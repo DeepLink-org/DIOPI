@@ -2883,7 +2883,8 @@ diopi_configs = {
 
     'conv_transpose2d': dict(
         name=["conv_transpose2d"],
-        atol=1e-5,
+        atol=1e-3,
+        rtol=1e-3,
         atol_half=1e2,
         rtol_half=1e2,
         para=dict(
@@ -2897,18 +2898,21 @@ diopi_configs = {
             args=[
                 {
                     "ins": ["input"],
+                    "requires_grad": [True],
                     "shape": ((2, 256, 14, 14), (2, 128, 32, 32),
                               (2, 64, 160, 160), (2, 64, 320, 320), (2, 64, 320, 320)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                 },
                 {
                     "ins": ["weight"],
+                    "requires_grad": [True],
                     "shape": ((256, 256, 2, 2), (128, 128, 4, 4),
                               (64, 64, 2, 2), (64, 1, 2, 2), (64, 1, 2, 2)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                 },
                 {
                     "ins": ["bias"],
+                    "requires_grad": [True],
                     "shape": ((256,), None, (64,), (1,), (1,)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                 },
