@@ -338,10 +338,13 @@ def np_allclose(np_values1: dict, np_values2: dict):
     not_passed_name = ""
     for name, value in np_values1.items():
         assert name in np_values2.keys(), f"{name} not exist in np_values2"
-        # passed = np.allclose(value, np_values2[name])
-        matched = np.isclose(value, np_values2[name])
-        mismatched_num = matched.size - np.sum(matched)
-        passed = mismatched_num < default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
+        if (value.size == 0 and np_values2[name].size == 0):
+            passed = True
+        else:
+            # passed = np.allclose(value, np_values2[name])
+            matched = np.isclose(value, np_values2[name])
+            mismatched_num = matched.size - np.sum(matched)
+            passed = mismatched_num < default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
         if not passed:
             not_passed_name = name
             break
