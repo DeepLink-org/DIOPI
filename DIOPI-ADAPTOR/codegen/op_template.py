@@ -11,6 +11,7 @@ class OpTemplate(object):
 
 #ifndef DIOPI_ADAPTOR_HPP_
 #define DIOPI_ADAPTOR_HPP_
+#include <cassert>
 #include <iostream>
 #include <vector>
 #include <diopi/diopirt.h>
@@ -128,6 +129,33 @@ static std::vector<diopiMemoryFormat_t> defaultFormats{};
 
 ${cast_strategy}
 
+diopiMemoryFormat_t getTargetMemoryFormat(int ndims, std::vector<diopiMemoryFormat_t> supportMemoryFormats) {
+    if (ndims == 3) {
+        for (auto i : supportMemoryFormats) {
+            if (i == diopiMemoryFormat_t::ChannelsLast1d || i == diopiMemoryFormat_t::Contiguous) {
+                return i;
+            }
+        }
+    }
+    else if(ndims == 4) {
+        for (auto i : supportMemoryFormats){
+            if (i == diopiMemoryFormat_t::ChannelsLast || i == diopiMemoryFormat_t::Contiguous) {
+                return i;
+            }
+        }
+    }
+    else if(ndims == 5) {
+        for (auto i : supportMemoryFormats){
+            if (i == diopiMemoryFormat_t::ChannelsLast3d || i == diopiMemoryFormat_t::Contiguous) {
+                return i;
+            }
+        }
+    }
+    else {
+        assert(false && "ndims not supported.");
+    }
+}
+
 template<class T, class strategy = NoCast>
 inline int castImpl(diopiContextHandle_t ctx, T src, T* dst,
                     std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats) {
@@ -160,7 +188,8 @@ inline int castImpl(diopiContextHandle_t ctx, T src, T* dst,
     if (!convertFormat) {
         dstStride = stride;
     } else {
-        strides_v = calcStrides(size.len, size, supportMemoryFormat[0]);
+        diopiMemoryFormat_t memoryFormat = getTargetMemoryFormat(size.len, supportMemoryFormat);
+        strides_v = calcStrides(size.len, size, memoryFormat);
         dstStride.len = strides_v.size();
         dstStride.data = strides_v.data();
     }

@@ -295,7 +295,7 @@ def analysis_configs(config, funcs_info):
                     for layout in layouts:
                         if layout == '':
                             continue
-                        if layout == 'NHWC' or layout == 'NCHW':
+                        if layout == 'NHWC' or layout == 'NCHW' or layout == 'NLC' or layout == 'NCL' or layout=='NDHWC' or layout=='NCDHW':
                             op_layouts.append(layout)
                         else:
                             r = re.match(r'(.*)\((.*)\)', layout)
