@@ -266,6 +266,11 @@ jobs:
           else
           git checkout ${{ github.sha }}
           fi
+      - name: ci interruptible and support pr ci
+        run: |
+          cd ${GITHUB_WORKSPACE}/dipu && bash scripts/ci_interruptible.sh
+        env:
+          GITHUB_TOKEN: "${{ secrets.CI_TOKEN }}"
       - name: Rsync to Server
         run: |
           echo ${GITHUB_WORKSPACE}
@@ -276,38 +281,53 @@ jobs:
           && git checkout ${PYTORCH_COMMIT} && git submodule update --init --recursive
           ssh ${CLUSTER_CAMB} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
           rsync -a --delete ${GITHUB_WORKSPACE}/dipu/ ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
-
-  Build-Pytorch:
-    name: Build pytorch
-    needs: [Rsync-Camb]
-    runs-on: tps-diopi-ci
-    env:
-      MLU_REQUESTS: 0
-    steps:
-      - name: Build pytorch
-        run: |
-          ssh ${CLUSTER_CAMB} """
-          set -e
-          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source
-          source scripts/ci_camb_env.sh
-          cd ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
-          echo "pwd: $(pwd)"
-          if [ -f ${CI_BUILD_FLAG} ]; then
-            echo "${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT} has been successfully compiled."
+          result=`ssh ${CLUSTER_CAMB} """
+                  mkdir -p ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
+                  cd ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
+                  if [ ! -f ${CI_BUILD_FLAG} ]; then
+                    touch ${CI_BUILD_FLAG}
+                  fi
+                  cat ${CI_BUILD_FLAG}
+                  """`
+          echo "result:${result}"
+          if [ "${result}x" = "${PYTORCH_COMMIT}"x ]; then
+            echo "pytorch:${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT} exist."
           else
-            mkdir -p build && make clean
-            export CMAKE_PREFIX_PATH=${CONDA_PREFIX:-"$(dirname $(which conda))/../"}
-            BUILD_BINARY=0 USE_PRECOMPILED_HEADERS=1 BUILD_TEST=0
-            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=40 \
-            --gres=mlu:${MLU_REQUESTS} python setup.py install --prefix=./install_path
-            echo "${PYTORCH_COMMIT}" > ${CI_BUILD_FLAG}
+            echo "pytorch not exist"
+            exit 1
           fi
-          """
+
+  # Build-Pytorch:
+  #   name: Build pytorch
+  #   needs: [Rsync]
+  #   runs-on: github-poc-ci
+  #   env:
+  #     MLU_REQUESTS: 0
+  #   steps:
+  #     - name: Build pytorch
+  #       run: |
+  #         ssh ${CLUSTER_CAMB} """
+  #         set -e
+  #         cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source
+  #         source scripts/ci_camb_env.sh
+  #         cd ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
+  #         echo "pwd: $(pwd)"
+  #         if [ -f ${CI_BUILD_FLAG} ]; then
+  #           echo "${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT} has been successfully compiled."
+  #         else
+  #           mkdir -p build && make clean
+  #           export CMAKE_PREFIX_PATH=${CONDA_PREFIX:-"$(dirname $(which conda))/../"}
+  #           BUILD_BINARY=0 USE_PRECOMPILED_HEADERS=1 BUILD_TEST=0
+  #           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=40 \
+  #           --gres=mlu:${MLU_REQUESTS} python setup.py install --prefix=./install_path
+  #           echo "${PYTORCH_COMMIT}" > ${CI_BUILD_FLAG}
+  #         fi
+  #         """
 
   Build-POC-Camb:
     name: Build dipu camb
-    needs: [Build-Pytorch]
-    runs-on: tps-diopi-ci
+    needs: [Rsync-Camb]
+    runs-on: github-poc-ci
     env:
       MLU_REQUESTS: 1
     steps:
