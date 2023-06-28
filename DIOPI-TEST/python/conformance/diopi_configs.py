@@ -3772,8 +3772,8 @@ diopi_configs = {
     'remainder_scalar_float': dict(
         name=['remainder'],
         interface=['torch'],
-        atol=1e-1,
-        rtol=1e-2,
+        atol=1e-4,
+        rtol=1e-5,
         para=dict(
             self=[4.3, 10.1, 5.2, 100., -2.5, -3],
         ),
@@ -3782,8 +3782,8 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['other'],
-                    "shape": ((6, ), (4, 1), (1, 2, 8),
-                              (1, 3, 1, 4), (1, 2, 8), (1, 8, 4)),
+                    "shape": ((6, ), (4, 1), (1, 28, 28),
+                              (16, 3, 7, 14, 14), (1, 28, 28), (1, 28, 28)),
                     "dtype": [Dtype.float32, Dtype.float16],
                     "gen_fn": Genfunc.randn,
                 },
@@ -3794,8 +3794,8 @@ diopi_configs = {
     'remainder_scalar_int': dict(
         name=['remainder'],
         interface=['torch'],
-        atol=1e-3,
-        rtol=1e-4,
+        atol=1e-4,
+        rtol=1e-5,
         para=dict(
             self=[4.3, 10.1, 5.2, 100., -2.5, -3],
         ),
@@ -3804,8 +3804,8 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['other'],
-                    "shape": ((6, ), (4, 1), (1, 2, 8),
-                              (1, 3, 1, 4), (1, 2, 8), (1, 8, 4)),
+                    "shape": ((6, ), (4, 1), (1, 28, 28),
+                              (16, 3, 7, 14, 14), (1, 28, 28), (1, 28, 28)),
                     "dtype": [Dtype.int16, Dtype.int32, Dtype.int64, Dtype.int8, Dtype.bool],
                     "gen_fn": dict(fn=Genfunc.randint, low=1, high=4),
                 },
@@ -3816,23 +3816,23 @@ diopi_configs = {
     'remainder_tensor': dict(
         name=['remainder'],
         interface=['torch'],
-        atol=1e-3,
-        rtol=1e-4,
+        atol=1e-4,
+        rtol=1e-5,
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((6, ), (4, 1), (1, 2, 8),
-                              (1, 3, 1, 4), (1, 2, 8), (1, 8, 4)),
+                    "shape": ((6, ), (4, 1), (1, 28, 28),
+                              (16, 3, 7, 14, 14), (1, 28, 28), (1, 28, 28)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,
                               Dtype.int64, Dtype.uint8, Dtype.int8],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ['other'],
-                    "shape": ((6, ), (4, 1), (1, 2, 8),
-                              (1, 3, 1, 4), (1, 2, 8), (1, 8, 4)),
+                    "shape": ((6, ), (4, 1), (1, 28, 28),
+                              (16, 3, 7, 14, 14), (1, 28, 28), (1, 28, 28)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,
                               Dtype.int64, Dtype.uint8, Dtype.int8],
                     "gen_fn": dict(fn=Genfunc.randint, low=1, high=4),
