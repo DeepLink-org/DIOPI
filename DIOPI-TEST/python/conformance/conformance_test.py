@@ -67,14 +67,9 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
     atol = cfg.get('atol_half', 1e-8) if tensor1.dtype == np.float16 else cfg.get('atol', 1e-8)
     tensor1 = np.sum(tensor1) if sum_to_compare else tensor1
     tensor2 = np.sum(tensor2) if sum_to_compare else tensor2
-    if sum_to_compare:
-        passed = np.allclose(tensor1, tensor2, rtol, atol, True)
-    elif (tensor1.size == 0) and (tensor2.size == 0):
-        passed = True
-    else:
-        matched = np.isclose(tensor1, tensor2, rtol, atol, True)
-        mismatched_num = matched.size - np.sum(matched)
-        passed = mismatched_num < default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
+    matched = np.isclose(tensor1, tensor2, rtol, atol, True)
+    mismatched_num = matched.size - np.sum(matched)
+    passed = mismatched_num <= default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
     if record:
         save_precision(cfg, tensor1, tensor2, passed, var_name)
     if not passed:
@@ -89,6 +84,7 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
             logger.debug(f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}, Max of diff is {max_diff}. \
                     \n" + f"{var_name} is {tensor1},\n{var_name}_ref is {tensor2},\nMask is {mask}\n")
         else:
+            assert tensor1.size == tensor2.size, "tensor1 element num does not equal tensor2's."
             diff = np.abs(tensor1 - tensor2)
             max_diff = np.abs(tensor1 - tensor2).max()
             max_diff_index = np.unravel_index(np.argmax(diff), diff.shape)
@@ -338,13 +334,9 @@ def np_allclose(np_values1: dict, np_values2: dict):
     not_passed_name = ""
     for name, value in np_values1.items():
         assert name in np_values2.keys(), f"{name} not exist in np_values2"
-        if (value.size == 0 and np_values2[name].size == 0):
-            passed = True
-        else:
-            # passed = np.allclose(value, np_values2[name])
-            matched = np.isclose(value, np_values2[name])
-            mismatched_num = matched.size - np.sum(matched)
-            passed = mismatched_num < default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
+        matched = np.isclose(value, np_values2[name])
+        mismatched_num = matched.size - np.sum(matched)
+        passed = mismatched_num <= default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
         if not passed:
             not_passed_name = name
             break
