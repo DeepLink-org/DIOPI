@@ -249,7 +249,7 @@ jobs:
   Rsync-Camb:
     name: Rsync code camb
     runs-on: tps-diopi-ci
-    needs: [Rsync]
+    # needs: [Rsync]
     steps:
       - name: clone repo
         run: |
@@ -279,8 +279,8 @@ jobs:
           echo `pwd`
           cd /home/autolink/rsync/sourcecode/pytorch && git checkout master && git pull \
           && git checkout ${PYTORCH_COMMIT} && git submodule update --init --recursive
-          ssh ${CLUSTER_CAMB} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
-          rsync -a --delete ${GITHUB_WORKSPACE}/dipu/ ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
+          ssh ${CLUSTER_CAMB} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/dipu"
+          rsync -a --delete ${GITHUB_WORKSPACE}/dipu/ ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/dipu/
           result=`ssh ${CLUSTER_CAMB} """
                   mkdir -p ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
                   cd ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
@@ -335,12 +335,12 @@ jobs:
         run: |
           ssh ${CLUSTER_CAMB} """
           set -e
-          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} && cp -R source ${GITHUB_JOB}  && cd ${GITHUB_JOB}
+          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/dipu
           export PYTORCH_DIR=${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
           source scripts/ci_camb_env.sh
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=40 \
           --gres=mlu:${MLU_REQUESTS} bash scripts/ci_camb_script.sh build_dipu \
-          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} && exit 1 )
+          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf dipu && exit 1 )
           """
 
   Test-One-Iter-Camb:
