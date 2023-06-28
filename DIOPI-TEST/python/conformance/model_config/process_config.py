@@ -409,7 +409,8 @@ if __name__ == '__main__':
                          'dbnet_config': other_config.dbnet_resnet18_fpnc_1200e_icdar2015_config,
                          'slowfast_config': other_config.slowfast_r50_16x8x1_22e_sthv1_rgb_config,
                          'tsn_config': other_config.tsn_r50_1x1x8_50e_sthv1_rgb_config,
-                         'llama_config': other_config.llama_config}
+                         'llama_config': other_config.llama_config,
+                         'llama_train_config': other_config.llama_train_config}
     config_dict = cv_config_dict
     for k, v in config_dict.items():
         gen_config_code(v, "cv_configs/" + k)
