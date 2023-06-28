@@ -111,16 +111,57 @@ inline diopiMemoryFormat_t probableMemoryFormat(diopiConstTensorHandle_t tensor,
         : diopiMemoryFormat_t::Contiguous);
 }
 
-inline bool isContiguous(diopiSize_t size, diopiSize_t stride, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous) {
-    int64_t totalSize = 1;
-    for (int64_t i = 0; i < size.len; ++i) {
-        totalSize *= size.data[i];
+inline bool isContiguous(diopiSize_t size, diopiSize_t stride_diopi, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous) {
+    auto dim = size.len;
+    auto shape = size.data;
+    auto strides = stride_diopi.data;
+    int64_t stride = 1;
+        
+    if (format == diopiMemoryFormat_t::Contiguous) {
+        for (int64_t i = dim - 1; i >= 0; i--) {
+            const auto& shapeD = shape[i];
+            if (shapeD != 1) {
+                if (strides[i] != stride) {
+                    return false;
+                }
+            }
+            stride *= shapeD;
+        }
+    } else if (format == diopiMemoryFormat_t::ChannelsLast) {
+        if (dim != 4) return false;
+        for (auto& i : {1, 3, 2, 0}) {
+            const auto& shapeD = shape[i];
+            if (shapeD != 1) {
+                // shape_d != 1 help dealing with shape like [2, 2048, 1, 1]
+                if (strides[i] != stride) {
+                    return false;
+                }
+            }
+            stride *= shapeD;
+        }
+    } else if (format == diopiMemoryFormat_t::ChannelsLast3d) {
+        if (dim != 5) return false;
+        for (auto& i : {1, 4, 3, 2, 0}) {
+            const auto& shapeD = shape[i];
+            if (shapeD != 1) {
+                if (strides[i] != stride) {
+                    return false;
+                }
+            }
+            stride *= shape[i];
+        } 
     }
-    if (totalSize == 0) return false;
-    if (format == diopiMemoryFormat_t::ChannelsLast && size.len != 4) return false;
-    auto st = calcStrides(size.len, size, format);
-    for (int64_t i = 0; i < size.len; ++i) {
-        if (st[i] != stride.data[i] && size.data[i] > 1) return false;
+    else if (format == diopiMemoryFormat_t::ChannelsLast1d) {
+        if (dim != 3) return false;
+        for (auto& i : {1, 2, 0}) {
+            const auto& shapeD = shape[i];
+            if (shapeD != 1) {
+                if (strides[i] != stride) {
+                    return false;
+                }
+            }
+            stride *= shape[i];
+        }
     }
     return true;
 }
