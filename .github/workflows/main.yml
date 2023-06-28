@@ -258,7 +258,7 @@ jobs:
           echo ${CLUSTER_CAMB}
           echo `pwd`
           mkdir -p ${GITHUB_WORKSPACE} 
-          cd ${GITHUB_WORKSPACE} && rm -rf dipu && git clone https://github.com/DeepLink-org/dipu.git && cd dipu # latest
+          cd ${GITHUB_WORKSPACE} && rm -rf dipu && git clone https://github.com/DeepLink-org/dipu.git && cd dipu && git checkout ci_test  # latest
 
           cd ${GITHUB_WORKSPACE}/dipu/third_party && rm -rf DIOPI && git clone https://github.com/DeepLink-org/DIOPI.git && cd DIOPI
           if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
