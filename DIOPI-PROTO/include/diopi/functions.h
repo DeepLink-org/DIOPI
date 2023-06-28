@@ -85,19 +85,19 @@ DIOPI_API diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diop
  * @param momentum Used to calculate the running mean and variance during runtime. type = [float32, float64]
  * @param eps The value added to the denominator during batch normalization to ensure numerical stability. type = [float32, float64]
  * @param[out] out normalized result. type = [float32, float16, float64].
- * @param[out] save_mean Mean tensor,the mean value for each feature channel of the input tensor. type = [float32, float16, float64].
- * @param[out] save_invstd Backup of inverse standard deviation computed during training. type = [float32, float16, float64].
+ * @param save_mean Mean tensor,the mean value for each feature channel of the input tensor. type = [float32, float16, float64].
+ * @param save_invstd Backup of inverse standard deviation computed during training. type = [float32, float16, float64].
  */
 DIOPI_API diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean, diopiTensorHandle_t save_invstd,
                                       diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias,
-                                      diopiConstTensorHandle_t running_mean, diopiConstTensorHandle_t running_var, bool training, double momentum, double eps);
+                                      diopiTensorHandle_t running_mean, diopiTensorHandle_t running_var, bool training, double momentum, double eps);
 
 /**
  * @brief compute the backward pass of batch normalization
  * @param[in] grad_output Gradient of normalized layer output, with the same shape as the forward pass output. type=[float32, float16, float64].
  * @param[out] grad_input Gradient of the input data, with the same shape as the input data. type = [float32, float16, float64].
- * @param[out] grad_weight Gradient of the weight parameter, with the same shape as the weight parameter. type = [float32, float16, float64].
- * @param[out] grad_bias Gradient of the bias parameter, with the same shape as the bias parameter. type = [float32, float16, float64].
+ * @param grad_weight Gradient of the weight parameter, with the same shape as the weight parameter. type = [float32, float16, float64].
+ * @param grad_bias Gradient of the bias parameter, with the same shape as the bias parameter. type = [float32, float16, float64].
  * @sa Other parameters refer to diopiBatchNorm().
  */
 DIOPI_API diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,

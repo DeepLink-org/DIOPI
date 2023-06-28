@@ -121,18 +121,12 @@ def get_functions_support(source_dir):
     param_dtypes = {}
     func_name = ''
     sa_func = None
-    ins_from_comment = []
-    is_in = False
     for idx, row in enumerate(content):
         if row.startswith(' * type'):
             assert len(func_dtypes) == 0
             r = re.match(r' \* type *= *\[(.*)\].*', row)
             func_dtypes = r.group(1).replace(' ', '').split(',')
         elif row.startswith(' * @param'):
-            if '[in]' in row:
-                is_in = True
-            elif '[out]' in row:
-                is_in = False
             if 'type' in row:
                 row_new = row
             elif not content[idx + 1].startswith(' */') and not content[idx + 1].startswith(' * @'):
@@ -154,8 +148,6 @@ def get_functions_support(source_dir):
                 dtypes_str = r.group(1)
             dtypes = dtypes_str.replace(' ', '').split(',')
             param_dtypes[param_name] = dtypes
-            if is_in:
-                ins_from_comment.append(param_name)
         elif row.startswith(' * @sa'):
             sa_func = row[row.find('diopi'):row.find('(')]
         elif row.startswith("DIOPI"):
@@ -184,7 +176,6 @@ def get_functions_support(source_dir):
                 funcs_info[func_name]['ins_vector'] = ins_v
             funcs_info[func_name]['ins'] = {}
             funcs_info[func_name]['outs'] = {}
-            funcs_info[func_name]['ins_outs'] = {}
             def insert(type, func_dtypes, tensor, param_dtypes):
                 if tensor not in param_dtypes.keys():
                     funcs_info[func_name][type][tensor] = func_dtypes
@@ -193,18 +184,13 @@ def get_functions_support(source_dir):
             for tensor in ins:
                 insert('ins', func_dtypes, tensor, param_dtypes)
             for tensor in outs:
-                if tensor in ins_from_comment:
-                    insert('ins_outs', func_dtypes, tensor, param_dtypes)
-                else:
-                    insert('outs', func_dtypes, tensor, param_dtypes)
+                insert('outs', func_dtypes, tensor, param_dtypes)
             if sa_func:
                 funcs_info[func_name]['sa'] = sa_func
             func_dtypes = []
             param_dtypes = {}
             func_name = ''
             sa_func = None
-            ins_from_comment = []
-            is_in = False
     for func in funcs_info:
         if 'sa' in funcs_info[func].keys():
             assert funcs_info[func]['sa'] in funcs_info.keys()
@@ -214,8 +200,6 @@ def get_functions_support(source_dir):
                     funcs_info[func]['ins'][i] = from_func_info['ins'][i]
                 elif i in funcs_info[func]['outs']:
                     funcs_info[func]['outs'][i] = from_func_info['ins'][i]
-                elif i in funcs_info[func]['ins_outs']:
-                    funcs_info[func]['ins_outs'][i] = from_func_info['ins'][i]
                 if 'grad_' + i in funcs_info[func]['outs']:
                     funcs_info[func]['outs']['grad_' + i] = from_func_info['ins'][i]
             for out in from_func_info['outs']:
@@ -223,19 +207,8 @@ def get_functions_support(source_dir):
                     funcs_info[func]['ins'][out] = from_func_info['outs'][out]
                 elif out in funcs_info[func]['outs']:
                     funcs_info[func]['outs'][out] = from_func_info['outs'][out]
-                elif out in funcs_info[func]['ins_outs']:
-                    funcs_info[func]['ins_outs'][out] = from_func_info['outs'][out]
                 if 'grad_' + out in funcs_info[func]['ins']:
                     funcs_info[func]['ins']['grad_' + out] = from_func_info['outs'][out]
-            for io in from_func_info['ins_outs']:
-                if io in funcs_info[func]['ins']:
-                    funcs_info[func]['ins'][io] = from_func_info['ins_outs'][io]
-                elif io in funcs_info[func]['outs']:
-                    funcs_info[func]['outs'][io] = from_func_info['ins_outs'][io]
-                elif io in funcs_info[func]['ins_outs']:
-                    funcs_info[func]['ins_outs'][io] = from_func_info['ins_outs'][io]
-                if 'grad_' + io in funcs_info[func]['ins']:
-                    funcs_info[func]['ins']['grad_' + io] = from_func_info['ins_outs'][io]
     return funcs_info
 
 
@@ -311,8 +284,7 @@ def analysis_configs(config, funcs_info):
                     op_dict[op_name]['cast'] = op_cast
                 if 'tensor_dtype' in op_cfg.keys():
                     for tensor in op_cfg['tensor_dtype']:
-                        assert tensor in funcs_info[op_name]['ins'].keys() or  tensor in funcs_info[op_name]['outs'].keys() \
-                            or tensor in funcs_info[op_name]['ins_outs'].keys()
+                        assert tensor in funcs_info[op_name]['ins'].keys() or  tensor in funcs_info[op_name]['outs'].keys()
                         tensor_cast = deal_dtype(op_name, op_cfg['tensor_dtype'][tensor], funcs_info, tensor)
                         op_tensor[tensor] = {}
                         op_tensor[tensor]['cast'] = tensor_cast
@@ -337,8 +309,7 @@ def analysis_configs(config, funcs_info):
                         if tensor_name not in op_tensor.keys():
                             op_tensor[tensor_name] = {}
                         op_tensor[tensor_name]['contiguous'] = True
-                for tensor in list(funcs_info[op_name]['ins'].keys())+list(funcs_info[op_name]['outs'].keys()) \
-                    + list(funcs_info[op_name]['ins_outs'].keys()):
+                for tensor in list(funcs_info[op_name]['ins'].keys())+list(funcs_info[op_name]['outs'].keys()):
                     if tensor not in op_tensor.keys():
                         op_tensor[tensor] = {}
                     if 'cast' not in op_tensor[tensor]:
@@ -393,8 +364,7 @@ def autogen_op_adaptor(op_configs, func_infos):
             cast_ins = []
             cast_outs = []
             new_input = []
-            for tensor in list(func_infos[func]['ins'].keys()) + list(func_infos[func]['outs'].keys()) \
-                + list(func_infos[func]['ins_outs'].keys()):
+            for tensor in list(func_infos[func]['ins'].keys()) + list(func_infos[func]['outs'].keys()):
                 tensor_info = op_config['tensor'][tensor] if op_config else None
                 contiguous_str = ', true' if (tensor_info and 'contiguous' in tensor_info.keys() \
                                 and tensor_info['contiguous']) or contiguous else ''
@@ -419,14 +389,15 @@ for (int i = 0; i < ${num}; ++i) {
                                     cast=', ' + cast_method if cast_method else '', memory_format=format_str if format_str else '', tensor=tensor, new_tensor=new_in, contiguous=contiguous_str)
                         cast_ins.append(cast_impl)
                 outs = func_infos[func]['outs']
-                ios = func_infos[func]['ins_outs']
-                if tensor in list(outs.keys()) + list(ios.keys()):
-                    if ('Inp' in op_name and tensor == 'input') or tensor in ios.keys():
+                if tensor in outs:
+                    if 'Inp' in op_name and tensor == 'input':
                         is_inplace = 'true'
                     else:
                         is_inplace = 'false'
                     cast_impl = 'auto {tensor}Wrapper = DiopiTensorWrapper<{cast}>(ctx, {tensor}, {is_inplace}{memory_format});'.format(
                                 cast=cast_method, memory_format=format_str if format_str else '', tensor=tensor, is_inplace=is_inplace, contiguous=contiguous_str)
+                    # import pdb
+                    # pdb.set_trace()
                     cast_outs.append(cast_impl)
             new_input.append('diopiConstTensorHandle_t ' + ','.join(new_ins) + ';') if len(new_ins) else ''
             call_args = []
@@ -436,7 +407,7 @@ for (int i = 0; i < ${num}; ++i) {
                     new_name = 'new' + name.capitalize() + '.data()'
                 elif name in ins.keys():
                     new_name = 'new' + name.capitalize()
-                elif name in outs.keys() or name in ios.keys():
+                elif name in outs.keys():
                     new_name = name + 'Wrapper'
                 else:
                     new_name = name
