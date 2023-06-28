@@ -338,6 +338,8 @@ jobs:
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/dipu
           export PYTORCH_DIR=${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
           source scripts/ci_camb_env.sh
+          echo $LD_LIBRARY_PATH
+          echo $LIBRARY_PATH
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=40 \
           --gres=mlu:${MLU_REQUESTS} bash scripts/ci_camb_script.sh build_dipu \
           || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/  && exit 1 )
