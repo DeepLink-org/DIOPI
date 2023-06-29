@@ -13,7 +13,6 @@
 
 namespace impl {
 namespace camb {
-extern "C" {
 
 std::vector<int64_t> inferSize(std::vector<int64_t> a, std::vector<int64_t> b) {
     int32_t dimsA = a.size();
@@ -31,6 +30,8 @@ std::vector<int64_t> inferSize(std::vector<int64_t> a, std::vector<int64_t> b) {
     }
     return expandedSize;
 }
+
+extern "C" {
 
 diopiError_t expand(diopiContextHandle_t ctx, DiopiTensor inputTensor, DiopiTensor outTensor) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -51,7 +52,7 @@ diopiError_t expand(diopiContextHandle_t ctx, DiopiTensor inputTensor, DiopiTens
 }
 
 diopiError_t diopiCdist(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input1, diopiConstTensorHandle_t input2, double p,
-                        const int64_t *compute_mode) {
+                        const int64_t *computeMode) {
     DIOPI_CHECK(p == 1.0, "Currently only 1-norm is supported by cnnl");
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
@@ -95,7 +96,7 @@ diopiError_t diopiCdist(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     std::vector<int64_t> input2TensorExpandSize(expandBatchPortion);
     input2TensorExpandSize.insert(input2TensorExpandSize.end(), {r2, c2});
 
-    int expandBatchProduct = std::accumulate(expandBatchPortion.begin(), expandBatchPortion.end(), 1, std::multiplies<int64_t>());
+    int64_t expandBatchProduct = std::accumulate(expandBatchPortion.begin(), expandBatchPortion.end(), 1LL, std::multiplies<>());
 
     std::vector<int64_t> input1ShapeCnnl{expandBatchProduct, r1, c1};
     DiopiTensor input1TensorExpand = requiresTensor(ctx, input1TensorExpandSize, input1Tensor.dtype());
@@ -124,14 +125,14 @@ diopiError_t diopiCdist(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     return diopiSuccess;
 }
 
-diopiError_t diopiCdistBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input1,
+diopiError_t diopiCdistBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input1,
                                 diopiConstTensorHandle_t input2, double p, diopiConstTensorHandle_t cdist) {
     DIOPI_CHECK(p == 1.0, "Currently only 1-norm is supported by cnnl");
 
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    DiopiTensor gradInputTensor(grad_input);
-    DiopiTensor gradOutputTensor(grad_output);
+    DiopiTensor gradInputTensor(gradInput);
+    DiopiTensor gradOutputTensor(gradOutput);
     DiopiTensor input1Tensor(input1);
     DiopiTensor input2Tensor(input2);
     DiopiTensor cdistTensor(cdist);
@@ -159,7 +160,7 @@ diopiError_t diopiCdistBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gr
     std::vector<int64_t> input2TensorExpandSize(expandBatchPortion);
     input2TensorExpandSize.insert(input2TensorExpandSize.end(), {r2, c2});
 
-    int expandBatchProduct = std::accumulate(expandBatchPortion.begin(), expandBatchPortion.end(), 1, std::multiplies<int64_t>());
+    int64_t expandBatchProduct = std::accumulate(expandBatchPortion.begin(), expandBatchPortion.end(), 1LL, std::multiplies<>());
 
     // Gracefully handle empty Tensors
     if (r1 == 0 || r2 == 0 || c1 == 0 || expandBatchProduct == 0) {
