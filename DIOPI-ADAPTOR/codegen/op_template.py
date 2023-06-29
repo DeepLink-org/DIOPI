@@ -171,29 +171,42 @@ static std::vector<diopiMemoryFormat_t> defaultFormats{};
 ${cast_strategy}
 
 diopiMemoryFormat_t getTargetMemoryFormat(int ndims, std::vector<diopiMemoryFormat_t> supportMemoryFormats) {
-    if (ndims == 3) {
-        for (auto i : supportMemoryFormats) {
-            if (i == diopiMemoryFormat_t::ChannelsLast1d || i == diopiMemoryFormat_t::Contiguous) {
-                return i;
+    switch (ndims) {
+        case 1:             
+        case 2: 
+            for (auto i : supportMemoryFormats) {
+                if (i == diopiMemoryFormat_t::Contiguous) {
+                    return i;
+                }
+            };
+            break;
+        case 3: {
+            for (auto i : supportMemoryFormats) {
+                if (i == diopiMemoryFormat_t::ChannelsLast1d || i == diopiMemoryFormat_t::Contiguous) {
+                    return i;
+                }
             }
+            break;
         }
-    }
-    else if(ndims == 4) {
-        for (auto i : supportMemoryFormats){
-            if (i == diopiMemoryFormat_t::ChannelsLast || i == diopiMemoryFormat_t::Contiguous) {
-                return i;
+        case 4: {
+            for (auto i : supportMemoryFormats){
+                if (i == diopiMemoryFormat_t::ChannelsLast || i == diopiMemoryFormat_t::Contiguous) {
+                    return i;
+                }
             }
+            break;
         }
-    }
-    else if(ndims == 5) {
-        for (auto i : supportMemoryFormats){
-            if (i == diopiMemoryFormat_t::ChannelsLast3d || i == diopiMemoryFormat_t::Contiguous) {
-                return i;
+        case 5: {
+            for (auto i : supportMemoryFormats){
+                if (i == diopiMemoryFormat_t::ChannelsLast3d || i == diopiMemoryFormat_t::Contiguous) {
+                    return i;
+                }
             }
+            break;
         }
-    }
-    else {
-        assert(false && "ndims not supported.");
+        default: {
+            assert(false && "ndims not supported.");
+        }
     }
 }
 
