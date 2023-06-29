@@ -11,13 +11,13 @@
     layout: NCHW
 
 - diopiUpsampleNearest:
-    layout: NHWC
+    layout: NHWC, NDHWC
 
 - diopiUpsampleNearestBackward:
-    layout: NHWC
+    layout: NHWC, NDHWC
 
 - diopiUpsampleLinear:
-    layout: NHWC
+    layout: NLC, NHWC, NDHWC
 
 - diopiUpsampleLinearBackward:
     layout: NLC, NHWC, NDHWC

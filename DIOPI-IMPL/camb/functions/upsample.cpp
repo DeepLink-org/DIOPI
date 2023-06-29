@@ -20,11 +20,24 @@ diopiError_t upsampleInternal(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         return diopiSuccess;
     }
 
-    DIOPI_CHECK(inputTensor.dim() == 4, "Camb kernel only supports Upsample 2d now.")
-    DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast), "inputTensor's memory format should be channelsLast");
-    DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast), "outputTensor's memory format should be channelsLast");
-    // cnnlTensorLayout_t layout = inputTensor.dim() > 4 ? CNNL_LAYOUT_NDHWC : CNNL_LAYOUT_NHWC;
-    cnnlTensorLayout_t layout = CNNL_LAYOUT_NHWC;
+    auto dim = inputTensor.dim();
+    cnnlTensorLayout_t layout;
+    if (3 == dim) {
+        DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast1d), "inputTensor's memory format should be channelsLast1d");
+        DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast1d), "outputTensor's memory format should be channelsLast1d");
+        layout = CNNL_LAYOUT_NLC;
+    } else if (4 == dim) {
+        DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast), "inputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast), "outputTensor's memory format should be channelsLast");
+        layout = CNNL_LAYOUT_NHWC;
+    } else if (5 == dim) {
+        DIOPI_CHECK(interpMode != CNNL_INTERP_NEAREST, "nearest upsample for 5d tensor is not supported by camb kernel.");
+        DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast3d), "inputTensor's memory format should be channelsLast3d");
+        DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast3d), "outputTensor's memory format should be channelsLast3d");
+        layout = CNNL_LAYOUT_NDHWC;
+    } else {
+        DIOPI_CHECK(false, "Dim of input tensor should be in [3,4,5].");
+    }
 
     CnnlTensorDesc inputDesc(inputTensor, layout);
     CnnlTensorDesc outputDesc(outputTensor, layout);
@@ -58,11 +71,23 @@ diopiError_t upsampleBackwardInternal(diopiContextHandle_t ctx, diopiTensorHandl
         return diopiSuccess;
     }
 
-    DIOPI_CHECK(inputTensor.dim() == 4 || inputTensor.dim() == 3, "Camb kernel only supports Upsample 2d now.")
-    DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast), "inputTensor's memory format should be channelsLast");
-    DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast), "outputTensor's memory format should be channelsLast");
-
-    cnnlTensorLayout_t layout = CNNL_LAYOUT_NHWC;
+    auto dim = inputTensor.dim();
+    cnnlTensorLayout_t layout;
+    if (3 == dim) {
+        DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast1d), "inputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast1d), "outputTensor's memory format should be channelsLast");
+        layout = CNNL_LAYOUT_NLC;
+    } else if (4 == dim) {
+        DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast), "inputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast), "outputTensor's memory format should be channelsLast");
+        layout = CNNL_LAYOUT_NHWC;
+    } else if (5 == dim) {
+        DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast3d), "inputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast3d), "outputTensor's memory format should be channelsLast");
+        layout = CNNL_LAYOUT_NDHWC;
+    } else {
+        DIOPI_CHECK(false, "Dim of input tensor should be in [3,4,5].");
+    }
 
     CnnlTensorDesc inputDesc(inputTensor, layout);
     CnnlTensorDesc outputDesc(outputTensor, layout);
@@ -91,8 +116,7 @@ extern "C" diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTenso
     DiopiTensor inputTensor(input);
 
     if (3 == inputTensor.dim() && 0 == strcmp(mode, "linear")) {
-        // DIOPI_CALL(upsampleInternal(ctx, out, input, alignCorners, !alignCorners, CNNL_INTERP_LINEAR));
-        DIOPI_CHECK(false, "3d upsample is not supported now. We will support this after adaptors support 3d contiguous (NLC)");
+        DIOPI_CALL(upsampleInternal(ctx, out, input, alignCorners, !alignCorners, CNNL_INTERP_LINEAR));
     } else if (4 == inputTensor.dim()) {
         if (0 == strcmp(mode, "bilinear")) {
             DIOPI_CALL(upsampleInternal(ctx, out, input, alignCorners, !alignCorners, CNNL_INTERP_BILINEAR))
@@ -103,8 +127,7 @@ extern "C" diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTenso
             return diopiErrorOccurred;
         }
     } else if (5 == inputTensor.dim() && 0 == strcmp(mode, "trilinear")) {
-        DIOPI_CHECK(false, "5d upsample is not supported now. We will support this after adaptors support 5d contiguous");
-        // DIOPI_CALL(upsampleInternal(ctx, out, input, alignCorners, !alignCorners, CNNL_INTERP_TRILINEAR))
+        DIOPI_CALL(upsampleInternal(ctx, out, input, alignCorners, !alignCorners, CNNL_INTERP_TRILINEAR))
     } else {
         DIOPI_CHECK(false, "interpolate mode type not supported");
         return diopiErrorOccurred;
@@ -119,8 +142,7 @@ extern "C" diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, di
     auto dim = inputTensor.dim();
 
     if (3 == dim && 0 == strcmp(mode, "linear")) {
-        DIOPI_CHECK(false, "3d upsample is not supported now. We will support this after adaptors support 3d contiguous (NLC)");
-        // DIOPI_CALL(upsampleBackwardInternal(ctx, gradInput, gradOutput, alignCorners, !alignCorners, CNNL_INTERP_BACKWARD_LINEAR))
+        DIOPI_CALL(upsampleBackwardInternal(ctx, gradInput, gradOutput, alignCorners, !alignCorners, CNNL_INTERP_BACKWARD_LINEAR))
     } else if (4 == dim) {
         if (0 == strcmp(mode, "bilinear")) {
             DIOPI_CALL(upsampleBackwardInternal(ctx, gradInput, gradOutput, alignCorners, !alignCorners, CNNL_INTERP_BACKWARD_BILINEAR))
@@ -130,8 +152,7 @@ extern "C" diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, di
             DIOPI_CHECK(false, "interpolate mode type not supported.");
         }
     } else if (5 == dim && 0 == strcmp(mode, "trilinear")) {
-        DIOPI_CHECK(false, "5d upsample is not supported now. We will support this after adaptors support 5d contiguous");
-        // DIOPI_CALL(upsampleBackwardInternal(ctx, gradInput, gradOutput, alignCorners, !alignCorners, CNNL_INTERP_BACKWARD_TRILINEAR))
+        DIOPI_CALL(upsampleBackwardInternal(ctx, gradInput, gradOutput, alignCorners, !alignCorners, CNNL_INTERP_BACKWARD_TRILINEAR))
     } else {
         DIOPI_CHECK(false, "interpolate mode type not supported.");
     }
