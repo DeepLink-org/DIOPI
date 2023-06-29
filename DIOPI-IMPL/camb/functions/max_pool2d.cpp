@@ -70,6 +70,8 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     const int64_t dilation0 = dilation.data[0];
     const int64_t dilation1 = dilation.len == 1 ? dilation0 : dilation.data[1];
 
+    DIOPI_CHECK(dilation0 == 1 && dilation1 == 1, "Camb kernel only support dilation == 1");
+
     // calculate padding coefficients
     auto pl = 0, pr = 0, pu = 0, pd = 0;
     pu = pd = padH;
@@ -158,6 +160,8 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     const int64_t padW = padding.len == 1 ? padH : padding.data[1];
     const int64_t dilation0 = dilation.data[0];
     const int64_t dilation1 = dilation.len == 1 ? dilation0 : dilation.data[1];
+
+    DIOPI_CHECK(dilation0 == 1 && dilation1 == 1, "Camb kernel only support dilation == 1");
 
     // calculate padding coefficients
     auto pl = 0, pr = 0, pu = 0, pd = 0;
