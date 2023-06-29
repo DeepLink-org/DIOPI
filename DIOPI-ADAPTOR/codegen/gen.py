@@ -29,7 +29,10 @@ str_to_diopi_dtype = {
 
 str_to_diopi_format = {
     'NCHW': 'diopiMemoryFormat_t::Contiguous',
-    'NHWC': 'diopiMemoryFormat_t::ChannelsLast'
+    'NCL': 'diopiMemoryFormat_t::Contiguous',
+    'NLC': 'diopiMemoryFormat_t::ChannelsLast1d',
+    'NHWC': 'diopiMemoryFormat_t::ChannelsLast',
+    'NDHWC': 'diopiMemoryFormat_t::ChannelsLast3d'
 }
 
 
@@ -43,11 +46,10 @@ cast_strategy = {
     'Default' : {
         'int64': 'int32',
         'float64' : 'float32',
-        'bool' : 'int32'
     },
 
     'CastFloatOnly' : {
-        'int64': 'int32'
+        'float64': 'float32'
     },
 
     'LogicOp' : {
@@ -293,7 +295,7 @@ def analysis_configs(config, funcs_info):
                     for layout in layouts:
                         if layout == '':
                             continue
-                        if layout == 'NHWC' or layout == 'NCHW':
+                        if layout == 'NHWC' or layout == 'NCHW' or layout == 'NLC' or layout == 'NCL' or layout=='NDHWC' or layout=='NCDHW':
                             op_layouts.append(layout)
                         else:
                             r = re.match(r'(.*)\((.*)\)', layout)

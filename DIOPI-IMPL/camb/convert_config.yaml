@@ -20,4 +20,4 @@
     layout: NHWC
 
 - diopiUpsampleLinearBackward:
-    layout: NHWC
+    layout: NLC, NHWC, NDHWC
