@@ -418,13 +418,9 @@ device_configs = {
 
     'cdist': dict(
         name=['cdist'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['x1'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
+        para=dict(
+            # Currently, p must be equal 1.0 due to the limitation of Cambrian operator.
+            p=[Skip(2), Skip(0), Skip(0.5), Skip(float("inf"))],
         ),
     ),
 
