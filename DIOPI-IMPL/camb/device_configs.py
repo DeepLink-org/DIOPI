@@ -861,9 +861,7 @@ device_configs = {
 
     'interpolate': dict(
         name=["interpolate"],
-        para=dict(
-            mode=[Skip('trilinear'), Skip('linear')]
-        ),
+        atol=1e-4,
         tensor_para=dict(
             args=[
                 {
