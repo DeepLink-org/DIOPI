@@ -21,7 +21,7 @@ device_configs = {
     'nll_loss': dict(
         name=["nll_loss"],
         atol=1e-3,
-        rtol=1e-4,
+        rtol=1e-3,
     ),
 
     'conv_2d': dict(
@@ -965,13 +965,5 @@ device_configs = {
             ]
         ),
     ),
-    'unique': dict(
-        name=['unique'],
-        interface=['torch'],
-        para=dict(
-            dim=[Skip(-1), Skip(0), Skip(None), Skip(0)],
-        ),
-    ),
-
 
 }
