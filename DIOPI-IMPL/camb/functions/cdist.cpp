@@ -78,17 +78,14 @@ diopiError_t diopiCdist(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
         return diopiSuccess;
     } else if (c1 == 0) {
         diopiScalar_t value;
-        if (DiopiDataType::isInteger(outTensor.dtype()))
-        {
+        if (DiopiDataType::isInteger(outTensor.dtype())) {
             value = {outTensor.dtype(), 0};
-        }
-        else
-        {
+        } else {
             value = {outTensor.dtype(), 0.0};
         }
         DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(outTensor), &value));
         return diopiSuccess;
-    } 
+    }
 
     std::vector<int64_t> batchInput1Tensor(input1Tensor.shape().begin(), input1Tensor.shape().begin() + dim1 - 2);
     std::vector<int64_t> batchInput2Tensor(input2Tensor.shape().begin(), input2Tensor.shape().begin() + dim2 - 2);
@@ -167,12 +164,9 @@ diopiError_t diopiCdistBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gr
     // Gracefully handle empty Tensors
     if (r1 == 0 || r2 == 0 || c1 == 0 || expandBatchProduct == 0) {
         diopiScalar_t value;
-        if (DiopiDataType::isInteger(gradInputTensor.dtype()))
-        {
+        if (DiopiDataType::isInteger(gradInputTensor.dtype())) {
             value = {gradInputTensor.dtype(), 0};
-        }
-        else
-        {
+        } else {
             value = {gradInputTensor.dtype(), 0.0};
         }
         DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(gradInputTensor), &value));
@@ -200,7 +194,8 @@ diopiError_t diopiCdistBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gr
     std::vector<int64_t> cdistShapeCnnl{expandBatchProduct, r1, r2};
     cdistTensor.reshape(cdistShapeCnnl);
 
-    DIOPI_CHECK(gradInputTensorExpand.numel() == gradInputTensorTmp.numel(), "Currently, the broadcast of the tensor input1 is not supported at the time of back propagation");
+    DIOPI_CHECK(gradInputTensorExpand.numel() == gradInputTensorTmp.numel(),
+                "Currently, the broadcast of the tensor input1 is not supported at the time of back propagation");
 
     CnnlTensorDesc gradInputDesc(gradInputTensorExpand, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc gradOutputDesc(gradOutputTensor, CNNL_LAYOUT_ARRAY);
