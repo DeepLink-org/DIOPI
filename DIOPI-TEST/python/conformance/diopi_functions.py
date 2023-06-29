@@ -2380,31 +2380,10 @@ def cdist_backward(x1, grad_outputs, output, x2, p, **kwargs):
     dim2 = len(sizeX2)
     assert dim1 > 1 and dim2 > 1, "cdist only supports at least 2D tensors"
     assert sizeX1[-1] == sizeX2[-1], "X1 and X2 must have the same number of elements at the last dimension"
-    column1 = sizeX1[-1]
-    row1 = sizeX1[-2]
-    batch_tensor1 = sizeX1[:-2]
-    batch_tensor2 = sizeX2[:-2]
-    expand_batch_portion = infer_size(batch_tensor1, batch_tensor2)
-    grad_x1_shape = expand_batch_portion + [row1, column1]
-    grad_x1 = Tensor(grad_x1_shape, x1.get_dtype())
+    grad_x1 = Tensor(sizeX1, x1.get_dtype())
     func = check_function("diopiCdistBackward")
     ret = func(x1.context(), grad_x1, grad_outputs[0], x1,
                x2, p, output)
-    grad_x1 = grad_x1.numpy()
-    i = len(grad_x1.shape) - 1
-    j = dim1 - 1
-    while i >= 0 and j >= 0 and len(grad_x1.shape) != dim1:
-        while i > 0 and j > 0 and grad_x1.shape[i] != sizeX1[j]:
-            grad_x1 = np.sum(grad_x1, axis=i)
-            i -= 1
-        j = j - 1
-        i = i - 1
-    if i == 0 and j == -1:
-        grad_x1 = np.sum(grad_x1, axis=i)
-    for index in range(dim1):
-        if sizeX1[index] != grad_x1.shape[index]:
-            grad_x1 = np.sum(grad_x1, axis=index, keepdims=True)
-    grad_x1 = Tensor.from_numpy(grad_x1)
     check_returncode(ret)
     return {'x1': grad_x1}
 
