@@ -116,7 +116,7 @@ inline bool isContiguous(diopiSize_t size, diopiSize_t stride_diopi, diopiMemory
     auto shape = size.data;
     auto strides = stride_diopi.data;
     int64_t stride = 1;
-        
+
     if (format == diopiMemoryFormat_t::Contiguous) {
         for (int64_t i = dim - 1; i >= 0; i--) {
             const auto& shapeD = shape[i];
@@ -149,7 +149,7 @@ inline bool isContiguous(diopiSize_t size, diopiSize_t stride_diopi, diopiMemory
                 }
             }
             stride *= shape[i];
-        } 
+        }
     }
     else if (format == diopiMemoryFormat_t::ChannelsLast1d) {
         if (dim != 3) return false;
@@ -172,8 +172,8 @@ ${cast_strategy}
 
 diopiMemoryFormat_t getTargetMemoryFormat(int ndims, std::vector<diopiMemoryFormat_t> supportMemoryFormats) {
     switch (ndims) {
-        case 1:             
-        case 2: 
+        case 1:
+        case 2:
             for (auto i : supportMemoryFormats) {
                 if (i == diopiMemoryFormat_t::Contiguous) {
                     return i;
@@ -205,7 +205,7 @@ diopiMemoryFormat_t getTargetMemoryFormat(int ndims, std::vector<diopiMemoryForm
             break;
         }
         default: {
-            assert(false && "ndims not supported.");
+            return diopiMemoryFormat_t::Contiguous;
         }
     }
 }
