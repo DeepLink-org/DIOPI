@@ -57,7 +57,7 @@
 namespace impl {
 namespace camb {
 
-enum class MemoryFormat : size_t { Contiguous = 0, ChannelsLast = 1, ChannelsLast3d = 2, Preserve = 3 };
+using MemoryFormat = diopiMemoryFormat_t;
 
 class DiopiDataType final {
 public:
