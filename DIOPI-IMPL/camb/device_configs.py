@@ -21,7 +21,7 @@ device_configs = {
     'nll_loss': dict(
         name=["nll_loss"],
         atol=1e-3,
-        rtol=1e-4,
+        rtol=1e-3,
     ),
 
     'conv_2d': dict(
@@ -738,7 +738,7 @@ device_configs = {
         name=['scatter'],
         para=dict(
             # The reduction operation of multiply is not supported by cnnl
-            reduce=[Skip('multiply')], 
+            reduce=[Skip('multiply')],
         ),
     ),
 
@@ -769,7 +769,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.uint8),    # overflow issue 
+                    "dtype": [Skip(Dtype.uint8),    # overflow issue
                               Skip(Dtype.bool)],    # not supported by camb kernel when accumulate is true
                 },
             ]

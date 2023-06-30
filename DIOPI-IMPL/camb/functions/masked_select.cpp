@@ -44,7 +44,9 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t *ou
 
     std::vector<int64_t> numTrueShape(1, 1);
     auto numTrue = requiresTensor(ctx, numTrueShape, diopi_dtype_uint32);
-#if (CNNL_MAJOR >= 1 && CNNL_MINOR >= 15 && CNNL_PATCHLEVEL >= 2)
+
+// version should be greater than 1.15.2
+#if (CNNL_MAJOR * 10000 + CNNL_MINOR * 100 + CNNL_PATCHLEVEL >= 11502)
     DIOPI_CALLCNNL(cnnlMasked_v4(handle,
                                  maskMode,
                                  inputDesc.get(),
@@ -121,7 +123,8 @@ DIOPI_API diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopi
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-#if (CNNL_MAJOR >= 1 && CNNL_MINOR >= 15 && CNNL_PATCHLEVEL >= 2)
+// version should be greater than 1.15.2
+#if (CNNL_MAJOR * 10000 + CNNL_MINOR * 100 + CNNL_PATCHLEVEL >= 11502)
     DIOPI_CALLCNNL(cnnlMasked_v4(handle,
                                  maskMode,
                                  gradInputDesc.get(),
