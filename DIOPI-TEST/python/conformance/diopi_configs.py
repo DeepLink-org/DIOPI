@@ -471,7 +471,7 @@ diopi_configs = {
 
     'pointwise_op': dict(
         name=['abs', 'cos', 'erf', 'exp', 'floor',
-              'neg', 'sin', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'ceil'],
+              'neg', 'sin', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'ceil', 'atan'],
         interface=['torch'],
         is_inplace=True,
         dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
@@ -490,7 +490,7 @@ diopi_configs = {
 
     'pointwise_op_int_without_inplace': dict(
         name=['abs', 'cos', 'erf', 'exp',
-              'neg', 'sin', 'asin', 'sqrt', 'logical_not', 'rsqrt'],
+              'neg', 'sin', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'atan'],
         interface=['torch'],
         dtype=[Dtype.int16, Dtype.int32, Dtype.int64, Dtype.uint8, Dtype.int8],
         tensor_para=dict(
@@ -524,7 +524,7 @@ diopi_configs = {
     ),
 
     'pointwise_op_bool': dict(
-        name=['cos', 'erf', 'exp', 'sin', 'asin', 'sqrt', 'rsqrt'],
+        name=['cos', 'erf', 'exp', 'sin', 'asin', 'sqrt', 'rsqrt', 'atan'],
         interface=['torch'],
         dtype=[Dtype.bool],
         tensor_para=dict(
