@@ -11,6 +11,7 @@ class OpTemplate(object):
 
 #ifndef DIOPI_ADAPTOR_HPP_
 #define DIOPI_ADAPTOR_HPP_
+#include <cassert>
 #include <iostream>
 #include <vector>
 #include <diopi/diopirt.h>
@@ -50,6 +51,18 @@ inline std::vector<int64_t> calcStrides(int ndims, diopiSize_t size, diopiMemory
             }
         }
 
+    }
+    else if(format == diopiMemoryFormat_t::ChannelsLast1d){
+        for (auto k : {1, 2, 0}) {
+            strides[k] = st;
+            if (size.data[k] == 0) {
+                continue;
+            }
+            if (size.data[k] == -1) st = -1;
+            if (st != -1) {
+                st *= size.data[k];
+            }
+        }
     }
     else {
         // PARROTS_THROW(InvalidArgs) <<
@@ -98,16 +111,57 @@ inline diopiMemoryFormat_t probableMemoryFormat(diopiConstTensorHandle_t tensor,
         : diopiMemoryFormat_t::Contiguous);
 }
 
-inline bool isContiguous(diopiSize_t size, diopiSize_t stride, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous) {
-    int64_t totalSize = 1;
-    for (int64_t i = 0; i < size.len; ++i) {
-        totalSize *= size.data[i];
+inline bool isContiguous(diopiSize_t size, diopiSize_t stride_diopi, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous) {
+    auto dim = size.len;
+    auto shape = size.data;
+    auto strides = stride_diopi.data;
+    int64_t stride = 1;
+
+    if (format == diopiMemoryFormat_t::Contiguous) {
+        for (int64_t i = dim - 1; i >= 0; i--) {
+            const auto& shapeD = shape[i];
+            if (shapeD != 1) {
+                if (strides[i] != stride) {
+                    return false;
+                }
+            }
+            stride *= shapeD;
+        }
+    } else if (format == diopiMemoryFormat_t::ChannelsLast) {
+        if (dim != 4) return false;
+        for (auto& i : {1, 3, 2, 0}) {
+            const auto& shapeD = shape[i];
+            if (shapeD != 1) {
+                // shape_d != 1 help dealing with shape like [2, 2048, 1, 1]
+                if (strides[i] != stride) {
+                    return false;
+                }
+            }
+            stride *= shapeD;
+        }
+    } else if (format == diopiMemoryFormat_t::ChannelsLast3d) {
+        if (dim != 5) return false;
+        for (auto& i : {1, 4, 3, 2, 0}) {
+            const auto& shapeD = shape[i];
+            if (shapeD != 1) {
+                if (strides[i] != stride) {
+                    return false;
+                }
+            }
+            stride *= shape[i];
+        }
     }
-    if (totalSize == 0) return false;
-    if (format == diopiMemoryFormat_t::ChannelsLast && size.len != 4) return false;
-    auto st = calcStrides(size.len, size, format);
-    for (int64_t i = 0; i < size.len; ++i) {
-        if (st[i] != stride.data[i] && size.data[i] > 1) return false;
+    else if (format == diopiMemoryFormat_t::ChannelsLast1d) {
+        if (dim != 3) return false;
+        for (auto& i : {1, 2, 0}) {
+            const auto& shapeD = shape[i];
+            if (shapeD != 1) {
+                if (strides[i] != stride) {
+                    return false;
+                }
+            }
+            stride *= shape[i];
+        }
     }
     return true;
 }
@@ -116,8 +170,48 @@ static std::vector<diopiMemoryFormat_t> defaultFormats{};
 
 ${cast_strategy}
 
+diopiMemoryFormat_t getTargetMemoryFormat(int ndims, std::vector<diopiMemoryFormat_t> supportMemoryFormats) {
+    switch (ndims) {
+        case 1:
+        case 2:
+            for (auto i : supportMemoryFormats) {
+                if (i == diopiMemoryFormat_t::Contiguous) {
+                    return i;
+                }
+            };
+            break;
+        case 3: {
+            for (auto i : supportMemoryFormats) {
+                if (i == diopiMemoryFormat_t::ChannelsLast1d || i == diopiMemoryFormat_t::Contiguous) {
+                    return i;
+                }
+            }
+            break;
+        }
+        case 4: {
+            for (auto i : supportMemoryFormats){
+                if (i == diopiMemoryFormat_t::ChannelsLast || i == diopiMemoryFormat_t::Contiguous) {
+                    return i;
+                }
+            }
+            break;
+        }
+        case 5: {
+            for (auto i : supportMemoryFormats){
+                if (i == diopiMemoryFormat_t::ChannelsLast3d || i == diopiMemoryFormat_t::Contiguous) {
+                    return i;
+                }
+            }
+            break;
+        }
+        default: {
+            return diopiMemoryFormat_t::Contiguous;
+        }
+    }
+}
+
 template<class T, class strategy = NoCast>
-static int castImpl(diopiContextHandle_t ctx, T src, T* dst,
+inline int castImpl(diopiContextHandle_t ctx, T src, T* dst,
                     std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats) {
     if (src == nullptr || src == 0) {
         *dst = src;
@@ -148,7 +242,8 @@ static int castImpl(diopiContextHandle_t ctx, T src, T* dst,
     if (!convertFormat) {
         dstStride = stride;
     } else {
-        strides_v = calcStrides(size.len, size, supportMemoryFormat[0]);
+        diopiMemoryFormat_t memoryFormat = getTargetMemoryFormat(size.len, supportMemoryFormat);
+        strides_v = calcStrides(size.len, size, memoryFormat);
         dstStride.len = strides_v.size();
         dstStride.data = strides_v.data();
     }

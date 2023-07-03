@@ -260,6 +260,10 @@ def tanh(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, 'diopiTanh', promote_type(input, Dtype.float32))
 
 
+def atan(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, 'diopiAtan', promote_type(input, Dtype.float32))
+
+
 def exp(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, 'diopiExp', promote_type(input, Dtype.float32))
 
@@ -1819,6 +1823,47 @@ def conv2d_backward(input, grad_outputs, weight, bias=None, stride=1,
     ret = func(input.context(), grad_input, grad_weight, grad_bias,
                grad_outputs[0], input, weight, sizeBias, stride,
                padding, dilation, transposed, output_padding, groups)
+    check_returncode(ret)
+    return out
+
+
+def conv_transpose2d_backward(input, grad_outputs, weight, bias=None, stride=1, padding=0, dilation=1, groups=1, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    sizeI = input.size().data
+    sizeW = weight.size().data
+    assert len(sizeI) == 4 and len(sizeW) == 4,\
+        'input and weight must be 4d tensors'
+
+    if isinstance(stride, int):
+        stride = (stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding)
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation)
+
+    stride = Sizes(list(stride))
+    padding = Sizes(list(padding))
+    dilation = Sizes(list(dilation))
+
+    grad_input = raw_like(input)
+    grad_weight = raw_like(weight)
+    out = {"input": grad_input, "weight": grad_weight}
+
+    if bias is None:
+        grad_bias = None
+        sizeBias = None
+    else:
+        gradBias = raw_like(bias)
+        grad_bias = gradBias
+        sizeBias = bias.size()
+        out.update({"bias": grad_bias})
+
+    output_padding = Sizes(list([0, 0]))
+
+    func = check_function("diopiConvTranspose2dBackward")
+    ret = func(input.context(), grad_input, grad_weight, grad_bias,
+               grad_outputs[0], input, weight, sizeBias, stride,
+               padding, dilation, output_padding, groups)
     check_returncode(ret)
     return out
 

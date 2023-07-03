@@ -11,6 +11,8 @@ namespace camb {
 extern "C" {
 diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t input, const int64_t *dim, bool sorted, bool returnCounts,
                          diopiTensorHandle_t indices, diopiTensorHandle_t *counts) {
+// version should be greater than 1.15.2
+#if (CNNL_MAJOR * 10000 + CNNL_MINOR * 100 + CNNL_PATCHLEVEL >= 11502)
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     // input_tensor
@@ -33,11 +35,11 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, dio
     DiopiTensor outputTensor =
         (realDim != -1) ? requiresTensor(ctx, {inputTensor.shape()}, inputTensor.dtype()) : requiresTensor(ctx, {inputTensor.numel()}, inputTensor.dtype());
     // index_tensor
-    DiopiTensor indexTensor = (realDim != -1) ? requiresTensor(ctx, {inputTensor.shape()[realDim]}, diopi_dtype_int32)
-                                              : requiresTensor(ctx, {inputTensor.numel()}, diopi_dtype_int32);
+    DiopiTensor indexTensor =
+        (realDim != -1) ? requiresTensor(ctx, {inputTensor.shape()[realDim]}, diopi_dtype_int32) : requiresTensor(ctx, inputTensor.shape(), diopi_dtype_int32);
     // counts_tensor
     DiopiTensor countsTensor = (realDim != -1) ? requiresTensor(ctx, {outputTensor.shape()[realDim]}, diopi_dtype_int32)
-                                               : requiresTensor(ctx, {outputTensor.numel()}, diopi_dtype_int32);
+                                               : requiresTensor(ctx, outputTensor.shape(), diopi_dtype_int32);
 
     // Tensor Desc
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
@@ -49,7 +51,7 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, dio
 
     // torch.unique always sort the tensor at the beginning
     // regardless of the sort argument when dim is specified
-    if (*dim != -1) {
+    if (dim != nullptr && (*dim) != -1) {
         sorted = true;
     }
     cnnlUniqueSort_t mode = sorted ? CNNL_SORT_ASCEND : CNNL_UNSORT_FORWARD;
@@ -126,6 +128,9 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, dio
     }
 
     return diopiSuccess;
+#else
+    DIOPI_CHECK(false, "not implemented in low version cnnl")
+#endif
 }
 }  // extern "C"
 

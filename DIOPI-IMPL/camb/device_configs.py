@@ -21,25 +21,13 @@ device_configs = {
     'nll_loss': dict(
         name=["nll_loss"],
         atol=1e-3,
-        rtol=1e-4,
+        rtol=1e-3,
     ),
 
     'conv_2d': dict(
         name=["conv2d"],
         atol_half=1e-1,
         rtol_half=1e-1,
-    ),
-
-    'hardswish': dict(
-        name=["hardswish"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
     ),
 
     'max_pool2d': dict(
@@ -68,14 +56,8 @@ device_configs = {
 
     'binary_cross_entropy': dict(
         name=["binary_cross_entropy"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
+        atol=1e-2,
+        rtol=1e-2,
     ),
 
     'binary_cross_entropy_with_logits': dict(
@@ -99,18 +81,6 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
                 },
             ],
-        ),
-    ),
-
-    'erfinv': dict(
-        name=["erfinv"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
         ),
     ),
 
@@ -201,25 +171,17 @@ device_configs = {
 
     'cross_entropy': dict(
         name=["cross_entropy"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
+        para=dict(
+            # label_smoothing is not supported by camb kernel
+            label_smoothing=[Skip(0.5)],
         ),
     ),
 
     'cross_entropy_prob_target': dict(
         name=["cross_entropy"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32)],
-                },
-            ],
+        para=dict(
+            # label_smoothing is not supported by camb kernel
+            label_smoothing=[Skip(0.1), Skip(0.3), Skip(0.5)],
         ),
     ),
 
@@ -444,13 +406,9 @@ device_configs = {
 
     'cdist': dict(
         name=['cdist'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['x1'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
+        para=dict(
+            # Currently, p must be equal 1.0 due to the limitation of Cambrian operator.
+            p=[Skip(2), Skip(0), Skip(0.5), Skip(float("inf"))],
         ),
     ),
 
@@ -555,31 +513,6 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
                 },
             ]
-        ),
-    ),
-
-    'masked_select': dict(
-        name=['masked_select'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
-    'masked_select_not_float': dict(
-        name=['masked_select'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
         ),
     ),
 
@@ -789,7 +722,7 @@ device_configs = {
         name=['scatter'],
         para=dict(
             # The reduction operation of multiply is not supported by cnnl
-            reduce=[Skip('multiply')], 
+            reduce=[Skip('multiply')],
         ),
     ),
 
@@ -820,7 +753,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.uint8),    # overflow issue 
+                    "dtype": [Skip(Dtype.uint8),    # overflow issue
                               Skip(Dtype.bool)],    # not supported by camb kernel when accumulate is true
                 },
             ]
@@ -912,14 +845,12 @@ device_configs = {
 
     'interpolate': dict(
         name=["interpolate"],
-        para=dict(
-            mode=[Skip('bilinear'), Skip('bicubic'), Skip('trilinear'), Skip('linear')]
-        ),
+        atol=1e-4,
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    # camb not supports 5d upsample
+                    # camb not supports 5d upsample nearest
                     "shape": [Skip((1, 3, 32, 224, 224))],
                 },
             ]

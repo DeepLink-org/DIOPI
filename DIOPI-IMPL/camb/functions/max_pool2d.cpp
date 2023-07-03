@@ -32,8 +32,8 @@ std::vector<int> getDim(const DiopiTensor& tensor) {
 }  // namespace
 
 extern "C" {
-diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernelSize,
-                                      diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceilMode) {
+diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernelSize, diopiSize_t stride,
+                            diopiSize_t padding, diopiSize_t dilation, bool ceilMode) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor inputTensor(input);
@@ -69,6 +69,8 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     const int64_t padW = padding.len == 1 ? padH : padding.data[1];
     const int64_t dilation0 = dilation.data[0];
     const int64_t dilation1 = dilation.len == 1 ? dilation0 : dilation.data[1];
+
+    DIOPI_CHECK(dilation0 == 1 && dilation1 == 1, "Camb kernel only support dilation == 1");
 
     // calculate padding coefficients
     auto pl = 0, pr = 0, pu = 0, pd = 0;
@@ -106,7 +108,7 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 }
 
 diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t indices, diopiConstTensorHandle_t input,
-                                                 diopiSize_t kernelSize, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceilMode) {
+                                       diopiSize_t kernelSize, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceilMode) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor inputTensor(input);
@@ -158,6 +160,8 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     const int64_t padW = padding.len == 1 ? padH : padding.data[1];
     const int64_t dilation0 = dilation.data[0];
     const int64_t dilation1 = dilation.len == 1 ? dilation0 : dilation.data[1];
+
+    DIOPI_CHECK(dilation0 == 1 && dilation1 == 1, "Camb kernel only support dilation == 1");
 
     // calculate padding coefficients
     auto pl = 0, pr = 0, pu = 0, pd = 0;
@@ -218,8 +222,8 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
 }
 
 diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                              diopiConstTensorHandle_t input, diopiSize_t kernelSize, diopiSize_t stride, diopiSize_t padding,
-                                              diopiSize_t dilation, bool ceilMode, diopiConstTensorHandle_t indices) {
+                                    diopiConstTensorHandle_t input, diopiSize_t kernelSize, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation,
+                                    bool ceilMode, diopiConstTensorHandle_t indices) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor inputTensor(input);
