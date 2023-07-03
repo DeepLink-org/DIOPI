@@ -2205,6 +2205,12 @@ DIOPI_API diopiError_t diopiTriuInp(diopiContextHandle_t ctx, diopiTensorHandle_
 DIOPI_API diopiError_t diopiSgn(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 DIOPI_API diopiError_t diopiSgnInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
 
+/**
+ * @brief Returns a new tensor with boolean elements representing if each element of input is NaN or not. Complex values are considered NaN when either their real and/or imaginary part is NaN.
+ * @param[in] ctx Context environment.
+ * @param input the input tensor, type = [float32, float64, float16, bool, int64, int32, int16, int8, uint8, nan].
+ * @param[out] out the output tensor. type = [bool].
+ */
 DIOPI_API diopiError_t diopiIsNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
 #if defined(__cplusplus)
