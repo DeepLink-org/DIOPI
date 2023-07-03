@@ -3727,7 +3727,7 @@ def triu(input, diagonal=0, inplace=False) -> Tensor:
 
 
 def isnan(input) -> Tensor:
-    call = "diopiIsnan"
+    call = "diopiIsNan"
     out = Tensor(input.size(), Dtype.bool)
     func = check_function(call)
     ret = func(input.context(), out, input)
