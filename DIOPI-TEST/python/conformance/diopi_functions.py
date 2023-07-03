@@ -3724,3 +3724,12 @@ def triu(input, diagonal=0, inplace=False) -> Tensor:
         ret = func(input.context(), out, input, diagonal)
         check_returncode(ret)
         return out
+
+
+def isnan(input) -> Tensor:
+    call = "diopiIsnan"
+    out = Tensor(input.size(), Dtype.bool)
+    func = check_function(call)
+    ret = func(input.context(), output, input)
+    check_returncode(ret)
+    return out

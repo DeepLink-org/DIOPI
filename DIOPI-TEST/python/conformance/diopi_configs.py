@@ -4795,6 +4795,23 @@ diopi_configs = {
         ),
     ),
 
+    'isnan': dict(
+        name=['isnan'],
+        interface=['torch'],
+        dtype=[Dtype.float64, Dtype.float32, Dtype.float16, Dtype.int16, Dtype.int32, Dtype.int64, Dtype.int8, Dtype.uint8, Dtype.bool],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1024, 64), (384, 128),
+                              (64, 1, 128), (128, 64, 3, 3),
+                              (2, 32, 130, 130)),
+                },
+            ],
+        ),
+    )
+
     'sgn': dict(
         name=['sgn'],
         interface=['torch'],
