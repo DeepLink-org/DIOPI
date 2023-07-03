@@ -249,7 +249,7 @@ class ManualTest(object):
         if len(out_numpy) == 0 and input_size:
             return True
         p_value = stats.kstest(out_numpy, 'norm', args=(mean, std))[1]
-        assert p_value > 0.0001, f"can't pass the ks test, failed to execute normal_, p_value is {p_value}"
+        assert p_value > 0.0001, f"can't pass the ks test, failed to execute normal_, p_value is {p_value}, shape of out is: {out_numpy.shape}"
 
     def test_multinomial(input, num_samples, replacement=False):
         out = F.multinomial(input, num_samples, replacement)
