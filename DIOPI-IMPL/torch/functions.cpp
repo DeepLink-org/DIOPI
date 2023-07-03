@@ -3105,7 +3105,7 @@ diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     const int64_t C = atInput.size(1);
     const auto input_shape = atInput.sizes();
     const int64_t HxW = c10::multiply_integers(input_shape.cbegin() + 2, input_shape.cend());
-    auto grad_input_mask = std::array<bool, 3>{true, true, true};
+    auto grad_input_mask = std::array<bool, 3>{true, grad_weight != nullptr, grad_bias != nullptr};
     auto atOut = at::native_group_norm_backward(atGradOutput, atInput, atSaveMean, atSaveVar, atWeight, N, C, HxW, num_groups, grad_input_mask);
 
     impl::aten::updateATen2Tensor(ctx, std::get<0>(atOut), grad_input);
