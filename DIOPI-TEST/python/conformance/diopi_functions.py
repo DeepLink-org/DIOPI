@@ -3730,6 +3730,6 @@ def isnan(input) -> Tensor:
     call = "diopiIsnan"
     out = Tensor(input.size(), Dtype.bool)
     func = check_function(call)
-    ret = func(input.context(), output, input)
+    ret = func(input.context(), out, input)
     check_returncode(ret)
     return out
