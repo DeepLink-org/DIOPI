@@ -55,6 +55,7 @@ diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
 
     DIOPI_CALLCNNL(cnnlWhere_v2(
         handle, inputDesc.get(), inputTensor.data(), numTrueDesc.get(), numTrue.data(), false, workspace, workspaceSize, outDesc.get(), outTensor.data()));
+    DIOPI_CALL(dataTypeCast(ctx, outTensor, diopi_dtype_int64));
     *out = diopiTensorHandle_t(outTensor);
     return diopiSuccess;
 }
