@@ -43,6 +43,7 @@ from .other_configs.crnn_config import crnn_config  # 2.1G
 from .other_configs.slowfast_config import slowfast_config  # 18G
 from .other_configs.tsn_config import tsn_config  # 20G
 from .other_configs.llama_config import llama_config
+from .other_configs.llama_train_config import llama_train_config
 
 
 __all__ = ['resnet50_config',
@@ -85,4 +86,5 @@ __all__ = ['resnet50_config',
            'crnn_config',
            'slowfast_config',
            'tsn_config',
-           'llama_config']
+           'llama_config',
+           'llama_train_config']
