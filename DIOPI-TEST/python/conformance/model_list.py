@@ -3,7 +3,7 @@ model_list = ['resnet50', 'vgg16', 'resnet101', 'seresnet50', 'densenet', 'mobil
               'retinanet', 'faster_rcnn_r50', 'ssd300', 'yolov3', 'atss', 'fcos', 'mask_rcnn',
               'solo', 'centernet', 'cascade_rcnn', 'detr',
               'unet', 'upernet', 'pspnet', 'fcn', 'deeplabv3', 'deeplabv3plus',
-              'sar', 'dbnet', 'stgcn', 'crnn', 'hrnet', 'deeppose', 'tsn', 'slowfast', 'llama']
+              'sar', 'dbnet', 'stgcn', 'crnn', 'hrnet', 'deeppose', 'tsn', 'slowfast', 'llama', 'llama_train']
 
 model_op_list = {
     'resnet50': ['sgd', 'randperm', 'conv2d', 'add', 'batch_norm', 'relu', 'adaptive_avg_pool2d', 'linear', 'cross_entropy', 'sum', 'mean', 'mul', 'div', 'max_pool2d', 'softmax'],
