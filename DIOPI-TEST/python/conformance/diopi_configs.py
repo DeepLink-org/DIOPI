@@ -4810,7 +4810,7 @@ diopi_configs = {
                 },
             ],
         ),
-    )
+    ),
 
     'sgn': dict(
         name=['sgn'],
