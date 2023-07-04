@@ -59,6 +59,7 @@ extern DIOPI_API int32_t device_synchronize_stream(diopiStreamHandle_t stream);
 /**
  * User-implemented functions
  **/
+extern int32_t initLibrary();
 extern int32_t finalizeLibrary();
 
 #if defined(__cplusplus)

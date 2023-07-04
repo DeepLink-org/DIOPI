@@ -72,6 +72,10 @@ int32_t device_memcpy_d2d_async(diopiStreamHandle_t stream_handle,
     return diopiSuccess;
 }
 
+int32_t initLibrary() {
+    return diopiSuccess;
+}
+
 int32_t finalizeLibrary() {
     return diopiSuccess;
 }

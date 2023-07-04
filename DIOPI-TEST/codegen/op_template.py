@@ -88,6 +88,7 @@ PYBIND11_MODULE(export_functions, m) {
     function_template = CodeTemplate("""\
 m.def("${func_name}", [](${attrs}) {
     if (${func_name}) {
+        py::gil_scoped_release no_gil;
         ${convert}
         diopiError_t ret = ${call_func};
         ${out_copy}

@@ -6,7 +6,9 @@
  * support conformance test suite of DIOPI
  */
 
+#define __STDC_FORMAT_MACROS
 #include "litert.hpp"
+#include <acl/acl.h>
 
 #include <conform_test.h>
 #include <diopi/diopirt.h>

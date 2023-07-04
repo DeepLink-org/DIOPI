@@ -16,8 +16,6 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx,
                                            diopiSize_t dilation,
                                            int64_t groups) {
     auto format = getAclDataFormat(input);
-    const std::string dataFormat =
-        (format == ACL_FORMAT_NHWC) ? "NHWC" : "NCHW";
     std::vector<int64_t> strideTemp(4, 1);
     std::vector<int64_t> dilationsTemp(4, 1);
     if (format == ACL_FORMAT_NHWC) {
@@ -31,7 +29,7 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx,
         dilationsTemp[2] = dilation.data[0];
         dilationsTemp[3] = dilation.data[1];
     }
-    const std::vector<int64_t> paddingTemp = {padding.data[0], padding.data[2], padding.data[1], padding.data[3]};
+    const std::vector<int64_t> paddingTemp = {padding.data[0], padding.data[0], padding.data[1], padding.data[1]};
 
     AclOpRunner<3, 1> runner("Conv2D");
     runner.addInput(input, weight)
@@ -39,7 +37,6 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx,
         .setAttr("pads", paddingTemp)
         .setAttr("dilations", dilationsTemp)
         .setAttr<int32_t>("groups", groups)
-        .setAttr("data_format", dataFormat)
         .addOutput(out);
     if (bias) {
         runner.addInput(bias);

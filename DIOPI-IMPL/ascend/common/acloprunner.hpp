@@ -4,7 +4,7 @@
 #include <acl/acl.h>
 #include <acl/acl_op.h>
 #include <acl/acl_op_compiler.h>
-#include <diopi/diopirt.h>
+#include <diopi/functions.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -16,16 +16,28 @@
 #include <typeinfo>
 #include <string>
 #include <utility>
+#include <stdexcept>
 
 namespace impl {
 namespace ascend {
 
-#define CALL_ACLRT(Expr)                                                                \
-    {                                                                                   \
-        ::aclError ret = Expr;                                                          \
-        if (ret != ::ACL_SUCCESS) {                                                     \
-            printf("call a ascendrt function (%s) failed. return code=%d", #Expr, ret); \
-        }                                                                               \
+#define TRACK_ACL(x)                                                   \
+    {                                                                  \
+        static bool enable = std::getenv("DIOPI_TRACK_ACL") != nullptr; \
+        if (enable)                                                    \
+        {                                                              \
+            printf("[%s: %d]:%s\n", __FILE__, __LINE__, x);            \
+        }                                                              \
+    }
+
+#define CALL_ACLRT(Expr)                               \
+    {                                                      \
+        TRACK_ACL(#Expr);                                  \
+        ::aclError ret = Expr;                             \
+        if (ret != ::ACL_SUCCESS)                          \
+        {                                                  \
+          throw std::runtime_error(std::string("ascend device error:") + aclGetRecentErrMsg()); \
+        }                                                  \
     }
 
 #define warning(...)                             \
@@ -335,19 +347,19 @@ public:
     template <typename T>
     AclOpRunner& setAttr(const std::string& attrName, const T& value) {
         if constexpr (std::is_same<T, int64_t>::value || std::is_same<T, int>::value) {
-            CALL_ACLRT(aclopSetAttrInt(attr_, attrName.data(), value));
+            CALL_ACLRT(aclopSetAttrInt(attr_, attrName.c_str(), value));
             return *this;
         }
         if constexpr (std::is_same<T, float>::value) {
-            CALL_ACLRT(aclopSetAttrFloat(attr_, attrName.data(), value));
+            CALL_ACLRT(aclopSetAttrFloat(attr_, attrName.c_str(), value));
             return *this;
         }
         if constexpr (std::is_same<T, uint8_t>::value || std::is_same<T, bool>::value) {
-            CALL_ACLRT(aclopSetAttrBool(attr_, attrName.data(), value));
+            CALL_ACLRT(aclopSetAttrBool(attr_, attrName.c_str(), value));
             return *this;
         }
         if constexpr (std::is_same<T, std::string>::value) {
-            CALL_ACLRT(aclopSetAttrString(attr_, attrName.data(), value.data()));
+            CALL_ACLRT(aclopSetAttrString(attr_, attrName.c_str(), value.data()));
             return *this;
         }
         check_args(false, "%s: no specialization for %s type.", dumpRunnerInfo().c_str() , typeid(T).name());
@@ -357,7 +369,7 @@ public:
     template <typename T>
     AclOpRunner& setAttr(const std::string& attrName, const typename std::vector<T>& value) {
         std::vector<int64_t> vec(value.begin(), value.end());
-        CALL_ACLRT(aclopSetAttrListInt(attr_, attrName.data(), vec.size(), vec.data()));
+        CALL_ACLRT(aclopSetAttrListInt(attr_, attrName.c_str(), vec.size(), vec.data()));
         return *this;
     }
 
@@ -378,7 +390,7 @@ public:
             }
         }
 
-        auto errorcode = aclopCompileAndExecute(opname_.data(),
+        CALL_ACLRT(aclopCompileAndExecute(opname_.c_str(),
                                                 inSize,
                                                 inputDescs_.data(),
                                                 inputBuffers_.data(),
@@ -389,10 +401,7 @@ public:
                                                 EngineType,
                                                 CompileType,
                                                 nullptr,
-                                                stream);
-        if (errorcode != ACL_SUCCESS) {
-            warning((dumpRunnerInfo() + ":" + aclGetRecentErrMsg()).c_str());
-        }
+                                                stream));
         // check_args(errorcode == ACL_SUCCESS, dumpRunnerInfo().c_str());
         //   Get environment variables once when run is called for the first time
         static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
