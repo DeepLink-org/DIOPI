@@ -2505,7 +2505,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((32, 49, 256), (32, 16, 64, 64)),
+                    "shape": ((32, 49, 256), (32, 49, 64, 64)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.positive,
                 },
