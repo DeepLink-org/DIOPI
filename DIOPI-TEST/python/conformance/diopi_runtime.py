@@ -163,8 +163,10 @@ def compute_nhwc_stride(size, itemsize=1, name=None):
     else:
         return compute_nhwc_stride_3d(size, itemsize)
 
+
 def diopi_rt_init():
     init_library()
+
 
 def on_diopi_rt_exit():
     finalize_library()
