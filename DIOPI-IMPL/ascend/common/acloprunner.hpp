@@ -12,32 +12,30 @@
 #include <functional>
 #include <initializer_list>
 #include <sstream>
-#include <vector>
-#include <typeinfo>
-#include <string>
-#include <utility>
 #include <stdexcept>
+#include <string>
+#include <typeinfo>
+#include <utility>
+#include <vector>
 
 namespace impl {
 namespace ascend {
 
-#define TRACK_ACL(x)                                                   \
-    {                                                                  \
+#define TRACK_ACL(x)                                                    \
+    {                                                                   \
         static bool enable = std::getenv("DIOPI_TRACK_ACL") != nullptr; \
-        if (enable)                                                    \
-        {                                                              \
-            printf("[%s: %d]:%s\n", __FILE__, __LINE__, x);            \
-        }                                                              \
+        if (enable) {                                                   \
+            printf("[%s: %d]:%s\n", __FILE__, __LINE__, x);             \
+        }                                                               \
     }
 
-#define CALL_ACLRT(Expr)                               \
-    {                                                      \
-        TRACK_ACL(#Expr);                                  \
-        ::aclError ret = Expr;                             \
-        if (ret != ::ACL_SUCCESS)                          \
-        {                                                  \
-          throw std::runtime_error(std::string("ascend device error:") + aclGetRecentErrMsg()); \
-        }                                                  \
+#define CALL_ACLRT(Expr)                                                                          \
+    {                                                                                             \
+        TRACK_ACL(#Expr);                                                                         \
+        ::aclError ret = Expr;                                                                    \
+        if (ret != ::ACL_SUCCESS) {                                                               \
+            throw std::runtime_error(std::string("ascend device error:") + aclGetRecentErrMsg()); \
+        }                                                                                         \
     }
 
 #define warning(...)                             \
@@ -57,7 +55,6 @@ namespace ascend {
         printf("\n");                                \
         std::abort();                                \
     }
-
 
 inline aclDataType getAclDataType(diopiConstTensorHandle_t th) {
     diopiDtype_t type;
@@ -94,7 +91,7 @@ inline aclDataType getAclDataType(diopiConstTensorHandle_t th) {
 
 inline std::string dumpTensor(diopiConstTensorHandle_t th) {
     std::stringstream stream;
-     stream << "Tensor(handle:" << th;
+    stream << "Tensor(handle:" << th;
     if (th) {
         diopiSize_t shape;
         diopiSize_t stride;
@@ -107,9 +104,9 @@ inline std::string dumpTensor(diopiConstTensorHandle_t th) {
         stream << " ,data:" << ptr;
         stream << " ,dtype:" << dtype;
         stream << " ,shape:";
-        std::for_each(shape.data, shape.data + shape.len, [&stream](int64_t v){stream << v << " ";});
+        std::for_each(shape.data, shape.data + shape.len, [&stream](int64_t v) { stream << v << " "; });
         stream << " ,stride:";
-        std::for_each(stride.data, stride.data + stride.len, [&stream](int64_t v){stream << v << " ";});
+        std::for_each(stride.data, stride.data + stride.len, [&stream](int64_t v) { stream << v << " "; });
     }
     stream << ")";
     return stream.str();
@@ -362,7 +359,7 @@ public:
             CALL_ACLRT(aclopSetAttrString(attr_, attrName.c_str(), value.data()));
             return *this;
         }
-        check_args(false, "%s: no specialization for %s type.", dumpRunnerInfo().c_str() , typeid(T).name());
+        check_args(false, "%s: no specialization for %s type.", dumpRunnerInfo().c_str(), typeid(T).name());
         return *this;
     }
 
@@ -391,17 +388,17 @@ public:
         }
 
         CALL_ACLRT(aclopCompileAndExecute(opname_.c_str(),
-                                                inSize,
-                                                inputDescs_.data(),
-                                                inputBuffers_.data(),
-                                                outSize,
-                                                outputDescs_.data(),
-                                                outputBuffers_.data(),
-                                                attr_,
-                                                EngineType,
-                                                CompileType,
-                                                nullptr,
-                                                stream));
+                                          inSize,
+                                          inputDescs_.data(),
+                                          inputBuffers_.data(),
+                                          outSize,
+                                          outputDescs_.data(),
+                                          outputBuffers_.data(),
+                                          attr_,
+                                          EngineType,
+                                          CompileType,
+                                          nullptr,
+                                          stream));
         // check_args(errorcode == ACL_SUCCESS, dumpRunnerInfo().c_str());
         //   Get environment variables once when run is called for the first time
         static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;

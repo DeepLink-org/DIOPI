@@ -6,11 +6,11 @@
  *************************************************************************************************/
 
 #include <diopi/diopirt.h>
+
 #include <cstdio>
+
 #include "../common/acloprunner.hpp"
 #include "../error.hpp"
-
-
 
 namespace impl {
 namespace ascend {

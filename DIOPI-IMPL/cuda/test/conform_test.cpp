@@ -4,20 +4,21 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/diopirt.h>
 #include <cuda_runtime.h>
+#include <diopi/diopirt.h>
 
 #include <cstdio>
 #include <mutex>
 
 extern "C" {
 
-#define CALL_CUDA(Expr)   {                                                         \
-    cudaError_t ret = Expr;                                                         \
-    if (ret != cudaSuccess) {                                                       \
-        printf("call a cudart function (%s) failed. return code=%d", #Expr, ret);   \
-    }}
-
+#define CALL_CUDA(Expr)                                                               \
+    {                                                                                 \
+        cudaError_t ret = Expr;                                                       \
+        if (ret != cudaSuccess) {                                                     \
+            printf("call a cudart function (%s) failed. return code=%d", #Expr, ret); \
+        }                                                                             \
+    }
 
 void* device_malloc(uint64_t bytes) {
     void* ptr;
@@ -25,9 +26,7 @@ void* device_malloc(uint64_t bytes) {
     return ptr;
 }
 
-void device_free(void* ptr) {
-    CALL_CUDA(cudaFree(ptr));
-}
+void device_free(void* ptr) { CALL_CUDA(cudaFree(ptr)); }
 
 int32_t device_make_stream(diopiStreamHandle_t* stream_handle_ptr) {
     cudaStream_t phStream;
@@ -48,22 +47,19 @@ int32_t device_synchronize_stream(diopiStreamHandle_t stream_handle) {
     return diopiSuccess;
 }
 
-int32_t device_memcpy_h2d_async(diopiStreamHandle_t stream_handle,
-                              void* dst, const void* src, uint64_t bytes) {
+int32_t device_memcpy_h2d_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
     cudaStream_t phStream = (cudaStream_t)stream_handle;
     CALL_CUDA(cudaMemcpyAsync(dst, src, bytes, cudaMemcpyHostToDevice, phStream));
     return diopiSuccess;
 }
 
-int32_t device_memcpy_d2h_async(diopiStreamHandle_t stream_handle,
-                              void* dst, const void* src, uint64_t bytes) {
+int32_t device_memcpy_d2h_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
     cudaStream_t phStream = (cudaStream_t)stream_handle;
     CALL_CUDA(cudaMemcpyAsync(dst, src, bytes, cudaMemcpyDeviceToHost, phStream));
     return diopiSuccess;
 }
 
-int32_t device_memcpy_d2d_async(diopiStreamHandle_t stream_handle,
-                              void* dst, const void* src, uint64_t bytes) {
+int32_t device_memcpy_d2d_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
     cudaStream_t phStream = (cudaStream_t)stream_handle;
     CALL_CUDA(cudaMemcpyAsync(dst, src, bytes, cudaMemcpyDeviceToDevice, phStream));
     return diopiSuccess;
@@ -76,18 +72,13 @@ static std::mutex mtxLastError;
 const char* device_get_last_error_string() {
     cudaError_t error = cudaGetLastError();
     std::lock_guard<std::mutex> lock(mtxLastError);
-    sprintf(strLastError, "cuda error: %s; other error: %s",
-            cudaGetErrorString(error), strLastErrorOther);
+    sprintf(strLastError, "cuda error: %s; other error: %s", cudaGetErrorString(error), strLastErrorOther);
     return strLastError;
 }
 
-int32_t initLibrary() {
-    return diopiSuccess;
-}
+int32_t initLibrary() { return diopiSuccess; }
 
-int32_t finalizeLibrary() {
-    return diopiSuccess;
-}
+int32_t finalizeLibrary() { return diopiSuccess; }
 
 }  // extern "C"
 
@@ -95,7 +86,7 @@ namespace impl {
 
 namespace cuda {
 
-void _set_last_error_string(const char *err) {
+void _set_last_error_string(const char* err) {
     std::lock_guard<std::mutex> lock(mtxLastError);
     sprintf(strLastErrorOther, "%s", err);
 }
