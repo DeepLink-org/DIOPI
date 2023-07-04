@@ -2505,7 +2505,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((32, 49, 256), (32, 16, 64, 64)),
+                    "shape": ((32, 49, 256), (32, 49, 64, 64)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.positive,
                 },
@@ -4547,8 +4547,8 @@ diopi_configs = {
         para=dict(
             mean=[-1, -0.5, 0, 0.1, 2, True, False],
             std=[0, 0.5, 1, 2.3, 3, True, True],
-            size=[(), (128,), (32, 16), (32, 8),
-                  (32, 8), (2, 2, 2, 16), (32, 2, 3, 3)],
+            size=[(), (1280,), (32, 160), (320, 8),
+                  (32, 80), (2, 2, 20, 16), (320, 2, 3, 3)],
         ),
     ),
 
@@ -4564,8 +4564,8 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [(), (128, 0), (32, 8), (32, 8),
-                              (0, 8), (16, 64, 32)],
+                    "shape": [(), (1280, 0), (320, 8), (32, 80),
+                              (0, 800), (16, 64, 32)],
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
             ]
@@ -4788,6 +4788,23 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((1024, 64), (384, 128),
+                              (64, 1, 128), (128, 64, 3, 3),
+                              (2, 32, 130, 130)),
+                },
+            ],
+        ),
+    ),
+
+    'isnan': dict(
+        name=['isnan'],
+        interface=['torch'],
+        dtype=[Dtype.float64, Dtype.float32, Dtype.float16, Dtype.int16, Dtype.int32, Dtype.int64, Dtype.int8, Dtype.uint8, Dtype.bool],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (1024, 64), (384, 128),
                               (64, 1, 128), (128, 64, 3, 3),
                               (2, 32, 130, 130)),
                 },

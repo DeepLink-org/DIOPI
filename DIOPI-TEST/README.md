@@ -1,5 +1,5 @@
 <div align=center>
-<img src="resources/deepLink_logo.png">
+<img src="../img/deepLink_logo.png">
 </div>
 
 # DIOPI-TEST
@@ -27,40 +27,8 @@ DIOPI-TEST 测试范围：
 
 
 ## **使用教学**
-
-### 基础安装及使用
-1. 需下载 [DIOPI-Test仓库](https://github.com/OpenComputeLab/DIOPI-Test)，可使用命令：
-    ```
-    git clone https://github.com/OpenComputeLab/DIOPI-Test.git
-    ```
-2. 编译 DIOPI-IMPL 提供编译文件的编译计算库。以下示例仅供参考：
-    ```
-    mkdir build && cd build && cmake .. -DIMPL_OPT=cuda && make -j32
-    ```
-3. 进入python目录，生成基准数据(需准备 nv 机器和 pytorch1.10 环境)
-    ```
-    cd python && python main.py --mode gen_data
-    ```
-    如需指定模型：
-    ```
-    python main.py --mode gen_data --model_name xxx
-    ```
-    其中支持的模型名可以通过如下命令获得：
-    ```
-    python main.py --get_model_list
-    ```
-4. 将数据拷贝到芯片机器上，执行以下命令验证算子：
-    ```
-    python main.py --mode run_test
-    ```
-    如需指定模型：
-    ```
-    python main.py --mode run_test --model_name xxx
-    ```
-    如需过滤不支持的数据类型以及部分测试使用nhwc格式张量(如跳过float64以及int64测例）：
-    ```
-    python main.py --mode run_test --filter_dtype float64 int64 --nhwc
-    ```
+### 安装和基础使用
+参考 [DIOPI Readme](https://github.com/DeepLink-org/DIOPI/tree/main/DIOPI-PROTO#readme)
 
 ### 结果分析
 
@@ -273,3 +241,91 @@ DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子
         见于cat、stack算子的测例配置, 组合使用。gen_num_range 表示在指定的范围内产生随机数个 args 中的张量。
         seq_name 指示将这些放入列表中的张量列表名字。
 
+### 厂商自定义测例配置
+我们提供了厂商自定义测例配置的能力，可以对python/conformance/diopi_configs.py里的测例按条件进行跳过，以及修改误差参数。
+
+如果要进行自定义配置，需要创建名为device_configs.py的配置文件，在文件里添加
+
+```
+    from .device_config_helper import Skip
+    from .diopi_runtime import Dtype
+    device_configs = {}
+```
+
+
+并可以按以下方式在device_configs里进行配置：
+
+1. 修改误差参数
+
+```
+    'cdist': dict(
+        name=['cdist'],
+        atol=1e-06,
+        rtol=1e-05,
+    ),
+```
+
+以上配置会覆盖原有配置中的atol, rtol。类似的，我们也支持atol_half，rtol_half的修改。
+
+2. 跳过任意tensor_para为某个类型的测例
+
+```
+    'cdist': dict(
+        name=['cdist'],
+        dtype = [Skip(Dtype.float64)],
+    ),
+``` 
+
+原本的python/conformance/diopi_configs.py中，对应的配置有x1, x2两个tensor_para。以上配置会跳过所有x1为float64或x2为float64的测例。
+
+3. 跳过特定参数条件的测例
+   
+```
+    'cdist': dict(
+        name=['cdist'],
+        para=dict(
+            p=[Skip(1),],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['x1'],
+                    "dtype": [Skip(Dtype.float64)],
+                },
+            ],
+        ),
+    ),
+``` 
+
+以上配置会跳过p=1 __或__ x1为float64类型的测例。
+
+
+一个完整的device_configs.py的示例如下:
+```
+    from .device_config_helper import Skip
+    from .diopi_runtime import Dtype
+    device_configs = {
+        'cdist': dict(
+            name=['cdist'],
+            para=dict(
+                p=[Skip(1),],
+            ),
+            tensor_para=dict(
+                args=[
+                    {
+                        "ins": ['x1'],
+                        "dtype": [Skip(Dtype.float64)],
+                    },
+                ],
+            ),
+        ),
+    }
+``` 
+
+
+创建完device_configs.py后，可以在验证算子时通过impl_folder参数将device_configs.py所在文件夹路径传进来，
+
+
+```
+    python main.py --mode run_test --impl_folder /path/to/folder --fname cdist
+```
