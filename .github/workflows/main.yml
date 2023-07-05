@@ -20,8 +20,8 @@ env:
   ENV_NAME: 'pt1.10v2'
   ENV_NAME_MMCV: 'pt1.11v1'
   GPU_REQUESTS: 1
-  SLURM_PAR_SH1984: ${{ vars.SLURM_PAR_SH1984 }}
-  SLURM_PAR_CAMB: ${{ vars.SLURM_PAR_CAMB }}
+  SLURM_PAR_SH1984: ${{ vars.SLURM_PAR_SH1984 || "pat_rd -x SH-IDC1-10-198-8-58,SH-IDC1-10-198-8-87" }}
+  SLURM_PAR_CAMB: ${{ vars.SLURM_PAR_CAMB || "camb_mlu370_m8 --exclude HOST-10-142-11-120,HOST-10-142-11-126" }}
   CLUSTER_1984: SH1984
   CLUSTER_CAMB: CAMB
   BUILD_TEST1: build_test
@@ -43,15 +43,6 @@ jobs:
           git checkout ${{ github.sha }}
           fi
           cd DIOPI-TEST/third_party && rm -rf mmcv_diopi && git clone https://github.com/DeepLink-org/mmcv_diopi.git
-      - name: read config file
-        run: |
-          if [[ "${{ env.SLURM_PAR_CAMB }}" == "" || "${{ env.SLURM_PAR_SH1984 }}" == "" ]]; then
-            config_keys=("SLURM_PAR_SH1984" "SLURM_PAR_CAMB")
-            for key in "${config_keys[@]}"; do
-              config_value=$(cat DIOPI/.github/partition.conf | grep "$key" | cut -d'=' -f2)
-              echo "${key}=$config_value" >> $GITHUB_ENV
-            done
-          fi
       - name: ci interruptible and support pr ci
         run: |
           cd ${GITHUB_WORKSPACE}/DIOPI && bash scripts/ci_interruptible.sh
