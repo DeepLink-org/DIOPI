@@ -21,7 +21,7 @@ env:
   ENV_NAME_MMCV: 'pt1.11v1'
   GPU_REQUESTS: 1
   SLURM_PAR_SH1984: ${{ vars.SLURM_PAR_SH1984 != '' && vars.SLURM_PAR_SH1984 || 'pat_rd -x SH-IDC1-10-198-8-58,SH-IDC1-10-198-8-87' }}
-  SLURM_PAR_CAMB: ${{ vars.SLURM_PAR_CAMB != '' && vars.SLURM_PAR_CAMB || 'camb_mlu370_m8 --exclude HOST-10-142-11-120,HOST-10-142-11-126' }}
+  SLURM_PAR_CAMB: ${{ vars.SLURM_PAR_CAMB != '' && vars.SLURM_PAR_CAMB || 'camb_mlu370_m8 --exclude HOST-10-142-11-120' }}
   CLUSTER_1984: SH1984
   CLUSTER_CAMB: CAMB
   BUILD_TEST1: build_test
