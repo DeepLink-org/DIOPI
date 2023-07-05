@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef DIOPI_IMPL_TORCH_MMCV_KERNEL_H_
-#define DIOPI_IMPL_TORCH_MMCV_KERNEL_H_
+#ifndef IMPL_TORCH_MMCV_KERNEL_H_
+#define IMPL_TORCH_MMCV_KERNEL_H_
 
 #include <ATen/ATen.h>
 
@@ -61,4 +61,4 @@ void modulated_deformable_col2im_coord_cuda(const Tensor data_col, const Tensor 
 
 }  // namespace ops
 }  // namespace mmcv
-#endif  // DIOPI_IMPL_TORCH_MMCV_KERNEL_H_
+#endif  // IMPL_TORCH_MMCV_KERNEL_H_

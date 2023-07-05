@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef DIOPI_IMPL_CAMB_COMMON_COMMON_HPP_
-#define DIOPI_IMPL_CAMB_COMMON_COMMON_HPP_
+#ifndef IMPL_CAMB_COMMON_COMMON_HPP_
+#define IMPL_CAMB_COMMON_COMMON_HPP_
 
 #include <set>
 #include <vector>
@@ -43,4 +43,4 @@ diopiError_t transpose(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTen
 }  // namespace camb
 }  // namespace impl
 
-#endif  // DIOPI_IMPL_CAMB_COMMON_COMMON_HPP_
+#endif  // IMPL_CAMB_COMMON_COMMON_HPP_

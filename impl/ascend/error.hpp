@@ -1,5 +1,5 @@
-#ifndef DIOPI_IMPL_ASCEND_ERROR_HPP_
-#define DIOPI_IMPL_ASCEND_ERROR_HPP_
+#ifndef IMPL_ASCEND_ERROR_HPP_
+#define IMPL_ASCEND_ERROR_HPP_
 
 #include <mutex>
 #include <utility>
@@ -24,4 +24,4 @@ const char* ascend_get_last_error_string();
 
 }  // namespace impl
 
-#endif  // DIOPI_IMPL_ASCEND_ERROR_HPP_
+#endif  // IMPL_ASCEND_ERROR_HPP_

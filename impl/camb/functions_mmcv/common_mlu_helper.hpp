@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef DIOPI_IMPL_CAMB_FUNCTIONS_MMCV_COMMON_MLU_HELPER_HPP_
-#define DIOPI_IMPL_CAMB_FUNCTIONS_MMCV_COMMON_MLU_HELPER_HPP_
+#ifndef IMPL_CAMB_FUNCTIONS_MMCV_COMMON_MLU_HELPER_HPP_
+#define IMPL_CAMB_FUNCTIONS_MMCV_COMMON_MLU_HELPER_HPP_
 
 #include <algorithm>
 
@@ -364,4 +364,4 @@ __mlu_func__ void recursiveSumPool(T *dst, int low_dim, int high_dim, int kernel
     return;
 }
 
-#endif  // DIOPI_IMPL_CAMB_FUNCTIONS_MMCV_COMMON_MLU_HELPER_HPP_
+#endif  // IMPL_CAMB_FUNCTIONS_MMCV_COMMON_MLU_HELPER_HPP_

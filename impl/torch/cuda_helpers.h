@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef DIOPI_IMPL_TORCH_CUDA_HELPERS_H_
-#define DIOPI_IMPL_TORCH_CUDA_HELPERS_H_
+#ifndef IMPL_TORCH_CUDA_HELPERS_H_
+#define IMPL_TORCH_CUDA_HELPERS_H_
 
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
@@ -141,4 +141,4 @@ __device__ void bilinear_interpolate_gradient(const int height, const int width,
 }  // namespace helper
 }  // namespace cuda
 
-#endif  // DIOPI_IMPL_TORCH_CUDA_HELPERS_H_
+#endif  // IMPL_TORCH_CUDA_HELPERS_H_

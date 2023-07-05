@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef DIOPI_IMPL_CAMB_CNNL_HELPER_HPP_
-#define DIOPI_IMPL_CAMB_CNNL_HELPER_HPP_
+#ifndef IMPL_CAMB_CNNL_HELPER_HPP_
+#define IMPL_CAMB_CNNL_HELPER_HPP_
 
 #include <cnnl.h>
 
@@ -245,4 +245,4 @@ extern CnnlHandlePool cnnlHandlePool;
 
 }  // namespace impl
 
-#endif  // DIOPI_IMPL_CAMB_CNNL_HELPER_HPP_
+#endif  // IMPL_CAMB_CNNL_HELPER_HPP_

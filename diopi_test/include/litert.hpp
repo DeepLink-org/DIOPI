@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink Inc.
  * @brief A reference implemention for DIOPI runtime, which is utilized to support conformance test suite of DIOPI
  */
-#ifndef DIOPI_IMPL_TEST_INCLUDE_LITERT_HPP_  // NOLINT
-#define DIOPI_IMPL_TEST_INCLUDE_LITERT_HPP_  // NOLINT
+#ifndef IMPL_LITERT_HPP_  // NOLINT
+#define IMPL_LITERT_HPP_  // NOLINT
 
 #include <conform_test.h>
 #include <diopi/diopirt.h>
@@ -192,4 +192,4 @@ DIOPI_RT_API diopiError_t diopiInit();
 DIOPI_RT_API diopiError_t diopiFinalize();
 }  // extern "C"
 
-#endif  // DIOPI_IMPL_TORCH_TEST_INCLUDE_LITERT_HPP_  // NOLINT
+#endif  // IMPL_INCLUDE_LITERT_HPP_  // NOLINT

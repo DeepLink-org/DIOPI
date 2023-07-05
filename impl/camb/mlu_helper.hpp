@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef DIOPI_IMPL_CAMB_MLU_HELPER_HPP_
-#define DIOPI_IMPL_CAMB_MLU_HELPER_HPP_
+#ifndef IMPL_CAMB_MLU_HELPER_HPP_
+#define IMPL_CAMB_MLU_HELPER_HPP_
 
 #include <cnrt.h>
 
@@ -99,4 +99,4 @@ inline cnrtDataType_t dtype2CnrtDtype(const diopiDtype_t dt) {
 
 }  // namespace impl
 
-#endif  // DIOPI_IMPL_CAMB_MLU_HELPER_HPP_
+#endif  // IMPL_CAMB_MLU_HELPER_HPP_

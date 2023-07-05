@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef DIOPI_IMPL_CUDA_ERROR_HPP_
-#define DIOPI_IMPL_CUDA_ERROR_HPP_
+#ifndef IMPL_CUDA_ERROR_HPP_
+#define IMPL_CUDA_ERROR_HPP_
 
 #include <utility>
 
@@ -31,4 +31,4 @@ void set_last_error_string(const char* szFmt, Types&&... args) {
 
 }  // namespace impl
 
-#endif  // DIOPI_IMPL_CUDA_ERROR_HPP_
+#endif  // IMPL_CUDA_ERROR_HPP_

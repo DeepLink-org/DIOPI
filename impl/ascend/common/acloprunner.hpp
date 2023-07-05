@@ -1,5 +1,5 @@
-#ifndef DIOPI_IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_
-#define DIOPI_IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_
+#ifndef IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_
+#define IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_
 
 #include <acl/acl.h>
 #include <acl/acl_op.h>
@@ -407,4 +407,4 @@ public:
 }  // namespace ascend
 }  // namespace impl
 
-#endif  //  DIOPI_IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_
+#endif  //  IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_

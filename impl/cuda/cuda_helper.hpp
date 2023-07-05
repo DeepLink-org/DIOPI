@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef DIOPI_IMPL_CUDA_CUDA_HELPER_HPP_
-#define DIOPI_IMPL_CUDA_CUDA_HELPER_HPP_
+#ifndef IMPL_CUDA_CUDA_HELPER_HPP_
+#define IMPL_CUDA_CUDA_HELPER_HPP_
 
 #include <cuda.h>
 
@@ -151,4 +151,4 @@ __device__ void bilinear_interpolate_gradient(const int height, const int width,
         fprintf(stderr, "%s:%s: %s<%s %d><<<%d,%d>>>(%s)", __FILE__, __FUNCTION__, #fun, #dtype, dtype, gridSize, blockSize, #__VA_ARGS__); \
         return diopiDtypeNotSupported;                                                                                                      \
     }
-#endif  // DIOPI_IMPL_CUDA_CUDA_HELPER_HPP_
+#endif  // IMPL_CUDA_CUDA_HELPER_HPP_

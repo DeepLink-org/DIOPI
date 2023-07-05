@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef DIOPI_IMPL_TORCH_HELPER_HPP_
-#define DIOPI_IMPL_TORCH_HELPER_HPP_
+#ifndef IMPL_TORCH_HELPER_HPP_
+#define IMPL_TORCH_HELPER_HPP_
 
 #include <ATen/ATen.h>
 #include <c10/cuda/CUDAStream.h>
@@ -492,4 +492,4 @@ inline at::Tensor crossEntropyLossLabelSmoothingBackward(at::Tensor& atInput, at
 
 }  // namespace impl
 
-#endif  // DIOPI_IMPL_TORCH_HELPER_HPP_
+#endif  // IMPL_TORCH_HELPER_HPP_

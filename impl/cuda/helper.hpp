@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef DIOPI_IMPL_CUDA_HELPER_HPP_
-#define DIOPI_IMPL_CUDA_HELPER_HPP_
+#ifndef IMPL_CUDA_HELPER_HPP_
+#define IMPL_CUDA_HELPER_HPP_
 
 #include <diopi/diopirt.h>
 #include <cuda_runtime.h>
@@ -140,4 +140,4 @@ inline cudaStream_t getStream(diopiContextHandle_t ctx) {
 
 }  // namespace impl
 
-#endif  // DIOPI_IMPL_CUDA_HELPER_HPP_
+#endif  // IMPL_CUDA_HELPER_HPP_

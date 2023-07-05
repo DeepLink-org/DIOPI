@@ -4,9 +4,9 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef DIOPI_IMPL_TORCH_CONTEXT_H_
-#define DIOPI_IMPL_TORCH_CONTEXT_H_
+#ifndef IMPL_TORCH_CONTEXT_H_
+#define IMPL_TORCH_CONTEXT_H_
 
 static thread_local diopiContextHandle_t context = nullptr;
 
-#endif  // DIOPI_IMPL_TORCH_CONTEXT_H_
+#endif  // IMPL_TORCH_CONTEXT_H_
