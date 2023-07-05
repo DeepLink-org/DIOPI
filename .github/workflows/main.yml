@@ -45,7 +45,7 @@ jobs:
           cd DIOPI-TEST/third_party && rm -rf mmcv_diopi && git clone https://github.com/DeepLink-org/mmcv_diopi.git
       - name: read config file
         run: |
-          config_keys=("SLURM_PAR_SH1984" "SLURM_PAR_CAMB")
+          config_keys=("SLURM_PAR_SH1984_1" "SLURM_PAR_CAMB")
           for key in "${config_keys[@]}"; do
             if [[ "${key}" == "" ]]; then
               config_value=$(cat .github/partition.conf | grep "$key" | cut -d'=' -f2)
