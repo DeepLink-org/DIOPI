@@ -45,14 +45,15 @@ jobs:
           cd DIOPI-TEST/third_party && rm -rf mmcv_diopi && git clone https://github.com/DeepLink-org/mmcv_diopi.git
       - name: read config file
         run: |
-          if [[ "${{ env.SLURM_PAR_SH1984_1 }}" == "" ]]; then
-            config_value=$(cat DIOPI/.github/partition.conf | grep "SLURM_PAR_SH1984_1" | cut -d'=' -f2)
-            echo "SLURM_PAR_SH1984_1=$config_value" >> $GITHUB_ENV
-          fi
-          if [[ "${{ env.SLURM_PAR_CAMB }}" == "" ]]; then
-            config_value=$(cat DIOPI/.github/partition.conf | grep "SLURM_PAR_CAMB" | cut -d'=' -f2)
-            echo "SLURM_PAR_CAMB=$config_value" >> $GITHUB_ENV
-          fi
+          config_keys=("SLURM_PAR_SH1984_1" "SLURM_PAR_CAMB")
+          for key in "${config_keys[@]}"; do
+            if [[ "${{ env[$(echo $key }}" == "" ]]; then
+              config_value=$(cat .github/partition.conf | grep "$key" | cut -d'=' -f2)
+              echo "${key}=$config_value" >> $GITHUB_ENV
+            else
+              echo "get env partition value"
+            fi
+          done
       - name: ci interruptible and support pr ci
         run: |
           cd ${GITHUB_WORKSPACE}/DIOPI && bash scripts/ci_interruptible.sh
