@@ -1,9 +1,0 @@
-DIOPI_3.0 {
-  global: diopi*; 
-  local: *;
-};
-
-libc10_cuda.so.1.10.0 {
-  global: 
-      *getCurrentCUDAStream*;
-}DIOPI_3.0;
