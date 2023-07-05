@@ -41,6 +41,7 @@ jobs:
           else
           git checkout ${{ github.sha }}
           fi
+          ls
           cd diopi_test/third_party && rm -rf mmcv_diopi && git clone https://github.com/DeepLink-org/mmcv_diopi.git
       - name: ci interruptible and support pr ci
         run: |
