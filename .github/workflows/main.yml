@@ -47,7 +47,7 @@ jobs:
         run: |
           config_keys=("SLURM_PAR_SH1984_1" "SLURM_PAR_CAMB")
           for key in "${config_keys[@]}"; do
-            if [[ "${{ env[$(echo $key }}" == "" ]]; then
+            if [[ "${{ env.\$key }}" == "" ]]; then
               config_value=$(cat .github/partition.conf | grep "$key" | cut -d'=' -f2)
               echo "${key}=$config_value" >> $GITHUB_ENV
             else
