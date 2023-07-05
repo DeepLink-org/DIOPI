@@ -42,7 +42,7 @@ jobs:
           git checkout ${{ github.sha }}
           fi
           ls
-          cd diopi_test && ls && cd third_party && rm -rf mmcv_diopi && git clone https://github.com/DeepLink-org/mmcv_diopi.git
+          git submodule update --init --recursive
       - name: ci interruptible and support pr ci
         run: |
           cd ${GITHUB_WORKSPACE}/DIOPI && bash scripts/ci_interruptible.sh
