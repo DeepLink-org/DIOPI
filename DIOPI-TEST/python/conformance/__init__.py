@@ -1,7 +1,7 @@
 # Copyright (c) 2023, DeepLink.
 from .diopi_runtime import Tensor, Dtype, Device, raw_like, diopiTensor, Context
 from .diopi_runtime import get_last_error, device
-from .diopi_runtime import from_numpy_dtype, to_numpy_dtype
+from .diopi_runtime import from_numpy_dtype, to_numpy_dtype, float_types, int_types
 from .diopi_configs import diopi_configs, ops_with_states
 from .config import Config
 from .conformance_test import ConformanceTest
@@ -41,4 +41,6 @@ __all__ = [
     'ConformanceTest',
     'diopiTensor',
     'cur_test_func',
+    'float_types',
+    'int_types',
 ]

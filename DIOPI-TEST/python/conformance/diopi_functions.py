@@ -4,9 +4,9 @@ import math
 import itertools
 
 from ctypes import c_double, byref
-from .diopi_runtime import Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d
+from .diopi_runtime import Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d, to_numpy_dtype
 from .utils import check_returncode, check_function, glob_vars, get_capsule
-from . import raw_like
+from . import raw_like, float_types, int_types
 from collections import namedtuple
 import numpy as np
 
@@ -73,6 +73,8 @@ def common_dtype(input, other) -> Dtype:
         dtype2 = glob_vars.int_type
     elif isinstance(other, float):
         dtype2 = Dtype.float32
+    elif isinstance(other, Dtype):
+        dtype2 = other
     else:
         assert 0, "not supported type of other"
 
@@ -497,8 +499,8 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
         out = input
         call = call + "Inp"
     else:
-        out = Tensor(input.size(), Dtype.float32)
-        # out = raw_like(input)
+        # out = Tensor(input.size(), Dtype.float32)
+        out = raw_like(input)
         args = args + "out, "
 
     if (max and min):
@@ -536,12 +538,17 @@ def clamp_min(input, min, inplace=False) -> Tensor:
     call = "diopiClampMin"
     args = "input.context(), "
     if inplace:
+        if isinstance(min, float) and input.get_dtype() in int_types:
+            input_np = input.numpy()
+            input = Tensor.from_numpy(input_np.astype(to_numpy_dtype(Dtype.float32)))
         out = input
         call = call + "Inp"
     else:
-        # out = raw_like(input)
-        
-        out = Tensor(input.size(), Dtype.float32)
+        if isinstance(min, float) and input.get_dtype() in int_types:
+            out_dtype = Dtype.float32
+        else:
+            out_dtype = input.get_dtype()
+        out = Tensor(input.size(), out_dtype)
         args = args + "out, "
 
     if isinstance(min, Tensor):
@@ -561,11 +568,17 @@ def clamp_max(input, max, inplace=False) -> Tensor:
     call = "diopiClampMax"
     args = "input.context(), "
     if inplace:
+        if isinstance(max, float) and input.get_dtype() in int_types:
+            input_np = input.numpy()
+            input = Tensor.from_numpy(input_np.astype(to_numpy_dtype(Dtype.float32)))
         out = input
         call = call + "Inp"
     else:
-        # out = raw_like(input)
-        out = Tensor(input.size(), Dtype.float32)
+        if isinstance(max, float) and input.get_dtype() in int_types:
+            out_dtype = Dtype.float32
+        else:
+            out_dtype = input.get_dtype()
+        out = Tensor(input.size(), out_dtype)
         args = args + "out, "
 
     if isinstance(max, Tensor):
@@ -2820,7 +2833,6 @@ def layer_norm(input, normalized_shape, weight=None, bias=None, eps=1e-05):
     sizeI = input.size().data
     dims = len(sizeI) - len(normalized_shape)
     size = [i for i in sizeI[0:dims]]
-    # save_mean = Tensor(size, Dtype.float32)
     save_mean = Tensor(size, input.get_dtype())
     save_invstd = raw_like(save_mean)
 
