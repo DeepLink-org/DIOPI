@@ -12,9 +12,7 @@
 namespace impl {
 namespace camb {
 
-std::vector<int> getPerm(diopiConstTensorHandle_t tensorHandle,
-                         int64_t dim0,
-                         int64_t dim1) {
+std::vector<int> getPerm(diopiConstTensorHandle_t tensorHandle, int64_t dim0, int64_t dim1) {
     DiopiTensor tensor(tensorHandle);
     int inputSize = tensor.shape().size();
 
@@ -39,20 +37,13 @@ std::vector<int> getPerm(diopiConstTensorHandle_t tensorHandle,
 
 extern "C" {
 
-diopiError_t diopiTranspose(diopiContextHandle_t ctx,
-                                      diopiTensorHandle_t out,
-                                      diopiConstTensorHandle_t input,
-                                      int64_t dim0,
-                                      int64_t dim1) {
+diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim0, int64_t dim1) {
     auto stream = getStream(ctx);
     CnnlResourceGuard<cnnlHandle_t, cnnlCreate, cnnlDestroy> cnnlHandle;
     cnnlHandle_t handle = cnnlHandle.get();
     DIOPI_CALLCNNL(cnnlSetQueue(handle, stream));
 
-    CnnlResourceGuard<cnnlTransposeDescriptor_t,
-                      cnnlCreateTransposeDescriptor,
-                      cnnlDestroyTransposeDescriptor>
-        cnnlTransposeDesc;
+    CnnlResourceGuard<cnnlTransposeDescriptor_t, cnnlCreateTransposeDescriptor, cnnlDestroyTransposeDescriptor> cnnlTransposeDesc;
     cnnlTransposeDescriptor_t transposeDesc = cnnlTransposeDesc.get();
     std::vector<int> perms = getPerm(input, dim0, dim1);
     DIOPI_CALLCNNL(cnnlSetTransposeDescriptor(transposeDesc, perms.size(), perms.data()));
@@ -68,20 +59,12 @@ diopiError_t diopiTranspose(diopiContextHandle_t ctx,
     void* outPtr = outputTensor.data();
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetTransposeWorkspaceSize(
-        handle, inputDesc.get(), transposeDesc, &workspaceSize));
-    void *workspace = nullptr;
+    DIOPI_CALLCNNL(cnnlGetTransposeWorkspaceSize(handle, inputDesc.get(), transposeDesc, &workspaceSize));
+    void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
-    DIOPI_CALLCNNL(cnnlTranspose_v2(handle,
-                                    transposeDesc,
-                                    inputDesc.get(),
-                                    inputPtr,
-                                    outputDesc.get(),
-                                    outPtr,
-                                    workspace,
-                                    workspaceSize));
+    DIOPI_CALLCNNL(cnnlTranspose_v2(handle, transposeDesc, inputDesc.get(), inputPtr, outputDesc.get(), outPtr, workspace, workspaceSize));
     return diopiSuccess;
 }
 }  // extern "C"

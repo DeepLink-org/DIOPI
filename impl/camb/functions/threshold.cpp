@@ -1,15 +1,15 @@
 #include <diopi/functions.h>
 
-#include "../common/float16.hpp"
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
+#include "../common/float16.hpp"
 
 namespace impl {
 namespace camb {
 extern "C" {
 
 diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* threshold,
-                                      const diopiScalar_t* value) {
+                            const diopiScalar_t* value) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor(input);
     DiopiTensor outTensor(out);
@@ -85,8 +85,7 @@ diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
             break;
     }
 
-    DIOPI_CALLCNNL(
-        cnnlThreshold(handle, inputTensorDesc.get(), inputTensor.data(), thresholdVal, valueVal, outTensorDesc.get(), outTensorTemp.data()));
+    DIOPI_CALLCNNL(cnnlThreshold(handle, inputTensorDesc.get(), inputTensor.data(), thresholdVal, valueVal, outTensorDesc.get(), outTensorTemp.data()));
 
     if (outTensorTemp.dtype() != outTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTemp));
@@ -100,7 +99,7 @@ diopiError_t diopiThresholdInp(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 }
 
 diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                              diopiConstTensorHandle_t input, const diopiScalar_t* threshold) {
+                                    diopiConstTensorHandle_t input, const diopiScalar_t* threshold) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor(input);
     DiopiTensor gradInputTensor(gradInput);

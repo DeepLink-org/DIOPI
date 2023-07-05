@@ -125,8 +125,8 @@ const std::unordered_map<std::vector<diopiDtype_t>, cnnlCastDataType_t, HashCnnl
 
 CnnlHandlePool cnnlHandlePool;
 
-diopiError_t cnnlTranspose(
-    diopiContextHandle_t& ctx, cnnlHandle_t& handle, DiopiTensor& in, DiopiTensor& out, cnnlTensorLayout_t layoutIn, cnnlTensorLayout_t layoutOut) {
+diopiError_t cnnlTranspose(diopiContextHandle_t& ctx, cnnlHandle_t& handle, DiopiTensor& in, DiopiTensor& out, cnnlTensorLayout_t layoutIn,
+                           cnnlTensorLayout_t layoutOut) {
     /* DEPRECATED AND WILL BE REMOVED */
     DIOPI_CHECK(in.dtype() == out.dtype(), "the data type of input and output tensor should be the same.");
 

@@ -108,26 +108,12 @@ diopiError_t diopiOneHot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     // output must be int32, float16, float32
     if (diopi_dtype_int32 != outTensor.dtype()) {
         DiopiTensor out32Tensor = requiresTensor(ctx, outTensor.shape(), diopi_dtype_int32);
-        DIOPI_CALLCNNL(cnnlOneHot(handle,
-                                  inputDesc.get(),
-                                  inputTensor.data(),
-                                  clsNum,
-                                  onValueTensor.data(),
-                                  offValueTensor.data(),
-                                  axis,
-                                  CNNL_DTYPE_INT32,
-                                  out32Tensor.data()));
+        DIOPI_CALLCNNL(cnnlOneHot(
+            handle, inputDesc.get(), inputTensor.data(), clsNum, onValueTensor.data(), offValueTensor.data(), axis, CNNL_DTYPE_INT32, out32Tensor.data()));
         DIOPI_CALL(dataTypeCast(ctx, outTensor, out32Tensor));
     } else {
-        DIOPI_CALLCNNL(cnnlOneHot(handle,
-                                  inputDesc.get(),
-                                  inputTensor.data(),
-                                  clsNum,
-                                  onValueTensor.data(),
-                                  offValueTensor.data(),
-                                  axis,
-                                  CNNL_DTYPE_INT32,
-                                  outTensor.data()));
+        DIOPI_CALLCNNL(cnnlOneHot(
+            handle, inputDesc.get(), inputTensor.data(), clsNum, onValueTensor.data(), offValueTensor.data(), axis, CNNL_DTYPE_INT32, outTensor.data()));
     }
 
     return diopiSuccess;

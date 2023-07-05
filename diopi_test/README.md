@@ -2,12 +2,12 @@
 <img src="../img/deepLink_logo.png">
 </div>
 
-# DIOPI-TEST
+# DIOPI_TEST
 
-DIOPI-TEST是构建于设备无关算子接口（Device-Independent Operator Interface, DIOPI）之上的测试框架，它支持了没有训练框架的情况下，验证算子适配正确性的功能。DIOPI-TEST设计了一套完整的测试框架和一套算子函数测试。测试套件，可以使芯片厂商适配 DIOPI 算子时，无需训练框架即可对适配结果的正确性进行验证。
+DIOPI_TEST是构建于设备无关算子接口（Device-Independent Operator Interface, DIOPI）之上的测试框架，它支持了没有训练框架的情况下，验证算子适配正确性的功能。DIOPI_TEST设计了一套完整的测试框架和一套算子函数测试。测试套件，可以使芯片厂商适配 DIOPI 算子时，无需训练框架即可对适配结果的正确性进行验证。
 
 主要模块：
-* DIOPI-TEST 运行时：支持了运行时函数的接口，用以管理设备相关资源。
+* DIOPI_TEST 运行时：支持了运行时函数的接口，用以管理设备相关资源。
 * 非算子测试：
     * 测试获取设备相关信息标准接口。
     * 测试获取错误信息标准接口。
@@ -21,14 +21,14 @@ DIOPI-TEST是构建于设备无关算子接口（Device-Independent Operator Int
     * 从30多个模型训练过程中抓取张量形状，数据类型及其他非张量参数值生成测例。
 
 
-DIOPI-TEST 测试范围：
+DIOPI_TEST 测试范围：
 * 每一个 DIOPI 标准算子均有相应的测试，并且会从不同的数据类型、张量维度、非张量参数等角度对每个算子设计多个测例。保证 DIOPI 标准算子接口中每个参数功能均被测试。针对常见训练算子目前已有约 2500个测例， 其中涵盖了如 conv2d， batch_norm, adaptive_max_pool2d, relu 等经典训练算子。
-* DIOPI-TEST 提供的模型算子测试，涵盖了经典分类模型如 resnet50, vgg16, seresnet50, densenet, mobilenet_v2, efficientnet, shufflenet_v2, repvgg, swin_transformer, vit, inceptionv3 及经典检测模型如 retinanet, faster_rcnn_r50, ssd300, yolov3, atss, fcos, mask_rcnn, solo, centernet, cascade_rcnn, detr 及经典分割模型如 unet, upernet, pspnet, fcn, deeplabv3, deeplabv3plus 及其他领域深度学习模型 sar, dbnet, stgcn, crnn, hrnet, deeppose, tsn, slowfast。
+* DIOPI_TEST 提供的模型算子测试，涵盖了经典分类模型如 resnet50, vgg16, seresnet50, densenet, mobilenet_v2, efficientnet, shufflenet_v2, repvgg, swin_transformer, vit, inceptionv3 及经典检测模型如 retinanet, faster_rcnn_r50, ssd300, yolov3, atss, fcos, mask_rcnn, solo, centernet, cascade_rcnn, detr 及经典分割模型如 unet, upernet, pspnet, fcn, deeplabv3, deeplabv3plus 及其他领域深度学习模型 sar, dbnet, stgcn, crnn, hrnet, deeppose, tsn, slowfast。
 
 
 ## **使用教学**
 ### 安装和基础使用
-参考 [DIOPI Readme](https://github.com/DeepLink-org/DIOPI/tree/main/DIOPI-PROTO#readme)
+参考 [DIOPI Readme](https://github.com/DeepLink-org/DIOPI/tree/main/D#readme)
 
 ### 结果分析
 
@@ -47,7 +47,7 @@ DIOPI-TEST 测试范围：
   ```
 
 ### 可选测试模式
-DIOPI-TEST框架还提供针对不同硬件芯片特点的测试模式以及其他测试模式
+DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其他测试模式
 
 * mode: 指定测试阶段
 
@@ -137,7 +137,7 @@ DIOPI-TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
     ```
 ### 测例配置说明
 
-DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子测试为例，
+DIOPITEST 设计了一套测例配置规则及相应的测试框架。以算子测试为例，
 所有算子测例配置文件位于 python/conformance/diopi_configs.py 中。
 我们以 group_norm 算子测例配置为例来阐释说明测例生成。
 

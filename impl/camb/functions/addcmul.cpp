@@ -8,7 +8,7 @@ namespace camb {
 extern "C" {
 
 diopiError_t diopiAddcmul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t tensor1,
-                                    diopiConstTensorHandle_t tensor2, const diopiScalar_t* value) {
+                          diopiConstTensorHandle_t tensor2, const diopiScalar_t* value) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor(input);
     DiopiTensor otherTensor1(tensor1);
@@ -58,7 +58,7 @@ diopiError_t diopiAddcmul(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     return diopiSuccess;
 }
 diopiError_t diopiAddcmulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t tensor1, diopiConstTensorHandle_t tensor2,
-                                       const diopiScalar_t* value) {
+                             const diopiScalar_t* value) {
     diopiAddcmul(ctx, input, input, tensor1, tensor2, value);
     return diopiSuccess;
 }

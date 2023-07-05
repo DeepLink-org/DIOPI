@@ -9,7 +9,6 @@
 namespace impl {
 namespace camb {
 
-
 diopiError_t logInternal(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, cnnlLogBase_t logBase) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor(input);

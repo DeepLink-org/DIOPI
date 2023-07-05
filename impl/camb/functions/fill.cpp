@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "../cnnl_helper.hpp"
-#include "../common/float16.hpp"
 #include "../common/common.hpp"
+#include "../common/float16.hpp"
 
 namespace impl {
 namespace camb {
@@ -24,7 +24,7 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
 
     // float64 not supported yet
     if (inputTensor.dtype() == diopi_dtype_float64) {
-       DIOPI_CALL(dataTypeCast(ctx, inputTensorTemp, diopi_dtype_float32));
+        DIOPI_CALL(dataTypeCast(ctx, inputTensorTemp, diopi_dtype_float32));
     }
 
     CnnlTensorDesc inputTensorDesc(inputTensorTemp, CNNL_LAYOUT_ARRAY);

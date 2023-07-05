@@ -14,7 +14,7 @@ namespace camb {
 extern "C" {
 
 diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
-                                diopiRoundMode_t roundingMode) {
+                      diopiRoundMode_t roundingMode) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor(input);
     DiopiTensor otherTensor(other);
@@ -60,7 +60,7 @@ diopiError_t diopiDivInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
 }
 
 diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
-                                      diopiRoundMode_t roundingMode) {
+                            diopiRoundMode_t roundingMode) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor(input);
     DiopiTensor otherTensorTmp;

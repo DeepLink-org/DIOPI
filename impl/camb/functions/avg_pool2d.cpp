@@ -5,6 +5,7 @@
  */
 
 #include <diopi/functions.h>
+
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
@@ -28,8 +29,8 @@ std::vector<int> getDim(DiopiTensor tensor) {
 }  // namespace
 extern "C" {
 
-diopiError_t diopiAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernelSize,
-                                      diopiSize_t stride, diopiSize_t padding, bool ceilMode, bool countIncludePad, const int64_t* divisorOverride) {
+diopiError_t diopiAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernelSize, diopiSize_t stride,
+                            diopiSize_t padding, bool ceilMode, bool countIncludePad, const int64_t* divisorOverride) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor inputTensor(input);
@@ -83,8 +84,8 @@ diopiError_t diopiAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     CnnlResourceGuard<cnnlPoolingDescriptor_t, cnnlCreatePoolingDescriptor, cnnlDestroyPoolingDescriptor> cnnlPoolDesc;
     cnnlPoolingDescriptor_t poolDesc = cnnlPoolDesc.get();
     cnnlPoolingMode_t mode = countIncludePad ? CNNL_POOLING_AVERAGE_COUNT_INCLUDE_PADDING : CNNL_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING;
-    DIOPI_CALLCNNL(cnnlSetPooling2dDescriptor_v2(
-        poolDesc, mode, CNNL_PROPAGATE_NAN, kernelH, kernelW, pu, pd, pl, pr, strideH, strideW, dilation0, dilation1, ceilMode));
+    DIOPI_CALLCNNL(
+        cnnlSetPooling2dDescriptor_v2(poolDesc, mode, CNNL_PROPAGATE_NAN, kernelH, kernelW, pu, pd, pl, pr, strideH, strideW, dilation0, dilation1, ceilMode));
 
     size_t workspaceSize = 0;
     DIOPI_CALLCNNL(cnnlGetPoolingWorkspaceSize(handle, mode, outTensor.shape()[3], inputTensor.shape()[2], &workspaceSize));
@@ -110,8 +111,8 @@ diopiError_t diopiAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 }
 
 diopiError_t diopiAvgPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                              diopiConstTensorHandle_t input, diopiSize_t kernelSize, diopiSize_t stride, diopiSize_t padding, bool ceilMode,
-                                              bool countIncludePad, const int64_t* divisorOverride) {
+                                    diopiConstTensorHandle_t input, diopiSize_t kernelSize, diopiSize_t stride, diopiSize_t padding, bool ceilMode,
+                                    bool countIncludePad, const int64_t* divisorOverride) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor inputTensor(input);
@@ -212,8 +213,8 @@ diopiError_t diopiAvgPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     CnnlResourceGuard<cnnlPoolingDescriptor_t, cnnlCreatePoolingDescriptor, cnnlDestroyPoolingDescriptor> cnnlPoolDesc;
     cnnlPoolingDescriptor_t poolDesc = cnnlPoolDesc.get();
     cnnlPoolingMode_t mode = countIncludePad ? CNNL_POOLING_AVERAGE_COUNT_INCLUDE_PADDING : CNNL_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING;
-    DIOPI_CALLCNNL(cnnlSetPooling2dDescriptor_v2(
-        poolDesc, mode, CNNL_PROPAGATE_NAN, kernelH, kernelW, pu, pd, pl, pr, strideH, strideW, dilation0, dilation1, ceilMode));
+    DIOPI_CALLCNNL(
+        cnnlSetPooling2dDescriptor_v2(poolDesc, mode, CNNL_PROPAGATE_NAN, kernelH, kernelW, pu, pd, pl, pr, strideH, strideW, dilation0, dilation1, ceilMode));
 
     const void* alpha = nullptr;
     const void* beta = nullptr;

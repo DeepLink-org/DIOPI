@@ -5,7 +5,7 @@ namespace camb {
 
 template <typename T1, typename T2, typename T3>
 diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor other, DiopiTensor out, cnnlOpTensorDesc_t opType, T1 alpha1, T2 alpha2,
-                            T3 beta) {
+                          T3 beta) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor inputCasted = input;
@@ -70,7 +70,7 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTens
 
 // Explicitly instantiate the template function for use in other .cpp files.
 template diopiError_t cnnlOpTensor<double, double, double>(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor other, DiopiTensor out,
-                                                             cnnlOpTensorDesc_t op_type, double alpha1, double alpha2, double beta);
+                                                           cnnlOpTensorDesc_t op_type, double alpha1, double alpha2, double beta);
 
 }  // namespace camb
 }  // namespace impl

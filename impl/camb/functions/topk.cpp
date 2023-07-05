@@ -13,14 +13,8 @@ namespace impl {
 namespace camb {
 extern "C" {
 
-diopiError_t diopiTopk(diopiContextHandle_t ctx,
-                                 diopiTensorHandle_t values,
-                                 diopiTensorHandle_t indices,
-                                 diopiConstTensorHandle_t input,
-                                 int64_t k,
-                                 int64_t dim,
-                                 bool largest,
-                                 bool sorted) {
+diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, diopiTensorHandle_t indices, diopiConstTensorHandle_t input, int64_t k,
+                       int64_t dim, bool largest, bool sorted) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor(input);
     DiopiTensor indicesTensor(indices);

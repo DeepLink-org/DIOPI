@@ -5,6 +5,7 @@
  */
 
 #include <diopi/functions.h>
+
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 

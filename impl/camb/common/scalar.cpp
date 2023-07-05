@@ -6,7 +6,6 @@
 
 #include "common.hpp"
 
-
 namespace impl {
 namespace camb {
 

@@ -6,8 +6,8 @@
 
 #include <cnmlrt.h>
 #include <cnnl.h>
-#include <diopi/diopirt.h>
 #include <conform_test.h>
+#include <diopi/diopirt.h>
 
 #include <cstdio>
 #include <mutex>

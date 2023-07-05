@@ -1,4 +1,5 @@
 #include <diopi/functions.h>
+
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
@@ -43,15 +44,15 @@ diopiError_t diopiPowTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     }
 
     DIOPI_CALLCNNL(cnnlPow(handle,
-                            CNNL_COMPUTATION_HIGH_PRECISION,
-                            inputDesc.get(),
-                            inputTensorTmp.data(),
-                            exponentDesc.get(),
-                            exponentTensorTmp.data(),
-                            workspace,
-                            workspaceSize,
-                            outDesc.get(),
-                            outTensorTmp.data()));
+                           CNNL_COMPUTATION_HIGH_PRECISION,
+                           inputDesc.get(),
+                           inputTensorTmp.data(),
+                           exponentDesc.get(),
+                           exponentTensorTmp.data(),
+                           workspace,
+                           workspaceSize,
+                           outDesc.get(),
+                           outTensorTmp.data()));
     DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
     return diopiSuccess;
 }

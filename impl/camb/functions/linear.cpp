@@ -27,8 +27,7 @@ diopiError_t flattenTo2d(std::vector<int64_t> inDims, std::vector<int>& outDims)
     return diopiSuccess;
 }
 
-diopiError_t matmul(diopiContextHandle_t ctx, DiopiTensor inputA, DiopiTensor inputB, DiopiTensor inputBias, DiopiTensor output, bool transA,
-                    bool transB) {
+diopiError_t matmul(diopiContextHandle_t ctx, DiopiTensor inputA, DiopiTensor inputB, DiopiTensor inputBias, DiopiTensor output, bool transA, bool transB) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     std::vector<int> inputShape, weightShape, outputShape;

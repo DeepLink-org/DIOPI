@@ -39,8 +39,7 @@ DIOPI_API diopiError_t diopiGather(diopiContextHandle_t ctx, diopiTensorHandle_t
         DiopiTensor outTemp = outTensor;
         DIOPI_CALL(dataTypeCast(ctx, outTemp, inputTensor.dtype()));
         CnnlTensorDesc outTempDesc(outTemp, CNNL_LAYOUT_ARRAY);
-        DIOPI_CALLCNNL(
-            cnnlGather(handle, dim, inputDesc.get(), inputTensor.data(), indexDesc.get(), indexTensor.data(), outTempDesc.get(), outTemp.data()));
+        DIOPI_CALLCNNL(cnnlGather(handle, dim, inputDesc.get(), inputTensor.data(), indexDesc.get(), indexTensor.data(), outTempDesc.get(), outTemp.data()));
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTemp));
     }
 

@@ -12,8 +12,8 @@ namespace impl {
 namespace camb {
 extern "C" {
 
-diopiError_t bitwiseCommon(
-    diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other, cnnlBitComputeOp_t optype) {
+diopiError_t bitwiseCommon(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
+                           cnnlBitComputeOp_t optype) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor outTensor(out);

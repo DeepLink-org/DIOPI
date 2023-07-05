@@ -15,8 +15,8 @@
 namespace impl {
 namespace camb {
 
-extern "C" diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTensorHandle_t dw, diopiTensorHandle_t buf, double lr,
-                                           double momentum, double dampening, double weightDecay, bool nesterov) {
+extern "C" diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTensorHandle_t dw, diopiTensorHandle_t buf, double lr, double momentum,
+                                 double dampening, double weightDecay, bool nesterov) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor wTensor(w);
