@@ -47,9 +47,10 @@ jobs:
         run: |
           config_keys=("SLURM_PAR_SH1984" "SLURM_PAR_CAMB")
           for key in "${config_keys[@]}"; do
-            if [[ -z "${{ env[key^^] }}" ]]; then
+            env_par="env.${key}"
+            if [[ "${{ env_par }}" == "" ]]; then
               config_value=$(cat .github/partition.conf | grep "$key" | cut -d'=' -f2)
-              echo "${key^^}=$config_value" >> $GITHUB_ENV
+              echo "${key}=$config_value" >> $GITHUB_ENV
             else
               echo "get env partition value"
             fi
@@ -254,5 +255,3 @@ jobs:
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode utest' \
           """
-
-
