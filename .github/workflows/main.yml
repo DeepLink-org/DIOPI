@@ -46,11 +46,12 @@ jobs:
       - name: read config file
         run: |
           if [[ "${{ env.SLURM_PAR_CAMB }}" == "" || "${{ env.SLURM_PAR_SH1984_1 }}" == "" ]]; then
-          config_keys=("SLURM_PAR_SH1984_1" "SLURM_PAR_CAMB")
-          for key in "${config_keys[@]}"; do
-            config_value=$(cat .github/partition.conf | grep "$key" | cut -d'=' -f2)
-            echo "${key}=$config_value" >> $GITHUB_ENV
-          done
+            config_keys=("SLURM_PAR_SH1984_1" "SLURM_PAR_CAMB")
+            for key in "${config_keys[@]}"; do
+              config_value=$(cat .github/partition.conf | grep "$key" | cut -d'=' -f2)
+              echo "${key}=$config_value" >> $GITHUB_ENV
+            done
+          fo
       - name: ci interruptible and support pr ci
         run: |
           cd ${GITHUB_WORKSPACE}/DIOPI && bash scripts/ci_interruptible.sh
