@@ -13,7 +13,7 @@ REPO_KEY="repo"
 
 function validate_required_env_variables() {
   local required_env_variables=( "GITHUB_REPOSITORY" "GITHUB_RUN_ID" )
-  if [ -z "${!GITHUB_TOKEN}" ]; then
+  if [ "$GITHUB_TOKEN" = "" ]​​; then
     echo "can not find GITHUB_TOKEN and stop to interrupt"
     exit 0
   fi
