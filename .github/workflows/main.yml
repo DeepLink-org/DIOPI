@@ -46,11 +46,11 @@ jobs:
       - name: read config file
         run: |
           if [[ "${{ env.SLURM_PAR_SH1984_1 }}" == "" ]]; then
-            config_value=$(cat .github/partition.conf | grep "SLURM_PAR_SH1984_1" | cut -d'=' -f2)
+            config_value=$(cat DIOPI/.github/partition.conf | grep "SLURM_PAR_SH1984_1" | cut -d'=' -f2)
             echo "SLURM_PAR_SH1984_1=$config_value" >> $GITHUB_ENV
           fi
           if [[ "${{ env.SLURM_PAR_CAMB }}" == "" ]]; then
-            config_value=$(cat .github/partition.conf | grep "SLURM_PAR_CAMB" | cut -d'=' -f2)
+            config_value=$(cat DIOPI/.github/partition.conf | grep "SLURM_PAR_CAMB" | cut -d'=' -f2)
             echo "SLURM_PAR_CAMB=$config_value" >> $GITHUB_ENV
           fi
       - name: ci interruptible and support pr ci
