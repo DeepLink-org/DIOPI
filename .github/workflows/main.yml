@@ -6,8 +6,6 @@ on:
       - main
       - dev_v0.25
       - wgs/*
-    paths-ignore:
-      - '.github/partition.conf'
   pull_request:
     branches:
       - main
