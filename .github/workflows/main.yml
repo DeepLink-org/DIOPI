@@ -6,11 +6,11 @@ on:
       - main
       - dev_v0.25
       - wgs/*
-    if: 'contains(github.event.head_commit.message, "ci") || contains(github.event.head_commit.message, "CI")'
   pull_request:
     branches:
       - main
       - dev_v0.25
+      - wgs/*
 
 env:
   NFS_PATH: '/mnt/cache/share/parrotsci/github/cibuild/${{ github.repository }}'
