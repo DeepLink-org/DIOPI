@@ -32,7 +32,7 @@ std::vector<int> getDim(DiopiTensor tensor) {
 extern "C" {
 
 DIOPI_API diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t pad, const char* mode,
-                                double* value) {
+                                const double* value) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor(input);
     DiopiTensor outTensor(out);
@@ -156,6 +156,8 @@ DIOPI_API diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t ou
                     valuePtr = &tempF32;
                     break;
                 }
+                default:
+                    break;
             }
         }
         DIOPI_CALLCNNL(
@@ -208,8 +210,8 @@ DIOPI_API diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t ou
                 sliceShape1[i] = src.shape()[i];
             }
             sliceShape1[dim] = value;
-            diopiSize_t slice_shape1(sliceShape1.data(), sliceShape1.size());
-            DIOPI_CALL(diopiRequireTensor(ctx, &dst, &slice_shape1, nullptr, src.dtype(), diopi_device));
+            diopiSize_t sliceShape(sliceShape1.data(), sliceShape1.size());
+            DIOPI_CALL(diopiRequireTensor(ctx, &dst, &sliceShape, nullptr, src.dtype(), diopi_device));
             return diopiSuccess;
         };
 
