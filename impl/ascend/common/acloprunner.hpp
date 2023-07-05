@@ -12,10 +12,10 @@
 #include <functional>
 #include <initializer_list>
 #include <sstream>
-#include <vector>
-#include <typeinfo>
 #include <string>
+#include <typeinfo>
 #include <utility>
+#include <vector>
 
 namespace impl {
 namespace ascend {
@@ -45,7 +45,6 @@ namespace ascend {
         printf("\n");                                \
         std::abort();                                \
     }
-
 
 inline aclDataType getAclDataType(diopiConstTensorHandle_t th) {
     diopiDtype_t type;
@@ -82,7 +81,7 @@ inline aclDataType getAclDataType(diopiConstTensorHandle_t th) {
 
 inline std::string dumpTensor(diopiConstTensorHandle_t th) {
     std::stringstream stream;
-     stream << "Tensor(handle:" << th;
+    stream << "Tensor(handle:" << th;
     if (th) {
         diopiSize_t shape;
         diopiSize_t stride;
@@ -95,9 +94,9 @@ inline std::string dumpTensor(diopiConstTensorHandle_t th) {
         stream << " ,data:" << ptr;
         stream << " ,dtype:" << dtype;
         stream << " ,shape:";
-        std::for_each(shape.data, shape.data + shape.len, [&stream](int64_t v){stream << v << " ";});
+        std::for_each(shape.data, shape.data + shape.len, [&stream](int64_t v) { stream << v << " "; });
         stream << " ,stride:";
-        std::for_each(stride.data, stride.data + stride.len, [&stream](int64_t v){stream << v << " ";});
+        std::for_each(stride.data, stride.data + stride.len, [&stream](int64_t v) { stream << v << " "; });
     }
     stream << ")";
     return stream.str();
@@ -350,7 +349,7 @@ public:
             CALL_ACLRT(aclopSetAttrString(attr_, attrName.data(), value.data()));
             return *this;
         }
-        check_args(false, "%s: no specialization for %s type.", dumpRunnerInfo().c_str() , typeid(T).name());
+        check_args(false, "%s: no specialization for %s type.", dumpRunnerInfo().c_str(), typeid(T).name());
         return *this;
     }
 
