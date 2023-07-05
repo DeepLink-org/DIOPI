@@ -812,7 +812,6 @@ diopiError_t diopiLog10(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     at::Tensor atInput = camb::aten::buildATen(input);
     at::Tensor atOut = camb::aten::buildATen(out);
     cnnl_log_internal(atOut, atInput, CNNL_LOG_10);
-    ;
     return diopiSuccess;
 }
 
@@ -904,7 +903,6 @@ diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     }
 #if CNRT_VERSION >= 60002
     cnnl_add_out(atOut, atInput, wrapped_scalar_tensor(atOther), atAlpha);
-    ;
 #else
     cnnl_add_out(atOut, atInput, at::scalar_tensor(atOther, at::device(at::kMLU).dtype(atInput.scalar_type())), atAlpha);
 #endif
@@ -951,7 +949,6 @@ diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 #if CNRT_VERSION >= 60002
     // Todo: to check
     cnnl_mul_out(atOut, atInput, wrapped_scalar_tensor(atOther));
-    ;
 #else
     cnnl_mul_out(atOut, atInput, at::scalar_tensor(atOther, at::device(at::kMLU).dtype(atInput.scalar_type())));
 #endif
