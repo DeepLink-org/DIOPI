@@ -5,7 +5,7 @@
  */
 
 #include <diopi/functions.h>
-#include <string.h>
+#include <cstring>
 #include <numeric>
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
@@ -16,12 +16,12 @@ namespace camb {
 namespace {
 
 std::vector<int> getDim(DiopiTensor tensor) {
-    int shape_size = tensor.shape().size();
+    int shapeSize = tensor.shape().size();
     std::vector<int> dim;
-    for (int i = 0; i < shape_size; i++) {
+    for (int i = 0; i < shapeSize; i++) {
         dim.push_back(static_cast<int>(tensor.shape()[i]));
     }
-    if (shape_size == 3) {
+    if (shapeSize == 3) {
         dim.insert(dim.begin(), 1);
     }
     return dim;
@@ -34,235 +34,235 @@ extern "C" {
 DIOPI_API diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t pad, const char* mode,
                                 double* value) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor input_tensor(input);
-    DiopiTensor out_tensor(out);
-    DiopiTensor input_tensor_tmp = input_tensor;
-    DiopiTensor out_tensor_tmp = out_tensor;
+    DiopiTensor inputTensor(input);
+    DiopiTensor outTensor(out);
+    DiopiTensor inputTensorTmp = inputTensor;
+    DiopiTensor outTensorTmp = outTensor;
 
-    if (input_tensor.dtype() == diopi_dtype_float64) {
-        std::vector<DiopiTensor*> pTensors{&input_tensor_tmp};
+    if (inputTensor.dtype() == diopi_dtype_float64) {
+        std::vector<DiopiTensor*> pTensors{&inputTensorTmp};
         DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_float32}));
-        input_tensor_tmp = *pTensors[0];
-        DIOPI_CALL(dataTypeCast(ctx, out_tensor_tmp, input_tensor_tmp.dtype()));
+        inputTensorTmp = *pTensors[0];
+        DIOPI_CALL(dataTypeCast(ctx, outTensorTmp, inputTensorTmp.dtype()));
     }
 
-    std::vector<int> pad_vec(pad.data, pad.data + pad.len);
-    CnnlTensorDesc input_desc;
-    CnnlTensorDesc out_desc;
-    std::string pad_mode(mode);
-    if (pad_mode == "constant") {
-        input_desc.set(input_tensor_tmp, CNNL_LAYOUT_ARRAY);
-        out_desc.set(out_tensor_tmp, CNNL_LAYOUT_ARRAY);
+    std::vector<int> padVec(pad.data, pad.data + pad.len);
+    CnnlTensorDesc inputDesc;
+    CnnlTensorDesc outDesc;
+    std::string padMode(mode);
+    if (padMode == "constant") {
+        inputDesc.set(inputTensorTmp, CNNL_LAYOUT_ARRAY);
+        outDesc.set(outTensorTmp, CNNL_LAYOUT_ARRAY);
 
-        bool all_pads_is_zero = true;
-        for (const auto& i : pad_vec) {
+        bool allPadsIsZero = true;
+        for (const auto& i : padVec) {
             if (i != 0) {
-                all_pads_is_zero = false;
+                allPadsIsZero = false;
                 break;
             }
         }
-        if (all_pads_is_zero) {
-            DIOPI_CALLCNNL(cnnlCopy(handle, input_desc.get(), input_tensor_tmp.data(), out_desc.get(), out_tensor_tmp.data()));
+        if (allPadsIsZero) {
+            DIOPI_CALLCNNL(cnnlCopy(handle, inputDesc.get(), inputTensorTmp.data(), outDesc.get(), outTensorTmp.data()));
         }
 
-        auto input_sizes = input_tensor.shape();
-        auto l_inp = input_tensor.shape().size();
-        auto l_pad = pad_vec.size() / 2;
-        auto l_diff = l_inp - l_pad;
+        auto inputSizes = inputTensor.shape();
+        auto lInp = inputTensor.shape().size();
+        auto lPad = padVec.size() / 2;
+        auto lDiff = lInp - lPad;
 
-        std::vector<int64_t> new_shape;
+        std::vector<int64_t> newShape;
         // for MLU pad
-        int new_pad[l_inp][2], new_pad_trans[l_inp][2];
-        for (size_t i = 0; i < (size_t)l_diff; i++) {
-            new_shape.emplace_back(input_sizes[i]);
-            new_pad[i][0] = new_pad[i][1] = 0;
+        int newPad[lInp][2], newPadTrans[lInp][2];
+        for (size_t i = 0; i < (size_t)lDiff; i++) {
+            newShape.emplace_back(inputSizes[i]);
+            newPad[i][0] = newPad[i][1] = 0;
         }
 
-        for (size_t i = 0; i < (size_t)l_pad; i++) {
-            auto pad_idx = pad_vec.size() - ((i + 1) * 2);
-            auto new_dim = input_sizes[l_diff + i] + pad_vec[pad_idx] + pad_vec[pad_idx + 1];
-            new_shape.emplace_back(new_dim);
-            new_pad[l_diff + i][0] = pad_vec[pad_idx];
-            new_pad[l_diff + i][1] = pad_vec[pad_idx + 1];
+        for (size_t i = 0; i < (size_t)lPad; i++) {
+            auto padIdx = padVec.size() - ((i + 1) * 2);
+            auto newDim = inputSizes[lDiff + i] + padVec[padIdx] + padVec[padIdx + 1];
+            newShape.emplace_back(newDim);
+            newPad[lDiff + i][0] = padVec[padIdx];
+            newPad[lDiff + i][1] = padVec[padIdx + 1];
         }
 
-        void* value_ptr;
-        bool temp_bool = 0;
-        int8_t temp_i8 = 0;
-        uint8_t temp_u8 = 0;
-        int16_t temp_i16 = 0;
-        uint16_t temp_u16 = 0;
-        int32_t temp_i32 = 0;
-        uint32_t temp_u32 = 0;
-        int64_t temp_i64 = 0;
-        uint64_t temp_u64 = 0;
-        half_float::half temp_f16 = static_cast<half_float::half>(0);
-        float temp_f32 = 0;
+        void* valuePtr;
+        bool tempBool = false;
+        int8_t tempI8 = 0;
+        uint8_t tempU8 = 0;
+        int16_t tempI16 = 0;
+        uint16_t tempU16 = 0;
+        int32_t tempI32 = 0;
+        uint32_t tempU32 = 0;
+        int64_t tempI64 = 0;
+        uint64_t tempU64 = 0;
+        half_float::half tempF16 = static_cast<half_float::half>(0);
+        float tempF32 = 0;
 
         if (value != nullptr) {
-            switch (input_tensor_tmp.dtype()) {
+            switch (inputTensorTmp.dtype()) {
                 case diopi_dtype_bool: {
-                    temp_bool = static_cast<bool>(*value);
-                    value_ptr = &temp_bool;
+                    tempBool = static_cast<bool>(*value);
+                    valuePtr = &tempBool;
                     break;
                 }
                 case diopi_dtype_int8: {
-                    temp_i8 = int8_t(*value);
-                    value_ptr = &temp_i8;
+                    tempI8 = int8_t(*value);
+                    valuePtr = &tempI8;
                     break;
                 }
                 case diopi_dtype_uint8: {
-                    temp_u8 = uint8_t(*value);
-                    value_ptr = &temp_u8;
+                    tempU8 = uint8_t(*value);
+                    valuePtr = &tempU8;
                     break;
                 }
                 case diopi_dtype_int16: {
-                    temp_i16 = int16_t(*value);
-                    value_ptr = &temp_i16;
+                    tempI16 = int16_t(*value);
+                    valuePtr = &tempI16;
                     break;
                 }
                 case diopi_dtype_uint16: {
-                    temp_u16 = uint16_t(*value);
-                    value_ptr = &temp_u16;
+                    tempU16 = uint16_t(*value);
+                    valuePtr = &tempU16;
                     break;
                 }
                 case diopi_dtype_int32: {
-                    temp_i32 = int32_t(*value);
-                    value_ptr = &temp_i32;
+                    tempI32 = int32_t(*value);
+                    valuePtr = &tempI32;
                     break;
                 }
                 case diopi_dtype_uint32: {
-                    temp_u32 = uint32_t(*value);
-                    value_ptr = &temp_u32;
+                    tempU32 = uint32_t(*value);
+                    valuePtr = &tempU32;
                     break;
                 }
                 case diopi_dtype_int64: {
-                    temp_i64 = int64_t(*value);
-                    value_ptr = &temp_i64;
+                    tempI64 = int64_t(*value);
+                    valuePtr = &tempI64;
                     break;
                 }
                 case diopi_dtype_uint64: {
-                    temp_u64 = uint64_t(*value);
-                    value_ptr = &temp_u64;
+                    tempU64 = uint64_t(*value);
+                    valuePtr = &tempU64;
                     break;
                 }
                 case diopi_dtype_float16: {
-                    temp_f16 = half_float::half(*value);
-                    value_ptr = &temp_f16;
+                    tempF16 = half_float::half(*value);
+                    valuePtr = &tempF16;
                     break;
                 }
                 case diopi_dtype_float32: {
-                    temp_f32 = static_cast<float>(*value);
-                    value_ptr = &temp_f32;
+                    tempF32 = static_cast<float>(*value);
+                    valuePtr = &tempF32;
                     break;
                 }
             }
         }
-        DIOPI_CALLCNNL(cnnlPad(
-            handle, input_desc.get(), input_tensor_tmp.data(), new_pad, (value == nullptr) ? nullptr : value_ptr, out_desc.get(), out_tensor_tmp.data()));
-    } else if (pad_mode == "reflect") {
-        std::vector<int> input_dim = getDim(input_tensor_tmp);
-        std::vector<int> out_dim = getDim(out_tensor_tmp);
-        input_desc.set(input_tensor_tmp, CNNL_LAYOUT_NCHW, input_dim);
-        out_desc.set(out_tensor_tmp, CNNL_LAYOUT_NCHW, out_dim);
-        int pad_[4];
-        if (pad_vec.size() == 4) {
+        DIOPI_CALLCNNL(
+            cnnlPad(handle, inputDesc.get(), inputTensorTmp.data(), newPad, (value == nullptr) ? nullptr : valuePtr, outDesc.get(), outTensorTmp.data()));
+    } else if (padMode == "reflect") {
+        std::vector<int> inputDim = getDim(inputTensorTmp);
+        std::vector<int> outDim = getDim(outTensorTmp);
+        inputDesc.set(inputTensorTmp, CNNL_LAYOUT_NCHW, inputDim);
+        outDesc.set(outTensorTmp, CNNL_LAYOUT_NCHW, outDim);
+        int padTmp[4];
+        if (padVec.size() == 4) {
             for (int i = 0; i < 4; i++) {
-                pad_[i] = static_cast<int>(pad_vec[i]);
+                padTmp[i] = static_cast<int>(padVec[i]);
             }
-        } else if (pad_vec.size() == 2) {
-            pad_[2] = pad_[3] = 0;
+        } else if (padVec.size() == 2) {
+            padTmp[2] = padTmp[3] = 0;
             for (int i = 0; i < 2; i++) {
-                pad_[i] = static_cast<int>(pad_vec[i]);
+                padTmp[i] = static_cast<int>(padVec[i]);
             }
         } else {
             DIOPI_CHECK(false, "Only supports 2D padding for reflection padding mode now.");
         }
-        DIOPI_CALLCNNL(cnnlReflectionPad2d(handle, input_desc.get(), input_tensor_tmp.data(), pad_, out_desc.get(), out_tensor_tmp.data()));
-    } else if (pad_mode == "replicate") {
-        std::vector<int> input_dim = getDim(input_tensor_tmp);
-        std::vector<int> out_dim = getDim(out_tensor_tmp);
-        input_desc.set(input_tensor_tmp, CNNL_LAYOUT_NCHW, input_dim);
-        out_desc.set(out_tensor_tmp, CNNL_LAYOUT_NCHW, out_dim);
-        int pad_[4];
-        if (pad_vec.size() == 4) {
+        DIOPI_CALLCNNL(cnnlReflectionPad2d(handle, inputDesc.get(), inputTensorTmp.data(), padTmp, outDesc.get(), outTensorTmp.data()));
+    } else if (padMode == "replicate") {
+        std::vector<int> inputDim = getDim(inputTensorTmp);
+        std::vector<int> outDim = getDim(outTensorTmp);
+        inputDesc.set(inputTensorTmp, CNNL_LAYOUT_NCHW, inputDim);
+        outDesc.set(outTensorTmp, CNNL_LAYOUT_NCHW, outDim);
+        int padTmp[4];
+        if (padVec.size() == 4) {
             for (int i = 0; i < 4; i++) {
-                pad_[i] = static_cast<int>(pad_vec[i]);
+                padTmp[i] = static_cast<int>(padVec[i]);
             }
-        } else if (pad_vec.size() == 2) {
-            pad_[2] = pad_[3] = 0;
+        } else if (padVec.size() == 2) {
+            padTmp[2] = padTmp[3] = 0;
             for (int i = 0; i < 2; i++) {
-                pad_[i] = static_cast<int>(pad_vec[i]);
+                padTmp[i] = static_cast<int>(padVec[i]);
             }
         } else {
             DIOPI_CHECK(false, "Only supports 2D padding for replicate padding mode now.");
         }
-        DIOPI_CALLCNNL(cnnlReplicationPad2d(handle, input_desc.get(), input_tensor_tmp.data(), pad_, out_desc.get(), out_tensor_tmp.data()));
-    } else if (pad_mode == "circular") {
-        input_desc.set(input_tensor_tmp, CNNL_LAYOUT_ARRAY);
-        out_desc.set(out_tensor_tmp, CNNL_LAYOUT_ARRAY);
+        DIOPI_CALLCNNL(cnnlReplicationPad2d(handle, inputDesc.get(), inputTensorTmp.data(), padTmp, outDesc.get(), outTensorTmp.data()));
+    } else if (padMode == "circular") {
+        inputDesc.set(inputTensorTmp, CNNL_LAYOUT_ARRAY);
+        outDesc.set(outTensorTmp, CNNL_LAYOUT_ARRAY);
 
-        auto create_slice_out = [&](auto& dst, auto src, int value, int dim) {
-            std::vector<int64_t> slice_shape_1(src.shape().size());
+        auto createSliceOut = [&](auto& dst, auto src, int value, int dim) {
+            std::vector<int64_t> sliceShape1(src.shape().size());
             for (int i = 0; i < src.shape().size(); i++) {
-                slice_shape_1[i] = src.shape()[i];
+                sliceShape1[i] = src.shape()[i];
             }
-            slice_shape_1[dim] = value;
-            diopiSize_t slice_shape1(slice_shape_1.data(), slice_shape_1.size());
+            sliceShape1[dim] = value;
+            diopiSize_t slice_shape1(sliceShape1.data(), sliceShape1.size());
             DIOPI_CALL(diopiRequireTensor(ctx, &dst, &slice_shape1, nullptr, src.dtype(), diopi_device));
             return diopiSuccess;
         };
 
-        auto slice_concat1 = [&](auto& dst, auto src, int start, int end, int dim) {
-            diopiTensorHandle_t input_slice = nullptr;
-            auto dim_value = end - start;
-            DIOPI_CALL(create_slice_out(input_slice, src, dim_value, dim));
-            DIOPI_CALL(diopiSlice(ctx, input_slice, static_cast<diopiTensorHandle_t>(src), dim, start, end, 1));
-            diopiConstTensorHandle_t tensors_cat[2];
-            tensors_cat[0] = static_cast<diopiConstTensorHandle_t>(src);
-            tensors_cat[1] = static_cast<diopiConstTensorHandle_t>(input_slice);
-            DIOPI_CALL(create_slice_out(dst, src, src.shape()[dim] + dim_value, dim));
-            DIOPI_CALL(diopiCat(ctx, dst, tensors_cat, 2, dim));
+        auto sliceConcat1 = [&](auto& dst, auto src, int start, int end, int dim) {
+            diopiTensorHandle_t inputSlice = nullptr;
+            auto dimValue = end - start;
+            DIOPI_CALL(createSliceOut(inputSlice, src, dimValue, dim));
+            DIOPI_CALL(diopiSlice(ctx, inputSlice, static_cast<diopiTensorHandle_t>(src), dim, start, end, 1));
+            diopiConstTensorHandle_t tensorsCat[2];
+            tensorsCat[0] = static_cast<diopiConstTensorHandle_t>(src);
+            tensorsCat[1] = static_cast<diopiConstTensorHandle_t>(inputSlice);
+            DIOPI_CALL(createSliceOut(dst, src, src.shape()[dim] + dimValue, dim));
+            DIOPI_CALL(diopiCat(ctx, dst, tensorsCat, 2, dim));
             return diopiSuccess;
         };
 
-        auto slice_concat2 = [&](auto& dst, auto src, int start, int end, int dim) {
-            diopiTensorHandle_t input_slice = nullptr;
-            auto dim_value = end - start;
-            DIOPI_CALL(create_slice_out(input_slice, src, dim_value, dim));
-            DIOPI_CALL(diopiSlice(ctx, input_slice, static_cast<diopiTensorHandle_t>(src), dim, start, end, 1));
-            diopiConstTensorHandle_t tensors_cat[2];
-            tensors_cat[0] = static_cast<diopiConstTensorHandle_t>(input_slice);
-            tensors_cat[1] = static_cast<diopiConstTensorHandle_t>(src);
-            DIOPI_CALL(create_slice_out(dst, src, src.shape()[dim] + dim_value, dim));
-            DIOPI_CALL(diopiCat(ctx, dst, tensors_cat, 2, dim));
+        auto sliceConcat2 = [&](auto& dst, auto src, int start, int end, int dim) {
+            diopiTensorHandle_t inputSlice = nullptr;
+            auto dimValue = end - start;
+            DIOPI_CALL(createSliceOut(inputSlice, src, dimValue, dim));
+            DIOPI_CALL(diopiSlice(ctx, inputSlice, static_cast<diopiTensorHandle_t>(src), dim, start, end, 1));
+            diopiConstTensorHandle_t tensorsCat[2];
+            tensorsCat[0] = static_cast<diopiConstTensorHandle_t>(inputSlice);
+            tensorsCat[1] = static_cast<diopiConstTensorHandle_t>(src);
+            DIOPI_CALL(createSliceOut(dst, src, src.shape()[dim] + dimValue, dim));
+            DIOPI_CALL(diopiCat(ctx, dst, tensorsCat, 2, dim));
             return diopiSuccess;
         };
 
-        diopiTensorHandle_t cat_out1 = nullptr;
-        DIOPI_CALL(slice_concat1(cat_out1, input_tensor_tmp, 0, pad_vec[pad_vec.size() - 1], 2));
+        diopiTensorHandle_t catOut1 = nullptr;
+        DIOPI_CALL(sliceConcat1(catOut1, inputTensorTmp, 0, padVec[padVec.size() - 1], 2));
 
-        DiopiTensor cat_out1_tensor(cat_out1);
-        diopiTensorHandle_t cat_out2 = nullptr;
-        DIOPI_CALL(slice_concat2(cat_out2, cat_out1_tensor, -(pad_vec[pad_vec.size() - 1] + pad_vec[pad_vec.size() - 2]), -pad_vec[pad_vec.size() - 1], 2));
-        if (pad_vec.size() <= 2) {
-            DIOPI_CALL(diopiCopyInp(ctx, cat_out2, static_cast<diopiTensorHandle_t>(out_tensor_tmp)));
+        DiopiTensor catOut1Tensor(catOut1);
+        diopiTensorHandle_t catOut2 = nullptr;
+        DIOPI_CALL(sliceConcat2(catOut2, catOut1Tensor, -(padVec[padVec.size() - 1] + padVec[padVec.size() - 2]), -padVec[padVec.size() - 1], 2));
+        if (padVec.size() <= 2) {
+            DIOPI_CALL(diopiCopyInp(ctx, catOut2, static_cast<diopiTensorHandle_t>(outTensorTmp)));
         }
 
-        if (pad_vec.size() > 2) {
-            DiopiTensor cat_out2_tensor(cat_out2);
-            diopiTensorHandle_t cat_out3 = nullptr;
-            DIOPI_CALL(slice_concat1(cat_out3, cat_out2_tensor, 0, pad_vec[pad_vec.size() - 3], 3));
+        if (padVec.size() > 2) {
+            DiopiTensor catOut2Tensor(catOut2);
+            diopiTensorHandle_t catOut3 = nullptr;
+            DIOPI_CALL(sliceConcat1(catOut3, catOut2Tensor, 0, padVec[padVec.size() - 3], 3));
 
-            DiopiTensor cat_out3_tensor(cat_out3);
-            diopiTensorHandle_t cat_out4 = nullptr;
-            DIOPI_CALL(slice_concat2(cat_out4, cat_out3_tensor, -(pad_vec[pad_vec.size() - 3] + pad_vec[pad_vec.size() - 4]), -pad_vec[pad_vec.size() - 3], 3));
-            DIOPI_CALL(diopiCopyInp(ctx, cat_out4, static_cast<diopiTensorHandle_t>(out_tensor_tmp)));
+            DiopiTensor catOut3Tensor(catOut3);
+            diopiTensorHandle_t catOut4 = nullptr;
+            DIOPI_CALL(sliceConcat2(catOut4, catOut3Tensor, -(padVec[padVec.size() - 3] + padVec[padVec.size() - 4]), -padVec[padVec.size() - 3], 3));
+            DIOPI_CALL(diopiCopyInp(ctx, catOut4, static_cast<diopiTensorHandle_t>(outTensorTmp)));
         }
     } else {
         DIOPI_CHECK(false, "Only supports constant, reflect, circular and replicate now.");
     }
-    DIOPI_CALL(dataTypeCast(ctx, out_tensor, out_tensor_tmp));
+    DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
 
     return diopiSuccess;
 }
