@@ -27,6 +27,9 @@ env:
   BUILD_TEST2: build_test_dy
   BUILD_TEST3: build_mmcv_ext
   GEN_DATA: DIOPI-TEST/python/data
+  PYTORCH_COMMIT: c263bd43e8e8502d4726643bc6fd046f0130ac0e
+  PYTORCH_BASE_DIR: '/mnt/lustre/share/parrotsci/github/cibuild/pytorchbase'
+  CI_BUILD_FLAG: "ci_build_flag"
 
 jobs:
   Rsync:
@@ -243,4 +246,129 @@ jobs:
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode utest' \
           """
 
+  Rsync-Camb:
+    name: Rsync code camb
+    runs-on: github-poc-ci
+    # needs: [Rsync]
+    steps:
+      - name: clone repo
+        run: |
+          echo ${GITHUB_WORKSPACE}
+          echo ${{ github.repository }}
+          echo ${CLUSTER_CAMB}
+          echo `pwd`
+          mkdir -p ${GITHUB_WORKSPACE} 
+          cd ${GITHUB_WORKSPACE} && rm -rf dipu && git clone https://github.com/DeepLink-org/dipu.git && cd dipu && git checkout ci_test  # latest
 
+          cd ${GITHUB_WORKSPACE}/dipu/third_party && rm -rf DIOPI && git clone https://github.com/DeepLink-org/DIOPI.git && cd DIOPI
+          if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
+          git checkout ${{ github.event.pull_request.head.sha }} && git merge --no-edit ${{ github.base_ref }} 
+          else
+          git checkout ${{ github.sha }}
+          fi
+      - name: ci interruptible and support pr ci
+        run: |
+          cd ${GITHUB_WORKSPACE}/dipu && bash scripts/ci_interruptible.sh
+        env:
+          GITHUB_TOKEN: "${{ secrets.CI_TOKEN }}"
+      - name: Rsync to Server
+        run: |
+          echo ${GITHUB_WORKSPACE}
+          echo ${{ github.repository }}
+          echo ${CLUSTER_CAMB}
+          echo `pwd`
+          cd /home/autolink/rsync/sourcecode/pytorch && git checkout master && git pull \
+          && git checkout ${PYTORCH_COMMIT} && git submodule update --init --recursive
+          ssh ${CLUSTER_CAMB} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/dipu"
+          rsync -a --delete ${GITHUB_WORKSPACE}/dipu/ ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/dipu/
+          result=`ssh ${CLUSTER_CAMB} """
+                  mkdir -p ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
+                  cd ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
+                  if [ ! -f ${CI_BUILD_FLAG} ]; then
+                    touch ${CI_BUILD_FLAG}
+                  fi
+                  cat ${CI_BUILD_FLAG}
+                  """`
+          echo "result:${result}"
+          if [ "${result}x" = "${PYTORCH_COMMIT}"x ]; then
+            echo "pytorch:${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT} exist."
+          else
+            echo "pytorch not exist"
+            exit 1
+          fi
+
+  # Build-Pytorch:
+  #   name: Build pytorch
+  #   needs: [Rsync]
+  #   runs-on: github-poc-ci
+  #   env:
+  #     MLU_REQUESTS: 0
+  #   steps:
+  #     - name: Build pytorch
+  #       run: |
+  #         ssh ${CLUSTER_CAMB} """
+  #         set -e
+  #         cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source
+  #         source scripts/ci_camb_env.sh
+  #         cd ${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
+  #         echo "pwd: $(pwd)"
+  #         if [ -f ${CI_BUILD_FLAG} ]; then
+  #           echo "${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT} has been successfully compiled."
+  #         else
+  #           mkdir -p build && make clean
+  #           export CMAKE_PREFIX_PATH=${CONDA_PREFIX:-"$(dirname $(which conda))/../"}
+  #           BUILD_BINARY=0 USE_PRECOMPILED_HEADERS=1 BUILD_TEST=0
+  #           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=40 \
+  #           --gres=mlu:${MLU_REQUESTS} python setup.py install --prefix=./install_path
+  #           echo "${PYTORCH_COMMIT}" > ${CI_BUILD_FLAG}
+  #         fi
+  #         """
+
+  Build-POC-Camb:
+    name: Build dipu camb
+    needs: [Rsync-Camb]
+    runs-on: github-poc-ci
+    env:
+      MLU_REQUESTS: 1
+    steps:
+      - name: Build dipu
+        run: |
+          ssh ${CLUSTER_CAMB} """
+          set -e
+          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/dipu
+          export PYTORCH_DIR=${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
+          source scripts/ci_camb_env.sh
+          echo $LD_LIBRARY_PATH
+          echo $LIBRARY_PATH
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=40 \
+          --gres=mlu:${MLU_REQUESTS} bash scripts/ci_camb_script.sh build_dipu \
+          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/  && exit 1 )
+          """
+
+  Test-One-Iter-Camb:
+    name: test-one-iter-camb
+    needs: [Build-POC-Camb]
+    runs-on: github-poc-ci
+    env:
+      MLU_REQUESTS: 1
+    steps:
+      - name: clone-repos
+        run: |
+          cd ${GITHUB_WORKSPACE} && cd dipu
+          bash scripts/ci_one_iter.sh clone
+          rsync -a --include='mmagic/***' --include='mmocr/***' --include='mmpose/***' --include='mmdetection3d/***' --include='mmaction2/***' --include='mmsegmentation/***' --include='mmcv/***' --include='mmpretrain/***' --include='mmdetection/***' --include='mmengine/***' --include='SMART/***' --exclude='*' ./ ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/Build-POC-Camb/
+
+      - name: run-one-iter-tools
+        run: |
+          ssh ${CLUSTER_CAMB} """
+          set -e
+          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/Build-POC-Camb
+          export PYTORCH_DIR=${PYTORCH_BASE_DIR}/${PYTORCH_COMMIT}
+          echo 'pytorch dir: ${PYTORCH_DIR}'
+          source scripts/ci_camb_env.sh
+          echo 'python path : ${PYTHONPATH}'
+          export PYTHONPATH=${NFS_PATH}/${GITHUB_RUN_NUMBER}/Build-POC-Camb/mmagic:${NFS_PATH}/${GITHUB_RUN_NUMBER}/Build-POC-Camb/mmpretrain:${NFS_PATH}/${GITHUB_RUN_NUMBER}/Build-POC-Camb/mmaction2:${NFS_PATH}/${GITHUB_RUN_NUMBER}/Build-POC-Camb/mmocr:${NFS_PATH}/${GITHUB_RUN_NUMBER}/Build-POC-Camb/mmpose:${NFS_PATH}/${GITHUB_RUN_NUMBER}/Build-POC-Camb/mmsegmentation:${NFS_PATH}/${GITHUB_RUN_NUMBER}/Build-POC-Camb/mmdetection3d:${NFS_PATH}/${GITHUB_RUN_NUMBER}/Build-POC-Camb/mmdetection:${NFS_PATH}/${GITHUB_RUN_NUMBER}/Build-POC-Camb/mmengine:${NFS_PATH}/${GITHUB_RUN_NUMBER}/Build-POC-Camb/mmcv:${NFS_PATH}/${GITHUB_RUN_NUMBER}/Build-POC-Camb/SMART/tools/one_iter_tool/one_iter:$PYTHONPATH
+          srun --job-name=${GITHUB_RUN_NUMBER}_${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --gres=mlu:${MLU_REQUESTS} sh scripts/ci_one_iter.sh build_camb
+          pwd
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB}  --gres=mlu:${MLU_REQUESTS} sh scripts/ci_camb_run_one_iter.sh && rm -rf one_iter_data || (rm -rf one_iter_data && exit 1)
+          """
