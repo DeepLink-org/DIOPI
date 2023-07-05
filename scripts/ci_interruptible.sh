@@ -13,7 +13,10 @@ REPO_KEY="repo"
 
 function validate_required_env_variables() {
   local required_env_variables=( "GITHUB_TOKEN" "GITHUB_REPOSITORY" "GITHUB_RUN_ID" )
-
+  if [ $GITHUB_EVENT_NAME == "pull_request_target" ] ; then
+    echo "event is prt, stop to interrupt"
+    exit 1
+  fi
   for env in "${required_env_variables[@]}"; do
     if [ -z "${!env}" ]; then
       echo "Must specify ${env}"
