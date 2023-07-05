@@ -212,9 +212,9 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
                                                workspace,
                                                workspaceSize));
 
-    // if (indicesTensor.dtype() == diopi_dtype_int64) {
-    //     DIOPI_CALL(dataTypeCast(ctx, indicesTensorTmp, diopi_dtype_int32));
-    // }
+    if (indicesTensor.dtype() == diopi_dtype_int64) {
+        DIOPI_CALL(dataTypeCast(ctx, indicesTensorTmp, diopi_dtype_int32));
+    }
     DIOPI_CALL(dataTypeCast(ctx, indicesTensor, indicesTensorTmp));
     DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
 
