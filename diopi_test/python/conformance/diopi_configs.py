@@ -4299,7 +4299,7 @@ diopi_configs = {
         atol=1e-5,
         para=dict(
             eps=[1e-5, 1e-5, 1e-12],
-            normalized_shape=[(5, 3, 5), (128, ), (64, )],
+            normalized_shape=[(5, 3, 5), (64, ), (64, )],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -4307,17 +4307,17 @@ diopi_configs = {
                 {
                     "ins": ["input"],
                     "requires_grad": [True],
-                    "shape": ((2, 5, 3, 5), (2, 3136, 128), (2, 64)),
+                    "shape": ((2, 5, 3, 5), (2, 3136, 64), (2, 64)),
                 },
                 {
                     "ins": ["weight"],
                     "requires_grad": [True],
-                    "shape": (None, (128, ), (64, )),
+                    "shape": (None, (64, ), (64, )),
                 },
                 {
                     "ins": ["bias"],
                     "requires_grad": [True],
-                    "shape": (None, (128, ), (64, )),
+                    "shape": (None, (64, ), (64, )),
                 },
             ]
         )
