@@ -60,18 +60,6 @@ device_configs = {
         rtol=1e-2,
     ),
 
-    'binary_cross_entropy_with_logits': dict(
-        name=["binary_cross_entropy_with_logits"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
-
     'pointwise_op': dict(
         name=['floor'],
         tensor_para=dict(
