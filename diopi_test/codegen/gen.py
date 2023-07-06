@@ -164,7 +164,7 @@ def gen_functions(options):
                 else:
                     call_func = func_name + '(' + ', '.join(call_args) + ')'
                 exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(attrs), convert=convert,
-                                                               out_copy=out_copy, call_func=call_func)))
+                                                      out_copy=out_copy, call_func=call_func)))
             else:
                 if use_adaptor:
                     exports.append('m.def("{func_name}", diopiadaptor::{func_name});'.format(func_name=func_name))
@@ -181,10 +181,10 @@ def gen_functions(options):
                     call_func = func_name + '(' + ', '.join(keep_args) + ')'
                 if type_change:
                     exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert=convert,
-                                                                   out_copy=out_copy, call_func=call_func)))
+                                                          out_copy=out_copy, call_func=call_func)))
                 else:
                     exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert='',
-                                                                   out_copy='', call_func=call_func)))
+                                                          out_copy='', call_func=call_func)))
 
     output_path = options.get('output_dir')
     output_file = os.path.join(output_path, 'export_functions.cpp')
