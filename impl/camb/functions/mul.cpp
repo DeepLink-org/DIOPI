@@ -19,7 +19,6 @@ diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     DiopiTensor otherTensor(other);
     DiopiTensor outTensor(out);
 
-
     DiopiTensor outTensorTmp = outTensor;
     if ((outTensor.dtype() != diopi_dtype_float16) && (outTensor.dtype() != diopi_dtype_float32)) {
         DIOPI_CALL(dataTypeCast(ctx, outTensorTmp, diopi_dtype_float32));

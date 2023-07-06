@@ -18,7 +18,7 @@ diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
     std::vector<CnnlTensorDesc> inputsDesc(numInputs);
     std::vector<cnnlTensorDescriptor_t> inputsDescTmp(numInputs);
-    std::vector<const void *> inputs(numInputs);
+    std::vector<const void*> inputs(numInputs);
     for (int i = 0; i < numInputs; i++) {
         DiopiTensor tempTensor(tensors[i]);
         inputsDesc[i].set(tempTensor, CNNL_LAYOUT_ARRAY);
@@ -28,7 +28,7 @@ diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
     size_t workspaceSize(0);
     DIOPI_CALLCNNL(cnnlGetConcatWorkspaceSize(handle, numInputs, &workspaceSize));
-    void * workspace = nullptr;
+    void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
