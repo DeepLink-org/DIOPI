@@ -39,9 +39,11 @@ def prepare():
     source_dir = os.path.join(_cur_dir, '../../proto/include/diopi/')
     output_dir = os.path.join(_cur_dir, '../csrc')
     use_adaptor = True if options.use_adaptor == 'true' else False
+    device = options.device
     options = dict(source_dir=source_dir,
                    output_dir=output_dir,
-                   use_adaptor=use_adaptor)
+                   use_adaptor=use_adaptor,
+                   device=device)
 
     return options
 
@@ -109,6 +111,11 @@ def gen_functions(options):
         content = f.readlines()
     exports = []
     use_adaptor = options.get('use_adaptor')
+    device = options.get('device')
+    if device == 'ascend':
+        ft = OT.function_ascend_template
+    else:
+        ft = OT.function_template
     for idx, row in enumerate(content):
         if row.startswith("DIOPI_API"):
             row = row[10:]
@@ -156,7 +163,7 @@ def gen_functions(options):
                     call_func = 'diopiadaptor::' + func_name + '(' + ', '.join(call_args) + ')'
                 else:
                     call_func = func_name + '(' + ', '.join(call_args) + ')'
-                exports.append(OT.function_template.substitute(env=dict(func_name=func_name, attrs=', '.join(attrs), convert=convert,
+                exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(attrs), convert=convert,
                                                                out_copy=out_copy, call_func=call_func)))
             else:
                 if use_adaptor:
@@ -173,10 +180,10 @@ def gen_functions(options):
                 else:
                     call_func = func_name + '(' + ', '.join(keep_args) + ')'
                 if type_change:
-                    exports.append(OT.function_template.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert=convert,
+                    exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert=convert,
                                                                    out_copy=out_copy, call_func=call_func)))
                 else:
-                    exports.append(OT.function_template.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert='',
+                    exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert='',
                                                                    out_copy='', call_func=call_func)))
 
     output_path = options.get('output_dir')
