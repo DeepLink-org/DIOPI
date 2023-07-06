@@ -24,7 +24,7 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
         dilationsTemp[2] = dilation.data[0];
         dilationsTemp[3] = dilation.data[1];
     }
-    const std::vector<int64_t> paddingTemp = {padding.data[0], padding.data[2], padding.data[1], padding.data[3]};
+    const std::vector<int64_t> paddingTemp = {padding.data[0], padding.data[0], padding.data[1], padding.data[1]};
 
     AclOpRunner<3, 1> runner("Conv2D");
     runner.addInput(input, weight)
