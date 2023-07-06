@@ -4,7 +4,7 @@
 #include <acl/acl.h>
 #include <acl/acl_op.h>
 #include <acl/acl_op_compiler.h>
-#include <diopi/diopirt.h>
+#include <diopi/functions.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -12,6 +12,7 @@
 #include <functional>
 #include <initializer_list>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <typeinfo>
 #include <utility>
@@ -20,12 +21,21 @@
 namespace impl {
 namespace ascend {
 
-#define CALL_ACLRT(Expr)                                                                \
-    {                                                                                   \
-        ::aclError ret = Expr;                                                          \
-        if (ret != ::ACL_SUCCESS) {                                                     \
-            printf("call a ascendrt function (%s) failed. return code=%d", #Expr, ret); \
-        }                                                                               \
+#define TRACK_ACL(x)                                                    \
+    {                                                                   \
+        static bool enable = std::getenv("DIOPI_TRACK_ACL") != nullptr; \
+        if (enable) {                                                   \
+            printf("[%s: %d]:%s\n", __FILE__, __LINE__, x);             \
+        }                                                               \
+    }
+
+#define CALL_ACLRT(Expr)                                                                          \
+    {                                                                                             \
+        TRACK_ACL(#Expr);                                                                         \
+        ::aclError ret = Expr;                                                                    \
+        if (ret != ::ACL_SUCCESS) {                                                               \
+            throw std::runtime_error(std::string("ascend device error:") + aclGetRecentErrMsg()); \
+        }                                                                                         \
     }
 
 #define warning(...)                             \
@@ -377,21 +387,18 @@ public:
             }
         }
 
-        auto errorcode = aclopCompileAndExecute(opname_.data(),
-                                                inSize,
-                                                inputDescs_.data(),
-                                                inputBuffers_.data(),
-                                                outSize,
-                                                outputDescs_.data(),
-                                                outputBuffers_.data(),
-                                                attr_,
-                                                EngineType,
-                                                CompileType,
-                                                nullptr,
-                                                stream);
-        if (errorcode != ACL_SUCCESS) {
-            warning((dumpRunnerInfo() + ":" + aclGetRecentErrMsg()).c_str());
-        }
+        CALL_ACLRT(aclopCompileAndExecute(opname_.data(),
+                                          inSize,
+                                          inputDescs_.data(),
+                                          inputBuffers_.data(),
+                                          outSize,
+                                          outputDescs_.data(),
+                                          outputBuffers_.data(),
+                                          attr_,
+                                          EngineType,
+                                          CompileType,
+                                          nullptr,
+                                          stream));
         // check_args(errorcode == ACL_SUCCESS, dumpRunnerInfo().c_str());
         //   Get environment variables once when run is called for the first time
         static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;

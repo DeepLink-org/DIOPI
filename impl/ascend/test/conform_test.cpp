@@ -4,24 +4,16 @@
  * Author
  *
  *************************************************************************************************/
-#include <acl/acl.h>
+
 #include <diopi/diopirt.h>
-#include <diopi_register.h>
 
 #include <cstdio>
 
-#include "error.hpp"
+#include "../common/acloprunner.hpp"
+#include "../error.hpp"
 
 namespace impl {
 namespace ascend {
-
-#define CALL_ACLRT(Expr)                                                                                          \
-    {                                                                                                             \
-        ::aclError ret = Expr;                                                                                    \
-        if (ret != ::ACL_SUCCESS) {                                                                               \
-            printf("call a ascendrt function (%s) failed. return code=%d, %s", #Expr, ret, aclGetRecentErrMsg()); \
-        }                                                                                                         \
-    }
 
 extern "C" {
 void* device_malloc(uint64_t bytes) {
@@ -59,6 +51,14 @@ int32_t device_memcpy_d2h_async(diopiStreamHandle_t stream_handle, void* dst, co
 
 int32_t device_memcpy_d2d_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
     CALL_ACLRT(aclrtMemcpyAsync(dst, bytes, src, bytes, ACL_MEMCPY_DEVICE_TO_DEVICE, reinterpret_cast<aclrtStream>(stream_handle)));
+    return diopiSuccess;
+}
+
+int32_t initLibrary() {
+    CALL_ACLRT(aclInit(NULL));
+    CALL_ACLRT(aclrtSetDevice(0));
+    aclrtContext context_;
+    CALL_ACLRT(aclrtCreateContext(&context_, 0));
     return diopiSuccess;
 }
 

@@ -6,7 +6,6 @@ on:
       - main
       - dev_v0.25
       - wgs/*
-    if: 'contains(github.event.head_commit.message, "ci") || contains(github.event.head_commit.message, "CI")'
   pull_request:
     branches:
       - main
@@ -19,8 +18,8 @@ env:
   ENV_NAME: 'pt2.0_diopi'
   ENV_NAME_MMCV: 'pt1.11v1'
   GPU_REQUESTS: 1
-  SLURM_PAR_SH1988: ${{ vars.SLURM_PAR_SH1984 }}
-  SLURM_PAR_CAMB: ${{ vars.SLURM_PAR_CAMB }}
+  SLURM_PAR_SH1988: ${{ vars.SLURM_PAR_SH1984 != '' && vars.SLURM_PAR_SH1984 || 'pat_rd -x SH-IDC1-10-198-8-58,SH-IDC1-10-198-8-87' }}
+  SLURM_PAR_CAMB: ${{ vars.SLURM_PAR_CAMB != '' && vars.SLURM_PAR_CAMB || 'camb_mlu370_m8 --exclude HOST-10-142-11-120,HOST-10-142-11-126' }}
   CLUSTER_1988: SH1984
   CLUSTER_CAMB: CAMB
   BUILD_TEST1: build_test
@@ -248,5 +247,3 @@ jobs:
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode utest' \
           """
-
-
