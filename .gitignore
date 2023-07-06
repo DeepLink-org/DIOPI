@@ -135,4 +135,3 @@ core.*
 wrap_func.cpp
 diopi_adaptors.hpp
 export_functions.cpp
-impl/third_party
