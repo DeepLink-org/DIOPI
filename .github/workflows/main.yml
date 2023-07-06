@@ -51,8 +51,8 @@ jobs:
       - name: Rsync to Server
         run: |
           echo ${NFS_PATH}
-          ssh ${CLUSTER_1984} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
-          rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_1984}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
+          ssh ${CLUSTER_1988} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
+          rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
           ssh ${CLUSTER_CAMB} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
           rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
 
@@ -63,7 +63,7 @@ jobs:
     steps:
       - name: lint
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_1988} """
           set -e
           cd ${NFS_PATH}/ && ls -al && find ${NFS_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
@@ -82,7 +82,7 @@ jobs:
     steps:
       - name: build
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_1988} """
           set -e
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
@@ -92,7 +92,7 @@ jobs:
           """
       - name: build-dyload
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_1988} """
           set -e
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST2} && cp -R source ${BUILD_TEST2} && cd ${BUILD_TEST2}
@@ -133,7 +133,7 @@ jobs:
     steps:
       - name: build
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_1988} """
           set -e
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME_MMCV}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST3} && cp -R source ${BUILD_TEST3} && cd ${BUILD_TEST3}
@@ -148,7 +148,7 @@ jobs:
     steps:
       - name: test
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_1988} """
           set -e
           export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME_MMCV}
@@ -165,7 +165,7 @@ jobs:
     steps:
       - name: gen-test-data
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_1988} """
           set -e
           export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
@@ -181,7 +181,7 @@ jobs:
     steps:
       - name: NHWC-32bit-test
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_1988} """
           set -e
           export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
@@ -190,7 +190,7 @@ jobs:
           """
       - name: dyload-test
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_1988} """
           set -e
           export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST2}
@@ -208,7 +208,7 @@ jobs:
     steps:
       - name: test
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_1988} """
           set -e
           export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
@@ -227,7 +227,7 @@ jobs:
           set -e
           export CI=true
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && ls
-          rsync -a ${CLUSTER_1984}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
+          rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode run_test --impl_folder ${NFS_PATH_LUSTRE}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/camb/' \
           && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
