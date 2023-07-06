@@ -379,18 +379,6 @@ device_configs = {
         ),
     ),
 
-    'unfold': dict(
-        name=["unfold"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
     'unfold_int': dict(
         name=["unfold"],
         tensor_para=dict(
