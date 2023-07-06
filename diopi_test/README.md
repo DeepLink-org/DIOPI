@@ -27,8 +27,8 @@ DIOPI_TEST 测试范围：
 
 
 ## **使用教学**
-### 安装和基础使用
-参考 [DIOPI Readme](https://github.com/DeepLink-org/DIOPI/tree/main/D#readme)
+
+参考 [DIOPI Readme](https://github.com/DeepLink-org/DIOPI/tree/main/DIOPI#readme)
 
 ### 结果分析
 
@@ -137,8 +137,7 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
     ```
 ### 测例配置说明
 
-DIOPITEST 设计了一套测例配置规则及相应的测试框架。以算子测试为例，
-所有算子测例配置文件位于 python/conformance/diopi_configs.py 中。
+DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子测试为例，所有算子测例配置文件位于 python/conformance/diopi_configs.py 中。
 我们以 group_norm 算子测例配置为例来阐释说明测例生成。
 
 ```
@@ -329,3 +328,4 @@ DIOPITEST 设计了一套测例配置规则及相应的测试框架。以算子�
 ```
     python main.py --mode run_test --impl_folder /path/to/folder --fname cdist
 ```
+
