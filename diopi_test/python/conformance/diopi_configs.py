@@ -314,7 +314,7 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((2, 1024, 14, 14), (256, 28, 28)),
+                    "shape": ((2, 256, 14, 14), (256, 28, 28)),
                     "dtype": [Dtype.float32, Dtype.float64],
                 },
             ]
