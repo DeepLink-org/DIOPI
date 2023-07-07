@@ -41,7 +41,9 @@ DIOPI_API diopiError_t diopiBCEWithLogits(diopiContextHandle_t ctx, diopiTensorH
     DiopiTensor inputTensorTmp = *inTensors[0];
     DiopiTensor targetTensorTmp = *inTensors[1];
     DiopiTensor outTensorTmp = outTensor;
-    DIOPI_CALL(dataTypeCast(ctx, outTensorTmp, inputTensorTmp.dtype()));
+    if (outTensorTmp.dtype() != inputTensorTmp.dtype()) {
+        outTensorTmp = requiresTensor(ctx, outTensor.shape(), inputTensorTmp.dtype());
+    }
 
     CnnlTensorDesc inputDesc(inputTensorTmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc targetDesc(targetTensorTmp, CNNL_LAYOUT_ARRAY);
@@ -136,7 +138,9 @@ DIOPI_API diopiError_t diopiBCEWithLogitsBackward(diopiContextHandle_t ctx, diop
     DiopiTensor inputTensorTmp = *inTensors[1];
     DiopiTensor targetTensorTmp = *inTensors[2];
     DiopiTensor gradInputTensorTmp = gradInputTensor;
-    DIOPI_CALL(dataTypeCast(ctx, gradInputTensorTmp, inputTensorTmp.dtype()));
+    if (gradInputTensorTmp.dtype() != inputTensorTmp.dtype()) {
+        gradInputTensorTmp = requiresTensor(ctx, gradInputTensor.shape(), inputTensorTmp.dtype());
+    }
 
     CnnlTensorDesc gradOutputDesc(gradOutputTensorTmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc inputDesc(inputTensorTmp, CNNL_LAYOUT_ARRAY);
