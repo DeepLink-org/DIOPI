@@ -6,7 +6,7 @@ import itertools
 from ctypes import c_double, byref
 from .diopi_runtime import Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d, to_numpy_dtype
 from .utils import check_returncode, check_function, glob_vars, get_capsule
-from . import raw_like, float_types, int_types
+from . import raw_like, int_types
 from collections import namedtuple
 import numpy as np
 
