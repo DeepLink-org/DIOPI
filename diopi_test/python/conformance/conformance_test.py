@@ -7,7 +7,7 @@ from . import diopi_configs, ops_with_states
 from .config import Config
 from .utils import logger, FunctionNotImplementedError, DiopiException
 from .utils import need_process_func, glob_vars, nhwc_op, dtype_op
-from .diopi_runtime import Tensor, compute_nhwc_stride, default_context
+from .diopi_runtime import Tensor, compute_nhwc_stride, default_context, diopi_rt_init
 from .utils import save_precision, record, write_precision
 from .utils import get_saved_pth_list, get_data_from_file
 from .utils import cfg_file_name
@@ -350,6 +350,7 @@ class ConformanceTest(object):
     @staticmethod
     def run(func_name, model_name, filter_dtype_str_list, debug_level, impl_folder):
 
+        diopi_rt_init()
         _cur_dir = os.path.dirname(os.path.abspath(__file__))
         inputs_dir_path = os.path.join(_cur_dir, "../data/" + model_name + "/inputs")
         outputs_dir_path = os.path.join(_cur_dir, "../data/" + model_name + "/outputs")
