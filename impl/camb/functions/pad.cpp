@@ -30,6 +30,50 @@ std::vector<int> getDim(DiopiTensor tensor) {
     return dim;
 }
 
+void* getTypedValuePtr(diopiDtype_t dtype, const double* value) {
+    void* valuePtr = nullptr;
+    if (value != nullptr) {
+        switch (dtype) {
+            case diopi_dtype_bool:
+                valuePtr = reinterpret_cast<void*>(new bool(static_cast<bool>(*value)));
+                break;
+            case diopi_dtype_int8:
+                valuePtr = reinterpret_cast<void*>(new int8_t(static_cast<int8_t>(*value)));
+                break;
+            case diopi_dtype_uint8:
+                valuePtr = reinterpret_cast<void*>(new uint8_t(static_cast<uint8_t>(*value)));
+                break;
+            case diopi_dtype_int16:
+                valuePtr = reinterpret_cast<void*>(new int16_t(static_cast<int16_t>(*value)));
+                break;
+            case diopi_dtype_uint16:
+                valuePtr = reinterpret_cast<void*>(new uint16_t(static_cast<uint16_t>(*value)));
+                break;
+            case diopi_dtype_int32:
+                valuePtr = reinterpret_cast<void*>(new int32_t(static_cast<int32_t>(*value)));
+                break;
+            case diopi_dtype_uint32:
+                valuePtr = reinterpret_cast<void*>(new uint32_t(static_cast<uint32_t>(*value)));
+                break;
+            case diopi_dtype_int64:
+                valuePtr = reinterpret_cast<void*>(new int64_t(static_cast<int64_t>(*value)));
+                break;
+            case diopi_dtype_uint64:
+                valuePtr = reinterpret_cast<void*>(new uint64_t(static_cast<uint64_t>(*value)));
+                break;
+            case diopi_dtype_float16:
+                valuePtr = reinterpret_cast<void*>(new half_float::half(static_cast<half_float::half>(*value)));
+                break;
+            case diopi_dtype_float32:
+                valuePtr = reinterpret_cast<void*>(new float(static_cast<float>(*value)));
+                break;
+            default:
+                break;
+        }
+    }
+    return valuePtr;
+}
+
 }  // namespace
 
 extern "C" {
@@ -46,7 +90,9 @@ DIOPI_API diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t ou
         std::vector<DiopiTensor*> pTensors{&inputTensorTmp};
         DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_float32}));
         inputTensorTmp = *pTensors[0];
-        DIOPI_CALL(dataTypeCast(ctx, outTensorTmp, inputTensorTmp.dtype()));
+        if (outTensorTmp.dtype() != inputTensorTmp.dtype()) {
+            outTensorTmp = requiresTensor(ctx, outTensor.shape(), inputTensorTmp.dtype());
+        }
     }
 
     std::vector<int> padVec(pad.data, pad.data + pad.len);
@@ -89,80 +135,7 @@ DIOPI_API diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t ou
             newPad[lDiff + i][1] = padVec[padIdx + 1];
         }
 
-        void* valuePtr;
-        bool tempBool = false;
-        int8_t tempI8 = 0;
-        uint8_t tempU8 = 0;
-        int16_t tempI16 = 0;
-        uint16_t tempU16 = 0;
-        int32_t tempI32 = 0;
-        uint32_t tempU32 = 0;
-        int64_t tempI64 = 0;
-        uint64_t tempU64 = 0;
-        half_float::half tempF16 = static_cast<half_float::half>(0);
-        float tempF32 = 0;
-
-        if (value != nullptr) {
-            switch (inputTensorTmp.dtype()) {
-                case diopi_dtype_bool: {
-                    tempBool = static_cast<bool>(*value);
-                    valuePtr = &tempBool;
-                    break;
-                }
-                case diopi_dtype_int8: {
-                    tempI8 = int8_t(*value);
-                    valuePtr = &tempI8;
-                    break;
-                }
-                case diopi_dtype_uint8: {
-                    tempU8 = uint8_t(*value);
-                    valuePtr = &tempU8;
-                    break;
-                }
-                case diopi_dtype_int16: {
-                    tempI16 = int16_t(*value);
-                    valuePtr = &tempI16;
-                    break;
-                }
-                case diopi_dtype_uint16: {
-                    tempU16 = uint16_t(*value);
-                    valuePtr = &tempU16;
-                    break;
-                }
-                case diopi_dtype_int32: {
-                    tempI32 = int32_t(*value);
-                    valuePtr = &tempI32;
-                    break;
-                }
-                case diopi_dtype_uint32: {
-                    tempU32 = uint32_t(*value);
-                    valuePtr = &tempU32;
-                    break;
-                }
-                case diopi_dtype_int64: {
-                    tempI64 = int64_t(*value);
-                    valuePtr = &tempI64;
-                    break;
-                }
-                case diopi_dtype_uint64: {
-                    tempU64 = uint64_t(*value);
-                    valuePtr = &tempU64;
-                    break;
-                }
-                case diopi_dtype_float16: {
-                    tempF16 = half_float::half(*value);
-                    valuePtr = &tempF16;
-                    break;
-                }
-                case diopi_dtype_float32: {
-                    tempF32 = static_cast<float>(*value);
-                    valuePtr = &tempF32;
-                    break;
-                }
-                default:
-                    break;
-            }
-        }
+        void* valuePtr = getTypedValuePtr(inputTensorTmp.dtype(), value);
         DIOPI_CALLCNNL(
             cnnlPad(handle, inputDesc.get(), inputTensorTmp.data(), newPad, (value == nullptr) ? nullptr : valuePtr, outDesc.get(), outTensorTmp.data()));
     } else if (padMode == "reflect") {
