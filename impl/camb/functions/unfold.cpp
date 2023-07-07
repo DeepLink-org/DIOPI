@@ -75,7 +75,9 @@ DIOPI_API diopiError_t diopiUnfoldBackward(diopiContextHandle_t ctx, diopiTensor
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_float32}));
     DiopiTensor gradOutputTensorTmp = *pTensors[0];
     DiopiTensor gradInputTensorTmp = gradInputTensor;
-    DIOPI_CALL(dataTypeCast(ctx, gradInputTensorTmp, gradOutputTensorTmp.dtype()));
+    if (gradInputTensorTmp.dtype() != gradOutputTensorTmp.dtype()) {
+        gradInputTensorTmp = requiresTensor(ctx, gradInputTensor.shape(), gradOutputTensorTmp.dtype());
+    }
 
     CnnlTensorDesc gradOutputDesc(gradOutputTensorTmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc gradInputDesc(gradInputTensorTmp, CNNL_LAYOUT_ARRAY);
