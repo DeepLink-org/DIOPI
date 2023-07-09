@@ -69,7 +69,7 @@ DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     }
 
     DIOPI_CALLCNNL(cnnlStdVarMean(handle, stdVarMeanDesc, inputDesc.get(), inputTensor.data(), workspace, workspaceSize,
-        outDesc.get(), outTmpTensor.data(), nullptr, nullptr, nullptr, nullptr));
+                                  outDesc.get(), outTmpTensor.data(), nullptr, nullptr, nullptr, nullptr));
     outTmpTensor.asStrided(outTensor.shape(), outTensor.stride());
     CnnlTensorDesc outTmpDesc(outTmpTensor, CNNL_LAYOUT_ARRAY);
     DIOPI_CALLCNNL(cnnlCopy(handle, outTmpDesc.get(), outTmpTensor.data(), outDesc.get(), outTensor.data()));
