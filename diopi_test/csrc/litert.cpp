@@ -120,10 +120,6 @@ const char* deviceToStr(const diopiDevice_t device) {
 #undef _device2str
 }
 
-
-
-
-
 diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context,
                          const void* src) {
     assert(shape);
@@ -135,7 +131,7 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
     int64_t strideTemp = 1;
     numel_ = 1;
     int64_t strideNumel = 1;
-    //得到存储数据的stride
+    // 得到存储数据的stride
     for (int64_t i = shape->len - 1; i >= 0; --i) {
         shape_[i] = shape->data[i];
         numel_ *= shape->data[i];
@@ -144,45 +140,16 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
         } else {
             stride_[i] = strideTemp;
             strideTemp *= shape->data[i];
-            std::cout<< shape->data[i]<<std::endl;
+            // std::cout << shape->data[i] << std::endl;
         }
-        strideNumel += (shape_[i]-1)*stride_[i];
+        strideNumel += (shape_[i] - 1) * stride_[i];
     }
     // std::cout<<"*****************"<<std::endl;
     // std::cout<<"numel_:"<<numel_<<std::endl;
     // std::cout<<"strideNumel"<<strideNumel <<std::endl;
-    
     strideNumel *= itemsize(dtype);
-    //应该通过stride和shape同时确定分配的比特大小，现在是直接使用了shape算出来的内存大小
-    
-    // for (int64_t i = shape->len - 1; i >= 0; --i) {
-    //     shape_[i] = shape->data[i];
-    //     if (stride != nullptr && stride->data != nullptr) {
-    //         stride_[i] = stride->data[i];
-    //     }
-    //     else
-    //         stride_[i]=1;
-        
-    // }
-    
-    // std::cout<< "strideNumel "<<strideNumel<<std::endl;
-
-
-
-
-    //还得通过指针把数据放在正确的内存位置上，内存上是连续排布的，
-    
+    // 还得通过指针把数据放在正确的内存位置上，内存上是连续排布的，
     const int64_t nbytes = strideNumel;
-
-
-
-
-
-
-
-
-    
-    
     // const int64_t nbytes = numel_ * itemsize(dtype);
     if (device_ == diopi_host) {
         storage_ = std::make_shared<Storage>(hostMalloc, hostFree, nbytes);
@@ -197,9 +164,6 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
         }
     }
     context_ = context;
-
-
-
 }
 
 bool diopiTensor::resetShape(const diopiSize_t* size) {
@@ -335,6 +299,5 @@ DIOPI_RT_API diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diop
     }
     return diopiSuccess;
 }
-
 
 }  // extern "C"
