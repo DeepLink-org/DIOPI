@@ -14,7 +14,7 @@ jobs:
         with:
           style: file
           tidy-checks: -*
-          ignore: DIOPI-IMPL/third_party
+          ignore: impl/third_party
 
       - name: Fail fast?!
         if: steps.linter.outputs.checks-failed > 0
