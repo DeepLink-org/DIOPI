@@ -471,6 +471,8 @@ class ConformanceTest(object):
             # import pdb
             # pdb.set_trace()
             for para in data['function_paras']["kwargs"].keys():
+                if len(data['cfg']['tensor_para']['args'])==0:
+                    continue
                 if str(para)+"stride" in data['cfg']['tensor_para']['args'][0].keys():
                     data['function_paras'][str(para)+"stride"] = data['cfg']['tensor_para']['args'][0][str(para)+"stride"]
 
