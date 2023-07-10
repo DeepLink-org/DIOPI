@@ -13,7 +13,7 @@ from . import diopi_configs
 from .diopi_runtime import from_dtype_str
 from .utils import get_saved_pth_list, get_data_from_file, cfg_file_name
 import torch
-# import torchvision
+import torchvision
 
 
 _cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -31,21 +31,6 @@ def expand_para(para_dict: dict, paras_list: list):
         for k, v in para_dict.items():
             tmp_para_dict[k] = copy.deepcopy(v[i])
         paras_list.append(tmp_para_dict)
-
-
-def get_num(position,dims,strides,dim,offset,index):
-    
-    if (dim==len(dims)):
-        print("********")
-        print("offset",offset)
-        print("index",index)
-        print("stride",strides[dim-1])
-        position[offset+index*strides[dim-1]]+=1
-        return 
-    for i in range(dims[dim]):
-        if i>0 and dim != len(dims)-1:
-            offset+=strides[dim]
-        get_num(position,dims,strides,dim+1,offset,i)
 
 
 def expand_tensor_para(args_list, tensor_paras_list):
@@ -102,7 +87,6 @@ def expand_tensor_para(args_list, tensor_paras_list):
     args0_dict = tmp_args_list[0]
     assert "shape" in args0_dict or "value" in args0_dict
     num = len(args0_dict["shape"]) if "shape" in args0_dict else len(args0_dict["value"])
-    
     # import pdb
     # pdb.set_trace()
     for j in range(num):
@@ -395,7 +379,7 @@ class GenInputData(object):
                 continue
             logger.info(f"Generate benchmark input data for diopi_functions.{cfg_func_name}")
             filter_dtype_list = get_filter_dtype_list(filter_dtype_str_list)
-            ### cfg_expand_list 决定了size是一份一份取的
+            # cfg_expand_list 决定了size是一份一份取的
             # import pdb
             # pdb.set_trace()
             cfg_expand_list = expand_cfg_by_all_options(configs[cfg_name], filter_dtype_list)
