@@ -32,6 +32,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ["input"],
+                    "inputstride":((2000000, 230400, 7200, 120, 2), (102400, 1600, 40, 1), (3000, 30, 1), (20, 1)),
                     "shape": ((2, 8, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
                     "requires_grad": [True],
                     "gen_fn": Genfunc.randn,
@@ -149,6 +150,7 @@ diopi_configs = {
                 {
                     "ins": ["input"],
                     "requires_grad": [True],
+                    "inputstride":((20480000, 80000, 400, 1), (10035200, 4900, 70, 1), (20000 ,9, 3, 1), (20480000, 80000, 400, 1)),
                     "shape": ((2, 256, 200, 304), (2, 2048, 64, 64), (2, 2048, 1, 1), (2, 256, 200, 304)),
                 },
                 {
@@ -164,7 +166,6 @@ diopi_configs = {
             ]
         ),
     ),
-
     'relu': dict(
         name=["relu"],
         is_inplace=True,
@@ -172,8 +173,8 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "inputstride":((4, 1),),
-                    "shape": ((2, 2), (64, 28, 28),
+                    "inputstride":((1, 3),(900, 30, 1),),
+                    "shape": ((3, 3), (64, 28, 28),
                               (32, 64, 112, 112), (64, 3, 7, 28, 28)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,

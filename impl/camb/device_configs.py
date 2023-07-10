@@ -28,6 +28,27 @@ device_configs = {
         name=["conv2d"],
         atol_half=1e-1,
         rtol_half=1e-1,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16), Skip(Dtype.float64)],
+                },
+            ]
+        ),
+    ),
+
+    'relu': dict(
+        name=["relu"],
+        is_inplace=True,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float64)],
+                },
+            ],
+        ),
     ),
 
     'max_pool2d': dict(
