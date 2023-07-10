@@ -53,8 +53,7 @@ def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dt
             if tensor is not None and str(tensor.dtype) not in test_tag:
                 test_tag.append(str(tensor.dtype))
 
-            # import pdb
-            # pdb.set_trace()
+
             if str(para)+"stride"  in function_paras:
                 #分配一个足够的np大小
                 stride = function_paras[para+"stride"]
@@ -71,7 +70,8 @@ def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dt
                 function_paras['kwargs'][para] = Tensor.from_numpy(tensor)
             # function_paras['kwargs'][para].numpy()
             tensor_info.append((para, str(tensor.dtype), str(tensor.shape)))
-
+            # import pdb
+            # pdb.set_trace()
         if para == "tensors":
             tensors = function_paras['kwargs'][para]
             for idx, ele in enumerate(tensors):
@@ -470,12 +470,15 @@ class ConformanceTest(object):
                     continue
             # import pdb
             # pdb.set_trace()
-            for para in data['function_paras']["kwargs"].keys():
-                if len(data['cfg']['tensor_para']['args'])==0:
-                    continue
-                if str(para)+"stride" in data['cfg']['tensor_para']['args'][0].keys():
+            # for para,index in zip(data['function_paras']["kwargs"].keys(),range(len(data['function_paras']["kwargs"].keys()))):
+            #     if len(data['cfg']['tensor_para']['args'])==0:
+            #         continue
+            #     if str(para)+"stride" in data['cfg']['tensor_para']['args'][index].keys():
+            #         data['function_paras'][str(para)+"stride"] = data['cfg']['tensor_para']['args'][0][str(para)+"stride"]
+            for index in range(len(data['cfg']['tensor_para']['args'])):
+                para = data['cfg']['tensor_para']['args'][0]['ins']
+                if str(para)+"stride" in data['cfg']['tensor_para']['args'][index].keys():
                     data['function_paras'][str(para)+"stride"] = data['cfg']['tensor_para']['args'][0][str(para)+"stride"]
-
             function_paras = data["function_paras"]
             test_tag = data["cfg"]["tag"]
             tensor_info = []
