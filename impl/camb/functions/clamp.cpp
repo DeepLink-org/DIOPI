@@ -23,6 +23,15 @@ diopiError_t clampScalarCheck(diopiContextHandle_t ctx, diopiConstTensorHandle_t
     return diopiSuccess;
 }
 
+diopiError_t clampTensorCheck(diopiContextHandle_t ctx, diopiConstTensorHandle_t input, diopiTensorHandle_t out) {
+                              const diopiScalar_t* max) {
+    diopiDtype_t inDtype, outDtype;
+    diopiGetTensorDtype(ctx, input, &inDtype);
+    diopiGetTensorDtype(ctx, out, &outDtype);
+    DIOPI_CHECK(inDtype == outDtype, "the dtype of input and output must be the same")
+    return diopiSuccess;
+}
+
 diopiError_t getClampBoundPtr(diopiContextHandle_t ctx, diopiConstTensorHandle_t bound, diopiDtype_t desireDtype, void** out) {
     if (nullptr != bound) {
         DiopiTensor boundTensor(bound);
@@ -124,7 +133,10 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t min,
                         diopiConstTensorHandle_t max) {
     DIOPI_CHECK(min != nullptr || max != nullptr, "At least one of \'min\' or \'max\' must not be None");
-    DIOPI_CHECK(inputTensor.dtype() == outputTensor.dtype(), "the dtype of input and output must be the same")
+    auto check = clampTensorCheck(ctx, input, out);
+    if (diopiSuccess != check) {
+        return check;
+    }
     if (min == nullptr) {
         return diopiClampMax(ctx, out, input, max);
     } else if (max == nullptr) {
@@ -156,7 +168,10 @@ diopiError_t diopiClampMaxScalar(diopiContextHandle_t ctx, diopiTensorHandle_t o
 }
 
 diopiError_t diopiClampMax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t max) {
-    DIOPI_CHECK(inputTensor.dtype() == outputTensor.dtype(), "the dtype of input and output must be the same")
+    auto check = clampTensorCheck(ctx, input, out);
+    if (diopiSuccess != check) {
+        return check;
+    }
     return clampCommon(ctx, input, out, nullptr, max);
 }
 
@@ -183,7 +198,10 @@ diopiError_t diopiClampMinScalar(diopiContextHandle_t ctx, diopiTensorHandle_t o
 }
 
 diopiError_t diopiClampMin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t min) {
-    DIOPI_CHECK(inputTensor.dtype() == outputTensor.dtype(), "the dtype of input and output must be the same")
+    auto check = clampTensorCheck(ctx, input, out);
+    if (diopiSuccess != check) {
+        return check;
+    }
     return clampCommon(ctx, input, out, min, nullptr);
 }
 
