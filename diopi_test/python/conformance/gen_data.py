@@ -13,7 +13,7 @@ from . import diopi_configs
 from .diopi_runtime import from_dtype_str
 from .utils import get_saved_pth_list, get_data_from_file, cfg_file_name
 import torch
-import torchvision
+# import torchvision
 
 
 _cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -91,12 +91,24 @@ def expand_tensor_para(args_list, tensor_paras_list):
     for j in range(num):
         args_ins_expand_list = copy.deepcopy(tmp_args_list)
         for i in range(len(tmp_args_list)):
+            stride_name =  str(tmp_args_list[i]['ins'])+"stride"
             if "value" in tmp_args_list[i].keys():
                 args_ins_expand_list[i]["value"] = copy.deepcopy(
                     tmp_args_list[i]["value"][j])
             elif "shape" in tmp_args_list[i].keys():
                 args_ins_expand_list[i]["shape"] = copy.deepcopy(
                     tmp_args_list[i]["shape"][j])
+            if stride_name in  tmp_args_list[i].keys():
+                if j >= len(args0_dict[stride_name]):
+                    # print("correct1")
+                    del args_ins_expand_list[i][stride_name]
+                    continue
+                elif tmp_args_list[i][stride_name][j]==None:
+                    # print("correct2")
+                    del args_ins_expand_list[i][stride_name]
+                    continue
+                args_ins_expand_list[i][stride_name] = copy.deepcopy(
+                    tmp_args_list[i][stride_name][j]) 
         tensor_paras_list.append(args_ins_expand_list)
 
 
@@ -156,6 +168,8 @@ def expand_cfg_all(paras_list, tensor_paras_list, cfg_dict, filter_dtype_list) -
 
 
 def expand_cfg_by_all_options(cfg_dict: dict, filter_dtype_list: list) -> list:
+    # import pdb 
+    # pdb.set_trace()
     paras_list, tensor_paras_list = expand_cfg_by_para(cfg_dict)
     cfg_expand_list = expand_cfg_all(paras_list, tensor_paras_list, cfg_dict, filter_dtype_list)
     return cfg_expand_list
@@ -284,6 +298,8 @@ def gen_and_dump_data(dir_path: str, cfg_name: str, cfg_expand_list: list, cfg_s
                     tensor_list.append(value)
                 assert (cfg_dict["tensor_para"]["seq_name"] != ""), "need a name the list of tensors"
         # tie all the function_paras in a list named seq_name
+        # import pdb
+        # pdb.set_trace()
         if cfg_dict["tensor_para"]["seq_name"] != "":
             name = cfg_dict["tensor_para"]["seq_name"]
             new_list = []
@@ -334,6 +350,9 @@ class GenInputData(object):
                 continue
             logger.info(f"Generate benchmark input data for diopi_functions.{cfg_func_name}")
             filter_dtype_list = get_filter_dtype_list(filter_dtype_str_list)
+            ### cfg_expand_list 决定了size是一份一份取的
+            # import pdb
+            # pdb.set_trace()
             cfg_expand_list = expand_cfg_by_all_options(configs[cfg_name], filter_dtype_list)
             cfg_counter += len(cfg_expand_list)
             gen_and_dump_data(inputs_dir_path, cfg_name, cfg_expand_list, cfg_save_dict)

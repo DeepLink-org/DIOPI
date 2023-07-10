@@ -44,12 +44,58 @@ def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dt
                 if 'nhwc' not in test_tag:
                     test_tag.append('nhwc')
 
+            # 处理有stride输入的tensor
+            # function_paras[str(para)+"stride"] = (10,6,1)
+
+
             if filter_dtype_str_list and str(tensor.dtype) in filter_dtype_str_list:
                 raise DiopiException(f"Skipped: {tensor.dtype} Tensor skipped for test")
             if tensor is not None and str(tensor.dtype) not in test_tag:
                 test_tag.append(str(tensor.dtype))
-            function_paras['kwargs'][para] = Tensor.from_numpy(tensor)
+
+            # import pdb
+            # pdb.set_trace()
+            if str(para)+"stride"  in function_paras:
+                #分配一个足够的np大小
+                stride = function_paras[para+"stride"]
+                assert len(stride)==len(tensor.shape) , "stride must have same dim with shape"
+                sumsize = int(sum((s-1) * st for s, st in zip(tensor.shape, stride))+1)
+                stride_pre_tensor = np.empty(sumsize,tensor.dtype)
+                stride_tensor = np.lib.stride_tricks.as_strided(stride_pre_tensor,shape= tensor.shape,strides=tuple(tensor.dtype.itemsize*st for st in stride))
+                gqw = np.lib.stride_tricks.as_strided(tensor,shape= tensor.shape,strides=tuple(tensor.dtype.itemsize*st for st in stride))
+                
+                np.copyto(stride_tensor, tensor)
+                temp = Tensor.from_numpy(stride_tensor)
+                function_paras['kwargs'][para] = temp
+            else:
+                function_paras['kwargs'][para] = Tensor.from_numpy(tensor)
+            function_paras['kwargs'][para].numpy()
+
+
             tensor_info.append((para, str(tensor.dtype), str(tensor.shape)))
+            ##################
+            # gqw_test = np.array([[1,2,3],[4,5,6],[7,8,9]])
+            # gqw1_test = np.array([[[1,2,3],[4,5,6],[7,8,9]],[[1,2,3],[4,5,6],[7,8,9]],[[1,2,3],[4,5,6],[7,8,9]]])
+            
+            # gqw_test_stride = np.lib.stride_tricks.as_strided(gqw_test,shape=(2,2),strides=(24,8))
+            # gqw1_test_stride = np.lib.stride_tricks.as_strided(gqw1_test,shape=(2,2,2),strides=(72,24,8))
+
+            
+            # gqw_tensor_inside = Tensor.from_numpy(gqw_test)
+            # gqw_tensor_outside = Tensor.from_numpy(gqw_test_stride)
+            # ##然后再赋值！！！
+            # #crush
+            # gqw1_test_stride = np.lib.stride_tricks.as_strided(gqw1_test,shape=(2,1,2),strides=(72,24,8))
+            # gqw_tensor_outside = Tensor.from_numpy(gqw1_test_stride)
+            # gqw_tensor_outside.numpy()
+
+            # # gqw_tensor = 
+
+            # gqw_tensor_numpy = gqw_tensor_outside.numpy()
+            # # import torch
+            # # gqw_tensor = Tensor.from_numpy_strides(gqw_test,strides)
+            # gqw_tensor = Tensor.from_numpy(gqw_test)
+
 
         if para == "tensors":
             tensors = function_paras['kwargs'][para]
@@ -357,6 +403,8 @@ class ConformanceTest(object):
 
         saved_pth_list = get_saved_pth_list(inputs_dir_path, cfg_file_name)
 
+        # import pdb
+        # pdb.set_trace()
         if model_name != "":
             diopi_config = "model_config." + model_name + "_config"
             configs = Config.process_configs(eval(diopi_config))
@@ -445,6 +493,11 @@ class ConformanceTest(object):
                 output_reference = get_data_from_file(output_abs_path, saved_pth, "output")
                 if output_reference is None:
                     continue
+            # import pdb
+            # pdb.set_trace()
+            for para in data['function_paras']["kwargs"].keys():
+                if str(para)+"stride" in data['cfg']['tensor_para']['args'][0].keys():
+                    data['function_paras'][str(para)+"stride"] = data['cfg']['tensor_para']['args'][0][str(para)+"stride"]
 
             function_paras = data["function_paras"]
             test_tag = data["cfg"]["tag"]
@@ -474,6 +527,8 @@ class ConformanceTest(object):
                         ignore_paras_for_input_check.add("input")
                     np_inputs_orign = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
                     info = convert_input_tensors(function_paras, test_tag, nhwc_list, dtype_list, filter_dtype_str_list)
+                    # import pdb
+                    # pdb.set_trace()
                     tensor_info = info if info else tensor_info
                     global cur_test_func
                     cur_test_func = func_call.split('(')[0].split('.')[1]
