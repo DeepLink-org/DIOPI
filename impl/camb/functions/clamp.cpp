@@ -167,39 +167,41 @@ diopiError_t diopiClampMax(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     auto check = clampTensorCheck(ctx, input, out);
     if (diopiSuccess != check) {
         return check;
-        return clampCommon(ctx, input, out, nullptr, max);
     }
+    return clampCommon(ctx, input, out, nullptr, max);
+}
 
-    diopiError_t diopiClampMinInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* min) {
-        DiopiTensor minTensorTmp;
-        makeTensorFromScalar(ctx, min, minTensorTmp);
-        diopiTensorHandle_t minTensor = minTensorTmp.tensorHandle();
-        return clampCommon(ctx, input, input, minTensor, nullptr);
+diopiError_t diopiClampMinInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* min) {
+    DiopiTensor minTensorTmp;
+    makeTensorFromScalar(ctx, min, minTensorTmp);
+    diopiTensorHandle_t minTensor = minTensorTmp.tensorHandle();
+    return clampCommon(ctx, input, input, minTensor, nullptr);
+}
+
+diopiError_t diopiClampMinInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t min) {
+    return clampCommon(ctx, input, input, min, nullptr);
+}
+
+diopiError_t diopiClampMinScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* min) {
+    auto check = clampScalarCheck(ctx, input, out, min, max);
+    if (diopiSuccess != check) {
+        return check;
     }
+    DiopiTensor minTensorTmp;
+    makeTensorFromScalar(ctx, min, minTensorTmp);
+    diopiTensorHandle_t minTensor = minTensorTmp.tensorHandle();
+    return clampCommon(ctx, input, out, minTensor, nullptr);
+}
 
-    diopiError_t diopiClampMinInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t min) {
-        return clampCommon(ctx, input, input, min, nullptr);
+diopiError_t diopiClampMin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t min) {
+    auto check = clampTensorCheck(ctx, input, out);
+    if (diopiSuccess != check) {
+        return check;
     }
+    return clampCommon(ctx, input, out, min, nullptr);
+}
 
-    diopiError_t diopiClampMinScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* min) {
-        auto check = clampScalarCheck(ctx, input, out, min, max);
-        if (diopiSuccess != check) {
-            return check;
-        }
-        DiopiTensor minTensorTmp;
-        makeTensorFromScalar(ctx, min, minTensorTmp);
-        diopiTensorHandle_t minTensor = minTensorTmp.tensorHandle();
-        return clampCommon(ctx, input, out, minTensor, nullptr);
-    }
-
-    diopiError_t diopiClampMin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t min) {
-        auto check = clampTensorCheck(ctx, input, out);
-        if (diopiSuccess != check) {
-            return check;
-            return clampCommon(ctx, input, out, min, nullptr);
-        }
-
-    }  // extern "C"
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl
