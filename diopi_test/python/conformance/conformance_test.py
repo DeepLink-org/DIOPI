@@ -63,39 +63,14 @@ def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dt
                 stride_pre_tensor = np.empty(sumsize,tensor.dtype)
                 stride_tensor = np.lib.stride_tricks.as_strided(stride_pre_tensor,shape= tensor.shape,strides=tuple(tensor.dtype.itemsize*st for st in stride))
                 gqw = np.lib.stride_tricks.as_strided(tensor,shape= tensor.shape,strides=tuple(tensor.dtype.itemsize*st for st in stride))
-                
+                #通过np赋值
                 np.copyto(stride_tensor, tensor)
                 temp = Tensor.from_numpy(stride_tensor)
                 function_paras['kwargs'][para] = temp
             else:
                 function_paras['kwargs'][para] = Tensor.from_numpy(tensor)
-            function_paras['kwargs'][para].numpy()
-
-
+            # function_paras['kwargs'][para].numpy()
             tensor_info.append((para, str(tensor.dtype), str(tensor.shape)))
-            ##################
-            # gqw_test = np.array([[1,2,3],[4,5,6],[7,8,9]])
-            # gqw1_test = np.array([[[1,2,3],[4,5,6],[7,8,9]],[[1,2,3],[4,5,6],[7,8,9]],[[1,2,3],[4,5,6],[7,8,9]]])
-            
-            # gqw_test_stride = np.lib.stride_tricks.as_strided(gqw_test,shape=(2,2),strides=(24,8))
-            # gqw1_test_stride = np.lib.stride_tricks.as_strided(gqw1_test,shape=(2,2,2),strides=(72,24,8))
-
-            
-            # gqw_tensor_inside = Tensor.from_numpy(gqw_test)
-            # gqw_tensor_outside = Tensor.from_numpy(gqw_test_stride)
-            # ##然后再赋值！！！
-            # #crush
-            # gqw1_test_stride = np.lib.stride_tricks.as_strided(gqw1_test,shape=(2,1,2),strides=(72,24,8))
-            # gqw_tensor_outside = Tensor.from_numpy(gqw1_test_stride)
-            # gqw_tensor_outside.numpy()
-
-            # # gqw_tensor = 
-
-            # gqw_tensor_numpy = gqw_tensor_outside.numpy()
-            # # import torch
-            # # gqw_tensor = Tensor.from_numpy_strides(gqw_test,strides)
-            # gqw_tensor = Tensor.from_numpy(gqw_test)
-
 
         if para == "tensors":
             tensors = function_paras['kwargs'][para]

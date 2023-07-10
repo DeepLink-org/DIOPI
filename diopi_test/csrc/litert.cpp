@@ -148,80 +148,10 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
             stride_numel_ += (shape_[i]-1)*stride_[i];
         }
     }
-    // std::vector<int64_t> srcstride = stride_ ;
-    // size_t ndims = shape->len;
+
+    //这里是只使用stride分配内存，没有加判断
     stride_numel_ *= itemsize(dtype);
     const int64_t nbytes = stride_numel_;
-    
-    //应该通过stride和shape同时确定分配的比特大小，现在是直接使用了shape算出来的内存大小
-    
-    // for (int64_t i = shape->len - 1; i >= 0; --i) {
-    //     shape_[i] = shape->data[i];
-    //     if (stride != nullptr && stride->data != nullptr) {
-    //         stride_[i] = stride->data[i];
-    //     }
-    //     else
-    //         stride_[i]=1;
-        
-    // }
-    
-    std::cout<< "stride_numel_ "<<stride_numel_<<std::endl;
-
-
-
-
-    //还得通过指针把数据放在正确的内存位置上，内存上是连续排布的，
-    
-
-    // using T0 = decltype(*src);
-
-    // std::cout<<"srcstride    "<<"dststride"<<std::endl;
-    // for (int64_t i = 0; i < ndims; ++i) {
-    // std::cout<<srcstride[i]<<"     ";
-    // std::cout<< stride_[i]<<std::endl;
-    // }
-
-    // using T = int;
-    // if (stride_numel_ > numel_){
-    //     if (itemsize(dtype) ==4){
-    //         using T = float;
-    //         T* trans_dst = (T*)malloc(stride_numel_);
-    //         T* trans_src = (T*)src;
-    //         hostRelocKernel<T>(ndims, shape_, trans_src, srcstride, trans_dst, stride_, 0);
-    //         // src = (void*)trans_dst;
-    //     }
-    //     else if (itemsize(dtype) ==8){
-    //         using T = double;
-    //         T* trans_dst = (T*)malloc(stride_numel_);
-    //         T* trans_src = (T*)src;
-    //         hostRelocKernel<T>(ndims, shape_, trans_src, srcstride, trans_dst, stride_, 0);
-    //         // src = (void*)trans_dst;
-    //     }
-    //     else if (itemsize(dtype) ==2){
-    //         using T = short int;
-    //         T* trans_dst = (T*)malloc(stride_numel_);
-    //         T* trans_src = (T*)src;
-    //         hostRelocKernel<T>(ndims, shape_, trans_src, srcstride, trans_dst, stride_, 0);
-    //         // src = (void*)trans_dst;
-    //     }
-    //     else if (itemsize(dtype) ==1){
-    //         using T = char;
-    //         T* trans_dst = (T*)malloc(stride_numel_);
-    //         T* trans_src = (T*)src;
-    //         hostRelocKernel<T>(ndims, shape_, trans_src, srcstride, trans_dst, stride_, 0);
-    //         // src = (void*)trans_dst;
-    //     }
-    //     else if (itemsize(dtype) ==16){
-    //         using T = long double;
-    //         T* trans_dst = (T*)malloc(stride_numel_);
-    //         T* trans_src = (T*)src;
-    //         hostRelocKernel<T>(ndims, shape_, trans_src, srcstride, trans_dst, stride_, 0);
-    //         // src = (void*)trans_dst;
-    //     }
-
-    //     // decltype(src) dst = reinterpret_cast<decltype(src)>(trans_dst);
-
-    // }
 
 
     std::cout<<"numel_:"<<numel_<<std::endl;
@@ -244,9 +174,6 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
         }
     }
     context_ = context;
-
-
-
 }
 
 bool diopiTensor::resetShape(const diopiSize_t* size) {
