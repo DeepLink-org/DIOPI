@@ -321,6 +321,29 @@ diopi_configs = {
         ),
     ),
 
+    'avg_pool2d': dict(
+        name=["avg_pool2d"],
+        para=dict(
+            kernel_size=[(2, 2), 3],
+            stride=[1, (1, 2)],
+            padding=[(1, 1), 0],
+            ceil_mode=[True, False],
+            count_include_pad=[True, False],
+            divisor_override=[None, 2],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    # TODO(xintian): fix backward for Dtype.float64
+                    # "requires_grad": [True],
+                    "shape": ((2, 256, 14, 14), (256, 28, 28)),
+                    "dtype": [Dtype.float64],
+                },
+            ]
+        ),
+    ),
+
     'max_pool2d': dict(
         name=["max_pool2d"],
         para=dict(
