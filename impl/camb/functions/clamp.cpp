@@ -35,7 +35,7 @@ diopiError_t getClampBoundPtr(diopiContextHandle_t ctx, diopiConstTensorHandle_t
     if (nullptr != bound) {
         DiopiTensor boundTensor(bound);
         DIOPI_CHECK(boundTensor.numel() == 1, "only supported when min and max are scalar or one element Tensor currently");
-        if (desireDtype != boundTensor.dtype()) {
+        if ((!DiopiDataType::isInteger(desireDtype) or diopi_dtype_float32 != boundTensor.dtype()) && desireDtype != boundTensor.dtype()) {
             DIOPI_CALL(dataTypeCast(ctx, boundTensor, desireDtype));
         }
         *out = boundTensor.data();
@@ -52,8 +52,23 @@ diopiError_t clampCommon(diopiContextHandle_t ctx, diopiConstTensorHandle_t inpu
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
 
+    void* minPtr = nullptr;
+    void* maxPtr = nullptr;
+    DIOPI_CALL(getClampBoundPtr(ctx, min, inputTensor.dtype(), &minPtr));
+    DIOPI_CALL(getClampBoundPtr(ctx, max, inputTensor.dtype(), &maxPtr));
+
     DiopiTensor output32Tensor = outputTensor;
-    if (DiopiDataType::isInteger(inputTensor.dtype())) {
+    bool isFloat = Flase;
+    if (min) {
+        diopiDtype_t dtype;
+        diopiGetTensorDtype(min, &dtype);
+        isFloat = diopi_dtype_float32 == dtype;
+    } else if (max) {
+        diopiDtype_t dtype;
+        diopiGetTensorDtype(max, &dtype);
+        isFloat = diopi_dtype_float32 == dtype;
+    }
+    if (DiopiDataType::isInteger(inputTensor.dtype()) && !isFloat) {
         DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_int32));
         DIOPI_CALL(dataTypeCast(ctx, output32Tensor, diopi_dtype_int32));
     } else if (inputTensor.dtype() == diopi_dtype_float64) {
@@ -62,11 +77,6 @@ diopiError_t clampCommon(diopiContextHandle_t ctx, diopiConstTensorHandle_t inpu
     }
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc output32Desc(output32Tensor, CNNL_LAYOUT_ARRAY);
-
-    void* minPtr = nullptr;
-    void* maxPtr = nullptr;
-    DIOPI_CALL(getClampBoundPtr(ctx, min, inputTensor.dtype(), &minPtr));
-    DIOPI_CALL(getClampBoundPtr(ctx, max, inputTensor.dtype(), &maxPtr));
 
     DIOPI_CALLCNNL(
         cnnlClip_v2(handle, CNNL_POINTER_MODE_DEVICE, inputDesc.get(), inputTensor.data(), minPtr, maxPtr, output32Desc.get(), output32Tensor.data()));
