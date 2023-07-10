@@ -24,7 +24,6 @@ diopiError_t clampScalarCheck(diopiContextHandle_t ctx, diopiConstTensorHandle_t
 }
 
 diopiError_t clampTensorCheck(diopiContextHandle_t ctx, diopiConstTensorHandle_t input, diopiTensorHandle_t out) {
-                              const diopiScalar_t* max) {
     diopiDtype_t inDtype, outDtype;
     diopiGetTensorDtype(ctx, input, &inDtype);
     diopiGetTensorDtype(ctx, out, &outDtype);
