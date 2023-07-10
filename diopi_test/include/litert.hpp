@@ -20,7 +20,6 @@
 #include <set>
 #include <string>
 #include <vector>
-#include <iostream>
 
 namespace py = pybind11;
 template <class T>
@@ -38,27 +37,6 @@ public:
 private:
     T* ptr;
 };
-
-template <class T>
-void hostRelocKernel(size_t ndims, std::vector<int64_t> dims,
-    const T* src, std::vector<int64_t> srcStrides, T* dst, 
-    std::vector<int64_t> dstStrides, int64_t i) {
-if (ndims > 0) {
-    for (int64_t k = 0; k < dims[i]; ++k) {
-        hostRelocKernel(ndims - 1, dims,
-                        src, srcStrides,
-                        dst, dstStrides,
-                        i+1);
-        src += srcStrides[i];
-        dst += dstStrides[i];
-
-    }
-} else {
-        std::cout <<"srcadd:" << src <<"," << *src <<"    ";
-        std::cout <<"dstadd"  << dst <<"," << *dst << std::endl;;
-        // *dst = *src;
-}
-}
 
 extern "C" {
 
