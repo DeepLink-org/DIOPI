@@ -9,8 +9,8 @@ extern "C" {
 diopiError_t clampScalarCheck(diopiContextHandle_t ctx, diopiConstTensorHandle_t input, diopiTensorHandle_t out, const diopiScalar_t* min,
                               const diopiScalar_t* max) {
     diopiDtype_t inDtype, outDtype;
-    diopiGetTensorDtype(ctx, input, &inDtype);
-    diopiGetTensorDtype(ctx, out, &outDtype);
+    diopiGetTensorDtype(input, &inDtype);
+    diopiGetTensorDtype(out, &outDtype);
     if (min != nullptr) {
         DIOPI_CHECK(outDtype == inDtype || (min->stype == diopi_dtype_float64 && outDtype == diopi_dtype_float32),
                     "the dtype of output must be the same as input or min");
@@ -25,8 +25,8 @@ diopiError_t clampScalarCheck(diopiContextHandle_t ctx, diopiConstTensorHandle_t
 
 diopiError_t clampTensorCheck(diopiContextHandle_t ctx, diopiConstTensorHandle_t input, diopiTensorHandle_t out) {
     diopiDtype_t inDtype, outDtype;
-    diopiGetTensorDtype(ctx, input, &inDtype);
-    diopiGetTensorDtype(ctx, out, &outDtype);
+    diopiGetTensorDtype(input, &inDtype);
+    diopiGetTensorDtype(out, &outDtype);
     DIOPI_CHECK(inDtype == outDtype, "the dtype of input and output must be the same")
     return diopiSuccess;
 }
