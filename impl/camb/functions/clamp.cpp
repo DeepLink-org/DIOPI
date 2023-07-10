@@ -67,13 +67,20 @@ diopiError_t clampCommon(diopiContextHandle_t ctx, diopiConstTensorHandle_t inpu
         diopiDtype_t dtype;
         diopiGetTensorDtype(max, &dtype);
         isFloat = diopi_dtype_float32 == dtype;
-    }
-    if (DiopiDataType::isInteger(inputTensor.dtype()) && !isFloat) {
-        DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_int32));
-        DIOPI_CALL(dataTypeCast(ctx, output32Tensor, diopi_dtype_int32));
+    }0
+    if (DiopiDataType::isInteger(inputTensor.dtype())) {
+        if (!isFloat) {
+            DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_int32));
+            DIOPI_CALL(dataTypeCast(ctx, output32Tensor, diopi_dtype_int32));
+        } else {
+            DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
+            DIOPI_CALL(dataTypeCast(ctx, output32Tensor, diopi_dtype_float32));
+        }
     } else if (inputTensor.dtype() == diopi_dtype_float64) {
         DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
         DIOPI_CALL(dataTypeCast(ctx, output32Tensor, diopi_dtype_float32));
+    } else {
+
     }
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc output32Desc(output32Tensor, CNNL_LAYOUT_ARRAY);
