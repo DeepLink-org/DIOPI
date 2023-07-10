@@ -314,14 +314,14 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((2, 256, 14, 14), (256, 28, 28)),
+                    "shape": ((2, 1024, 14, 14), (256, 28, 28)),
                     "dtype": [Dtype.float32],
                 },
             ]
         ),
     ),
 
-    'avg_pool2d': dict(
+    'avg_pool2d_float64': dict(
         name=["avg_pool2d"],
         para=dict(
             kernel_size=[(2, 2), 3],
@@ -337,7 +337,7 @@ diopi_configs = {
                     "ins": ['input'],
                     # TODO(xintian): fix backward for Dtype.float64
                     # "requires_grad": [True],
-                    "shape": ((2, 256, 14, 14), (256, 28, 28)),
+                    "shape": ((2, 1024, 14, 14), (256, 28, 28)),
                     "dtype": [Dtype.float64],
                 },
             ]
@@ -1401,8 +1401,8 @@ diopi_configs = {
                               (1, 242991, 2),
                               (2, 4, 100, 152),
                               (384, 128)),
-                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16
-                              ],
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16,
+                              Dtype.int32, Dtype.int64, Dtype.int8],
                     "gen_fn": Genfunc.randn,
                 },
             ],
@@ -4834,7 +4834,6 @@ diopi_configs = {
             ],
         ),
     ),
-
 
     'sgn': dict(
         name=['sgn'],

@@ -496,19 +496,20 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
     call = "diopiClamp"
     args = "input.context(), "
     if inplace:
-        out = input
         call = call + "Inp"
     else:
-        # out = Tensor(input.size(), Dtype.float32)
-        out = raw_like(input)
         args = args + "out, "
 
+    convert_float = False
     if (max and min):
         if isinstance(min, Tensor):
             assert (isinstance(max, Tensor)), 'min and max must have same type'
             args += "input, min, max"
-        elif isinstance(min, (int, float)):
+        else:
+            assert (isinstance(min, (int, float))), 'min must be Tensor or Value'
             assert (isinstance(max, (int, float))), 'min and max must have same type'
+            if isinstance(min, float) and input.get_dtype() in int_types:
+                convert_float = True
             call = call + 'Scalar'
             min = Scalar(min)
             max = Scalar(max)
@@ -516,17 +517,34 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
     elif (max and not min):
         if isinstance(max, Tensor):
             args += "input, None, max"
-        if isinstance(max, (int, float)):
+        else:
+            assert (isinstance(max, (int, float))), 'max must be Tensor or Value'
+            if isinstance(max, float) and input.get_dtype() in int_types:
+                convert_float = True
             call = call + 'Scalar'
             max = Scalar(max)
             args = args + "input, None, max"
     elif (min and not max):
         if isinstance(min, Tensor):
             args += "input, min, None"
-        if isinstance(min, (int, float)):
+        else:
+            assert (isinstance(min, (int, float))), 'min must be Tensor or Value'
+            if isinstance(min, float) and input.get_dtype() in int_types:
+                convert_float = True
             call = call + 'Scalar'
             min = Scalar(min)
             args = args + "input, min, None"
+
+    if inplace:
+        if convert_float:
+            input_np = input.numpy()
+            input = Tensor.from_numpy(input_np.astype(to_numpy_dtype(Dtype.float32)))
+        out = input
+    else:
+        if convert_float:
+            out = Tensor(input.size(), Dtype.float32)
+        else:
+            out = raw_like(input)
 
     func = check_function(call)
     ret = eval(f'func({args})')
