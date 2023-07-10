@@ -134,7 +134,7 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
     stride_.resize(shape->len);
     int64_t strideTemp = 1;
     numel_ = 1;
-    int64_t stride_numel_ = 1;
+    int64_t strideNumel = 1;
     //得到存储数据的stride
     for (int64_t i = shape->len - 1; i >= 0; --i) {
         shape_[i] = shape->data[i];
@@ -146,13 +146,13 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
             strideTemp *= shape->data[i];
             std::cout<< shape->data[i]<<std::endl;
         }
-        stride_numel_ += (shape_[i]-1)*stride_[i];
+        strideNumel += (shape_[i]-1)*stride_[i];
     }
     // std::cout<<"*****************"<<std::endl;
     // std::cout<<"numel_:"<<numel_<<std::endl;
-    // std::cout<<"stride_numel_"<<stride_numel_ <<std::endl;
+    // std::cout<<"strideNumel"<<strideNumel <<std::endl;
     
-    stride_numel_ *= itemsize(dtype);
+    strideNumel *= itemsize(dtype);
     //应该通过stride和shape同时确定分配的比特大小，现在是直接使用了shape算出来的内存大小
     
     // for (int64_t i = shape->len - 1; i >= 0; --i) {
@@ -165,14 +165,14 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
         
     // }
     
-    // std::cout<< "stride_numel_ "<<stride_numel_<<std::endl;
+    // std::cout<< "strideNumel "<<strideNumel<<std::endl;
 
 
 
 
     //还得通过指针把数据放在正确的内存位置上，内存上是连续排布的，
     
-    const int64_t nbytes = stride_numel_;
+    const int64_t nbytes = strideNumel;
 
 
 
