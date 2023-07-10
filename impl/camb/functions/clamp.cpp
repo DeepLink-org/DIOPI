@@ -58,7 +58,7 @@ diopiError_t clampCommon(diopiContextHandle_t ctx, diopiConstTensorHandle_t inpu
     DIOPI_CALL(getClampBoundPtr(ctx, max, inputTensor.dtype(), &maxPtr));
 
     DiopiTensor output32Tensor = outputTensor;
-    bool isFloat = Flase;
+    bool isFloat = false;
     if (min) {
         diopiDtype_t dtype;
         diopiGetTensorDtype(min, &dtype);
