@@ -43,12 +43,7 @@ extern "C" diopiError_t diopiFloor(diopiContextHandle_t ctx, diopiTensorHandle_t
         descOut.set(trOutTmp, CNNL_LAYOUT_ARRAY);
     }
 
-    DIOPI_CALLCNNL(cnnlFloor(handle,
-                             descInput.get(),
-
-                             trInput.data(),
-                             descOut.get(),
-                             trOutTmp.data()));
+    DIOPI_CALLCNNL(cnnlFloor(handle, descInput.get(), trInput.data(), descOut.get(), trOutTmp.data()));
     if (trOutTmp.dtype() != trOut.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, trOut, trOutTmp));
     }
