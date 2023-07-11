@@ -67,7 +67,7 @@ diopiError_t clampCommon(diopiContextHandle_t ctx, diopiConstTensorHandle_t inpu
         diopiDtype_t dtype;
         diopiGetTensorDtype(max, &dtype);
         isFloat = diopi_dtype_float32 == dtype;
-    }0
+    }
     if (DiopiDataType::isInteger(inputTensor.dtype())) {
         if (!isFloat) {
             DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_int32));
