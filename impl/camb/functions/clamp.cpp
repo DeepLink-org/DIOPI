@@ -34,8 +34,8 @@ diopiError_t clampTensorCheck(diopiContextHandle_t ctx, diopiConstTensorHandle_t
 diopiError_t getClampBoundPtr(diopiContextHandle_t ctx, diopiConstTensorHandle_t bound, diopiDtype_t desireDtype, void** out) {
     if (nullptr != bound) {
         DiopiTensor boundTensor(bound);
-        DIOPI_CHECK(boundTensor.numel() == 1, "only supported when min and max are scalar or one element Tensor currently");
-        if ((!DiopiDataType::isInteger(desireDtype) or diopi_dtype_float32 != boundTensor.dtype()) && desireDtype != boundTensor.dtype()) {
+        DIOPI_CHECK(boundTensor.numel() == 1, "only supported when min and max are scalar || one element Tensor currently");
+        if ((!DiopiDataType::isInteger(desireDtype) || diopi_dtype_float32 != boundTensor.dtype()) && desireDtype != boundTensor.dtype()) {
             DIOPI_CALL(dataTypeCast(ctx, boundTensor, desireDtype));
         }
         *out = boundTensor.data();
@@ -79,9 +79,8 @@ diopiError_t clampCommon(diopiContextHandle_t ctx, diopiConstTensorHandle_t inpu
     } else if (inputTensor.dtype() == diopi_dtype_float64) {
         DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
         DIOPI_CALL(dataTypeCast(ctx, output32Tensor, diopi_dtype_float32));
-    } else {
-
     }
+
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc output32Desc(output32Tensor, CNNL_LAYOUT_ARRAY);
 
