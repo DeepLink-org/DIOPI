@@ -6,13 +6,11 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 build)
 
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/test/include")
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/../third_party/pybind11/include")
-include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/../../dipu/third_party/DIOPI/DIOPI-IMPL/third_party/pybind11/include")
-#include_directories(SYSTEM "/home/cse/miniconda3/envs/dipu/include/python3.8")"
 include_directories(SYSTEM "~/miniconda3/envs/dipu/include/python3.8")
 
 set(RUNTIME_SRC
     litert.cpp
-    ../conform_test.cpp)
+    conform_test.cpp)
 
 set(EXPORT_SRC
     export_runtime.cpp
@@ -33,9 +31,9 @@ target_link_libraries(${DIOPIRT} PRIVATE diopirt)
 #target_link_libraries(${DIOPIRT} -Wl,--no-as-needed ${DEVICEIMPL} -Wl,--as-needed)
 target_link_libraries(diopirt -Wl,--no-as-needed ${DEVICEIMPL} -Wl,--as-needed)
 
-set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../DIOPI-TEST/csrc")
+set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/csrc")
 
-set(TEST_GEN_PATH "${CMAKE_SOURCE_DIR}/../DIOPI-TEST/codegen")
+set(TEST_GEN_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/codegen")
 add_custom_target(test_code_gen COMMAND python3 ${TEST_GEN_PATH}/gen.py
     --device=topsrider --use_adaptor=${USE_ADAPTOR})
 add_custom_target(functions_copy ALL
@@ -56,9 +54,9 @@ if(${USE_ADAPTOR} STREQUAL "true")
 endif()
 
 
-file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/../DIOPI-TEST/python)
+file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/../diopi_test/python)
 add_custom_target(python_copy ALL
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS}> ${CMAKE_SOURCE_DIR}/../DIOPI-TEST/python
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIRT}> ${CMAKE_SOURCE_DIR}/../DIOPI-TEST/python
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS}> ${CMAKE_SOURCE_DIR}/../diopi_test/python
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIRT}> ${CMAKE_SOURCE_DIR}/../diopi_test/python
     DEPENDS ${DIOPIFUNCTIONS} ${DIOPIRT})
 
