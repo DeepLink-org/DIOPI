@@ -270,7 +270,7 @@ class Tensor(diopiTensor):
         size_without_stride = 1
         for s in list(self.size().data):
             size_without_stride = size_without_stride * s
-        if(sumsize > size_without_stride):
+        if (sumsize > size_without_stride):
             darray = np.empty(sumsize, to_numpy_dtype(self.get_dtype()))
         else:
             darray = np.empty(list(self.size().data), to_numpy_dtype(self.get_dtype()))
@@ -284,6 +284,7 @@ class Tensor(diopiTensor):
                    for stride in self.get_stride().data]
         darray = np.lib.stride_tricks.as_strided(darray, shape=list(self.size().data), strides=strides)
         return darray
+
 
 def raw_like(tensor) -> Tensor:
     return tensor.raw_like()
