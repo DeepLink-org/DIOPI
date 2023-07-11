@@ -144,11 +144,7 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
         }
         strideNumel += (shape_[i] - 1) * stride_[i];
     }
-    // std::cout<<"*****************"<<std::endl;
-    // std::cout<<"numel_:"<<numel_<<std::endl;
-    // std::cout<<"strideNumel"<<strideNumel <<std::endl;
     strideNumel *= itemsize(dtype);
-    // 还得通过指针把数据放在正确的内存位置上，内存上是连续排布的，
     const int64_t nbytes = strideNumel;
     // const int64_t nbytes = numel_ * itemsize(dtype);
     if (device_ == diopi_host) {

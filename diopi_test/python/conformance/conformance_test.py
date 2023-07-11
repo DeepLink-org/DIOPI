@@ -56,14 +56,10 @@ def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dt
                 stride_pre_tensor = np.empty(sumsize, tensor.dtype)
                 stride_tensor = np.lib.stride_tricks.as_strided(stride_pre_tensor, shape=tensor.shape, strides=tuple(tensor.dtype.itemsize * st for st in stride))
                 np.copyto(stride_tensor, tensor)
-                temp = Tensor.from_numpy(stride_tensor)
-                function_paras['kwargs'][para] = temp
+                function_paras['kwargs'][para] = Tensor.from_numpy(stride_tensor)
             else:
                 function_paras['kwargs'][para] = Tensor.from_numpy(tensor)
-            # function_paras['kwargs'][para].numpy()
             tensor_info.append((para, str(tensor.dtype), str(tensor.shape)))
-            # import pdb
-            # pdb.set_trace()
         if para == "tensors":
             tensors = function_paras['kwargs'][para]
             for idx, ele in enumerate(tensors):
@@ -370,8 +366,6 @@ class ConformanceTest(object):
 
         saved_pth_list = get_saved_pth_list(inputs_dir_path, cfg_file_name)
 
-        # import pdb
-        # pdb.set_trace()
         if model_name != "":
             diopi_config = "model_config." + model_name + "_config"
             configs = Config.process_configs(eval(diopi_config))
@@ -460,13 +454,6 @@ class ConformanceTest(object):
                 output_reference = get_data_from_file(output_abs_path, saved_pth, "output")
                 if output_reference is None:
                     continue
-            # import pdb
-            # pdb.set_trace()
-            # for para,index in zip(data['function_paras']["kwargs"].keys(),range(len(data['function_paras']["kwargs"].keys()))):
-            #     if len(data['cfg']['tensor_para']['args'])==0:
-            #         continue
-            #     if str(para)+"stride" in data['cfg']['tensor_para']['args'][index].keys():
-            #         data['function_paras'][str(para)+"stride"] = data['cfg']['tensor_para']['args'][0][str(para)+"stride"]
             for index in range(len(data['cfg']['tensor_para']['args'])):
                 para = data['cfg']['tensor_para']['args'][0]['ins']
                 if str(para) + "stride" in data['cfg']['tensor_para']['args'][index].keys():
@@ -499,8 +486,6 @@ class ConformanceTest(object):
                         ignore_paras_for_input_check.add("input")
                     np_inputs_orign = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
                     info = convert_input_tensors(function_paras, test_tag, nhwc_list, dtype_list, filter_dtype_str_list)
-                    # import pdb
-                    # pdb.set_trace()
                     tensor_info = info if info else tensor_info
                     global cur_test_func
                     cur_test_func = func_call.split('(')[0].split('.')[1]
