@@ -2109,26 +2109,56 @@ diopi_configs = {
     'embedding': dict(
         name=["embedding"],
         para=dict(
-            padding_idx=[None, 0, None, 0],
-            max_norm=[None, 1.0, None, 1.0],
-            norm_type=[2.0, 1.0, 2.0, 3.0],
-            scale_grad_by_freq=[False, True, False, True],
-            sparse=[False, False, False, False],
+            padding_idx=[None, None, 92, -20, 0, -15, 19, 2, 0],
+            max_norm=[None, 1.0, None, None, -2, 2, None, 9, -0.5],
+            norm_type=[2.0, 0, 1, 2, 0.5, 1.2, float('inf'), -2, -0.5],
+            scale_grad_by_freq=[False, True, False, True, False, True, False, True, True],
+            # sparse=[True, False, True, False, True, False, True, False, False],
+            sparse=[False, False, False, False, False, False, False, False, False],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": ((), (2, ), (2, 30), (2, 3, 4)),
-                    "dtype": [Dtype.int64, Dtype.int32],
+                    "shape": ((), (2, ), (2, 30), (2, 3, 4), (12, 4, 3, 8),
+                              (64, ), (2, 16), (12, 4, 18), (1, 32)),
+                    "dtype": [Dtype.int64, Dtype.int64, Dtype.int32],
                     "gen_fn": dict(fn=Genfunc.randint, high=10),
                 },
                 {
                     "ins": ["weight"],
                     "requires_grad": [True],
-                    "shape": ((10, 3), (10, 2), (93, 512), (20, 2)),
+                    "shape": ((10, 3), (10, 2), (93, 512), (20, 2), (16, 8),
+                              (15, 3), (20, 3), (10, 5), (10, 4)),
                     "gen_fn": Genfunc.randn,
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
+                },
+            ],
+        ),
+    ),
+    
+    'embedding_forward': dict(
+        name=["embedding"],
+        para=dict(
+            padding_idx=[None],
+            max_norm=[None],
+            norm_type=[2.0],
+            scale_grad_by_freq=[False],
+            sparse=[False],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((1, 32),),
+                    "dtype": [Dtype.int64, Dtype.int64, Dtype.int32],
+                    "gen_fn": dict(fn=Genfunc.randint, high=10),
+                },
+                {
+                    "ins": ["weight"],
+                    "shape": ((10, 0),),
+                    "gen_fn": Genfunc.randn,
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
             ],
         ),
