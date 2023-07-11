@@ -51,9 +51,9 @@ def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dt
                 test_tag.append(str(tensor.dtype))
             if str(para) + "stride" in function_paras:
                 stride = function_paras[para + "stride"]
-                assert len(stride) == len(tensor.shape),"stride must have same dim with shape"
+                assert len(stride) == len(tensor.shape), "stride must have same dim with shape"
                 sumsize = int(sum((s - 1) * st for s, st in zip(tensor.shape, stride)) + 1)
-                stride_pre_tensor = np.empty(sumsize,tensor.dtype)
+                stride_pre_tensor = np.empty(sumsize, tensor.dtype)
                 stride_tensor = np.lib.stride_tricks.as_strided(stride_pre_tensor, shape=tensor.shape, strides=tuple(tensor.dtype.itemsize * st for st in stride))
                 np.copyto(stride_tensor, tensor)
                 temp = Tensor.from_numpy(stride_tensor)

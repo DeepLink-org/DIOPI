@@ -101,23 +101,22 @@ def expand_tensor_para(args_list, tensor_paras_list):
                 if j >= len(args0_dict[stride_name]):
                     del args_ins_expand_list[i][stride_name]
                     continue
-                elif tmp_args_list[i][stride_name][j] == None:
+                elif tmp_args_list[i][stride_name][j] is None:
                     del args_ins_expand_list[i][stride_name]
                     continue
-                args_ins_expand_list[i][stride_name] = copy.deepcopy(tmp_args_list[i][stride_name][j]) 
+                args_ins_expand_list[i][stride_name] = copy.deepcopy(tmp_args_list[i][stride_name][j])
                 # 判断stride和shape是否符合标准，不符合报错
                 tmp_stride = args_ins_expand_list[i][stride_name]
                 tmp_shape = args_ins_expand_list[i]["shape"]
                 # 首先判断是否长度相同
-                assert len(tmp_stride) == len(tmp_shape),"stride and shape must have the same dim"
-                sumsize = int(sum([(s - 1) * st for s, st in zip(list(tmp_shape), [int(stride) for stride in tmp_stride])]) + 1)
+                assert len(tmp_stride) == len(tmp_shape), "stride and shape must have the same dim"
                 stride_dic = []
-                for index, s, st in zip(range(len(list(tmp_shape))),list(tmp_shape), tmp_stride):
+                for index, s, st in zip(range(len(list(tmp_shape))), list(tmp_shape), tmp_stride):
                     stride_dic.append((s, st))
                 sorted_stride = sorted(stride_dic, key=lambda x: x[1])
                 for index in range(len(sorted_stride) - 1):
-                    print("need:", (sorted_stride[index][0] - 1)*sorted_stride[index][1], "have,", sorted_stride[index + 1][1])
-                    assert (sorted_stride[index][0]-1) * sorted_stride[index][1]  <  sorted_stride[index+1][1],"wrong stride for shape (might have memory overlap)"
+                    # print("need:", (sorted_stride[index][0] - 1) * sorted_stride[index][1], "have,", sorted_stride[index + 1][1])
+                    assert (sorted_stride[index][0] - 1) * sorted_stride[index][1] < sorted_stride[index + 1][1], "wrong stride for shape (might have memory overlap)"
         tensor_paras_list.append(args_ins_expand_list)
 
 
