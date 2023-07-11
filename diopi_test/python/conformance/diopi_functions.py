@@ -613,10 +613,11 @@ def min(input, dim=None, keepdim=False) -> Tensor:
     assert isinstance(dim, int), "dim should be int"
 
     sizeI = input.size().data
-    if keepdim:
-        sizeI[dim] = 1
-    else:
-        del sizeI[dim]
+    if len(sizeI) > 0:
+        if keepdim:
+            sizeI[dim] = 1
+        else:
+            del sizeI[dim]
     out = Tensor(sizeI, input.get_dtype())
     indices = Tensor(out.size().data, glob_vars.int_type)
     func = check_function("diopiMin")
@@ -1478,10 +1479,11 @@ def max(input, dim=None, keepdim=False):
 
     assert isinstance(dim, int), "dim should be int"
     sizeI = input.size().data
-    if keepdim:
-        sizeI[dim] = 1
-    else:
-        del sizeI[dim]
+    if len(sizeI) > 0:
+        if keepdim:
+            sizeI[dim] = 1
+        else:
+            del sizeI[dim]
     out = Tensor(sizeI, input.get_dtype())
     indices = Tensor(out.size().data, glob_vars.int_type)
 
