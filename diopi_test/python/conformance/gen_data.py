@@ -110,34 +110,21 @@ def expand_tensor_para(args_list, tensor_paras_list):
                     continue
                 args_ins_expand_list[i][stride_name] = copy.deepcopy(
                     tmp_args_list[i][stride_name][j]) 
-                ###判断stride和shape是否符合标准，不符合报错
+                # 判断stride和shape是否符合标准，不符合报错
                 tmp_stride = args_ins_expand_list[i][stride_name]
                 tmp_shape = args_ins_expand_list[i]["shape"]
-                #首先判断是否长度相同
-                assert len(tmp_stride)==len(tmp_shape),"stride and shape must have the same dim"
-                sumsize = int(sum([(s-1) * st for s, st in zip(list(tmp_shape), [int(stride) for stride in tmp_stride])])+1)
+                # 首先判断是否长度相同
+                assert len(tmp_stride) == len(tmp_shape), "stride and shape must have the same dim"
+                sumsize = int(sum([(s-1) * st for s, st in zip(list(tmp_shape), [int(stride) for stride in tmp_stride])]) + 1)
                 position = [0]*sumsize
                 stride_dic = []
-                for index ,s, st in zip(range(len(list(tmp_shape))),list(tmp_shape), tmp_stride):
+                for index, s, st in zip(range(len(list(tmp_shape))),list(tmp_shape), tmp_stride):
                     stride_dic.append((s, st))
                 sorted_stride = sorted(stride_dic, key=lambda x: x[1])
                 # print(sorted_stride)
-                for index in range(len(sorted_stride)-1):
-                    print("need:",(sorted_stride[index][0]-1)*sorted_stride[index][1] ,"have,",sorted_stride[index+1][1])
-                    assert (sorted_stride[index][0]-1)*sorted_stride[index][1]  <  sorted_stride[index+1][1], "wrong stride for shape (might have memory overlap)"
-                # get_num(position,tmp_shape,tmp_stride,0,0,0)
-
-                # for index ,s, st in zip(range(len(list(tmp_shape))),list(tmp_shape), tmp_stride):
-                #     if index>0:
-                #         tmp_offset += tmp_stride[index]
-                #     for i in range(s):
-                #         position[tmp_offset + i * st] += 1
-                    # if(index+1<len(list(tmp_shape))):
-                # assert  not any(val > 1 for val in position),"wrong stride for shape (might have memory overlap)"
-                # import pdb
-                # pdb.set_trace()
-                # print(position)
-                # print(any(val > 1 for val in position))
+                for index in range(len(sorted_stride) - 1):
+                    print("need:", (sorted_stride[index][0]-1)*sorted_stride[index][1], "have,", sorted_stride[index+1][1])
+                    assert (sorted_stride[index][0]-1) * sorted_stride[index][1]  <  sorted_stride[index+1][1], "wrong stride for shape (might have memory overlap)"
         tensor_paras_list.append(args_ins_expand_list)
 
 
