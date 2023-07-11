@@ -72,6 +72,16 @@ device_configs = {
         ),
     ),
 
+    'pointwise_op': dict(
+        name=["atan"],
+        atol=5e-4,
+    ),
+
+    'pointwise_op_int_without_inplace': dict(
+        name=["atan"],
+        atol=5e-4,
+    ),
+
     'pointwise_binary': dict(
         name=['mul'],
         tensor_para=dict(
