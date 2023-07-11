@@ -1,4 +1,5 @@
 #include <diopi/functions.h>
+#include <iostream>
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
@@ -33,6 +34,9 @@ diopiError_t clampTensorCheck(diopiContextHandle_t ctx, diopiConstTensorHandle_t
 
 diopiError_t getClampBoundPtr(diopiContextHandle_t ctx, diopiConstTensorHandle_t bound, diopiDtype_t desireDtype, void** out) {
     if (nullptr != bound) {
+        std::cout << "getClampBoundPtr================" <<std::endl;
+        std::cout << "desireDtype:" << desireDtype <<std::endl;
+        std::cout << "boundTensor.dtype():" << boundTensor.dtype() <<std::endl;
         DiopiTensor boundTensor(bound);
         DIOPI_CHECK(boundTensor.numel() == 1, "only supported when min and max are scalar || one element Tensor currently");
         if ((!DiopiDataType::isInteger(desireDtype) || diopi_dtype_float32 != boundTensor.dtype()) && desireDtype != boundTensor.dtype()) {
@@ -69,14 +73,22 @@ diopiError_t clampCommon(diopiContextHandle_t ctx, diopiConstTensorHandle_t inpu
         isFloat = diopi_dtype_float32 == dtype;
     }
     if (DiopiDataType::isInteger(inputTensor.dtype())) {
+        std::cout << "isInteger================" <<std::endl;
+        std::cout << "inputTensor.dtype():" << inputTensor.dtype() <<std::endl;
         if (!isFloat) {
+            std::cout << "isInteger================" <<std::endl;
+            std::cout << "isFloat:" << "false" <<std::endl;
             DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_int32));
             DIOPI_CALL(dataTypeCast(ctx, output32Tensor, diopi_dtype_int32));
         } else {
+            std::cout << "isInteger================" <<std::endl;
+            std::cout << "isFloat:" << "true" <<std::endl;
             DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
             DIOPI_CALL(dataTypeCast(ctx, output32Tensor, diopi_dtype_float32));
         }
     } else if (inputTensor.dtype() == diopi_dtype_float64) {
+        std::cout << "isFloat64================" <<std::endl;
+        std::cout << "inputTensor.dtype():" << inputTensor.dtype() <<std::endl;
         DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
         DIOPI_CALL(dataTypeCast(ctx, output32Tensor, diopi_dtype_float32));
     }
