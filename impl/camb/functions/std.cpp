@@ -115,7 +115,7 @@ DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
         outTensor.asStrided(outShape, outStride);
     }
     if (outTensor.dtype() != outDtype) {
-        dataTypeCast(ctx, outTensor, outDtype);
+        DIOPI_CALL(dataTypeCast(ctx, outTensor, outDtype));
     }
 
     return diopiSuccess;
