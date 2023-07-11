@@ -87,6 +87,8 @@ def expand_tensor_para(args_list, tensor_paras_list):
     args0_dict = tmp_args_list[0]
     assert "shape" in args0_dict or "value" in args0_dict
     num = len(args0_dict["shape"]) if "shape" in args0_dict else len(args0_dict["value"])
+    # import pdb
+    # pdb.set_trace()
     for j in range(num):
         args_ins_expand_list = copy.deepcopy(tmp_args_list)
         for i in range(len(tmp_args_list)):
@@ -97,16 +99,16 @@ def expand_tensor_para(args_list, tensor_paras_list):
             elif "shape" in tmp_args_list[i].keys():
                 args_ins_expand_list[i]["shape"] = copy.deepcopy(
                     tmp_args_list[i]["shape"][j])
-            if stride_name in tmp_args_list[i].keys():
-                if j >= len(args0_dict[stride_name]):
-                    del args_ins_expand_list[i][stride_name]
+            if "stride" in tmp_args_list[i].keys():
+                if j >= len(args0_dict["stride"]):
+                    del args_ins_expand_list[i]["stride"]
                     continue
-                elif tmp_args_list[i][stride_name][j] is None:
-                    del args_ins_expand_list[i][stride_name]
+                elif tmp_args_list[i]["stride"][j] is None:
+                    del args_ins_expand_list[i]["stride"]
                     continue
-                args_ins_expand_list[i][stride_name] = copy.deepcopy(tmp_args_list[i][stride_name][j])
+                args_ins_expand_list[0][stride_name] = copy.deepcopy(tmp_args_list[i]["stride"][j])
                 # 判断stride和shape是否符合标准，不符合报错
-                tmp_stride = args_ins_expand_list[i][stride_name]
+                tmp_stride = args_ins_expand_list[0][stride_name]
                 tmp_shape = args_ins_expand_list[i]["shape"]
                 # 首先判断是否长度相同
                 assert len(tmp_stride) == len(tmp_shape), "stride and shape must have the same dim"

@@ -455,8 +455,8 @@ class ConformanceTest(object):
                 if output_reference is None:
                     continue
             for index in range(len(data['cfg']['tensor_para']['args'])):
-                para = data['cfg']['tensor_para']['args'][0]['ins']
-                if str(para) + "stride" in data['cfg']['tensor_para']['args'][index].keys():
+                para = data['cfg']['tensor_para']['args'][index]['ins']
+                if str(para) + "stride" in data['cfg']['tensor_para']['args'][0].keys():
                     data['function_paras'][str(para) + "stride"] = data['cfg']['tensor_para']['args'][0][str(para) + "stride"]
             function_paras = data["function_paras"]
             test_tag = data["cfg"]["tag"]
