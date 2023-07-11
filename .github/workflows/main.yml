@@ -73,31 +73,31 @@ jobs:
           || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} && exit 1 )
           """
 
-  # Build-Nvidia:
-  #   name: Build-Nvidia
-  #   runs-on:  tps-diopi-ci
-  #   needs: [Rsync]
-  #   steps:
-  #     - name: build
-  #       run: |
-  #         ssh ${CLUSTER_1988} """
-  #         set -e
-  #         source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
-  #         cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
-  #         export CI=true
-  #         export DIOPI_BUILD_TESTRT=ON
-  #         srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh torch' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
-  #         """
-  #     - name: build-dyload
-  #       run: |
-  #         ssh ${CLUSTER_1988} """
-  #         set -e
-  #         source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
-  #         cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST2} && cp -R source ${BUILD_TEST2} && cd ${BUILD_TEST2}
-  #         export CI=true
-  #         export DIOPI_BUILD_TESTRT=ON
-  #         srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh torch_dyload' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST2} && exit 1 )
-  #         """
+  Build-Nvidia:
+    name: Build-Nvidia
+    runs-on:  tps-diopi-ci
+    needs: [Rsync]
+    steps:
+      - name: build
+        run: |
+          ssh ${CLUSTER_1988} """
+          set -e
+          source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
+          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
+          export CI=true
+          export DIOPI_BUILD_TESTRT=ON
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh torch' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
+          """
+      - name: build-dyload
+        run: |
+          ssh ${CLUSTER_1988} """
+          set -e
+          source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
+          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST2} && cp -R source ${BUILD_TEST2} && cd ${BUILD_TEST2}
+          export CI=true
+          export DIOPI_BUILD_TESTRT=ON
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh torch_dyload' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST2} && exit 1 )
+          """
 
   Build-Camb:
     name: Build-Camb
