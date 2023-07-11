@@ -63,8 +63,8 @@ pybind11_add_module(${DIOPIRT_PYBIND} SHARED ${RT_EXPORT_SRC})
 target_link_libraries(${DIOPIRT_PYBIND} PRIVATE ${DIOPIRT})
 
 # create pybind library for functions.
-set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../DIOPI-TEST/csrc")
-set(TEST_GEN_PATH "${CMAKE_SOURCE_DIR}/../DIOPI-TEST/codegen")
+set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/csrc")
+set(TEST_GEN_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/codegen")
 add_custom_target(test_code_gen COMMAND python3 ${TEST_GEN_PATH}/gen.py
     --device=torch --use_adaptor=${USE_ADAPTOR})
 add_custom_target(functions_copy ALL
@@ -81,8 +81,8 @@ target_link_libraries(${DIOPIFUNCTIONS_PYBIND} PRIVATE ${DIOPIRT})
 add_dependencies(${DIOPIFUNCTIONS_PYBIND} functions_copy)
 
 # copy pybind library into test folder.
-file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/../DIOPI-TEST/python)
+file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/../diopi_test/python)
 add_custom_target(python_copy ALL
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS_PYBIND}> ${CMAKE_SOURCE_DIR}/../DIOPI-TEST/python
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIRT_PYBIND}> ${CMAKE_SOURCE_DIR}/../DIOPI-TEST/python
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS_PYBIND}> ${CMAKE_SOURCE_DIR}/../diopi_test/python
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIRT_PYBIND}> ${CMAKE_SOURCE_DIR}/../diopi_test/python
     DEPENDS ${DIOPIFUNCTIONS_PYBIND} ${DIOPIRT_PYBIND})
