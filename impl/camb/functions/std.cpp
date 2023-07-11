@@ -61,7 +61,7 @@ DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
         }
         auto outKeepDimStride = inputTensor.stride();
         for (int i = inputTensor.dim() - 2; i >= 0; i--) {
-            outKeepDimStride[i] = outKeepDimStride[i+1] * outKeepDimShape[i+1];
+            outKeepDimStride[i] = outKeepDimStride[i + 1] * outKeepDimShape[i + 1];
         }
         outTensor.asStrided(outKeepDimShape, outKeepDimStride);
     }
@@ -80,7 +80,7 @@ DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     CnnlResourceGuard<cnnlStdVarMeanDescriptor_t, cnnlCreateStdVarMeanDescriptor, cnnlDestroyStdVarMeanDescriptor> stdVarMeanObj;
     cnnlStdVarMeanDescriptor_t stdVarMeanDesc = stdVarMeanObj.get();
     DIOPI_CALLCNNL(cnnlSetStdVarMeanDescriptor(stdVarMeanDesc, CNNL_STD, axisNum, axis, unbiased));
-    delete [] axis;
+    delete[] axis;
 
     size_t workspaceSize = 0;
     void *workspace = nullptr;
@@ -109,8 +109,8 @@ DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
             }
         }
         std::vector<int64_t> outStride(outShape.size(), 1);
-        for(int i = outShape.size() - 2; i >= 0; i--) {
-            outStride[i] = outStride[i+1] * outShape[i+1];
+        for (int i = outShape.size() - 2; i >= 0; i--) {
+            outStride[i] = outStride[i + 1] * outShape[i + 1];
         }
         outTensor.asStrided(outShape, outStride);
     }
