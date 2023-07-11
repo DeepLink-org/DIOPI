@@ -3771,7 +3771,7 @@ diopi_configs = {
         ),
     ),
 
-    'remainder_scalar_float': dict(
+    'remainder_self_scalar_float': dict(
         name=['remainder'],
         interface=['torch'],
         atol=1e-4,
@@ -3793,7 +3793,7 @@ diopi_configs = {
         ),
     ),
 
-    'remainder_scalar_int': dict(
+    'remainder_self_scalar_int': dict(
         name=['remainder'],
         interface=['torch'],
         atol=1e-4,
@@ -3825,18 +3825,41 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((6, ), (4, 1), (1, 28, 28),
-                              (16, 3, 7, 14, 14), (1, 28, 28), (1, 28, 28)),
+                    "shape": (((6, ), (4, 5), (14, 28, 28),
+                              (16, 1, 7, 14, 14)),),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,
                               Dtype.int64, Dtype.uint8, Dtype.int8],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ['other'],
-                    "shape": ((6, ), (4, 1), (1, 28, 28),
-                              (16, 3, 7, 14, 14), (1, 28, 28), (1, 28, 28)),
+                    "shape": (((6, ), (4, 5), (14, 28, 28),
+                              (16, 1, 7, 14, 14)),),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,
                               Dtype.int64, Dtype.uint8, Dtype.int8],
+                    "gen_fn": dict(fn=Genfunc.randint, low=1, high=4),
+                },
+            ],
+        ),
+    ),
+
+    'remainder_other_scalar': dict(
+        name=['remainder'],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-5,
+        para=dict(
+            other=[4.3, 10.1, 5.2, 100., -5., -2.3],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((6, ), (4, 5), (14, 28, 28),
+                              (16, 1, 7, 14, 14), (4, 5), (4, 5)),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16,
+                              Dtype.int32, Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
                     "gen_fn": dict(fn=Genfunc.randint, low=1, high=4),
                 },
             ],
