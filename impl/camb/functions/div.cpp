@@ -33,9 +33,9 @@ DIOPI_API diopiError_t diopiDiv(diopiContextHandle_t ctx,
                                          diopi_dtype_float32};
   DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
-  CnnlTensorDesc   inputDesc( inputTensor, CNNL_LAYOUT_ARRAY);
-  CnnlTensorDesc   otherDesc( otherTensor, CNNL_LAYOUT_ARRAY);
-  CnnlTensorDesc  outDesc(  outTensorTemp, CNNL_LAYOUT_ARRAY);
+  CnnlTensorDesc  inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+  CnnlTensorDesc  otherDesc(otherTensor, CNNL_LAYOUT_ARRAY);
+  CnnlTensorDesc  outDesc(outTensorTemp, CNNL_LAYOUT_ARRAY);
   size_t workspaceSize = 0;
   void *workspace = nullptr;
 
@@ -74,7 +74,7 @@ DIOPI_API diopiError_t diopiDiv(diopiContextHandle_t ctx,
   default:
     break;
   }
-  if (  outTensorTemp.dtype() !=  outTensor.dtype()) {
+  if (outTensorTemp.dtype() != outTensor.dtype()) {
     DIOPI_CALL(dataTypeCast(ctx,  outTensor,   outTensorTemp));
   }
   return diopiSuccess;
@@ -98,7 +98,7 @@ DIOPI_API diopiError_t diopiDivScalar(diopiContextHandle_t ctx,
   DiopiTensor  otherTensor;
   DIOPI_CALL(makeTensorFromScalar(ctx, other,  otherTensor));
   DiopiTensor  outTensor(out);
-  DIOPI_CALL(diopiDiv(ctx, out, input, diopiTensorHandle_t( otherTensor),
+  DIOPI_CALL(diopiDiv(ctx, out, input, diopiTensorHandle_t(otherTensor),
                       roundingMode));
   return diopiSuccess;
 }
