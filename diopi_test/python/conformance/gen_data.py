@@ -87,8 +87,6 @@ def expand_tensor_para(args_list, tensor_paras_list):
     args0_dict = tmp_args_list[0]
     assert "shape" in args0_dict or "value" in args0_dict
     num = len(args0_dict["shape"]) if "shape" in args0_dict else len(args0_dict["value"])
-    # import pdb
-    # pdb.set_trace()
     for j in range(num):
         args_ins_expand_list = copy.deepcopy(tmp_args_list)
         for i in range(len(tmp_args_list)):
