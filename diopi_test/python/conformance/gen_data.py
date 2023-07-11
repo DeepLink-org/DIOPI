@@ -87,6 +87,7 @@ def expand_tensor_para(args_list, tensor_paras_list):
     args0_dict = tmp_args_list[0]
     assert "shape" in args0_dict or "value" in args0_dict
     num = len(args0_dict["shape"]) if "shape" in args0_dict else len(args0_dict["value"])
+    
     for j in range(num):
         args_ins_expand_list = copy.deepcopy(tmp_args_list)
         for i in range(len(tmp_args_list)):
@@ -354,7 +355,6 @@ class GenInputData(object):
                 continue
             logger.info(f"Generate benchmark input data for diopi_functions.{cfg_func_name}")
             filter_dtype_list = get_filter_dtype_list(filter_dtype_str_list)
-            # cfg_expand_list 决定了size是一份一份取的
             cfg_expand_list = expand_cfg_by_all_options(configs[cfg_name], filter_dtype_list)
             cfg_counter += len(cfg_expand_list)
             gen_and_dump_data(inputs_dir_path, cfg_name, cfg_expand_list, cfg_save_dict)

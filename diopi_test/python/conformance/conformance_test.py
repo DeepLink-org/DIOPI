@@ -44,7 +44,6 @@ def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dt
                 if 'nhwc' not in test_tag:
                     test_tag.append('nhwc')
             # 处理有stride输入的tensor
-            # function_paras[str(para) + "stride"] = (10,6,1)
             if filter_dtype_str_list and str(tensor.dtype) in filter_dtype_str_list:
                 raise DiopiException(f"Skipped: {tensor.dtype} Tensor skipped for test")
             if tensor is not None and str(tensor.dtype) not in test_tag:
