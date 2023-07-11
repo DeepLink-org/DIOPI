@@ -559,19 +559,25 @@ device_configs = {
         ),
     ),
 
-    'remainder_scalar_float': dict(
-        name = ['remainder'],
-        atol = 1e-1,
-        rtol = 1e-2,
-    ),
-
-    'remainder_scalar_int': dict(
+    'remainder_self_scalar_float': dict(
         name = ['remainder'],
         atol = 1e-1,
         rtol = 1e-2,
     ),
 
     'remainder_tensor': dict(
+        name = ['remainder'],
+        atol = 1e-1,
+        rtol = 1e-2,
+    ),
+
+    'remainder_other_scalar': dict(
+        name = ['remainder'],
+        atol = 1e-1,
+        rtol = 1e-2,
+    ),
+
+    'remainder_self_scalar_int': dict(
         name = ['remainder'],
         atol = 1e-1,
         rtol = 1e-2,
