@@ -521,58 +521,6 @@ device_configs = {
         ),
     ),
 
-    'pad': dict(
-        name=['pad'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
-    'pad_not_float': dict(
-        name=['pad'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'constant_pad': dict(
-        name=['pad'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'constant_pad_positive': dict(
-        name=['pad'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.uint8)],
-                },
-            ],
-        ),
-    ),
-
     'norm': dict(
         name=['norm'],
         tensor_para=dict(
