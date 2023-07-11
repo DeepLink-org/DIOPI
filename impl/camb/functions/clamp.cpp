@@ -56,11 +56,6 @@ diopiError_t clampCommon(diopiContextHandle_t ctx, diopiConstTensorHandle_t inpu
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
 
-    void* minPtr = nullptr;
-    void* maxPtr = nullptr;
-    DIOPI_CALL(getClampBoundPtr(ctx, min, inputTensor.dtype(), &minPtr));
-    DIOPI_CALL(getClampBoundPtr(ctx, max, inputTensor.dtype(), &maxPtr));
-
     DiopiTensor output32Tensor = outputTensor;
     bool isFloat = false;
     if (min) {
@@ -92,6 +87,11 @@ diopiError_t clampCommon(diopiContextHandle_t ctx, diopiConstTensorHandle_t inpu
         DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
         DIOPI_CALL(dataTypeCast(ctx, output32Tensor, diopi_dtype_float32));
     }
+
+    void* minPtr = nullptr;
+    void* maxPtr = nullptr;
+    DIOPI_CALL(getClampBoundPtr(ctx, min, inputTensor.dtype(), &minPtr));
+    DIOPI_CALL(getClampBoundPtr(ctx, max, inputTensor.dtype(), &maxPtr));
 
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc output32Desc(output32Tensor, CNNL_LAYOUT_ARRAY);
