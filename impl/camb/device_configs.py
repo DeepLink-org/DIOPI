@@ -12,6 +12,20 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
+                    "dtype": [Skip(Dtype.float16)]
+                },
+            ]
+        ),
+    ),
+
+    'batch_norm_stride': dict(
+        name=["batch_norm"],
+        atol=1e-2,
+        rtol=1e-3,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
                     "dtype": [Skip(Dtype.float32), Skip(Dtype.float16), Skip(Dtype.float64)]
                 },
             ]
@@ -28,6 +42,12 @@ device_configs = {
         name=["conv2d"],
         atol_half=1e-1,
         rtol_half=1e-1,
+    ),
+
+    'conv_2d_stride': dict(
+        name=["conv2d"],
+        atol_half=1e-1,
+        rtol_half=1e-1,
         tensor_para=dict(
             args=[
                 {
@@ -38,7 +58,7 @@ device_configs = {
         ),
     ),
 
-    'relu': dict(
+    'relu_stride': dict(
         name=["relu"],
         is_inplace=True,
         tensor_para=dict(
