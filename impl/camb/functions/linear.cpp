@@ -192,7 +192,7 @@ extern "C" diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTenso
         DIOPI_CALL(gradOutputDesc.set(gradOutputTensor, CNNL_LAYOUT_ARRAY, outputShape));
 
         size_t workspaceSizeBias;
-        DIOPI_CALLCNNL(cnnlGetBiasAddBackwardWorkspaceSize(handle, gradOutputDesc.get(), biasGradDesc.get(), 3, &workspaceSizeBias))
+        DIOPI_CALLCNNL(cnnlGetBiasAddBackwardWorkspaceSize(handle, gradOutputDesc.get(), biasGradDesc.get(), 1, &workspaceSizeBias))
 
         void* workspaceBias = nullptr;
         if (0 != workspaceSizeBias) {
