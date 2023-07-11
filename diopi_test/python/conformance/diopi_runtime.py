@@ -265,12 +265,11 @@ class Tensor(diopiTensor):
 
     def numpy(self) -> np.ndarray:
         data = np.empty((1,), to_numpy_dtype(self.get_dtype()))
-        element_size=data.itemsize
-        sumsize = int(sum([(s-1) * st for s, st in zip(list(self.size().data), [int(stride * 8) for stride in self.get_stride().data])])/element_size+1)
-        size_without_stride=1
+        element_size = data.itemsize
+        sumsize = int(sum([(s - 1) * st for s, st in zip(list(self.size().data), [int(stride * 8) for stride in self.get_stride().data])]) / element_size + 1)
+        size_without_stride = 1
         for s in list(self.size().data):
-            size_without_stride = size_without_stride*s
-
+            size_without_stride = size_without_stride * s
         if(sumsize > size_without_stride):
             darray = np.empty(sumsize, to_numpy_dtype(self.get_dtype()))
         else:
@@ -281,37 +280,8 @@ class Tensor(diopiTensor):
         PyCapsule_New.argtypes = (ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor)
         capsule = PyCapsule_New(c_void_p(darray.ctypes.data), None, PyCapsule_Destructor(0))
         diopi_tensor_copy_to_buffer(self.context(), self, capsule)
-        
         strides = [int(stride * darray.itemsize)
                    for stride in self.get_stride().data]
-
-
-        # print("shape",list(self.size().data))
-        # print("strides",strides)
-        # print("darray",darray)
-        darray = np.lib.stride_tricks.as_strided(darray, shape=list(self.size().data), strides=strides)
-        return darray
-
-    def numpy_stride(self) -> np.ndarray:
-        # darray = np.empty(list(self.size().data), to_numpy_dtype(self.get_dtype()))
-        data = np.empty((1,), to_numpy_dtype(self.get_dtype()))
-        element_size=data.itemsize
-        sumsize = int(sum([(s-1) * st for s, st in zip(list(self.size().data), [int(stride * element_size) for stride in self.get_stride().data])])/element_size+1)
-        darray = np.empty(sumsize,to_numpy_dtype(self.get_dtype()))
-        PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
-        PyCapsule_New = ctypes.pythonapi.PyCapsule_New
-        PyCapsule_New.restype = ctypes.py_object
-        PyCapsule_New.argtypes = (ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor)
-        capsule = PyCapsule_New(c_void_p(darray.ctypes.data), None, PyCapsule_Destructor(0))
-        diopi_tensor_copy_to_buffer(self.context(), self, capsule)
-        
-        strides = [int(stride * darray.itemsize)
-                   for stride in self.get_stride().data]
-
-
-        # print("shape",list(self.size().data))
-        # print("strides",strides)
-        # print("darray",darray)
         darray = np.lib.stride_tricks.as_strided(darray, shape=list(self.size().data), strides=strides)
         return darray
 

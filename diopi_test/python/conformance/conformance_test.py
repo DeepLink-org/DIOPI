@@ -49,13 +49,12 @@ def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dt
                 raise DiopiException(f"Skipped: {tensor.dtype} Tensor skipped for test")
             if tensor is not None and str(tensor.dtype) not in test_tag:
                 test_tag.append(str(tensor.dtype))
-            if str(para) + "stride"  in function_paras:
+            if str(para) + "stride" in function_paras:
                 stride = function_paras[para + "stride"]
-                assert len(stride) == len(tensor.shape) , "stride must have same dim with shape"
-                sumsize = int(sum((s-1) * st for s, st in zip(tensor.shape, stride)) + 1)
+                assert len(stride) == len(tensor.shape),"stride must have same dim with shape"
+                sumsize = int(sum((s - 1) * st for s, st in zip(tensor.shape, stride)) + 1)
                 stride_pre_tensor = np.empty(sumsize,tensor.dtype)
                 stride_tensor = np.lib.stride_tricks.as_strided(stride_pre_tensor, shape=tensor.shape, strides=tuple(tensor.dtype.itemsize * st for st in stride))
-                gqw = np.lib.stride_tricks.as_strided(tensor, shape= tensor.shape,strides=tuple(tensor.dtype.itemsize * st for st in stride))
                 np.copyto(stride_tensor, tensor)
                 temp = Tensor.from_numpy(stride_tensor)
                 function_paras['kwargs'][para] = temp
@@ -471,7 +470,7 @@ class ConformanceTest(object):
             for index in range(len(data['cfg']['tensor_para']['args'])):
                 para = data['cfg']['tensor_para']['args'][0]['ins']
                 if str(para) + "stride" in data['cfg']['tensor_para']['args'][index].keys():
-                    data['function_paras'][str(para) + "stride"] = data['cfg']['tensor_para']['args'][0][str(para)+"stride"]
+                    data['function_paras'][str(para) + "stride"] = data['cfg']['tensor_para']['args'][0][str(para) + "stride"]
             function_paras = data["function_paras"]
             test_tag = data["cfg"]["tag"]
             tensor_info = []

@@ -87,44 +87,37 @@ def expand_tensor_para(args_list, tensor_paras_list):
     args0_dict = tmp_args_list[0]
     assert "shape" in args0_dict or "value" in args0_dict
     num = len(args0_dict["shape"]) if "shape" in args0_dict else len(args0_dict["value"])
-    # import pdb
-    # pdb.set_trace()
     for j in range(num):
         args_ins_expand_list = copy.deepcopy(tmp_args_list)
         for i in range(len(tmp_args_list)):
-            stride_name =  str(tmp_args_list[i]['ins'])+"stride"
+            stride_name = str(tmp_args_list[i]['ins']) + "stride"
             if "value" in tmp_args_list[i].keys():
                 args_ins_expand_list[i]["value"] = copy.deepcopy(
                     tmp_args_list[i]["value"][j])
             elif "shape" in tmp_args_list[i].keys():
                 args_ins_expand_list[i]["shape"] = copy.deepcopy(
                     tmp_args_list[i]["shape"][j])
-            if stride_name in  tmp_args_list[i].keys():
+            if stride_name in tmp_args_list[i].keys():
                 if j >= len(args0_dict[stride_name]):
-                    # print("correct1")
                     del args_ins_expand_list[i][stride_name]
                     continue
-                elif tmp_args_list[i][stride_name][j]==None:
-                    # print("correct2")
+                elif tmp_args_list[i][stride_name][j] == None:
                     del args_ins_expand_list[i][stride_name]
                     continue
-                args_ins_expand_list[i][stride_name] = copy.deepcopy(
-                    tmp_args_list[i][stride_name][j]) 
+                args_ins_expand_list[i][stride_name] = copy.deepcopy(tmp_args_list[i][stride_name][j]) 
                 # 判断stride和shape是否符合标准，不符合报错
                 tmp_stride = args_ins_expand_list[i][stride_name]
                 tmp_shape = args_ins_expand_list[i]["shape"]
                 # 首先判断是否长度相同
-                assert len(tmp_stride) == len(tmp_shape), "stride and shape must have the same dim"
-                sumsize = int(sum([(s-1) * st for s, st in zip(list(tmp_shape), [int(stride) for stride in tmp_stride])]) + 1)
-                position = [0]*sumsize
+                assert len(tmp_stride) == len(tmp_shape),"stride and shape must have the same dim"
+                sumsize = int(sum([(s - 1) * st for s, st in zip(list(tmp_shape), [int(stride) for stride in tmp_stride])]) + 1)
                 stride_dic = []
                 for index, s, st in zip(range(len(list(tmp_shape))),list(tmp_shape), tmp_stride):
                     stride_dic.append((s, st))
                 sorted_stride = sorted(stride_dic, key=lambda x: x[1])
-                # print(sorted_stride)
                 for index in range(len(sorted_stride) - 1):
-                    print("need:", (sorted_stride[index][0]-1)*sorted_stride[index][1], "have,", sorted_stride[index+1][1])
-                    assert (sorted_stride[index][0]-1) * sorted_stride[index][1]  <  sorted_stride[index+1][1], "wrong stride for shape (might have memory overlap)"
+                    print("need:", (sorted_stride[index][0] - 1)*sorted_stride[index][1], "have,", sorted_stride[index + 1][1])
+                    assert (sorted_stride[index][0]-1) * sorted_stride[index][1]  <  sorted_stride[index+1][1],"wrong stride for shape (might have memory overlap)"
         tensor_paras_list.append(args_ins_expand_list)
 
 
@@ -184,8 +177,6 @@ def expand_cfg_all(paras_list, tensor_paras_list, cfg_dict, filter_dtype_list) -
 
 
 def expand_cfg_by_all_options(cfg_dict: dict, filter_dtype_list: list) -> list:
-    # import pdb 
-    # pdb.set_trace()
     paras_list, tensor_paras_list = expand_cfg_by_para(cfg_dict)
     cfg_expand_list = expand_cfg_all(paras_list, tensor_paras_list, cfg_dict, filter_dtype_list)
     return cfg_expand_list
@@ -314,8 +305,6 @@ def gen_and_dump_data(dir_path: str, cfg_name: str, cfg_expand_list: list, cfg_s
                     tensor_list.append(value)
                 assert (cfg_dict["tensor_para"]["seq_name"] != ""), "need a name the list of tensors"
         # tie all the function_paras in a list named seq_name
-        # import pdb
-        # pdb.set_trace()
         if cfg_dict["tensor_para"]["seq_name"] != "":
             name = cfg_dict["tensor_para"]["seq_name"]
             new_list = []
@@ -367,8 +356,6 @@ class GenInputData(object):
             logger.info(f"Generate benchmark input data for diopi_functions.{cfg_func_name}")
             filter_dtype_list = get_filter_dtype_list(filter_dtype_str_list)
             # cfg_expand_list 决定了size是一份一份取的
-            # import pdb
-            # pdb.set_trace()
             cfg_expand_list = expand_cfg_by_all_options(configs[cfg_name], filter_dtype_list)
             cfg_counter += len(cfg_expand_list)
             gen_and_dump_data(inputs_dir_path, cfg_name, cfg_expand_list, cfg_save_dict)
