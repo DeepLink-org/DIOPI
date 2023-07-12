@@ -10,7 +10,7 @@ case $1 in
   cuda)
     mkdir -p build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=cuda -DTEST=${DIOPI_BUILD_TESTRT} && make -j8;;
   torch)
-    mkdir -p build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=torch -DDEBUG=ON -DTEST=${DIOPI_BUILD_TESTRT} \
+    mkdir -p build && cd build && cmake .. -DENABLE_COVERAGE=${ENABLE_COVERAGE} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=torch -DDEBUG=ON -DTEST=${DIOPI_BUILD_TESTRT} \
     -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` \
     && make -j8;;
   torch_dyload)

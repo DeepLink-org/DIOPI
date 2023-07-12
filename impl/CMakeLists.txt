@@ -4,6 +4,11 @@ project(diopi_impl)
 option(TEST "Whether to compile DIOPI with runtime" OFF)
 option(DEBUG "whether to use debug" ON)
 option(DYLOAD "Whether to load so in runtime by dlopen" OFF)
+
+# use gcover
+OPTION (ENABLE_COVERAGE "Use gcov" OFF)
+MESSAGE(STATUS ENABLE_COVERAGE=${ENABLE_COVERAGE})
+
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/proto/include")
 
 if (DEBUG)
@@ -11,6 +16,12 @@ if (DEBUG)
 else()
     SET(CMAKE_BUILD_TYPE "Release")
 endif()
+
+# use gcover
+IF(ENABLE_COVERAGE)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
+ENDIF()
 
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
