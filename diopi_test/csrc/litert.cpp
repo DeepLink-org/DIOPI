@@ -131,7 +131,6 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
     int64_t strideTemp = 1;
     numel_ = 1;
     int64_t strideNumel = 1;
-    // 得到存储数据的stride
     for (int64_t i = shape->len - 1; i >= 0; --i) {
         shape_[i] = shape->data[i];
         numel_ *= shape->data[i];
@@ -140,7 +139,6 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
         } else {
             stride_[i] = strideTemp;
             strideTemp *= shape->data[i];
-            // std::cout << shape->data[i] << std::endl;
         }
         strideNumel += (shape_[i] - 1) * stride_[i];
     }

@@ -57,7 +57,7 @@ diopi_configs = {
     ),
 
 
-    'batch_norm_stride': dict(
+    'batch_norm_no_contiguous': dict(
         name=["batch_norm"],
         dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
         atol=1e-5,
@@ -208,7 +208,7 @@ diopi_configs = {
         ),
     ),
 
-    'conv_2d_stride': dict(
+    'conv_2d_no_contiguous': dict(
         name=["conv2d"],
         atol=1e-3,
         rtol=1e-3,
@@ -257,7 +257,7 @@ diopi_configs = {
         ),
     ),
 
-    'relu_stride': dict(
+    'relu_no_contiguous': dict(
         name=["relu"],
         is_inplace=True,
         tensor_para=dict(

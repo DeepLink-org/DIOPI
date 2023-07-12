@@ -116,7 +116,6 @@ def expand_tensor_para(args_list, tensor_paras_list):
                     stride_dic.append((s, st))
                 sorted_stride = sorted(stride_dic, key=lambda x: x[1])
                 for index in range(len(sorted_stride) - 1):
-                    # print("need:", (sorted_stride[index][0] - 1) * sorted_stride[index][1], "have,", sorted_stride[index + 1][1])
                     assert (sorted_stride[index][0] - 1) * sorted_stride[index][1] < sorted_stride[index + 1][1], "wrong stride for shape (might have memory overlap)"
         tensor_paras_list.append(args_ins_expand_list)
 

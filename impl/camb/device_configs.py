@@ -18,10 +18,8 @@ device_configs = {
         ),
     ),
 
-    'batch_norm_stride': dict(
+    'batch_norm_no_contiguous': dict(
         name=["batch_norm"],
-        atol=1e-2,
-        rtol=1e-3,
         tensor_para=dict(
             args=[
                 {
@@ -44,10 +42,8 @@ device_configs = {
         rtol_half=1e-1,
     ),
 
-    'conv_2d_stride': dict(
+    'conv_2d_no_contiguous': dict(
         name=["conv2d"],
-        atol_half=1e-1,
-        rtol_half=1e-1,
         tensor_para=dict(
             args=[
                 {
@@ -58,7 +54,7 @@ device_configs = {
         ),
     ),
 
-    'relu_stride': dict(
+    'relu_no_contiguous': dict(
         name=["relu"],
         is_inplace=True,
         tensor_para=dict(
