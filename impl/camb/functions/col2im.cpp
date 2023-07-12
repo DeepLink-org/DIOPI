@@ -67,8 +67,8 @@ diopiError_t diopiCol2Im(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     cnnlDataType_t dtype;
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, inputTensor.dtype()));
 
-    DiopiTensor out_tensor(out);
-    CnnlTensorDesc outDesc(out_tensor, CNNL_LAYOUT_NCHW);
+    DiopiTensor outTensor(out);
+    CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_NCHW);
 
     int32_t padHeight = padding.data[0];
     int32_t padWidth = padding.len == 2 ? padding.data[1] : padding.data[0];
@@ -101,7 +101,7 @@ diopiError_t diopiCol2Im(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
         workspace = requiresBuffer(ctx, workspace_size).data();
     }
 
-    DIOPI_CALLCNNL(cnnlCol2Im(handle, inputColDesc.get(), inputCol.data(), w_desc, convDesc, workspace, workspace_size, outDesc.get(), out_tensor.data()));
+    DIOPI_CALLCNNL(cnnlCol2Im(handle, inputColDesc.get(), inputCol.data(), w_desc, convDesc, workspace, workspace_size, outDesc.get(), outTensor.data()));
 
     return diopiSuccess;
 }
