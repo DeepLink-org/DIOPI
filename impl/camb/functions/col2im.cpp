@@ -5,6 +5,7 @@
  */
 
 #include <diopi/functions.h>
+
 #include <numeric>
 
 #include "../cnnl_helper.hpp"
@@ -100,8 +101,7 @@ diopiError_t diopiCol2Im(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
         workspace = requiresBuffer(ctx, workspace_size).data();
     }
 
-    DIOPI_CALLCNNL(
-        cnnlCol2Im(handle, input_colDesc.get(), input_col.data(), w_desc, conv_desc, workspace, workspace_size, outDesc.get(), out_tensor.data()));
+    DIOPI_CALLCNNL(cnnlCol2Im(handle, input_colDesc.get(), input_col.data(), w_desc, conv_desc, workspace, workspace_size, outDesc.get(), out_tensor.data()));
 
     return diopiSuccess;
 }
