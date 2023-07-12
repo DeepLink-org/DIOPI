@@ -549,60 +549,28 @@ device_configs = {
         ),
     ),
 
-    'remainder': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['other'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
+    'remainder_self_scalar_float': dict(
+        name = ['remainder'],
+        atol = 1e-1,
+        rtol = 1e-2,
     ),
 
     'remainder_tensor': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8)],
-                },
-            ],
-        ),
+        name = ['remainder'],
+        atol = 1e-1,
+        rtol = 1e-2,
     ),
 
-    'remainder_other_zero': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8)],
-                },
-            ],
-        ),
+    'remainder_other_scalar': dict(
+        name = ['remainder'],
+        atol = 1e-1,
+        rtol = 1e-2,
     ),
 
-    'remainder_scalar': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
+    'remainder_self_scalar_int': dict(
+        name = ['remainder'],
+        atol = 1e-1,
+        rtol = 1e-2,
     ),
 
     # When not performing a reduce operation, the accuracy comparison of scatter needs to be performed on the CPU
