@@ -109,7 +109,6 @@ def expand_tensor_para(args_list, tensor_paras_list):
                 # 判断stride和shape是否符合标准，不符合报错
                 tmp_stride = args_ins_expand_list[0][stride_name]
                 tmp_shape = args_ins_expand_list[i]["shape"]
-                # 首先判断是否长度相同
                 assert len(tmp_stride) == len(tmp_shape), "stride and shape must have the same dim"
                 stride_dic = []
                 for index, s, st in zip(range(len(list(tmp_shape))), list(tmp_shape), tmp_stride):

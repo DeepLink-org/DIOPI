@@ -43,7 +43,6 @@ def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dt
                 tensor = tensor_nhwc
                 if 'nhwc' not in test_tag:
                     test_tag.append('nhwc')
-                function_paras['kwargs'][para] = Tensor.from_numpy(tensor)
             # 处理有stride输入的tensor
             elif str(para) + "stride" in function_paras:
                 stride = function_paras[para + "stride"]
@@ -52,9 +51,8 @@ def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dt
                 stride_pre_tensor = np.empty(sumsize, tensor.dtype)
                 stride_tensor = np.lib.stride_tricks.as_strided(stride_pre_tensor, shape=tensor.shape, strides=tuple(tensor.dtype.itemsize * st for st in stride))
                 np.copyto(stride_tensor, tensor)
-                function_paras['kwargs'][para] = Tensor.from_numpy(stride_tensor)
-            else:
-                function_paras['kwargs'][para] = Tensor.from_numpy(tensor)
+                tensor = stride_tensor
+            function_paras['kwargs'][para] = Tensor.from_numpy(tensor)
             if filter_dtype_str_list and str(tensor.dtype) in filter_dtype_str_list:
                 raise DiopiException(f"Skipped: {tensor.dtype} Tensor skipped for test")
             if tensor is not None and str(tensor.dtype) not in test_tag:
