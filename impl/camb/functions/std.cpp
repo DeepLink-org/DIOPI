@@ -50,6 +50,10 @@ DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
         axisNum = dim.getLen();
         axis = new int[axisNum];
         for (int i = 0; i < axisNum; i++) {
+            if (dim.data[i] < 0 - inputTensor.dim() || dim.data[i] >= inputTensor.dim()) {
+                delete[] axis;
+                return diopiErrorOccurred;
+            }
             axis[i] = dim.data[i];
         }
     }
