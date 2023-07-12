@@ -45,7 +45,7 @@ def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dt
                     test_tag.append('nhwc')
             function_paras['kwargs'][para] = Tensor.from_numpy(tensor)
             # 处理有stride输入的tensor
-            else if str(para) + "stride" in function_paras:
+            elif str(para) + "stride" in function_paras:
                 stride = function_paras[para + "stride"]
                 assert len(stride) == len(tensor.shape), "stride must have same dim with shape"
                 sumsize = int(sum((s - 1) * st for s, st in zip(tensor.shape, stride)) + 1)
