@@ -774,7 +774,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "shape": [Skip((2, 576, 46464))],
                 },
             ]
         ),
