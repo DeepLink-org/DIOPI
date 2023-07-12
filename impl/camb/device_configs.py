@@ -96,18 +96,6 @@ device_configs = {
         ),
     ),
 
-    'div_rounding_mode': dict(
-        name=['div'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
     'bmm': dict(
         name=['bmm'],
         atol=1e-1,
