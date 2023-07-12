@@ -94,14 +94,14 @@ diopiError_t diopiCol2Im(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     cnnlConvolutionDescriptor_t convDesc = cnnlConvDesc.get();
     DIOPI_CALLCNNL(cnnlSetConvolutionDescriptor(convDesc, 4, vPadding.data(), vStride.data(), vDilation.data(), 1, dtype));
 
-    size_t workspace_size = 0;
-    DIOPI_CALLCNNL(cnnlGetCol2ImWorkspaceSize(handle, inputColDesc.get(), outDesc.get(), wDesc, &workspace_size));
+    size_t workspaceSize = 0;
+    DIOPI_CALLCNNL(cnnlGetCol2ImWorkspaceSize(handle, inputColDesc.get(), outDesc.get(), wDesc, &workspaceSize));
     void* workspace = nullptr;
-    if (0 != workspace_size) {
-        workspace = requiresBuffer(ctx, workspace_size).data();
+    if (0 != workspaceSize) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlCol2Im(handle, inputColDesc.get(), inputCol.data(), wDesc, convDesc, workspace, workspace_size, outDesc.get(), outTensor.data()));
+    DIOPI_CALLCNNL(cnnlCol2Im(handle, inputColDesc.get(), inputCol.data(), wDesc, convDesc, workspace, workspaceSize, outDesc.get(), outTensor.data()));
 
     return diopiSuccess;
 }
