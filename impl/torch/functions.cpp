@@ -4077,13 +4077,23 @@ DIOPI_API diopiError_t diopiIsNan(diopiContextHandle_t ctx, diopiTensorHandle_t 
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiLinalgQR(diopiContextHandle_t ctx, diopiConstTensorHandle_t A, const char* mode, diopiTensorHandle_t Q, diopiTensorHandle_t R){
+DIOPI_API diopiError_t diopiLinalgQROut(diopiContextHandle_t ctx, diopiConstTensorHandle_t A, const char* mode, diopiTensorHandle_t Q, diopiTensorHandle_t R){
     impl::aten::setCurCtx(ctx);
     auto atA = impl::aten::buildATen(A);
     auto atQ = impl::aten::buildATen(Q);
     auto atR = impl::aten::buildATen(R);
     c10::string_view atMode(mode, strlen(mode));
     at::linalg_qr_out(atQ, atR, atA, mode);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
+diopiError_t diopiAmaxOut(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t self, diopiSize_t dim, bool keepdim){
+    impl::aten::setCurCtx(ctx);
+    at::IntArrayRef atDim = impl::aten::buildAtIntArray(dim);
+    auto atOut = impl::aten::buildATen(out);
+    auto atSelf = impl::aten::buildATen(self);
+    at::amax_out(atOut, atSelf, atDim, keepdim);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }

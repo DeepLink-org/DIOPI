@@ -3733,3 +3733,68 @@ def isnan(input) -> Tensor:
     ret = func(input.context(), out, input)
     check_returncode(ret)
     return out
+
+
+def amaxout(input, dim, keepdim) -> Tensor:
+    call = "diopiAmaxOut"
+    func = check_function(call)
+    if isinstance(dim, int):
+        sizeO = []
+        dim = Sizes(list([dim]))
+        sizeI = list(input.size().data)
+        if dim < 0 and abs(dim) > len(list(input.shape().data)):
+            dim = 0
+        elif dim < 0:
+            dim = abs(dim)
+        for index in range(len(sizeI)):
+            if index==dim:
+                if keepdim == True:
+                    sizeO.append(1)
+            else:
+                sizeO.append(sizeI[index])
+    else:
+        remove = list(dim)
+        dim = Sizes(list(dim))
+        sizeI = list(input.size().data)
+    
+        sizeO = []
+        # import pdb
+        # pdb.set_trace()
+        for index in range(len(remove)):
+            if remove[index] < 0 and abs(remove[index]) > len(list(input.shape().data)):
+                remove[index] = 0
+                continue
+            elif remove[index] < 0:
+                remove[index] = abs(remove[index])
+        for index in range(len(sizeI)):
+            if index in remove:
+                if keepdim == True:
+                    sizeO.append(1)
+                continue
+            else:
+                sizeO.append(sizeI[index])
+    out = Tensor(sizeO, input.get_dtype())
+    ret = func(input.context(), out, input, dim, keepdim)
+    check_returncode(ret)
+    return out
+
+def linalgqrout(input, mode):
+    call = "diopiLinalgQROut"
+    func = check_function(call)
+    sizeI = list(input.size().data)
+    sizeq = []
+    sizer = []
+    if sizeI[-1]>=sizeI[-2]:
+        sizeq = sizeI[:-1]
+        sizeq.append(sizeI[-2])
+        sizer = sizeI[:]
+    else:
+        sizer = sizeI[:-1]
+        sizer.append(sizeI[-2])
+        sizeq = sizeI[:]
+
+    q = Tensor(sizeq, input.get_dtype())
+    r = Tensor(sizer, input.get_dtype())
+    ret = func(input.context(), input, mode, q, r)
+    out = [q,r]
+    return out

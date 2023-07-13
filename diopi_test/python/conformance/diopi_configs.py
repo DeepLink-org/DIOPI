@@ -4812,6 +4812,47 @@ diopi_configs = {
         ),
     ),
 
+    'amaxout': dict(
+        name=['amaxout'],
+        interface=['CustomizedTest'],
+        dtype=[Dtype.float64, Dtype.float32, Dtype.float16, Dtype.int16, Dtype.int32, Dtype.int64, Dtype.int8, Dtype.uint8],
+        para=dict(
+            dim=[1, 0, 2, (1, 2), (1, 2)],
+            keepdim=[False, False, False, True, False],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1024, 64), (384, 128),
+                              (64, 1, 128), (128, 64, 3, 3),
+                              (2, 32, 130, 130)),
+                },
+            ],
+        ),
+    ),
+
+    'linalgqrout': dict(
+        name=['linalgqrout'],
+        interface=['CustomizedTest'],
+        dtype=[Dtype.float64, Dtype.float32],
+        para=dict(
+            mode=['reduced', 'reduced', 'reduced', 'reduced', 'reduced'],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1024, 1024), (384, 384),
+                              (64, 1, 128), (128, 64, 3, 3),
+                              (2, 32, 130, 130)),
+                },
+            ],
+        ),
+    ),
+
     'sgn': dict(
         name=['sgn'],
         interface=['torch'],

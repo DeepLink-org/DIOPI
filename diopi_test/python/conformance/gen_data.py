@@ -13,7 +13,7 @@ from . import diopi_configs
 from .diopi_runtime import from_dtype_str
 from .utils import get_saved_pth_list, get_data_from_file, cfg_file_name
 import torch
-import torchvision
+# import torchvision
 
 
 _cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -491,6 +491,15 @@ class CustomizedTest(object):
         log_probs_ = log_probs.log_softmax(2)
         loss = torch.nn.functional.ctc_loss(log_probs_, targets, input_lengths, target_lengths, blank=blank, reduction=reduction, zero_infinity=zero_infinity)
         return loss
+
+    def linalgqrout(input, mode):
+        q, r = torch.linalg.qr(input, mode)
+        out=[q, r]
+        return out
+    
+    def amaxout(input, dim, keepdim):
+        out = torch.amax(input, dim, keepdim)
+        return out
 
 
 def transfer_tensor_to_device(function_paras: dict):
