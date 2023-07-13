@@ -270,6 +270,46 @@ inline int castImpl(diopiContextHandle_t ctx, T src, T* dst,
     return convertType;
 }
 
+template<class T, class strategy = NoCast>
+inline int requireImpl(diopiContextHandle_t ctx, T src, T* dst,
+                    std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats) {
+    if (!src) {
+        *dst = src;
+        return 0;
+    }
+    diopiDtype_t srcDtype, dstDtype;
+    diopiGetTensorDtype(src, &srcDtype);
+    diopiSize_t size, stride;
+    diopiGetTensorShape(src, &size);
+    diopiGetTensorStride(src, &stride);
+    diopiDevice_t device;
+    diopiGetTensorDevice(src, &device);
+
+    bool convertDtype = strategy::getDstDtype(srcDtype, dstDtype);
+    bool convertFormat = true;
+    for (int i = 0; i < supportMemoryFormat.size(); ++i) {
+        if (isContiguous(size, stride, supportMemoryFormat[i])) {
+            convertFormat = false;
+            break;
+        }
+    }
+    diopiSize_t dstStride = stride;
+    std::vector<int64_t> strides_v;
+    if (convertFormat) {
+        diopiMemoryFormat_t memoryFormat = getTargetMemoryFormat(size.len, supportMemoryFormat);
+        strides_v = calcStrides(size.len, size, memoryFormat);
+        dstStride.len = strides_v.size();
+        dstStride.data = strides_v.data();
+    }
+    int convertType = (convertFormat ? 1 : 0) | ((convertDtype ? 1 : 0) << 1);
+    if (convertType) {
+        diopiRequireTensor(ctx, dst, &size, &dstStride, dstDtype, device);
+    } else {
+        *dst = src;
+    }
+    return convertType;
+}
+
 template <typename Adaptor, typename... Args>
 void dispatch_diopi(diopiContextHandle_t ctx, Args&&... args) {
     auto adaptor = Adaptor();
@@ -282,6 +322,11 @@ private:
     diopiContextHandle_t ctx_;
     diopiTensorHandle_t payload_;
     diopiTensorHandle_t tmp_ = nullptr;
+
+    // 0 means no change
+    // 1 means changes in memoryformat
+    // 2 means changes in cast dtype
+    // 3 means changes in dtype and memoryformat
     int convertType_ = 0;
 
 public:
@@ -289,7 +334,7 @@ public:
                        std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats)
                        : ctx_(ctx)
                        , payload_(payload) {
-        convertType_ = castImpl<diopiTensorHandle_t, strategy>(ctx, payload_, &tmp_, supportMemoryFormat);
+        convertType_ = requireImpl<diopiTensorHandle_t, strategy>(ctx, payload_, &tmp_, supportMemoryFormat);
     }
 
     ~DiopiTensorWrapper() {
