@@ -2169,7 +2169,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'embedding_forward': dict(
         name=["embedding"],
         para=dict(
