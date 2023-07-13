@@ -3800,4 +3800,5 @@ def linalgqrout(input, mode):
     r = Tensor(sizer, input.get_dtype())
     ret = func(input.context(), input, mode, q, r)
     out = [q,r]
+    check_returncode(ret)
     return out
