@@ -71,7 +71,7 @@ if __name__ == "__main__":
         cf.ConformanceTest.run(args.fname, args.model_name.lower(), args.filter_dtype, args.failure_debug_level, args.impl_folder)
         write_report()
     elif args.mode == 'utest':
-        call = "python3 -m pytest -vx tests"
+        call = "python3 -m pytest -vx tests --cov=conformance"
         subprocess.call(shlex.split(call))  # nosec
     else:
         print("available options for mode: gen_data, run_test and utest")
