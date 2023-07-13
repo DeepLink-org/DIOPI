@@ -79,7 +79,9 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const Dio
     DIOPI_CHECK(src.shape() == dest.shape(), "the shapes of src and dest are not equal");
 
     if (dest.dtype() == src.dtype()) {
-        clone(ctx, src, dest);
+        if (dest.data() != src.data()) {
+            clone(ctx, src, dest);
+        }
         return diopiSuccess;
     }
 
