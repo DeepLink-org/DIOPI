@@ -613,10 +613,11 @@ def min(input, dim=None, keepdim=False) -> Tensor:
     assert isinstance(dim, int), "dim should be int"
 
     sizeI = input.size().data
-    if keepdim:
-        sizeI[dim] = 1
-    else:
-        del sizeI[dim]
+    if len(sizeI) > 0:
+        if keepdim:
+            sizeI[dim] = 1
+        else:
+            del sizeI[dim]
     out = Tensor(sizeI, input.get_dtype())
     indices = Tensor(out.size().data, glob_vars.int_type)
     func = check_function("diopiMin")
@@ -1129,7 +1130,8 @@ def sort(input, dim=- 1, descending=False, stable=False):
         func(input.context(), vals, indices, input, dim, descending, stable)
     check_returncode(ret)
     # if not stable, need to reconstruct indices and use "input[indices]" to check
-    if not stable:
+
+    if len(sizeI) > 0 and not stable:
         # reconstruct the indices
         lst = []
         for dim_size in input.shape().data:
@@ -1155,7 +1157,8 @@ def sort(input, dim=- 1, descending=False, stable=False):
 
 def topk(input, k, dim=-1, largest=True, sorted=True):
     sizeI = input.size().data
-    sizeI[dim] = k
+    if len(sizeI) > 0:
+        sizeI[dim] = k
     values = Tensor(sizeI, input.get_dtype())
     indices = Tensor(sizeI, glob_vars.int_type)
 
@@ -1478,10 +1481,11 @@ def max(input, dim=None, keepdim=False):
 
     assert isinstance(dim, int), "dim should be int"
     sizeI = input.size().data
-    if keepdim:
-        sizeI[dim] = 1
-    else:
-        del sizeI[dim]
+    if len(sizeI) > 0:
+        if keepdim:
+            sizeI[dim] = 1
+        else:
+            del sizeI[dim]
     out = Tensor(sizeI, input.get_dtype())
     indices = Tensor(out.size().data, glob_vars.int_type)
 
@@ -2463,7 +2467,7 @@ def bitwise_or(input, other, inplace=False):
 
 def argmax(input, dim=None, keepdim=False):
     sizeO = list(input.size().data)
-    if dim is not None:
+    if len(sizeO) > 0 and dim is not None:
         assert dim < len(sizeO), "dim out of index"
         if keepdim:
             sizeO[dim] = 1
