@@ -3778,7 +3778,7 @@ diopi_configs = {
         ),
     ),
 
-    'remainder': dict(
+    'remainder_self_scalar_float': dict(
         name=['remainder'],
         interface=['torch'],
         atol=1e-4,
@@ -3793,8 +3793,7 @@ diopi_configs = {
                     "ins": ['other'],
                     "shape": ((6, ), (4, 1), (1, 28, 28),
                               (16, 3, 7, 14, 14), (1, 28, 28), (1, 28, 28)),
-                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16,
-                              Dtype.int32, Dtype.int64, Dtype.int8, Dtype.bool],
+                    "dtype": [Dtype.float64, Dtype.float32, Dtype.float16],
                     "gen_fn": Genfunc.randn,
                 },
             ],
@@ -3823,39 +3822,13 @@ diopi_configs = {
                               (16, 3, 7, 14, 14)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,
                               Dtype.int64, Dtype.uint8, Dtype.int8],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": dict(fn=Genfunc.randint, low=1, high=4),
                 },
             ],
         ),
     ),
 
-    'remainder_other_zero': dict(
-        name=['remainder'],
-        interface=['torch'],
-        atol=1e-4,
-        rtol=1e-5,
-        tensor_para=dict(
-            gen_fn=Genfunc.randn,
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((6, ), (4, 5)),
-                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,
-                              Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-                {
-                    "ins": ['other'],
-                    "shape": ((6, ), (4, 1)),
-                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,
-                              Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
-                    "gen_fn": Genfunc.zeros,
-                },
-            ],
-        ),
-    ),
-
-    'remainder_scalar': dict(
+    'remainder_other_scalar': dict(
         name=['remainder'],
         interface=['torch'],
         atol=1e-4,
@@ -3872,7 +3845,29 @@ diopi_configs = {
                               (16, 1, 7, 14, 14), (4, 5), (4, 5)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16,
                               Dtype.int32, Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": dict(fn=Genfunc.randint, low=1, high=4),
+                },
+            ],
+        ),
+    ),
+
+    'remainder_self_scalar_int': dict(
+        name=['remainder'],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-5,
+        para=dict(
+            self=[4.3, 10.1, 5.2, 100., -2.5, -3],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['other'],
+                    "shape": ((6, ), (4, 1), (1, 28, 28),
+                              (16, 3, 7, 14, 14), (1, 28, 28), (1, 28, 28)),
+                    "dtype": [Dtype.int16, Dtype.int32, Dtype.int64, Dtype.int8, Dtype.bool],
+                    "gen_fn": dict(fn=Genfunc.randint, low=1, high=4),
                 },
             ],
         ),

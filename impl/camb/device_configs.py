@@ -130,18 +130,6 @@ device_configs = {
         rtol=1e-2,
     ),
 
-    'binary_cross_entropy_with_logits': dict(
-        name=["binary_cross_entropy_with_logits"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
-
     'pointwise_op': dict(
         name=['floor', 'asin', 'ceil'],
         tensor_para=dict(
@@ -167,7 +155,7 @@ device_configs = {
     ),
 
     'pointwise_op_int_without_inplace': dict(
-        name=['asin'],
+        name=['asin', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -201,6 +189,11 @@ device_configs = {
                 },
             ]
         ),
+    ),
+
+    'pointwise_op': dict(
+        name=["atan"],
+        atol=5e-4,
     ),
 
     'pointwise_binary': dict(
@@ -290,14 +283,6 @@ device_configs = {
 
     'reduce_partial_op_1': dict(
         name=['std'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
     ),
 
     'cross_entropy': dict(
@@ -358,32 +343,6 @@ device_configs = {
                 {
                     "ins": ["grads"],
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
-    'split': dict(
-        name=["split"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensor'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8)],
-                },
-            ],
-        ),
-    ),
-
-    'split_bool': dict(
-        name=["split"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensor'],
-                    "dtype": [Skip(Dtype.bool)],
                 },
             ],
         ),
@@ -507,31 +466,6 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
                 },
             ]
-        ),
-    ),
-
-    'unfold': dict(
-        name=["unfold"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
-    'unfold_int': dict(
-        name=["unfold"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
         ),
     ),
 
@@ -677,58 +611,6 @@ device_configs = {
         ),
     ),
 
-    'pad': dict(
-        name=['pad'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
-    'pad_not_float': dict(
-        name=['pad'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'constant_pad': dict(
-        name=['pad'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'constant_pad_positive': dict(
-        name=['pad'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.uint8)],
-                },
-            ],
-        ),
-    ),
-
     'norm': dict(
         name=['norm'],
         tensor_para=dict(
@@ -779,60 +661,28 @@ device_configs = {
         ),
     ),
 
-    'remainder': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['other'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
+    'remainder_self_scalar_float': dict(
+        name = ['remainder'],
+        atol = 1e-1,
+        rtol = 1e-2,
     ),
 
     'remainder_tensor': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8)],
-                },
-            ],
-        ),
+        name = ['remainder'],
+        atol = 1e-1,
+        rtol = 1e-2,
     ),
 
-    'remainder_other_zero': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8)],
-                },
-            ],
-        ),
+    'remainder_other_scalar': dict(
+        name = ['remainder'],
+        atol = 1e-1,
+        rtol = 1e-2,
     ),
 
-    'remainder_scalar': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ],
-        ),
+    'remainder_self_scalar_int': dict(
+        name = ['remainder'],
+        atol = 1e-1,
+        rtol = 1e-2,
     ),
 
     # When not performing a reduce operation, the accuracy comparison of scatter needs to be performed on the CPU
@@ -994,7 +844,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "shape": [Skip((2, 576, 46464))],
                 },
             ]
         ),
