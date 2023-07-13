@@ -264,8 +264,10 @@ class Tensor(diopiTensor):
         return tr
 
     def numpy(self) -> np.ndarray:
-        darray = np.empty(list(self.size().data), to_numpy_dtype(self.get_dtype()))
-
+        data = np.empty((1,), to_numpy_dtype(self.get_dtype()))
+        element_size = data.itemsize
+        sumsize = int(sum([(s - 1) * st for s, st in zip(list(self.size().data), [int(stride * element_size) for stride in self.get_stride().data])]) / element_size + 1)
+        darray = np.empty(sumsize, to_numpy_dtype(self.get_dtype()))
         PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
         PyCapsule_New = ctypes.pythonapi.PyCapsule_New
         PyCapsule_New.restype = ctypes.py_object
