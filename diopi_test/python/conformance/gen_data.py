@@ -492,6 +492,15 @@ class CustomizedTest(object):
         loss = torch.nn.functional.ctc_loss(log_probs_, targets, input_lengths, target_lengths, blank=blank, reduction=reduction, zero_infinity=zero_infinity)
         return loss
 
+    def linalgqrout(input, mode):
+        q, r = torch.linalg.qr(input, mode)
+        out=[q, r]
+        return out
+    
+    def amaxout(input, dim, keepdim):
+        out = torch.amax(input, dim, keepdim)
+        return out
+
 
 def transfer_tensor_to_device(function_paras: dict):
     for para in function_paras["kwargs"].keys():
