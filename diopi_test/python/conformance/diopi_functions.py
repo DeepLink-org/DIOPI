@@ -3740,14 +3740,17 @@ def amaxout(input, dim, keepdim) -> Tensor:
     func = check_function(call)
     if isinstance(dim, int):
         sizeO = []
+        # import pdb
+        # pdb.set_trace()
+        dim_num = dim
         dim = Sizes(list([dim]))
         sizeI = list(input.size().data)
-        if dim < 0 and abs(dim) > len(list(input.shape().data)):
-            dim = 0
-        elif dim < 0:
-            dim = abs(dim)
+        if dim_num < 0 and abs(dim_num) > len(list(input.shape().data)):
+            dim_num = 0
+        elif dim_num < 0:
+            dim_num = abs(dim_num)
         for index in range(len(sizeI)):
-            if index==dim:
+            if index==dim_num:
                 if keepdim == True:
                     sizeO.append(1)
             else:
