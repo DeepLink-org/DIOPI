@@ -63,7 +63,7 @@ static diopiError_t dataTypeCastTwice(diopiContextHandle_t ctx, DiopiTensor& des
 #undef _MAKE_KEY
 
 diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& src, diopiDtype_t destDtype) {
-    if (!src.defined() || src.dtype() == destDtype) {
+    if (src.dtype() == destDtype) {
         return diopiSuccess;
     }
     DiopiTensor dest = requiresTensor(ctx, src.shape(), destDtype);
@@ -74,8 +74,6 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& src, diopiDtype
 
 diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const DiopiTensor& src) {
     // check size of dest and src
-    DIOPI_CHECK(dest.defined(), "dest not defined");
-    DIOPI_CHECK(src.defined(), "src not defined");
     DIOPI_CHECK(src.shape() == dest.shape(), "the shapes of src and dest are not equal");
 
     if (dest.dtype() == src.dtype()) {
@@ -125,9 +123,7 @@ diopiError_t autoCastTensorType(diopiContextHandle_t ctx, const std::vector<Diop
     std::set<diopiDtype_t> dtypeAndTensorPtrs;
     diopiDtype_t targetType = diopi_dtype_float32;
     for (const auto& pTensor : pTensors) {
-        if (pTensor->defined()) {
-            dtypeAndTensorPtrs.insert(pTensor->dtype());
-        }
+        dtypeAndTensorPtrs.insert(pTensor->dtype());
     }
     if (dtypeAndTensorPtrs.find(diopi_dtype_float64) != dtypeAndTensorPtrs.end() || dtypeAndTensorPtrs.find(diopi_dtype_float32) != dtypeAndTensorPtrs.end()) {
         if (opSupportedDtype.find(diopi_dtype_float32) == opSupportedDtype.end()) {  // not support float32
