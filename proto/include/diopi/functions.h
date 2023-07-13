@@ -2214,6 +2214,10 @@ DIOPI_API diopiError_t diopiSgnInp(diopiContextHandle_t ctx, diopiTensorHandle_t
  */
 DIOPI_API diopiError_t diopiIsNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
+DIOPI_API diopiError_t diopiLinalgQROut(diopiContextHandle_t ctx, diopiConstTensorHandle_t A, const char* mode, diopiTensorHandle_t Q, diopiTensorHandle_t R);
+
+DIOPI_API diopiError_t diopiSignOut(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t self);
+
 #if defined(__cplusplus)
 }
 #endif  // __cplusplus

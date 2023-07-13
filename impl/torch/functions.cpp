@@ -4077,4 +4077,24 @@ DIOPI_API diopiError_t diopiIsNan(diopiContextHandle_t ctx, diopiTensorHandle_t 
     return diopiSuccess;
 }
 
+DIOPI_API diopiError_t diopiLinalgQROut(diopiContextHandle_t ctx, diopiConstTensorHandle_t A, const char* mode, diopiTensorHandle_t Q, diopiTensorHandle_t R){
+    impl::aten::setCurCtx(ctx);
+    auto atA = impl::aten::buildATen(A);
+    auto atQ = impl::aten::buildATen(Q);
+    auto atR = impl::aten::buildATen(R);
+    c10::string_view atMode(mode, strlen(mode));
+    at::linalg_qr_out(atQ, atR, atA, mode);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiSignOut(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t self){
+    impl::aten::setCurCtx(ctx);
+    auto atOut = impl::aten::buildATen(out);
+    auto atSelf = impl::aten::buildATen(self);
+    at::sign_out(atOut, atSelf);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
 }  // extern "C"
