@@ -1,0 +1,4 @@
+[run]
+omit = [
+    */conformance/model_config/*,
+    ]
