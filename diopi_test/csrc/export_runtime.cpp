@@ -123,5 +123,6 @@ PYBIND11_MODULE(export_runtime, m) {
     m.def("get_last_error_string", &diopiGetLastErrorString);
     m.def("diopi_init", &diopiInit);
     m.def("diopi_finalize", &diopiFinalize);
+    m.def("init_library", &initLibrary);
     m.def("finalize_library", &finalizeLibrary);
 }

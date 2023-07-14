@@ -4,11 +4,11 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/diopirt.h>
-// #include <diopi_register.h>
 #include <cuda_runtime.h>
+#include <diopi/diopirt.h>
 
 #include <cstdio>
+#include <mutex>
 
 extern "C" {
 
@@ -65,8 +65,32 @@ int32_t device_memcpy_d2d_async(diopiStreamHandle_t stream_handle, void* dst, co
     return diopiSuccess;
 }
 
+static char strLastError[8192] = {0};
+static char strLastErrorOther[4096] = {0};
+static std::mutex mtxLastError;
+
+const char* device_get_last_error_string() {
+    cudaError_t error = cudaGetLastError();
+    std::lock_guard<std::mutex> lock(mtxLastError);
+    sprintf(strLastError, "cuda error: %s; other error: %s", cudaGetErrorString(error), strLastErrorOther);
+    return strLastError;
+}
+
 int32_t initLibrary() { return diopiSuccess; }
 
 int32_t finalizeLibrary() { return diopiSuccess; }
 
 }  // extern "C"
+
+namespace impl {
+
+namespace cuda {
+
+void _set_last_error_string(const char* err) {
+    std::lock_guard<std::mutex> lock(mtxLastError);
+    sprintf(strLastErrorOther, "%s", err);
+}
+
+}  // namespace cuda
+
+}  // namespace impl
