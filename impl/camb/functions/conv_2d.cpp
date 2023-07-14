@@ -15,9 +15,9 @@
 namespace impl {
 namespace camb {
 
-#define REQUIRES_TENSOR_BY_DTYPE_OR_NOT(tensor1, tensor2)                \
+#define REQUIRES_TENSOR_BY_DTYPE_OR_NOT(tensor1, tensor2, targetDtype)   \
     DiopiTensor tensor1 = tensor2;                                       \
-    if (tensor2.defined() && tensor1.dtype() != tensor2.dtype()) {       \
+    if (tensor2.defined() && tensor1.dtype() != targetDtype) {           \
         tensor1 = requiresTensor(ctx, tensor1.shape(), tensor2.dtype()); \
     }
 
@@ -55,7 +55,7 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
 
     std::vector<DiopiTensor *> tensors{&inputTensor, &weightTensor, &biasTensor};
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32}));
-    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(outputTensorTmp, outputTensor);
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(outputTensorTmp, outputTensor, inputTensor.dtype());
 
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_NHWC);
     CnnlTensorDesc weightDesc(weightTensor, CNNL_LAYOUT_NHWC);
@@ -132,9 +132,9 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
 
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32}));
 
-    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradWeightTensorTmp, gradWeightTensor);
-    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradInputTensorTmp, gradInputTensor);
-    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradBiasTensorTmp, gradBiasTensor);
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradWeightTensorTmp, gradWeightTensor, inputTensor.dtype());
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradInputTensorTmp, gradInputTensor, inputTensor.dtype());
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradBiasTensorTmp, gradBiasTensor), inputTensor.dtype();
 
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_NHWC);
     CnnlTensorDesc weightDesc(weightTensor, CNNL_LAYOUT_NHWC);
