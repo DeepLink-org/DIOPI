@@ -294,10 +294,4 @@ DIOPI_RT_API diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diop
     return diopiSuccess;
 }
 
-DIOPI_RT_API diopiError_t diopiReplaceTensorStorage(diopiTensorHandle_t th, void* ptr, void (*deleter)(void*)) {
-    auto new_storage = std::make_shared<Storage>(ptr, deleter, th->nbytes());
-    th->setStorage(std::move(new_storage));
-    return diopiSuccess;
-}
-
 }  // extern "C"

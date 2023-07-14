@@ -55,10 +55,6 @@ public:
         ptr_ = mallocFn_(nbytes);
     }
 
-    Storage(void* ptr, free_func_t freeFn, int64_t nbytes) : mallocFn_(nullptr), freeFn_(freeFn), ptr_(ptr), nbytes_(nbytes) {
-        assert(freeFn_);
-    }
-
     ~Storage() {
         freeFn_(ptr_);
         ptr_ = nullptr;
@@ -138,7 +134,6 @@ public:
     }
 
     diopiContextHandle_t getCtx() const { return context_; }
-    void setStorage(std::shared_ptr<Storage> && storage) { storage_ = std::move(storage); }
 };
 
 struct diopiContext {
