@@ -11,14 +11,13 @@
 
 #include "../common/common.hpp"
 #include "../common/debug.hpp"
-
 namespace impl {
 namespace camb {
 
-#define REQUIRES_TENSOR_BY_DTYPE_OR_NOT(tensor1, tensor2, targetDtype) \
-    DiopiTensor tensor1 = tensor2;                                     \
-    if (tensor2.defined() && tensor1.dtype() != targetDtype) {         \
-        tensor1 = requiresTensor(ctx, tensor1.shape(), targetDtype);   \
+#define REQUIRES_TENSOR_BY_DTYPE_OR_NOT(tensor1, tensor2, targetDtype)                           \
+    DiopiTensor tensor1 = tensor2;                                                               \
+    if (tensor2.defined() && tensor1.dtype() != targetDtype) {                                   \
+        tensor1 = requiresTensor(ctx, tensor1.shape(), targetDtype, MemoryFormat::ChannelsLast); \
     }
 
 // namespace {
@@ -53,7 +52,11 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
     DIOPI_CHECK(weightTensor.isContiguous(MemoryFormat::ChannelsLast), "weightTensor should be ChannelsLast");
     DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast), "outputTensor should be ChannelsLast");
 
-    std::vector<DiopiTensor *> tensors{&inputTensor, &weightTensor, &biasTensor};
+    std::vector<DiopiTensor *> tensors{&inputTensor, &weightTensor};
+    if (bias) {
+        tensors.push_back(&biasTensor);
+    }
+
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32}));
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(outputTensorTmp, outputTensor, inputTensor.dtype());
 
@@ -132,14 +135,9 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
 
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32}));
 
-    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradWeightTensorTmp, gradWeightTensor, inputTensor.dtype());
-    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradInputTensorTmp, gradInputTensor, inputTensor.dtype());
-    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradBiasTensorTmp, gradBiasTensor, inputTensor.dtype());
-
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_NHWC);
     CnnlTensorDesc weightDesc(weightTensor, CNNL_LAYOUT_NHWC);
     CnnlTensorDesc gradOutputDesc(gradOutputTensor, CNNL_LAYOUT_NHWC);
-    CnnlTensorDesc weightGradDesc(gradWeightTensorTmp, CNNL_LAYOUT_NHWC);
 
     CnnlResourceGuard<cnnlConvolutionDescriptor_t, cnnlCreateConvolutionDescriptor, cnnlDestroyConvolutionDescriptor> convDesc;
 
@@ -151,6 +149,8 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
     int strideTmp[2] = {strideVec[0], strideVec[1]};
     int dilationTmp[2] = {dilationVec[0], dilationVec[1]};
     if (gradWeightTensor.defined()) {
+        REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradWeightTensorTmp, gradWeightTensor, inputTensor.dtype());
+        CnnlTensorDesc weightGradDesc(gradWeightTensorTmp, CNNL_LAYOUT_NHWC);
         cnnlDataType_t computeType;
         DIOPI_CALL(CnnlDataType::convertToCnnlType(&computeType, inputTensor.dtype()));
         DIOPI_CALLCNNL(cnnlSetConvolutionDescriptor(convDesc.get(), 4, paddingTmp, strideTmp, dilationTmp, groups, computeType));
@@ -177,10 +177,13 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
                                                      nullptr,
                                                      weightGradDesc.get(),
                                                      gradWeightTensorTmp.data()));
+        // printDevData(ctx, gradWeightTensorTmp, "gradWeightTensorTmp");
         DIOPI_CALL(dataTypeCast(ctx, gradWeightTensor, gradWeightTensorTmp));
+        // printDevData(ctx, gradWeightTensor, "gradWeightTensor");
     }
 
     if (gradInputTensor.defined()) {
+        REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradInputTensorTmp, gradInputTensor, inputTensor.dtype());
         CnnlTensorDesc inputGradDesc(gradInputTensorTmp, CNNL_LAYOUT_NHWC);
         size_t workspaceSizeInput;
         DIOPI_CALLCNNL(cnnlGetConvolutionBackwardDataWorkspaceSize(
@@ -209,7 +212,7 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
     }
 
     if (grad3 != nullptr) {
-        DiopiTensor biasGradTensor(grad3);
+        REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradBiasTensorTmp, gradBiasTensor, inputTensor.dtype());
         CnnlTensorDesc gradBiasDesc(gradBiasTensorTmp, CNNL_LAYOUT_ARRAY);
         std::vector<int64_t> biasShape{gradBiasTensorTmp.shape().begin(), gradBiasTensorTmp.shape().end()};
         biasSizes->data = biasShape.data();
