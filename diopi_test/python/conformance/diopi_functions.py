@@ -3736,7 +3736,7 @@ def isnan(input) -> Tensor:
 
 
 def amaxout(input, dim, keepdim) -> Tensor:
-    call = "diopiAmaxOut"
+    call = "diopiAmax"
     func = check_function(call)
     if isinstance(dim, int):
         sizeO = []
@@ -3750,8 +3750,8 @@ def amaxout(input, dim, keepdim) -> Tensor:
         elif dim_num < 0:
             dim_num = abs(dim_num)
         for index in range(len(sizeI)):
-            if index==dim_num:
-                if keepdim == True:
+            if index == dim_num:
+                if keepdim is True:
                     sizeO.append(1)
             else:
                 sizeO.append(sizeI[index])
@@ -3759,10 +3759,7 @@ def amaxout(input, dim, keepdim) -> Tensor:
         remove = list(dim)
         dim = Sizes(list(dim))
         sizeI = list(input.size().data)
-    
         sizeO = []
-        # import pdb
-        # pdb.set_trace()
         for index in range(len(remove)):
             if remove[index] < 0 and abs(remove[index]) > len(list(input.shape().data)):
                 remove[index] = 0
@@ -3771,7 +3768,7 @@ def amaxout(input, dim, keepdim) -> Tensor:
                 remove[index] = abs(remove[index])
         for index in range(len(sizeI)):
             if index in remove:
-                if keepdim == True:
+                if keepdim is True:
                     sizeO.append(1)
                 continue
             else:
@@ -3781,13 +3778,14 @@ def amaxout(input, dim, keepdim) -> Tensor:
     check_returncode(ret)
     return out
 
+
 def linalgqrout(input, mode):
-    call = "diopiLinalgQROut"
+    call = "diopiLinalgQR"
     func = check_function(call)
     sizeI = list(input.size().data)
     sizeq = []
     sizer = []
-    if sizeI[-1]>=sizeI[-2]:
+    if sizeI[-1] >= sizeI[-2]:
         sizeq = sizeI[:-1]
         sizeq.append(sizeI[-2])
         sizer = sizeI[:]
@@ -3799,6 +3797,6 @@ def linalgqrout(input, mode):
     q = Tensor(sizeq, input.get_dtype())
     r = Tensor(sizer, input.get_dtype())
     ret = func(input.context(), input, mode, q, r)
-    out = [q,r]
+    out = [q, r]
     check_returncode(ret)
     return out
