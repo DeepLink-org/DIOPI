@@ -23,7 +23,6 @@ if(NOT DIOPI_BR_LIB)
     message(FATAL_ERROR "${DEVICEIMPL} library not found !")
 endif()
 
-file(COPY ${DIOPI_BR_LIB} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../lib/ FOLLOW_SYMLINK_CHAIN)
 if (TEST)
   add_subdirectory(test)
 endif()

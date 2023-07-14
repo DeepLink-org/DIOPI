@@ -51,9 +51,7 @@ add_library(${DIOPIRT} SHARED ${RUNTIME_SRC})
 target_link_libraries(${DIOPIRT} ${SUPA_RUNTIME_LIB})
 
 # link test-rt with real symbols in diopi_impl.so
-find_library(DIOPI_IMPL_LIB diopi_impl ${CMAKE_CURRENT_SOURCE_DIR}/../../lib/)
-message(INFO " DIOPI_IMPL_LIB=${DIOPI_IMPL_LIB}")
-target_link_libraries(${DIOPIRT} -Wl,--no-as-needed ${DIOPI_IMPL_LIB} -Wl,--as-needed)
+target_link_libraries(${DIOPIRT} -Wl,--no-as-needed ${DIOPI_BR_LIB} -Wl,--as-needed)
 
 # create pybind library for test-rt
 set(RT_EXPORT_SRC
