@@ -15,10 +15,10 @@
 namespace impl {
 namespace camb {
 
-#define REQUIRES_TENSOR_BY_DTYPE_OR_NOT(tensor1, tensor2, targetDtype)   \
-    DiopiTensor tensor1 = tensor2;                                       \
-    if (tensor2.defined() && tensor1.dtype() != targetDtype) {           \
-        tensor1 = requiresTensor(ctx, tensor1.shape(), tensor2.dtype()); \
+#define REQUIRES_TENSOR_BY_DTYPE_OR_NOT(tensor1, tensor2, targetDtype) \
+    DiopiTensor tensor1 = tensor2;                                     \
+    if (tensor2.defined() && tensor1.dtype() != targetDtype) {         \
+        tensor1 = requiresTensor(ctx, tensor1.shape(), targetDtype);   \
     }
 
 // namespace {
