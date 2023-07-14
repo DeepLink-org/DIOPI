@@ -3774,18 +3774,18 @@ def linalgqr(input, mode):
     sizeI = list(input.size().data)
     sizeq = []
     sizer = []
-    if mode=="reduced":
+    if mode == "reduced":
         if sizeI[-1] <= sizeI[-2]:
             sizeq = sizeI[:]
             sizer = sizeI[:-2] + [sizeI[-1], sizeI[-1]]
         else:
             sizer = sizeI[:]
             sizeq = sizeI[:-2] + [sizeI[-2], sizeI[-2]]
-    elif mode=="complete":
+    elif mode == "complete":
         sizeq = sizeI[:-1]
         sizeq.append(sizeI[-2])
         sizer = sizeI[:]
-    elif mode=='r':
+    elif mode == 'r':
         sizeq = [0]
         if sizeI[-1] <= sizeI[-2]:
             sizer = sizeI[:-2] + [sizeI[-1], sizeI[-1]]
