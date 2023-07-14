@@ -1,0 +1,60 @@
+#- common_config:
+    #dtype: (int64)->int32, (float64)->float32
+    #layout: NHWC
+    #contiguous: False
+
+- diopiMaxAll:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiDiv:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiGtScalar:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiLtScalar:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiAddScalar:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiAddInpScalar:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiCat:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiCrossEntropyLoss:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiCrossEntropyLossBackward:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiGather:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiNeScalar:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiIndexSelect:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiSort:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiArgmax:
+    dtype: (int64)->int32, (float64)->float32
+
+#- diopiAdd:
+    #dtype: (int64)->int32, (float64)->float32
+    #tensor_dtype:
+        #input: (float64)->float32
+        #other: (float64, int64)->float32
+        #out: (float64, int64)->float32
+    #layout: NCHW, NHWC, input(NHWC)
+    #contiguous: input, out
+
+#- diopiDropout:
+    #dtype: (int64)->int32, (float64)->float32, (bool)->uint8
+    #layout: NCHW
+    #contiguous: input, out, mask

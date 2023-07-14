@@ -3304,7 +3304,10 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     impl::aten::setCurCtx(ctx);
     at::Tensor atDest = impl::aten::buildATen(dest);
     at::Tensor atSrc = impl::aten::buildATen(src);
-    at::native::copy_(atDest, atSrc, false);
+    // Set non_blocking true to avoid stream sync thus improving performance.
+    // The data is not ready when diopiCopyInp returns.
+    // If you need to use it immediately, please call cudaStreamSynchronize first.
+    at::native::copy_(atDest, atSrc, true);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
