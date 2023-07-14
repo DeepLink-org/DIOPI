@@ -494,9 +494,9 @@ class CustomizedTest(object):
 
     def linalgqrout(input, mode):
         q, r = torch.linalg.qr(input, mode)
-        out=[q, r]
+        out = [q, r]
         return out
-    
+
     def amaxout(input, dim, keepdim):
         out = torch.amax(input, dim, keepdim)
         return out
