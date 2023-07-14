@@ -4,7 +4,7 @@ from ctypes import c_void_p
 import numpy as np
 import atexit
 from export_runtime import diopiTensor, diopiSize, diopiScalar, diopiReduction, diopiRoundMode, diopiError, TensorP, Context, Device, Dtype, \
-    diopi_tensor_copy_to_buffer, get_last_error_string, finalize_library, diopi_finalize
+    diopi_tensor_copy_to_buffer, get_last_error_string, finalize_library, diopi_finalize, init_library
 from .utils import glob_vars
 
 
@@ -165,6 +165,10 @@ def compute_nhwc_stride(size, itemsize=1, name=None):
         return compute_nhwc_stride_3d(size, itemsize)
 
 
+def diopi_rt_init():
+    init_library()
+
+
 def on_diopi_rt_exit():
     finalize_library()
     diopi_finalize()
@@ -261,8 +265,10 @@ class Tensor(diopiTensor):
         return tr
 
     def numpy(self) -> np.ndarray:
-        darray = np.empty(list(self.size().data), to_numpy_dtype(self.get_dtype()))
-
+        data = np.empty((1,), to_numpy_dtype(self.get_dtype()))
+        element_size = data.itemsize
+        sumsize = int(sum([(s - 1) * st for s, st in zip(list(self.size().data), [int(stride * element_size) for stride in self.get_stride().data])]) / element_size + 1)
+        darray = np.empty(sumsize, to_numpy_dtype(self.get_dtype()))
         PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
         PyCapsule_New = ctypes.pythonapi.PyCapsule_New
         PyCapsule_New.restype = ctypes.py_object

@@ -1,4 +1,4 @@
-DIOPI Python API
+一致性测试 API
 ===================
 .. currentmodule:: docs.CN_doc
 
