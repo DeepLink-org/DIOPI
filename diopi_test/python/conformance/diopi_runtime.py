@@ -8,7 +8,6 @@ from export_runtime import diopiTensor, diopiSize, diopiScalar, diopiReduction, 
 from conformance.utils import glob_vars
 
 
-
 def device(dev: str) -> Device:
     if dev == "cpu" or dev == "host":
         return Device.Host
