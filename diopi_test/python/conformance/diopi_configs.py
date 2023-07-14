@@ -4812,13 +4812,13 @@ diopi_configs = {
         ),
     ),
 
-    'amaxout': dict(
-        name=['amaxout'],
-        interface=['CustomizedTest'],
+    'amax': dict(
+        name=['amax'],
+        interface=['torch'],
         dtype=[Dtype.float64, Dtype.float32, Dtype.float16, Dtype.int16, Dtype.int32, Dtype.int64, Dtype.int8, Dtype.uint8],
         para=dict(
-            dim=[1, 0, 2, (1, 2), (1, 2)],
-            keepdim=[False, False, False, True, False],
+            dim=[1, 0, 2, (1, 2), (-1, 2), None, None],
+            keepdim=[False, False, False, True, False, False, True],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -4827,27 +4827,27 @@ diopi_configs = {
                     "ins": ['input'],
                     "shape": ((1024, 64), (384, 128),
                               (64, 1, 128), (128, 64, 3, 3),
-                              (2, 32, 130, 130)),
+                              (2, 32, 130, 130), (128, 64, 32, 3), (384, 128)),
                 },
             ],
         ),
     ),
 
-    'linalgqrout': dict(
-        name=['linalgqrout'],
+    'linalgqr': dict(
+        name=['linalgqr'],
         interface=['CustomizedTest'],
         dtype=[Dtype.float64, Dtype.float32],
         para=dict(
-            mode=['reduced', 'reduced', 'reduced', 'reduced', 'reduced'],
+            mode=['reduced', 'reduced', 'complete', 'complete', 'r', 'r'],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((1024, 1024), (384, 384),
-                              (64, 1, 128), (128, 64, 3, 3),
-                              (2, 32, 130, 130)),
+                    "shape": ((1024, 384), (384, 1024),
+                              (64, 1, 128), (128, 64, 32, 3),
+                              (2, 32, 130, 100), (2, 32, 100, 150)),
                 },
             ],
         ),

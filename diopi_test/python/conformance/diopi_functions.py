@@ -3735,65 +3735,64 @@ def isnan(input) -> Tensor:
     return out
 
 
-def amaxout(input, dim, keepdim) -> Tensor:
+def amax(input, dim, keepdim) -> Tensor:
     call = "diopiAmax"
     func = check_function(call)
-    if isinstance(dim, int):
-        sizeO = []
-        # import pdb
-        # pdb.set_trace()
-        dim_num = dim
-        dim = Sizes(list([dim]))
-        sizeI = list(input.size().data)
-        if dim_num < 0 and abs(dim_num) > len(list(input.shape().data)):
-            dim_num = 0
-        elif dim_num < 0:
-            dim_num = abs(dim_num)
-        for index in range(len(sizeI)):
-            if index == dim_num:
-                if keepdim is True:
-                    sizeO.append(1)
-            else:
-                sizeO.append(sizeI[index])
-    else:
-        remove = list(dim)
-        dim = Sizes(list(dim))
-        sizeI = list(input.size().data)
-        sizeO = []
-        for index in range(len(remove)):
-            if remove[index] < 0 and abs(remove[index]) > len(list(input.shape().data)):
-                remove[index] = 0
-                continue
-            elif remove[index] < 0:
-                remove[index] = abs(remove[index])
-        for index in range(len(sizeI)):
-            if index in remove:
-                if keepdim is True:
-                    sizeO.append(1)
-                continue
-            else:
-                sizeO.append(sizeI[index])
+    sizeI = list(input.size().data)
+    size = len(sizeI)
+    sizeO = []
+    dim_list = []
+    dim = list(dim) if isinstance(dim, tuple) else dim
+    if dim is None and keepdim:
+        sizeO = [1 for i in range(0, size)]
+        dim = Sizes([])
+    elif dim is None and keepdim is False:
+        sizeO = [0]
+        dim = Sizes([])
+    elif dim is not None:
+        dim_list = dim if isinstance(dim, list) else [dim]
+        for i in range(0, len(dim_list)):
+            if dim_list[i] < 0:
+                dim_list[i] += size
+        dim_list.sort()
+        for i in range(0, size):
+            if i not in dim_list:
+                sizeO.append(sizeI[i])
+            elif keepdim:
+                sizeO.append(1)
+        dim = Sizes(list(dim)) if isinstance(dim, list) else Sizes(list([dim]))
+    dtype = input.get_dtype()
     out = Tensor(sizeO, input.get_dtype())
     ret = func(input.context(), out, input, dim, keepdim)
     check_returncode(ret)
     return out
 
 
-def linalgqrout(input, mode):
+def linalgqr(input, mode):
     call = "diopiLinalgQR"
     func = check_function(call)
     sizeI = list(input.size().data)
     sizeq = []
     sizer = []
-    if sizeI[-1] >= sizeI[-2]:
+    if mode=="reduced":
+        if sizeI[-1] <= sizeI[-2]:
+            sizeq = sizeI[:]
+            sizer = sizeI[:-2] + [sizeI[-1], sizeI[-1]]
+        else:
+            sizer = sizeI[:]
+            sizeq = sizeI[:-2] + [sizeI[-2], sizeI[-2]]
+    elif mode=="complete":
         sizeq = sizeI[:-1]
         sizeq.append(sizeI[-2])
         sizer = sizeI[:]
+    elif mode=='r':
+        sizeq = [0]
+        if sizeI[-1] <= sizeI[-2]:
+            sizer = sizeI[:-2] + [sizeI[-1], sizeI[-1]]
+        else:
+            sizer = sizeI[:]
     else:
-        sizer = sizeI[:-1]
-        sizer.append(sizeI[-2])
-        sizeq = sizeI[:]
-
+        raise ValueError('mode do not support.')
     q = Tensor(sizeq, input.get_dtype())
     r = Tensor(sizer, input.get_dtype())
     ret = func(input.context(), input, mode, q, r)

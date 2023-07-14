@@ -492,13 +492,9 @@ class CustomizedTest(object):
         loss = torch.nn.functional.ctc_loss(log_probs_, targets, input_lengths, target_lengths, blank=blank, reduction=reduction, zero_infinity=zero_infinity)
         return loss
 
-    def linalgqrout(input, mode):
+    def linalgqr(input, mode):
         q, r = torch.linalg.qr(input, mode)
         out = [q, r]
-        return out
-
-    def amaxout(input, dim, keepdim):
-        out = torch.amax(input, dim, keepdim)
         return out
 
 
