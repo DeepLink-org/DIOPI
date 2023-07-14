@@ -4838,7 +4838,7 @@ diopi_configs = {
         interface=['CustomizedTest'],
         dtype=[Dtype.float64, Dtype.float32],
         para=dict(
-            mode=['reduced', 'reduced', 'complete', 'complete', 'r', 'r'],
+            mode=['reduced', 'reduced', 'complete', 'complete', 'r', 'r', 'reduced', 'complete', 'r'],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -4847,7 +4847,8 @@ diopi_configs = {
                     "ins": ['input'],
                     "shape": ((1024, 384), (384, 1024),
                               (64, 1, 128), (128, 64, 32, 3),
-                              (2, 32, 130, 100), (2, 32, 100, 150)),
+                              (2, 32, 130, 100), (2, 32, 100, 150),
+                              (1024, 1024), (4, 284, 384), (3, 64, 64)),
                 },
             ],
         ),

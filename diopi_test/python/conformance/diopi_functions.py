@@ -3738,32 +3738,11 @@ def isnan(input) -> Tensor:
 def amax(input, dim, keepdim) -> Tensor:
     call = "diopiAmax"
     func = check_function(call)
-    sizeI = list(input.size().data)
-    size = len(sizeI)
-    sizeO = []
-    dim_list = []
-    dim = list(dim) if isinstance(dim, tuple) else dim
-    if dim is None and keepdim:
-        sizeO = [1 for i in range(0, size)]
-        dim = Sizes([])
-    elif dim is None and keepdim is False:
-        sizeO = [0]
-        dim = Sizes([])
-    elif dim is not None:
-        dim_list = dim if isinstance(dim, list) else [dim]
-        for i in range(0, len(dim_list)):
-            if dim_list[i] < 0:
-                dim_list[i] += size
-        dim_list.sort()
-        for i in range(0, size):
-            if i not in dim_list:
-                sizeO.append(sizeI[i])
-            elif keepdim:
-                sizeO.append(1)
-        dim = Sizes(list(dim)) if isinstance(dim, list) else Sizes(list([dim]))
-    dtype = input.get_dtype()
-    out = Tensor(sizeO, input.get_dtype())
-    ret = func(input.context(), out, input, dim, keepdim)
+    assert isinstance(dim, (int, list)) or dim is None,\
+        "dim should be int or list or None"
+    dim, out = reduce_op_process(input, dim, keepdim)
+    dim1 = Sizes(list(dim))
+    ret = func(input.context(), out, input, dim1, keepdim)
     check_returncode(ret)
     return out
 
