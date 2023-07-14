@@ -3738,8 +3738,8 @@ def isnan(input) -> Tensor:
 def amax(input, dim, keepdim) -> Tensor:
     call = "diopiAmax"
     func = check_function(call)
-    assert isinstance(dim, (int, list)) or dim is None,\
-        "dim should be int or list or None"
+    assert isinstance(dim, (int, list, tuple)) or dim is None,\
+        "dim should be int or list or tuple or None"
     dim, out = reduce_op_process(input, dim, keepdim)
     dim1 = Sizes(list(dim))
     ret = func(input.context(), out, input, dim1, keepdim)
