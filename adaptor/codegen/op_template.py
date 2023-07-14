@@ -318,6 +318,13 @@ void dispatch_diopi(diopiContextHandle_t ctx, Args&&... args) {
 
 template<class strategy = NoCast>
 class DiopiTensorWrapper {
+    
+    // forbid copy/move construct/assignment
+    DiopiTensorWrapper(const DiopiTensorWrapper&) = delete;
+    DiopiTensorWrapper& operator=(const DiopiTensorWrapper&) = delete;
+    DiopiTensorWrapper(DiopiTensorWrapper&&) = delete;
+    DiopiTensorWrapper& operator=(DiopiTensorWrapper&&) = delete;
+
 private:
     diopiContextHandle_t ctx_;
     diopiTensorHandle_t payload_;
@@ -325,16 +332,20 @@ private:
 
     // 0 means no change
     // 1 means changes in memoryformat
-    // 2 means changes in cast dtype
+    // 2 means changes in dtype
     // 3 means changes in dtype and memoryformat
     int convertType_ = 0;
 
 public:
     DiopiTensorWrapper(diopiContextHandle_t ctx, diopiTensorHandle_t payload,
-                       std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats)
+                       std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats, bool inp = false)
                        : ctx_(ctx)
                        , payload_(payload) {
-        convertType_ = requireImpl<diopiTensorHandle_t, strategy>(ctx, payload_, &tmp_, supportMemoryFormat);
+        if (inp) {
+            convertType_ = castImpl<diopiTensorHandle_t, strategy>(ctx, payload_, &tmp_, supportMemoryFormat);
+        } else {
+            convertType_ = requireImpl<diopiTensorHandle_t, strategy>(ctx, payload_, &tmp_, supportMemoryFormat);
+        }
     }
 
     ~DiopiTensorWrapper() {

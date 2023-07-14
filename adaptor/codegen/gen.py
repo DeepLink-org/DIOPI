@@ -59,6 +59,9 @@ cast_strategy = {
 }
 
 
+exclude_ops = ['copyInp', 'CastDtype']
+
+
 def prepare():
     parser = argparse.ArgumentParser(
         description='Generate parrots source files')
@@ -356,6 +359,8 @@ def autogen_op_adaptor(op_configs, func_infos):
     layout = op_configs['Common']['layout'] if 'Common' in op_configs.keys() else []
     for func in func_infos:
         op_name = func.lstrip('diopi')
+        if op_name in exclude_ops:
+            continue
         if (func not in op_configs.keys() and 'Common' not in op_configs.keys()) or len(list(func_infos[func].keys())) == 1:
             call_args = [arg.split(' ')[-1] for arg in func_infos[func]['call_args']]
             adaptors_code.append(OT.adaptor_template.substitute(env=dict(op_name=op_name, attrs=func_infos[func]['call_args'],
@@ -392,8 +397,8 @@ for (int i = 0; i < ${num}; ++i) {
                         cast_ins.append(cast_impl)
                 outs = func_infos[func]['outs']
                 if tensor in outs:
-                    cast_impl = 'auto {tensor}Wrapper = DiopiTensorWrapper<{cast}>(ctx, {tensor}{memory_format});'.format(
-                                cast=cast_method, memory_format=format_str if format_str else '', tensor=tensor, contiguous=contiguous_str)
+                    cast_impl = 'DiopiTensorWrapper<{cast}> {tensor}Wrapper(ctx, {tensor}{memory_format}, {inp});'.format(
+                                cast=cast_method, memory_format=format_str if format_str else '', tensor=tensor, contiguous=contiguous_str, inp = 'true' if 'Inp' in op_name else 'false')
                     cast_outs.append(cast_impl)
             new_input.append('diopiConstTensorHandle_t ' + ','.join(new_ins) + ';') if len(new_ins) else ''
             call_args = []
