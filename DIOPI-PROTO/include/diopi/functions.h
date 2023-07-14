@@ -161,7 +161,7 @@ DIOPI_API diopiError_t diopiHardtanhBackward(diopiContextHandle_t ctx, diopiTens
  */
 DIOPI_API diopiError_t diopiHardswish(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 /**
- * @brief the in-place version of diopiHardtanh().
+ * @brief the in-place version of diopiHardswish().
  * @param input the input tensor and will be stored result tensor. type = [float16, float32, float64].
  * @sa Other parameters refer to diopiHardswish().
  */
