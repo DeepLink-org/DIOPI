@@ -44,8 +44,8 @@ include_directories(SYSTEM "${Python3_INCLUDE_DIRS}")
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/test/include")
 
 set(RUNTIME_SRC
-    litert.cpp
-    conform_test.cpp)
+    conform_test.cpp
+    litert.cpp)
 
 add_library(${DIOPIRT} SHARED ${RUNTIME_SRC})
 target_link_libraries(${DIOPIRT} ${SUPA_RUNTIME_LIB})

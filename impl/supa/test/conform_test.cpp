@@ -82,3 +82,29 @@ int32_t device_memcpy_d2d_async(diopiStreamHandle_t streamHandle, void* dst, con
 int32_t initLibrary() { return diopiSuccess; }
 
 int32_t finalizeLibrary() { return diopiSuccess; }
+
+
+#undef DIOPI_ATTR_WEAK
+#include "include/litert.hpp"
+diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diopiConstTensorHandle_t tensor, void* dst) {
+    if (tensor->device() == diopi_device) {
+        diopiTensorHandle_t dst_tensor;
+        diopiSize_t stride;
+        diopiDtype_t dtype;
+        diopiDevice_t dev;
+        diopiSize_t size;
+        diopiGetTensorDevice(tensor, &dev);
+        diopiGetTensorDtype(tensor, &dtype);
+        diopiGetTensorShape(tensor, &size);
+        diopiGetTensorStride(tensor, &stride);
+        diopiRequireTensor(ctx, &dst_tensor, &size, &stride, dtype, dev);
+        diopiCopyInp(ctx, tensor, dst_tensor);
+        diopiStreamHandle_t stream;
+        diopiGetStream(ctx, &stream);
+        device_memcpy_d2h_async(stream, dst, dst_tensor->data(), dst_tensor->nbytes());
+        device_synchronize_stream(stream);
+    } else {
+        std::memcpy(dst, tensor->data(), tensor->nbytes());
+    }
+    return diopiSuccess;
+}
