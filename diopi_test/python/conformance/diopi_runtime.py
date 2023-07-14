@@ -5,6 +5,7 @@ import numpy as np
 import atexit
 from export_runtime import diopiTensor, diopiSize, diopiScalar, diopiReduction, diopiRoundMode, diopiError, TensorP, Context, Device, Dtype, \
     diopi_tensor_copy_to_buffer, get_last_error_string, finalize_library, diopi_finalize
+from conformance.utils import glob_vars
 
 
 def device(dev: str) -> Device:
@@ -191,7 +192,7 @@ class Scalar(diopiScalar):
 
     def __init__(self, value, dtype=None):
         if dtype is None:
-            dtype = Dtype.int64 if isinstance(value, int) else Dtype.float64
+            dtype = Dtype.int64 if isinstance(value, int) else glob_vars.float_type
         diopiScalar.__init__(self, dtype, value)
 
 

@@ -57,6 +57,8 @@ def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dt
                 tensors[idx] = Tensor.from_numpy(ele)
                 if ele is not None and str(ele.dtype) not in test_tag:
                     test_tag.append(str(ele.dtype))
+            if filter_dtype_str_list and str(tensor.dtype) in filter_dtype_str_list:
+                raise DiopiException(f"Skipped: {tensor.dtype} Tensor skipped for test")
             function_paras['kwargs'][para] = tensors
             tensor_info.append(("TensorList: " + para, str(tensors[0].get_dtype()), str(tensors[0].shape())))
     return tensor_info
