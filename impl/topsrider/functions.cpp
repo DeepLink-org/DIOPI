@@ -20,7 +20,7 @@ extern "C" {
 
 class TopsOpInit {
 public:
-    explicit TopsOpInit() { impl::tops::topsLibInit(); }
+    TopsOpInit() { impl::tops::topsLibInit(); }
 
     ~TopsOpInit() { impl::tops::topsLibFinalize(); }
 };
