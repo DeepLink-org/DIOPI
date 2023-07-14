@@ -134,7 +134,7 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
 
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradWeightTensorTmp, gradWeightTensor, inputTensor.dtype());
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradInputTensorTmp, gradInputTensor, inputTensor.dtype());
-    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradBiasTensorTmp, gradBiasTensor), inputTensor.dtype();
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradBiasTensorTmp, gradBiasTensor, inputTensor.dtype());
 
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_NHWC);
     CnnlTensorDesc weightDesc(weightTensor, CNNL_LAYOUT_NHWC);
