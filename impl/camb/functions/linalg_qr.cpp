@@ -15,12 +15,12 @@ namespace impl {
 namespace camb {
 extern "C" {
 
-diopiError_t diopiLinalgQR(diopiContextHandle_t ctx, diopiConstTensorHandle_t A, const char *mode, diopiTensorHandle_t Q, diopiTensorHandle_t R) {
+diopiError_t diopiLinalgQR(diopiContextHandle_t ctx, diopiConstTensorHandle_t a, const char *mode, diopiTensorHandle_t q, diopiTensorHandle_t r) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor output1Tensor;
-    DiopiTensor output2Tensor(R);
-    DiopiTensor inputTensor(A);
+    DiopiTensor output2Tensor(r);
+    DiopiTensor inputTensor(a);
     DIOPI_CHECK(inputTensor.dim() >= 2 && inputTensor.dim() <= 8,
                 "The number of dimensions of each input tensor should be equal to or greater than 2, and no greater than 8.");
     std::vector<DiopiTensor *> tensor{&inputTensor};
@@ -35,7 +35,7 @@ diopiError_t diopiLinalgQR(diopiContextHandle_t ctx, diopiConstTensorHandle_t A,
         output1Shape[output1Shape.size() - 1] = std::min(m, n);
         output1Tensor = requiresTensor(ctx, output1Shape, inputTensor.dtype());
     } else {
-        output1Tensor = DiopiTensor(Q);
+        output1Tensor = DiopiTensor(q);
     }
 
     DiopiTensor output1TensorTmp = output1Tensor;
