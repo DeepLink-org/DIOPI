@@ -37,6 +37,18 @@ device_configs = {
             ]
         ),
     ),
+    
+    'batch_norm_no_contiguous': dict(
+        name=["batch_norm"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16), Skip(Dtype.float64)]
+                },
+            ]
+        ),
+    ),
 
     'nll_loss': dict(
         name=["nll_loss"],
@@ -95,6 +107,31 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+            ],
+        ),
+    ),
+
+    'conv_2d_no_contiguous': dict(
+        name=["conv2d"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16), Skip(Dtype.float64)],
+                },
+            ]
+        ),
+    ),
+
+    'relu_no_contiguous': dict(
+        name=["relu"],
+        is_inplace=True,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float64)],
                 },
             ],
         ),
