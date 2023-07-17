@@ -2234,8 +2234,8 @@ diopi_configs = {
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            split_size_or_sections=[[1, 1, 1, 1], [5,], [15200, 3800, 950, 247, 70], 4, 3,
-                                    0, [3, 5, 4], [0,]],
+            split_size_or_sections=[[1, 1, 1, 1], [5, ], [15200, 3800, 950, 247, 70], 4, 3,
+                                    0, [3, 5, 4], [0, ]],
             dim=[-1, 1, 0, 2, 1, -1, 0, 1]
         ),
         tensor_para=dict(
