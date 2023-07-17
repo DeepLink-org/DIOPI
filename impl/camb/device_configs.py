@@ -570,6 +570,14 @@ device_configs = {
         name = ['remainder'],
         atol = 1e-1,
         rtol = 1e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float16)],
+                },
+            ],
+        ),
     ),
 
     'remainder_other_scalar': dict(
