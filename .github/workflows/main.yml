@@ -27,6 +27,10 @@ env:
   BUILD_TEST3: build_mmcv_ext
   GEN_DATA: diopi_test/python/data
 
+concurrency:
+  group: ${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   Rsync:
     name: Rsync code
@@ -42,11 +46,6 @@ jobs:
           fi
           ls
           git submodule update --init --recursive
-      - name: ci interruptible and support pr ci
-        run: |
-          cd ${GITHUB_WORKSPACE}/DIOPI && bash scripts/ci_interruptible.sh
-        env:
-          GITHUB_TOKEN: "${{ secrets.CI_TOKEN }}"
       - name: Rsync to Server
         run: |
           ssh ${CLUSTER_1984} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"

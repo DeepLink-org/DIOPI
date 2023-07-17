@@ -130,6 +130,7 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
     stride_.resize(shape->len);
     int64_t strideTemp = 1;
     numel_ = 1;
+    int64_t strideNumel = 1;
     for (int64_t i = shape->len - 1; i >= 0; --i) {
         shape_[i] = shape->data[i];
         numel_ *= shape->data[i];
@@ -139,9 +140,11 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
             stride_[i] = strideTemp;
             strideTemp *= shape->data[i];
         }
+        strideNumel += (shape_[i] - 1) * stride_[i];
     }
-
-    const int64_t nbytes = numel_ * itemsize(dtype);
+    strideNumel *= itemsize(dtype);
+    const int64_t nbytes = strideNumel;
+    // const int64_t nbytes = numel_ * itemsize(dtype);
     if (device_ == diopi_host) {
         storage_ = std::make_shared<Storage>(hostMalloc, hostFree, nbytes);
     } else {
