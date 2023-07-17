@@ -387,7 +387,7 @@ def autogen_op_adaptor(op_configs, func_infos):
                         new_ins_vector_template = CodeTemplate("""\
 std::vector<diopiConstTensorHandle_t> ${newinput}(${num}, diopiConstTensorHandle_t());
 for (int i = 0; i < ${num}; ++i) {
-    castImpl<diopiConstTensorHandle_t${cast}>(ctx, ${input}[i], &${newinput}[i]${memory_format});
+    requireTensor<diopiConstTensorHandle_t${cast}>(ctx, ${input}[i], &${newinput}[i]${memory_format}, true);
 }
 """)
                         new_input.append(new_ins_vector_template.substitute(env=dict(input=tensor, newinput='new' + tensor.capitalize(), num=func_infos[func]['ins_vector'][tensor],
@@ -395,7 +395,7 @@ for (int i = 0; i < ${num}; ++i) {
                     else:
                         new_in = 'new' + tensor.capitalize()
                         new_ins.append(new_in)
-                        cast_impl = 'castImpl<diopiConstTensorHandle_t{cast}>(ctx, {tensor}, &{new_tensor}{memory_format});'.format(
+                        cast_impl = 'requireTensor<diopiConstTensorHandle_t{cast}>(ctx, {tensor}, &{new_tensor}{memory_format}, true);'.format(
                                     cast=', ' + cast_method if cast_method else '', memory_format=format_str if format_str else '', tensor=tensor, new_tensor=new_in, contiguous=contiguous_str)
                         cast_ins.append(cast_impl)
                 outs = func_infos[func]['outs']
@@ -403,7 +403,7 @@ for (int i = 0; i < ${num}; ++i) {
                     cast_impl = 'DiopiTensorWrapper<{cast}> {tensor}Wrapper(ctx, {tensor}{memory_format}, {inp});'.format(
                                 cast=cast_method, memory_format=format_str if format_str else '', tensor=tensor, contiguous=contiguous_str, inp='true' if ('Inp' in op_name or tensor in inp_params) else 'false')
                     cast_outs.append(cast_impl)
-            new_input.append('diopiConstTensorHandle_t ' + ','.join(new_ins) + ';') if len(new_ins) else ''
+            new_input.append('diopiConstTensorHandle_t ' + ', '.join(new_ins) + ';') if len(new_ins) else ''
             call_args = []
             for arg in func_infos[func]['call_args']:
                 name = arg.split(' ')[-1]

@@ -211,68 +211,8 @@ diopiMemoryFormat_t getTargetMemoryFormat(int ndims, std::vector<diopiMemoryForm
 }
 
 template<class T, class strategy = NoCast>
-inline int castImpl(diopiContextHandle_t ctx, T src, T* dst,
-                    std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats) {
-    if (src == nullptr || src == 0) {
-        *dst = src;
-        return 0;
-    }
-    diopiDtype_t srcDtype, dstDtype;
-    diopiGetTensorDtype(src, &srcDtype);
-    diopiSize_t size, stride, dstStride;
-    diopiGetTensorShape(src, &size);
-    diopiGetTensorStride(src, &stride);
-    diopiDevice_t device;
-    diopiGetTensorDevice(src, &device);
-
-    bool convertDtype = strategy::getDstDtype(srcDtype, dstDtype);
-    bool convertFormat = true;
-    if (supportMemoryFormat.size() == 0) {
-        convertFormat = false;
-    } else {
-        for (int i = 0; i < supportMemoryFormat.size(); ++i) {
-            if (isContiguous(size, stride, supportMemoryFormat[i])) {
-                convertFormat = false;
-                break;
-            }
-        }
-    }
-    int convertType = 0;
-    std::vector<int64_t> strides_v;
-    if (!convertFormat) {
-        dstStride = stride;
-    } else {
-        diopiMemoryFormat_t memoryFormat = getTargetMemoryFormat(size.len, supportMemoryFormat);
-        strides_v = calcStrides(size.len, size, memoryFormat);
-        dstStride.len = strides_v.size();
-        dstStride.data = strides_v.data();
-    }
-    if (convertDtype) {
-        diopiTensorHandle_t tmp = nullptr;
-        diopiRequireTensor(ctx, &tmp, &size, &dstStride, dstDtype, device);
-        diopiCastDtype(ctx, tmp, src);
-        *dst = tmp;
-        convertType = 1;
-    } else {
-        *dst = src;
-    }
-    convertType = convertType << 1;
-    if (convertFormat) {
-        diopiTensorHandle_t tmp = nullptr;
-        diopiRequireTensor(ctx, &tmp, &size, &dstStride, dstDtype, device);
-        diopiCopyInp(ctx, *dst, tmp);
-        *dst = tmp;
-        convertType = convertType + 1;
-    }
-    if (convertType == 0) {
-        *dst = src;
-    }
-    return convertType;
-}
-
-template<class T, class strategy = NoCast>
-inline int requireImpl(diopiContextHandle_t ctx, T src, T* dst,
-                    std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats) {
+int requireTensor(diopiContextHandle_t ctx, T src, T* dst,
+                    std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats, bool copy = true) {
     if (!src) {
         *dst = src;
         return 0;
@@ -303,7 +243,12 @@ inline int requireImpl(diopiContextHandle_t ctx, T src, T* dst,
     }
     int convertType = (convertFormat ? 1 : 0) | ((convertDtype ? 1 : 0) << 1);
     if (convertType) {
-        diopiRequireTensor(ctx, dst, &size, &dstStride, dstDtype, device);
+        diopiTensorHandle_t tmp = nullptr;
+        diopiRequireTensor(ctx, &tmp, &size, &dstStride, dstDtype, device);
+        if (copy) {
+            diopiCopyInp(ctx, src, tmp);
+        }
+        *dst = tmp;
     } else {
         *dst = src;
     }
@@ -336,11 +281,7 @@ public:
                        std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats, bool inp = false)
                        : ctx_(ctx)
                        , payload_(payload) {
-        if (inp) {
-            convertType_ = castImpl<diopiTensorHandle_t, strategy>(ctx, payload_, &tmp_, supportMemoryFormat);
-        } else {
-            convertType_ = requireImpl<diopiTensorHandle_t, strategy>(ctx, payload_, &tmp_, supportMemoryFormat);
-        }
+            convertType_ = requireTensor<diopiTensorHandle_t, strategy>(ctx, payload_, &tmp_, supportMemoryFormat, inp);
     }
 
     ~DiopiTensorWrapper() {
