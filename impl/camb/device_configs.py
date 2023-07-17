@@ -828,4 +828,9 @@ device_configs = {
         ),
     ),
 
+    'linalgqr': dict(
+        name=['linalgqr'],
+        atol=1e-4,
+    ),
+
 }
