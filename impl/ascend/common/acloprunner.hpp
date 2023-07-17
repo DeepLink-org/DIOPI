@@ -56,38 +56,7 @@ namespace ascend {
         std::abort();                                \
     }
 
-inline aclDataType getAclDataType(diopiConstTensorHandle_t th) {
-    diopiDtype_t type;
-    diopiGetTensorDtype(th, &type);
-    switch (type) {
-        case diopi_dtype_float16:
-            return ACL_FLOAT16;
-        case diopi_dtype_float32:
-            return ACL_FLOAT;
-        case diopi_dtype_float64:
-            return ACL_DOUBLE;
-        case diopi_dtype_int8:
-            return ACL_INT8;
-        case diopi_dtype_uint8:
-            return ACL_UINT8;
-        case diopi_dtype_int16:
-            return ACL_INT16;
-        case diopi_dtype_uint16:
-            return ACL_UINT16;
-        case diopi_dtype_int32:
-            return ACL_INT32;
-        case diopi_dtype_uint32:
-            return ACL_UINT32;
-        case diopi_dtype_int64:
-            return ACL_INT64;
-        case diopi_dtype_uint64:
-            return ACL_UINT64;
-        case diopi_dtype_bool:
-            return ACL_BOOL;
-    }
-    check_args(false, "acl not support dioptDtype_t:%d", type);
-    return ACL_DT_UNDEFINED;
-}
+aclDataType getAclDataType(diopiConstTensorHandle_t th);
 
 inline std::string dumpTensor(diopiConstTensorHandle_t th) {
     std::stringstream stream;
@@ -399,6 +368,7 @@ public:
                                           CompileType,
                                           nullptr,
                                           stream));
+        CALL_ACLRT(aclrtSynchronizeStream(stream));
         // check_args(errorcode == ACL_SUCCESS, dumpRunnerInfo().c_str());
         //   Get environment variables once when run is called for the first time
         static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
@@ -410,6 +380,9 @@ public:
     }
 };
 
+diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out);
+diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out, diopiDtype_t dtype);
+diopiError_t makeTensorFromSize(diopiContextHandle_t ctx, const diopiSize_t* size, diopiTensorHandle_t* out);
 }  // namespace ascend
 }  // namespace impl
 

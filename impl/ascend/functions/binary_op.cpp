@@ -46,8 +46,11 @@ extern "C" DIOPI_API diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTen
 
 extern "C" DIOPI_API diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
                                                  const diopiScalar_t* alpha) {
-    const float value = (alpha != nullptr) ? getValue<float>(alpha) : 1.0;
-    AclOpRunner<1, 1>("Adds").addInput(input).setAttr<float>("value", value * getValue<float>(other)).addOutput(out).run(ctx);
+    diopiTensorHandle_t trOther = nullptr;
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(out, &dtype);
+    makeTensorFromScalar(ctx, other, &trOther, dtype);
+    diopiAdd(ctx, out, input, trOther, alpha);
     return diopiSuccess;
 }
 
