@@ -196,7 +196,7 @@ class Scalar(diopiScalar):
     def __init__(self, value, dtype=None):
         from conformance.utils import glob_vars
         if dtype is None:
-            dtype = Dtype.int64 if isinstance(value, int) else glob_vars.float_type
+            dtype = glob_vars.int_type if isinstance(value, int) else glob_vars.float_type
         diopiScalar.__init__(self, dtype, value)
 
 
