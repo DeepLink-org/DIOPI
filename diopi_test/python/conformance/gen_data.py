@@ -464,11 +464,12 @@ class CustomizedTest(object):
                                         centered=centered)
         return param, param_grad, square_avg, grad_avg, momentum_buffer
 
-    def index_put(input, values, indices1, indices2=None, accumulate=False):
+    def index_put(input, values, indices1, indices2=None, indices3=None, accumulate=False):
+        indices = [indices1]
         if indices2 is not None:
-            indices = [indices1, indices2]
-        else:
-            indices = [indices1]
+            indices.append(indices2)
+        if indices3 is not None:
+            indices.append(indices3)
         return torch.index_put(input, indices, values, accumulate)
 
     def im2col(input, kernel_size, dilation=1, padding=0, stride=1):
