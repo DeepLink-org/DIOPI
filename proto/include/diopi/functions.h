@@ -2237,7 +2237,7 @@ DIOPI_API diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle
 /**
  * @brief Distribution and random numbers.
  * @param[in] ctx Context environment.
- * @param inout the input and output tensor, type = [float32, float64, float16, int64, int32, int16, int8]
+ * @param[in,out] inout the input and output tensor, type = [float32, float64, float16, int64, int32, int16, int8]
  * @param from the lower bound of the random function. type = [int64].
  * @param to a pointer, the upper bound of the random function, it can be none.
  * @param idx idx
@@ -2265,7 +2265,7 @@ DIOPI_API diopiError_t diopiBernoulliInp(diopiContextHandle_t ctx, diopiTensorHa
  * @param[in] ctx Context environment.
  * @param p the double value for a pointer, the upper bound of the random function, it can be none.
  * @param idx the int64 value for generating random values.
- * @param out The output tensor to store the generated random binary values. type = [float32, float64, float16]
+ * @param[out] out The output tensor to store the generated random binary values. type = [float32, float64, float16]
  */
 DIOPI_API diopiError_t diopiBernoulliScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, double p, int64_t idx);
 
@@ -2296,7 +2296,7 @@ DIOPI_API diopiError_t diopiNormalTensor(diopiContextHandle_t ctx, diopiTensorHa
 /**
  * @brief Returns a tensor of random numbers drawn from separate normal distributions whose mean and standard deviation are given.
  * @param[in] ctx Context environment.
- * @param inout the input and output tensor, type = [float16，float32, float64]
+ * @param[in,out] inout the input and output tensor, type = [float16，float32, float64]
  * @param mean  the double mean value for the mean for all distributions.
  * @param std   the double std value for the std for all distributions.
  */
@@ -2363,7 +2363,6 @@ DIOPI_API diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTenso
  * @param grad_output Gradient of the output tensor. type = [float16, float32, float64]
  * @param out_size an array,size of the output tensor.
  * @param in_size an array,size of the input tensor.
- * @return Error code indicating the status of the operation.
  */
 DIOPI_API diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                                     diopiSize_t out_size, diopiSize_t in_size);
