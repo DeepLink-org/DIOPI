@@ -26,7 +26,7 @@ void* device_malloc(uint64_t bytes) {
 
 void device_free(void* ptr) {
     if (ptr) {
-        CALL_ACLRT(aclrtFree(ptr)); 
+        CALL_ACLRT(aclrtFree(ptr));
     }
 }
 
