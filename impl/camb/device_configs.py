@@ -483,7 +483,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(Dtype.float16)],
                 },
             ]
         ),
