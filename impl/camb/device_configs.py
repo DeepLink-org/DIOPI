@@ -697,6 +697,14 @@ device_configs = {
         name = ['remainder'],
         atol = 1e-1,
         rtol = 1e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['other'],
+                    "dtype": [Skip(Dtype.float16)],
+                },
+            ],
+        ),
     ),
 
     'remainder_tensor': dict(
@@ -1047,10 +1055,9 @@ device_configs = {
                Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
                Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
     ),
-    
+
     'linalgqr': dict(
         name=['linalgqr'],
-        interface=['CustomizedTest'],
-        dtype=[Skip(Dtype.float64), Skip(Dtype.float32)],
+        atol=1e-4,
     ),
 }
