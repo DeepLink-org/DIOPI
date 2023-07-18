@@ -23,6 +23,7 @@
 extern "C" {
 DIOPI_API void* br_device_malloc(uint64_t bytes);
 DIOPI_API void br_device_free(void* ptr);
+DIOPI_API void* get_real_br_ptr(void* ptr);
 }
 
 void* device_malloc(uint64_t bytes) {
@@ -63,13 +64,13 @@ int32_t device_synchronize_stream(diopiStreamHandle_t streamHandle) {
 
 int32_t device_memcpy_h2d_async(diopiStreamHandle_t streamHandle, void* dst, const void* src, uint64_t bytes) {
     suStream_t stream = (suStream_t)streamHandle;
-    SUPA_CALL(suMemcpyAsync(dst, const_cast<void*>(src), bytes, stream, suMemcpyHostToDevice));
+    SUPA_CALL(suMemcpyAsync(get_real_br_ptr(dst), const_cast<void*>(src), bytes, stream, suMemcpyHostToDevice));
     return diopiSuccess;
 }
 
 int32_t device_memcpy_d2h_async(diopiStreamHandle_t streamHandle, void* dst, const void* src, uint64_t bytes) {
     suStream_t stream = (suStream_t)streamHandle;
-    SUPA_CALL(suMemcpyAsync(dst, const_cast<void*>(src), bytes, stream, suMemcpyDeviceToHost));
+    SUPA_CALL(suMemcpyAsync(dst, get_real_br_ptr(const_cast<void*>(src)), bytes, stream, suMemcpyDeviceToHost));
     return diopiSuccess;
 }
 
