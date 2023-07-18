@@ -6,7 +6,6 @@
 
 #ifndef IMPL_TORCH_HELPER_HPP_
 #define IMPL_TORCH_HELPER_HPP_
-
 #include <ATen/ATen.h>
 #include <c10/cuda/CUDAStream.h>
 #include <cuda_runtime.h>
@@ -187,7 +186,8 @@ inline at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArr
                                c10::InefficientStdFunctionContext::makeDataPtr(data, deleter, device),
                                allocator,
                                false);
-    return at::empty({0}, options).set_(storage, 0, sizes, strides);
+    at::TensorOptions new_options = options.device(device);
+    return at::empty({0}, new_options).set_(storage, 0, sizes, strides);
 }
 
 template <typename T>
@@ -200,7 +200,6 @@ inline at::Tensor buildATen(T tensor) {
     diopiDevice_t device;
     diopiGetTensorDevice(tensor, &device);
     c10::DeviceType atDevice = getATenDevice(device);
-
     void* data = nullptr;
     diopiGetTensorData(const_cast<diopiTensorHandle_t>(tensor), &data);
 
