@@ -40,7 +40,6 @@ __all__ = [
     'to_numpy_dtype',
     'ConformanceTest',
     'diopiTensor',
-    'cur_test_func',
     'float_types',
     'int_types',
 ]
