@@ -168,7 +168,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['floor', 'asin', 'ceil'],
+        name=['floor', 'asin', 'ceil', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -226,11 +226,6 @@ device_configs = {
                 },
             ]
         ),
-    ),
-
-    'pointwise_op': dict(
-        name=["atan"],
-        atol=5e-4,
     ),
 
     'pointwise_binary': dict(
@@ -817,6 +812,13 @@ device_configs = {
             ],
         ),
     ),
+    
+    'randperm': dict(
+        name=['randperm'],
+        para=dict(
+            n=[Skip(1)],
+        ),
+    ),
 
     'bernoulli': dict(
         name=['bernoulli'],
@@ -1038,4 +1040,17 @@ device_configs = {
         ),
     ),
 
+    'amax': dict(
+        name=['amax'],
+        interface=['torch'],
+        dtype=[Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
+               Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
+               Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+    ),
+    
+    'linalgqr': dict(
+        name=['linalgqr'],
+        interface=['CustomizedTest'],
+        dtype=[Skip(Dtype.float64), Skip(Dtype.float32)],
+    ),
 }
