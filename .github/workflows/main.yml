@@ -27,6 +27,10 @@ env:
   BUILD_TEST3: build_mmcv_ext
   GEN_DATA: diopi_test/python/data
 
+concurrency:
+  group: ${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   Rsync:
     name: Rsync code
@@ -42,11 +46,6 @@ jobs:
           fi
           ls
           git submodule update --init --recursive
-      - name: ci interruptible and support pr ci
-        run: |
-          cd ${GITHUB_WORKSPACE}/DIOPI && bash scripts/ci_interruptible.sh
-        env:
-          GITHUB_TOKEN: "${{ secrets.CI_TOKEN }}"
       - name: Rsync to Server
         run: |
           ssh ${CLUSTER_1988} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
@@ -193,8 +192,13 @@ jobs:
           export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST2}
           rm -rf ${GEN_DATA} && ln -s ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${GEN_DATA}
+<<<<<<< HEAD
           export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST2}/impl/lib
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=20 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode run_test'
+=======
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST2}/impl/lib
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=20 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode run_test'
+>>>>>>> origin/main
           """
 
   Rt-Test-Nvidia:

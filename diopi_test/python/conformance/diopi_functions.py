@@ -3768,3 +3768,48 @@ def isnan(input) -> Tensor:
     ret = func(input.context(), out, input)
     check_returncode(ret)
     return out
+
+
+def amax(input, dim, keepdim) -> Tensor:
+    call = "diopiAmax"
+    func = check_function(call)
+    assert isinstance(dim, (int, list, tuple)) or dim is None,\
+        "dim should be int or list or tuple or None"
+    dim, out = reduce_op_process(input, dim, keepdim)
+    dim1 = Sizes(list(dim))
+    ret = func(input.context(), out, input, dim1, keepdim)
+    check_returncode(ret)
+    return out
+
+
+def linalgqr(input, mode):
+    call = "diopiLinalgQR"
+    func = check_function(call)
+    sizeI = list(input.size().data)
+    sizeq = []
+    sizer = []
+    if mode == "reduced":
+        if sizeI[-1] <= sizeI[-2]:
+            sizeq = sizeI[:]
+            sizer = sizeI[:-2] + [sizeI[-1], sizeI[-1]]
+        else:
+            sizer = sizeI[:]
+            sizeq = sizeI[:-2] + [sizeI[-2], sizeI[-2]]
+    elif mode == "complete":
+        sizeq = sizeI[:-1]
+        sizeq.append(sizeI[-2])
+        sizer = sizeI[:]
+    elif mode == 'r':
+        sizeq = [0]
+        if sizeI[-1] <= sizeI[-2]:
+            sizer = sizeI[:-2] + [sizeI[-1], sizeI[-1]]
+        else:
+            sizer = sizeI[:]
+    else:
+        raise ValueError('mode do not support.')
+    q = Tensor(sizeq, input.get_dtype())
+    r = Tensor(sizer, input.get_dtype())
+    ret = func(input.context(), input, mode, q, r)
+    out = [q, r]
+    check_returncode(ret)
+    return out
