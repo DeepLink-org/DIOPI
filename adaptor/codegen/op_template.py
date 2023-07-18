@@ -261,7 +261,7 @@ int castImpl(diopiContextHandle_t ctx, T src, T* dst,
         convertFormat = false;
     }
     for (int i = 0; i < supportMemoryFormat.size(); ++i) {
-       if (isContiguous(size, stride, supportMemoryFormat[i])) {
+        if (isContiguous(size, stride, supportMemoryFormat[i])) {
             convertFormat = false;
             break;
         }
