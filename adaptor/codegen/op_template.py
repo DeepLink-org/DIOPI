@@ -211,15 +211,15 @@ diopiMemoryFormat_t getTargetMemoryFormat(int ndims, std::vector<diopiMemoryForm
 }
 
 template<class T, class strategy = NoCast>
-inline int castImpl(diopiContextHandle_t ctx, T src, T* dst,
-                    std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats) {
-    if (src == nullptr || src == 0) {
+int castImpl(diopiContextHandle_t ctx, T src, T* dst,
+                    std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats, bool copy = true) {
+    if (!src) {
         *dst = src;
         return 0;
     }
     diopiDtype_t srcDtype, dstDtype;
     diopiGetTensorDtype(src, &srcDtype);
-    diopiSize_t size, stride, dstStride;
+    diopiSize_t size, stride;
     diopiGetTensorShape(src, &size);
     diopiGetTensorStride(src, &stride);
     diopiDevice_t device;
@@ -227,44 +227,29 @@ inline int castImpl(diopiContextHandle_t ctx, T src, T* dst,
 
     bool convertDtype = strategy::getDstDtype(srcDtype, dstDtype);
     bool convertFormat = true;
-    if (supportMemoryFormat.size() == 0) {
-        convertFormat = false;
-    } else {
-        for (int i = 0; i < supportMemoryFormat.size(); ++i) {
-            if (isContiguous(size, stride, supportMemoryFormat[i])) {
-                convertFormat = false;
-                break;
-            }
+    for (int i = 0; i < supportMemoryFormat.size(); ++i) {
+        if (isContiguous(size, stride, supportMemoryFormat[i])) {
+            convertFormat = false;
+            break;
         }
     }
-    int convertType = 0;
+    diopiSize_t dstStride = stride;
     std::vector<int64_t> strides_v;
-    if (!convertFormat) {
-        dstStride = stride;
-    } else {
+    if (convertFormat) {
         diopiMemoryFormat_t memoryFormat = getTargetMemoryFormat(size.len, supportMemoryFormat);
         strides_v = calcStrides(size.len, size, memoryFormat);
         dstStride.len = strides_v.size();
         dstStride.data = strides_v.data();
     }
-    if (convertDtype) {
+    int convertType = (convertFormat ? 1 : 0) | ((convertDtype ? 1 : 0) << 1);
+    if (convertType) {
         diopiTensorHandle_t tmp = nullptr;
         diopiRequireTensor(ctx, &tmp, &size, &dstStride, dstDtype, device);
-        diopiCastDtype(ctx, tmp, src);
+        if (copy) {
+            diopiCopyInp(ctx, src, tmp);
+        }
         *dst = tmp;
-        convertType = 1;
     } else {
-        *dst = src;
-    }
-    convertType = convertType << 1;
-    if (convertFormat) {
-        diopiTensorHandle_t tmp = nullptr;
-        diopiRequireTensor(ctx, &tmp, &size, &dstStride, dstDtype, device);
-        diopiCopyInp(ctx, *dst, tmp);
-        *dst = tmp;
-        convertType = convertType + 1;
-    }
-    if (convertType == 0) {
         *dst = src;
     }
     return convertType;
@@ -278,6 +263,13 @@ void dispatch_diopi(diopiContextHandle_t ctx, Args&&... args) {
 
 template<class strategy = NoCast>
 class DiopiTensorWrapper {
+
+    // forbid copy/move constructor/assignment
+    DiopiTensorWrapper(const DiopiTensorWrapper&) = delete;
+    DiopiTensorWrapper& operator=(const DiopiTensorWrapper&) = delete;
+    DiopiTensorWrapper(DiopiTensorWrapper&&) = delete;
+    DiopiTensorWrapper& operator=(DiopiTensorWrapper&&) = delete;
+
 private:
     diopiContextHandle_t ctx_;
     diopiTensorHandle_t payload_;
@@ -286,22 +278,22 @@ private:
 
 public:
     DiopiTensorWrapper(diopiContextHandle_t ctx, diopiTensorHandle_t payload,
-                       std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats)
+                       std::vector<diopiMemoryFormat_t> supportMemoryFormat = defaultFormats, bool inp = false)
                        : ctx_(ctx)
                        , payload_(payload) {
-        convertType_ = castImpl<diopiTensorHandle_t, strategy>(ctx, payload_, &tmp_, supportMemoryFormat);
+            convertType_ = castImpl<diopiTensorHandle_t, strategy>(ctx, payload_, &tmp_, supportMemoryFormat, inp);
     }
 
     ~DiopiTensorWrapper() {
-        if (convertType_ == 0) {
+        if (0 == convertType_) {
             if (tmp_) {
                 payload_ = tmp_;
             }
             return;
         }
-        if (convertType_ == 1){
+        if (1 == convertType_){
             diopiCopyInp(ctx_, tmp_, payload_);
-        } else if (convertType_ == 2) {
+        } else if (2 == convertType_) {
             diopiCastDtype(ctx_, payload_, tmp_);
         } else {
             diopiDtype_t dtype;
