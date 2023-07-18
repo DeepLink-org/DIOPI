@@ -855,7 +855,7 @@ DIOPI_API diopiError_t diopiBmm(diopiContextHandle_t ctx, diopiTensorHandle_t ou
  */
 DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t batch1,
                                     diopiConstTensorHandle_t batch2, double beta, double alpha);
-                                    /**
+/**
  * @brief Performs a batch matrix-matrix product of matrices in batch1 and batch2. input is added to the final result.
  * @param[in] ctx Context environment.
  * @param[out] input the input tensor and will be stored result tensor. type = [float16, float32, float64].
@@ -1971,7 +1971,8 @@ DIOPI_API diopiError_t diopiIndexFillScalar(diopiContextHandle_t ctx, diopiTenso
  * @param input the input tensor. type=[float16, float32, float64]
  * @param dim int64 value dim for along which to index.
  * @param index indices of self tensor to fill in.type=[int64]
- * @param value The value tensor containing the values to fill the elements of the input, same shape and type as the input tensor. type=[float16, float32, float64]
+ * @param value The value tensor containing the values to fill the elements of the input, same shape and type as the input tensor. type=[float16, float32,
+ * float64]
  * @param[out] out The output tensor. The same shape and type as the input tensor. type=[float16, float32, float64]
  */
 DIOPI_API diopiError_t diopiIndexFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim,
@@ -2116,7 +2117,8 @@ DIOPI_API diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t o
  * @param input_lengths Tensor containing the lengths of input sequences. type=[int64]
  * @param target_lengths Tensor containing the lengths of target sequences. type=[int64]
  * @param blank Index of the blank label. type=[int64]
- * @param reduction Specifies the reduction to apply to the output: 'none' | 'mean' | 'sum'. 'none': no reduction will be applied, 'mean': the output losses will be divided by the target lengths and then the mean over the batch is taken. Default: 'mean'
+ * @param reduction Specifies the reduction to apply to the output: 'none' | 'mean' | 'sum'. 'none': no reduction will be applied, 'mean': the output losses
+ * will be divided by the target lengths and then the mean over the batch is taken. Default: 'mean'
  * @param zero_infinity Boolean flag indicating whether to zero out infinite losses. type=[bool]
  * @param[out] neg_log_likelihood Tensor containing the negative log-likelihood values. type=[float32, float64]
  * @param[out] log_alpha Tensor containing the log alpha values. type=[float32, float64]
@@ -2133,7 +2135,8 @@ DIOPI_API diopiError_t diopiCTCLoss(diopiContextHandle_t ctx, diopiTensorHandle_
  * @param input_lengths Tensor containing the lengths of input sequences. type=[int64]
  * @param target_lengths Tensor containing the lengths of target sequences. type=[int64]
  * @param blank Index of the blank label. type=[int64]
- * @param reduction Specifies the reduction to apply to the output: 'none' | 'mean' | 'sum'. 'none': no reduction will be applied, 'mean': the output losses will be divided by the target lengths and then the mean over the batch is taken. Default: 'mean'
+ * @param reduction Specifies the reduction to apply to the output: 'none' | 'mean' | 'sum'. 'none': no reduction will be applied, 'mean': the output losses
+ * will be divided by the target lengths and then the mean over the batch is taken. Default: 'mean'
  * @param zero_infinity Boolean flag indicating whether to zero out infinite losses. type=[bool]
  * @param[out] neg_log_likelihood Tensor containing the negative log-likelihood values. type=[float32, float64]
  * @param[out] log_alpha Tensor containing the log alpha values. type=[float32, float64]
