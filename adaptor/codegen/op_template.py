@@ -13,6 +13,7 @@ class OpTemplate(object):
 #define DIOPI_ADAPTOR_HPP_
 #include <cassert>
 #include <iostream>
+#include <algorithm>
 #include <vector>
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
@@ -170,44 +171,71 @@ static std::vector<diopiMemoryFormat_t> defaultFormats{};
 
 ${cast_strategy}
 
-diopiMemoryFormat_t getTargetMemoryFormat(int ndims, std::vector<diopiMemoryFormat_t> supportMemoryFormats) {
-    switch (ndims) {
+// diopiMemoryFormat_t getTargetMemoryFormat(int ndims, std::vector<diopiMemoryFormat_t> supportMemoryFormats) {
+//     switch (ndims) {
+//         case 1:
+//         case 2:
+//             for (auto i : supportMemoryFormats) {
+//                 if (i == diopiMemoryFormat_t::Contiguous) {
+//                     return i;
+//                 }
+//             };
+//             break;
+//         case 3: {
+//             for (auto i : supportMemoryFormats) {
+//                 if (i == diopiMemoryFormat_t::ChannelsLast1d || i == diopiMemoryFormat_t::Contiguous) {
+//                     return i;
+//                 }
+//             }
+//             break;
+//         }
+//         case 4: {
+//             for (auto i : supportMemoryFormats){
+//                 if (i == diopiMemoryFormat_t::ChannelsLast || i == diopiMemoryFormat_t::Contiguous) {
+//                     return i;
+//                 }
+//             }
+//             break;
+//         }
+//         case 5: {
+//             for (auto i : supportMemoryFormats){
+//                 if (i == diopiMemoryFormat_t::ChannelsLast3d || i == diopiMemoryFormat_t::Contiguous) {
+//                     return i;
+//                 }
+//             }
+//             break;
+//         }
+//         default: {
+//             return diopiMemoryFormat_t::Contiguous;
+//         }
+//     }
+// }
+inline std::vector<diopiMemoryFormat_t> matchMemoryFormatBySize(size_t sizeLen){
+    std::vector<diopiMemoryFormat_t> matchedMemoryFormat;
+    switch(sizeLen){
         case 1:
         case 2:
-            for (auto i : supportMemoryFormats) {
-                if (i == diopiMemoryFormat_t::Contiguous) {
-                    return i;
-                }
-            };
-            break;
-        case 3: {
-            for (auto i : supportMemoryFormats) {
-                if (i == diopiMemoryFormat_t::ChannelsLast1d || i == diopiMemoryFormat_t::Contiguous) {
-                    return i;
-                }
-            }
-            break;
-        }
-        case 4: {
-            for (auto i : supportMemoryFormats){
-                if (i == diopiMemoryFormat_t::ChannelsLast || i == diopiMemoryFormat_t::Contiguous) {
-                    return i;
-                }
-            }
-            break;
-        }
-        case 5: {
-            for (auto i : supportMemoryFormats){
-                if (i == diopiMemoryFormat_t::ChannelsLast3d || i == diopiMemoryFormat_t::Contiguous) {
-                    return i;
-                }
-            }
-            break;
-        }
-        default: {
-            return diopiMemoryFormat_t::Contiguous;
+            return {diopiMemoryFormat_t::Contiguous};
+        case 3:
+            return {diopiMemoryFormat_t::Contiguous, diopiMemoryFormat_t::ChannelsLast1d};
+        case 4:
+            return {diopiMemoryFormat_t::Contiguous, diopiMemoryFormat_t::ChannelsLast};
+        case 5:
+            return {diopiMemoryFormat_t::Contiguous, diopiMemoryFormat_t::ChannelsLast3d};
+        default:
+            return {diopiMemoryFormat_t::Contiguous};
+    }
+}
+
+inline std::vector<diopiMemoryFormat_t> setIntersection(std::vector<diopiMemoryFormat_t> matchedMemoryFormat, std::vector<diopiMemoryFormat_t> supportMemoryFormat){
+    // A small number of elements are suitable for this method getting intersection
+    std::vector<diopiMemoryFormat_t>  ret;
+    for(auto i : matchedMemoryFormat){
+        if(std::find(supportMemoryFormat.begin(), supportMemoryFormat.end(), i) != std::end(supportMemoryFormat)){
+            ret.push_back(i);
         }
     }
+    return ret;
 }
 
 template<class T, class strategy = NoCast>
@@ -227,6 +255,11 @@ int castImpl(diopiContextHandle_t ctx, T src, T* dst,
 
     bool convertDtype = strategy::getDstDtype(srcDtype, dstDtype);
     bool convertFormat = true;
+    std::vector<diopiMemoryFormat_t> matchedMemoryFormat = matchMemoryFormatBySize(size.len);
+    supportMemoryFormat = setIntersection(matchedMemoryFormat, supportMemoryFormat);
+    if(supportMemoryFormat.size() == 0){
+        convertFormat = false;
+    }
     for (int i = 0; i < supportMemoryFormat.size(); ++i) {
         if (isContiguous(size, stride, supportMemoryFormat[i])) {
             convertFormat = false;
@@ -236,7 +269,7 @@ int castImpl(diopiContextHandle_t ctx, T src, T* dst,
     diopiSize_t dstStride = stride;
     std::vector<int64_t> strides_v;
     if (convertFormat) {
-        diopiMemoryFormat_t memoryFormat = getTargetMemoryFormat(size.len, supportMemoryFormat);
+        diopiMemoryFormat_t memoryFormat = supportMemoryFormat[0];
         strides_v = calcStrides(size.len, size, memoryFormat);
         dstStride.len = strides_v.size();
         dstStride.data = strides_v.data();

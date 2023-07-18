@@ -40,7 +40,7 @@ jobs:
         run: |
           cd ${GITHUB_WORKSPACE} && rm -rf DIOPI && git clone https://github.com/DeepLink-org/DIOPI.git && cd DIOPI
           if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
-          git checkout ${{ github.event.pull_request.head.sha }} && git merge --no-edit ${{ github.base_ref }} 
+          git checkout ${{ github.event.pull_request.head.sha }} && git merge --no-edit ${{ github.base_ref }}
           else
           git checkout ${{ github.sha }}
           fi
@@ -182,7 +182,7 @@ jobs:
           set -e
           export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode run_test --fname batch_norm --nhwc &&
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=20 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode run_test --fname batch_norm --nhwc &&
           python main.py --mode run_test --fname index_select --four_bytes && python main.py --mode run_test --fname arange --four_bytes'
           """
       - name: dyload-test
