@@ -34,6 +34,7 @@ list(APPEND IMPL_TORCH "TORCH" "LIBTORCH" "ATEN" "PYTORCH" "torch" "libtorch" "a
 list(APPEND IMPL_CAMB_TORCH "CAMB_PYTORCH" "camb_pytorch")
 list(APPEND IMPL_CAMB "CAMB" "camb")
 list(APPEND IMPL_ASCEND "ASCEND" "ascend")
+list(APPEND IMPL_SUPA "SUPA" "supa")
 
 add_definitions(-std=c++14)
 
@@ -47,6 +48,8 @@ elseif (${IMPL_OPT} IN_LIST IMPL_CAMB)
     add_subdirectory(camb)
 elseif (${IMPL_OPT} IN_LIST IMPL_ASCEND)
         add_subdirectory(ascend)
+elseif (${IMPL_OPT} IN_LIST IMPL_SUPA)
+    add_subdirectory(supa)
 else()
     message(WARNING "No implementation module is compiled, cmake requires option -DIMPL_OPT=CUDA or TORCH")
 endif()
