@@ -55,10 +55,10 @@ diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
 
-    std::vector<DiopiTensor *> inOutTensorVecPtr{&inputTensor, &outputTensor};
-    std::set<diopiDtype_t> supportedDtype{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64, diopi_dtype_int8,
-                                          diopi_dtype_bool, diopi_dtype_int16, diopi_dtype_int32, diopi_dtype_int64};
-    DIOPI_CALL(autoCastTensorType(ctx, inOutTensorVecPtr, supportedDtype));
+    std::vector<DiopiTensor*> inOutTensorVecPtr{&inputTensor, &outputTensor};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64, diopi_dtype_int8,
+                                           diopi_dtype_bool, diopi_dtype_int16, diopi_dtype_int32, diopi_dtype_int64};
+    DIOPI_CALL(autoCastTensorType(ctx, inOutTensorVecPtr, supportedDtypes));
     inputTensor = *inOutTensorVecPtr[0];
     outputTensor = *inOutTensorVecPtr[1];
 
@@ -71,7 +71,8 @@ diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
-    DIOPI_CALLCNNL(cnnlTranspose_v2(handle, transposeDesc, inputDesc.get(), inputTensor.data(), outputDesc.get(), outputTensor.data(), workspace, workspaceSize));
+    DIOPI_CALLCNNL(cnnlTranspose_v2(handle, transposeDesc, inputDesc.get(), inputTensor.data(),
+                                    outputDesc.get(), outputTensor.data(), workspace, workspaceSize));
     return diopiSuccess;
 }
 
