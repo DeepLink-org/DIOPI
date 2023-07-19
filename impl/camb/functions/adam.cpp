@@ -27,10 +27,16 @@ diopiError_t bangAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopi
     DiopiTensor maxExpAvgSqTensor = DiopiTensor(maxExpAvgSq);
 
     DiopiTensor inputCasted = inputTensor;
-    DiopiTensor gradCasted = gradTensor;
     DiopiTensor expAvgCasted = expAvgTensor;
     DiopiTensor expAvgSqCasted = expAvgSqTensor;
     DiopiTensor maxExpAvgSqCasted = maxExpAvgSqTensor;
+
+    DiopiTensor gradCasted;
+    if (weightDecay != 0) {
+        DIOPI_CALL(clone(ctx, gradTensor, gradCasted));
+    } else {
+        gradCasted = gradTensor;
+    }
 
     std::vector<DiopiTensor*> tensors{&inputCasted, &gradCasted, &expAvgCasted, &expAvgSqCasted, &maxExpAvgSqCasted};
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32}));
