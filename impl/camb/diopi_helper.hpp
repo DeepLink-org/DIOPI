@@ -134,7 +134,11 @@ public:
         diopiGetTensorDevice(tensor_, &device);
         return device;
     }
-    diopiDtype_t dtype() const { return dtype_; }
+
+    diopiDtype_t dtype() const {
+        DIOPI_CHECK_NULLPTR_ABORT(tensor_);
+        return dtype_;
+    }
 
     const std::vector<int64_t>& shape() const {
         DIOPI_CHECK_NULLPTR_ABORT(tensor_);

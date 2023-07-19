@@ -485,8 +485,7 @@ class ConformanceTest(object):
                     np_inputs_orign = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
                     info = convert_input_tensors(function_paras, test_tag, nhwc_list, dtype_list, filter_dtype_str_list)
                     tensor_info = info if info else tensor_info
-                    global cur_test_func
-                    cur_test_func = func_call.split('(')[0].split('.')[1]
+                    glob_vars.cur_test_func = func_call.split('(')[0].split('.')[1]
                     output = eval(func_call)
                     np_inputs_after_forward = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
                     passed, not_passed_name = np_allclose(np_inputs_orign, np_inputs_after_forward)
