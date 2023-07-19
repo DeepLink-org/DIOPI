@@ -420,7 +420,7 @@ inline at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Te
                 TORCH_CHECK(false, "Invalid reduction type encountered in cross_entropy: ", reduction);
         }
     }
-    auto atGradInputFinal = at::_log_softmax_backward_data(atGradInput, atLogSoftmaxOutput, 1, atLogSoftmaxOutput);
+    auto atGradInputFinal = at::_log_softmax_backward_data(atGradInput, atLogSoftmaxOutput, 1, atLogSoftmaxOutput.scalar_type());
     return atGradInputFinal;
 }
 
@@ -483,7 +483,7 @@ inline at::Tensor crossEntropyLossLabelSmoothingBackward(at::Tensor& atInput, at
     atGradInput = atGradInput.clone();
     atGradInput += atGradInput2;
     atLogSoftmaxOutput = at::log_softmax(atInput, 1, atInput.scalar_type());
-    auto atGradInputFinal = at::_log_softmax_backward_data(atGradInput, atLogSoftmaxOutput, 1, atLogSoftmaxOutput);
+    auto atGradInputFinal = at::_log_softmax_backward_data(atGradInput, atLogSoftmaxOutput, 1, atLogSoftmaxOutput.scalar_type());
     return atGradInputFinal;
 }
 
