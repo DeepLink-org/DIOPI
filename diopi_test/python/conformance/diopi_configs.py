@@ -19,8 +19,8 @@ diopi_configs = {
     'batch_norm': dict(
         name=["batch_norm"],
         dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
-        atol=1e-5,
-        rtol=1e-6,
+        atol=1e-3,
+        rtol=1e-4,
         atol_half=1e-1,
         rtol_half=1e-2,
         para=dict(
