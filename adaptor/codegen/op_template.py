@@ -236,7 +236,6 @@ inline std::vector<diopiMemoryFormat_t> setIntersection(std::vector<diopiMemoryF
         if(std::find(supportMemoryFormat.begin(), supportMemoryFormat.end(), i) != std::end(supportMemoryFormat)){
             ret.push_back(i);
         }
-        return diopiMemoryFormat_t::Contiguous;
     }
     return ret;
 }
