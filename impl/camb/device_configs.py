@@ -489,18 +489,6 @@ device_configs = {
         ),
     ),
 
-    'conv_transpose2d': dict(
-        name=["conv_transpose2d"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ]
-        ),
-    ),
-
     'cdist': dict(
         name=['cdist'],
         para=dict(
