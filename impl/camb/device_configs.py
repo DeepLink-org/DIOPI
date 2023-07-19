@@ -386,8 +386,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64)],
-                    "shape": [Skip(())],
+                    "dtype": [Skip(Dtype.uint8)],
                 },
             ],
         ),
