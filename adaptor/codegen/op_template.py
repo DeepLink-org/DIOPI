@@ -208,6 +208,7 @@ diopiMemoryFormat_t getTargetMemoryFormat(int ndims, std::vector<diopiMemoryForm
         default: {
             return diopiMemoryFormat_t::Contiguous;
         }
+        return diopiMemoryFormat_t::Contiguous;
     }
 }
 
