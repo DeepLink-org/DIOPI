@@ -103,6 +103,7 @@ inline bool isLikeChannelsLast(diopiConstTensorHandle_t tensor, bool checkContig
         }
         return true;
     }
+    return true;
 }
 
 inline diopiMemoryFormat_t probableMemoryFormat(diopiConstTensorHandle_t tensor, bool exactMatch = false) {
