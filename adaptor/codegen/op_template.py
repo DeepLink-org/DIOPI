@@ -172,46 +172,46 @@ static std::vector<diopiMemoryFormat_t> defaultFormats{};
 
 ${cast_strategy}
 
- diopiMemoryFormat_t getTargetMemoryFormat(int ndims, std::vector<diopiMemoryFormat_t> supportMemoryFormats) {
-     switch (ndims) {
-         case 1:
-         case 2:
-             for (auto i : supportMemoryFormats) {
-                 if (i == diopiMemoryFormat_t::Contiguous) {
-                     return i;
-                 }
-             };
-             break;
-         case 3: {
-             for (auto i : supportMemoryFormats) {
-                 if (i == diopiMemoryFormat_t::ChannelsLast1d || i == diopiMemoryFormat_t::Contiguous) {
-                     return i;
-                 }
-             }
-             break;
-         }
-         case 4: {
-             for (auto i : supportMemoryFormats){
-                 if (i == diopiMemoryFormat_t::ChannelsLast || i == diopiMemoryFormat_t::Contiguous) {
-                     return i;
-                 }
-             }
-             break;
-         }
-         case 5: {
-             for (auto i : supportMemoryFormats){
-                 if (i == diopiMemoryFormat_t::ChannelsLast3d || i == diopiMemoryFormat_t::Contiguous) {
-                     return i;
-                 }
-             }
-             break;
-         }
-         default: {
-             return diopiMemoryFormat_t::Contiguous;
-         }
-        return diopiMemoryFormat_t::Contiguous;
-     }
- }
+// diopiMemoryFormat_t getTargetMemoryFormat(int ndims, std::vector<diopiMemoryFormat_t> supportMemoryFormats) {
+//     switch (ndims) {
+//         case 1:
+//         case 2:
+//             for (auto i : supportMemoryFormats) {
+//                 if (i == diopiMemoryFormat_t::Contiguous) {
+//                     return i;
+//                 }
+//             };
+//             break;
+//         case 3: {
+//             for (auto i : supportMemoryFormats) {
+//                 if (i == diopiMemoryFormat_t::ChannelsLast1d || i == diopiMemoryFormat_t::Contiguous) {
+//                     return i;
+//                 }
+//             }
+//             break;
+//         }
+//         case 4: {
+//             for (auto i : supportMemoryFormats){
+//                 if (i == diopiMemoryFormat_t::ChannelsLast || i == diopiMemoryFormat_t::Contiguous) {
+//                     return i;
+//                 }
+//             }
+//             break;
+//         }
+//         case 5: {
+//             for (auto i : supportMemoryFormats){
+//                 if (i == diopiMemoryFormat_t::ChannelsLast3d || i == diopiMemoryFormat_t::Contiguous) {
+//                     return i;
+//                 }
+//             }
+//             break;
+//         }
+//         default: {
+//             return diopiMemoryFormat_t::Contiguous;
+//         }
+//     }
+//     return diopiMemoryFormat_t::Contiguous;
+// }
 inline std::vector<diopiMemoryFormat_t> matchMemoryFormatBySize(size_t sizeLen){
     std::vector<diopiMemoryFormat_t> matchedMemoryFormat;
     switch(sizeLen){
