@@ -2417,6 +2417,26 @@ DIOPI_API diopiError_t diopiSgnInp(diopiContextHandle_t ctx, diopiTensorHandle_t
  */
 DIOPI_API diopiError_t diopiIsNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
+/**
+ * @brief Computes the QR decomposition of a matrix.
+ * @param[in] ctx Context environment.
+ * @param input  tensor of shape (*, m, n) where * is zero or more batch dimensions., type = [float64, float32].
+ * @param mode  one of ‘reduced’, ‘complete’, ‘r’. Controls the shape of the returned tensors. Default: ‘reduced’.
+ * @param[out] Q the output tensor. type = [float64, float32].
+ * @param[out] R the output tensor. type = [float64, float32].
+ */
+DIOPI_API diopiError_t diopiLinalgQR(diopiContextHandle_t ctx, diopiConstTensorHandle_t A, const char* mode, diopiTensorHandle_t Q, diopiTensorHandle_t R);
+
+/**
+ * @brief Returns the maximum value of each slice of the input tensor in the given dimension(s) dim.
+ * @param[in] ctx Context environment.
+ * @param self the input tensor. type = [float64, float32, float16, int16, int32, int64, int8, uint8]
+ * @param dim (int or tuple of ints) – the dimension or dimensions to reduce.
+ * @param keepdim whether the output tensor has dim retained or not.type = [bool].
+ * @param[out] out the output tensor. type = [float64, float32, float16, int16, int32, int64, int8, uint8]
+ */
+DIOPI_API diopiError_t diopiAmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t self, diopiSize_t dim, bool keepdim);
+
 #if defined(__cplusplus)
 }
 #endif  // __cplusplus
