@@ -21,8 +21,6 @@ diopi_configs = {
         dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
         atol=1e-3,
         rtol=1e-4,
-<<<<<<< HEAD
-=======
         atol_half=1e-1,
         rtol_half=1e-2,
         para=dict(
@@ -64,7 +62,6 @@ diopi_configs = {
         dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
         atol=1e-5,
         rtol=1e-6,
->>>>>>> 7655cc6d43f7812ce375a8b8b51e16c065626049
         atol_half=1e-1,
         rtol_half=1e-2,
         para=dict(
