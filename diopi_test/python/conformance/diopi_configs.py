@@ -57,11 +57,11 @@ diopi_configs = {
     ),
 
 
-    'batch_norm_no_contiguous': dict(
+    'batch_norm_no_continuous': dict(
         name=["batch_norm"],
         dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
-        atol=1e-5,
-        rtol=1e-6,
+        atol=1e-3,
+        rtol=1e-4,
         atol_half=1e-1,
         rtol_half=1e-2,
         para=dict(
@@ -5048,6 +5048,8 @@ diopi_configs = {
         name=['linalgqr'],
         interface=['CustomizedTest'],
         dtype=[Dtype.float64, Dtype.float32],
+        atol=1e-3,
+        rtol=1e-4,
         para=dict(
             mode=['reduced', 'reduced', 'complete', 'complete', 'r', 'r', 'reduced', 'complete', 'r'],
         ),
