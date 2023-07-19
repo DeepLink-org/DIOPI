@@ -32,7 +32,12 @@ diopiError_t makeTensorFromSize(diopiContextHandle_t ctx, const diopiSize_t* siz
         for (int i = 0; i < len; i++) {
             reinterpret_cast<int32_t*>(ptr)[i] = (int32_t)size->data[i];
         }
-        diopiTensorCopyFromBuffer(ctx, const_cast<void*>(ptr), *out);
+        void* dst;
+        diopiGetTensorData(*out, &dst);
+        diopiStreamHandle_t stream;
+        diopiGetStream(ctx, &stream);
+        CALL_ACLRT(aclrtMemcpyAsync(dst, buffersize, const_cast<void*>(ptr), buffersize, ACL_MEMCPY_HOST_TO_DEVICE, reinterpret_cast<aclrtStream>(stream)));
+        CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));
     }
     return diopiSuccess;
 }
