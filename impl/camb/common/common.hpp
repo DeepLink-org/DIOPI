@@ -40,8 +40,6 @@ diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiT
 
 diopiError_t transpose(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor input, int64_t dim0, int64_t dim1);
 
-diopiError_t transpose(diopiContextHandle_t ctx, const DiopiTensor& inputTensor, DiopiTensor& outTensor, std::vector<int32_t> perms);
-
 }  // namespace camb
 }  // namespace impl
 
