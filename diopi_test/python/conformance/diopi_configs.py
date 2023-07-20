@@ -856,6 +856,29 @@ diopi_configs = {
         ),
     ),
 
+    'pow_int': dict(
+        name=['pow'],
+        interface=['torch'],
+        is_inplace=True,
+        para=dict(
+            exponent=[True, 2, 0.6, 1.2, 3, 0., True,  0],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (16, ), (20267, 80),
+                              (2, 128, 3072), (2, 512, 38, 38),
+                              (0,), (0, 8), (7, 0, 9)),
+                    "dtype": [Dtype.int16, Dtype.int32, Dtype.int64,
+                              Dtype.int8, Dtype.uint8],
+                    "gen_fn": dict(fn=Genfunc.randint, low=-4, high=4),
+                }
+            ],
+        ),
+    ),
+
+
     'pow_float_tensor': dict(
         name=['pow'],
         interface=['torch'],
