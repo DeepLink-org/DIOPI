@@ -304,18 +304,25 @@ extern "C" diopiError_t diopiConvTranspose2dBackward(diopiContextHandle_t ctx, d
 
     std::vector<DiopiTensor *> tensors{&gradOutputTensor, &inputTensor, &weightTensor};
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32}));
-    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradInputTensorTmp, gradInputTensor, inputTensor.dtype());
-    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradWeightTensorTmp, gradWeightTensor, inputTensor.dtype());
 
-    DIOPI_CALL(convForward(ctx, gradOutputTensor, weightTensor, {}, gradInputTensorTmp, stride, padding, dilation, groups));
-    DIOPI_CALL(convBackwardFilter(ctx, inputTensor, gradWeightTensorTmp, gradOutputTensor, stride, padding, dilation, groups));
-    if (gradBiasTensor.tensorHandle()) {
-        DIOPI_CALL(autoCastTensorType(ctx, {&gradBiasTensor}, {diopi_dtype_float16, diopi_dtype_float32}));
-        DIOPI_CALL(convBackwardBias(ctx, gradOutputTensor, gradBiasTensor));
+    if (gradInputTensor.tensorHandle()) {
+        REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradInputTensorTmp, gradInputTensor, inputTensor.dtype());
+        DIOPI_CALL(convForward(ctx, gradOutputTensor, weightTensor, {}, gradInputTensorTmp, stride, padding, dilation, groups));
+        DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensorTmp));
     }
 
-    DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensorTmp));
-    DIOPI_CALL(dataTypeCast(ctx, gradWeightTensor, gradWeightTensorTmp));
+    if (gradWeightTensor.tensorHandle()) {
+        REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradWeightTensorTmp, gradWeightTensor, inputTensor.dtype());
+        DIOPI_CALL(convBackwardFilter(ctx, inputTensor, gradWeightTensorTmp, gradOutputTensor, stride, padding, dilation, groups));
+        DIOPI_CALL(dataTypeCast(ctx, gradWeightTensor, gradWeightTensorTmp));
+    }
+
+    if (gradBiasTensor.tensorHandle()) {
+        REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradBiasTensorTmp, gradBiasTensor, inputTensor.dtype());
+        DIOPI_CALL(convBackwardBias(ctx, gradOutputTensor, gradBiasTensor));
+        DIOPI_CALL(dataTypeCast(ctx, gradBiasTensor, gradBiasTensorTmp));
+    }
+
     return diopiSuccess;
 }
 
