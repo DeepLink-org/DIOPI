@@ -503,7 +503,7 @@ diopi_configs = {
         rtol_half=1e-2,
         para=dict(
             output_size=[5, (26, 40), (None, None), (1, 1), 2,
-                         (None, 3), (3, 4), (7, 7), (10, 10), 0],
+                         (None, 3), (3, 4), (7, 7), (10, 10)],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -514,7 +514,28 @@ diopi_configs = {
                     "shape": ((3, 16, 8), (4, 7, 27, 39), (4, 16, 12),
                               (2, 2048, 8, 6), (2, 288, 33, 33),
                               (2, 144, 65, 65), (2, 1280, 7, 7),
-                              (2, 265, 7, 7), (2, 265, 7, 7), (4, 7, 27, 39)),
+                              (2, 265, 7, 7), (2, 265, 7, 7)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
+                },
+            ]
+        ),
+    ),
+
+    'adaptive_avg_pool2d_zero_size': dict(
+        name=["adaptive_avg_pool2d"],
+        atol=1e-5,
+        rtol=1e-4,
+        atol_half=1e-2,
+        rtol_half=1e-2,
+        para=dict(
+            output_size=[0],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((4, 7, 27, 39),),
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
             ]
