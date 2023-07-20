@@ -227,6 +227,7 @@ inline std::vector<diopiMemoryFormat_t> matchMemoryFormatBySize(size_t sizeLen){
         default:
             return {diopiMemoryFormat_t::Contiguous};
     }
+    return {diopiMemoryFormat_t::Contiguous};
 }
 
 inline std::vector<diopiMemoryFormat_t> setIntersection(std::vector<diopiMemoryFormat_t> matchedMemoryFormat, std::vector<diopiMemoryFormat_t> supportMemoryFormat){
