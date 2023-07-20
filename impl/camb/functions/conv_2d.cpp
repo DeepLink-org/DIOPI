@@ -29,7 +29,6 @@ diopiError_t convForward(diopiContextHandle_t ctx, DiopiTensor input, DiopiTenso
     CnnlTensorDesc biasDesc;
     if (bias.defined()) {
         DIOPI_CALL(biasDesc.set(bias, CNNL_LAYOUT_NHWC));
-
     }
 
     std::vector<int> strideVec{stride.data, stride.data + stride.len};
@@ -212,7 +211,6 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
     CnnlTensorDesc biasDesc;
     if (biasTensor.defined()) {
         DIOPI_CALL(biasDesc.set(biasTensor, CNNL_LAYOUT_NHWC));
-
     }
 
     std::vector<int> strideVec{stride.data, stride.data + stride.len};
