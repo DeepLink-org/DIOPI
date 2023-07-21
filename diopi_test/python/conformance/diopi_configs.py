@@ -951,7 +951,7 @@ diopi_configs = {
         interface=['torch'],
         is_inplace=True,
         para=dict(
-            exponent=[-0.5, 2, 0.6, 1.2, 3, 0., True, 0],
+            exponent=[-0.5, 2, 0.6, 1.2, 3, 0., 1, 0],
         ),
         tensor_para=dict(
             args=[
