@@ -1,21 +1,21 @@
-# # Copyright (c) 2023, DeepLink.
-# from .config import Genfunc
-# from .diopi_runtime import Dtype
+# Copyright (c) 2023, DeepLink.
+from .config import Genfunc
+from .diopi_runtime import Dtype
 
-# ops_with_states = {"batch_norm": {"running_mean", "running_var"},
-#                    "sgd": {"buf", "param"},
-#                    "fill_": {"input"},
-#                    "embedding": {"weight"},
-#                    "adam": {"param", "exp_avg", "exp_avg_sq", "max_exp_avg_sq"},
-#                    "adamw": {"param", "exp_avg", "exp_avg_sq", "max_exp_avg_sq"},
-#                    "adadelta": {"param", "square_avg", "acc_delta"},
-#                    "rmsprop": {"param", "square_avg", "grad_avg", "momentum_buffer"},
-#                    "copy_": {"input"},
-#                    "cast_dtype": {"out"},
-#                    }
+ops_with_states = {"batch_norm": {"running_mean", "running_var"},
+                   "sgd": {"buf", "param"},
+                   "fill_": {"input"},
+                   "embedding": {"weight"},
+                   "adam": {"param", "exp_avg", "exp_avg_sq", "max_exp_avg_sq"},
+                   "adamw": {"param", "exp_avg", "exp_avg_sq", "max_exp_avg_sq"},
+                   "adadelta": {"param", "square_avg", "acc_delta"},
+                   "rmsprop": {"param", "square_avg", "grad_avg", "momentum_buffer"},
+                   "copy_": {"input"},
+                   "cast_dtype": {"out"},
+                   }
 
 
-# diopi_configs = {
+diopi_configs = {
 #     'batch_norm': dict(
 #         name=["batch_norm"],
 #         dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
@@ -5315,4 +5315,4 @@
 #             ],
 #         ),
 #     ),
-# }
+}
