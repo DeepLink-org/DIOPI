@@ -140,6 +140,12 @@ public:
         return dtype_;
     }
 
+    template <typename T>
+    std::vector<T> shape() const {
+        DIOPI_CHECK_NULLPTR_ABORT(tensor_);
+        return std::vector<T>(shape_.begin(), shape_.end());
+    }
+
     const std::vector<int64_t>& shape() const {
         DIOPI_CHECK_NULLPTR_ABORT(tensor_);
         return shape_;
