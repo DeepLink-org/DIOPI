@@ -2329,15 +2329,15 @@ diopi_configs = {
         name=["clip_grad_norm_"],
         interface=["CustomizedTest"],
         para=dict(
-            max_norm=[1.0, 5, 2.0, 10, 8, -0.5, 0, -2],
-            norm_type=[0, 0.2, 1, 2.0, float("inf"), 2, float('-inf'), 3.0],
-            error_if_nonfinite=[True, False, False, True, True, False, True, True],  # 1.7 not support
+            max_norm=[1.0, 5, 2.0, -1.2, 3, 10, 8, -0.5, 0, -2],
+            norm_type=[0, -0.2, 1, 2.0, float('-inf'), float("inf"), 1.2, 2, 1, 3.0],
+            error_if_nonfinite=[True, False, False, True, True, False, True, True, False, True],  # 1.7 not support
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["grads"],
-                    "shape": ((), (10,), (10, 2, 5), (20, 3, 4, 5), (20, 2, 3, 4, 5),
+                    "shape": ((), (10,), (10, 2, 5), (20,), (10, 5, 1), (20, 3, 4, 5), (20, 2, 3, 4, 5),
                               (0,), (0, 10), (5, 0, 9)),
                     "gen_fn": Genfunc.randn,
                     "dtype": [Dtype.float32, Dtype.float16, Dtype.float64],
