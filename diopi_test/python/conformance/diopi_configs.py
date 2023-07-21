@@ -326,8 +326,8 @@ diopi_configs = {
         name=["hardtanh"],
         is_inplace=True,
         para=dict(
-            min_val=[0, -1, 20, 0.0, -20, 20, -2, 1, -5],
-            max_val=[0.4, 5, -50, 0.5, 70.5, 20, 0, 0.0, -10],
+            min_val=[0, 1, 20, 0.0, 20, 20, 2, 1, False],
+            max_val=[0.4, 5, 50, 0.5, 70.5, 20, True, 0.0, 10],
         ),
         tensor_para=dict(
             args=[
