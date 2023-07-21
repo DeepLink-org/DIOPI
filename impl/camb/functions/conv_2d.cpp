@@ -49,8 +49,14 @@ diopiError_t convForward(diopiContextHandle_t ctx, DiopiTensor input, DiopiTenso
     DIOPI_CALLCNNL(cnnlSetConvolutionDescriptor(convDesc.get(), dimNb, paddingTmp, strideTmp, dilationTmp, groups, computeType));
 
     size_t workspaceSize;
-    DIOPI_CALLCNNL(cnnlGetConvolutionForwardWorkspaceSize(
-        handle, inputDesc.get(), weightDesc.get(), outputDesc.get(), biasDesc.get(), convDesc.get(), CNNL_CONVOLUTION_FWD_ALGO_DIRECT, &workspaceSize));
+    DIOPI_CALLCNNL(cnnlGetConvolutionForwardWorkspaceSize(handle,
+                                                          inputDesc.get(),
+                                                          weightDesc.get(),
+                                                          outputDesc.get(),
+                                                          bias.tensorHandle() ? biasDesc.get() : nullptr,
+                                                          convDesc.get(),
+                                                          CNNL_CONVOLUTION_FWD_ALGO_DIRECT,
+                                                          &workspaceSize));
 
     void *workspace = nullptr;
     if (0 != workspaceSize) {
