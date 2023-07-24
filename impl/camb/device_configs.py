@@ -149,6 +149,18 @@ device_configs = {
         ),
     ),
 
+    'adaptive_max_pool2d_return_indices': dict(
+        name=["adaptive_max_pool2d"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+            ]
+        ),
+    ),
+
     'adaptive_max_pool2d': dict(
         name=["adaptive_max_pool2d"],
         tensor_para=dict(
@@ -269,6 +281,18 @@ device_configs = {
     'bmm': dict(
         name=['bmm'],
         atol=1e-1,
+    ),
+
+    'adaptive_avg_pool2d': dict(
+        name=["adaptive_avg_pool2d"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((3, 16, 8)), Skip((4, 16, 12))),
+                },
+            ]
+        ),
     ),
 
     'addcdiv': dict(
@@ -583,7 +607,19 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16), Skip(Dtype.float64)],
+                },
+            ]
+        ),
+    ),
+
+    'max_pool3d_return_indices': dict(
+        name=['max_pool3d'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16), Skip(Dtype.float64)],
                 },
             ]
         ),
@@ -602,6 +638,18 @@ device_configs = {
     ),
 
     'adaptive_max_pool3d': dict(
+        name=["adaptive_max_pool3d"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+            ]
+        ),
+    ),
+
+    'adaptive_max_pool3d_return_indices': dict(
         name=["adaptive_max_pool3d"],
         tensor_para=dict(
             args=[
