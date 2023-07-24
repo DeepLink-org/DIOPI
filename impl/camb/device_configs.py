@@ -91,7 +91,7 @@ device_configs = {
         ),
     ),
 
-    'pow_diff_dtype': dict(
+    'pow_diff_dtype_inplace': dict(
         name=["pow"],
         tensor_para=dict(
             args=[
