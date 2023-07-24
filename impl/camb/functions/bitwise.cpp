@@ -126,4 +126,3 @@ diopiError_t diopiBitwiseNotInp(diopiContextHandle_t ctx, diopiTensorHandle_t in
 
 }  // namespace camb
 }  // namespace impl
-
