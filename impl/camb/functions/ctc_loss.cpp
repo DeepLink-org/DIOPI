@@ -17,12 +17,12 @@
 namespace impl {
 namespace camb {
 
-extern "C" {                         
+extern "C" {
 /**
  * @brief Computes the Connectionist Temporal Classification loss.
- * 
+ *
  */
-static diopiError_t convertCTCLossReduction(cnnlCTCLossReduceMode_t *ctclossReduction , const diopiReduction_t reduction) {
+static diopiError_t convertCTCLossReduction(cnnlCTCLossReduceMode_t *ctclossReduction, const diopiReduction_t reduction) {
     switch (reduction) {
         case ReductionNone:
             *ctclossReduction = CNNL_REDUCE_MODE_NONE;
@@ -39,7 +39,7 @@ static diopiError_t convertCTCLossReduction(cnnlCTCLossReduceMode_t *ctclossRedu
     return diopiSuccess;
 }
 
-static diopiError_t CTCLoss(diopiContextHandle_t ctx, DiopiTensor lossTensor, DiopiTensor gradTensor, DiopiTensor logProbsTensor, DiopiTensor targetTensor,
+static diopiError_t ctcLoss(diopiContextHandle_t ctx, DiopiTensor lossTensor, DiopiTensor gradTensor, DiopiTensor logProbsTensor, DiopiTensor targetTensor,
                             DiopiTensor inputLengths, DiopiTensor targetLengths, cnnlCTCLossDescriptor_t ctcLossDesc, bool backward) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
@@ -116,7 +116,7 @@ DIOPI_API diopiError_t diopiCTCLoss(diopiContextHandle_t ctx, diopiTensorHandle_
     auto numLabels = logProbsTensor.shape()[2];
     int maxInputLength = logProbsTensor.shape()[0];
 
-    int32_t *htargetLength = (int32_t *)malloc(sizeof(int32_t) * targetLengthTensor.numel());
+    int32_t *htargetLength = reinterpret_cast<int32_t *>(malloc(sizeof(int32_t) * targetLengthTensor.numel()));
     auto cnrtRet = cnrtMemcpy(htargetLength, targetLengthTensor.data(), sizeof(int32_t) * targetLengthTensor.numel(), cnrtMemcpyDevToHost);
     DIOPI_CHECK(cnrtRet == cnrtSuccess, "[diopiCTCLoss] Memory copy from Device to Host failed.");
     int32_t maxTargetLen = 0;
@@ -136,7 +136,7 @@ DIOPI_API diopiError_t diopiCTCLoss(diopiContextHandle_t ctx, diopiTensorHandle_
     DIOPI_CALLCNNL(cnnlSetCTCLossDescriptor(ctcLossDesc, ctcLossNormMode, ctcLossReduceMode, ctcLossZeroInfMode, blank, maxInputLength, maxTargetLen));
 
     DiopiTensor gradTensor = requiresTensor(ctx, logProbsTensor.shape(), logProbsTensor.dtype());
-    DIOPI_CALL(CTCLoss(ctx, outTensor, gradTensor, logProbsTensor, targetTensor, inputLengthsTensor, targetLengthTensor, ctcLossDesc, false));
+    DIOPI_CALL(ctcLoss(ctx, outTensor, gradTensor, logProbsTensor, targetTensor, inputLengthsTensor, targetLengthTensor, ctcLossDesc, false));
 
     return diopiSuccess;
 }
@@ -162,7 +162,7 @@ DIOPI_API diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTenso
     gradOutputTensor = *inOutTensorsVecPtr[1];
     negLLTensor = *inOutTensorsVecPtr[2];
     logProbsTensor = *inOutTensorsVecPtr[3];
-    logAlphaTensor  = *inOutTensorsVecPtr[4];
+    logAlphaTensor = *inOutTensorsVecPtr[4];
 
     // lable and length.
     DiopiTensor targetTensor(targets);
@@ -184,7 +184,7 @@ DIOPI_API diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTenso
     auto numLabels = logProbsTensor.shape()[2];
     int maxInputLength = logProbsTensor.shape()[0];
 
-    int32_t *htargetLength = (int32_t *)malloc(sizeof(int32_t) * targetLengthTensor.numel());
+    int32_t *htargetLength = reinterpret_cast<int32_t *>(malloc(sizeof(int32_t) * targetLengthTensor.numel()));
     auto cnrtRet = cnrtMemcpy(htargetLength, targetLengthTensor.data(), sizeof(int32_t) * targetLengthTensor.numel(), cnrtMemcpyDevToHost);
     DIOPI_CHECK(cnrtRet == cnrtSuccess, "[diopiCTCLossBackward] Memory copy from Device to Host failed.");
     int32_t maxTargetLen = 0;
@@ -209,7 +209,7 @@ DIOPI_API diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTenso
     } else {
         lossTensor = requiresTensor(ctx, {1}, logProbsTensor.dtype());
     }
-    DIOPI_CALL(CTCLoss(ctx, lossTensor, gradInputTensor, logProbsTensor, targetTensor, inputLengthsTensor, targetLengthTensor, ctcLossDesc, true));
+    DIOPI_CALL(ctcLoss(ctx, lossTensor, gradInputTensor, logProbsTensor, targetTensor, inputLengthsTensor, targetLengthTensor, ctcLossDesc, true));
 
     return diopiSuccess;
 }
