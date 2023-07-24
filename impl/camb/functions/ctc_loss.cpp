@@ -26,7 +26,6 @@ extern "C" {
  * 
  * 
  */
-
 static diopiError_t convertCTCLossReduction(cnnlCTCLossReduceMode_t *ctclossReduction , const diopiReduction_t reduction) {
     switch (reduction) {
         case ReductionNone:
@@ -39,12 +38,46 @@ static diopiError_t convertCTCLossReduction(cnnlCTCLossReduceMode_t *ctclossRedu
             *ctclossReduction = CNNL_REDUCE_MODE_SUM;
             break;
         default:
-            // diopiReduction_t need update to support more mean types for ctc loss. 
-            // CNNL_REDUCE_MODE_MEAN_BY_INPUT_LENGTHS
-            // CNNL_REDUCE_MODE_MEAN_BY_LABEL_LENGTH_AND_BATCH
             DIOPI_CHECK(false, "The reduction mode does not supported.");
-            return diopiErrorOccurred;
     }
+    return diopiSuccess;
+}
+
+static diopiError_t CTCLoss(diopiContextHandle_t ctx, DiopiTensor lossTensor, DiopiTensor gradTensor, DiopiTensor logProbsTensor, DiopiTensor targetTensor,
+                            DiopiTensor inputLengths, DiopiTensor targetLengths, cnnlCTCLossDescriptor_t ctcLossDesc, bool backward) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+
+    CnnlTensorDesc lossTensorDesc(lossTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradTensorDesc(gradTensor, CNNL_LAYOUT_TNC);
+    CnnlTensorDesc logProbsTensorDesc(logProbsTensor, CNNL_LAYOUT_TNC);
+    CnnlTensorDesc targetTensorDesc(targetTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc inputLengthsDesc(inputLengths, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc targetLengthsDesc(targetLengths, CNNL_LAYOUT_ARRAY);
+
+    size_t workspaceSize = 0;
+    DIOPI_CALLCNNL(cnnlGetCTCLossWorkspaceSize(handle, ctcLossDesc, logProbsTensorDesc.get(), backward, &workspaceSize));
+    void *workspace = nullptr;
+    if (workspaceSize > 0) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
+        DIOPI_CHECK(workspace != nullptr, "[diopiCTCLoss] require buffers: size = %d, for workspace failed.", workspaceSize);
+    }
+
+    DIOPI_CALLCNNL(cnnlCTCLoss(handle,
+                               ctcLossDesc,
+                               logProbsTensorDesc.get(),
+                               logProbsTensor.data(),
+                               targetTensorDesc.get(),
+                               targetTensor.data(),
+                               inputLengthsDesc.get(),
+                               inputLengths.data(),
+                               targetLengthsDesc.get(),
+                               targetLengths.data(),
+                               workspace,
+                               workspaceSize,
+                               lossTensorDesc.get(),
+                               lossTensor.data(),
+                               backward ? gradTensorDesc.get() : nullptr,
+                               backward ? gradTensor.data() : nullptr));
     return diopiSuccess;
 }
 
@@ -53,33 +86,33 @@ DIOPI_API diopiError_t diopiCTCLoss(diopiContextHandle_t ctx, diopiTensorHandle_
                                     diopiConstTensorHandle_t targetLengths, int64_t blank, diopiReduction_t reduction, bool zeroInfinity) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
+    // input and nll, la, out.
     DiopiTensor outTensor(out);
+    DiopiTensor negLLTensor(negLogLikelihood);
+    DiopiTensor logAlphaTensor(logAlpha);
     DiopiTensor logProbsTensor(logProbs);
 
-    std::vector<DiopiTensor *> inputOutputTensorsVecPtr{&outTensor, &logProbsTensor};
-    std::set<diopiDtype_t> inputOutputSupportedDtype{diopi_dtype_float32, diopi_dtype_float64};
-    DIOPI_CALL(autoCastTensorType(ctx, inputOutputTensorsVecPtr, inputOutputSupportedDtype));
-    outTensor = *inputOutputTensorsVecPtr[0];
-    logProbsTensor = *inputOutputTensorsVecPtr[1];
+    std::vector<DiopiTensor *> inOutTensorsVecPtr{&outTensor, &negLLTensor, &logAlphaTensor, &logProbsTensor};
+    std::set<diopiDtype_t> inOutSupportedDtype{diopi_dtype_float32, diopi_dtype_float64};
+    DIOPI_CALL(autoCastTensorType(ctx, inOutTensorsVecPtr, inOutSupportedDtype));
+    outTensor = *inOutTensorsVecPtr[0];
+    negLLTensor = *inOutTensorsVecPtr[1];
+    logAlphaTensor = *inOutTensorsVecPtr[2];
+    logProbsTensor = *inOutTensorsVecPtr[3];
 
-    DiopiTensor inputLengthTensor(inputLengths);
-    DiopiTensor targetsTensor(targets);
-    DiopiTensor targetsLengthTensor(targetLengths);
+    // lable and length.
+    DiopiTensor inputLengthsTensor(inputLengths);
+    DiopiTensor targetTensor(targets);
+    DiopiTensor targetLengthTensor(targetLengths);
 
-    std::vector<DiopiTensor *> labelLengthTensorsVecPtr{&inputLengthTensor, &targetsTensor, &targetsLengthTensor};
+    std::vector<DiopiTensor *> labelLengthTensorsVecPtr{&inputLengthsTensor, &targetTensor, &targetLengthTensor};
     std::set<diopiDtype_t> labelLengthSupportedDtype{diopi_dtype_int32, diopi_dtype_int64};
     DIOPI_CALL(autoCastTensorType(ctx, labelLengthTensorsVecPtr, labelLengthSupportedDtype));
-    inputLengthTensor = *labelLengthTensorsVecPtr[0];
-    targetsTensor = *labelLengthTensorsVecPtr[1];
-    targetsLengthTensor = *labelLengthTensorsVecPtr[2];
+    inputLengthsTensor = *labelLengthTensorsVecPtr[0];
+    targetTensor = *labelLengthTensorsVecPtr[1];
+    targetLengthTensor = *labelLengthTensorsVecPtr[2];
 
-    CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc logProbsDesc(logProbsTensor, CNNL_LAYOUT_TNC);
-    CnnlTensorDesc targetsDesc(targetsTensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc inputLengthDesc(inputLengthTensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc targetsLengthDesc(targetsLengthTensor, CNNL_LAYOUT_ARRAY);
-    // CnnlTensorDesc
-
+    // ctc_loss descriptor
     CnnlResourceGuard<cnnlCTCLossDescriptor_t, cnnlCreateCTCLossDescriptor, cnnlDestroyCTCLossDescriptor> ctcLossDescObj;
     cnnlCTCLossDescriptor_t ctcLossDesc = ctcLossDescObj.get();
 
@@ -87,66 +120,28 @@ DIOPI_API diopiError_t diopiCTCLoss(diopiContextHandle_t ctx, diopiTensorHandle_
     auto numLabels = logProbsTensor.shape()[2];
     int maxInputLength = logProbsTensor.shape()[0];
 
-    // for (decltype(batchSize) i = 0; i < batchSize; i++) {
-    //     if (maxInputLength)
-    // }
-    std::cout << "here:" << std::endl;
-    // int64_t maxLabelLength = 0;
-    void *mll = malloc(sizeof(int32_t));
-    
-    diopiTensorHandle_t maxLabelLen = nullptr;
-    std::vector<int64_t> shape{1};
-    diopiSize_t size(shape.data(), 1);
-    DIOPI_CALL(diopiRequireTensor(ctx, &maxLabelLen, &size, nullptr, diopi_dtype_int32, diopi_device));
-    DIOPI_CALL(diopiMaxAll(ctx, maxLabelLen, targetLengths));
-
-    DiopiTensor maxLabelLenTensor(maxLabelLen);
-    printDevData(ctx, maxLabelLenTensor, "[max label len]");
-    cnrtMemcpy(mll, maxLabelLenTensor.data(), sizeof(int32_t), cnrtMemcpyDevToHost);
-    int32_t maxLabelLength = *reinterpret_cast<int32_t *>(mll);
-    std::cout << "[Host Label Leng] " << maxLabelLength << std::endl;
+    int32_t *htargetLength = (int32_t *)malloc(sizeof(int32_t) * targetLengthTensor.numel());
+    auto cnrtRet = cnrtMemcpy(htargetLength, targetLengthTensor.data(), sizeof(int32_t) * targetLengthTensor.numel(), cnrtMemcpyDevToHost);
+    DIOPI_CHECK(cnrtRet == cnrtSuccess, "[diopiCTCLoss] Memory copy from Device to Host failed.");
+    int32_t maxTargetLen = 0;
+    for (int i = 0; i < targetLengthTensor.numel(); i++) {
+        if (maxTargetLen < htargetLength[i]) {
+            maxTargetLen = htargetLength[i];
+        }
+    }
+    free(htargetLength);
 
     cnnlCTCLossNormalizationMode_t ctcLossNormMode = CNNL_LOG_SOFTMAX_NORMALIZATION;
     cnnlCTCLossReduceMode_t ctcLossReduceMode;
     DIOPI_CALL(convertCTCLossReduction(&ctcLossReduceMode, reduction));
-    // cnnlCTCLossZeroInfinityMode_t ctcLossZeroInfMode = zeroInfinity ? CNNL_NONE_ZERO_INFINITY_PROBS_GRADS : CNNL_NONE_ZERO_INFINITY;
     cnnlCTCLossZeroInfinityMode_t ctcLossZeroInfMode = zeroInfinity ? CNNL_ZERO_INFINITY : CNNL_NONE_ZERO_INFINITY;
 
-    DIOPI_CHECK(blank == 0, "ctc_loss only support blank = 0 on cambricon.");
-    DIOPI_CALLCNNL(cnnlSetCTCLossDescriptor(ctcLossDesc, ctcLossNormMode, ctcLossReduceMode, ctcLossZeroInfMode, blank, maxInputLength, static_cast<int>(maxLabelLength)));
+    DIOPI_CHECK(blank == 0, "[diopiCTCLoss] ctc_loss only support blank = 0 on cambricon.");
+    DIOPI_CALLCNNL(cnnlSetCTCLossDescriptor(ctcLossDesc, ctcLossNormMode, ctcLossReduceMode, ctcLossZeroInfMode, blank, maxInputLength, maxTargetLen));
 
-    size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetCTCLossWorkspaceSize(handle, ctcLossDesc, logProbsDesc.get(), false, &workspaceSize));
-    void *workspace = nullptr;
-    if (workspaceSize > 0) {
-        workspace = requiresBuffer(ctx, workspaceSize).data();
-        DIOPI_CHECK(workspace != nullptr, "[diopiCTCLoss] require buffers: size = %d, for workspace failed.", workspaceSize);
-    }
-    printDevData(ctx, outTensor, "[CTCLoss] loss");
-    DIOPI_CALLCNNL(cnnlCTCLoss(handle,
-                         ctcLossDesc,
-                         logProbsDesc.get(),
-                         logProbsTensor.data(),
-                         targetsDesc.get(),
-                         targetsTensor.data(), 
-                         inputLengthDesc.get(),
-                         inputLengthTensor.data(),
-                         targetsLengthDesc.get(),
-                         targetsLengthTensor.data(),
-                         workspace,
-                         workspaceSize,
-                         outDesc.get(), //ctcLossDesc,//const cnnlTensorDescriptor_t loss_desc,
-                         outTensor.data(),//void *loss,
-                         nullptr,
-                         nullptr));
-    // CNNL_SOFTMAX_NORMALIZATION || CNNL_LOG_SOFTMAX_NORMALIZATION
-    // cnnlCTCLossNormalizationMode_t ctcLossNormMode = CNNL_NONE_NORMALIZATION;
-    // cnnlCTCLossReduceMode_t ctcLossReduceMode;
-    // DIOPI_CALL(convertCTCLossReduction(&ctcLossReduceMode, reduction));
-    // cnnlCTCLossZeroInfinityMode_t ctcLossZeroInfMode = zeroInfinity ? CNNL_ZERO_INFINITY : CNNL_NONE_ZERO_INFINITY;
+    DiopiTensor gradTensor = requiresTensor(ctx, logProbsTensor.shape(), logProbsTensor.dtype());
+    DIOPI_CALL(CTCLoss(ctx, outTensor, gradTensor, logProbsTensor, targetTensor, inputLengthsTensor, targetLengthTensor, ctcLossDesc, false));
 
-    // CnnlResourceGuard<cnnlCTCLossDescriptor_t, cnnlCreateCTCLossDescriptor, cnnlDestroyCTCLossDescriptor> ctclossDescObj;
-    // cnnlCTCLossDescriptor_t ctcLossDesc = ctcLossDescObj.get();
     return diopiSuccess;
 }
 
@@ -154,6 +149,72 @@ DIOPI_API diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTenso
                                             diopiConstTensorHandle_t logProbs, diopiConstTensorHandle_t targets, diopiConstTensorHandle_t inputLengths,
                                             diopiConstTensorHandle_t targetLengths, diopiConstTensorHandle_t negLogLikelihood,
                                             diopiConstTensorHandle_t logAlpha, int64_t blank, diopiReduction_t reduction, bool zeroInfinity) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+
+    // input and nll, la, out.
+    DiopiTensor gradInputTensor(gradInput);
+    DiopiTensor gradOutputTensor(gradOutput);
+
+    DiopiTensor negLLTensor(negLogLikelihood);
+    DiopiTensor logProbsTensor(logProbs);
+    DiopiTensor logAlphaTensor(logAlpha);
+
+    std::vector<DiopiTensor *> inOutTensorsVecPtr{&gradInputTensor, &gradOutputTensor, &negLLTensor, &logProbsTensor, &logAlphaTensor};
+    std::set<diopiDtype_t> inOutSupportedDtype{diopi_dtype_float32, diopi_dtype_float64};
+    DIOPI_CALL(autoCastTensorType(ctx, inOutTensorsVecPtr, inOutSupportedDtype));
+    gradInputTensor = *inOutTensorsVecPtr[0];
+    gradOutputTensor = *inOutTensorsVecPtr[1];
+    negLLTensor = *inOutTensorsVecPtr[2];
+    logProbsTensor = *inOutTensorsVecPtr[3];
+    logAlphaTensor  = *inOutTensorsVecPtr[4];
+
+    // lable and length.
+    DiopiTensor targetTensor(targets);
+    DiopiTensor inputLengthsTensor(inputLengths);
+    DiopiTensor targetLengthTensor(targetLengths);
+
+    std::vector<DiopiTensor *> labelLengthTensorsVecPtr{&targetTensor, &inputLengthsTensor, &targetLengthTensor};
+    std::set<diopiDtype_t> labelLengthSupportedDtype{diopi_dtype_int32, diopi_dtype_int64};
+    DIOPI_CALL(autoCastTensorType(ctx, labelLengthTensorsVecPtr, labelLengthSupportedDtype));
+    targetTensor = *labelLengthTensorsVecPtr[0];
+    inputLengthsTensor = *labelLengthTensorsVecPtr[1];
+    targetLengthTensor = *labelLengthTensorsVecPtr[2];
+
+    // ctc_loss descriptor
+    CnnlResourceGuard<cnnlCTCLossDescriptor_t, cnnlCreateCTCLossDescriptor, cnnlDestroyCTCLossDescriptor> ctcLossDescObj;
+    cnnlCTCLossDescriptor_t ctcLossDesc = ctcLossDescObj.get();
+
+    auto batchSize = logProbsTensor.shape()[1];
+    auto numLabels = logProbsTensor.shape()[2];
+    int maxInputLength = logProbsTensor.shape()[0];
+
+    int32_t *htargetLength = (int32_t *)malloc(sizeof(int32_t) * targetLengthTensor.numel());
+    auto cnrtRet = cnrtMemcpy(htargetLength, targetLengthTensor.data(), sizeof(int32_t) * targetLengthTensor.numel(), cnrtMemcpyDevToHost);
+    DIOPI_CHECK(cnrtRet == cnrtSuccess, "[diopiCTCLossBackward] Memory copy from Device to Host failed.");
+    int32_t maxTargetLen = 0;
+    for (int i = 0; i < targetLengthTensor.numel(); i++) {
+        if (maxTargetLen < htargetLength[i]) {
+            maxTargetLen = htargetLength[i];
+        }
+    }
+    free(htargetLength);
+
+    cnnlCTCLossNormalizationMode_t ctcLossNormMode = CNNL_LOG_SOFTMAX_NORMALIZATION;
+    cnnlCTCLossReduceMode_t ctcLossReduceMode;
+    DIOPI_CALL(convertCTCLossReduction(&ctcLossReduceMode, reduction));
+    cnnlCTCLossZeroInfinityMode_t ctcLossZeroInfMode = zeroInfinity ? CNNL_ZERO_INFINITY : CNNL_NONE_ZERO_INFINITY;
+
+    DIOPI_CHECK(blank == 0, "[diopiCTCLossBackward] ctc_loss only support blank = 0 on cambricon.");
+    DIOPI_CALLCNNL(cnnlSetCTCLossDescriptor(ctcLossDesc, ctcLossNormMode, ctcLossReduceMode, ctcLossZeroInfMode, blank, maxInputLength, maxTargetLen));
+
+    DiopiTensor lossTensor;
+    if (ctcLossReduceMode == CNNL_REDUCE_MODE_NONE) {
+        lossTensor = requiresTensor(ctx, {logProbsTensor.shape()[1]}, logProbsTensor.dtype());
+    } else {
+        lossTensor = requiresTensor(ctx, {1}, logProbsTensor.dtype());
+    }
+    DIOPI_CALL(CTCLoss(ctx, lossTensor, gradInputTensor, logProbsTensor, targetTensor, inputLengthsTensor, targetLengthTensor, ctcLossDesc, true));
+
     return diopiSuccess;
 }
 

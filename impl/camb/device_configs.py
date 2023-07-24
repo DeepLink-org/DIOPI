@@ -681,18 +681,6 @@ device_configs = {
         ),
     ),
 
-    'ctc_loss': dict(
-        name=["ctc_loss"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['log_probs'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
-
     'remainder_self_scalar_float': dict(
         name = ['remainder'],
         atol = 1e-1,
