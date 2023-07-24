@@ -2,6 +2,8 @@ find_path(NEUWARE_ROOT_DIR
     NAMES include/cnrt.h
     HINTS ${NEUWARE_ROOT}
           $ENV{NEUWARE_ROOT}
+          ${CAMB_PATH}
+          $ENV{CAMB_PATH}
           /usr/local/neuware
 )
 
@@ -10,6 +12,8 @@ find_program(NEUWARE_CNCC_EXECUTABLE
     HINTS ${NEUWARE_ROOT_DIR}/bin
           ${NEUWARE_ROOT}/bin
           $ENV{NEUWARE_ROOT}/bin
+          ${CAMB_PATH}/bin
+          $ENV{CAMB_PATH}/bin
           /usr/local/neuware/bin
 )
 
