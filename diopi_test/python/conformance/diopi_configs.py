@@ -856,85 +856,42 @@ diopi_configs = {
 #         ),
 #     ),
 
-    'pow': dict(
-        name=['pow'],
-        interface=['torch'],
-        is_inplace=True,
-        para=dict(
-            exponent=[-2, -0.5, 0, 0.6, True, 3, 4., 1.],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((), (16, ), (20267, 80),
-                              (2, 128, 3072),
-                              (2, 512, 38, 38),
-                              (0,), (0, 8), (7, 0, 9)),
-                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
-                }
-            ],
-        ),
-    ),
-
-    'pow_int': dict(
-        name=['pow'],
-        interface=['torch'],
-        is_inplace=True,
-        para=dict(
-            exponent=[1, 2, 0.6, 1.2, 3, 0., 2.3,  0],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((), (16, ), (20267, 80),
-                              (2, 128, 3072), (2, 512, 38, 38),
-                              (0,), (0, 8), (7, 0, 9)),
-                    "dtype": [Dtype.int16, Dtype.int32, Dtype.int64,
-                              Dtype.int8, Dtype.uint8],
-                    "gen_fn": dict(fn=Genfunc.randint, low=-4, high=4),
-                }
-            ],
-        ),
-    ),
-
-    'pow_bool': dict(
-        name=['pow'],
-        interface=['torch'],
-        is_inplace=True,
-        para=dict(
-            exponent=[-0.5, 2, 0.6, 3, 1.2, 0.],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((), (20267, 80),
-                              (2, 128, 3072),
-                              (2, 512, 38, 38),
-                              (0,), (0, 8)),
-                    "dtype": [Dtype.bool],
-                    "gen_fn": Genfunc.mask,
-                }
-            ],
-        ),
-    ),
-
-    # 'pow_input_scalar_int_exponent': dict(
+    # 'pow': dict(
     #     name=['pow'],
     #     interface=['torch'],
+    #     is_inplace=True,
     #     para=dict(
-    #         self=[-2, -0.5, 1., 0.6, 2, 3, 4., 1.],
+    #         exponent=[-2, -0.5, 0, 0.6, True, 3, 4., 1.],
     #     ),
     #     tensor_para=dict(
     #         args=[
     #             {
-    #                 "ins": ['exponent'],
-    #                 "shape": ((), (8,), (125, 1),
-    #                           (70, 1, 2), (4, 256, 16, 16),
-    #                           (0,), (0, 4), (9, 0, 6)),
+    #                 "ins": ['input'],
+    #                 "shape": ((), (16, ), (20267, 80),
+    #                           (2, 128, 3072),
+    #                           (2, 512, 38, 38),
+    #                           (0,), (0, 8), (7, 0, 9)),
+    #                 "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
+    #                 "gen_fn": Genfunc.randn,
+    #             }
+    #         ],
+    #     ),
+    # ),
+
+    # 'pow_int': dict(
+    #     name=['pow'],
+    #     interface=['torch'],
+    #     is_inplace=True,
+    #     para=dict(
+    #         exponent=[1, 2, 0.6, 1.2, 3, 0., 2.3,  0],
+    #     ),
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "shape": ((), (16, ), (20267, 80),
+    #                           (2, 128, 3072), (2, 512, 38, 38),
+    #                           (0,), (0, 8), (7, 0, 9)),
     #                 "dtype": [Dtype.int16, Dtype.int32, Dtype.int64,
     #                           Dtype.int8, Dtype.uint8],
     #                 "gen_fn": dict(fn=Genfunc.randint, low=-4, high=4),
@@ -943,19 +900,21 @@ diopi_configs = {
     #     ),
     # ),
 
-    # 'pow_input_scalar_bool_exponent': dict(
+    # 'pow_bool': dict(
     #     name=['pow'],
     #     interface=['torch'],
+    #     is_inplace=True,
     #     para=dict(
-    #         self=[-2, -0.5, 0, 0.6, 2, 3, 4., 1.],
+    #         exponent=[-0.5, 2, 0.6, 3, 1.2, 0.],
     #     ),
     #     tensor_para=dict(
     #         args=[
     #             {
-    #                 "ins": ['exponent'],
-    #                 "shape": ((), (8,), (125, 1),
-    #                           (70, 1, 2), (4, 256, 16, 16),
-    #                           (0,), (0, 4), (9, 0, 6)),
+    #                 "ins": ['input'],
+    #                 "shape": ((), (20267, 80),
+    #                           (2, 128, 3072),
+    #                           (2, 512, 38, 38),
+    #                           (0,), (0, 8)),
     #                 "dtype": [Dtype.bool],
     #                 "gen_fn": Genfunc.mask,
     #             }
@@ -963,33 +922,74 @@ diopi_configs = {
     #     ),
     # ),
 
-    # 'pow_tensor': dict(
-    #     name=['pow'],
-    #     interface=['torch'],
-    #     is_inplace=True,
-    #     dtype=[Dtype.float16, Dtype.float32, Dtype.float64,
-    #            Dtype.int16, Dtype.int32, Dtype.int64,
-    #            Dtype.int8, Dtype.uint8],
-    #     tensor_para=dict(
-    #         gen_fn=Genfunc.randn,
-    #         args=[
-    #             {
-    #                 "ins": ['input'],
-    #                 "shape": ((), (1, ), (20267, 80),
-    #                           (2, 128, 3072),
-    #                           (2, 512, 38, 38),
-    #                           (0,), (0, 4), (9, 0, 3)),
-    #             },
-    #             {
-    #                 "ins": ['exponent'],
-    #                 "shape": ((), (1, ), (20267, 80),
-    #                           (2, 128, 3072),
-    #                           (2, 512, 38, 38),
-    #                           (0,), (0, 4), (9, 0, 3)),
-    #             },
-    #         ],
-    #     ),
-    # ),
+    'pow_input_scalar_int_exponent': dict(
+        name=['pow'],
+        interface=['torch'],
+        para=dict(
+            self=[-2, -0.5, 1., 0.6, 2, 3, 4., 1.],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['exponent'],
+                    "shape": ((), (8,), (125, 1),
+                              (70, 1, 2), (4, 16, 16),
+                              (0,), (0, 4), (9, 0, 6)),
+                    "dtype": [Dtype.int16, Dtype.int32, Dtype.int64,
+                              Dtype.int8, Dtype.uint8],
+                    "gen_fn": dict(fn=Genfunc.randint, low=-4, high=4),
+                }
+            ],
+        ),
+    ),
+
+    'pow_input_scalar_bool_exponent': dict(
+        name=['pow'],
+        interface=['torch'],
+        para=dict(
+            self=[-2, -0.5, 0, 0.6, 2, 3, 4., 1.],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['exponent'],
+                    "shape": ((), (8,), (125, 1),
+                              (70, 1, 2), (4, 16, 16),
+                              (0,), (0, 4), (9, 0, 6)),
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask,
+                }
+            ],
+        ),
+    ),
+
+    'pow_tensor': dict(
+        name=['pow'],
+        interface=['torch'],
+        is_inplace=True,
+        dtype=[Dtype.float16, Dtype.float32, Dtype.float64,
+               Dtype.int16, Dtype.int32, Dtype.int64,
+               Dtype.int8, Dtype.uint8],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (1, ), (20267, 80),
+                              (2, 128, 3072),
+                              (2, 512, 38, 38),
+                              (0,), (0, 4), (9, 0, 3)),
+                },
+                {
+                    "ins": ['exponent'],
+                    "shape": ((), (1, ), (20267, 80),
+                              (2, 128, 3072),
+                              (2, 512, 38, 38),
+                              (0,), (0, 4), (9, 0, 3)),
+                },
+            ],
+        ),
+    ),
 
     # 'pow_broadcast': dict(
     #     name=['pow'],
