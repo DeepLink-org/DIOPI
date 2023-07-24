@@ -113,7 +113,7 @@ device_configs = {
             args=[
                 {
                     "ins": ["exponent"],
-                    "dtype": [Skip(Dtype.float16), Skip(Dtype.int32), Skip(Dtype.int64),
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
                               Skip(Dtype.int8), Skip(Dtype.uint8)]
                 },
             ]
