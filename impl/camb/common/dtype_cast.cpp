@@ -48,7 +48,7 @@ static diopiError_t dataTypeCastTwice(diopiContextHandle_t ctx, DiopiTensor& des
         DiopiTensor mid = requiresTensor(ctx, src.shape(), diopi_dtype_int32);
         DIOPI_CALL(dataTypeCast(ctx, mid, src));
         DIOPI_CALL(dataTypeCast(ctx, dest, mid));
-    } else if (&canCastByFloat32) {
+    } else if (canCastByFloat32(key)) {
         DiopiTensor mid = requiresTensor(ctx, src.shape(), diopi_dtype_float32);
         DIOPI_CALL(dataTypeCast(ctx, mid, src));
         DIOPI_CALL(dataTypeCast(ctx, dest, mid));
@@ -73,15 +73,11 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& src, diopiDtype
 }
 
 diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const DiopiTensor& src) {
-    // check size of dest and src
-    DIOPI_CHECK(src.shape() == dest.shape(), "the shapes of src and dest are not equal");
-
     if (dest.dtype() == src.dtype()) {
-        if (dest.data() != src.data()) {
-            clone(ctx, src, dest);
-        }
         return diopiSuccess;
     }
+    // check size of dest and src
+    DIOPI_CHECK(src.shape() == dest.shape(), "the shapes of src and dest are not equal");
 
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     diopiDtype_t srcDtype = src.dtype();
