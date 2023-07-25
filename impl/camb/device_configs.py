@@ -170,6 +170,48 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float64)],
+                    "shape": (Skip((2, 0)), Skip((6, 0, 9))),
+                },
+            ]
+        ),
+    ),
+
+    'select_not_float': dict(
+        name=["select"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    # "dtype": [Skip(Dtype.float64)],
+                    "shape": (Skip((2, 0)), Skip((6, 0, 9))),
+                },
+            ]
+        ),
+    ),
+
+    'index_select': dict(
+        name=["index_select"],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": (Skip((12, 0)), Skip((2, 0, 9))),
+                },
+            ]
+        ),
+    ),
+
+    'index_select_not_float': dict(
+        name=["index_select"],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": (Skip((12, 0)), Skip((2, 0, 15))),
                 },
             ]
         ),
@@ -218,6 +260,45 @@ device_configs = {
                 {
                     "ins": ['mask'],
                     "shape": (Skip((2, 4)), Skip((5, 6)), Skip((0,)), Skip((4, 0)), Skip((1, 0, 9))),
+                },
+            ],
+        ),
+    ),
+
+    'gather': dict(
+        name=['gather'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((3, 9)), Skip((14, 6, 2)), Skip((5, 0, 9))),
+                },
+            ],
+        ),
+    ),
+
+    'gather_0dim': dict(
+        name=['gather'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['index'],
+                    "shape": (Skip(()),),
+                },
+            ],
+        ),
+    ),
+
+    'gather_not_float': dict(
+        name=['gather'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((3, 9)), Skip((14, 6, 2)), Skip((5, 0, 9))),
                 },
             ],
         ),
