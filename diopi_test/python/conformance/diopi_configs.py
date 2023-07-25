@@ -883,7 +883,7 @@ diopi_configs = {
         interface=['torch'],
         is_inplace=True,
         para=dict(
-            exponent=[1, 2, 0.6, 1.2, 3, 0., 2.3,  0],
+            exponent=[1, 2, 0.6, 1.2, 3, 0., 2.3, 0],
         ),
         tensor_para=dict(
             args=[
