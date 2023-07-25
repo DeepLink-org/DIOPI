@@ -433,6 +433,14 @@ device_configs = {
 
     'argmax': dict(
         name=['argmax'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip(()),),
+                },
+            ],
+        ),
     ),
 
     'argmax_same_value': dict(
@@ -638,6 +646,19 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
                               Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
                               Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                },
+            ],
+        ),
+    ),
+
+    'sort': dict(
+        name=["sort"],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip(()),),
                 },
             ],
         ),
