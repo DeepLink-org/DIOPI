@@ -34,7 +34,9 @@ inline bool canCastByFloat32(uint64_t castType) {
                                                     MAKE_KEY(diopi_dtype_uint8, diopi_dtype_int16),
                                                     MAKE_KEY(diopi_dtype_int16, diopi_dtype_uint8),
                                                     MAKE_KEY(diopi_dtype_uint8, diopi_dtype_int8),
-                                                    MAKE_KEY(diopi_dtype_int8, diopi_dtype_uint8)};
+                                                    MAKE_KEY(diopi_dtype_int8, diopi_dtype_uint8),
+                                                    MAKE_KEY(diopi_dtype_int32, diopi_dtype_uint8),
+                                                    MAKE_KEY(diopi_dtype_uint8, diopi_dtype_int32)};
     return std::find(validCasts.begin(), validCasts.end(), castType) != validCasts.end();
 }
 
