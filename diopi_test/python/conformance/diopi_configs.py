@@ -971,7 +971,7 @@ diopi_configs = {
                Dtype.int16, Dtype.int32, Dtype.int64,
                Dtype.int8, Dtype.uint8],
         tensor_para=dict(
-            gen_fn=Genfunc.randn,
+            gen_fn=dict(fn=Genfunc.randn_int, high=4),
             args=[
                 {
                     "ins": ['input'],
@@ -1042,7 +1042,7 @@ diopi_configs = {
         name=['pow'],
         interface=['torch'],
         tensor_para=dict(
-            gen_fn=Genfunc.randn,
+            gen_fn=dict(fn=Genfunc.randn_int, high=4),
             args=[
                 {
                     "ins": ['input'],
@@ -1067,7 +1067,7 @@ diopi_configs = {
         interface=['torch'],
         is_inplace=True,
         tensor_para=dict(
-            gen_fn=Genfunc.randn,
+            gen_fn=dict(fn=Genfunc.randn_int, high=4),
             args=[
                 {
                     "ins": ['input'],
@@ -1171,7 +1171,7 @@ diopi_configs = {
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64,
                               Dtype.int16, Dtype.int32, Dtype.int64,
                               Dtype.int8, Dtype.uint8, Dtype.bool],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": dict(fn=Genfunc.randn_int, high=4),
                 }
             ],
         ),

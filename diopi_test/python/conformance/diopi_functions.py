@@ -6,7 +6,7 @@ import itertools
 from ctypes import c_double, byref
 from .diopi_runtime import Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d, to_numpy_dtype
 from .utils import check_returncode, check_function, glob_vars, get_capsule
-from . import raw_like, int_types
+from . import raw_like, int_types, float_types
 from collections import namedtuple
 import numpy as np
 
@@ -70,8 +70,6 @@ def get_dtype(input) -> Dtype:
 
 def common_dtype(input, other) -> Dtype:
     dtype1, dtype2 = get_dtype(input), get_dtype(other)
-
-    float_types = [Dtype.float16, Dtype.float32, Dtype.float64]
     if dtype1 in float_types and dtype2 not in float_types:
         return dtype1
     if dtype1 not in float_types and dtype2 in float_types:
@@ -86,8 +84,6 @@ def common_dtype(input, other) -> Dtype:
 
 
 def pow_dtype(input, other) -> Dtype:
-    int_types = [Dtype.int8, Dtype.int16, Dtype.int32, Dtype.int64, Dtype.uint8]
-    float_types = [Dtype.float16, Dtype.float32, Dtype.float64]
     dtype1, dtype2 = get_dtype(input), get_dtype(other)
     if dtype1 not in int_types and dtype2 not in int_types and dtype1 != Dtype.bool and dtype2 != Dtype.bool:
         return dtype1
@@ -1276,7 +1272,6 @@ def split(tensor, split_size_or_sections, dim=0):
 
 
 def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
-    float_types = [Dtype.float16, Dtype.float32, Dtype.float64]
     if input is not None:
         out_dtype = pow_dtype(input, exponent)
     else:

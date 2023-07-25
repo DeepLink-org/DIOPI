@@ -10,7 +10,7 @@ from .utils import logger
 from .utils import need_process_func
 from .config import Genfunc, dict_elem_length, Config
 from . import diopi_configs
-from .diopi_runtime import from_dtype_str
+from .diopi_runtime import from_dtype_str, int_types, float_types
 from .utils import get_saved_pth_list, get_data_from_file, cfg_file_name
 import torch
 import torchvision
@@ -221,7 +221,7 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
                 high = 10
         else:
             gen_fn = arg["gen_fn"]["fn"]
-            assert (gen_fn == Genfunc.randint or gen_fn == Genfunc.uniform), "only randint needs args"
+            assert (gen_fn == Genfunc.randint or gen_fn == Genfunc.uniform or Genfunc.randn_int), "only randint needs args"
             low = arg["gen_fn"].get("low", 0)
             high = arg["gen_fn"].get("high", 10)
         dtype = to_numpy_dtype(arg["dtype"])
@@ -253,6 +253,11 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
             value = mat @ mat.transpose(axis) + 1e-3
         elif gen_fn == Genfunc.randn_cmplx:
             value = np.array(np.random.randn(*shape) + 1j * np.random.randn(*shape)).astype(dtype)
+        elif gen_fn == Genfunc.randn_int:
+            if dtype in int_types:
+                value = np.random.randint(low=low, high=high, size=shape).astype(dtype)
+            else:
+                value = np.array(np.random.randn(*shape)).astype(dtype)
         else:
             value = np.array(np.random.randn(*shape)).astype(dtype)
 
