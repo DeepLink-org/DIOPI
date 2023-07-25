@@ -244,6 +244,8 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
             value = np.random.randint(low=0, high=2, size=shape).astype(dtype)
         elif gen_fn == Genfunc.randint:
             value = np.random.randint(low=low, high=high, size=shape).astype(dtype)
+            if dtype == np_int_types[-1]:
+                value = np.random.randint(low=0, high=high, size=shape).astype(dtype)
         elif gen_fn == Genfunc.empty:
             value = np.empty(shape, dtype=dtype)
         elif gen_fn == Genfunc.positive:
