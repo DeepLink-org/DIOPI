@@ -91,12 +91,31 @@ def expand_tensor_para(args_list, tensor_paras_list):
     for j in range(num):
         args_ins_expand_list = copy.deepcopy(tmp_args_list)
         for i in range(len(tmp_args_list)):
+            stride_name = str(tmp_args_list[i]['ins']) + "stride"
             if "value" in tmp_args_list[i].keys():
                 args_ins_expand_list[i]["value"] = copy.deepcopy(
                     tmp_args_list[i]["value"][j])
             elif "shape" in tmp_args_list[i].keys():
                 args_ins_expand_list[i]["shape"] = copy.deepcopy(
                     tmp_args_list[i]["shape"][j])
+            if "stride" in tmp_args_list[i].keys():
+                if j >= len(args0_dict["stride"]):
+                    del args_ins_expand_list[i]["stride"]
+                    continue
+                elif tmp_args_list[i]["stride"][j] is None:
+                    del args_ins_expand_list[i]["stride"]
+                    continue
+                args_ins_expand_list[0][stride_name] = copy.deepcopy(tmp_args_list[i]["stride"][j])
+                # 判断stride和shape是否符合标准，不符合报错
+                tmp_stride = args_ins_expand_list[0][stride_name]
+                tmp_shape = args_ins_expand_list[i]["shape"]
+                assert len(tmp_stride) == len(tmp_shape), "stride and shape must have the same dim"
+                stride_dic = []
+                for index, s, st in zip(range(len(list(tmp_shape))), list(tmp_shape), tmp_stride):
+                    stride_dic.append((s, st))
+                sorted_stride = sorted(stride_dic, key=lambda x: x[1])
+                for index in range(len(sorted_stride) - 1):
+                    assert (sorted_stride[index][0] - 1) * sorted_stride[index][1] < sorted_stride[index + 1][1], "wrong stride for shape (might have memory overlap)"
         tensor_paras_list.append(args_ins_expand_list)
 
 
@@ -390,7 +409,7 @@ class CustomizedTest(object):
         exp_avgs = [exp_avg]
         exp_avg_sqs = [exp_avg_sq]
         max_exp_avg_sqs = [max_exp_avg_sq]
-        state_steps = [step]
+        state_steps = [torch.tensor(float(step))]
 
         torch.optim._functional.adam(params_with_grad,
                                      grads,
@@ -403,7 +422,8 @@ class CustomizedTest(object):
                                      beta2=beta2,
                                      lr=lr,
                                      weight_decay=weight_decay,
-                                     eps=eps)
+                                     eps=eps,
+                                     maximize=False)
         return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
 
     def adamw(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr, beta1, beta2, eps, step, weight_decay, amsgrad):
@@ -441,7 +461,8 @@ class CustomizedTest(object):
                                          lr=lr,
                                          rho=rho,
                                          eps=eps,
-                                         weight_decay=weight_decay)
+                                         weight_decay=weight_decay,
+                                         maximize=False)
         return param, param_grad, square_avg, acc_delta
 
     def rmsprop(param, param_grad, square_avg, grad_avg, momentum_buffer, lr, alpha, eps, weight_decay, momentum, centered):
@@ -492,6 +513,11 @@ class CustomizedTest(object):
         log_probs_ = log_probs.log_softmax(2)
         loss = torch.nn.functional.ctc_loss(log_probs_, targets, input_lengths, target_lengths, blank=blank, reduction=reduction, zero_infinity=zero_infinity)
         return loss
+
+    def linalgqr(input, mode):
+        q, r = torch.linalg.qr(input, mode)
+        out = [q, r]
+        return out
 
 
 def transfer_tensor_to_device(function_paras: dict):

@@ -21,3 +21,15 @@
 
 - diopiUpsampleLinearBackward:
     layout: NLC, NHWC, NDHWC
+
+- diopiConvolution2d:
+    layout: NHWC
+
+- diopiConvolution2dBackward:
+    layout: NHWC
+
+- diopiConvTranspose2d:
+    layout: NHWC
+
+- diopiConvTranspose2dBackward:
+    layout: NHWC

@@ -94,7 +94,7 @@ DIOPI主要包含以下几个组件：
     ```
     2022-09-29 16:40:40,550 - DIOPI-Test - INFO - Run diopi_functions.relu succeed
     ```
-    
+
     失败的测例会额外存储测例输入参数的张量信息在 ```error_report.csv``` 中以供调试所需。
 
     ```

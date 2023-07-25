@@ -17,7 +17,7 @@ def device(dev: str) -> Device:
 all_types = [Dtype.float16, Dtype.float32, Dtype.float64, Dtype.int32, Dtype.int64]
 float_types = [Dtype.float16, Dtype.float32, Dtype.float64]
 float_no_half_types = [Dtype.float32, Dtype.float64]
-int_types = [Dtype.int32, Dtype.int64]
+int_types = [Dtype.int32, Dtype.int64, Dtype.int16, Dtype.int8]
 complex_types = [Dtype.complex64, Dtype.complex128]
 default = all_types
 
@@ -194,8 +194,9 @@ class Sizes(diopiSize):
 class Scalar(diopiScalar):
 
     def __init__(self, value, dtype=None):
+        from conformance.utils import glob_vars
         if dtype is None:
-            dtype = Dtype.int64 if isinstance(value, int) else Dtype.float64
+            dtype = glob_vars.int_type if isinstance(value, int) else glob_vars.float_type
         diopiScalar.__init__(self, dtype, value)
 
 
@@ -264,8 +265,10 @@ class Tensor(diopiTensor):
         return tr
 
     def numpy(self) -> np.ndarray:
-        darray = np.empty(list(self.size().data), to_numpy_dtype(self.get_dtype()))
-
+        data = np.empty((1,), to_numpy_dtype(self.get_dtype()))
+        element_size = data.itemsize
+        sumsize = int(sum([(s - 1) * st for s, st in zip(list(self.size().data), [int(stride * element_size) for stride in self.get_stride().data])]) / element_size + 1)
+        darray = np.empty(sumsize, to_numpy_dtype(self.get_dtype()))
         PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
         PyCapsule_New = ctypes.pythonapi.PyCapsule_New
         PyCapsule_New.restype = ctypes.py_object

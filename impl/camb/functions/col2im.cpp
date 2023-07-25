@@ -38,19 +38,19 @@ static diopiError_t transposeInternal(diopiContextHandle_t ctx, DiopiTensor outT
     CnnlResourceGuard<cnnlTransposeDescriptor_t, cnnlCreateTransposeDescriptor, cnnlDestroyTransposeDescriptor> cnnlTransposeDesc;
     cnnlTransposeDescriptor_t transposeDesc = cnnlTransposeDesc.get();
     std::vector<int> perms = getPerm(input, dim0, dim1);
-    cnnlSetTransposeDescriptor(transposeDesc, perms.size(), perms.data());
+    DIOPI_CALLCNNL(cnnlSetTransposeDescriptor(transposeDesc, perms.size(), perms.data()));
 
     CnnlTensorDesc inputDesc(input, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize = 0;
-    cnnlGetTransposeWorkspaceSize(handle, inputDesc.get(), transposeDesc, &workspaceSize);
+    DIOPI_CALLCNNL(cnnlGetTransposeWorkspaceSize(handle, inputDesc.get(), transposeDesc, &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    cnnlTranspose_v2(handle, transposeDesc, inputDesc.get(), input.data(), outDesc.get(), outTensor.data(), workspace, workspaceSize);
+    DIOPI_CALLCNNL(cnnlTranspose_v2(handle, transposeDesc, inputDesc.get(), input.data(), outDesc.get(), outTensor.data(), workspace, workspaceSize));
     return diopiSuccess;
 }
 
@@ -59,16 +59,20 @@ diopiError_t diopiCol2Im(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor inputTensor(input);
+    DiopiTensor outTensor(out);
+    if (inputTensor.shape().size() == 2) {
+        inputTensor.unsqueeze(0);
+        outTensor.unsqueeze(0);
+    }
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_NCHW);
+
     DiopiTensor inputCol = requiresTensor(ctx, {inputTensor.shape()[0], inputTensor.shape()[2], inputTensor.shape()[1]}, inputTensor.dtype());
     DIOPI_CALL(transposeInternal(ctx, inputCol, inputTensor, 1, 2));
     CnnlTensorDesc inputColDesc(inputCol, CNNL_LAYOUT_ARRAY);
 
     cnnlDataType_t dtype;
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, inputTensor.dtype()));
-
-    DiopiTensor outTensor(out);
-    CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_NCHW);
 
     int32_t padHeight = padding.data[0];
     int32_t padWidth = padding.len == 2 ? padding.data[1] : padding.data[0];
