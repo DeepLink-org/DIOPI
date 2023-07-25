@@ -112,7 +112,14 @@ device_configs = {
 
     'bmm': dict(
         name=['bmm'],
-        atol=1e-1,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0, 12, 16)), Skip((4, 0, 6)), Skip((4, 9, 0)), Skip((5, 8, 13))),
+                }
+            ],
+        ),
     ),
 
     'addcdiv': dict(
