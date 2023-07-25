@@ -17,27 +17,32 @@ namespace camb {
 #define MAKE_KEY(a, b) (((static_cast<uint64_t>(a) & 0xFFFFFFFF) << 32) | (static_cast<uint64_t>(b) & 0xFFFFFFFF))
 
 inline bool canCastByInt32(uint64_t castType) {
-    constexpr std::array<uint64_t, 8> validCasts = {MAKE_KEY(diopi_dtype_bool, diopi_dtype_int64),
-                                                    MAKE_KEY(diopi_dtype_int16, diopi_dtype_int64),
-                                                    MAKE_KEY(diopi_dtype_uint8, diopi_dtype_bool),
-                                                    MAKE_KEY(diopi_dtype_int16, diopi_dtype_bool),
-                                                    MAKE_KEY(diopi_dtype_int64, diopi_dtype_bool),
-                                                    MAKE_KEY(diopi_dtype_int8, diopi_dtype_bool),
-                                                    MAKE_KEY(diopi_dtype_int8, diopi_dtype_int64),
-                                                    MAKE_KEY(diopi_dtype_int64, diopi_dtype_int8)};
-    return std::find(validCasts.begin(), validCasts.end(), castType) != validCasts.end();
+    // special convert (cnnl doesn't support)
+    constexpr uint64_t boolInt64 = MAKE_KEY(diopi_dtype_bool, diopi_dtype_int64);
+    constexpr uint64_t int16Int64 = MAKE_KEY(diopi_dtype_int16, diopi_dtype_int64);
+    constexpr uint64_t uint8Bool = MAKE_KEY(diopi_dtype_uint8, diopi_dtype_bool);
+    constexpr uint64_t int16Bool = MAKE_KEY(diopi_dtype_int16, diopi_dtype_bool);
+    constexpr uint64_t int64Bool = MAKE_KEY(diopi_dtype_int64, diopi_dtype_bool);
+    constexpr uint64_t int8Bool = MAKE_KEY(diopi_dtype_int8, diopi_dtype_bool);
+    constexpr uint64_t int8Int64 = MAKE_KEY(diopi_dtype_int8, diopi_dtype_int64);
+    constexpr uint64_t int64Int8 = MAKE_KEY(diopi_dtype_int64, diopi_dtype_int8);
+
+    return boolInt64 == castType || int16Int64 == castType || uint8Bool == castType || int16Bool == castType || int64Bool == castType || int8Bool == castType ||
+           int8Int64 == castType || int64Int8 == castType;
 }
 
 inline bool canCastByFloat32(uint64_t castType) {
-    constexpr std::array<uint64_t, 8> validCasts = {MAKE_KEY(diopi_dtype_int64, diopi_dtype_float64),
-                                                    MAKE_KEY(diopi_dtype_float64, diopi_dtype_int64),
-                                                    MAKE_KEY(diopi_dtype_uint8, diopi_dtype_int16),
-                                                    MAKE_KEY(diopi_dtype_int16, diopi_dtype_uint8),
-                                                    MAKE_KEY(diopi_dtype_uint8, diopi_dtype_int8),
-                                                    MAKE_KEY(diopi_dtype_int8, diopi_dtype_uint8),
-                                                    MAKE_KEY(diopi_dtype_int32, diopi_dtype_uint8),
-                                                    MAKE_KEY(diopi_dtype_uint8, diopi_dtype_int32)};
-    return std::find(validCasts.begin(), validCasts.end(), castType) != validCasts.end();
+    constexpr uint64_t int64Float64 = MAKE_KEY(diopi_dtype_int64, diopi_dtype_float64);
+    constexpr uint64_t float64Int64 = MAKE_KEY(diopi_dtype_float64, diopi_dtype_int64);
+    constexpr uint64_t uint8Int16 = MAKE_KEY(diopi_dtype_uint8, diopi_dtype_int16);
+    constexpr uint64_t int16Uint8 = MAKE_KEY(diopi_dtype_int16, diopi_dtype_uint8);
+    constexpr uint64_t uint8Int8 = MAKE_KEY(diopi_dtype_uint8, diopi_dtype_int8);
+    constexpr uint64_t int8Uint8 = MAKE_KEY(diopi_dtype_int8, diopi_dtype_uint8);
+    constexpr uint64_t int32Uint8 = MAKE_KEY(diopi_dtype_int32, diopi_dtype_uint8);
+    constexpr uint64_t uint8Int32 = MAKE_KEY(diopi_dtype_uint8, diopi_dtype_int32);
+
+    return int64Float64 == castType || float64Int64 == castType || uint8Int16 == castType || int16Uint8 == castType || uint8Int8 == castType ||
+           int8Uint8 == castType || int32Uint8 == castType || uint8Int32 == castType;
 }
 
 static diopiError_t dataTypeCastTwice(diopiContextHandle_t ctx, DiopiTensor& dest, const DiopiTensor& src) {
