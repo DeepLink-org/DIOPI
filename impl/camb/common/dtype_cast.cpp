@@ -29,7 +29,7 @@ inline bool canCastByInt32(uint64_t castType) {
 }
 
 inline bool canCastByFloat32(uint64_t castType) {
-    constexpr std::array<uint64_t, 6> validCasts = {MAKE_KEY(diopi_dtype_int64, diopi_dtype_float64),
+    constexpr std::array<uint64_t, 8> validCasts = {MAKE_KEY(diopi_dtype_int64, diopi_dtype_float64),
                                                     MAKE_KEY(diopi_dtype_float64, diopi_dtype_int64),
                                                     MAKE_KEY(diopi_dtype_uint8, diopi_dtype_int16),
                                                     MAKE_KEY(diopi_dtype_int16, diopi_dtype_uint8),
