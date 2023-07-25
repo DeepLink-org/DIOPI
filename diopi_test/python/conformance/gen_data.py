@@ -222,7 +222,7 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
                 high = 10
         else:
             gen_fn = arg["gen_fn"]["fn"]
-            assert (gen_fn == Genfunc.randint or gen_fn == Genfunc.uniform or Genfunc.randn_int), "only randint needs args"
+            assert (gen_fn == Genfunc.randint or gen_fn == Genfunc.uniform or Genfunc.randn_int), "only randint & uniform & randn_int needs args"
             low = arg["gen_fn"].get("low", 0)
             high = arg["gen_fn"].get("high", 10)
         dtype = to_numpy_dtype(arg["dtype"])
