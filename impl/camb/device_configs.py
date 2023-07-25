@@ -189,6 +189,40 @@ device_configs = {
         ),
     ),
 
+    'masked_select': dict(
+        name=['masked_select'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip(()), Skip((4, 1, 5, 8)), Skip((0,)), Skip((4, 0)), Skip((16, 0, 9))),
+                },
+                {
+                    "ins": ['mask'],
+                    "shape": (Skip((4,)), Skip((3, 5, 8)), Skip((0,)), Skip((2, 4, 0)), Skip((0, 9))),
+                },
+            ],
+        ),
+    ),
+
+    'masked_select_not_float': dict(
+        name=['masked_select'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip(()), Skip((4, 1, 6)), Skip((0,)), Skip((4, 1)), Skip((16, 0, 9))),
+                },
+                {
+                    "ins": ['mask'],
+                    "shape": (Skip((2, 4)), Skip((5, 6)), Skip((0,)), Skip((4, 0)), Skip((1, 0, 9))),
+                },
+            ],
+        ),
+    ),
+
     'embedding': dict(
         name=["embedding"],
         para=dict(
