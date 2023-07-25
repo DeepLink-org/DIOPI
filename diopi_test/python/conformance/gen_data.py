@@ -204,6 +204,7 @@ def delete_fn(cfg_dict):
 
 
 def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
+    np_int_types = [to_numpy_dtype(type) for type in int_types]
     if "value" in arg.keys():
         dtype = to_numpy_dtype(arg.get("dtype", None))
         value = np.array(arg["value"], dtype=dtype)
@@ -254,7 +255,7 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
         elif gen_fn == Genfunc.randn_cmplx:
             value = np.array(np.random.randn(*shape) + 1j * np.random.randn(*shape)).astype(dtype)
         elif gen_fn == Genfunc.randn_int:
-            if dtype in int_types:
+            if dtype in np_int_types:
                 value = np.random.randint(low=low, high=high, size=shape).astype(dtype)
             else:
                 value = np.array(np.random.randn(*shape)).astype(dtype)
