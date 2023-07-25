@@ -97,8 +97,9 @@ def pow_dtype(input, other) -> Dtype:
         if dtype1 == Dtype.bool:
             return Dtype.float32 if dtype2 in float_types else Dtype.int64
         if dtype2 not in int_types:
-            return dtype1 if dtype1==Dtype.float16 else Dtype.float32
+            return dtype1 if dtype1 == Dtype.float16 else Dtype.float32
     return dtype1
+
 
 def promote_type(input: Tensor, promoted_dtype: Dtype) -> Dtype:
     dtype1 = input.get_dtype()
@@ -1276,7 +1277,7 @@ def split(tensor, split_size_or_sections, dim=0):
 
 def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
     float_types = [Dtype.float16, Dtype.float32, Dtype.float64]
-    if input != None:
+    if input is not None:
         out_dtype = pow_dtype(input, exponent)
     else:
         out_dtype = pow_dtype(self, exponent)
