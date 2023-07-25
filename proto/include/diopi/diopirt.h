@@ -18,6 +18,7 @@
 #endif
 
 #if defined(__cplusplus)
+#include <iostream>
 extern "C" {
 #endif
 
@@ -34,6 +35,13 @@ typedef struct diopiSize_t_ {
     diopiSize_t_() : data(nullptr), len(0) {}
     diopiSize_t_(const int64_t* d, int64_t l) : data(d), len(l) {}
     int64_t getLen() const { return len; }
+    friend std::ostream& operator<<(std::ostream& os, const diopiSize_t_& obj) {
+        os << "Length: " << obj.len << "\nData: ";
+        for (int64_t i = 0; i < obj.len; ++i) {
+            os << obj.data[i] << " ";
+        }
+        return os;
+    }
 #endif  // __cplusplus
 } diopiSize_t;
 

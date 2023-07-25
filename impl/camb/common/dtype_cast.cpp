@@ -73,11 +73,15 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& src, diopiDtype
 }
 
 diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const DiopiTensor& src) {
-    if (dest.dtype() == src.dtype()) {
-        return diopiSuccess;
-    }
     // check size of dest and src
     DIOPI_CHECK(src.shape() == dest.shape(), "the shapes of src and dest are not equal");
+
+    if (dest.dtype() == src.dtype()) {
+        if (dest.data() != src.data()) {
+            clone(ctx, src, dest);
+        }
+        return diopiSuccess;
+    }
 
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     diopiDtype_t srcDtype = src.dtype();

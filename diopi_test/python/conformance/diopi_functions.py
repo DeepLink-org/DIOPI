@@ -4,9 +4,9 @@ import math
 import itertools
 
 from ctypes import c_double, byref
-from .diopi_runtime import Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d
+from .diopi_runtime import Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d, to_numpy_dtype
 from .utils import check_returncode, check_function, glob_vars, get_capsule
-from . import raw_like
+from . import raw_like, int_types
 from collections import namedtuple
 import numpy as np
 
@@ -73,6 +73,8 @@ def common_dtype(input, other) -> Dtype:
         dtype2 = glob_vars.int_type
     elif isinstance(other, float):
         dtype2 = Dtype.float32
+    elif isinstance(other, Dtype):
+        dtype2 = other
     else:
         assert 0, "not supported type of other"
 
@@ -494,18 +496,20 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
     call = "diopiClamp"
     args = "input.context(), "
     if inplace:
-        out = input
         call = call + "Inp"
     else:
-        out = raw_like(input)
         args = args + "out, "
 
+    convert_float = False
     if (max and min):
         if isinstance(min, Tensor):
             assert (isinstance(max, Tensor)), 'min and max must have same type'
             args += "input, min, max"
-        elif isinstance(min, (int, float)):
+        else:
+            assert (isinstance(min, (int, float))), 'min must be Tensor or Value'
             assert (isinstance(max, (int, float))), 'min and max must have same type'
+            if isinstance(min, float) and input.get_dtype() in int_types:
+                convert_float = True
             call = call + 'Scalar'
             min = Scalar(min)
             max = Scalar(max)
@@ -513,17 +517,34 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
     elif (max and not min):
         if isinstance(max, Tensor):
             args += "input, None, max"
-        if isinstance(max, (int, float)):
+        else:
+            assert (isinstance(max, (int, float))), 'max must be Tensor or Value'
+            if isinstance(max, float) and input.get_dtype() in int_types:
+                convert_float = True
             call = call + 'Scalar'
             max = Scalar(max)
             args = args + "input, None, max"
     elif (min and not max):
         if isinstance(min, Tensor):
             args += "input, min, None"
-        if isinstance(min, (int, float)):
+        else:
+            assert (isinstance(min, (int, float))), 'min must be Tensor or Value'
+            if isinstance(min, float) and input.get_dtype() in int_types:
+                convert_float = True
             call = call + 'Scalar'
             min = Scalar(min)
             args = args + "input, min, None"
+
+    if inplace:
+        if convert_float:
+            input_np = input.numpy()
+            input = Tensor.from_numpy(input_np.astype(to_numpy_dtype(Dtype.float32)))
+        out = input
+    else:
+        if convert_float:
+            out = Tensor(input.size(), Dtype.float32)
+        else:
+            out = raw_like(input)
 
     func = check_function(call)
     ret = eval(f'func({args})')
@@ -535,10 +556,17 @@ def clamp_min(input, min, inplace=False) -> Tensor:
     call = "diopiClampMin"
     args = "input.context(), "
     if inplace:
+        if isinstance(min, float) and input.get_dtype() in int_types:
+            input_np = input.numpy()
+            input = Tensor.from_numpy(input_np.astype(to_numpy_dtype(Dtype.float32)))
         out = input
         call = call + "Inp"
     else:
-        out = raw_like(input)
+        if isinstance(min, float) and input.get_dtype() in int_types:
+            out_dtype = Dtype.float32
+        else:
+            out_dtype = input.get_dtype()
+        out = Tensor(input.size(), out_dtype)
         args = args + "out, "
 
     if isinstance(min, Tensor):
@@ -558,10 +586,17 @@ def clamp_max(input, max, inplace=False) -> Tensor:
     call = "diopiClampMax"
     args = "input.context(), "
     if inplace:
+        if isinstance(max, float) and input.get_dtype() in int_types:
+            input_np = input.numpy()
+            input = Tensor.from_numpy(input_np.astype(to_numpy_dtype(Dtype.float32)))
         out = input
         call = call + "Inp"
     else:
-        out = raw_like(input)
+        if isinstance(max, float) and input.get_dtype() in int_types:
+            out_dtype = Dtype.float32
+        else:
+            out_dtype = input.get_dtype()
+        out = Tensor(input.size(), out_dtype)
         args = args + "out, "
 
     if isinstance(max, Tensor):
@@ -3735,5 +3770,50 @@ def isnan(input) -> Tensor:
     out = Tensor(input.size(), Dtype.bool)
     func = check_function(call)
     ret = func(input.context(), out, input)
+    check_returncode(ret)
+    return out
+
+
+def amax(input, dim, keepdim) -> Tensor:
+    call = "diopiAmax"
+    func = check_function(call)
+    assert isinstance(dim, (int, list, tuple)) or dim is None,\
+        "dim should be int or list or tuple or None"
+    dim, out = reduce_op_process(input, dim, keepdim)
+    dim1 = Sizes(list(dim))
+    ret = func(input.context(), out, input, dim1, keepdim)
+    check_returncode(ret)
+    return out
+
+
+def linalgqr(input, mode):
+    call = "diopiLinalgQR"
+    func = check_function(call)
+    sizeI = list(input.size().data)
+    sizeq = []
+    sizer = []
+    if mode == "reduced":
+        if sizeI[-1] <= sizeI[-2]:
+            sizeq = sizeI[:]
+            sizer = sizeI[:-2] + [sizeI[-1], sizeI[-1]]
+        else:
+            sizer = sizeI[:]
+            sizeq = sizeI[:-2] + [sizeI[-2], sizeI[-2]]
+    elif mode == "complete":
+        sizeq = sizeI[:-1]
+        sizeq.append(sizeI[-2])
+        sizer = sizeI[:]
+    elif mode == 'r':
+        sizeq = [0]
+        if sizeI[-1] <= sizeI[-2]:
+            sizer = sizeI[:-2] + [sizeI[-1], sizeI[-1]]
+        else:
+            sizer = sizeI[:]
+    else:
+        raise ValueError('mode do not support.')
+    q = Tensor(sizeq, input.get_dtype())
+    r = Tensor(sizer, input.get_dtype())
+    ret = func(input.context(), input, mode, q, r)
+    out = [q, r]
     check_returncode(ret)
     return out
