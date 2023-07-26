@@ -497,8 +497,6 @@ class ConformanceTest(object):
                     if passed:
                         logger.info(f"Run diopi_functions.{cfg_func_name} succeed")
                     else:
-                        logger.info(output_abs_path)
-                        logger.info(data['cfg'])
                         input_compare_str = "" if not_passed_name == "" else f", because of inputs: {not_passed_name} changed"
                         logger.error(
                             f"Run diopi_functions.{cfg_func_name} failed{input_compare_str}", tag=test_tag, info=tensor_info)
