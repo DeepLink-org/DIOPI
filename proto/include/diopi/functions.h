@@ -100,7 +100,7 @@ DIOPI_API diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandl
  * @param[out] mean normalized mean. type = [float32, float16, float64].
  * @param invstd normalized invstd. type = [float32, float16, float64].
  */
-DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd, diopiTensorHandle_t input,
+DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd, diopiConstTensorHandle_t input,
                                            double eps);
 
 /**
