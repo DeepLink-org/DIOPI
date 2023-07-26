@@ -56,7 +56,6 @@ diopi_configs = {
         ),
     ),
 
-
     'batch_norm_no_contiguous': dict(
         name=["batch_norm"],
         dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
@@ -972,6 +971,33 @@ diopi_configs = {
                Dtype.int8, Dtype.uint8],
         tensor_para=dict(
             gen_fn=dict(fn=Genfunc.randn_int, high=4),
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (1, ), (20267, 80),
+                              (2, 128, 3072),
+                              (2, 512, 38, 38),
+                              (0,), (0, 4), (9, 0, 3)),
+                },
+                {
+                    "ins": ['exponent'],
+                    "shape": ((), (1, ), (20267, 80),
+                              (2, 128, 3072),
+                              (2, 512, 38, 38),
+                              (0,), (0, 4), (9, 0, 3)),
+                },
+            ],
+        ),
+    ),
+
+    'pow_tensor_skip_camb': dict(
+        name=['pow'],
+        interface=['torch'],
+        is_inplace=True,
+        dtype=[Dtype.int16, Dtype.int32, Dtype.int64,
+               Dtype.int8, Dtype.uint8],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
