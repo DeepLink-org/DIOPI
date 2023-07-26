@@ -78,6 +78,18 @@ device_configs = {
         ),
     ),
 
+    'pow_input_scalar_int_exponent': dict(
+        name=["pow"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["exponent"],
+                    "dtype": [Skip(Dtype.uint8)]
+                },
+            ]
+        ),
+    ),
+
     'nll_loss': dict(
         name=["nll_loss"],
         atol=1e-3,
