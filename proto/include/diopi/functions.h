@@ -93,6 +93,16 @@ DIOPI_API diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandl
                                       diopiTensorHandle_t running_mean, diopiTensorHandle_t running_var, bool training, double momentum, double eps);
 
 /**
+ * @brief Applies Batch Normalization to calculate mean and invstd.
+ * @param[in] ctx Context environment.
+ * @param input input tensor. type = [float32, float16, float64].
+ * @param eps The value added to the denominator during batch normalization to ensure numerical stability. type = [float32, float64]
+ * @param[out] mean normalized mean. type = [float32, float16, float64].
+ * @param[out] invstd normalized invstd. type = [float32, float16, float64].
+ */
+DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd, diopiTensorHandle_t input, double eps);
+
+/**
  * @brief compute the backward pass of batch normalization
  * @param[in] grad_output Gradient of normalized layer output, with the same shape as the forward pass output. type=[float32, float16, float64].
  * @param[out] grad_input Gradient of the input data, with the same shape as the input data. type = [float32, float16, float64].

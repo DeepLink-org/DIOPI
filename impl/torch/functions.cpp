@@ -4127,4 +4127,14 @@ diopiError_t diopiAmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     return diopiSuccess;
 }
 
+diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd, diopiTensorHandle_t input, double eps) {
+    impl::aten::setCurCtx(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atOuts = at::batch_norm_stats(atInput, eps);
+    impl::aten::updateATen2Tensor(ctx, std::get<0>(atOuts), mean);
+    impl::aten::updateATen2Tensor(ctx, std::get<1>(atOuts), invstd);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
 }  // extern "C"

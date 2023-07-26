@@ -99,6 +99,29 @@ diopi_configs = {
         ),
     ),
 
+    'batch_norm_stats': dict(
+        name=["batch_norm_stats"],
+        interface=['CustomizedTest'],
+        dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
+        atol=1e-3,
+        rtol=1e-4,
+        atol_half=1e-1,
+        rtol_half=1e-2,
+        para=dict(
+            eps=[1e-5, 1e-4, 1e-4, 1e-5],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 8, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "requires_grad": [False],
+                    "gen_fn": Genfunc.randn,
+                },
+            ]
+        ),
+    ),
+
     'baddbmm': dict(
         name=["baddbmm"],
         interface=["torch"],
