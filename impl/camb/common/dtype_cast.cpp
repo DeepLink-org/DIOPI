@@ -62,11 +62,8 @@ static diopiError_t dataTypeCastTwice(diopiContextHandle_t ctx, DiopiTensor& des
         DIOPI_CALL(dataTypeCast(ctx, dest, mid));
     } else {
         // TODO(waiting for dispatch) : cast through cpu
-        setLastErrorString("Can not cast from %s to %s at %s:%d ",
-                           DiopiDataType::dataTypeStr(srcDtype).c_str(),
-                           DiopiDataType::dataTypeStr(destDtype).c_str(),
-                           __FILE__,
-                           __LINE__);
+        setLastErrorString(
+            "Can not cast from %s to %s at %s:%d ", DiopiDataType::dataTypeStr(srcDtype), DiopiDataType::dataTypeStr(destDtype), __FILE__, __LINE__);
         return diopiDtypeNotSupported;
     }
     return diopiSuccess;
