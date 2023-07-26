@@ -768,6 +768,18 @@ device_configs = {
         ),
     ),
 
+    'scatter_specific': dict(
+        name=['scatter'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float32)],
+                },
+            ]
+        ),
+    ),
+
     'scatter_reduce': dict(
         name=['scatter'],
         para=dict(
