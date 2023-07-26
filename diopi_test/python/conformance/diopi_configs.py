@@ -2535,14 +2535,15 @@ diopi_configs = {
         name=["tril"],
         interface=["torch"],
         para=dict(
-            diagonal=[0, -1, 1],
+            diagonal=[12, 0, 5, -9, -1, 1, 2, 10, -10],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((6, 7), (6, 8, 8),
-                              (64, 7, 28, 28)),
+                    "shape": ((8, 9), (6, 7), (6, 6), (9, 9),
+                              (6, 8, 8), (64, 7, 28, 28),
+                              (2, 0), (12, 0), (2, 0, 9)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,
                               Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
                     "gen_fn": Genfunc.randn,
