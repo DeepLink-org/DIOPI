@@ -3940,13 +3940,13 @@ diopi_configs = {
         name=['permute'],
         interface=['torch'],
         para=dict(
-            dims=[(0, 1, 3, 2, 4, 5), (2, 0, 1), (0, 2, 3, 1), (1, 0), (0, -2, -1), (0,), (0,)],
+            dims=[(), (0, 1, 3, 2, 4, 5), (2, 0, 1), (0, 2, 3, -3), (1, 0), (0, -2, -1), (0,), (-1,)],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [(2, 8, 7, 8, 7, 128), (49, 49, 4), (2, 3, 200, 304), (20267, 1), (2, 3, 4), (0,), (1,)],
+                    "shape": [(), (2, 8, 7, 8, 7, 128), (49, 49, 4), (2, 3, 200, 304), (20267, 1), (2, 3, 4), (0,), (1,)],
                     "gen_fn": Genfunc.randn,
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16,
                               Dtype.int32, Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
