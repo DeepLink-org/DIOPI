@@ -98,7 +98,7 @@ DIOPI_API diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandl
  * @param input input tensor. type = [float32, float16, float64].
  * @param eps The value added to the denominator during batch normalization to ensure numerical stability. type = [float32, float64]
  * @param[out] mean normalized mean. type = [float32, float16, float64].
- * @param[out] invstd normalized invstd. type = [float32, float16, float64].
+ * @param invstd normalized invstd. type = [float32, float16, float64].
  */
 DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd, diopiTensorHandle_t input, double eps);
 
