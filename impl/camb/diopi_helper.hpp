@@ -63,7 +63,7 @@ class DiopiDataType final {
 public:
     static bool isInteger(diopiDtype_t dtype) { return dtype < 8; }
     static bool isFloatPoint(diopiDtype_t dtype) { return dtype <= 10 && dtype >= 8 || dtype == 12 || dtype == 13; }
-    static std::string dataTypeStr(diopiDtype_t dtype) {
+    static const char* dataTypeStr(diopiDtype_t dtype) {
         switch (dtype) {
             case diopi_dtype_int8:
                 return "diopi_dtype_int8";
