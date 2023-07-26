@@ -1323,8 +1323,8 @@ def where(condition, input, other) -> Tensor:
     sizeC = condition.size().data
     sizeO = broadcast_out_size(sizeX, sizeY)
     sizeO = broadcast_out_size(sizeC, sizeO)
-    assert (input.get_dtype() == other.get_dtype()),\
-        " input and other shoule be the same type "
+    # assert (input.get_dtype() == other.get_dtype()),\
+    #     " input and other shoule be the same type "
     out = Tensor(sizeO, input.get_dtype())
 
     func = check_function("diopiWhere")

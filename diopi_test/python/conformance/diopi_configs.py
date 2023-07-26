@@ -2754,7 +2754,8 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['condition'],
-                    "shape": [(1024, ), (1482, 4), (4, 5, 6)],
+                    "shape": [(), (1024, ), (1482, 4), (4, 5, 6),
+                              (0,), (2, 0), (2, 0, 9)],
                     "dtype": [Dtype.uint8, Dtype.bool],
                     "gen_fn": Genfunc.mask
                 },
@@ -2762,7 +2763,8 @@ diopi_configs = {
                     "ins": ['input', 'other'],
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64, Dtype.int16,
                               Dtype.int32, Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
-                    "shape": [(1024, ), (1482, 4), (4, 5, 6)],
+                    "shape": [(), (1024, ), (1482, 4), (4, 5, 6),
+                              (0,), (2, 0), (2, 0, 9)],
                     "gen_fn": Genfunc.randn
                 },
             ],
@@ -2776,22 +2778,54 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['condition'],
-                    "shape": [(1, ), (3, ), (3, ), (1, 445), (3, 5), (4, ),
-                              (3, 4, 5), (3, )],
+                    "shape": [(), (1, ), (3, ), (3, ), (1, 445), (3, 5), (4, ),
+                              (3, 4, 5), (3, ), (0,), (2, 0), (2, 0, 9)],
                     "dtype": [Dtype.uint8, Dtype.bool],
                     "gen_fn": Genfunc.mask
                 },
                 {
                     "ins": ['input'],
                     "dtype": [Dtype.float32, Dtype.float64],
-                    "shape": [(1, ), (1, ), (3, ), (1, 445), (3, 5), (1, ), (4, 5),
-                              (5, 4, 3)],
+                    "shape": [(1,), (2, 7), (1, ), (3, ), (2, 445), (3, 5), (1, ), (4, 5),
+                              (5, 4, 3), (1,), (6, 2, 0), (2, 1, 9)],
                     "gen_fn": Genfunc.randn
                 },
                 {
                     "ins": ['other'],
                     "dtype": [Dtype.float32, Dtype.float64],
-                    "shape": [(1, ), (1, ), (1, ), (1, ), (1, ), (4, ), (5, ), (4, 3)],
+                    "shape": [(8,), (7,), (2, 1), (1, ), (1, ), (1, ), (4, ), (5, ), (4, 3),
+                              (0,), (2, 1), (0, 1)],
+                    "gen_fn": Genfunc.randn
+                },
+            ],
+        ),
+    ),
+
+    'where_diff_dtype': dict(
+        name=['where'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['condition'],
+                    "shape": [(3, 4),],
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask
+                },
+                {
+                    "ins": ['input'],
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64,
+                              Dtype.int16, Dtype.int32, Dtype.int64,
+                              Dtype.uint8, Dtype.int8, Dtype.bool],
+                    "shape": [(3, 4),],
+                    "gen_fn": Genfunc.randn
+                },
+                {
+                    "ins": ['other'],
+                    "dtype": [Dtype.float32, Dtype.int32, Dtype.float32,
+                              Dtype.float16, Dtype.float32, Dtype.bool,
+                              Dtype.int8, Dtype.uint8, Dtype.uint8],
+                    "shape": [(3, 4),],
                     "gen_fn": Genfunc.randn
                 },
             ],
