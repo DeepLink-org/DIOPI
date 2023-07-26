@@ -4281,6 +4281,36 @@ diopi_configs = {
             ]
         ),
     ),
+    
+    'index_put_acc_bool_indices_zeros': dict(
+        name=['index_put'],
+        interface=['CustomizedTest'],
+        is_inplace=True,
+        para=dict(
+            accumulate=[True, False, False]
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((16, 4, 4), (4, 4)),
+                    "dtype": [Dtype.float32, Dtype.int8, Dtype.bool],
+                },
+                {
+                    "ins": ['indices1'],
+                    "shape": ((16, 4), (4, 4)),
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.zeros,
+                },
+                {
+                    "ins": ['values'],
+                    "shape": ((64, 4), (16,)),
+                    "dtype": [Dtype.float32, Dtype.int8, Dtype.bool]
+                },
+            ]
+        ),
+    ),
 
     'index_put_one_indices': dict(
         name=['index_put'],
