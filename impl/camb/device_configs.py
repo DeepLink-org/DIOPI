@@ -966,11 +966,11 @@ device_configs = {
             args=[
                 {
                     "ins": ['abs'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(Dtype.float64)],
                 },
                 {
                     "ins": ['angle'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(Dtype.float64)],
                 },
             ]
         ),
