@@ -54,7 +54,6 @@ void printDevDataComplexInternal(diopiContextHandle_t ctx, void* data, int64_t l
     std::cout << "]" << std::endl;
 }
 
-
 inline void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor, std::string name = "name", int maxLen = 20, int beginIdx = 0) {
     if (!tensor.defined()) {
         std::cout << "Tensor " << name << " is not defined. Please check it before using `printDevData`." << std::endl;
