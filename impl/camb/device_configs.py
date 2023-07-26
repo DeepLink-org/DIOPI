@@ -72,19 +72,7 @@ device_configs = {
             args=[
                 {
                     "ins": ["exponent"],
-                    "dtype": [Skip(Dtype.float16), Skip(Dtype.uint8)]
-                },
-            ]
-        ),
-    ),
-
-    'pow_input_scalar_int_exponent': dict(
-        name=["pow"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["exponent"],
-                    "dtype": [Skip(Dtype.uint8)]
+                    "dtype": [Skip(Dtype.float16)]
                 },
             ]
         ),
