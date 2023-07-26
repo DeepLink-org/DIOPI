@@ -4281,7 +4281,7 @@ diopi_configs = {
             ]
         ),
     ),
-    
+
     'index_put_acc_bool_indices_zeros': dict(
         name=['index_put'],
         interface=['CustomizedTest'],
