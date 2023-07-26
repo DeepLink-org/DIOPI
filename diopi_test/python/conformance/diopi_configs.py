@@ -4276,7 +4276,7 @@ diopi_configs = {
                               (16, 1, 7, 14, 14)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,
                               Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": dict(fn=Genfunc.randn_int, high=4),
                 },
                 {
                     "ins": ['other'],
