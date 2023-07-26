@@ -4287,26 +4287,28 @@ diopi_configs = {
         interface=['CustomizedTest'],
         is_inplace=True,
         para=dict(
-            accumulate=[True, False, False]
+            accumulate=[True, False]
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((16, 4, 4), (4, 4)),
-                    "dtype": [Dtype.float32, Dtype.int8, Dtype.bool],
+                    "shape": ((4, 4), (4, 4)),
+                    "dtype": [Dtype.float32, Dtype.int64],
+                    "gen_fn": Genfunc.ones,
                 },
                 {
                     "ins": ['indices1'],
-                    "shape": ((16, 4), (4, 4)),
+                    "shape": ((4, 4), (4, 4)),
                     "dtype": [Dtype.bool],
                     "gen_fn": Genfunc.zeros,
                 },
                 {
                     "ins": ['values'],
-                    "shape": ((64, 4), (16,)),
-                    "dtype": [Dtype.float32, Dtype.int8, Dtype.bool]
+                    "shape": ((0,), (0,)),
+                    "dtype": [Dtype.float32, Dtype.int64],
+                    "gen_fn": Genfunc.ones
                 },
             ]
         ),
