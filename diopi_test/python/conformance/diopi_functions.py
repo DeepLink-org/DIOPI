@@ -1276,6 +1276,9 @@ def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
         out_dtype = pow_dtype(input, exponent)
     else:
         out_dtype = pow_dtype(self, exponent)
+        out_dtype = pow_dtype(self, exponent)
+        if Scalar(self).type == Dtype.int64 and get_dtype(exponent) in int_types:
+            out_dtype = get_dtype(exponent)
     if input is None and self is not None:
         assert isinstance(exponent, Tensor),\
             "exponent must be tensor when input is scalar"
