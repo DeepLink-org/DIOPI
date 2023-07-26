@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <set>
+#include <unordered_map>
 
 #include "../cnnl_helper.hpp"
 #include "common.hpp"
@@ -16,6 +17,28 @@ namespace impl {
 namespace camb {
 
 #define _MAKE_KEY(a, b) (((static_cast<uint64_t>(a) & 0xFFFFFFFF) << 32) | (static_cast<uint64_t>(b) & 0xFFFFFFFF))
+
+// static std::unordered_map<diopiDtype_t, diopiDtype_t> complexMemberDtypeMap {
+//     {diopi_dtype_complex128, diopi_dtype_float64},
+//     {diopi_dtype_complex64, diopi_dtype_float32},
+//     {diopi_dtype_complex32, diopi_dtype_float16},
+// };
+
+diopiDtype_t getComplexMemberDtype(diopiDtype_t complexDtype) {
+    switch (complexDtype) {
+        case diopi_dtype_complex128:
+            return diopi_dtype_float64;
+            break;
+        case diopi_dtype_complex64:
+            return diopi_dtype_float32;
+            break;
+        case diopi_dtype_complex32:
+            return diopi_dtype_float16;
+            break;
+        default:
+            break;
+    }
+}
 
 inline bool canCastByInt32(uint64_t castType) {
     // special convert (cnnl doesn't support)
@@ -93,9 +116,17 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const Dio
     CnnlDataType::convertToCnnlType(&srcCnnlDtype, srcDtype);
     CnnlDataType::convertToCnnlType(&destCnnlDtype, destDtype);
 
+    // camb only support CNNL_DTYPE_COMPLEX_HALF and CNNL_DTYPE_FLOAT so far
     if (CnnlDataType::isComplex(srcCnnlDtype) && CnnlDataType::isComplex(destCnnlDtype)) {
-        // todo
-        std::cout << "dtype_cast for complex not supported" << std::endl;
+        diopiDtype_t srcMemberType = getComplexMemberDtype(src.dtype());
+        diopiDtype_t destMemberType = getComplexMemberDtype(dest.dtype());
+        std::vector<int64_t> tempShape = src.shape();
+        tempShape.back() *= 2;
+        DiopiTensor tempSrcTensor = requiresTensor(ctx, tempShape, srcMemberType);
+        DiopiTensor tempDestTensor = requiresTensor(ctx, tempShape, destMemberType);
+        DIOPI_CALL(clone(ctx, src, tempSrcTensor))
+        dataTypeCast(ctx, tempDestTensor, tempSrcTensor);
+        DIOPI_CALL(clone(ctx, tempDestTensor, dest));
         return diopiSuccess;
     }
 
