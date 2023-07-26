@@ -2,14 +2,6 @@
 
 namespace impl {
 namespace ascend {
-diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out) {
-    int64_t sizeTmp[1] = {1};
-    diopiSize_t sSize(sizeTmp, 1);
-    float val = static_cast<float>(scalar->ival);
-    diopiRequireTensor(ctx, out, &sSize, nullptr, scalar->stype, diopi_device);
-    AclOpRunner<1, 1>("Fills").addInput(*out).setAttr<float>("value", val).addOutput(*out).run(ctx);
-    return diopiSuccess;
-}
 
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out, diopiDtype_t dtype) {
     int64_t sizeTmp[1] = {1};
@@ -20,31 +12,15 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
     return diopiSuccess;
 }
 
-diopiError_t makeTensorFromSize(diopiContextHandle_t ctx, const diopiSize_t* size, diopiTensorHandle_t* out) {
-    int64_t len = size->getLen();
-    int64_t buffersize = len * aclDataTypeSize(ACL_INT32);
-    int64_t sizeTmp[1] = {len};
-    diopiSize_t sSize(sizeTmp, 1);
-    diopiRequireTensor(ctx, out, &sSize, nullptr, diopi_dtype_int32, diopi_device);
-    if (len > 0) {
-        void* ptr;
-        CALL_ACLRT(aclrtMallocHost(&ptr, buffersize));
-        for (int i = 0; i < len; i++) {
-            reinterpret_cast<int32_t*>(ptr)[i] = (int32_t)size->data[i];
-        }
-        void* dst;
-        diopiGetTensorData(*out, &dst);
-        diopiStreamHandle_t stream;
-        diopiGetStream(ctx, &stream);
-        CALL_ACLRT(aclrtMemcpyAsync(dst, buffersize, const_cast<void*>(ptr), buffersize, ACL_MEMCPY_HOST_TO_DEVICE, reinterpret_cast<aclrtStream>(stream)));
-        CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));
-    }
-    return diopiSuccess;
+diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out) {
+    return makeTensorFromScalar(ctx, scalar, out, scalar->stype);
 }
 
-aclDataType getAclDataType(diopiConstTensorHandle_t th) {
-    diopiDtype_t type;
-    diopiGetTensorDtype(th, &type);
+diopiError_t makeTensorFromSize(diopiContextHandle_t ctx, const diopiSize_t* size, diopiTensorHandle_t* out) {
+    return makeTensorFromSize<int64_t>(ctx, size, out, diopi_dtype_int64);
+}
+
+aclDataType getAclDataType(diopiDtype_t type) {
     switch (type) {
         case diopi_dtype_float16:
             return ACL_FLOAT16;
@@ -73,6 +49,12 @@ aclDataType getAclDataType(diopiConstTensorHandle_t th) {
     }
     check_args(false, "acl not support dioptDtype_t:%d", type);
     return ACL_DT_UNDEFINED;
+}
+
+aclDataType getAclDataType(diopiConstTensorHandle_t th) {
+    diopiDtype_t type;
+    diopiGetTensorDtype(th, &type);
+    return getAclDataType(type);
 }
 }  // namespace ascend
 }  // namespace impl

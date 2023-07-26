@@ -29,7 +29,7 @@ extern "C" DIOPI_API diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensor
     if (value == 1.0) {
         AclOpRunner<2, 1, dtypeConvertor>("AddV2").addInput(input, other).addOutput(out).run(ctx);
     } else {
-        AclOpRunner<2, 1>("AxpyV2")
+        AclOpRunner<2, 1>("Axpy")
             .addInput(input, ACL_FORMAT_ND)
             .addInput(other, ACL_FORMAT_ND)
             .setAttr<float>("alpha", value)

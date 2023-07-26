@@ -65,11 +65,11 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
     diopiTensorHandle_t weightShapeT;
     diopiSize_t weightShape;
     diopiGetTensorShape(grad_weight, &weightShape);
-    makeTensorFromSize(ctx, &weightShape, &weightShapeT);
+    makeTensorFromSize<int32_t>(ctx, &weightShape, &weightShapeT, diopi_dtype_int32);
 
     AclOpRunner<3, 1>("Conv2DBackpropFilter")
         .addInput<0>(input)
-        .addInput<1>(weightShapeT)
+        .addConstInput<1>(weightShapeT, ACL_FORMAT_ND)
         .addInput<2>(grad_output)
         .addOutput(grad_weight)
         .setAttr("strides", strideTemp)
@@ -82,9 +82,9 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
         diopiTensorHandle_t inputShapeT;
         diopiSize_t inputShape;
         diopiGetTensorShape(input, &inputShape);
-        makeTensorFromSize(ctx, &inputShape, &inputShapeT);
+        makeTensorFromSize<int32_t>(ctx, &inputShape, &inputShapeT, diopi_dtype_int32);
         AclOpRunner<3, 1>("Conv2DBackpropInput")
-            .addInput<0>(inputShapeT)
+            .addConstInput<0>(inputShapeT)
             .addInput<1>(weight)
             .addInput<2>(grad_output)
             .addOutput(grad_input)
