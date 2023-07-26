@@ -47,8 +47,8 @@ void printDevDataComplexInternal(diopiContextHandle_t ctx, void* data, int64_t l
     syncStreamInCtx(ctx);
     std::cout << "[";
     for (int i = 0; i < len && i < maxLen; ++i) {
-        CastT real = static_cast<CastT>(reinterpret_cast<RealT*>(ptr.get())[2 * i]);
-        CastT img = static_cast<CastT>(reinterpret_cast<RealT*>(ptr.get())[2 * i + 1]);
+        CastT real = static_cast<CastT>(reinterpret_cast<RealT*>(ptr.get())[static_cast<ptrdiff_t>(2 * i)]);
+        CastT img = static_cast<CastT>(reinterpret_cast<RealT*>(ptr.get())[static_cast<ptrdiff_t>(2 * i + 1)]);
         std::cout << real << (img >= 0 ? "+" : "") << img << "j,";
     }
     std::cout << "]" << std::endl;
