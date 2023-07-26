@@ -35,8 +35,6 @@ diopiDtype_t getComplexMemberDtype(diopiDtype_t complexDtype) {
         case diopi_dtype_complex32:
             return diopi_dtype_float16;
             break;
-        default:
-            break;
     }
 }
 
