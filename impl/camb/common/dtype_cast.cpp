@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 
+#include "../cnnl_helper.hpp"
 #include "common.hpp"
 
 namespace impl {
@@ -86,6 +87,17 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const Dio
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     diopiDtype_t srcDtype = src.dtype();
     diopiDtype_t destDtype = dest.dtype();
+
+    cnnlDataType_t srcCnnlDtype;
+    cnnlDataType_t destCnnlDtype;
+    CnnlDataType::convertToCnnlType(&srcCnnlDtype, srcDtype);
+    CnnlDataType::convertToCnnlType(&destCnnlDtype, destDtype);
+
+    if (CnnlDataType::isComplex(srcCnnlDtype) && CnnlDataType::isComplex(destCnnlDtype)) {
+        // todo
+        std::cout << "dtype_cast for complex not supported" << std::endl;
+        return diopiSuccess;
+    }
 
     auto it = gCnnlCastDataTypeMapping.find({srcDtype, destDtype});
     if (it != gCnnlCastDataTypeMapping.end()) {

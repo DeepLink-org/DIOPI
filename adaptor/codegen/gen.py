@@ -25,6 +25,9 @@ str_to_diopi_dtype = {
     'float32': 'diopiDtype_t::diopi_dtype_float32',
     'float16': 'diopiDtype_t::diopi_dtype_float16',
     'bool': 'diopiDtype_t::diopi_dtype_bool',
+    'complex32': 'diopi_dtype_complex32',
+    'complex64': 'diopi_dtype_complex64',
+    'complex128':'diopi_dtype_complex128',
 }
 
 str_to_diopi_format = {
@@ -38,7 +41,9 @@ str_to_diopi_format = {
 
 default_cast_dtype = {
     'int64': 'int32',
-    'float64': 'float32'
+    'float64': 'float32',
+    'complex32': 'complex64',
+    'complex128': 'complex64'
 }
 
 cast_strategy = {
@@ -46,6 +51,8 @@ cast_strategy = {
     'Default': {
         'int64': 'int32',
         'float64': 'float32',
+        'complex32': 'complex64',
+        'complex128': 'complex64'
     },
 
     'CastFloatOnly': {

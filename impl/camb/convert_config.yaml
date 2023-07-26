@@ -1,5 +1,5 @@
 - common_config:
-    dtype: (int64)->int32, (float64)->float32
+    dtype: (int64)->int32, (float64)->float32, (complex32)->complex64, (complex128)->complex64
     layout: NCHW
 
 - diopiAdd:

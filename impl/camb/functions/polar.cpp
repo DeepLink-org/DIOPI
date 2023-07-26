@@ -23,15 +23,9 @@ DIOPI_API diopiError_t diopiPolar(diopiContextHandle_t ctx, diopiTensorHandle_t 
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
-    DiopiTensor outTensorTemp = outTensor;
-
-    if (outTensor.dtype() != diopi_dtype_complex64) {
-        outTensorTemp = requiresTensor(ctx, outTensor.shape(), diopi_dtype_complex64);
-    }
-
     CnnlTensorDesc absDesc(absTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc angleDesc(angleTensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc outDesc(outTensorTemp, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
     size_t workspaceSize = 0;
     DIOPI_CALLCNNL(cnnlGetPolarWorkspaceSize(handle, absDesc.get(), angleDesc.get(), outDesc.get(), &workspaceSize));
     void* workspace = nullptr;
@@ -40,9 +34,7 @@ DIOPI_API diopiError_t diopiPolar(diopiContextHandle_t ctx, diopiTensorHandle_t 
     }
 
     DIOPI_CALLCNNL(
-        cnnlPolar(handle, absDesc.get(), absTensor.data(), angleDesc.get(), angleTensor.data(), outDesc.get(), outTensorTemp.data(), workspace, workspaceSize));
-
-    // DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTemp));
+        cnnlPolar(handle, absDesc.get(), absTensor.data(), angleDesc.get(), angleTensor.data(), outDesc.get(), outTensor.data(), workspace, workspaceSize));
 
     return diopiSuccess;
 }
