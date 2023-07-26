@@ -97,6 +97,15 @@ def pow_dtype(input, other) -> Dtype:
     return dtype1
 
 
+def remainder_dtype(input, other) -> Dtype:
+    dtype1, dtype2 = get_dtype(input), get_dtype(other)
+    if dtype1 == Dtype.int8 and dtype2 == Dtype.uint8:
+        return Dtype.int16
+    if dtype1 == Dtype.uint8 and dtype2 == Dtype.int8:
+        return Dtype.int16
+    return common_dtype(input, other)
+
+
 def promote_type(input: Tensor, promoted_dtype: Dtype) -> Dtype:
     dtype1 = input.get_dtype()
     need_promote_types = [Dtype.int8, Dtype.int16, Dtype.int32, Dtype.int64,
@@ -2194,7 +2203,7 @@ def arange(end, start=0, step=1, dtype=None) -> Tensor:
         else:
             dtype = glob_vars.int_type
 
-    numel = int((end - start) / step)
+    numel = int((end - start) / step + (((end - start) / step) > int((end - start) / step)))
     out = Tensor((numel,), dtype)
 
     func = check_function("diopiArange")
@@ -2250,17 +2259,18 @@ def bernoulli(input, inplace=False, p=None) -> Tensor:
 def masked_fill(input, mask, value, inplace=False) -> Tensor:
     assert mask.get_dtype() == Dtype.bool, "mask must be bool tensor"
     out = raw_like(input)
-
     call = "diopiMaskedFill"
-
     call_scalar = False
     if isinstance(value, Tensor):
         value_res = value
     else:
         value_res = Scalar(value)
         call_scalar = True
-
+    out_size = infer_size(input.size().data, mask.size().data)
     if inplace:
+        input_np = input.numpy()
+        input_np = np.resize(input_np, out_size)
+        input = Tensor.from_numpy(input_np)
         out = input
         call = call + "Inp"
         if call_scalar:
@@ -2268,7 +2278,7 @@ def masked_fill(input, mask, value, inplace=False) -> Tensor:
         func = check_function(call)
         ret = func(input.context(), input, mask, value_res)
     else:
-        out = raw_like(input)
+        out = Tensor(out_size, input.get_dtype())
         if call_scalar:
             call = call + "Scalar"
         func = check_function(call)
@@ -3133,26 +3143,21 @@ def remainder(other, input=None, self=None):
             call += "Tensor"
             sizeO = list(input.size().data)
             sizeOther = list(other.size().data)
-            for i in range(0, len(sizeOther)):
-                if sizeO[i] != sizeOther[i]:
-                    assert sizeO[i] == 1 or sizeOther[i] == 1, \
-                        "input and other must Supports broadcasting to a common shape"
-                    if sizeO[i] == 1:
-                        sizeO[i] = sizeOther[i]
-            out_dtype = common_dtype(input, other)
+            sizeO = infer_size(sizeO, sizeOther)
+            out_dtype = remainder_dtype(input, other)
             out = Tensor(sizeO, out_dtype)
             input = input
             other = other
         else:
             call += "Scalar"
-            out_dtype = common_dtype(input, other)
+            out_dtype = remainder_dtype(input, other)
             out = Tensor(input.size().data, out_dtype)
             other = Scalar(other)
             input = input
     else:
         assert isinstance(other, Tensor), "input or other must be tensor"
         context = other.context()
-        out_dtype = common_dtype(input, other)
+        out_dtype = remainder_dtype(input, other)
         out = Tensor(other.size().data, out_dtype)
         input = Scalar(input)
         other = other
@@ -3226,17 +3231,19 @@ def index_put(input, values, indices1, indices2=None, accumulate=False, inplace=
 
 def scatter(input, dim, index, src=None, value=None, reduce=None, inplace=False):
     assert isinstance(dim, int), "dim must be int"
-    assert input.size().len == index.size().len, \
-        "input and index must have the same number of dimensions"
+    # if input.size().len != 0 and index.size().len != 0:
+    #     assert input.size().len == index.size().len, \
+    #         "input and index must have the same number of dimensions"
     assert (src is not None) or (value is not None)
     if reduce is not None:
         assert reduce == 'add' or reduce == 'multiply', "reduce argument must be either add or multiply."
     else:
         reduce = ""
-    if src is not None:
-        assert input.size().len == src.size().len, \
-            "input and src must have the same number of dimensions"
-    else:
+    # if src is not None:
+    #     if input.size().len != 0 and src.size().len != 0:
+    #         assert input.size().len == src.size().len, \
+    #             "input and src must have the same number of dimensions"
+    if src is None:
         src = value
     out = raw_like(input)
     call = "diopiScatter"
