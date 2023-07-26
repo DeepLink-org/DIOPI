@@ -28,13 +28,12 @@ diopiDtype_t getComplexMemberDtype(diopiDtype_t complexDtype) {
     switch (complexDtype) {
         case diopi_dtype_complex128:
             return diopi_dtype_float64;
-            break;
         case diopi_dtype_complex64:
             return diopi_dtype_float32;
-            break;
         case diopi_dtype_complex32:
             return diopi_dtype_float16;
-            break;
+        default:
+            setLastErrorString("ComplexDatatype error %d at %s:%d", complexDtype, __FILE__, __LINE__);
     }
 }
 

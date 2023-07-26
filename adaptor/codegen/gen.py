@@ -51,7 +51,6 @@ cast_strategy = {
     'Default': {
         'int64': 'int32',
         'float64': 'float32',
-        'complex32': 'complex64',
         'complex128': 'complex64'
     },
 
