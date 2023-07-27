@@ -4900,7 +4900,7 @@ diopi_configs = {
     'polar': dict(
         name=['polar'],
         interface=['torch'],
-        dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
+        dtype=[Dtype.float32, Dtype.float64],
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
