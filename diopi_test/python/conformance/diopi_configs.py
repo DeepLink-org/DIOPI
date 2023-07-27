@@ -5090,19 +5090,20 @@ diopi_configs = {
     'amax': dict(
         name=['amax'],
         interface=['torch'],
-        dtype=[Dtype.float64, Dtype.float32, Dtype.float16, Dtype.int16, Dtype.int32, Dtype.int64, Dtype.int8, Dtype.uint8],
+        dtype=[Dtype.float64, Dtype.float32, Dtype.float16, Dtype.int16, Dtype.int32, Dtype.int64, Dtype.int8, Dtype.uint8, Dtype.bool],
         para=dict(
-            dim=[1, 0, 2, (1, 2), (-1, 2), None, None],
-            keepdim=[False, False, False, True, False, False, True],
+            dim=[None, -1, (0,), 1, 0, 2, (1, 2), (-1, 2, 0, -3), None, None, -2, (0,)],
+            keepdim=[False, True, True, False, False, False, True, False, False, True, False, True],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((1024, 64), (384, 128),
+                    "shape": ((), (), (18,), (1024, 64), (384, 128),
                               (64, 1, 128), (128, 64, 3, 3),
-                              (2, 32, 130, 130), (128, 64, 32, 3), (384, 128)),
+                              (2, 32, 130, 130), (128, 64, 32, 3), (384, 128),
+                              (3, 0), (4, 0, 5)),
                 },
             ],
         ),
