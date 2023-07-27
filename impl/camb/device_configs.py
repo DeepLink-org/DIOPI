@@ -777,7 +777,7 @@ device_configs = {
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['other'],
+                    "ins": ['input'],
                     "shape": [Skip((1, 28, 28))],
                 },
             ],
@@ -791,7 +791,7 @@ device_configs = {
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['other'],
+                    "ins": ['input'],
                     "shape": [Skip((4, 1))],
                 },
             ],
