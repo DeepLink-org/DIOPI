@@ -3157,7 +3157,10 @@ def remainder(other, input=None, self=None):
     else:
         assert isinstance(other, Tensor), "input or other must be tensor"
         context = other.context()
-        out_dtype = remainder_dtype(input, other)
+        if isinstance(input, int):
+            out_dtype = get_dtype(other)
+        else:
+            out_dtype = remainder_dtype(input, other)
         out = Tensor(other.size().data, out_dtype)
         input = Scalar(input)
         other = other
