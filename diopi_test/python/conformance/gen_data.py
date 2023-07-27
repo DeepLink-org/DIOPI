@@ -549,19 +549,19 @@ def get_name_and_data_for_grad(function_paras):
 
 def to_numpy(tensors):
     if isinstance(tensors, torch.Tensor):
-        ndarrays = tensors.detach().cuda().numpy()
+        ndarrays = tensors.detach().cpu().numpy()
     elif isinstance(tensors, (list, tuple)):
         ndarrays = []
         for i in range(len(tensors)):
             if isinstance(tensors[i], torch.Tensor):
-                ndarrays.append(tensors[i].detach().cuda().numpy())
+                ndarrays.append(tensors[i].detach().cpu().numpy())
             else:
                 ndarrays.append(tensors[i])
     elif isinstance(tensors, dict):
         ndarrays = {}
         for k, v in tensors.items():
             if isinstance(v, torch.Tensor):
-                tmp = {k: v.detach().cuda().numpy()}
+                tmp = {k: v.detach().cpu().numpy()}
             else:
                 tmp = {k: v}
             ndarrays.update(tmp)
