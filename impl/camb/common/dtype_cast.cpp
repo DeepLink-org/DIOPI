@@ -33,7 +33,7 @@ diopiDtype_t getComplexMemberDtype(diopiDtype_t complexDtype) {
         case diopi_dtype_complex32:
             return diopi_dtype_float16;
         default:
-            setLastErrorString("ComplexDatatype error %d at %s:%d", complexDtype, __FILE__, __LINE__);
+            setLastErrorString("Unsupported ComplexDatatype %s at %s:%d", DiopiDataType::dataTypeStr(complexDtype), __FILE__, __LINE__);
     }
 }
 
@@ -126,13 +126,21 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const Dio
     if (CnnlDataType::isComplex(srcCnnlDtype) && CnnlDataType::isComplex(destCnnlDtype)) {
         diopiDtype_t srcMemberType = getComplexMemberDtype(src.dtype());
         diopiDtype_t destMemberType = getComplexMemberDtype(dest.dtype());
+
         std::vector<int64_t> tempShape = src.shape();
-        tempShape.back() *= 2;
-        DiopiTensor tempSrcTensor = requiresTensor(ctx, tempShape, srcMemberType);
-        DiopiTensor tempDestTensor = requiresTensor(ctx, tempShape, destMemberType);
-        DIOPI_CALL(clone(ctx, src, tempSrcTensor))
-        dataTypeCast(ctx, tempDestTensor, tempSrcTensor);
-        DIOPI_CALL(clone(ctx, tempDestTensor, dest));
+        tempShape.push_back(2);
+
+        std::vector<int64_t> tempStride = src.stride();
+        for (auto& i : tempStride) {
+            i *= 2;
+        }
+        tempStride.push_back(1);
+
+        CnnlTensorDesc srcDesc;
+        CnnlTensorDesc destDesc;
+        srcDesc.set(srcMemberType, tempShape, tempStride, CNNL_LAYOUT_ARRAY);
+        destDesc.set(destMemberType, tempShape, tempStride, CNNL_LAYOUT_ARRAY);
+        DIOPI_CALLCNNL(cnnlCastDataType(handle, srcDesc.get(), src.data(), destMemberType, destDesc.get(), dest.data()));
         return diopiSuccess;
     }
 

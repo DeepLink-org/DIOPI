@@ -93,6 +93,12 @@ public:
                 return "diopi_dtype_bfloat16";
             case diopi_dtype_tfloat32:
                 return "diopi_dtype_tfloat32";
+            case diopi_dtype_complex32:
+                return "diopi_dtype_complex32";
+            case diopi_dtype_complex64:
+                return "diopi_dtype_complex64";
+            case diopi_dtype_complex128:
+                return "diopi_dtype_complex128";
             default:
                 setLastErrorString("dtype:%d is not support at %s:%d.\n", dtype, __FILE__, __LINE__);
         }
