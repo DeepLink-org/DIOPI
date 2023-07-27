@@ -39,14 +39,14 @@ void printDevDataInternal(diopiContextHandle_t ctx, void* data, int64_t len, int
 }
 
 template <typename RealT, typename CastT>
-void printDevDataComplexInternal(diopiContextHandle_t ctx, void* data, int64_t len, int64_t maxLen) {
+void printDevDataComplexInternal(diopiContextHandle_t ctx, void* data, int64_t len, int64_t maxLen, int64_t beginIdx) {
     int bytes = sizeof(RealT) * len * 2;
     std::unique_ptr<char> ptr(new char[bytes]);
     std::cout << "data address:" << data << std::endl;
     cnrtMemcpyAsync(ptr.get(), data, bytes, getStream(ctx), cnrtMemcpyDevToHost);
     syncStreamInCtx(ctx);
     std::cout << "[";
-    for (int i = 0; i < len && i < maxLen; ++i) {
+    for (int i = beginIdx; i < len && i < maxLen; ++i) {
         CastT real = static_cast<CastT>(reinterpret_cast<RealT*>(ptr.get())[static_cast<ptrdiff_t>(2 * i)]);
         CastT img = static_cast<CastT>(reinterpret_cast<RealT*>(ptr.get())[static_cast<ptrdiff_t>(2 * i + 1)]);
         std::cout << real << (img >= 0 ? "+" : "") << img << "j,";
@@ -110,10 +110,10 @@ inline void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor, std::stri
             printDevDataInternal<double, double>(ctx, dataIn, len, maxLen, beginIdx);
             break;
         case diopi_dtype_complex32:
-            printDevDataComplexInternal<half_float::half, float>(ctx, dataIn, len, maxLen);
+            printDevDataComplexInternal<half_float::half, float>(ctx, dataIn, len, maxLen, beginIdx);
             break;
         case diopi_dtype_complex64:
-            printDevDataComplexInternal<float, float>(ctx, dataIn, len, maxLen);
+            printDevDataComplexInternal<float, float>(ctx, dataIn, len, maxLen, beginIdx);
             break;
         default:
             std::cout << "unsupported dtype" << std::endl;
