@@ -126,10 +126,8 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const Dio
     if (CnnlDataType::isComplex(srcCnnlDtype) && CnnlDataType::isComplex(destCnnlDtype)) {
         diopiDtype_t srcMemberType = getComplexMemberDtype(src.dtype());
         diopiDtype_t destMemberType = getComplexMemberDtype(dest.dtype());
-
         std::vector<int64_t> tempShape = src.shape();
         tempShape.push_back(2);
-
         std::vector<int64_t> tempStride = src.stride();
         for (auto& i : tempStride) {
             i *= 2;
@@ -142,8 +140,8 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const Dio
             CnnlTensorDesc destDesc;
             srcDesc.set(srcMemberType, tempShape, tempStride, CNNL_LAYOUT_ARRAY);
             destDesc.set(destMemberType, tempShape, tempStride, CNNL_LAYOUT_ARRAY);
-            cnnlCastDataType_t destMemberCnnlType;
-            DIOPI_CALLCNNL(cnnlCastDataType(handle, srcDesc.get(), src.data(), destMemberCnnlType, destDesc.get(), dest.data()));
+            cnnlCastDataType_t castType = it->second;
+            DIOPI_CALLCNNL(cnnlCastDataType(handle, srcDesc.get(), src.data(), castType, destDesc.get(), dest.data()));
         }
         return diopiSuccess;
     }
@@ -173,6 +171,8 @@ static diopiError_t choiceDtype(const std::set<diopiDtype_t>& opSupportedDtypes,
         *dtype = diopi_dtype_int8;
     } else if (opSupportedDtypes.find(diopi_dtype_bool) != opSupportedDtypes.end()) {
         *dtype = diopi_dtype_bool;
+    } else if (opSupportedDtypes.find(diopi_dtype_complex64) != opSupportedDtypes.end()) {
+        *dtype = diopi_dtype_complex64;
     } else {
         setLastErrorString("%s", "this operator does not support bool, int8, int16, int32, float16, float32");
         return diopiDtypeNotSupported;
@@ -223,6 +223,13 @@ diopiError_t autoCastTensorType(diopiContextHandle_t ctx, const std::vector<Diop
         }
     } else if (dtypeAndTensorPtrs.find(diopi_dtype_bool) != dtypeAndTensorPtrs.end()) {
         if (opSupportedDtype.find(diopi_dtype_bool) == opSupportedDtype.end()) {  // not support bool
+            DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
+        } else {  // all tensors cast into bool
+            targetType = diopi_dtype_bool;
+        }
+    } else if (dtypeAndTensorPtrs.find(diopi_dtype_complex64) != dtypeAndTensorPtrs.end() ||
+               dtypeAndTensorPtrs.find(diopi_dtype_complex128) != dtypeAndTensorPtrs.end()) {
+        if (opSupportedDtype.find(diopi_dtype_complex64) == opSupportedDtype.end()) {  // not support bool
             DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
         } else {  // all tensors cast into bool
             targetType = diopi_dtype_bool;
