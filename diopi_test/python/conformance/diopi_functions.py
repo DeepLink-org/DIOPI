@@ -61,9 +61,9 @@ def get_dtype(input) -> Dtype:
     if isinstance(input, Tensor):
         return input.get_dtype()
     elif isinstance(input, int):
-        return Dtype.int64
+        return glob_vars.int_type
     elif isinstance(input, float):
-        return Dtype.float32
+        return glob_vars.float_type
     else:
         assert 0, "not supported type of input"
 
