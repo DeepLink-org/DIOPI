@@ -429,6 +429,7 @@ public:
                                           CompileType,
                                           nullptr,
                                           stream));
+        CALL_ACLRT(aclrtSynchronizeStream(stream));
         // check_args(errorcode == ACL_SUCCESS, dumpRunnerInfo().c_str());
         // Get environment variables once when run is called for the first time
         static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;

@@ -6,7 +6,7 @@ namespace ascend {
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out, diopiDtype_t dtype) {
     int64_t sizeTmp[1] = {1};
     diopiSize_t sSize(sizeTmp, 1);
-    float val = static_cast<float>(scalar->ival);
+    float val = getValue<float>(scalar);
     diopiRequireTensor(ctx, out, &sSize, nullptr, dtype, diopi_device);
     AclOpRunner<1, 1>("Fills").addInput(*out).setAttr<float>("value", val).addOutput(*out).run(ctx);
     return diopiSuccess;
