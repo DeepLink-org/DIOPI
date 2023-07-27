@@ -4111,17 +4111,40 @@ diopi_configs = {
         name=['unique'],
         interface=['torch'],
         para=dict(
-            sorted=[True, False, True, False],
-            return_inverse=[True, False, True, False],
-            return_counts=[True, False, True, False],
-            dim=[-1, 0, None, 0],
+            sorted=[True, True, False, True, False, False, True, False],
+            return_inverse=[False, True, True, False, True, True, False, True],
+            return_counts=[False, False, True, True, True, False, True, False],
+            dim=[None, -1, 1, None, 2, 0, 1, -2],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((0,), (252,), (2, 256), (4, 64, 128)),
+                    "shape": ((), (252,), (2, 256), (4, 64, 128), (4, 2, 12, 3),
+                              (0,), (2, 0), (7, 0, 9)),
+                    "dtype": [Dtype.int64, Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16,
+                              Dtype.int32, Dtype.uint8, Dtype.int8, Dtype.bool],
+                },
+            ],
+        ),
+    ),
+
+    'unique_same_value': dict(
+        name=['unique'],
+        interface=['torch'],
+        para=dict(
+            sorted=[True, True, False, True],
+            return_inverse=[False, True, True, False],
+            return_counts=[False, False, True, True],
+            dim=[None, -1, 1, None],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.ones,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((252,), (2, 256), (4, 64, 128), (4, 2, 12, 3)),
                     "dtype": [Dtype.int64, Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16,
                               Dtype.int32, Dtype.uint8, Dtype.int8, Dtype.bool],
                 },
@@ -4135,14 +4158,16 @@ diopi_configs = {
         atol_half=1e-4,
         rtol_half=1e-3,
         para=dict(
-            dim=[-1, 0, -1, 0],
-            dtype=[Dtype.float64, Dtype.float32, Dtype.int64, Dtype.int64]
+            dim=[0, -1, 0, -1, 1, 3, -1, 0, -2],
+            dtype=[Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,
+                   Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool]
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((56, 1), (70, 1, 2), (2, 512, 38, 38), (2, 80, 128, 128, 1)),
+                    "shape": ((), (42,), (56, 1), (70, 1, 2), (2, 512, 38, 38), (2, 80, 128, 128, 1),
+                              (0,), (3, 0), (2, 0, 6)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,
                               Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
                     "gen_fn": Genfunc.randn,
