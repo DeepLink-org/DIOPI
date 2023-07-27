@@ -136,11 +136,15 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const Dio
         }
         tempStride.push_back(1);
 
-        CnnlTensorDesc srcDesc;
-        CnnlTensorDesc destDesc;
-        srcDesc.set(srcMemberType, tempShape, tempStride, CNNL_LAYOUT_ARRAY);
-        destDesc.set(destMemberType, tempShape, tempStride, CNNL_LAYOUT_ARRAY);
-        DIOPI_CALLCNNL(cnnlCastDataType(handle, srcDesc.get(), src.data(), destMemberType, destDesc.get(), dest.data()));
+        auto it = gCnnlCastDataTypeMapping.find({srcMemberType, destMemberType});
+        if (it != gCnnlCastDataTypeMapping.end()) {
+            CnnlTensorDesc srcDesc;
+            CnnlTensorDesc destDesc;
+            srcDesc.set(srcMemberType, tempShape, tempStride, CNNL_LAYOUT_ARRAY);
+            destDesc.set(destMemberType, tempShape, tempStride, CNNL_LAYOUT_ARRAY);
+            cnnlCastDataType_t destMemberCnnlType;
+            DIOPI_CALLCNNL(cnnlCastDataType(handle, srcDesc.get(), src.data(), destMemberCnnlType, destDesc.get(), dest.data()));
+        }
         return diopiSuccess;
     }
 

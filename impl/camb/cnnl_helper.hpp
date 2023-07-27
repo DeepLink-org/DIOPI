@@ -87,7 +87,7 @@ public:
     CnnlTensorDesc(const CnnlTensorDesc& other) = delete;
     CnnlTensorDesc(CnnlTensorDesc&& other) = delete;
     CnnlTensorDesc& operator=(const CnnlTensorDesc& other) = delete;
-    diopiError_t set(cnnlDataType_t dtype, const std::vector<int32_t>&, const std::vector<int32_t>& stride, cnnlTensorLayout_t layout) {
+    diopiError_t set(cnnlDataType_t dtype, const std::vector<int32_t>& shape, const std::vector<int32_t>& stride, cnnlTensorLayout_t layout) {
         size_t dim = shape.size();
         std::vector<int32_t> shapeTmp(dim);
         std::vector<int32_t> strideTmp(dim);
