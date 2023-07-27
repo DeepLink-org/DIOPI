@@ -3958,14 +3958,20 @@ diopi_configs = {
     'pad': dict(
         name=['pad'],
         para=dict(
-            pad=[(0, 3), (0, 1, 0, 1), (1, 1, 1, 1), (0, 193)],
-            mode=['circular', 'replicate', 'reflect', 'replicate'],
+            pad=[(2, 4), (0, 3), (7, -14, 2, 3), (0, 1, 0, 1), (0, 1, -1, 3, 1, 2), (0, 2, -1, 1, 1, 5),
+                 (2, 4), (0, 3), (7, -14, 2, 3), (0, 1, 0, 1), (0, 1, -1, 3, 1, 2), (0, 2, -1, 1, 1, 5),
+                 (0, 3), (0, 1, 0, 1), (0, 2, -1, 1, 1, 5)],
+            mode=['reflect', 'reflect', 'reflect', 'reflect', 'reflect', 'reflect',
+                  'replicate', 'replicate', 'replicate', 'replicate', 'replicate', 'replicate',
+                  'circular', 'circular', 'circular'],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [(2, 56, 56), (2, 3, 260, 260), (2, 144, 65, 65), (3, 576, 862)],
+                    "shape": [(4, 5), (2, 56, 56), (12, 4, 8), (2, 3, 260, 260), (2, 144, 65, 65), (3, 576, 862, 2, 3),
+                              (4, 5), (2, 56, 56), (12, 4, 8), (2, 3, 260, 260), (2, 144, 65, 65), (3, 576, 862, 2, 3),
+                              (2, 56, 56), (2, 3, 260, 260), (3, 576, 862, 2, 3)],
                     "gen_fn": Genfunc.randn,
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                 },
@@ -3994,15 +4000,20 @@ diopi_configs = {
     'constant_pad': dict(
         name=['pad'],
         para=dict(
-            pad=[(0, 3), (0, 1, 0, 1), (1, 1, 1, 1), (0, 193)],
-            mode=['constant', 'constant', 'constant', 'constant'],
-            value=[100, 0, -1, 1]
+            pad=[(), (4, 6), (), (-1, 2, 0, -2), (0, 3), (0, 1, 0, 1), (1, 1, 1, 1), (0, 193),
+                 (-1, 2, 0, -2, 2, 3), (1, 2, 0, 2, 1, 4, 5, 6), (-1, 2, 1, 2, 0, 2, 1, 4, 5, 6),
+                 (1, 0), (1, 2, 3, 5)],
+            mode=['constant', 'constant', 'constant', 'constant', 'constant', 'constant', 'constant',
+                  'constant', 'constant', 'constant', 'constant', 'constant', 'constant'],
+            value=[None, -0.3, 0.2, 0, 100, 0, -1, 1, -3, 3, False, 1e-2, 2.4]
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [(2, 56, 56), (2, 3, 260, 260), (2, 144, 65, 65), (3, 576, 862)],
+                    "shape": [(), (5,), (2, 3), (4, 5), (2, 56, 56), (2, 3, 260, 260), (2, 144, 65, 65), (3, 576, 862),
+                              (3, 4, 5), (3, 4, 5, 6), (3, 4, 5, 6, 7),
+                              (0,), (4, 0)],
                     "gen_fn": Genfunc.randn,
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16,
                               Dtype.int32, Dtype.int64, Dtype.int8, Dtype.bool],
