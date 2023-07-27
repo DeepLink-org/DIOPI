@@ -5063,9 +5063,25 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((), (1024, 64), (384, 128),
+                    "shape": ((), (128,), (1024, 64), (384, 128),
                               (64, 1, 128), (128, 64, 3, 3),
-                              (2, 32, 130, 130)),
+                              (2, 32, 130, 130),
+                              (0,), (4, 0), (12, 0, 9)),
+                },
+            ],
+        ),
+    ),
+
+    'isnan_input_nan': dict(
+        name=['isnan'],
+        interface=['torch'],
+        tensor_para=dict(
+            dtype=[Dtype.float32, Dtype.float64, Dtype.float16],
+            args=[
+                {
+                    "ins": ['input'],
+                    "value": ((float('nan'),), [[float('nan'), 1, -1]], [[float('nan'), 0], [1, float('nan')]],
+                              [[[float('nan'), float('inf')], [0, float('-inf')]]])
                 },
             ],
         ),
