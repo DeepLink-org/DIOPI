@@ -37,12 +37,12 @@
         }                                                                                        \
     } while (false);
 
-#define DIOPI_CHECK_ABORT(cond, fmt, args...)                    \
-    do {                                                         \
-        if (!(cond)) {                                           \
-            printf(#fmt " at %s:%d ", args, __FILE__, __LINE__); \
-            abort();                                             \
-        }                                                        \
+#define DIOPI_CHECK_ABORT(cond, fmt, args...)                      \
+    do {                                                           \
+        if (!(cond)) {                                             \
+            printf(#fmt " at %s:%d ", ##args, __FILE__, __LINE__); \
+            abort();                                               \
+        }                                                          \
     } while (false);
 
 #define DIOPI_CALL(Expr)                                                                                                            \
@@ -63,6 +63,32 @@ class DiopiDataType final {
 public:
     static bool isInteger(diopiDtype_t dtype) { return dtype < 8; }
     static bool isFloatPoint(diopiDtype_t dtype) { return dtype <= 10 && dtype >= 8 || dtype == 12 || dtype == 13; }
+    static diopiDtype_t complexDtype2Real(diopiDtype_t complexDtype) {
+        switch (complexDtype) {
+            case diopi_dtype_complex128:
+                return diopi_dtype_float64;
+            case diopi_dtype_complex64:
+                return diopi_dtype_float32;
+            case diopi_dtype_complex32:
+                return diopi_dtype_float16;
+            default:
+                setLastErrorString("Unsupported ComplexDatatype %s at %s:%d", DiopiDataType::dataTypeStr(complexDtype), __FILE__, __LINE__);
+                return diopi_dtype_unsupported;
+        }
+    }
+    static diopiDtype_t realDtype2Complex(diopiDtype_t realDtype) {
+        switch (realDtype) {
+            case diopi_dtype_float64:
+                return diopi_dtype_complex128;
+            case diopi_dtype_float32:
+                return diopi_dtype_float32;
+            case diopi_dtype_float16:
+                return diopi_dtype_complex32;
+            default:
+                setLastErrorString("Unsupported ComplexDatatype %s at %s:%d", DiopiDataType::dataTypeStr(realDtype), __FILE__, __LINE__);
+                return diopi_dtype_unsupported;
+        }
+    }
     static const char* dataTypeStr(diopiDtype_t dtype) {
         switch (dtype) {
             case diopi_dtype_int8:
@@ -146,6 +172,38 @@ public:
         return dtype_;
     }
 
+    DiopiTensor& setDtype(diopiDtype_t dtype) {
+        dtype_ = dtype;
+        return *this;
+    }
+
+    DiopiTensor& viewAsComplex() const {
+        int64_t lastDim = size(-1);
+        DIOPI_CHECK_ABORT(2 == lastDim, "last dim of tensor must be 2 when view as complex");
+        diopiDtype_t complexDtype = DiopiDataType::realDtype2Complex(dtype());
+        std::vector<int64_t> complexShape(shape().begin(), shape().end() - 1);
+        std::vector<int64_t> complexStride(stride().begin(), stride().end() - 1);
+        for (auto& i : complexStride) {
+            i /= 2;
+        }
+        DiopiTensor complexTensor(tensor_);
+        complexTensor.asStrided(complexShape, complexStride).setDtype(complexDtype);
+        return complexTensor;
+    }
+
+    DiopiTensor viewAsReal() const {
+        diopiDtype_t realDtype = DiopiDataType::complexDtype2Real(dtype());
+        std::vector<int64_t> realShape(shape());
+        realShape.push_back(2);
+        std::vector<int64_t> realStride(stride().size() + 1, 1);
+        for (int i = 1; i < stride().size(); ++i) {
+            realStride[i] = stride()[i];
+        }
+        DiopiTensor realTensor(tensor_);
+        realTensor.asStrided(realShape, realStride).setDtype(dtype());
+        return realTensor;
+    }
+
     template <typename T>
     std::vector<T> shape() const {
         DIOPI_CHECK_NULLPTR_ABORT(tensor_);
@@ -157,7 +215,12 @@ public:
         return shape_;
     }
 
-    int64_t size(int i) const { return shape()[i]; }
+    int64_t size(int i) const {
+        if (i < 0) {
+            i = shape_.size() + i;
+        }
+        return shape()[i];
+    }
 
     const std::vector<int64_t>& stride() const {
         DIOPI_CHECK_NULLPTR_ABORT(tensor_);
@@ -267,12 +330,13 @@ public:
         return true;
     }
 
-    void asStrided(const std::vector<int64_t>& shape, const std::vector<int64_t>& stride) {
+    DiopiTensor& asStrided(const std::vector<int64_t>& shape, const std::vector<int64_t>& stride) {
         this->shape_ = shape;
         this->stride_ = stride;
+        return *this;
     }
 
-    void unsqueeze(int dim) {
+    DiopiTensor& unsqueeze(int dim) {
         // Note: `channels_last` tensor uses this will become uncontiguous
         // which is same with pytorch
         auto shape = this->shape();
@@ -284,6 +348,7 @@ public:
         newShape.insert(newShape.begin() + dim, 1);
         newStrides.insert(newStrides.begin() + dim, newStride);
         this->asStrided(newShape, newStrides);
+        return *this;
     }
 
     bool defined() const {
@@ -291,7 +356,7 @@ public:
         return this->numel() != 0;
     }
 
-    void reshape(const std::vector<int64_t> shape) {
+    DiopiTensor& reshape(const std::vector<int64_t> shape) {
         // must be contiguous
         std::vector<int64_t> stride(shape.size());
         this->shape_ = shape;
@@ -300,6 +365,7 @@ public:
             stride[j] = stride[j + 1] * shape[j + 1];
         }
         this->stride_ = stride;
+        return *this;
     }
 
     void* data() {
