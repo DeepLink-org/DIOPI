@@ -42,7 +42,6 @@ str_to_diopi_format = {
 default_cast_dtype = {
     'int64': 'int32',
     'float64': 'float32',
-    'complex32': 'complex64',
     'complex128': 'complex64'
 }
 
