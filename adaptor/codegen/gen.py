@@ -59,8 +59,11 @@ cast_strategy = {
 }
 
 
-exclude_ops = ['copyInp', 'CastDtype']
-inp_params = ['running_mean', 'running_var']
+exclude_ops = ['CopyInp', 'CastDtype']
+inp_config = {
+    'BatchNorm': ['running_mean', 'running_var'],
+    'IndexPut': ['out']
+}
 
 
 def prepare():
@@ -401,7 +404,7 @@ for (int i = 0; i < ${num}; ++i) {
                 outs = func_infos[func]['outs']
                 if tensor in outs:
                     cast_impl = 'DiopiTensorWrapper<{cast}> {tensor}Wrapper(ctx, {tensor}{memory_format}, {inp});'.format(
-                                cast=cast_method, memory_format=format_str if format_str else '', tensor=tensor, contiguous=contiguous_str, inp='true' if ('Inp' in op_name or tensor in inp_params) else 'false')
+                                cast=cast_method, memory_format=format_str if format_str else '', tensor=tensor, contiguous=contiguous_str, inp='true' if ('Inp' in op_name or tensor in inp_config.get(op_name, [])) else 'false')
                     cast_outs.append(cast_impl)
             new_input.append('diopiConstTensorHandle_t ' + ', '.join(new_ins) + ';') if len(new_ins) else ''
             call_args = []
