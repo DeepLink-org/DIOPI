@@ -730,8 +730,11 @@ device_configs = {
             args=[
                 {
                     "ins": ['other'],
-                    "shape:" [Skip((1, 28, 28))],
                     "dtype": [Skip(Dtype.float16)],
+                },
+                {
+                    "ins": ['other'],
+                    "shape:" [Skip((1, 28, 28))],
                 },
             ],
         ),
