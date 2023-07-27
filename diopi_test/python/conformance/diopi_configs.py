@@ -4427,7 +4427,7 @@ diopi_configs = {
                 },
                 {
                     "ins": ['index'],
-                    "shape": ((), (6,), (2, 7), (4, 8, 10), (16, 4, 4), (2, 8, 1, 1), (2, 8, 1, 1)),
+                    "shape": ((), (6,), (2, 7), (4, 8, 5), (16, 4, 4), (2, 8, 1, 1), (2, 8, 1, 1)),
                     "dtype": [Dtype.int64],
                     "gen_fn": dict(fn=Genfunc.randint, low=0, high=4),
                 },
