@@ -18,25 +18,6 @@ namespace camb {
 
 #define MAKE_KEY(a, b) (((static_cast<uint64_t>(a) & 0xFFFFFFFF) << 32) | (static_cast<uint64_t>(b) & 0xFFFFFFFF))
 
-// static std::unordered_map<diopiDtype_t, diopiDtype_t> complexMemberDtypeMap {
-//     {diopi_dtype_complex128, diopi_dtype_float64},
-//     {diopi_dtype_complex64, diopi_dtype_float32},
-//     {diopi_dtype_complex32, diopi_dtype_float16},
-// };
-
-diopiDtype_t getComplexMemberDtype(diopiDtype_t complexDtype) {
-    switch (complexDtype) {
-        case diopi_dtype_complex128:
-            return diopi_dtype_float64;
-        case diopi_dtype_complex64:
-            return diopi_dtype_float32;
-        case diopi_dtype_complex32:
-            return diopi_dtype_float16;
-        default:
-            setLastErrorString("Unsupported ComplexDatatype %s at %s:%d", DiopiDataType::dataTypeStr(complexDtype), __FILE__, __LINE__);
-    }
-}
-
 inline bool canCastByInt32(uint64_t castType) {
     // special convert (cnnl doesn't support)
     constexpr uint64_t boolInt64 = MAKE_KEY(diopi_dtype_bool, diopi_dtype_int64);
@@ -114,44 +95,27 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const Dio
     }
 
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    diopiDtype_t srcDtype = src.dtype();
-    diopiDtype_t destDtype = dest.dtype();
-
     cnnlDataType_t srcCnnlDtype;
     cnnlDataType_t destCnnlDtype;
-    CnnlDataType::convertToCnnlType(&srcCnnlDtype, srcDtype);
-    CnnlDataType::convertToCnnlType(&destCnnlDtype, destDtype);
-
+    CnnlDataType::convertToCnnlType(&srcCnnlDtype, src.dtype());
+    CnnlDataType::convertToCnnlType(&destCnnlDtype, dest.dtype());
+    DiopiTensor destTmp = dest;
+    DiopiTensor srcTmp = src;
     // camb only support CNNL_DTYPE_COMPLEX_HALF and CNNL_DTYPE_FLOAT so far
     if (CnnlDataType::isComplex(srcCnnlDtype) && CnnlDataType::isComplex(destCnnlDtype)) {
-        diopiDtype_t srcMemberType = getComplexMemberDtype(src.dtype());
-        diopiDtype_t destMemberType = getComplexMemberDtype(dest.dtype());
-        std::vector<int64_t> tempShape = src.shape();
-        tempShape.push_back(2);
-        std::vector<int64_t> tempStride = src.stride();
-        for (auto& i : tempStride) {
-            i *= 2;
-        }
-        tempStride.push_back(1);
-
-        auto it = gCnnlCastDataTypeMapping.find({srcMemberType, destMemberType});
-        if (it != gCnnlCastDataTypeMapping.end()) {
-            CnnlTensorDesc srcDesc;
-            CnnlTensorDesc destDesc;
-            srcDesc.set(srcMemberType, tempShape, tempStride, CNNL_LAYOUT_ARRAY);
-            destDesc.set(destMemberType, tempShape, tempStride, CNNL_LAYOUT_ARRAY);
-            cnnlCastDataType_t castType = it->second;
-            DIOPI_CALLCNNL(cnnlCastDataType(handle, srcDesc.get(), src.data(), castType, destDesc.get(), dest.data()));
-        }
-        return diopiSuccess;
+        destTmp = dest.viewAsReal();
+        srcTmp = src.viewAsReal();
     }
 
-    auto it = gCnnlCastDataTypeMapping.find({srcDtype, destDtype});
+    diopiDtype_t srcTmpDtype = srcTmp.dtype();
+    diopiDtype_t destTmpDtype = destTmp.dtype();
+
+    auto it = gCnnlCastDataTypeMapping.find({srcTmpDtype, destTmpDtype});
     if (it != gCnnlCastDataTypeMapping.end()) {
-        CnnlTensorDesc srcDesc(src, CNNL_LAYOUT_ARRAY);
-        CnnlTensorDesc destDesc(dest, CNNL_LAYOUT_ARRAY);
+        CnnlTensorDesc srcTmpDesc(srcTmp, CNNL_LAYOUT_ARRAY);
+        CnnlTensorDesc destTmpDesc(destTmp, CNNL_LAYOUT_ARRAY);
         cnnlCastDataType_t castType = it->second;
-        DIOPI_CALLCNNL(cnnlCastDataType(handle, srcDesc.get(), src.data(), castType, destDesc.get(), dest.data()));
+        DIOPI_CALLCNNL(cnnlCastDataType(handle, srcTmpDesc.get(), srcTmp.data(), castType, destTmpDesc.get(), destTmp.data()));
     } else {
         DIOPI_CALL(dataTypeCastTwice(ctx, dest, src));
     }
