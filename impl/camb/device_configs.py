@@ -730,7 +730,22 @@ device_configs = {
             args=[
                 {
                     "ins": ['other'],
+                    "shape:" [Skip(1, 28, 28)],
                     "dtype": [Skip(Dtype.float16)],
+                },
+            ],
+        ),
+    ),
+
+    'remainder_bool': dict(
+        name = ['remainder'],
+        atol = 1e-1,
+        rtol = 1e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['other'],
+                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64), Skip(Dtype.int8)],
                 },
             ],
         ),
@@ -740,6 +755,14 @@ device_configs = {
         name = ['remainder'],
         atol = 1e-1,
         rtol = 1e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.int16)],
+                },
+            ],
+        ),
     ),
 
     'remainder_other_scalar': dict(
@@ -752,6 +775,28 @@ device_configs = {
         name = ['remainder'],
         atol = 1e-1,
         rtol = 1e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['other'],
+                    "shape:" [Skip(1, 28, 28)],
+                },
+            ],
+        ),
+    ),
+
+    'remainder_scalar_bool': dict(
+        name = ['remainder'],
+        atol = 1e-1,
+        rtol = 1e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['other'],
+                    "shape:" [Skip(4, 1)],
+                },
+            ],
+        ),
     ),
 
     # When not performing a reduce operation, the accuracy comparison of scatter needs to be performed on the CPU
