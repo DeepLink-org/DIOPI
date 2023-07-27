@@ -526,12 +526,12 @@ def transfer_tensor_to_device(function_paras: dict):
             if para in function_paras["requires_grad"].keys()\
                     and function_paras["requires_grad"][para] == [True]:
                 tensor.requires_grad = True
-            function_paras['kwargs'][para] = tensor.cpu()
+            function_paras['kwargs'][para] = tensor.cuda()
 
         if para == "tensors":
             tensors = function_paras['kwargs'][para]
             for idx, ele in enumerate(tensors):
-                tensors[idx] = torch.from_numpy(ele).cpu()
+                tensors[idx] = torch.from_numpy(ele).cuda()
             function_paras['kwargs'][para] = tensors
 
 
@@ -549,19 +549,19 @@ def get_name_and_data_for_grad(function_paras):
 
 def to_numpy(tensors):
     if isinstance(tensors, torch.Tensor):
-        ndarrays = tensors.detach().cpu().numpy()
+        ndarrays = tensors.detach().cuda().numpy()
     elif isinstance(tensors, (list, tuple)):
         ndarrays = []
         for i in range(len(tensors)):
             if isinstance(tensors[i], torch.Tensor):
-                ndarrays.append(tensors[i].detach().cpu().numpy())
+                ndarrays.append(tensors[i].detach().cuda().numpy())
             else:
                 ndarrays.append(tensors[i])
     elif isinstance(tensors, dict):
         ndarrays = {}
         for k, v in tensors.items():
             if isinstance(v, torch.Tensor):
-                tmp = {k: v.detach().cpu().numpy()}
+                tmp = {k: v.detach().cuda().numpy()}
             else:
                 tmp = {k: v}
             ndarrays.update(tmp)
