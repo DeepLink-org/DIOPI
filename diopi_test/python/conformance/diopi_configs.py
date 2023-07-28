@@ -3404,22 +3404,28 @@ diopi_configs = {
         interface=['torch'],
         saved_args=dict(output=0),
         para=dict(
-            p=[1, 2, 0, 0.5, float("inf")],
+            p=[1, 2, 0, 0.5, float("inf"), 1.2, 0, 2, 1, 2, 0],
             compute_mode=['use_mm_for_euclid_dist', 'donot_use_mm_for_euclid_dist', 'use_mm_for_euclid_dist_if_necessary',
-                          'use_mm_for_euclid_dist_if_necessary', 'use_mm_for_euclid_dist_if_necessary']
+                          'use_mm_for_euclid_dist_if_necessary', 'use_mm_for_euclid_dist', 'donot_use_mm_for_euclid_dist',
+                          'use_mm_for_euclid_dist_if_necessary', 'use_mm_for_euclid_dist_if_necessary',
+                          'use_mm_for_euclid_dist', 'donot_use_mm_for_euclid_dist', 'use_mm_for_euclid_dist_if_necessary',]
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['x1'],
                     "requires_grad": [True],
-                    "shape": ((2, 50, 4), (1, 32, 32), (4, 31, 256), (4, 256, 256), (10, 128)),
+                    "shape": ((2, 50, 4), (1, 32, 32), (4, 31, 256), (4, 256, 256), (10, 128),
+                              (2, 50, 4), (1, 32, 32), (4, 31, 256), 
+                              (0, 4, 5), (4, 0, 9), (3, 0)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ['x2'],
-                    "shape": ((100, 4), (32, 2, 48, 64, 32), (4, 256, 256), (4, 256, 256), (1, 10, 128)),
+                    "shape": ((100, 4), (32, 2, 48, 64, 32), (4, 256, 256), (4, 256, 256), (1, 10, 128),
+                              (100, 4), (32, 2, 48, 64, 32), (4, 256, 256), 
+                              (0, 6, 5), (4, 5, 9), (2, 1, 0)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
