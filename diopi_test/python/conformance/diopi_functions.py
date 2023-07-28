@@ -2790,6 +2790,8 @@ def roll(input, shifts, dims=None):
         shifts = (shifts, )
     shifts = Sizes(list(shifts))
 
+    if isinstance(dims, int):
+        dims = (dims, )
     if dims is not None:
         dims = Sizes(list(dims))
     else:
