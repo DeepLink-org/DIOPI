@@ -3358,9 +3358,9 @@ diopi_configs = {
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            dimension=[2, 1, 2, -1, 0],
-            size=[2, 2, 2, 2, 2],
-            step=[1, 1, 1, 3, 1],
+            dimension=[2, 1, 2, 1, 1, -1, -1, 0, -1, -2, 2],
+            size=[2, 2, 4, 5, 20, 2, 10, 1, 0, 3, 5],
+            step=[1, 1, 1, 3, 2, 1, 3, 2, 1, 2, 3],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -3368,7 +3368,8 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((2, 128, 56, 56), (2, 512, 14, 14), (2, 96, 200, 304), (2, 128, 36), (16,)),
+                    "shape": ((2, 128, 56, 56), (2, 512, 14, 14), (2, 96, 200, 304), (2, 128, 36), (10, 20), (16,), (20,), (),
+                              (0,), (16, 0), (4, 0, 16)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                 },
             ],
@@ -3382,7 +3383,7 @@ diopi_configs = {
         rtol=1e-5,
         para=dict(
             dimension=[2, 1, 2, -1, 0],
-            size=[2, 2, 2, 2, 2],
+            size=[2, 4, 1, 5, 16],
             step=[1, 1, 1, 3, 1],
         ),
         tensor_para=dict(

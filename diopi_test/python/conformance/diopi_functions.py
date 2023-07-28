@@ -2697,8 +2697,12 @@ def expand(input, size) -> Tensor:
 
 def unfold(input, dimension, size, step):
     sizeO = list(input.size().data)
-    sizeO[dimension] = int((sizeO[dimension] - size) / step + 1)
-    sizeO.append(size)
+
+    if len(sizeO) == 0:
+        sizeO = [1]
+    else:
+        sizeO[dimension] = int((sizeO[dimension] - size) / step + 1)
+        sizeO.append(size)
 
     out = Tensor(sizeO, input.get_dtype())
     func = check_function("diopiUnfold")
