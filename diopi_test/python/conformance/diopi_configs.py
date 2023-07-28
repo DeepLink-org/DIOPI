@@ -3235,7 +3235,8 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((1,), (182,), (64, 128), (2, 1, 640, 640)),
+                    "shape": ((), (1,), (182,), (64, 128), (2, 1, 640, 640),
+                              (0,), (12, 0), (4, 0, 9)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                 },
             ],
@@ -3254,6 +3255,25 @@ diopi_configs = {
                     "ins": ['input'],
                     "shape": ((1,), (182,), (64, 128), (2, 1, 640, 640)),
                     "dtype": [Dtype.int16, Dtype.int32, Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
+                },
+            ],
+        ),
+    ),
+
+    'reciprocal_zero': dict(
+        name=["reciprocal"],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-5,
+        tensor_para=dict(
+            gen_fn=Genfunc.zeros,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((182,),),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16,
+                              Dtype.int16, Dtype.int32, Dtype.int64,
+                              Dtype.uint8, Dtype.int8, Dtype.bool],
                 },
             ],
         ),
