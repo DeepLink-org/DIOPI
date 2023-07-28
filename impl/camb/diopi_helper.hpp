@@ -177,7 +177,7 @@ public:
         return *this;
     }
 
-    DiopiTensor& viewAsComplex() const {
+    DiopiTensor viewAsComplex() const {
         int64_t lastDim = size(-1);
         DIOPI_CHECK_ABORT(2 == lastDim, "last dim of tensor must be 2 when view as complex");
         diopiDtype_t complexDtype = DiopiDataType::realDtype2Complex(dtype());
