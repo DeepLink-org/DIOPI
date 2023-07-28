@@ -626,7 +626,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'pointwise_op_uint8': dict(
         name=['abs', 'cos', 'erf', 'erfinv', 'exp',
               'neg', 'sin', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'atan'],
