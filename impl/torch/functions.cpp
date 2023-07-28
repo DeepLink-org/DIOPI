@@ -1851,8 +1851,7 @@ diopiError_t diopiSigmoidFocalLoss(diopiContextHandle_t ctx, diopiTensorHandle_t
 }
 
 diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean, diopiTensorHandle_t save_invstd,
-                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiTensorHandle_t running_mean,
-                            diopiTensorHandle_t running_var, bool training, double momentum, double eps) {
+                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiTensorHandle_t running_mean, diopiTensorHandle_t running_var, bool training, double momentum, double eps) {
     impl::aten::setCurCtx(ctx);
     at::Tensor atInput = impl::aten::buildATen(input);
     at::Tensor atWeight = impl::aten::buildATen(weight);
@@ -4131,6 +4130,21 @@ diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensorHandle_t m
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atOuts = at::batch_norm_stats(atInput, eps);
+    impl::aten::updateATen2Tensor(ctx, std::get<0>(atOuts), mean);
+    impl::aten::updateATen2Tensor(ctx, std::get<1>(atOuts), invstd);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd,  diopiConstTensorHandle_t input, diopiConstTensorHandle_t mean_all, diopiConstTensorHandle_t invstd_all, diopiTensorHandle_t running_mean, diopiTensorHandle_t running_var, float momentum, float eps, diopiConstTensorHandle_t counts) {
+    impl::aten::setCurCtx(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atMean_all = impl::aten::buildATen(mean_all);
+    auto atInvstd_all = impl::aten::buildATen(invstd_all);
+    auto atRunning_mean = impl::aten::buildATen(running_mean);
+    auto atRunning_var = impl::aten::buildATen(running_var);
+    auto atCounts = impl::aten::buildATen(counts);
+    auto atOuts = at::batch_norm_gather_stats_with_counts(atInput, atMean_all, atInvstd_all, atRunning_mean, atRunning_var, momentum, eps, atCounts);
     impl::aten::updateATen2Tensor(ctx, std::get<0>(atOuts), mean);
     impl::aten::updateATen2Tensor(ctx, std::get<1>(atOuts), invstd);
     impl::aten::unsetCurCtx();

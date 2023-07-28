@@ -102,6 +102,15 @@ DIOPI_API diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandl
  */
 DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd, diopiConstTensorHandle_t input,
                                            double eps);
+/**
+ * @brief Applies Batch Normalization gather to calculate mean and invstd.
+ */
+DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd,
+                                                           diopiConstTensorHandle_t input, diopiConstTensorHandle_t mean_all,
+                                                           diopiConstTensorHandle_t invstd_all, diopiTensorHandle_t running_mean,
+                                                           diopiTensorHandle_t running_var, float momentum, float eps,
+                                                           diopiConstTensorHandle_t counts);
+
 
 /**
  * @brief compute the backward pass of batch normalization

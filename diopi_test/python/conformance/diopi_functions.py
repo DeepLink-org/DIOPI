@@ -1391,6 +1391,15 @@ def batch_norm_stats(input, eps):
     out = (mean, invstd)
     return out
 
+def batch_norm_gather_stats_with_counts(input, mean_all, invstd_all, running_mean, running_var, momentum, eps, count_all):
+    func = check_function('diopiBatchNormGatherStatsWithCounts')
+    mean = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+    invstd = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+    ret = func(input.context(), mean, invstd, input, mean_all, invstd_all, running_mean, running_var, momentum, eps, count_all)
+    check_returncode(ret)
+    out = (mean, invstd)
+    return out
+
 
 def log_softmax(input, dim=None, dtype=None):
     if dim is None:
