@@ -3957,13 +3957,15 @@ diopi_configs = {
         name=['expand'],
         interface=['torch.Tensor'],
         para=dict(
-            size=[(60800, 3), (-1, 4), (-1, 8, -1), (7, 3, -1)],
+            size=[(0,), (5,), (8, 2), (4, -1), (60800, 3), (-1, 4), (-1, 8, -1), (7, 3, -1), (5, -1, 8, 6, -1),
+                  (2, 0), (4, -1, -1), (-1, -1, 9)],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [(60800, 1), (100, 1), (70, 1, 2), (3, 1)],
+                    "shape": [(), (), (), (8,), (60800, 1), (100, 1), (70, 1, 2), (3, 1), (4, 1, 6, 8),
+                              (0,), (12, 0), (4, 0, 1)],
                     "gen_fn": Genfunc.randn,
                     "dtype": [Dtype.float32, Dtype.bool, Dtype.float16, Dtype.float64,
                               Dtype.int64, Dtype.int32, Dtype.int16, Dtype.int8, Dtype.uint8],
