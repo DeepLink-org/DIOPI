@@ -195,12 +195,13 @@ public:
         diopiDtype_t realDtype = DiopiDataType::complexDtype2Real(dtype());
         std::vector<int64_t> realShape(shape());
         realShape.push_back(2);
-        std::vector<int64_t> realStride(stride().size() + 1, 1);
-        for (int i = 1; i < stride().size(); ++i) {
-            realStride[i] = stride()[i];
+        std::vector<int64_t> realStride(stride());
+        for (auto& i : realStride) {
+            i *= 2;
         }
+        realStride.push_back(1);
         DiopiTensor realTensor(tensor_);
-        realTensor.asStrided(realShape, realStride).setDtype(dtype());
+        realTensor.asStrided(realShape, realStride).setDtype(realDtype);
         return realTensor;
     }
 

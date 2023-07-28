@@ -46,7 +46,6 @@ public:
     static bool isFloatPoint(cnnlDataType_t cnnlDT);
     static bool isInteger(cnnlDataType_t cnnlDT);
     static bool isBool(cnnlDataType_t cnnlDT);
-    static bool isComplex(cnnlDataType_t cnnlDT);
 };
 
 template <typename T, ::cnnlStatus_t (*fnCreate)(T*), ::cnnlStatus_t (*fnDestroy)(T)>

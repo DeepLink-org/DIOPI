@@ -18,6 +18,8 @@ namespace camb {
 
 #define MAKE_KEY(a, b) (((static_cast<uint64_t>(a) & 0xFFFFFFFF) << 32) | (static_cast<uint64_t>(b) & 0xFFFFFFFF))
 
+bool isComplexDtype(diopiDtype_t dtype) { return (dtype == diopi_dtype_complex32 || dtype == diopi_dtype_complex64 || dtype == diopi_dtype_complex128); }
+
 inline bool canCastByInt32(uint64_t castType) {
     // special convert (cnnl doesn't support)
     constexpr uint64_t boolInt64 = MAKE_KEY(diopi_dtype_bool, diopi_dtype_int64);
@@ -95,14 +97,10 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const Dio
     }
 
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    cnnlDataType_t srcCnnlDtype;
-    cnnlDataType_t destCnnlDtype;
-    CnnlDataType::convertToCnnlType(&srcCnnlDtype, src.dtype());
-    CnnlDataType::convertToCnnlType(&destCnnlDtype, dest.dtype());
     DiopiTensor destTmp = dest;
     DiopiTensor srcTmp = src;
     // camb only support CNNL_DTYPE_COMPLEX_HALF and CNNL_DTYPE_FLOAT so far
-    if (CnnlDataType::isComplex(srcCnnlDtype) && CnnlDataType::isComplex(destCnnlDtype)) {
+    if (isComplexDtype(src.dtype()) && isComplexDtype(dest.dtype())) {
         destTmp = dest.viewAsReal();
         srcTmp = src.viewAsReal();
     }

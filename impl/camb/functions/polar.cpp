@@ -35,7 +35,6 @@ DIOPI_API diopiError_t diopiPolar(diopiContextHandle_t ctx, diopiTensorHandle_t 
 
     DIOPI_CALLCNNL(
         cnnlPolar(handle, absDesc.get(), absTensor.data(), angleDesc.get(), angleTensor.data(), outDesc.get(), outTensor.data(), workspace, workspaceSize));
-
     return diopiSuccess;
 }
 }  // extern "C"
