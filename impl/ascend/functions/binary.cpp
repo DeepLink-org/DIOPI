@@ -6,12 +6,6 @@
 
 #include <diopi/functions.h>
 
-#include <iostream>
-#include <map>
-#include <memory>
-#include <set>
-#include <vector>
-
 #include "../common/acloprunner.hpp"
 
 namespace impl {
@@ -49,7 +43,7 @@ extern "C" DIOPI_API diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopi
     diopiTensorHandle_t trOther = nullptr;
     diopiDtype_t dtype;
     diopiGetTensorDtype(out, &dtype);
-    makeTensorFromScalar(ctx, other, &trOther, dtype);
+    makeTensorFromScalar(ctx, other, &trOther, dtype, diopiDevice_t::diopi_device);
     return diopiAdd(ctx, out, input, trOther, alpha);
 }
 
@@ -81,7 +75,7 @@ extern "C" DIOPI_API diopiError_t diopiSubScalar(diopiContextHandle_t ctx, diopi
     diopiTensorHandle_t trOther = nullptr;
     diopiDtype_t dtype;
     diopiGetTensorDtype(out, &dtype);
-    makeTensorFromScalar(ctx, other, &trOther, dtype);
+    makeTensorFromScalar(ctx, other, &trOther, dtype, diopiDevice_t::diopi_device);
     return diopiSub(ctx, out, input, trOther, alpha);
 }
 
@@ -104,7 +98,7 @@ extern "C" DIOPI_API diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopi
     diopiTensorHandle_t trOther = nullptr;
     diopiDtype_t dtype;
     diopiGetTensorDtype(input, &dtype);
-    makeTensorFromScalar(ctx, other, &trOther, dtype);
+    makeTensorFromScalar(ctx, other, &trOther, dtype, diopiDevice_t::diopi_device);
     return diopiMul(ctx, out, input, trOther);
 }
 
@@ -128,7 +122,7 @@ extern "C" DIOPI_API diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopi
     diopiTensorHandle_t trOther = nullptr;
     diopiDtype_t dtype;
     diopiGetTensorDtype(input, &dtype);
-    makeTensorFromScalar(ctx, other, &trOther, dtype);
+    makeTensorFromScalar(ctx, other, &trOther, dtype, diopiDevice_t::diopi_device);
     return diopiDiv(ctx, out, input, trOther, roundingMode);
 }
 

@@ -47,10 +47,10 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
-                                                   diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
-                                                   diopiConstTensorHandle_t weight, diopiSize_t *bias_sizes, diopiSize_t stride, diopiSize_t padding,
-                                                   diopiSize_t dilation, bool transposed, diopiSize_t output_padding, int64_t groups) {
+extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight,
+                                                   diopiTensorHandle_t gradBias, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
+                                                   diopiConstTensorHandle_t weight, diopiSize_t *biasSizes, diopiSize_t stride, diopiSize_t padding,
+                                                   diopiSize_t dilation, bool transposed, diopiSize_t outputPadding, int64_t groups) {
     auto format = getAclDataFormat(input);
     const std::string dataFormat = (format == ACL_FORMAT_NHWC) ? "NHWC" : "NCHW";
     std::vector<int64_t> strideTemp(4, 1);
@@ -70,21 +70,21 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
 
     diopiTensorHandle_t weightShapeT;
     diopiSize_t weightShape;
-    diopiGetTensorShape(grad_weight, &weightShape);
+    diopiGetTensorShape(gradWeight, &weightShape);
     makeTensorFromSize<int32_t>(ctx, &weightShape, &weightShapeT, diopi_dtype_int32);
 
     AclOpRunner<3, 1>("Conv2DBackpropFilter")
         .addInput<0>(input)
         .addConstInput<1>(weightShapeT, ACL_FORMAT_ND)
-        .addInput<2>(grad_output)
-        .addOutput(grad_weight)
+        .addInput<2>(gradOutput)
+        .addOutput(gradWeight)
         .setAttr("strides", strideTemp)
         .setAttr("pads", paddingTemp)
         .setAttr("dilations", dilationsTemp)
         .setAttr("groups", groups)
         .setAttr("data_format", dataFormat)
         .run(ctx);
-    if (grad_input != nullptr) {
+    if (gradInput != nullptr) {
         diopiTensorHandle_t inputShapeT;
         diopiSize_t inputShape;
         diopiGetTensorShape(input, &inputShape);
@@ -92,8 +92,8 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
         AclOpRunner<3, 1>("Conv2DBackpropInput")
             .addConstInput<0>(inputShapeT)
             .addInput<1>(weight)
-            .addInput<2>(grad_output)
-            .addOutput(grad_input)
+            .addInput<2>(gradOutput)
+            .addOutput(gradInput)
             .setAttr("strides", strideTemp)
             .setAttr("pads", paddingTemp)
             .setAttr("dilations", dilationsTemp)
@@ -102,8 +102,8 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
             .run(ctx);
     }
 
-    if (grad_bias != nullptr) {
-        AclOpRunner<1, 1>("BiasAddGrad").addInput(grad_output).addOutput(grad_bias).setAttr("data_format", dataFormat).run(ctx);
+    if (gradBias != nullptr) {
+        AclOpRunner<1, 1>("BiasAddGrad").addInput(gradOutput).addOutput(gradBias).setAttr("data_format", dataFormat).run(ctx);
     }
     return diopiSuccess;
 }

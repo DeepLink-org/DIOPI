@@ -13,18 +13,18 @@
 namespace impl {
 namespace ascend {
 extern "C" diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
-    diopiTensorHandle_t dimT = nullptr;
+    diopiTensorHandle_t dimAllTensor = nullptr;
     bool keepdim = true;
     diopiSize_t inS, outS;
     diopiGetTensorShape(input, &inS);
     diopiGetTensorShape(out, &outS);
     if (dim.getLen() > 0) {
-        makeTensorFromSize(ctx, &dim, &dimT);
+        makeTensorFromSize(ctx, &dim, &dimAllTensor);
     } else {
-        std::vector<int64_t> v(inS.getLen());
-        std::iota(std::begin(v), std::end(v), 0);
-        diopiSize_t dim_(v.data(), v.size());
-        makeTensorFromSize(ctx, &dim_, &dimT);
+        std::vector<int64_t> dimAllVector(inS.getLen());
+        std::iota(std::begin(dimAllVector), std::end(dimAllVector), 0);
+        diopiSize_t dimAll(dimAllVector.data(), dimAllVector.size());
+        makeTensorFromSize(ctx, &dimAll, &dimAllTensor);
     }
     if (inS.getLen() != outS.getLen()) {
         keepdim = false;
@@ -36,23 +36,23 @@ extern "C" diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t o
             }
         }
     }
-    AclOpRunner<2, 1>("ReduceSum").addInput(input).addConstInput(dimT, ACL_FORMAT_ND).setAttr<uint8_t>("keep_dims", keepdim).addOutput(out).run(ctx);
+    AclOpRunner<2, 1>("ReduceSum").addInput(input).addConstInput(dimAllTensor, ACL_FORMAT_ND).setAttr<uint8_t>("keep_dims", keepdim).addOutput(out).run(ctx);
     return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
-    diopiTensorHandle_t dimT = nullptr;
+    diopiTensorHandle_t dimAllTensor = nullptr;
     bool keepdim = true;
     diopiSize_t inS, outS;
     diopiGetTensorShape(input, &inS);
     diopiGetTensorShape(out, &outS);
     if (dim.getLen() > 0) {
-        makeTensorFromSize(ctx, &dim, &dimT);
+        makeTensorFromSize(ctx, &dim, &dimAllTensor);
     } else {
-        std::vector<int64_t> v(inS.getLen());
-        std::iota(std::begin(v), std::end(v), 0);
-        diopiSize_t dim_(v.data(), v.size());
-        makeTensorFromSize(ctx, &dim_, &dimT);
+        std::vector<int64_t> dimAllVector(inS.getLen());
+        std::iota(std::begin(dimAllVector), std::end(dimAllVector), 0);
+        diopiSize_t dimAll(dimAllVector.data(), dimAllVector.size());
+        makeTensorFromSize(ctx, &dimAll, &dimAllTensor);
     }
     if (inS.getLen() != outS.getLen()) {
         keepdim = false;
@@ -64,7 +64,7 @@ extern "C" diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t 
             }
         }
     }
-    AclOpRunner<2, 1>("ReduceMean").addInput(input).addConstInput(dimT, ACL_FORMAT_ND).setAttr<uint8_t>("keep_dims", keepdim).addOutput(out).run(ctx);
+    AclOpRunner<2, 1>("ReduceMean").addInput(input).addConstInput(dimAllTensor, ACL_FORMAT_ND).setAttr<uint8_t>("keep_dims", keepdim).addOutput(out).run(ctx);
     return diopiSuccess;
 }
 }  // namespace ascend
