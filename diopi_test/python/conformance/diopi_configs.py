@@ -4857,12 +4857,14 @@ diopi_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": ((192, 147), (1, 1, 384), (2, 1, 38, 45)),
+                    "shape": ((), (8,), (12,), (192, 147), (1, 1, 384), (2, 1, 38, 45),
+                              (0,), (0, 12,), (12, 0, 9)),
                     "no_contiguous": [True],
                 },
                 {
                     "ins": ["other"],
-                    "shape": ((147, 1), (384, 1, 1), (45, 38, 1, 2)),
+                    "shape": ((), (), (12,), (147, 1), (384, 1, 1), (45, 38, 1, 2),
+                              (0,), (12, 0), (9, 0, 12)),
                 },
             ]
         )
@@ -4877,13 +4879,38 @@ diopi_configs = {
                 {
                     "ins": ["input"],
                     "shape": ((192, 147), (1, 1, 384), (2, 1, 38, 45), (100, 100)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.bool,
+                              Dtype.int64, Dtype.int32, Dtype.int16, Dtype.int8, Dtype.uint8],
                     "no_contiguous": [True],
                 },
                 {
                     "ins": ["other"],
-                    "dtype": [Dtype.int32, Dtype.int64],
+                    "dtype": [Dtype.float64, Dtype.int64, Dtype.float16, Dtype.float16,
+                              Dtype.int32, Dtype.float32, Dtype.uint8, Dtype.uint8, Dtype.uint8],
                     "shape": ((147, 1), (384, 1, 1), (45, 38, 1, 2), (1, 100)),
+                },
+            ]
+        )
+    ),
+
+    'copy_broadcast': dict(
+        name=["copy_"],
+        interface=['torch.Tensor'],
+        dtype=[Dtype.float32, Dtype.float64],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((8,), (12, 2), (192, 147, 2), (6, 5, 384), (2, 12, 38, 45, 3),
+                              (0, 2), (0, 12,), (12, 0, 9, 2)),
+                    "no_contiguous": [True],
+                },
+                {
+                    "ins": ["other"],
+                    "shape": ((1,), (12,), (1, 147), (6, 1, 384), (2, 1, 38, 45),
+                              (1,), (0, 1,), (12, 0, 1)),
+                    "no_contiguous": [True],
                 },
             ]
         )
