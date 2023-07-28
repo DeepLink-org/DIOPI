@@ -2356,7 +2356,10 @@ def cumsum(input, dim, dtype=None):
     assert isinstance(dim, int), "dim should be int"
 
     sizeI = list(input.size().data)
-    assert dim < len(sizeI), "dim out of index"
+    if len(sizeI) == 0:
+        assert dim in (0, -1), "dim out of index"
+    else:
+        assert dim < len(sizeI), "dim out of index"
 
     out = Tensor(input.size().data, promote_type(input, Dtype.int64)) if dtype is None else Tensor(input.size().data, dtype)
     func = check_function("diopiCumsum")

@@ -3382,15 +3382,15 @@ diopi_configs = {
         interface=['torch'],
         atol=1e-6,
         rtol=1e-5,
-        dtype=[Dtype.float32],
         para=dict(
-            dim=[1, 2, 0, -1],
+            dim=[0, -1, 1, 2, 0, -1, -1, -2, 1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((2, 22, 33), (2, 2, 10, 16), (1, 20), (2, 2, 20)),
+                    "shape": ((), (12,), (2, 22, 33), (2, 2, 10, 16), (1, 20), (2, 2, 20),
+                              (0,), (5, 0), (4, 0, 12)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,
                               Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
                     "gen_fn": Genfunc.randn,
