@@ -3468,7 +3468,7 @@ diopi_configs = {
         ),
     ),
 
-    'bitwise_not': dict(
+    'bitwise_not_uint8': dict(
         name=['bitwise_not'],
         interface=['torch'],
         is_inplace=True,
@@ -3476,9 +3476,10 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((1,), (100, 4), (2, 256, 256)),
-                    "dtype": [Dtype.bool, Dtype.int32],
-                    "gen_fn": Genfunc.randn,
+                    "shape": ((), (1,), (100, 4), (2, 256, 256),
+                              (0,)),
+                    "dtype": [Dtype.uint8],
+                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=256),
                 },
             ],
         ),
@@ -3492,10 +3493,11 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((10,), (100, 4), (2, 256, 256)),
+                    "shape": ((10,), (100, 4), (2, 256, 256),
+                              (4, 0), (8, 0, 9)),
                     "dtype": [Dtype.bool, Dtype.int16, Dtype.int32, Dtype.int64,
-                              Dtype.int8, Dtype.uint8],
-                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=2),
+                              Dtype.int8],
+                    "gen_fn": dict(fn=Genfunc.randint, low=-128, high=128),
                 },
             ],
         ),
