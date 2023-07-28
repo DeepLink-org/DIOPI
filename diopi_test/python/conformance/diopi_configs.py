@@ -4754,15 +4754,36 @@ diopi_configs = {
         no_output_ref=True,
         is_inplace=True,
         para=dict(
-            p=[None, 0.5, None, None],
+            p=[0.1, None, 0.5, None, None, 0.7, None, None],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.rand,
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((1, ), (64, 64), (16, 1, 3, 3), (96, 48, 3, 3)),
+                    "shape": ((), (1, ), (64, 64), (16, 1, 3, 3), (96, 48, 3, 3),
+                              (0,), (4, 0), (5, 0, 7)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
+                },
+            ],
+        ),
+    ),
+
+    'bernoulli_int': dict(
+        name=['bernoulli'],
+        no_output_ref=True,
+        is_inplace=True,
+        para=dict(
+            p=[0.1, 0, 0.5, True],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.rand,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (5, ), (2, 3), (2, 1, 6)),
+                    "dtype": [Dtype.int64, Dtype.int32, Dtype.int16,
+                              Dtype.int8, Dtype.uint8, Dtype.bool],
                 },
             ],
         ),

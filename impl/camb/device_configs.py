@@ -840,6 +840,19 @@ device_configs = {
         ),
     ),
 
+    'bernoulli_int': dict(
+        name=['bernoulli'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
+                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                },
+            ],
+        ),
+    ),
+
     'layer_norm': dict(
         name=["layer_norm"],
         atol=1e-4,

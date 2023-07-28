@@ -203,8 +203,8 @@ class ManualTest(object):
 
     def test_bernoulli(input, inplace=False, p=None):
         p_numpy = input.numpy()
-        p = p_numpy.mean() if p is None else p
         out = F.bernoulli(input, inplace, p)
+        p = p_numpy.mean() if p is None else p
         out_numpy = out.numpy()
 
         if out.numel() > 100:
