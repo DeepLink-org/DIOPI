@@ -3860,13 +3860,34 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((8, 48), (4, 128), (256, 8)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ['mat2'],
                     "shape": ((48, 128), (128, 128), (8, 1)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'mm_diff_dtype': dict(
+        name=['mm'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((8, 0), (0, 128), (256, 8)),
+                    "dtype": [Dtype.float32, Dtype.float16, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ['mat2'],
+                    "shape": ((0, 128), (128, 128), (8, 0)),
+                    "dtype": [Dtype.float16, Dtype.float64, Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
             ],
