@@ -197,8 +197,19 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
-                              Skip(Dtype.uint8), Skip(Dtype.int8)],
+                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64), Skip(Dtype.int8)],
+                },
+            ],
+        ),
+    ),
+    
+    'pointwise_op_uint8': dict(
+        name=['atan'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.uint8)],
                 },
             ],
         ),
