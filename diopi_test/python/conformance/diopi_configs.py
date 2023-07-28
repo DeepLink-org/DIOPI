@@ -2811,7 +2811,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['condition'],
-                    "shape": [(3, 4),],
+                    "shape": [(3, 4), ],
                     "dtype": [Dtype.bool],
                     "gen_fn": Genfunc.mask
                 },
@@ -2820,7 +2820,7 @@ diopi_configs = {
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64,
                               Dtype.int16, Dtype.int32, Dtype.int64,
                               Dtype.uint8, Dtype.int8, Dtype.bool],
-                    "shape": [(3, 4),],
+                    "shape": [(3, 4), ],
                     "gen_fn": Genfunc.randn
                 },
                 {
@@ -2828,7 +2828,7 @@ diopi_configs = {
                     "dtype": [Dtype.float32, Dtype.int32, Dtype.float32,
                               Dtype.float16, Dtype.float32, Dtype.bool,
                               Dtype.int8, Dtype.uint8, Dtype.uint8],
-                    "shape": [(3, 4),],
+                    "shape": [(3, 4), ],
                     "gen_fn": Genfunc.randn
                 },
             ],
@@ -3429,7 +3429,7 @@ diopi_configs = {
             compute_mode=['use_mm_for_euclid_dist', 'donot_use_mm_for_euclid_dist', 'use_mm_for_euclid_dist_if_necessary',
                           'use_mm_for_euclid_dist_if_necessary', 'use_mm_for_euclid_dist', 'donot_use_mm_for_euclid_dist',
                           'use_mm_for_euclid_dist_if_necessary', 'use_mm_for_euclid_dist_if_necessary',
-                          'use_mm_for_euclid_dist', 'donot_use_mm_for_euclid_dist', 'use_mm_for_euclid_dist_if_necessary',]
+                          'use_mm_for_euclid_dist', 'donot_use_mm_for_euclid_dist', 'use_mm_for_euclid_dist_if_necessary']
         ),
         tensor_para=dict(
             args=[
@@ -3437,7 +3437,7 @@ diopi_configs = {
                     "ins": ['x1'],
                     "requires_grad": [True],
                     "shape": ((2, 50, 4), (1, 32, 32), (4, 31, 256), (4, 256, 256), (10, 128),
-                              (2, 50, 4), (1, 32, 32), (4, 31, 256), 
+                              (2, 50, 4), (1, 32, 32), (4, 31, 256),
                               (0, 4, 5), (4, 0, 9), (3, 0)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
@@ -3445,7 +3445,7 @@ diopi_configs = {
                 {
                     "ins": ['x2'],
                     "shape": ((100, 4), (32, 2, 48, 64, 32), (4, 256, 256), (4, 256, 256), (1, 10, 128),
-                              (100, 4), (32, 2, 48, 64, 32), (4, 256, 256), 
+                              (100, 4), (32, 2, 48, 64, 32), (4, 256, 256),
                               (0, 6, 5), (4, 5, 9), (2, 1, 0)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
