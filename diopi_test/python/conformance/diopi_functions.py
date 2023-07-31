@@ -3210,6 +3210,7 @@ def index_put(input, values, indices1, indices2=None, accumulate=False, inplace=
         ret = func(input.context(), input, values,
                    c_tensors, indices_counts, accumulate)
     else:
+        copy_(out, input)   # out should be the same with original tensor
         func = check_function(call)
         ret = func(input.context(), out, input, values,
                    c_tensors, indices_counts, accumulate)
