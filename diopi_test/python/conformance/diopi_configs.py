@@ -4527,14 +4527,16 @@ diopi_configs = {
         name=["interpolate"],
         dtype=[Dtype.float32, Dtype.float64, Dtype.float16],
         para=dict(
-            mode=['nearest', 'bilinear', 'nearest', 'bicubic', 'trilinear', 'linear', 'nearest', 'nearest'],
+            mode=['nearest', 'nearest', 'nearest', 'nearest', 'nearest',
+                  'bilinear', 'bilinear', 'bicubic', 'bicubic',
+                  'trilinear', 'trilinear', 'linear', 'linear', 'linear'],
             # For bicubic, do not use big size like (64, 64), which will cause accuracy error in float16.
             # Additionally, according to pytorch website(https://pytorch.org/docs/stable/generated/torch.nn.functional.interpolate.html)
             # "This operation may produce nondeterministic gradients when given tensors on a CUDA device."
             # So if you are facing a value error in backward, try to figure out whether this is a problem of pytorch.
-            size=[(50, 76), (25, 38), (4, 224, 224), (32, 32), (4, 224, 112), (64, ), None, 32],
-            scale_factor=[None, None, None, None, None, None, (3.0, 3.0), None],
-            align_corners=[None, False, None, True, True, False, None, None],
+            size=[None, (50, 76), (4, 224, 224), None, 32, (25, 38), (14, 16), (32, 32), (10, 32), None, (4, 224, 112), (64, ), (32,), None],
+            scale_factor=[0.5, None, None, (3.0, 3.0), None, None, None, None, None, (1.3, 1, 0.2), None, None, None, 0.3],
+            align_corners=[None, None, None, None, None, False, True, True, False, True, False, False, True, False],
             # recompute_scale_factor=[False, False, False, False, False, False, True, False]
 
         ),
@@ -4544,8 +4546,9 @@ diopi_configs = {
                 {
                     "ins": ["input"],
                     "requires_grad": [True],
-                    "shape": ((2, 256, 25, 38), (2, 256, 13, 19), (1, 3, 32, 224, 224), (2, 16, 1, 1),
-                              (1, 3, 32, 112, 112), (2, 32, 32), (2, 2, 16, 16), (2, 2, 16, 16)),
+                    "shape": ((2, 16, 23), (2, 256, 25, 38), (1, 3, 32, 224, 224), (2, 2, 16, 16), (2, 2, 16, 16),
+                              (2, 256, 13, 19), (3, 12, 14, 19), (2, 16, 1, 1), (2, 16, 15, 32),
+                              (1, 3, 32, 112, 112), (1, 3, 32, 112, 112), (2, 32, 32), (2, 32, 32), (2, 32, 32)),
                 },
             ]
         )
