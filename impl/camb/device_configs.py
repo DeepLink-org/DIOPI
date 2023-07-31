@@ -50,7 +50,7 @@ device_configs = {
         ),
     ),
 
-    'pow_tensor_skip_camb': dict(
+    'pow_tensor_only_0_1': dict(
         name=["pow"],
         tensor_para=dict(
             args=[
