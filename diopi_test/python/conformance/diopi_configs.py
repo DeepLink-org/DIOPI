@@ -4560,9 +4560,9 @@ diopi_configs = {
         para=dict(
             output_size=[(352, 528), (12, 40), (4, 26), 10],
             kernel_size=[3, (2, 1), (2, 2), 3],
-            stride=[2, (2, 1), (2, 1), 2],
-            padding=[1, 0, (0, 1), 0],
-            dilation=[1, 1, 1, 2],
+            stride=[2, (2, 1), (3, 1), 2],
+            padding=[1, 0, (2, 4), 0],
+            dilation=[1, 1, (2, 3), 2],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -4571,9 +4571,9 @@ diopi_configs = {
                     "ins": ['input'],
                     "shape": ((2, 576, 46464),
                               (2, 512, 240),
-                              (2, 2048, 54),
+                              (2, 2048, 62),
                               (3, 36, 9)),
-                    "dtype": [Dtype.float16, Dtype.float32],
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
             ]
         ),
@@ -4583,21 +4583,22 @@ diopi_configs = {
         name=["im2col"],
         interface=['CustomizedTest'],
         para=dict(
-            kernel_size=[3, (2, 1), (2, 2), 3],
-            stride=[2, (2, 1), (2, 1), 2],
-            padding=[1, 0, (0, 1), 0],
-            dilation=[1, 1, 1, 2],
+            kernel_size=[2, (2, 2), 3, (2, 1), (2, 2), 3],
+            stride=[1, 2, 2, (2, 1), (3, 4), 2],
+            padding=[0, 0, 1, 0, (2, 1), 0],
+            dilation=[1, 1, 1, (2, 3), 1, 2],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((2, 64, 352, 528),
+                    "shape": ((2, 16, 32, 24), (2, 5, 3, 3),
+                              (2, 64, 352, 528),
                               (2, 256, 12, 40),
                               (2, 512, 4, 26),
                               (3, 4, 10, 10)),
-                    "dtype": [Dtype.float16, Dtype.float32],
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
             ]
         ),
