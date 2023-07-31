@@ -63,22 +63,6 @@ device_configs = {
         ),
     ),
 
-    'pow_diff_dtype': dict(
-        name=["pow"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.uint8)]
-                },
-                {
-                    "ins": ["exponent"],
-                    "dtype": [Skip(Dtype.float16)]
-                },
-            ]
-        ),
-    ),
-
     'pow_input_scalar': dict(
         name=["pow"],
         tensor_para=dict(

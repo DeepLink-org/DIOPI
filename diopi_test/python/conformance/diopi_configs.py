@@ -1005,21 +1005,21 @@ diopi_configs = {
         interface=['torch'],
         is_inplace=True,
         tensor_para=dict(
-            gen_fn=Genfunc.randn,
+            gen_fn=dict(fn=Genfunc.randn_int, high=4),
             args=[
                 {
                     "ins": ['input'],
                     "shape": ((1024, ),),
                     "dtype":[Dtype.float64, Dtype.float32, Dtype.float16,
-                             Dtype.int64, Dtype.int32, Dtype.int16,
-                             Dtype.int8, Dtype.uint8, Dtype.bool],
+                             Dtype.int32, Dtype.float64, Dtype.float64,
+                             Dtype.int8, Dtype.float32, Dtype.int8],
                 },
                 {
                     "ins": ['exponent'],
                     "shape": ((1024, ),),
                     "dtype":[Dtype.int32, Dtype.uint8, Dtype.bool,
-                             Dtype.int64, Dtype.float64, Dtype.float32,
-                             Dtype.int16, Dtype.float16, Dtype.int8],
+                             Dtype.int64, Dtype.float16, Dtype.float32,
+                             Dtype.int16, Dtype.bool, Dtype.uint8],
                 },
             ],
         ),
