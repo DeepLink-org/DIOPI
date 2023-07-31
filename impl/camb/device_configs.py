@@ -796,6 +796,30 @@ device_configs = {
         ),
     ),
 
+    'unfold': dict(
+        name=["unfold"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip(()),),
+                },
+            ],
+        ),
+    ),
+
+    'pad': dict(
+        name=['pad'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((4, 5)),],
+                },
+            ],
+        ),
+    ),
+
     'random': dict(
         name=['random'],
         tensor_para=dict(
