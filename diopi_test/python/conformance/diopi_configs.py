@@ -4679,19 +4679,23 @@ diopi_configs = {
         name=["repeat"],
         interface=['torch.Tensor'],
         para=dict(
-            repeats=[(4, 2), (4, 2, 1),
+            repeats=[(), (3,), (3, 5), (4, 2), (4, 2, 1),
                      (4, 2), (4, 2, 1),
-                     (4, 2, 1)],
+                     (4, 2, 1), (3, 4, 6, 3, 5),
+                     (1, 2), (2, 2, 3), (4, 2, 3, 0)],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((3, ), (3, ),
-                              (1, 2), (1, 2),
-                              (1, 2, 3)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "shape": ((), (), (), (3, ), (3, ),
+                              (1, 2), (1, 2), (1, 2, 3),
+                              (4, 2, 3, 5),
+                              (0,), (12, 0), (4, 0, 9)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64,
+                              Dtype.int16, Dtype.int32, Dtype.int64,
+                              Dtype.int8, Dtype.uint8, Dtype.bool],
                 },
             ]
         ),
