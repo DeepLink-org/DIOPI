@@ -202,19 +202,26 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
     DiopiTensor outputTensor(out);
     DiopiTensor biasTensor(bias);
 
-    DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast), "inputTensor should be ChannelsLast");
-    DIOPI_CHECK(weightTensor.isContiguous(MemoryFormat::ChannelsLast), "weightTensor should be ChannelsLast");
-    DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast), "outputTensor should be ChannelsLast");
+    DIOPI_CHECK(inputTensor.isContiguous(), "inputTensor should be Contiguous");
+    DIOPI_CHECK(weightTensor.isContiguous(), "weightTensor should be Contiguous");
+    DIOPI_CHECK(outputTensor.isContiguous(), "outputTensor should be Contiguous");
 
     std::vector<DiopiTensor *> tensors{&inputTensor, &weightTensor};
     if (biasTensor.tensorHandle()) {
         tensors.push_back(&biasTensor);
     }
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32}));
-    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(outputTensorTmp, outputTensor, inputTensor.dtype());
+
+    MemoryFormat memoryFormat = inputTensor.dim() == 4 ? MemoryFormat::ChannelsLast : MemoryFormat::ChannelsLast3d;
+    DIOPI_CALL(contiguous(ctx, inputTensor, memoryFormat));
+    DIOPI_CALL(contiguous(ctx, weightTensor, memoryFormat));
+    DiopiTensor outputTensorTmp = requiresTensor(ctx, outputTensor.shape(), inputTensor.dtype(), memoryFormat);
 
     DIOPI_CALL(convForward(ctx, inputTensor, weightTensor, biasTensor, outputTensorTmp, stride, padding, dilation, groups));
-    DIOPI_CALL(dataTypeCast(ctx, outputTensor, outputTensorTmp));
+
+    // channels last -> contiguous
+    DIOPI_CALL(contiguous(ctx, outputTensorTmp, MemoryFormat::Contiguous));
+    DIOPI_CALL(diopiCopyInp(ctx, outputTensorTmp.tensorHandle(), outputTensor.tensorHandle()));
     return diopiSuccess;
 }
 
@@ -234,23 +241,31 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
     DiopiTensor gradWeightTensor(gradWeight);
     DiopiTensor gradBiasTensor(grad3);
 
-    DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast), "inputTensor should be ChannelsLast");
+    DIOPI_CHECK(inputTensor.isContiguous(), "inputTensor should be Contiguous");
     if (gradInputTensor.tensorHandle()) {
-        DIOPI_CHECK(gradInputTensor.isContiguous(MemoryFormat::ChannelsLast), "gradInputTensor should be ChannelsLast");
+        DIOPI_CHECK(gradInputTensor.isContiguous(), "gradInputTensor should be Contiguous");
     }
     std::vector<DiopiTensor *> tensors{&inputTensor, &weightTensor, &gradOutputTensor};
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32}));
 
+    /* Transpose */
+    MemoryFormat memoryFormat = inputTensor.dim() == 4 ? MemoryFormat::ChannelsLast : MemoryFormat::ChannelsLast3d;
+    DIOPI_CALL(contiguous(ctx, inputTensor, memoryFormat));
+    DIOPI_CALL(contiguous(ctx, weightTensor, memoryFormat));
+    DIOPI_CALL(contiguous(ctx, gradOutputTensor, memoryFormat));
+
     if (gradWeightTensor.tensorHandle()) {
-        REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradWeightTensorTmp, gradWeightTensor, inputTensor.dtype());
+        DiopiTensor gradWeightTensorTmp = requiresTensor(ctx, gradWeightTensor.shape(), inputTensor.dtype(), memoryFormat);
         DIOPI_CALL(convBackwardFilter(ctx, gradOutputTensor, gradWeightTensorTmp, inputTensor, stride, padding, dilation, groups));
-        DIOPI_CALL(dataTypeCast(ctx, gradWeightTensor, gradWeightTensorTmp));
+        DIOPI_CALL(contiguous(ctx, gradWeightTensorTmp, MemoryFormat::Contiguous));
+        DIOPI_CALL(diopiCopyInp(ctx, gradWeightTensorTmp.tensorHandle(), gradWeightTensor.tensorHandle()));
     }
 
     if (gradInputTensor.tensorHandle()) {
-        REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradInputTensorTmp, gradInputTensor, inputTensor.dtype());
+        DiopiTensor gradInputTensorTmp = requiresTensor(ctx, gradInputTensor.shape(), inputTensor.dtype(), memoryFormat);
         DIOPI_CALL(convBackwardData(ctx, gradOutputTensor, gradInputTensorTmp, weightTensor, stride, padding, dilation, groups));
-        DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensorTmp));
+        DIOPI_CALL(contiguous(ctx, gradInputTensorTmp, MemoryFormat::Contiguous));
+        DIOPI_CALL(diopiCopyInp(ctx, gradInputTensorTmp.tensorHandle(), gradInputTensor.tensorHandle()));
     }
 
     if (grad3 != nullptr) {
