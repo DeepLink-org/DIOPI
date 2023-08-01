@@ -4608,12 +4608,14 @@ diopi_configs = {
         name=['flip'],
         interface=['torch'],
         para=dict(
-            dims=[(1,), (-2, -1), (0, 1), (0, -1, 2)],
+            dims=[(-1,), (0,), (1,), (-2, -1), (0, 2, -1, -3,), (0, -1, 2),
+                  (-1,), (0, 1), (-2, 0, 2)],
         ),
         tensor_para=dict(
             args=[
                 {
-                    "shape": ((49, 49), (12, 13, 14), (12, 13, 14, 16), (2, 3, 4, 10, 12)),
+                    "shape": ((), (12,), (49, 49), (12, 13, 14), (12, 13, 14, 16), (2, 3, 4, 10, 12),
+                              (0,), (12, 0), (2, 0, 7)),
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64,
                               Dtype.int16, Dtype.int32, Dtype.int64,
                               Dtype.int8, Dtype.uint8, Dtype.bool],
