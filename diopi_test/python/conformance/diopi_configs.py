@@ -4629,15 +4629,16 @@ diopi_configs = {
         name=['cholesky_ex'],
         interface=['torch.linalg'],
         para=dict(
-            upper=[True, False],
-            check_errors=[True, False],
+            upper=[True, False, True, False, False],
+            check_errors=[True, False, True, False, True],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((2, 3, 3), (2, 3, 3)),
+                    "shape": ((3, 4), (2, 3, 3), (2, 3, 4), (6, 3, 4, 5),
+                              (0, 3, 4)),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.sym_mat,
                 },
