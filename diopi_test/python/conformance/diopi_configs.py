@@ -4464,15 +4464,16 @@ diopi_configs = {
         name=['random'],
         no_output_ref=True,
         para={
-            'start': [0, 3, -1, 0, 3],
-            'end': [2, None, 1, None, 4],
+            'start': [-10, 0, 3, -1, 0, 3, 4, 0, -5],
+            'end': [-2, 2, None, 1, None, 4, 12, 4, None],
         },
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((1, ), (64, 64), (16, 1, 3, 3), (96, 48, 3, 3), (16, 1, 3, 3)),
+                    "shape": ((), (1, ), (64, 64), (16, 1, 3, 3), (96, 48, 3, 3), (16, 1, 3, 3),
+                              (0,), (4, 0), (3, 0, 9)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16,
                               Dtype.int64, Dtype.int32, Dtype.int16, Dtype.int8],
                 },
