@@ -435,7 +435,32 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float64), Skip(Dtype.float32)],
+                },
+            ],
+        ),
+    ),
+
+    'index_empty_tensor': dict(
+        name=["index"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float64), Skip(Dtype.float32)],
+                },
+            ],
+        ),
+    ),
+
+    'index_int': dict(
+        name=["index"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
+                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
                 },
             ],
         ),

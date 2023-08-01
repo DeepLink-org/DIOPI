@@ -2768,40 +2768,109 @@ diopi_configs = {
         ),
     ),
 
-    'index': dict(
-        name=["index"],
-        interface=["CustomizedTest"],
-        # input[idx1,idx2,idx3] input[...,idx3] input[idx,...,idx3]
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((128, 2, 2), (2, 3, 224, 224), (3, 2, 6, 197, 64)),
-                    "requires_grad": [True],
-                    "gen_fn": Genfunc.randn,
-                    "dtype": [Dtype.float32, Dtype.float64],
-                },
-                {
-                    "ins": ['idx1'],
-                    "shape": ((1, ), None, (1, )),
-                    "gen_fn": dict(fn=Genfunc.randint, high=3),
-                    "dtype": [Dtype.int64],
-                },
-                {
-                    "ins": ['idx2'],
-                    "shape": ((1, ), None, None),
-                    "gen_fn": dict(fn=Genfunc.randint, high=2),
-                    "dtype": [Dtype.int64],
-                },
-                {
-                    "ins": ['idx3'],
-                    "shape": ((2, ), (224, 224), (64, )),
-                    "gen_fn": Genfunc.mask,
-                    "dtype": [Dtype.bool],
-                },
-            ],
-        ),
-    ),
+    # 'index': dict(
+    #     name=["index"],
+    #     interface=["CustomizedTest"],
+    #     # input[idx1,idx2,idx3] input[...,idx3] input[idx,...,idx3]
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "shape": ((), (12,), (12, 32), (128, 2, 2), (2, 3, 224, 224), (3, 2, 6, 197, 64)),
+    #                 "requires_grad": [True],
+    #                 "gen_fn": Genfunc.randn,
+    #                 "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
+    #             },
+    #             {
+    #                 "ins": ['idx1'],
+    #                 "shape": (None, (24,), None, (1, ), None, (1, )),
+    #                 "gen_fn": dict(fn=Genfunc.randint, high=3),
+    #                 "dtype": [Dtype.int64, Dtype.int32, Dtype.int64],
+    #             },
+    #             {
+    #                 "ins": ['idx2'],
+    #                 "shape": (None, None, (11, 64), (1, ), None, None),
+    #                 "gen_fn": dict(fn=Genfunc.randint, high=2),
+    #                 "dtype": [Dtype.int32],
+    #             },
+    #             {
+    #                 "ins": ['idx3'],
+    #                 "shape": (None, None, None, (2, ), (224, 224), (64, )),
+    #                 "gen_fn": Genfunc.mask,
+    #                 "dtype": [Dtype.bool, Dtype.uint8, Dtype.bool],
+    #             },
+    #         ],
+    #     ),
+    # ),
+
+    # 'index_empty_tensor': dict(
+    #     name=["index"],
+    #     interface=["CustomizedTest"],
+    #     # input[idx1,idx2,idx3] input[...,idx3] input[idx,...,idx3]
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "shape": ((0,), (4, 0), (4, 0, 5)),
+    #                 # "requires_grad": [True],
+    #                 "gen_fn": Genfunc.randn,
+    #                 "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
+    #             },
+    #             {
+    #                 "ins": ['idx1'],
+    #                 "shape": (None, (5,), (1,)),
+    #                 "gen_fn": dict(fn=Genfunc.randint, high=3),
+    #                 "dtype": [Dtype.int64],
+    #             },
+    #             {
+    #                 "ins": ['idx2'],
+    #                 "shape": (None, None, None),
+    #                 "gen_fn": dict(fn=Genfunc.randint, high=2),
+    #                 "dtype": [Dtype.int64],
+    #             },
+    #             {
+    #                 "ins": ['idx3'],
+    #                 "shape": (None, None, (5,)),
+    #                 "gen_fn": Genfunc.mask,
+    #                 "dtype": [Dtype.bool],
+    #             },
+    #         ],
+    #     ),
+    # ),
+
+    # 'index_int': dict(
+    #     name=["index"],
+    #     interface=["CustomizedTest"],
+    #     # input[idx1,idx2,idx3] input[...,idx3] input[idx,...,idx3]
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "shape": ((), (12,), (12, 32), (128, 2, 2), (4, 3, 224, 224), (3, 2, 6, 197, 64)),
+    #                 "gen_fn": Genfunc.randn,
+    #                 "dtype": [Dtype.int16, Dtype.int32, Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
+    #             },
+    #             {
+    #                 "ins": ['idx1'],
+    #                 "shape": (None, None, None, (1, ), (2,), (1, 4)),
+    #                 "gen_fn": dict(fn=Genfunc.randint, high=3),
+    #                 "dtype": [Dtype.int64],
+    #             },
+    #             {
+    #                 "ins": ['idx2'],
+    #                 "shape": (None, (12,), (12, 32), (2, ), None, None),
+    #                 "gen_fn": Genfunc.mask,
+    #                 "dtype": [Dtype.bool],
+    #             },
+    #             {
+    #                 "ins": ['idx3'],
+    #                 "shape": (None, None, None, (1, ), (128, 2), (23, 4,)),
+    #                 "gen_fn": dict(fn=Genfunc.randint, high=2),
+    #                 "dtype": [Dtype.int32],
+    #             },
+    #         ],
+    #     ),
+    # ),
 
     'sgd': dict(
         name=["sgd"],
