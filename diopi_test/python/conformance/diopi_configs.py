@@ -4654,9 +4654,9 @@ diopi_configs = {
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            upper=[True, False, True, False],
-            transpose=[True, False, True, False],
-            unitriangular=[True, False, True, False],
+            upper=[True, False, True, False],  # , True, False, True, False],
+            transpose=[True, False, False, True],  # , True, False, False, True],
+            unitriangular=[True, False, True, False],  # , True, False, True, False],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -4664,13 +4664,15 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((2, 2, 2), (3, 3), (7, 6, 5), (7, 2, 1)),
+                    "shape": ((2, 2, 2), (3, 3), (7, 6, 5), (7, 2, 1),),
+                    # (0, 4, 3), (0, 5), (4, 5), (5, 4, 0)),
                     "dtype": [Dtype.float32, Dtype.float64],
                 },
                 {
                     "ins": ['A'],
                     "requires_grad": [True],
-                    "shape": ((2, 2, 2), (5, 3, 3), (7, 6, 6), (2, 2)),
+                    "shape": ((2, 2, 2), (5, 3, 3), (7, 6, 6), (2, 2),),
+                    # (4, 4), (4, 0, 0), (0, 4, 4), (4, 4)),
                     "dtype": [Dtype.float32, Dtype.float64],
                 },
             ],
