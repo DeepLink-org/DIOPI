@@ -4710,10 +4710,11 @@ diopi_configs = {
         name=["normal"],
         no_output_ref=True,
         para=dict(
-            mean=[-1, -0.5, 0, 0.1, 2, True, False],
-            std=[0, 0.5, 1, 2.3, 3, True, True],
+            mean=[-1, -0.5, 0, 0.1, 2, True, False, 0.2, -2, 0],
+            std=[0, 0.5, 1, 2.3, 3, True, True, 0.5, 0, 3],
             size=[(), (1280,), (32, 160), (320, 8),
-                  (32, 80), (2, 2, 20, 16), (320, 2, 3, 3)],
+                  (32, 80), (2, 2, 20, 16), (320, 2, 3, 3),
+                  (0,), (4, 0), (2, 0, 9)],
         ),
     ),
 
@@ -4741,7 +4742,7 @@ diopi_configs = {
         name=["normal"],
         no_output_ref=True,
         para=dict(
-            mean=[-1, -0.5, 0, 0.1, 2],
+            mean=[-1, -0.5, 0, 0.1, 2, True, False, 1.2],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.positive,
@@ -4749,7 +4750,8 @@ diopi_configs = {
                 {
                     "ins": ['std'],
                     "shape": ((), (16,), (8, 4),
-                              (256, 256, 3, 3), (256, 128, 1, 1)),
+                              (256, 256, 3, 3), (256, 128, 1, 1),
+                              (0,), (4, 0), (4, 0, 7)),
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
             ]
@@ -4760,14 +4762,15 @@ diopi_configs = {
         name=["normal"],
         no_output_ref=True,
         para=dict(
-            std=[0.5, 0.1, 0.054056261216234408, 2, 5],
+            std=[0.5, 0.1, 0.054056261216234408, 2, 5, 1.2, True, 2],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['mean'],
-                    "shape": ((), (16,), (8, 4), (256, 256, 3, 3), (256, 128, 1, 1)),
+                    "shape": ((), (16,), (8, 4), (256, 256, 3, 3), (256, 128, 1, 1),
+                              (0,), (4, 0), (4, 0, 7)),
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
             ]
@@ -4783,16 +4786,18 @@ diopi_configs = {
                 {
                     "ins": ['mean'],
                     # (3, 4), (4,16,),will be removed in version 1.6 release
-                    "shape": ((), (16, 64), (8, 8, 16), (256, 1, 3, 3), (256, 128, 3, 1)),
-                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
+                    "shape": ((), (16, 64), (8, 8, 16), (256, 1, 3, 3), (256, 128, 3, 1),
+                              (0,), (4, 0), (2, 0, 9)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64,
+                              Dtype.float16, Dtype.float32, Dtype.float64],
                 },
                 {
                     "ins": ['std'],
                     # (12,), (2,4,4,2), will be removed in version 1.6 release
-                    "shape": ((128,), (16, 64), (8, 16), (256, 256, 3, 3), (256, 128, 1, 1)),
+                    "shape": ((128,), (16, 64), (8, 16), (256, 256, 3, 3), (256, 128, 1, 1),
+                              (0,), (2, 1, 1), (0, 9)),
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64,
-                              Dtype.int16, Dtype.int32, Dtype.int64,
-                              Dtype.int8, Dtype.uint8, Dtype.bool],
+                              Dtype.float32, Dtype.float64, Dtype.float32],
                     "gen_fn": Genfunc.positive,
                 },
             ]
