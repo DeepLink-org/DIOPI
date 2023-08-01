@@ -26,7 +26,7 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
         }
     } else {
         float val = getValue<float>(scalar);
-        AclOpRunner<1, 1>("Fills").addInput(*out).setAttr<float>("value", val).addOutput(*out).run(ctx);
+        AclOpRunner<1, 1>("Fills", ctx).addInput(*out).setAttr<float>("value", val).addOutput(*out).run();
     }
     return diopiSuccess;
 }
@@ -35,8 +35,33 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
     return makeTensorFromScalar(ctx, scalar, out, scalar->stype, device);
 }
 
+diopiError_t makeTensorFromSize(diopiContextHandle_t ctx, const diopiSize_t* size, diopiTensorHandle_t* out, diopiDtype_t dtype) {
+    int64_t len = size->getLen();
+    int64_t sizeTmp[1] = {len};
+    diopiSize_t sSize(sizeTmp, 1);
+    diopiRequireTensor(ctx, out, &sSize, nullptr, dtype, diopi_host);
+    if (len > 0) {
+        void* dst = nullptr;
+        diopiGetTensorData(*out, &dst);
+        if (dtype == diopi_dtype_int64) {
+            for (int i = 0; i < len; i++) {
+                reinterpret_cast<int64_t*>(dst)[i] = (int64_t)size->data[i];
+            }
+        } else if (dtype == diopi_dtype_int32) {
+            for (int i = 0; i < len; i++) {
+                reinterpret_cast<int32_t*>(dst)[i] = (int32_t)size->data[i];
+            }
+        } else if (dtype == diopi_dtype_int64) {
+            for (int i = 0; i < len; i++) {
+                reinterpret_cast<int16_t*>(dst)[i] = (int16_t)size->data[i];
+            }
+        }
+    }
+    return diopiSuccess;
+}
+
 diopiError_t makeTensorFromSize(diopiContextHandle_t ctx, const diopiSize_t* size, diopiTensorHandle_t* out) {
-    return makeTensorFromSize<int64_t>(ctx, size, out, diopi_dtype_int64);
+    return makeTensorFromSize(ctx, size, out, diopi_dtype_int64);
 }
 
 diopiError_t makeTensorLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t src) {

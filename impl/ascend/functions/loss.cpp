@@ -20,7 +20,7 @@ DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_
     diopiTensorHandle_t totalWeight;
     makeTensorFromScalar(ctx, &totalWeightScalar, &totalWeight, diopi_dtype_float32, diopi_device);
 
-    AclOpRunner<3, 2> runner("NLLLoss");
+    AclOpRunner<3, 2> runner("NLLLoss", ctx);
     runner.addInput(input, target).setAttr("ignore_index", ignoreIndex).addOutput(out, totalWeight);
     if (weight) {
         runner.addInput(weight);
@@ -32,14 +32,14 @@ DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_
     } else if (reduction == diopiReduction_t::ReductionNone) {
         runner.setAttr("reduction", std::string("none"));
     }
-    runner.run(ctx);
+    runner.run();
     return diopiSuccess;
 }
 
 DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
                                             diopiReduction_t reduction, int64_t ignoreIndex) {
-    AclOpRunner<5, 1> runner("NLLLossGrad");
+    AclOpRunner<5, 1> runner("NLLLossGrad", ctx);
     runner.addInput(input, gradOutput, target).setAttr("ignore_index", ignoreIndex).addOutput(gradInput);
     diopiTensorHandle_t totalWeight;
     auto totalWeightScalar = diopiScalar_t();
@@ -56,7 +56,7 @@ DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTenso
         int64_t weightDim[] = {inputShape.data[1]};
         diopiSize_t weightShape(weightDim, 1);
         diopiRequireTensor(ctx, &weightNew, &weightShape, nullptr, diopi_dtype_float32, diopi_device);
-        AclOpRunner<1, 1>("Fills").addInput(weightNew).setAttr<float>("value", 1.0).addOutput(weightNew).run(ctx);
+        AclOpRunner<1, 1>("Fills", ctx).addInput(weightNew).setAttr<float>("value", 1.0).addOutput(weightNew).run();
         diopiSum(ctx, totalWeight, weightNew, diopiSize_t());
         runner.addInput(weightNew, totalWeight);
     }
@@ -67,7 +67,7 @@ DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTenso
     } else if (reduction == diopiReduction_t::ReductionNone) {
         runner.setAttr("reduction", std::string("none"));
     }
-    runner.run(ctx);
+    runner.run();
     return diopiSuccess;
 }
 

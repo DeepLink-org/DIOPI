@@ -12,8 +12,8 @@ namespace impl {
 namespace ascend {
 
 namespace {
-aclDataType dtypeConvertor(diopiConstTensorHandle_t th) {
-    auto dtype = getAclDataType(th);
+aclDataType dtypeConvertor(diopiDtype_t type) {
+    auto dtype = getAclDataType(type);
     if (dtype == ACL_BOOL) {
         return ACL_UINT8;
     }
@@ -27,9 +27,9 @@ extern "C" DIOPI_API diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensor
     const float value = (alpha != nullptr) ? getValue<float>(alpha) : 1.0;
 
     if (value == 1.0) {
-        AclOpRunner<2, 1, dtypeConvertor>("AddV2").addInput(input, other).addOutput(out).run(ctx);
+        AclOpRunner<2, 1, dtypeConvertor>("AddV2", ctx).addInput(input, other).addOutput(out).run();
     } else {
-        AclOpRunner<2, 1>("Axpy").addInput(input).addInput(other).setAttr<float>("alpha", value).addOutput(out).run(ctx);
+        AclOpRunner<2, 1>("Axpy", ctx).addInput(input).addInput(other).setAttr<float>("alpha", value).addOutput(out).run();
     }
     return diopiSuccess;
 }
@@ -57,11 +57,11 @@ extern "C" DIOPI_API diopiError_t diopiSub(diopiContextHandle_t ctx, diopiTensor
     const float value = (alpha != nullptr) ? getValue<float>(alpha) : 1.0;
 
     if (value == 1.0) {
-        AclOpRunner<2, 1, dtypeConvertor>("Sub").addInput(input, other).addOutput(out).run(ctx);
+        AclOpRunner<2, 1, dtypeConvertor>("Sub", ctx).addInput(input, other).addOutput(out).run();
     } else if (value == -1.0) {
-        AclOpRunner<2, 1, dtypeConvertor>("AddV2").addInput(input, other).addOutput(out).run(ctx);
+        AclOpRunner<2, 1, dtypeConvertor>("AddV2", ctx).addInput(input, other).addOutput(out).run();
     } else {
-        AclOpRunner<2, 1>("Axpy").addInput(input).addInput(other).setAttr<float>("alpha", -value).addOutput(out).run(ctx);
+        AclOpRunner<2, 1>("Axpy", ctx).addInput(input).addInput(other).setAttr<float>("alpha", -value).addOutput(out).run();
     }
     return diopiSuccess;
 }
@@ -85,7 +85,7 @@ extern "C" DIOPI_API diopiError_t diopiSubInpScalar(diopiContextHandle_t ctx, di
 }
 
 extern "C" DIOPI_API diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    AclOpRunner<2, 1, dtypeConvertor>("Mul").addInput(input, other).addOutput(out).run(ctx);
+    AclOpRunner<2, 1, dtypeConvertor>("Mul", ctx).addInput(input, other).addOutput(out).run();
     return diopiSuccess;
 }
 
@@ -108,7 +108,7 @@ extern "C" DIOPI_API diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, di
 
 extern "C" DIOPI_API diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                                            diopiRoundMode_t roundingMode) {
-    AclOpRunner<2, 1, dtypeConvertor>("RealDiv").addInput(input, other).addOutput(out).run(ctx);
+    AclOpRunner<2, 1, dtypeConvertor>("RealDiv", ctx).addInput(input, other).addOutput(out).run();
     return diopiSuccess;
 }
 

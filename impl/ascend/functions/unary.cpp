@@ -12,7 +12,7 @@ namespace impl {
 namespace ascend {
 
 extern "C" DIOPI_API diopiError_t diopiNeg(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AclOpRunner<1, 1>("Neg").addInput(input).addOutput(out).run(ctx);
+    AclOpRunner<1, 1>("Neg", ctx).addInput(input).addOutput(out).run();
     return diopiSuccess;
 }
 
