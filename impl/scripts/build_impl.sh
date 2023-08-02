@@ -10,8 +10,8 @@ case $1 in
   cuda)
     mkdir -p build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=cuda -DTEST=${DIOPI_BUILD_TESTRT} && make -j8;;
   torch)
-    mkdir -p build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=torch -DDEBUG=ON -DTEST=${DIOPI_BUILD_TESTRT} \
-    -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` \
+    mkdir -p build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=torch -DDEBUG=ON -DTEST=${DIOPI_BUILD_TESTRT}  \
+    -DENABLE_COVERAGE=${ENABLE_COVERAGE} -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` \
     && make -j8;;
   torch_dyload)
     mkdir -p build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=torch -DDEBUG=ON -DDYLOAD=ON -DTEST=${DIOPI_BUILD_TESTRT} \
@@ -22,7 +22,7 @@ case $1 in
     -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` \
     && make -j8;;
   camb)
-    mkdir -p build && cd build && cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=camb -DTEST=${DIOPI_BUILD_TESTRT} && make -j8;;
+    mkdir -p build && cd build && cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=camb -DTEST=${DIOPI_BUILD_TESTRT} -DENABLE_COVERAGE=${ENABLE_COVERAGE} && make -j8;;
   ascend)
     mkdir -p build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=ascend -DTEST=${DIOPI_BUILD_TESTRT} && make -j8;;
   hip_pytorch)

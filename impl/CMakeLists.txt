@@ -6,12 +6,19 @@ option(DEBUG "whether to use debug" ON)
 option(DYLOAD "Whether to load so in runtime by dlopen" OFF)
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/proto/include")
 
+# use gcover
+OPTION (ENABLE_COVERAGE "Use gcov" OFF)
+MESSAGE(STATUS ENABLE_COVERAGE=${ENABLE_COVERAGE})
+
 if (DEBUG)
     SET(CMAKE_BUILD_TYPE "Debug")
 else()
     SET(CMAKE_BUILD_TYPE "Release")
 endif()
-
+if (ENABLE_COVERAGE)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
+endif()
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 add_definitions(-DDIOPI_ATTR_WEAK)
