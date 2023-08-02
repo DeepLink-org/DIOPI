@@ -161,6 +161,8 @@ diopiError_t makeTensorFromSize(diopiContextHandle_t ctx, const diopiSize_t* siz
 
 diopiError_t makeTensorLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t src);
 
+diopiError_t makeTensorLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t src, diopiDtype_t dtype);
+
 template <int InputSize, int OutputSize, aclDataType (*dtypeCastStrategy)(diopiDtype_t) = getAclDataType>
 class AclOpRunner {
     std::string opname_;
@@ -277,7 +279,7 @@ public:
     AclOpRunner& addConstInput(T val) {
         static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
         if (PARROTS_DEBUG_ACLOPRUNNER > 0) {
-            info("%s scalar input[%d]:%f", opname_.c_str(), inputIndex, float(val));
+            info("%s scalar input[%d]: %s", opname_.c_str(), inputIndex, std::to_string(val));
         }
 
         check_args(inputIndex >= 0 && inputIndex < InputSize, "check 0<=inputIndex<InputSize failed");

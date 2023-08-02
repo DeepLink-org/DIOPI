@@ -64,15 +64,19 @@ diopiError_t makeTensorFromSize(diopiContextHandle_t ctx, const diopiSize_t* siz
     return makeTensorFromSize(ctx, size, out, diopi_dtype_int64);
 }
 
-diopiError_t makeTensorLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t src) {
+diopiError_t makeTensorLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t src, diopiDtype_t dtype) {
     diopiDevice_t device;
     diopiSize_t size, stride;
-    diopiDtype_t dtype;
     diopiGetTensorDevice(src, &device);
     diopiGetTensorShape(src, &size);
     diopiGetTensorStride(src, &stride);
-    diopiGetTensorDtype(src, &dtype);
     diopiRequireTensor(ctx, out, &size, &stride, dtype, device);
+}
+
+diopiError_t makeTensorLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t src) {
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(src, &dtype);
+    makeTensorLike(ctx, out, src, dtype);
 }
 
 aclDataType getAclDataType(diopiDtype_t type) {
