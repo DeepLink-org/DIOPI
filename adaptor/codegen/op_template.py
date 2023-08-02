@@ -398,7 +398,7 @@ ${adaptors}
 """)
 
     adaptor_template = CodeTemplate("""\
-static diopiError_t diopi${op_name}(${attrs}) {
+inline diopiError_t diopi${op_name}(${attrs}) {
     TimeElapsed adaptorTimeElapsed("${op_name}_adaptor");
     ${new_input}
     ${cast_input}
