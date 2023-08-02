@@ -3128,39 +3128,41 @@ diopi_configs = {
         ),
     ),
 
-    # 'adam': dict(
-    #     name=['adam', 'adamw'],
-    #     interface=["CustomizedTest"],
-    #     atol=1e-4,
-    #     rtol=1e-3,
-    #     atol_half=1e-4,
-    #     rtol_half=1e-3,
+    'adam': dict(
+        name=['adam', 'adamw'],
+        interface=["CustomizedTest"],
+        atol=1e-4,
+        rtol=1e-3,
+        atol_half=1e-4,
+        rtol_half=1e-3,
 
-    #     para=dict(
-    #         lr=[0.1, 0.1],
-    #         beta1=[0.9, 0.8],
-    #         beta2=[0.99, 0.88],
-    #         eps=[1e-08, 1e-09],
-    #         step=[1, 4],
-    #         weight_decay=[0, 0.1],
-    #         amsgrad=[False, True],
-    #     ),
-    #     tensor_para=dict(
-    #         dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
-    #         args=[
-    #             {
-    #                 "ins": ['param', 'param_grad'],
-    #                 "shape": [(2, 3, 16), (4, 32, 7, 7)],
-    #                 "gen_fn": Genfunc.rand,
-    #             },
-    #             {
-    #                 "ins": ['exp_avg', 'exp_avg_sq', 'max_exp_avg_sq'],
-    #                 "shape": [(2, 3, 16), (4, 32, 7, 7)],
-    #                 "gen_fn": Genfunc.zeros,
-    #             },
-    #         ]
-    #     ),
-    # ),
+        para=dict(
+            lr=[0, -0.2, 2, 0.001, 0.1, 3.2, -2, 0],
+            beta1=[0, -1, 0.004, 0.9, 0.8, -2, 4.3, 0],
+            beta2=[0.3, 0, -2, 0.99, 0.88, 1, -4, 0],
+            eps=[-1e-02, 0, 1e-2, 1e-08, 1e-09, 0, 2, 1e-4],
+            step=[3, 2, 0, 1, 4, 2, 4, 5],
+            weight_decay=[-0.2, 0, 2, 0, 0.1, 2.5, 0, -3],
+            amsgrad=[False, True, True, False, True, False, True, True],
+        ),
+        tensor_para=dict(
+            dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
+            args=[
+                {
+                    "ins": ['param', 'param_grad'],
+                    "shape": [(), (16,), (16, 8), (2, 3, 16), (4, 32, 7, 7),
+                              (0,), (4, 0), (12, 0, 9)],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ['exp_avg', 'exp_avg_sq', 'max_exp_avg_sq'],
+                    "shape": [(), (16,), (16, 8), (2, 3, 16), (4, 32, 7, 7),
+                              (0,), (4, 0), (12, 0, 9)],
+                    "gen_fn": Genfunc.randn,
+                },
+            ]
+        ),
+    ),
 
     'conv_transpose2d': dict(
         name=["conv_transpose2d"],
