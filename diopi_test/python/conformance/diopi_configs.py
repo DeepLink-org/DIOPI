@@ -5110,18 +5110,22 @@ diopi_configs = {
         name=['triu'],
         interface=['torch'],
         is_inplace=True,
-        dtype=[Dtype.float64, Dtype.float32, Dtype.float16],
         para=dict(
-            diagonal=[0, 1, 2, -1, 3],
+            diagonal=[0, 1, 2, -1, 3, 12, 0, 5, -9, -1, 1, 2, 10, -10],
         ),
         tensor_para=dict(
-            gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
                     "shape": ((1024, 64), (384, 128),
                               (64, 1, 128), (128, 64, 3, 3),
-                              (2, 32, 130, 130)),
+                              (2, 32, 130, 130),
+                              (8, 9), (6, 7), (6, 6), (9, 9),
+                              (6, 8, 8), (64, 7, 28, 28),
+                              (2, 0), (12, 0), (2, 0, 9)),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int16, Dtype.int32,
+                              Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
+                    "gen_fn": Genfunc.randn,
                 },
             ],
         ),
