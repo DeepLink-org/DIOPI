@@ -47,5 +47,16 @@ extern "C" DIOPI_API diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t c
     return diopiSuccess;
 }
 
+extern "C" DIOPI_API diopiError_t diopiSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    AclOpRunner<1, 1>("Sigmoid").addInput(input).addOutput(out).run(ctx);
+    return diopiSuccess;
+}
+
+extern "C" DIOPI_API diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                                       diopiConstTensorHandle_t output) {
+    AclOpRunner<2, 1>("SigmoidGrad").addInput(output, grad_output).addOutput(grad_input).run(ctx);
+    return diopiSuccess;
+}
+
 }  // namespace ascend
 }  // namespace impl
