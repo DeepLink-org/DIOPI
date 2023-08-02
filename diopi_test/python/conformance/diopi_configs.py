@@ -3441,25 +3441,27 @@ diopi_configs = {
         atol=1e-5,
         rtol=1e-3,
         para=dict(
-            lr=[0.1, 0.01],
-            alpha=[0.9, 0.99],
-            eps=[1e-6, 1e-8],
-            weight_decay=[0, 0.1],
-            momentum=[0, 0.1],
-            centered=[False, True],
+            lr=[0, 1.2, -0.05, 0.1, 0.01, 0, 2, 2.3],
+            alpha=[-0.3, 0, 1.2, 0.9, 0.99, 3, 0, 0.4],
+            eps=[1e-2, 0, -1e-4, 1e-6, 1e-8, 0, 1e-4, -1e-6],
+            weight_decay=[1.2, 0.5, -1.3, 0, 0.1, 0.5, 0, -1.2],
+            momentum=[-2, 0.3, 1, 0, 0.1, 0.05, -3, 0],
+            centered=[True, False, True, False, True, True, False, True],
         ),
         tensor_para=dict(
             dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "shape": [(2, 3, 16), (4, 32, 7, 7)],
+                    "shape": [(), (16,), (16, 8), (2, 3, 16), (4, 32, 7, 7),
+                              (0,), (4, 0), (12, 0, 9)],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ['square_avg', 'grad_avg', 'momentum_buffer'],
-                    "shape": [(2, 3, 16), (4, 32, 7, 7)],
-                    "gen_fn": Genfunc.zeros,
+                    "shape": [(), (16,), (16, 8), (2, 3, 16), (4, 32, 7, 7),
+                              (0,), (4, 0), (12, 0, 9)],
+                    "gen_fn": Genfunc.randn,
                 },
             ]
         ),
