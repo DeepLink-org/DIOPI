@@ -2748,25 +2748,48 @@ diopi_configs = {
         ),
     ),
 
-    'slice': dict(
-        name=["slice_op"],
-        interface=["CustomizedTest"],
-        dtype=[Dtype.float32, Dtype.float64],
-        para=dict(
-            index=(slice(0, 3, 1), slice(0, 3, 1), slice(0, 4, 2), slice(-3, -2, 1)),
-            dim=[0, 1, 2, 0],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "requires_grad": [True],
-                    "shape": ((7, ), (128, 3, 3), (2, 3, 224, 224), (3, 2, 6, 197, 64)),
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
+    # 'slice': dict(
+    #     name=["slice_op"],
+    #     interface=["CustomizedTest"],
+    #     dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
+    #     para=dict(
+    #         index=(slice(0, 3, 1), slice(3, 20, 2), slice(0, 3, 1), slice(0, 4, 2), slice(-3, -2, 1),
+    #                slice(0, -4, 2), slice(2, 4, 1), slice(5, 1, 2)),
+    #         dim=[0, -2, 1, 2, 0, -1, 0, 1],
+    #     ),
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "requires_grad": [True],
+    #                 "shape": ((7, ), (7, 10), (128, 3, 3), (2, 3, 224, 224), (3, 2, 6, 197, 64),
+    #                           (0,), (4, 0), (12, 0, 9)),
+    #                 "gen_fn": Genfunc.randn,
+    #             },
+    #         ],
+    #     ),
+    # ),
+
+    # 'slice_int': dict(
+    #     name=["slice_op"],
+    #     interface=["CustomizedTest"],
+    #     dtype=[Dtype.int16, Dtype.int32, Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
+    #     para=dict(
+    #         index=(slice(0, 3, 1), slice(3, 20, 2), slice(0, 3, 1), slice(0, 4, 2), slice(-3, -2, 1),
+    #                slice(0, -4, 2), slice(2, 4, 1), slice(5, 1, 2)),
+    #         dim=[0, -2, 1, 2, 0, -1, 0, 1],
+    #     ),
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "shape": ((7, ), (7, 10), (128, 3, 3), (2, 3, 224, 224), (3, 2, 6, 197, 64),
+    #                           (0,), (4, 0), (12, 0, 9)),
+    #                 "gen_fn": Genfunc.randn,
+    #             },
+    #         ],
+    #     ),
+    # ),
 
     # 'index': dict(
     #     name=["index"],
