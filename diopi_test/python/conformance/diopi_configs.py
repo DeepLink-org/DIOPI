@@ -2901,23 +2901,25 @@ diopi_configs = {
         atol_half=1e-4,
         rtol_half=1e-3,
         para=dict(
-            nesterov=[False, True],
-            lr=[0.1, 0.1],
-            momentum=[0.01, 0.01],
-            weight_decay=[0, 0.1],
-            dampening=[0.1, 0],
+            lr=[0.05, 0.001, 0.1, 0.1, 2, 3, 0.2, 0.07],
+            momentum=[0.5, 0, 0.01, 0.01, 1, 0.5, 2, 1.2],
+            weight_decay=[0, 0.5, 0, 0.1, 3, 2.3, 4.0, 5],
+            dampening=[0, -0.5, 0.1, 0, 2, 3.0, 0, 6.5],
+            nesterov=[True, False, False, True, False, False, True, False],
         ),
         tensor_para=dict(
             dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "shape": [(2, 3, 16), (4, 32, 7, 7)],
+                    "shape": [(), (16, 8), (2, 3, 16), (4, 32, 7, 7), (4, 16, 3, 8, 2),
+                              (0,), (3, 0), (4, 0, 9)],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ['buf'],
-                    "shape": [(2, 3, 16), (4, 32, 7, 7)],
+                    "shape": [(), (16, 8), (2, 3, 16), (4, 32, 7, 7), (4, 16, 3, 8, 2),
+                              (0,), (3, 0), (4, 0, 9)],
                     "gen_fn": Genfunc.rand,
                 },
             ]
