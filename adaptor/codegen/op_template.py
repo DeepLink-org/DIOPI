@@ -17,8 +17,50 @@ class OpTemplate(object):
 #include <vector>
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
+#include <chrono>
+#include <fstream>
+#include <ostream>
+#include <stdlib.h>
 
-namespace diopiadaptor{
+namespace diopiadaptor {
+
+class TimeElapsedRecord : public std::ofstream {
+public:
+    TimeElapsedRecord(const char* fileName):std::ofstream(fileName, std::ios::out | std::ios::trunc), enableTiming_(false) {
+        if (getenv("DIOPI_ENABLE_TIMING")){
+            enableTiming_ = true;
+        }
+    }
+    bool isEnableTiming(){
+        return enableTiming_;
+    }
+private:
+    bool enableTiming_;
+};
+
+
+class TimeElapsed{
+public:
+    TimeElapsed(const char* opName):opName_(opName){
+        if(timeElapsedRecord_.isEnableTiming()){
+            start_ = std::chrono::steady_clock::now();
+        }
+    }
+    ~TimeElapsed(){
+        if(timeElapsedRecord_.isEnableTiming()){
+            auto end = std::chrono::steady_clock::now();
+            std::chrono::duration<double, std::milli> elapsed = end - start_;  // ms
+            double elapsedTime = elapsed.count();
+            timeElapsedRecord_ << opName_ << ": " << elapsedTime << "ms" << std::endl;
+        }
+    }
+private:
+    const char* opName_;
+    std::chrono::time_point<std::chrono::steady_clock> start_;
+    static TimeElapsedRecord timeElapsedRecord_;
+};
+
+TimeElapsedRecord TimeElapsed::timeElapsedRecord_("op_time.dat");
 
 inline std::vector<int64_t> calcStrides(int ndims, diopiSize_t size, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous) {
     std::vector<int64_t> strides;
@@ -356,11 +398,17 @@ ${adaptors}
 """)
 
     adaptor_template = CodeTemplate("""\
-inline diopiError_t diopi${op_name}(${attrs}) {
+static diopiError_t diopi${op_name}(${attrs}) {
+    TimeElapsed adaptorTimeElapsed("${op_name}_adaptor");
     ${new_input}
     ${cast_input}
     ${cast_output}
-    return ::${call_func}
+    diopiError_t ret;
+    {
+        TimeElapsed opTimeElapsed("${op_name}");
+        ret = ::${call_func}
+    }
+    return ret;
 }
 
 """)
