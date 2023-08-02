@@ -2901,7 +2901,7 @@ diopi_configs = {
         atol_half=1e-4,
         rtol_half=1e-3,
         para=dict(
-            lr=[0.05, 0.001, 0.1, 0.1, 2, 3, 0.2, 0.07],
+            lr=[0.05, 0.001, 0.1, 0.1, 0, 3, 0.2, 0.07],
             momentum=[0.5, 0, 0.01, 0.01, 1, 0.5, 2, 1.2],
             weight_decay=[0, 0.5, 0, 0.1, 3, 2.3, 4.0, 5],
             dampening=[0, -0.5, 0.1, 0, 2, 3.0, 0, 6.5],
@@ -3409,23 +3409,25 @@ diopi_configs = {
         atol_half=1e-4,
         rtol_half=1e-3,
         para=dict(
-            lr=[0.1, 0.1],
-            rho=[0.9, 0.88],
-            eps=[1e-6, 1e-6],
-            weight_decay=[0, 0.1],
+            lr=[1.0, 0, -0.5, 0.1, 0.1, 2.3, -2, 0],
+            rho=[-1, 1.2, 0, 0.9, 0.88, -3, 0.5, 0],
+            eps=[1e-2, 0, -1e-4, 1e-6, 1e-6, 0, 1e-4, -1e-6],
+            weight_decay=[1.2, 0.5, -1.3, 0, 0.1, 0.5, 0, -1.2],
         ),
         tensor_para=dict(
             dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "shape": [(2, 3, 16), (4, 32, 7, 7)],
-                    "gen_fn": Genfunc.rand,
+                    "shape": [(), (16,), (16, 8), (2, 3, 16), (4, 32, 7, 7),
+                              (0,), (4, 0), (12, 0, 9)],
+                    "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ['square_avg', 'acc_delta'],
-                    "shape": [(2, 3, 16), (4, 32, 7, 7)],
-                    "gen_fn": Genfunc.zeros,
+                    "shape": [(), (16,), (16, 8), (2, 3, 16), (4, 32, 7, 7),
+                              (0,), (4, 0), (12, 0, 9)],
+                    "gen_fn": Genfunc.randn,
                 },
             ]
         ),
