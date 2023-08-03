@@ -93,23 +93,35 @@ DIOPI_API diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandl
                                       diopiTensorHandle_t running_mean, diopiTensorHandle_t running_var, bool training, double momentum, double eps);
 
 /**
- * @brief Applies Batch Normalization to calculate mean and invstd.
- * @param[in] ctx Context environment.
- * @param input input tensor. type = [float32, float16, float64].
- * @param eps The value added to the denominator during batch normalization to ensure numerical stability. type = [float32, float64]
- * @param[out] mean normalized mean. type = [float32, float16, float64].
- * @param invstd normalized invstd. type = [float32, float16, float64].
+ * @brief SyncBN series operator.
  */
 DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd, diopiConstTensorHandle_t input,
                                            double eps);
+
 /**
- * @brief Applies Batch Normalization gather to calculate mean and invstd.
+ * @brief SyncBN series operator.
  */
 DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd,
                                                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t mean_all,
                                                            diopiConstTensorHandle_t invstd_all, diopiTensorHandle_t running_mean,
                                                            diopiTensorHandle_t running_var, float momentum, float eps,
                                                            diopiConstTensorHandle_t counts);
+
+/**
+ * @brief SyncBN series operator.
+ */
+DIOPI_API diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorHandle_t sum_dy, diopiTensorHandle_t sum_dy_xmu,
+                                                    diopiTensorHandle_t grad_weight, diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_out,
+                                                    diopiConstTensorHandle_t input, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t invstd,
+                                                    diopiTensorHandle_t weight, bool input_g, bool weight_g, bool bias_g);
+
+/**
+ * @brief SyncBN series operator.
+ */
+DIOPI_API diopiError_t diopiBatchNormBackwardElemt(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_out,
+                                                   diopiConstTensorHandle_t input, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t invstd,
+                                                   diopiConstTensorHandle_t weight, diopiConstTensorHandle_t sum_dy, diopiConstTensorHandle_t sum_dy_xmu,
+                                                   diopiConstTensorHandle_t count);
 
 
 /**

@@ -528,6 +528,17 @@ class CustomizedTest(object):
         out = (mean, invstd)
         return out
 
+    def batch_norm_backward_reduce(grad_output,input,mean,invstd,weight, input_g, weight_g, bias_g):
+        sum_dy, sum_dy_xmu, grad_weight, grad_bias = torch.batch_norm_backward_reduce(grad_output,input,mean,invstd,weight, input_g, weight_g, bias_g)
+        out = (sum_dy, sum_dy_xmu, grad_weight, grad_bias)
+        return out
+    
+    def batch_norm_backward_elemt(grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count):
+        grad_input = torch.batch_norm_backward_elemt(grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count)
+        out = grad_input
+        return out
+
+
 
 def transfer_tensor_to_device(function_paras: dict):
     for para in function_paras["kwargs"].keys():

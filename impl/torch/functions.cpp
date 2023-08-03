@@ -4151,4 +4151,37 @@ DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t 
     return diopiSuccess;
 }
 
+DIOPI_API diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorHandle_t sum_dy, diopiTensorHandle_t sum_dy_xmu,  diopiTensorHandle_t grad_weight, diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t invstd, diopiTensorHandle_t weight, bool input_g, bool weight_g, bool bias_g) {
+    impl::aten::setCurCtx(ctx);
+    auto atGrad_out = impl::aten::buildATen(grad_out);
+    auto atInput = impl::aten::buildATen(input);
+    auto atMean = impl::aten::buildATen(mean);
+    auto atInvstd = impl::aten::buildATen(invstd);
+    auto atWeight = impl::aten::buildATen(weight);
+    auto atOuts = at::batch_norm_backward_reduce(atGrad_out, atInput, atMean, atInvstd, atWeight, input_g, weight_g, bias_g);
+    impl::aten::updateATen2Tensor(ctx, std::get<0>(atOuts), sum_dy);
+    impl::aten::updateATen2Tensor(ctx, std::get<1>(atOuts), sum_dy_xmu);
+    impl::aten::updateATen2Tensor(ctx, std::get<2>(atOuts), grad_weight);
+    impl::aten::updateATen2Tensor(ctx, std::get<3>(atOuts), grad_bias);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiBatchNormBackwardElemt(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t invstd, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t sum_dy, diopiConstTensorHandle_t sum_dy_xmu, diopiConstTensorHandle_t count) {
+    impl::aten::setCurCtx(ctx);
+    auto atGrad_out = impl::aten::buildATen(grad_out);
+    auto atInput = impl::aten::buildATen(input);
+    auto atMean = impl::aten::buildATen(mean);
+    auto atInvstd = impl::aten::buildATen(invstd);
+    auto atWeight = impl::aten::buildATen(weight);
+    auto atSum_dy = impl::aten::buildATen(sum_dy);
+    auto atSum_dy_xmu = impl::aten::buildATen(sum_dy_xmu);
+    auto atCount = impl::aten::buildATen(count);
+    auto atOuts = at::batch_norm_backward_elemt(atGrad_out, atInput, atMean, atInvstd, atWeight, atSum_dy, atSum_dy_xmu, atCount);
+    impl::aten::updateATen2Tensor(ctx, atOuts , grad_input);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
+
 }  // extern "C"
