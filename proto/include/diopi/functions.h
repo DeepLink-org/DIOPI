@@ -112,7 +112,7 @@ DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t 
 DIOPI_API diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorHandle_t sum_dy, diopiTensorHandle_t sum_dy_xmu,
                                                     diopiTensorHandle_t grad_weight, diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_out,
                                                     diopiConstTensorHandle_t input, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t invstd,
-                                                    diopiTensorHandle_t weight, bool input_g, bool weight_g, bool bias_g);
+                                                    diopiConstTensorHandle_t weight, bool input_g, bool weight_g, bool bias_g);
 
 /**
  * @brief SyncBN series operator.
