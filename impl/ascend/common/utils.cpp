@@ -55,6 +55,10 @@ diopiError_t makeTensorFromSize(diopiContextHandle_t ctx, const diopiSize_t* siz
             for (int i = 0; i < len; i++) {
                 reinterpret_cast<int16_t*>(dst)[i] = (int16_t)size->data[i];
             }
+        } else if (dtype == diopi_dtype_bool) {
+            for (int i = 0; i < len; i++) {
+                reinterpret_cast<bool*>(dst)[i] = static_cast<bool>(size->data[i]);
+            }
         }
     }
     return diopiSuccess;
