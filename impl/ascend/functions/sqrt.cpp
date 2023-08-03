@@ -28,7 +28,7 @@ extern "C" DIOPI_API diopiError_t diopiSqrt(diopiContextHandle_t ctx, diopiTenso
     nanValueScalar.fval = 0.0;
     makeTensorFromScalar(ctx, &nanValueScalar, &nanValue, diopi_dtype_float32, diopi_device);
     diopiDivInpScalar(ctx, nanValue, &zeroValueScalar, diopiRoundMode_t::RoundModeNone);
-    // get nagetive mask
+    // get negative mask
     diopiTensorHandle_t mask;
     makeTensorLike(ctx, &mask, input, diopi_dtype_bool);
     diopiLtScalar(ctx, mask, input, &zeroValueScalar);
