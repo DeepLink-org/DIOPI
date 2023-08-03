@@ -1391,6 +1391,7 @@ def batch_norm_stats(input, eps):
     out = (mean, invstd)
     return out
 
+
 def batch_norm_gather_stats_with_counts(input, mean_all, invstd_all, running_mean, running_var, momentum, eps, count_all):
     func = check_function('diopiBatchNormGatherStatsWithCounts')
     mean = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
@@ -1399,6 +1400,7 @@ def batch_norm_gather_stats_with_counts(input, mean_all, invstd_all, running_mea
     check_returncode(ret)
     out = (mean, invstd)
     return out
+
 
 def batch_norm_backward_reduce(grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g):
     func = check_function('diopiBatchNormBackwardReduce')
@@ -1411,6 +1413,7 @@ def batch_norm_backward_reduce(grad_output, input, mean, invstd, weight, input_g
     out = (sum_dy, sum_dy_xmu, grad_weight, grad_bias)
     return out
 
+
 def batch_norm_backward_elemt(grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count):
     func = check_function('diopiBatchNormBackwardElemt')
     grad_input = Tensor(Sizes(list(grad_out.size().data)), input.get_dtype())
@@ -1418,8 +1421,6 @@ def batch_norm_backward_elemt(grad_out, input, mean, invstd, weight, sum_dy, sum
     check_returncode(ret)
     out = (grad_input)
     return out
-
-
 
 
 def log_softmax(input, dim=None, dtype=None):
