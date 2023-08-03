@@ -1035,22 +1035,6 @@ device_configs = {
         ),
     ),
 
-    'polar': dict(
-        name=["polar"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['abs'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-                {
-                    "ins": ['angle'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
-        ),
-    ),
-
     'lerp': dict(
         name=['lerp'],
         tensor_para=dict(
