@@ -13,8 +13,8 @@ namespace ascend {
 
 extern "C" {
 
-diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* value) {
-    AclOpRunner<1, 1>("Fills", ctx).addInput(input).setAttr<float>("value", getValue<float>(value)).addOutput(input).run();
+DIOPI_API diopiError_t diopiMaskedFillInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t mask, diopiConstTensorHandle_t value) {
+    AclOpRunner<3, 1>("MaskedFill", ctx).addInput(input, mask, value).addOutput(input).run();
     return diopiSuccess;
 }
 

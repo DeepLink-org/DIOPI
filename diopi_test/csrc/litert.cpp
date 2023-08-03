@@ -154,7 +154,6 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
             diopiGetStream(context, &stream);
             device_memcpy_h2d_async(stream, storage_->data(), src, nbytes);
             device_synchronize_stream(stream);
-            auto error = diopiGetLastErrorString();
         }
     }
     context_ = context;
