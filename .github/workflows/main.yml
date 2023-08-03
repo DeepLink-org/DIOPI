@@ -82,6 +82,7 @@ jobs:
         run: |
           ssh ${CLUSTER_1988} """
           set -e
+          export USE_COVERAGE=${USE_COVERAGE}
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export CI=true
@@ -108,6 +109,7 @@ jobs:
         run: |
           ssh ${CLUSTER_CAMB} """
           set -e
+          export USE_COVERAGE=${USE_COVERAGE}
           cd ${NFS_PATH}/ && ls -al && find ${NFS_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
