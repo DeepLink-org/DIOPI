@@ -26,6 +26,7 @@ env:
   BUILD_TEST2: build_test_dy
   BUILD_TEST3: build_mmcv_ext
   GEN_DATA: diopi_test/python/data
+  USE_COVERAGE: ${{ github.ref == 'main' && 'ON' || 'ON' }}
 
 concurrency:
   group: ${{ github.head_ref || github.ref }}
