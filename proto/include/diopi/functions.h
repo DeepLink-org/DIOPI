@@ -107,6 +107,7 @@ DIOPI_API diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTen
 
 /**
  * @brief Applies the rectified linear unit function element-wise.
+ * \f${ReLU}(input) = (input)^+ = \max(0, input)\f$
  * @param[in] ctx Context environment.
  * @param input the input tensor, type = [float32, float64].
  * @param[out] out the result tensor. type = [float32, float64].
@@ -123,6 +124,13 @@ DIOPI_API diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_
 /**
  * @brief It clips the tensor values within a range defined by the lower and upper bounds.
  * Any values below the lower bound are set to the lower bound, and any values above the upper bound are set to the upper bound.
+ * \f[
+ * {HardTanh}(input) = \begin{cases}
+ * \text{max_val} &amp; \text{ if } input &gt; \text{ max_val } \\
+ * \text{min_val} &amp; \text{ if } input &lt; \text{ min_val } \\
+ * x &amp; \text{ otherwise } \\
+ * \end{cases}
+ * \f]
  * @param[in] ctx Context environment.
  * @param input the input tensor,type = [float32, float64].
  * @param min_val scalar, the lower bound. type = [float32, float64].
@@ -147,13 +155,38 @@ DIOPI_API diopiError_t diopiHardtanhInp(diopiContextHandle_t ctx, diopiTensorHan
 DIOPI_API diopiError_t diopiHardtanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                              diopiConstTensorHandle_t input, const diopiScalar_t* min_val, const diopiScalar_t* max_val);
 
+/**
+ * @brief Applies the Hardswish function element-wise, Hardswish is defined as:
+ * \f[
+ * {Hardswish}(input) = \begin{cases}
+ * 0 &amp; \text{if} input \le -3, \\
+ * x &amp; \text{if} input \ge +3, \\
+ * x \cdot (input + 3) /6 &amp; \text{otherwise}
+ *\end{cases}
+ * \f]
+ * @param[in] ctx Context environment.
+ * @param input the input tensor, type = [float32, float64].
+ * @param[out] out the result tensor. type = [float32, float64].
+ */
+
 DIOPI_API diopiError_t diopiHardswish(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+/**
+ * @brief the in-place version of diopiHardswish().
+ * @param[in] ctx Context environment.
+ * @param input the input tensor and will be stored result tensor.type = [float32, float64].
+ */
 DIOPI_API diopiError_t diopiHardswishInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
 DIOPI_API diopiError_t diopiHardswishBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                               diopiConstTensorHandle_t input);
 /**
  * @brief The function thresholds the input tensor by setting elements greater than a given threshold to the threshold value, while leaving elements less than
  * or equal to the threshold unchanged.
+ * \f[
+ * \begin{cases}
+ * input, &amp;\text{ if } input &gt; \text{threshold} \\
+ * \text{value}, &amp;\text{ otherwise }
+ * \end{cases}
+ * \f]
  * @param[in] ctx Context environment.
  * @param input the input tensor. type = [float16, float32, float64].
  * @param threshold the value to threshold at. type = [float16, float32, float64].
@@ -182,6 +215,12 @@ DIOPI_API diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTen
 
 /**
  * @brief Applies the gaussian error linear unit function element-wise
+ * \f[
+ * {GELU}(x) = x * \Phi(x)
+ * \f]
+ * where Phi(x) is the Cumulative Distribution Function for Gaussian Distribution.
+ * When the approximate argument is ‘tanh’, Gelu is estimated with:
+ * $${GELU}(x) = 0.5 * x * (1 + \text{Tanh}(\sqrt(2 / \pi) * (x + 0.044715 * x^3)))$$
  * @param[in] ctx Context environment.
  * @param input the input tensor. type = [float32, float64].
  * @param approximate Whether to use an approximate estimation. If it equals to "tanh", it will use an approximate estimation.
@@ -647,7 +686,22 @@ DIOPI_API diopiError_t diopiLog2(diopiContextHandle_t ctx, diopiTensorHandle_t o
 DIOPI_API diopiError_t diopiLog10Inp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
 DIOPI_API diopiError_t diopiLog10(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
+/**
+ * @brief the in-place version of diopiErf()
+ * @param[in] ctx Context environment.
+ * @param input the input tensor.
+ */
 DIOPI_API diopiError_t diopiErfInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
+
+/**
+ * @brief Computes the error function of input. The error function is defined as follows:
+ * \f[
+ * \mathrm{erf}(input) = \frac{2}{\sqrt{\pi}} \int_{0}^{input} e^{-t^2} dt
+ * \f]
+ * @param[in] ctx Context environment.
+ * @param input the input tensor.
+ * @param[out] out the output tensor.
+ */
 DIOPI_API diopiError_t diopiErf(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
 DIOPI_API diopiError_t diopiPowScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiScalar_t* input, diopiConstTensorHandle_t exponent);
