@@ -104,8 +104,7 @@ DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensor
 DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd,
                                                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t mean_all,
                                                            diopiConstTensorHandle_t invstd_all, diopiTensorHandle_t running_mean,
-                                                           diopiTensorHandle_t running_var, float momentum, float eps,
-                                                           diopiConstTensorHandle_t counts);
+                                                           diopiTensorHandle_t running_var, float momentum, float eps, diopiConstTensorHandle_t counts);
 
 /**
  * @brief SyncBN series operator.
@@ -122,7 +121,6 @@ DIOPI_API diopiError_t diopiBatchNormBackwardElemt(diopiContextHandle_t ctx, dio
                                                    diopiConstTensorHandle_t input, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t invstd,
                                                    diopiConstTensorHandle_t weight, diopiConstTensorHandle_t sum_dy, diopiConstTensorHandle_t sum_dy_xmu,
                                                    diopiConstTensorHandle_t count);
-
 
 /**
  * @brief compute the backward pass of batch normalization

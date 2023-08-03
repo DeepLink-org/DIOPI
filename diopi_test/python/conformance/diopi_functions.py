@@ -1424,7 +1424,7 @@ def batch_norm_backward_reduce(grad_output, input, mean, invstd, weight, input_g
     sum_dy_xmu = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
     grad_weight = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
     grad_bias = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
-    ret = func(input.context(), sum_dy, sum_dy_xmu, grad_weight, grad_bias, grad_output, input,mean, invstd,weight, input_g, weight_g, bias_g)
+    ret = func(input.context(), sum_dy, sum_dy_xmu, grad_weight, grad_bias, grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g)
     check_returncode(ret)
     out = (sum_dy, sum_dy_xmu, grad_weight, grad_bias)
     return out
