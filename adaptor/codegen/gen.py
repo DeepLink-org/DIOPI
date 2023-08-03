@@ -25,6 +25,9 @@ str_to_diopi_dtype = {
     'float32': 'diopiDtype_t::diopi_dtype_float32',
     'float16': 'diopiDtype_t::diopi_dtype_float16',
     'bool': 'diopiDtype_t::diopi_dtype_bool',
+    'complex32': 'diopi_dtype_complex32',
+    'complex64': 'diopi_dtype_complex64',
+    'complex128':'diopi_dtype_complex128',
 }
 
 str_to_diopi_format = {
@@ -38,7 +41,8 @@ str_to_diopi_format = {
 
 default_cast_dtype = {
     'int64': 'int32',
-    'float64': 'float32'
+    'float64': 'float32',
+    'complex128': 'complex64'
 }
 
 cast_strategy = {
@@ -46,6 +50,7 @@ cast_strategy = {
     'Default': {
         'int64': 'int32',
         'float64': 'float32',
+        'complex128': 'complex64'
     },
 
     'CastFloatOnly': {
@@ -59,8 +64,12 @@ cast_strategy = {
 }
 
 
-exclude_ops = ['copyInp', 'CastDtype']
-inp_params = ['running_mean', 'running_var']
+exclude_ops = ['CopyInp', 'CastDtype']
+inp_config = {
+    'BatchNorm': ['running_mean', 'running_var'],
+    'IndexPut': ['out'],
+    'Adadelta': ['input', 'grad', 'square_avg', 'acc_delta'],
+}
 
 
 def prepare():
@@ -401,7 +410,7 @@ for (int i = 0; i < ${num}; ++i) {
                 outs = func_infos[func]['outs']
                 if tensor in outs:
                     cast_impl = 'DiopiTensorWrapper<{cast}> {tensor}Wrapper(ctx, {tensor}{memory_format}, {inp});'.format(
-                                cast=cast_method, memory_format=format_str if format_str else '', tensor=tensor, contiguous=contiguous_str, inp='true' if ('Inp' in op_name or tensor in inp_params) else 'false')
+                                cast=cast_method, memory_format=format_str if format_str else '', tensor=tensor, contiguous=contiguous_str, inp='true' if ('Inp' in op_name or tensor in inp_config.get(op_name, [])) else 'false')
                     cast_outs.append(cast_impl)
             new_input.append('diopiConstTensorHandle_t ' + ', '.join(new_ins) + ';') if len(new_ins) else ''
             call_args = []

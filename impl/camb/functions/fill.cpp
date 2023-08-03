@@ -100,7 +100,7 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
             break;
         }
         default: {
-            DIOPI_CHECK(false, "the input tensor dtype %s is not allown", DiopiDataType::dataTypeStr(inputTensorTemp.dtype()).c_str());
+            DIOPI_CHECK(false, "the input tensor dtype %s is not allown", DiopiDataType::dataTypeStr(inputTensorTemp.dtype()));
         }
     }
 

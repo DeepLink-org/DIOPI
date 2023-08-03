@@ -17,7 +17,7 @@ def device(dev: str) -> Device:
 all_types = [Dtype.float16, Dtype.float32, Dtype.float64, Dtype.int32, Dtype.int64]
 float_types = [Dtype.float16, Dtype.float32, Dtype.float64]
 float_no_half_types = [Dtype.float32, Dtype.float64]
-int_types = [Dtype.int32, Dtype.int64, Dtype.int16, Dtype.int8]
+int_types = [Dtype.int32, Dtype.int64, Dtype.int16, Dtype.int8, Dtype.uint8]
 complex_types = [Dtype.complex64, Dtype.complex128]
 default = all_types
 

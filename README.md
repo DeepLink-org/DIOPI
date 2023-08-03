@@ -16,7 +16,7 @@ DIOPI-设备无关算子接口（Device-Independent Operator Interface, DIOPI）
 
 ## 结构说明
 
-![结构](img/structure.png)
+![结构](https://deeplink.readthedocs.io/zh_CN/latest/_images/DIOPI_structure.png)
 
 DIOPI主要包含以下几个组件：
 
