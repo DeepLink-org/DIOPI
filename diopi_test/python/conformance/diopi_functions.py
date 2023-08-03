@@ -1420,10 +1420,20 @@ def batch_norm_gather_stats_with_counts(input, mean_all, invstd_all, running_mea
 
 def batch_norm_backward_reduce(grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g):
     func = check_function('diopiBatchNormBackwardReduce')
-    sum_dy = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
-    sum_dy_xmu = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
-    grad_weight = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
-    grad_bias = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+    if input_g:
+        sum_dy = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+        sum_dy_xmu = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+    else:
+        sum_dy = None
+        sum_dy_xmu = None
+    if weight_g:
+        grad_weight = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+    else:
+        grad_weight = None
+    if weight_g:
+        grad_bias = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+    else:
+        grad_bias = None
     ret = func(input.context(), sum_dy, sum_dy_xmu, grad_weight, grad_bias, grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g)
     check_returncode(ret)
     out = (sum_dy, sum_dy_xmu, grad_weight, grad_bias)
