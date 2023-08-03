@@ -176,13 +176,13 @@ jobs:
     name: Op-Test-Nvidia
     runs-on: tps-diopi-ci
     needs: Gen-Data
+    env:
+      run_test: "python"
     steps:
       - name: NHWC-32bit-test
         run: |
-          if [ -n "${USE_COVERAGE}" ] && [ "${USE_COVERAGE}" = "ON" ]; then
+          if [ "${USE_COVERAGE}" = "ON" ]; then
             run_test="coverage run -p"
-          else
-            run_test="python"
           fi
           ssh ${CLUSTER_1988} """
           set -e
@@ -223,13 +223,13 @@ jobs:
     name: Op-Test-Camb
     runs-on: tps-diopi-ci
     needs: [Gen-Data, Build-Camb]
+    env:
+      run_test: "python"
     steps:
       - name: test
         run: |
-          if [ -n "${USE_COVERAGE}" ] && [ "${USE_COVERAGE}" = "ON" ]; then
+          if [ "${USE_COVERAGE}" = "ON" ]; then
             run_test="coverage run -p"
-          else
-            run_test="python"
           fi
           ssh ${CLUSTER_CAMB} """
           set -e
