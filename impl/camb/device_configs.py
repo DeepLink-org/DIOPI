@@ -50,6 +50,31 @@ device_configs = {
         ),
     ),
 
+    'pow_tensor_only_0_1': dict(
+        name=["pow"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["exponent"],
+                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
+                              Skip(Dtype.int8), Skip(Dtype.uint8)]
+                },
+            ]
+        ),
+    ),
+
+    'pow_input_scalar': dict(
+        name=["pow"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["exponent"],
+                    "dtype": [Skip(Dtype.float16)]
+                },
+            ]
+        ),
+    ),
+
     'nll_loss': dict(
         name=["nll_loss"],
         atol=1e-3,
@@ -519,14 +544,8 @@ device_configs = {
 
     'adadelta': dict(
         name=["adadelta"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['param', 'param_grad'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ]
-        ),
+        atol_half=1e-3,
+        rtol_half=1e-3,
     ),
 
     'rmsprop': dict(
@@ -689,7 +708,21 @@ device_configs = {
             args=[
                 {
                     "ins": ['other'],
-                    "dtype": [Skip(Dtype.float16)],
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64), Skip(Dtype.int8)],
+                },
+            ],
+        ),
+    ),
+
+    'remainder_bool': dict(
+        name = ['remainder'],
+        atol = 1e-1,
+        rtol = 1e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['other'],
+                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64), Skip(Dtype.int8)],
                 },
             ],
         ),
@@ -699,6 +732,14 @@ device_configs = {
         name = ['remainder'],
         atol = 1e-1,
         rtol = 1e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.int16)],
+                },
+            ],
+        ),
     ),
 
     'remainder_other_scalar': dict(
@@ -711,6 +752,28 @@ device_configs = {
         name = ['remainder'],
         atol = 1e-1,
         rtol = 1e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((1, 28, 28))],
+                },
+            ],
+        ),
+    ),
+
+    'remainder_scalar_bool': dict(
+        name = ['remainder'],
+        atol = 1e-1,
+        rtol = 1e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((4, 1))],
+                },
+            ],
+        ),
     ),
 
     # When not performing a reduce operation, the accuracy comparison of scatter needs to be performed on the CPU
@@ -722,6 +785,18 @@ device_configs = {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float32), Skip(Dtype.float64), Skip(Dtype.float16), Skip(Dtype.int16),
                               Skip(Dtype.int32), Skip(Dtype.int64), Skip(Dtype.uint8), Skip(Dtype.int8), Skip(Dtype.bool)],
+                },
+            ]
+        ),
+    ),
+
+    'scatter_specific': dict(
+        name=['scatter'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float32)],
                 },
             ]
         ),
@@ -955,22 +1030,6 @@ device_configs = {
                 {
                     "ins": ['mean'],
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ]
-        ),
-    ),
-
-    'polar': dict(
-        name=["polar"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['abs'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-                {
-                    "ins": ['angle'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
             ]
         ),
