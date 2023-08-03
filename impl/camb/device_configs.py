@@ -267,6 +267,30 @@ device_configs = {
         ),
     ),
 
+    'pointwise_binary_broadcast': dict(
+        name=['mul'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((0,)), Skip((8, 16, 1)), Skip((32, 0, 16))],
+                    },
+            ]
+        )
+    ),
+
+    'pointwise_binary_broadcast_inplace': dict(
+        name=['mul'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((16, 0,)), Skip((8, 16, 0)), Skip((32, 0, 16))],
+                },
+            ],
+        ),
+    ),
+
     'silu': dict(
         name=["silu"],
         tensor_para=dict(
