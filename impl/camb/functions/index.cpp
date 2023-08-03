@@ -15,7 +15,7 @@
 namespace impl {
 namespace camb {
 
-static std::vector<int64_t> inferSize(std::vector<int64_t> a, std::vector<int64_t> b) {
+static std::vector<int64_t> inferSize(const std::vector<int64_t> &a, const std::vector<int64_t> &b) {
     int32_t dimsA = a.size();
     int32_t dimsB = b.size();
     int32_t ndim = dimsA > dimsB ? dimsA : dimsB;
@@ -33,16 +33,15 @@ static std::vector<int64_t> inferSize(std::vector<int64_t> a, std::vector<int64_
 }
 
 // true if all the non-null tensors are adjacent
-static bool hasContiguousSubspace(std::vector<DiopiTensor> tensorList) {
-    auto isDefined = [](const DiopiTensor &tensor) { return tensor.defined(); };
-    auto isNull = [](const DiopiTensor &tensor) { return !tensor.defined(); };
+static bool hasContiguousSubspace(const std::vector<DiopiTensor> &tensorList) {
+    auto isDefined = [](const DiopiTensor &tensor) { return static_cast<bool>(tensor.tensorHandle()); };
+    auto isNull = [](const DiopiTensor &tensor) { return static_cast<bool>(!tensor.tensorHandle()); };
     auto start = std::find_if(tensorList.begin(), tensorList.end(), isDefined);
     auto stop = std::find_if(tensorList.rbegin(), tensorList.rend(), isDefined);
     auto it = std::find_if(start, stop.base(), isNull);
     return it == stop.base();
 }
 
-extern "C" {
 static diopiError_t expand(cnnlHandle_t handle, DiopiTensor outTensor, DiopiTensor inputTensor) {
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
@@ -50,12 +49,12 @@ static diopiError_t expand(cnnlHandle_t handle, DiopiTensor outTensor, DiopiTens
     return diopiSuccess;
 }
 
-static diopiError_t permute(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor inputTensor, std::vector<int32_t> dims) {
+static diopiError_t permute(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor inputTensor, std::vector<int32_t> order) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
     CnnlResourceGuard<cnnlTransposeDescriptor_t, cnnlCreateTransposeDescriptor, cnnlDestroyTransposeDescriptor> transDesc;
-    DIOPI_CALLCNNL(cnnlSetTransposeDescriptor(transDesc.get(), inputTensor.dim(), dims.data()));
+    DIOPI_CALLCNNL(cnnlSetTransposeDescriptor(transDesc.get(), inputTensor.dim(), order.data()));
 
     size_t workspaceSize = 0;
     DIOPI_CALLCNNL(cnnlGetTransposeWorkspaceSize(handle, inputDesc.get(), transDesc.get(), &workspaceSize));
@@ -150,9 +149,8 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
                     }
                     indiceEmptyTensor = true;
                 }
-            }
-            // int tensor
-            else {
+            } else {
+                // int tensor
                 if (index.numel()) {
                     indicesCast.emplace_back(std::move(index));
                 } else {
@@ -206,30 +204,30 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
 
     // transpose input and indices together so that they're adjacent at the front
     if (!hasContiguousSubspace(indicesExpand)) {
-        std::vector<int32_t> dims;
-        dims.reserve(inputTensor.dim());
+        std::vector<int32_t> order;
+        order.reserve(inputTensor.dim());
         std::vector<int64_t> transposedShape = inputTensor.shape();
         for (auto i = 0; i < inputTensor.dim(); ++i) {
             if (indicesExpand[i].tensorHandle()) {
-                dims.emplace_back(i);
+                order.emplace_back(i);
                 transposedIndices.emplace_back(indicesExpand[i]);
             }
         }
         for (auto i = 0; i < inputTensor.dim(); ++i) {
             if (!indicesExpand[i].tensorHandle()) {
-                dims.emplace_back(i);
+                order.emplace_back(i);
                 transposedIndices.emplace_back();
             }
         }
         for (auto i = 0; i < inputTensor.dim(); ++i) {
-            transposedShape[i] = inputTensor.size(dims[i]);
+            transposedShape[i] = inputTensor.size(order[i]);
         }
         transposedInput = requiresTensor(ctx, transposedShape, inputTensor.dtype());
         // meet cnnl kernel requirements
         while (transposedIndices.size() < indices.size()) {
             transposedIndices.emplace_back();
         }
-        DIOPI_CALL(permute(ctx, transposedInput, inputTensor, dims));
+        DIOPI_CALL(permute(ctx, transposedInput, inputTensor, order));
     } else {
         transposedInput = inputTensor;
         transposedIndices = indicesExpand;
@@ -282,6 +280,8 @@ static diopiError_t computeOutputShape(diopiContextHandle_t ctx, const DiopiTens
     return diopiSuccess;
 }
 
+extern "C" {
+
 diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t *indices, int64_t nums) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     const int64_t arraySize = 8;
@@ -305,11 +305,11 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diop
                     indicesTensors.emplace_back(indiceTensor);
                 } else {
                     // DiopiTensor emptyTensor = requiresTensor(ctx, {0}, indiceTensor.dtype());
-                    // std::cout << "empty indiceTesor.shape: ";
-                    // for (auto num : indiceTensor.shape()) {
-                    //     std::cout << num << ",";
-                    // }
-                    // std::cout << std::endl;
+                    std::cout << "empty indiceTesor.shape: ";
+                    for (auto num : indiceTensor.shape()) {
+                        std::cout << num << ",";
+                    }
+                    std::cout << std::endl;
                     DiopiTensor emptyTensor = requiresTensor(ctx, indiceTensor.shape(), indiceTensor.dtype());
                     indicesTensors.emplace_back(std::move(emptyTensor));
                 }
@@ -370,20 +370,20 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diop
                                      outTensor.data(),
                                      outputDims.data(),
                                      outputDim.data()));
-    // if (indiceEmptyTensor) {
-    //     std::cout << "indiceEmptyTensor" << std::endl;
-    //     outTensor.reshape(actualOutTensorShape);
-    // }
-    // std::cout << "cnnloutshape: ";
-    // for (auto num : cnnlOutTensorShape) {
-    //     std::cout << num << ",";
-    // }
-    // std::cout << std::endl;
-    // std::cout << "actualoutshape: ";
-    // for (auto num : actualOutTensorShape) {
-    //     std::cout << num << ",";
-    // }
-    // std::cout << std::endl;
+    if (indiceEmptyTensor) {
+        std::cout << "indiceEmptyTensor" << std::endl;
+        outTensor.reshape(actualOutTensorShape);
+    }
+    std::cout << "cnnloutshape: ";
+    for (auto num : cnnlOutTensorShape) {
+        std::cout << num << ",";
+    }
+    std::cout << std::endl;
+    std::cout << "actualoutshape: ";
+    for (auto num : actualOutTensorShape) {
+        std::cout << num << ",";
+    }
+    std::cout << std::endl;
     DIOPI_CALL(dataTypeCast(ctx, outTensor, inputTensor.dtype()));
     *out = diopiTensorHandle_t(outTensor);
     return diopiSuccess;
