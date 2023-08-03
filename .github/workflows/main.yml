@@ -4,27 +4,32 @@ on:
   push:
     branches:
       - main
+      - dev_v0.25
       - wgs/*
-    if: 'contains(github.event.head_commit.message, "ci") || contains(github.event.head_commit.message, "CI")'
   pull_request:
     branches:
       - main
+      - dev_v0.25
 
 env:
   NFS_PATH: '/mnt/cache/share/parrotsci/github/cibuild/${{ github.repository }}'
   NFS_PATH_LUSTRE: '/mnt/lustre/share/parrotsci/github/cibuild/${{ github.repository }}'
   ENV_PATH: '/mnt/cache/share/platform/cienv'
-  ENV_NAME: 'pt1.10v2'
+  ENV_NAME: 'pt2.0_diopi'
   ENV_NAME_MMCV: 'pt1.11v1'
   GPU_REQUESTS: 1
-  SLURM_PAR_SH1984: ${{ vars.SLURM_PAR_SH1984 }}
-  SLURM_PAR_CAMB: ${{ vars.SLURM_PAR_CAMB }}
-  CLUSTER_1984: SH1984
+  SLURM_PAR_SH1988: ${{ vars.SLURM_PAR_SH1984 != '' && vars.SLURM_PAR_SH1984 || 'pat_rd -x SH-IDC1-10-198-8-58,SH-IDC1-10-198-8-87' }}
+  SLURM_PAR_CAMB: ${{ vars.SLURM_PAR_CAMB != '' && vars.SLURM_PAR_CAMB || 'camb_mlu370_m8 --exclude HOST-10-142-11-120,HOST-10-142-11-126' }}
+  CLUSTER_1988: SH1984
   CLUSTER_CAMB: CAMB
   BUILD_TEST1: build_test
   BUILD_TEST2: build_test_dy
   BUILD_TEST3: build_mmcv_ext
-  GEN_DATA: DIOPI-TEST/python/data
+  GEN_DATA: diopi_test/python/data
+
+concurrency:
+  group: ${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   Rsync:
@@ -35,20 +40,16 @@ jobs:
         run: |
           cd ${GITHUB_WORKSPACE} && rm -rf DIOPI && git clone https://github.com/DeepLink-org/DIOPI.git && cd DIOPI
           if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
-          git checkout ${{ github.event.pull_request.head.sha }} && git merge --no-edit main
+          git checkout ${{ github.event.pull_request.head.sha }} && git merge --no-edit ${{ github.base_ref }}
           else
-          git checkout ${{ github.sha }} &&  git merge --no-edit main
+          git checkout ${{ github.sha }}
           fi
-          cd DIOPI-TEST/third_party && rm -rf mmcv_diopi && git clone https://github.com/DeepLink-org/mmcv_diopi.git
-      - name: ci interruptible and support pr ci
-        run: |
-          cd ${GITHUB_WORKSPACE}/DIOPI && bash scripts/ci_interruptible.sh
-        env:
-          GITHUB_TOKEN: "${{ secrets.CI_TOKEN }}"
+          ls
+          git submodule update --init --recursive
       - name: Rsync to Server
         run: |
-          ssh ${CLUSTER_1984} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
-          rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_1984}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
+          ssh ${CLUSTER_1988} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
+          rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
           ssh ${CLUSTER_CAMB} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
           rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
 
@@ -59,14 +60,14 @@ jobs:
     steps:
       - name: lint
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_1988} """
           set -e
           cd ${NFS_PATH}/ && ls -al && find ${NFS_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${GITHUB_JOB} && cp -R source ${GITHUB_JOB}  && cd ${GITHUB_JOB}
           export CI=true
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 bash -c 'cd DIOPI-TEST && bash scripts/ci_script.sh py-lint \
-          && bash scripts/ci_script.sh cpp-lint && cd ../DIOPI-IMPL \ && bash scripts/ci_script.sh cpp-lint' \
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 bash -c 'cd diopi_test && bash scripts/ci_script.sh py-lint \
+          && bash scripts/ci_script.sh cpp-lint && cd ../impl \ && bash scripts/ci_script.sh cpp-lint' \
           && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} \
           || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} && exit 1 )
           """
@@ -78,23 +79,23 @@ jobs:
     steps:
       - name: build
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_1988} """
           set -e
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export CI=true
           export DIOPI_BUILD_TESTRT=ON
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 bash -c 'cd DIOPI-IMPL && bash scripts/build_impl.sh torch' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh torch' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
           """
       - name: build-dyload
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_1988} """
           set -e
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST2} && cp -R source ${BUILD_TEST2} && cd ${BUILD_TEST2}
           export CI=true
           export DIOPI_BUILD_TESTRT=ON
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 bash -c 'cd DIOPI-IMPL && bash scripts/build_impl.sh torch_dyload' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST2} && exit 1 )
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh torch_dyload' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST2} && exit 1 )
           """
 
   Build-Camb:
@@ -111,7 +112,7 @@ jobs:
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export CI=true
           export DIOPI_BUILD_TESTRT=ON
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 bash -c 'cd DIOPI-IMPL && bash scripts/build_impl.sh camb' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh camb' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
           """
       - name: clang-tidy
         run: |
@@ -119,7 +120,7 @@ jobs:
           set -e
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 bash -c 'cd DIOPI-IMPL && bash scripts/ci_script.sh clang-tidy' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 bash -c 'cd impl && bash scripts/ci_script.sh clang-tidy' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
           """
 
   Build-Mmcv-Ext-Nvidia:
@@ -129,12 +130,12 @@ jobs:
     steps:
       - name: build
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_1988} """
           set -e
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME_MMCV}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST3} && cp -R source ${BUILD_TEST3} && cd ${BUILD_TEST3}
           export CI=true
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 ls && cd DIOPI-TEST && bash scripts/build_mmcv.sh mmcv_ext || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST3} && exit 1 )
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 ls && cd diopi_test && bash scripts/build_mmcv.sh mmcv_ext || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST3} && exit 1 )
           """
 
   Op-Test-Mmcv-Ext-Nvidia:
@@ -144,13 +145,13 @@ jobs:
     steps:
       - name: test
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_1988} """
           set -e
           export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME_MMCV}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST3}
           pip install -U pytest
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=40 --gres=gpu:${GPU_REQUESTS} ls && cd DIOPI-TEST && bash scripts/test_mmcv_ext.sh CUDA \
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=40 --gres=gpu:${GPU_REQUESTS} ls && cd diopi_test && bash scripts/test_mmcv_ext.sh CUDA \
           && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST3} || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST3} && exit 1 )
           """
 
@@ -161,12 +162,12 @@ jobs:
     steps:
       - name: gen-test-data
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_1988} """
           set -e
           export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
-          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd DIOPI-TEST/python && ls &&
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'python main.py --mode gen_data' \
+          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd diopi_test/python && ls &&
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'python main.py --mode gen_data' \
           || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           """
 
@@ -177,22 +178,23 @@ jobs:
     steps:
       - name: NHWC-32bit-test
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_1988} """
           set -e
           export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode run_test --fname batch_norm --nhwc &&
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=20 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode run_test --fname batch_norm --nhwc &&
           python main.py --mode run_test --fname index_select --four_bytes && python main.py --mode run_test --fname arange --four_bytes'
           """
       - name: dyload-test
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_1988} """
           set -e
           export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST2}
           rm -rf ${GEN_DATA} && ln -s ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${GEN_DATA}
-          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST2}/DIOPI-IMPL/lib
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode run_test'
+          export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST2}/impl/lib
+          echo \$LD_LIBRARY_PATH
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=20 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode run_test'
           """
 
   Rt-Test-Nvidia:
@@ -202,12 +204,12 @@ jobs:
     steps:
       - name: test
         run: |
-          ssh ${CLUSTER_1984} """
+          ssh ${CLUSTER_1988} """
           set -e
           export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1984} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode utest'
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode utest'
           """
 
   Op-Test-Camb:
@@ -221,9 +223,9 @@ jobs:
           set -e
           export CI=true
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && ls
-          rsync -a ${CLUSTER_1984}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/DIOPI-TEST/python/
+          rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode run_test --impl_folder ${NFS_PATH_LUSTRE}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/DIOPI-IMPL/camb/' \
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=20 --gres=mlu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode run_test --impl_folder ${NFS_PATH_LUSTRE}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/camb/' \
           && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           """
 
@@ -238,7 +240,5 @@ jobs:
           set -e
           export CI=true
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} bash -c 'cd DIOPI-TEST/python && python main.py --mode utest' \
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode utest' \
           """
-
-
