@@ -183,9 +183,9 @@ diopi_configs = {
         atol_half=1e-1,
         rtol_half=1e-2,
         para=dict(
-            input_g = [True, True, False], 
-            weight_g = [True, False, True], 
-            bias_g = [True, False, True],
+            input_g=[True, True, False], 
+            weight_g=[True, False, True], 
+            bias_g=[True, False, True],
         ),
         tensor_para=dict(
             args=[
