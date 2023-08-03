@@ -14,5 +14,3 @@ DIOPI_API diopiError_t diopiMaskedFillInp(diopiContextHandle_t ctx, diopiTensorH
 
 }  // namespace ascend
 }  // namespace impl
-
-
