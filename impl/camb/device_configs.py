@@ -69,9 +69,61 @@ device_configs = {
             args=[
                 {
                     "ins": ["exponent"],
-                    "dtype": [Skip(Dtype.float16)]
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
+                              Skip(Dtype.int8), Skip(Dtype.uint8)]
                 },
             ]
+        ),
+    ),
+
+    'pow_input_scalar_bool': dict(
+        name=["pow"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["exponent"],
+                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
+                              Skip(Dtype.int8)]
+                },
+            ]
+        ),
+    ),
+
+    'pow_tensor': dict(
+        name=['pow'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
+                              Skip(Dtype.int8), Skip(Dtype.uint8)]
+                },
+            ],
+        ),
+    ),
+
+    'pow_diff_dtype_cast': dict(
+        name=['pow'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
+                              Skip(Dtype.bool)]
+                },
+            ],
+        ),
+    ),
+
+    'pow_diff_dtype': dict(
+        name=['pow'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64)]
+                },
+            ],
         ),
     ),
 
@@ -102,24 +154,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
-    'pow_float_tensor': dict(
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 512, 38, 38))],
-                    "dtype": [Skip(Dtype.float64)],
-                },
-                {
-                    "ins": ['exponent'],
-                    "shape": [Skip((2, 512, 38, 38))],
-                    "dtype": [Skip(Dtype.float64)],
                 },
             ],
         ),
