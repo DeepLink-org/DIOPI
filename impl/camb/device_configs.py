@@ -301,6 +301,62 @@ device_configs = {
         ),
     ),
 
+    'pointwise_binary_broadcast': dict(
+        name=['mul'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((0,)), Skip((8, 16, 1)), Skip((32, 0, 16))],
+                    },
+            ]
+        )
+    ),
+
+    'pointwise_binary_broadcast_inplace': dict(
+        name=['mul'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((16, 0,)), Skip((8, 16, 0)), Skip((32, 0, 16))],
+                },
+            ],
+        ),
+    ),
+
+    'pointwise_binary_diff_dtype': dict(
+        name=['mul'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.uint8)],
+                },
+                {
+                    "ins": ['other'],
+                    "dtype": [Skip(Dtype.float16)],
+                },
+            ],
+        ),
+    ),
+
+    'pointwise_binary_diff_dtype_without_bool': dict(
+        name=['div'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.uint8)],
+                },
+                {
+                    "ins": ['other'],
+                    "dtype": [Skip(Dtype.float16)],
+                },
+            ],
+        ),
+    ),
+
     'silu': dict(
         name=["silu"],
         tensor_para=dict(
@@ -353,7 +409,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
 
             ],
@@ -734,7 +790,7 @@ device_configs = {
         ),
     ),
 
-    'remainder_self_scalar_float': dict(
+    'remainder_self_scalar': dict(
         name = ['remainder'],
         atol = 1e-1,
         rtol = 1e-2,
@@ -742,13 +798,13 @@ device_configs = {
             args=[
                 {
                     "ins": ['other'],
-                    "dtype": [Skip(Dtype.float16), Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64), Skip(Dtype.int8)],
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64), Skip(Dtype.int8), Skip(Dtype.uint8)],
                 },
             ],
         ),
     ),
 
-    'remainder_bool': dict(
+    'remainder_self_bool': dict(
         name = ['remainder'],
         atol = 1e-1,
         rtol = 1e-2,
@@ -756,7 +812,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['other'],
-                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64), Skip(Dtype.int8)],
+                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64), Skip(Dtype.int8), Skip(Dtype.uint8)],
                 },
             ],
         ),
@@ -770,7 +826,21 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16)],
+                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int8)],
+                },
+            ],
+        ),
+    ),
+
+    'remainder_tensor_zero': dict(
+        name = ['remainder'],
+        atol = 1e-1,
+        rtol = 1e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int8)],
                 },
             ],
         ),
@@ -780,23 +850,17 @@ device_configs = {
         name = ['remainder'],
         atol = 1e-1,
         rtol = 1e-2,
-    ),
-
-    'remainder_self_scalar_int': dict(
-        name = ['remainder'],
-        atol = 1e-1,
-        rtol = 1e-2,
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((1, 28, 28))],
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64), Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
                 },
             ],
         ),
     ),
 
-    'remainder_scalar_bool': dict(
+    'remainder_other_scalar_bool': dict(
         name = ['remainder'],
         atol = 1e-1,
         rtol = 1e-2,
