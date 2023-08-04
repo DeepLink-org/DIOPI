@@ -18,21 +18,23 @@ diopiError_t diopiSgn(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     DiopiTensor inputTensor(input);
     DiopiTensor outTensor(out);
 
-    // std::vector<DiopiTensor*> pTensors{&inputTensor};
-    // std::set<diopiDtype_t> supportedDtypes{diopi_dtype_complex64};
-    // DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
+    if (inputTensor.dtype() == diopi_dtype_complex128 || inputTensor.dtype() == diopi_dtype_complex64) {
+        DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_complex64));
+    } else {
+        DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
+    }
 
-    // DiopiTensor outTensorTemp = outTensor;
-    if (inputTensor.dtype() != outTensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, outTensor, inputTensor.dtype()));
+    DiopiTensor outTensorTemp = outTensor;
+    if (inputTensor.dtype() != outTensorTemp.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensorTemp, inputTensor.dtype()));
     }
 
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlSign(handle, inputDesc.get(), inputTensor.data(), outDesc.get(), outTensor.data()));
+    CnnlTensorDesc outDesc(outTensorTemp, CNNL_LAYOUT_ARRAY);
+    DIOPI_CALLCNNL(cnnlSign(handle, inputDesc.get(), inputTensor.data(), outDesc.get(), outTensorTemp.data()));
 
-    if (outTensor.dtype() != outTensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensor));
+    if (outTensorTemp.dtype() != outTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTemp));
     }
     return diopiSuccess;
 }
