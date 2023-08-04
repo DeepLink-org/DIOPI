@@ -38,6 +38,54 @@ device_configs = {
         ),
     ),
     
+    'hardtanh': dict(
+        name=["hardtanh"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0,)), Skip((0, 8)), Skip((16, 0, 8))),
+                },
+            ],
+        ),
+    ),
+    
+    'hardtanh_int': dict(
+        name=["hardtanh"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0,)), Skip((0, 8)), Skip((16, 0, 8))),
+                },
+            ],
+        ),
+    ),
+    
+    'hardtanh_uint': dict(
+        name=["hardtanh"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0,)), Skip((0, 8)), Skip((16, 0, 8))),
+                },
+            ],
+        ),
+    ),
+
+    'threshold_uint': dict(
+        name=["threshold"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.uint8)],
+                },
+            ],
+        ),
+    ),
+
     'batch_norm_no_contiguous': dict(
         name=["batch_norm"],
         tensor_para=dict(
@@ -386,6 +434,31 @@ device_configs = {
         atol=1e-1,
     ),
 
+    'addmm': dict(
+        name=["addmm"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip(()),),
+                }
+            ],
+        ),
+    ),
+    
+    'addcmul': dict(
+        name=["addcmul"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
+                              Skip(Dtype.uint8), Skip(Dtype.int8)],
+                },
+            ],
+        ),
+    ),
+
     'addcdiv': dict(
         name=["addcdiv"],
         tensor_para=dict(
@@ -393,6 +466,18 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float16)],
+                },
+            ],
+        ),
+    ),
+
+    'leaky_relu': dict(
+        name=["leaky_relu"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0,)), Skip((0, 8)), Skip((16, 0, 8))),
                 },
             ],
         ),
