@@ -515,7 +515,7 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
         args = args + "out, "
 
     convert_float = False
-    if (max and min):
+    if (max is not None and min is not None):
         if isinstance(min, Tensor):
             assert (isinstance(max, Tensor)), 'min and max must have same type'
             args += "input, min, max"
@@ -528,7 +528,7 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
             min = Scalar(min)
             max = Scalar(max)
             args = args + "input, min, max"
-    elif (max and not min):
+    elif (max is not None and min is None):
         if isinstance(max, Tensor):
             args += "input, None, max"
         else:
@@ -538,7 +538,7 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
             call = call + 'Scalar'
             max = Scalar(max)
             args = args + "input, None, max"
-    elif (min and not max):
+    elif (min is not None and max is None):
         if isinstance(min, Tensor):
             args += "input, min, None"
         else:
