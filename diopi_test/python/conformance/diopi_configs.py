@@ -12,6 +12,7 @@ ops_with_states = {"batch_norm": {"running_mean", "running_var"},
                    "rmsprop": {"param", "square_avg", "grad_avg", "momentum_buffer"},
                    "copy_": {"input"},
                    "cast_dtype": {"out"},
+                   "batch_norm_gather_stats_with_counts": {"running_mean", "running_var"},
                    }
 
 
@@ -93,6 +94,180 @@ diopi_configs = {
                     "requires_grad": [True],
                     "shape": ((8, ), (64, ), (96, ), (16, )),
                     "gen_fn": Genfunc.randn,
+                },
+            ]
+        ),
+    ),
+
+    'batch_norm_stats': dict(
+        name=["batch_norm_stats"],
+        interface=['CustomizedTest'],
+        dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
+        atol=1e-3,
+        rtol=1e-4,
+        atol_half=1e-1,
+        rtol_half=1e-2,
+        para=dict(
+            eps=[1e-5, 1e-4, 1e-4, 1e-5],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 8, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "requires_grad": [False],
+                    "gen_fn": Genfunc.randn,
+                },
+            ]
+        ),
+    ),
+
+    'batch_norm_gather_stats_with_counts': dict(
+        name=["batch_norm_gather_stats_with_counts"],
+        interface=['CustomizedTest'],
+        dtype=[Dtype.float32, Dtype.float64],
+        atol=1e-3,
+        rtol=1e-4,
+        atol_half=1e-1,
+        rtol_half=1e-2,
+        para=dict(
+            momentum=[1e-3, 1e-4, 1e-4, 1e-5],
+            eps=[1e-5, 1e-4, 1e-4, 1e-5],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 8, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "requires_grad": [False],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["running_mean"],
+                    "shape": ((8,), (64,), (96,), (16,)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["running_var"],
+                    "shape": ((8,), (64,), (96,), (16,)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["mean_all"],
+                    "shape": ((2, 8), (7, 64), (3, 96), (4, 16)),
+                    "requires_grad": [False],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["invstd_all"],
+                    "shape": ((2, 8), (7, 64), (3, 96), (4, 16)),
+                    "requires_grad": [False],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["count_all"],
+                    "shape": ((16,), (448,), (288,), (64,)),
+                    "requires_grad": [False],
+                    "gen_fn": Genfunc.randn,
+                },
+            ]
+        ),
+    ),
+
+    'batch_norm_backward_reduce': dict(
+        name=["batch_norm_backward_reduce"],
+        interface=['CustomizedTest'],
+        dtype=[Dtype.float32, Dtype.float64],
+        atol=1e-3,
+        rtol=1e-4,
+        atol_half=1e-1,
+        rtol_half=1e-2,
+        para=dict(
+            input_g=[True, True, False],
+            weight_g=[True, False, True],
+            bias_g=[True, False, True],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["grad_output"],
+                    "shape": ((2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["mean"],
+                    "shape": ((64,), (96,), (16,)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["invstd"],
+                    "shape": ((64,), (96,), (16,)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["weight"],
+                    "shape": ((64,), (96,), (16,)),
+                    "gen_fn": Genfunc.randn,
+                },
+            ]
+        ),
+    ),
+
+    'batch_norm_backward_elemt': dict(
+        name=["batch_norm_backward_elemt"],
+        interface=['CustomizedTest'],
+        dtype=[Dtype.float32, Dtype.float64],
+        atol=1e-3,
+        rtol=1e-4,
+        atol_half=1e-1,
+        rtol_half=1e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["grad_out"],
+                    "shape": ((2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["mean"],
+                    "shape": ((64,), (96,), (16,)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["invstd"],
+                    "shape": ((64,), (96,), (16,)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["weight"],
+                    "shape": ((64,), (96,), (16,)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["sum_dy"],
+                    "shape": ((64,), (96,), (16,)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["sum_dy_xmu"],
+                    "shape": ((64,), (96,), (16,)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["count"],
+                    "shape": ((64,), (96,), (16,)),
+                    "gen_fn": dict(fn=Genfunc.randint, low=4, high=6),
+                    "dtype": [Dtype.int32],
                 },
             ]
         ),
