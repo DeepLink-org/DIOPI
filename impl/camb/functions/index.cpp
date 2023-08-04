@@ -119,7 +119,7 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
         if (!indiceTensor.tensorHandle()) {
             indicesTensorsCast.emplace_back();
         } else {
-            DiopiTensor indexTensor = std::move(indiceTensor);
+            DiopiTensor indexTensor = indiceTensor;
             if (indexTensor.dtype() == diopi_dtype_uint8 || indexTensor.dtype() == diopi_dtype_bool) {
                 // the sizes of byte tensor or bool tensor must match the sizes of the corresponding dimensions in input
                 for (auto j = 0; j < indexTensor.dim(); ++j) {
@@ -161,21 +161,20 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
     bool first = true;
     std::vector<int64_t> sizes;
     std::vector<DiopiTensor> indicesTensorsExpand(indicesTensorsCast.size());
-    for (auto i = 0; i < indicesTensorsCast.size(); ++i) {
-        if (!indicesTensorsCast[i].tensorHandle() || !indicesTensorsCast[i].numel()) {
+    for (auto& indiceTensorCast : indicesTensorsCast) {
+        if (!indiceTensorCast.tensorHandle() || !indiceTensorCast.numel()) {
             continue;
         } else if (first) {
-            sizes = indicesTensorsCast[i].shape();
+            sizes = indiceTensorCast.shape();
             first = false;
         } else {
-            sizes = inferSize(sizes, indicesTensorsCast[i].shape());
+            sizes = inferSize(sizes, indiceTensorCast.shape());
         }
     }
     for (auto i = 0; i < indicesTensorsCast.size(); ++i) {
         if (!indicesTensorsCast[i].tensorHandle() || !indicesTensorsCast[i].numel()) {
             if (indicesTensorsCast[i].tensorHandle()) {
                 // handle the broadcast of empty indice tensor
-                // 默认原生int tensor可广播
                 indicesTensorsExpand[i] = indicesTensorsCast[i];
                 if (boolTensorConvertToEmptyTensor) {
                     std::vector<int64_t> tmpShape(sizes.size(), 1);
