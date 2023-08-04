@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "../cnnl_helper.hpp"
-#include "debug.hpp"
 
 namespace impl {
 namespace camb {
@@ -39,6 +38,8 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTens
 diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiTensor& outTensor, MemoryFormat memoryFormat = MemoryFormat::Preserve);
 
 diopiError_t transpose(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor input, int64_t dim0, int64_t dim1);
+
+diopiError_t transpose(diopiContextHandle_t ctx, const DiopiTensor& inputTensor, DiopiTensor& outTensor, std::vector<int32_t> perms);
 
 }  // namespace camb
 }  // namespace impl

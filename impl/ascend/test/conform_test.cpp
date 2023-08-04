@@ -17,12 +17,18 @@ namespace ascend {
 
 extern "C" {
 void* device_malloc(uint64_t bytes) {
-    void* ptr;
-    CALL_ACLRT(::aclrtMalloc(&ptr, bytes, ACL_MEM_MALLOC_HUGE_FIRST));
+    void* ptr = nullptr;
+    if (bytes > 0) {
+        CALL_ACLRT(::aclrtMalloc(&ptr, bytes, ACL_MEM_MALLOC_HUGE_FIRST));
+    }
     return ptr;
 }
 
-void device_free(void* ptr) { CALL_ACLRT(aclrtFree(ptr)); }
+void device_free(void* ptr) {
+    if (ptr) {
+        CALL_ACLRT(aclrtFree(ptr));
+    }
+}
 
 int32_t device_make_stream(diopiStreamHandle_t* stream_handle_ptr) {
     CALL_ACLRT(aclrtCreateStream(reinterpret_cast<aclrtStream*>(stream_handle_ptr)));

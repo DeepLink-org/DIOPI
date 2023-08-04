@@ -1,5 +1,5 @@
 - common_config:
-    dtype: (int64)->int32, (float64)->float32
+    dtype: (int64)->int32, (float64)->float32, (complex128)->complex64
     layout: NCHW
 
 - diopiAdd:
@@ -26,4 +26,10 @@
     layout: NHWC
 
 - diopiConvolution2dBackward:
+    layout: NHWC
+
+- diopiConvTranspose2d:
+    layout: NHWC
+
+- diopiConvTranspose2dBackward:
     layout: NHWC

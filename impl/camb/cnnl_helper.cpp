@@ -48,6 +48,12 @@ diopiError_t CnnlDataType::convertToCnnlType(cnnlDataType_t* cnnlType, diopiDtyp
         case diopi_dtype_int64:
             *cnnlType = CNNL_DTYPE_INT64;
             break;
+        case diopi_dtype_complex32:
+            *cnnlType = CNNL_DTYPE_COMPLEX_HALF;
+            break;
+        case diopi_dtype_complex64:
+            *cnnlType = CNNL_DTYPE_COMPLEX_FLOAT;
+            break;
         default:
             setLastErrorString("unkown diopitype error %d at %s:%d", type, __FILE__, __LINE__);
             return diopiDtypeNotSupported;
