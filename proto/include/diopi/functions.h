@@ -123,6 +123,12 @@ DIOPI_API diopiError_t diopiBatchNormBackwardElemt(diopiContextHandle_t ctx, dio
                                                    diopiConstTensorHandle_t count);
 
 /**
+ * @brief SyncBN series operator.
+ */
+DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
+                                           diopiConstTensorHandle_t bias, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t invstd, float eps);
+
+/**
  * @brief compute the backward pass of batch normalization
  * @param[in] grad_output Gradient of normalized layer output, with the same shape as the forward pass output. type=[float32, float16, float64].
  * @param[out] grad_input Gradient of the input data, with the same shape as the input data. type = [float32, float16, float64].
