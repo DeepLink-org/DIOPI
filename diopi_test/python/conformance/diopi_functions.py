@@ -1448,6 +1448,7 @@ def batch_norm_backward_elemt(grad_out, input, mean, invstd, weight, sum_dy, sum
     out = (grad_input)
     return out
 
+
 def batch_norm_elemt(input, weight, bias, mean, invstd, eps):
     func = check_function('diopiBatchNormElemt')
     out = Tensor(Sizes(list(input.size().data)), input.get_dtype())

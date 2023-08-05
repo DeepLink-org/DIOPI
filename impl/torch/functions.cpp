@@ -4207,5 +4207,4 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
     return diopiSuccess;
 }
 
-
 }  // extern "C"
