@@ -92,20 +92,21 @@ DIOPI_API diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandl
                                       diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias,
                                       diopiTensorHandle_t running_mean, diopiTensorHandle_t running_var, bool training, double momentum, double eps);
 
-
 /**
  * @brief Computes the mean and inverse standard deviation across a batch of data for Synchronized Batch Normalization (SyncBN).
  * @param[in] ctx Context environment.
  * @param input Input tensor. type = [float32, float16, float64].
  * @param eps The value added to the denominator during calculation to ensure numerical stability. type = [float32, float64].
  * @param[out] mean Mean tensor, the computed mean value for each feature channel of the input tensor. type = [float32, float16, float64].
- * @param invstd Inverse standard deviation tensor, the computed inverse standard deviation for each feature channel of the input tensor. type = [float32, float16, float64].
+ * @param invstd Inverse standard deviation tensor, the computed inverse standard deviation for each feature channel of the input tensor. type = [float32,
+ * float16, float64].
  */
 DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd, diopiConstTensorHandle_t input,
                                            double eps);
 
 /**
- * @brief Collects and processes statistics across multiple devices for Synchronized Batch Normalization (SyncBN) with consideration of the count of samples in each device.
+ * @brief Collects and processes statistics across multiple devices for Synchronized Batch Normalization (SyncBN) with consideration of the count of samples in
+ * each device.
  * @param[in] ctx Context environment.
  * @param input Input tensor. type = [float32, float16, float64].
  * @param mean_all The tensor of aggregated mean values across all devices. type = [float32, float16, float64].
@@ -114,7 +115,8 @@ DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensor
  * @param momentum Used to calculate the running mean and variance during runtime. type = [float32, float64].
  * @param eps The value added to the denominator during calculation to ensure numerical stability. type = [float32, float64].
  * @param[out] mean Mean tensor, the computed mean value for each feature channel of the input tensor. type = [float32, float16, float64].
- * @param invstd Inverse standard deviation tensor, the computed inverse standard deviation for each feature channel of the input tensor. type = [float32, float16, float64].
+ * @param invstd Inverse standard deviation tensor, the computed inverse standard deviation for each feature channel of the input tensor. type = [float32,
+ * float16, float64].
  * @param running_mean Updated running mean tensor. type = [float32, float16, float64].
  * @param running_var Updated running variance tensor. type = [float32, float16, float64].
  */
@@ -169,7 +171,8 @@ DIOPI_API diopiError_t diopiBatchNormBackwardElemt(diopiContextHandle_t ctx, dio
  * @param weight Weight tensor. type = [float32, float16, float64].
  * @param bias Bias tensor. type = [float32, float16, float64].
  * @param mean Mean tensor, the computed mean value for each feature channel of the input tensor. type = [float32, float16, float64].
- * @param invstd Inverse standard deviation tensor, the computed inverse standard deviation for each feature channel of the input tensor. type = [float32, float16, float64].
+ * @param invstd Inverse standard deviation tensor, the computed inverse standard deviation for each feature channel of the input tensor. type = [float32,
+ * float16, float64].
  * @param eps The value added to the denominator during calculation to ensure numerical stability. type = [float32, float64].
  * @param[out] out Output tensor, the result of batch normalization. type = [float32, float16, float64].
  */
