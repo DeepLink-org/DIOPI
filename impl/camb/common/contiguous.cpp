@@ -7,6 +7,7 @@
 #include <iostream>
 #include <vector>
 
+#include "../common/debug.hpp"
 #include "common.hpp"
 
 namespace impl {
@@ -22,6 +23,7 @@ static diopiError_t transpose(diopiContextHandle_t& ctx, DiopiTensor& in, DiopiT
     DIOPI_CALLCNNL(cnnlGetTransposeWorkspaceSize(handle, inDesc.get(), transDesc.get(), &workspaceSize));
 
     void* workspacePtr = workspaceSize == 0 ? requiresBuffer(ctx, workspaceSize).data() : nullptr;
+    // std::cout << "in.dtype:" << DiopiDataType::dataTypeStr(in.dtype()) << ", out.dtype:" << DiopiDataType::dataTypeStr(out.dtype()) << std::endl;
     DIOPI_CALLCNNL(cnnlTranspose_v2(handle, transDesc.get(), inDesc.get(), in.data(), outDesc.get(), out.data(), workspacePtr, workspaceSize));
     return diopiSuccess;
 }
@@ -43,10 +45,21 @@ static diopiError_t calOrderAndSrcMemoryFormat(const DiopiTensor& src, MemoryFor
                                                std::vector<int32_t>& orderOut) {
     if (src.isContiguous(destMemoryFormat)) {
         srcMemoryFormatOut = destMemoryFormat;
-        orderOut = {0, 1, 2, 3};
+        orderOut.reserve(src.dim());
+        for (int i = 0; i < src.dim(); ++i) {
+            orderOut[i] = i;
+        }
         return diopiSuccess;
     }
-    if (src.isContiguous(MemoryFormat::ChannelsLast) && destMemoryFormat == MemoryFormat::Contiguous) {
+    if (src.isContiguous(MemoryFormat::ChannelsLast1d) && destMemoryFormat == MemoryFormat::Contiguous ||
+        src.isContiguous() && destMemoryFormat == MemoryFormat::ChannelsLast1d) {
+        if (src.dim() != 3) {
+            setLastErrorString("the dim of the tensor should be 4, but now is %d.", src.dim());
+            return diopiNoImplement;
+        }
+        srcMemoryFormatOut = MemoryFormat::ChannelsLast1d;
+        orderOut = {0, 2, 1};
+    } else if (src.isContiguous(MemoryFormat::ChannelsLast) && destMemoryFormat == MemoryFormat::Contiguous) {
         if (src.dim() != 4) {
             setLastErrorString("the dim of the tensor should be 4, but now is %d.", src.dim());
             return diopiNoImplement;
@@ -84,6 +97,8 @@ static diopiError_t calOrderAndSrcMemoryFormat(const DiopiTensor& src, MemoryFor
 
 diopiError_t calCnnlLayout(MemoryFormat memoryFormat, int64_t dim, cnnlTensorLayout_t& cnnlLayout) {
     switch (memoryFormat) {
+        case MemoryFormat::ChannelsLast1d:
+            cnnlLayout = CNNL_LAYOUT_NLC;
         case MemoryFormat::ChannelsLast:
             cnnlLayout = CNNL_LAYOUT_NHWC;
             break;
@@ -117,7 +132,7 @@ diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, MemoryFormat
         return diopiSuccess;
     }
     int64_t dim = src.dim();
-    DIOPI_CHECK(dim == 4 || dim == 5, "only support 4d/5d tensor currently");
+    DIOPI_CHECK(dim <= 5, "only support less than 5d tensor currently");
     MemoryFormat srcMemoryFormat;
     std::vector<int32_t> order;
     DiopiTensor dest;
@@ -135,6 +150,7 @@ diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, MemoryFormat
     DIOPI_CALL(calCnnlLayout(memoryFormat, dim, destLayout));
     DIOPI_CALL(transpose(ctx, src, dest, srcLayout, destLayout, order));
     src = dest;
+    // printDevData(ctx, dest, "=====dest");
     return diopiSuccess;
 }
 }  // namespace camb

@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "../common/common.hpp"
-
+#include "../common/debug.hpp"
 namespace impl {
 namespace camb {
 
@@ -210,6 +210,8 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
     if (biasTensor.tensorHandle()) {
         tensors.push_back(&biasTensor);
     }
+    // printDevData(ctx,inputTensor, "inputTensor");
+    // printDevData(ctx,weightTensor, "weightTensor");
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32}));
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(outputTensorTmp, outputTensor, inputTensor.dtype());
 
