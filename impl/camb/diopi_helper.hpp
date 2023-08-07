@@ -53,7 +53,7 @@
         diopiError_t ret = Expr;                                                                                                    \
         if (diopiSuccess != ret) {                                                                                                  \
             impl::camb::setLastErrorString("%s: %s at %s:%d\n", ::impl::camb::getDiopiErrorStr(ret), __func__, __FILE__, __LINE__); \
-            printf(impl::camb::cambGetLastErrorString(false));                                                                      \
+            printf("%s", impl::camb::cambGetLastErrorString(false));                                                                \
             return ret;                                                                                                             \
         }                                                                                                                           \
     } while (false);
