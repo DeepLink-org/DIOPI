@@ -71,6 +71,7 @@ namespace cuda {
 // Note: this is a overloaded aten function to get the stream from context.
 // For original functions, please refer to https://github.com/pytorch/pytorch/blob/v1.10.0/c10/cuda/CUDAStream.cpp.
 inline CUDAStream getCurrentCUDAStream(DeviceIndex device_index) {
+    std::cout << __FUNCTION__ << std::endl;
     if (device_index == -1) {
         device_index = current_device();
     }
