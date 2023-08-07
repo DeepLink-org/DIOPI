@@ -8,6 +8,7 @@
 #define IMPL_TORCH_HELPER_HPP_
 #include <ATen/ATen.h>
 #include <c10/cuda/CUDAStream.h>
+#include <c10/cuda/CUDACachingAllocator.h>
 #include <cuda_runtime.h>
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
