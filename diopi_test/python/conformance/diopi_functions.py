@@ -1398,6 +1398,65 @@ def batch_norm(input, running_mean, running_var, weight, bias,
     return out
 
 
+def batch_norm_stats(input, eps):
+    func = check_function('diopiBatchNormStats')
+    mean = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+    invstd = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+    ret = func(input.context(), mean, invstd, input, eps)
+    check_returncode(ret)
+    out = (mean, invstd)
+    return out
+
+
+def batch_norm_gather_stats_with_counts(input, mean_all, invstd_all, running_mean, running_var, momentum, eps, count_all):
+    func = check_function('diopiBatchNormGatherStatsWithCounts')
+    mean = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+    invstd = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+    ret = func(input.context(), mean, invstd, input, mean_all, invstd_all, running_mean, running_var, momentum, eps, count_all)
+    check_returncode(ret)
+    out = (mean, invstd)
+    return out
+
+
+def batch_norm_backward_reduce(grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g):
+    func = check_function('diopiBatchNormBackwardReduce')
+    if input_g:
+        sum_dy = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+        sum_dy_xmu = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+    else:
+        sum_dy = None
+        sum_dy_xmu = None
+    if weight_g:
+        grad_weight = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+    else:
+        grad_weight = None
+    if weight_g:
+        grad_bias = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+    else:
+        grad_bias = None
+    ret = func(input.context(), sum_dy, sum_dy_xmu, grad_weight, grad_bias, grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g)
+    check_returncode(ret)
+    out = (sum_dy, sum_dy_xmu, grad_weight, grad_bias)
+    return out
+
+
+def batch_norm_backward_elemt(grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count):
+    func = check_function('diopiBatchNormBackwardElemt')
+    grad_input = Tensor(Sizes(list(grad_out.size().data)), input.get_dtype())
+    ret = func(input.context(), grad_input, grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count)
+    check_returncode(ret)
+    out = (grad_input)
+    return out
+
+
+def batch_norm_elemt(input, weight, bias, mean, invstd, eps):
+    func = check_function('diopiBatchNormElemt')
+    out = Tensor(Sizes(list(input.size().data)), input.get_dtype())
+    ret = func(input.context(), out, input, weight, bias, mean, invstd, eps)
+    check_returncode(ret)
+    return out
+
+
 def log_softmax(input, dim=None, dtype=None):
     if dim is None:
         dim = 0

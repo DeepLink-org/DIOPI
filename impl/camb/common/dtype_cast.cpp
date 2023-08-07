@@ -8,13 +8,17 @@
 
 #include <memory>
 #include <set>
+#include <unordered_map>
 
+#include "../cnnl_helper.hpp"
 #include "common.hpp"
 
 namespace impl {
 namespace camb {
 
 #define MAKE_KEY(a, b) (((static_cast<uint64_t>(a) & 0xFFFFFFFF) << 32) | (static_cast<uint64_t>(b) & 0xFFFFFFFF))
+
+bool isComplexDtype(diopiDtype_t dtype) { return (dtype == diopi_dtype_complex32 || dtype == diopi_dtype_complex64 || dtype == diopi_dtype_complex128); }
 
 inline bool canCastByInt32(uint64_t castType) {
     // special convert (cnnl doesn't support)
@@ -93,15 +97,23 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const Dio
     }
 
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    diopiDtype_t srcDtype = src.dtype();
-    diopiDtype_t destDtype = dest.dtype();
+    DiopiTensor destTmp = dest;
+    DiopiTensor srcTmp = src;
+    // camb only support CNNL_DTYPE_COMPLEX_HALF and CNNL_DTYPE_FLOAT so far
+    if (isComplexDtype(src.dtype()) && isComplexDtype(dest.dtype())) {
+        destTmp = dest.viewAsReal();
+        srcTmp = src.viewAsReal();
+    }
 
-    auto it = gCnnlCastDataTypeMapping.find({srcDtype, destDtype});
+    diopiDtype_t srcTmpDtype = srcTmp.dtype();
+    diopiDtype_t destTmpDtype = destTmp.dtype();
+
+    auto it = gCnnlCastDataTypeMapping.find({srcTmpDtype, destTmpDtype});
     if (it != gCnnlCastDataTypeMapping.end()) {
-        CnnlTensorDesc srcDesc(src, CNNL_LAYOUT_ARRAY);
-        CnnlTensorDesc destDesc(dest, CNNL_LAYOUT_ARRAY);
+        CnnlTensorDesc srcTmpDesc(srcTmp, CNNL_LAYOUT_ARRAY);
+        CnnlTensorDesc destTmpDesc(destTmp, CNNL_LAYOUT_ARRAY);
         cnnlCastDataType_t castType = it->second;
-        DIOPI_CALLCNNL(cnnlCastDataType(handle, srcDesc.get(), src.data(), castType, destDesc.get(), dest.data()));
+        DIOPI_CALLCNNL(cnnlCastDataType(handle, srcTmpDesc.get(), srcTmp.data(), castType, destTmpDesc.get(), destTmp.data()));
     } else {
         DIOPI_CALL(dataTypeCastTwice(ctx, dest, src));
     }
@@ -121,6 +133,8 @@ static diopiError_t choiceDtype(const std::set<diopiDtype_t>& opSupportedDtypes,
         *dtype = diopi_dtype_int8;
     } else if (opSupportedDtypes.find(diopi_dtype_bool) != opSupportedDtypes.end()) {
         *dtype = diopi_dtype_bool;
+    } else if (opSupportedDtypes.find(diopi_dtype_complex64) != opSupportedDtypes.end()) {
+        *dtype = diopi_dtype_complex64;
     } else {
         setLastErrorString("%s", "this operator does not support bool, int8, int16, int32, float16, float32");
         return diopiDtypeNotSupported;
@@ -171,6 +185,13 @@ diopiError_t autoCastTensorType(diopiContextHandle_t ctx, const std::vector<Diop
         }
     } else if (dtypeAndTensorPtrs.find(diopi_dtype_bool) != dtypeAndTensorPtrs.end()) {
         if (opSupportedDtype.find(diopi_dtype_bool) == opSupportedDtype.end()) {  // not support bool
+            DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
+        } else {  // all tensors cast into bool
+            targetType = diopi_dtype_bool;
+        }
+    } else if (dtypeAndTensorPtrs.find(diopi_dtype_complex64) != dtypeAndTensorPtrs.end() ||
+               dtypeAndTensorPtrs.find(diopi_dtype_complex128) != dtypeAndTensorPtrs.end()) {
+        if (opSupportedDtype.find(diopi_dtype_complex64) == opSupportedDtype.end()) {  // not support bool
             DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
         } else {  // all tensors cast into bool
             targetType = diopi_dtype_bool;
