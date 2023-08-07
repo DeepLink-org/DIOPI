@@ -26,7 +26,7 @@ env:
   BUILD_TEST2: build_test_dy
   BUILD_TEST3: build_mmcv_ext
   GEN_DATA: diopi_test/python/data
-  USE_COVERAGE: ${{ github.ref == 'main' && 'ON' || 'OFF' }}
+  USE_COVERAGE: ${{ (contains( github.ref, 'main') || startsWith(github.ref, 'refs/heads/v') || startsWith(github.ref, 'refs/heads/dev')) && 'ON' || 'OFF' }}
 
 concurrency:
   group: ${{ github.head_ref || github.ref }}
