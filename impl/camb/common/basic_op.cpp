@@ -20,7 +20,7 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTens
 
     CnnlResourceGuard<cnnlOpTensorDescriptor_t, cnnlCreateOpTensorDescriptor, cnnlDestroyOpTensorDescriptor> opDesc;
 
-    DIOPI_CALLCNNL(cnnlSetOpTensorDescriptor(opDesc.get(), CNNL_OP_TENSOR_SUB, compType, CNNL_NOT_PROPAGATE_NAN));
+    DIOPI_CALLCNNL(cnnlSetOpTensorDescriptor(opDesc.get(), opType, compType, CNNL_NOT_PROPAGATE_NAN));
 
     std::shared_ptr<void> alpha1Value = nullptr;
     std::shared_ptr<void> alpha2Value = nullptr;
