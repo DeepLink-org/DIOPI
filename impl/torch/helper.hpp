@@ -92,7 +92,7 @@ class CUDAAllocator:public::c10::Allocator {
 
 inline CUDAAllocator* get() {
     std::cout << __FUNCTION__ << std::endl;
-    return c10::GetAllocator(c10::DeviceType::CUDA);
+    return static_cast<CUDAAllocator*>(c10::GetAllocator(c10::DeviceType::CUDA));
 }
 
 }  // CUDACachingAllocator
