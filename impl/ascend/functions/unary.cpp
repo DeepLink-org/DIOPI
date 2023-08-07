@@ -20,24 +20,18 @@ extern "C" DIOPI_API diopiError_t diopiNegInp(diopiContextHandle_t ctx, diopiTen
 
 extern "C" DIOPI_API diopiError_t diopiSqrt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     AclOpRunner<1, 1>("Sqrt", ctx).addInput(input).addOutput(out).run();
+    negativeInputRtnFillNan(ctx, out, input);
+    return diopiSuccess;
+}
 
-    // 解决ascend对负数做sqrt不返回nan的问题
-    // get nan value tensor
-    diopiTensorHandle_t nanValue;
-    auto nanValueScalar = diopiScalar_t();
-    nanValueScalar.stype = diopi_dtype_float64;
-    nanValueScalar.fval = 0.0;
-    makeTensorFromScalar(ctx, &nanValueScalar, &nanValue, diopi_dtype_float32, diopi_device);
-    auto zeroValueScalar = diopiScalar_t();
-    zeroValueScalar.stype = diopi_dtype_float64;
-    zeroValueScalar.fval = 0.0;
-    diopiDivInpScalar(ctx, nanValue, &zeroValueScalar, diopiRoundMode_t::RoundModeNone);
-    // get negative mask
-    diopiTensorHandle_t mask;
-    makeTensorLike(ctx, &mask, input, diopi_dtype_bool);
-    diopiLtScalar(ctx, mask, input, &zeroValueScalar);
-    diopiMaskedFillInp(ctx, out, mask, nanValue);
+DIOPI_API diopiError_t diopiLog(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    AclOpRunner<1, 1>("Log", ctx).addInput(input).setAttr<float>("base", -1.0).setAttr<float>("scale", 1.0).setAttr<float>("shift", 0.0).addOutput(out).run();
+    negativeInputRtnFillNan(ctx, out, input);
+    return diopiSuccess;
+}
 
+DIOPI_API diopiError_t diopiFloor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    AclOpRunner<1, 1>("Floor", ctx).addInput(input).addOutput(out).run();
     return diopiSuccess;
 }
 

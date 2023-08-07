@@ -163,6 +163,14 @@ diopiError_t makeTensorLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, 
 
 diopiError_t makeTensorLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t src, diopiDtype_t dtype);
 
+/**
+ * @brief some op originally support positive tensor, but ascend op can handle negative tensor. So we need to change those out value to nan
+ * @param[in] ctx Context environment.
+ * @param[in] input the input tensor.
+ * @param[out] the output tensor.
+ */
+diopiError_t negativeInputRtnFillNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
 template <int InputSize, int OutputSize, aclDataType (*dtypeCastStrategy)(diopiDtype_t) = getAclDataType>
 class AclOpRunner {
     std::string opname_;
@@ -311,7 +319,7 @@ public:
         } else if constexpr (std::is_same<T, bool>::value) {
             type = diopi_dtype_bool;
         } else {
-            error("type not supported");
+            error("type not supported: %s", typeid(T).name());
         }
         desc = aclCreateTensorDesc(dtypeCastStrategy(type), 0, nullptr, ACL_FORMAT_ND);
         check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
