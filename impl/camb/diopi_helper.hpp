@@ -25,6 +25,7 @@
     do {                                                                                     \
         if (!(cond)) {                                                                       \
             impl::camb::setLastErrorString(#fmt " at %s:%d.\n", ##args, __FILE__, __LINE__); \
+            printf(impl::camb::cambGetLastErrorString(false));                               \
             return diopiErrorOccurred;                                                       \
         }                                                                                    \
     } while (false);
@@ -33,6 +34,7 @@
     do {                                                                                         \
         if (variable == nullptr) {                                                               \
             printf("The variable `" #variable "` is not defined at %s:%d ", __FILE__, __LINE__); \
+            printf(impl::camb::cambGetLastErrorString(false));                                   \
             abort();                                                                             \
         }                                                                                        \
     } while (false);
@@ -41,6 +43,7 @@
     do {                                                         \
         if (!(cond)) {                                           \
             printf(#fmt " at %s:%d ", args, __FILE__, __LINE__); \
+            printf(impl::camb::cambGetLastErrorString(false));   \
             abort();                                             \
         }                                                        \
     } while (false);
@@ -50,6 +53,7 @@
         diopiError_t ret = Expr;                                                                                                    \
         if (diopiSuccess != ret) {                                                                                                  \
             impl::camb::setLastErrorString("%s: %s at %s:%d\n", ::impl::camb::getDiopiErrorStr(ret), __func__, __FILE__, __LINE__); \
+            printf(impl::camb::cambGetLastErrorString(false));                                                                      \
             return ret;                                                                                                             \
         }                                                                                                                           \
     } while (false);
@@ -219,6 +223,9 @@ public:
     }
 
     bool isContiguous(MemoryFormat format = MemoryFormat::Contiguous) const {
+        if (!defined()) {
+            return true;
+        }
         int64_t stride = 1;
         int64_t dim = this->dim();
         auto strides = this->stride();
@@ -234,6 +241,20 @@ public:
                 }
                 stride *= shapeD;
             }
+        } else if (format == MemoryFormat::ChannelsLast1d) {
+            if (strides.size() != 3) {
+                return false;
+            }
+            for (auto& i : {1, 2, 0}) {
+                const auto& shapeD = shape[i];
+                if (shapeD != 1) {
+                    if (strides[i] != stride) {
+                        return false;
+                    }
+                }
+                stride *= shapeD;
+            }
+
         } else if (format == MemoryFormat::ChannelsLast) {
             if (strides.size() != 4) return false;
             for (auto& i : {1, 3, 2, 0}) {
