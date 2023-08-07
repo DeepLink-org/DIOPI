@@ -65,8 +65,8 @@ void set_last_error_string(const char* szFmt, Types&&... args) {
 using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
 extern thread_local diopiContextHandle_t context;
 namespace c10 {
-
 namespace cuda {
+#if 0
 
 // Note: this is a overloaded aten function to get the stream from context.
 // For original functions, please refer to https://github.com/pytorch/pytorch/blob/v1.10.0/c10/cuda/CUDAStream.cpp.
@@ -98,7 +98,7 @@ inline CUDAAllocator* get() {
 
 }  // CUDACachingAllocator
 
-
+#endif
 
 }  // namespace cuda
 }  // namespace c10
