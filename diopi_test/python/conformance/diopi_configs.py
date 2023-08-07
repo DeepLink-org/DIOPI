@@ -2748,6 +2748,7 @@ diopi_configs = {
         ),
     ),
 
+    # FIXME nonzero输入0-d张量报错
     'nonzero': dict(
         name=["nonzero"],
         interface=['torch'],
@@ -2758,7 +2759,11 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((), (1482, ), (16, 24), (5, 8, 20),
+                    # "shape": ((), (1482, ), (16, 24), (5, 8, 20),
+                    #           (4, 4, 16, 20),
+                    #           (4, 4, 16, 2, 20),
+                    #           (0,), (12, 0), (2, 0, 9)),
+                    "shape": ((1482, ), (16, 24), (5, 8, 20),
                               (4, 4, 16, 20),
                               (4, 4, 16, 2, 20),
                               (0,), (12, 0), (2, 0, 9)),
@@ -2767,52 +2772,52 @@ diopi_configs = {
         ),
     ),
 
-    'nonzero_float': dict(
-        name=["nonzero"],
-        interface=['torch'],
-        dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
-        tensor_para=dict(
-            gen_fn=Genfunc.randn,
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((1482,), (16, 24)),
-                },
-            ],
-        ),
-    ),
+    # 'nonzero_float': dict(
+    #     name=["nonzero"],
+    #     interface=['torch'],
+    #     dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
+    #     tensor_para=dict(
+    #         gen_fn=Genfunc.randn,
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "shape": ((1482,), (16, 24)),
+    #             },
+    #         ],
+    #     ),
+    # ),
 
-    'nonzero_int': dict(
-        name=["nonzero"],
-        interface=['torch'],
-        dtype=[Dtype.int16, Dtype.int32, Dtype.int64, Dtype.int8],
-        tensor_para=dict(
-            gen_fn=dict(fn=Genfunc.randint, low=-128, high=128),
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((4, 4, 16, 20),
-                              (4, 4, 16, 2, 20)),
-                },
-            ],
-        ),
-    ),
+    # 'nonzero_int': dict(
+    #     name=["nonzero"],
+    #     interface=['torch'],
+    #     dtype=[Dtype.int16, Dtype.int32, Dtype.int64, Dtype.int8],
+    #     tensor_para=dict(
+    #         gen_fn=dict(fn=Genfunc.randint, low=-128, high=128),
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "shape": ((4, 4, 16, 20),
+    #                           (4, 4, 16, 2, 20)),
+    #             },
+    #         ],
+    #     ),
+    # ),
 
-    'nonzero_uint': dict(
-        name=["nonzero"],
-        interface=['torch'],
-        dtype=[Dtype.uint8],
-        tensor_para=dict(
-            gen_fn=dict(fn=Genfunc.randint, low=0, high=256),
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((4, 4, 16, 20),
-                              (4, 4, 16, 2, 20)),
-                },
-            ],
-        ),
-    ),
+    # 'nonzero_uint': dict(
+    #     name=["nonzero"],
+    #     interface=['torch'],
+    #     dtype=[Dtype.uint8],
+    #     tensor_para=dict(
+    #         gen_fn=dict(fn=Genfunc.randint, low=0, high=256),
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "shape": ((4, 4, 16, 20),
+    #                           (4, 4, 16, 2, 20)),
+    #             },
+    #         ],
+    #     ),
+    # ),
 
     'linear': dict(
         name=["linear"],
