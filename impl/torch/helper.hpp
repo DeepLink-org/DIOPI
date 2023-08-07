@@ -83,6 +83,10 @@ inline CUDAStream getCurrentCUDAStream(DeviceIndex device_index) {
     }
 }
 
+inline c10::Allocator* c10::cuda::CUDACachingAllocator::get() {
+    return c10::GetAllocator(c10::DeviceType::CUDA);
+}
+
 }  // namespace cuda
 }  // namespace c10
 
