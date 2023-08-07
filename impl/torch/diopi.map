@@ -6,5 +6,5 @@ DIOPI_3.0 {
 libc10_cuda.so.1.10.0 {
   global:
       *getCurrentCUDAStream*;
-      *CUDACachingAllocator*
+      *CUDACachingAllocator*;
 }DIOPI_3.0;
