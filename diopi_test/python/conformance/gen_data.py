@@ -10,7 +10,7 @@ from .utils import logger
 from .utils import need_process_func
 from .config import Genfunc, dict_elem_length, Config
 from . import diopi_configs
-from .diopi_runtime import from_dtype_str
+from .diopi_runtime import from_dtype_str, int_types, float_types
 from .utils import get_saved_pth_list, get_data_from_file, cfg_file_name
 import torch
 import torchvision
@@ -204,6 +204,7 @@ def delete_fn(cfg_dict):
 
 
 def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
+    np_int_types = [to_numpy_dtype(type) for type in int_types]
     if "value" in arg.keys():
         dtype = to_numpy_dtype(arg.get("dtype", None))
         value = np.array(arg["value"], dtype=dtype)
@@ -221,7 +222,7 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
                 high = 10
         else:
             gen_fn = arg["gen_fn"]["fn"]
-            assert (gen_fn == Genfunc.randint or gen_fn == Genfunc.uniform), "only randint needs args"
+            assert (gen_fn == Genfunc.randint or gen_fn == Genfunc.uniform or Genfunc.randn_int), "only randint & uniform & randn_int needs args"
             low = arg["gen_fn"].get("low", 0)
             high = arg["gen_fn"].get("high", 10)
         dtype = to_numpy_dtype(arg["dtype"])
@@ -243,16 +244,23 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
             value = np.random.randint(low=0, high=2, size=shape).astype(dtype)
         elif gen_fn == Genfunc.randint:
             value = np.random.randint(low=low, high=high, size=shape).astype(dtype)
+            if dtype == np_int_types[-1]:
+                value = np.random.randint(low=0, high=high, size=shape).astype(dtype)
         elif gen_fn == Genfunc.empty:
             value = np.empty(shape, dtype=dtype)
         elif gen_fn == Genfunc.positive:
-            value = np.abs(np.array(np.random.randn(*shape)).astype(dtype))
+            value = np.array(np.abs(np.random.randn(*shape)).astype(dtype))
         elif gen_fn == Genfunc.sym_mat:
             axis = [i for i in range(len(shape) - 2)] + [-1, -2]
             mat = np.random.randn(*shape).astype(dtype)
             value = mat @ mat.transpose(axis) + 1e-3
         elif gen_fn == Genfunc.randn_cmplx:
             value = np.array(np.random.randn(*shape) + 1j * np.random.randn(*shape)).astype(dtype)
+        elif gen_fn == Genfunc.randn_int:
+            if dtype in np_int_types:
+                value = np.random.randint(low=low, high=high, size=shape).astype(dtype)
+            else:
+                value = np.array(np.random.randn(*shape)).astype(dtype)
         else:
             value = np.array(np.random.randn(*shape)).astype(dtype)
 
@@ -517,6 +525,26 @@ class CustomizedTest(object):
     def linalgqr(input, mode):
         q, r = torch.linalg.qr(input, mode)
         out = [q, r]
+        return out
+
+    def batch_norm_stats(input, eps):
+        mean, invstd = torch.batch_norm_stats(input, eps)
+        out = (mean, invstd)
+        return out
+
+    def batch_norm_gather_stats_with_counts(input, mean_all, invstd_all, running_mean, running_var, momentum, eps, count_all):
+        mean, invstd = torch.batch_norm_gather_stats_with_counts(input, mean_all, invstd_all, running_mean, running_var, momentum, eps, count_all)
+        out = (mean, invstd)
+        return out
+
+    def batch_norm_backward_reduce(grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g):
+        sum_dy, sum_dy_xmu, grad_weight, grad_bias = torch.batch_norm_backward_reduce(grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g)
+        out = (sum_dy, sum_dy_xmu, grad_weight, grad_bias)
+        return out
+
+    def batch_norm_backward_elemt(grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count):
+        grad_input = torch.batch_norm_backward_elemt(grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count)
+        out = grad_input
         return out
 
 
