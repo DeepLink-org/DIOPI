@@ -25,7 +25,7 @@
     do {                                                                                     \
         if (!(cond)) {                                                                       \
             impl::camb::setLastErrorString(#fmt " at %s:%d.\n", ##args, __FILE__, __LINE__); \
-            printf(impl::camb::cambGetLastErrorString(false));                               \
+            printf("%s", impl::camb::cambGetLastErrorString(false));                         \
             return diopiErrorOccurred;                                                       \
         }                                                                                    \
     } while (false);
@@ -34,18 +34,18 @@
     do {                                                                                         \
         if (variable == nullptr) {                                                               \
             printf("The variable `" #variable "` is not defined at %s:%d ", __FILE__, __LINE__); \
-            printf(impl::camb::cambGetLastErrorString(false));                                   \
+            printf("%s", impl::camb::cambGetLastErrorString(false));                             \
             abort();                                                                             \
         }                                                                                        \
     } while (false);
 
-#define DIOPI_CHECK_ABORT(cond, fmt, args...)                      \
-    do {                                                           \
-        if (!(cond)) {                                             \
-            printf(#fmt " at %s:%d ", ##args, __FILE__, __LINE__); \
-            printf(impl::camb::cambGetLastErrorString(false));     \
-            abort();                                               \
-        }                                                          \
+#define DIOPI_CHECK_ABORT(cond, fmt, args...)                        \
+    do {                                                             \
+        if (!(cond)) {                                               \
+            printf(#fmt " at %s:%d ", ##args, __FILE__, __LINE__);   \
+            printf("%s", impl::camb::cambGetLastErrorString(false)); \
+            abort();                                                 \
+        }                                                            \
     } while (false);
 
 #define DIOPI_CALL(Expr)                                                                                                            \
