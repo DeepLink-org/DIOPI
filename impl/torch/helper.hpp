@@ -85,7 +85,7 @@ inline CUDAStream getCurrentCUDAStream(DeviceIndex device_index) {
 
 namespace CUDACachingAllocator {
 
-class CUDAAllocator::public c10::Allocator {
+class CUDAAllocator:public::c10::Allocator {
 
 };
 
