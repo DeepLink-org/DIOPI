@@ -8,7 +8,6 @@
 #define IMPL_TORCH_HELPER_HPP_
 #include <ATen/ATen.h>
 #include <c10/cuda/CUDAStream.h>
-#include <c10/cuda/CUDACachingAllocator.h>
 #include <cuda_runtime.h>
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
@@ -84,10 +83,15 @@ inline CUDAStream getCurrentCUDAStream(DeviceIndex device_index) {
     }
 }
 
+namespace CUDACachingAllocator {
 
 inline c10::Allocator* c10::cuda::CUDACachingAllocator::get() {
     return c10::GetAllocator(c10::DeviceType::CUDA);
 }
+
+}  // CUDACachingAllocator
+
+
 
 }  // namespace cuda
 }  // namespace c10
