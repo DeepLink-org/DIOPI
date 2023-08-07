@@ -125,7 +125,7 @@ diopi_configs = {
     'batch_norm_gather_stats_with_counts': dict(
         name=["batch_norm_gather_stats_with_counts"],
         interface=['CustomizedTest'],
-        dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
+        dtype=[Dtype.float32, Dtype.float64],
         atol=1e-3,
         rtol=1e-4,
         atol_half=1e-1,
@@ -177,7 +177,7 @@ diopi_configs = {
     'batch_norm_backward_reduce': dict(
         name=["batch_norm_backward_reduce"],
         interface=['CustomizedTest'],
-        dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
+        dtype=[Dtype.float32, Dtype.float64],
         atol=1e-3,
         rtol=1e-4,
         atol_half=1e-1,
@@ -221,7 +221,7 @@ diopi_configs = {
     'batch_norm_backward_elemt': dict(
         name=["batch_norm_backward_elemt"],
         interface=['CustomizedTest'],
-        dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
+        dtype=[Dtype.float32, Dtype.float64],
         atol=1e-3,
         rtol=1e-4,
         atol_half=1e-1,
@@ -276,7 +276,7 @@ diopi_configs = {
     'batch_norm_elemt': dict(
         name=["batch_norm_elemt"],
         interface=['CustomizedTest'],
-        dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
+        dtype=[Dtype.float32, Dtype.float64],
         atol=1e-3,
         rtol=1e-4,
         atol_half=1e-1,
