@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
+
 #include <diopi/functions.h>
 
 #include <numeric>
@@ -26,7 +32,7 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
     }
     const std::vector<int64_t> paddingTemp = {padding.data[0], padding.data[0], padding.data[1], padding.data[1]};
 
-    AclOpRunner<3, 1> runner("Conv2D");
+    AclOpRunner<3, 1> runner("Conv2D", ctx);
     runner.addInput(input, weight)
         .setAttr("strides", strideTemp)
         .setAttr("pads", paddingTemp)
@@ -37,14 +43,14 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
     if (bias) {
         runner.addInput(bias);
     }
-    runner.run(ctx);
+    runner.run();
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
-                                                   diopiTensorHandle_t grad3, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
-                                                   diopiConstTensorHandle_t weight, diopiSize_t *bias_sizes, diopiSize_t stride, diopiSize_t padding,
-                                                   diopiSize_t dilation, bool transposed, diopiSize_t output_padding, int64_t groups) {
+extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight,
+                                                   diopiTensorHandle_t gradBias, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
+                                                   diopiConstTensorHandle_t weight, diopiSize_t *biasSizes, diopiSize_t stride, diopiSize_t padding,
+                                                   diopiSize_t dilation, bool transposed, diopiSize_t outputPadding, int64_t groups) {
     auto format = getAclDataFormat(input);
     const std::string dataFormat = (format == ACL_FORMAT_NHWC) ? "NHWC" : "NCHW";
     std::vector<int64_t> strideTemp(4, 1);
@@ -60,39 +66,40 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
         dilationsTemp[2] = dilation.data[0];
         dilationsTemp[3] = dilation.data[1];
     }
-    const std::vector<int64_t> paddingTemp = {padding.data[0], padding.data[2], padding.data[1], padding.data[3]};
+    const std::vector<int64_t> paddingTemp = {padding.data[0], padding.data[0], padding.data[1], padding.data[1]};
 
-    diopiSize_t weightShape, gradWeightShape;
-    diopiGetTensorShape(weight, &weightShape);
-    diopiGetTensorShape(grad_weight, &gradWeightShape);
+    diopiSize_t weightShape;
+    diopiGetTensorShape(gradWeight, &weightShape);
 
-    AclOpRunner<2, 1>("Conv2DBackpropFilterD")
-        .addInput(input, grad_output)
-        .addOutput(grad_weight)
-        .setAttr("filter_size", std::vector<int32_t>{gradWeightShape.data[0], gradWeightShape.data[1], gradWeightShape.data[2], gradWeightShape.data[3]})
+    AclOpRunner<3, 1>("Conv2DBackpropFilter", ctx)
+        .addInput(input)
+        .addConstInput(weightShape)
+        .addInput(gradOutput)
+        .addOutput(gradWeight)
         .setAttr("strides", strideTemp)
         .setAttr("pads", paddingTemp)
         .setAttr("dilations", dilationsTemp)
         .setAttr("groups", groups)
         .setAttr("data_format", dataFormat)
-        .run(ctx);
-    if (grad_input != nullptr) {
+        .run();
+    if (gradInput != nullptr) {
         diopiSize_t inputShape;
         diopiGetTensorShape(input, &inputShape);
-        AclOpRunner<2, 1>("Conv2DBackpropInputD")
-            .addInput(weight, grad_output)
-            .addOutput(grad_input)
+        AclOpRunner<3, 1>("Conv2DBackpropInput", ctx)
+            .addConstInput(inputShape)
+            .addInput(weight)
+            .addInput(gradOutput)
+            .addOutput(gradInput)
             .setAttr("strides", strideTemp)
-            .setAttr("input_size", std::vector<int32_t>{inputShape.data[0], inputShape.data[1], inputShape.data[2], inputShape.data[3]})
             .setAttr("pads", paddingTemp)
             .setAttr("dilations", dilationsTemp)
             .setAttr("data_format", dataFormat)
             .setAttr("groups", groups)
-            .run(ctx);
+            .run();
     }
 
-    if (grad3 != nullptr) {
-        AclOpRunner<1, 1>("BiasAddGrad").addInput(grad_output).addOutput(grad3).setAttr("data_format", dataFormat).run(ctx);
+    if (gradBias != nullptr) {
+        AclOpRunner<1, 1>("BiasAddGrad", ctx).addInput(gradOutput).addOutput(gradBias).setAttr("data_format", dataFormat).run();
     }
     return diopiSuccess;
 }

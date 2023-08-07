@@ -61,54 +61,66 @@ diopiError_t bitwiseCommon(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
 }
 
 diopiError_t diopiBitwiseAnd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    return bitwiseCommon(ctx, out, input, other, CNNL_CYCLE_BAND_OP);
+    DIOPI_CALL(bitwiseCommon(ctx, out, input, other, CNNL_CYCLE_BAND_OP));
+    return diopiSuccess;
 }
 
 diopiError_t diopiBitwiseAndInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
-    return bitwiseCommon(ctx, input, input, other, CNNL_CYCLE_BAND_OP);
+    DIOPI_CALL(bitwiseCommon(ctx, input, input, other, CNNL_CYCLE_BAND_OP));
+    return diopiSuccess;
 }
 
 diopiError_t diopiBitwiseAndScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
     DiopiTensor otherTensor;
     makeTensorFromScalar(ctx, other, otherTensor);
     diopiTensorHandle_t input2 = otherTensor.tensorHandle();
-    return bitwiseCommon(ctx, out, input, diopiTensorHandle_t(input2), CNNL_CYCLE_BAND_OP);
+    DIOPI_CALL(bitwiseCommon(ctx, out, input, diopiTensorHandle_t(input2), CNNL_CYCLE_BAND_OP));
+    return diopiSuccess;
 }
 
 diopiError_t diopiBitwiseAndInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
     DiopiTensor otherTensor;
     makeTensorFromScalar(ctx, other, otherTensor);
     diopiTensorHandle_t input2 = otherTensor.tensorHandle();
-    return bitwiseCommon(ctx, input, input, input2, CNNL_CYCLE_BAND_OP);
+    DIOPI_CALL(bitwiseCommon(ctx, input, input, input2, CNNL_CYCLE_BAND_OP));
+    return diopiSuccess;
 }
 
 diopiError_t diopiBitwiseOr(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    return bitwiseCommon(ctx, out, input, other, CNNL_CYCLE_BOR_OP);
+    DIOPI_CALL(bitwiseCommon(ctx, out, input, other, CNNL_CYCLE_BOR_OP));
+    return diopiSuccess;
 }
 
 diopiError_t diopiBitwiseOrInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
-    return bitwiseCommon(ctx, input, input, other, CNNL_CYCLE_BOR_OP);
+    DIOPI_CALL(bitwiseCommon(ctx, input, input, other, CNNL_CYCLE_BOR_OP));
+    return diopiSuccess;
 }
 
 diopiError_t diopiBitwiseOrScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
     DiopiTensor otherTensor;
     makeTensorFromScalar(ctx, other, otherTensor);
     diopiTensorHandle_t input2 = otherTensor.tensorHandle();
-    return bitwiseCommon(ctx, out, input, input2, CNNL_CYCLE_BOR_OP);
+    DIOPI_CALL(bitwiseCommon(ctx, out, input, input2, CNNL_CYCLE_BOR_OP));
+    return diopiSuccess;
 }
 
 diopiError_t diopiBitwiseOrInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
     DiopiTensor otherTensor;
     makeTensorFromScalar(ctx, other, otherTensor);
     diopiTensorHandle_t input2 = otherTensor.tensorHandle();
-    return bitwiseCommon(ctx, input, input, input2, CNNL_CYCLE_BOR_OP);
+    DIOPI_CALL(bitwiseCommon(ctx, input, input, input2, CNNL_CYCLE_BOR_OP));
+    return diopiSuccess;
 }
 
 diopiError_t diopiBitwiseNot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    return bitwiseCommon(ctx, out, input, nullptr, CNNL_BNOT_OP);
+    DIOPI_CALL(bitwiseCommon(ctx, out, input, nullptr, CNNL_BNOT_OP));
+    return diopiSuccess;
 }
 
-diopiError_t diopiBitwiseNotInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return bitwiseCommon(ctx, input, input, nullptr, CNNL_BNOT_OP); }
+diopiError_t diopiBitwiseNotInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    DIOPI_CALL(bitwiseCommon(ctx, input, input, nullptr, CNNL_BNOT_OP));
+    return diopiSuccess;
+}
 
 }  // extern "C"
 
