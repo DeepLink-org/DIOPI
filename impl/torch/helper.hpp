@@ -86,6 +86,7 @@ inline CUDAStream getCurrentCUDAStream(DeviceIndex device_index) {
 namespace CUDACachingAllocator {
 
 inline c10::Allocator* get() {
+    std::cout << __FUNCTION<< << std::endl;
     return c10::GetAllocator(c10::DeviceType::CUDA);
 }
 
