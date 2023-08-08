@@ -734,7 +734,7 @@ DIOPI_API diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 DIOPI_API diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha);
 /**
  * @brief Add a scalar to a tensor.
- * @param[in] other The scalar value to be added. type = [float64, float32, float16, int64, int32, int16, int8, uint8].
+ * @param[in] other  value to be added. type = [float64, float32, float16, int64, int32, int16, int8, uint8].
  * @sa Other parameters refer to diopiAdd().
  */
 DIOPI_API diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
@@ -795,7 +795,7 @@ DIOPI_API diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 DIOPI_API diopiError_t diopiMulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other);
 /**
  * @brief Multiply tensor input with other (element-wise multiplication)
- * @param[in] other The scalar value to be added. type = [float64, float32, float16, int64, int32, int16, int8, uint8].
+ * @param[in] other  value to be added. type = [float64, float32, float16, int64, int32, int16, int8, uint8].
  * @sa Other parameters refer to diopiMul().
  */
 DIOPI_API diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other);
@@ -1046,7 +1046,7 @@ DIOPI_API diopiError_t diopiBitwiseAndInp(diopiContextHandle_t ctx, diopiTensorH
  * @brief Computes the bitwise AND of input and other. The input tensor must be of integral or Boolean types. For bool tensors, it computes the logical AND.
  * @param[in] ctx Context environment.
  * @param[in] input the first tensor. type = [int16, int32, int64, int8, uint8, bool].
- * @param[in] other The scalar value to be bitwise and. type = [int16, int32, int64, int8, uint8, bool].
+ * @param[in] other the scalar value to be bitwise and. type = [int16, int32, int64, int8, uint8, bool].
  * @param[out] out the output tensor. type = [int16, int32, int64, int8, uint8, bool].
  */
 DIOPI_API diopiError_t diopiBitwiseAndScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other);
@@ -1074,7 +1074,7 @@ DIOPI_API diopiError_t diopiBitwiseOrInp(diopiContextHandle_t ctx, diopiTensorHa
  * @brief Computes the bitwise OR of input and other. The input tensor must be of integral or Boolean types. For bool tensors, it computes the logical AND.
  * @param[in] ctx Context environment.
  * @param[in] input the first tensor. type = [int16, int32, int64, int8, uint8, bool].
- * @param[in] other The scalar value to be bitwise or. type = [int16, int32, int64, int8, uint8, bool].
+ * @param[in] other the scalar value to be bitwise or. type = [int16, int32, int64, int8, uint8, bool].
  * @param[out] out the output tensor. type = [int16, int32, int64, int8, uint8, bool].
  */
 DIOPI_API diopiError_t diopiBitwiseOrScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other);
