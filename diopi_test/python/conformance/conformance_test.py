@@ -155,8 +155,8 @@ class ManualTest(object):
         out_numpy = out.numpy()
         mask_numpy = mask.numpy()
 
-        rtol = 1e-2 if input_numpy.dtype == np.float16 else 1e-4
-        atol = 1e-2 if input_numpy.dtype == np.float16 else 1e-5
+        rtol = default_cfg_dict['default_option']['rtol_half'] if input_numpy.dtype == np.float16 else default_cfg_dict['default_option']['rtol']
+        atol = default_cfg_dict['default_option']['atol_half'] if input_numpy.dtype == np.float16 else default_cfg_dict['default_option']['atol']
 
         if training and input.numel() > 0:
             # compute ratio
