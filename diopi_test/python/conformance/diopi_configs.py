@@ -273,6 +273,48 @@ diopi_configs = {
         ),
     ),
 
+    'batch_norm_elemt': dict(
+        name=["batch_norm_elemt"],
+        interface=['CustomizedTest'],
+        dtype=[Dtype.float32, Dtype.float64],
+        atol=1e-3,
+        rtol=1e-4,
+        atol_half=1e-1,
+        rtol_half=1e-2,
+        para=dict(
+            eps=[1e-5, 1e-4, 1e-5],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["mean"],
+                    "shape": ((64,), (96,), (16,)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["invstd"],
+                    "shape": ((64,), (96,), (16,)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["weight"],
+                    "shape": ((64,), (96,), (16,)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["bias"],
+                    "shape": ((64,), (96,), (16,)),
+                    "gen_fn": Genfunc.randn,
+                },
+            ]
+        ),
+    ),
+
     'baddbmm': dict(
         name=["baddbmm"],
         interface=["torch"],
