@@ -1933,7 +1933,7 @@ def conv2d_backward(input, grad_outputs, weight, bias=None, stride=1,
     return out
 
 
-def conv_transpose2d_backward(input, grad_outputs, weight, bias=None, stride=1, padding=0, dilation=1, groups=1, **kwargs) -> Tensor:
+def conv_transpose2d_backward(input, grad_outputs, weight, bias=None, stride=1, padding=0, dilation=1, groups=1, output_padding=0, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     sizeI = input.size().data
     sizeW = weight.size().data
@@ -1963,8 +1963,10 @@ def conv_transpose2d_backward(input, grad_outputs, weight, bias=None, stride=1, 
         grad_bias = gradBias
         sizeBias = bias.size()
         out.update({"bias": grad_bias})
-
-    output_padding = Sizes(list([0, 0]))
+    if isinstance(output_padding, int):
+        output_padding = Sizes([output_padding])
+    else:
+        output_padding = Sizes(list(output_padding))
 
     func = check_function("diopiConvTranspose2dBackward")
     ret = func(input.context(), grad_input, grad_weight, grad_bias,
