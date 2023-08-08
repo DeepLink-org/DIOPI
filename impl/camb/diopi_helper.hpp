@@ -478,6 +478,18 @@ inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<in
                 stride *= size[i - 1];
             }
         }
+    } else if (memoryFormat == MemoryFormat::ChannelsLast1d) {
+        DIOPI_CHECK_ABORT(size.size() == 3, "%s", "tensor size should be 3");
+        for (auto& k : {1, 2, 0}) {
+            strides[k] = stride;
+            if (size[k] == 0) {
+                continue;
+            }
+            if (stride != -1) {
+                stride *= size[k];
+            }
+        }
+
     } else if (memoryFormat == MemoryFormat::ChannelsLast) {
         DIOPI_CHECK_ABORT(size.size() == 4, "%s", "tensor size should be 4");
         // constant array is used here to let
@@ -502,6 +514,8 @@ inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<in
                 stride *= size[k];
             }
         }
+    } else {
+        DIOPI_CHECK_ABORT(false, "memory format not support");
     }
     return requiresTensor(ctx, size, strides, dtype);
 }
