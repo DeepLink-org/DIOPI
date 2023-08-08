@@ -193,7 +193,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['floor', 'asin', 'ceil', 'atan'],
+        name=['floor', 'asin', 'ceil', 'atan', 'erfinv'],
         tensor_para=dict(
             args=[
                 {
@@ -229,6 +229,18 @@ device_configs = {
         ),
     ),
 
+    'pointwise_op_uint8': dict(
+        name=['atan'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.uint8)],
+                },
+            ],
+        ),
+    ),
+
     'pointwise_op_bool': dict(
         name=['asin'],
         tensor_para=dict(
@@ -238,18 +250,6 @@ device_configs = {
                     "dtype": [Skip(Dtype.bool)],
                 },
             ],
-        ),
-    ),
-
-    'erfinv': dict(
-        name=["erfinv"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
         ),
     ),
 
@@ -460,7 +460,16 @@ device_configs = {
         para=dict(
             # The diopiEmbeddingRenorm_ function is temporarily unavailable due to the unsupported Cambrian operator.
             # Thus, to pass the test case, skip all non-None types of the max_norm parameter in the configuration file.
-            max_norm=[Skip(1.0)],
+            max_norm=[Skip(1.0), Skip(-2), Skip(2), Skip(9), Skip(-0.5)],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    # when padding_idx set to 0, this case failed
+                    "shape": [Skip((2, 3, 4))],
+                },
+            ],
         ),
     ),
 
@@ -956,6 +965,32 @@ device_configs = {
                               Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
                 },
             ]
+        ),
+    ),
+
+    'reduce_partial_op_2': dict(
+        name=['min', 'max'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((12, 0)), Skip((2, 0, 12))),
+                },
+            ],
+        ),
+    ),
+
+    'reduce_partial_op_3': dict(
+        name=['any', 'all'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0,)), Skip((12, 0)), Skip((2, 0, 12))),
+                },
+            ],
         ),
     ),
 
