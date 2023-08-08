@@ -95,7 +95,7 @@ inline void setCurCtx(diopiContextHandle_t ctx) {
     diopistreamHandle t stream handle;
     diopiGetstream(ctx,&stream handle);
     CUDAStream cur_stream = getstreamFromExternal(static_cast<cudastream t>(stream handle), current device());
-    setCurrentCUDAStream(cur stream);
+    setCurrentCUDAStream(cur_stream);
     //Here, we set the current stream of cuda to the stream of diopi, but when the context is unloaded, it is not restored. The main reason is that the current stream of cuda is not used. However, there may be hidden bugs, which will be optimized later.
     }
 
