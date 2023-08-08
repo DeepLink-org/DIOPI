@@ -407,14 +407,13 @@ ConvertType requireTensorIfMemoryFormatConvert(diopiContextHandle_t ctx, T src, 
     if(targetMemoryFormats.size() == 0) {
         needConvertMemoryFormat = false;
     }
-    bool needConvertDtype = srcDtype == dstDtype;
     for(auto memoryFormat : targetMemoryFormats) {
         if(isContiguous(srcSize, srcStride, memoryFormat)){
             needConvertMemoryFormat = false;
             break;
         }
     }
-    diopiSize_t dstStride;
+    diopiSize_t dstStride = srcStride;
     std::vector<int64_t> dstStrideVec;
     diopiSize_t dstSize = srcSize;
     if (needConvertMemoryFormat){
