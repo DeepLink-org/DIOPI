@@ -23,6 +23,11 @@ DIOPI_API diopiError_t diopiAddcdiv(diopiContextHandle_t ctx, diopiTensorHandle_
     return diopiSuccess;
 }
 
+DIOPI_API diopiError_t diopiAddcdivInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t tensor1, diopiConstTensorHandle_t tensor2,
+                                       const diopiScalar_t* value) {
+    return diopiAddcdiv(ctx, input, input, tensor1, tensor2, value);
+}
+
 }  // extern "C"
 
 }  // namespace ascend
