@@ -62,7 +62,17 @@ DIOPI_API diopiError_t diopiSiluBackward(diopiContextHandle_t ctx, diopiTensorHa
     AclOpRunner<3, 1>("SwishGrad", ctx).addInput(gradOutput, input, out).addOutput(gradInput).run();
     return diopiSuccess;
 }
+
+extern "C" DIOPI_API diopiError_t diopiSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    AclOpRunner<1, 1>("Sigmoid", ctx).addInput(input).addOutput(out).run();
+    return diopiSuccess;
 }
 
+extern "C" DIOPI_API diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                                       diopiConstTensorHandle_t output) {
+    AclOpRunner<2, 1>("SigmoidGrad", ctx).addInput(output, grad_output).addOutput(grad_input).run();
+    return diopiSuccess;
+}
+}
 }  // namespace ascend
 }  // namespace impl
