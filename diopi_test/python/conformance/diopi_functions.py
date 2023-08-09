@@ -1449,6 +1449,14 @@ def batch_norm_backward_elemt(grad_out, input, mean, invstd, weight, sum_dy, sum
     return out
 
 
+def batch_norm_elemt(input, weight, bias, mean, invstd, eps):
+    func = check_function('diopiBatchNormElemt')
+    out = Tensor(Sizes(list(input.size().data)), input.get_dtype())
+    ret = func(input.context(), out, input, weight, bias, mean, invstd, eps)
+    check_returncode(ret)
+    return out
+
+
 def log_softmax(input, dim=None, dtype=None):
     if dim is None:
         dim = 0
