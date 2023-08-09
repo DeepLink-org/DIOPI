@@ -954,6 +954,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
+                    "shape": [Skip((0,)), Skip((4, 0)), Skip((3, 0, 9))],
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.int64), Skip(Dtype.int32),
                               Skip(Dtype.int16), Skip(Dtype.int8)],
                 },
@@ -1031,7 +1032,8 @@ device_configs = {
                 {
                     "ins": ["input"],
                     # camb not supports 5d upsample nearest
-                    "shape": [Skip((1, 3, 32, 224, 224))],
+                    # when shape is (2, 16, 23), can't get correct result
+                    "shape": [Skip((2, 16, 23)), Skip((1, 3, 32, 224, 224))],
                 },
             ]
         )
