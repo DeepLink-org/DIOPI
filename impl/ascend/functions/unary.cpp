@@ -10,15 +10,49 @@
 
 namespace impl {
 namespace ascend {
-
-extern "C" DIOPI_API diopiError_t diopiNeg(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+extern "C" {
+DIOPI_API diopiError_t diopiNeg(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     AclOpRunner<1, 1>("Neg", ctx).addInput(input).addOutput(out).run();
     return diopiSuccess;
 }
 
-extern "C" DIOPI_API diopiError_t diopiNegInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiNeg(ctx, input, input); }
+DIOPI_API diopiError_t diopiNegInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiNeg(ctx, input, input); }
 
-extern "C" DIOPI_API diopiError_t diopiSqrt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+DIOPI_API diopiError_t diopiRsqrt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    AclOpRunner<1, 1>("Rsqrt", ctx).addInput(input, ACL_FORMAT_ND).addOutput(out).run();
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiRsqrtInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiRsqrt(ctx, input, input); }
+
+/**
+ * @brief some op originally support positive tensor, but ascend op can handle negative tensor. So we need to change those out value to nan
+ * @param[in] ctx Context environment.
+ * @param[in] input the input tensor.
+ * @param[out] the output tensor.
+ */
+diopiError_t negativeInputRtnFillNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    // get nan value tensor
+    diopiTensorHandle_t nanValue;
+    auto nanValueScalar = diopiScalar_t();
+    nanValueScalar.stype = diopi_dtype_float64;
+    nanValueScalar.fval = 0.0;
+    makeTensorFromScalar(ctx, &nanValueScalar, &nanValue, diopi_dtype_float32, diopi_device);
+    auto zeroValueScalar = diopiScalar_t();
+    zeroValueScalar.stype = diopi_dtype_float64;
+    zeroValueScalar.fval = 0.0;
+    diopiDivInpScalar(ctx, nanValue, &zeroValueScalar, diopiRoundMode_t::RoundModeNone);
+
+    // get negative mask
+    diopiTensorHandle_t mask;
+    makeTensorLike(ctx, &mask, input, diopi_dtype_bool);
+    diopiLtScalar(ctx, mask, input, &zeroValueScalar);
+
+    // masked_fill nan
+    return diopiMaskedFillInp(ctx, out, mask, nanValue);
+}
+
+DIOPI_API diopiError_t diopiSqrt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     AclOpRunner<1, 1>("Sqrt", ctx).addInput(input).addOutput(out).run();
     negativeInputRtnFillNan(ctx, out, input);
     return diopiSuccess;
@@ -33,6 +67,7 @@ DIOPI_API diopiError_t diopiLog(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 DIOPI_API diopiError_t diopiFloor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     AclOpRunner<1, 1>("Floor", ctx).addInput(input).addOutput(out).run();
     return diopiSuccess;
+}
 }
 
 }  // namespace ascend

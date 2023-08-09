@@ -83,27 +83,6 @@ diopiError_t makeTensorLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, 
     makeTensorLike(ctx, out, src, dtype);
 }
 
-diopiError_t negativeInputRtnFillNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    // get nan value tensor
-    diopiTensorHandle_t nanValue;
-    auto nanValueScalar = diopiScalar_t();
-    nanValueScalar.stype = diopi_dtype_float64;
-    nanValueScalar.fval = 0.0;
-    makeTensorFromScalar(ctx, &nanValueScalar, &nanValue, diopi_dtype_float32, diopi_device);
-    auto zeroValueScalar = diopiScalar_t();
-    zeroValueScalar.stype = diopi_dtype_float64;
-    zeroValueScalar.fval = 0.0;
-    diopiDivInpScalar(ctx, nanValue, &zeroValueScalar, diopiRoundMode_t::RoundModeNone);
-
-    // get negative mask
-    diopiTensorHandle_t mask;
-    makeTensorLike(ctx, &mask, input, diopi_dtype_bool);
-    diopiLtScalar(ctx, mask, input, &zeroValueScalar);
-
-    // masked_fill nan
-    return diopiMaskedFillInp(ctx, out, mask, nanValue);
-}
-
 aclDataType getAclDataType(diopiDtype_t type) {
     switch (type) {
         case diopi_dtype_float16:
@@ -130,6 +109,10 @@ aclDataType getAclDataType(diopiDtype_t type) {
             return ACL_UINT64;
         case diopi_dtype_bool:
             return ACL_BOOL;
+        case diopi_dtype_complex64:
+            return ACL_COMPLEX64;
+        case diopi_dtype_complex128:
+            return ACL_COMPLEX128;
     }
     check_args(false, "acl not support dioptDtype_t:%d", type);
     return ACL_DT_UNDEFINED;

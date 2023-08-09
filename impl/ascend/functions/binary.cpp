@@ -11,7 +11,6 @@
 namespace impl {
 namespace ascend {
 
-namespace {
 aclDataType dtypeConvertor(diopiDtype_t type) {
     auto dtype = getAclDataType(type);
     if (dtype == ACL_BOOL) {
@@ -20,17 +19,38 @@ aclDataType dtypeConvertor(diopiDtype_t type) {
     return dtype;
 }
 
-}  // namespace
-
 extern "C" DIOPI_API diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                                            const diopiScalar_t* alpha) {
-    const float value = (alpha != nullptr) ? getValue<float>(alpha) : 1.0;
-
-    if (value == 1.0) {
-        AclOpRunner<2, 1, dtypeConvertor>("AddV2", ctx).addInput(input, other).addOutput(out).run();
+    diopiDtype_t outDtype, inputDtype, otherDtype;
+    diopiGetTensorDtype(out, &outDtype);
+    diopiGetTensorDtype(input, &inputDtype);
+    diopiGetTensorDtype(other, &otherDtype);
+    diopiDtype_t highType = promoteTypes(inputDtype, otherDtype);
+    diopiTensorHandle_t inputCopy, otherCopy, outCopy;
+    if (inputDtype != highType) {
+        makeTensorLike(ctx, &inputCopy, input, highType);
+        diopiCastDtype(ctx, inputCopy, input);
     } else {
-        AclOpRunner<2, 1>("Axpy", ctx).addInput(input).addInput(other).setAttr<float>("alpha", value).addOutput(out).run();
+        inputCopy = const_cast<diopiTensorHandle_t>(input);
     }
+    if (otherDtype != highType) {
+        makeTensorLike(ctx, &otherCopy, other, highType);
+        diopiCastDtype(ctx, otherCopy, other);
+    } else {
+        otherCopy = const_cast<diopiTensorHandle_t>(other);
+    }
+    if (outDtype != highType) {
+        makeTensorLike(ctx, &outCopy, out, highType);
+    } else {
+        outCopy = out;
+    }
+    const float value = (alpha != nullptr) ? getValue<float>(alpha) : 1.0;
+    if (value == 1.0) {
+        AclOpRunner<2, 1, dtypeConvertor>("AddV2", ctx).addInput(inputCopy, otherCopy).addOutput(outCopy).run();
+    } else {
+        AclOpRunner<2, 1>("Axpy", ctx).addInput(inputCopy).addInput(otherCopy).setAttr<float>("alpha", value).addOutput(outCopy).run();
+    }
+    if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);
     return diopiSuccess;
 }
 
@@ -54,15 +74,38 @@ extern "C" DIOPI_API diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, di
 
 extern "C" DIOPI_API diopiError_t diopiSub(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                                            const diopiScalar_t* alpha) {
-    const float value = (alpha != nullptr) ? getValue<float>(alpha) : 1.0;
-
-    if (value == 1.0) {
-        AclOpRunner<2, 1, dtypeConvertor>("Sub", ctx).addInput(input, other).addOutput(out).run();
-    } else if (value == -1.0) {
-        AclOpRunner<2, 1, dtypeConvertor>("AddV2", ctx).addInput(input, other).addOutput(out).run();
+    diopiDtype_t outDtype, inputDtype, otherDtype;
+    diopiGetTensorDtype(out, &outDtype);
+    diopiGetTensorDtype(input, &inputDtype);
+    diopiGetTensorDtype(other, &otherDtype);
+    diopiDtype_t highType = promoteTypes(inputDtype, otherDtype);
+    diopiTensorHandle_t inputCopy, otherCopy, outCopy;
+    if (inputDtype != highType) {
+        makeTensorLike(ctx, &inputCopy, input, highType);
+        diopiCastDtype(ctx, inputCopy, input);
     } else {
-        AclOpRunner<2, 1>("Axpy", ctx).addInput(input).addInput(other).setAttr<float>("alpha", -value).addOutput(out).run();
+        inputCopy = const_cast<diopiTensorHandle_t>(input);
     }
+    if (otherDtype != highType) {
+        makeTensorLike(ctx, &otherCopy, other, highType);
+        diopiCastDtype(ctx, otherCopy, other);
+    } else {
+        otherCopy = const_cast<diopiTensorHandle_t>(other);
+    }
+    if (outDtype != highType) {
+        makeTensorLike(ctx, &outCopy, out, highType);
+    } else {
+        outCopy = out;
+    }
+    const float value = (alpha != nullptr) ? getValue<float>(alpha) : 1.0;
+    if (value == 1.0) {
+        AclOpRunner<2, 1, dtypeConvertor>("Sub", ctx).addInput(inputCopy, otherCopy).addOutput(outCopy).run();
+    } else if (value == -1.0) {
+        AclOpRunner<2, 1, dtypeConvertor>("AddV2", ctx).addInput(inputCopy, otherCopy).addOutput(outCopy).run();
+    } else {
+        AclOpRunner<2, 1>("Axpy", ctx).addInput(inputCopy).addInput(otherCopy).setAttr<float>("alpha", -value).addOutput(outCopy).run();
+    }
+    if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);
     return diopiSuccess;
 }
 
@@ -85,7 +128,31 @@ extern "C" DIOPI_API diopiError_t diopiSubInpScalar(diopiContextHandle_t ctx, di
 }
 
 extern "C" DIOPI_API diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    AclOpRunner<2, 1, dtypeConvertor>("Mul", ctx).addInput(input, other).addOutput(out).run();
+    diopiDtype_t outDtype, inputDtype, otherDtype;
+    diopiGetTensorDtype(out, &outDtype);
+    diopiGetTensorDtype(input, &inputDtype);
+    diopiGetTensorDtype(other, &otherDtype);
+    diopiDtype_t highType = promoteTypes(inputDtype, otherDtype);
+    diopiTensorHandle_t inputCopy, otherCopy, outCopy;
+    if (inputDtype != highType) {
+        makeTensorLike(ctx, &inputCopy, input, highType);
+        diopiCastDtype(ctx, inputCopy, input);
+    } else {
+        inputCopy = const_cast<diopiTensorHandle_t>(input);
+    }
+    if (otherDtype != highType) {
+        makeTensorLike(ctx, &otherCopy, other, highType);
+        diopiCastDtype(ctx, otherCopy, other);
+    } else {
+        otherCopy = const_cast<diopiTensorHandle_t>(other);
+    }
+    if (outDtype != highType) {
+        makeTensorLike(ctx, &outCopy, out, highType);
+    } else {
+        outCopy = out;
+    }
+    AclOpRunner<2, 1, dtypeConvertor>("Mul", ctx).addInput(inputCopy, otherCopy).addOutput(outCopy).run();
+    if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);
     return diopiSuccess;
 }
 
@@ -96,9 +163,7 @@ extern "C" DIOPI_API diopiError_t diopiMulInp(diopiContextHandle_t ctx, diopiTen
 extern "C" DIOPI_API diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
                                                  const diopiScalar_t* other) {
     diopiTensorHandle_t trOther = nullptr;
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(input, &dtype);
-    makeTensorFromScalar(ctx, other, &trOther, dtype, diopiDevice_t::diopi_device);
+    makeTensorFromScalar(ctx, other, &trOther, diopi_dtype_float32, diopiDevice_t::diopi_device);
     return diopiMul(ctx, out, input, trOther);
 }
 
@@ -108,7 +173,31 @@ extern "C" DIOPI_API diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, di
 
 extern "C" DIOPI_API diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                                            diopiRoundMode_t roundingMode) {
-    AclOpRunner<2, 1, dtypeConvertor>("RealDiv", ctx).addInput(input, other).addOutput(out).run();
+    diopiDtype_t outDtype, inputDtype, otherDtype;
+    diopiGetTensorDtype(out, &outDtype);
+    diopiGetTensorDtype(input, &inputDtype);
+    diopiGetTensorDtype(other, &otherDtype);
+    diopiDtype_t highType = promoteTypes(inputDtype, otherDtype);
+    diopiTensorHandle_t inputCopy, otherCopy, outCopy;
+    if (inputDtype != highType) {
+        makeTensorLike(ctx, &inputCopy, input, highType);
+        diopiCastDtype(ctx, inputCopy, input);
+    } else {
+        inputCopy = const_cast<diopiTensorHandle_t>(input);
+    }
+    if (otherDtype != highType) {
+        makeTensorLike(ctx, &otherCopy, other, highType);
+        diopiCastDtype(ctx, otherCopy, other);
+    } else {
+        otherCopy = const_cast<diopiTensorHandle_t>(other);
+    }
+    if (outDtype != highType) {
+        makeTensorLike(ctx, &outCopy, out, highType);
+    } else {
+        outCopy = out;
+    }
+    AclOpRunner<2, 1, dtypeConvertor>("RealDiv", ctx).addInput(inputCopy, otherCopy).addOutput(outCopy).run();
+    if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);
     return diopiSuccess;
 }
 

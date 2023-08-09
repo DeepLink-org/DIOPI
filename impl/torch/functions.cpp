@@ -4193,4 +4193,18 @@ DIOPI_API diopiError_t diopiBatchNormBackwardElemt(diopiContextHandle_t ctx, dio
     return diopiSuccess;
 }
 
+DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
+                                           diopiConstTensorHandle_t bias, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t invstd, float eps) {
+    impl::aten::setCurCtx(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atMean = impl::aten::buildATen(mean);
+    auto atInvstd = impl::aten::buildATen(invstd);
+    auto atWeight = impl::aten::buildATen(weight);
+    auto atBias = impl::aten::buildATen(bias);
+    auto atOuts = at::batch_norm_elemt(atInput, atWeight, atBias, atMean, atInvstd, eps);
+    impl::aten::updateATen2Tensor(ctx, atOuts, out);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
 }  // extern "C"

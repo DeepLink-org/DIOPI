@@ -13,8 +13,8 @@ namespace ascend {
 
 extern "C" {
 
-DIOPI_API diopiError_t diopiTanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AclOpRunner<1, 1>("Tanh", ctx).addInput(input).addOutput(out).run();
+diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t repeatsSize) {
+    AclOpRunner<2, 1>("Tile", ctx).addInput(input).addConstInput(repeatsSize).addOutput(out).run();
     return diopiSuccess;
 }
 

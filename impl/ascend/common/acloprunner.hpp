@@ -11,6 +11,7 @@
 #include <array>
 #include <functional>
 #include <initializer_list>
+#include <map>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -163,14 +164,6 @@ diopiError_t makeTensorLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, 
 
 diopiError_t makeTensorLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t src, diopiDtype_t dtype);
 
-/**
- * @brief some op originally support positive tensor, but ascend op can handle negative tensor. So we need to change those out value to nan
- * @param[in] ctx Context environment.
- * @param[in] input the input tensor.
- * @param[out] the output tensor.
- */
-diopiError_t negativeInputRtnFillNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
-
 template <int InputSize, int OutputSize, aclDataType (*dtypeCastStrategy)(diopiDtype_t) = getAclDataType>
 class AclOpRunner {
     std::string opname_;
@@ -185,7 +178,7 @@ class AclOpRunner {
 
     std::string dumpRunnerInfo() {
         std::stringstream sstream;
-        sstream << "opname:" << opname_ << ",ins.size:" << InputSize << ",outs.size:" << OutputSize << std::endl;
+        sstream << "opname:" << opname_ << ",ins.size:" << inputIndex << ",outs.size:" << outputIndex << std::endl;
         return sstream.str();
     }
 
@@ -269,14 +262,14 @@ public:
         return *this;
     }
 
-    AclOpRunner& addConstInput(diopiSize_t& size, diopiDtype_t dtype) {
+    AclOpRunner& addConstInput(const diopiSize_t& size, diopiDtype_t dtype) {
         diopiTensorHandle_t sizeTensor;
         makeTensorFromSize(context_, &size, &sizeTensor, dtype);
         addConstInput(sizeTensor, ACL_FORMAT_ND);
         return *this;
     }
 
-    AclOpRunner& addConstInput(diopiSize_t& size) {
+    AclOpRunner& addConstInput(const diopiSize_t& size) {
         diopiTensorHandle_t sizeTensor;
         makeTensorFromSize(context_, &size, &sizeTensor);
         addConstInput(sizeTensor, ACL_FORMAT_ND);
@@ -284,7 +277,7 @@ public:
     }
 
     template <typename T>
-    AclOpRunner& addConstInput(T val) {
+    AclOpRunner& addConstInput(const T& val) {
         static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
         if (PARROTS_DEBUG_ACLOPRUNNER > 0) {
             std::stringstream ss;
@@ -331,18 +324,43 @@ public:
     }
 
     template <typename T>
-    AclOpRunner& addConstInput(diopiScalar_t& scalar) {
+    AclOpRunner& addConstInput(const diopiScalar_t& scalar) {
         T val = getValue<T>(&scalar);
         addConstInput<T>(val);
         return *this;
     }
 
-    AclOpRunner& addConstInput(diopiScalar_t& scalar) {
+    AclOpRunner& addConstInput(const diopiScalar_t& scalar) {
         if (scalar.stype == diopi_dtype_int64) {
             addConstInput<int64_t>(scalar.ival);
         } else {
             addConstInput<double>(scalar.fval);
         }
+        return *this;
+    }
+
+    AclOpRunner& addInput(const void* ptr, int64_t buffersize, std::vector<int64_t>& dims, const aclFormat& format, diopiDtype_t dtype) {
+        static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (PARROTS_DEBUG_ACLOPRUNNER > 0) {
+            std::stringstream stream;
+            stream << "Tensor:(";
+            stream << " data:" << ptr;
+            stream << " ,dtype:" << dtype;
+            stream << " ,shape:";
+            std::for_each(dims.data(), dims.data() + dims.size(), [&stream](int64_t v) { stream << v << " "; });
+            stream << ")";
+            info("%s input[%d]: %s", opname_.c_str(), inputIndex, stream.str().c_str());
+        }
+
+        check_args(inputIndex >= 0 && inputIndex < InputSize, "check 0<=inputIndex<InputSize failed");
+
+        auto& desc = inputDescs_[inputIndex];
+        auto& buffer = inputBuffers_[inputIndex];
+
+        desc = aclCreateTensorDesc(dtypeCastStrategy(dtype), dims.size(), dims.data(), format);
+        check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
+        buffer = aclCreateDataBuffer(const_cast<void*>(ptr), buffersize);
+        inputIndex++;
         return *this;
     }
 
@@ -391,6 +409,29 @@ public:
     template <typename... Ins>
     AclOpRunner& addInput(diopiConstTensorHandle_t in, const Ins&... ins) {
         addInput(in).addInput(ins...);
+        return *this;
+    }
+
+    AclOpRunner& addOutput(void* ptr, int64_t buffersize, std::vector<int64_t>& dims, const aclFormat& format, diopiDtype_t dtype) {
+        static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (PARROTS_DEBUG_ACLOPRUNNER > 0) {
+            std::stringstream stream;
+            stream << "Tensor:(";
+            stream << " data:" << ptr;
+            stream << " ,dtype:" << dtype;
+            stream << " ,shape:";
+            std::for_each(dims.data(), dims.data() + dims.size(), [&stream](int64_t v) { stream << v << " "; });
+            stream << ")";
+            info("%s output[%d]: %s", opname_.c_str(), outputIndex, stream.str().c_str());
+        }
+
+        check_args(outputIndex >= 0 && outputIndex < OutputSize, "check 0<=outputIndex<OutputSize failed");
+        auto& desc = outputDescs_[outputIndex];
+        auto& buffer = outputBuffers_[outputIndex];
+        desc = aclCreateTensorDesc(dtypeCastStrategy(dtype), dims.size(), dims.data(), format);
+        check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
+        buffer = aclCreateDataBuffer(ptr, buffersize);
+        outputIndex++;
         return *this;
     }
 
@@ -496,6 +537,40 @@ public:
         return *this;
     }
 };
+
+static inline diopiDtype_t promoteTypes(diopiDtype_t a, diopiDtype_t b) {
+    // This is generated according to NumPy's promote_types
+    constexpr auto u1 = diopi_dtype_uint8;
+    constexpr auto i1 = diopi_dtype_int8;
+    constexpr auto i2 = diopi_dtype_int16;
+    constexpr auto i4 = diopi_dtype_int32;
+    constexpr auto i8 = diopi_dtype_int64;
+    constexpr auto f2 = diopi_dtype_float16;
+    constexpr auto f4 = diopi_dtype_float32;
+    constexpr auto f8 = diopi_dtype_float64;
+    constexpr auto c4 = diopi_dtype_complex64;
+    constexpr auto c8 = diopi_dtype_complex128;
+    constexpr auto b1 = diopi_dtype_bool;
+
+    static std::map<diopiDtype_t, int> dtypeMap = {{u1, 0}, {i1, 1}, {i2, 2}, {i4, 3}, {i8, 4}, {f2, 5}, {f4, 6}, {f8, 7}, {c4, 8}, {f8, 7}, {c8, 9}, {b1, 10}};
+    static constexpr diopiDtype_t promoteTypesLookup[11][11] = {
+        /*        u1  i1  i2  i4  i8  f2  f4  f8  c4  c8  b1*/
+        /* u1 */ {u1, i2, i2, i4, i8, f2, f4, f8, c4, c8, u1},
+        /* i1 */ {i2, i1, i2, i4, i8, f2, f4, f8, c4, c8, i1},
+        /* i2 */ {i2, i2, i2, i4, i8, f2, f4, f8, c4, c8, i2},
+        /* i4 */ {i4, i4, i4, i4, i8, f2, f4, f8, c4, c8, i4},
+        /* i8 */ {i8, i8, i8, i8, i8, f2, f4, f8, c4, c8, i8},
+        /* f2 */ {f2, f2, f2, f2, f2, f2, f4, f8, c4, c8, f2},
+        /* f4 */ {f4, f4, f4, f4, f4, f4, f4, f8, c4, c4, c8},
+        /* f8 */ {f8, f8, f8, f8, f8, f8, f8, f8, c8, c8, c8},
+        /* c4 */ {c4, c4, c4, c4, c4, c4, c4, c8, c4, c4, c8},
+        /* c8 */ {c8, c8, c8, c8, c8, c8, c8, c8, c8, c8, c8},
+        /* b1 */ {u1, i1, i2, i4, i8, f2, f4, f8, c4, c8, b1},
+    };
+
+    check_args((dtypeMap.count(a) != 0 && dtypeMap.count(b) != 0), "dtype not supported.");
+    return promoteTypesLookup[dtypeMap[a]][dtypeMap[b]];
+}
 
 }  // namespace ascend
 }  // namespace impl
