@@ -14,6 +14,7 @@ on:
 env:
   NFS_PATH: '/mnt/cache/share/parrotsci/github/cibuild/${{ github.repository }}'
   NFS_PATH_LUSTRE: '/mnt/lustre/share/parrotsci/github/cibuild/${{ github.repository }}'
+  ASCEND_PATH: '/mnt/cache/share/deeplinkci/github/${{ github.repository }}'
   ENV_PATH: '/mnt/cache/share/platform/cienv'
   ENV_NAME: 'pt2.0_diopi'
   ENV_NAME_MMCV: 'pt1.11v1'
@@ -22,6 +23,7 @@ env:
   SLURM_PAR_CAMB: ${{ vars.SLURM_PAR_CAMB != '' && vars.SLURM_PAR_CAMB || 'camb_mlu370_m8 --exclude HOST-10-142-11-120,HOST-10-142-11-126' }}
   CLUSTER_1988: SH1984
   CLUSTER_CAMB: CAMB
+  CLUSTER_ASCEND: ASCEND
   BUILD_TEST1: build_test
   BUILD_TEST2: build_test_dy
   BUILD_TEST3: build_mmcv_ext
@@ -53,6 +55,8 @@ jobs:
           rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
           ssh ${CLUSTER_CAMB} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
           rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
+          ssh ${CLUSTER_ASCEND} "mkdir -p ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/source"
+          rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_ASCEND}:${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/source/
 
   lint:
     name: lint
@@ -258,4 +262,30 @@ jobs:
           export CI=true
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode utest' \
+          """
+
+  Build-Ascend:
+    name: Build-Ascend
+    runs-on: tps-ascend-ci
+    needs: [Rsync]
+    steps:
+      - name: build
+        run: |
+          set -e
+          cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
+          export CI=true
+          echo "test"
+          """
+
+  Test-Ascend:
+    name: Test-Ascend
+    runs-on: tps-ascend-ci
+    needs: [Build-Ascend]
+    steps:
+      - name: test
+        run: |
+          set -e
+          cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+          export CI=true
+          echo "test"
           """
