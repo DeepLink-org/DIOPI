@@ -223,7 +223,7 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
-                              Skip(Dtype.uint8), Skip(Dtype.int8)],
+                              Skip(Dtype.int8)],
                 },
             ],
         ),
