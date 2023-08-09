@@ -382,6 +382,32 @@ device_configs = {
         ),
     ),
 
+    'clamp_max_tensor': dict(
+        name=['clamp_max'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float64), Skip(Dtype.float32)],
+                },
+
+            ],
+        ),
+    ),
+
+    'clamp_min_tensor': dict(
+        name=['clamp_min'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float64), Skip(Dtype.float32)],
+                },
+
+            ],
+        ),
+    ),
+
     'reduce_partial_op': dict(
         name=['sum'],
         tensor_para=dict(
@@ -586,19 +612,15 @@ device_configs = {
         name=['cdist'],
         para=dict(
             # Currently, p must be equal 1.0 due to the limitation of Cambrian operator.
-            p=[Skip(2), Skip(0), Skip(0.5), Skip(float("inf"))],
+            p=[Skip(2), Skip(0), Skip(0.5), Skip(float("inf")), Skip(1.2)],
         ),
     ),
 
     'cdist_compute_mode': dict(
         name=['cdist'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['x1'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float64)],
-                },
-            ],
+        para=dict(
+            # Currently, p must be equal 1.0 due to the limitation of Cambrian operator.
+            p=[Skip(2)],
         ),
     ),
 
@@ -694,27 +716,37 @@ device_configs = {
     #     rtol=1e-1
     # ),
 
-    'index_fill': dict(
-        name=['index_fill'],
+    'mm_diff_dtype': dict(
+        name=['mm'],
+        interface=['torch'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "shape": (Skip((8, 0)),),
                 },
-            ]
+            ],
         ),
     ),
 
-    'index_fill_scalar': dict(
-        name=['index_fill'],
+    'expand': dict(
+        name=['expand'],
+        interface=['torch.Tensor'],
+        para=dict(
+            size=[Skip((0,))],
+        ),
+    ),
+
+    'permute': dict(
+        name=['permute'],
+        interface=['torch'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "shape": [Skip(())],
                 },
-            ]
+            ],
         ),
     ),
 
@@ -949,11 +981,43 @@ device_configs = {
 
     'pad': dict(
         name=['pad'],
+        para=dict(
+            # Only supports 2D padding for reflection/replicate padding mode now
+            # pad should be greater than or equal to 0
+            pad=[Skip((7, -14, 2, 3)), Skip((0, 1, -1, 3, 1, 2)), Skip((0, 2, -1, 1, 1, 5)),],
+        ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
+                    # input dims should be 4D for cnnlReflectionPad2d
                     "shape": [Skip((4, 5)),],
+                },
+            ],
+        ),
+    ),
+
+    'constant_pad': dict(
+        name=['pad'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip(())],
+                },
+            ],
+        ),
+    ),
+
+    'unique': dict(
+        name=['unique'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    # when dtype is float64, can't get the correct result
+                    "shape": (Skip((4, 64, 128)),),
                 },
             ],
         ),
@@ -1073,6 +1137,32 @@ device_configs = {
                 },
             ]
         )
+    ),
+
+    'tanh': dict(
+        name=['tanh'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0,)), Skip((16, 0)), Skip((1, 0, 6))),
+                },
+            ],
+        ),
+    ),
+
+    'tanh_not_float': dict(
+        name=['tanh'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0,)), Skip((16, 0)), Skip((1, 0, 6))),
+                },
+            ],
+        ),
     ),
 
     'col2im': dict(
