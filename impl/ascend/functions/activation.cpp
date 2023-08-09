@@ -106,7 +106,6 @@ DIOPI_API diopiError_t diopiTanhBackward(diopiContextHandle_t ctx, diopiTensorHa
     AclOpRunner<2, 1>("TanhGrad", ctx).addInput(output, gradOutput).addOutput(gradInput).run();
     return diopiSuccess;
 }
-
 }
 }  // namespace ascend
 }  // namespace impl
