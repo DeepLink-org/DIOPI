@@ -280,7 +280,9 @@ public:
     AclOpRunner& addConstInput(const T& val) {
         static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
         if (PARROTS_DEBUG_ACLOPRUNNER > 0) {
-            info("%s scalar input[%d]: %s", opname_.c_str(), inputIndex, std::to_string(val));
+            std::stringstream ss;
+            ss << val;
+            info("%s scalar input[%d]: %s", opname_.c_str(), inputIndex, ss.str().c_str());
         }
 
         check_args(inputIndex >= 0 && inputIndex < InputSize, "check 0<=inputIndex<InputSize failed");
@@ -310,7 +312,7 @@ public:
         } else if constexpr (std::is_same<T, bool>::value) {
             type = diopi_dtype_bool;
         } else {
-            error("type not supported");
+            error("type not supported: %s", typeid(T).name());
         }
         desc = aclCreateTensorDesc(dtypeCastStrategy(type), 0, nullptr, ACL_FORMAT_ND);
         check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
