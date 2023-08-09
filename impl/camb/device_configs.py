@@ -1012,18 +1012,6 @@ device_configs = {
         )
     ),
 
-    'col2im': dict(
-        name=["col2im"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 576, 46464))],
-                },
-            ]
-        ),
-    ),
-
     'cholesky': dict(
         name=['cholesky_ex'],
         tensor_para=dict(
