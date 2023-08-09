@@ -2224,8 +2224,13 @@ DIOPI_API diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, dio
 
 /**
  * \brief Computes the inverse error function of input tensor.
+ * The inverse error function is defined in the range(-1, 1) as:
+ * erfinv(erf(x)) = x
  */
 DIOPI_API diopiError_t diopiErfinv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+/**
+ * @brief the in-place version of diopiErfinv()
+ * /
 DIOPI_API diopiError_t diopiErfinvInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
 
 /**
@@ -2251,8 +2256,16 @@ DIOPI_API diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t
 
 DIOPI_API diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
-DIOPI_API diopiError_t diopiPolar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t abs, diopiConstTensorHandle_t angle);
+/**
+ * @brief Constructs a complex tensor whose elements are Cartesian coordinates corresponding to the polar coordinates with absolute value abs and angle angle.
+ * out = abs \cdot \cos(angle) + abs \cdot \sin(angle) \cdot j
+ * @param[in] ctx Context environment.
+ * @param abs the absolute value of the complex tensor, must be float or double.
+ * @param angle the angle of the complex tensor. Must be same dtypes as abs.
+ * @param[out] out the output tensor.
+ */
 
+DIOPI_API diopiError_t diopiPolar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t abs, diopiConstTensorHandle_t angle);
 DIOPI_API diopiError_t diopiTriu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t diagonal);
 DIOPI_API diopiError_t diopiTriuInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, int64_t diagonal);
 
