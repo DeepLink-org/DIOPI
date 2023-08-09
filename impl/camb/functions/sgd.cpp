@@ -15,25 +15,24 @@
 namespace impl {
 namespace camb {
 
-// out = a * scale_a + b * scale_b;
-static diopiError_t addMulFunc(diopiContextHandle_t ctx, const DiopiTensor &a, float scaleA, const DiopiTensor &b, float scaleB, DiopiTensor &out) {
+// a= a * scale_a + b * scale_b;
+static diopiError_t addMulFunc(diopiContextHandle_t ctx, DiopiTensor &a, float scaleA, const DiopiTensor &b, float scaleB) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     size_t workspaceSize;
     std::vector<int> shape;
     shape.push_back(a.numel());
-    CnnlTensorDesc outDesc, bDesc;
-    DIOPI_CALL(clone(ctx, a, out));
-    DIOPI_CALL(outDesc.set(out, CNNL_LAYOUT_ARRAY, shape));
+    CnnlTensorDesc aDesc, bDesc;
+    DIOPI_CALL(aDesc.set(a, CNNL_LAYOUT_ARRAY, shape));
     DIOPI_CALL(bDesc.set(b, CNNL_LAYOUT_ARRAY, shape));
 
-    DIOPI_CALLCNNL(cnnlGetBiasAddWorkspaceSize(handle, bDesc.get(), outDesc.get(), &workspaceSize));
+    DIOPI_CALLCNNL(cnnlGetBiasAddWorkspaceSize(handle, bDesc.get(), aDesc.get(), &workspaceSize));
 
     void *workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlBiasAdd(handle, &scaleB, bDesc.get(), b.data(), workspace, workspaceSize, &scaleA, outDesc.get(), out.data()));
+    DIOPI_CALLCNNL(cnnlBiasAdd(handle, &scaleB, bDesc.get(), b.data(), workspace, workspaceSize, &scaleA, aDesc.get(), a.data()));
     return diopiSuccess;
 };
 
@@ -70,37 +69,17 @@ extern "C" diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w
     CnnlTensorDesc wDescTmp(wTensorTmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc dwDesc(dwTensorTmp, CNNL_LAYOUT_ARRAY);
 
-    // a = a * scale_a + b * scale_b;
-    auto addMulFunc = [&](auto &a, float scaleA, auto b, float scaleB) {
-        size_t workspaceSize;
-        std::vector<int> shape;
-        shape.push_back(a.numel());
-        CnnlTensorDesc aDesc, bDesc;
-        DIOPI_CALL(aDesc.set(a, CNNL_LAYOUT_ARRAY, shape));
-        DIOPI_CALL(bDesc.set(b, CNNL_LAYOUT_ARRAY, shape));
-
-        DIOPI_CALLCNNL(cnnlGetBiasAddWorkspaceSize(handle, bDesc.get(), aDesc.get(), &workspaceSize));
-
-        void *workspace = nullptr;
-        if (workspaceSize != 0) {
-            workspace = requiresBuffer(ctx, workspaceSize).data();
-        }
-
-        DIOPI_CALLCNNL(cnnlBiasAdd(handle, &scaleB, bDesc.get(), b.data(), workspace, workspaceSize, &scaleA, aDesc.get(), a.data()));
-        return diopiSuccess;
-    };
-
     if (weightDecay != 0) {
-        DIOPI_CALL(addMulFunc(dwTensorTmp, 1.0, wTensorTmp, weightDecay));
+        DIOPI_CALL(addMulFunc(ctx, dwTensorTmp, 1.0, wTensorTmp, weightDecay));
     }
     if (momentum != 0) {
         if (buf == nullptr) {
             bufTensorTmp = dwTensorTmp;
         } else {
-            DIOPI_CALL(addMulFunc(bufTensorTmp, momentum, dwTensorTmp, (1.0 - dampening)));
+            DIOPI_CALL(addMulFunc(ctx, bufTensorTmp, momentum, dwTensorTmp, (1.0 - dampening)));
         }
         if (nesterov) {
-            DIOPI_CALL(addMulFunc(dwTensorTmp, 1.0, bufTensorTmp, momentum));
+            DIOPI_CALL(addMulFunc(ctx, dwTensorTmp, 1.0, bufTensorTmp, momentum));
         } else {
             dwTensorTmp = bufTensorTmp;
         }
