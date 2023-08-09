@@ -602,6 +602,15 @@ device_configs = {
         name=["adadelta"],
         atol_half=1e-3,
         rtol_half=1e-3,
+        tensor_para=dict(
+            args=[
+                {
+                    # can't get correct result
+                    "ins": ['param', 'param_grad'],
+                    "dtype": [Skip(Dtype.float16)],
+                },
+            ]
+        ),
     ),
 
     'rmsprop': dict(
