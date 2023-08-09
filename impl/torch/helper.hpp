@@ -98,7 +98,7 @@ inline void setCurCtx(diopiContextHandle_t ctx) {
     c10::cuda::setCurrentCUDAStream(cur_stream);
     // Here, we set the current stream of cuda to the stream of diopi, but when the context is unloaded, it is not restored.
     // The main reason is that the current stream of cuda is not used. However, there may be hidden bugs, which will be optimized later.
-    }
+}
 
 inline void unsetCurCtx() { context = nullptr; }
 
