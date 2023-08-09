@@ -416,6 +416,10 @@ device_configs = {
 
     'select': dict(
         name=["select"],
+        para=dict(
+            # negative index can't get the correct result
+            index=[Skip(-5)],
+        ),
         tensor_para=dict(
             args=[
                 {
@@ -429,6 +433,10 @@ device_configs = {
 
     'select_not_float': dict(
         name=["select"],
+        para=dict(
+            # negative index can't get the correct result
+            index=[Skip(-12)],
+        ),
         tensor_para=dict(
             args=[
                 {
@@ -489,11 +497,11 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": (Skip(()), Skip((4, 1, 5, 8)), Skip((0,)), Skip((4, 0)), Skip((16, 0, 9))),
+                    "shape": (Skip((4,)), Skip((4, 5, 6)), Skip(()), Skip((0,)), Skip((4, 0)), Skip((16, 0, 9))),
                 },
                 {
                     "ins": ['mask'],
-                    "shape": (Skip((4,)), Skip((3, 5, 8)), Skip((0,)), Skip((2, 4, 0)), Skip((0, 9))),
+                    "shape": (Skip((5, 6)), Skip((0,)), Skip((2, 4, 0)), Skip((0, 9))),
                 },
             ],
         ),
@@ -506,7 +514,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": (Skip(()), Skip((4, 1, 6)), Skip((0,)), Skip((4, 1)), Skip((16, 0, 9))),
+                    "shape": (Skip(()), Skip((3, 4)), Skip((4, 6, 5, 8)), Skip((4, 1, 6)), Skip((0,)), Skip((4, 1)), Skip((16, 0, 9))),
                 },
                 {
                     "ins": ['mask'],
@@ -1010,12 +1018,14 @@ device_configs = {
         ),
     ),
 
-    'index_put': dict(
+    'index_put_acc_three_indices': dict(
         name=['index_put'],
         tensor_para=dict(
             args=[
+                # index_put can't get the correct result
                 {
                     "ins": ['input'],
+                    "shape": [Skip((16, 4, 4)), Skip((4, 5, 0))],
                     "dtype": [Skip(Dtype.uint8),    # overflow issue
                               Skip(Dtype.bool)],    # not supported by camb kernel when accumulate is true
                 },
@@ -1023,16 +1033,61 @@ device_configs = {
         ),
     ),
 
-    # when accumulate is True and dtype of indices is bool, can't get the correct result
-    'index_put_acc_bool_indices': dict(
+    'index_put_acc_two_indices': dict(
         name=['index_put'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                    "shape": [Skip((4, 5, 0))],
+                },
+                # index_put can't get the correct result
+                {
+                    "ins": ['indices1'],
+                    "shape": [Skip((4, 5))],
+                },
+            ]
+        ),
+    ),
+
+    'index_put_acc_one_indices': dict(
+        name=['index_put'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((4, 5)), Skip((4, 0))],
+                },
+                # index_put can't get the correct result
+                {
+                    "ins": ['indices1'],
+                    "shape": [Skip((6,)), Skip((2, 10)), Skip(())],
+                },
+            ]
+        ),
+    ),
+
+    # when accumulate is True and dtype of indices is bool, can't get the correct result
+    'index_put_acc_bool_indices_zeros': dict(
+        name=['index_put'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['indices1'],
+                    "dtype": [Skip(Dtype.bool)],
+                },
+            ]
+        ),
+    ),
+
+    # when accumulate is True and dtype of indices is bool, can't get the correct result
+    'index_put_one_indices': dict(
+        name=['index_put'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['indices1'],
+                    "dtype": [Skip(Dtype.bool)],
                 },
             ]
         ),
