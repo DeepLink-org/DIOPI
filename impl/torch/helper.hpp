@@ -90,13 +90,14 @@ namespace impl {
 
 namespace aten {
 
-inline void setCurCtx(diopiContextHandle_t ctx) { 
-    context = ctx; 
+inline void setCurCtx(diopiContextHandle_t ctx) {
+    context = ctx;
     diopiStreamHandle_t stream_handle;
     diopiGetStream(ctx, &stream_handle);
     c10::cuda::CUDAStream cur_stream = c10::cuda::getStreamFromExternal(static_cast<cudaStream_t>(stream_handle), c10::cuda::current_device());
     c10::cuda::setCurrentCUDAStream(cur_stream);
-    //Here, we set the current stream of cuda to the stream of diopi, but when the context is unloaded, it is not restored. The main reason is that the current stream of cuda is not used. However, there may be hidden bugs, which will be optimized later.
+    // Here, we set the current stream of cuda to the stream of diopi, but when the context is unloaded, it is not restored.
+    // The main reason is that the current stream of cuda is not used. However, there may be hidden bugs, which will be optimized later.
     }
 
 inline void unsetCurCtx() { context = nullptr; }
