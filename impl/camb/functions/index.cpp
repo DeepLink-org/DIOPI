@@ -13,7 +13,7 @@
 
 namespace impl {
 namespace camb {
-
+// infer the size of a expanded tensor based on the sizes of two input tensors a and b
 static std::vector<int64_t> inferSize(const std::vector<int64_t>& a, const std::vector<int64_t>& b) {
     int32_t dimsA = a.size();
     int32_t dimsB = b.size();
@@ -41,6 +41,7 @@ static bool hasContiguousSubspace(const std::vector<DiopiTensor>& tensorList) {
     return it == stop.base();
 }
 
+// return a new output tensor with singleton dimensions expanded to a larger size based on the input tensor
 static diopiError_t expand(cnnlHandle_t handle, DiopiTensor outTensor, DiopiTensor inputTensor) {
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
@@ -48,6 +49,7 @@ static diopiError_t expand(cnnlHandle_t handle, DiopiTensor outTensor, DiopiTens
     return diopiSuccess;
 }
 
+// compared to the input tensor, the dimensions of the output tensor are permuted according to the given order
 static diopiError_t permute(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor inputTensor, std::vector<int32_t> order) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
@@ -76,6 +78,9 @@ static diopiError_t nonzeroCount(diopiContextHandle_t ctx, DiopiTensor inputTens
     return diopiSuccess;
 }
 
+// return a tensor containing the indices of all non-zero elements of input
+// assist in converting bool indices to equivalent integer indices, because the indices list of the index op does not support mixed use of different dtypes of
+// index tensors
 static diopiError_t nonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
@@ -108,6 +113,7 @@ static diopiError_t nonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, 
     return diopiSuccess;
 }
 
+// to satisfy the kernel requirement, the bool index tensor in the input indices list is first converted to an equivalent integer index tensor
 static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputTensor, std::vector<DiopiTensor> indicesTensors,
                                     DiopiTensor& transposedInputTensor, std::vector<DiopiTensor>& transposedIndicesTensors) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -134,7 +140,7 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
                 DiopiTensor nonzeroTensor(out);
                 // empty tensor judgment
                 if (nonzeroTensor.numel()) {
-                    for (auto j = 0; j < indexTensor.dim(); j++) {
+                    for (auto j = 0; j < indexTensor.dim(); ++j) {
                         std::vector<int64_t> selectShape = nonzeroTensor.shape();
                         selectShape.erase(selectShape.begin() + 1);
                         DiopiTensor selectTensor = requiresTensor(ctx, selectShape, nonzeroTensor.dtype());
@@ -143,7 +149,7 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
                     }
                 } else {
                     // specical case: bool tensor -> empty int tensor
-                    for (auto j = 0; j < indexTensor.dim(); j++) {
+                    for (auto j = 0; j < indexTensor.dim(); ++j) {
                         DiopiTensor emptyTensor = requiresTensor(ctx, {0}, nonzeroTensor.dtype());
                         indicesTensorsCast.emplace_back(std::move(emptyTensor));
                     }
@@ -162,7 +168,7 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
     std::vector<int64_t> sizes;
     std::vector<DiopiTensor> indicesTensorsExpand(indicesTensorsCast.size());
     for (auto& indiceTensorCast : indicesTensorsCast) {
-        if (!indiceTensorCast.tensorHandle() || !indiceTensorCast.numel()) {
+        if (!(indiceTensorCast.tensorHandle() && indiceTensorCast.numel())) {
             continue;
         } else if (first) {
             sizes = indiceTensorCast.shape();
@@ -172,7 +178,7 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
         }
     }
     for (auto i = 0; i < indicesTensorsCast.size(); ++i) {
-        if (!indicesTensorsCast[i].tensorHandle() || !indicesTensorsCast[i].numel()) {
+        if (!(indicesTensorsCast[i].tensorHandle() && indicesTensorsCast[i].numel())) {
             if (indicesTensorsCast[i].tensorHandle()) {
                 // handle the broadcast of empty indice tensor
                 indicesTensorsExpand[i] = indicesTensorsCast[i];
