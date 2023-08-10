@@ -437,7 +437,7 @@ inline DiopiTensor ones(diopiContextHandle_t ctx, std::vector<int64_t> size, dio
     diopiTensorHandle_t tensor = nullptr;
     diopiSize_t sizeTmp(size.data(), size.size());
     diopiRequireTensor(ctx, &tensor, &sizeTmp, nullptr, dtype, diopi_device);
-    diopiScalar_t scalar = {dtype, 1.0};
+    diopiScalar_t scalar = constructDiopiScalarT(dtype, 1);
     if (DiopiDataType().isInteger(dtype)) scalar = {dtype, 1};
     diopiFill(ctx, tensor, &scalar);
     return DiopiTensor(tensor);
@@ -559,6 +559,18 @@ inline const char* reductionStr(diopiReduction_t reduction) {
         default:
             return "not supported reduction method";
     }
+}
+
+template <typename T>
+diopiScalar_t constructDiopiScalarT(diopiDtype_t dtype, T val) {
+    diopiScalar_t scalar;
+    scalar.stype = dtype;
+    if (DiopiDataType::isFloatPoint(dtype)) {
+        scalar.fval = static_cast<double>(val);
+    } else {
+        scalar.ival = static_cast<int64_t>(val);
+    }
+    return scalar;
 }
 
 }  // namespace camb
