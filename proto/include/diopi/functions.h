@@ -1006,7 +1006,7 @@ DIOPI_API diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t
 /**
  * @brief Add a scalar to a tensor.
  * @param[in] other the scalar value to be added. type = [float64, float32, float16, int64, int32, int16, int8, uint8].
- * @sa Other parameters refer to diopiAdd.
+ * @sa Other parameters refer to diopiAdd().
  */
 DIOPI_API diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
                                       const diopiScalar_t* alpha);
@@ -2945,14 +2945,14 @@ DIOPI_API diopiError_t diopiGatherBackward(diopiContextHandle_t ctx, diopiTensor
 /**
  * @brief The in-place version of diopiScatter.
  * @param[in] ctx Context environment.
- * @sa other parameters refer to diopiScatter.
+ * @sa other parameters refer to diopiScatter().
  */
 DIOPI_API diopiError_t diopiScatterInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, int64_t dim, diopiConstTensorHandle_t src,
                                        diopiConstTensorHandle_t index, const char* reduce);
 /**
  * @brief The in-place version of diopiScatterScalar().
  * @param[inout] input the input and output tensor. type = [float32, float64, float16, int16, int32, int64, uint8, int8, bool].
- * @sa other parameters refer to diopiScatterScalar.
+ * @sa other parameters refer to diopiScatterScalar().
  */
 DIOPI_API diopiError_t diopiScatterInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, int64_t dim, const diopiScalar_t* value,
                                              diopiConstTensorHandle_t index, const char* reduce);
