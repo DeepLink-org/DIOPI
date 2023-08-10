@@ -377,7 +377,6 @@ device_configs = {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float16), Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
-
             ],
         ),
     ),
@@ -390,7 +389,6 @@ device_configs = {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float16), Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
-
             ],
         ),
     ),
@@ -403,17 +401,30 @@ device_configs = {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float16), Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
+            ],
+        ),
+    ),
 
+    'reduce_op': dict(
+        name=['mean', 'sum'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((16, 0, 9)),),
+                    "dtype": [Skip(Dtype.float16)],
+                },
             ],
         ),
     ),
 
     'reduce_partial_op': dict(
-        name=['sum'],
+        name=['mean', 'sum'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
+                    "shape": (Skip((16, 0, 9)),),
                     "dtype": [Skip(Dtype.float16)],
                 },
             ],
@@ -879,6 +890,43 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip((4, 1))],
+                },
+            ],
+        ),
+    ),
+
+    'gelu': dict(
+        name=['gelu'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0,)), Skip((0, 8)), Skip((16, 0, 7))),
+                },
+            ],
+        ),
+    ),
+
+    'linear': dict(
+        name=["linear"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['weight'],
+                    "requires_grad": [True],
+                    "shape": (Skip((0, 8)),),
+                },
+            ]
+        ),
+    ),
+
+    'one_hot': dict(
+        name=["one_hot"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip(()),),
                 },
             ],
         ),
