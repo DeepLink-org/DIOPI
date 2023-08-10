@@ -515,7 +515,7 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
         args = args + "out, "
 
     convert_float = False
-    if (max and min):
+    if (max is not None and min is not None):
         if isinstance(min, Tensor):
             assert (isinstance(max, Tensor)), 'min and max must have same type'
             args += "input, min, max"
@@ -528,7 +528,7 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
             min = Scalar(min)
             max = Scalar(max)
             args = args + "input, min, max"
-    elif (max and not min):
+    elif (max is not None and min is None):
         if isinstance(max, Tensor):
             args += "input, None, max"
         else:
@@ -538,7 +538,7 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
             call = call + 'Scalar'
             max = Scalar(max)
             args = args + "input, None, max"
-    elif (min and not max):
+    elif (min is not None and max is None):
         if isinstance(min, Tensor):
             args += "input, min, None"
         else:
@@ -1446,6 +1446,14 @@ def batch_norm_backward_elemt(grad_out, input, mean, invstd, weight, sum_dy, sum
     ret = func(input.context(), grad_input, grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count)
     check_returncode(ret)
     out = (grad_input)
+    return out
+
+
+def batch_norm_elemt(input, weight, bias, mean, invstd, eps):
+    func = check_function('diopiBatchNormElemt')
+    out = Tensor(Sizes(list(input.size().data)), input.get_dtype())
+    ret = func(input.context(), out, input, weight, bias, mean, invstd, eps)
+    check_returncode(ret)
     return out
 
 
