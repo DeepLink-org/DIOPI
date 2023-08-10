@@ -134,7 +134,9 @@ DIOPI主要包含以下几个组件：
 <!--* [DIPU-Adapter Readme](DIPU-Adapter.md)-->
 
 其他文档
-<!--* [API文档]{} -->
+* [DIOPI教程](https://deeplink.readthedocs.io/zh_CN/latest/doc/DIOPI/Introduction.html)
+* [C API文档](https://deeplink.readthedocs.io/zh_CN/latest/doc/DIOPI/API/API_index.html)
+* [一致性测试 API](https://deeplink.readthedocs.io/zh_CN/latest/DIOPI/diopi_test/python/docs/source/cn_ref.html)
 * [常见问题](https://deeplink.readthedocs.io/zh_CN/latest/doc/DIOPI/FAQ.html)
 * [Release Note](https://github.com/DeepLink-org/DIOPI/releases)
 * [开发者指南](https://github.com/DeepLink-org/DIOPI/blob/main/Contributors.md)
