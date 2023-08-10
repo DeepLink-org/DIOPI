@@ -370,18 +370,14 @@ ConvertType castImpl(diopiContextHandle_t ctx, T src, T* dst,
     diopiSize_t dstSize = srcSize;
     if (needConvertMemoryFormat){
         diopiContiguous(ctx, &memoryFormatedTensor, tmp0, targetMemoryFormats[0]);
-        // std::cout << "src1: " << src<< std::endl;
-        // std::cout << "memoryFormatedTensor1: " << memoryFormatedTensor << std::endl;
         convertType.setMemoryFormatConverted();
         diopiGetTensorStride(memoryFormatedTensor, &dstStride);
         diopiGetTensorShape(memoryFormatedTensor, &dstSize);
     }else{
         memoryFormatedTensor = tmp0;
-        // std::cout << "memoryFormatedTensor: " << memoryFormatedTensor <<std::endl;
     }
 
     *dst = memoryFormatedTensor;
-    // std::cout <<"in contiguous: "<< *dst <<std::endl;
     return convertType;
 }
 
@@ -439,7 +435,6 @@ ConvertType requireTensorIfMemoryFormatConvert(diopiContextHandle_t ctx, T src, 
         *dst = src;
     }
 
-    // std::cout <<"in contiguous: "<< *dst <<std::endl;
     return convertType;
 }
 
