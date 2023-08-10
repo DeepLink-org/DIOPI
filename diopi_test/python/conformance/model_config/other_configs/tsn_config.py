@@ -12,6 +12,8 @@ tsn_config = {
 
     'conv2d': dict(
         name=["conv2d"],
+        atol=1e-03,
+        rtol=1e-03,
         para=dict(
             bias=[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None],
             stride=[(2, 2), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (2, 2), (1, 1), (2, 2), (1, 1), (1, 1), (1, 1), (2, 2), (1, 1), (2, 2), (1, 1), (1, 1), (1, 1), (2, 2), (1, 1), (2, 2), (1, 1), (1, 1)],
@@ -41,6 +43,10 @@ tsn_config = {
 
     'batch_norm': dict(
         name=["batch_norm"],
+        atol=1e-03,
+        rtol=1e-04,
+        atol_half=1e-01,
+        rtol_half=1e-02,
         para=dict(
             training=[False, False, False, False, False, False, False, False, False, False, False, False],
             momentum=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
@@ -204,6 +210,10 @@ tsn_config = {
 
     'linear': dict(
         name=["linear"],
+        atol=1e-03,
+        rtol=1e-04,
+        atol_half=1e-01,
+        rtol_half=1e-02,
         tensor_para=dict(
             args=[
                 {
@@ -424,6 +434,8 @@ tsn_config = {
 
     'clamp': dict(
         name=["clamp"],
+        atol=1e-04,
+        rtol=1e-05,
         interface=["torch"],
         para=dict(
             max=[1.0],

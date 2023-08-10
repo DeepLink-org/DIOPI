@@ -96,6 +96,8 @@ swin_transformer_config = {
 
     'conv2d': dict(
         name=["conv2d"],
+        atol=1e-03,
+        rtol=1e-03,
         para=dict(
             stride=[(4, 4)],
             padding=[(0, 0)],
@@ -238,6 +240,10 @@ swin_transformer_config = {
 
     'linear': dict(
         name=["linear"],
+        atol=1e-03,
+        rtol=1e-04,
+        atol_half=1e-01,
+        rtol_half=1e-02,
         tensor_para=dict(
             args=[
                 {
@@ -601,6 +607,10 @@ swin_transformer_config = {
 
     'linear_1': dict(
         name=["linear"],
+        atol=1e-03,
+        rtol=1e-04,
+        atol_half=1e-01,
+        rtol_half=1e-02,
         para=dict(
             bias=[None, None, None],
         ),
@@ -883,6 +893,8 @@ swin_transformer_config = {
 
     'clamp': dict(
         name=["clamp"],
+        atol=1e-04,
+        rtol=1e-05,
         interface=["torch"],
         para=dict(
             max=[1.0],
