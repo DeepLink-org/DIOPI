@@ -150,7 +150,7 @@ extern "C" diopiError_t diopiIm2Col(diopiContextHandle_t ctx, diopiTensorHandle_
     int64_t nOutputPlane = nInputPlane * kernelWidth * kernelHeight;
     int64_t outputLength = outputHeight * outputWidth;
 
-    outTr.reshape({batchSize, outputLength, nOutputPlane});
+    outTr.view({batchSize, outputLength, nOutputPlane});
     DiopiTensor outputTr;
     outputTr = requiresTensor(ctx, outTr.shape(), outTr.dtype());
     DIOPI_CALL(im2colOutInternal(ctx, outputTr, inputTr, kernelVec, dilationVec, paddingVec, strideVec));

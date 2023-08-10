@@ -378,7 +378,7 @@ public:
         return this->numel() != 0;
     }
 
-    DiopiTensor& reshape(const std::vector<int64_t> shape) {
+    DiopiTensor& view(const std::vector<int64_t> shape) {
         // must be contiguous
         std::vector<int64_t> stride(shape.size());
         this->shape_ = shape;

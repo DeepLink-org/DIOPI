@@ -122,7 +122,7 @@ diopiError_t diopiSelect(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     }
     std::vector<int64_t> shape(outTensor.shape());
     shape.insert(shape.begin() + dim, 1);
-    outTensor.reshape(shape);
+    outTensor.view(shape);
 
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc indexDesc(indexTensor, CNNL_LAYOUT_ARRAY);
@@ -154,7 +154,7 @@ diopiError_t diopiSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
     DiopiTensor gradTensor(gradOutput);
     std::vector<int64_t> shape(gradTensor.shape());
     shape.insert(shape.begin() + dim, 1);
-    gradTensor.reshape(shape);
+    gradTensor.view(shape);
 
     if (gradInputTensor.dtype() == diopi_dtype_int64) {
         DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, diopi_dtype_int32));

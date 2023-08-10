@@ -52,12 +52,12 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 
     if (3 == dim) {
         inputTr.unsqueeze(3);
-        outputTr.reshape(inputTr.shape());
+        outputTr.view(inputTr.shape());
     }
     if (2 == dim) {
         inputTr.unsqueeze(2);
         inputTr.unsqueeze(3);
-        outputTr.reshape(inputTr.shape());
+        outputTr.view(inputTr.shape());
     }
 
     std::vector<DiopiTensor*> pTensors{&inputTr, &weightTr, &biasTr};
@@ -170,14 +170,14 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     if (3 == dim) {
         inputTr.unsqueeze(3);
         gradOutputTr.unsqueeze(3);
-        gradInputTr.reshape(inputTr.shape());
+        gradInputTr.view(inputTr.shape());
     }
     if (2 == dim) {
         inputTr.unsqueeze(2);
         inputTr.unsqueeze(3);
         gradOutputTr.unsqueeze(2);
         gradOutputTr.unsqueeze(3);
-        gradInputTr.reshape(inputTr.shape());
+        gradInputTr.view(inputTr.shape());
     }
 
     std::vector<DiopiTensor*> pTensors{&gradOutputTr, &inputTr, &weightTr};
