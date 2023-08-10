@@ -25,6 +25,7 @@
     do {                                                                                     \
         if (!(cond)) {                                                                       \
             impl::camb::setLastErrorString(#fmt " at %s:%d.\n", ##args, __FILE__, __LINE__); \
+            printf("%s", impl::camb::cambGetLastErrorString(false));                         \
             return diopiErrorOccurred;                                                       \
         }                                                                                    \
     } while (false);
@@ -33,16 +34,18 @@
     do {                                                                                         \
         if (variable == nullptr) {                                                               \
             printf("The variable `" #variable "` is not defined at %s:%d ", __FILE__, __LINE__); \
+            printf("%s", impl::camb::cambGetLastErrorString(false));                             \
             abort();                                                                             \
         }                                                                                        \
     } while (false);
 
-#define DIOPI_CHECK_ABORT(cond, fmt, args...)                      \
-    do {                                                           \
-        if (!(cond)) {                                             \
-            printf(#fmt " at %s:%d ", ##args, __FILE__, __LINE__); \
-            abort();                                               \
-        }                                                          \
+#define DIOPI_CHECK_ABORT(cond, fmt, args...)                        \
+    do {                                                             \
+        if (!(cond)) {                                               \
+            printf(#fmt " at %s:%d ", ##args, __FILE__, __LINE__);   \
+            printf("%s", impl::camb::cambGetLastErrorString(false)); \
+            abort();                                                 \
+        }                                                            \
     } while (false);
 
 #define DIOPI_CALL(Expr)                                                                                                            \
@@ -50,6 +53,7 @@
         diopiError_t ret = Expr;                                                                                                    \
         if (diopiSuccess != ret) {                                                                                                  \
             impl::camb::setLastErrorString("%s: %s at %s:%d\n", ::impl::camb::getDiopiErrorStr(ret), __func__, __FILE__, __LINE__); \
+            printf("%s", impl::camb::cambGetLastErrorString(false));                                                                \
             return ret;                                                                                                             \
         }                                                                                                                           \
     } while (false);
@@ -289,6 +293,9 @@ public:
     }
 
     bool isContiguous(MemoryFormat format = MemoryFormat::Contiguous) const {
+        if (!defined()) {
+            return true;
+        }
         int64_t stride = 1;
         int64_t dim = this->dim();
         auto strides = this->stride();
@@ -304,6 +311,20 @@ public:
                 }
                 stride *= shapeD;
             }
+        } else if (format == MemoryFormat::ChannelsLast1d) {
+            if (strides.size() != 3) {
+                return false;
+            }
+            for (auto& i : {1, 2, 0}) {
+                const auto& shapeD = shape[i];
+                if (shapeD != 1) {
+                    if (strides[i] != stride) {
+                        return false;
+                    }
+                }
+                stride *= shapeD;
+            }
+
         } else if (format == MemoryFormat::ChannelsLast) {
             if (strides.size() != 4) return false;
             for (auto& i : {1, 3, 2, 0}) {
@@ -457,6 +478,18 @@ inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<in
                 stride *= size[i - 1];
             }
         }
+    } else if (memoryFormat == MemoryFormat::ChannelsLast1d) {
+        DIOPI_CHECK_ABORT(size.size() == 3, "%s", "tensor size should be 3");
+        for (auto& k : {1, 2, 0}) {
+            strides[k] = stride;
+            if (size[k] == 0) {
+                continue;
+            }
+            if (stride != -1) {
+                stride *= size[k];
+            }
+        }
+
     } else if (memoryFormat == MemoryFormat::ChannelsLast) {
         DIOPI_CHECK_ABORT(size.size() == 4, "%s", "tensor size should be 4");
         // constant array is used here to let
@@ -481,6 +514,8 @@ inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<in
                 stride *= size[k];
             }
         }
+    } else {
+        DIOPI_CHECK_ABORT(false, "memory format not support");
     }
     return requiresTensor(ctx, size, strides, dtype);
 }

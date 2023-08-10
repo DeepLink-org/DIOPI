@@ -3183,6 +3183,9 @@ DIOPI_API diopiError_t diopiLinalgQR(diopiContextHandle_t ctx, diopiConstTensorH
  */
 DIOPI_API diopiError_t diopiAmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t self, diopiSize_t dim, bool keepdim);
 
+// this contiguous func is temporary, please do not use.
+DIOPI_API diopiError_t diopiContiguous(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, diopiMemoryFormat_t memoryFormat);
+
 #if defined(__cplusplus)
 }
 #endif  // __cplusplus
