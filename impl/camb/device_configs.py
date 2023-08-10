@@ -501,12 +501,26 @@ device_configs = {
         ),
     ),
 
-    'reduce_partial_op': dict(
-        name=['sum'],
+    'reduce_op': dict(
+        name=['mean', 'sum'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
+                    "shape": (Skip((16, 0, 9)),),
+                    "dtype": [Skip(Dtype.float16)],
+                },
+            ],
+        ),
+    ),
+
+    'reduce_partial_op': dict(
+        name=['mean', 'sum'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((16, 0, 9)),),
                     "dtype": [Skip(Dtype.float16)],
                 },
             ],
@@ -959,6 +973,43 @@ device_configs = {
         ),
     ),
 
+    'gelu': dict(
+        name=['gelu'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0,)), Skip((0, 8)), Skip((16, 0, 7))),
+                },
+            ],
+        ),
+    ),
+
+    'linear': dict(
+        name=["linear"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['weight'],
+                    "requires_grad": [True],
+                    "shape": (Skip((0, 8)),),
+                },
+            ]
+        ),
+    ),
+
+    'one_hot': dict(
+        name=["one_hot"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip(()),),
+                },
+            ],
+        ),
+    ),
+
     # When not performing a reduce operation, the accuracy comparison of scatter needs to be performed on the CPU
     'scatter': dict(
         name=['scatter'],
@@ -1129,18 +1180,6 @@ device_configs = {
                 },
             ]
         )
-    ),
-
-    'col2im': dict(
-        name=["col2im"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 576, 46464))],
-                },
-            ]
-        ),
     ),
 
     'cholesky': dict(

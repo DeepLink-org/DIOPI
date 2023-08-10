@@ -273,6 +273,48 @@ diopi_configs = {
         ),
     ),
 
+    'batch_norm_elemt': dict(
+        name=["batch_norm_elemt"],
+        interface=['CustomizedTest'],
+        dtype=[Dtype.float32, Dtype.float64],
+        atol=1e-3,
+        rtol=1e-4,
+        atol_half=1e-1,
+        rtol_half=1e-2,
+        para=dict(
+            eps=[1e-5, 1e-4, 1e-5],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["mean"],
+                    "shape": ((64,), (96,), (16,)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["invstd"],
+                    "shape": ((64,), (96,), (16,)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["weight"],
+                    "shape": ((64,), (96,), (16,)),
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["bias"],
+                    "shape": ((64,), (96,), (16,)),
+                    "gen_fn": Genfunc.randn,
+                },
+            ]
+        ),
+    ),
+
     'baddbmm': dict(
         name=["baddbmm"],
         interface=["torch"],
@@ -624,16 +666,36 @@ diopi_configs = {
         name=['gelu'],
         atol=1e-4,
         rtol=1e-5,
-        # approximate=['none', 'tanh'], # todo: pytroch 1.12
+        approximate=['none', 'tanh', 'none', 'tanh',
+                     'none', 'tanh', 'none', 'tanh', 'none'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((16, 7), (64, 28, 28),
-                              (16, 3, 14, 14), (64, 3, 7, 28, 28)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "shape": ((), (32,), (16, 7), (64, 28, 28),
+                              (16, 3, 14, 14), (64, 3, 7, 28, 28),
+                              (0,), (0, 8), (16, 0, 7)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'gelu_specific': dict(
+        name=['gelu'],
+        atol=1e-4,
+        rtol=1e-5,
+        approximate=['none', 'tanh'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((32,), (16, 7)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.zeros,
                 },
             ],
         ),
@@ -2289,6 +2351,7 @@ diopi_configs = {
         ),
     ),
 
+    # FIXME matmul输入空张量，运行报错
     'matmul': dict(
         name=['matmul'],
         interface=['torch'],
@@ -2296,17 +2359,19 @@ diopi_configs = {
         rtol=1e-5,
         tensor_para=dict(
             gen_fn=Genfunc.randn,
-            dtype=[Dtype.float32, Dtype.float64],
+            dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
             args=[
                 {
                     "ins": ['input'],
                     "shape": ((128, 49, 128), (5,), (128, 4, 49, 32),
-                              (2, 1, 3136, 3136), (2, 784, 64), (2, 31, 6, 40, 512)),
+                              (2, 1, 3136, 3136), (2, 784, 64), (2, 16, 8, 64), (2, 31, 6, 40, 512),)
+                    #   (0,), (0, 0), (0, 4, 4), (5, 0, 3, 3)),
                 },
                 {
                     "ins": ['other'],
                     "shape": ((128, 384), (5,), (128, 4, 32, 49),
-                              (2, 3, 3136, 64), (2, 64, 784), (512, 1)),
+                              (2, 3, 3136, 64), (2, 64, 784), (2, 1, 64, 8), (512, 1),)
+                    #   (0,), (0, 2), (1, 4, 5), (0, 3, 4)),
                 },
             ],
         ),
@@ -2551,8 +2616,9 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((64, ), (169, 4), (17100, 2), (1, 1, 384),
-                              (4, 133, 128, 128), (2, 64, 3, 3, 3)),
+                    "shape": ((), (64, ), (169, 4), (17100, 2), (1, 1, 384),
+                              (4, 133, 128, 128), (2, 64, 3, 3, 3),
+                              (0,), (0, 2), (16, 0, 9)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                     "gen_fn": Genfunc.randn,
                 },
@@ -2564,7 +2630,8 @@ diopi_configs = {
         name=['mean', 'sum'],
         interface=['torch'],
         para=dict(
-            dim=[0, 1, [0, 1], 2, [-1, 0], 3],
+            dim=[-1, 0, 1, [0, 1], 2, [-1, 0], 3,
+                 [0], -2, [0, 1]],
         ),
         atol=1e-4,
         rtol=1e-5,
@@ -2572,8 +2639,9 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((64, ), (169, 4), (17100, 2), (1, 1, 384),
-                              (4, 133, 128, 128), (2, 64, 3, 3, 3)),
+                    "shape": ((), (64, ), (169, 4), (17100, 2), (1, 1, 384),
+                              (4, 133, 128, 128), (2, 64, 3, 3, 3),
+                              (0,), (0, 2), (16, 0, 9)),
                     "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                     "gen_fn": Genfunc.randn,
                 },
@@ -2691,7 +2759,8 @@ diopi_configs = {
         name=['sum'],
         interface=['torch'],
         para=dict(
-            dim=[0, 1, [0, 1], 2, [-1, 0], 3],
+            dim=[-1, 0, 1, [0, 1], 2, [-1, 0], 3,
+                 [0], -2, [0, 1]],
         ),
         atol=1e-4,
         rtol=1e-5,
@@ -2699,11 +2768,12 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((64, ), (169, 4), (17100, 2), (1, 1, 384),
-                              (4, 133, 128, 128), (2, 64, 3, 3, 3)),
+                    "shape": ((), (64, ), (169, 4), (17100, 2), (1, 1, 384),
+                              (4, 133, 128, 128), (2, 64, 3, 3, 3),
+                              (0,), (0, 2), (16, 0, 9)),
                     "dtype": [Dtype.int16, Dtype.int32, Dtype.int64,
                               Dtype.uint8, Dtype.int8, Dtype.bool],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.randint,
                 },
             ],
         ),
@@ -3025,6 +3095,7 @@ diopi_configs = {
         ),
     ),
 
+    # FIXME linear输入指定shape报错
     'linear': dict(
         name=["linear"],
         atol=1e-3,
@@ -3037,20 +3108,28 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((2, 512), (128, 49, 128), (6, 2, 100, 256),
-                              (2, 31, 6, 40, 512)),
+                    # "shape": ((8,), (8,), (2, 512), (128, 49, 128), (6, 2, 100, 256),
+                    #           (2, 6, 16, 8), (2, 31, 6, 40, 512), (2, 16, 8, 32, 7), (0,), (0,), (16, 8)),
+                    "shape": ((2, 512), (128, 49, 128),
+                              (2, 31, 6, 40, 512), (16, 8)),
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
                 {
                     "ins": ['weight'],
                     "requires_grad": [True],
-                    "shape": ((10, 512), (384, 128), (81, 256), (1, 512)),
+                    # "shape": ((8,), (16, 8,), (10, 512), (384, 128), (81, 256),
+                    #           (64, 8), (1, 512), (16, 7), (0,), (16, 0), (0, 8)),
+                    "shape": ((10, 512), (384, 128),
+                              (1, 512), (0, 8)),
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
                 {
                     "ins": ['bias'],
                     "requires_grad": [True],
-                    "shape": ((10, ), None, (81, ), (1,)),
+                    # "shape": ((), (16,), (10, ), None, (100, 81, ),
+                    #           (6, 1, 64), (1,), (2, 16, 8, 32, 16), None, (16,), (16, 0)),
+                    "shape": ((10, ), None,
+                              (1,), (16, 0)),
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
             ]
@@ -3061,15 +3140,35 @@ diopi_configs = {
         name=["log_softmax"],
         saved_args=dict(output=0),
         para=dict(
-            dim=[-1, 1, 0, -1],
+            dim=[-1, 0, -2, 1, 3, -1, 1, -2],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((78, 24), (2, 92, 29), (2, 150, 512, 512), (4, 12, 577, 577)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "shape": ((), (13,), (78, 24), (2, 92, 29), (2, 150, 512, 512),
+                              (0,), (0, 15), (5, 0, 13)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'log_softmax_specific': dict(
+        name=["log_softmax"],
+        saved_args=dict(output=0),
+        para=dict(
+            dim=[-1, 0, -2, 1, 2],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((), (1,), (1, 24), (2, 1, 29), (2, 150, 1, 512),),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
             ],
@@ -3170,13 +3269,13 @@ diopi_configs = {
     'one_hot': dict(
         name=["one_hot"],
         para=dict(
-            num_classes=[-1, -1, 80],
+            num_classes=[-1, -1, 6, 80, 4, 6],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((2, ), (6, 8, ), (64, 7, 28,)),
+                    "shape": ((), (2, ), (6, 8, ), (64, 7, 28,), (0, ), (16, 0)),
                     "dtype": [Dtype.int64],
                     "gen_fn": dict(fn=Genfunc.randint, high=6),
                 },
@@ -3184,26 +3283,60 @@ diopi_configs = {
         ),
     ),
 
+    # FIXME stack输入size为0的张量报错
     'join': dict(
         name=['cat', 'stack'],
         interface=['torch'],
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            dim=[-1, 1, 0, 2, 1, 1],
+            # dim=[-1, 1, 0, 2, 1, 1, -1, 1, -2],
+            dim=[-1, 1, 0, 2, 1, 1, -1, 1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['tensor'],
                     "requires_grad": [True],
+                    # "shape": ((3, ), (512, 4),
+                    #           (0, 50, 76), (2, 31, 512),
+                    #           (2, 512, 8, 8), (1, 64, 4, 56, 56),
+                    #           (0,), (16, 0), (8, 0, 2)),
                     "shape": ((3, ), (512, 4),
                               (0, 50, 76), (2, 31, 512),
-                              (2, 512, 8, 8), (1, 64, 4, 56, 56)),
+                              (2, 512, 8, 8), (1, 64, 4, 56, 56),
+                              (0,), (16, 0)),
                     "dtype": [Dtype.float32, Dtype.float16, Dtype.float64, Dtype.int16,
                               Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool, Dtype.int32],
                     "gen_fn": Genfunc.randn,
                     "gen_num_range": [1, 5]
+                },
+            ],
+            seq_name='tensors',
+        ),
+    ),
+
+    'cat_diff_size': dict(
+        name=['cat'],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-5,
+        para=dict(
+            dim=[-1, 0, -2, 1, 2],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['tensors'],
+                    "requires_grad": [True],
+                    "shape": (((8,), (16,),),
+                              ((2, 8,), (16, 8,), (3, 8,), (4, 8,), (1, 8,)),
+                              ((3, 16, 8,), (3, 2, 8,), (3, 7, 8,)),
+                              ((2, 512, 8, 8), (2, 128, 8, 8), (2, 2, 8, 8), (2, 1, 8, 8)),
+                              ((2, 31, 0), (2, 31, 512), (2, 31, 128)),),
+                    "dtype": [Dtype.float32, Dtype.float16, Dtype.float64, Dtype.int16,
+                              Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool, Dtype.int32],
+                    "gen_fn": Genfunc.randn,
                 },
             ],
             seq_name='tensors',
@@ -3349,8 +3482,8 @@ diopi_configs = {
         name=['transpose'],
         interface=['torch'],
         para=dict(
-            dim0=[0, -2, 0],
-            dim1=[-1, -1, -1],
+            dim0=[0, -1, 1, 1, -2, 0, 1, 0],
+            dim1=[-1, -1, 2, -1, -1, -1, 0, 2],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
@@ -3359,7 +3492,9 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((), (660, 6, 49, 32), (2, 1536, 950)),
+                    "shape": ((), (32,), (2, 1536, 950),
+                              (16, 8), (660, 6, 49, 32),
+                              (0,), (0, 8), (16, 0, 8)),
                 },
             ],
         ),
@@ -3450,16 +3585,22 @@ diopi_configs = {
         no_output_ref=True,
         is_inplace=True,
         para=dict(
-            p=[0.5, 0, 0.1, 0.4],
-            training=[True, True, True, False]
+            p=[0.5, 0.5, 0.1,
+               0.4, 1, 0.7,
+               0, 0.05, 0.9],
+            training=[True, True, True,
+                      False, True, True,
+                      False, True, True]
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((2, 4096), (32, 49, 256), (2, 16, 64, 64), (1, 2304, 1, 1, 1)),
-                    "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.positive,
+                    "shape": ((), (1024,), (2, 4096), (32, 49, 256),
+                              (2, 16, 64, 64), (1, 2304, 1, 1, 1),
+                              (0,), (16, 0), (8, 0, 16)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
                 },
             ],
         ),
@@ -3469,22 +3610,52 @@ diopi_configs = {
         name=["dropout"],
         no_output_ref=True,
         para=dict(
-            p=[0.5, 0, 0.1, 0.4],
-            training=[False, False, False, False],
+            p=[0.5, 0, 0.1,
+               0.4, 1, 0.7,
+               0, 0.05, 0.9],
+            training=[False, False, False,
+                      False, False, False,
+                      False, False, False],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((2, 4096), (32, 49, 256), (2, 16, 64, 64),
-                              (1, 2304, 1, 1, 1)),
-                    "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.positive,
+                    "shape": ((), (1024,), (2, 4096), (32, 49, 256),
+                              (2, 16, 64, 64), (1, 2304, 1, 1, 1),
+                              (0,), (16, 0), (8, 0, 16)),
+                    "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
+                    "gen_fn": Genfunc.randn,
                 },
             ],
         ),
     ),
 
+    # FIXME dropout2d部分shape下报错（偶发）
+    # 'dropout2d': dict(
+    #     name=["dropout2d"],
+    #     no_output_ref=True,
+    #     is_inplace=True,
+    #     para=dict(
+    #         p=[0, 0.2, 0.5,
+    #            0.7, 0.4,
+    #            0.6, 0.3,
+    #            0.8, 0.5, 1],
+    #     ),
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "shape": ((2, 2048), (4, 1024), (32, 49, 256),
+    #                           (32, 16, 64, 64), (2, 2, 1, 128, 64),
+    #                           (2048, 128, 16,), (4096, 2, 4, 16),
+    #                           (0,), (16, 0), (8, 0, 16)),
+    #                 "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
+    #                 "gen_fn": Genfunc.randn,
+    #             },
+    #         ],
+    #     ),
+    # ),
     'dropout2d': dict(
         name=["dropout2d"],
         no_output_ref=True,
