@@ -373,10 +373,7 @@ public:
         return *this;
     }
 
-    bool defined() const {
-        if (tensor_ == nullptr) return false;
-        return this->numel() != 0;
-    }
+    bool defined() const { return tensor_ != nullptr; }
 
     DiopiTensor& view(const std::vector<int64_t> shape) {
         // must be contiguous
