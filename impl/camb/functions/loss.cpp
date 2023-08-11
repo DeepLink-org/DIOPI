@@ -98,7 +98,7 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
             DIOPI_CHECK(false, "unexpected nll_loss reduciton mode");
     }
     auto totalWeightTensor = requiresTensor(ctx, {1}, weightTensor.dtype());
-    diopiScalar_t scalar({weightTensor.dtype(), static_cast<double>(targetTensor.numel())});
+    diopiScalar_t scalar = constructDiopiScalarT(weightTensor.dtype(), targetTensor.numel());
     DIOPI_CALL(diopiFill(ctx, totalWeightTensor.tensorHandle(), &scalar));
 
     outputTmpTensor.asStrided(outputSize, {1});
