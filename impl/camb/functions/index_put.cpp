@@ -8,6 +8,7 @@
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
+// #include "../common/debug.hpp"
 
 namespace impl {
 namespace camb {
@@ -38,12 +39,25 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
 
     std::vector<cnnlTensorDescriptor_t> indicesDescs;
     std::vector<void*> indicesPtrList;
+    diopiTensorHandle_t indiceCast;
 
     bool indicesAllNull = true;
     for (auto i = 0; i < indicesCounts; ++i) {
         DiopiTensor indiceTensor(indices[i]);
         if (indiceTensor.defined()) {
             DIOPI_CHECK(indiceTensor.isContiguous(), "indice tensor should be contiguous");
+
+            if (indiceTensor.dtype() == diopi_dtype_bool){
+                // printDevData(ctx, indiceTensor, "indiceTensor");
+                diopiNonzero(ctx, &indiceCast, indiceTensor.tensorHandle());
+                DiopiTensor indiceCastTensor(indiceCast);
+                dataTypeCast(ctx, indiceCastTensor, diopi_dtype_int32);
+                // printDevData(ctx, indiceCastTensor, "indiceCastTensor");
+                indiceTensor = indiceCastTensor;
+            }
+
+            // printDevData(ctx, indiceTensor, "indiceTensor Outside");
+
 // version should be less than 1.18.0
 #if (CNNL_MAJOR * 10000 + CNNL_MINOR * 100 < 11800)
             DIOPI_CHECK(!(indiceTensor.dtype() == diopi_dtype_bool),
@@ -70,6 +84,8 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     size_t workspaceSize = 0;
     DIOPI_CALLCNNL(
         cnnlGetIndexPutWorkspaceSize(handle, inputDesc.get(), indicesDescs.data(), indicesDescs.size(), valuesDesc.get(), accumulate, &workspaceSize));
+
+    // std::cout << "requires buffer in indexput: " << workspaceSize << std::endl;    
 
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
