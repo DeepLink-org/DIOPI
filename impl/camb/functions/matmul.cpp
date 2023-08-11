@@ -175,7 +175,6 @@ static diopiError_t matMulVector(diopiContextHandle_t ctx, DiopiTensor outTensor
 
 static diopiError_t transposeInternal(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor input, int64_t dim0, int64_t dim1) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    diopiTensorHandle_t out = (diopiTensorHandle_t)outTensor;
 
     CnnlResourceGuard<cnnlTransposeDescriptor_t, cnnlCreateTransposeDescriptor, cnnlDestroyTransposeDescriptor> cnnlTransposeDesc;
     cnnlTransposeDescriptor_t transposeDesc = cnnlTransposeDesc.get();
@@ -303,7 +302,6 @@ static diopiError_t tensorMatmulTensor(diopiContextHandle_t ctx, DiopiTensor out
         int inputDim = inputTensor.dim();
         int64_t n = inputTensor.dim() == 2 ? inputTensor.shape()[0] : 1;
         int64_t m = inputTensor.shape()[inputTensor.dim() - 1];
-        int64_t p = otherTensor.shape()[otherTensor.dim() - 1];
         if (inputDim == 1) {
             inputTensor.reshape({n, m});
         }
@@ -378,8 +376,6 @@ static diopiError_t tensorMatmulTensor(diopiContextHandle_t ctx, DiopiTensor out
 }
 
 diopiError_t diopiMatmul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-
     DiopiTensor inputTensor(input);
     DiopiTensor otherTensor(other);
     DiopiTensor outTensor(out);

@@ -148,7 +148,7 @@ diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 
     size_t workspaceSize(0);
     DIOPI_CALLCNNL(cnnlGetLayerNormBackwardWorkspaceSize(handle, inputDesc.get(), axis, &workspaceSize));
-    void *workspace;
+    void *workspace = nullptr;
     if (workspaceSize > 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }

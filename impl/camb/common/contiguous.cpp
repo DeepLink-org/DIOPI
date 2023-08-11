@@ -133,9 +133,9 @@ diopiError_t calCnnlLayout(MemoryFormat memoryFormat, int64_t dim, cnnlTensorLay
     return diopiSuccess;
 }
 
-static bool hasZero(std::vector<int64_t> vec) {
-    return std::any_of(vec.begin(), vec.end(), [](auto i) { return i == 0; });
-}
+// static bool hasZero(std::vector<int64_t> vec) {
+//     return std::any_of(vec.begin(), vec.end(), [](auto i) { return i == 0; });
+// }
 
 template <typename T>
 static std::vector<T> changeVecAccordingToOrder(std::vector<T> vec, std::vector<int32_t> order) {

@@ -25,7 +25,7 @@ std::vector<int64_t> inferSize(std::vector<int64_t> a, std::vector<int64_t> b) {
         auto dimB = dimsB - 1 - offset;
         auto sizeA = (dimA >= 0) ? a[dimA] : 1;
         auto sizeB = (dimB >= 0) ? b[dimB] : 1;
-        assert(sizeA == sizeB || sizeA == 1 || sizeB == 1 && "The size of tensor a must match the size of tensor b at a non-singleton dimension");
+        assert((sizeA == sizeB || sizeA == 1 || sizeB == 1) && "The size of tensor a must match the size of tensor b at a non-singleton dimension");
         expandedSize[i] = sizeA == 1 ? sizeB : sizeA;
     }
     return expandedSize;
@@ -78,12 +78,7 @@ diopiError_t diopiCdist(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     if (r1 == 0 || r2 == 0) {
         return diopiSuccess;
     } else if (c1 == 0) {
-        diopiScalar_t value;
-        if (DiopiDataType::isInteger(outTensor.dtype())) {
-            value = {outTensor.dtype(), 0};
-        } else {
-            value = {outTensor.dtype(), 0.0};
-        }
+        diopiScalar_t value = constructDiopiScalarT(outTensor.dtype(), 0);
         DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(outTensor), &value));
         return diopiSuccess;
     }
@@ -164,12 +159,7 @@ diopiError_t diopiCdistBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gr
 
     // Gracefully handle empty Tensors
     if (r1 == 0 || r2 == 0 || c1 == 0 || expandBatchProduct == 0) {
-        diopiScalar_t value;
-        if (DiopiDataType::isInteger(gradInputTensor.dtype())) {
-            value = {gradInputTensor.dtype(), 0};
-        } else {
-            value = {gradInputTensor.dtype(), 0.0};
-        }
+        diopiScalar_t value = constructDiopiScalarT(gradInputTensor.dtype(), 0);
         DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(gradInputTensor), &value));
         return diopiSuccess;
     }
