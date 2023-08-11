@@ -450,7 +450,6 @@ inline DiopiTensor ones(diopiContextHandle_t ctx, const std::vector<int64_t>& si
     diopiSize_t sizeTmp{size.data(), static_cast<int64_t>(size.size())};
     diopiRequireTensor(ctx, &tensor, &sizeTmp, nullptr, dtype, diopi_device);
     diopiScalar_t scalar = constructDiopiScalarT(dtype, 1);
-    if (DiopiDataType().isInteger(dtype)) scalar = {dtype, 1};
     diopiFill(ctx, tensor, &scalar);
     return DiopiTensor(tensor);
 }
