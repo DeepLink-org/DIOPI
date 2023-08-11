@@ -38,7 +38,7 @@ DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_
         diopiGetTensorShape(input, &inputSize);
 
         int64_t offsetList[2] = {0, 0};
-        diopiSize_t offset(offsetList, 2);
+        diopiSize_t offset{offsetList, 2};
 
         float prob = 1. - p;
         AclOpRunner<5, 1, dtypeConvertor>("StatelessDropOutGenMask", ctx)

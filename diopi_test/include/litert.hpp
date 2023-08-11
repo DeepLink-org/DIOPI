@@ -82,12 +82,12 @@ public:
     ~diopiTensor() {}
 
     diopiSize_t shape() const {
-        diopiSize_t size(shape_.data(), static_cast<int64_t>(shape_.size()));
+        diopiSize_t size{shape_.data(), static_cast<int64_t>(shape_.size())};
         return size;
     }
 
     diopiSize_t stride() const {
-        diopiSize_t stride(stride_.data(), static_cast<int64_t>(stride_.size()));
+        diopiSize_t stride{stride_.data(), static_cast<int64_t>(stride_.size())};
         return stride;
     }
 

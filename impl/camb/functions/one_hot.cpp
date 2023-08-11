@@ -92,7 +92,7 @@ diopiError_t diopiOneHot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
 
     diopiTensorHandle_t onValue, offValue;
     std::vector<int64_t> dims(1, 1);
-    diopiSize_t shape(dims.data(), 1);
+    diopiSize_t shape{dims.data(), 1};
     DIOPI_CALL(diopiRequireTensor(ctx, &onValue, &shape, nullptr, diopi_dtype_int32, diopi_device));
     DIOPI_CALL(diopiRequireTensor(ctx, &offValue, &shape, nullptr, diopi_dtype_int32, diopi_device));
     DiopiTensor onValueTensor(onValue);

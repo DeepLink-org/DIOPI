@@ -91,14 +91,16 @@ PYBIND11_MODULE(export_runtime, m) {
         .def(py::init([](py::list& sizeList, int64_t nums) {
             int64_t* sizes = new int64_t[nums];
             for (int i = 0; i < nums; ++i) sizes[i] = sizeList[i].cast<int64_t>();
-            auto self = diopiSize_t(sizes, nums);
+            auto self = diopiSize_t{sizes, nums};
             return self;
         }))
         .def(py::init<const int64_t*, int64_t>())
-        .def_property_readonly("len", &diopiSize_t::getLen)
+        .def_readonly("len", &diopiSize_t::len)
         .def_property_readonly("data", [](diopiSize_t& size) {
             std::vector<int64_t> data(size.len);
-            for (int i = 0; i < size.len; i++) data[i] = size.data[i];
+            for (int i = 0; i < size.len; i++) {
+                data[i] = size.data[i];
+            }
             return data;
         });
     py::class_<diopiScalar_t>(m, "diopiScalar")
@@ -115,8 +117,9 @@ PYBIND11_MODULE(export_runtime, m) {
             scalar.ival = val;
             return scalar;
         }))
-        .def_property_readonly("type", &diopiScalar_t::type)
-        .def_property_readonly("val", &diopiScalar_t::val);
+        .def_readwrite("stype", &diopiScalar_t::stype)
+        .def_readwrite("ival", &diopiScalar_t::ival)
+        .def_readwrite("fval", &diopiScalar_t::fval);
     py::class_<PtrWrapper<diopiTensor>>(m, "TensorP").def(py::init<diopiTensor*>()).def(py::init<py::none>()).def("data", &PtrWrapper<diopiTensor>::operator*);
     m.def("diopi_tensor_copy_to_buffer",
           [](diopiContextHandle_t context, diopiConstTensorHandle_t tensor, void* ptr) { diopiTensorCopyToBuffer(context, tensor, ptr); });
