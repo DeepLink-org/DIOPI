@@ -127,7 +127,7 @@ DIOPI_API diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx, diopiTens
         runner.run();
     } else {
         int64_t lossDim[] = {inputSize.data[0]};
-        diopiSize_t lossShape(lossDim, 1);
+        diopiSize_t lossShape{lossDim, 1};
         diopiTensorHandle_t loss;
         diopiRequireTensor(ctx, &loss, &lossShape, nullptr, diopi_dtype_float32, diopi_device);
         runner.addOutput(loss, backProp);

@@ -28,7 +28,7 @@ diopiError_t maxAll(diopiContextHandle_t ctx, diopiTensorHandle_t max, diopiTens
     for (int i = 0; i < inputTensor.dim(); i++) {
         dims[i] = i;
     }
-    diopiSize_t dim = {dims.data(), inputTensor.dim()};
+    diopiSize_t dim{dims.data(), inputTensor.dim()};
     CnnlReduceDescriptor reduceDesc;
     reduceDesc.set(inputTensor, dims, CNNL_REDUCE_MAX, CNNL_REDUCE_NO_INDICES, CNNL_32BIT_INDICES, dtype);
 
