@@ -32,19 +32,19 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 
     DIOPI_CHECK(inputTr.shape().size() >= 2, "input's dim should be greater than 2.")
     /* Some basic check */
-    if (runningMeanTr.defined() && runningVarTr.defined()) {
+    if (runningMeanTr.defined() && runningMeanTr.numel() && runningVarTr.defined() && runningVarTr.numel()) {
         DIOPI_CHECK(runningMeanTr.dtype() == runningVarTr.dtype(), "running_mean and running_var need to have the same data types");
     }
     auto dim = inputTr.dim();
     DIOPI_CHECK(dim >= 2 && dim <= 5, "Input dim is out of range");
     DIOPI_CHECK(dim == outputTr.dim(), "Input dim != out dim");
 
-    if (!weightTr.defined()) {
+    if (!(weightTr.defined() && weightTr.numel())) {
         diopiScalar_t val{diopi_dtype_float32, {1.0f}};
         weightTr = requiresTensor(ctx, {inputTr.shape()[1]}, inputTr.dtype());
         DIOPI_CALL(diopiFill(ctx, weightTr.tensorHandle(), &val))
     }
-    if (!biasTr.defined()) {
+    if (!(biasTr.defined() && biasTr.numel())) {
         diopiScalar_t val{diopi_dtype_float32, {0.0f}};
         biasTr = requiresTensor(ctx, {inputTr.shape()[1]}, inputTr.dtype());
         DIOPI_CALL(diopiFill(ctx, biasTr.tensorHandle(), &val))
@@ -61,10 +61,10 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     }
 
     std::vector<DiopiTensor*> pTensors{&inputTr, &weightTr, &biasTr};
-    if (runningMeanTr.defined()) {
+    if (runningMeanTr.defined() && runningMeanTr.numel()) {
         pTensors.push_back(&runningMeanTr);
     }
-    if (runningVarTr.defined()) {
+    if (runningVarTr.defined() && runningVarTr.numel()) {
         pTensors.push_back(&runningVarTr);
     }
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
@@ -106,8 +106,8 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
                                                        weightBiasMeanVarDesc.get(),
                                                        weightTr.data(),
                                                        biasTr.data(),
-                                                       runningMeanTr.defined() ? runningMeanTr.data() : nullptr,
-                                                       runningVarTr.defined() ? runningVarTr.data() : nullptr,
+                                                       runningMeanTr.defined() && runningMeanTr.numel() ? runningMeanTr.data() : nullptr,
+                                                       runningVarTr.defined() && runningVarTr.numel() ? runningVarTr.data() : nullptr,
                                                        static_cast<float>(eps),
                                                        static_cast<float>(momentum),
                                                        outputDesc.get(),
@@ -127,8 +127,8 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
                                                      weightBiasMeanVarDesc.get(),
                                                      weightTr.data(),
                                                      biasTr.data(),
-                                                     runningMeanTr.defined() ? runningMeanTr.data() : nullptr,
-                                                     runningVarTr.defined() ? runningVarTr.data() : nullptr,
+                                                     runningMeanTr.defined() && runningMeanTr.numel() ? runningMeanTr.data() : nullptr,
+                                                     runningVarTr.defined() && runningVarTr.numel() ? runningVarTr.data() : nullptr,
                                                      static_cast<float>(eps),
                                                      outputDesc.get(),
                                                      outputTmpTr.data()));
@@ -161,7 +161,7 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 
     DiopiTensor gradOutputTr(gradOutput);
 
-    if (runningMeanTr.defined() && runningVarTr.defined()) {
+    if (runningMeanTr.defined() && runningMeanTr.numel() && runningVarTr.defined() && runningVarTr.numel()) {
         DIOPI_CHECK(runningMeanTr.dtype() == runningVarTr.dtype(), "running_mean and running_var need to have the same data types");
     }
     auto dim = inputTr.dim();
@@ -181,10 +181,10 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     }
 
     std::vector<DiopiTensor*> pTensors{&gradOutputTr, &inputTr, &weightTr};
-    if (runningMeanTr.defined()) {
+    if (runningMeanTr.defined() && runningMeanTr.numel()) {
         pTensors.push_back(&runningMeanTr);
     }
-    if (runningVarTr.defined()) {
+    if (runningVarTr.defined() && runningVarTr.numel()) {
         pTensors.push_back(&runningVarTr);
     }
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
@@ -246,8 +246,8 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                                                 weightBiasMeanVarDesc.get(),
                                                 weightTr.data(),
                                                 nullptr,
-                                                saveMeanTr.defined() ? saveMeanTr.data() : nullptr,
-                                                saveInvstdTr.defined() ? saveInvstdTr.data() : nullptr,
+                                                saveMeanTr.defined() && saveMeanTr.numel() ? saveMeanTr.data() : nullptr,
+                                                saveInvstdTr.defined() && saveInvstdTr.numel() ? saveInvstdTr.data() : nullptr,
                                                 static_cast<float>(eps),
                                                 nullptr,
                                                 nullptr,
@@ -278,8 +278,8 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                                                       weightBiasMeanVarDesc.get(),
                                                       weightTr.data(),
                                                       nullptr,
-                                                      runningMeanTr.defined() ? runningMeanTr.data() : nullptr,
-                                                      runningVarTr.defined() ? runningVarTr.data() : nullptr,
+                                                      runningMeanTr.defined() && runningMeanTr.numel() ? runningMeanTr.data() : nullptr,
+                                                      runningVarTr.defined() && runningVarTr.numel() ? runningVarTr.data() : nullptr,
                                                       static_cast<float>(eps),
                                                       workspacePtr,
                                                       workspaceSize,

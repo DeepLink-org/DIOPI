@@ -88,9 +88,6 @@ diopiError_t cnnlActivationInternal(diopiContextHandle_t ctx, DiopiTensor input,
 
 diopiError_t cnnlActivationBackwardInternal(diopiContextHandle_t ctx, DiopiTensor gradInput, DiopiTensor gradOutput, DiopiTensor input, DiopiTensor output,
                                             CnnlAttribute attr) {
-    // if (!input.defined()) {
-    //     return diopiSuccess;
-    // }
     auto handle = cnnlHandlePool.get(ctx);
     auto mode = attr.get<cnnlActivationMode_t>("mode", CNNL_ACTIVATION_SIGMOID);
     auto perf = attr.get<cnnlActivationPreference_t>("perf", CNNL_ACTIVATION_HIGH_PRECISION);
@@ -108,10 +105,10 @@ diopiError_t cnnlActivationBackwardInternal(diopiContextHandle_t ctx, DiopiTenso
     CnnlResourceGuard<cnnlActivationDescriptor_t, cnnlCreateActivationDescriptor, cnnlDestroyActivationDescriptor> activationDesc;
     DIOPI_CALLCNNL(cnnlSetActivationDescriptor_v6(activationDesc.get(), mode, perf, nanProp, coef, slicedDim, gamma, scale, isResult, approximate));
     std::vector<DiopiTensor*> inputs{&gradOutput};
-    if (input.defined()) {
+    if (input.defined() && input.numel()) {
         inputs.push_back(&input);
     }
-    if (output.defined()) {
+    if (output.defined() && output.numel()) {
         inputs.push_back(&output);
     }
 
@@ -124,10 +121,10 @@ diopiError_t cnnlActivationBackwardInternal(diopiContextHandle_t ctx, DiopiTenso
     CnnlTensorDesc gradOutputDesc(gradOutput, CNNL_LAYOUT_ARRAY);
 
     CnnlTensorDesc inputDesc, outputDesc;
-    if (input.defined()) {
+    if (input.defined() && input.numel()) {
         DIOPI_CALL(inputDesc.set(input, CNNL_LAYOUT_ARRAY));
     }
-    if (output.defined()) {
+    if (output.defined() && output.numel()) {
         DIOPI_CALL(outputDesc.set(output, CNNL_LAYOUT_ARRAY));
     }
 
@@ -135,11 +132,11 @@ diopiError_t cnnlActivationBackwardInternal(diopiContextHandle_t ctx, DiopiTenso
                                           activationDesc.get(),
                                           alpha,
                                           outputDesc.get(),
-                                          output.defined() ? output.data() : nullptr,
+                                          output.defined() && output.numel() ? output.data() : nullptr,
                                           gradOutputDesc.get(),
                                           gradOutput.data(),
                                           inputDesc.get(),
-                                          input.defined() ? input.data() : nullptr,
+                                          input.defined() && input.numel() ? input.data() : nullptr,
                                           beta,
                                           gradInputDesc.get(),
                                           tempGradInput.data()));

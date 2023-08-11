@@ -64,7 +64,7 @@ diopiError_t transpose(diopiContextHandle_t ctx, const DiopiTensor& inputTensor,
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     CnnlResourceGuard<cnnlTransposeDescriptor_t, cnnlCreateTransposeDescriptor, cnnlDestroyTransposeDescriptor> cnnlTransposeDesc;
     DIOPI_CALLCNNL(cnnlSetTransposeDescriptor(cnnlTransposeDesc.get(), perms.size(), perms.data()));
-    if (!outTensor.defined()) {
+    if (!(outTensor.defined() && outTensor.numel())) {
         std::vector<int64_t> trShape(perms.size());
         for (int i = 0; i < perms.size(); ++i) {
             trShape[i] = inputTensor.shape()[perms[i]];

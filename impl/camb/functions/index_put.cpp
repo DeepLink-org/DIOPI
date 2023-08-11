@@ -42,7 +42,7 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     bool indicesAllNull = true;
     for (auto i = 0; i < indicesCounts; ++i) {
         DiopiTensor indiceTensor(indices[i]);
-        if (indiceTensor.defined()) {
+        if (indiceTensor.defined() && indiceTensor.numel()) {
             DIOPI_CHECK(indiceTensor.isContiguous(), "indice tensor should be contiguous");
 // version should be less than 1.18.0
 #if (CNNL_MAJOR * 10000 + CNNL_MINOR * 100 < 11800)

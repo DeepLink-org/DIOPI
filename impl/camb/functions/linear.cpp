@@ -71,7 +71,7 @@ diopiError_t matmul(diopiContextHandle_t ctx, DiopiTensor inputA, DiopiTensor in
     int32_t useBeta = 0;
     float beta = 0.0;
     void* biasPtr = nullptr;
-    if (inputBias.defined()) {
+    if (inputBias.defined() && inputBias.numel()) {
         useBeta = 1;
         beta = 1.0;
         biasPtr = inputBias.data();

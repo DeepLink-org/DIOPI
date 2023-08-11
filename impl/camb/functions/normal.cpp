@@ -27,7 +27,7 @@ diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, doub
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor tensor(out);
-    if (!tensor.defined()) {
+    if (!(tensor.defined() && tensor.numel())) {
         return diopiSuccess;
     }
 

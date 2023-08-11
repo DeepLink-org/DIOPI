@@ -293,7 +293,7 @@ public:
     }
 
     bool isContiguous(MemoryFormat format = MemoryFormat::Contiguous) const {
-        if (!defined()) {
+        if (!(this->defined() && this->numel())) {
             return true;
         }
         int64_t stride = 1;

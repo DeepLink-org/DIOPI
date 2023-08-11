@@ -22,7 +22,7 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     DiopiTensor outputTensor(out);
     DiopiTensor targetTensor(target);
     DiopiTensor weightTensor(weight);
-    if (!weightTensor.defined()) {
+    if (!(weightTensor.defined() && weightTensor.numel())) {
         weightTensor = ones(ctx, {inputTensor.shape()[1]}, inputTensor.dtype());
     }
     DIOPI_CHECK(inputTensor.numel() != 0, "input tensor is empty")
@@ -52,7 +52,7 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     if (dim == 2 || dim == 1) {
         DIOPI_CHECK(targetTensor.dim() == 1, "1D target_tr tensor expected, multi-target_tr not supported");
         DIOPI_CHECK(inputTensor.shape()[0] == targetTensor.shape()[0], "size mismatch ");
-        DIOPI_CHECK(!weightTensor.defined() || weightTensor.numel() == inputTensor.shape()[1],
+        DIOPI_CHECK(!(weightTensor.defined() && weightTensor.numel()) || weightTensor.numel() == inputTensor.shape()[1],
                     "weight_tr tensor should be defined either for all classes or no classes");
     } else if (dim == 4) {
         inputContiguous = inputTensor.contiguous(ctx, MemoryFormat::ChannelsLast);
@@ -146,7 +146,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     DiopiTensor targetTensor(target);
     DiopiTensor weightTensor(weight);
 
-    if (!weightTensor.defined()) {
+    if (!(weightTensor.defined() && weightTensor.numel())) {
         weightTensor = ones(ctx, {inputTensor.shape()[1]}, inputTensor.dtype());
     }
 
@@ -171,7 +171,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     if (dim == 2 || dim == 1) {
         DIOPI_CHECK(targetTensor.dim() == 1, "1D target_tr tensor expected, multi-target_tr not supported");
         DIOPI_CHECK(inputTensor.shape()[0] == targetTensor.shape()[0], "size mismatch ");
-        DIOPI_CHECK(!weightTensor.defined() || weightTensor.numel() == inputTensor.shape()[1],
+        DIOPI_CHECK(!(weightTensor.defined() && weightTensor.numel()) || weightTensor.numel() == inputTensor.shape()[1],
                     "weight_tr tensor should be defined either for all classes or no classes");
     } else if (dim == 4) {
         inputContiguous = inputTensor.contiguous(ctx, MemoryFormat::ChannelsLast);

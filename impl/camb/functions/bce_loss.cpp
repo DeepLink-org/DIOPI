@@ -55,7 +55,7 @@ DIOPI_API diopiError_t diopiBCELoss(diopiContextHandle_t ctx, diopiTensorHandle_
     DiopiTensor weightTensor(weight);
     DiopiTensor outTensor(out);
 
-    if (!weightTensor.defined()) {
+    if (!(weightTensor.defined() && weightTensor.numel())) {
         weightTensor = ones(ctx, inputTensor.shape(), inputTensor.dtype());
     }
     DIOPI_CALL(broadcastHelper(ctx, weightTensor, inputTensor, &weightTensor));
@@ -110,7 +110,7 @@ DIOPI_API diopiError_t diopiBCELossBackward(diopiContextHandle_t ctx, diopiTenso
     DiopiTensor gradInputTensor(gradInput);
     DiopiTensor gradOutputTensor(gradOutput);
 
-    if (!weightTensor.defined()) {
+    if (!(weightTensor.defined() && weightTensor.numel())) {
         weightTensor = ones(ctx, targetTensor.shape(), targetTensor.dtype());
     }
     DIOPI_CALL(broadcastHelper(ctx, weightTensor, inputTensor, &weightTensor));
