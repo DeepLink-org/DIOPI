@@ -25,7 +25,7 @@ std::vector<int64_t> inferSize(std::vector<int64_t> a, std::vector<int64_t> b) {
         auto dimB = dimsB - 1 - offset;
         auto sizeA = (dimA >= 0) ? a[dimA] : 1;
         auto sizeB = (dimB >= 0) ? b[dimB] : 1;
-        assert(sizeA == sizeB || sizeA == 1 || sizeB == 1 && "The size of tensor a must match the size of tensor b at a non-singleton dimension");
+        assert((sizeA == sizeB || sizeA == 1 || sizeB == 1) && "The size of tensor a must match the size of tensor b at a non-singleton dimension");
         expandedSize[i] = sizeA == 1 ? sizeB : sizeA;
     }
     return expandedSize;

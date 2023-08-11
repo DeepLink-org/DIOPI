@@ -36,7 +36,6 @@ int selectUnionType(uint32_t useJob, int boxNumPerCore) {
 
 static cnnlStatus_t policyFunc(cnrtDim3_t *kDim, cnrtFunctionType_t *kType, int &coreNumPerClass, const int inputBoxNum) {
     uint32_t coreDim = impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
-    uint32_t clusterNumber = impl::camb::getDeviceAttr(cnrtAttrClusterCount);
     uint32_t jobLimit = impl::camb::getJobLimitCapability();
     uint32_t coreNumber = jobLimit;
 

@@ -66,7 +66,7 @@ using MemoryFormat = diopiMemoryFormat_t;
 class DiopiDataType final {
 public:
     static bool isInteger(diopiDtype_t dtype) { return dtype < 8; }
-    static bool isFloatPoint(diopiDtype_t dtype) { return dtype <= 10 && dtype >= 8 || dtype == 12 || dtype == 13; }
+    static bool isFloatPoint(diopiDtype_t dtype) { return (dtype <= 10 && dtype >= 8) || dtype == 12 || dtype == 13; }
     static diopiDtype_t complexDtype2Real(diopiDtype_t complexDtype) {
         switch (complexDtype) {
             case diopi_dtype_complex128:

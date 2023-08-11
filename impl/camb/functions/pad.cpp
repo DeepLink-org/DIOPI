@@ -121,7 +121,7 @@ DIOPI_API diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 
         std::vector<int64_t> newShape;
         // for MLU pad
-        int newPad[lInp][2], newPadTrans[lInp][2];
+        int newPad[lInp][2];
         for (size_t i = 0; i < (size_t)lDiff; i++) {
             newShape.emplace_back(inputSizes[i]);
             newPad[i][0] = newPad[i][1] = 0;

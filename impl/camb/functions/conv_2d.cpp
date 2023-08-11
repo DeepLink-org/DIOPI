@@ -196,7 +196,6 @@ diopiError_t convBackwardBias(diopiContextHandle_t ctx, DiopiTensor gradOutput, 
 
 extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                            diopiConstTensorHandle_t bias, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, int64_t groups) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor(input);
     DiopiTensor weightTensor(weight);
     DiopiTensor outputTensor(out);
@@ -226,7 +225,6 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
         // do nothing
         return diopiSuccess;
     }
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor(input);
     DiopiTensor weightTensor(weight);
     DiopiTensor gradOutputTensor(gradOutput);
