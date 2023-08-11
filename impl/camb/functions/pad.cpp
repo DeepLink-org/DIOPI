@@ -186,7 +186,7 @@ DIOPI_API diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t ou
                 sliceShape1[i] = src.shape()[i];
             }
             sliceShape1[dim] = value;
-            diopiSize_t sliceShape(sliceShape1.data(), sliceShape1.size());
+            diopiSize_t sliceShape{sliceShape1.data(), static_cast<int64_t>(sliceShape1.size())};
             DIOPI_CALL(diopiRequireTensor(ctx, &dst, &sliceShape, nullptr, src.dtype(), diopi_device));
             return diopiSuccess;
         };

@@ -236,7 +236,7 @@ DIOPI_RT_API diopiError_t diopiRequireTensor(diopiContextHandle_t ctx, diopiTens
 
 DIOPI_RT_API diopiError_t diopiRequireBuffer(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor, int64_t bytes, diopiDevice_t dev) {
     diopi_log("requires a buffer, bytes: %" PRId64 ", device: %s", bytes, deviceToStr(dev));
-    diopiSize_t size(&bytes, 1);
+    diopiSize_t size{&bytes, 1};
     return diopiRequireTensor(ctx, tensor, &size, nullptr, diopi_dtype_int8, dev);
 }
 

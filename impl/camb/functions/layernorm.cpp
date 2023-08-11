@@ -132,8 +132,8 @@ diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
         weightTensor = requiresTensor(ctx, normalizedShape, inputTensor.dtype());
         gradWeightTensor = requiresTensor(ctx, normalizedShape, inputTensor.dtype());
         gradBiasTensor = requiresTensor(ctx, normalizedShape, inputTensor.dtype());
-        diopiScalar_t one = {diopi_dtype_float32, 1};
-        diopiScalar_t zero = {diopi_dtype_float32, 0};
+        diopiScalar_t one = constructDiopiScalarT(diopi_dtype_float32, 1);
+        diopiScalar_t zero = constructDiopiScalarT(diopi_dtype_float32, 0);
         DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(weightTensor), &one));
         DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(gradWeightTensor), &zero));
         DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(gradBiasTensor), &zero));

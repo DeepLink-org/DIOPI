@@ -75,7 +75,7 @@ static diopiError_t vectorMulVector(diopiContextHandle_t ctx, DiopiTensor outTen
 
     DIOPI_CALLCNNL(cnnlMulN(handle, inputsDesc.data(), inputs.data(), 2, tempOutDesc.get(), tempOut.data()));
     int64_t dimData = 0;
-    diopiSize_t dim = {&dimData, 1};
+    diopiSize_t dim{&dimData, 1};
 
     if (outTensor.dtype() == vector1Tensor.dtype()) {
         DIOPI_CALL(diopiSum(ctx, (diopiTensorHandle_t)outTensor, (diopiTensorHandle_t)tempOut, dim));

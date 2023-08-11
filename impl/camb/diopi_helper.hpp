@@ -136,6 +136,18 @@ public:
     }
 };
 
+template <typename T>
+diopiScalar_t constructDiopiScalarT(diopiDtype_t dtype, T val) {
+    diopiScalar_t scalar;
+    scalar.stype = dtype;
+    if (DiopiDataType::isFloatPoint(dtype)) {
+        scalar.fval = static_cast<double>(val);
+    } else {
+        scalar.ival = static_cast<int64_t>(val);
+    }
+    return scalar;
+}
+
 class DiopiTensor final {
 public:
     DiopiTensor() = default;
@@ -285,8 +297,8 @@ public:
                 }
             }
         }
-        diopiSize_t strideDiopi(strides.data(), static_cast<int64_t>(strides.size()));
-        diopiSize_t shapeDiopi(this->shape().data(), static_cast<int64_t>(this->shape().size()));
+        diopiSize_t strideDiopi{strides.data(), static_cast<int64_t>(strides.size())};
+        diopiSize_t shapeDiopi{this->shape().data(), static_cast<int64_t>(this->shape().size())};
         diopiTensorHandle_t tensor = nullptr;
         diopiRequireTensor(ctx, &tensor, &shapeDiopi, &strideDiopi, this->dtype(), this->device());
         return DiopiTensor(tensor);
@@ -428,16 +440,16 @@ protected:
 inline auto makeTensor(diopiContextHandle_t ctx, const diopiScalar_t* pScalar) -> DiopiTensor {
     diopiTensorHandle_t tensor = nullptr;
     std::vector<int64_t> shape{1};
-    diopiSize_t size(shape.data(), 1);
+    diopiSize_t size{shape.data(), 1};
     diopiRequireTensor(ctx, &tensor, &size, nullptr, pScalar->stype, diopi_device);
     return DiopiTensor(tensor);
 }
 
-inline DiopiTensor ones(diopiContextHandle_t ctx, std::vector<int64_t> size, diopiDtype_t dtype) {
+inline DiopiTensor ones(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype) {
     diopiTensorHandle_t tensor = nullptr;
-    diopiSize_t sizeTmp(size.data(), size.size());
+    diopiSize_t sizeTmp{size.data(), static_cast<int64_t>(size.size())};
     diopiRequireTensor(ctx, &tensor, &sizeTmp, nullptr, dtype, diopi_device);
-    diopiScalar_t scalar = {dtype, 1.0};
+    diopiScalar_t scalar = constructDiopiScalarT(dtype, 1);
     if (DiopiDataType().isInteger(dtype)) scalar = {dtype, 1};
     diopiFill(ctx, tensor, &scalar);
     return DiopiTensor(tensor);
@@ -450,15 +462,15 @@ inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const diopiSize_t& s
 }
 
 inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, const std::vector<int64_t>& stride, diopiDtype_t dtype) {
-    diopiSize_t sizeTmp(size.data(), size.size());
-    diopiSize_t strideTmp(stride.data(), stride.size());
+    diopiSize_t sizeTmp{size.data(), static_cast<int64_t>(size.size())};
+    diopiSize_t strideTmp{stride.data(), static_cast<int64_t>(stride.size())};
     diopiTensorHandle_t tensor = nullptr;
     diopiRequireTensor(ctx, &tensor, &sizeTmp, &strideTmp, dtype, diopi_device);
     return DiopiTensor(tensor);
 }
 
 inline DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype) {
-    diopiSize_t sizeTmp(size.data(), size.size());
+    diopiSize_t sizeTmp{size.data(), static_cast<int64_t>(size.size())};
     diopiTensorHandle_t tensor = nullptr;
     diopiRequireTensor(ctx, &tensor, &sizeTmp, nullptr, dtype, diopi_device);
     return DiopiTensor(tensor);
@@ -538,7 +550,7 @@ std::vector<T> diopiSizeT2Vector(diopiSize_t size) {
 }
 
 inline diopiSize_t vec2diopiSizeT(const std::vector<int64_t>& sizeIn) {
-    diopiSize_t diopiSize(sizeIn.data(), sizeIn.size());
+    diopiSize_t diopiSize{sizeIn.data(), static_cast<int64_t>(sizeIn.size())};
     return diopiSize;
 }
 

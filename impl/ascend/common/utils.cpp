@@ -5,7 +5,7 @@ namespace ascend {
 
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out, diopiDtype_t dtype, diopiDevice_t device) {
     int64_t sizeTmp[1] = {1};
-    diopiSize_t sSize(sizeTmp, 1);
+    diopiSize_t sSize{sizeTmp, 1};
     diopiRequireTensor(ctx, out, &sSize, nullptr, dtype, device);
     if (device == diopi_host) {
         void* ptr;
@@ -38,7 +38,7 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
 diopiError_t makeTensorFromSize(diopiContextHandle_t ctx, const diopiSize_t* size, diopiTensorHandle_t* out, diopiDtype_t dtype) {
     int64_t len = size->getLen();
     int64_t sizeTmp[1] = {len};
-    diopiSize_t sSize(sizeTmp, 1);
+    diopiSize_t sSize{sizeTmp, 1};
     diopiRequireTensor(ctx, out, &sSize, nullptr, dtype, diopi_host);
     if (len > 0) {
         void* dst = nullptr;

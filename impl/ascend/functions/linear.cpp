@@ -110,7 +110,7 @@ extern "C" diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTenso
 
     if (gradBias) {
         std::vector<int64_t> dimVec({0});
-        diopiSize_t dim(dimVec.data(), dimVec.size());
+        diopiSize_t dim{dimVec.data(), static_cast<int64_t>(dimVec.size())};
         diopiSum(ctx, gradBias, gradOutput, dim);
     }
     return diopiSuccess;
