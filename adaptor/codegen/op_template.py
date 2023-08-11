@@ -20,22 +20,30 @@ class OpTemplate(object):
 #include <chrono>
 #include <fstream>
 #include <ostream>
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstring>
 
 namespace diopiadaptor {
 
-class TimeElapsedRecord : public std::ofstream {
+class TimeElapsedRecord {
 public:
-    TimeElapsedRecord(const char* fileName):std::ofstream(fileName, std::ios::out | std::ios::trunc), enableTiming_(false) {
-        if (getenv("DIOPI_ENABLE_TIMING")){
+    TimeElapsedRecord(const char* fileName) : enableTiming_(false) {
+        const char* enableEnvVar = getenv("DIOPI_ENABLE_TIMING");
+        if (enableEnvVar && strcmp(enableEnvVar, "OFF") && strcmp(enableEnvVar, "0")){
             enableTiming_ = true;
+            stream_ = std::move(std::ofstream(fileName, std::ios::out | std::ios::trunc));
         }
     }
-    bool isEnableTiming(){
+    bool isEnableTiming() {
         return enableTiming_;
     }
+    std::ofstream& getOStream(){
+        return stream_;
+    }
+
 private:
     bool enableTiming_;
+    std::ofstream stream_;
 };
 
 
@@ -51,7 +59,7 @@ public:
             auto end = std::chrono::steady_clock::now();
             std::chrono::duration<double, std::milli> elapsed = end - start_;  // ms
             double elapsedTime = elapsed.count();
-            timeElapsedRecord_ << opName_ << ": " << elapsedTime << "ms" << std::endl;
+            timeElapsedRecord_.getOStream() << opName_ << ": " << elapsedTime << "ms" << std::endl;
         }
     }
 private:

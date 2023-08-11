@@ -150,10 +150,7 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
     } else {
         storage_ = std::make_shared<Storage>(device_malloc, device_free, nbytes);
         if (src != nullptr) {
-            diopiStreamHandle_t stream;
-            diopiGetStream(context, &stream);
-            device_memcpy_h2d_async(stream, storage_->data(), src, nbytes);
-            device_synchronize_stream(stream);
+            diopiTensorCopyFromBuffer(context, src, this);
         }
     }
     context_ = context;
