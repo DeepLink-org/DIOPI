@@ -30,13 +30,13 @@
         }                                                                                    \
     } while (false);
 
-#define DIOPI_CHECK_NULLPTR_ABORT(variable)                                                      \
-    do {                                                                                         \
-        if (variable == nullptr) {                                                               \
-            printf("The variable `" #variable "` is not defined at %s:%d ", __FILE__, __LINE__); \
-            printf("%s", impl::camb::cambGetLastErrorString(false));                             \
-            abort();                                                                             \
-        }                                                                                        \
+#define DIOPI_CHECK_NULLPTR_ABORT(variable)                                                       \
+    do {                                                                                          \
+        if (variable == nullptr) {                                                                \
+            printf("The variable `" #variable "` is not wangxing at %s:%d ", __FILE__, __LINE__); \
+            printf("%s", impl::camb::cambGetLastErrorString(false));                              \
+            abort();                                                                              \
+        }                                                                                         \
     } while (false);
 
 #define DIOPI_CHECK_ABORT(cond, fmt, args...)                        \
@@ -373,10 +373,7 @@ public:
         return *this;
     }
 
-    bool defined() const {
-        if (tensor_ == nullptr) return false;
-        return this->numel() != 0;
-    }
+    bool defined() const { return tensor_ != nullptr; }
 
     DiopiTensor& view(const std::vector<int64_t> shape) {
         // must be contiguous
