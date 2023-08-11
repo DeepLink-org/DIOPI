@@ -213,7 +213,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto gradInputRealTensor = requiresTensor(ctx, {n, c}, inputContiguous.dtype());
 
     auto totalWeightTensor = requiresTensor(ctx, {1}, weightTensor.dtype());
-    diopiScalar_t scalar({weightTensor.dtype(), static_cast<double>(targetTensor.numel())});
+    diopiScalar_t scalar = constructDiopiScalarT(weightTensor.dtype(), targetTensor.numel());
     DIOPI_CALL(diopiFill(ctx, totalWeightTensor.tensorHandle(), &scalar));
 
     CnnlTensorDesc gradOutputDesc;
