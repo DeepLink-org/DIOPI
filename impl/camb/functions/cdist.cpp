@@ -78,12 +78,7 @@ diopiError_t diopiCdist(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     if (r1 == 0 || r2 == 0) {
         return diopiSuccess;
     } else if (c1 == 0) {
-        diopiScalar_t value;
-        if (DiopiDataType::isInteger(outTensor.dtype())) {
-            value = {outTensor.dtype(), 0};
-        } else {
-            value = {outTensor.dtype(), 0.0};
-        }
+        diopiScalar_t value = constructDiopiScalarT(outTensor.dtype(), 0);
         DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(outTensor), &value));
         return diopiSuccess;
     }
@@ -164,12 +159,7 @@ diopiError_t diopiCdistBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gr
 
     // Gracefully handle empty Tensors
     if (r1 == 0 || r2 == 0 || c1 == 0 || expandBatchProduct == 0) {
-        diopiScalar_t value;
-        if (DiopiDataType::isInteger(gradInputTensor.dtype())) {
-            value = {gradInputTensor.dtype(), 0};
-        } else {
-            value = {gradInputTensor.dtype(), 0.0};
-        }
+        diopiScalar_t value = constructDiopiScalarT(gradInputTensor.dtype(), 0);
         DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(gradInputTensor), &value));
         return diopiSuccess;
     }
