@@ -110,9 +110,7 @@ diopiError_t diopiSelect(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
         DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
     }
 
-    diopiScalar_t indexScalar;
-    indexScalar.stype = diopi_dtype_int64;
-    indexScalar.ival = index;
+    diopiScalar_t indexScalar = constructDiopiScalarT(diopi_dtype_int64, index);
     DiopiTensor indexTensor;
     DIOPI_CALL(makeTensorFromScalar(ctx, &indexScalar, indexTensor));
     DiopiTensor outTensor(out);
@@ -169,9 +167,7 @@ diopiError_t diopiSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
     CnnlTensorDesc gradInputDesc(gradInputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc gradDesc(gradTensor, CNNL_LAYOUT_ARRAY);
 
-    diopiScalar_t indexScalar;
-    indexScalar.stype = diopi_dtype_int64;
-    indexScalar.ival = index;
+    diopiScalar_t indexScalar = constructDiopiScalarT(diopi_dtype_int64, index);
     DiopiTensor indexTensor;
     DIOPI_CALL(makeTensorFromScalar(ctx, &indexScalar, indexTensor));
     if (indexTensor.dtype() == diopi_dtype_int64) {
