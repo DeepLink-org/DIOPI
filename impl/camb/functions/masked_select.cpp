@@ -20,7 +20,6 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t *ou
     DIOPI_CALL(autoCastTensorType(ctx, pmask, maskDtypes));
     // When the data type of masked tensor is not bool, the data type of input
     // tensor must be same with the data type of the masked tensor.
-    diopiDtype_t originDtype = inputTensor.dtype();
 
     std::vector<DiopiTensor *> pinput{&inputTensor};
     std::set<diopiDtype_t> inputDtypes{

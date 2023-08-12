@@ -95,8 +95,6 @@ static diopiError_t batchAddBatchMatmul(diopiContextHandle_t ctx, DiopiTensor in
 
 DIOPI_API diopiError_t diopiBaddbmmInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t batch1, diopiConstTensorHandle_t batch2,
                                        double beta, double alpha) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-
     DiopiTensor inputTensor(input);
     DiopiTensor batch1Tensor(batch1);
     DiopiTensor batch2Tensor(batch2);
@@ -116,8 +114,6 @@ DIOPI_API diopiError_t diopiBaddbmmInp(diopiContextHandle_t ctx, diopiTensorHand
 
 DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t batch1,
                                     diopiConstTensorHandle_t batch2, double beta, double alpha) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-
     DiopiTensor batch1Tensor(batch1);
     DiopiTensor batch2Tensor(batch2);
     DiopiTensor inputTensor(input);

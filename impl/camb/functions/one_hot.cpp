@@ -28,7 +28,6 @@ diopiError_t maxAll(diopiContextHandle_t ctx, diopiTensorHandle_t max, diopiTens
     for (int i = 0; i < inputTensor.dim(); i++) {
         dims[i] = i;
     }
-    diopiSize_t dim = {dims.data(), inputTensor.dim()};
     CnnlReduceDescriptor reduceDesc;
     reduceDesc.set(inputTensor, dims, CNNL_REDUCE_MAX, CNNL_REDUCE_NO_INDICES, CNNL_32BIT_INDICES, dtype);
 
@@ -92,7 +91,7 @@ diopiError_t diopiOneHot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
 
     diopiTensorHandle_t onValue, offValue;
     std::vector<int64_t> dims(1, 1);
-    diopiSize_t shape(dims.data(), 1);
+    diopiSize_t shape{dims.data(), 1};
     DIOPI_CALL(diopiRequireTensor(ctx, &onValue, &shape, nullptr, diopi_dtype_int32, diopi_device));
     DIOPI_CALL(diopiRequireTensor(ctx, &offValue, &shape, nullptr, diopi_dtype_int32, diopi_device));
     DiopiTensor onValueTensor(onValue);

@@ -54,7 +54,6 @@ diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
-    const bool lowerIndexFirst = true;
     DIOPI_CALLCNNL(cnnlTopKTensor_v3(handle,
                                      inputDesc.get(),
                                      inputTensorTemp.data(),
