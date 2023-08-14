@@ -309,7 +309,7 @@ inline void invokeATenFuncInp(diopiContextHandle_t ctx, Func func, Args&&... arg
 inline void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
     at::IntArrayRef atSize = input.sizes();
     at::IntArrayRef atStride = input.strides();
-    diopiSize_t size{atSize.data(), atSize.size()};
+    diopiSize_t size{static_cast<int64_t*>(atSize.data()), static_cast<int64_t*>(atSize.size())};
     diopiSize_t stride{atStride.data(), atStride.size()};
     diopiDtype_t dtype = getDIOPITensorType(input);
     diopiRequireTensor(ctx, out, &size, &stride, dtype, diopi_device);
