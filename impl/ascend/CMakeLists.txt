@@ -39,7 +39,7 @@ target_link_libraries(${DEVICEIMPL} ascendcl acl_op_compiler)
 if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
     set(ADAPTOR_GEN_PATH "${CMAKE_SOURCE_DIR}/../adaptor/codegen")
     add_custom_target(adaptor_code_gen COMMAND python3 ${ADAPTOR_GEN_PATH}/gen.py
-        --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${CMAKE_SOURCE_DIR}/../proto/include/diopi/
+        --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${ADAPTOR_GEN_PATH}/../csrc/
         --config_device=ascend)
     set(USE_ADAPTOR "true")
     add_dependencies(${DEVICEIMPL} adaptor_code_gen)
