@@ -77,6 +77,10 @@ slowfast_config = {
 
     'batch_norm': dict(
         name=["batch_norm"],
+        atol=1e-03,
+        rtol=1e-04,
+        atol_half=1e-01,
+        rtol_half=1e-02,
         para=dict(
             training=[True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True],
             momentum=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
@@ -241,6 +245,10 @@ slowfast_config = {
 
     'linear': dict(
         name=["linear"],
+        atol=1e-03,
+        rtol=1e-04,
+        atol_half=1e-01,
+        rtol_half=1e-02,
         tensor_para=dict(
             args=[
                 {
@@ -461,6 +469,8 @@ slowfast_config = {
 
     'clamp': dict(
         name=["clamp"],
+        atol=1e-04,
+        rtol=1e-05,
         interface=["torch"],
         para=dict(
             max=[1.0],

@@ -37,7 +37,6 @@ extern "C" diopiError_t diopiAbsInp(diopiContextHandle_t ctx, diopiTensorHandle_
 }
 
 extern "C" diopiError_t diopiAbs(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
     DIOPI_CALL(abs(ctx, inputTensor, outputTensor));

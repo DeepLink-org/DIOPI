@@ -271,13 +271,13 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
             srcShapeT64[i] = srcTensor.shape()[axis[i]];
         }
 
-        diopiSize_t srcTShape(srcShapeT64.data(), srcShapeT64.size());
+        diopiSize_t srcTShape{srcShapeT64.data(), static_cast<int64_t>(srcShapeT64.size())};
         DIOPI_CALL(diopiRequireTensor(ctx, &dst, &srcTShape, nullptr, srcTensor.dtype(), diopi_device));
         if (srcTensor.shape().size() == 4) {
-            diopiSize_t nchw2nhwc(axis.data(), 4);
+            diopiSize_t nchw2nhwc{axis.data(), 4};
             DIOPI_CALL(diopiPermute(ctx, dst, src, nchw2nhwc));
         } else if (srcTensor.shape().size() == 3) {
-            diopiSize_t chw2hwc(axis.data(), 3);
+            diopiSize_t chw2hwc{axis.data(), 3};
             DIOPI_CALL(diopiPermute(ctx, dst, src, chw2hwc));
         } else {
             DIOPI_CHECK(false, "non-empty 3D or 4D (batch mode) tensor expected for input");
@@ -362,11 +362,11 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 
     if (gradInputTensorT.shape().size() == 4) {
         std::vector<int64_t> permNhwc2nchw{0, 3, 1, 2};
-        diopiSize_t nhwc2nchw(permNhwc2nchw.data(), 4);
+        diopiSize_t nhwc2nchw{permNhwc2nchw.data(), 4};
         DIOPI_CALL(diopiPermute(ctx, static_cast<diopiTensorHandle_t>(gradInputTensorTmp), gradInputT, nhwc2nchw));
     } else if (gradInputTensorT.shape().size() == 3) {
         std::vector<int64_t> permHwc2chw{2, 0, 1};
-        diopiSize_t hwc2chw(permHwc2chw.data(), 3);
+        diopiSize_t hwc2chw{permHwc2chw.data(), 3};
         DIOPI_CALL(diopiPermute(ctx, static_cast<diopiTensorHandle_t>(gradInputTensorTmp), gradInputT, hwc2chw));
     } else {
         DIOPI_CHECK(false, "non-empty 3D or 4D (batch mode) tensor expected for input");

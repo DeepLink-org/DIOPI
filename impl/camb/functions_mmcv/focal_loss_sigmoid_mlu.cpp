@@ -42,7 +42,7 @@ static void policyFuncForward(cnrtDim3_t *kDim, cnrtFunctionType_t *kType, impl:
     const int splitTargetNum = 2;
     const int splitPipelineNum = 6;
     const int hasWeight = weight.data() != nullptr;
-    const int targetDataWidth = (target.dtype() == diopi_dtype_int64 || target.dtype() == diopi_dtype_uint64) ? target.elemsize() / 2 : target.elemsize();
+    // const int targetDataWidth = (target.dtype() == diopi_dtype_int64 || target.dtype() == diopi_dtype_uint64) ? target.elemsize() / 2 : target.elemsize();
     const int thresholdC = PAD_DOWN((nramSize - splitTargetNum * sizeof(int)) / (splitPipelineNum + hasWeight), NFU_ALIGN_SIZE) / input.elemsize();
 
     int nSeg = 1;
@@ -119,7 +119,7 @@ extern "C" DIOPI_API diopiError_t diopiSigmoidFocalLossMmcv(diopiContextHandle_t
     cnrtDim3_t kDim;
     cnrtFunctionType_t kType = CNRT_FUNC_TYPE_UNION1;
     policyFuncForward(&kDim, &kType, inputTr, targetTr, weightTr);
-    auto coreDim = impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
+    // auto coreDim = impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
 
     // get compute queue
     auto queue = impl::camb::getStream(ctx);
@@ -258,7 +258,7 @@ extern "C" DIOPI_API diopiError_t diopiSigmoidFocalLossBackwardMmcv(diopiContext
 
     // get dtype of input
     cnrtDataType_t dType = impl::camb::dtype2CnrtDtype(inputTr.dtype());
-    auto coreDim = impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
+    // auto coreDim = impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
     auto dimN = inputTr.size(0);
 
     // CNLOG(INFO) << "Launch Kernel KernelFocalLossSigmoidBackward<<<Union"

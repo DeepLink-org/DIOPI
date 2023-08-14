@@ -36,7 +36,6 @@ int selectUnionType(uint32_t useJob, int boxNumPerCore) {
 
 static cnnlStatus_t policyFunc(cnrtDim3_t *kDim, cnrtFunctionType_t *kType, int &coreNumPerClass, const int inputBoxNum) {
     uint32_t coreDim = impl::camb::getDeviceAttr(cnrtAttrMcorePerCluster);
-    uint32_t clusterNumber = impl::camb::getDeviceAttr(cnrtAttrClusterCount);
     uint32_t jobLimit = impl::camb::getJobLimitCapability();
     uint32_t coreNumber = jobLimit;
 
@@ -80,7 +79,7 @@ extern "C" DIOPI_API diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTe
     auto scores = impl::camb::DiopiTensor(scoresTr);
 
     if (boxes.numel() == 0) {
-        diopiScalar_t scalar = {diopi_dtype_int64, 1};
+        diopiScalar_t scalar = impl::camb::constructDiopiScalarT(diopi_dtype_int64, 1);
         auto tempOut = impl::camb::requiresTensor(ctx, {1}, diopi_dtype_int64);
         DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(tempOut), &scalar));
         *out = diopiTensorHandle_t(tempOut);

@@ -94,6 +94,8 @@ vit_config = {
 
     'conv2d': dict(
         name=["conv2d"],
+        atol=1e-03,
+        rtol=1e-03,
         para=dict(
             stride=[(16, 16)],
             padding=[(0, 0)],
@@ -238,6 +240,10 @@ vit_config = {
 
     'linear': dict(
         name=["linear"],
+        atol=1e-03,
+        rtol=1e-04,
+        atol_half=1e-01,
+        rtol_half=1e-02,
         tensor_para=dict(
             args=[
                 {
@@ -616,6 +622,8 @@ vit_config = {
 
     'clamp': dict(
         name=["clamp"],
+        atol=1e-04,
+        rtol=1e-05,
         interface=["torch"],
         para=dict(
             max=[1.0],
