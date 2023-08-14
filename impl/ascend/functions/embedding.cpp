@@ -14,7 +14,7 @@ extern "C" {
 DIOPI_API diopiError_t diopiEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t indices,
                                       int64_t paddingIdx, bool scaleGradByfreq, bool sparse) {
     std::vector<int64_t> dimVec({0});
-    diopiSize_t dim(dimVec.data(), dimVec.size());
+    diopiSize_t dim{dimVec.data(), static_cast<int64_t>(dimVec.size())};
     AclOpRunner<3, 1>("GatherV2", ctx).addInput(weight, indices).addConstInput(dim).setAttr<int64_t>("batch_dims", 0).addOutput(out).run();
     return diopiSuccess;
 }

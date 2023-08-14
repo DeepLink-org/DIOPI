@@ -70,11 +70,9 @@ diopiError_t matmul(diopiContextHandle_t ctx, DiopiTensor inputA, DiopiTensor in
 
     int32_t useBeta = 0;
     float beta = 0.0;
-    void* biasPtr = nullptr;
     if (inputBias.defined()) {
         useBeta = 1;
         beta = 1.0;
-        biasPtr = inputBias.data();
         DIOPI_CALL(biasDesc.set(inputBias, CNNL_LAYOUT_ARRAY));
         DIOPI_CALLCNNL(cnnlExpand(handle, biasDesc.get(), inputBias.data(), outputDesc.get(), output.data()));
     }
@@ -126,7 +124,6 @@ diopiError_t matmul(diopiContextHandle_t ctx, DiopiTensor inputA, DiopiTensor in
 
 extern "C" diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                     diopiConstTensorHandle_t bias) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor(input);
     DiopiTensor weightTensor(weight);
     DiopiTensor biasTensor(bias);

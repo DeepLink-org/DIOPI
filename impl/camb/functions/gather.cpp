@@ -50,7 +50,7 @@ DIOPI_API diopiError_t diopiGatherBackward(diopiContextHandle_t ctx, diopiTensor
                                            diopiConstTensorHandle_t input, int64_t dim, diopiConstTensorHandle_t index) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    diopiScalar_t zero = {diopi_dtype_float32, 0};
+    diopiScalar_t zero = constructDiopiScalarT(diopi_dtype_float32, 0);
     DIOPI_CALL(diopiFill(ctx, gradInput, &zero));
 
     DiopiTensor inputTensor(input);

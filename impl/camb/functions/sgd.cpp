@@ -86,9 +86,8 @@ extern "C" diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w
     }
 
     std::vector<int64_t> shape{1};
-    diopiSize_t size(shape.data(), shape.size());
     DiopiTensor lrTensor;
-    diopiScalar_t lrScalar{diopi_dtype_float64, {lr}};
+    diopiScalar_t lrScalar = constructDiopiScalarT(diopi_dtype_float64, lr);
     DIOPI_CALL(makeTensorFromScalar(ctx, &lrScalar, lrTensor));
     DIOPI_CALL(dataTypeCast(ctx, lrTensor, dwTensorTmp.dtype()));
     DIOPI_CALLCNNL(cnnlGradientDescent(handle, dwDesc.get(), dwTensorTmp.data(), lrTensor.data(), wDescTmp.get(), wTensorTmp.data()));
