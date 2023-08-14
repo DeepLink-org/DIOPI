@@ -25,7 +25,7 @@ static std::vector<int64_t> inferSize(const std::vector<int64_t>& a, const std::
         auto dimB = dimsB - 1 - offset;
         auto sizeA = (dimA >= 0) ? a[dimA] : 1;
         auto sizeB = (dimB >= 0) ? b[dimB] : 1;
-        assert(sizeA == sizeB || sizeA == 1 || sizeB == 1 && "The size of tensor a must match the size of tensor b at a non-singleton dimension");
+        assert((sizeA == sizeB || sizeA == 1 || sizeB == 1) && "The size of tensor a must match the size of tensor b at a non-singleton dimension");
         expandedSize[i] = sizeA == 1 ? sizeB : sizeA;
     }
     return expandedSize;
@@ -33,8 +33,8 @@ static std::vector<int64_t> inferSize(const std::vector<int64_t>& a, const std::
 
 // true if all the non-null tensors are adjacent
 static bool hasContiguousSubspace(const std::vector<DiopiTensor>& tensorList) {
-    auto isDefined = [](const DiopiTensor& tensor) { return tensor.tensorHandle(); };
-    auto isNull = [](const DiopiTensor& tensor) { return !tensor.tensorHandle(); };
+    auto isDefined = [](const DiopiTensor& tensor) { return tensor.defined(); };
+    auto isNull = [](const DiopiTensor& tensor) { return !tensor.defined(); };
     auto start = std::find_if(tensorList.begin(), tensorList.end(), isDefined);
     auto stop = std::find_if(tensorList.rbegin(), tensorList.rend(), isDefined);
     auto it = std::find_if(start, stop.base(), isNull);
@@ -122,7 +122,7 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
     bool boolTensorConvertToEmptyTensor = false;
     std::vector<DiopiTensor> indicesTensorsCast;
     for (auto indiceTensor : indicesTensors) {
-        if (!indiceTensor.tensorHandle()) {
+        if (!indiceTensor.defined()) {
             indicesTensorsCast.emplace_back();
         } else {
             DiopiTensor indexTensor = indiceTensor;
@@ -150,7 +150,8 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
                 } else {
                     // specical case: bool tensor -> empty int tensor
                     for (auto j = 0; j < indexTensor.dim(); ++j) {
-                        DiopiTensor emptyTensor = requiresTensor(ctx, {0}, nonzeroTensor.dtype());
+                        std::vector<int64_t> emptyShape{0};
+                        DiopiTensor emptyTensor = requiresTensor(ctx, emptyShape, nonzeroTensor.dtype());
                         indicesTensorsCast.emplace_back(std::move(emptyTensor));
                     }
                     boolTensorConvertToEmptyTensor = true;
@@ -168,7 +169,7 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
     std::vector<int64_t> sizes;
     std::vector<DiopiTensor> indicesTensorsExpand(indicesTensorsCast.size());
     for (auto& indiceTensorCast : indicesTensorsCast) {
-        if (!(indiceTensorCast.tensorHandle() && indiceTensorCast.numel())) {
+        if (!(indiceTensorCast.defined() && indiceTensorCast.numel())) {
             continue;
         } else if (first) {
             sizes = indiceTensorCast.shape();
@@ -178,14 +179,14 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
         }
     }
     for (auto i = 0; i < indicesTensorsCast.size(); ++i) {
-        if (!(indicesTensorsCast[i].tensorHandle() && indicesTensorsCast[i].numel())) {
-            if (indicesTensorsCast[i].tensorHandle()) {
+        if (!(indicesTensorsCast[i].defined() && indicesTensorsCast[i].numel())) {
+            if (indicesTensorsCast[i].defined()) {
                 // handle the broadcast of empty indice tensor
                 indicesTensorsExpand[i] = indicesTensorsCast[i];
                 if (boolTensorConvertToEmptyTensor) {
                     std::vector<int64_t> tmpShape(sizes.size(), 1);
                     tmpShape.insert(tmpShape.begin(), 0);
-                    indicesTensorsExpand[i].reshape(tmpShape);
+                    indicesTensorsExpand[i].view(tmpShape);
                 }
             } else {
                 continue;
@@ -210,13 +211,13 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
         order.reserve(inputTensor.dim());
         std::vector<int64_t> transposedShape = inputTensor.shape();
         for (auto i = 0; i < inputTensor.dim(); ++i) {
-            if (indicesTensorsExpand[i].tensorHandle()) {
+            if (indicesTensorsExpand[i].defined()) {
                 order.emplace_back(i);
                 transposedIndicesTensors.emplace_back(indicesTensorsExpand[i]);
             }
         }
         for (auto i = 0; i < inputTensor.dim(); ++i) {
-            if (!indicesTensorsExpand[i].tensorHandle()) {
+            if (!indicesTensorsExpand[i].defined()) {
                 order.emplace_back(i);
                 transposedIndicesTensors.emplace_back();
             }
@@ -252,7 +253,7 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diop
     for (auto i = 0; i < arraySize; ++i) {
         if (i < nums) {
             DiopiTensor indiceTensor(indices[i]);
-            if (indiceTensor.tensorHandle()) {
+            if (indiceTensor.defined()) {
                 if (indiceTensor.dtype() == diopi_dtype_int64) {
                     DIOPI_CALL(dataTypeCast(ctx, indiceTensor, diopi_dtype_int32));
                 }
@@ -281,7 +282,7 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diop
     std::vector<cnnlTensorDescriptor_t> indicesDescT(arraySize);
     std::vector<void*> indicesPtrList(arraySize);
     for (auto i = 0; i < arraySize; ++i) {
-        if (transposedIndicesTensors[i].tensorHandle()) {
+        if (transposedIndicesTensors[i].defined()) {
             indicesDesc[i].set(transposedIndicesTensors[i], CNNL_LAYOUT_ARRAY);
             indicesDescT[i] = indicesDesc[i].get();
             indicesPtrList[i] = transposedIndicesTensors[i].data();
