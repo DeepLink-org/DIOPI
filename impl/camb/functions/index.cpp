@@ -25,7 +25,7 @@ static std::vector<int64_t> inferSize(const std::vector<int64_t>& a, const std::
         auto dimB = dimsB - 1 - offset;
         auto sizeA = (dimA >= 0) ? a[dimA] : 1;
         auto sizeB = (dimB >= 0) ? b[dimB] : 1;
-        assert(sizeA == sizeB || sizeA == 1 || sizeB == 1 && "The size of tensor a must match the size of tensor b at a non-singleton dimension");
+        assert((sizeA == sizeB || sizeA == 1 || sizeB == 1) && "The size of tensor a must match the size of tensor b at a non-singleton dimension");
         expandedSize[i] = sizeA == 1 ? sizeB : sizeA;
     }
     return expandedSize;
@@ -150,7 +150,8 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
                 } else {
                     // specical case: bool tensor -> empty int tensor
                     for (auto j = 0; j < indexTensor.dim(); ++j) {
-                        DiopiTensor emptyTensor = requiresTensor(ctx, {0}, nonzeroTensor.dtype());
+                        std::vector<int64_t> emptyShape{0};
+                        DiopiTensor emptyTensor = requiresTensor(ctx, emptyShape, nonzeroTensor.dtype());
                         indicesTensorsCast.emplace_back(std::move(emptyTensor));
                     }
                     boolTensorConvertToEmptyTensor = true;
