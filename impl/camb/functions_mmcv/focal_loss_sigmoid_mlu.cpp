@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "../cnnl_helper.hpp"
+#include "../common/common.hpp"
 #include "../diopi_helper.hpp"
 #include "../mlu_helper.hpp"
-#include "../common/common.hpp"
 
 namespace impl {
 
