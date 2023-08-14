@@ -133,8 +133,12 @@ core.*
 *.csv
 
 wrap_func.cpp
+diopi_adaptors.cpp
 diopi_adaptors.hpp
 export_functions.cpp
+<<<<<<< Updated upstream
 
 
 kernel_meta_*
+=======
+>>>>>>> Stashed changes
