@@ -531,7 +531,6 @@ diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     auto atInput = impl::aten::buildATen(input);
     auto atWeight = impl::aten::buildATen(weight);
     auto atBias = impl::aten::buildATen(bias);
-    //impl::aten::invokeATenFuncRet(ctx, at::linear, out, atInput, atWeight, atBias);
     impl::aten::invokeATenFuncInp(ctx, at::linear_out, atOut, atInput, atWeight, atBias);
 
     impl::aten::unsetCurCtx();
