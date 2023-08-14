@@ -527,10 +527,13 @@ diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
 diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                          diopiConstTensorHandle_t bias) {
     impl::aten::setCurCtx(ctx);
+    auto atOut = impl::aten::buildATen(out);
     auto atInput = impl::aten::buildATen(input);
     auto atWeight = impl::aten::buildATen(weight);
     auto atBias = impl::aten::buildATen(bias);
-    impl::aten::invokeATenFuncRet(ctx, at::linear, out, atInput, atWeight, atBias);
+    //impl::aten::invokeATenFuncRet(ctx, at::linear, out, atInput, atWeight, atBias);
+    impl::aten::invokeATenFuncInp(ctx, at::linear_out, atOut, atInput, atWeight, atBias);
+
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
