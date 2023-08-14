@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "../common/common.hpp"
+#include "../common/debug.hpp"
 
 namespace impl {
 namespace camb {
@@ -98,6 +99,24 @@ diopiError_t convBackwardData(diopiContextHandle_t ctx, DiopiTensor gradOutput, 
     int paddingTmp[4] = {paddingVec[0], paddingVec[0], paddingVec[1], paddingVec[1]};
     int strideTmp[2] = {strideVec[0], strideVec[1]};
     int dilationTmp[2] = {dilationVec[0], dilationVec[1]};
+
+    std::cout << "stride = ";
+    for (auto i : strideVec) {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "padding = ";
+    for (auto i : paddingVec) {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "dilation = ";
+    for (auto i : dilationVec) {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
 
     cnnlDataType_t computeType;
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&computeType, gradInput.dtype()));
@@ -270,12 +289,21 @@ extern "C" diopiError_t diopiConvTranspose2d(diopiContextHandle_t ctx, diopiTens
     DiopiTensor weightTensor(weight);
     DiopiTensor biasTensor(bias);
 
+    printDevData(ctx, outputTensor, "outputTensor");
+    printDevData(ctx, inputTensor, "inputTensor");
+    printDevData(ctx, weightTensor, "weightTensor");
+    printDevData(ctx, biasTensor, "biasTensor");
+
+    std::cout << "outputPadding = ";
+    std::cout << outputPadding << std::endl;
+
     std::vector<DiopiTensor *> tensors{&inputTensor, &weightTensor};
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32}));
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(outputTensorTmp, outputTensor, inputTensor.dtype());
     DIOPI_CALL(convBackwardData(ctx, inputTensor, outputTensorTmp, weightTensor, stride, padding, dilation, groups));
 
     if (biasTensor.tensorHandle()) {
+        std::cout << "###########################biasTensor is defined###########################" << std::endl;
         cnnlHandle_t handle = cnnlHandlePool.get(ctx);
         DIOPI_CALL(autoCastTensorType(ctx, {&biasTensor}, {diopi_dtype_float16, diopi_dtype_float32}));
         CnnlTensorDesc biasDesc(biasTensor, CNNL_LAYOUT_NHWC);
@@ -295,6 +323,106 @@ extern "C" diopiError_t diopiConvTranspose2d(diopiContextHandle_t ctx, diopiTens
 
     DIOPI_CALL(dataTypeCast(ctx, outputTensor, outputTensorTmp));
     return diopiSuccess;
+
+    // cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+
+    // DiopiTensor outputTensor(out);
+    // DiopiTensor inputTensor(input);
+    // DiopiTensor weightTensor(weight);
+    // DiopiTensor biasTensor(bias);
+
+    // printDevData(ctx, outputTensor, "outputTensor");
+    // printDevData(ctx, inputTensor, "inputTensor");
+    // printDevData(ctx, weightTensor, "weightTensor");
+    // printDevData(ctx, biasTensor, "biasTensor");
+
+    // CnnlTensorDesc outputDesc(outputTensor, CNNL_LAYOUT_NHWC);
+    // CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_NHWC);
+    // CnnlTensorDesc weightDesc(weightTensor, CNNL_LAYOUT_NHWC);
+    // CnnlTensorDesc biasDesc;
+    // if (biasTensor.tensorHandle()) {
+    //     std::cout << "###########################biasTensor is defined###########################" << std::endl;
+    //     DIOPI_CALL(biasDesc.set(biasTensor, CNNL_LAYOUT_NHWC));
+    // }
+
+    // std::vector<int> strideVec{stride.data, stride.data + stride.len};
+    // std::vector<int> paddingVec{padding.data, padding.data + padding.len};
+    // std::vector<int> dilationVec{dilation.data, dilation.data + dilation.len};
+
+    // std::cout << "stride = ";
+    // for (auto i: strideVec) {
+    //     std::cout << i << " " ;
+    // }
+    // std::cout << std::endl;
+
+    // std::cout << "padding = ";
+    // for (auto i: paddingVec) {
+    //     std::cout << i << " " ;
+    // }
+    // std::cout << std::endl;
+
+    // std::cout << "dilation = ";
+    // for (auto i: dilationVec) {
+    //     std::cout << i << " " ;
+    // }
+    // std::cout << std::endl;
+
+    // int paddingTmp[4] = {paddingVec[0], paddingVec[0], paddingVec[1], paddingVec[1]};
+    // int strideTmp[2] = {strideVec[0], strideVec[1]};
+    // int dilationTmp[2] = {dilationVec[0], dilationVec[1]};
+
+    // cnnlDataType_t computeType;
+    // DIOPI_CALL(CnnlDataType::convertToCnnlType(&computeType, inputTensor.dtype()));
+
+    // CnnlResourceGuard<cnnlDeconvolutionDescriptor_t, cnnlCreateDeconvolutionDescriptor, cnnlDestroyDeconvolutionDescriptor> deconvDesc;
+    // DIOPI_CALLCNNL(cnnlSetDeconvolutionDescriptor(deconvDesc.get(), dimNb, paddingTmp, strideTmp, dilationTmp, groups, computeType));
+
+    // cnnlDeconvolutionAlgo_t algo;
+    // DIOPI_CALLCNNL(cnnlGetDeconvolutionAlgorithm_v2(
+    //                                         handle,
+    //                                         inputDesc.get(),
+    //                                         weightDesc.get(),
+    //                                         biasTensor.tensorHandle() ? biasDesc.get() : nullptr,
+    //                                         deconvDesc.get(),
+    //                                         outputDesc.get(),
+    //                                         CNNL_CONVOLUTION_BWD_DATA_FASTEST,
+    //                                         &algo
+
+    // ));
+
+    // size_t workspaceSize;
+    // DIOPI_CALLCNNL(cnnlGetDeconvolutionWorkspaceSize_v2(handle,
+    //                                                       inputDesc.get(),
+    //                                                       weightDesc.get(),
+    //                                                       biasTensor.tensorHandle() ? biasDesc.get() : nullptr,
+    //                                                       deconvDesc.get(),
+    //                                                       outputDesc.get(),
+    //                                                       algo,
+    //                                                       &workspaceSize));
+
+    // void *workspace = nullptr;
+    // if (0 != workspaceSize) {
+    //     workspace = requiresBuffer(ctx, workspaceSize).data();
+    // }
+
+    // DIOPI_CALLCNNL(cnnlDeconvolution(
+    //     handle,
+    //     nullptr,
+    //     inputDesc.get(),
+    //     inputTensor.data(),
+    //     weightDesc.get(),
+    //     weightTensor.data(),
+    //     biasTensor.tensorHandle() ? biasDesc.get() : nullptr,
+    //     biasTensor.tensorHandle() ? biasTensor.data() : nullptr,
+    //     deconvDesc.get(),
+    //     algo,
+    //     workspace,
+    //     workspaceSize,
+    //     nullptr,
+    //     outputDesc.get(),
+    //     outputTensor.data()
+    // ));
+    // return diopiSuccess;
 }
 
 extern "C" diopiError_t diopiConvTranspose2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight,

@@ -72,53 +72,53 @@ inline void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor, std::stri
     }
     std::cout << "], is_contiguous: " << tensor.isContiguous();
     std::cout << ", is_contiguous(channelsLast): " << tensor.isContiguous(MemoryFormat::ChannelsLast) << std::endl;
-    switch (tensor.dtype()) {
-        case diopi_dtype_bool:
-            printDevDataInternal<bool, int32_t>(ctx, dataIn, len, maxLen, beginIdx);
-            break;
-        case diopi_dtype_uint8:
-            printDevDataInternal<uint8_t, int32_t>(ctx, dataIn, len, maxLen, beginIdx);
-            break;
-        case diopi_dtype_int8:
-            printDevDataInternal<int8_t, int32_t>(ctx, dataIn, len, maxLen, beginIdx);
-            break;
-        case diopi_dtype_uint16:
-            printDevDataInternal<uint16_t, uint16_t>(ctx, dataIn, len, maxLen, beginIdx);
-            break;
-        case diopi_dtype_int16:
-            printDevDataInternal<int16_t, int16_t>(ctx, dataIn, len, maxLen, beginIdx);
-            break;
-        case diopi_dtype_uint32:
-            printDevDataInternal<uint32_t, uint32_t>(ctx, dataIn, len, maxLen, beginIdx);
-            break;
-        case diopi_dtype_int32:
-            printDevDataInternal<int32_t, int32_t>(ctx, dataIn, len, maxLen, beginIdx);
-            break;
-        case diopi_dtype_uint64:
-            printDevDataInternal<uint64_t, uint64_t>(ctx, dataIn, len, maxLen, beginIdx);
-            break;
-        case diopi_dtype_int64:
-            printDevDataInternal<int64_t, int64_t>(ctx, dataIn, len, maxLen, beginIdx);
-            break;
-        case diopi_dtype_float16:
-            printDevDataInternal<half_float::half, half_float::half>(ctx, dataIn, len, maxLen, beginIdx);
-            break;
-        case diopi_dtype_float32:
-            printDevDataInternal<float, float>(ctx, dataIn, len, maxLen, beginIdx);
-            break;
-        case diopi_dtype_float64:
-            printDevDataInternal<double, double>(ctx, dataIn, len, maxLen, beginIdx);
-            break;
-        case diopi_dtype_complex32:
-            printDevDataComplexInternal<half_float::half, float>(ctx, dataIn, len, maxLen, beginIdx);
-            break;
-        case diopi_dtype_complex64:
-            printDevDataComplexInternal<float, float>(ctx, dataIn, len, maxLen, beginIdx);
-            break;
-        default:
-            std::cout << "unsupported dtype" << std::endl;
-            break;
-    }
+    // switch (tensor.dtype()) {
+    //     case diopi_dtype_bool:
+    //         printDevDataInternal<bool, int32_t>(ctx, dataIn, len, maxLen, beginIdx);
+    //         break;
+    //     case diopi_dtype_uint8:
+    //         printDevDataInternal<uint8_t, int32_t>(ctx, dataIn, len, maxLen, beginIdx);
+    //         break;
+    //     case diopi_dtype_int8:
+    //         printDevDataInternal<int8_t, int32_t>(ctx, dataIn, len, maxLen, beginIdx);
+    //         break;
+    //     case diopi_dtype_uint16:
+    //         printDevDataInternal<uint16_t, uint16_t>(ctx, dataIn, len, maxLen, beginIdx);
+    //         break;
+    //     case diopi_dtype_int16:
+    //         printDevDataInternal<int16_t, int16_t>(ctx, dataIn, len, maxLen, beginIdx);
+    //         break;
+    //     case diopi_dtype_uint32:
+    //         printDevDataInternal<uint32_t, uint32_t>(ctx, dataIn, len, maxLen, beginIdx);
+    //         break;
+    //     case diopi_dtype_int32:
+    //         printDevDataInternal<int32_t, int32_t>(ctx, dataIn, len, maxLen, beginIdx);
+    //         break;
+    //     case diopi_dtype_uint64:
+    //         printDevDataInternal<uint64_t, uint64_t>(ctx, dataIn, len, maxLen, beginIdx);
+    //         break;
+    //     case diopi_dtype_int64:
+    //         printDevDataInternal<int64_t, int64_t>(ctx, dataIn, len, maxLen, beginIdx);
+    //         break;
+    //     case diopi_dtype_float16:
+    //         printDevDataInternal<half_float::half, half_float::half>(ctx, dataIn, len, maxLen, beginIdx);
+    //         break;
+    //     case diopi_dtype_float32:
+    //         printDevDataInternal<float, float>(ctx, dataIn, len, maxLen, beginIdx);
+    //         break;
+    //     case diopi_dtype_float64:
+    //         printDevDataInternal<double, double>(ctx, dataIn, len, maxLen, beginIdx);
+    //         break;
+    //     case diopi_dtype_complex32:
+    //         printDevDataComplexInternal<half_float::half, float>(ctx, dataIn, len, maxLen, beginIdx);
+    //         break;
+    //     case diopi_dtype_complex64:
+    //         printDevDataComplexInternal<float, float>(ctx, dataIn, len, maxLen, beginIdx);
+    //         break;
+    //     default:
+    //         std::cout << "unsupported dtype" << std::endl;
+    //         break;
+    // }
     return;
 }
 
