@@ -23,13 +23,6 @@ typedef struct {
         double fval;
         int64_t ival;
     };
-    diopiDtype_t type() { return stype; }
-    double val() {
-        if (stype == diopiDtype_t::diopi_dtype_float64)
-            return fval;
-        else if (stype == diopiDtype_t::diopi_dtype_int64)
-            return ival;
-    }
 } diopiScalar_t;
 
 typedef enum { Contiguous = 0, ChannelsLast = 1, ChannelsLast3d = 2, Preserve = 3, ChannelsLast1d = 4 } diopiMemoryFormat_t;
@@ -3440,6 +3433,9 @@ DIOPI_API diopiError_t diopiLinalgQR(diopiContextHandle_t ctx, diopiConstTensorH
  * @param[out] out the output tensor. type = [float64, float32, float16, int16, int32, int64, int8, uint8]
  */
 DIOPI_API diopiError_t diopiAmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t self, diopiSize_t dim, bool keepdim);
+
+// this contiguous func is temporary, please do not use.
+DIOPI_API diopiError_t diopiContiguous(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, diopiMemoryFormat_t memoryFormat);
 
 #if defined(__cplusplus)
 }
