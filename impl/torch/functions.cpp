@@ -10,6 +10,7 @@
 #include <math.h>
 #include <torch/nn.h>
 #include <torch/optim.h>
+#include <ATen/ops/convolution_backward_native.h>
 
 #include <cstring>
 
@@ -185,14 +186,15 @@ diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                 diopiConstTensorHandle_t bias, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, int64_t groups) {
     impl::aten::setCurCtx(ctx);
-    auto atOutput = impl::aten::buildATen(out);
+    auto atOut = impl::aten::buildATen(out);
     auto atInput = impl::aten::buildATen(input);
     auto atWeight = impl::aten::buildATen(weight);
     auto atBias = impl::aten::buildATen(bias);
     auto atStride = impl::aten::buildAtIntArray(stride);
     auto atPadding = impl::aten::buildAtIntArray(padding);
     auto atDilation = impl::aten::buildAtIntArray(dilation);
-    impl::aten::invokeATenFuncInp(ctx, at::convolution_out, atOutput, atInput, atWeight, atBias, atStride, atPadding, atDilation, false, at::IntArrayRef(0), groups);
+    impl::aten::invokeATenFuncRet(ctx, at::convolution, out, atInput, atWeight, atBias, atStride, atPadding, atDilation, false, at::IntArrayRef(0), groups);
+    //impl::aten::invokeATenFuncInp(ctx, at::convolution_out, atOut, atInput, atWeight, atBias, atStride, atPadding, atDilation, false, at::IntArrayRef(0), groups);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -2104,25 +2106,24 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
                                         diopiConstTensorHandle_t weight, diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation,
                                         bool transposed, diopiSize_t output_padding, int64_t groups) {
     impl::aten::setCurCtx(ctx);
+    auto atGradInput = impl::aten::buildATen(grad_input);
+    auto atGradWeight = impl::aten::buildATen(grad_weight);
+    auto atGradBias = impl::aten::buildATen(grad_bias);
+    c10::OptionalIntArrayRef bias_sizes_opt = bias_sizes ? c10::make_optional<c10::ArrayRef<int64_t>>(impl::aten::buildAtIntArray(*bias_sizes)) : c10::nullopt;
+
     auto atInput = impl::aten::buildATen(input);
     auto atGrad = impl::aten::buildATen(grad_output);
     auto atWeight = impl::aten::buildATen(weight);
     auto atStride = impl::aten::buildAtIntArray(stride);
     auto atPadding = impl::aten::buildAtIntArray(padding);
+    auto atDilation = impl::aten::buildAtIntArray(dilation);
     std::vector<int64_t> outputPadding(padding.len, 0);
     at::IntArrayRef atOutputPadding(outputPadding.data(), outputPadding.size());
-    auto atDilation = impl::aten::buildAtIntArray(dilation);
     diopi_tensor_list vecOut = {grad_input, grad_weight};
 #ifdef USE_HIP
     auto grad_input_mask = std::array<bool, 3>{true, true, false};
     impl::aten::invokeATenFuncRet(
         ctx, at::miopen_convolution_backward, vecOut, atInput, atGrad, atWeight, atPadding, atStride, atDilation, groups, false, false, grad_input_mask);
-#else
-    auto grad_inputs =
-        at::convolution_backward(atGrad, atInput, atWeight, c10::nullopt, atStride, atPadding, atDilation, false, atOutputPadding, groups, {true, true, false});
-    impl::aten::updateATen2Tensor(ctx, std::get<0>(grad_inputs), grad_input);
-    impl::aten::updateATen2Tensor(ctx, std::get<1>(grad_inputs), grad_weight);
-#endif
     if (bias_sizes != nullptr && grad_bias != nullptr) {
         auto atBias = impl::aten::buildATen(grad_bias);
         at::Tensor atTmp = atGrad;
@@ -2134,6 +2135,33 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
         atTmp = at::sum(atTmp, 0, false);
         impl::aten::updateATen2Tensor(ctx, atTmp, grad_bias);
     }
+#else
+    if (atGradInput.defined() && atGradWeight.defined()) {
+        at::Tensor atGradBiasTemp = atGradBias.defined() ? atGradBias : at::empty({atGrad.size(1)}, atGrad.options());
+        at::convolution_backward_out(atGradInput, atGradWeight, atGradBiasTemp, atGrad, atInput, atWeight, c10::nullopt, atStride, atPadding, atDilation, false, atOutputPadding, groups, {atGradInput.defined(), atGradWeight.defined(), true});
+        //at::convolution_backward_out(atGradInput, atGradWeight, atGradBias, atGrad, atInput, atWeight, bias_sizes_opt, atStride, atPadding, atDilation, false, atOutputPadding, groups, {atGradInput.defined(), atGradWeight.defined(), atGradBias.defined()});
+    } else {
+        //atGradInput = at::Tensor();
+        //atGradWeight = at::Tensor();
+        auto grad_inputs =
+        at::convolution_backward(atGrad, atInput, atWeight, c10::nullopt, atStride, atPadding, atDilation, false, atOutputPadding, groups, {true, true, false});
+        //impl::aten::updateATen2Tensor(ctx, std::get<0>(grad_inputs), grad_input);
+        //impl::aten::updateATen2Tensor(ctx, std::get<1>(grad_inputs), grad_weight);
+        atGradInput = std::get<0>(grad_inputs);
+        atGradWeight = std::get<1>(grad_inputs);
+        if (bias_sizes != nullptr && grad_bias != nullptr) {
+            auto atBias = impl::aten::buildATen(grad_bias);
+            at::Tensor atTmp = atGrad;
+            int64_t size = atGrad.dim() - 1;
+            while (atBias.dim() != size) {
+                atTmp = at::sum(atTmp, -1, false);
+                size -= 1;
+            }
+            atTmp = at::sum(atTmp, 0, false);
+            impl::aten::updateATen2Tensor(ctx, atTmp, grad_bias);
+        }
+    }
+#endif
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -2415,26 +2443,8 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                                     diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                     diopiConstTensorHandle_t running_mean, diopiConstTensorHandle_t running_var, diopiConstTensorHandle_t save_mean,
                                     diopiConstTensorHandle_t save_invstd, bool training, double eps) {
-#if 0
     impl::aten::setCurCtx(ctx);
-    auto atGradOutput = impl::aten::buildATen(grad_output);
-    auto atInput = impl::aten::buildATen(input);
-    auto atWeight = impl::aten::buildATen(weight);
-    c10::optional<at::Tensor> atRunningMean = running_mean ? c10::optional<at::Tensor>(impl::aten::buildATen(running_mean)) : c10::nullopt;
-    c10::optional<at::Tensor> atRunningVar = running_var ? c10::optional<at::Tensor>(impl::aten::buildATen(running_var)) : c10::nullopt;
-    c10::optional<at::Tensor> atSaveMean = save_mean ? c10::optional<at::Tensor>(impl::aten::buildATen(save_mean)) : c10::nullopt;
-    c10::optional<at::Tensor> atSaveVar = save_invstd ? c10::optional<at::Tensor>(impl::aten::buildATen(save_invstd)) : c10::nullopt;
-    auto grad_input_mask = std::array<bool, 3>{true, true, true};
-    auto atOut =
-        at::native_batch_norm_backward(atGradOutput, atInput, atWeight, atRunningMean, atRunningVar, atSaveMean, atSaveVar, training, eps, grad_input_mask);
-    impl::aten::updateATen2Tensor(ctx, std::get<0>(atOut), grad_input);
-    impl::aten::updateATen2Tensor(ctx, std::get<1>(atOut), grad_weight);
-    impl::aten::updateATen2Tensor(ctx, std::get<2>(atOut), grad_bias);
-    impl::aten::unsetCurCtx();
-    return diopiSuccess;
-#endif
-    impl::aten::setCurCtx(ctx);
-    auto atGradInput = impl::aten::buildATen(grad_output);
+    auto atGradInput = impl::aten::buildATen(grad_input);
     auto atGradWeight = impl::aten::buildATen(grad_weight);
     auto atGradBias = impl::aten::buildATen(grad_bias);
     auto atGradOutput = impl::aten::buildATen(grad_output);
@@ -2445,8 +2455,7 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     c10::optional<at::Tensor> atSaveMean = save_mean ? c10::optional<at::Tensor>(impl::aten::buildATen(save_mean)) : c10::nullopt;
     c10::optional<at::Tensor> atSaveVar = save_invstd ? c10::optional<at::Tensor>(impl::aten::buildATen(save_invstd)) : c10::nullopt;
     auto grad_input_mask = std::array<bool, 3>{atGradInput.defined(), atGradWeight.defined(), atGradBias.defined()};
-    auto atOut =
-        at::native_batch_norm_backward_out(atGradInput, atGradWeight, atGradBias, atGradOutput, atInput, atWeight, atRunningMean, atRunningVar, atSaveMean, atSaveVar, training, eps, grad_input_mask);
+    at::native_batch_norm_backward_out(atGradInput, atGradWeight, atGradBias, atGradOutput, atInput, atWeight, atRunningMean, atRunningVar, atSaveMean, atSaveVar, training, eps, grad_input_mask);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
