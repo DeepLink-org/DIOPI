@@ -94,6 +94,7 @@ def prepare():
     options = parser.parse_args()
     source = os.path.join(options.diopi_dir, 'proto/include/diopi')
     config_path = os.path.join(options.diopi_dir, 'impl/', options.config_device)
+    device = options.config_device
 
     def create_if_not_exist(name):
         if not os.path.exists(name):
@@ -103,7 +104,7 @@ def prepare():
     dirs = dict(source=source,
                 output_dir=options.output_dir,
                 config_path=config_path)
-    return dirs
+    return dirs, device
 
 
 def get_func_info(content):
@@ -364,7 +365,7 @@ def memory_format_to_str(memory_format):
     return ', std::vector<diopiMemoryFormat_t>{' + ','.join(formats) + '}'
 
 
-def autogen_op_adaptor(op_configs, func_infos):
+def autogen_op_adaptor(op_configs, device, func_infos):
     adaptors_code = []
     cast = op_configs['Common']['cast'] if 'Common' in op_configs.keys() else ''
     contiguous = op_configs['Common']['contiguous'] if 'Common' in op_configs.keys() else []
@@ -375,7 +376,7 @@ def autogen_op_adaptor(op_configs, func_infos):
             continue
         if (func not in op_configs.keys() and 'Common' not in op_configs.keys()) or len(list(func_infos[func].keys())) == 1:
             call_args = [arg.split(' ')[-1] for arg in func_infos[func]['call_args']]
-            adaptors_code.append(OT.adaptor_template.substitute(env=dict(op_name=op_name, attrs=func_infos[func]['call_args'],
+            adaptors_code.append(OT.adaptor_template.substitute(env=dict(op_name=op_name, attrs=func_infos[func]['call_args'], device=device,
                                                                          new_input='', cast_input='', cast_output='', call_func=func + '(' + ', '.join(call_args) + ');')))
         else:
             op_config = op_configs[func] if func in op_configs.keys() else None
@@ -426,12 +427,12 @@ for (int i = 0; i < ${num}; ++i) {
                     new_name = name
                 call_args.append(new_name)
 
-            adaptors_code.append(OT.adaptor_template.substitute(env=dict(op_name=op_name, attrs=', '.join(func_infos[func]['call_args']),
+            adaptors_code.append(OT.adaptor_template.substitute(env=dict(op_name=op_name, attrs=', '.join(func_infos[func]['call_args']), device=device,
                                                                          new_input=new_input, cast_input=cast_ins, cast_output=cast_outs, call_func=func + '(' + ', '.join(call_args) + ');')))
     return adaptors_code
 
 
-def gen_autogen_operators(dirs, adaptor_fm):
+def gen_autogen_operators(dirs, device, adaptor_fm):
     config_file_path = os.path.join(dirs.get('config_path'), 'convert_config.yaml')
     try:
         with open(config_file_path, 'r') as f:
@@ -442,23 +443,22 @@ def gen_autogen_operators(dirs, adaptor_fm):
 
     funcs_info = get_functions_support(dirs.get('source'))
     op_configs = analysis_configs(configs, funcs_info)
-    adaptors_code = autogen_op_adaptor(op_configs, funcs_info)
+    adaptors_code = autogen_op_adaptor(op_configs, device, funcs_info)
     casts_code = autogen_cast_strategy()
 
-    adaptor_fm.write('diopi_adaptors.hpp',
+    adaptor_fm.write('diopi_adaptors.cpp',
                      OT.operators_template,
                      dict(adaptors=adaptors_code, cast_strategy=casts_code))
 
-
 def declare_outputs(adaptor_fm):
-    adaptor_fm.will_write('diopi_adaptors.hpp')
+    adaptor_fm.will_write('diopi_adaptors.cpp')
 
 
 def gen_all_codes():
-    dirs = prepare()
+    dirs, device = prepare()
     adaptor_fm = FileManager(dirs.get('output_dir', '.'))
     declare_outputs(adaptor_fm)
-    gen_autogen_operators(dirs, adaptor_fm)
+    gen_autogen_operators(dirs, device, adaptor_fm)
     adaptor_fm.check_all_files_written()
 
 
