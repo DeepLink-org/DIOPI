@@ -2139,10 +2139,7 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
     if (atGradInput.defined() && atGradWeight.defined()) {
         at::Tensor atGradBiasTemp = atGradBias.defined() ? atGradBias : at::empty({atGrad.size(1)}, atGrad.options());
         at::convolution_backward_out(atGradInput, atGradWeight, atGradBiasTemp, atGrad, atInput, atWeight, c10::nullopt, atStride, atPadding, atDilation, false, atOutputPadding, groups, {atGradInput.defined(), atGradWeight.defined(), true});
-        //at::convolution_backward_out(atGradInput, atGradWeight, atGradBias, atGrad, atInput, atWeight, bias_sizes_opt, atStride, atPadding, atDilation, false, atOutputPadding, groups, {atGradInput.defined(), atGradWeight.defined(), atGradBias.defined()});
     } else {
-        //atGradInput = at::Tensor();
-        //atGradWeight = at::Tensor();
         auto grad_inputs =
         at::convolution_backward(atGrad, atInput, atWeight, c10::nullopt, atStride, atPadding, atDilation, false, atOutputPadding, groups, {true, true, false});
         impl::aten::updateATen2Tensor(ctx, std::get<0>(grad_inputs), grad_input);
