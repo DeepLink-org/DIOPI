@@ -1938,7 +1938,7 @@ DIOPI_API diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t*
  */
 DIOPI_API diopiError_t diopiIndexBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t zeros_like_input,
                                           diopiConstTensorHandle_t* indices, int64_t nums, diopiConstTensorHandle_t grad_output);
-  
+
 /**
  * @brief Returns a new tensor that indexes the input tensor along dimension dim using the entries in the index tensor.
  * @param[in] ctx Context environment.
@@ -3179,7 +3179,7 @@ DIOPI_API diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandl
  */
 DIOPI_API diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std);
 
- /**
+/**
  * @brief Creates grids of coordinates specified by 1D input tensors.
  * @param[in] ctx Context environment.
  * @param[in] inputs an array of 1D input tensors. type = [float32, float64].
@@ -3302,10 +3302,11 @@ DIOPI_API diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, dio
  * The inverse error function is defined in the range(-1, 1) as:
  * erfinv(erf(x)) = x
  */
+
 DIOPI_API diopiError_t diopiErfinv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 /**
  * @brief The in-place version of diopiErfinv()
- * /
+ */
 DIOPI_API diopiError_t diopiErfinvInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
 
 /**
