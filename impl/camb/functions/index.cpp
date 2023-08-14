@@ -121,7 +121,7 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
     // first expand bool tensor (masks) or byte tensor (masks) into 1 or more long tensors
     bool boolTensorConvertToEmptyTensor = false;
     std::vector<DiopiTensor> indicesTensorsCast;
-    for (auto indiceTensor : indicesTensors) {
+    for (const auto& indiceTensor : indicesTensors) {
         if (!indiceTensor.defined()) {
             indicesTensorsCast.emplace_back();
         } else {
