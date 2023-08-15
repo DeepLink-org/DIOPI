@@ -1993,7 +1993,7 @@ diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     auto atInput = impl::aten::buildATen(input);
     c10::string_view atApproximate(approximate, strlen(approximate));
     //impl::aten::invokeATenFuncRet(ctx, at::gelu, out, atInput, atApproximate);
-    impl::aten::invokeATenFuncRet(ctx, at::gelu_out, atOut, atInput, atApproximate);
+    impl::aten::invokeATenFuncInp(ctx, at::gelu_out, atOut, atInput, atApproximate);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -2233,9 +2233,10 @@ diopiError_t diopiEmbeddingBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                             diopiConstTensorHandle_t input) {
     impl::aten::setCurCtx(ctx);
+    auto atGradInput = impl::aten::buildATen(grad_input);
     auto atGradOutput = impl::aten::buildATen(grad_output);
     auto atInput = impl::aten::buildATen(input);
-    impl::aten::invokeATenFuncRet(ctx, at::_adaptive_avg_pool2d_backward, grad_input, atGradOutput, atInput);
+    impl::aten::invokeATenFuncRet(ctx, at::_adaptive_avg_pool2d_backward, atGradInput, atGradOutput, atInput);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
