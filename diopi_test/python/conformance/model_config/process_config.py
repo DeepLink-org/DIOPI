@@ -43,6 +43,7 @@ func_para = dict(
     argmax=reduce_op,
     view_as_complex=unary_op,
     view_as_real=unary_op,
+    copy_=binary_op,
     std={'input': 'tensor', 'dim': 'para', 'unbiased': 'para'},
     remainder={'input': 'tensor/scalar', 'other': 'tensor/scalar'},
     conv_transpose2d={"input": "tensor", "weight": "tensor", "bias": "tensor/none", "stride": "para/key",
@@ -133,8 +134,11 @@ func_para = dict(
     normal={'mean': 'tensor/para', 'std': 'tensor/para', 'size': 'para/key'},
     normal_={'size': 'para/key', 'mean': 'tensor/para', 'std': 'tensor/para'},
     triu={"input": "tensor", "diagonal": "para/key"},
+    tril={"input": "tensor", "diagonal": "para/key"},
     silu={'input': "tensor/grad", "inplace": "para/key"},
     multinomial={'input': "tensor", "num_samples": "para", "replacement": "para/key"},
+    polar={"abs": "tensor", "angle": "tensor"},
+    nll_loss={'input': 'tensor', 'target': 'tensor', 'weight': 'tensor/none', 'reduction': 'para/key', 'ignore_index': 'para/key'},
 )
 
 convert_name = {'iadd': "add", 'radd': "add", 'add_': "add", 'rmul': 'mul', 'truediv': 'div', 'rtruediv': 'div',
