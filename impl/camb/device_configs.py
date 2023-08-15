@@ -952,23 +952,19 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.uint8),    # overflow issue
-                              Skip(Dtype.bool)],    # not supported by camb kernel when accumulate is true
+                    "dtype": [Skip(Dtype.bool)],    # not supported by camb kernel when accumulate is true
                 },
             ]
         ),
     ),
 
-    # when accumulate is True and dtype of indices is bool, can't get the correct result
     'index_put_acc_bool_indices': dict(
         name=['index_put'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                    "dtype": [Skip(Dtype.bool)],  # not supported by camb kernel when accumulate is true
                 },
             ]
         ),
