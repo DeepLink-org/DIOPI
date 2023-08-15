@@ -4,6 +4,8 @@ from ...diopi_runtime import Dtype
 faster_rcnn_r50_config = {
     'conv2d': dict(
         name=["conv2d"],
+        atol=1e-03,
+        rtol=1e-03,
         para=dict(
             bias=[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None],
             stride=[(2, 2), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (2, 2), (1, 1), (2, 2), (1, 1), (1, 1), (1, 1), (2, 2), (1, 1), (2, 2), (1, 1), (1, 1), (1, 1), (2, 2), (1, 1), (2, 2), (1, 1), (1, 1), (2, 2), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (2, 2), (1, 1), (2, 2), (1, 1), (1, 1), (1, 1), (2, 2), (1, 1), (2, 2), (1, 1), (1, 1), (1, 1), (2, 2), (1, 1), (2, 2), (1, 1), (1, 1)],
@@ -33,6 +35,10 @@ faster_rcnn_r50_config = {
 
     'batch_norm': dict(
         name=["batch_norm"],
+        atol=1e-03,
+        rtol=1e-04,
+        atol_half=1e-01,
+        rtol_half=1e-02,
         para=dict(
             training=[False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False],
             momentum=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
@@ -141,6 +147,8 @@ faster_rcnn_r50_config = {
 
     'conv2d_1': dict(
         name=["conv2d"],
+        atol=1e-03,
+        rtol=1e-03,
         para=dict(
             stride=[(1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1)],
             padding=[(0, 0), (0, 0), (0, 0), (0, 0), (1, 1), (1, 1), (1, 1), (1, 1), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (1, 1), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (1, 1), (1, 1), (1, 1), (1, 1), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (1, 1), (0, 0), (0, 0)],
@@ -450,6 +458,8 @@ faster_rcnn_r50_config = {
 
     'clamp': dict(
         name=["clamp"],
+        atol=1e-04,
+        rtol=1e-05,
         interface=["torch.Tensor"],
         para=dict(
             min=[0, 0, 0, 0],
@@ -1008,6 +1018,8 @@ faster_rcnn_r50_config = {
 
     'clamp_1': dict(
         name=["clamp"],
+        atol=1e-04,
+        rtol=1e-05,
         interface=["torch.Tensor"],
         para=dict(
             min=[-4.135166556742356, 0, -4.135166556742356, 0, -4.135166556742356],
@@ -1061,6 +1073,8 @@ faster_rcnn_r50_config = {
 
     'clamp_2': dict(
         name=["clamp"],
+        atol=1e-04,
+        rtol=1e-05,
         is_inplace=[True],
         interface=["torch.Tensor"],
         para=dict(
@@ -1253,6 +1267,10 @@ faster_rcnn_r50_config = {
 
     'linear': dict(
         name=["linear"],
+        atol=1e-03,
+        rtol=1e-04,
+        atol_half=1e-01,
+        rtol_half=1e-02,
         tensor_para=dict(
             args=[
                 {

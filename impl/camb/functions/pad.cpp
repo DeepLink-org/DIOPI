@@ -121,7 +121,7 @@ DIOPI_API diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 
         std::vector<int64_t> newShape;
         // for MLU pad
-        int newPad[lInp][2], newPadTrans[lInp][2];
+        int newPad[lInp][2];
         for (size_t i = 0; i < (size_t)lDiff; i++) {
             newShape.emplace_back(inputSizes[i]);
             newPad[i][0] = newPad[i][1] = 0;
@@ -186,7 +186,7 @@ DIOPI_API diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t ou
                 sliceShape1[i] = src.shape()[i];
             }
             sliceShape1[dim] = value;
-            diopiSize_t sliceShape(sliceShape1.data(), sliceShape1.size());
+            diopiSize_t sliceShape{sliceShape1.data(), static_cast<int64_t>(sliceShape1.size())};
             DIOPI_CALL(diopiRequireTensor(ctx, &dst, &sliceShape, nullptr, src.dtype(), diopi_device));
             return diopiSuccess;
         };

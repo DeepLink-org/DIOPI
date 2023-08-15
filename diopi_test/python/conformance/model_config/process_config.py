@@ -157,6 +157,13 @@ gen_func = {'cholesky_ex/input': 'Genfunc.sym_mat', 'normal/std': 'Genfunc.posit
             "erfinv/input": 'dict(fn=Genfunc.uniform, low=-1, high=1)', "sqrt/input": 'Genfunc.positive',
             'log/input': 'Genfunc.positive', 'log2/input': 'Genfunc.positive', 'log10/input': 'Genfunc.positive'}
 
+atol_rtol = {
+    'batch_norm': dict(atol=1e-3, rtol=1e-4, atol_half=1e-1, rtol_half=1e-2,),
+    'conv2d': dict(atol=1e-3, rtol=1e-3,),
+    'linear': dict(atol=1e-3, rtol=1e-4, atol_half=1e-1, rtol_half=1e-2,),
+    'clamp': dict(atol=1e-4, rtol=1e-5,)
+}
+
 tensor_vide = "                    "
 para_vide = "            "
 key_vide = "        "
@@ -250,6 +257,9 @@ def gen_config_code(config, file_name):
             config = ["    '" + name + "_" + str(names[name]) + "': dict(\n"]
         config.append(key_vide + 'name=["' + name + '"],\n')
 
+        if name in atol_rtol:
+            for k, v in atol_rtol[name].items():
+                config.append(key_vide + f'{k}={v:.0e},\n')
         if ele[0] in inplace_tag:
             config.append(key_vide + 'is_inplace=[True],\n')
         if name in no_output_ref:

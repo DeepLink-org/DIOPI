@@ -85,8 +85,8 @@ diopiError_t diopiCol2Im(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     std::vector<int32_t> vDilation = {dilationHeight, dilationWidth};
     int32_t kernelSizeHeight = kernelSize.data[0];
     int32_t kernelSizeWidth = kernelSize.len == 2 ? kernelSize.data[1] : kernelSize.data[0];
-    int32_t outputSizeHeight = outputSize.data[0];
-    int32_t outputSizeWidth = outputSize.len == 2 ? outputSize.data[1] : outputSize.data[0];
+    // int32_t outputSizeHeight = outputSize.data[0];
+    // int32_t outputSizeWidth = outputSize.len == 2 ? outputSize.data[1] : outputSize.data[0];
 
     CnnlTensorDesc weightDesc;
     cnnlTensorDescriptor_t wDesc = weightDesc.get();
