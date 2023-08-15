@@ -2206,12 +2206,12 @@ diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTenso
 }
 
 diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                    diopiConstTensorHandle_t input, const diopiScalar_t* negative_slope) {
+                                    diopiConstTensorHandle_t input, const diopiScalar_t* negative_slope, bool input_is_result) {
     impl::aten::setCurCtx(ctx);
     auto atGradOutput = impl::aten::buildATen(grad_output);
     auto atInput = impl::aten::buildATen(input);
     auto atSlope = impl::aten::buildAtScalar(negative_slope);
-    impl::aten::invokeATenFuncRet(ctx, at::leaky_relu_backward, grad_input, atGradOutput, atInput, atSlope, false);
+    impl::aten::invokeATenFuncRet(ctx, at::leaky_relu_backward, grad_input, atGradOutput, atInput, atSlope, input_is_result);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }

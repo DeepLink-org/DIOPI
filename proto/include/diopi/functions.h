@@ -308,11 +308,13 @@ DIOPI_API diopiError_t diopiLeakyReluInp(diopiContextHandle_t ctx, diopiTensorHa
 /**
  * @brief Compute the backward pass of diopiLeakyRelu().
  * @param[in] grad_output the grad of output. type = [float32, float64].
+ * @param[in] input_is_result boolean. This is a Boolean value indicating whether the input tensor is the result of the Leaky ReLU operation's forward
+ * propagation. It is used to optimize memory usage during backpropagation.
  * @param[out] grad_input the grad of input. type = [float32, float64].
  * @sa Other parameters refer to diopiLeakyRelu().
  */
 DIOPI_API diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                              diopiConstTensorHandle_t input, const diopiScalar_t* negative_slope);
+                                              diopiConstTensorHandle_t input, const diopiScalar_t* negative_slope, bool input_is_result);
 
 /**
  * @brief Applies 2D average-pooling operation in kH×kW regions by step size sH×sW steps.
