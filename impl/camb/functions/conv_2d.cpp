@@ -448,6 +448,10 @@ extern "C" diopiError_t diopiConvTranspose2dBackward(diopiContextHandle_t ctx, d
     DiopiTensor weightTensor(weight);
     DiopiTensor gradBiasTensor(gradBias);
 
+    if (!gradOutputTensor.defined()) {
+        return diopiSuccess;
+    }
+
     // std::cout << "######################in conveTranspose2dBackward######################" << std::endl;
     // printDevData(ctx, gradInputTensor, "gradInputTensor");
     // printDevData(ctx, gradWeightTensor, "gradWeightTensor");
