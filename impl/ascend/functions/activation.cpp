@@ -91,7 +91,7 @@ DIOPI_API diopiError_t diopiLeakyRelu(diopiContextHandle_t ctx, diopiTensorHandl
 }
 
 DIOPI_API diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                              diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope, bool inputIsResult) {
+                                              diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope) {
     AclOpRunner<2, 1>("LeakyReluGrad", ctx).addInput(gradOutput, input).setAttr("negative_slope", getValue<float>(negativeSlope)).addOutput(gradInput).run();
     return diopiSuccess;
 }
