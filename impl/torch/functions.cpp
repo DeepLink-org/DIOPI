@@ -10,8 +10,8 @@
 #include <math.h>
 #include <torch/nn.h>
 #include <torch/optim.h>
-#include <ATen/ops/convolution_backward_native.h>
-
+#include <ATen/ops/convolution_backward_ops.h>
+#include <ATen/ops/convolution_backward_cuda_dispatch.h>
 #include <cstring>
 
 #ifdef USE_HIP
@@ -2161,12 +2161,19 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
         impl::aten::updateATen2Tensor(ctx, atTmp, grad_bias);
     }
 #else
-    if (atGradInput.defined() && atGradWeight.defined()) {
+#if 1
+    //if (atGradInput.defined() && atGradWeight.defined()) {
+    if (0) {
+        at::convolution_backward_out(atGradInput, atGradWeight, atGradBias, atGrad, atInput, atWeight, bias_sizes_opt, atStride, atPadding, atDilation, false, atOutputPadding, groups, {atGradInput.defined(), atGradWeight.defined(), true});
+        //std::tuple<at::Tensor &,at::Tensor &,at::Tensor &> convolution_backward_out_symint(const at::Tensor & grad_output, const at::Tensor & input, const at::Tensor & weight, at::OptionalSymIntArrayRef bias_sizes, at::IntArrayRef stride, c10::SymIntArrayRef padding, at::IntArrayRef dilation, bool transposed, c10::SymIntArrayRef output_padding, int64_t groups, ::std::array<bool,3> output_mask, at::Tensor & out0, at::Tensor & out1, at::Tensor & out2);
+        //at::convolution_backward_out_symint(atGrad, atInput, atWeight, bias_sizes_opt, atStride, atPadding, atDilation, false, c10::nullopt, groups, {atGradInput.defined(), atGradWeight.defined(), atGradBias.defined()}, atGradInput, atGradWeight, atGradBias);
+    } else
+    if (atGradInput.defined() && atGradWeight.defined() && 0) {
         at::Tensor atGradBiasTemp = atGradBias.defined() ? atGradBias : at::empty({atGrad.size(1)}, atGrad.options());
         at::convolution_backward_out(atGradInput, atGradWeight, atGradBiasTemp, atGrad, atInput, atWeight, c10::nullopt, atStride, atPadding, atDilation, false, atOutputPadding, groups, {atGradInput.defined(), atGradWeight.defined(), true});
     } else {
         auto grad_inputs =
-        at::convolution_backward(atGrad, atInput, atWeight, c10::nullopt, atStride, atPadding, atDilation, false, atOutputPadding, groups, {true, true, false});
+        at::cuda::convolution_backward(atGrad, atInput, atWeight, c10::nullopt, atStride, atPadding, atDilation, false, atOutputPadding, groups, {true, true, false});
         impl::aten::updateATen2Tensor(ctx, std::get<0>(grad_inputs), grad_input);
         impl::aten::updateATen2Tensor(ctx, std::get<1>(grad_inputs), grad_weight);
         if (bias_sizes != nullptr && grad_bias != nullptr) {
@@ -2181,6 +2188,14 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
             impl::aten::updateATen2Tensor(ctx, atTmp, grad_bias);
         }
     }
+#else
+    if (output_mask[0]) {
+      grad_input = cudnn_convolution_backward_input(input.sizes(), grad_output, weight, padding, stride, dilation, groups, benchmark, deterministic, allow_tf32);
+    }
+    if (output_mask[1]) {
+      grad_weight = cudnn_convolution_backward_weight(weight.sizes(), grad_output, input, padding, stride, dilation, groups, benchmark, deterministic, allow_tf32);
+    }
+#endif
 #endif
     impl::aten::unsetCurCtx();
     return diopiSuccess;
