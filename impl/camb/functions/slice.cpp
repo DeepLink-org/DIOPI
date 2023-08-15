@@ -46,7 +46,7 @@ diopiError_t diopiIndexSelectBackward(diopiContextHandle_t ctx, diopiTensorHandl
                                       int64_t dim, diopiConstTensorHandle_t index) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    diopiScalar_t zero = {diopi_dtype_int64, 0};
+    diopiScalar_t zero = constructDiopiScalarT(diopi_dtype_int64, 0);
     DIOPI_CALL(diopiFill(ctx, gradInput, &zero));
     DiopiTensor gradInputTensor(gradInput);
     DiopiTensor gradTensor(grad);
@@ -144,7 +144,7 @@ diopiError_t diopiSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
                                  int64_t dim, int64_t index) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    diopiScalar_t zero = {diopi_dtype_int64, 0};
+    diopiScalar_t zero = constructDiopiScalarT(diopi_dtype_int64, 0);
     DIOPI_CALL(diopiFill(ctx, gradInput, &zero));
     DiopiTensor gradInputTensor(gradInput);
     diopiDtype_t outDtype = gradInputTensor.dtype();
