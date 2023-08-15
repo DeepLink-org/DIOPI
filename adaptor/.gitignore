@@ -1,2 +1,3 @@
 # autogen-file
-diopi_adaptors.hpp
+diopi_adaptors.cpp
+impl_functions.hpp
