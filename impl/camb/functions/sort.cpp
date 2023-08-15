@@ -4,14 +4,13 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
-extern "C" {
+
+diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiTensorHandle_t dest);
 
 diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, diopiTensorHandle_t indices, diopiConstTensorHandle_t input, int64_t dim,
                        bool descending, const bool* stable) {
@@ -24,7 +23,7 @@ diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
     // since input can be changed by cnnlTopKTensor_v3 when input_shape is (24180),
     // need to requires a temp Tensor to bypass this bug
     DiopiTensor inputTensorTemp = requiresTensor(ctx, inputTensor.shape(), inputTensor.dtype());
-    diopiCopyInp(ctx, input, diopiTensorHandle_t(inputTensorTemp));
+    DIOPI_CALL(diopiCopyInp(ctx, input, diopiTensorHandle_t(inputTensorTemp)));
 
     if (inputTensorTemp.dtype() == diopi_dtype_float64) {
         DIOPI_CALL(dataTypeCast(ctx, inputTensorTemp, diopi_dtype_float32));
@@ -79,6 +78,5 @@ diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
     return diopiSuccess;
 }
 
-}  // extern "C"
 }  // namespace camb
 }  // namespace impl

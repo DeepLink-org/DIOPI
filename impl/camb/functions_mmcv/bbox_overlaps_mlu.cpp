@@ -4,7 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
 
 #include "../diopi_helper.hpp"
