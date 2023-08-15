@@ -311,7 +311,7 @@ extern "C" diopiError_t diopiLeakyReluInp(diopiContextHandle_t ctx, diopiTensorH
 }
 
 extern "C" diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                               diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope) {
+                                               diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope, bool inputIsResult) {
     DiopiTensor gradInputTensor(gradInput);
     DiopiTensor gradOutputTensor(gradOutput);
     DiopiTensor inputTensor(input);
