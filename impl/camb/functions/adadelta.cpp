@@ -32,9 +32,9 @@ extern "C" diopiError_t diopiAdadelta(diopiContextHandle_t ctx, diopiTensorHandl
     CnnlTensorDesc gradDesc(gradCasted, CNNL_LAYOUT_ARRAY);
 
     DiopiTensor lrTensor, rhoTensor, epsTensor;
-    diopiScalar_t lrScalar{diopi_dtype_float64, {lr}};
-    diopiScalar_t rhoScalar{diopi_dtype_float64, {rho}};
-    diopiScalar_t epsScalar{diopi_dtype_float64, {eps}};
+    diopiScalar_t lrScalar = constructDiopiScalarT(diopi_dtype_float64, lr);
+    diopiScalar_t rhoScalar = constructDiopiScalarT(diopi_dtype_float64, rho);
+    diopiScalar_t epsScalar = constructDiopiScalarT(diopi_dtype_float64, eps);
 
     DIOPI_CALL(makeTensorFromScalar(ctx, &lrScalar, lrTensor));
     DIOPI_CALL(makeTensorFromScalar(ctx, &rhoScalar, rhoTensor));
