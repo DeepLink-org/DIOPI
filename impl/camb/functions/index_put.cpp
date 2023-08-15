@@ -61,12 +61,17 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
                 for (int64_t j = 0; j < dim; j++) {
                     // infers out for select
                     DiopiTensor indiceInt32 = requiresTensor(ctx, {indiceNonzeroTensor.shape()[0]}, diopi_dtype_int32);
+                    if (!indiceNonzeroTensor.defined() || indiceNonzeroTensor.numel() <= 0) {
+                        // case when bool indices with all zero
+                        continue;
+                    }
                     DIOPI_CALL(diopiSelect(ctx, indiceInt32.tensorHandle(), indiceNonzero, 1, j));
 
                     savedIndicesTensors.emplace_back(indiceInt32);
                     indicesPtrList.emplace_back(indiceInt32.data());
                     savedIndicesDescs[i].set(indiceInt32, layout);
                     indicesDescs.emplace_back(savedIndicesDescs[i].get());
+                    indicesAllNull = false;
                 }
             } else {
                 // int32
@@ -75,8 +80,8 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
                 indicesPtrList.emplace_back(indiceTensor.data());
                 savedIndicesDescs[i].set(indiceTensor, layout);
                 indicesDescs.emplace_back(savedIndicesDescs[i].get());
+                indicesAllNull = false;
             }
-            indicesAllNull = false;
         } else {
             indicesPtrList.emplace_back(nullptr);
             indicesDescs.emplace_back(nullptr);
