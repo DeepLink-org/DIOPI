@@ -50,7 +50,7 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
 extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight,
                                                    diopiTensorHandle_t gradBias, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
                                                    diopiConstTensorHandle_t weight, diopiSize_t *biasSizes, diopiSize_t stride, diopiSize_t padding,
-                                                   diopiSize_t dilation, bool transposed, diopiSize_t outputPadding, int64_t groups) {
+                                                   diopiSize_t dilation, int64_t groups) {
     auto format = getAclDataFormat(input);
     const std::string dataFormat = (format == ACL_FORMAT_NHWC) ? "NHWC" : "NCHW";
     std::vector<int64_t> strideTemp(4, 1);
