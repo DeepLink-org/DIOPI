@@ -8,8 +8,6 @@
 namespace impl {
 namespace camb {
 
-diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim);
-
 static std::vector<int> getPerm(DiopiTensor tensor, int64_t dim0, int64_t dim1) {
     int inputSize = tensor.shape().size();
     if (dim0 < 0) {

@@ -3,8 +3,6 @@
 namespace impl {
 namespace camb {
 
-diopiError_t diopiPermute(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dims);
-
 diopiError_t clampScalarCheck(diopiContextHandle_t ctx, diopiConstTensorHandle_t input, diopiTensorHandle_t out, const diopiScalar_t* min,
                               const diopiScalar_t* max) {
     diopiDtype_t inDtype, outDtype;
