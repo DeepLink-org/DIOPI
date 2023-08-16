@@ -57,6 +57,7 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
                 diopiTensorHandle_t indiceNonzero = nullptr;
                 DIOPI_CALL(diopiNonzero(ctx, &indiceNonzero, indiceTensor.tensorHandle()));
                 DiopiTensor indiceNonzeroTensor(indiceNonzero);
+                DIOPI_CHECK(indiceNonzeroTensor.defined(), "indiceNonzeroTensor should be defined.");
 
                 for (int64_t j = 0; j < dim; j++) {
                     // infers out for select
