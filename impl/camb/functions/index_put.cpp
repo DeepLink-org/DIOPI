@@ -61,7 +61,7 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
                 for (int64_t j = 0; j < dim; j++) {
                     // infers out for select
                     DiopiTensor indiceInt32 = requiresTensor(ctx, {indiceNonzeroTensor.shape()[0]}, diopi_dtype_int32);
-                    if (!indiceNonzeroTensor.defined() || indiceNonzeroTensor.numel() <= 0) {
+                    if (indiceNonzeroTensor.numel() <= 0) {
                         // case when bool indices with all zero
                         continue;
                     }
