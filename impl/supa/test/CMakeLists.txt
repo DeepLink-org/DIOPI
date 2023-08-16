@@ -76,7 +76,7 @@ set(FUNCTIONS_EXPORT_SRC
 )
 
 pybind11_add_module(${DIOPIFUNCTIONS_PYBIND} SHARED ${FUNCTIONS_EXPORT_SRC})
-target_link_libraries(${DIOPIFUNCTIONS_PYBIND} PRIVATE ${DIOPIRT})
+target_link_libraries(${DIOPIFUNCTIONS_PYBIND} PRIVATE ${DIOPIRT} ${DEVICEIMPL})
 add_dependencies(${DIOPIFUNCTIONS_PYBIND} test_code_gen)
 
 # copy pybind library into test folder.

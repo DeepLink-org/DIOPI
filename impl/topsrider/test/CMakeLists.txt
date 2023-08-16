@@ -46,7 +46,7 @@ set(FUNCTIONS_SRC
 )
 
 pybind11_add_module(${DIOPI_FUNCTIONS} SHARED ${FUNCTIONS_SRC})
-target_link_libraries(${DIOPI_FUNCTIONS} PRIVATE -Wl,--no-as-needed diopirt -Wl,--as-needed)
+target_link_libraries(${DIOPI_FUNCTIONS} PRIVATE -Wl,--no-as-needed diopirt ${DEVICEIMPL} -Wl,--as-needed)
 add_dependencies(${DIOPI_FUNCTIONS} test_code_gen)
 
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/../diopi_test/python)
