@@ -35,7 +35,7 @@ extern "C" diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHand
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
+diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(input);
     DiopiTensor otherTensor;
