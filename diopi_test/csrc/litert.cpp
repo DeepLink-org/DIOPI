@@ -121,10 +121,9 @@ const char* deviceToStr(const diopiDevice_t device) {
 }
 
 diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context,
-                         const void* src) {
+                         const void* src)
+    : dtype_(dtype), device_(device), context_(context) {
     assert(shape);
-    dtype_ = dtype;
-    device_ = device;
 
     shape_.resize(shape->len);
     stride_.resize(shape->len);
@@ -153,7 +152,6 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
             diopiTensorCopyFromBuffer(context, src, this);
         }
     }
-    context_ = context;
 }
 
 bool diopiTensor::resetShape(const diopiSize_t* size) {

@@ -19,11 +19,11 @@ static uint32_t getSeed() {
     return seed;
 }
 
-diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to, int64_t idx) {
+diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor tensor(inout);
-    if (!tensor.defined()) {
+    if (!(tensor.defined() && tensor.numel())) {
         return diopiSuccess;
     }
 

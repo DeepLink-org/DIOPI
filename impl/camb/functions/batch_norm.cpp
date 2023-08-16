@@ -36,24 +36,24 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     DIOPI_CHECK(dim == outputTr.dim(), "Input dim != out dim");
 
     if (!weightTr.defined()) {
-        diopiScalar_t val{diopi_dtype_float32, {1.0f}};
+        diopiScalar_t val = constructDiopiScalarT(diopi_dtype_float32, 1.0f);
         weightTr = requiresTensor(ctx, {inputTr.shape()[1]}, inputTr.dtype());
         DIOPI_CALL(diopiFill(ctx, weightTr.tensorHandle(), &val))
     }
     if (!biasTr.defined()) {
-        diopiScalar_t val{diopi_dtype_float32, {0.0f}};
+        diopiScalar_t val = constructDiopiScalarT(diopi_dtype_float32, 0.0f);
         biasTr = requiresTensor(ctx, {inputTr.shape()[1]}, inputTr.dtype());
         DIOPI_CALL(diopiFill(ctx, biasTr.tensorHandle(), &val))
     }
 
     if (3 == dim) {
         inputTr.unsqueeze(3);
-        outputTr.reshape(inputTr.shape());
+        outputTr.view(inputTr.shape());
     }
     if (2 == dim) {
         inputTr.unsqueeze(2);
         inputTr.unsqueeze(3);
-        outputTr.reshape(inputTr.shape());
+        outputTr.view(inputTr.shape());
     }
 
     std::vector<DiopiTensor*> pTensors{&inputTr, &weightTr, &biasTr};
@@ -166,14 +166,14 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     if (3 == dim) {
         inputTr.unsqueeze(3);
         gradOutputTr.unsqueeze(3);
-        gradInputTr.reshape(inputTr.shape());
+        gradInputTr.view(inputTr.shape());
     }
     if (2 == dim) {
         inputTr.unsqueeze(2);
         inputTr.unsqueeze(3);
         gradOutputTr.unsqueeze(2);
         gradOutputTr.unsqueeze(3);
-        gradInputTr.reshape(inputTr.shape());
+        gradInputTr.view(inputTr.shape());
     }
 
     std::vector<DiopiTensor*> pTensors{&gradOutputTr, &inputTr, &weightTr};

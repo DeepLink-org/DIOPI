@@ -385,12 +385,9 @@ public:
         return *this;
     }
 
-    bool defined() const {
-        if (tensor_ == nullptr) return false;
-        return this->numel() != 0;
-    }
+    bool defined() const { return tensor_ != nullptr; }
 
-    DiopiTensor& reshape(const std::vector<int64_t> shape) {
+    DiopiTensor& view(const std::vector<int64_t> shape) {
         // must be contiguous
         std::vector<int64_t> stride(shape.size());
         this->shape_ = shape;

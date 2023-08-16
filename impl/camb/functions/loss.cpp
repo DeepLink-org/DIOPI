@@ -58,7 +58,7 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
         for (int i = 2; i < inputTensor.dim(); ++i) {
             inputLastSize *= inputTensor.shape()[i];
         }
-        inputTensor.reshape({inputTensor.shape()[0], inputTensor.shape()[1], 1, inputLastSize});
+        inputTensor.view({inputTensor.shape()[0], inputTensor.shape()[1], 1, inputLastSize});
 
         inputContiguous = inputTensor.contiguous(ctx, MemoryFormat::ChannelsLast);
         DIOPI_CALL(cnnlTranspose(ctx, handle, inputTensor, inputContiguous, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC));
@@ -177,7 +177,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         for (int i = 2; i < inputTensor.dim(); ++i) {
             inputLastSize *= inputTensor.shape()[i];
         }
-        inputTensor.reshape({inputTensor.shape()[0], inputTensor.shape()[1], 1, inputLastSize});
+        inputTensor.view({inputTensor.shape()[0], inputTensor.shape()[1], 1, inputLastSize});
 
         inputContiguous = inputTensor.contiguous(ctx, MemoryFormat::ChannelsLast);
         DIOPI_CALL(cnnlTranspose(ctx, handle, inputTensor, inputContiguous, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC));
@@ -235,8 +235,8 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
                                        gradInputRealTensor.data()));
     if (dim > 2) {
         // NHWC -> NCHW and dealing with data type
-        gradInputRealTensor.reshape(inputContiguous.shape());
-        gradInputTensor.reshape(inputContiguous.shape());
+        gradInputRealTensor.view(inputContiguous.shape());
+        gradInputTensor.view(inputContiguous.shape());
 
         DiopiTensor gradInputTmpTensor = gradInputTensor;
         if (gradInputTensor.dtype() != gradInputRealTensor.dtype()) {

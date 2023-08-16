@@ -102,9 +102,9 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, dio
     }
 
     DiopiTensor slicedOutputTensor = requiresTensor(ctx, trueOutShape, outputTensor.dtype());
-    slicedOutputTensor.reshape({slicedOutputTensor.numel()});
+    slicedOutputTensor.view({slicedOutputTensor.numel()});
     CnnlTensorDesc slicedOutputDesc(slicedOutputTensor, CNNL_LAYOUT_ARRAY);
-    outputTensor.reshape({outputTensor.numel()});
+    outputTensor.view({outputTensor.numel()});
     CnnlTensorDesc newOutputDesc(outputTensor, CNNL_LAYOUT_ARRAY);
 
     int begin[] = {0};
