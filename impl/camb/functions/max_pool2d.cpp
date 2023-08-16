@@ -13,8 +13,6 @@
 namespace impl {
 namespace camb {
 
-diopiError_t diopiPermute(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dims);
-
 namespace {
 
 std::vector<int> getDim(const DiopiTensor& tensor) {
