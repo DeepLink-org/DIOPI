@@ -76,6 +76,11 @@ def prepare():
     parser = argparse.ArgumentParser(
         description='Generate parrots source files')
     parser.add_argument(
+        '-a',
+        '--auto_convert',
+        help='convert the memory format and data type automatically according to the convertion configuration user defined.',
+        default='false')
+    parser.add_argument(
         '-d',
         '--diopi_dir',
         help='path of dependence used to generate code',
@@ -95,6 +100,7 @@ def prepare():
     source = os.path.join(options.diopi_dir, 'proto/include/diopi')
     config_path = os.path.join(options.diopi_dir, 'impl/', options.config_device)
     device = options.config_device
+    auto_convert = (options.auto_convert.lower() == "true")
 
     def create_if_not_exist(name):
         if not os.path.exists(name):
@@ -104,7 +110,7 @@ def prepare():
     dirs = dict(source=source,
                 output_dir=options.output_dir,
                 config_path=config_path)
-    return dirs, device
+    return dirs, device, auto_convert
 
 
 def get_func_info(content):
@@ -135,6 +141,7 @@ def get_functions_support(source_dir):
     funcs_info = {}
     func_dtypes = []
     param_dtypes = {}
+    funcs_decl = []
     func_name = ''
     sa_func = None
     for idx, row in enumerate(content):
@@ -182,6 +189,8 @@ def get_functions_support(source_dir):
                 continue
             else:
                 ins, outs, args, ins_v = get_func_info(temp_content)
+                func_decl = 'diopiError_t __attribute__((weak)) ' + func_name + ' '.join(temp_content).replace('\n', '') + '\n\n'
+                funcs_decl.append(func_decl)
             if func_name not in funcs_info.keys():
                 funcs_info[func_name] = {}
             funcs_info[func_name]['call_args'] = args
@@ -226,7 +235,7 @@ def get_functions_support(source_dir):
                     funcs_info[func]['outs'][out] = from_func_info['outs'][out]
                 if 'grad_' + out in funcs_info[func]['ins']:
                     funcs_info[func]['ins']['grad_' + out] = from_func_info['outs'][out]
-    return funcs_info
+    return funcs_info, funcs_decl
 
 
 def deal_dtype(op_name, dtype_config, func_infos, tensor_name=None):
@@ -365,19 +374,18 @@ def memory_format_to_str(memory_format):
     return ', std::vector<diopiMemoryFormat_t>{' + ','.join(formats) + '}'
 
 
-def autogen_op_adaptor(op_configs, device, func_infos):
+def autogen_op_adaptor(op_configs, device, func_infos, is_auto_convert):
+
     adaptors_code = []
     cast = op_configs['Common']['cast'] if 'Common' in op_configs.keys() else ''
     contiguous = op_configs['Common']['contiguous'] if 'Common' in op_configs.keys() else []
     layout = op_configs['Common']['layout'] if 'Common' in op_configs.keys() else []
     for func in func_infos:
         op_name = func.lstrip('diopi')
-        if op_name in exclude_ops:
-            continue
-        if (func not in op_configs.keys() and 'Common' not in op_configs.keys()) or len(list(func_infos[func].keys())) == 1:
+        if (func not in op_configs.keys() and 'Common' not in op_configs.keys()) or len(list(func_infos[func].keys())) == 1 or op_name in exclude_ops or not is_auto_convert:
             call_args = [arg.split(' ')[-1] for arg in func_infos[func]['call_args']]
             adaptors_code.append(OT.adaptor_template.substitute(env=dict(op_name=op_name, attrs=func_infos[func]['call_args'], device=device,
-                                                                         new_input='', cast_input='', cast_output='', call_func=func + '(' + ', '.join(call_args) + ');')))
+                                                                         new_input='', cast_input='', cast_output='', func_name=func, call_func=func + '(' + ', '.join(call_args) + ')')))
         else:
             op_config = op_configs[func] if func in op_configs.keys() else None
             new_ins = []
@@ -428,11 +436,11 @@ for (int i = 0; i < ${num}; ++i) {
                 call_args.append(new_name)
 
             adaptors_code.append(OT.adaptor_template.substitute(env=dict(op_name=op_name, attrs=', '.join(func_infos[func]['call_args']), device=device,
-                                                                         new_input=new_input, cast_input=cast_ins, cast_output=cast_outs, call_func=func + '(' + ', '.join(call_args) + ');')))
+                                                                         new_input=new_input, cast_input=cast_ins, cast_output=cast_outs, func_name=func, call_func=func + '(' + ', '.join(call_args) + ')')))
     return adaptors_code
 
 
-def gen_autogen_operators(dirs, device, adaptor_fm):
+def gen_autogen_operators(dirs, device, adaptor_fm, is_auto_convert):
     config_file_path = os.path.join(dirs.get('config_path'), 'convert_config.yaml')
     try:
         with open(config_file_path, 'r') as f:
@@ -441,24 +449,29 @@ def gen_autogen_operators(dirs, device, adaptor_fm):
         print(e)
         return
 
-    funcs_info = get_functions_support(dirs.get('source'))
+    funcs_info, funcs_decl = get_functions_support(dirs.get('source'))
     op_configs = analysis_configs(configs, funcs_info)
-    adaptors_code = autogen_op_adaptor(op_configs, device, funcs_info)
+    adaptors_code = autogen_op_adaptor(op_configs, device, funcs_info, is_auto_convert)
     casts_code = autogen_cast_strategy()
 
-    adaptor_fm.write('diopi_adaptors.cpp',
+    adaptor_fm.write('diopi_adaptor.cpp',
                      OT.operators_template,
                      dict(adaptors=adaptors_code, cast_strategy=casts_code))
+    adaptor_fm.write('impl_functions.hpp',
+                     OT.impl_declaration_template,
+                     dict(device=device, impl_declaration=funcs_decl))
+
 
 def declare_outputs(adaptor_fm):
-    adaptor_fm.will_write('diopi_adaptors.cpp')
+    adaptor_fm.will_write('diopi_adaptor.cpp')
+    adaptor_fm.will_write('impl_functions.hpp')
 
 
 def gen_all_codes():
-    dirs, device = prepare()
+    dirs, device, is_auto_convert = prepare()
     adaptor_fm = FileManager(dirs.get('output_dir', '.'))
     declare_outputs(adaptor_fm)
-    gen_autogen_operators(dirs, device, adaptor_fm)
+    gen_autogen_operators(dirs, device, adaptor_fm, is_auto_convert)
     adaptor_fm.check_all_files_written()
 
 
