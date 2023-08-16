@@ -78,17 +78,16 @@ else ()
     endif()
 endif()
 
+set(AUTO_CONVERT "false")
 if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
-    set(ADAPTOR_GEN_PATH "${CMAKE_SOURCE_DIR}/../adaptor/codegen")
-    add_custom_target(adaptor_code_gen COMMAND python3 ${ADAPTOR_GEN_PATH}/gen.py
-        --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${CMAKE_SOURCE_DIR}/../proto/include/diopi/
-        --config_device=torch)
-    set(USE_ADAPTOR "true")
-    add_dependencies(${DEVICEIMPL} adaptor_code_gen)
-    add_definitions(-DTEST_USE_ADAPTOR)
-else()
-    set(USE_ADAPTOR "false")
+    set(AUTO_CONVERT "true")
 endif()
+
+set(ADAPTOR_GEN_PATH "${CMAKE_SOURCE_DIR}/../adaptor/codegen")
+add_custom_target(adaptor_code_gen COMMAND python3 ${ADAPTOR_GEN_PATH}/gen.py
+    --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${CMAKE_SOURCE_DIR}/../proto/include/diopi/
+    --config_device=torch --auto_convert=${AUTO_CONVERT})
+add_dependencies(${DEVICEIMPL} adaptor_code_gen)
 
 if (TEST)
     add_subdirectory(test)
