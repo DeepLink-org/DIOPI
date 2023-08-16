@@ -11,8 +11,6 @@
 namespace impl {
 namespace ascend {
 
-extern "C" {
-
 DIOPI_API diopiError_t diopiAddcmul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t tensor1,
                                     diopiConstTensorHandle_t tensor2, const diopiScalar_t* value) {
     diopiTensorHandle_t trOther = nullptr;
@@ -27,8 +25,6 @@ DIOPI_API diopiError_t diopiAddcmulInp(diopiContextHandle_t ctx, diopiTensorHand
                                        const diopiScalar_t* value) {
     return diopiAddcmul(ctx, input, input, tensor1, tensor2, value);
 }
-
-}  // extern "C"
 
 }  // namespace ascend
 }  // namespace impl

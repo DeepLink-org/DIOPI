@@ -11,7 +11,6 @@
 namespace impl {
 namespace ascend {
 
-extern "C" {
 DIOPI_API diopiError_t diopiOneHot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t numClasses) {
     diopiDtype_t dtype;
     diopiGetTensorDtype(out, &dtype);
@@ -25,7 +24,6 @@ DIOPI_API diopiError_t diopiOneHot(diopiContextHandle_t ctx, diopiTensorHandle_t
         .addOutput(out)
         .run();
     return diopiSuccess;
-}
 }
 }  // namespace ascend
 }  // namespace impl

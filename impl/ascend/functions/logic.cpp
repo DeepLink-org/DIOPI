@@ -11,8 +11,6 @@
 namespace impl {
 namespace ascend {
 
-extern "C" {
-
 diopiError_t logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other, char* logicOp) {
     diopiDtype_t inputDtype, otherDtype;
     diopiGetTensorDtype(input, &inputDtype);
@@ -179,8 +177,6 @@ diopiError_t diopiLogicalNot(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
 }
 
 diopiError_t diopiLogicalNotInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiLogicalNot(ctx, input, input); }
-
-}  // extern "C"
 
 }  // namespace ascend
 }  // namespace impl

@@ -11,7 +11,7 @@
 namespace impl {
 namespace ascend {
 
-extern "C" diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     AclOpRunner<1, 1>("Cast", ctx).addInput(input).addOutput(out).setAttr<int32_t>("dst_type", getAclDataType(out)).run();
     return diopiSuccess;
 }

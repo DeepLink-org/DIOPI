@@ -11,7 +11,7 @@
 namespace impl {
 namespace ascend {
 
-extern "C" diopiError_t diopiArgmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim, bool keepdim) {
+diopiError_t diopiArgmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim, bool keepdim) {
     AclOpRunner<2, 1>("ArgMaxV2", ctx).addInput(input).addConstInput(*dim).setAttr("keep_dims", keepdim).addOutput(out).run();
     return diopiSuccess;
 }
