@@ -13,6 +13,7 @@ class OpTemplate(object):
 #define DIOPI_ADAPTOR_HPP_
 
 #include "convert.hpp"
+#include "impl_functions.hpp"
 
 ${cast_strategy}
 
@@ -22,7 +23,7 @@ ${adaptors}
 """)
 
     adaptor_template = CodeTemplate("""\
-diopiError_t diopi${op_name}(${attrs}) {
+extern "C" diopiError_t diopi${op_name}(${attrs}) {
     TimeElapsed adaptorTimeElapsed("${op_name}_adaptor");
     ${new_input}
     {
@@ -34,7 +35,12 @@ diopiError_t diopi${op_name}(${attrs}) {
     diopiError_t ret;
     {
         TimeElapsed opTimeElapsed("${op_name}");
-        ret = ::impl::${device}::${call_func}
+        if(::impl::${device}::${func_name}) {
+            ret = ::impl::${device}::${call_func};
+        }
+        else {
+            return diopiError_t::diopiNoImplement;
+        }
     }
     return ret;
 }
@@ -54,5 +60,28 @@ public:
         return convert;
     }
 };
+""")
+
+    impl_declaration_template = CodeTemplate("""\
+/**
+ * @file
+ * @author OpenComputeLab
+ * @copyright  (c) 2023, DeepLink.
+ */
+
+#ifndef IMPL_FUNCTIONS_HPP_
+#define IMPL_FUNCTIONS_HPP_
+
+#include <diopi/diopirt.h>
+
+namespace impl {
+namespace ${device} {
+
+${impl_declaration}
+
+}  // namespace ${device}
+}  // namespace impl
+
+#endif  // IMPL_FUNCTIONS_HPP_
 
 """)

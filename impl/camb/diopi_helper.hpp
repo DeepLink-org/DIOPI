@@ -10,7 +10,6 @@
 #include <cnnl.h>
 #include <cnrt.h>
 #include <diopi/diopirt.h>
-#include <diopi/functions.h>
 
 #include <algorithm>
 #include <cstdio>
@@ -20,6 +19,7 @@
 #include <vector>
 
 #include "error.hpp"
+#include "impl_functions.hpp"
 
 #define DIOPI_CHECK(cond, fmt, args...)                                                      \
     do {                                                                                     \

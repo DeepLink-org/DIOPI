@@ -36,28 +36,29 @@ list(APPEND IMPL_SRC cnnl_helper.cpp)
 list(APPEND IMPL_SRC ${IMPL_SRC_MMCV})
 list(APPEND IMPL_SRC ${IMPL_SRC_MMCV_MLU})
 
-BANG_ADD_LIBRARY(${DEVICEIMPL} SHARED ${IMPL_SRC})
+# adaptor
+set(ADAPTOR_GEN_PATH "${CMAKE_SOURCE_DIR}/../adaptor/codegen")
+set(ADAPTOR_CSRC_PATH "${ADAPTOR_GEN_PATH}/../csrc")
 
+set(AUTO_CONVERT "false")
+if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
+    set(AUTO_CONVERT "true")
+endif()
+add_custom_target(adaptor_code_gen COMMAND python3 ${ADAPTOR_GEN_PATH}/gen.py
+    --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH}
+    --config_device=camb --auto_convert=${AUTO_CONVERT})
+
+file(GLOB_RECURSE ADAPTOR_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ../../adaptor/csrc/*.cpp)
+list(APPEND IMPL_SRC ${ADAPTOR_SRC})
+
+BANG_ADD_LIBRARY(${DEVICEIMPL} SHARED ${IMPL_SRC})
 # third_party include
 set(THIRD_PARTY_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/half/include)
 
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
-
 target_link_libraries(${DEVICEIMPL} cndev cnrt cnnl cnmlrt)
 target_include_directories(${DEVICEIMPL} SYSTEM PUBLIC ${THIRD_PARTY_INCLUDE_DIRS})
-
-if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
-    set(ADAPTOR_GEN_PATH "${CMAKE_SOURCE_DIR}/../adaptor/codegen")
-    set(ADAPTOR_CSRC_PATH "${ADAPTOR_GEN_PATH}/../csrc")
-    add_custom_target(adaptor_code_gen COMMAND python3 ${ADAPTOR_GEN_PATH}/gen.py
-        --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH}
-        --config_device=camb)
-    set(USE_ADAPTOR "true")
-    add_dependencies(${DEVICEIMPL} adaptor_code_gen)
-    list(APPEND IMPL_SRC ${ADAPTOR_CSRC_PATH}/*.cpp)
-else()
-    set(USE_ADAPTOR "false")
-endif()
+add_dependencies(${DEVICEIMPL} adaptor_code_gen)
 
 if (TEST)
     add_subdirectory(test)
