@@ -58,15 +58,22 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
                 DIOPI_CALL(diopiNonzero(ctx, &indiceNonzero, indiceTensor.tensorHandle()));
                 DiopiTensor indiceNonzeroTensor(indiceNonzero);
 
+                DIOPI_CHECK(indiceNonzeroTensor.defined(), "indiceNonzeroTensor should be defined.");
+
                 for (int64_t j = 0; j < dim; j++) {
                     // infers out for select
                     DiopiTensor indiceInt32 = requiresTensor(ctx, {indiceNonzeroTensor.shape()[0]}, diopi_dtype_int32);
+                    if (indiceNonzeroTensor.numel() <= 0) {
+                        // case when bool indices with all zero
+                        continue;
+                    }
                     DIOPI_CALL(diopiSelect(ctx, indiceInt32.tensorHandle(), indiceNonzero, 1, j));
 
                     savedIndicesTensors.emplace_back(indiceInt32);
                     indicesPtrList.emplace_back(indiceInt32.data());
                     savedIndicesDescs[i].set(indiceInt32, layout);
                     indicesDescs.emplace_back(savedIndicesDescs[i].get());
+                    indicesAllNull = false;
                 }
             } else {
                 // int32
@@ -75,41 +82,30 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
                 indicesPtrList.emplace_back(indiceTensor.data());
                 savedIndicesDescs[i].set(indiceTensor, layout);
                 indicesDescs.emplace_back(savedIndicesDescs[i].get());
+
+                indicesAllNull = false;
             }
-            indicesAllNull = false;
-        } else {
-            indicesPtrList.emplace_back(nullptr);
-            indicesDescs.emplace_back(nullptr);
         }
     }
-    if (indicesAllNull) {
-        // cnnl can't support all of the indices are nullptr
-        return diopiSuccess;
+    else {
+        indicesPtrList.emplace_back(nullptr);
+        indicesDescs.emplace_back(nullptr);
     }
-
-    size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(
-        cnnlGetIndexPutWorkspaceSize(handle, inputDesc.get(), indicesDescs.data(), indicesDescs.size(), valuesDesc.get(), accumulate, &workspaceSize));
-
-    void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
-
-    DIOPI_CALLCNNL(cnnlIndexPut(handle,
-                                inputDesc.get(),
-                                inputTensor.data(),
-                                indicesDescs.data(),
-                                indicesPtrList.data(),
-                                indicesDescs.size(),
-                                valuesDesc.get(),
-                                valuesTensor.data(),
-                                workspacePtr,
-                                workspaceSize,
-                                accumulate,
-                                true,
-                                outputDesc.get(),
-                                outputTensor.data()));
-
+}
+if (indicesAllNull) {
+    // cnnl can't support all of the indices are nullptr
     return diopiSuccess;
 }
+
+size_t workspaceSize = 0;
+DIOPI_CALLCNNL(cnnlGetIndexPutWorkspaceSize(handle, inputDesc.get(), indicesDescs.data(), indicesDescs.size(), valuesDesc.get(), accumulate, &workspaceSize));
+
+void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
+
+DIOPI_CALLCNNL(cnnlIndexPut(handle, inputDesc.get(), inputTensor.data(), indicesDescs.data(), indicesPtrList.data(), indicesDescs.size(), valuesDesc.get(),
+                            valuesTensor.data(), workspacePtr, workspaceSize, accumulate, true, outputDesc.get(), outputTensor.data()));
+
+return diopiSuccess;
 
 diopiError_t diopiIndexPutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t values, diopiConstTensorHandle_t* indices,
                               int64_t indicesCounts, bool accumulate) {
