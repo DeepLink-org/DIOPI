@@ -4,7 +4,7 @@ from .cv_configs.resnet101_config import resnet101_config  # 5.0G
 from .cv_configs.mobilenet_v2_config import mobilenet_v2_config  # 4.3G
 from .cv_configs.efficientnet_config import efficientnet_config  # 12G
 from .cv_configs.seresnet50_config import seresnet50_config  # 5.7G
-from .cv_configs.densenet_config import densenet_config  # large data
+from .cv_configs.densenet_config import densenet_config  # large data,106G
 from .cv_configs.vgg16_config import vgg16_config  # 9.8G
 from .cv_configs.repvgg_config import repvgg_config  # 4.1G
 from .cv_configs.shufflenet_v2_config import shufflenet_v2_config  # 1.9G
@@ -37,13 +37,13 @@ from .det_configs.solo_config import solo_config  # 24G
 from .other_configs.deeppose_config import deeppose_config  # 10G
 from .other_configs.hrnet_config import hrnet_config  # 7G
 from .other_configs.stgcn_config import stgcn_config  # 7.1G
-from .other_configs.sar_config import sar_config  # large shape
+from .other_configs.sar_config import sar_config  # large shape,83G
 from .other_configs.dbnet_config import dbnet_config  # 14G
 from .other_configs.crnn_config import crnn_config  # 2.1G
 from .other_configs.slowfast_config import slowfast_config  # 18G
 from .other_configs.tsn_config import tsn_config  # 20G
-from .other_configs.llama_config import llama_config
-from .other_configs.llama_train_config import llama_train_config
+from .other_configs.llama_config import llama_config  # 17G
+from .other_configs.llama_train_config import llama_train_config  # large data,659G
 
 
 __all__ = ['resnet50_config',

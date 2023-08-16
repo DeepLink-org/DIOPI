@@ -410,21 +410,6 @@ llama_train_config = {
         ),
     ),
 
-    'view_as_complex': dict(
-        name=["view_as_complex"],
-        interface=["torch"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(2, 128, 32, 64, 2)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
     'mul_2': dict(
         name=["mul"],
         interface=["torch.Tensor"],
@@ -439,21 +424,6 @@ llama_train_config = {
                 {
                     "ins": ["other"],
                     "shape": [(1, 128, 1, 64)],
-                    "dtype": [Dtype.complex64],
-                    "gen_fn": Genfunc.randn_cmplx,
-                },
-            ],
-        ),
-    ),
-
-    'view_as_real': dict(
-        name=["view_as_real"],
-        interface=["torch"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(2, 128, 32, 64)],
                     "dtype": [Dtype.complex64],
                     "gen_fn": Genfunc.randn_cmplx,
                 },
