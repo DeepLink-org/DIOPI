@@ -4,7 +4,9 @@ project(diopi_impl)
 option(TEST "Whether to compile DIOPI with runtime" OFF)
 option(DEBUG "whether to use debug" ON)
 option(DYLOAD "Whether to load so in runtime by dlopen" OFF)
+
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/proto/include")
+include_directories("${PROJECT_SOURCE_DIR}/../adaptor/csrc")
 
 # use gcover
 option(ENABLE_COVERAGE "Use gcov" OFF)

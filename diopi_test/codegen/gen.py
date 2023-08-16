@@ -22,12 +22,6 @@ def prepare():
     parser = argparse.ArgumentParser(
         description='Generate parrots source files')
     parser.add_argument(
-        '-u',
-        '--use_adaptor',
-        help='name of file which contains configs of device',
-        default='true'
-        '-')
-    parser.add_argument(
         '-d',
         '--device',
         help='name of device',
@@ -38,11 +32,9 @@ def prepare():
     options = parser.parse_args()
     source_dir = os.path.join(_cur_dir, '../../proto/include/diopi/')
     output_dir = os.path.join(_cur_dir, '../csrc')
-    use_adaptor = True if options.use_adaptor == 'true' else False
     device = options.device
     options = dict(source_dir=source_dir,
                    output_dir=output_dir,
-                   use_adaptor=use_adaptor,
                    device=device)
 
     return options
@@ -110,7 +102,6 @@ def gen_functions(options):
     with open(os.path.join(_cur_dir, options.get('source_dir'), 'functions.h'), 'r', encoding='utf8')as f:
         content = f.readlines()
     exports = []
-    use_adaptor = options.get('use_adaptor')
     device = options.get('device')
     if device == 'ascend':
         ft = OT.function_ascend_template
@@ -159,26 +150,17 @@ def gen_functions(options):
                     out_copy += "if ({param}.get() != nullptr)\n \
     *{param} = *{param}Handle;\n".format(param=call_args[out])
                     call_args[out] = '&' + call_args[out] + 'Handle'
-                if use_adaptor:
-                    call_func = 'diopiadaptor::' + func_name + '(' + ', '.join(call_args) + ')'
-                else:
-                    call_func = func_name + '(' + ', '.join(call_args) + ')'
+                call_func = func_name + '(' + ', '.join(call_args) + ')'
                 exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(attrs), convert=convert,
                                                       out_copy=out_copy, call_func=call_func)))
             else:
-                if use_adaptor:
-                    exports.append('m.def("{func_name}", diopiadaptor::{func_name});'.format(func_name=func_name))
-                else:
-                    exports.append('m.def("{func_name}", {func_name});'.format(func_name=func_name))
+                exports.append('m.def("{func_name}", {func_name});'.format(func_name=func_name))
             if len(paras_none):
                 arg_def = [attr_types[index] + ' ' + args[index] for index in range(len(args)) if index not in paras_none]
                 keep_args = []
                 for index, arg in enumerate(call_args):
                     keep_args.append(arg if index not in paras_none else 'nullptr')
-                if use_adaptor:
-                    call_func = 'diopiadaptor::' + func_name + '(' + ', '.join(keep_args) + ')'
-                else:
-                    call_func = func_name + '(' + ', '.join(keep_args) + ')'
+                call_func = func_name + '(' + ', '.join(keep_args) + ')'
                 if type_change:
                     exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert=convert,
                                                           out_copy=out_copy, call_func=call_func)))
