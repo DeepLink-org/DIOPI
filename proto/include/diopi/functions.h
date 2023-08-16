@@ -60,8 +60,6 @@ DIOPI_API diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorH
  * @param[in] stride an array with dimension matching the number of input spatial dimensions. type = [int32, int64].
  * @param[in] padding an array with dimension matching the number of input spatial dimensions. type = [int32, int64].
  * @param[in] dilation an array with dimension matching the number of input spatial dimensions. type = [int32, int64].
- * @param[in] transposed indicating whether the convolution is transposed.
- * @param[in] output_padding an array, dimension == number of input spatial dimensions; only supported when transposed is true. type = [int32, int64].
  * @param[in] groups number of groups for grouped convolution. type = [int64].
  * @param[out] grad_input the grad of input. type = [float32, float16, float64].
  * @param[out] grad_weight the grad of weight. type = [float32, float16, float64].
@@ -70,7 +68,7 @@ DIOPI_API diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorH
 DIOPI_API diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
                                                   diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
                                                   diopiConstTensorHandle_t weight, diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding,
-                                                  diopiSize_t dilation, bool transposed, diopiSize_t output_padding, int64_t groups);
+                                                  diopiSize_t dilation, int64_t groups);
 
 /**
  * @brief Applies Batch Normalization for each channel across a batch of data.
@@ -94,10 +92,10 @@ DIOPI_API diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandl
 /**
  * @brief Computes the mean and inverse standard deviation across a batch of data for Synchronized Batch Normalization (SyncBN).
  * @param[in] ctx Context environment.
- * @param input Input tensor. type = [float32, float16, float64].
- * @param eps The value added to the denominator during calculation to ensure numerical stability. type = [float32, float64].
+ * @param[in] input Input tensor. type = [float32, float16, float64].
+ * @param[in] eps The value added to the denominator during calculation to ensure numerical stability. type = [float32, float64].
  * @param[out] mean Mean tensor, the computed mean value for each feature channel of the input tensor. type = [float32, float16, float64].
- * @param invstd Inverse standard deviation tensor, the computed inverse standard deviation for each feature channel of the input tensor. type = [float32,
+ * @param[out] invstd Inverse standard deviation tensor, the computed inverse standard deviation for each feature channel of the input tensor. type = [float32,
  * float16, float64].
  */
 DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd, diopiConstTensorHandle_t input,
@@ -107,17 +105,17 @@ DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensor
  * @brief Collects and processes statistics across multiple devices for Synchronized Batch Normalization (SyncBN) with consideration of the count of samples in
  * each device.
  * @param[in] ctx Context environment.
- * @param input Input tensor. type = [float32, float64].
- * @param mean_all The tensor of aggregated mean values across all devices. type = [float32, float64].
- * @param invstd_all The tensor of aggregated inverse standard deviation values across all devices. type = [float32, float64].
- * @param counts The tensor representing the count of samples in each device. type = [float32, float64].
- * @param momentum Used to calculate the running mean and variance during runtime. type = [float32, float64].
- * @param eps The value added to the denominator during calculation to ensure numerical stability. type = [float32, float64].
+ * @param[in] input Input tensor. type = [float32, float64].
+ * @param[in] mean_all The tensor of aggregated mean values across all devices. type = [float32, float64].
+ * @param[in] invstd_all The tensor of aggregated inverse standard deviation values across all devices. type = [float32, float64].
+ * @param[in] counts The tensor representing the count of samples in each device. type = [float32, float64].
+ * @param[in] momentum Used to calculate the running mean and variance during runtime. type = [float32, float64].
+ * @param[in] eps The value added to the denominator during calculation to ensure numerical stability. type = [float32, float64].
  * @param[out] mean Mean tensor, the computed mean value for each feature channel of the input tensor. type = [float32, float64].
- * @param invstd Inverse standard deviation tensor, the computed inverse standard deviation for each feature channel of the input tensor. type = [float32,
+ * @param[out] invstd Inverse standard deviation tensor, the computed inverse standard deviation for each feature channel of the input tensor. type = [float32,
  * float16, float64].
- * @param running_mean Updated running mean tensor. type = [float32, float64].
- * @param running_var Updated running variance tensor. type = [float32, float64].
+ * @param[out] running_mean Updated running mean tensor. type = [float32, float64].
+ * @param[out] running_var Updated running variance tensor. type = [float32, float64].
  */
 DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd,
                                                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t mean_all,
@@ -127,18 +125,18 @@ DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t 
 /**
  * @brief Conducts backward pass reduction operations for Synchronized Batch Normalization (SyncBN).
  * @param[in] ctx Context environment.
- * @param grad_out Gradient tensor back-propagated from the downstream layers. type = [float32, float64].
- * @param input Original input tensor used in the forward pass. type = [float32, float64].
- * @param mean Mean tensor computed in the forward pass. type = [float32, float64].
- * @param invstd Inverse standard deviation tensor computed in the forward pass. type = [float32, float64].
- * @param weight Original weight tensor used in the forward pass. type = [float32, float64].
- * @param input_g Flag to indicate whether to compute gradient with respect to input. type = bool.
- * @param weight_g Flag to indicate whether to compute gradient with respect to weight. type = bool.
- * @param bias_g Flag to indicate whether to compute gradient with respect to bias. type = bool.
+ * @param[in] grad_out Gradient tensor back-propagated from the downstream layers. type = [float32, float64].
+ * @param[in] input Original input tensor used in the forward pass. type = [float32, float64].
+ * @param[in] mean Mean tensor computed in the forward pass. type = [float32, float64].
+ * @param[in] invstd Inverse standard deviation tensor computed in the forward pass. type = [float32, float64].
+ * @param[in] weight Original weight tensor used in the forward pass. type = [float32, float64].
+ * @param[in] input_g Flag to indicate whether to compute gradient with respect to input. type = bool.
+ * @param[in] weight_g Flag to indicate whether to compute gradient with respect to weight. type = bool.
+ * @param[in] bias_g Flag to indicate whether to compute gradient with respect to bias. type = bool.
  * @param[out] sum_dy Tensor for sum of gradients w.r.t output y. type = [float32, float64].
- * @param sum_dy_xmu Tensor for sum of gradients product with (x - mean). type = [float32, float64].
- * @param grad_weight Gradient tensor w.r.t the weight. type = [float32, float64].
- * @param grad_bias Gradient tensor w.r.t the bias. type = [float32, float64].
+ * @param[out] sum_dy_xmu Tensor for sum of gradients product with (x - mean). type = [float32, float64].
+ * @param[out] grad_weight Gradient tensor w.r.t the weight. type = [float32, float64].
+ * @param[out] grad_bias Gradient tensor w.r.t the bias. type = [float32, float64].
  */
 DIOPI_API diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorHandle_t sum_dy, diopiTensorHandle_t sum_dy_xmu,
                                                     diopiTensorHandle_t grad_weight, diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_out,
@@ -148,14 +146,14 @@ DIOPI_API diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, di
 /**
  * @brief Conducts element-wise operations for the backward pass of Synchronized Batch Normalization (SyncBN).
  * @param[in] ctx Context environment.
- * @param grad_out Gradient tensor back-propagated from the downstream layers. type = [float32, float64].
- * @param input Original input tensor used in the forward pass. type = [float32, float64].
- * @param mean Mean tensor computed in the forward pass. type = [float32, float64].
- * @param invstd Inverse standard deviation tensor computed in the forward pass. type = [float32, float64].
- * @param weight Original weight tensor used in the forward pass. type = [float32, float64].
- * @param sum_dy Tensor for sum of gradients w.r.t output y. type = [float32, float64].
- * @param sum_dy_xmu Tensor for sum of gradients product with (x - mean). type = [float32, float64].
- * @param count The tensor representing the count of samples. type = [int32].
+ * @param[in] grad_out Gradient tensor back-propagated from the downstream layers. type = [float32, float64].
+ * @param[in] input Original input tensor used in the forward pass. type = [float32, float64].
+ * @param[in] mean Mean tensor computed in the forward pass. type = [float32, float64].
+ * @param[in] invstd Inverse standard deviation tensor computed in the forward pass. type = [float32, float64].
+ * @param[in] weight Original weight tensor used in the forward pass. type = [float32, float64].
+ * @param[in] sum_dy Tensor for sum of gradients w.r.t output y. type = [float32, float64].
+ * @param[in] sum_dy_xmu Tensor for sum of gradients product with (x - mean). type = [float32, float64].
+ * @param[in] count The tensor representing the count of samples. type = [int32].
  * @param[out] grad_input Gradient tensor w.r.t the input. type = [float32, float64].
  */
 DIOPI_API diopiError_t diopiBatchNormBackwardElemt(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_out,
@@ -166,13 +164,13 @@ DIOPI_API diopiError_t diopiBatchNormBackwardElemt(diopiContextHandle_t ctx, dio
 /**
  * @brief Conducts element-wise operations for the forward pass of Synchronized Batch Normalization (SyncBN).
  * @param[in] ctx Context environment.
- * @param input Input tensor. type = [float32, float64].
- * @param weight Weight tensor. type = [float32, float64].
- * @param bias Bias tensor. type = [float32, float64].
- * @param mean Mean tensor, the computed mean value for each feature channel of the input tensor. type = [float32, float64].
- * @param invstd Inverse standard deviation tensor, the computed inverse standard deviation for each feature channel of the input tensor. type = [float32,
+ * @param[in] input Input tensor. type = [float32, float64].
+ * @param[in] weight Weight tensor. type = [float32, float64].
+ * @param[in] bias Bias tensor. type = [float32, float64].
+ * @param[in] mean Mean tensor, the computed mean value for each feature channel of the input tensor. type = [float32, float64].
+ * @param[in] invstd Inverse standard deviation tensor, the computed inverse standard deviation for each feature channel of the input tensor. type = [float32,
  * float16, float64].
- * @param eps The value added to the denominator during calculation to ensure numerical stability. type = [float32, float64].
+ * @param[in] eps The value added to the denominator during calculation to ensure numerical stability. type = [float32, float64].
  * @param[out] out Output tensor, the result of batch normalization. type = [float32, float64].
  */
 DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
@@ -352,7 +350,9 @@ DIOPI_API diopiError_t diopiLeakyReluInp(diopiContextHandle_t ctx, diopiTensorHa
  * @brief Compute the backward pass of diopiLeakyRelu().
  * @param[out] grad_input the grad of input. type = [float32, float64].
  * @param[in] grad_output the grad of output. type = [float32, float64].
- * @param[in] input_is_result boolean.
+ * @param[in] input_is_result boolean. This is a Boolean value indicating whether the input tensor is the result of the Leaky ReLU operation's forward
+ * propagation. It is used to optimize memory usage during backpropagation.
+ * @param[out] grad_input the grad of input. type = [float32, float64].
  * @sa Other parameters refer to diopiLeakyRelu().
  */
 DIOPI_API diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
@@ -867,7 +867,7 @@ DIOPI_API diopiError_t diopiAtan(diopiContextHandle_t ctx, diopiTensorHandle_t o
 /**
  * @brief The in-place version of diopiAtan().
  * @param[in] ctx Context environment.
- * @param[in] input the input tensor and will be stroed reuslt tensor. type = [float16, float32, float64].
+ * @param[inout] input the input tensor and will be stroed reuslt tensor. type = [float16, float32, float64].
  */
 DIOPI_API diopiError_t diopiAtanInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
 
@@ -1064,12 +1064,8 @@ DIOPI_API diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 DIOPI_API diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha);
 /**
  * @brief Add a scalar to a tensor.
- * \f[ out = input + alpha \times other \f]
- * @param[in] ctx Context environment.
- * @param[in] input the first input tensor and will be stored result tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
- * @param[in] other The scalar value to be added. type = [float64, float32, float16, int64, int32, int16, int8, uint8].
- * @param[in] alpha Scaling factor, i.e., the scaling factor of the second tensor.type = [float32, float64, int32, int64].
- * @param[out] out Output tensor for storing the result of the addition operation. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[in] other the scalar value to be added. type = [float64, float32, float16, int64, int32, int16, int8, uint8].
+ * @sa Other parameters refer to diopiAdd().
  */
 DIOPI_API diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
                                       const diopiScalar_t* alpha);
@@ -2154,12 +2150,12 @@ DIOPI_API diopiError_t diopiClipGradNorm(diopiContextHandle_t ctx, double* out, 
 /**
  * @brief Perform weight re-normalization in the embedding layer
  * @param[in] ctx Context environment.
- * @param[in] input the input tensor and will be stored result tensor. type = [float32, float64].
+ * @param[in] inout the input tensor and will be stored result tensor. type = [float32, float64].
  * @param[in] indices indicate the weights to be updated in the embedding layer. type = [int32, int64].
  * @param[in] max_norm each embedding vector with norm larger than max_norm is renormalized to have norm max_norm. type = [double].
  * @param[in] norm_type the p of the p-norm to compute for the max_norm option. type = [double].
  */
-DIOPI_API diopiError_t diopiEmbeddingRenorm_(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t indices, double max_norm,
+DIOPI_API diopiError_t diopiEmbeddingRenorm_(diopiContextHandle_t ctx, diopiTensorHandle_t inout, diopiConstTensorHandle_t indices, double max_norm,
                                              double norm_type);
 /**
  * @brief A simple lookup table that looks up embeddings in a fixed dictionary and size. This module is often used to retrieve word embeddings using indices.
@@ -2389,7 +2385,6 @@ DIOPI_API diopiError_t diopiConvTranspose2d(diopiContextHandle_t ctx, diopiTenso
  * @param[in] ctx Context environment.
  * @param[in] grad_output the grad tensor of output. type = [float32, float16, float64].
  * @param[in] bias_sizes an array, indicates that a bias was used in the forward pass and contains the shape of the bias. type = [int32, int64].
- * @param[in] output_padding an array, dimension == number of input spatial dimensions; only supported when transposed is true. type = [int32, int64].
  * @param[in] input the input tensor. type = [float32, float16, float64].
  * @param[in] weight the weight tensor; dimension of kernel_size must match the number of input spatial dimensions.
  * @param[in] stride an array with dimension matching the number of input spatial dimensions. type = [int32, int64].
@@ -2454,8 +2449,8 @@ DIOPI_API diopiError_t diopiCdist(diopiContextHandle_t ctx, diopiTensorHandle_t 
  * @param[in] grad_output the grad tensor of output, with the same shape as the forward pass output. type=[float32, float64].
  * @param[in] input1 input tensor. type=[float32, float64].
  * @param[in] input2 input tensor. type=[float32, float64].
- * @param[in] p double p value for the p-norm distance to calculate between each vector pair.
- * @param[in] cdist input tensor. type=[float32, float64].
+ * @param[in] p p value for the p-norm distance to calculate between each vector pair. type=[double].
+ * @param[in] cdist the p-norm distance between input1 and input2. type=[float32, float64].
  * @param[out] grad_input the grad tensor of input, with the same shape as the forward pass input. type=[float32, float64].
  */
 DIOPI_API diopiError_t diopiCdistBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
@@ -2490,10 +2485,10 @@ DIOPI_API diopiError_t diopiAdadelta(diopiContextHandle_t ctx, diopiTensorHandle
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor. type=[float16, float32, float64].
  * @param[in] grad the grad tensor. type=[float16, float32, float64].
- * @param[in] exp_avgs the exponentially weighted moving average of gradients. type=[float16, float32,
+ * @param[in] exp_avg the exponentially weighted moving average of gradients. type=[float16, float32,
  * float64].
- * @param[in] exp_avg_sqs the exponentially weighted moving average of squared gradients. type=[float16, float32, float64].
- * @param[in] max_exp_avg_sqs the maximum values of the exponentially weighted moving average of squared gradients. type=[float16, float32, float64].
+ * @param[in] exp_avg_sq the exponentially weighted moving average of squared gradients. type=[float16, float32, float64].
+ * @param[in] max_exp_avg_sq the maximum values of the exponentially weighted moving average of squared gradients. type=[float16, float32, float64].
  * @param[in] lr learning rate. type=[float32].
  * @param[in] beta1 coefficients used for computing moving averages of gradients. type=[float32].
  * @param[in] beta2 coefficients used for computing moving averages of squared gradients. type=[float32].
@@ -2583,7 +2578,7 @@ DIOPI_API diopiError_t diopiConvolution3d(diopiContextHandle_t ctx, diopiTensorH
 DIOPI_API diopiError_t diopiConvolution3dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
                                                   diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
                                                   diopiConstTensorHandle_t weight, diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding,
-                                                  diopiSize_t dilation, bool transposed, diopiSize_t output_padding, int64_t groups);
+                                                  diopiSize_t dilation, int64_t groups);
 
 /**
  * \brief Applies a 3D max pooling over an input signal composed of several input planes.
@@ -3069,18 +3064,17 @@ DIOPI_API diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle
  * @param[in] inout the input and output tensor, type = [float32, float64, float16, int64, int32, int16, int8]
  * @param[in] from the lower bound of the random function. type = [int64].
  * @param[in] to a pointer, the upper bound of the random function, it can be none.
- * @param[in] idx idx
  */
-DIOPI_API diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t from, const int64_t* to, int64_t idx);
+DIOPI_API diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t from, const int64_t* to);
 
 /**
  * @brief Fills self tensor with numbers sampled from the continuous uniform distribution: \f[P(x)= \frac{1}{to-from}\f]
  * @param[in] ctx Context environment.
- * @param[in] from
- * @param[in] to
- * @param[in] inout the output tensor.
+ * @param[in] inout the input and output tensor, type = [float32, float64, float16, int64, int32, int16, int8]
+ * @param[in] from the lower bound of the random function. type = [double].
+ * @param[in] to the upper bound of the random function. type = [double].
  */
-DIOPI_API diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to, int64_t idx);
+DIOPI_API diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to);
 
 /**
  * @brief Draws binary random numbers (0 or 1) from a Bernoulli distribution.
@@ -3088,14 +3082,14 @@ DIOPI_API diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHand
  * @param[in] input the input tensor of probability values for the Bernoulli distribution.
  * @param[out] out the output tensor.
  */
-DIOPI_API diopiError_t diopiBernoulli(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t idx);
+DIOPI_API diopiError_t diopiBernoulli(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
 /**
  * @brief The in-place version of diopiBernoulli().
  * @param[in] ctx Context environment.
- * @param[in] input the input tensor of probability values for the Bernoulli distribution.
+ * @param[in] inout the input tensor of probability values for the Bernoulli distribution.
  */
-DIOPI_API diopiError_t diopiBernoulliInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t idx);
+DIOPI_API diopiError_t diopiBernoulliInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout);
 
 /**
  * @brief Draws binary random numbers (0 or 1) from a Bernoulli distribution.
@@ -3103,7 +3097,7 @@ DIOPI_API diopiError_t diopiBernoulliInp(diopiContextHandle_t ctx, diopiTensorHa
  * @param[in] p probability values for the Bernoulli distribution.
  * @param[out] out the output tensor.
  */
-DIOPI_API diopiError_t diopiBernoulliScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, double p, int64_t idx);
+DIOPI_API diopiError_t diopiBernoulliScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, double p);
 
 /**
  * @brief Returns a one-dimensional tensor that starts from start, increments by step, and ends at end.
@@ -3120,10 +3114,9 @@ DIOPI_API diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t
  * @brief Randomly generate an integer between 0 and n-1.
  * @param[in] ctx Context environment.
  * @param[in] n the upper bound(excluding), type = [int64].
- * @param[in] idx
  * @param[out] out the output tensor. type = [int32, int64].
  */
-DIOPI_API diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, int64_t n, int64_t idx);
+DIOPI_API diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, int64_t n);
 
 /**
  * @brief Returns a tensor of random numbers drawn from separate normal distributions whose mean and standard deviation are given.
@@ -3166,16 +3159,7 @@ DIOPI_API diopiError_t diopiNormalTensor(diopiContextHandle_t ctx, diopiTensorHa
  * @param[in] ctx Context environment.
  * @param[in] mean the tensor of per-element means.
  * @param[in] std the tensor of per-element standard deviations.
- * @param[out] inout the output tensor.
- */
-DIOPI_API diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std);
-
-/**
- * @brief The in-place version of diopiNormal.
- * @param[in] ctx Context environment.
- * @param[in] mean the tensor of per-element means.
- * @param[in] std the tensor of per-element standard deviations.
- * @param[out] inout the output tensor.
+ * @param[in] inout the input and output tensor.
  */
 DIOPI_API diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std);
 

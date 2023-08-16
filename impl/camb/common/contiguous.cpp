@@ -179,7 +179,7 @@ diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, MemoryFormat
         return diopiSuccess;
     }
     int64_t dim = src.dim();
-    DIOPI_CHECK(dim <= 5, "only support less than 5d tensor currently");
+    DIOPI_CHECK(dim <= 8, "only support less than 8d tensor currently");
     MemoryFormat srcMemoryFormat;
     std::vector<int32_t> order;
     std::vector<int32_t> reverseOrder;
