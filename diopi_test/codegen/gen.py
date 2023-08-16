@@ -7,6 +7,7 @@ import yaml
 import copy
 
 from op_template import OpTemplate as OT
+from filemanager import FileManager
 
 tensor_ptr = ['diopiTensorHandle_t*', 'diopiConstTensorHandle_t*']
 
@@ -97,7 +98,7 @@ def get_func_info(content):
     return type_change, args, attr_types, paras_can_be_none, ins_vector, outs_vector, out_ptr
 
 
-def gen_functions(options):
+def gen_functions(options, functions_fm):
     _cur_dir = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(_cur_dir, options.get('source_dir'), 'functions.h'), 'r', encoding='utf8')as f:
         content = f.readlines()
@@ -168,18 +169,23 @@ def gen_functions(options):
                     exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert='',
                                                           out_copy='', call_func=call_func)))
 
-    output_path = options.get('output_dir')
-    output_file = os.path.join(output_path, 'export_functions.cpp')
-    out_code = OT.operators_template.substitute(env=dict(export_functions=exports))
+    # output_path = options.get('output_dir')
+    # output_file = os.path.join(output_path, 'export_functions.cpp')
+    # out_code = OT.operators_template.substitute(env=dict(export_functions=exports))
 
-    with open(output_file, 'w') as file:
-        file.write(out_code)
+    functions_fm.write("export_functions.cpp",OT.operators_template, env=dict(export_functions=exports) )
+    # with open(output_file, 'w') as file:
+    #     file.write(out_code)
 
+def declare_outputs(adaptor_fm):
+    adaptor_fm.will_write('export_functions.cpp')
 
 def gen_all_codes():
     dirs = prepare()
-
-    gen_functions(dirs)
+    functions_fm = FileManager(dirs.get('output_dir', '.'))
+    declare_outputs(functions_fm)
+    gen_functions(dirs, functions_fm)
+    functions_fm.check_all_files_written()
 
 
 if __name__ == '__main__':
