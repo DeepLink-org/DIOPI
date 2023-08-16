@@ -10,8 +10,6 @@
 namespace impl {
 namespace camb {
 
-diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiTensorHandle_t dest);
-
 diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, diopiTensorHandle_t indices, diopiConstTensorHandle_t input, int64_t dim,
                        bool descending, const bool* stable) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);

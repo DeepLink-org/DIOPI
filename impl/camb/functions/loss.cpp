@@ -11,13 +11,6 @@
 namespace impl {
 namespace camb {
 
-diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiTensorHandle_t dest);
-
-diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim);
-
-diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                     diopiConstTensorHandle_t output, int64_t dim);
-
 diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                           diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
