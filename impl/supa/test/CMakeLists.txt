@@ -3,7 +3,7 @@ set(DIOPIFUNCTIONS_PYBIND export_functions)
 set(DIOPIRT diopirt)
 
 add_compile_options(-fno-elide-constructors)
-add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11)
+add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 build)
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/../third_party/pybind11/include")
 
 # config inc/lib path for SUPA runtime.

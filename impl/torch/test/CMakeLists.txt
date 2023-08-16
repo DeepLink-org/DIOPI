@@ -2,7 +2,7 @@ set(DIOPIRT export_runtime)
 set(DIOPI_FUNCTIONS export_functions)
 
 add_compile_options(-fno-elide-constructors)
-add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11)
+add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 build)
 
 set(DIOPI_TEST_DIR "${CMAKE_SOURCE_DIR}/../diopi_test")
 
