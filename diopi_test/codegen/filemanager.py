@@ -61,5 +61,4 @@ class FileManager(object):
                 "list of outputs this script produces. use "
                 "will_write to add them.".format(self.undeclared_files))
         if len(self.filenames) > 0:
-            raise Exception("Outputs declared with 'will_write' were "
-                            + "never written: {}".format(self.filenames))
+            raise Exception("Outputs declared with 'will_write' were " + "never written: {}".format(self.filenames))
