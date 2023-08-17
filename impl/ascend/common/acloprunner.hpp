@@ -6,8 +6,6 @@
 #include <acl/acl_op_compiler.h>
 #include <stdint.h>
 
-#include <impl_functions.hpp>
-
 #include <algorithm>
 #include <array>
 #include <functional>
@@ -19,6 +17,8 @@
 #include <typeinfo>
 #include <utility>
 #include <vector>
+
+#include "impl_functions.hpp"
 
 namespace impl {
 namespace ascend {

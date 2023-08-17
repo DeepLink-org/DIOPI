@@ -9,17 +9,17 @@ class OpTemplate(object):
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef DIOPI_ADAPTOR_HPP_
-#define DIOPI_ADAPTOR_HPP_
-
 #include "convert.hpp"
 #include "impl_functions.hpp"
+
+// NOLINTBEGIN
 
 ${cast_strategy}
 
 ${adaptors}
 
-# endif // DIOPI_ADAPTOR_HPP
+// NOLINTEND
+
 """)
 
     adaptor_template = CodeTemplate("""\
@@ -74,6 +74,7 @@ public:
 
 #include <diopi/diopirt.h>
 
+// NOLINTBEGIN
 namespace impl {
 namespace ${device} {
 
@@ -82,6 +83,7 @@ ${impl_declaration}
 }  // namespace ${device}
 }  // namespace impl
 
+// NOLINTEND
 #endif  // IMPL_FUNCTIONS_HPP_
 
 """)
