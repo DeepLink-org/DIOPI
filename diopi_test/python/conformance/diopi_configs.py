@@ -4117,7 +4117,7 @@ diopi_configs = {
         para=dict(
             stride=[1, 2, 1, 2, (2, 2)],
             padding=[0, 1, 0, 1, (1, 0)],
-            output_padding=[0, 1, 0, 1, (1, 1)],
+            output_padding=[0, 1, 0, 1, (0, 1)],
             groups=[1, 8, 1, 1, 1],
             dilation=[1, 2, 1, 2, (1, 2)],
         ),

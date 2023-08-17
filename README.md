@@ -21,7 +21,7 @@ DIOPI-设备无关算子接口（Device-Independent Operator Interface, DIOPI）
 DIOPI主要包含以下几个组件：
 
 - [proto](https://github.com/DeepLink-org/DIOPI/tree/main/proto)：声明了一套运行时函数接口(diopirt)和标准算子接口(function)。
-- [impl](https://github.com/DeepLink-org/DIOPI/tree/main/impl)：对接硬件芯片。硬件厂商可在其中使用硬件软件栈提供的计算接口，实现算子功能。其使用 ```proto/include/diopi/diopirt.h``` 提供的接口实现 ```proto/include/diopi/functions.h``` 声明的标准算子, 并编译为 ```libdiopi_impl.so``` 动态库。在测试阶段，impl 还需实现并注册 ```diopi_test/include/diopi_register.h``` 声明的硬件芯片管理相关的函数。
+- [impl](https://github.com/DeepLink-org/DIOPI/tree/main/impl)：对接硬件芯片。硬件厂商可在其中使用硬件软件栈提供的计算接口，实现算子功能。其使用 ```proto/include/diopi/diopirt.h``` 提供的接口实现 ```proto/include/diopi/functions.h``` 声明的标准算子, 并编译为 ```libdiopi_impl.so``` 动态库。
 - [diopi_test](https://github.com/DeepLink-org/DIOPI/tree/main/diopi_test)：用于保证算子功能正确性。实现 ```proto/include/diopi/diopirt.h``` 声明基础运行时函数，并调用 ```libdiopi_impl.so``` 进行测试验证。
 - [adaptor](https://github.com/DeepLink-org/DIOPI/tree/main/adaptor)：用于提供辅助功能函数。目前提供的功能包括自动类型转换、内存分布转换等。
 
@@ -48,11 +48,13 @@ DIOPI主要包含以下几个组件：
     ```
     cd impl && sh scripts/build_impl.sh torch
     ```
+    可以通过传入参数指定底层硬件，得到支持对应硬件的版本。
 
     或者参考以下命令示例编译 impl：
     ```
     cd impl && mkdir build && cd build && cmake .. -DIMPL_OPT=cuda && make -j32
     ```
+    可以通过-DIMPL_OPT指定底层硬件，得到支持对应硬件的版本。
 
 
 ## 更新基准数据
@@ -65,7 +67,7 @@ DIOPI主要包含以下几个组件：
     ```
     python main.py --mode gen_data --model_name xxx
     ```
-    其中支持的模型名可以通过如下命令获得：
+    其中支持的模型名和对应的算子可以通过如下命令获得：
     ```
     python main.py --get_model_list
     ```
@@ -95,7 +97,7 @@ DIOPI主要包含以下几个组件：
     2022-09-29 16:40:40,550 - DIOPI-Test - INFO - Run diopi_functions.relu succeed
     ```
 
-    失败的测例会额外存储测例输入参数的张量信息在 ```error_report.csv``` 中以供调试所需。
+    如果测例失败，会打印对应测例的输入参数的张量信息用于调试。
 
     ```
     DIOPI-Test Error Report
@@ -114,7 +116,7 @@ DIOPI主要包含以下几个组件：
   ```
 ### 测例失败
 
-失败的测例会额外存储测例输入参数的张量信息在 error_report.csv 中以供调试所需。
+如果测例失败，会打印对应测例的输入参数的张量信息用于调试。
   ```
   DIOPI-Test Error Report
   ---------------------------------
