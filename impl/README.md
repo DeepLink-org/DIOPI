@@ -15,11 +15,11 @@
 
 ## **实现原理**
 
-<!-- #### 实现 TEST 所需运行时函数
+#### 实现 TEST 所需运行时函数
 
   ```diopi_test/include/diopi_register.h``` 中提供了运行时所需 C-API 函数声明，用户根据函数声明实现运行时所需函数，以便测试套件能够在芯片上管理内存等资源。该实现部分仅供测试时使用。
 
-#### 要求实现并注册的函数列表如下
+<!-- #### 要求实现并注册的函数列表如下
 
   ```
   typedef int32_t (*create_stream_func_t)(diopiStreamHandle_t*);
