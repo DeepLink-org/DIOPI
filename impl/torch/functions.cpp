@@ -2012,6 +2012,7 @@ diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     return diopiSuccess;
 }
 
+#if 0
 diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                           diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignore_index) {
     impl::aten::setCurCtx(ctx);
@@ -2043,6 +2044,21 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     } else {
         at::nll_loss2d_out(atOut, atInput, atTarget, atWeight, reduction, ignore_index);
     }
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+#endif
+
+diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
+                          diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignore_index) {
+    impl::aten::setCurCtx(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = impl::aten::buildATen(out);
+    auto atTarget = impl::aten::buildATen(target);
+    auto atWeight = impl::aten::buildATen(weight);
+
+    at::nll_loss_out(atOut, atInput, atTarget, atWeight, reduction, ignore_index);
+
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -2382,11 +2398,12 @@ diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
 diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                      diopiConstTensorHandle_t output, int64_t dim) {
     impl::aten::setCurCtx(ctx);
+    auto atGradInput = impl::aten::buildATen(grad_input);
     auto atGradOutput = impl::aten::buildATen(grad_output);
     auto atOutput = impl::aten::buildATen(output);
     // TODO(huqingqing): use default type instead
     //impl::aten::invokeATenFuncRet(ctx, at::_log_softmax_backward_data, grad_input, atGradOutput, atOutput, dim, atOutput.scalar_type());
-    impl::aten::invokeATenFuncInp(ctx, at::_log_softmax_backward_data_out, atGradOutput, atGradOutput, atOutput, dim, atOutput.scalar_type());
+    impl::aten::invokeATenFuncInp(ctx, at::_log_softmax_backward_data_out, atGradInput, atGradOutput, atOutput, dim, atOutput.scalar_type());
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
