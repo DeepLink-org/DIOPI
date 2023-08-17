@@ -27,10 +27,12 @@ BinPackArguments: false
 ColumnLimit: 160
 #IncludeIsMainSourceRegex: (\.cu)$
 IncludeCategories:
-  - Regex:           '^<.*\.h(pp)?>'
+  - Regex:           '^<.*\.h>'
     Priority:        1
-  - Regex:           '^<.*'
+  - Regex:           '^<.*\.hpp>'
     Priority:        2
-  - Regex:           '.*'
+  - Regex:           '^<.*'
     Priority:        3
+  - Regex:           '.*'
+    Priority:        4
 ...
