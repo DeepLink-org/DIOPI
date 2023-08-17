@@ -169,16 +169,12 @@ def gen_functions(options, functions_fm):
                     exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert='',
                                                           out_copy='', call_func=call_func)))
 
-    # output_path = options.get('output_dir')
-    # output_file = os.path.join(output_path, 'export_functions.cpp')
-    # out_code = OT.operators_template.substitute(env=dict(export_functions=exports))
+    functions_fm.write("export_functions.cpp", OT.operators_template, env=dict(export_functions=exports))
 
-    functions_fm.write("export_functions.cpp",OT.operators_template, env=dict(export_functions=exports) )
-    # with open(output_file, 'w') as file:
-    #     file.write(out_code)
 
 def declare_outputs(adaptor_fm):
     adaptor_fm.will_write('export_functions.cpp')
+
 
 def gen_all_codes():
     dirs = prepare()
