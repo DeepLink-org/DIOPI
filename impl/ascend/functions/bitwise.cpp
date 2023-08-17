@@ -13,7 +13,6 @@ namespace ascend {
 
 extern "C" {
 
-
 DIOPI_API diopiError_t diopiBitwiseNot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     diopiDtype_t dtype;
     diopiGetTensorDtype(input, &dtype);
@@ -35,7 +34,6 @@ DIOPI_API diopiError_t diopiBitwiseAnd(diopiContextHandle_t ctx, diopiTensorHand
     }
     return diopiSuccess;
 }
-
 
 }  // extern "C"
 
