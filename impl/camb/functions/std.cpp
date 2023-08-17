@@ -40,14 +40,14 @@ DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 
     int axisNum = 0;
     int *axis = nullptr;
-    if (dim.getLen() == 0) {
+    if (0 == dim.len) {
         axisNum = inputTensor.dim();
         axis = new int[axisNum];
         for (int i = 0; i < axisNum; i++) {
             axis[i] = i;
         }
     } else {
-        axisNum = dim.getLen();
+        axisNum = dim.len;
         axis = new int[axisNum];
         for (int i = 0; i < axisNum; i++) {
             axis[i] = dim.data[i];

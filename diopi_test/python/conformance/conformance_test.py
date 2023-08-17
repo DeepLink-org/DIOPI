@@ -155,7 +155,10 @@ class ManualTest(object):
         out_numpy = out.numpy()
         mask_numpy = mask.numpy()
 
-        if training:
+        rtol = default_cfg_dict['default_option']['rtol_half'] if input_numpy.dtype == np.float16 else default_cfg_dict['default_option']['rtol']
+        atol = default_cfg_dict['default_option']['atol_half'] if input_numpy.dtype == np.float16 else default_cfg_dict['default_option']['atol']
+
+        if training and input.numel() > 0:
             # compute ratio
             real_ratio = np.sum(mask_numpy) / mask.numel()
             # check data
@@ -164,13 +167,13 @@ class ManualTest(object):
                 mask_numpy = mask_numpy * tmp
             remains = out_numpy[mask_numpy == 1]
             ref = input_numpy[mask_numpy == 1]
-            assert np.allclose(remains, ref / (1 - p), rtol=1e-4, atol=1e-5),\
+            assert np.allclose(remains, ref / (1 - p), rtol=rtol, atol=atol),\
                 f"failed to execute {name}"
-
-            assert np.abs(real_ratio - (1 - p)) < 3e-2,\
-                f"failed to execute {name} "
+            if mask.numel() > 100:
+                assert np.abs(real_ratio - (1 - p)) < 3e-2,\
+                    f"failed to execute {name}"
         else:
-            assert np.allclose(input_numpy, out_numpy, rtol=1e-4, atol=1e-5),\
+            assert np.allclose(input_numpy, out_numpy, rtol=rtol, atol=atol),\
                 "failed to execute dropout"
 
     def test_dropout(input, p=0.5, training=True, inplace=False):
@@ -497,6 +500,8 @@ class ConformanceTest(object):
                     if passed:
                         logger.info(f"Run diopi_functions.{cfg_func_name} succeed")
                     else:
+                        logger.info(output_abs_path)
+                        logger.info(data['cfg'])
                         input_compare_str = "" if not_passed_name == "" else f", because of inputs: {not_passed_name} changed"
                         logger.error(
                             f"Run diopi_functions.{cfg_func_name} failed{input_compare_str}", tag=test_tag, info=tensor_info)

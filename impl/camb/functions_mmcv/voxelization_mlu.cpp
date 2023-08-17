@@ -100,7 +100,7 @@ extern "C" diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx, diopiTen
     const int gridY = std::round((coorsYMax - coorsYMin) / voxelY);
     const int gridZ = std::round((coorsZMax - coorsZMin) / voxelZ);
 
-    diopiScalar_t scalar = {diopi_dtype_int32, 0};
+    diopiScalar_t scalar = impl::camb::constructDiopiScalarT(diopi_dtype_int32, 0);
     auto tempCoors = impl::camb::requiresTensor(ctx, {nDim, numPoints}, diopi_dtype_int32);
     DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(tempCoors), &scalar));
 

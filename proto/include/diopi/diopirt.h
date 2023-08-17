@@ -27,22 +27,9 @@ extern "C" {
 #define DIOPI_VER_PATCH 0
 #define DIOPI_VERSION (DIOPI_VER_MAJOR * 1000 + DIOPI_VER_MINOR * 100 + DIOPI_VER_PATCH)
 
-typedef struct diopiSize_t_ {
+typedef struct {
     const int64_t* data;
     int64_t len;
-
-#if defined(__cplusplus)
-    diopiSize_t_() : data(nullptr), len(0) {}
-    diopiSize_t_(const int64_t* d, int64_t l) : data(d), len(l) {}
-    int64_t getLen() const { return len; }
-    friend std::ostream& operator<<(std::ostream& os, const diopiSize_t_& obj) {
-        os << "Length: " << obj.len << "\nData: ";
-        for (int64_t i = 0; i < obj.len; ++i) {
-            os << obj.data[i] << " ";
-        }
-        return os;
-    }
-#endif  // __cplusplus
 } diopiSize_t;
 
 typedef enum {
@@ -83,8 +70,10 @@ typedef enum {
     diopi_dtype_bool = 11,
     diopi_dtype_bfloat16 = 12,
     diopi_dtype_tfloat32 = 13,
-    diopi_dtype_complex64 = 14,
-    diopi_dtype_complex128 = 15,
+    diopi_dtype_complex32 = 14,
+    diopi_dtype_complex64 = 15,
+    diopi_dtype_complex128 = 16,
+    diopi_dtype_unsupported = 255
 } diopiDtype_t;
 
 /**
