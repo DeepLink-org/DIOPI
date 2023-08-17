@@ -106,36 +106,6 @@ DIOPI_API diopiError_t diopiTanhBackward(diopiContextHandle_t ctx, diopiTensorHa
     AclOpRunner<2, 1>("TanhGrad", ctx).addInput(output, gradOutput).addOutput(gradInput).run();
     return diopiSuccess;
 }
-
-DIOPI_API diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size,
-                                           bool alignCorners, const char* mode) {
-    AclOpRunner<2, 1>("ResizeBilinearV2", ctx)
-        .addInput(input, ACL_FORMAT_NCHW)
-        .addConstInput(size)
-        .setAttr("align_corners", alignCorners)
-        .setAttr("half_pixel_centers", !alignCorners)
-        .addOutput(out)
-        .run();
-    return diopiSuccess;
-}
-
-DIOPI_API diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                                   diopiSize_t outSize, diopiSize_t inSize, bool alignCorners, const char* mode) {
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(gradOutput, &dtype);
-    diopiSize_t stride;
-    diopiGetTensorStride(gradOutput, &stride);
-    diopiTensorHandle_t originalImage;
-    diopiRequireTensor(ctx, &originalImage, &inSize, &stride, dtype, diopi_device);
-    AclOpRunner<2, 1>("ResizeBilinearV2Grad", ctx)
-        .addInput(gradOutput, ACL_FORMAT_NCHW)
-        .addInput(originalImage, ACL_FORMAT_NCHW)
-        .setAttr("align_corners", alignCorners)
-        .setAttr("half_pixel_centers", !alignCorners)
-        .addOutput(gradInput)
-        .run();
-    return diopiSuccess;
-}
 }
 }  // namespace ascend
 }  // namespace impl
