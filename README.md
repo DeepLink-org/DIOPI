@@ -48,15 +48,10 @@ DIOPI主要包含以下几个组件：
     ```
     cd impl && sh scripts/build_impl.sh torch
     ```
-    可以通过传入参数指定底层硬件，得到支持对应硬件的版本。
-
     或者参考以下命令示例编译 impl：
     ```
     cd impl && mkdir build && cd build && cmake .. -DIMPL_OPT=cuda && make -j32
     ```
-    可以通过-DIMPL_OPT指定底层硬件，得到支持对应硬件的版本。
-
-
 ## 更新基准数据
 
 1. 进入python目录，生成基准数据(需准备 nv 机器和 pytorch1.10 环境)
