@@ -8,7 +8,9 @@
 #define IMPL_CAMB_ERROR_HPP_
 
 #include <cnrt.h>
+#include <cxxabi.h>
 #include <diopi/diopirt.h>
+#include <execinfo.h>
 
 #include <cstring>
 #include <iostream>
@@ -34,6 +36,34 @@ inline void setLastErrorString(const char* szFmt, Types&&... args) {
 const char* cambGetLastErrorString(bool clearBuff);
 
 const char* getDiopiErrorStr(diopiError_t err);
+
+#ifdef DEBUG_MODE
+inline void printBacktrace() {
+    const int maxStackFrames = 64;
+    void* stackTraces[maxStackFrames];
+    int stackFrames = backtrace(stackTraces, maxStackFrames);
+
+    char** stackStrings = backtrace_symbols(stackTraces, stackFrames);  // do not forget to free stack_strings
+    for (int i = 0; i < stackFrames; i++) {
+        printf("%s\n", stackStrings[i]);
+
+        // Try to demangle the symbol name
+        char* symbol = stackStrings[i];
+        char* mangledStart = strchr(symbol, '(');
+        char* mangledEnd = strchr(mangledStart, '+');
+        if (mangledStart && mangledEnd) {
+            *mangledStart++ = '\0';
+            *mangledEnd = '\0';
+            int status;
+            char* demangled = abi::__cxa_demangle(mangledStart, nullptr, nullptr, &status);
+            if (status == 0) {
+                printf("  %s\n", demangled);
+            }
+        }
+    }
+    free(stackStrings);
+}
+#endif
 
 }  // namespace camb
 
