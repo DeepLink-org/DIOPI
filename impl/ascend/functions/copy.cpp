@@ -24,15 +24,15 @@ DIOPI_API diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHa
             diopiGetTensorStride(dest, &dstStride);
             diopiGetTensorStride(src, &srcStride);
             AclOpRunner<8, 1>("ViewCopy", ctx)
-                .addInput(dest)
-                .addConstInput(dstSize, diopi_dtype_int32)
-                .addConstInput(dstStride, diopi_dtype_int32)
-                .addConstInput<int>(0)
-                .addInput(src)
-                .addConstInput(srcSize, diopi_dtype_int32)
-                .addConstInput(srcStride, diopi_dtype_int32)
-                .addConstInput<int>(0)
-                .addOutput(dest)
+                .addInputWithoutContiguous(dest)
+                .addConstInput(dstSize)
+                .addConstInput(dstStride)
+                .addConstInput(0, diopi_dtype_int64)
+                .addInputWithoutContiguous(src)
+                .addConstInput(srcSize)
+                .addConstInput(srcStride)
+                .addConstInput(0, diopi_dtype_int64)
+                .addOutputWithoutContiguous(dest)
                 .run();
         } else {
             diopiCastDtype(ctx, dest, src);

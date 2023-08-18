@@ -12,7 +12,7 @@ namespace impl {
 namespace ascend {
 extern "C" {
 DIOPI_API diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
-    AclOpRunner<2, 1>("Cumsum", ctx).addInput(input).addConstInput<int64_t>(dim).addOutput(out).run();
+    AclOpRunner<2, 1>("Cumsum", ctx).addInput(input).addConstInput(dim, diopi_dtype_int64).addOutput(out).run();
     return diopiSuccess;
 }
 }
