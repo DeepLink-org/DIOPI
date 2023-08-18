@@ -249,14 +249,14 @@ MemoryFormat DiopiTensor::suggestMemoryFormat() {
     }
 }
 diopiTensorHandle_t DiopiTensor::tensorHandle() {
-    if (this->defined()){
+    if (this->defined()) {
         DIOPI_CHECK_ABORT(this->device() == diopiDevice_t::diopi_device, "%s", "tensor_ is not on camb device.");
     }
     return tensor_;
 }
 
 diopiConstTensorHandle_t DiopiTensor::tensorHandle() const {
-    if (this->defined()){
+    if (this->defined()) {
         DIOPI_CHECK_ABORT(this->device() == diopiDevice_t::diopi_device, "%s", "tensor_ is not on camb device.");
     }
     return tensor_;
