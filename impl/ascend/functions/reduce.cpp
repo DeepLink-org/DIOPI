@@ -4,15 +4,13 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <numeric>
 
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
-extern "C" diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
+diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
     bool keepdim = true;
     diopiSize_t inS, outS;
     diopiGetTensorShape(input, &inS);
@@ -42,7 +40,7 @@ extern "C" diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t o
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
+diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
     bool keepdim = true;
     diopiSize_t inS, outS;
     diopiGetTensorShape(input, &inS);

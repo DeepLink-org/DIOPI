@@ -40,12 +40,18 @@ message(STATUS "Python lib: ${Python3_LIBRARIES};${Python3_LIBRARY_DIRS}")
 message(STATUS "Python include: ${Python3_INCLUDE_DIRS}")
 include_directories(SYSTEM "${Python3_INCLUDE_DIRS}")
 
+# set diopi_test path
+set(DIOPI_TEST_DIR "${CMAKE_SOURCE_DIR}/../diopi_test")
+
 # setup and create test-rt.
-include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/test/include")
+include_directories(SYSTEM "${DIOPI_TEST_DIR}/include")
+
+set(FUNCTION_SAVE_PATH "${DIOPI_TEST_DIR}/csrc")
+set(TEST_GEN_PATH "${DIOPI_TEST_DIR}/codegen")
 
 set(RUNTIME_SRC
     conform_test.cpp
-    litert.cpp)
+    ${FUNCTION_SAVE_PATH}/litert.cpp)
 
 add_library(${DIOPIRT} SHARED ${RUNTIME_SRC})
 target_link_libraries(${DIOPIRT} ${SUPA_RUNTIME_LIB})
@@ -55,28 +61,23 @@ target_link_libraries(${DIOPIRT} -Wl,--no-as-needed ${DIOPI_BR_LIB} -Wl,--as-nee
 
 # create pybind library for test-rt
 set(RT_EXPORT_SRC
-    export_runtime.cpp
+    ${FUNCTION_SAVE_PATH}/export_runtime.cpp
 )
 pybind11_add_module(${DIOPIRT_PYBIND} SHARED ${RT_EXPORT_SRC})
 target_link_libraries(${DIOPIRT_PYBIND} PRIVATE ${DIOPIRT})
 
 # create pybind library for functions.
-set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/csrc")
-set(TEST_GEN_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/codegen")
-add_custom_target(test_code_gen COMMAND python3 ${TEST_GEN_PATH}/gen.py
-    --device=torch --use_adaptor=${USE_ADAPTOR})
-add_custom_target(functions_copy ALL
-    COMMAND ln -f ${FUNCTION_SAVE_PATH}/export_functions.cpp ${PROJECT_SOURCE_DIR}/test
-    DEPENDS test_code_gen)
+add_custom_target(test_code_gen COMMAND python3 ${TEST_GEN_PATH}/gen.py --device=torch)
 
-file(TOUCH export_functions.cpp)
+set(EXPORT_FUNCTIONS "${FUNCTION_SAVE_PATH}/export_functions.cpp")
+file(TOUCH ${EXPORT_FUNCTIONS})
 set(FUNCTIONS_EXPORT_SRC
-    export_functions.cpp
+    ${EXPORT_FUNCTIONS}
 )
 
 pybind11_add_module(${DIOPIFUNCTIONS_PYBIND} SHARED ${FUNCTIONS_EXPORT_SRC})
-target_link_libraries(${DIOPIFUNCTIONS_PYBIND} PRIVATE ${DIOPIRT})
-add_dependencies(${DIOPIFUNCTIONS_PYBIND} functions_copy)
+target_link_libraries(${DIOPIFUNCTIONS_PYBIND} PRIVATE ${DIOPIRT} ${DEVICEIMPL})
+add_dependencies(${DIOPIFUNCTIONS_PYBIND} test_code_gen)
 
 # copy pybind library into test folder.
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/../diopi_test/python)

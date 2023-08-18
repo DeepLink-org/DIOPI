@@ -4,13 +4,10 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
-extern "C" {
 
 DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                                     diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
@@ -174,7 +171,6 @@ DIOPI_API diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, d
         diopiDivInpScalar(ctx, gradInput, &batchSize, RoundModeNone);
     }
     return diopiSuccess;
-}
 }
 }  // namespace ascend
 }  // namespace impl

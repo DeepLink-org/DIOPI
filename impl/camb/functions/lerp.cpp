@@ -4,15 +4,12 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 #include "../common/debug.hpp"
 
 namespace impl {
 namespace camb {
-extern "C" {
 
 diopiError_t diopiLerpTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t end,
                              diopiConstTensorHandle_t weight) {
@@ -71,6 +68,5 @@ diopiError_t diopiLerpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
     return diopiSuccess;
 }
 
-}  // extern "C"
 }  // namespace camb
 }  // namespace impl

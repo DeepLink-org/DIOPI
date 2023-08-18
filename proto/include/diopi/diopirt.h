@@ -76,6 +76,20 @@ typedef enum {
     diopi_dtype_unsupported = 255
 } diopiDtype_t;
 
+typedef struct {
+    diopiDtype_t stype;
+    union {
+        double fval;
+        int64_t ival;
+    };
+} diopiScalar_t;
+
+typedef enum { Contiguous = 0, ChannelsLast = 1, ChannelsLast3d = 2, Preserve = 3, ChannelsLast1d = 4 } diopiMemoryFormat_t;
+
+typedef enum { ReductionNone, ReductionMean, ReductionSum, ReductionEND } diopiReduction_t;
+
+typedef enum { RoundModeNone, RoundModeTrunc, RoundModeFloor, RoundModeEND } diopiRoundMode_t;
+
 /**
  * Opaque structure holding Context and Tensor
  **/

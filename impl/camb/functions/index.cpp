@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <vector>
 
 #include "../cnnl_helper.hpp"
@@ -238,8 +236,6 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
     return diopiSuccess;
 }
 
-extern "C" {
-
 diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t* indices, int64_t nums) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     const int64_t arraySize = 8;
@@ -328,6 +324,5 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diop
     return diopiSuccess;
 }
 
-}  // extern "C"
 }  // namespace camb
 }  // namespace impl
