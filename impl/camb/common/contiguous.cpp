@@ -39,11 +39,10 @@ static diopiError_t transpose(diopiContextHandle_t& ctx, DiopiTensor& in, DiopiT
 //     return diopiSuccess;
 // }
 
-static diopiError_t calOrderAndSrcdiopiMemoryFormat_t(const DiopiTensor& src, diopiMemoryFormat_t destdiopiMemoryFormat_t,
-                                                      diopiMemoryFormat_t& srcdiopiMemoryFormat_tOut, std::vector<int32_t>& orderOut,
-                                                      std::vector<int32_t>& reverseOrder) {
-    if (src.isContiguous(destdiopiMemoryFormat_t)) {
-        srcdiopiMemoryFormat_tOut = destdiopiMemoryFormat_t;
+static diopiError_t calOrderAndSrcMemoryFormat(const DiopiTensor& src, diopiMemoryFormat_t destMemoryFormat, diopiMemoryFormat_t& srcMemoryFormatOut,
+                                               std::vector<int32_t>& orderOut, std::vector<int32_t>& reverseOrder) {
+    if (src.isContiguous(destMemoryFormat)) {
+        srcMemoryFormatOut = destMemoryFormat;
         orderOut.reserve(src.dim());
         for (int i = 0; i < src.dim(); ++i) {
             orderOut[i] = i;
@@ -51,57 +50,57 @@ static diopiError_t calOrderAndSrcdiopiMemoryFormat_t(const DiopiTensor& src, di
         reverseOrder = orderOut;
         return diopiSuccess;
     }
-    if (src.isContiguous(diopiMemoryFormat_t::ChannelsLast1d) && destdiopiMemoryFormat_t == diopiMemoryFormat_t::Contiguous) {
+    if (src.isContiguous(diopiMemoryFormat_t::ChannelsLast1d) && destMemoryFormat == diopiMemoryFormat_t::Contiguous) {
         if (src.dim() != 3) {
             setLastErrorString("the dim of the tensor should be 4, but now is %d.", src.dim());
             return diopiNoImplement;
         }
-        srcdiopiMemoryFormat_tOut = diopiMemoryFormat_t::ChannelsLast1d;
+        srcMemoryFormatOut = diopiMemoryFormat_t::ChannelsLast1d;
         orderOut = {0, 2, 1};
         reverseOrder = {0, 2, 1};
-    } else if (src.isContiguous(diopiMemoryFormat_t::Contiguous) && destdiopiMemoryFormat_t == diopiMemoryFormat_t::ChannelsLast1d) {
+    } else if (src.isContiguous(diopiMemoryFormat_t::Contiguous) && destMemoryFormat == diopiMemoryFormat_t::ChannelsLast1d) {
         if (src.dim() != 3) {
             setLastErrorString("the dim of the tensor should be 4, but now is %d.", src.dim());
             return diopiNoImplement;
         }
-        srcdiopiMemoryFormat_tOut = diopiMemoryFormat_t::Contiguous;
+        srcMemoryFormatOut = diopiMemoryFormat_t::Contiguous;
         orderOut = {0, 2, 1};
         reverseOrder = {0, 2, 1};
-    } else if (src.isContiguous(diopiMemoryFormat_t::ChannelsLast) && destdiopiMemoryFormat_t == diopiMemoryFormat_t::Contiguous) {
+    } else if (src.isContiguous(diopiMemoryFormat_t::ChannelsLast) && destMemoryFormat == diopiMemoryFormat_t::Contiguous) {
         if (src.dim() != 4) {
             setLastErrorString("the dim of the tensor should be 4, but now is %d.", src.dim());
             return diopiNoImplement;
         }
-        srcdiopiMemoryFormat_tOut = diopiMemoryFormat_t::ChannelsLast;
+        srcMemoryFormatOut = diopiMemoryFormat_t::ChannelsLast;
         orderOut = {0, 3, 1, 2};
         reverseOrder = {0, 2, 3, 1};
-    } else if (src.isContiguous(diopiMemoryFormat_t::Contiguous) && destdiopiMemoryFormat_t == diopiMemoryFormat_t::ChannelsLast) {
+    } else if (src.isContiguous(diopiMemoryFormat_t::Contiguous) && destMemoryFormat == diopiMemoryFormat_t::ChannelsLast) {
         if (src.dim() != 4) {
             setLastErrorString("the dim of the tensor should be 4, but now is %d.", src.dim());
             return diopiNoImplement;
         }
-        srcdiopiMemoryFormat_tOut = diopiMemoryFormat_t::Contiguous;
+        srcMemoryFormatOut = diopiMemoryFormat_t::Contiguous;
         orderOut = {0, 2, 3, 1};
         reverseOrder = {0, 3, 1, 2};
-    } else if (src.isContiguous(diopiMemoryFormat_t::Contiguous) && destdiopiMemoryFormat_t == diopiMemoryFormat_t::ChannelsLast3d) {
+    } else if (src.isContiguous(diopiMemoryFormat_t::Contiguous) && destMemoryFormat == diopiMemoryFormat_t::ChannelsLast3d) {
         if (src.dim() != 5) {
             setLastErrorString("the dim of the tensor should be 5, but now is %d.", src.dim());
             return diopiNoImplement;
         }
-        srcdiopiMemoryFormat_tOut = diopiMemoryFormat_t::Contiguous;
+        srcMemoryFormatOut = diopiMemoryFormat_t::Contiguous;
         orderOut = {0, 2, 3, 4, 1};
         reverseOrder = {0, 4, 1, 2, 3};
-    } else if (src.isContiguous(diopiMemoryFormat_t::ChannelsLast3d) && destdiopiMemoryFormat_t == diopiMemoryFormat_t::Contiguous) {
+    } else if (src.isContiguous(diopiMemoryFormat_t::ChannelsLast3d) && destMemoryFormat == diopiMemoryFormat_t::Contiguous) {
         if (src.dim() != 5) {
             setLastErrorString("the dim of the tensor should be 5, but now is %d.", src.dim());
             return diopiNoImplement;
         }
-        srcdiopiMemoryFormat_tOut = diopiMemoryFormat_t::ChannelsLast3d;
+        srcMemoryFormatOut = diopiMemoryFormat_t::ChannelsLast3d;
         orderOut = {0, 4, 1, 2, 3};
         reverseOrder = {0, 2, 3, 4, 1};
     } else {
         // convert to contiguous format
-        srcdiopiMemoryFormat_tOut = diopiMemoryFormat_t::Preserve;
+        srcMemoryFormatOut = diopiMemoryFormat_t::Preserve;
         return diopiSuccess;
     }
     return diopiSuccess;
@@ -181,12 +180,12 @@ diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryF
     }
     int64_t dim = src.dim();
     DIOPI_CHECK(dim <= 8, "only support less than 8d tensor currently");
-    diopiMemoryFormat_t srcdiopiMemoryFormat_t;
+    diopiMemoryFormat_t srcMemoryFormat;
     std::vector<int32_t> order;
     std::vector<int32_t> reverseOrder;
     DiopiTensor dest;
-    DIOPI_CALL(calOrderAndSrcdiopiMemoryFormat_t(src, memoryFormat, srcdiopiMemoryFormat_t, order, reverseOrder));
-    if (srcdiopiMemoryFormat_t == diopiMemoryFormat_t::Preserve) {
+    DIOPI_CALL(calOrderAndSrcMemoryFormat(src, memoryFormat, srcMemoryFormat, order, reverseOrder));
+    if (srcMemoryFormat == diopiMemoryFormat_t::Preserve) {
         DIOPI_CALL(clone(ctx, src, dest, memoryFormat));
         src = dest;
         return diopiSuccess;
