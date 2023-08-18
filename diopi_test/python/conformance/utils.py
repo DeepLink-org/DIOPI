@@ -1,7 +1,7 @@
 # Copyright (c) 2023, DeepLink.
 import logging
-from . import diopi_runtime
-from .diopi_runtime import get_last_error, Dtype, diopiError
+# from . import diopi_runtime
+# from .diopi_runtime import get_last_error, Dtype, diopiError
 import os
 import numpy as np
 import csv
@@ -101,8 +101,8 @@ class glob_var(object):
         self.nhwc = nhwc
         self.nhwc_min_dim = nhwc_min_dim
         self.four_bytes = four_bytes
-        self.int_type = Dtype.int64
-        self.float_type = Dtype.float64
+        self.int_type = np.int64
+        self.float_type = np.float64
         self._cur_test_func = ''
 
     def set_nhwc(self):
@@ -116,8 +116,8 @@ class glob_var(object):
 
     def set_four_bytes(self):
         self.four_bytes = True
-        self.int_type = Dtype.int32
-        self.float_type = Dtype.float32
+        self.int_type = np.int32
+        self.float_type = np.float32
 
     def get_four_bytes(self):
         return self.four_bytes
@@ -238,19 +238,19 @@ def check_function(fn_name):
     return func
 
 
-def squeeze(input: diopi_runtime.Tensor, dim=None):
-    size = input.size()
-    new_size = []
-    if dim < 0:
-        dim += len(size)
+# def squeeze(input: diopi_runtime.Tensor, dim=None):
+#     size = input.size()
+#     new_size = []
+#     if dim < 0:
+#         dim += len(size)
 
-    for i in range(0, len(size)):
-        if size[i] != 1:
-            new_size.append(size[i])
-        elif dim is not None and i != dim:
-            new_size.append(size[i])
+#     for i in range(0, len(size)):
+#         if size[i] != 1:
+#             new_size.append(size[i])
+#         elif dim is not None and i != dim:
+#             new_size.append(size[i])
 
-    input.reset_shape(new_size)
+#     input.reset_shape(new_size)
 
 
 real_op_list = []
