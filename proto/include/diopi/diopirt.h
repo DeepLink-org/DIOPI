@@ -27,22 +27,9 @@ extern "C" {
 #define DIOPI_VER_PATCH 0
 #define DIOPI_VERSION (DIOPI_VER_MAJOR * 1000 + DIOPI_VER_MINOR * 100 + DIOPI_VER_PATCH)
 
-typedef struct diopiSize_t_ {
+typedef struct {
     const int64_t* data;
     int64_t len;
-
-#if defined(__cplusplus)
-    diopiSize_t_() : data(nullptr), len(0) {}
-    diopiSize_t_(const int64_t* d, int64_t l) : data(d), len(l) {}
-    int64_t getLen() const { return len; }
-    friend std::ostream& operator<<(std::ostream& os, const diopiSize_t_& obj) {
-        os << "Length: " << obj.len << "\nData: ";
-        for (int64_t i = 0; i < obj.len; ++i) {
-            os << obj.data[i] << " ";
-        }
-        return os;
-    }
-#endif  // __cplusplus
 } diopiSize_t;
 
 typedef enum {
@@ -88,6 +75,20 @@ typedef enum {
     diopi_dtype_complex128 = 16,
     diopi_dtype_unsupported = 255
 } diopiDtype_t;
+
+typedef struct {
+    diopiDtype_t stype;
+    union {
+        double fval;
+        int64_t ival;
+    };
+} diopiScalar_t;
+
+typedef enum { Contiguous = 0, ChannelsLast = 1, ChannelsLast3d = 2, Preserve = 3, ChannelsLast1d = 4 } diopiMemoryFormat_t;
+
+typedef enum { ReductionNone, ReductionMean, ReductionSum, ReductionEND } diopiReduction_t;
+
+typedef enum { RoundModeNone, RoundModeTrunc, RoundModeFloor, RoundModeEND } diopiRoundMode_t;
 
 /**
  * Opaque structure holding Context and Tensor

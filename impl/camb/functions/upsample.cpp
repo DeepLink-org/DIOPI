@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
@@ -99,20 +97,20 @@ diopiError_t upsampleBackwardInternal(diopiContextHandle_t ctx, diopiTensorHandl
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size) {
+diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size) {
     DIOPI_CALL(upsampleInternal(ctx, out, input, false, false, CNNL_INTERP_NEAREST))
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                                     diopiSize_t outSize, diopiSize_t inSize) {
+diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiSize_t outSize,
+                                          diopiSize_t inSize) {
     DIOPI_CALL(upsampleBackwardInternal(ctx, gradInput, gradOutput, false, false, CNNL_INTERP_BACKWARD_NEAREST))
 
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size,
-                                            bool alignCorners, const char* mode) {
+diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size, bool alignCorners,
+                                 const char* mode) {
     DiopiTensor inputTensor(input);
 
     if (3 == inputTensor.dim() && 0 == strcmp(mode, "linear")) {
@@ -136,8 +134,8 @@ extern "C" diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTenso
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                                    diopiSize_t outSize, diopiSize_t inSize, bool alignCorners, const char* mode) {
+diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiSize_t outSize,
+                                         diopiSize_t inSize, bool alignCorners, const char* mode) {
     DiopiTensor inputTensor(gradOutput);
     auto dim = inputTensor.dim();
 

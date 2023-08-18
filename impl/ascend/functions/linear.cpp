@@ -4,14 +4,12 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
-extern "C" diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
-                                    diopiConstTensorHandle_t bias) {
+diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
+                         diopiConstTensorHandle_t bias) {
     diopiSize_t inputSize, outputSize;
     diopiGetTensorShape(input, &inputSize);
     diopiGetTensorShape(out, &outputSize);
@@ -53,9 +51,8 @@ extern "C" diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight,
-                                            diopiTensorHandle_t gradBias, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
-                                            diopiConstTensorHandle_t weight) {
+diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight, diopiTensorHandle_t gradBias,
+                                 diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight) {
     diopiSize_t inputSize, gradOutSize;
     diopiGetTensorShape(input, &inputSize);
     diopiGetTensorShape(gradOutput, &gradOutSize);
@@ -110,7 +107,7 @@ extern "C" diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTenso
 
     if (gradBias) {
         std::vector<int64_t> dimVec({0});
-        diopiSize_t dim(dimVec.data(), dimVec.size());
+        diopiSize_t dim{dimVec.data(), static_cast<int64_t>(dimVec.size())};
         diopiSum(ctx, gradBias, gradOutput, dim);
     }
     return diopiSuccess;

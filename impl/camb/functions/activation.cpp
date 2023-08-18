@@ -88,9 +88,6 @@ diopiError_t cnnlActivationInternal(diopiContextHandle_t ctx, DiopiTensor input,
 
 diopiError_t cnnlActivationBackwardInternal(diopiContextHandle_t ctx, DiopiTensor gradInput, DiopiTensor gradOutput, DiopiTensor input, DiopiTensor output,
                                             CnnlAttribute attr) {
-    // if (!input.defined()) {
-    //     return diopiSuccess;
-    // }
     auto handle = cnnlHandlePool.get(ctx);
     auto mode = attr.get<cnnlActivationMode_t>("mode", CNNL_ACTIVATION_SIGMOID);
     auto perf = attr.get<cnnlActivationPreference_t>("perf", CNNL_ACTIVATION_HIGH_PRECISION);
@@ -149,8 +146,7 @@ diopiError_t cnnlActivationBackwardInternal(diopiContextHandle_t ctx, DiopiTenso
 
 }  // namespace
 
-extern "C" diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
 
@@ -160,8 +156,7 @@ extern "C" diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t 
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     DiopiTensor inputTensor(input);
 
     CnnlAttribute attr;
@@ -170,8 +165,7 @@ extern "C" diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
 
@@ -181,8 +175,7 @@ extern "C" diopiError_t diopiSigmoid(diopiContextHandle_t ctx, diopiTensorHandle
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiSigmoidInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiSigmoidInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     DiopiTensor inputTensor(input);
 
     CnnlAttribute attr;
@@ -191,9 +184,8 @@ extern "C" diopiError_t diopiSigmoidInp(diopiContextHandle_t ctx, diopiTensorHan
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                             diopiConstTensorHandle_t output) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                  diopiConstTensorHandle_t output) {
     DiopiTensor gradInputTensor(gradInput);
     DiopiTensor gradOutputTensor(gradOutput);
     DiopiTensor outputTensor(output);
@@ -204,8 +196,7 @@ extern "C" diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTens
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiSilu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiSilu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
 
@@ -215,8 +206,7 @@ extern "C" diopiError_t diopiSilu(diopiContextHandle_t ctx, diopiTensorHandle_t 
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiSiluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiSiluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     DiopiTensor inputTensor(input);
 
     CnnlAttribute attr;
@@ -225,9 +215,7 @@ extern "C" diopiError_t diopiSiluInp(diopiContextHandle_t ctx, diopiTensorHandle
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiSiluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                          diopiConstTensorHandle_t input) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiSiluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input) {
     DiopiTensor gradInputTensor(gradInput);
     DiopiTensor gradOutputTensor(gradOutput);
     DiopiTensor inputTensor(input);
@@ -238,8 +226,7 @@ extern "C" diopiError_t diopiSiluBackward(diopiContextHandle_t ctx, diopiTensorH
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiTanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiTanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
 
@@ -249,8 +236,7 @@ extern "C" diopiError_t diopiTanh(diopiContextHandle_t ctx, diopiTensorHandle_t 
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiTanhInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiTanhInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     DiopiTensor inputTensor(input);
 
     CnnlAttribute attr;
@@ -259,9 +245,7 @@ extern "C" diopiError_t diopiTanhInp(diopiContextHandle_t ctx, diopiTensorHandle
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiTanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                          diopiConstTensorHandle_t output) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiTanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t output) {
     DiopiTensor gradInputTensor(gradInput);
     DiopiTensor gradOutputTensor(gradOutput);
     DiopiTensor outputTensor(output);
@@ -272,8 +256,7 @@ extern "C" diopiError_t diopiTanhBackward(diopiContextHandle_t ctx, diopiTensorH
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char* approximate) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char* approximate) {
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
 
@@ -287,9 +270,8 @@ extern "C" diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t 
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                          diopiConstTensorHandle_t input, const char* approximate) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
+                               const char* approximate) {
     DiopiTensor gradInputTensor(gradInput);
     DiopiTensor gradOutputTensor(gradOutput);
     DiopiTensor inputTensor(input);
@@ -304,8 +286,7 @@ extern "C" diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorH
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiLeakyRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiLeakyRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope) {
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
 
@@ -317,8 +298,7 @@ extern "C" diopiError_t diopiLeakyRelu(diopiContextHandle_t ctx, diopiTensorHand
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiLeakyReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* negativeSlope) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiLeakyReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* negativeSlope) {
     DiopiTensor inputTensor(input);
     CnnlAttribute attr;
     float coefVal = DiopiDataType::isInteger(negativeSlope->stype) ? negativeSlope->ival : negativeSlope->fval;
@@ -328,9 +308,8 @@ extern "C" diopiError_t diopiLeakyReluInp(diopiContextHandle_t ctx, diopiTensorH
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                               diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope, bool inputIsResult) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                    diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope, bool inputIsResult) {
     DiopiTensor gradInputTensor(gradInput);
     DiopiTensor gradOutputTensor(gradOutput);
     DiopiTensor inputTensor(input);
@@ -343,8 +322,7 @@ extern "C" diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTe
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiHardswish(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiHardswish(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
 
@@ -354,8 +332,7 @@ extern "C" diopiError_t diopiHardswish(diopiContextHandle_t ctx, diopiTensorHand
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiHardswishInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiHardswishInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     DiopiTensor inputTensor(input);
 
     CnnlAttribute attr;
@@ -364,9 +341,8 @@ extern "C" diopiError_t diopiHardswishInp(diopiContextHandle_t ctx, diopiTensorH
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiHardswishBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                               diopiConstTensorHandle_t input) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+diopiError_t diopiHardswishBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                    diopiConstTensorHandle_t input) {
     DiopiTensor gradInputTensor(gradInput);
     DiopiTensor gradOutputTensor(gradOutput);
     DiopiTensor inputTensor(input);
