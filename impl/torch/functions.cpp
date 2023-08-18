@@ -2183,13 +2183,14 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
         impl::aten::updateATen2Tensor(ctx, atTmp, grad_bias);
     }
 #else
-    if (0) {
+    if (1) {
         auto grad_inputs = at::convolution_backward(
             atGrad, atInput, atWeight, c10::nullopt, atStride, atPadding, atDilation, false, atOutputPadding, groups, {true, true, false});
         impl::aten::updateATen2Tensor(ctx, std::get<0>(grad_inputs), grad_input);
         impl::aten::updateATen2Tensor(ctx, std::get<1>(grad_inputs), grad_weight);
 
     } else {
+#if 0
         if (atGradInput.defined()) {
             ::at::native::raw_cudnn_convolution_backward_input_out(
                 atGradInput, atGrad, atWeight, atPadding, atStride, atDilation, groups, true /*benchmark*/, false /*deterministic*/, true /*allow_tf32*/);
@@ -2198,6 +2199,7 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
             ::at::native::raw_cudnn_convolution_backward_weight_out(
                 atGradWeight, atGrad, atInput, atPadding, atStride, atDilation, groups, true /*benchmark*/, false /*deterministic*/, true /*allow_tf32*/);
         }
+#endif
     }
 
     if (bias_sizes != nullptr && grad_bias != nullptr) {
