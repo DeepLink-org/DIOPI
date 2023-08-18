@@ -20,7 +20,6 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t *ou
     DIOPI_CALL(autoCastTensorType(ctx, pmask, maskDtypes));
     // When the data type of masked tensor is not bool, the data type of input
     // tensor must be same with the data type of the masked tensor.
-    diopiDtype_t originDtype = inputTensor.dtype();
 
     std::vector<DiopiTensor *> pinput{&inputTensor};
     std::set<diopiDtype_t> inputDtypes{
@@ -95,12 +94,10 @@ DIOPI_API diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopi
     DiopiTensor maskTensor(mask);              // mask
     DiopiTensor tempGradInputTensor = ones(ctx, gradInputTensor.shape(), gradInputTensor.dtype());
 
-    if (!gradOutputTensor.defined()) {  // if mask is full-zero, output is empty, gradInput is full-zero
-        auto scalar = diopiScalar_t();
-        scalar.stype = gradInputTensor.dtype();
-        scalar.ival = 0;
-        scalar.fval = 0.0;
-        diopiFill(ctx, gradInput, &scalar);
+    if (!(gradOutputTensor.defined() && gradOutputTensor.numel())) {  // if mask is full-zero, output is empty, gradInput is full-zero
+        diopiScalar_t scalar = constructDiopiScalarT(gradInputTensor.dtype(), 0);
+        DIOPI_CALL(diopiFill(ctx, gradInput, &scalar));
+        return diopiSuccess;
     }
 
     std::vector<DiopiTensor *> pmask{&maskTensor};

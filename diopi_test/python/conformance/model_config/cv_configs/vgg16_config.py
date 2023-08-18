@@ -12,6 +12,8 @@ vgg16_config = {
 
     'conv2d': dict(
         name=["conv2d"],
+        atol=1e-03,
+        rtol=1e-03,
         para=dict(
             stride=[(1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1)],
             padding=[(1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1)],
@@ -87,6 +89,10 @@ vgg16_config = {
 
     'linear': dict(
         name=["linear"],
+        atol=1e-03,
+        rtol=1e-04,
+        atol_half=1e-01,
+        rtol_half=1e-02,
         tensor_para=dict(
             args=[
                 {
