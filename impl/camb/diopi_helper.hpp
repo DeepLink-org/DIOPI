@@ -42,7 +42,7 @@
 #define DIOPI_CHECK_ABORT(cond, fmt, args...)                        \
     do {                                                             \
         if (!(cond)) {                                               \
-            printf(fmt " at %s:%d ", ##args, __FILE__, __LINE__);    \
+            printf(#fmt " at %s:%d ", ##args, __FILE__, __LINE__);   \
             printf("%s", impl::camb::cambGetLastErrorString(false)); \
             abort();                                                 \
         }                                                            \
