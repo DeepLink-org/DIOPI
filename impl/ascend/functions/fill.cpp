@@ -41,9 +41,9 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
     diopiDtype_t dtype;
     diopiGetTensorDtype(input, &dtype);
     diopiTensorHandle_t inputCopy;
-    if (shape.getLen() == 0) {
+    if (shape.len == 0) {
         int64_t sizeTmp[1] = {1};
-        shape = diopiSize_t(sizeTmp, 1);
+        shape = arrayToDiopiSize(sizeTmp, 1);
         int64_t elemsize;
         diopiStreamHandle_t stream;
         diopiGetTensorElemSize(input, &elemsize);

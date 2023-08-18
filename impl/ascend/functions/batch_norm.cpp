@@ -15,8 +15,8 @@ void batchNormBackwardTrainingUpdate(diopiContextHandle_t ctx, diopiTensorHandle
                                      diopiConstTensorHandle_t input, diopiConstTensorHandle_t saveMean, diopiConstTensorHandle_t saveInvstd, double eps) {
     diopiSize_t inputSize;
     diopiGetTensorShape(input, &inputSize);
-    std::string name = (inputSize.getLen() == 5) ? "BN3DTrainingUpdateGrad" : "BNTrainingUpdateGrad";
-    auto format = (inputSize.getLen() == 5) ? ACL_FORMAT_NCDHW : ACL_FORMAT_NCHW;
+    std::string name = (inputSize.len == 5) ? "BN3DTrainingUpdateGrad" : "BNTrainingUpdateGrad";
+    auto format = (inputSize.len == 5) ? ACL_FORMAT_NCDHW : ACL_FORMAT_NCHW;
 
     AclOpRunner<4, 2>(name, ctx)
         .addInput(gradOut, format)
@@ -35,8 +35,8 @@ void batchNormBackwardTrainingReduceNocheck(diopiContextHandle_t ctx, diopiTenso
                                             double eps) {
     diopiSize_t inputSize;
     diopiGetTensorShape(input, &inputSize);
-    std::string name = (inputSize.getLen() == 5) ? "BN3DTrainingReduceGrad" : "BNTrainingReduceGrad";
-    auto format = (inputSize.getLen() == 5) ? ACL_FORMAT_NCDHW : ACL_FORMAT_NCHW;
+    std::string name = (inputSize.len == 5) ? "BN3DTrainingReduceGrad" : "BNTrainingReduceGrad";
+    auto format = (inputSize.len == 5) ? ACL_FORMAT_NCDHW : ACL_FORMAT_NCHW;
     AclOpRunner<7, 1>(name, ctx)
         .addInput(gradOut, format)
         .addInput(input, format)

@@ -12,17 +12,6 @@ namespace impl {
 namespace ascend {
 extern "C" {
 DIOPI_API diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size) {
-    /*diopiSize_t inputSize;
-    diopiGetTensorShape(input, &inputSize);
-    std::vector<int64_t> outputSizeVec({inputSize.data[0], inputSize.data[1], size.data[0], size.data[1]});
-    diopiSize_t outputSize(outputSizeVec.data(), outputSizeVec.size());
-    const void* data;
-    diopiGetTensorDataConst(input, &data);
-    int64_t elemsize, numel;
-    diopiDtype_t dtype;
-    diopiGetTensorElemSize(input, &elemsize);
-    diopiGetTensorNumel(input, &numel);
-    diopiGetTensorDtype(input, &dtype);*/
     AclOpRunner<2, 1>("ResizeNearestNeighborV2", ctx)
         .addInput(input)
         .addConstInput(size, diopi_dtype_int32)
@@ -37,7 +26,7 @@ DIOPI_API diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, di
                                                     diopiSize_t outSize, diopiSize_t inSize) {
     auto gradOutputCopy = contiguous(ctx, gradOutput);
     std::vector<int64_t> outputSizeVec({inSize.data[2], inSize.data[3]});
-    diopiSize_t outputSize(outputSizeVec.data(), outputSizeVec.size());
+    diopiSize_t outputSize = vectorToDiopiSize(outputSizeVec);
     AclOpRunner<2, 1>("ResizeNearestNeighborV2Grad", ctx)
         .addInput(gradOutputCopy)
         .addConstInput(outputSize, diopi_dtype_int32)

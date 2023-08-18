@@ -22,9 +22,9 @@ DIOPI_API diopiError_t diopiMax(diopiContextHandle_t ctx, diopiTensorHandle_t ma
 DIOPI_API diopiError_t diopiMaxAll(diopiContextHandle_t ctx, diopiTensorHandle_t max, diopiConstTensorHandle_t input) {
     diopiSize_t inS;
     diopiGetTensorShape(input, &inS);
-    std::vector<int64_t> dimAllVector(inS.getLen());
+    std::vector<int64_t> dimAllVector(inS.len);
     std::iota(std::begin(dimAllVector), std::end(dimAllVector), 0);
-    diopiSize_t dimAll(dimAllVector.data(), dimAllVector.size());
+    diopiSize_t dimAll = vectorToDiopiSize(dimAllVector);
     AclOpRunner<2, 1>("ReduceMax", ctx).addInput(input).addConstInput(dimAll).addOutput(max).run();
     return diopiSuccess;
 }
@@ -38,9 +38,9 @@ DIOPI_API diopiError_t diopiMin(diopiContextHandle_t ctx, diopiTensorHandle_t mi
 DIOPI_API diopiError_t diopiMinAll(diopiContextHandle_t ctx, diopiTensorHandle_t min, diopiConstTensorHandle_t input) {
     diopiSize_t inS;
     diopiGetTensorShape(input, &inS);
-    std::vector<int64_t> dimAllVector(inS.getLen());
+    std::vector<int64_t> dimAllVector(inS.len);
     std::iota(std::begin(dimAllVector), std::end(dimAllVector), 0);
-    diopiSize_t dimAll(dimAllVector.data(), dimAllVector.size());
+    diopiSize_t dimAll = vectorToDiopiSize(dimAllVector);
     AclOpRunner<2, 1>("ReduceMin", ctx).addInput(input).addConstInput(dimAll).addOutput(min).run();
     return diopiSuccess;
 }
