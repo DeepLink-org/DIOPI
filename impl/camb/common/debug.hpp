@@ -69,7 +69,7 @@ inline void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor, std::stri
         std::cout << tensor.stride()[i] << ", ";
     }
     std::cout << "], is_contiguous: " << tensor.isContiguous();
-    std::cout << ", is_contiguous(channelsLast): " << tensor.isContiguous(MemoryFormat::ChannelsLast) << std::endl;
+    std::cout << ", is_contiguous(channelsLast): " << tensor.isContiguous(diopiMemoryFormat_t::ChannelsLast) << std::endl;
     switch (tensor.dtype()) {
         case diopi_dtype_bool:
             printDevDataInternal<bool, int32_t>(ctx, dataIn, len, maxLen, beginIdx);
@@ -127,6 +127,32 @@ void printVec(const std::string& str, std::vector<T> vec) {
         std::cout << vec[i] << " ";
     }
     std::cout << std::endl;
+}
+
+inline void printBacktrace() {
+    const int maxStackFrames = 64;
+    void* stackTraces[maxStackFrames];
+    int stackFrames = backtrace(stackTraces, maxStackFrames);
+
+    char** stackStrings = backtrace_symbols(stackTraces, stackFrames);  // do not forget to free stack_strings
+    for (int i = 0; i < stackFrames; i++) {
+        printf("%s\n", stackStrings[i]);
+
+        // Try to demangle the symbol name
+        char* symbol = stackStrings[i];
+        char* mangledStart = strchr(symbol, '(');
+        char* mangledEnd = strchr(mangledStart, '+');
+        if (mangledStart && mangledEnd) {
+            *mangledStart++ = '\0';
+            *mangledEnd = '\0';
+            int status;
+            char* demangled = abi::__cxa_demangle(mangledStart, nullptr, nullptr, &status);
+            if (status == 0) {
+                printf("  %s\n", demangled);
+            }
+        }
+    }
+    free(stackStrings);
 }
 
 }  // namespace camb

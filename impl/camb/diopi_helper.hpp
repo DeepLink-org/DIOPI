@@ -30,18 +30,11 @@
         }                                                                                    \
     } while (false);
 
-inline void debugPrintBacktrace() {
-#ifdef DEBUG_MODE
-    impl::camb::printBacktrace();
-#endif
-}
-
 #define DIOPI_CHECK_NULLPTR_ABORT(variable)                                                      \
     do {                                                                                         \
         if (variable == nullptr) {                                                               \
             printf("The variable `" #variable "` is not defined at %s:%d ", __FILE__, __LINE__); \
             printf("%s", impl::camb::cambGetLastErrorString(false));                             \
-            debugPrintBacktrace();                                                               \
             abort();                                                                             \
         }                                                                                        \
     } while (false);
@@ -51,7 +44,6 @@ inline void debugPrintBacktrace() {
         if (!(cond)) {                                               \
             printf(fmt " at %s:%d ", ##args, __FILE__, __LINE__);    \
             printf("%s", impl::camb::cambGetLastErrorString(false)); \
-            debugPrintBacktrace();                                   \
             abort();                                                 \
         }                                                            \
     } while (false);
@@ -68,8 +60,6 @@ inline void debugPrintBacktrace() {
 
 namespace impl {
 namespace camb {
-
-using MemoryFormat = diopiMemoryFormat_t;
 
 class DiopiDataType final {
 public:
@@ -183,7 +173,21 @@ public:
 
     DiopiTensor viewAsReal() const;
 
-    const std::vector<int64_t>& shape() const;
+    template <typename T>
+    std::vector<T> shape() const {
+        DIOPI_CHECK_NULLPTR_ABORT(tensor_);
+        return std::vector<T>(shape_.begin(), shape_.end());
+    }
+
+    const std::vector<int64_t>& shape() const {
+        DIOPI_CHECK_NULLPTR_ABORT(tensor_);
+        return shape_;
+    }
+
+    const std::vector<int64_t>& stride() const {
+        DIOPI_CHECK_NULLPTR_ABORT(tensor_);
+        return stride_;
+    }
 
     int64_t size(int i) const {
         if (i < 0) {
@@ -192,16 +196,14 @@ public:
         return shape()[i];
     }
 
-    const std::vector<int64_t>& stride() const;
-
     int64_t numel() const;
     int64_t elemsize() const;
     int64_t dim() const { return static_cast<int64_t>(this->shape().size()); }
 
     /* DEPRECATED AND WILL BE REMOVED */
-    DiopiTensor contiguous(diopiContextHandle_t ctx, MemoryFormat format = MemoryFormat::Contiguous);
+    DiopiTensor contiguous(diopiContextHandle_t ctx, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous);
 
-    bool isContiguous(MemoryFormat format = MemoryFormat::Contiguous) const;
+    bool isContiguous(diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous) const;
 
     DiopiTensor& asStrided(const std::vector<int64_t>& shape, const std::vector<int64_t>& stride);
 
@@ -214,8 +216,6 @@ public:
     void* data();
     const void* data() const;
 
-    MemoryFormat suggestMemoryFormat();
-
     diopiTensorHandle_t tensorHandle();
     diopiConstTensorHandle_t tensorHandle() const;
 
@@ -223,7 +223,7 @@ public:
 
 protected:
     diopiTensorHandle_t tensor_ = nullptr;
-    diopiDtype_t dtype_{diopi_dtype_float32};
+    diopiDtype_t dtype_{diopi_dtype_unsupported};
     std::vector<int64_t> shape_{0};
     std::vector<int64_t> stride_{0};
 };
@@ -238,7 +238,7 @@ DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>&
 
 DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype);
 
-DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype, MemoryFormat memoryFormat);
+DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype, diopiMemoryFormat_t diopiMemoryFormat_t);
 
 inline DiopiTensor requiresBuffer(diopiContextHandle_t ctx, int64_t numBytes) {
     diopiTensorHandle_t tensor = nullptr;

@@ -12,10 +12,10 @@
 namespace impl {
 namespace camb {
 
-#define REQUIRES_TENSOR_BY_DTYPE_OR_NOT(tensor1, tensor2, targetDtype)                           \
-    DiopiTensor tensor1 = tensor2;                                                               \
-    if (tensor2.defined() && tensor1.dtype() != targetDtype) {                                   \
-        tensor1 = requiresTensor(ctx, tensor1.shape(), targetDtype, MemoryFormat::ChannelsLast); \
+#define REQUIRES_TENSOR_BY_DTYPE_OR_NOT(tensor1, tensor2, targetDtype)                                  \
+    DiopiTensor tensor1 = tensor2;                                                                      \
+    if (tensor2.defined() && tensor1.dtype() != targetDtype) {                                          \
+        tensor1 = requiresTensor(ctx, tensor1.shape(), targetDtype, diopiMemoryFormat_t::ChannelsLast); \
     }
 namespace {
 // The number of dimensions in the input tensor of the convolution operation.
@@ -199,9 +199,9 @@ diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     DiopiTensor outputTensor(out);
     DiopiTensor biasTensor(bias);
 
-    DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast), "inputTensor should be ChannelsLast");
-    DIOPI_CHECK(weightTensor.isContiguous(MemoryFormat::ChannelsLast), "weightTensor should be ChannelsLast");
-    DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast), "outputTensor should be ChannelsLast");
+    DIOPI_CHECK(inputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast), "inputTensor should be ChannelsLast");
+    DIOPI_CHECK(weightTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast), "weightTensor should be ChannelsLast");
+    DIOPI_CHECK(outputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast), "outputTensor should be ChannelsLast");
 
     std::vector<DiopiTensor *> tensors{&inputTensor, &weightTensor};
     if (biasTensor.defined()) {
@@ -229,9 +229,9 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
     DiopiTensor gradWeightTensor(gradWeight);
     DiopiTensor gradBiasTensor(grad3);
 
-    DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast), "inputTensor should be ChannelsLast");
+    DIOPI_CHECK(inputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast), "inputTensor should be ChannelsLast");
     if (gradInputTensor.defined()) {
-        DIOPI_CHECK(gradInputTensor.isContiguous(MemoryFormat::ChannelsLast), "gradInputTensor should be ChannelsLast");
+        DIOPI_CHECK(gradInputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast), "gradInputTensor should be ChannelsLast");
     }
     std::vector<DiopiTensor *> tensors{&inputTensor, &weightTensor, &gradOutputTensor};
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32}));

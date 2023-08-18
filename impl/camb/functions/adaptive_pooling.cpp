@@ -28,14 +28,14 @@ diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_
         outputTmpTr = requiresTensor(ctx, outputTr.shape(), inputTr.dtype());
     }
 
-    auto memoryFormat = MemoryFormat::ChannelsLast;
+    auto memoryFormat = diopiMemoryFormat_t::ChannelsLast;
     auto inputChannelLast = inputTr.contiguous(ctx, memoryFormat);
     DIOPI_CALL(cnnlTranspose(ctx, handle, inputTr, inputChannelLast, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC));
 
     auto outputChannelLast = outputTmpTr;
     if (!outputChannelLast.isContiguous(memoryFormat)) {
         // for some special case like shape = [2, 2048, 1, 1], it's already been ChannelsLast
-        outputChannelLast = requiresTensor(ctx, outputTmpTr.shape(), outputTmpTr.dtype(), MemoryFormat::ChannelsLast);
+        outputChannelLast = requiresTensor(ctx, outputTmpTr.shape(), outputTmpTr.dtype(), diopiMemoryFormat_t::ChannelsLast);
     }
 
     cnnlTensorLayout_t layout = CNNL_LAYOUT_NHWC;
@@ -83,7 +83,7 @@ diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTenso
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
-    auto memoryFormat = MemoryFormat::ChannelsLast;
+    auto memoryFormat = diopiMemoryFormat_t::ChannelsLast;
     auto gradOutputChannelLast = gradOutputTr.contiguous(ctx, memoryFormat);
     DIOPI_CALL(cnnlTranspose(ctx, handle, gradOutputTr, gradOutputChannelLast, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC));
 

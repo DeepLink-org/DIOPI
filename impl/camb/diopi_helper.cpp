@@ -65,16 +65,6 @@ DiopiTensor DiopiTensor::viewAsReal() const {
     return realTensor;
 }
 
-const std::vector<int64_t>& DiopiTensor::shape() const {
-    DIOPI_CHECK_NULLPTR_ABORT(tensor_);
-    return shape_;
-}
-
-const std::vector<int64_t>& DiopiTensor::stride() const {
-    DIOPI_CHECK_NULLPTR_ABORT(tensor_);
-    return stride_;
-}
-
 int64_t DiopiTensor::numel() const {
     DIOPI_CHECK_NULLPTR_ABORT(tensor_);
     int64_t numel;
@@ -88,13 +78,13 @@ int64_t DiopiTensor::elemsize() const {
     return elemsize;
 }
 
-DiopiTensor DiopiTensor::contiguous(diopiContextHandle_t ctx, MemoryFormat format) {
+DiopiTensor DiopiTensor::contiguous(diopiContextHandle_t ctx, diopiMemoryFormat_t format) {
     /* DEPRECATED AND WILL BE REMOVED */
     if (this->isContiguous(format)) return *this;
     int64_t dim = this->dim();
     std::vector<int64_t> strides(dim);
     int64_t stride = 1;
-    if (format == MemoryFormat::Contiguous) {
+    if (format == diopiMemoryFormat_t::Contiguous) {
         for (size_t i = dim; i > 0; --i) {
             strides[i - 1] = stride;
             if (shape_[i - 1] == 0) {
@@ -104,7 +94,7 @@ DiopiTensor DiopiTensor::contiguous(diopiContextHandle_t ctx, MemoryFormat forma
                 stride *= shape_[i - 1];
             }
         }
-    } else if (format == MemoryFormat::ChannelsLast) {
+    } else if (format == diopiMemoryFormat_t::ChannelsLast) {
         DIOPI_CHECK_ABORT(this->shape().size() == 4, "%s", "tensor size should be 4");
         for (auto k : {1, 3, 2, 0}) {
             strides[k] = stride;
@@ -115,7 +105,7 @@ DiopiTensor DiopiTensor::contiguous(diopiContextHandle_t ctx, MemoryFormat forma
                 stride *= shape_[k];
             }
         }
-    } else if (format == MemoryFormat::ChannelsLast3d) {
+    } else if (format == diopiMemoryFormat_t::ChannelsLast3d) {
         DIOPI_CHECK_ABORT(this->shape().size() == 5, "%s", "tensor size should be 5");
         for (auto k : {1, 4, 3, 2, 0}) {
             strides[k] = stride;
@@ -134,7 +124,7 @@ DiopiTensor DiopiTensor::contiguous(diopiContextHandle_t ctx, MemoryFormat forma
     return DiopiTensor(tensor);
 }
 
-bool DiopiTensor::isContiguous(MemoryFormat format) const {
+bool DiopiTensor::isContiguous(diopiMemoryFormat_t format) const {
     if (!defined()) {
         return true;
     }
@@ -143,7 +133,7 @@ bool DiopiTensor::isContiguous(MemoryFormat format) const {
     auto strides = this->stride();
     auto shape = this->shape();
 
-    if (format == MemoryFormat::Contiguous) {
+    if (format == diopiMemoryFormat_t::Contiguous) {
         for (int64_t i = dim - 1; i >= 0; i--) {
             const auto& shapeD = shape[i];
             if (shapeD != 1) {
@@ -153,7 +143,7 @@ bool DiopiTensor::isContiguous(MemoryFormat format) const {
             }
             stride *= shapeD;
         }
-    } else if (format == MemoryFormat::ChannelsLast1d) {
+    } else if (format == diopiMemoryFormat_t::ChannelsLast1d) {
         if (strides.size() != 3) {
             return false;
         }
@@ -167,7 +157,7 @@ bool DiopiTensor::isContiguous(MemoryFormat format) const {
             stride *= shapeD;
         }
 
-    } else if (format == MemoryFormat::ChannelsLast) {
+    } else if (format == diopiMemoryFormat_t::ChannelsLast) {
         if (strides.size() != 4) return false;
         for (auto& i : {1, 3, 2, 0}) {
             const auto& shapeD = shape[i];
@@ -179,7 +169,7 @@ bool DiopiTensor::isContiguous(MemoryFormat format) const {
             }
             stride *= shapeD;
         }
-    } else if (format == MemoryFormat::ChannelsLast3d) {
+    } else if (format == diopiMemoryFormat_t::ChannelsLast3d) {
         if (strides.size() != 5) return false;
         for (auto& i : {1, 4, 3, 2, 0}) {
             const auto& shapeD = shape[i];
@@ -238,16 +228,6 @@ const void* DiopiTensor::data() const {
     return p;
 }
 
-MemoryFormat DiopiTensor::suggestMemoryFormat() {
-    // TODO(waiting for dispatch): Performance can be improved by dividing is_contiguous into several funcs
-    if (this->isContiguous(MemoryFormat::Contiguous)) {
-        return MemoryFormat::Contiguous;
-    } else if (this->isContiguous(MemoryFormat::ChannelsLast)) {
-        return MemoryFormat::ChannelsLast;
-    } else {
-        return MemoryFormat::ChannelsLast3d;
-    }
-}
 diopiTensorHandle_t DiopiTensor::tensorHandle() {
     if (this->defined()) {
         DIOPI_CHECK_ABORT(this->device() == diopiDevice_t::diopi_device, "%s", "tensor_ is not on camb device.");
@@ -300,11 +280,11 @@ DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>&
     return DiopiTensor(tensor);
 }
 
-DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype, MemoryFormat memoryFormat) {
+DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype, diopiMemoryFormat_t memoryFormat) {
     int64_t dim = size.size();
     std::vector<int64_t> strides(dim);
     int64_t stride = 1;
-    if (memoryFormat == MemoryFormat::Contiguous) {
+    if (memoryFormat == diopiMemoryFormat_t::Contiguous) {
         for (size_t i = dim; i > 0; --i) {
             strides[i - 1] = stride;
             if (size[i - 1] == 0) {
@@ -314,7 +294,7 @@ DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>&
                 stride *= size[i - 1];
             }
         }
-    } else if (memoryFormat == MemoryFormat::ChannelsLast1d) {
+    } else if (memoryFormat == diopiMemoryFormat_t::ChannelsLast1d) {
         DIOPI_CHECK_ABORT(size.size() == 3, "%s", "tensor size should be 3");
         for (auto& k : {1, 2, 0}) {
             strides[k] = stride;
@@ -326,7 +306,7 @@ DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>&
             }
         }
 
-    } else if (memoryFormat == MemoryFormat::ChannelsLast) {
+    } else if (memoryFormat == diopiMemoryFormat_t::ChannelsLast) {
         DIOPI_CHECK_ABORT(size.size() == 4, "%s", "tensor size should be 4");
         // constant array is used here to let
         // compiler fully unroll the loop to get better performance
@@ -339,7 +319,7 @@ DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>&
                 stride *= size[k];
             }
         }
-    } else if (memoryFormat == MemoryFormat::ChannelsLast3d) {
+    } else if (memoryFormat == diopiMemoryFormat_t::ChannelsLast3d) {
         DIOPI_CHECK_ABORT(size.size() == 5, "%s", "tensor size should be 5");
         for (auto& k : {1, 4, 3, 2, 0}) {
             strides[k] = stride;
