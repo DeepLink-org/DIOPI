@@ -4,12 +4,16 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include <numeric>
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 namespace impl {
 namespace camb {
+
+extern "C" {
 
 diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                           diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
@@ -392,6 +396,8 @@ diopiError_t diopiMSELossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     }
     return diopiSuccess;
 }
+
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

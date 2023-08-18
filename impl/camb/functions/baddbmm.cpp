@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include <cstring>
 #include <iostream>
 #include <numeric>
@@ -15,6 +17,7 @@
 namespace impl {
 namespace camb {
 
+extern "C" {
 /**
  * @brief Broadcast input add batch matmul.
  * @param[in] ctx Context environment.
@@ -131,5 +134,6 @@ DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_
     return diopiSuccess;
 }
 
+}  // extern "C"
 }  // namespace camb
 }  // namespace impl

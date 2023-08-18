@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include <numeric>
 #include <vector>
 
@@ -28,6 +30,8 @@ std::vector<int64_t> inferSize(std::vector<int64_t> a, std::vector<int64_t> b) {
     }
     return expandedSize;
 }
+
+extern "C" {
 
 diopiError_t expand(diopiContextHandle_t ctx, DiopiTensor inputTensor, DiopiTensor outTensor) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -204,5 +208,6 @@ diopiError_t diopiCdistBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gr
     return diopiSuccess;
 }
 
+}  // extern "C"
 }  // namespace camb
 }  // namespace impl

@@ -1,4 +1,4 @@
-
+#include <diopi/functions.h>
 
 #include <numeric>
 
@@ -8,6 +8,7 @@
 namespace impl {
 namespace camb {
 
+extern "C" {
 static std::vector<int> getPerm(DiopiTensor tensor, int64_t dim0, int64_t dim1) {
     int inputSize = tensor.shape().size();
     if (dim0 < 0) {
@@ -382,6 +383,8 @@ diopiError_t diopiMatmul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     DIOPI_CALL(tensorMatmulTensor(ctx, outTensor, inputTensor, otherTensor));
     return diopiSuccess;
 }
+
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include <cstring>
 #include <numeric>
 
@@ -29,6 +31,7 @@ std::vector<int> getDim(const DiopiTensor& tensor) {
 
 }  // namespace
 
+extern "C" {
 diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernelSize, diopiSize_t stride,
                             diopiSize_t padding, diopiSize_t dilation, bool ceilMode) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -372,6 +375,8 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 
     return diopiSuccess;
 }
+
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

@@ -4,6 +4,7 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
 
 #include <cmath>
@@ -101,7 +102,7 @@ extern "C" diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx, diopiTen
 
     diopiScalar_t scalar = impl::camb::constructDiopiScalarT(diopi_dtype_int32, 0);
     auto tempCoors = impl::camb::requiresTensor(ctx, {nDim, numPoints}, diopi_dtype_int32);
-    DIOPI_CALL(impl::camb::diopiFill(ctx, diopiTensorHandle_t(tempCoors), &scalar));
+    DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(tempCoors), &scalar));
 
     impl::camb::kernelDynamicVoxelize(kDim,
                                       kType,
@@ -125,10 +126,10 @@ extern "C" diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx, diopiTen
 
     // 2. map point to the idx of the corresponding voxel, find duplicate coor
     auto pointToPointidx = impl::camb::requiresTensor(ctx, {numPoints}, diopi_dtype_int32);
-    DIOPI_CALL(impl::camb::diopiFill(ctx, diopiTensorHandle_t(pointToPointidx), &scalar));
+    DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(pointToPointidx), &scalar));
 
     auto pointToVoxelidx = impl::camb::requiresTensor(ctx, {numPoints}, diopi_dtype_int32);
-    DIOPI_CALL(impl::camb::diopiFill(ctx, diopiTensorHandle_t(pointToVoxelidx), &scalar));
+    DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(pointToVoxelidx), &scalar));
 
     impl::camb::kernelPoint2Voxel(kDim, kType, queue, tempCoors.data(), pointToPointidx.data(), pointToVoxelidx.data(), numPoints, maxPoints);
 
@@ -139,9 +140,9 @@ extern "C" diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx, diopiTen
 
     // 3. determine voxel num and voxel's coor index
     auto coorToVoxelidx = impl::camb::requiresTensor(ctx, {numPoints}, diopi_dtype_int32);
-    DIOPI_CALL(impl::camb::diopiFill(ctx, diopiTensorHandle_t(coorToVoxelidx), &scalar));
+    DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(coorToVoxelidx), &scalar));
     auto voxelNumTrtmp = impl::camb::requiresTensor(ctx, {1}, diopi_dtype_int32);
-    DIOPI_CALL(impl::camb::diopiFill(ctx, diopiTensorHandle_t(voxelNumTrtmp), &scalar));
+    DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(voxelNumTrtmp), &scalar));
 
     impl::camb::kernelCalcPointsPerVoxel(kDimCalcPointsPerVoxel,
                                          kTypeCalcPointsPerVoxel,

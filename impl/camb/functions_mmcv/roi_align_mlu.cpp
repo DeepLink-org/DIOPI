@@ -4,6 +4,7 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
 
 #include <iostream>
@@ -52,7 +53,7 @@ extern "C" DIOPI_API diopiError_t diopiRoiAlignMmcv(diopiContextHandle_t ctx, di
         auto dtype = inputTr.dtype();
         outputTr = impl::camb::requiresTensor(ctx, {numRois, channels, alignedHeight, alignedWidth}, dtype);
         diopiScalar_t scalar = impl::camb::constructDiopiScalarT(dtype, 0);
-        DIOPI_CALL(impl::camb::diopiFill(ctx, diopiTensorHandle_t(outputTr), &scalar));
+        diopiFill(ctx, diopiTensorHandle_t(outputTr), &scalar);
         return diopiSuccess;
     }
 
@@ -123,7 +124,7 @@ extern "C" diopiError_t diopiRoiAlignBackwardMmcv(diopiContextHandle_t ctx, diop
     auto dtype = gradTr.dtype();
     auto gradInputTrTmp = impl::camb::requiresTensor(ctx, {batchSize, channels, height, width}, dtype);
     diopiScalar_t scalar = impl::camb::constructDiopiScalarT(dtype, 0);
-    DIOPI_CALL(impl::camb::diopiFill(ctx, diopiTensorHandle_t(gradInputTrTmp), &scalar));
+    diopiFill(ctx, diopiTensorHandle_t(gradInputTrTmp), &scalar);
 
     auto gradInputTr1 = gradInputTrTmp.contiguous(ctx, memoryFormat);
     cnnlTranspose(ctx, handle, gradInputTrTmp, gradInputTr1, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC);

@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include <numeric>
 #include <vector>
 
@@ -12,8 +14,8 @@
 namespace impl {
 namespace camb {
 
-diopiError_t diopiSplitWithSizes(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, int64_t numOuts, diopiConstTensorHandle_t input,
-                                 const diopiSize_t splitSizes, int64_t dim) {
+extern "C" diopiError_t diopiSplitWithSizes(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, int64_t numOuts, diopiConstTensorHandle_t input,
+                                            const diopiSize_t splitSizes, int64_t dim) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     auto inputTensor = DiopiTensor(input);

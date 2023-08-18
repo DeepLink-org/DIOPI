@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include <cfloat>
 #include <vector>
 
@@ -12,7 +14,7 @@
 namespace impl {
 namespace camb {
 
-diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t from, const int64_t* to) {
+extern "C" diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t from, const int64_t* to) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor tensor(inout);

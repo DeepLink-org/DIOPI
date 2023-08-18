@@ -6,6 +6,8 @@
 
 #include "../error.hpp"
 
+#include <diopi/functions.h>
+
 namespace impl {
 namespace camb {
 

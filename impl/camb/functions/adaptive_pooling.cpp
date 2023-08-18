@@ -4,11 +4,15 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
+
+extern "C" {
 
 diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t outputSize) {
     /* Get handle and generate tensors */
@@ -118,6 +122,8 @@ diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTenso
 
     return diopiSuccess;
 }
+
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

@@ -5,6 +5,7 @@
  */
 
 #include <cnrt.h>
+#include <diopi/functions.h>
 
 #include <iostream>
 #include <map>
@@ -18,7 +19,7 @@
 namespace impl {
 namespace camb {
 
-diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+extern "C" diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     DiopiTensor trInput(input);
     DiopiTensor trOut(out);
 

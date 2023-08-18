@@ -4,11 +4,15 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
+
+extern "C" {
 
 diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     DiopiTensor inputTr(input);
@@ -18,6 +22,8 @@ diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 
     return diopiSuccess;
 }
+
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

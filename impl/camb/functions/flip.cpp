@@ -1,4 +1,4 @@
-
+#include <diopi/functions.h>
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
@@ -6,6 +6,7 @@
 namespace impl {
 namespace camb {
 
+extern "C" {
 diopiError_t diopiFlip(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dims) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
@@ -35,6 +36,8 @@ diopiError_t diopiFlip(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     }
     return diopiSuccess;
 }
+
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

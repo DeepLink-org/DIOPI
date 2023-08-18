@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include <numeric>
 
 #include "../cnnl_helper.hpp"
@@ -13,6 +15,7 @@
 namespace impl {
 namespace camb {
 
+extern "C" {
 static std::vector<int> getPerm(DiopiTensor tensor, int64_t dim0, int64_t dim1) {
     int inputSize = tensor.shape().size();
     if (dim0 < 0) {
@@ -106,6 +109,8 @@ diopiError_t diopiCol2Im(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
 
     return diopiSuccess;
 }
+
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

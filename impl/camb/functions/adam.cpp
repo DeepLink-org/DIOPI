@@ -92,14 +92,16 @@ diopiError_t bangAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopi
     return diopiSuccess;
 }
 
-diopiError_t diopiAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t grad, diopiTensorHandle_t expAvg, diopiTensorHandle_t expAvgSq,
-                       diopiTensorHandle_t maxExpAvgSq, float lr, float beta1, float beta2, float eps, float weightDecay, int64_t step, bool amsgrad) {
+extern "C" diopiError_t diopiAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t grad, diopiTensorHandle_t expAvg,
+                                  diopiTensorHandle_t expAvgSq, diopiTensorHandle_t maxExpAvgSq, float lr, float beta1, float beta2, float eps,
+                                  float weightDecay, int64_t step, bool amsgrad) {
     DIOPI_CALL(bangAdam(ctx, input, grad, expAvg, expAvgSq, maxExpAvgSq, lr, beta1, beta2, eps, weightDecay, step, amsgrad, 0));
     return diopiSuccess;
 }
 
-diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t grad, diopiTensorHandle_t expAvg, diopiTensorHandle_t expAvgSq,
-                        diopiTensorHandle_t maxExpAvgSq, float lr, float beta1, float beta2, float eps, float weightDecay, int64_t step, bool amsgrad) {
+extern "C" diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t grad, diopiTensorHandle_t expAvg,
+                                   diopiTensorHandle_t expAvgSq, diopiTensorHandle_t maxExpAvgSq, float lr, float beta1, float beta2, float eps,
+                                   float weightDecay, int64_t step, bool amsgrad) {
     DIOPI_CALL(bangAdam(ctx, input, grad, expAvg, expAvgSq, maxExpAvgSq, lr, beta1, beta2, eps, weightDecay, step, amsgrad, 1));
     return diopiSuccess;
 }

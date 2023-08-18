@@ -3,6 +3,7 @@
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  */
+#include <diopi/functions.h>
 
 #include <cstring>
 #include <iostream>
@@ -15,6 +16,7 @@
 namespace impl {
 namespace camb {
 
+extern "C" {
 /**
  * @brief Computes the inverse error function of input tensor.
  */
@@ -47,5 +49,6 @@ DIOPI_API diopiError_t diopiErfinvInp(diopiContextHandle_t ctx, diopiTensorHandl
     return diopiSuccess;
 }
 
+}  // extern "C"
 }  // namespace camb
 }  // namespace impl

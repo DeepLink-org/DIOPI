@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include "../common/acloprunner.hpp"
 
 namespace impl {
@@ -20,6 +22,7 @@ aclDataType dtypeConvertor(diopiDtype_t type) {
 
 }  // namespace
 
+extern "C" {
 DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p,
                                     bool train) {
     if (train) {
@@ -52,6 +55,7 @@ DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_
         diopiCopyInp(ctx, input, out);
     }
     return diopiSuccess;
+}
 }
 }  // namespace ascend
 }  // namespace impl

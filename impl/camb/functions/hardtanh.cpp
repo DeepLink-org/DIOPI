@@ -4,11 +4,15 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
+
+extern "C" {
 
 diopiError_t diopiHardtanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* minVal,
                            const diopiScalar_t* maxVal) {
@@ -66,6 +70,8 @@ diopiError_t diopiHardtanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t
     DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensorTmp));
     return diopiSuccess;
 }
+
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

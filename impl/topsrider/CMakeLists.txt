@@ -45,17 +45,6 @@ endif()
 
 set(IMPL_SRC test/conform_test.cpp functions.cpp ${OPS_SRCS})
 
-# adaptor
-set(ADAPTOR_GEN_PATH "${ADAPTOR_DIR}/codegen")
-set(ADAPTOR_CSRC_PATH "${ADAPTOR_DIR}/csrc")
-
-set(AUTO_CONVERT "false")
-if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
-    set(AUTO_CONVERT "true")
-endif()
-
-list(APPEND IMPL_SRC ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp ${ADAPTOR_CSRC_PATH}/convert.cpp)
-
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 
 if(CMAKE_BUILD_TYPE AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
@@ -74,6 +63,18 @@ target_include_directories(${DEVICEIMPL} SYSTEM PUBLIC ${THIRD_PARTY_INCLUDE_DIR
 #target_link_libraries(${DEVICEIMPL} efrt)
 #target_link_libraries(${DEVICEIMPL} dtu_sdk)
 target_link_libraries(${DEVICEIMPL} ops)
+
+if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
+    set(ADAPTOR_GEN_PATH "${CMAKE_SOURCE_DIR}/../adaptor/codegen")
+    add_custom_target(adaptor_code_gen COMMAND python3 ${ADAPTOR_GEN_PATH}/gen.py
+        --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${CMAKE_SOURCE_DIR}/../proto/include/diopi/
+        --config_device=topsrider)
+    set(USE_ADAPTOR "true")
+    add_dependencies(${DEVICEIMPL} adaptor_code_gen)
+    add_definitions(-DTEST_USE_ADAPTOR)
+else()
+    set(USE_ADAPTOR "false")
+endif()
 
 if (TEST)
     add_subdirectory(test)

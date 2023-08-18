@@ -1,10 +1,14 @@
-
+#include <diopi/functions.h>
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
+
+extern "C" {
+
+diopiError_t nonzeroCount(diopiContextHandle_t ctx, DiopiTensor inputTensor, DiopiTensor *numTrue);
 
 diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -151,6 +155,7 @@ DIOPI_API diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopi
     DIOPI_CALL(diopiMul(ctx, gradInput, mask, gradInput));
     return diopiSuccess;
 }
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

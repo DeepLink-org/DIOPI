@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include "../common/acloprunner.hpp"
 
 namespace impl {
@@ -17,8 +19,8 @@ aclDataType dtypeConvertor(diopiDtype_t type) {
     return dtype;
 }
 
-DIOPI_API diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
-                                const diopiScalar_t* alpha) {
+extern "C" DIOPI_API diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
+                                           const diopiScalar_t* alpha) {
     diopiDtype_t outDtype, inputDtype, otherDtype;
     diopiGetTensorDtype(out, &outDtype);
     diopiGetTensorDtype(input, &inputDtype);
@@ -52,12 +54,12 @@ DIOPI_API diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha) {
+extern "C" DIOPI_API diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha) {
     return diopiAdd(ctx, input, input, other, alpha);
 }
 
-DIOPI_API diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
-                                      const diopiScalar_t* alpha) {
+extern "C" DIOPI_API diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
+                                                 const diopiScalar_t* alpha) {
     diopiTensorHandle_t trOther = nullptr;
     diopiDtype_t dtype;
     diopiGetTensorDtype(out, &dtype);
@@ -65,12 +67,13 @@ DIOPI_API diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandl
     return diopiAdd(ctx, out, input, trOther, alpha);
 }
 
-DIOPI_API diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
+extern "C" DIOPI_API diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other,
+                                                    const diopiScalar_t* alpha) {
     return diopiAddScalar(ctx, input, input, other, alpha);
 }
 
-DIOPI_API diopiError_t diopiSub(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
-                                const diopiScalar_t* alpha) {
+extern "C" DIOPI_API diopiError_t diopiSub(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
+                                           const diopiScalar_t* alpha) {
     diopiDtype_t outDtype, inputDtype, otherDtype;
     diopiGetTensorDtype(out, &outDtype);
     diopiGetTensorDtype(input, &inputDtype);
@@ -106,12 +109,12 @@ DIOPI_API diopiError_t diopiSub(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiSubInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha) {
+extern "C" DIOPI_API diopiError_t diopiSubInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha) {
     return diopiSub(ctx, input, input, other, alpha);
 }
 
-DIOPI_API diopiError_t diopiSubScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
-                                      const diopiScalar_t* alpha) {
+extern "C" DIOPI_API diopiError_t diopiSubScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
+                                                 const diopiScalar_t* alpha) {
     diopiTensorHandle_t trOther = nullptr;
     diopiDtype_t dtype;
     diopiGetTensorDtype(out, &dtype);
@@ -119,11 +122,12 @@ DIOPI_API diopiError_t diopiSubScalar(diopiContextHandle_t ctx, diopiTensorHandl
     return diopiSub(ctx, out, input, trOther, alpha);
 }
 
-DIOPI_API diopiError_t diopiSubInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
+extern "C" DIOPI_API diopiError_t diopiSubInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other,
+                                                    const diopiScalar_t* alpha) {
     return diopiSubScalar(ctx, input, input, other, alpha);
 }
 
-DIOPI_API diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
+extern "C" DIOPI_API diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
     diopiDtype_t outDtype, inputDtype, otherDtype;
     diopiGetTensorDtype(out, &outDtype);
     diopiGetTensorDtype(input, &inputDtype);
@@ -152,22 +156,23 @@ DIOPI_API diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiMulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
+extern "C" DIOPI_API diopiError_t diopiMulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
     return diopiMul(ctx, input, input, other);
 }
 
-DIOPI_API diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
+extern "C" DIOPI_API diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
+                                                 const diopiScalar_t* other) {
     diopiTensorHandle_t trOther = nullptr;
     makeTensorFromScalar(ctx, other, &trOther, diopi_dtype_float32, diopiDevice_t::diopi_device);
     return diopiMul(ctx, out, input, trOther);
 }
 
-DIOPI_API diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
+extern "C" DIOPI_API diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
     return diopiMulScalar(ctx, input, input, other);
 }
 
-DIOPI_API diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
-                                diopiRoundMode_t roundingMode) {
+extern "C" DIOPI_API diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
+                                           diopiRoundMode_t roundingMode) {
     diopiDtype_t outDtype, inputDtype, otherDtype;
     diopiGetTensorDtype(out, &outDtype);
     diopiGetTensorDtype(input, &inputDtype);
@@ -196,12 +201,13 @@ DIOPI_API diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiDivInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, diopiRoundMode_t roundingMode) {
+extern "C" DIOPI_API diopiError_t diopiDivInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other,
+                                              diopiRoundMode_t roundingMode) {
     return diopiDiv(ctx, input, input, other, roundingMode);
 }
 
-DIOPI_API diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
-                                      diopiRoundMode_t roundingMode) {
+extern "C" DIOPI_API diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
+                                                 diopiRoundMode_t roundingMode) {
     diopiTensorHandle_t trOther = nullptr;
     diopiDtype_t dtype;
     diopiGetTensorDtype(input, &dtype);
@@ -209,7 +215,8 @@ DIOPI_API diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandl
     return diopiDiv(ctx, out, input, trOther, roundingMode);
 }
 
-DIOPI_API diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, diopiRoundMode_t roundingMode) {
+extern "C" DIOPI_API diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other,
+                                                    diopiRoundMode_t roundingMode) {
     return diopiDivScalar(ctx, input, input, other, roundingMode);
 }
 

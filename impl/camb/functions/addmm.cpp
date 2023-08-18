@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include <cstring>
 #include <iostream>
 #include <numeric>
@@ -14,6 +16,8 @@
 
 namespace impl {
 namespace camb {
+
+extern "C" {
 
 diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mat1,
                         diopiConstTensorHandle_t mat2, const diopiScalar_t* beta, const diopiScalar_t* alpha) {
@@ -133,6 +137,7 @@ diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
 
     return diopiSuccess;
 }
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

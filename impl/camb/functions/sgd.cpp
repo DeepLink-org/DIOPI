@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include <vector>
 
 #include "../cnnl_helper.hpp"
@@ -34,8 +36,8 @@ static diopiError_t addMulFunc(diopiContextHandle_t ctx, DiopiTensor &a, float s
     return diopiSuccess;
 }
 
-diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTensorHandle_t dw, diopiTensorHandle_t buf, double lr, double momentum,
-                      double dampening, double weightDecay, bool nesterov) {
+extern "C" diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTensorHandle_t dw, diopiTensorHandle_t buf, double lr, double momentum,
+                                 double dampening, double weightDecay, bool nesterov) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor wTensor(w);
