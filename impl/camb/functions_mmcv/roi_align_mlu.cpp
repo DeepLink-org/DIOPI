@@ -124,10 +124,7 @@ extern "C" diopiError_t diopiRoiAlignBackwardMmcv(diopiContextHandle_t ctx, diop
 
     auto dtype = gradTr.dtype();
     auto gradInputTrTmp = impl::camb::requiresTensor(ctx, {batchSize, channels, height, width}, dtype);
-    diopiScalar_t scalar = {dtype, 0.0};
-    if (impl::camb::DiopiDataType().isInteger(dtype)) {
-        scalar = {dtype, 0};
-    }
+    diopiScalar_t scalar = impl::camb::constructDiopiScalarT(dtype, 0);
     diopiFill(ctx, diopiTensorHandle_t(gradInputTrTmp), &scalar);
 
     auto gradInputTr1 = gradInputTrTmp.contiguous(ctx, memoryFormat);

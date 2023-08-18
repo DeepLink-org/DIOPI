@@ -309,7 +309,6 @@ diopiTensorHandle_t clone(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     } else {
         const void* data;
         diopiGetTensorDataConst(src, &data);
-        info("src: %s", dumpTensor(src).c_str());
         auto baseShapeVec = getBaseShape(src);
         AclOpRunner<4, 1>("AsStrided", ctx)
             .addInput(data, getBaseBufferSize(src), baseShapeVec, ACL_FORMAT_ND, dtype)

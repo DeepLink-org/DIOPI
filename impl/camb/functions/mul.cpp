@@ -13,8 +13,7 @@ namespace impl {
 namespace camb {
 extern "C" {
 
-diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+extern "C" diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
     DiopiTensor inputTensor(input);
     DiopiTensor otherTensor(other);
     DiopiTensor outTensor(out);
@@ -45,13 +44,15 @@ diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     return diopiSuccess;
 }
 
-diopiError_t diopiMulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
-    DIOPI_CALL(diopiMul(ctx, input, input, other));
+extern "C" diopiError_t diopiMulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
+    DiopiTensor inputTensor(input);
+    DiopiTensor otherTensor(other);
+    DiopiTensor outputTensor(input);
+    DIOPI_CALL(cnnlOpTensor(ctx, inputTensor, otherTensor, outputTensor, CNNL_OP_TENSOR_MUL));
     return diopiSuccess;
 }
 
-diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+extern "C" diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
     DiopiTensor inputTensor(input);
     DiopiTensor outTensor(out);
     DiopiTensor otherTensorTmp;
@@ -61,8 +62,12 @@ diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     return diopiSuccess;
 }
 
-diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
-    DIOPI_CALL(diopiMulScalar(ctx, input, input, other));
+extern "C" diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
+    DiopiTensor inputTensor(input);
+    DiopiTensor outputTensor(input);
+    DiopiTensor otherTensor;
+    DIOPI_CALL(makeTensorFromScalar(ctx, other, otherTensor));
+    DIOPI_CALL(cnnlOpTensor(ctx, inputTensor, otherTensor, outputTensor, CNNL_OP_TENSOR_MUL));
     return diopiSuccess;
 }
 

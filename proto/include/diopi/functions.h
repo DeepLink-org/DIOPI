@@ -23,13 +23,6 @@ typedef struct {
         double fval;
         int64_t ival;
     };
-    diopiDtype_t type() { return stype; }
-    double val() {
-        if (stype == diopiDtype_t::diopi_dtype_float64)
-            return fval;
-        else if (stype == diopiDtype_t::diopi_dtype_int64)
-            return ival;
-    }
 } diopiScalar_t;
 
 typedef enum { Contiguous = 0, ChannelsLast = 1, ChannelsLast3d = 2, Preserve = 3, ChannelsLast1d = 4 } diopiMemoryFormat_t;

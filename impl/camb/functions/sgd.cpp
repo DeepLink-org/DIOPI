@@ -15,6 +15,27 @@
 namespace impl {
 namespace camb {
 
+// a= a * scale_a + b * scale_b;
+static diopiError_t addMulFunc(diopiContextHandle_t ctx, DiopiTensor &a, float scaleA, const DiopiTensor &b, float scaleB) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    size_t workspaceSize;
+    std::vector<int> shape;
+    shape.push_back(a.numel());
+    CnnlTensorDesc aDesc, bDesc;
+    DIOPI_CALL(aDesc.set(a, CNNL_LAYOUT_ARRAY, shape));
+    DIOPI_CALL(bDesc.set(b, CNNL_LAYOUT_ARRAY, shape));
+
+    DIOPI_CALLCNNL(cnnlGetBiasAddWorkspaceSize(handle, bDesc.get(), aDesc.get(), &workspaceSize));
+
+    void *workspace = nullptr;
+    if (workspaceSize != 0) {
+        workspace = requiresBuffer(ctx, workspaceSize).data();
+    }
+
+    DIOPI_CALLCNNL(cnnlBiasAdd(handle, &scaleB, bDesc.get(), b.data(), workspace, workspaceSize, &scaleA, aDesc.get(), a.data()));
+    return diopiSuccess;
+}
+
 extern "C" diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTensorHandle_t dw, diopiTensorHandle_t buf, double lr, double momentum,
                                  double dampening, double weightDecay, bool nesterov) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);

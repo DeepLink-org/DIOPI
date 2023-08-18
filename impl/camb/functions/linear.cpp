@@ -126,7 +126,6 @@ diopiError_t matmul(diopiContextHandle_t ctx, DiopiTensor inputA, DiopiTensor in
 
 extern "C" diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                     diopiConstTensorHandle_t bias) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor(input);
     DiopiTensor weightTensor(weight);
     DiopiTensor biasTensor(bias);

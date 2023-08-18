@@ -30,7 +30,7 @@ diopiError_t randpermFunc(DiopiTensor tensor, int64_t n, int64_t idx) {
 }
 }  // namespace
 
-extern "C" diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, int64_t n, int64_t idx) {
+extern "C" diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, int64_t n) {
     DiopiTensor outTensor(out);
     if (outTensor.dtype() == diopi_dtype_int32) {
         DIOPI_CALL(randpermFunc<int>(outTensor, n, idx));

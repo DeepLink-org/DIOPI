@@ -111,7 +111,6 @@ diopiError_t im2colOutInternal(diopiContextHandle_t ctx, DiopiTensor& output, co
 
 extern "C" diopiError_t diopiIm2Col(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernelSize,
                                     diopiSize_t dilation, diopiSize_t padding, diopiSize_t stride) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTr(input);
     DiopiTensor outTr(out);
     DIOPI_CHECK(kernelSize.len == 2, "The length of the kernelSize's shape should equal to 2, but got len: %d", kernelSize.len);
