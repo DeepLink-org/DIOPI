@@ -14,14 +14,14 @@
 namespace impl {
 namespace camb {
 
-extern "C" diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t from, const int64_t* to, int64_t idx) {
+extern "C" diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t from, const int64_t* to, diopiConstGeneratorHandle_t generator) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor tensor(inout);
     cnnlDataType_t dtype;
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, tensor.dtype()));
-    cnnlRandGenerator_t generator;
-    DIOPI_CALLCNNL(cnnlRandCreateGenerator(&generator, CNNL_RAND_RNG_FAST));
+    cnnlRandGenerator_t cnnl_generator;
+    DIOPI_CALLCNNL(cnnlRandCreateGenerator(&cnnl_generator, CNNL_RAND_RNG_MTGP32));
 
     if (dtype == CNNL_DTYPE_FLOAT || dtype == CNNL_DTYPE_HALF) {
         float min = from;
@@ -31,12 +31,14 @@ extern "C" diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHand
         } else {
             max = FLT_MAX;
         }
-        DIOPI_CALLCNNL(cnnlRandGenerateUniform(handle, generator, dtype, nullptr, tensor.numel(), min, max, tensor.data()));
+        void* state_ptr = nullptr;
+        DIOPI_CALL(diopiGeneratorGetState(generator, &state_ptr));
+        DIOPI_CALLCNNL(cnnlRandGenerateUniform(handle, cnnl_generator, dtype, state_ptr, tensor.numel(), min, max, tensor.data()));
     } else {
         setLastErrorString("%s%d", "cnnl random not support datatype: ", dtype);
         return diopiDtypeNotSupported;
     }
-    DIOPI_CALLCNNL(cnnlRandDestroyGenerator(generator));
+    DIOPI_CALLCNNL(cnnlRandDestroyGenerator(cnnl_generator));
     return diopiSuccess;
 }
 
