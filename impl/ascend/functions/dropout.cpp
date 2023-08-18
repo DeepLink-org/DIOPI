@@ -43,13 +43,18 @@ DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_
         float prob = 1. - p;
         AclOpRunner<5, 1, dtypeConvertor>("StatelessDropOutGenMask", ctx)
             .addConstInput(inputSize)
-            .addConstInput<float>(prob)
-            .addConstInput<int>(0)
-            .addConstInput<int>(0)
+            .addConstInput(prob, diopi_dtype_float32)
+            .addConstInput(0, diopi_dtype_int32)
+            .addConstInput(0, diopi_dtype_int32)
             .addConstInput(offset)
             .addOutput(maskTempTensor)
             .run();
-        AclOpRunner<3, 1, dtypeConvertor>("DropOutDoMask", ctx).addInput(input, maskTempTensor).addConstInput<float>(prob).addOutput(out).run();
+        AclOpRunner<3, 1, dtypeConvertor>("DropOutDoMask", ctx)
+            .addInput(input)
+            .addInput(maskTempTensor)
+            .addConstInput(prob, diopi_dtype_float32)
+            .addOutput(out)
+            .run();
 
     } else {
         diopiCopyInp(ctx, input, out);

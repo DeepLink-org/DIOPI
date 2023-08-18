@@ -15,7 +15,7 @@ DIOPI_API diopiError_t diopiWhere(diopiContextHandle_t ctx, diopiTensorHandle_t 
                                   diopiConstTensorHandle_t other) {
     std::vector<int64_t> dimVec({0});
     diopiSize_t dim(dimVec.data(), dimVec.size());
-    AclOpRunner<3, 1>("Select", ctx).addInput(condition, input, other).addOutput(out).run();
+    AclOpRunner<3, 1>("Select", ctx).addInput(condition).addInput(input).addInput(other).addOutput(out).run();
     return diopiSuccess;
 }
 }

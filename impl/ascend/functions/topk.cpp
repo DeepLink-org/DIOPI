@@ -21,7 +21,8 @@ DIOPI_API diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t v
         .setAttr("dim", dim)
         .setAttr("largest", largest)
         .setAttr("sorted", sorted)
-        .addOutput(values, indices)
+        .addOutput(values)
+        .addOutput(indices)
         .run();
     return diopiSuccess;
 }
