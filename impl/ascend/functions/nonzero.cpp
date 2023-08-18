@@ -16,7 +16,7 @@ std::vector<int64_t> nonzeroNpuMaxOutputSize(diopiConstTensorHandle_t input) {
     diopiGetTensorNumel(input, &inputNumEl);
     diopiSize_t inputSize;
     diopiGetTensorShape(input, &inputSize);
-    int64_t inputDim = inputSize.getLen();
+    int64_t inputDim = inputSize.len;
     std::vector<int64_t> maxOutputSize({inputNumEl, inputDim});
     return maxOutputSize;
 }
@@ -24,7 +24,7 @@ std::vector<int64_t> nonzeroNpuMaxOutputSize(diopiConstTensorHandle_t input) {
 extern "C" {
 DIOPI_API diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input) {
     auto outputSizeVec = nonzeroNpuMaxOutputSize(input);
-    diopiSize_t outputSize(outputSizeVec.data(), outputSizeVec.size());
+    diopiSize_t outputSize = vectorToDiopiSize(outputSizeVec);
 
     diopiTensorHandle_t output;
     diopiRequireTensor(ctx, &output, &outputSize, nullptr, diopi_dtype_int64, diopi_device);

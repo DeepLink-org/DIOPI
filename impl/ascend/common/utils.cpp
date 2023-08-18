@@ -13,7 +13,7 @@ diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* out, floa
 
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out, diopiDtype_t dtype, diopiDevice_t device) {
     int64_t sizeTmp[1] = {1};
-    diopiSize_t sSize(sizeTmp, 1);
+    diopiSize_t sSize = arrayToDiopiSize(sizeTmp, 1);
     diopiTensorHandle_t outCopy;
     diopiRequireTensor(ctx, &outCopy, &sSize, nullptr, dtype, diopi_host);
     void* ptr;
@@ -65,9 +65,9 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
 }
 
 diopiError_t makeTensorFromSize(diopiContextHandle_t ctx, const diopiSize_t* size, diopiTensorHandle_t* out, diopiDtype_t dtype) {
-    int64_t len = size->getLen();
+    int64_t len = size->len;
     int64_t sizeTmp[1] = {len};
-    diopiSize_t sSize(sizeTmp, 1);
+    diopiSize_t sSize = arrayToDiopiSize(sizeTmp, 1);
     diopiRequireTensor(ctx, out, &sSize, nullptr, dtype, diopi_host);
     if (len > 0) {
         void* dst = nullptr;
@@ -238,9 +238,9 @@ std::vector<int64_t> getBaseShape(diopiConstTensorHandle_t src) {
     diopiSize_t shape;
     diopiGetTensorShape(src, &shape);
     if (isContiguous(src)) {
-        if (shape.getLen() > 0) {
-            baseShapeVec.resize(shape.getLen());
-            for (int64_t i = 0; i < shape.getLen(); i++) {
+        if (shape.len > 0) {
+            baseShapeVec.resize(shape.len);
+            for (int64_t i = 0; i < shape.len; i++) {
                 baseShapeVec[i] = shape.data[i];
             }
         } else {
@@ -251,7 +251,7 @@ std::vector<int64_t> getBaseShape(diopiConstTensorHandle_t src) {
         diopiSize_t stride;
         diopiGetTensorStride(src, &stride);
         int64_t maxStride = 0, maxIdx = -1;
-        for (int64_t i = 0; i < stride.getLen(); i++) {
+        for (int64_t i = 0; i < stride.len; i++) {
             if (stride.data[i] > maxStride) {
                 maxStride = stride.data[i];
                 maxIdx = i;
@@ -272,7 +272,7 @@ int64_t getBaseBufferSize(diopiConstTensorHandle_t src) {
     diopiGetTensorShape(src, &shape);
     diopiGetTensorElemSize(src, &elemsize);
     if (isContiguous(src)) {
-        if (shape.getLen() > 0) {
+        if (shape.len > 0) {
             diopiGetTensorNumel(src, &numel);
             return numel * elemsize;
         } else {
@@ -282,7 +282,7 @@ int64_t getBaseBufferSize(diopiConstTensorHandle_t src) {
         diopiSize_t stride;
         diopiGetTensorStride(src, &stride);
         int64_t maxStride = 0, maxIdx = -1;
-        for (int64_t i = 0; i < stride.getLen(); i++) {
+        for (int64_t i = 0; i < stride.len; i++) {
             if (stride.data[i] > maxStride) {
                 maxStride = stride.data[i];
                 maxIdx = i;
@@ -345,6 +345,20 @@ diopiTensorHandle_t contiguous(diopiContextHandle_t ctx, diopiConstTensorHandle_
         diopiCastDtype(ctx, out, outTemp);
     }
     return out;
+}
+
+diopiSize_t vectorToDiopiSize(std::vector<int64_t>& sizeVec) {
+    diopiSize_t size;
+    size.len = sizeVec.size();
+    size.data = sizeVec.data();
+    return size;
+}
+
+diopiSize_t arrayToDiopiSize(int64_t* data, int64_t len) {
+    diopiSize_t size;
+    size.len = len;
+    size.data = data;
+    return size;
 }
 }  // namespace ascend
 }  // namespace impl

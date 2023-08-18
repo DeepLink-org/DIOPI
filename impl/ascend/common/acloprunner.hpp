@@ -263,6 +263,10 @@ int64_t getBaseBufferSize(diopiConstTensorHandle_t src);
 
 std::vector<int64_t> getBaseShape(diopiConstTensorHandle_t src);
 
+diopiSize_t vectorToDiopiSize(std::vector<int64_t>& sizeVec);
+
+diopiSize_t arrayToDiopiSize(int64_t* data, int64_t len);
+
 template <int InputSize, int OutputSize, aclDataType (*dtypeCastStrategy)(diopiDtype_t) = getAclDataType>
 class AclOpRunner {
     std::string opname_;
@@ -634,7 +638,7 @@ public:
                 realShape.push_back(dimSize);
             }
             diopiTensorHandle_t syncTensorReal;
-            diopiSize_t syncTensorRealSize(realShape.data(), realShape.size());
+            diopiSize_t syncTensorRealSize = vectorToDiopiSize(realShape);
             diopiDtype_t dtype;
             diopiGetTensorDtype(*syncTensorPtr, &dtype);
             diopiRequireTensor(context_, &syncTensorReal, &syncTensorRealSize, nullptr, dtype, diopi_device);

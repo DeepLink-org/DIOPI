@@ -17,14 +17,14 @@ extern "C" DIOPI_API diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopi
                                                  int64_t dim1) {
     diopiSize_t inputShape;
     diopiGetTensorShape(input, &inputShape);
-    int64_t inputSize = inputShape.getLen();
+    int64_t inputSize = inputShape.len;
     if (dim0 < 0) dim0 = dim0 + inputSize;
     if (dim1 < 0) dim1 = dim1 + inputSize;
     std::vector<int64_t> perms(inputSize);
     std::iota(perms.begin(), perms.end(), 0);
     perms[dim0] = dim1;
     perms[dim1] = dim0;
-    diopiSize_t permsSize(perms.data(), perms.size());
+    diopiSize_t permsSize = vectorToDiopiSize(perms);
     AclOpRunner<2, 1>("Transpose", ctx).addInput(input).addConstInput(permsSize).addOutput(out).run();
     return diopiSuccess;
 }
