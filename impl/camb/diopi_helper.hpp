@@ -30,7 +30,7 @@
         }                                                                                    \
     } while (false);
 
-inline void DIOPI_DebugPrintBacktrace() {
+inline void debugPrintBacktrace() {
 #ifdef DEBUG_MODE
     impl::camb::printBacktrace();
 #endif
