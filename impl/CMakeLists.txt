@@ -17,6 +17,7 @@ message(STATUS ENABLE_COVERAGE=${ENABLE_COVERAGE})
 
 if (DEBUG)
     set(CMAKE_BUILD_TYPE "Debug")
+    add_definitions(-DDEBUG_MODE)
 else()
     set(CMAKE_BUILD_TYPE "Release")
 endif()
