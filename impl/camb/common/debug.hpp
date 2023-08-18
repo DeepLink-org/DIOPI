@@ -129,32 +129,6 @@ void printVec(const std::string& str, std::vector<T> vec) {
     std::cout << std::endl;
 }
 
-inline void printBacktrace() {
-    const int maxStackFrames = 64;
-    void* stackTraces[maxStackFrames];
-    int stackFrames = backtrace(stackTraces, maxStackFrames);
-
-    char** stackStrings = backtrace_symbols(stackTraces, stackFrames);  // do not forget to free stack_strings
-    for (int i = 0; i < stackFrames; i++) {
-        printf("%s\n", stackStrings[i]);
-
-        // Try to demangle the symbol name
-        char* symbol = stackStrings[i];
-        char* mangledStart = strchr(symbol, '(');
-        char* mangledEnd = strchr(mangledStart, '+');
-        if (mangledStart && mangledEnd) {
-            *mangledStart++ = '\0';
-            *mangledEnd = '\0';
-            int status;
-            char* demangled = abi::__cxa_demangle(mangledStart, nullptr, nullptr, &status);
-            if (status == 0) {
-                printf("  %s\n", demangled);
-            }
-        }
-    }
-    free(stackStrings);
-}
-
 }  // namespace camb
 }  // namespace impl
 
