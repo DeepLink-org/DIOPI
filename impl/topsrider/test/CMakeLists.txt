@@ -36,18 +36,14 @@ target_link_libraries(${DIOPIRT} PRIVATE diopirt)
 #target_link_libraries(${DIOPIRT} -Wl,--no-as-needed ${DEVICEIMPL} -Wl,--as-needed)
 target_link_libraries(diopirt -Wl,--no-as-needed ${DEVICEIMPL} -Wl,--as-needed)
 
-add_custom_target(test_code_gen COMMAND python3 ${TEST_GEN_PATH}/gen.py --device=topsrider)
-
 # file(MAKE_DIRECTORY ${FUNCTION_SAVE_PATH})
-set(EXPORT_FUNCTIONS "${FUNCTION_SAVE_PATH}/export_functions.cpp")
-file(TOUCH ${EXPORT_FUNCTIONS})
-set(FUNCTIONS_SRC
-    ${EXPORT_FUNCTIONS}
+add_custom_command(
+    OUTPUT ${FUNCTION_SAVE_PATH}/export_functions.cpp
+    COMMAND python3 ${TEST_GEN_PATH}/gen.py --device=camb
 )
 
-pybind11_add_module(${DIOPI_FUNCTIONS} SHARED ${FUNCTIONS_SRC})
+pybind11_add_module(${DIOPI_FUNCTIONS} SHARED ${FUNCTIONS_SRC} ${FUNCTION_SAVE_PATH}/export_functions.cpp)
 target_link_libraries(${DIOPI_FUNCTIONS} PRIVATE -Wl,--no-as-needed diopirt ${DEVICEIMPL} -Wl,--as-needed)
-add_dependencies(${DIOPI_FUNCTIONS} test_code_gen)
 
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/../diopi_test/python)
 add_custom_target(python_copy ALL

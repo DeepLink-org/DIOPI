@@ -32,24 +32,25 @@ file(GLOB_RECURSE IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions/*.cpp 
 #list(APPEND IMPL_SRC acl_helper.cpp)
 
 # adaptor
-set(ADAPTOR_GEN_PATH "${CMAKE_SOURCE_DIR}/../adaptor/codegen")
-set(ADAPTOR_CSRC_PATH "${ADAPTOR_GEN_PATH}/../csrc")
+set(ADAPTOR_GEN_PATH "${ADAPTOR_DIR}/codegen")
+set(ADAPTOR_CSRC_PATH "${ADAPTOR_DIR}/csrc")
+
 
 set(AUTO_CONVERT "false")
 if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
     set(AUTO_CONVERT "true")
 endif()
-add_custom_target(adaptor_code_gen COMMAND python3 ${ADAPTOR_GEN_PATH}/gen.py
-    --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH}
-    --config_device=ascend --auto_convert=${AUTO_CONVERT})
+add_custom_command(
+  OUTPUT ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp
+  COMMAND python3 ${ADAPTOR_GEN_PATH}/gen.py --diopi_dir=${CMAKE_SOURCE_DIR}/../
+            --output_dir=${ADAPTOR_CSRC_PATH} --config_device=camb --auto_convert=${AUTO_CONVERT}
+)
 
-file(GLOB_RECURSE ADAPTOR_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ../../adaptor/csrc/*.cpp)
-list(APPEND IMPL_SRC ${ADAPTOR_SRC})
+list(APPEND IMPL_SRC ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp ${ADAPTOR_CSRC_PATH}/convert.cpp)
 
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
 target_link_libraries(${DEVICEIMPL} ascendcl acl_op_compiler)
-add_dependencies(${DEVICEIMPL} adaptor_code_gen)
 
 if (TEST)
     add_subdirectory(test)

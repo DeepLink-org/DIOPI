@@ -39,6 +39,7 @@ extern "C" diopiError_t diopi${op_name}(${attrs}) {
             ret = ::impl::${device}::${call_func};
         }
         else {
+            std::cout << "impl::${device}::${func_name} not implement"  << std::endl;
             return diopiError_t::diopiNoImplement;
         }
     }
