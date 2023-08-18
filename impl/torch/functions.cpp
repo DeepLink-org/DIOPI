@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <ATen/ops/convolution_backward_cuda_dispatch.h>
-#include <ATen/ops/convolution_backward_ops.h>
 #include <cuda_runtime_api.h>
 #include <cudnn.h>
 #include <diopi/functions.h>
@@ -24,6 +22,22 @@
 #include "context.h"
 #include "helper.hpp"
 #include "vision_kernel.h"
+
+#ifndef USE_HIP
+namespace at {
+namespace native {
+void raw_cudnn_convolution_forward_out(const Tensor& output, const Tensor& input, const Tensor& weight, IntArrayRef padding, IntArrayRef stride,
+                                       IntArrayRef dilation, int64_t groups, bool benchmark, bool deterministic, bool allow_tf32);
+
+void raw_cudnn_convolution_backward_input_out(const at::Tensor& grad_input, const at::Tensor& grad_output, const at::Tensor& weight, IntArrayRef padding,
+                                              IntArrayRef stride, IntArrayRef dilation, int64_t groups, bool benchmark, bool deterministic, bool allow_tf32);
+
+void raw_cudnn_convolution_backward_weight_out(const Tensor& grad_weight, const Tensor& grad_output, const Tensor& input, IntArrayRef padding,
+                                               IntArrayRef stride, IntArrayRef dilation, int64_t groups, bool benchmark, bool deterministic, bool allow_tf32);
+}  // namespace native
+
+}  // namespace at
+#endif
 
 extern "C" {
 
@@ -2169,71 +2183,35 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
         impl::aten::updateATen2Tensor(ctx, atTmp, grad_bias);
     }
 #else
-#if 1
-    // if (atGradInput.defined() && atGradWeight.defined()) {
     if (0) {
-        at::convolution_backward_out(atGradInput,
-                                     atGradWeight,
-                                     atGradBias,
-                                     atGrad,
-                                     atInput,
-                                     atWeight,
-                                     bias_sizes_opt,
-                                     atStride,
-                                     atPadding,
-                                     atDilation,
-                                     false,
-                                     atOutputPadding,
-                                     groups,
-                                     {atGradInput.defined(), atGradWeight.defined(), true});
-        // std::tuple<at::Tensor &,at::Tensor &,at::Tensor &> convolution_backward_out_symint(const at::Tensor & grad_output, const at::Tensor & input, const
-        // at::Tensor & weight, at::OptionalSymIntArrayRef bias_sizes, at::IntArrayRef stride, c10::SymIntArrayRef padding, at::IntArrayRef dilation, bool
-        // transposed, c10::SymIntArrayRef output_padding, int64_t groups, ::std::array<bool,3> output_mask, at::Tensor & out0, at::Tensor & out1, at::Tensor &
-        // out2); at::convolution_backward_out_symint(atGrad, atInput, atWeight, bias_sizes_opt, atStride, atPadding, atDilation, false, c10::nullopt, groups,
-        // {atGradInput.defined(), atGradWeight.defined(), atGradBias.defined()}, atGradInput, atGradWeight, atGradBias);
-    } else if (atGradInput.defined() && atGradWeight.defined() && 0) {
-        at::Tensor atGradBiasTemp = atGradBias.defined() ? atGradBias : at::empty({atGrad.size(1)}, atGrad.options());
-        at::convolution_backward_out(atGradInput,
-                                     atGradWeight,
-                                     atGradBiasTemp,
-                                     atGrad,
-                                     atInput,
-                                     atWeight,
-                                     c10::nullopt,
-                                     atStride,
-                                     atPadding,
-                                     atDilation,
-                                     false,
-                                     atOutputPadding,
-                                     groups,
-                                     {atGradInput.defined(), atGradWeight.defined(), true});
-    } else {
-        auto grad_inputs = at::cuda::convolution_backward(
+        auto grad_inputs = at::convolution_backward(
             atGrad, atInput, atWeight, c10::nullopt, atStride, atPadding, atDilation, false, atOutputPadding, groups, {true, true, false});
         impl::aten::updateATen2Tensor(ctx, std::get<0>(grad_inputs), grad_input);
         impl::aten::updateATen2Tensor(ctx, std::get<1>(grad_inputs), grad_weight);
-        if (bias_sizes != nullptr && grad_bias != nullptr) {
-            auto atBias = impl::aten::buildATen(grad_bias);
-            at::Tensor atTmp = atGrad;
-            int64_t size = atGrad.dim() - 1;
-            while (atBias.dim() != size) {
-                atTmp = at::sum(atTmp, -1, false);
-                size -= 1;
-            }
-            atTmp = at::sum(atTmp, 0, false);
-            impl::aten::updateATen2Tensor(ctx, atTmp, grad_bias);
+
+    } else {
+        if (atGradInput.defined()) {
+            ::at::native::raw_cudnn_convolution_backward_input_out(
+                atGradInput, atGrad, atWeight, atPadding, atStride, atDilation, groups, true /*benchmark*/, false /*deterministic*/, true /*allow_tf32*/);
+        }
+        if (atGradWeight.defined()) {
+            ::at::native::raw_cudnn_convolution_backward_weight_out(
+                atGradWeight, atGrad, atInput, atPadding, atStride, atDilation, groups, true /*benchmark*/, false /*deterministic*/, true /*allow_tf32*/);
         }
     }
-#else
-    if (output_mask[0]) {
-        grad_input =
-            cudnn_convolution_backward_input(input.sizes(), grad_output, weight, padding, stride, dilation, groups, benchmark, deterministic, allow_tf32);
+
+    if (bias_sizes != nullptr && grad_bias != nullptr) {
+        auto atBias = impl::aten::buildATen(grad_bias);
+        at::Tensor atTmp = atGrad;
+        int64_t size = atGrad.dim() - 1;
+        while (atBias.dim() != size) {
+            atTmp = at::sum(atTmp, -1, false);
+            size -= 1;
+        }
+        atTmp = at::sum(atTmp, 0, false);
+        impl::aten::updateATen2Tensor(ctx, atTmp, grad_bias);
     }
-    if (output_mask[1]) {
-        grad_weight =
-            cudnn_convolution_backward_weight(weight.sizes(), grad_output, input, padding, stride, dilation, groups, benchmark, deterministic, allow_tf32);
-    }
-#endif
+
 #endif
     impl::aten::unsetCurCtx();
     return diopiSuccess;
