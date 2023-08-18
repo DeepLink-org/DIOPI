@@ -1,4 +1,4 @@
-
+#include <diopi/functions.h>
 
 #include <numeric>
 
@@ -8,6 +8,7 @@
 namespace impl {
 namespace camb {
 
+extern "C" {
 static std::vector<int> getPerm(DiopiTensor tensor, int64_t dim0, int64_t dim1) {
     int inputSize = tensor.shape().size();
     if (dim0 < 0) {
@@ -74,7 +75,7 @@ static diopiError_t vectorMulVector(diopiContextHandle_t ctx, DiopiTensor outTen
 
     DIOPI_CALLCNNL(cnnlMulN(handle, inputsDesc.data(), inputs.data(), 2, tempOutDesc.get(), tempOut.data()));
     int64_t dimData = 0;
-    diopiSize_t dim{&dimData, 1};
+    diopiSize_t dim = {&dimData, 1};
 
     if (outTensor.dtype() == vector1Tensor.dtype()) {
         DIOPI_CALL(diopiSum(ctx, (diopiTensorHandle_t)outTensor, (diopiTensorHandle_t)tempOut, dim));
@@ -161,11 +162,11 @@ static diopiError_t matMulMat(diopiContextHandle_t ctx, DiopiTensor out, DiopiTe
 
 static diopiError_t matMulVector(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor inputTensor, DiopiTensor vectorTensor) {
     if (inputTensor.shape()[1] != vectorTensor.shape()[0]) {
-        vectorTensor.view({1, vectorTensor.shape()[0]});
-        outTensor.view({vectorTensor.shape()[0], 1});
+        vectorTensor.reshape({1, vectorTensor.shape()[0]});
+        outTensor.reshape({vectorTensor.shape()[0], 1});
     } else {
-        vectorTensor.view({vectorTensor.shape()[0], 1});
-        outTensor.view({inputTensor.shape()[0], 1});
+        vectorTensor.reshape({vectorTensor.shape()[0], 1});
+        outTensor.reshape({inputTensor.shape()[0], 1});
     }
 
     DIOPI_CALL(matMulMat(ctx, outTensor, inputTensor, vectorTensor));
@@ -174,6 +175,7 @@ static diopiError_t matMulVector(diopiContextHandle_t ctx, DiopiTensor outTensor
 
 static diopiError_t transposeInternal(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor input, int64_t dim0, int64_t dim1) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    diopiTensorHandle_t out = (diopiTensorHandle_t)outTensor;
 
     CnnlResourceGuard<cnnlTransposeDescriptor_t, cnnlCreateTransposeDescriptor, cnnlDestroyTransposeDescriptor> cnnlTransposeDesc;
     cnnlTransposeDescriptor_t transposeDesc = cnnlTransposeDesc.get();
@@ -284,7 +286,7 @@ static diopiError_t tensorMatmulTensor(diopiContextHandle_t ctx, DiopiTensor out
             std::vector<int64_t> tempShape(2);
             tempShape[0] = otherTensor.shape()[0];
             tempShape[1] = 1;
-            otherTensor.view(tempShape);
+            otherTensor.reshape(tempShape);
         } else {
             outputSize.push_back(otherTensor.shape()[1]);
         }
@@ -292,17 +294,18 @@ static diopiError_t tensorMatmulTensor(diopiContextHandle_t ctx, DiopiTensor out
         std::vector<int64_t> shape(2);
         shape[1] = inputTensor.shape()[inputTensor.dim() - 1];
         shape[0] = inputTensor.numel() / shape[1];
-        inputTensor.view(shape);
+        inputTensor.reshape(shape);
         shape[1] = otherTensor.shape()[1];
-        outTensor.view(shape);
+        outTensor.reshape(shape);
         DIOPI_CALL(matMulMat(ctx, outTensor, inputTensor, otherTensor));
         return diopiSuccess;
     } else if ((inputTensor.dim() == 1 || inputTensor.dim() == 2) && otherTensor.dim() >= 3) {
         int inputDim = inputTensor.dim();
         int64_t n = inputTensor.dim() == 2 ? inputTensor.shape()[0] : 1;
         int64_t m = inputTensor.shape()[inputTensor.dim() - 1];
+        int64_t p = otherTensor.shape()[otherTensor.dim() - 1];
         if (inputDim == 1) {
-            inputTensor.view({n, m});
+            inputTensor.reshape({n, m});
         }
 
         std::vector<int64_t> otherShape(otherTensor.shape());
@@ -355,8 +358,8 @@ static diopiError_t tensorMatmulTensor(diopiContextHandle_t ctx, DiopiTensor out
         DiopiTensor otherExpand = requiresTensor(ctx, tensor2ExpandSize, otherTensor.dtype());
         broadcast(ctx, inputExpand, inputTensor);
         broadcast(ctx, otherExpand, otherTensor);
-        inputExpand.view(tensor1BmmView);
-        otherExpand.view(tensor2BmmView);
+        inputExpand.reshape(tensor1BmmView);
+        otherExpand.reshape(tensor2BmmView);
 
         std::vector<int64_t> outputShape({expandBatchProduct});
         if (inputTensor.dim() > 1) {
@@ -365,7 +368,7 @@ static diopiError_t tensorMatmulTensor(diopiContextHandle_t ctx, DiopiTensor out
         if (otherTensor.dim() > 1) {
             outputShape.push_back(p);
         }
-        outTensor.view(outputShape);
+        outTensor.reshape(outputShape);
         DIOPI_CALL(batchMatmul(ctx, outTensor, inputExpand, otherExpand));
         return diopiSuccess;
     }
@@ -375,6 +378,8 @@ static diopiError_t tensorMatmulTensor(diopiContextHandle_t ctx, DiopiTensor out
 }
 
 diopiError_t diopiMatmul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+
     DiopiTensor inputTensor(input);
     DiopiTensor otherTensor(other);
     DiopiTensor outTensor(out);
@@ -382,6 +387,8 @@ diopiError_t diopiMatmul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     DIOPI_CALL(tensorMatmulTensor(ctx, outTensor, inputTensor, otherTensor));
     return diopiSuccess;
 }
+
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

@@ -1,4 +1,4 @@
-
+#include <diopi/functions.h>
 
 #include <vector>
 
@@ -8,6 +8,7 @@
 namespace impl {
 namespace camb {
 
+extern "C" {
 diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t input, const int64_t *dim, bool sorted, bool returnCounts,
                          diopiTensorHandle_t indices, diopiTensorHandle_t *counts) {
 // version should be greater than 1.15.2
@@ -99,9 +100,9 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, dio
     }
 
     DiopiTensor slicedOutputTensor = requiresTensor(ctx, trueOutShape, outputTensor.dtype());
-    slicedOutputTensor.view({slicedOutputTensor.numel()});
+    slicedOutputTensor.reshape({slicedOutputTensor.numel()});
     CnnlTensorDesc slicedOutputDesc(slicedOutputTensor, CNNL_LAYOUT_ARRAY);
-    outputTensor.view({outputTensor.numel()});
+    outputTensor.reshape({outputTensor.numel()});
     CnnlTensorDesc newOutputDesc(outputTensor, CNNL_LAYOUT_ARRAY);
 
     int begin[] = {0};
@@ -131,6 +132,7 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, dio
     DIOPI_CHECK(false, "not implemented in low version cnnl")
 #endif
 }
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

@@ -4,11 +4,15 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
+
+extern "C" {
 
 diopiError_t diopiIndexSelect(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim, diopiConstTensorHandle_t index) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -42,7 +46,7 @@ diopiError_t diopiIndexSelectBackward(diopiContextHandle_t ctx, diopiTensorHandl
                                       int64_t dim, diopiConstTensorHandle_t index) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    diopiScalar_t zero = constructDiopiScalarT(diopi_dtype_int64, 0);
+    diopiScalar_t zero = {diopi_dtype_int64, 0};
     DIOPI_CALL(diopiFill(ctx, gradInput, &zero));
     DiopiTensor gradInputTensor(gradInput);
     DiopiTensor gradTensor(grad);
@@ -106,7 +110,9 @@ diopiError_t diopiSelect(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
         DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
     }
 
-    diopiScalar_t indexScalar = constructDiopiScalarT(diopi_dtype_int64, index);
+    diopiScalar_t indexScalar;
+    indexScalar.stype = diopi_dtype_int64;
+    indexScalar.ival = index;
     DiopiTensor indexTensor;
     DIOPI_CALL(makeTensorFromScalar(ctx, &indexScalar, indexTensor));
     DiopiTensor outTensor(out);
@@ -116,7 +122,7 @@ diopiError_t diopiSelect(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     }
     std::vector<int64_t> shape(outTensor.shape());
     shape.insert(shape.begin() + dim, 1);
-    outTensor.view(shape);
+    outTensor.reshape(shape);
 
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc indexDesc(indexTensor, CNNL_LAYOUT_ARRAY);
@@ -138,7 +144,7 @@ diopiError_t diopiSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
                                  int64_t dim, int64_t index) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    diopiScalar_t zero = constructDiopiScalarT(diopi_dtype_int64, 0);
+    diopiScalar_t zero = {diopi_dtype_int64, 0};
     DIOPI_CALL(diopiFill(ctx, gradInput, &zero));
     DiopiTensor gradInputTensor(gradInput);
     diopiDtype_t outDtype = gradInputTensor.dtype();
@@ -148,7 +154,7 @@ diopiError_t diopiSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
     DiopiTensor gradTensor(gradOutput);
     std::vector<int64_t> shape(gradTensor.shape());
     shape.insert(shape.begin() + dim, 1);
-    gradTensor.view(shape);
+    gradTensor.reshape(shape);
 
     if (gradInputTensor.dtype() == diopi_dtype_int64) {
         DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, diopi_dtype_int32));
@@ -163,7 +169,9 @@ diopiError_t diopiSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
     CnnlTensorDesc gradInputDesc(gradInputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc gradDesc(gradTensor, CNNL_LAYOUT_ARRAY);
 
-    diopiScalar_t indexScalar = constructDiopiScalarT(diopi_dtype_int64, index);
+    diopiScalar_t indexScalar;
+    indexScalar.stype = diopi_dtype_int64;
+    indexScalar.ival = index;
     DiopiTensor indexTensor;
     DIOPI_CALL(makeTensorFromScalar(ctx, &indexScalar, indexTensor));
     if (indexTensor.dtype() == diopi_dtype_int64) {
@@ -249,6 +257,8 @@ diopiError_t diopiSliceBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gr
     }
     return diopiSuccess;
 }
+
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

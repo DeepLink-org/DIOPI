@@ -4,12 +4,14 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
-
+extern "C" {
 DIOPI_API diopiError_t diopiPolar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t abs, diopiConstTensorHandle_t angle) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
@@ -35,6 +37,7 @@ DIOPI_API diopiError_t diopiPolar(diopiContextHandle_t ctx, diopiTensorHandle_t 
         cnnlPolar(handle, absDesc.get(), absTensor.data(), angleDesc.get(), angleTensor.data(), outDesc.get(), outTensor.data(), workspace, workspaceSize));
     return diopiSuccess;
 }
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

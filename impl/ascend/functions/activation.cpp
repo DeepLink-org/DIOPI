@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include "../common/acloprunner.hpp"
 
 namespace impl {
@@ -112,6 +114,7 @@ DIOPI_API diopiError_t diopiTanhBackward(diopiContextHandle_t ctx, diopiTensorHa
                                          diopiConstTensorHandle_t output) {
     AclOpRunner<2, 1>("TanhGrad", ctx).addInput(output).addInput(gradOutput).addOutput(gradInput).run();
     return diopiSuccess;
+}
 }
 }  // namespace ascend
 }  // namespace impl

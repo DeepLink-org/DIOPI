@@ -4,11 +4,14 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
+extern "C" {
 
 diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, diopiTensorHandle_t indices, diopiConstTensorHandle_t input, int64_t k,
                        int64_t dim, bool largest, bool sorted) {
@@ -68,5 +71,6 @@ diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
     return diopiSuccess;
 }
 
+}  // extern "C"
 }  // namespace camb
 }  // namespace impl

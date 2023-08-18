@@ -4,10 +4,13 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
+extern "C" {
 
 DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                                     diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
@@ -26,7 +29,7 @@ DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_
         diopiSize_t inputShape;
         diopiGetTensorShape(input, &inputShape);
         int64_t weightDim[] = {inputShape.data[1]};
-        diopiSize_t weightShape{weightDim, 1};
+        diopiSize_t weightShape(weightDim, 1);
         diopiRequireTensor(ctx, &weightNew, &weightShape, nullptr, diopi_dtype_float32, diopi_device);
         fillTensor(ctx, &weightNew, 1.0);
         runner.addInput(weightNew);
@@ -67,7 +70,7 @@ DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTenso
         diopiSize_t inputShape;
         diopiGetTensorShape(input, &inputShape);
         int64_t weightDim[] = {inputShape.data[1]};
-        diopiSize_t weightShape{weightDim, 1};
+        diopiSize_t weightShape(weightDim, 1);
         diopiRequireTensor(ctx, &weightNew, &weightShape, nullptr, diopi_dtype_float32, diopi_device);
         fillTensor(ctx, &weightNew, 1.0);
         runner1.addInput(weightNew);
@@ -124,7 +127,7 @@ DIOPI_API diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx, diopiTens
         runner.run();
     } else {
         int64_t lossDim[] = {inputSize.data[0]};
-        diopiSize_t lossShape{lossDim, 1};
+        diopiSize_t lossShape(lossDim, 1);
         diopiTensorHandle_t loss;
         diopiRequireTensor(ctx, &loss, &lossShape, nullptr, diopi_dtype_float32, diopi_device);
         runner.addOutput(loss).addOutput(backProp);
@@ -153,7 +156,7 @@ DIOPI_API diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, d
     diopiOneHot(ctx, targetOneHot, target, inputSize.data[1]);
 
     int64_t lossDim[] = {inputSize.data[0]};
-    diopiSize_t lossShape{lossDim, 1};
+    diopiSize_t lossShape(lossDim, 1);
     diopiTensorHandle_t loss;
     diopiRequireTensor(ctx, &loss, &lossShape, nullptr, diopi_dtype_float32, diopi_device);
 
@@ -171,6 +174,7 @@ DIOPI_API diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, d
         diopiDivInpScalar(ctx, gradInput, &batchSize, RoundModeNone);
     }
     return diopiSuccess;
+}
 }
 }  // namespace ascend
 }  // namespace impl

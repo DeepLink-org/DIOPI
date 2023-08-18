@@ -12,7 +12,7 @@ namespace camb {
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, DiopiTensor& out) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     int64_t sizeTmp[1] = {1};
-    diopiSize_t sSize{sizeTmp, 1};
+    diopiSize_t sSize(sizeTmp, 1);
     if (scalar->stype == diopi_dtype_int64) {
         int32_t val = static_cast<int32_t>(scalar->ival);
         out = requiresTensor(ctx, sSize, diopi_dtype_int32);

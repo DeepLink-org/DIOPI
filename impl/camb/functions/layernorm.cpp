@@ -1,10 +1,12 @@
-
+#include <diopi/functions.h>
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
+
+extern "C" {
 
 diopiError_t diopiLayerNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t saveMean, diopiTensorHandle_t saveInvstd,
                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiSize_t normalizedShape,
@@ -130,8 +132,8 @@ diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
         weightTensor = requiresTensor(ctx, normalizedShape, inputTensor.dtype());
         gradWeightTensor = requiresTensor(ctx, normalizedShape, inputTensor.dtype());
         gradBiasTensor = requiresTensor(ctx, normalizedShape, inputTensor.dtype());
-        diopiScalar_t one = constructDiopiScalarT(diopi_dtype_float32, 1);
-        diopiScalar_t zero = constructDiopiScalarT(diopi_dtype_float32, 0);
+        diopiScalar_t one = {diopi_dtype_float32, 1};
+        diopiScalar_t zero = {diopi_dtype_float32, 0};
         DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(weightTensor), &one));
         DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(gradWeightTensor), &zero));
         DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(gradBiasTensor), &zero));
@@ -146,7 +148,7 @@ diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 
     size_t workspaceSize(0);
     DIOPI_CALLCNNL(cnnlGetLayerNormBackwardWorkspaceSize(handle, inputDesc.get(), axis, &workspaceSize));
-    void *workspace = nullptr;
+    void *workspace;
     if (workspaceSize > 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
@@ -180,6 +182,8 @@ diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     }
     return diopiSuccess;
 }
+
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

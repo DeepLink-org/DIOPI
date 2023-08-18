@@ -4,11 +4,15 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
+
+extern "C" {
 
 diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t saveMean, diopiTensorHandle_t saveInvstd,
                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiTensorHandle_t runningMean,
@@ -36,24 +40,24 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     DIOPI_CHECK(dim == outputTr.dim(), "Input dim != out dim");
 
     if (!weightTr.defined()) {
-        diopiScalar_t val = constructDiopiScalarT(diopi_dtype_float32, 1.0f);
+        diopiScalar_t val{diopi_dtype_float32, {1.0f}};
         weightTr = requiresTensor(ctx, {inputTr.shape()[1]}, inputTr.dtype());
         DIOPI_CALL(diopiFill(ctx, weightTr.tensorHandle(), &val))
     }
     if (!biasTr.defined()) {
-        diopiScalar_t val = constructDiopiScalarT(diopi_dtype_float32, 0.0f);
+        diopiScalar_t val{diopi_dtype_float32, {0.0f}};
         biasTr = requiresTensor(ctx, {inputTr.shape()[1]}, inputTr.dtype());
         DIOPI_CALL(diopiFill(ctx, biasTr.tensorHandle(), &val))
     }
 
     if (3 == dim) {
         inputTr.unsqueeze(3);
-        outputTr.view(inputTr.shape());
+        outputTr.reshape(inputTr.shape());
     }
     if (2 == dim) {
         inputTr.unsqueeze(2);
         inputTr.unsqueeze(3);
-        outputTr.view(inputTr.shape());
+        outputTr.reshape(inputTr.shape());
     }
 
     std::vector<DiopiTensor*> pTensors{&inputTr, &weightTr, &biasTr};
@@ -166,14 +170,14 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     if (3 == dim) {
         inputTr.unsqueeze(3);
         gradOutputTr.unsqueeze(3);
-        gradInputTr.view(inputTr.shape());
+        gradInputTr.reshape(inputTr.shape());
     }
     if (2 == dim) {
         inputTr.unsqueeze(2);
         inputTr.unsqueeze(3);
         gradOutputTr.unsqueeze(2);
         gradOutputTr.unsqueeze(3);
-        gradInputTr.view(inputTr.shape());
+        gradInputTr.reshape(inputTr.shape());
     }
 
     std::vector<DiopiTensor*> pTensors{&gradOutputTr, &inputTr, &weightTr};
@@ -295,6 +299,8 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 
     return diopiSuccess;
 }
+
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

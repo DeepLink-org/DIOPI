@@ -2101,7 +2101,7 @@ diopiError_t diopiRoiAlignBackward(diopiContextHandle_t ctx, diopiTensorHandle_t
 diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
                                         diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
                                         diopiConstTensorHandle_t weight, diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation,
-                                        int64_t groups) {
+                                        bool transposed, diopiSize_t output_padding, int64_t groups) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atGrad = impl::aten::buildATen(grad_output);
@@ -2443,7 +2443,7 @@ diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t out, cons
     return diopiSuccess;
 }
 
-diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, int64_t n) {
+diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, int64_t n, int64_t idx) {
     impl::aten::setCurCtx(ctx);
     auto atOut = impl::aten::buildATen(out);
     at::randperm_out(atOut, n);
@@ -2451,7 +2451,7 @@ diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, in
     return diopiSuccess;
 }
 
-diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to) {
+diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to, int64_t idx) {
     impl::aten::setCurCtx(ctx);
     auto atInOut = impl::aten::buildATen(inout);
     at::native::uniform_(atInOut, from, to, c10::nullopt);
@@ -2459,7 +2459,7 @@ diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout
     return diopiSuccess;
 }
 
-diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t from, const int64_t* to) {
+diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t from, const int64_t* to, int64_t idx) {
     impl::aten::setCurCtx(ctx);
     auto atInOut = impl::aten::buildATen(inout);
     c10::optional<int64_t> atTo = to ? c10::optional<int64_t>(*to) : c10::nullopt;
@@ -2468,7 +2468,7 @@ diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout,
     return diopiSuccess;
 }
 
-diopiError_t diopiBernoulliInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout) {
+diopiError_t diopiBernoulliInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t idx) {
     impl::aten::setCurCtx(ctx);
     auto atInOut = impl::aten::buildATen(inout);
     at::bernoulli(atInOut, c10::nullopt);
@@ -2476,7 +2476,7 @@ diopiError_t diopiBernoulliInp(diopiContextHandle_t ctx, diopiTensorHandle_t ino
     return diopiSuccess;
 }
 
-diopiError_t diopiBernoulli(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+diopiError_t diopiBernoulli(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t idx) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);
@@ -2485,7 +2485,7 @@ diopiError_t diopiBernoulli(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     return diopiSuccess;
 }
 
-diopiError_t diopiBernoulliScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, double p) {
+diopiError_t diopiBernoulliScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, double p, int64_t idx) {
     impl::aten::setCurCtx(ctx);
     auto atOut = impl::aten::buildATen(out);
     at::bernoulli(atOut, p, c10::nullopt);
@@ -2914,7 +2914,7 @@ diopiError_t diopiConvolution3d(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 diopiError_t diopiConvolution3dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
                                         diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
                                         diopiConstTensorHandle_t weight, diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation,
-                                        int64_t groups) {
+                                        bool transposed, diopiSize_t output_padding, int64_t groups) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atGrad = impl::aten::buildATen(grad_output);

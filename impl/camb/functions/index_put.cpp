@@ -4,11 +4,15 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
+
+extern "C" {
 
 diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t values,
                            diopiConstTensorHandle_t* indices, int64_t indicesCounts, bool accumulate) {
@@ -29,7 +33,7 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     CnnlTensorDesc outputDesc(outputTensor, layout);
 
     // to preserve descriptor and tensor, make sure it's not destructed
-    std::vector<CnnlTensorDesc> savedIndicesDescs(inputTensor.dim());
+    std::vector<CnnlTensorDesc> savedIndicesDescs(indicesCounts);
     std::vector<DiopiTensor> savedIndicesTensors;
 
     std::vector<cnnlTensorDescriptor_t> indicesDescs;
@@ -40,45 +44,19 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
         DiopiTensor indiceTensor(indices[i]);
         if (indiceTensor.defined()) {
             DIOPI_CHECK(indiceTensor.isContiguous(), "indice tensor should be contiguous");
+// version should be less than 1.18.0
+#if (CNNL_MAJOR * 10000 + CNNL_MINOR * 100 < 11800)
+            DIOPI_CHECK(!(indiceTensor.dtype() == diopi_dtype_bool),
+                        "There are bugs in camb kernel when indices dtype is bool, please upgrade your cnnl version to 1.18 at least.");
+#endif
             DIOPI_CHECK(indiceTensor.dim() > 0, "zero-dimensional tensor cannot be concatenated");
-
-            if (indiceTensor.dtype() == diopi_dtype_uint8 || indiceTensor.dtype() == diopi_dtype_bool) {
-                // byte(uint8) / bool, expand to int32
-                auto dim = indiceTensor.dim();
-                for (int64_t j = 0; j < dim; j++) {
-                    int64_t srcIdx = i + j;
-                    DIOPI_CHECK(indiceTensor.shape()[j] == inputTensor.shape()[srcIdx], "The shape of the mask does not match the shape of the input tensor")
-                }
-                // Replace with nonzeros
-                diopiTensorHandle_t indiceNonzero = nullptr;
-                DIOPI_CALL(diopiNonzero(ctx, &indiceNonzero, indiceTensor.tensorHandle()));
-                DiopiTensor indiceNonzeroTensor(indiceNonzero);
-                DIOPI_CHECK(indiceNonzeroTensor.defined(), "indiceNonzeroTensor should be defined.");
-
-                for (int64_t j = 0; j < dim; j++) {
-                    // infers out for select
-                    DiopiTensor indiceInt32 = requiresTensor(ctx, {indiceNonzeroTensor.shape()[0]}, diopi_dtype_int32);
-                    if (indiceNonzeroTensor.numel() <= 0) {
-                        // case when bool indices with all zero
-                        continue;
-                    }
-                    DIOPI_CALL(diopiSelect(ctx, indiceInt32.tensorHandle(), indiceNonzero, 1, j));
-
-                    savedIndicesTensors.emplace_back(indiceInt32);
-                    indicesPtrList.emplace_back(indiceInt32.data());
-                    savedIndicesDescs[i].set(indiceInt32, layout);
-                    indicesDescs.emplace_back(savedIndicesDescs[i].get());
-                    indicesAllNull = false;
-                }
-            } else {
-                // int32
-                DIOPI_CHECK(indiceTensor.dtype() == diopi_dtype_int32, "indiceTensor's dtype should be `int`");
-                savedIndicesTensors.emplace_back(indiceTensor);
-                indicesPtrList.emplace_back(indiceTensor.data());
-                savedIndicesDescs[i].set(indiceTensor, layout);
-                indicesDescs.emplace_back(savedIndicesDescs[i].get());
-                indicesAllNull = false;
-            }
+            DIOPI_CHECK(indiceTensor.dtype() == diopi_dtype_int32 || indiceTensor.dtype() == diopi_dtype_bool || indiceTensor.dtype() == diopi_dtype_uint8,
+                        "indiceTensor's dtype should be `int`, `bool` or `uint8`");
+            savedIndicesTensors.emplace_back(indiceTensor);
+            indicesPtrList.emplace_back(indiceTensor.data());
+            savedIndicesDescs[i].set(indiceTensor, layout);
+            indicesDescs.emplace_back(savedIndicesDescs[i].get());
+            indicesAllNull = false;
         } else {
             indicesPtrList.emplace_back(nullptr);
             indicesDescs.emplace_back(nullptr);
@@ -118,6 +96,8 @@ diopiError_t diopiIndexPutInp(diopiContextHandle_t ctx, diopiTensorHandle_t inpu
     DIOPI_CALL(diopiIndexPut(ctx, input, input, values, indices, indicesCounts, accumulate));
     return diopiSuccess;
 }
+
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

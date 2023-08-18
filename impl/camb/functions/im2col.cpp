@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include <cstddef>
 #include <numeric>
 
@@ -95,6 +97,7 @@ diopiError_t im2colOutInternal(diopiContextHandle_t ctx, DiopiTensor& output, co
 
     auto inputPtr = inputTr.data();
     auto outputPtr = outputTr.data();
+    void* workspacePtr = nullptr;
     size_t workspaceSize = 0;
     DIOPI_CALLCNNL(cnnlGetIm2ColWorkspaceSize(handle, descInput.get(), descWeight.get(), convDesc.get(), descOutput.get(), &workspaceSize));
     void* workspace = nullptr;
@@ -106,8 +109,9 @@ diopiError_t im2colOutInternal(diopiContextHandle_t ctx, DiopiTensor& output, co
     return diopiSuccess;
 }
 
-diopiError_t diopiIm2Col(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernelSize, diopiSize_t dilation,
-                         diopiSize_t padding, diopiSize_t stride) {
+extern "C" diopiError_t diopiIm2Col(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernelSize,
+                                    diopiSize_t dilation, diopiSize_t padding, diopiSize_t stride) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTr(input);
     DiopiTensor outTr(out);
     DIOPI_CHECK(kernelSize.len == 2, "The length of the kernelSize's shape should equal to 2, but got len: %d", kernelSize.len);
@@ -146,7 +150,7 @@ diopiError_t diopiIm2Col(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     int64_t nOutputPlane = nInputPlane * kernelWidth * kernelHeight;
     int64_t outputLength = outputHeight * outputWidth;
 
-    outTr.view({batchSize, outputLength, nOutputPlane});
+    outTr.reshape({batchSize, outputLength, nOutputPlane});
     DiopiTensor outputTr;
     outputTr = requiresTensor(ctx, outTr.shape(), outTr.dtype());
     DIOPI_CALL(im2colOutInternal(ctx, outputTr, inputTr, kernelVec, dilationVec, paddingVec, strideVec));

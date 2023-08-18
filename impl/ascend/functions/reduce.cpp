@@ -4,13 +4,15 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include <numeric>
 
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
-diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
+extern "C" diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
     bool keepdim = true;
     diopiSize_t inS, outS;
     diopiGetTensorShape(input, &inS);
@@ -23,7 +25,7 @@ diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     } else {
         std::vector<int64_t> dimAllVector(inS.getLen());
         std::iota(std::begin(dimAllVector), std::end(dimAllVector), 0);
-        diopiSize_t dimAll{dimAllVector.data(), static_cast<int64_t>(dimAllVector.size())};
+        diopiSize_t dimAll(dimAllVector.data(), dimAllVector.size());
         runner.addConstInput(dimAll);
     }
     if (inS.getLen() != outS.getLen()) {
@@ -40,7 +42,7 @@ diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     return diopiSuccess;
 }
 
-diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
+extern "C" diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
     bool keepdim = true;
     diopiSize_t inS, outS;
     diopiGetTensorShape(input, &inS);
@@ -53,7 +55,7 @@ diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     } else {
         std::vector<int64_t> dimAllVector(inS.getLen());
         std::iota(std::begin(dimAllVector), std::end(dimAllVector), 0);
-        diopiSize_t dimAll{dimAllVector.data(), static_cast<int64_t>(dimAllVector.size())};
+        diopiSize_t dimAll(dimAllVector.data(), dimAllVector.size());
         runner.addConstInput(dimAll);
     }
     if (inS.getLen() != outS.getLen()) {

@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include "../common/acloprunner.hpp"
 
 namespace impl {
@@ -48,9 +50,10 @@ void batchNormBackwardTrainingReduceNocheck(diopiContextHandle_t ctx, diopiTenso
         .run();
 }
 
-DIOPI_API diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t saveMean, diopiTensorHandle_t saveInvstd,
-                                      diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias,
-                                      diopiTensorHandle_t runningMean, diopiTensorHandle_t runningVar, bool training, double momentum, double eps) {
+extern "C" DIOPI_API diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t saveMean,
+                                                 diopiTensorHandle_t saveInvstd, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
+                                                 diopiConstTensorHandle_t bias, diopiTensorHandle_t runningMean, diopiTensorHandle_t runningVar, bool training,
+                                                 double momentum, double eps) {
     if (!training) {
         AclOpRunner<5, 1>("BNInfer", ctx)
             .addInput(input)
@@ -89,10 +92,11 @@ DIOPI_API diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandl
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight,
-                                              diopiTensorHandle_t gradBias, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
-                                              diopiConstTensorHandle_t weight, diopiConstTensorHandle_t runninMean, diopiConstTensorHandle_t runningVar,
-                                              diopiConstTensorHandle_t saveMean, diopiConstTensorHandle_t saveInvstd, bool training, double eps) {
+extern "C" DIOPI_API diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight,
+                                                         diopiTensorHandle_t gradBias, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
+                                                         diopiConstTensorHandle_t weight, diopiConstTensorHandle_t runninMean,
+                                                         diopiConstTensorHandle_t runningVar, diopiConstTensorHandle_t saveMean,
+                                                         diopiConstTensorHandle_t saveInvstd, bool training, double eps) {
     if (!training) {
         batchNormBackwardTrainingUpdate(ctx, gradWeight, gradBias, gradOutput, input, runninMean, runningVar, eps);
         AclOpRunner<3, 1>("BNInferGrad", ctx)

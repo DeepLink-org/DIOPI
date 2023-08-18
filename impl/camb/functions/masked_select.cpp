@@ -1,10 +1,14 @@
-
+#include <diopi/functions.h>
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
+
+extern "C" {
+
+diopiError_t nonzeroCount(diopiContextHandle_t ctx, DiopiTensor inputTensor, DiopiTensor *numTrue);
 
 diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -16,6 +20,7 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t *ou
     DIOPI_CALL(autoCastTensorType(ctx, pmask, maskDtypes));
     // When the data type of masked tensor is not bool, the data type of input
     // tensor must be same with the data type of the masked tensor.
+    diopiDtype_t originDtype = inputTensor.dtype();
 
     std::vector<DiopiTensor *> pinput{&inputTensor};
     std::set<diopiDtype_t> inputDtypes{
@@ -90,10 +95,12 @@ DIOPI_API diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopi
     DiopiTensor maskTensor(mask);              // mask
     DiopiTensor tempGradInputTensor = ones(ctx, gradInputTensor.shape(), gradInputTensor.dtype());
 
-    if (!(gradOutputTensor.defined() && gradOutputTensor.numel())) {  // if mask is full-zero, output is empty, gradInput is full-zero
-        diopiScalar_t scalar = constructDiopiScalarT(gradInputTensor.dtype(), 0);
-        DIOPI_CALL(diopiFill(ctx, gradInput, &scalar));
-        return diopiSuccess;
+    if (!gradOutputTensor.defined()) {  // if mask is full-zero, output is empty, gradInput is full-zero
+        auto scalar = diopiScalar_t();
+        scalar.stype = gradInputTensor.dtype();
+        scalar.ival = 0;
+        scalar.fval = 0.0;
+        diopiFill(ctx, gradInput, &scalar);
     }
 
     std::vector<DiopiTensor *> pmask{&maskTensor};
@@ -151,6 +158,7 @@ DIOPI_API diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopi
     DIOPI_CALL(diopiMul(ctx, gradInput, mask, gradInput));
     return diopiSuccess;
 }
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

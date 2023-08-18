@@ -31,7 +31,7 @@ inline void setLastErrorString(const char* szFmt, Types&&... args) {
     curIdxError = strlen(strLastError);
 }
 
-const char* cambGetLastErrorString(bool clearBuff);
+const char* cambGetLastErrorString();
 
 const char* getDiopiErrorStr(diopiError_t err);
 

@@ -50,8 +50,10 @@ inline bool canCastByFloat32(uint64_t castType) {
 }
 
 static diopiError_t dataTypeCastTwice(diopiContextHandle_t ctx, DiopiTensor& dest, const DiopiTensor& src) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     diopiDtype_t srcDtype = src.dtype();
     diopiDtype_t destDtype = dest.dtype();
+    cnnlCastDataType_t castType;
     // cast through middle
     auto key = MAKE_KEY(srcDtype, destDtype);
     if (canCastByInt32(key)) {
