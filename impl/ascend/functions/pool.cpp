@@ -4,11 +4,14 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
 
+extern "C" {
 DIOPI_API diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t outputSize) {
     AclOpRunner<1, 1>("AdaptiveAvgPool2d", ctx)
         .addInput(input)
@@ -47,6 +50,7 @@ DIOPI_API diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopi
         .run();
 
     return diopiSuccess;
+}
 }
 
 }  // namespace ascend

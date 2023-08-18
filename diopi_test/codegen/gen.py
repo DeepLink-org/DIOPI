@@ -7,7 +7,6 @@ import yaml
 import copy
 
 from op_template import OpTemplate as OT
-from filemanager import FileManager
 
 tensor_ptr = ['diopiTensorHandle_t*', 'diopiConstTensorHandle_t*']
 
@@ -23,6 +22,12 @@ def prepare():
     parser = argparse.ArgumentParser(
         description='Generate parrots source files')
     parser.add_argument(
+        '-u',
+        '--use_adaptor',
+        help='name of file which contains configs of device',
+        default='true'
+        '-')
+    parser.add_argument(
         '-d',
         '--device',
         help='name of device',
@@ -33,9 +38,11 @@ def prepare():
     options = parser.parse_args()
     source_dir = os.path.join(_cur_dir, '../../proto/include/diopi/')
     output_dir = os.path.join(_cur_dir, '../csrc')
+    use_adaptor = True if options.use_adaptor == 'true' else False
     device = options.device
     options = dict(source_dir=source_dir,
                    output_dir=output_dir,
+                   use_adaptor=use_adaptor,
                    device=device)
 
     return options
@@ -98,11 +105,12 @@ def get_func_info(content):
     return type_change, args, attr_types, paras_can_be_none, ins_vector, outs_vector, out_ptr
 
 
-def gen_functions(options, functions_fm):
+def gen_functions(options):
     _cur_dir = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(_cur_dir, options.get('source_dir'), 'functions.h'), 'r', encoding='utf8')as f:
         content = f.readlines()
     exports = []
+    use_adaptor = options.get('use_adaptor')
     device = options.get('device')
     if device == 'ascend':
         ft = OT.function_ascend_template
@@ -151,17 +159,26 @@ def gen_functions(options, functions_fm):
                     out_copy += "if ({param}.get() != nullptr)\n \
     *{param} = *{param}Handle;\n".format(param=call_args[out])
                     call_args[out] = '&' + call_args[out] + 'Handle'
-                call_func = func_name + '(' + ', '.join(call_args) + ')'
+                if use_adaptor:
+                    call_func = 'diopiadaptor::' + func_name + '(' + ', '.join(call_args) + ')'
+                else:
+                    call_func = func_name + '(' + ', '.join(call_args) + ')'
                 exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(attrs), convert=convert,
                                                       out_copy=out_copy, call_func=call_func)))
             else:
-                exports.append('m.def("{func_name}", {func_name});'.format(func_name=func_name))
+                if use_adaptor:
+                    exports.append('m.def("{func_name}", diopiadaptor::{func_name});'.format(func_name=func_name))
+                else:
+                    exports.append('m.def("{func_name}", {func_name});'.format(func_name=func_name))
             if len(paras_none):
                 arg_def = [attr_types[index] + ' ' + args[index] for index in range(len(args)) if index not in paras_none]
                 keep_args = []
                 for index, arg in enumerate(call_args):
                     keep_args.append(arg if index not in paras_none else 'nullptr')
-                call_func = func_name + '(' + ', '.join(keep_args) + ')'
+                if use_adaptor:
+                    call_func = 'diopiadaptor::' + func_name + '(' + ', '.join(keep_args) + ')'
+                else:
+                    call_func = func_name + '(' + ', '.join(keep_args) + ')'
                 if type_change:
                     exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert=convert,
                                                           out_copy=out_copy, call_func=call_func)))
@@ -169,19 +186,18 @@ def gen_functions(options, functions_fm):
                     exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert='',
                                                           out_copy='', call_func=call_func)))
 
-    functions_fm.write("export_functions.cpp", OT.operators_template, env=dict(export_functions=exports))
+    output_path = options.get('output_dir')
+    output_file = os.path.join(output_path, 'export_functions.cpp')
+    out_code = OT.operators_template.substitute(env=dict(export_functions=exports))
 
-
-def declare_outputs(adaptor_fm):
-    adaptor_fm.will_write('export_functions.cpp')
+    with open(output_file, 'w') as file:
+        file.write(out_code)
 
 
 def gen_all_codes():
     dirs = prepare()
-    functions_fm = FileManager(dirs.get('output_dir', '.'))
-    declare_outputs(functions_fm)
-    gen_functions(dirs, functions_fm)
-    functions_fm.check_all_files_written()
+
+    gen_functions(dirs)
 
 
 if __name__ == '__main__':

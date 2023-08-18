@@ -4,11 +4,14 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
+extern "C" {
 
 DIOPI_API diopiError_t diopiRemainderTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -56,6 +59,6 @@ DIOPI_API diopiError_t diopiRemainder(diopiContextHandle_t ctx, diopiTensorHandl
     DIOPI_CALL(diopiRemainderTensor(ctx, out, inputTensorPtr, other));
     return diopiSuccess;
 }
-
+}  // extern "C"
 }  // namespace camb
 }  // namespace impl

@@ -9,6 +9,8 @@
 namespace impl {
 namespace camb {
 
+extern "C" {
+
 diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask,
                              diopiConstTensorHandle_t value) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -101,6 +103,8 @@ diopiError_t diopiMaskedFillInpScalar(diopiContextHandle_t ctx, diopiTensorHandl
     DIOPI_CALL(diopiMaskedFill(ctx, input, input, mask, static_cast<diopiTensorHandle_t>(valueTensor)));
     return diopiSuccess;
 }
+
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

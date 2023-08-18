@@ -6,6 +6,7 @@
 
 #include <cnnl.h>
 #include <cnrt.h>
+#include <diopi/functions.h>
 
 #include <cstdio>
 #include <cstring>

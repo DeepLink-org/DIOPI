@@ -4,10 +4,14 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
+
+extern "C" {
 
 diopiError_t diopiPowTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t exponent) {
     AclOpRunner<2, 1>("Pow", ctx).addInput(input, exponent).addOutput(out).run();
@@ -33,6 +37,8 @@ diopiError_t diopiPowScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, c
     makeTensorFromScalar(ctx, input, &inputTensor, diopi_device);
     return diopiPowTensor(ctx, out, inputTensor, exponent);
 }
+
+}  // extern "C"
 
 }  // namespace ascend
 }  // namespace impl

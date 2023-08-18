@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include <vector>
 
 #include "../cnnl_helper.hpp"
@@ -11,6 +13,7 @@
 
 namespace impl {
 namespace camb {
+extern "C" {
 
 diopiError_t slice(cnnlHandle_t handle, DiopiTensor outTensor, DiopiTensor inputTensor, std::vector<int32_t> start, std::vector<int32_t> end,
                    std::vector<int32_t> step) {
@@ -142,5 +145,6 @@ diopiError_t diopiScatterInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t
     return diopiSuccess;
 }
 
+}  // extern "C"
 }  // namespace camb
 }  // namespace impl

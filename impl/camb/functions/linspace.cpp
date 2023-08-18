@@ -3,7 +3,7 @@
 namespace impl {
 namespace camb {
 
-diopiError_t diopiLinspace(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiScalar_t* start, const diopiScalar_t* end, int64_t steps) {
+extern "C" diopiError_t diopiLinspace(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiScalar_t* start, const diopiScalar_t* end, int64_t steps) {
     auto handle = cnnlHandlePool.get(ctx);
     DiopiTensor outTensor(out);
 

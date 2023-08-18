@@ -1,4 +1,4 @@
-
+#include <diopi/functions.h>
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
@@ -17,6 +17,8 @@ int getDim(DiopiTensor tensor, int64_t dim) {
 }
 
 }  // namespace
+
+extern "C" {
 
 diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -40,6 +42,8 @@ diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
 
     return diopiSuccess;
 }
+
+}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

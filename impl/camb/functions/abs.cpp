@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
@@ -28,13 +30,13 @@ static diopiError_t abs(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor
     return diopiSuccess;
 }
 
-diopiError_t diopiAbsInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+extern "C" diopiError_t diopiAbsInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     DiopiTensor inputTensor(input);
     DIOPI_CALL(abs(ctx, inputTensor, inputTensor));
     return diopiSuccess;
 }
 
-diopiError_t diopiAbs(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+extern "C" diopiError_t diopiAbs(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
     DIOPI_CALL(abs(ctx, inputTensor, outputTensor));

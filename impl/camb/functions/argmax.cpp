@@ -1,4 +1,4 @@
-
+#include <diopi/functions.h>
 
 #include <algorithm>
 #include <numeric>
@@ -9,7 +9,7 @@
 namespace impl {
 namespace camb {
 
-diopiError_t diopiArgmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim, bool keepdim) {
+extern "C" diopiError_t diopiArgmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim, bool keepdim) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor = DiopiTensor(input);
     DiopiTensor indicesTensor = DiopiTensor(out);

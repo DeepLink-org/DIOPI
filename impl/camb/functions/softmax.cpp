@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include <numeric>
 #include <vector>
 
@@ -145,15 +147,15 @@ diopiError_t softmaxBackward(diopiContextHandle_t ctx, DiopiTensor gradInputTens
 
 }  // namespace
 
-diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
+extern "C" diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
     DIOPI_CALL(softmaxForward(ctx, inputTensor, outputTensor, dim));
     return diopiSuccess;
 }
 
-diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t output,
-                                  int64_t dim) {
+extern "C" diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                             diopiConstTensorHandle_t output, int64_t dim) {
     DiopiTensor gradInputTensor(gradInput);
     DiopiTensor gradOutputTensor(gradOutput);
     DiopiTensor outputTensor(output);
@@ -161,15 +163,15 @@ diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     return diopiSuccess;
 }
 
-diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
+extern "C" diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
     DIOPI_CALL(softmaxForward(ctx, inputTensor, outputTensor, dim, true));
     return diopiSuccess;
 }
 
-diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                     diopiConstTensorHandle_t output, int64_t dim) {
+extern "C" diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                                diopiConstTensorHandle_t output, int64_t dim) {
     DiopiTensor gradInputTensor(gradInput);
     DiopiTensor gradOutputTensor(gradOutput);
     DiopiTensor outputTensor(output);

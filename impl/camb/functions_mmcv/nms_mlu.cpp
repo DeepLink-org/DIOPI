@@ -4,6 +4,7 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
 
 #include <memory>
@@ -15,11 +16,6 @@
 namespace impl {
 
 namespace camb {
-
-diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim0, int64_t dim1);
-
-diopiError_t diopiSlice(diopiContextHandle_t ctx, diopiTensorHandle_t nullOut, diopiConstTensorHandle_t input, int64_t dim, int64_t start, int64_t end,
-                        int64_t step);
 
 void kernelNms(cnrtDim3_t kDim, cnrtFunctionType_t kType, cnrtQueue_t queue, const cnrtDataType_t dataTypeInput, const void *boxesPtr, const void *scoresPtr,
                const int inputNumBoxes, const int maxOutputBoxes, const float iouThreshold, const float offset, void *workspacePtr, void *outputSizePtr,
@@ -85,7 +81,7 @@ extern "C" DIOPI_API diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTe
     if (boxes.numel() == 0) {
         diopiScalar_t scalar = impl::camb::constructDiopiScalarT(diopi_dtype_int64, 1);
         auto tempOut = impl::camb::requiresTensor(ctx, {1}, diopi_dtype_int64);
-        DIOPI_CALL(impl::camb::diopiFill(ctx, diopiTensorHandle_t(tempOut), &scalar));
+        DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(tempOut), &scalar));
         *out = diopiTensorHandle_t(tempOut);
         return diopiSuccess;
     }
@@ -103,7 +99,7 @@ extern "C" DIOPI_API diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTe
     // transpose boxes (n, 4) to (4, n) for better performance
     auto boxesT = impl::camb::requiresTensor(ctx, {boxes.size(1), boxes.size(0)}, boxes.dtype());
 
-    DIOPI_CALL(impl::camb::diopiTranspose(ctx, diopiTensorHandle_t(boxesT), diopiTensorHandle_t(boxes), 0, 1));
+    DIOPI_CALL(diopiTranspose(ctx, diopiTensorHandle_t(boxesT), diopiTensorHandle_t(boxes), 0, 1));
     auto output = impl::camb::requiresTensor(ctx, {maxOutputBoxes}, diopi_dtype_int32);
     auto outputSize = impl::camb::requiresTensor(ctx, {1}, diopi_dtype_int32);
 
@@ -145,7 +141,7 @@ extern "C" DIOPI_API diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTe
     int outputNum = reinterpret_cast<int *>(outputSizeCpu.get())[0];
 
     auto tempOut = impl::camb::requiresTensor(ctx, {outputNum}, output.dtype());
-    DIOPI_CALL(impl::camb::diopiSlice(ctx, diopiTensorHandle_t(tempOut), diopiTensorHandle_t(output), 0, 0, outputNum, 1));
+    DIOPI_CALL(diopiSlice(ctx, diopiTensorHandle_t(tempOut), diopiTensorHandle_t(output), 0, 0, outputNum, 1));
     DIOPI_CALL(impl::camb::dataTypeCast(ctx, tempOut, diopi_dtype_int64));
     *out = diopiTensorHandle_t(tempOut);
     return diopiSuccess;

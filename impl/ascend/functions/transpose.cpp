@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include <numeric>
 
 #include "../common/acloprunner.hpp"
@@ -11,7 +13,8 @@
 namespace impl {
 namespace ascend {
 
-DIOPI_API diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim0, int64_t dim1) {
+extern "C" DIOPI_API diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim0,
+                                                 int64_t dim1) {
     diopiSize_t inputShape;
     diopiGetTensorShape(input, &inputShape);
     int64_t inputSize = inputShape.getLen();

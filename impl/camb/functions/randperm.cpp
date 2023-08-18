@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <diopi/functions.h>
+
 #include <algorithm>
 #include <numeric>
 #include <random>
@@ -28,7 +30,7 @@ diopiError_t randpermFunc(DiopiTensor tensor, int64_t n) {
 }
 }  // namespace
 
-diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, int64_t n) {
+extern "C" diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, int64_t n) {
     DiopiTensor outTensor(out);
     if (outTensor.dtype() == diopi_dtype_int32) {
         DIOPI_CALL(randpermFunc<int>(outTensor, n));
