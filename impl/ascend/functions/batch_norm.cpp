@@ -56,7 +56,11 @@ extern "C" DIOPI_API diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopi
                                                  double momentum, double eps) {
     if (!training) {
         AclOpRunner<5, 1>("BNInfer", ctx)
-            .addInput(input, weight, bias, runningMean, runningVar)
+            .addInput(input)
+            .addInput(weight)
+            .addInput(bias)
+            .addInput(runningMean)
+            .addInput(runningVar)
             .addOutput(out)
             .setAttr("epsilon", static_cast<float>(eps))
             .run();
@@ -67,12 +71,22 @@ extern "C" DIOPI_API diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopi
         diopiGetTensorStride(runningMean, &stride);
         diopiRequireTensor(ctx, &sum, &shape, &stride, diopiDtype_t::diopi_dtype_float32, diopi_device);
         diopiRequireTensor(ctx, &squareSum, &shape, &stride, diopiDtype_t::diopi_dtype_float32, diopi_device);
-        AclOpRunner<1, 2>("BNTrainingReduce", ctx).addInput(input).setAttr("epsilon", static_cast<float>(eps)).addOutput(sum, squareSum).run();
+        AclOpRunner<1, 2>("BNTrainingReduce", ctx).addInput(input).setAttr("epsilon", static_cast<float>(eps)).addOutput(sum).addOutput(squareSum).run();
         AclOpRunner<7, 5>("BNTrainingUpdate", ctx)
-            .addInput(input, sum, squareSum, weight, bias, runningMean, runningVar)
+            .addInput(input)
+            .addInput(sum)
+            .addInput(squareSum)
+            .addInput(weight)
+            .addInput(bias)
+            .addInput(runningMean)
+            .addInput(runningVar)
             .setAttr("epsilon", static_cast<float>(eps))
             .setAttr("factor", static_cast<float>(momentum))
-            .addOutput(out, runningMean, runningVar, saveMean, saveInvstd)
+            .addOutput(out)
+            .addOutput(runningMean)
+            .addOutput(runningVar)
+            .addOutput(saveMean)
+            .addOutput(saveInvstd)
             .run();
     }
     return diopiSuccess;
@@ -86,7 +100,9 @@ extern "C" DIOPI_API diopiError_t diopiBatchNormBackward(diopiContextHandle_t ct
     if (!training) {
         batchNormBackwardTrainingUpdate(ctx, gradWeight, gradBias, gradOutput, input, runninMean, runningVar, eps);
         AclOpRunner<3, 1>("BNInferGrad", ctx)
-            .addInput(gradOutput, weight, runningVar)
+            .addInput(gradOutput)
+            .addInput(weight)
+            .addInput(runningVar)
             .addOutput(gradInput)
             .setAttr<float>("epsilon", static_cast<float>(eps))
             .run();

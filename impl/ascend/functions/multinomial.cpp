@@ -15,8 +15,8 @@ DIOPI_API diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHan
                                         bool replacement) {
     AclOpRunner<3, 1>("MultinomialWithReplacement", ctx)
         .addInput(input)
-        .addConstInput<int64_t>(0)
-        .addConstInput<int64_t>(0)
+        .addConstInput(0, diopi_dtype_int64)
+        .addConstInput(0, diopi_dtype_int64)
         .setAttr("numsamples", numSamples)
         .setAttr("replacement", replacement)
         .addOutput(out)
