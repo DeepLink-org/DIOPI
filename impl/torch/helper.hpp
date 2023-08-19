@@ -7,12 +7,14 @@
 #ifndef IMPL_TORCH_HELPER_HPP_
 #define IMPL_TORCH_HELPER_HPP_
 #include <ATen/ATen.h>
+#include <ATen/cuda/CUDAGeneratorImpl.h>
 #include <c10/cuda/CUDAStream.h>
 #include <cuda_runtime.h>
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 
 #include <iostream>
+#include <mutex>
 #include <utility>
 #include <vector>
 
@@ -229,6 +231,29 @@ inline at::Tensor buildATen(T tensor) {
         return fromPreAllocated(
             data, atDims, atStrides, [](void*) {}, allocator, options);
     }
+}
+
+// new cuda generator and pass dipu generator state into cuda generator state
+inline at::Generator buildGenerator(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t generator) {
+    auto gen = at::cuda::detail::createCUDAGenerator();
+    diopiTensorHandle_t state_handle = nullptr;
+    diopiGeneratorGetState(ctx, generator, &state_handle);
+    auto state = impl::aten::buildATen(state_handle);
+    {
+        std::lock_guard<std::mutex> lock(gen.mutex());
+        gen.set_state(state);
+    }
+    return gen;
+}
+
+inline void updateGeneratorHandleState(at::Generator &cuda_gen, diopiConstGeneratorHandle_t generator) {
+    at::Tensor new_state;
+    {
+        std::lock_guard<std::mutex> lock(cuda_gen.mutex());
+        new_state = cuda_gen.get_state();
+    }
+    diopiConstTensorHandle_t new_state_handle = new_state.defined() ? reinterpret_cast<::diopiConstTensorHandle_t>(&new_state) : nullptr;
+    diopiGeneratorSetState(generator, new_state_handle);
 }
 
 inline bool isInt(const diopiScalar_t* scalar) { return scalar->stype <= 7; }

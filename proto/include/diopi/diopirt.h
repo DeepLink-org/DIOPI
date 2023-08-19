@@ -124,7 +124,8 @@ extern DIOPI_RT_API diopiError_t diopiRequireBuffer(diopiContextHandle_t ctx, di
 
 extern DIOPI_RT_API diopiError_t diopiGeneratorInitState(diopiConstGeneratorHandle_t th);
 extern DIOPI_RT_API diopiError_t diopiGeneratorUpdateState(diopiConstGeneratorHandle_t th);
-extern DIOPI_RT_API diopiError_t diopiGeneratorGetState(diopiConstGeneratorHandle_t th, void **data);
+extern DIOPI_RT_API diopiError_t diopiGeneratorGetState(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t th, diopiTensorHandle_t *data);
+extern DIOPI_RT_API diopiError_t diopiGeneratorSetState(diopiConstGeneratorHandle_t th, diopiConstTensorHandle_t new_state);
 
 #if defined(__cplusplus)
 }
