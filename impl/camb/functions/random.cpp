@@ -31,9 +31,12 @@ extern "C" diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHand
         } else {
             max = FLT_MAX;
         }
+        diopiTensorHandle_t state_handle = nullptr;
+        DIOPI_CALL(diopiGeneratorGetState(ctx, generator, &state_handle));
         void* state_ptr = nullptr;
-        DIOPI_CALL(diopiGeneratorGetState(generator, &state_ptr));
+        DIOPI_CALL(diopiGetTensorData(state_handle, &state_ptr));
         DIOPI_CALLCNNL(cnnlRandGenerateUniform(handle, cnnl_generator, dtype, state_ptr, tensor.numel(), min, max, tensor.data()));
+        DIOPI_CALL(diopiGeneratorSetState(generator, state_handle));
     } else {
         setLastErrorString("%s%d", "cnnl random not support datatype: ", dtype);
         return diopiDtypeNotSupported;
