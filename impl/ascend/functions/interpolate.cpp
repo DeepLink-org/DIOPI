@@ -52,7 +52,7 @@ DIOPI_API diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, dio
             .setAttr("half_pixel_centers", !alignCorners)
             .addOutput(gradInput)
             .run();
-    } else{
+    } else {
         check_args(false, "unsupport mode %s", modeStr);
     }
     return diopiSuccess;
