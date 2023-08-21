@@ -43,6 +43,8 @@ PYBIND11_MODULE(export_runtime, m) {
         .def("context", &diopiTensor::getCtx)
         .def_buffer(&diopiTensor::buffer);
 
+    py::class_<diopiGenerator>(m, "diopiGenerator", py::buffer_protocol()).def(py::init<>());
+
     py::class_<diopiContext>(m, "Context", py::buffer_protocol()).def(py::init<>()).def("clear_tensors", &diopiContext::clearTensors);
 
     py::enum_<diopiDevice_t>(m, "Device").value("Host", diopiDevice_t::diopi_host).value("AIChip", diopiDevice_t::diopi_device);

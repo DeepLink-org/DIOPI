@@ -148,10 +148,34 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
         storage_ = std::make_shared<Storage>(hostMalloc, hostFree, nbytes);
     } else {
         storage_ = std::make_shared<Storage>(device_malloc, device_free, nbytes);
-        if (src != nullptr) {
-            diopiTensorCopyFromBuffer(context, src, this);
-        }
     }
+    if (src != nullptr) {
+        diopiTensorCopyFromBuffer(context, src, this);
+    }
+}
+
+diopiTensor& diopiTensor::operator=(const diopiTensor& other) {
+    if (this == &other) {
+        return *this;
+    }
+
+    shape_ = other.shape_;
+    stride_ = other.stride_;
+    dtype_ = other.dtype_;
+    device_ = other.device_;
+    numel_ = other.numel_;
+    context_ = other.context_;
+    if (device_ == diopi_host) {
+        storage_ = std::make_shared<Storage>(hostMalloc, hostFree, nbytes());
+    } else {
+        storage_ = std::make_shared<Storage>(device_malloc, device_free, nbytes());
+    }
+
+    const void* src = other.data();
+    if (src != nullptr) {
+        diopiTensorCopyFromBuffer(context_, src, this);
+    }
+    return *this;
 }
 
 bool diopiTensor::resetShape(const diopiSize_t* size) {
@@ -285,6 +309,16 @@ DIOPI_RT_API diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diop
     } else {
         std::memcpy(dst, tensor->data(), tensor->nbytes());
     }
+    return diopiSuccess;
+}
+
+DIOPI_RT_API diopiError_t diopiGeneratorGetState(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t th, diopiTensorHandle_t* data) {
+    *data = &(th->state_);
+    return diopiSuccess;
+}
+
+DIOPI_RT_API diopiError_t diopiGeneratorSetState(diopiConstGeneratorHandle_t th, diopiConstTensorHandle_t new_state) {
+    th->state_ = *new_state;
     return diopiSuccess;
 }
 
