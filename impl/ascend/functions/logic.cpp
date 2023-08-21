@@ -18,20 +18,7 @@ diopiError_t logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConst
     diopiGetTensorDtype(input, &inputDtype);
     diopiGetTensorDtype(other, &otherDtype);
     diopiDtype_t highType = promoteTypes(inputDtype, otherDtype);
-    diopiTensorHandle_t inputCopy, otherCopy;
-    if (inputDtype != highType) {
-        makeTensorLike(ctx, &inputCopy, input, highType);
-        diopiCastDtype(ctx, inputCopy, input);
-    } else {
-        inputCopy = const_cast<diopiTensorHandle_t>(input);
-    }
-    if (otherDtype != highType) {
-        makeTensorLike(ctx, &otherCopy, other, highType);
-        diopiCastDtype(ctx, otherCopy, other);
-    } else {
-        otherCopy = const_cast<diopiTensorHandle_t>(other);
-    }
-    AclOpRunner<2, 1>(logicOp, ctx).addInput(inputCopy, otherCopy).addOutput(out).run();
+    AclOpRunner<2, 1>(logicOp, ctx).addInput(input, highType).addInput(other, highType).addOutput(out).run();
     return diopiSuccess;
 }
 
@@ -44,12 +31,12 @@ diopiError_t logicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     diopiGetTensorDtype(input, &inputDtype);
     otherDtype = other->stype;
     diopiTensorHandle_t inputCopy, otherCopy;
-    if (inputDtype != otherDtype && (!is_integral_type(otherDtype) && is_integral_type(inputDtype))) {
-        makeTensorLike(ctx, &inputCopy, input, diopi_dtype_float32);
-        diopiCastDtype(ctx, inputCopy, input);
+
+    if (inputDtype != otherDtype && (!isIntegralType(otherDtype) && isIntegralType(inputDtype))) {
+        inputCopy = contiguous(ctx, input, diopi_dtype_float32);
         makeTensorFromScalar(ctx, other, &otherCopy, diopi_dtype_float32);
     } else {
-        inputCopy = const_cast<diopiTensorHandle_t>(input);
+        inputCopy = contiguous(ctx, input);
         makeTensorFromScalar(ctx, other, &otherCopy, inputDtype);
     }
     AclOpRunner<2, 1>(logicOp, ctx).addInput(inputCopy).addConstInput(otherCopy).addOutput(out).run();
