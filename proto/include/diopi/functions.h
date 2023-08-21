@@ -16,9 +16,9 @@ extern "C" {
 /**
  * \brief get the vendor's name who implements the functions
  */
-DIOPI_RT_API const char* diopiGetVendorName();
-DIOPI_RT_API const char* diopiGetImplVersion();
-DIOPI_RT_API const char* diopiGetLastErrorString();
+DIOPI_RT_API DIOPI_ATTR_WEEK const char* diopiGetVendorName();
+DIOPI_RT_API DIOPI_ATTR_WEEK const char* diopiGetImplVersion();
+DIOPI_RT_API DIOPI_ATTR_WEEK const char* diopiGetLastErrorString();
 
 /**
  * @brief Applies a 2D convolution over an input image composed of several input planes.
