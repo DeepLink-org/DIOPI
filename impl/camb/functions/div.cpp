@@ -4,14 +4,11 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
-extern "C" {
 
 DIOPI_API diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                                 diopiRoundMode_t roundingMode) {
@@ -105,6 +102,5 @@ DIOPI_API diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, diopiTensorHa
     return diopiSuccess;
 }
 
-}  // extern "C"
 }  // namespace camb
 }  // namespace impl

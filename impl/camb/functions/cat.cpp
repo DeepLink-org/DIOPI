@@ -4,14 +4,10 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../cnnl_helper.hpp"
 
 namespace impl {
 namespace camb {
-
-extern "C" {
 
 diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t* tensors, int64_t numInputs, int64_t dim) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -39,8 +35,6 @@ diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

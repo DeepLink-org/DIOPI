@@ -4,14 +4,11 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
-extern "C" {
 
 diopiError_t diopiAmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, bool keepdim) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -76,6 +73,5 @@ diopiError_t diopiAmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     return diopiSuccess;
 }
 
-}  // extern "C"
 }  // namespace camb
 }  // namespace impl
