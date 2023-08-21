@@ -188,14 +188,16 @@ DIOPI_API diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, d
 
 DIOPI_API diopiError_t diopiMSELoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                                     diopiReduction_t reduction) {
-    AclOpRunner<2, 1>("MseLoss", ctx).addInput(input, target).addOutput(out).setAttr<std::string>("reduction", getReductionStr(reduction)).run();
+    AclOpRunner<2, 1>("MseLoss", ctx).addInput(input).addInput(target).addOutput(out).setAttr<std::string>("reduction", getReductionStr(reduction)).run();
     return diopiSuccess;
 }
 
 DIOPI_API diopiError_t diopiMSELossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiReduction_t reduction) {
     AclOpRunner<3, 1>("MseLossGrad", ctx)
-        .addInput(input, target, gradOutput)
+        .addInput(input)
+        .addInput(target)
+        .addInput(gradOutput)
         .addOutput(gradInput)
         .setAttr<std::string>("reduction", getReductionStr(reduction))
         .run();

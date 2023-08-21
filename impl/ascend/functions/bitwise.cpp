@@ -28,9 +28,9 @@ DIOPI_API diopiError_t diopiBitwiseAnd(diopiContextHandle_t ctx, diopiTensorHand
     diopiDtype_t dtype;
     diopiGetTensorDtype(input, &dtype);
     if (diopi_dtype_bool == dtype) {
-        AclOpRunner<2, 1>("LogicalAnd", ctx).addInput(input, other).addOutput(out).run();
+        AclOpRunner<2, 1>("LogicalAnd", ctx).addInput(input).addInput(other).addOutput(out).run();
     } else {
-        AclOpRunner<2, 1>("BitwiseAnd", ctx).addInput(input, other).addOutput(out).run();
+        AclOpRunner<2, 1>("BitwiseAnd", ctx).addInput(input).addInput(other).addOutput(out).run();
     }
     return diopiSuccess;
 }

@@ -9,6 +9,7 @@
 #include <cfloat>
 #include <cmath>
 #include <limits>
+#include <string>
 
 #include "../common/acloprunner.hpp"
 
@@ -19,13 +20,18 @@ extern "C" {
 
 DIOPI_API diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size,
                                            bool alignCorners, const char* mode) {
-    AclOpRunner<2, 1>("ResizeBilinearV2", ctx)
-        .addInput(input, ACL_FORMAT_NCHW)
-        .addConstInput(size)
-        .setAttr("align_corners", alignCorners)
-        .setAttr("half_pixel_centers", !alignCorners)
-        .addOutput(out)
-        .run();
+    std::string modeStr(mode);
+    if ("bilinear" == modeStr) {
+        AclOpRunner<2, 1>("ResizeBilinearV2", ctx)
+            .addInput(input, ACL_FORMAT_NCHW)
+            .addConstInput(size)
+            .setAttr("align_corners", alignCorners)
+            .setAttr("half_pixel_centers", !alignCorners)
+            .addOutput(out)
+            .run();
+    } else {
+        check_args(false, "unsupport mode %s", modeStr);
+    }
     return diopiSuccess;
 }
 
@@ -36,14 +42,19 @@ DIOPI_API diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, dio
     diopiSize_t stride;
     diopiGetTensorStride(gradOutput, &stride);
     diopiTensorHandle_t originalImage;
-    diopiRequireTensor(ctx, &originalImage, &inSize, &stride, dtype, diopi_device);
-    AclOpRunner<2, 1>("ResizeBilinearV2Grad", ctx)
-        .addInput(gradOutput, ACL_FORMAT_NCHW)
-        .addInput(originalImage, ACL_FORMAT_NCHW)
-        .setAttr("align_corners", alignCorners)
-        .setAttr("half_pixel_centers", !alignCorners)
-        .addOutput(gradInput)
-        .run();
+    diopiRequireTensor(ctx, &originalImage, &inSize, nullptr, dtype, diopi_device);
+    std::string modeStr(mode);
+    if ("bilinear" == modeStr) {
+        AclOpRunner<2, 1>("ResizeBilinearV2Grad", ctx)
+            .addInput(gradOutput, ACL_FORMAT_NCHW)
+            .addInput(originalImage, ACL_FORMAT_NCHW)
+            .setAttr("align_corners", alignCorners)
+            .setAttr("half_pixel_centers", !alignCorners)
+            .addOutput(gradInput)
+            .run();
+    } else{
+        check_args(false, "unsupport mode %s", modeStr);
+    }
     return diopiSuccess;
 }
 
