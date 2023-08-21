@@ -63,88 +63,12 @@ namespace camb {
 
 class DiopiDataType final {
 public:
-    static bool isInteger(diopiDtype_t dtype) { return dtype < 8; }
-    static bool isFloatPoint(diopiDtype_t dtype) { return (dtype <= 10 && dtype >= 8) || dtype == 12 || dtype == 13; }
-    static diopiDtype_t complexDtype2Real(diopiDtype_t complexDtype) {
-        switch (complexDtype) {
-            case diopi_dtype_complex128:
-                return diopi_dtype_float64;
-            case diopi_dtype_complex64:
-                return diopi_dtype_float32;
-            case diopi_dtype_complex32:
-                return diopi_dtype_float16;
-            default:
-                setLastErrorString("Unsupported ComplexDatatype %s at %s:%d", DiopiDataType::dataTypeStr(complexDtype), __FILE__, __LINE__);
-                return diopi_dtype_unsupported;
-        }
-    }
-    static diopiDtype_t realDtype2Complex(diopiDtype_t realDtype) {
-        switch (realDtype) {
-            case diopi_dtype_float64:
-                return diopi_dtype_complex128;
-            case diopi_dtype_float32:
-                return diopi_dtype_float32;
-            case diopi_dtype_float16:
-                return diopi_dtype_complex32;
-            default:
-                setLastErrorString("Unsupported ComplexDatatype %s at %s:%d", DiopiDataType::dataTypeStr(realDtype), __FILE__, __LINE__);
-                return diopi_dtype_unsupported;
-        }
-    }
-    static const char* dataTypeStr(diopiDtype_t dtype) {
-        switch (dtype) {
-            case diopi_dtype_int8:
-                return "diopi_dtype_int8";
-            case diopi_dtype_uint8:
-                return "diopi_dtype_uint8";
-            case diopi_dtype_int16:
-                return "diopi_dtype_int16";
-            case diopi_dtype_uint16:
-                return "diopi_dtype_uint16";
-            case diopi_dtype_int32:
-                return "diopi_dtype_int32";
-            case diopi_dtype_uint32:
-                return "diopi_dtype_uint32";
-            case diopi_dtype_int64:
-                return "diopi_dtype_int64";
-            case diopi_dtype_uint64:
-                return "diopi_dtype_uint64";
-            case diopi_dtype_float16:
-                return "diopi_dtype_float16";
-            case diopi_dtype_float32:
-                return "diopi_dtype_float32";
-            case diopi_dtype_float64:
-                return "diopi_dtype_float64";
-            case diopi_dtype_bool:
-                return "diopi_dtype_bool";
-            case diopi_dtype_bfloat16:
-                return "diopi_dtype_bfloat16";
-            case diopi_dtype_tfloat32:
-                return "diopi_dtype_tfloat32";
-            case diopi_dtype_complex32:
-                return "diopi_dtype_complex32";
-            case diopi_dtype_complex64:
-                return "diopi_dtype_complex64";
-            case diopi_dtype_complex128:
-                return "diopi_dtype_complex128";
-            default:
-                setLastErrorString("dtype:%d is not support at %s:%d.\n", dtype, __FILE__, __LINE__);
-        }
-        return "";
-    }
+    static bool isInteger(diopiDtype_t dtype);
+    static bool isFloatPoint(diopiDtype_t dtype);
+    static diopiDtype_t complexDtype2Real(diopiDtype_t complexDtype);
+    static diopiDtype_t realDtype2Complex(diopiDtype_t realDtype);
+    static const char* dataTypeStr(diopiDtype_t dtype);
 };
-
-template <typename T>
-diopiScalar_t constructDiopiScalarT(diopiDtype_t dtype, T val) {
-    diopiScalar_t scalar;
-    scalar.stype = dtype;
-    if (DiopiDataType::isFloatPoint(dtype)) {
-        scalar.fval = static_cast<double>(val);
-    } else {
-        scalar.ival = static_cast<int64_t>(val);
-    }
-    return scalar;
-}
 
 class DiopiTensor final {
 public:
@@ -238,47 +162,33 @@ DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>&
 
 DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype);
 
-DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype, diopiMemoryFormat_t diopiMemoryFormat_t);
+DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype, diopiMemoryFormat_t memoryFormat);
 
-inline DiopiTensor requiresBuffer(diopiContextHandle_t ctx, int64_t numBytes) {
-    diopiTensorHandle_t tensor = nullptr;
-    diopiRequireBuffer(ctx, &tensor, numBytes, diopi_device);
-    return DiopiTensor(tensor);
-}
+DiopiTensor requiresBuffer(diopiContextHandle_t ctx, int64_t numBytes);
 
-inline cnrtQueue_t getStream(diopiContextHandle_t ctx) {
-    diopiStreamHandle_t streamHandle;
-    diopiGetStream(ctx, &streamHandle);
-    return static_cast<cnrtQueue_t>(streamHandle);
-}
+cnrtQueue_t getStream(diopiContextHandle_t ctx);
 
 template <typename T>
 std::vector<T> diopiSizeT2Vector(diopiSize_t size) {
     return std::vector<T>(size.data, size.data + size.len);
 }
 
-inline diopiSize_t vec2diopiSizeT(const std::vector<int64_t>& sizeIn) {
-    diopiSize_t diopiSize{sizeIn.data(), static_cast<int64_t>(sizeIn.size())};
-    return diopiSize;
-}
+diopiSize_t vec2diopiSizeT(const std::vector<int64_t>& sizeIn);
 
-inline void syncStreamInCtx(diopiContextHandle_t ctx) {
-    cnrtQueue_t queue = getStream(ctx);
-    cnrtQueueSync(queue);
-    return;
-}
+void syncStreamInCtx(diopiContextHandle_t ctx);
 
-inline const char* reductionStr(diopiReduction_t reduction) {
-    switch (reduction) {
-        case ReductionNone:
-            return "ReductionNone";
-        case ReductionSum:
-            return "ReductionSum";
-        case ReductionMean:
-            return "ReductionMean";
-        default:
-            return "not supported reduction method";
+const char* reductionStr(diopiReduction_t reduction);
+
+template <typename T>
+diopiScalar_t constructDiopiScalarT(diopiDtype_t dtype, T val) {
+    diopiScalar_t scalar;
+    scalar.stype = dtype;
+    if (DiopiDataType::isFloatPoint(dtype)) {
+        scalar.fval = static_cast<double>(val);
+    } else {
+        scalar.ival = static_cast<int64_t>(val);
     }
+    return scalar;
 }
 
 }  // namespace camb

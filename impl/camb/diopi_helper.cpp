@@ -9,6 +9,84 @@
 namespace impl {
 namespace camb {
 
+// DiopiDataType
+
+bool DiopiDataType::isInteger(diopiDtype_t dtype) { return dtype < 8; }
+
+bool DiopiDataType::isFloatPoint(diopiDtype_t dtype) { return (dtype <= 10 && dtype >= 8) || dtype == 12 || dtype == 13; }
+
+diopiDtype_t DiopiDataType::complexDtype2Real(diopiDtype_t complexDtype) {
+    switch (complexDtype) {
+        case diopi_dtype_complex128:
+            return diopi_dtype_float64;
+        case diopi_dtype_complex64:
+            return diopi_dtype_float32;
+        case diopi_dtype_complex32:
+            return diopi_dtype_float16;
+        default:
+            setLastErrorString("Unsupported ComplexDatatype %s at %s:%d", DiopiDataType::dataTypeStr(complexDtype), __FILE__, __LINE__);
+            return diopi_dtype_unsupported;
+    }
+}
+
+diopiDtype_t DiopiDataType::realDtype2Complex(diopiDtype_t realDtype) {
+    switch (realDtype) {
+        case diopi_dtype_float64:
+            return diopi_dtype_complex128;
+        case diopi_dtype_float32:
+            return diopi_dtype_float32;
+        case diopi_dtype_float16:
+            return diopi_dtype_complex32;
+        default:
+            setLastErrorString("Unsupported ComplexDatatype %s at %s:%d", DiopiDataType::dataTypeStr(realDtype), __FILE__, __LINE__);
+            return diopi_dtype_unsupported;
+    }
+}
+
+const char* DiopiDataType::dataTypeStr(diopiDtype_t dtype) {
+    switch (dtype) {
+        case diopi_dtype_int8:
+            return "diopi_dtype_int8";
+        case diopi_dtype_uint8:
+            return "diopi_dtype_uint8";
+        case diopi_dtype_int16:
+            return "diopi_dtype_int16";
+        case diopi_dtype_uint16:
+            return "diopi_dtype_uint16";
+        case diopi_dtype_int32:
+            return "diopi_dtype_int32";
+        case diopi_dtype_uint32:
+            return "diopi_dtype_uint32";
+        case diopi_dtype_int64:
+            return "diopi_dtype_int64";
+        case diopi_dtype_uint64:
+            return "diopi_dtype_uint64";
+        case diopi_dtype_float16:
+            return "diopi_dtype_float16";
+        case diopi_dtype_float32:
+            return "diopi_dtype_float32";
+        case diopi_dtype_float64:
+            return "diopi_dtype_float64";
+        case diopi_dtype_bool:
+            return "diopi_dtype_bool";
+        case diopi_dtype_bfloat16:
+            return "diopi_dtype_bfloat16";
+        case diopi_dtype_tfloat32:
+            return "diopi_dtype_tfloat32";
+        case diopi_dtype_complex32:
+            return "diopi_dtype_complex32";
+        case diopi_dtype_complex64:
+            return "diopi_dtype_complex64";
+        case diopi_dtype_complex128:
+            return "diopi_dtype_complex128";
+        default:
+            setLastErrorString("dtype:%d is not support at %s:%d.\n", dtype, __FILE__, __LINE__);
+    }
+    return "";
+}
+
+// DiopiTensor
+
 DiopiTensor::DiopiTensor(const diopiTensorHandle_t& tensor) : tensor_(tensor) {
     if (tensor_ != nullptr) {
         diopiSize_t diopiShape;
@@ -242,6 +320,8 @@ diopiConstTensorHandle_t DiopiTensor::tensorHandle() const {
     return tensor_;
 }
 
+// other funcs
+
 DiopiTensor makeTensor(diopiContextHandle_t ctx, const diopiScalar_t* pScalar) {
     diopiTensorHandle_t tensor = nullptr;
     std::vector<int64_t> shape{1};
@@ -334,6 +414,42 @@ DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>&
         DIOPI_CHECK_ABORT(false, "memory format not support");
     }
     return requiresTensor(ctx, size, strides, dtype);
+}
+
+DiopiTensor requiresBuffer(diopiContextHandle_t ctx, int64_t numBytes) {
+    diopiTensorHandle_t tensor = nullptr;
+    diopiRequireBuffer(ctx, &tensor, numBytes, diopi_device);
+    return DiopiTensor(tensor);
+}
+
+cnrtQueue_t getStream(diopiContextHandle_t ctx) {
+    diopiStreamHandle_t streamHandle;
+    diopiGetStream(ctx, &streamHandle);
+    return static_cast<cnrtQueue_t>(streamHandle);
+}
+
+diopiSize_t vec2diopiSizeT(const std::vector<int64_t>& sizeIn) {
+    diopiSize_t diopiSize{sizeIn.data(), static_cast<int64_t>(sizeIn.size())};
+    return diopiSize;
+}
+
+void syncStreamInCtx(diopiContextHandle_t ctx) {
+    cnrtQueue_t queue = getStream(ctx);
+    cnrtQueueSync(queue);
+    return;
+}
+
+const char* reductionStr(diopiReduction_t reduction) {
+    switch (reduction) {
+        case ReductionNone:
+            return "ReductionNone";
+        case ReductionSum:
+            return "ReductionSum";
+        case ReductionMean:
+            return "ReductionMean";
+        default:
+            return "not supported reduction method";
+    }
 }
 
 }  // namespace camb
