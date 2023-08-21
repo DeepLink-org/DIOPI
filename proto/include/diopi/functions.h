@@ -3001,7 +3001,8 @@ DIOPI_API diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle
  * @param[in] to a pointer, the upper bound of the random function, it can be none.
  * @param[in] generator a pseudorandom number generator for sampling
  */
-DIOPI_API diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t from, const int64_t* to, diopiConstGeneratorHandle_t generator);
+DIOPI_API diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t from, const int64_t* to,
+                                      diopiConstGeneratorHandle_t generator);
 
 /**
  * @brief Fills self tensor with numbers sampled from the continuous uniform distribution: \f[P(x)= \frac{1}{to-from}\f]
@@ -3077,7 +3078,8 @@ DIOPI_API diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t
  * @param[out] out the output tensor.
  * @param[in] generator a pseudorandom number generator for sampling
  */
-DIOPI_API diopiError_t diopiNormalTensorScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t mean, double std, diopiConstGeneratorHandle_t generator);
+DIOPI_API diopiError_t diopiNormalTensorScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t mean, double std,
+                                               diopiConstGeneratorHandle_t generator);
 
 /**
  * @brief Returns a tensor of random numbers drawn from separate normal distributions whose mean and standard deviation are given.
@@ -3087,7 +3089,8 @@ DIOPI_API diopiError_t diopiNormalTensorScalar(diopiContextHandle_t ctx, diopiTe
  * @param[out] out the output tensor.
  * @param[in] generator a pseudorandom number generator for sampling
  */
-DIOPI_API diopiError_t diopiNormalScalarTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, diopiConstTensorHandle_t std, diopiConstGeneratorHandle_t generator);
+DIOPI_API diopiError_t diopiNormalScalarTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, diopiConstTensorHandle_t std,
+                                               diopiConstGeneratorHandle_t generator);
 
 /**
  * @brief Returns a tensor of random numbers drawn from separate normal distributions whose mean and standard deviation are given.
@@ -3097,7 +3100,8 @@ DIOPI_API diopiError_t diopiNormalScalarTensor(diopiContextHandle_t ctx, diopiTe
  * @param[out] out the output tensor.
  * @param[in] generator a pseudorandom number generator for sampling
  */
-DIOPI_API diopiError_t diopiNormalTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t std, diopiConstGeneratorHandle_t generator);
+DIOPI_API diopiError_t diopiNormalTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t std,
+                                         diopiConstGeneratorHandle_t generator);
 
 /**
  * @brief The in-place version of diopiNormal.
