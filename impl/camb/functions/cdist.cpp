@@ -25,7 +25,7 @@ std::vector<int64_t> inferSize(std::vector<int64_t> a, std::vector<int64_t> b) {
         auto dimB = dimsB - 1 - offset;
         auto sizeA = (dimA >= 0) ? a[dimA] : 1;
         auto sizeB = (dimB >= 0) ? b[dimB] : 1;
-        assert(sizeA == sizeB || sizeA == 1 || sizeB == 1 && "The size of tensor a must match the size of tensor b at a non-singleton dimension");
+        assert((sizeA == sizeB || sizeA == 1 || sizeB == 1) && "The size of tensor a must match the size of tensor b at a non-singleton dimension");
         expandedSize[i] = sizeA == 1 ? sizeB : sizeA;
     }
     return expandedSize;
@@ -78,12 +78,7 @@ diopiError_t diopiCdist(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     if (r1 == 0 || r2 == 0) {
         return diopiSuccess;
     } else if (c1 == 0) {
-        diopiScalar_t value;
-        if (DiopiDataType::isInteger(outTensor.dtype())) {
-            value = {outTensor.dtype(), 0};
-        } else {
-            value = {outTensor.dtype(), 0.0};
-        }
+        diopiScalar_t value = constructDiopiScalarT(outTensor.dtype(), 0);
         DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(outTensor), &value));
         return diopiSuccess;
     }
@@ -101,16 +96,16 @@ diopiError_t diopiCdist(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     std::vector<int64_t> input1ShapeCnnl{expandBatchProduct, r1, c1};
     DiopiTensor input1TensorExpand = requiresTensor(ctx, input1TensorExpandSize, input1Tensor.dtype());
     DIOPI_CALL(expand(ctx, input1Tensor, input1TensorExpand));
-    input1TensorExpand.reshape(input1ShapeCnnl);
+    input1TensorExpand.view(input1ShapeCnnl);
 
     std::vector<int64_t> input2ShapeCnnl{expandBatchProduct, r2, c2};
     DiopiTensor input2TensorExpand = requiresTensor(ctx, input2TensorExpandSize, input2Tensor.dtype());
     DIOPI_CALL(expand(ctx, input2Tensor, input2TensorExpand));
-    input2TensorExpand.reshape(input2ShapeCnnl);
+    input2TensorExpand.view(input2ShapeCnnl);
 
     std::vector<int64_t> outputShape = outTensor.shape();
     std::vector<int64_t> outputShapeCnnl{expandBatchProduct, r1, r2};
-    outTensorTmp.reshape(outputShapeCnnl);
+    outTensorTmp.view(outputShapeCnnl);
 
     CnnlTensorDesc outDesc(outTensorTmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc input1Desc(input1TensorExpand, CNNL_LAYOUT_ARRAY);
@@ -118,7 +113,7 @@ diopiError_t diopiCdist(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
 
     DIOPI_CALLCNNL(cnnlCdistForward(
         handle, input1Desc.get(), input1TensorExpand.data(), input2Desc.get(), input2TensorExpand.data(), p, outDesc.get(), outTensorTmp.data()));
-    outTensorTmp.reshape(outputShape);
+    outTensorTmp.view(outputShape);
     if (outTensor.dtype() != outTensorTmp.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
     }
@@ -164,12 +159,7 @@ diopiError_t diopiCdistBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gr
 
     // Gracefully handle empty Tensors
     if (r1 == 0 || r2 == 0 || c1 == 0 || expandBatchProduct == 0) {
-        diopiScalar_t value;
-        if (DiopiDataType::isInteger(gradInputTensor.dtype())) {
-            value = {gradInputTensor.dtype(), 0};
-        } else {
-            value = {gradInputTensor.dtype(), 0.0};
-        }
+        diopiScalar_t value = constructDiopiScalarT(gradInputTensor.dtype(), 0);
         DIOPI_CALL(diopiFill(ctx, diopiTensorHandle_t(gradInputTensor), &value));
         return diopiSuccess;
     }
@@ -177,21 +167,21 @@ diopiError_t diopiCdistBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gr
     std::vector<int64_t> input1ShapeCnnl{expandBatchProduct, r1, c1};
     DiopiTensor input1TensorExpand = requiresTensor(ctx, input1TensorExpandSize, input1Tensor.dtype());
     DIOPI_CALL(expand(ctx, input1Tensor, input1TensorExpand));
-    input1TensorExpand.reshape(input1ShapeCnnl);
+    input1TensorExpand.view(input1ShapeCnnl);
 
     std::vector<int64_t> input2ShapeCnnl{expandBatchProduct, r2, c2};
     DiopiTensor input2TensorExpand = requiresTensor(ctx, input2TensorExpandSize, input2Tensor.dtype());
     DIOPI_CALL(expand(ctx, input2Tensor, input2TensorExpand));
-    input2TensorExpand.reshape(input2ShapeCnnl);
+    input2TensorExpand.view(input2ShapeCnnl);
 
     std::vector<int64_t> gradInputShapeCnnl{expandBatchProduct, r1, c1};
-    gradInputTensorTmp.reshape(gradInputShapeCnnl);
+    gradInputTensorTmp.view(gradInputShapeCnnl);
 
     std::vector<int64_t> gradOutputShapeCnnl{expandBatchProduct, r1, r2};
-    gradOutputTensor.reshape(gradOutputShapeCnnl);
+    gradOutputTensor.view(gradOutputShapeCnnl);
 
     std::vector<int64_t> cdistShapeCnnl{expandBatchProduct, r1, r2};
-    cdistTensor.reshape(cdistShapeCnnl);
+    cdistTensor.view(cdistShapeCnnl);
 
     CnnlTensorDesc gradInputDesc(gradInputTensorTmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc gradOutputDesc(gradOutputTensor, CNNL_LAYOUT_ARRAY);
