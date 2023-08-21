@@ -28,10 +28,14 @@ add_library(diopirt SHARED ${RUNTIME_SRC})
 target_link_libraries(${DIOPIRT} PRIVATE diopirt)
 target_link_libraries(diopirt ${DEVICEIMPL})
 
+file(GLOB TEST_TEMPLATE_CODE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${DIOPI_TEST_DIR}/codegen/*.py)
+add_custom_target(test_gen_dependency DEPENDS ${TEST_TEMPLATE_CODE})
+
 set(GEN_FILES ${FUNCTION_SAVE_PATH}/export_functions.cpp)
 add_custom_target(test_code_gen ALL
     COMMAND python3 ${TEST_GEN_PATH}/gen.py --device=torch
-    BYPRODUCTS ${GEN_FILES})
+    BYPRODUCTS ${GEN_FILES}
+    DEPENDS test_gen_dependency)
 
 set(FUNCTIONS_SRC ${GEN_FILES})
 
