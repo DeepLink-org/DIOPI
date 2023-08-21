@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <vector>
 
 #include "../cnnl_helper.hpp"
@@ -13,7 +11,6 @@
 
 namespace impl {
 namespace camb {
-extern "C" {
 
 diopiError_t diopiLinalgQR(diopiContextHandle_t ctx, diopiConstTensorHandle_t a, const char *mode, diopiTensorHandle_t q, diopiTensorHandle_t r) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -73,6 +70,5 @@ diopiError_t diopiLinalgQR(diopiContextHandle_t ctx, diopiConstTensorHandle_t a,
     return diopiSuccess;
 }
 
-}  // extern "C"
 }  // namespace camb
 }  // namespace impl

@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <cstring>
 #include <iostream>
 #include <numeric>
@@ -17,7 +15,6 @@
 namespace impl {
 namespace camb {
 
-extern "C" {
 /**
  * @brief Measures the Binary Cross Entropy between the target and input probabilities.
  * @param[in] ctx Context environment.
@@ -158,6 +155,5 @@ DIOPI_API diopiError_t diopiBCELossBackward(diopiContextHandle_t ctx, diopiTenso
     return diopiSuccess;
 }
 
-}  // extern "C"
 }  // namespace camb
 }  // namespace impl
