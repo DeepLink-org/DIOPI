@@ -1,5 +1,7 @@
 # Copyright (c) 2023, DeepLink.
 from code_template import CodeTemplate
+
+
 class OpTemplate(object):
     operators_template = CodeTemplate("""\
 /**
@@ -12,6 +14,8 @@ class OpTemplate(object):
 #include <pybind11/pybind11.h>
 #include "litert.hpp"
 #include <diopi/diopirt.h>
+#include <diopi/functions.h>
+
 namespace py = pybind11;
 
 PYBIND11_MODULE(export_functions, m) {

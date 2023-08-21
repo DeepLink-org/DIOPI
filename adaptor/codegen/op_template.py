@@ -9,17 +9,16 @@ class OpTemplate(object):
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef DIOPI_ADAPTOR_HPP_
-#define DIOPI_ADAPTOR_HPP_
-
 #include "convert.hpp"
 #include "impl_functions.hpp"
 
+// NOLINTBEGIN
 ${cast_strategy}
 
 ${adaptors}
 
-# endif // DIOPI_ADAPTOR_HPP
+// NOLINTEND
+
 """)
 
     adaptor_template = CodeTemplate("""\
@@ -35,12 +34,7 @@ extern "C" diopiError_t diopi${op_name}(${attrs}) {
     diopiError_t ret;
     {
         TimeElapsed opTimeElapsed("${op_name}");
-        if(::impl::${device}::${func_name}) {
-            ret = ::impl::${device}::${call_func};
-        }
-        else {
-            return diopiError_t::diopiNoImplement;
-        }
+        ret = ::impl::${device}::${call_func};
     }
     return ret;
 }
@@ -74,6 +68,7 @@ public:
 
 #include <diopi/diopirt.h>
 
+// NOLINTBEGIN
 namespace impl {
 namespace ${device} {
 
@@ -82,6 +77,7 @@ ${impl_declaration}
 }  // namespace ${device}
 }  // namespace impl
 
+// NOLINTEND
 #endif  // IMPL_FUNCTIONS_HPP_
 
 """)

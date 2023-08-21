@@ -8,9 +8,6 @@
 namespace impl {
 namespace camb {
 
-diopiError_t diopiSlice(diopiContextHandle_t ctx, diopiTensorHandle_t null_out, diopiConstTensorHandle_t input, int64_t dim, int64_t start, int64_t end,
-                        int64_t step);
-
 diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t input, const int64_t *dim, bool sorted, bool returnCounts,
                          diopiTensorHandle_t indices, diopiTensorHandle_t *counts) {
 // version should be greater than 1.15.2
