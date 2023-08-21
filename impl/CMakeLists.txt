@@ -26,8 +26,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAG}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAG}")
 
 
-add_definitions(-DDIOPI_ATTR_WEAK)
-
 set(DEVICEIMPL diopi_impl)
 
 list(APPEND IMPL_CUDA "CUDA" "cuda")
