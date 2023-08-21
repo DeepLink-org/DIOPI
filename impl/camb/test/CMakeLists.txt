@@ -28,12 +28,12 @@ add_library(diopirt SHARED ${RUNTIME_SRC})
 target_link_libraries(${DIOPIRT} PRIVATE diopirt)
 target_link_libraries(diopirt cnrt cnmlrt)
 
-add_custom_target(test_code_gen ALL COMMAND python3 ${TEST_GEN_PATH}/gen.py --device=camb)
+set(GEN_FILES ${FUNCTION_SAVE_PATH}/export_functions.cpp)
+add_custom_target(test_code_gen ALL
+    COMMAND python3 ${TEST_GEN_PATH}/gen.py --device=camb
+    BYPRODUCTS ${GEN_FILES})
 
-set(EXPORT_FUNCTIONS "${FUNCTION_SAVE_PATH}/export_functions.cpp")
-file(TOUCH ${EXPORT_FUNCTIONS})
-
-set(FUNCTIONS_SRC ${EXPORT_FUNCTIONS})
+set(FUNCTIONS_SRC ${GEN_FILES})
 
 pybind11_add_module(${DIOPI_FUNCTIONS} SHARED ${FUNCTIONS_SRC})
 target_link_libraries(${DIOPI_FUNCTIONS} PRIVATE diopirt ${DEVICEIMPL})

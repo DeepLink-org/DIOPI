@@ -2,7 +2,7 @@ set(DIOPIRT export_runtime)
 set(DIOPI_FUNCTIONS export_functions)
 
 add_compile_options(-fno-elide-constructors)
-add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 buildDIOPI_FUNCTIONS)
+add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 build)
 
 set(DIOPI_TEST_DIR "${CMAKE_SOURCE_DIR}/../diopi_test")
 
@@ -28,12 +28,12 @@ add_library(diopirt SHARED ${RUNTIME_SRC})
 target_link_libraries(${DIOPIRT} PRIVATE diopirt)
 target_link_libraries(diopirt ${DEVICEIMPL})
 
-add_custom_target(test_code_gen ALL COMMAND python3 ${TEST_GEN_PATH}/gen.py --device=torch)
+set(GEN_FILES ${FUNCTION_SAVE_PATH}/export_functions.cpp)
+add_custom_target(test_code_gen ALL
+    COMMAND python3 ${TEST_GEN_PATH}/gen.py --device=torch
+    BYPRODUCTS ${GEN_FILES})
 
-set(EXPORT_FUNCTIONS "${FUNCTION_SAVE_PATH}/export_functions.cpp")
-file(TOUCH ${EXPORT_FUNCTIONS})
-
-set(FUNCTIONS_SRC ${EXPORT_FUNCTIONS})
+set(FUNCTIONS_SRC ${GEN_FILES})
 
 pybind11_add_module(${DIOPI_FUNCTIONS} SHARED ${FUNCTIONS_SRC})
 target_link_libraries(${DIOPI_FUNCTIONS} PRIVATE diopirt ${DEVICEIMPL})

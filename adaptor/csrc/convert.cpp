@@ -96,10 +96,10 @@ diopiMemoryFormat_t probableMemoryFormat(diopiConstTensorHandle_t tensor, bool e
                                                                                               : diopiMemoryFormat_t::Contiguous);
 }
 
-bool isContiguous(diopiSize_t size, diopiSize_t stride_diopi, diopiMemoryFormat_t format) {
+bool isContiguous(diopiSize_t size, diopiSize_t strideDiopi, diopiMemoryFormat_t format) {
     auto dim = size.len;
     auto shape = size.data;
-    auto strides = stride_diopi.data;
+    auto strides = strideDiopi.data;
     int64_t stride = 1;
 
     if (format == diopiMemoryFormat_t::Contiguous) {
@@ -204,6 +204,6 @@ const char *getDiopiErrorStr(diopiError_t err) {
 }
 #undef DIOPI_ERROR_TO_STR
 
-TimeElapsedRecord TimeElapsed::timeElapsedRecord_("op_time.dat");
+TimeElapsedRecord TimeElapsed::timeElapsedRecord("op_time.dat");
 
 std::vector<diopiMemoryFormat_t> defaultFormats{};

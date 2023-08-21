@@ -19,7 +19,7 @@ bool isLikeChannelsLast(diopiConstTensorHandle_t tensor, bool checkContiguous, d
 
 inline diopiMemoryFormat_t probableMemoryFormat(diopiConstTensorHandle_t tensor, bool exactMatch = false);
 
-bool isContiguous(diopiSize_t size, diopiSize_t stride_diopi, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous);
+bool isContiguous(diopiSize_t size, diopiSize_t strideDiopi, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous);
 
 std::vector<diopiMemoryFormat_t> matchMemoryFormatBySize(size_t sizeLen);
 
@@ -31,9 +31,9 @@ class TimeElapsedRecord {
 public:
     TimeElapsedRecord(const char *fileName) : enableTiming_(false) {
         const char *enableEnvVar = getenv("DIOPI_ENABLE_TIMING");
-        if (enableEnvVar && strcmp(enableEnvVar, "OFF") && strcmp(enableEnvVar, "0")) {
+        if (enableEnvVar && strcmp(enableEnvVar, "OFF") != 0 && strcmp(enableEnvVar, "0") != 0) {
             enableTiming_ = true;
-            stream_ = std::move(std::ofstream(fileName, std::ios::out | std::ios::trunc));
+            stream_ = std::ofstream(fileName, std::ios::out | std::ios::trunc);
         }
     }
     bool isEnableTiming() { return enableTiming_; }
@@ -47,23 +47,23 @@ private:
 class TimeElapsed {
 public:
     TimeElapsed(const char *opName) : opName_(opName) {
-        if (timeElapsedRecord_.isEnableTiming()) {
+        if (timeElapsedRecord.isEnableTiming()) {
             start_ = std::chrono::steady_clock::now();
         }
     }
     ~TimeElapsed() {
-        if (timeElapsedRecord_.isEnableTiming()) {
+        if (timeElapsedRecord.isEnableTiming()) {
             auto end = std::chrono::steady_clock::now();
             std::chrono::duration<double, std::milli> elapsed = end - start_;  // ms
             double elapsedTime = elapsed.count();
-            timeElapsedRecord_.getOStream() << opName_ << ": " << elapsedTime << "ms" << std::endl;
+            timeElapsedRecord.getOStream() << opName_ << ": " << elapsedTime << "ms" << std::endl;
         }
     }
 
 private:
     const char *opName_;
     std::chrono::time_point<std::chrono::steady_clock> start_;
-    static TimeElapsedRecord timeElapsedRecord_;
+    static TimeElapsedRecord timeElapsedRecord;
 };
 
 class ConvertType {
@@ -124,7 +124,7 @@ ConvertType castImpl(diopiContextHandle_t ctx, T src, T *dst, std::vector<diopiM
 
     // convert memoryformat
     bool needConvertMemoryFormat = true;
-    if (targetMemoryFormats.size() == 0) {
+    if (targetMemoryFormats.empty()) {
         needConvertMemoryFormat = false;
     }
     for (auto memoryFormat : targetMemoryFormats) {
@@ -163,7 +163,7 @@ ConvertType requireTensorIfMemoryFormatConvert(diopiContextHandle_t ctx, T src, 
     strategy::getDstDtype(srcDtype, dstDtype);
     std::vector<diopiMemoryFormat_t> targetMemoryFormats = obtainTargetMemoryFormats(srcSize.len, supportMemoryFormats);
     bool needConvertMemoryFormat = true;
-    if (targetMemoryFormats.size() == 0) {
+    if (targetMemoryFormats.empty()) {
         needConvertMemoryFormat = false;
     }
     for (auto memoryFormat : targetMemoryFormats) {
@@ -201,7 +201,7 @@ ConvertType requireTensorIfMemoryFormatConvert(diopiContextHandle_t ctx, T src, 
 }
 
 template <typename Adaptor, typename... Args>
-void dispatch_diopi(diopiContextHandle_t ctx, Args &&...args) {
+void dispatchDiopi(diopiContextHandle_t ctx, Args &&...args) {
     auto adaptor = Adaptor();
     adaptor(ctx, std::forward<Args>(args)...);
 }
@@ -220,6 +220,7 @@ inline bool isEqualDiopiSize(diopiSize_t val1, diopiSize_t val2) {
 
 template <class strategy>
 class DiopiTensorWrapper {
+public:
     // forbid copy/move constructor/assignment
     DiopiTensorWrapper(const DiopiTensorWrapper &) = delete;
     DiopiTensorWrapper &operator=(const DiopiTensorWrapper &) = delete;
