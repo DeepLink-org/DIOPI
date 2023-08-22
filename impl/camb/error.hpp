@@ -8,9 +8,7 @@
 #define IMPL_CAMB_ERROR_HPP_
 
 #include <cnrt.h>
-#include <cxxabi.h>
 #include <diopi/diopirt.h>
-#include <execinfo.h>
 
 #include <cstring>
 #include <iostream>
