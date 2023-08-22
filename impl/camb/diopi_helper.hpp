@@ -162,7 +162,7 @@ DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>&
 
 DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype);
 
-DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype, diopiMemoryFormat_t diopiMemoryFormat_t);
+DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype, diopiMemoryFormat_t memoryFormat);
 
 DiopiTensor requiresBuffer(diopiContextHandle_t ctx, int64_t numBytes);
 
