@@ -41,7 +41,6 @@ inline void debugPrintBacktrace() {
         if (variable == nullptr) {                                                               \
             printf("The variable `" #variable "` is not defined at %s:%d ", __FILE__, __LINE__); \
             printf("%s", impl::camb::cambGetLastErrorString(false));                             \
-            DIOPI_DebugPrintBacktrace();                                                         \
             abort();                                                                             \
         }                                                                                        \
     } while (false);
@@ -51,7 +50,7 @@ inline void debugPrintBacktrace() {
         if (!(cond)) {                                               \
             printf(fmt " at %s:%d ", ##args, __FILE__, __LINE__);    \
             printf("%s", impl::camb::cambGetLastErrorString(false)); \
-            DIOPI_DebugPrintBacktrace();                             \
+            debugPrintBacktrace();                                   \
             abort();                                                 \
         }                                                            \
     } while (false);
