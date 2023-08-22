@@ -170,7 +170,8 @@ class ManualTest(object):
             assert np.allclose(remains, ref / (1 - p), rtol=rtol, atol=atol),\
                 f"failed to execute {name}, dropout value doesn't matches."
             if mask.numel() > 100:
-                assert np.abs(real_ratio - (1 - p)) < 3e-2,\
+                # 0.05 is from pytorch
+                assert np.abs(real_ratio - (1 - p)) < 0.05,\
                     f"failed to execute {name}, dropout proportion unexpected."
         else:
             assert np.allclose(input_numpy, out_numpy, rtol=rtol, atol=atol),\
