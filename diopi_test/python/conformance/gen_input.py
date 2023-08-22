@@ -11,10 +11,13 @@ class GenPolicy:
     default = 'default'
     gen_tensor_by_value = 'gen_tensor_by_value'
     gen_tensor_list = 'gen_tensor_list'
-    gen_tensor_diff_shape = 'gen_tensor_diff_shape'
+    gen_tensor_list_diff_shape = 'gen_tensor_list_diff_shape'
+
+    gen_list_policy = [gen_tensor_list, gen_tensor_list_diff_shape]
 
 class GenInputData(object):
     r'''
+    Generate input data for all functions by using diopi_configs
     '''
     @staticmethod
     def run(diopi_item_config_path='diopi_case_items.cfg', input_path='data/inputs/'):
@@ -39,7 +42,7 @@ class GenInputData(object):
 
         logger.info(f"Generate test cases number for input data: {case_counter}")
         if case_counter == 0:
-            logger.warn(f"No benchmark input data is generated, \"{func_name}\" may not be in the diopi-config")
+            logger.warn(f"No benchmark input data is generated")
         else:
             logger.info("Generate benchmark input data done!")
 
@@ -77,10 +80,10 @@ class GenParas(object):
                 value, requires_grad = gen_tensor_obj.gen_value()
             elif gen_policy == GenPolicy.gen_tensor_list:
                 value, requires_grad = gen_tensor_obj.gen_tensor_list()
-            elif gen_policy == GenPolicy.gen_tensor_diff_shape:
+            elif gen_policy == GenPolicy.gen_tensor_list_diff_shape:
                 value, requires_grad = gen_tensor_obj.gen_tensor_list_diff_shape()
             else:
-                raise Exception(f'gen_policy {gen_policy} do not exist, only support default,gen_tensor_by_value,gen_tensor_list,gen_tensor_diff_shape')
+                raise Exception(f'gen_policy {gen_policy} do not exist, only support default,gen_tensor_by_value,gen_tensor_list,gen_tensor_list_diff_shape')
             function_paras["kwargs"][name] = value
             if requires_grad == [True]:
                 function_paras["requires_grad"][name] = requires_grad
@@ -95,7 +98,7 @@ class GenTensor(object):
         self.gen_policy = arg["gen_policy"]
         self.name = arg["ins"]
         self.shape = arg.get("shape", None)
-        self.dtype = arg.get("dtype", None)
+        self.dtype = self.parse_dtype(arg.get("dtype", None))
         self.value = arg.get("value", None)
         self.requires_grad = arg.get("requires_grad", [False])
         self.no_contiguous = arg.get("no_contiguous", False)
@@ -144,6 +147,9 @@ class GenTensor(object):
         if self.no_contiguous:
             value = value.transpose()
         return value
+
+    def parse_dtype(self, dtype_str):
+        return getattr(np, dtype_str)
 
     def parse_gen_fn(self, gen_fn):
         if isinstance(gen_fn, dict):
