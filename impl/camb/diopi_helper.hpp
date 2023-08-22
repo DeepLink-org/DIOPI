@@ -30,11 +30,18 @@
         }                                                                                    \
     } while (false);
 
+inline void DIOPI_DebugPrintBacktrace() {
+#ifdef DEBUG_MODE
+    impl::camb::printBacktrace();
+#endif
+}
+
 #define DIOPI_CHECK_NULLPTR_ABORT(variable)                                                      \
     do {                                                                                         \
         if (variable == nullptr) {                                                               \
             printf("The variable `" #variable "` is not defined at %s:%d ", __FILE__, __LINE__); \
             printf("%s", impl::camb::cambGetLastErrorString(false));                             \
+            DIOPI_DebugPrintBacktrace();                                                         \
             abort();                                                                             \
         }                                                                                        \
     } while (false);
@@ -42,8 +49,9 @@
 #define DIOPI_CHECK_ABORT(cond, fmt, args...)                        \
     do {                                                             \
         if (!(cond)) {                                               \
-            printf(#fmt " at %s:%d ", ##args, __FILE__, __LINE__);   \
+            printf(fmt " at %s:%d ", ##args, __FILE__, __LINE__);    \
             printf("%s", impl::camb::cambGetLastErrorString(false)); \
+            DIOPI_DebugPrintBacktrace();                             \
             abort();                                                 \
         }                                                            \
     } while (false);
