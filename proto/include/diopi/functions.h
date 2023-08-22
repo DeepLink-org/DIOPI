@@ -458,7 +458,7 @@ DIOPI_API diopiError_t diopiAdaptiveMaxPool2dBackward(diopiContextHandle_t ctx, 
  * @param[in] input the input tensor, type = [float32, float64].
  * @param[in] p the probability of an element in the input tensor being zeroed out. type = [float32, float64].
  * @param[in] train boolean, whether the module is in training mode. When set to False, the dropout operation will not be performed.
- * @param[in] mask A binary mask tensor of the same shape as the input tensor, where each element's value is either 0 or 1,
+ * @param[out] mask A binary mask tensor of the same shape as the input tensor, where each element's value is either 0 or 1,
  * indicating whether the corresponding neuron at that position is dropped or not. type = [int32].
  * @param[out] out the output tensor. type = [float32, float64].
  */
@@ -468,7 +468,7 @@ DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_
  * @brief The in-place version of diopiDropout().
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor and will be stored result tensor. type = [float32, float64].
- * @param[in] mask A binary mask tensor of the same shape as the input tensor, where each element's value is either 0 or 1,
+ * @param[out] mask A binary mask tensor of the same shape as the input tensor, where each element's value is either 0 or 1,
  * indicating whether the corresponding neuron at that position is dropped or not. type = [int32].
  * @param[in] p the probability of an element in the input tensor being zeroed out. type = [float32, float64].
  * @param[in] train boolean, whether the module is in training mode. When set to False, the dropout operation will not be performed.
