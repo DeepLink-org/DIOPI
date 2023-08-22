@@ -6,6 +6,8 @@
 #ifndef IMPL_CAMB_COMMON_DEBUG_HPP_
 #define IMPL_CAMB_COMMON_DEBUG_HPP_
 
+#include <cxxabi.h>
+#include <execinfo.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
