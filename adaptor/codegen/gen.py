@@ -69,6 +69,7 @@ inp_config = {
     'BatchNorm': ['running_mean', 'running_var'],
     'IndexPut': ['out'],
     'Adadelta': ['input', 'grad', 'square_avg', 'acc_delta'],
+    'IndexBackward':['zeros_like_input']
 }
 
 def findAllFile(base):
