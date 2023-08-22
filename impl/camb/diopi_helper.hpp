@@ -30,12 +30,6 @@
         }                                                                                    \
     } while (false);
 
-inline void debugPrintBacktrace() {
-#ifdef DEBUG_MODE
-    impl::camb::printBacktrace();
-#endif
-}
-
 #define DIOPI_CHECK_NULLPTR_ABORT(variable)                                                      \
     do {                                                                                         \
         if (variable == nullptr) {                                                               \
@@ -50,7 +44,6 @@ inline void debugPrintBacktrace() {
         if (!(cond)) {                                               \
             printf(fmt " at %s:%d ", ##args, __FILE__, __LINE__);    \
             printf("%s", impl::camb::cambGetLastErrorString(false)); \
-            debugPrintBacktrace();                                   \
             abort();                                                 \
         }                                                            \
     } while (false);
@@ -169,7 +162,11 @@ DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>&
 
 DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype);
 
+<<<<<<< HEAD
 DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype, diopiMemoryFormat_t memoryFormat);
+=======
+DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype, diopiMemoryFormat_t diopiMemoryFormat_t);
+>>>>>>> 090f8770 (delete using MemoryFormat)
 
 DiopiTensor requiresBuffer(diopiContextHandle_t ctx, int64_t numBytes);
 

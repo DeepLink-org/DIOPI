@@ -19,6 +19,10 @@
 
 #include "diopi_helper.hpp"
 
+#ifndef NDEBUG
+#include "common/debug.hpp"
+#endif
+
 namespace impl {
 namespace camb {
 
