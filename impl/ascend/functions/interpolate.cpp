@@ -23,7 +23,7 @@ DIOPI_API diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTensor
     std::string modeStr(mode);
     if ("bilinear" == modeStr) {
         AclOpRunner<2, 1>("ResizeBilinearV2", ctx)
-            .addInput(input, ACL_FORMAT_NCHW)
+            .addInput(input)
             .addConstInput(size)
             .setAttr("align_corners", alignCorners)
             .setAttr("half_pixel_centers", !alignCorners)
@@ -46,8 +46,8 @@ DIOPI_API diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, dio
     std::string modeStr(mode);
     if ("bilinear" == modeStr) {
         AclOpRunner<2, 1>("ResizeBilinearV2Grad", ctx)
-            .addInput(gradOutput, ACL_FORMAT_NCHW)
-            .addInput(originalImage, ACL_FORMAT_NCHW)
+            .addInput(gradOutput)
+            .addInput(originalImage)
             .setAttr("align_corners", alignCorners)
             .setAttr("half_pixel_centers", !alignCorners)
             .addOutput(gradInput)
