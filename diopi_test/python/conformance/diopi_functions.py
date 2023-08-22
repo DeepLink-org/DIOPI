@@ -1003,7 +1003,7 @@ def adaptive_max_pool2d(input, output_size, return_indices=False):
     return out
 
 
-def dropout_impl(input: Tensor, size_mask: list, p: float=0.5,
+def dropout_impl(input: Tensor, size_mask: list, p: float = 0.5,
                  training: bool = True, inplace: bool = False):
     mask = Tensor(size_mask, Dtype.uint8)
     if inplace:
@@ -1014,7 +1014,7 @@ def dropout_impl(input: Tensor, size_mask: list, p: float=0.5,
         out = raw_like(input)
         func = check_function("diopiDropout")
         ret = func(input.context(), out, mask, input, p, training)
-    
+
     check_returncode(ret)
     return out, mask
 
