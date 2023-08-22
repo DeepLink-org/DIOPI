@@ -19,7 +19,7 @@ DIOPI_API diopiError_t diopiAddcdiv(diopiContextHandle_t ctx, diopiTensorHandle_
     diopiDtype_t dtype;
     diopiGetTensorDtype(out, &dtype);
     makeTensorFromScalar(ctx, value, &trOther, dtype, diopiDevice_t::diopi_device);
-    AclOpRunner<4, 1>("Addcdiv", ctx).addInput(input, tensor1, tensor2, trOther).addOutput(out).run();
+    AclOpRunner<4, 1>("Addcdiv", ctx).addInput(input).addInput(tensor1).addInput(tensor2).addInput(trOther).addOutput(out).run();
     return diopiSuccess;
 }
 

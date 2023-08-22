@@ -4,7 +4,12 @@ project(diopi_impl)
 option(TEST "Whether to compile DIOPI with runtime" OFF)
 option(DEBUG "whether to use debug" ON)
 option(DYLOAD "Whether to load so in runtime by dlopen" OFF)
+
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/proto/include")
+include_directories("${PROJECT_SOURCE_DIR}/../adaptor/csrc")
+
+set (ADAPTOR_DIR "${CMAKE_SOURCE_DIR}/../adaptor")
+set (DIOPI_TEST_DIR "${CMAKE_SOURCE_DIR}/../diopi_test")
 
 # use gcover
 option(ENABLE_COVERAGE "Use gcov" OFF)
@@ -25,8 +30,6 @@ set(COMMON_FLAG "-Wall -Wno-sign-compare")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAG}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAG}")
 
-
-add_definitions(-DDIOPI_ATTR_WEAK)
 
 set(DEVICEIMPL diopi_impl)
 

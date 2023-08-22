@@ -4,14 +4,11 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
-extern "C" {
 
 diopiError_t diopiEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t indices,
                             int64_t paddingIdx, bool scaleGradByfreq, bool sparse) {
@@ -123,6 +120,5 @@ diopiError_t diopiEmbeddingBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     }
     return diopiSuccess;
 }
-}  // extern "C"
 }  // namespace camb
 }  // namespace impl

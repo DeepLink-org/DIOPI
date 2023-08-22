@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <vector>
 
 #include "../cnnl_helper.hpp"
@@ -13,7 +11,6 @@
 
 namespace impl {
 namespace camb {
-extern "C" {
 
 diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p, bool train) {
     if (train) {
@@ -94,7 +91,7 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
         DIOPI_CALLCNNL(cnnlRandDestroyGenerator(generator));
 
     } else {  // if in test_mode
-        diopiCopyInp(ctx, input, out);
+        DIOPI_CALL(diopiCopyInp(ctx, input, out));
     }
     return diopiSuccess;
 }
@@ -104,6 +101,5 @@ diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input
     return diopiSuccess;
 }
 
-}  // extern "C"
 }  // namespace camb
 }  // namespace impl

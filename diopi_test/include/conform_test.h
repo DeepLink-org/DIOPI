@@ -48,14 +48,14 @@ typedef void (*free_func_t)(void*);
 
 // extern DIOPI_API diopiError_t diopiRegisterGetLastErrorFunc();
 
-extern DIOPI_API void* device_malloc(uint64_t bytes);
-extern DIOPI_API void device_free(void* ptr);
-extern DIOPI_API int32_t device_memcpy_h2d_async(diopiStreamHandle_t stream, void* dst, const void* src, uint64_t bytes);
-extern DIOPI_API int32_t device_memcpy_d2h_async(diopiStreamHandle_t stream, void* dst, const void* src, uint64_t bytes);
-extern DIOPI_API int32_t device_memcpy_d2d_async(diopiStreamHandle_t stream, void* dst, const void* src, uint64_t bytes);
-extern DIOPI_API int32_t device_make_stream(diopiStreamHandle_t*);
-extern DIOPI_API int32_t device_destroy_stream(diopiStreamHandle_t);
-extern DIOPI_API int32_t device_synchronize_stream(diopiStreamHandle_t stream);
+extern void* device_malloc(uint64_t bytes);
+extern void device_free(void* ptr);
+extern int32_t device_memcpy_h2d_async(diopiStreamHandle_t stream, void* dst, const void* src, uint64_t bytes);
+extern int32_t device_memcpy_d2h_async(diopiStreamHandle_t stream, void* dst, const void* src, uint64_t bytes);
+extern int32_t device_memcpy_d2d_async(diopiStreamHandle_t stream, void* dst, const void* src, uint64_t bytes);
+extern int32_t device_make_stream(diopiStreamHandle_t*);
+extern int32_t device_destroy_stream(diopiStreamHandle_t);
+extern int32_t device_synchronize_stream(diopiStreamHandle_t stream);
 /**
  * User-implemented functions
  **/
