@@ -79,7 +79,7 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
     if (boolTensorConvertToEmptyTensor) {
         bool first = true;
         std::vector<int64_t> sizes;
-        for (auto indexTensorCast : indicesTensorsCast) {
+        for (const auto& indexTensorCast : indicesTensorsCast) {
             if (!indexTensorCast.defined()) {
                 continue;
             } else if (first) {
