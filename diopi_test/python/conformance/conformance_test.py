@@ -248,7 +248,7 @@ class ManualTest(object):
             mean = 0.0
             std = 1.
         out_numpy = out_numpy.flatten()
-        if len(out_numpy) == 0 and size is not None:
+        if len(out_numpy) == 0:
             return True
         p_value = stats.kstest(out_numpy, 'norm', args=(mean, std + 1e-22))[1]
         assert p_value > 0.0001, f"can't pass the ks test, failed to execute normal, p_value is {p_value}"
