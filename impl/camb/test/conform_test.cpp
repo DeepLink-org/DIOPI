@@ -8,11 +8,12 @@
 #include <cnnl.h>
 #include <conform_test.h>
 #include <diopi/diopirt.h>
-#include "litert.hpp"
 
 #include <cstdio>
 #include <mutex>
 #include <vector>
+
+#include "litert.hpp"
 namespace impl {
 namespace camb {
 
