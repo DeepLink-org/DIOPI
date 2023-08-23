@@ -233,29 +233,6 @@ inline at::Tensor buildATen(T tensor) {
     }
 }
 
-// new cuda generator and pass dipu generator state into cuda generator state
-inline at::Generator buildGenerator(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t generator) {
-    auto gen = at::cuda::detail::createCUDAGenerator();
-    diopiTensorHandle_t state_handle = nullptr;
-    diopiGeneratorGetState(ctx, generator, &state_handle);
-    auto state = impl::aten::buildATen(state_handle);
-    {
-        std::lock_guard<std::mutex> lock(gen.mutex());
-        gen.set_state(state);
-    }
-    return gen;
-}
-
-inline void updateGeneratorHandleState(at::Generator& cuda_gen, diopiConstGeneratorHandle_t generator) {
-    at::Tensor new_state;
-    {
-        std::lock_guard<std::mutex> lock(cuda_gen.mutex());
-        new_state = cuda_gen.get_state();
-    }
-    diopiConstTensorHandle_t new_state_handle = new_state.defined() ? reinterpret_cast<::diopiConstTensorHandle_t>(&new_state) : nullptr;
-    diopiGeneratorSetState(generator, new_state_handle);
-}
-
 inline bool isInt(const diopiScalar_t* scalar) { return scalar->stype <= 7; }
 
 inline bool isFloat(const diopiScalar_t* scalar) { return scalar->stype > 7; }
@@ -347,6 +324,31 @@ inline void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiT
     diopiDtype_t dtype = getDIOPITensorType(input);
     diopiRequireTensor(ctx, out, &size, &stride, dtype, diopi_device);
     updateATen2Tensor(ctx, input, *out);
+}
+
+
+// new cuda generator and pass dipu generator state into cuda generator state
+inline at::Generator buildGenerator(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t generator) {
+    auto gen = at::cuda::detail::createCUDAGenerator();
+    diopiTensorHandle_t state_handle = nullptr;
+    diopiGeneratorGetState(ctx, generator, &state_handle);
+    auto state = impl::aten::buildATen(state_handle);
+    {
+        std::lock_guard<std::mutex> lock(gen.mutex());
+        gen.set_state(state);
+    }
+    return gen;
+}
+
+inline void updateGeneratorHandleState(diopiContextHandle_t ctx, at::Generator& cuda_gen, diopiConstGeneratorHandle_t generator) {
+    at::Tensor new_state;
+    {
+        std::lock_guard<std::mutex> lock(cuda_gen.mutex());
+        new_state = cuda_gen.get_state();
+    }
+    diopiTensorHandle_t new_state_handle = nullptr;
+    buildDiopiTensor(ctx, new_state, &new_state_handle);
+    diopiGeneratorSetState(generator, new_state_handle);
 }
 
 inline c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding_mode) {

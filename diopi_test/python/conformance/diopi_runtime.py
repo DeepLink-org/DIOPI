@@ -4,7 +4,7 @@ from ctypes import c_void_p
 import numpy as np
 import atexit
 from export_runtime import diopiTensor, diopiSize, diopiScalar, diopiReduction, diopiRoundMode, diopiError, TensorP, Context, Device, Dtype, \
-    diopi_tensor_copy_to_buffer, get_last_error_string, finalize_library, diopi_finalize, init_library
+    diopi_tensor_copy_to_buffer, get_last_error_string, finalize_library, diopi_finalize, init_library, diopiGenerator
 
 
 def device(dev: str) -> Device:
@@ -207,7 +207,8 @@ class Tensor(diopiTensor):
         dtype=None,
         stride=None,
         context=default_context,
-        data_ptr=None
+        data_ptr=None,
+        device=Device.AIChip
     ):
         if size is None:
             return diopiTensor.__init__(self)
@@ -217,10 +218,10 @@ class Tensor(diopiTensor):
 
         if data_ptr is None:
             diopiTensor.__init__(self, size, stride, dtype,
-                                 Device.AIChip, context)
+                                 device, context)
         else:
             diopiTensor.__init__(self, size, stride, dtype,
-                                 Device.AIChip, context, data_ptr)
+                                 device, context, data_ptr)
 
     def __str__(self):
         array = self.numpy()
@@ -234,7 +235,7 @@ class Tensor(diopiTensor):
         stride = self.get_stride()
         dtype = self.get_dtype()
         return Tensor(size=size, dtype=dtype, stride=stride,
-                      context=self.context())
+                      context=self.context(), device=self.get_device())
 
     def size(self):
         return self.shape()
@@ -244,7 +245,7 @@ class Tensor(diopiTensor):
         self.reset_shape(Sizes(list(shape)))
 
     @classmethod
-    def from_numpy(cls, darray, context=None):
+    def from_numpy(cls, darray, context=None, device=Device.AIChip):
         if not isinstance(darray, (np.generic, np.ndarray)):
             raise TypeError(f"expected np.ndarray (got {type(darray)})")
         dtype = from_numpy_dtype(darray.dtype)
@@ -259,9 +260,9 @@ class Tensor(diopiTensor):
         PyCapsule_New.argtypes = (ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor)
         capsule = PyCapsule_New(c_void_p(darray.ctypes.data), None, PyCapsule_Destructor(0))
         if context:
-            tr = cls(size=size, dtype=dtype, stride=stride, data_ptr=capsule, context=context)
+            tr = cls(size=size, dtype=dtype, stride=stride, data_ptr=capsule, context=context, device=device)
         else:
-            tr = cls(size=size, dtype=dtype, stride=stride, data_ptr=capsule, )
+            tr = cls(size=size, dtype=dtype, stride=stride, data_ptr=capsule, device=device)
         return tr
 
     def numpy(self) -> np.ndarray:
@@ -283,3 +284,8 @@ class Tensor(diopiTensor):
 
 def raw_like(tensor) -> Tensor:
     return tensor.raw_like()
+
+
+class Generator(diopiGenerator):
+    def __init__(self, state: Tensor):
+        diopiGenerator.__init__(self, state)

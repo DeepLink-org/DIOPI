@@ -7,7 +7,8 @@ from . import diopi_configs, ops_with_states
 from .config import Config
 from .utils import logger, FunctionNotImplementedError, DiopiException
 from .utils import need_process_func, glob_vars, nhwc_op, dtype_op
-from .diopi_runtime import Tensor, compute_nhwc_stride, default_context, diopi_rt_init
+from .diopi_runtime import Tensor, compute_nhwc_stride, default_context, diopi_rt_init, Generator
+from export_runtime import build_generator_state
 from .utils import save_precision, record, write_precision
 from .utils import get_saved_pth_list, get_data_from_file
 from .utils import cfg_file_name
@@ -183,7 +184,9 @@ class ManualTest(object):
         ManualTest.test_dropout_(F.dropout2d, input, p, training, inplace)
 
     def test_randperm(n):
-        out = F.randperm(n)
+        state = build_generator_state(default_context)
+        generator = Generator(state)
+        out = F.randperm(n, generator=generator)
         out_numpy = out.numpy()
         out_ref = np.arange(0, n, 1)
         if out.numel() > 10:
@@ -195,7 +198,9 @@ class ManualTest(object):
             "failed to execute randperm"
 
     def test_uniform(input, start=0, end=1):
-        out = F.uniform(input, start, end)
+        state = build_generator_state(input.context())
+        generator = Generator(state)
+        out = F.uniform(input, start, end, generator)
         epsilon = 1e-5   # eliminate minor precision error
         out_numpy = out.numpy()
         assert (out_numpy <= (end + epsilon)).all() and (out_numpy >= (start - epsilon)).all(),\
@@ -207,7 +212,9 @@ class ManualTest(object):
     def test_bernoulli(input, inplace=False, p=None):
         p_numpy = input.numpy()
         p = p_numpy.mean() if p is None else p
-        out = F.bernoulli(input, inplace, p)
+        state = build_generator_state(input.context())
+        generator = Generator(state)
+        out = F.bernoulli(input, inplace, p, generator)
         out_numpy = out.numpy()
 
         if out.numel() > 100:
@@ -215,7 +222,9 @@ class ManualTest(object):
                 "failed to execute bernoulli"
 
     def test_random(input, start, end):
-        out = F.random(input, start, end)
+        state = build_generator_state(input.context())
+        generator = Generator(state)
+        out = F.random(input, start, end, generator)
         out_numpy = out.numpy()
 
         assert (out_numpy >= start).all(),\
@@ -234,7 +243,9 @@ class ManualTest(object):
 
     def test_normal(mean, std, size=None):
         from scipy import stats
-        out = F.normal(mean, std, size)
+        state = build_generator_state(default_context)
+        generator = Generator(state)
+        out = F.normal(mean, std, size, generator)
         out_numpy = out.numpy()
         if isinstance(mean, Tensor):
             mean_numpy = mean.numpy()
@@ -255,7 +266,9 @@ class ManualTest(object):
     def test_normal_(input, mean, std, shape=None):
         from scipy import stats
         input_size = 0 in input.size().data
-        out = F.normal_(input, mean, std, shape)
+        state = build_generator_state(input.context())
+        generator = Generator(state)
+        out = F.normal_(input, mean, std, shape, generator)
         out_numpy = out.numpy()
         out_numpy = out_numpy.flatten()
         if len(out_numpy) == 0 and input_size:
@@ -264,7 +277,9 @@ class ManualTest(object):
         assert p_value > 0.0001, f"can't pass the ks test, failed to execute normal_, p_value is {p_value}, shape of out is: {out_numpy.shape}"
 
     def test_multinomial(input, num_samples, replacement=False):
-        out = F.multinomial(input, num_samples, replacement)
+        state = build_generator_state(input.context())
+        generator = Generator(state)
+        out = F.multinomial(input, num_samples, replacement, generator)
         out_numpy = out.numpy()
         has_duplicates = False
         if out.size().len == 2:

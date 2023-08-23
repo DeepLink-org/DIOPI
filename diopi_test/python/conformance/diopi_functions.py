@@ -2267,45 +2267,45 @@ def arange(end, start=0, step=1, dtype=None) -> Tensor:
     return out
 
 
-def randperm(n: int, dtype=None) -> Tensor:
+def randperm(n: int, dtype=None, generator=None) -> Tensor:
     dtype = glob_vars.int_type if dtype is None else dtype
     numel = n
     out = Tensor((numel,), dtype)
 
     func = check_function("diopiRandperm")
-    ret = func(out.context(), out, n)
+    ret = func(out.context(), out, n, generator)
     check_returncode(ret)
     return out
 
 
-def uniform(input, start=0, end=1) -> Tensor:
+def uniform(input, start=0, end=1, generator=None) -> Tensor:
     func = check_function("diopiUniformInp")
-    ret = func(input.context(), input, start, end)
+    ret = func(input.context(), input, start, end, generator)
     check_returncode(ret)
     return input
 
 
-def random(input, start=0, end=None) -> Tensor:
+def random(input, start=0, end=None, generator=None) -> Tensor:
     func = check_function("diopiRandomInp")
-    ret = func(input.context(), input, start, end) if end else \
-        func(input.context(), input, start)
+    ret = func(input.context(), input, start, end, generator) if end else \
+        func(input.context(), input, start, generator)
     check_returncode(ret)
     return input
 
 
-def bernoulli(input, inplace=False, p=None) -> Tensor:
+def bernoulli(input, inplace=False, p=None, generator=None) -> Tensor:
     out = input
 
     if p is not None:
         func = check_function("diopiBernoulliScalar")
-        ret = func(input.context(), input, p)
+        ret = func(input.context(), input, p, generator)
     elif inplace:
         func = check_function("diopiBernoulliInp")
-        ret = func(input.context(), input)
+        ret = func(input.context(), input, generator)
     else:
         out = raw_like(input)
         func = check_function("diopiBernoulli")
-        ret = func(input.context(), out, input)
+        ret = func(input.context(), out, input, generator)
 
     check_returncode(ret)
     return out
@@ -3649,7 +3649,7 @@ def repeat(input, repeats):
     return out
 
 
-def normal(mean, std, size=None):
+def normal(mean, std, size=None, generator=None):
     call = "diopiNormal"
     if isinstance(mean, Tensor) and isinstance(std, Tensor):
         sizeX1 = list(mean.size().data)
@@ -3676,15 +3676,15 @@ def normal(mean, std, size=None):
     arg_mean = mean if isinstance(mean, Tensor) else mean
     arg_std = std if isinstance(std, Tensor) else std
     func = check_function(call)
-    ret = func(out.context(), out, arg_mean, arg_std)
+    ret = func(out.context(), out, arg_mean, arg_std, generator)
     check_returncode(ret)
     return out
 
 
-def normal_(input, mean, std, shape=None) -> Tensor:
+def normal_(input, mean, std, shape=None, generator=None) -> Tensor:
     call = "diopiNormalInp"
     func = check_function(call)
-    ret = func(input.context(), input, mean, std)
+    ret = func(input.context(), input, mean, std, generator)
     check_returncode(ret)
     return input
 
@@ -3719,14 +3719,14 @@ def cast_dtype(input, out) -> Tensor:
     return out
 
 
-def multinomial(input, num_samples, replacement) -> Tensor:
+def multinomial(input, num_samples, replacement, generator=None) -> Tensor:
     call = "diopiMultinomial"
     func = check_function(call)
     if len(input.size().data) == 2:
         out = Tensor(size=(input.size().data[0], num_samples), dtype=Dtype.int64)
     if len(input.size().data) == 1:
         out = Tensor(size=(num_samples,), dtype=Dtype.int64)
-    ret = func(input.context(), out, input, num_samples, replacement)
+    ret = func(input.context(), out, input, num_samples, replacement, generator)
     check_returncode(ret)
     return out
 

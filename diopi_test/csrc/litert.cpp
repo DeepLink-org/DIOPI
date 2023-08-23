@@ -166,9 +166,9 @@ diopiTensor& diopiTensor::operator=(const diopiTensor& other) {
     numel_ = other.numel_;
     context_ = other.context_;
     if (device_ == diopi_host) {
-        storage_ = std::make_shared<Storage>(hostMalloc, hostFree, nbytes());
+        storage_ = std::make_shared<Storage>(hostMalloc, hostFree, other.nbytes());
     } else {
-        storage_ = std::make_shared<Storage>(device_malloc, device_free, nbytes());
+        storage_ = std::make_shared<Storage>(device_malloc, device_free, other.nbytes());
     }
 
     const void* src = other.data();
@@ -313,12 +313,12 @@ DIOPI_RT_API diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diop
 }
 
 DIOPI_RT_API diopiError_t diopiGeneratorGetState(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t th, diopiTensorHandle_t* data) {
-    *data = &(th->state_);
+    *data = &(th->state());
     return diopiSuccess;
 }
 
 DIOPI_RT_API diopiError_t diopiGeneratorSetState(diopiConstGeneratorHandle_t th, diopiConstTensorHandle_t new_state) {
-    th->state_ = *new_state;
+    th->set_state(new_state);
     return diopiSuccess;
 }
 
