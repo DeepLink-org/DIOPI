@@ -174,6 +174,13 @@ inline diopiDtype_t getDIOPITensorType(at::Tensor& input) {
     }
 }
 
+inline diopiDevice_t getDIOPIDevice(c10::DeviceType device) {
+    if (device == c10::DeviceType::CPU) {
+        return diopi_host;
+    }
+    return diopi_device;
+}
+
 inline c10::DeviceType getATenDevice(diopiDevice_t device) {
     if (device == diopi_host) {
         return c10::DeviceType::CPU;
@@ -322,7 +329,8 @@ inline void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiT
     diopiSize_t size{atSize.data(), atSize.size()};
     diopiSize_t stride{atStride.data(), atStride.size()};
     diopiDtype_t dtype = getDIOPITensorType(input);
-    diopiRequireTensor(ctx, out, &size, &stride, dtype, diopi_device);
+    diopiDevice_t device = getDIOPIDevice(input.device().type());
+    diopiRequireTensor(ctx, out, &size, &stride, dtype, device);
     updateATen2Tensor(ctx, input, *out);
 }
 
