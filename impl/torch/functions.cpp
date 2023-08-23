@@ -3231,7 +3231,11 @@ diopiError_t diopiBCELoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     at::Tensor atInput = impl::aten::buildATen(input);
     at::Tensor atTarget = impl::aten::buildATen(target);
     c10::optional<at::Tensor> atWeight = weight ? c10::optional<at::Tensor>(impl::aten::buildATen(weight)) : c10::nullopt;
-    impl::aten::invokeATenFuncInp(ctx, at::binary_cross_entropy_out, atOut, atInput, atTarget, atWeight, reduction);
+    if (reduction == 0) {
+        at::binary_cross_entropy_out(atOut, atInput, atTarget, atWeight, reduction);
+    } else {
+        impl::aten::invokeATenFuncRet(ctx, at::binary_cross_entropy, out, atInput, atTarget, atWeight, reduction);
+    }
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -3255,13 +3259,15 @@ diopiError_t diopiLayerNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
                             double eps) {
     impl::aten::setCurCtx(ctx);
     at::Tensor atOut = impl::aten::buildATen(out);
+    at::Tensor atSaveMean = impl::aten::buildATen(save_mean);
+    at::Tensor atSaveInvstd = impl::aten::buildATen(save_invstd);
+
     at::Tensor atInput = impl::aten::buildATen(input);
     c10::optional<at::Tensor> atWeight = weight ? c10::optional<at::Tensor>(impl::aten::buildATen(weight)) : c10::nullopt;
     c10::optional<at::Tensor> atBias = bias ? c10::optional<at::Tensor>(impl::aten::buildATen(bias)) : c10::nullopt;
     auto atNormalizedShape = impl::aten::buildAtIntArray(normalized_shape);
     diopi_tensor_list vecOut = {out, save_mean, save_invstd};
-    impl::aten::invokeATenFuncRet(ctx, at::native_layer_norm, vecOut, atInput, atNormalizedShape, atWeight, atBias, eps);
-    // impl::aten::invokeATenFuncInp(ctx, at::native_layer_norm_out, atOut, vecOut, atInput, atNormalizedShape, atWeight, atBias, eps);
+    at::native_layer_norm_out(atOut, atSaveMean, atSaveInvstd, atInput, atNormalizedShape, atWeight, atBias, eps);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -3299,11 +3305,20 @@ diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     if (diopiDtype_t::diopi_dtype_float16 == rDtype) {
         atSaveVar = at::native::to(atSaveVar, impl::aten::getATenType(diopiDtype_t::diopi_dtype_float32).toScalarType(), false, true, c10::nullopt);
     }
-    auto atOut = at::native_layer_norm_backward(atGradOutput, atInput, atNormalizedShape, atSaveMean, atSaveVar, atWeight, atBias, grad_input_mask);
 
-    impl::aten::updateATen2Tensor(ctx, std::get<0>(atOut), grad_input);
-    impl::aten::updateATen2Tensor(ctx, std::get<1>(atOut), grad_weight);
-    impl::aten::updateATen2Tensor(ctx, std::get<2>(atOut), grad_bias);
+    if (grad_input && grad_weight && grad_bias) {
+        auto atGradInput = impl::aten::buildATen(grad_input);
+        auto atGradWeight = impl::aten::buildATen(grad_weight);
+        auto atGradBias = impl::aten::buildATen(grad_bias);
+        at::native_layer_norm_backward_out(
+            atGradInput, atGradWeight, atGradBias, atGradOutput, atInput, atNormalizedShape, atSaveMean, atSaveVar, atWeight, atBias, grad_input_mask);
+    } else {
+        auto atOut = at::native_layer_norm_backward(atGradOutput, atInput, atNormalizedShape, atSaveMean, atSaveVar, atWeight, atBias, grad_input_mask);
+        impl::aten::updateATen2Tensor(ctx, std::get<0>(atOut), grad_input);
+        impl::aten::updateATen2Tensor(ctx, std::get<1>(atOut), grad_weight);
+        impl::aten::updateATen2Tensor(ctx, std::get<2>(atOut), grad_bias);
+    }
+
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
