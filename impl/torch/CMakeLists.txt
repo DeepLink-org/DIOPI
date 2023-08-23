@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.14)
 project(torch_impl)
 
 option(HIP "Whether to use HIP when available" OFF)
@@ -76,18 +76,6 @@ else ()
         cuda_add_library(${DEVICEIMPL} SHARED ${REAL_IMPL_SRC})
         target_link_libraries(${DEVICEIMPL} ${CUDA_LIBRARIES} ${TORCH_LIBRARIES})
     endif()
-endif()
-
-if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
-    set(ADAPTOR_GEN_PATH "${CMAKE_SOURCE_DIR}/../adaptor/codegen")
-    add_custom_target(adaptor_code_gen COMMAND python3 ${ADAPTOR_GEN_PATH}/gen.py
-        --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${CMAKE_SOURCE_DIR}/../proto/include/diopi/
-        --config_device=torch)
-    set(USE_ADAPTOR "true")
-    add_dependencies(${DEVICEIMPL} adaptor_code_gen)
-    add_definitions(-DTEST_USE_ADAPTOR)
-else()
-    set(USE_ADAPTOR "false")
 endif()
 
 if (TEST)

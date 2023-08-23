@@ -107,7 +107,15 @@ namespace impl {
 
 namespace aten {
 
-inline void setCurCtx(diopiContextHandle_t ctx) { context = ctx; }
+inline void setCurCtx(diopiContextHandle_t ctx) {
+    context = ctx;
+    diopiStreamHandle_t stream_handle;
+    diopiGetStream(ctx, &stream_handle);
+    c10::cuda::CUDAStream cur_stream = c10::cuda::getStreamFromExternal(static_cast<cudaStream_t>(stream_handle), c10::cuda::current_device());
+    c10::cuda::setCurrentCUDAStream(cur_stream);
+    // Here, we set the current stream of cuda to the stream of diopi, but when the context is unloaded, it is not restored.
+    // The main reason is that the current stream of cuda is not used. However, there may be hidden bugs, which will be optimized later.
+}
 
 inline void unsetCurCtx() { context = nullptr; }
 
@@ -326,8 +334,8 @@ inline void invokeATenFuncInp(diopiContextHandle_t ctx, Func func, Args&&... arg
 inline void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
     at::IntArrayRef atSize = input.sizes();
     at::IntArrayRef atStride = input.strides();
-    diopiSize_t size(const_cast<int64_t*>(atSize.data()), atSize.size());
-    diopiSize_t stride(const_cast<int64_t*>(atStride.data()), atStride.size());
+    diopiSize_t size{atSize.data(), atSize.size()};
+    diopiSize_t stride{atStride.data(), atStride.size()};
     diopiDtype_t dtype = getDIOPITensorType(input);
     diopiRequireTensor(ctx, out, &size, &stride, dtype, diopi_device);
     updateATen2Tensor(ctx, input, *out);

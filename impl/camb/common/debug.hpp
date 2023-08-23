@@ -25,20 +25,36 @@ namespace camb {
 
 // print the data on dev
 template <typename RealT, typename CastT>
-void printDevDataInternal(diopiContextHandle_t ctx, void* data, int64_t len, int64_t maxLen) {
+void printDevDataInternal(diopiContextHandle_t ctx, void* data, int64_t len, int64_t maxLen, int64_t beginIdx) {
     int bytes = sizeof(RealT) * len;
     std::unique_ptr<char> ptr(new char[bytes]);
     std::cout << "data address:" << data << std::endl;
     cnrtMemcpyAsync(ptr.get(), data, bytes, getStream(ctx), cnrtMemcpyDevToHost);
     syncStreamInCtx(ctx);
     std::cout << "[";
-    for (int i = 0; i < len && i < maxLen; ++i) {
+    for (int i = beginIdx; i < len && i < maxLen; ++i) {
         std::cout << static_cast<CastT>(reinterpret_cast<RealT*>(ptr.get())[i]) << " ";
     }
     std::cout << "]" << std::endl;
 }
 
-inline void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor, std::string name = "name", int maxLen = 20) {
+template <typename RealT, typename CastT>
+void printDevDataComplexInternal(diopiContextHandle_t ctx, void* data, int64_t len, int64_t maxLen, int64_t beginIdx) {
+    int bytes = sizeof(RealT) * len * 2;
+    std::unique_ptr<char> ptr(new char[bytes]);
+    std::cout << "data address:" << data << std::endl;
+    cnrtMemcpyAsync(ptr.get(), data, bytes, getStream(ctx), cnrtMemcpyDevToHost);
+    syncStreamInCtx(ctx);
+    std::cout << "[";
+    for (int i = beginIdx; i < len && i < maxLen; ++i) {
+        CastT real = static_cast<CastT>(reinterpret_cast<RealT*>(ptr.get())[static_cast<ptrdiff_t>(2 * i)]);
+        CastT img = static_cast<CastT>(reinterpret_cast<RealT*>(ptr.get())[static_cast<ptrdiff_t>(2 * i + 1)]);
+        std::cout << real << (img >= 0 ? "+" : "") << img << "j,";
+    }
+    std::cout << "]" << std::endl;
+}
+
+inline void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor, std::string name = "name", int maxLen = 20, int beginIdx = 0) {
     if (!tensor.defined()) {
         std::cout << "Tensor " << name << " is not defined. Please check it before using `printDevData`." << std::endl;
         return;
@@ -55,43 +71,49 @@ inline void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor, std::stri
         std::cout << tensor.stride()[i] << ", ";
     }
     std::cout << "], is_contiguous: " << tensor.isContiguous();
-    std::cout << ", is_contiguous(channelsLast): " << tensor.isContiguous(MemoryFormat::ChannelsLast) << std::endl;
+    std::cout << ", is_contiguous(channelsLast): " << tensor.isContiguous(diopiMemoryFormat_t::ChannelsLast) << std::endl;
     switch (tensor.dtype()) {
         case diopi_dtype_bool:
-            printDevDataInternal<bool, int32_t>(ctx, dataIn, len, maxLen);
+            printDevDataInternal<bool, int32_t>(ctx, dataIn, len, maxLen, beginIdx);
             break;
         case diopi_dtype_uint8:
-            printDevDataInternal<uint8_t, int32_t>(ctx, dataIn, len, maxLen);
+            printDevDataInternal<uint8_t, int32_t>(ctx, dataIn, len, maxLen, beginIdx);
             break;
         case diopi_dtype_int8:
-            printDevDataInternal<int8_t, int32_t>(ctx, dataIn, len, maxLen);
+            printDevDataInternal<int8_t, int32_t>(ctx, dataIn, len, maxLen, beginIdx);
             break;
         case diopi_dtype_uint16:
-            printDevDataInternal<uint16_t, uint16_t>(ctx, dataIn, len, maxLen);
+            printDevDataInternal<uint16_t, uint16_t>(ctx, dataIn, len, maxLen, beginIdx);
             break;
         case diopi_dtype_int16:
-            printDevDataInternal<int16_t, int16_t>(ctx, dataIn, len, maxLen);
+            printDevDataInternal<int16_t, int16_t>(ctx, dataIn, len, maxLen, beginIdx);
             break;
         case diopi_dtype_uint32:
-            printDevDataInternal<uint32_t, uint32_t>(ctx, dataIn, len, maxLen);
+            printDevDataInternal<uint32_t, uint32_t>(ctx, dataIn, len, maxLen, beginIdx);
             break;
         case diopi_dtype_int32:
-            printDevDataInternal<int32_t, int32_t>(ctx, dataIn, len, maxLen);
+            printDevDataInternal<int32_t, int32_t>(ctx, dataIn, len, maxLen, beginIdx);
             break;
         case diopi_dtype_uint64:
-            printDevDataInternal<uint64_t, uint64_t>(ctx, dataIn, len, maxLen);
+            printDevDataInternal<uint64_t, uint64_t>(ctx, dataIn, len, maxLen, beginIdx);
             break;
         case diopi_dtype_int64:
-            printDevDataInternal<int64_t, int64_t>(ctx, dataIn, len, maxLen);
+            printDevDataInternal<int64_t, int64_t>(ctx, dataIn, len, maxLen, beginIdx);
             break;
         case diopi_dtype_float16:
-            printDevDataInternal<half_float::half, float>(ctx, dataIn, len, maxLen);
+            printDevDataInternal<half_float::half, half_float::half>(ctx, dataIn, len, maxLen, beginIdx);
             break;
         case diopi_dtype_float32:
-            printDevDataInternal<float, float>(ctx, dataIn, len, maxLen);
+            printDevDataInternal<float, float>(ctx, dataIn, len, maxLen, beginIdx);
             break;
         case diopi_dtype_float64:
-            printDevDataInternal<double, double>(ctx, dataIn, len, maxLen);
+            printDevDataInternal<double, double>(ctx, dataIn, len, maxLen, beginIdx);
+            break;
+        case diopi_dtype_complex32:
+            printDevDataComplexInternal<half_float::half, float>(ctx, dataIn, len, maxLen, beginIdx);
+            break;
+        case diopi_dtype_complex64:
+            printDevDataComplexInternal<float, float>(ctx, dataIn, len, maxLen, beginIdx);
             break;
         default:
             std::cout << "unsupported dtype" << std::endl;

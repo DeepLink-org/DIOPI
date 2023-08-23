@@ -1,10 +1,9 @@
-#include <diopi/functions.h>
+
 
 #include "../cnnl_helper.hpp"
 
 namespace impl {
 namespace camb {
-extern "C" {
 diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t* tensors, int64_t numTensors, int64_t dim) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     std::vector<CnnlTensorDesc> inputsDesc(numTensors);
@@ -37,6 +36,5 @@ diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     DIOPI_CALLCNNL(cnnlConcat(handle, numTensors, dim, inputsDescTmp.data(), inputsData.data(), workspace, workspaceSize, outDesc.get(), outTensor.data()));
     return diopiSuccess;
 }
-}  // extern "C"
 }  // namespace camb
 }  // namespace impl
