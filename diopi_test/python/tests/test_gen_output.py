@@ -51,32 +51,31 @@ class TestGenOutputData(object):
             if_backward = len([i['requires_grad'] for i in case_cfg[case_name]['tensor_para']['args'] if i['requires_grad'] == [True]]) != 0
             if if_backward:
                 os.remove(os.path.join(outputs_path, case_name.split(".pth")[0] + "_backward.pth"))
-
         os.remove(cfg_file_path)
 
     def test_gen_output_cfg(self, gen_and_clear_case):
         case_cfg, cfg_file_path = gen_and_clear_case
         GenOutputData.run(cfg_file_path, inputs_path, outputs_path)
-        # for case_name in case_cfg:
-        #     case_path = os.path.join(outputs_path, case_name)
-        #     if case_cfg[case_name].get('no_output_ref', False):
-        #         assert not os.path.exists(case_path), f'Expect file {case_path} not found'
-        #         continue
+        for case_name in case_cfg:
+            case_path = os.path.join(outputs_path, case_name)
+            if case_cfg[case_name].get('no_output_ref', False):
+                assert not os.path.exists(case_path), f'Expect file {case_path} not found'
+                continue
 
-        #     assert os.path.exists(case_path), f'File {case_path} not found'
-        #     with open(case_path, 'rb') as f:
-        #         forward_result = pickle.load(f)
+            assert os.path.exists(case_path), f'File {case_path} not found'
+            with open(case_path, 'rb') as f:
+                forward_result = pickle.load(f)
 
-        #     saved_backward_pth = os.path.join(outputs_path, case_name.split(".pth")[0] + "_backward.pth")
-        #     if_backward = len([i['requires_grad'] for i in case_cfg[case_name]['tensor_para']['args'] if i['requires_grad'] == [True]]) != 0
+            saved_backward_pth = os.path.join(outputs_path, case_name.split(".pth")[0] + "_backward.pth")
+            if_backward = len([i['requires_grad'] for i in case_cfg[case_name]['tensor_para']['args'] if i['requires_grad'] == [True]]) != 0
 
-        #     backward_result = None
-        #     if if_backward:
-        #         assert os.path.exists(saved_backward_pth), f'File {saved_backward_pth} not found'
-        #         with open(saved_backward_pth, 'rb') as f:
-        #             backward_result = pickle.load(f)
+            backward_result = None
+            if if_backward:
+                assert os.path.exists(saved_backward_pth), f'File {saved_backward_pth} not found'
+                with open(saved_backward_pth, 'rb') as f:
+                    backward_result = pickle.load(f)
 
-        #     self.check_output(case_cfg[case_name], forward_result, backward_result)
+            self.check_output(case_cfg[case_name], forward_result, backward_result)
 
     def check_output(self, cfg, forward_result, backward_result):
         # logging.info(f'case_cfg: {cfg}\nforward_result: {forward_result}\nbackward_result:{backward_result}')

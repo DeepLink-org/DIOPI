@@ -5,7 +5,7 @@ import sys
 import torch
 
 from gen_input import GenPolicy
-from utils import logger
+from utils import logger, get_data_from_file
 
 
 class CustomizedTest(object):
@@ -207,8 +207,10 @@ class GenOutputData(object):
             each_cfg_dict = all_cfg_dict[case_name]
             func_name = each_cfg_dict["name"]
 
-            input_ = GenOutputData.get_data_from_file(input_path, case_name)
-            if input_ is None or "no_output_ref" in each_cfg_dict:
+            data_path = os.path.join(input_path, case_name)
+            input_ = get_data_from_file(data_path, case_name, 'input')
+            if "no_output_ref" in each_cfg_dict:
+                logger.info((case_name, each_cfg_dict))
                 continue
 
             gen_tensor_obj = GenTensor(case_name, each_cfg_dict)
@@ -235,23 +237,6 @@ class GenOutputData(object):
             logger.info(f"No benchmark output data is generated")
         else:
             logger.info("Generate benchmark output and backward data done!")
-
-    @staticmethod
-    def get_data_from_file(input_path, case_name):
-        data_path = os.path.join(input_path, case_name)
-        if not os.path.exists(data_path):
-            logger.error(f"FileNotFound: No benchmark input data '{case_name}' was generated"
-                        f" (No such file or directory: {data_path})")
-            return None
-        try:
-            f = open(data_path, "rb")
-            data = pickle.load(f)
-        except Exception as e:
-            logger.error(f"Failed: {e}")
-            return None
-        else:
-            f.close()
-        return data
 
     @staticmethod
     def to_numpy(tensors):
@@ -340,12 +325,13 @@ class GenTensor(object):
         return saved_grads
 
     def transfer_tensor_to_device(self, function_paras: dict):
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
         for para in function_paras["kwargs"].keys():
             if isinstance(function_paras['kwargs'][para], np.ndarray):
                 tensor = torch.from_numpy(function_paras['kwargs'][para])
                 if function_paras["requires_grad"].get(para, []) == [True]:
                     tensor.requires_grad = True
-                function_paras['kwargs'][para] = tensor.cuda()
+                function_paras['kwargs'][para] = tensor.to(device=device)
 
             gen_policy = [i.get('gen_policy', None) for i in self.case_cfg['tensor_para']['args'] if i['ins'] == para]
             if_gen_list = len(gen_policy) > 0 and gen_policy[0] in GenPolicy.gen_list_policy
@@ -353,7 +339,7 @@ class GenTensor(object):
                 if isinstance(function_paras['kwargs'][para], (list, tuple)):
                     tensors = function_paras['kwargs'][para]
                     for idx, ele in enumerate(tensors):
-                        tensors[idx] = torch.from_numpy(ele).cuda()
+                        tensors[idx] = torch.from_numpy(ele).to(device=device)
                         if function_paras["requires_grad"].get(para, []) == [True]:
                             tensors[idx].requires_grad = True
                     function_paras['kwargs'][para] = tensors
