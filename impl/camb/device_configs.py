@@ -189,7 +189,7 @@ device_configs = {
             args=[
                 {
                     "ins": ["weight"],
-                    "shape": [Skip((2048, 1, 3, 3))],
+                    "shape": [Skip((18, 8, 12, 2)), Skip((6, 9, 3, 5)), Skip((2048, 1, 3, 3)), Skip((2, 6, 2, 3))],
                 },
             ]
         ),
@@ -607,6 +607,18 @@ device_configs = {
         ),
     ),
 
+    'sigmoid': dict(
+        name=["sigmoid"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0,)), Skip((256, 0)), Skip((8, 0, 128))),
+                },
+            ],
+        ),
+    ),
+
     'sigmoid_focal_loss': dict(
         name=["sigmoid_focal_loss"],
         tensor_para=dict(
@@ -616,6 +628,18 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
             ],
+        ),
+    ),
+    
+    'conv_transpose2d': dict(
+        name=["conv_transpose2d"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["weight"],
+                    "shape": (Skip((2, 4, 12, 16)), Skip((18, 3, 2, 1))),
+                }
+            ]
         ),
     ),
 
@@ -1136,6 +1160,27 @@ device_configs = {
     'layer_norm': dict(
         name=["layer_norm"],
         atol=1e-4,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": (Skip((32,)), Skip((2, 16, 128))),
+                },
+            ]
+        )
+    ),
+
+    'layer_norm_empty_tensor': dict(
+        name=["layer_norm"],
+        atol=1e-4,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": (Skip((0,)), Skip((0, 12))),
+                },
+            ]
+        )
     ),
 
     'copy': dict(
