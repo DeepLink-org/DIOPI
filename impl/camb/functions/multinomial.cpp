@@ -42,13 +42,13 @@ diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    diopiTensorHandle_t state_handle = nullptr;
-    DIOPI_CALL(diopiGeneratorGetState(ctx, gen, &state_handle));
-    void* state_ptr = nullptr;
-    DIOPI_CALL(diopiGetTensorData(state_handle, &state_ptr));
+    diopiTensorHandle_t stateHandle = nullptr;
+    DIOPI_CALL(diopiGeneratorGetState(ctx, gen, &stateHandle));
+    void* statePtr = nullptr;
+    DIOPI_CALL(diopiGetTensorData(stateHandle, &statePtr));
     DIOPI_CALLCNNL(cnnlRandGenerateMultinomial_v2(
-        handle, generator, inputDesc.get(), inputTensor.data(), replacement, false, state_ptr, workspace, workspaceSize, outDesc.get(), outTemp.data()));
-    DIOPI_CALL(diopiGeneratorSetState(gen, state_handle));
+        handle, generator, inputDesc.get(), inputTensor.data(), replacement, false, statePtr, workspace, workspaceSize, outDesc.get(), outTemp.data()));
+    DIOPI_CALL(diopiGeneratorSetState(gen, stateHandle));
     if (outTensor.dtype() != outTemp.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTemp));
     }

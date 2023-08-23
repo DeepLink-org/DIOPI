@@ -22,17 +22,17 @@ diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout
 
     cnnlDataType_t dtype;
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, tensor.dtype()));
-    cnnlRandGenerator_t cnnl_generator = nullptr;
+    cnnlRandGenerator_t cnnlGenerator = nullptr;
     // cnnlRandRngType_t rng_type is recommended to be set as CNNL_RAND_RNG_MTGP32 on MLU300 series and CNNL_RAND_RNG_FAST on MLU200 series.
-    DIOPI_CALLCNNL(cnnlRandCreateGenerator(&cnnl_generator, CNNL_RAND_RNG_MTGP32));
+    DIOPI_CALLCNNL(cnnlRandCreateGenerator(&cnnlGenerator, CNNL_RAND_RNG_MTGP32));
 
-    diopiTensorHandle_t state_handle = nullptr;
-    DIOPI_CALL(diopiGeneratorGetState(ctx, generator, &state_handle));
-    void* state_ptr = nullptr;
-    DIOPI_CALL(diopiGetTensorData(state_handle, &state_ptr));
-    DIOPI_CALLCNNL(cnnlRandGenerateUniform(handle, cnnl_generator, dtype, state_ptr, tensor.numel(), from, to, tensor.data()));
-    DIOPI_CALL(diopiGeneratorSetState(generator, state_handle));
-    DIOPI_CALLCNNL(cnnlRandDestroyGenerator(cnnl_generator));
+    diopiTensorHandle_t stateHandle = nullptr;
+    DIOPI_CALL(diopiGeneratorGetState(ctx, generator, &stateHandle));
+    void* statePtr = nullptr;
+    DIOPI_CALL(diopiGetTensorData(stateHandle, &statePtr));
+    DIOPI_CALLCNNL(cnnlRandGenerateUniform(handle, cnnlGenerator, dtype, statePtr, tensor.numel(), from, to, tensor.data()));
+    DIOPI_CALL(diopiGeneratorSetState(generator, stateHandle));
+    DIOPI_CALLCNNL(cnnlRandDestroyGenerator(cnnlGenerator));
     return diopiSuccess;
 }
 

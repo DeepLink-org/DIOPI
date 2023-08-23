@@ -78,9 +78,9 @@ int32_t finalizeLibrary() { return diopiSuccess; }
 int32_t buildGeneratorState(diopiContextHandle_t ctx, diopiTensorHandle_t out) {
     std::vector<int64_t> vec{1180672};
     diopiSize_t size{vec.data(), static_cast<int64_t>(vec.size())};
-    diopiTensorHandle_t new_tensor = nullptr;
-    diopiRequireTensor(ctx, &new_tensor, &size, nullptr, diopi_dtype_uint8, diopi_device);
-    *out = *new_tensor;
+    diopiTensorHandle_t tensor = nullptr;
+    diopiRequireTensor(ctx, &tensor, &size, nullptr, diopi_dtype_uint8, diopi_device);
+    *out = *tensor;
     return diopiSuccess;
 }
 

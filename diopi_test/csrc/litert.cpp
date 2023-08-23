@@ -317,8 +317,8 @@ DIOPI_RT_API diopiError_t diopiGeneratorGetState(diopiContextHandle_t ctx, diopi
     return diopiSuccess;
 }
 
-DIOPI_RT_API diopiError_t diopiGeneratorSetState(diopiConstGeneratorHandle_t th, diopiConstTensorHandle_t new_state) {
-    th->set_state(new_state);
+DIOPI_RT_API diopiError_t diopiGeneratorSetState(diopiConstGeneratorHandle_t th, diopiConstTensorHandle_t state) {
+    th->set_state(state);
     return diopiSuccess;
 }
 
