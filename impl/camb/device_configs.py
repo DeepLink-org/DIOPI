@@ -189,7 +189,7 @@ device_configs = {
             args=[
                 {
                     "ins": ["weight"],
-                    "shape": [Skip((2048, 1, 3, 3))],
+                    "shape": [Skip((18, 8, 12, 2)), Skip((6, 9, 3, 5)), Skip((2048, 1, 3, 3)), Skip((2, 6, 2, 3))],
                 },
             ]
         ),
@@ -607,6 +607,18 @@ device_configs = {
         ),
     ),
 
+    'sigmoid': dict(
+        name=["sigmoid"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0,)), Skip((256, 0)), Skip((8, 0, 128))),
+                },
+            ],
+        ),
+    ),
+
     'sigmoid_focal_loss': dict(
         name=["sigmoid_focal_loss"],
         tensor_para=dict(
@@ -616,6 +628,18 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
             ],
+        ),
+    ),
+    
+    'conv_transpose2d': dict(
+        name=["conv_transpose2d"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["weight"],
+                    "shape": (Skip((2, 4, 12, 16)), Skip((18, 3, 2, 1))),
+                }
+            ]
         ),
     ),
 
@@ -649,7 +673,32 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float64), Skip(Dtype.float32)],
+                },
+            ],
+        ),
+    ),
+
+    'index_empty_tensor': dict(
+        name=["index"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float64), Skip(Dtype.float32)],
+                },
+            ],
+        ),
+    ),
+
+    'index_int': dict(
+        name=["index"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
+                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
                 },
             ],
         ),
@@ -1095,6 +1144,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
+                    "shape": [Skip((0,)), Skip((4, 0)), Skip((3, 0, 9))],
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.int64), Skip(Dtype.int32),
                               Skip(Dtype.int16), Skip(Dtype.int8)],
                 },
@@ -1136,6 +1186,27 @@ device_configs = {
     'layer_norm': dict(
         name=["layer_norm"],
         atol=1e-4,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": (Skip((32,)), Skip((2, 16, 128))),
+                },
+            ]
+        )
+    ),
+
+    'layer_norm_empty_tensor': dict(
+        name=["layer_norm"],
+        atol=1e-4,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": (Skip((0,)), Skip((0, 12))),
+                },
+            ]
+        )
     ),
 
     'copy': dict(
@@ -1172,7 +1243,8 @@ device_configs = {
                 {
                     "ins": ["input"],
                     # camb not supports 5d upsample nearest
-                    "shape": [Skip((1, 3, 32, 224, 224))],
+                    # when shape is (2, 16, 23), can't get correct result
+                    "shape": [Skip((2, 16, 23)), Skip((1, 3, 32, 224, 224))],
                 },
             ]
         )
@@ -1295,7 +1367,9 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
+                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
+                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
                 },
             ],
         ),
@@ -1307,7 +1381,22 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.complex64), Skip(Dtype.complex128), Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.int16)],
+                    "dtype": [Skip(Dtype.complex64), Skip(Dtype.complex128),
+                              Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
+                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
+                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                },
+            ],
+        ),
+    ),
+
+    'sgn_zero': dict(
+        name=['sgn'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.complex64), Skip(Dtype.complex128)],
                 },
             ],
         ),

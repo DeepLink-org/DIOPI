@@ -4,14 +4,11 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
-extern "C" {
 
 class CnnlRandGenerator final {
 public:
@@ -58,8 +55,6 @@ diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

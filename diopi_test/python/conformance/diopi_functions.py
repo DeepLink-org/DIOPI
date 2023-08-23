@@ -1003,22 +1003,18 @@ def adaptive_max_pool2d(input, output_size, return_indices=False):
     return out
 
 
-def dropout_impl(input, size_mask, p=0.5, training=True, inplace=False):
-    call = "diopiDropout"
-    args = 'input.context(), out, mask, '
-
+def dropout_impl(input: Tensor, size_mask: list, p: float = 0.5,
+                 training: bool = True, inplace: bool = False):
+    mask = Tensor(size_mask, Dtype.uint8)
     if inplace:
         out = input
-        call = call + 'Inp'
+        func = check_function("diopiDropoutInp")
+        ret = func(input.context(), out, mask, p, training)
     else:
         out = raw_like(input)
-        args = args + 'input, '
+        func = check_function("diopiDropout")
+        ret = func(input.context(), out, mask, input, p, training)
 
-    mask = Tensor(size_mask, Dtype.uint8)
-    args = args + "p, training"
-
-    func = check_function(call)
-    ret = eval(f'func({args})')
     check_returncode(ret)
     return out, mask
 
@@ -1285,7 +1281,7 @@ def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
         out_dtype = pow_dtype(input, exponent)
     else:
         out_dtype = pow_dtype(self, exponent)
-        if Scalar(self).type == Dtype.int64:
+        if Scalar(self).stype == Dtype.int64:
             exponent_dtype = get_dtype(exponent)
             if exponent_dtype in int_types or exponent_dtype in float_types:
                 out_dtype = exponent_dtype

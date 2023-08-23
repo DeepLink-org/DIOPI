@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <cstring>
 #include <set>
 
@@ -14,8 +12,6 @@
 
 namespace impl {
 namespace camb {
-
-extern "C" {
 
 diopiError_t logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other, cnnlLogicOp_t logicOp) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -274,8 +270,6 @@ diopiError_t diopiLogicalNotInp(diopiContextHandle_t ctx, diopiTensorHandle_t in
     DIOPI_CALL(logicInp(ctx, input, input, CNNL_LOGIC_OP_NOT));
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

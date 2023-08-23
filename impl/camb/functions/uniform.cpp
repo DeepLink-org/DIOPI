@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <random>
 
 #include "../cnnl_helper.hpp"
@@ -38,7 +36,6 @@ diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout
     DIOPI_CALL(diopiGeneratorSetState(generator, state_handle));
     DIOPI_CALLCNNL(cnnlRandDestroyGenerator(cnnl_generator));
     return diopiSuccess;
-}
 }
 
 }  // namespace camb
