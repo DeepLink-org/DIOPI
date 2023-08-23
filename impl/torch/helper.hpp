@@ -334,7 +334,6 @@ inline void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiT
     updateATen2Tensor(ctx, input, *out);
 }
 
-
 // new cuda generator and pass dipu generator state into cuda generator state
 inline at::Generator buildGenerator(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t generator) {
     auto gen = at::cuda::detail::createCUDAGenerator();
