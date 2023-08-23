@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <cstring>
 #include <numeric>
 
@@ -14,8 +12,6 @@
 
 namespace impl {
 namespace camb {
-
-extern "C" {
 
 DIOPI_API diopiError_t diopiBCEWithLogits(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                                           diopiConstTensorHandle_t weight, diopiConstTensorHandle_t posWeight, diopiReduction_t reduction) {
@@ -208,8 +204,6 @@ DIOPI_API diopiError_t diopiBCEWithLogitsBackward(diopiContextHandle_t ctx, diop
 
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

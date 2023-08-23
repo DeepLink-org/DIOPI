@@ -4,16 +4,12 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <random>
 
 #include "../cnnl_helper.hpp"
 
 namespace impl {
 namespace camb {
-
-extern "C" {
 
 static uint32_t getSeed() {
     std::random_device rd;
@@ -27,7 +23,7 @@ diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, doub
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor tensor(out);
-    if (!tensor.defined()) {
+    if (!(tensor.defined() && tensor.numel())) {
         return diopiSuccess;
     }
 
@@ -51,7 +47,6 @@ diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, doub
 diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std) {
     DIOPI_CALL(diopiNormal(ctx, inout, mean, std));
     return diopiSuccess;
-}
 }
 
 }  // namespace camb

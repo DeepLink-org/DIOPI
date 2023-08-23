@@ -121,10 +121,9 @@ const char* deviceToStr(const diopiDevice_t device) {
 }
 
 diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context,
-                         const void* src) {
+                         const void* src)
+    : dtype_(dtype), device_(device), context_(context) {
     assert(shape);
-    dtype_ = dtype;
-    device_ = device;
 
     shape_.resize(shape->len);
     stride_.resize(shape->len);
@@ -150,13 +149,9 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
     } else {
         storage_ = std::make_shared<Storage>(device_malloc, device_free, nbytes);
         if (src != nullptr) {
-            diopiStreamHandle_t stream;
-            diopiGetStream(context, &stream);
-            device_memcpy_h2d_async(stream, storage_->data(), src, nbytes);
-            device_synchronize_stream(stream);
+            diopiTensorCopyFromBuffer(context, src, this);
         }
     }
-    context_ = context;
 }
 
 bool diopiTensor::resetShape(const diopiSize_t* size) {
@@ -239,7 +234,7 @@ DIOPI_RT_API diopiError_t diopiRequireTensor(diopiContextHandle_t ctx, diopiTens
 
 DIOPI_RT_API diopiError_t diopiRequireBuffer(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor, int64_t bytes, diopiDevice_t dev) {
     diopi_log("requires a buffer, bytes: %" PRId64 ", device: %s", bytes, deviceToStr(dev));
-    diopiSize_t size(&bytes, 1);
+    diopiSize_t size{&bytes, 1};
     return diopiRequireTensor(ctx, tensor, &size, nullptr, diopi_dtype_int8, dev);
 }
 

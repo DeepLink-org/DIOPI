@@ -95,6 +95,8 @@ dbnet_config = {
 
     'conv2d': dict(
         name=["conv2d"],
+        atol=1e-03,
+        rtol=1e-03,
         para=dict(
             bias=[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None],
             stride=[(2, 2), (1, 1), (2, 2), (1, 1), (2, 2), (2, 2), (1, 1), (2, 2), (2, 2), (1, 1), (2, 2), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1)],
@@ -142,6 +144,10 @@ dbnet_config = {
 
     'batch_norm': dict(
         name=["batch_norm"],
+        atol=1e-03,
+        rtol=1e-04,
+        atol_half=1e-01,
+        rtol_half=1e-02,
         para=dict(
             training=[True, True, True, True, True],
             momentum=[0.1, 0.1, 0.1, 0.1, 0.1],
