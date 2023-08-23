@@ -11,7 +11,17 @@
 namespace impl {
 namespace ascend {
 extern "C" {
-
+std::string getReductionStr(const diopiReduction_t reduction) {
+    std::string reductionStr = "none";
+    if (diopiReduction_t::ReductionMean == reduction) {
+        reductionStr = "mean";
+    } else if (diopiReduction_t::ReductionSum == reduction) {
+        reductionStr = "sum";
+    } else if (diopiReduction_t::ReductionEND == reduction) {
+        reductionStr = "end";
+    }
+    return reductionStr;
+}
 DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                                     diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
     auto totalWeightScalar = diopiScalar_t();
@@ -173,6 +183,24 @@ DIOPI_API diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, d
         batchSize.fval = inputSize.data[0];
         diopiDivInpScalar(ctx, gradInput, &batchSize, RoundModeNone);
     }
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiMSELoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
+                                    diopiReduction_t reduction) {
+    AclOpRunner<2, 1>("MseLoss", ctx).addInput(input).addInput(target).addOutput(out).setAttr<std::string>("reduction", getReductionStr(reduction)).run();
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiMSELossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiReduction_t reduction) {
+    AclOpRunner<3, 1>("MseLossGrad", ctx)
+        .addInput(input)
+        .addInput(target)
+        .addInput(gradOutput)
+        .addOutput(gradInput)
+        .setAttr<std::string>("reduction", getReductionStr(reduction))
+        .run();
     return diopiSuccess;
 }
 }
