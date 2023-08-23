@@ -3823,8 +3823,11 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
     auto atGradOutput = impl::aten::buildATen(grad_output);
     auto atInput = impl::aten::buildATen(input);
     auto atWeight = impl::aten::buildATen(weight);
-    auto atGradInput = at::matmul(atGradOutput, atWeight);
-    impl::aten::updateATen2Tensor(ctx, atGradInput, grad_input);
+
+    if (grad_input) {
+        auto atGradInput = impl::aten::buildATen(grad_input);
+        at::matmul_out(atGradInput, atGradOutput, atWeight);
+    }
 
     int64_t dims = atInput.dim();
     if (grad_weight) {
