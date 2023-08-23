@@ -80,7 +80,7 @@ diopiError_t makeTensorFromSize(diopiContextHandle_t ctx, const diopiSize_t* siz
             for (int i = 0; i < len; i++) {
                 reinterpret_cast<int32_t*>(dst)[i] = (int32_t)size->data[i];
             }
-        } else if (dtype == diopi_dtype_int64) {
+        } else if (dtype == diopi_dtype_int16) {
             for (int i = 0; i < len; i++) {
                 reinterpret_cast<int16_t*>(dst)[i] = (int16_t)size->data[i];
             }
