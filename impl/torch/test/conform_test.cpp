@@ -6,12 +6,13 @@
 
 #include <diopi/diopirt.h>
 
-#include "litert.hpp"
 // #include <diopi_register.h>
 #include <cuda_runtime.h>
 
 #include <cstdio>
 #include <vector>
+
+#include "litert.hpp"
 
 extern "C" {
 
