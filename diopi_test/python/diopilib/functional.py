@@ -4,16 +4,23 @@ import math
 import numpy as np
 import itertools
 from collections import namedtuple
+import ctypes
 from ctypes import c_double, byref
 
 from .diopirt import (Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, 
                       compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d, 
-                      to_numpy_dtype)
-from .utils import check_returncode, check_function, glob_vars, get_capsule
-from . import raw_like, int_types, float_types
-
+                      to_numpy_dtype, check_returncode, check_function) #, glob_vars, get_capsule
+from .diopirt import raw_like, int_types, float_types
 
 GLOBAL_STATE = {}
+
+def get_capsule(src):
+    PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
+    PyCapsule_New = ctypes.pythonapi.PyCapsule_New
+    PyCapsule_New.restype = ctypes.py_object
+    PyCapsule_New.argtypes = (ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor)
+    capsule = PyCapsule_New(src, None, PyCapsule_Destructor(0))
+    return capsule
 
 def broadcast_out_size(size1, size2):
     sizeO = size1 if len(size1) > len(size2) else size2
@@ -27,7 +34,6 @@ def broadcast_out_size(size1, size2):
         length -= 1
 
     return sizeO
-
 
 def reduce_op_process(input, dim=None, keepdim=False, dtype=None):
     sizeI = list(input.size().data)
