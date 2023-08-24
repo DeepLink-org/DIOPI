@@ -2923,10 +2923,14 @@ diopiError_t diopiArgmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
 diopiError_t diopiSmoothL1Loss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                                diopiReduction_t reduction, double beta) {
     impl::aten::setCurCtx(ctx);
-    at::Tensor atOut = impl::aten::buildATen(out);
     at::Tensor atInput = impl::aten::buildATen(input);
     at::Tensor atTarget = impl::aten::buildATen(target);
-    at::smooth_l1_loss_out(atOut, atInput, atTarget, reduction, beta);
+    if (reduction == 0) {
+        at::Tensor atOut = impl::aten::buildATen(out);
+        at::smooth_l1_loss_out(atOut, atInput, atTarget, reduction, beta);
+    } else {
+        impl::aten::invokeATenFuncRet(ctx, at::smooth_l1_loss, out, atInput, atTarget, reduction, beta);
+    }
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
