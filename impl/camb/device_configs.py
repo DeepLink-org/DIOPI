@@ -1375,6 +1375,30 @@ device_configs = {
         ),
     ),
 
+    'sgn': dict(
+        name=['sgn'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.complex128)],
+                },
+            ],
+        ),
+    ),
+
+    'sgn_zero': dict(
+        name=['sgn'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.complex128)],
+                },
+            ],
+        ),
+    ),
+
     'amax': dict(
         name=['amax'],
         interface=['torch'],
