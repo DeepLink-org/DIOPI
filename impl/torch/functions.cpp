@@ -2020,7 +2020,6 @@ diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     return diopiSuccess;
 }
 
-#if 0
 diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                           diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignore_index) {
     impl::aten::setCurCtx(ctx);
@@ -2052,21 +2051,6 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     } else {
         at::nll_loss2d_out(atOut, atInput, atTarget, atWeight, reduction, ignore_index);
     }
-    impl::aten::unsetCurCtx();
-    return diopiSuccess;
-}
-#endif
-
-diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
-                          diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignore_index) {
-    impl::aten::setCurCtx(ctx);
-    auto atInput = impl::aten::buildATen(input);
-    auto atOut = impl::aten::buildATen(out);
-    auto atTarget = impl::aten::buildATen(target);
-    auto atWeight = impl::aten::buildATen(weight);
-
-    at::nll_loss_out(atOut, atInput, atTarget, atWeight, reduction, ignore_index);
-
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
