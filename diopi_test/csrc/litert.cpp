@@ -172,8 +172,17 @@ diopiTensor& diopiTensor::operator=(const diopiTensor& other) {
     }
 
     const void* src = other.data();
-    if (src != nullptr) {
-        diopiTensorCopyFromBuffer(context_, src, this);
+    if (src == nullptr) {
+        return *this;
+    }
+
+    if (device_ == diopi_host) {
+        std::memcpy(data(), src, other.nbytes());
+    } else {
+        diopiStreamHandle_t stream;
+        diopiGetStream(context_, &stream);
+        device_memcpy_d2d_async(stream, data(), src, other.nbytes());
+        device_synchronize_stream(stream);
     }
     return *this;
 }
