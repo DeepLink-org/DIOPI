@@ -2987,8 +2987,7 @@ DIOPI_API diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle
  * @param[in] to a pointer, the upper bound of the random function, it can be none.
  * @param[in] generator a pseudorandom number generator for sampling
  */
-DIOPI_API diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t from, const int64_t* to,
-                                      diopiGeneratorHandle_t generator);
+DIOPI_API diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t from, const int64_t* to, diopiGeneratorHandle_t generator);
 
 /**
  * @brief Fills self tensor with numbers sampled from the continuous uniform distribution: \f[P(x)= \frac{1}{to-from}\f]
