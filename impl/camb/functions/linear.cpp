@@ -162,13 +162,18 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
     }
     DiopiTensor biasTensor((diopiTensorHandle_t) nullptr);
 
-    DIOPI_CALL(matmul(ctx, gradOutputTensor, inputTensor, biasTensor, gradWeightTemp, true, false));
-    if (gradWeightTemp.dtype() != gradWeightTensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, gradWeightTensor, gradWeightTemp));
+    if (gradWeight != nullptr) {
+        DIOPI_CALL(matmul(ctx, gradOutputTensor, inputTensor, biasTensor, gradWeightTemp, true, false));
+        if (gradWeightTemp.dtype() != gradWeightTensor.dtype()) {
+            DIOPI_CALL(dataTypeCast(ctx, gradWeightTensor, gradWeightTemp));
+        }
     }
-    DIOPI_CALL(matmul(ctx, gradOutputTensor, weightTensor, biasTensor, gradInputTemp, false, false));
-    if (gradInputTemp.dtype() != gradInputTensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTemp));
+
+    if (gradInput != nullptr) {
+        DIOPI_CALL(matmul(ctx, gradOutputTensor, weightTensor, biasTensor, gradInputTemp, false, false));
+        if (gradInputTemp.dtype() != gradInputTensor.dtype()) {
+            DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTemp));
+        }
     }
 
     if (gradBias != nullptr) {
