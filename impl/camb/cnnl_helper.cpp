@@ -14,6 +14,7 @@ namespace impl {
 namespace camb {
 
 diopiError_t CnnlDataType::convertToCnnlType(cnnlDataType_t* cnnlType, diopiDtype_t type) {
+    std::cout << "the input dtype is " << DiopiDataType::dataTypeStr(type) << std::endl;
     switch (type) {
         case diopi_dtype_int8:
             *cnnlType = CNNL_DTYPE_INT8;
