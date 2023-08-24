@@ -13,26 +13,12 @@
 extern "C" {
 #endif  // __cplusplus
 
-typedef enum { ReductionNone, ReductionMean, ReductionSum, ReductionEND } diopiReduction_t;
-
-typedef enum { RoundModeNone, RoundModeTrunc, RoundModeFloor, RoundModeEND } diopiRoundMode_t;
-
-typedef struct {
-    diopiDtype_t stype;
-    union {
-        double fval;
-        int64_t ival;
-    };
-} diopiScalar_t;
-
-typedef enum { Contiguous = 0, ChannelsLast = 1, ChannelsLast3d = 2, Preserve = 3, ChannelsLast1d = 4 } diopiMemoryFormat_t;
-
 /**
  * \brief get the vendor's name who implements the functions
  */
-DIOPI_RT_API const char* diopiGetVendorName();
-DIOPI_RT_API const char* diopiGetImplVersion();
-DIOPI_RT_API const char* diopiGetLastErrorString();
+DIOPI_RT_API DIOPI_ATTR_WEEK const char* diopiGetVendorName();
+DIOPI_RT_API DIOPI_ATTR_WEEK const char* diopiGetImplVersion();
+DIOPI_RT_API DIOPI_ATTR_WEEK const char* diopiGetLastErrorString();
 
 /**
  * @brief Applies a 2D convolution over an input image composed of several input planes.
@@ -458,7 +444,7 @@ DIOPI_API diopiError_t diopiAdaptiveMaxPool2dBackward(diopiContextHandle_t ctx, 
  * @param[in] input the input tensor, type = [float32, float64].
  * @param[in] p the probability of an element in the input tensor being zeroed out. type = [float32, float64].
  * @param[in] train boolean, whether the module is in training mode. When set to False, the dropout operation will not be performed.
- * @param[in] mask A binary mask tensor of the same shape as the input tensor, where each element's value is either 0 or 1,
+ * @param[out] mask A binary mask tensor of the same shape as the input tensor, where each element's value is either 0 or 1,
  * indicating whether the corresponding neuron at that position is dropped or not. type = [int32].
  * @param[out] out the output tensor. type = [float32, float64].
  */
@@ -468,7 +454,7 @@ DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_
  * @brief The in-place version of diopiDropout().
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor and will be stored result tensor. type = [float32, float64].
- * @param[in] mask A binary mask tensor of the same shape as the input tensor, where each element's value is either 0 or 1,
+ * @param[out] mask A binary mask tensor of the same shape as the input tensor, where each element's value is either 0 or 1,
  * indicating whether the corresponding neuron at that position is dropped or not. type = [int32].
  * @param[in] p the probability of an element in the input tensor being zeroed out. type = [float32, float64].
  * @param[in] train boolean, whether the module is in training mode. When set to False, the dropout operation will not be performed.

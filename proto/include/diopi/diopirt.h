@@ -9,13 +9,10 @@
 
 #include <stdint.h>
 
-#ifndef DIOPI_ATTR_WEAK
-#define DIOPI_API
+#define DIOPI_ATTR_WEEK __attribute__((weak))
+
+#define DIOPI_API DIOPI_ATTR_WEEK
 #define DIOPI_RT_API
-#else
-#define DIOPI_API __attribute__((weak))
-#define DIOPI_RT_API __attribute__((weak))
-#endif
 
 #if defined(__cplusplus)
 #include <iostream>
@@ -76,6 +73,20 @@ typedef enum {
     diopi_dtype_unsupported = 255
 } diopiDtype_t;
 
+typedef struct {
+    diopiDtype_t stype;
+    union {
+        double fval;
+        int64_t ival;
+    };
+} diopiScalar_t;
+
+typedef enum { Contiguous = 0, ChannelsLast = 1, ChannelsLast3d = 2, Preserve = 3, ChannelsLast1d = 4 } diopiMemoryFormat_t;
+
+typedef enum { ReductionNone, ReductionMean, ReductionSum, ReductionEND } diopiReduction_t;
+
+typedef enum { RoundModeNone, RoundModeTrunc, RoundModeFloor, RoundModeEND } diopiRoundMode_t;
+
 /**
  * Opaque structure holding Context and Tensor
  **/
@@ -104,10 +115,10 @@ extern DIOPI_RT_API diopiError_t diopiGetTensorDataConst(diopiConstTensorHandle_
 extern DIOPI_RT_API diopiError_t diopiGetTensorShape(diopiConstTensorHandle_t th, diopiSize_t* size);
 extern DIOPI_RT_API diopiError_t diopiGetTensorStride(diopiConstTensorHandle_t th, diopiSize_t* stride);
 extern DIOPI_RT_API diopiError_t diopiGetTensorDtype(diopiConstTensorHandle_t th, diopiDtype_t* dtype);
-extern DIOPI_RT_API diopiError_t diopiGetTensorDevice(diopiConstTensorHandle_t th, diopiDevice_t* device);
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorDevice(diopiConstTensorHandle_t th, diopiDevice_t* device);
 
 extern DIOPI_RT_API diopiError_t diopiGetTensorNumel(diopiConstTensorHandle_t th, int64_t* numel);
-extern DIOPI_RT_API diopiError_t diopiGetTensorElemSize(diopiConstTensorHandle_t th, int64_t* itemsize);
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorElemSize(diopiConstTensorHandle_t th, int64_t* itemsize);
 
 /**
  * operations to require Stream and Tensor instances from a Context handle
@@ -116,7 +127,8 @@ extern DIOPI_RT_API diopiError_t diopiGetStream(diopiContextHandle_t ctx, diopiS
 
 extern DIOPI_RT_API diopiError_t diopiRequireTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor, const diopiSize_t* size, const diopiSize_t* stride,
                                                     const diopiDtype_t dtype, const diopiDevice_t device);
-extern DIOPI_RT_API diopiError_t diopiRequireBuffer(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor, int64_t num_bytes, diopiDevice_t device);
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiRequireBuffer(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor, int64_t num_bytes,
+                                                                    diopiDevice_t device);
 
 #if defined(__cplusplus)
 }

@@ -1,4 +1,4 @@
-#include <diopi/functions.h>
+
 
 #include <cstring>
 #include <numeric>
@@ -34,7 +34,6 @@ diopiError_t logInpInternal(diopiContextHandle_t ctx, diopiTensorHandle_t input,
     return diopiSuccess;
 }
 
-extern "C" {
 diopiError_t diopiLogInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     DIOPI_CALL(logInpInternal(ctx, input, CNNL_LOG_E));
     return diopiSuccess;
@@ -64,8 +63,6 @@ diopiError_t diopiLog10(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     DIOPI_CALL(logInternal(ctx, out, input, CNNL_LOG_10));
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl
