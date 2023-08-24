@@ -1,11 +1,42 @@
 # Copyright (c) 2023, DeepLink.
 import ctypes
 from ctypes import c_void_p
-import numpy as np
 import atexit
-from .diopi_runtime import diopiTensor, diopiSize, diopiScalar, diopiReduction, diopiRoundMode, diopiError, TensorP, Context, Device, Dtype, \
-    diopi_tensor_copy_to_buffer, get_last_error_string, finalize_library, diopi_finalize, init_library
+import numpy as np
+from .diopi_runtime import (diopiTensor, diopiSize, diopiScalar, diopiReduction, diopiRoundMode,
+                            diopiError, TensorP, Context, Device, Dtype,
+                            diopi_tensor_copy_to_buffer, get_last_error_string,
+                            finalize_library, diopi_finalize, init_library)
 
+class DiopiException(Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+class FunctionNotImplementedError(DiopiException):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+def check_returncode(returncode, throw_exception=True):
+    if 0 != returncode:
+        if returncode == diopiError.diopi_no_implement:
+            # raise FunctionNotImplementedError(glob_vars.cur_test_func + ' not implement')
+            raise FunctionNotImplementedError(' not implement')
+        error_info = f"Returncode: {returncode}"
+        error_detail = get_last_error()
+        error_info += ", Details: " + error_detail
+        if throw_exception:
+            raise DiopiException(error_info)
+        else:
+            # logger.info(error_info)
+            print(error_info)
+
+def check_function(fn_name):
+    try:
+        func = eval(f"diopi_functions.{fn_name}")
+    except AttributeError as e:
+        raise FunctionNotImplementedError(e.args)
+    return func
 
 def device(dev: str) -> Device:
     if dev == "cpu" or dev == "host":
