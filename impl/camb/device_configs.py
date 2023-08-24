@@ -1381,7 +1381,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.complex64, Dtype.complex128)],
+                    "dtype": [Skip(Dtype.complex64), Skip(Dtype.complex128)],
                 },
             ],
         ),
@@ -1393,7 +1393,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.complex64, Dtype.complex128)],
+                    "dtype": [Skip(Dtype.complex64), Skip(Dtype.complex128)],
                 },
             ],
         ),
