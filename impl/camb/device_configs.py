@@ -798,18 +798,6 @@ device_configs = {
         ),
     ),
 
-    'smooth_l1_loss': dict(
-        name=["smooth_l1_loss"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
-        ),
-    ),
-
     'conv3d': dict(
         name=['conv3d'],
         tensor_para=dict(
