@@ -74,12 +74,15 @@ inline std::string dumpTensor(diopiConstTensorHandle_t th) {
         diopiSize_t stride;
         const void* ptr;
         diopiDtype_t dtype;
+        diopiDevice_t device;
         diopiGetTensorDtype(th, &dtype);
         diopiGetTensorDataConst(th, &ptr);
         diopiGetTensorShape(th, &shape);
         diopiGetTensorStride(th, &stride);
+        diopiGetTensorDevice(th, &device);
         stream << " ,data:" << ptr;
         stream << " ,dtype:" << dtype;
+        stream << " ,device:" << device;
         stream << " ,shape:";
         std::for_each(shape.data, shape.data + shape.len, [&stream](int64_t v) { stream << v << " "; });
         stream << " ,stride:";
@@ -159,6 +162,8 @@ diopiError_t makeTensorLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, 
 diopiError_t makeOnesLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t src);
 
 diopiError_t makeOnesLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t src, diopiDtype_t dtype);
+
+diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, diopiConstTensorHandle_t src);
 
 inline std::vector<int64_t> calcStrides(int ndims, diopiSize_t size, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous) {
     std::vector<int64_t> strides;
@@ -445,10 +450,6 @@ public:
         std::vector<int64_t> dims = getBaseShape(th);
         int64_t buffSize = getBaseBufferSize(th);
 
-        diopiDevice_t device;
-
-        diopiGetTensorDevice(th, &device);
-
         static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
         if (PARROTS_DEBUG_ACLOPRUNNER > 0) {
             info("%s input[%d]:%s", opname_.c_str(), inputIndex, dumpTensor(th).c_str());
@@ -508,9 +509,6 @@ public:
         diopiDtype_t dtype;
         diopiGetTensorDtype(th, &dtype);
         diopiGetTensorData(th, &ptr);
-        diopiDevice_t device;
-
-        diopiGetTensorDevice(th, &device);
 
         std::vector<int64_t> dims = getBaseShape(th);
         int64_t buffSize = getBaseBufferSize(th);

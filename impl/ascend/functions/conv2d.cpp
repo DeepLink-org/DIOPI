@@ -13,6 +13,51 @@
 
 namespace impl {
 namespace ascend {
+void printTensor(diopiContextHandle_t ctx, diopiConstTensorHandle_t th, char *name) {
+    const void *ptr_device;
+    void *ptr_host;
+
+    diopiDevice_t device;
+    diopiGetTensorDevice(th, &device);
+
+    int64_t numel, itemsize;
+    diopiGetTensorElemSize(th, &itemsize);
+    diopiGetTensorNumel(th, &numel);
+    if (device == diopiDevice_t::diopi_device) {
+        diopiGetTensorDataConst(th, &ptr_device);
+        diopiStreamHandle_t stream;
+        diopiGetStream(ctx, &stream);
+        CALL_ACLRT(aclrtMallocHost(&ptr_host, numel * itemsize));
+        CALL_ACLRT(
+            aclrtMemcpyAsync(ptr_host, numel * itemsize, ptr_device, numel * itemsize, ACL_MEMCPY_DEVICE_TO_HOST, reinterpret_cast<aclrtStream>(stream)));
+        CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));
+    } else {
+        const void *ptr_host_c;
+        diopiGetTensorDataConst(th, &ptr_host_c);
+        ptr_host = const_cast<void *>(ptr_host_c);
+    }
+
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(th, &dtype);
+    printf("Tensor %s:\n", name);
+    for (int64_t i = 0; i < numel; i++) {
+        switch (dtype) {
+            case diopi_dtype_float32:
+                printf("item %ld: %f\n", i, reinterpret_cast<float *>(ptr_host)[i]);
+                break;
+            case diopi_dtype_float64:
+                printf("item %ld: %f\n", i, reinterpret_cast<double *>(ptr_host)[i]);
+                break;
+            case diopi_dtype_int32:
+                printf("item %ld: %d\n", i, reinterpret_cast<int *>(ptr_host)[i]);
+                break;
+            case diopi_dtype_int64:
+                printf("item %ld: %ld\n", i, reinterpret_cast<int64_t *>(ptr_host)[i]);
+                break;
+        }
+    }
+    printf("\n");
+}
 extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                            diopiConstTensorHandle_t bias, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, int64_t groups) {
     auto format = getAclDataFormat(input);
@@ -38,7 +83,7 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
         .setAttr("strides", strideTemp)
         .setAttr("pads", paddingTemp)
         .setAttr("dilations", dilationsTemp)
-        .setAttr<int32_t>("groups", groups)
+        .setAttr<int64_t>("groups", 1)
         .setAttr("data_format", dataFormat)
         .addOutput(out);
     if (bias) {
@@ -101,7 +146,7 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
         .setAttr("strides", strideTemp)
         .setAttr("pads", paddingTemp)
         .setAttr("dilations", dilationsTemp)
-        .setAttr("groups", groups)
+        .setAttr<int64_t>("groups", 1)
         .setAttr("data_format", dataFormat)
         .run();
     if (gradInput != nullptr) {
@@ -116,7 +161,7 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
             .setAttr("pads", paddingTemp)
             .setAttr("dilations", dilationsTemp)
             .setAttr("data_format", dataFormat)
-            .setAttr("groups", groups)
+            .setAttr<int64_t>("groups", 1)
             .run();
     }
 

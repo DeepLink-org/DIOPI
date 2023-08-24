@@ -42,8 +42,25 @@ DIOPI_API diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHand
 
 DIOPI_API diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                                diopiConstTensorHandle_t output, int64_t dim) {
-    std::vector<int> dimList = {dim};
-    AclOpRunner<2, 1>("LogSoftmaxGrad", ctx).addInput(gradOutput).addInput(output).setAttr("axes", dimList).addOutput(gradInput).run();
+    diopiSize_t sumSize;
+    diopiGetTensorShape(gradOutput, &sumSize);
+    std::vector<int64_t> sumSizeVec(sumSize.data, sumSize.data + sumSize.len);
+    sumSizeVec[dim] = 1;
+    sumSize = vectorToDiopiSize(sumSizeVec);
+    diopiTensorHandle_t sum, exp;
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(gradOutput, &dtype);
+    diopiRequireTensor(ctx, &sum, &sumSize, nullptr, dtype, diopi_device);
+    std::vector<int64_t> dimVec({dim});
+    auto dimSize = vectorToDiopiSize(dimVec);
+    diopiSum(ctx, sum, gradOutput, dimSize);
+    makeTensorLike(ctx, &exp, output);
+    diopiExp(ctx, exp, output);
+    diopiMul(ctx, gradInput, exp, sum);
+    diopiScalar_t scalar;
+    scalar.stype = diopi_dtype_float64;
+    scalar.fval = 1.0;
+    diopiSub(ctx, gradInput, gradOutput, gradInput, &scalar);
     return diopiSuccess;
 }
 

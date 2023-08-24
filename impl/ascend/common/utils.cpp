@@ -15,47 +15,63 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
     int64_t sizeTmp[1] = {1};
     diopiSize_t sSize = arrayToDiopiSize(sizeTmp, 1);
     diopiTensorHandle_t outCopy;
-    diopiRequireTensor(ctx, &outCopy, &sSize, nullptr, dtype, diopi_host);
-    void* ptr;
-    diopiGetTensorData(outCopy, &ptr);
-    switch (dtype) {
-        case diopiDtype_t::diopi_dtype_float32:
-            reinterpret_cast<float*>(ptr)[0] = getValue<float>(scalar);
-            break;
-        case diopiDtype_t::diopi_dtype_float64:
-            reinterpret_cast<double*>(ptr)[0] = getValue<double>(scalar);
-            break;
-        case diopiDtype_t::diopi_dtype_int32:
-            reinterpret_cast<int*>(ptr)[0] = getValue<int>(scalar);
-            break;
-        case diopiDtype_t::diopi_dtype_int64:
-            reinterpret_cast<int64_t*>(ptr)[0] = getValue<int64_t>(scalar);
-            break;
-        case diopiDtype_t::diopi_dtype_uint8:
-            reinterpret_cast<uint8_t*>(ptr)[0] = getValue<uint8_t>(scalar);
-            break;
-        case diopiDtype_t::diopi_dtype_int8:
-            reinterpret_cast<int8_t*>(ptr)[0] = getValue<int8_t>(scalar);
-            break;
-        case diopiDtype_t::diopi_dtype_bool:
-            reinterpret_cast<bool*>(ptr)[0] = getValue<bool>(scalar);
-            break;
-        default:
-            error("dtype %d not supported", dtype);
-    }
     if (device == diopi_host) {
+        diopiRequireTensor(ctx, &outCopy, &sSize, nullptr, dtype, diopi_host);
+        void* ptr;
+        diopiGetTensorData(outCopy, &ptr);
+        switch (dtype) {
+            case diopiDtype_t::diopi_dtype_float32:
+                reinterpret_cast<float*>(ptr)[0] = getValue<float>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_float64:
+                reinterpret_cast<double*>(ptr)[0] = getValue<double>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_int32:
+                reinterpret_cast<int*>(ptr)[0] = getValue<int>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_int64:
+                reinterpret_cast<int64_t*>(ptr)[0] = getValue<int64_t>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_uint8:
+                reinterpret_cast<uint8_t*>(ptr)[0] = getValue<uint8_t>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_int8:
+                reinterpret_cast<int8_t*>(ptr)[0] = getValue<int8_t>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_bool:
+                reinterpret_cast<bool*>(ptr)[0] = getValue<bool>(scalar);
+                break;
+            default:
+                error("dtype %d not supported on host", dtype);
+        }
         *out = outCopy;
-    } else {
+    } else if (device == diopi_device) {
+        diopiTensorHandle_t outCopyDev;
+        void *src, *dst;
+        if (isFloatingType(dtype)) {
+            diopiRequireTensor(ctx, &outCopy, &sSize, nullptr, diopi_dtype_float64, diopi_host);
+            diopiRequireTensor(ctx, &outCopyDev, &sSize, nullptr, diopi_dtype_float64, diopi_device);
+            diopiGetTensorData(outCopy, &src);
+            reinterpret_cast<double*>(src)[0] = getValue<double>(scalar);
+        } else if (isIntegralTypeWithBool(dtype)) {
+            diopiRequireTensor(ctx, &outCopy, &sSize, nullptr, diopi_dtype_int64, diopi_host);
+            diopiRequireTensor(ctx, &outCopyDev, &sSize, nullptr, diopi_dtype_int64, diopi_device);
+            diopiGetTensorData(outCopy, &src);
+            reinterpret_cast<int64_t*>(src)[0] = getValue<int64_t>(scalar);
+        } else {
+            error("dtype %d not supported on device", dtype);
+        }
         int64_t elemsize;
         diopiStreamHandle_t stream;
         diopiGetTensorElemSize(outCopy, &elemsize);
         diopiGetStream(ctx, &stream);
-        void *src, *dst;
         diopiRequireTensor(ctx, out, &sSize, nullptr, dtype, diopi_device);
-        diopiGetTensorData(*out, &dst);
-        diopiGetTensorData(outCopy, &src);
+        diopiGetTensorData(outCopyDev, &dst);
         CALL_ACLRT(aclrtMemcpyAsync(dst, elemsize, src, elemsize, ACL_MEMCPY_HOST_TO_DEVICE, stream));
         CALL_ACLRT(aclrtSynchronizeStream(stream));
+        diopiCastDtype(ctx, *out, outCopyDev);
+    } else {
+        error("device %d not supported", device);
     }
     return diopiSuccess;
 }
@@ -80,7 +96,7 @@ diopiError_t makeTensorFromSize(diopiContextHandle_t ctx, const diopiSize_t* siz
             for (int i = 0; i < len; i++) {
                 reinterpret_cast<int32_t*>(dst)[i] = (int32_t)size->data[i];
             }
-        } else if (dtype == diopi_dtype_int64) {
+        } else if (dtype == diopi_dtype_int16) {
             for (int i = 0; i < len; i++) {
                 reinterpret_cast<int16_t*>(dst)[i] = (int16_t)size->data[i];
             }
@@ -359,6 +375,32 @@ diopiSize_t arrayToDiopiSize(int64_t* data, int64_t len) {
     size.len = len;
     size.data = data;
     return size;
+}
+
+diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, diopiConstTensorHandle_t src) {
+    diopiDevice_t device;
+    diopiGetTensorDevice(src, &device);
+    if (device == diopi_host) {
+        diopiTensorHandle_t dst;
+        diopiSize_t size, stride;
+        diopiDtype_t dtype;
+        diopiGetTensorShape(src, &size);
+        diopiGetTensorStride(src, &stride);
+        diopiGetTensorDtype(src, &dtype);
+        diopiRequireTensor(ctx, &dst, &size, &stride, dtype, diopi_device);
+        const void* srcPtr;
+        void* dstPtr;
+        diopiGetTensorDataConst(src, &srcPtr);
+        diopiGetTensorData(dst, &dstPtr);
+        diopiStreamHandle_t stream;
+        diopiGetStream(ctx, &stream);
+        int64_t elemsize = getBaseBufferSize(src);
+        CALL_ACLRT(aclrtMemcpyAsync(dstPtr, elemsize, const_cast<void*>(srcPtr), elemsize, ACL_MEMCPY_HOST_TO_DEVICE, stream));
+        CALL_ACLRT(aclrtSynchronizeStream(stream));
+        return dst;
+    } else {
+        return const_cast<diopiTensorHandle_t>(src);
+    }
 }
 }  // namespace ascend
 }  // namespace impl

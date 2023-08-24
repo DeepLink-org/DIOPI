@@ -63,6 +63,11 @@ DIOPI_API diopiError_t diopiFloor(diopiContextHandle_t ctx, diopiTensorHandle_t 
     AclOpRunner<1, 1>("Floor", ctx).addInput(input).addOutput(out).run();
     return diopiSuccess;
 }
+
+DIOPI_API diopiError_t diopiExp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    AclOpRunner<1, 1>("Exp", ctx).addInput(input).addOutput(out).run();
+    return diopiSuccess;
+}
 }
 
 }  // namespace ascend
