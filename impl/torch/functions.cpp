@@ -24,19 +24,28 @@
 #include "vision_kernel.h"
 
 #ifndef USE_HIP
+// #define DIOPI_USE_CUDNN
+
+#ifdef DIOPI_USE_CUDNN
 namespace at {
 namespace native {
-void raw_cudnn_convolution_forward_out(const Tensor& output, const Tensor& input, const Tensor& weight, IntArrayRef padding, IntArrayRef stride,
-                                       IntArrayRef dilation, int64_t groups, bool benchmark, bool deterministic, bool allow_tf32);
+extern void raw_cudnn_convolution_forward_out(const Tensor& output, const Tensor& input, const Tensor& weight, IntArrayRef padding, IntArrayRef stride,
+                                              IntArrayRef dilation, int64_t groups, bool benchmark, bool deterministic, bool allow_tf32);
 
-void raw_cudnn_convolution_backward_input_out(const at::Tensor& grad_input, const at::Tensor& grad_output, const at::Tensor& weight, IntArrayRef padding,
-                                              IntArrayRef stride, IntArrayRef dilation, int64_t groups, bool benchmark, bool deterministic, bool allow_tf32);
+extern void raw_cudnn_convolution_backward_input_out(const at::Tensor& grad_input, const at::Tensor& grad_output, const at::Tensor& weight,
+                                                     const IntArrayRef padding, const IntArrayRef stride, const IntArrayRef dilation, const int64_t groups,
+                                                     const bool benchmark, const bool deterministic, const bool allow_tf32);
 
-void raw_cudnn_convolution_backward_weight_out(const Tensor& grad_weight, const Tensor& grad_output, const Tensor& input, IntArrayRef padding,
-                                               IntArrayRef stride, IntArrayRef dilation, int64_t groups, bool benchmark, bool deterministic, bool allow_tf32);
+extern void raw_cudnn_convolution_backward_weight_out(const Tensor& grad_weight, const Tensor& grad_output, const Tensor& input, const IntArrayRef padding,
+                                                      const IntArrayRef stride, const IntArrayRef dilation, const int64_t groups, const bool benchmark,
+                                                      const bool deterministic, const bool allow_tf32);
+
 }  // namespace native
 
 }  // namespace at
+
+#endif
+
 #endif
 
 extern "C" {
@@ -2167,24 +2176,25 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
         impl::aten::updateATen2Tensor(ctx, atTmp, grad_bias);
     }
 #else
-    if (1) {
+#ifdef DIOPI_USE_CUDNN
+    {
+        if (atGradInput.defined()) {
+            at::native::raw_cudnn_convolution_backward_input_out(
+                atGradInput, atGrad, atWeight, atPadding, atStride, atDilation, groups, true /*benchmark*/, false /*deterministic*/, true /*allow_tf32*/);
+        }
+        if (atGradWeight.defined()) {
+            at::native::raw_cudnn_convolution_backward_weight_out(
+                atGradWeight, atGrad, atInput, atPadding, atStride, atDilation, groups, true /*benchmark*/, false /*deterministic*/, true /*allow_tf32*/);
+        }
+    }
+#else
+    {
         auto grad_inputs = at::convolution_backward(
             atGrad, atInput, atWeight, c10::nullopt, atStride, atPadding, atDilation, false, atOutputPadding, groups, {true, true, false});
         impl::aten::updateATen2Tensor(ctx, std::get<0>(grad_inputs), grad_input);
         impl::aten::updateATen2Tensor(ctx, std::get<1>(grad_inputs), grad_weight);
-
-    } else {
-#if 0
-        if (atGradInput.defined()) {
-            ::at::native::raw_cudnn_convolution_backward_input_out(
-                atGradInput, atGrad, atWeight, atPadding, atStride, atDilation, groups, true /*benchmark*/, false /*deterministic*/, true /*allow_tf32*/);
-        }
-        if (atGradWeight.defined()) {
-            ::at::native::raw_cudnn_convolution_backward_weight_out(
-                atGradWeight, atGrad, atInput, atPadding, atStride, atDilation, groups, true /*benchmark*/, false /*deterministic*/, true /*allow_tf32*/);
-        }
-#endif
     }
+#endif
 
     if (bias_sizes != nullptr && grad_bias != nullptr) {
         auto atBias = impl::aten::buildATen(grad_bias);
