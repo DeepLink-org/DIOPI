@@ -322,7 +322,19 @@ DIOPI_RT_API diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diop
 }
 
 DIOPI_RT_API diopiError_t diopiGeneratorGetState(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t th, diopiTensorHandle_t* data) {
-    *data = &(th->state());
+    const diopiTensor& state = th->state();
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(&state, &dtype);
+    diopiDevice_t device;
+    diopiGetTensorDevice(&state, &device);
+    diopiSize_t shape;
+    diopiGetTensorShape(&state, &shape);
+    diopiSize_t stride;
+    diopiGetTensorStride(&state, &stride);
+    diopiTensorHandle_t tensor = nullptr;
+    diopiRequireTensor(ctx, &tensor, &shape, &stride, dtype, diopi_device);
+    *tensor = state;
+    *data = tensor;
     return diopiSuccess;
 }
 

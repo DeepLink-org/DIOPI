@@ -347,7 +347,7 @@ inline at::Generator buildGenerator(diopiContextHandle_t ctx, diopiConstGenerato
     return gen;
 }
 
-inline void updateGeneratorHandleState(diopiContextHandle_t ctx, at::Generator& cuda_gen, diopiConstGeneratorHandle_t generator) {
+inline void updateGeneratorHandleState(diopiContextHandle_t ctx, at::Generator& cuda_gen, diopiGeneratorHandle_t generator) {
     at::Tensor new_state;
     {
         std::lock_guard<std::mutex> lock(cuda_gen.mutex());
