@@ -20,18 +20,18 @@ extern "C" diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t o
     AclOpRunner<2, 1> runner("ReduceSum", ctx);
     runner.addInput(input);
 
-    if (dim.getLen() > 0) {
+    if (dim.len > 0) {
         runner.addConstInput(dim);
     } else {
-        std::vector<int64_t> dimAllVector(inS.getLen());
+        std::vector<int64_t> dimAllVector(inS.len);
         std::iota(std::begin(dimAllVector), std::end(dimAllVector), 0);
-        diopiSize_t dimAll(dimAllVector.data(), dimAllVector.size());
+        diopiSize_t dimAll = vectorToDiopiSize(dimAllVector);
         runner.addConstInput(dimAll);
     }
-    if (inS.getLen() != outS.getLen()) {
+    if (inS.len != outS.len) {
         keepdim = false;
     } else {
-        for (int i = 0; i < inS.getLen(); i++) {
+        for (int i = 0; i < inS.len; i++) {
             if (inS.data[i] != outS.data[i]) {
                 keepdim = false;
                 break;
@@ -50,18 +50,18 @@ extern "C" diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t 
     AclOpRunner<2, 1> runner("ReduceMean", ctx);
     runner.addInput(input);
 
-    if (dim.getLen() > 0) {
+    if (dim.len > 0) {
         runner.addConstInput(dim);
     } else {
-        std::vector<int64_t> dimAllVector(inS.getLen());
+        std::vector<int64_t> dimAllVector(inS.len);
         std::iota(std::begin(dimAllVector), std::end(dimAllVector), 0);
-        diopiSize_t dimAll(dimAllVector.data(), dimAllVector.size());
+        diopiSize_t dimAll = vectorToDiopiSize(dimAllVector);
         runner.addConstInput(dimAll);
     }
-    if (inS.getLen() != outS.getLen()) {
+    if (inS.len != outS.len) {
         keepdim = false;
     } else {
-        for (int i = 0; i < inS.getLen(); i++) {
+        for (int i = 0; i < inS.len; i++) {
             if (inS.data[i] != outS.data[i]) {
                 keepdim = false;
                 break;

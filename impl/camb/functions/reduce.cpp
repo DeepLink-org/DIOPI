@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <algorithm>
 
 #include "../cnnl_helper.hpp"
@@ -159,8 +157,6 @@ diopiError_t reduceDimImpl(diopiContextHandle_t ctx, DiopiTensor& outputTr, Diop
     return diopiSuccess;
 }
 
-extern "C" {
-
 diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
     DiopiTensor inputTr(input);
     DiopiTensor outputTr(out);
@@ -290,8 +286,6 @@ diopiError_t diopiAny(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

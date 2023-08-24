@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <numeric>
 
 #include "../cnnl_helper.hpp"
@@ -15,7 +13,6 @@
 namespace impl {
 namespace camb {
 
-extern "C" {
 static std::vector<int> getPerm(DiopiTensor tensor, int64_t dim0, int64_t dim1) {
     int inputSize = tensor.shape().size();
     if (dim0 < 0) {
@@ -85,8 +82,8 @@ diopiError_t diopiCol2Im(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     std::vector<int32_t> vDilation = {dilationHeight, dilationWidth};
     int32_t kernelSizeHeight = kernelSize.data[0];
     int32_t kernelSizeWidth = kernelSize.len == 2 ? kernelSize.data[1] : kernelSize.data[0];
-    int32_t outputSizeHeight = outputSize.data[0];
-    int32_t outputSizeWidth = outputSize.len == 2 ? outputSize.data[1] : outputSize.data[0];
+    // int32_t outputSizeHeight = outputSize.data[0];
+    // int32_t outputSizeWidth = outputSize.len == 2 ? outputSize.data[1] : outputSize.data[0];
 
     CnnlTensorDesc weightDesc;
     cnnlTensorDescriptor_t wDesc = weightDesc.get();
@@ -99,7 +96,7 @@ diopiError_t diopiCol2Im(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     DIOPI_CALLCNNL(cnnlSetConvolutionDescriptor(convDesc, 4, vPadding.data(), vStride.data(), vDilation.data(), 1, dtype));
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetCol2ImWorkspaceSize(handle, inputColDesc.get(), outDesc.get(), wDesc, &workspaceSize));
+    DIOPI_CALLCNNL(cnnlGetCol2ImWorkspaceSize(handle, inputColDesc.get(), wDesc, outDesc.get(), &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
@@ -109,8 +106,6 @@ diopiError_t diopiCol2Im(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
 
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

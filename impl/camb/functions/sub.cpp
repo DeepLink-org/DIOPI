@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <memory>
 
 #include "../cnnl_helper.hpp"
@@ -14,8 +12,8 @@
 namespace impl {
 namespace camb {
 
-extern "C" diopiError_t diopiSub(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
-                                 const diopiScalar_t* alpha) {
+diopiError_t diopiSub(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
+                      const diopiScalar_t* alpha) {
     DiopiTensor inputTensor(input);
     DiopiTensor otherTensor(other);
     DiopiTensor outputTensor(out);
@@ -24,7 +22,7 @@ extern "C" diopiError_t diopiSub(diopiContextHandle_t ctx, diopiTensorHandle_t o
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiSubInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha) {
+diopiError_t diopiSubInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha) {
     DiopiTensor inputTensor(input);
     DiopiTensor otherTensor(other);
     DiopiTensor outputTensor(input);
@@ -33,8 +31,8 @@ extern "C" diopiError_t diopiSubInp(diopiContextHandle_t ctx, diopiTensorHandle_
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiSubScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
-                                       const diopiScalar_t* alpha) {
+diopiError_t diopiSubScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
+                            const diopiScalar_t* alpha) {
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
     DiopiTensor otherTensor;
@@ -44,7 +42,7 @@ extern "C" diopiError_t diopiSubScalar(diopiContextHandle_t ctx, diopiTensorHand
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiSubInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
+diopiError_t diopiSubInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(input);
     DiopiTensor otherTensor;

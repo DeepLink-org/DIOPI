@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
@@ -23,17 +21,17 @@ diopiError_t upsampleInternal(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     auto dim = inputTensor.dim();
     cnnlTensorLayout_t layout;
     if (3 == dim) {
-        DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast1d), "inputTensor's memory format should be channelsLast1d");
-        DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast1d), "outputTensor's memory format should be channelsLast1d");
+        DIOPI_CHECK(inputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "inputTensor's memory format should be channelsLast1d");
+        DIOPI_CHECK(outputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "outputTensor's memory format should be channelsLast1d");
         layout = CNNL_LAYOUT_NLC;
     } else if (4 == dim) {
-        DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast), "inputTensor's memory format should be channelsLast");
-        DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast), "outputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(inputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast), "inputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(outputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast), "outputTensor's memory format should be channelsLast");
         layout = CNNL_LAYOUT_NHWC;
     } else if (5 == dim) {
         DIOPI_CHECK(interpMode != CNNL_INTERP_NEAREST, "nearest upsample for 5d tensor is not supported by camb kernel.");
-        DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast3d), "inputTensor's memory format should be channelsLast3d");
-        DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast3d), "outputTensor's memory format should be channelsLast3d");
+        DIOPI_CHECK(inputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "inputTensor's memory format should be channelsLast3d");
+        DIOPI_CHECK(outputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "outputTensor's memory format should be channelsLast3d");
         layout = CNNL_LAYOUT_NDHWC;
     } else {
         DIOPI_CHECK(false, "Dim of input tensor should be in [3,4,5].");
@@ -74,16 +72,16 @@ diopiError_t upsampleBackwardInternal(diopiContextHandle_t ctx, diopiTensorHandl
     auto dim = inputTensor.dim();
     cnnlTensorLayout_t layout;
     if (3 == dim) {
-        DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast1d), "inputTensor's memory format should be channelsLast");
-        DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast1d), "outputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(inputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "inputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(outputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "outputTensor's memory format should be channelsLast");
         layout = CNNL_LAYOUT_NLC;
     } else if (4 == dim) {
-        DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast), "inputTensor's memory format should be channelsLast");
-        DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast), "outputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(inputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast), "inputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(outputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast), "outputTensor's memory format should be channelsLast");
         layout = CNNL_LAYOUT_NHWC;
     } else if (5 == dim) {
-        DIOPI_CHECK(inputTensor.isContiguous(MemoryFormat::ChannelsLast3d), "inputTensor's memory format should be channelsLast");
-        DIOPI_CHECK(outputTensor.isContiguous(MemoryFormat::ChannelsLast3d), "outputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(inputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "inputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(outputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "outputTensor's memory format should be channelsLast");
         layout = CNNL_LAYOUT_NDHWC;
     } else {
         DIOPI_CHECK(false, "Dim of input tensor should be in [3,4,5].");
@@ -99,20 +97,20 @@ diopiError_t upsampleBackwardInternal(diopiContextHandle_t ctx, diopiTensorHandl
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size) {
+diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size) {
     DIOPI_CALL(upsampleInternal(ctx, out, input, false, false, CNNL_INTERP_NEAREST))
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                                     diopiSize_t outSize, diopiSize_t inSize) {
+diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiSize_t outSize,
+                                          diopiSize_t inSize) {
     DIOPI_CALL(upsampleBackwardInternal(ctx, gradInput, gradOutput, false, false, CNNL_INTERP_BACKWARD_NEAREST))
 
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size,
-                                            bool alignCorners, const char* mode) {
+diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size, bool alignCorners,
+                                 const char* mode) {
     DiopiTensor inputTensor(input);
 
     if (3 == inputTensor.dim() && 0 == strcmp(mode, "linear")) {
@@ -136,8 +134,8 @@ extern "C" diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTenso
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                                    diopiSize_t outSize, diopiSize_t inSize, bool alignCorners, const char* mode) {
+diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiSize_t outSize,
+                                         diopiSize_t inSize, bool alignCorners, const char* mode) {
     DiopiTensor inputTensor(gradOutput);
     auto dim = inputTensor.dim();
 
