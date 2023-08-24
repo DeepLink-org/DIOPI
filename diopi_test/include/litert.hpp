@@ -139,7 +139,7 @@ public:
 
 struct diopiGenerator {
 private:
-    mutable diopiTensor state_;
+    diopiTensor state_;
 
 public:
     diopiGenerator() = default;
@@ -148,7 +148,7 @@ public:
 
     diopiTensor& state() const { return state_; }
 
-    void set_state(diopiConstTensorHandle_t new_state) const { state_ = *new_state; }
+    void set_state(diopiConstTensorHandle_t new_state) { state_ = *new_state; }
 };
 
 struct diopiContext {

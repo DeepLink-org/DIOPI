@@ -11,7 +11,7 @@
 namespace impl {
 namespace camb {
 
-diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, double std, diopiConstGeneratorHandle_t generator) {
+diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, double std, diopiGeneratorHandle_t generator) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor tensor(out);
@@ -35,7 +35,7 @@ diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, doub
     return diopiSuccess;
 }
 
-diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std, diopiConstGeneratorHandle_t generator) {
+diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std, diopiGeneratorHandle_t generator) {
     DIOPI_CALL(diopiNormal(ctx, inout, mean, std, generator));
     return diopiSuccess;
 }

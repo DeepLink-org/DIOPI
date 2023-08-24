@@ -11,7 +11,7 @@
 namespace impl {
 namespace camb {
 
-diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to, diopiConstGeneratorHandle_t generator) {
+diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to, diopiGeneratorHandle_t generator) {
     DIOPI_CHECK_NULLPTR_ABORT(generator);
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 

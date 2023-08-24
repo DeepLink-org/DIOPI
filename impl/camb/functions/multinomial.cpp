@@ -21,7 +21,7 @@ private:
 };
 
 diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t numSamples, bool replacement,
-                              diopiConstGeneratorHandle_t gen) {
+                              diopiGeneratorHandle_t gen) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     CnnlRandGenerator cnnlGenerator;

@@ -2442,7 +2442,7 @@ diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t out, cons
     return diopiSuccess;
 }
 
-diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, int64_t n, diopiConstGeneratorHandle_t generator) {
+diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, int64_t n, diopiGeneratorHandle_t generator) {
     impl::aten::setCurCtx(ctx);
     auto atOut = impl::aten::buildATen(out);
     at::Generator gen = impl::aten::buildGenerator(ctx, generator);
@@ -2452,7 +2452,7 @@ diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, in
     return diopiSuccess;
 }
 
-diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to, diopiConstGeneratorHandle_t generator) {
+diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to, diopiGeneratorHandle_t generator) {
     impl::aten::setCurCtx(ctx);
     auto atInOut = impl::aten::buildATen(inout);
     at::Generator gen = impl::aten::buildGenerator(ctx, generator);
@@ -2462,7 +2462,7 @@ diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout
     return diopiSuccess;
 }
 
-diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t from, const int64_t* to, diopiConstGeneratorHandle_t generator) {
+diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t from, const int64_t* to, diopiGeneratorHandle_t generator) {
     impl::aten::setCurCtx(ctx);
     auto atInOut = impl::aten::buildATen(inout);
     c10::optional<int64_t> atTo = to ? c10::optional<int64_t>(*to) : c10::nullopt;
@@ -2473,7 +2473,7 @@ diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout,
     return diopiSuccess;
 }
 
-diopiError_t diopiBernoulliInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, diopiConstGeneratorHandle_t generator) {
+diopiError_t diopiBernoulliInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, diopiGeneratorHandle_t generator) {
     impl::aten::setCurCtx(ctx);
     auto atInOut = impl::aten::buildATen(inout);
     at::Generator gen = impl::aten::buildGenerator(ctx, generator);
@@ -2483,7 +2483,7 @@ diopiError_t diopiBernoulliInp(diopiContextHandle_t ctx, diopiTensorHandle_t ino
     return diopiSuccess;
 }
 
-diopiError_t diopiBernoulli(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstGeneratorHandle_t generator) {
+diopiError_t diopiBernoulli(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiGeneratorHandle_t generator) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);
@@ -2494,7 +2494,7 @@ diopiError_t diopiBernoulli(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     return diopiSuccess;
 }
 
-diopiError_t diopiBernoulliScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, double p, diopiConstGeneratorHandle_t generator) {
+diopiError_t diopiBernoulliScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, double p, diopiGeneratorHandle_t generator) {
     impl::aten::setCurCtx(ctx);
     auto atOut = impl::aten::buildATen(out);
     at::Generator gen = impl::aten::buildGenerator(ctx, generator);
@@ -2504,7 +2504,7 @@ diopiError_t diopiBernoulliScalar(diopiContextHandle_t ctx, diopiTensorHandle_t 
     return diopiSuccess;
 }
 
-diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, double std, diopiConstGeneratorHandle_t generator) {
+diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, double std, diopiGeneratorHandle_t generator) {
     impl::aten::setCurCtx(ctx);
     auto atOut = impl::aten::buildATen(out);
     auto atSize = atOut.sizes();
@@ -2515,7 +2515,7 @@ diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, doub
     return diopiSuccess;
 }
 
-diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std, diopiConstGeneratorHandle_t generator) {
+diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std, diopiGeneratorHandle_t generator) {
     impl::aten::setCurCtx(ctx);
     auto atInOut = impl::aten::buildATen(inout);
     at::Generator gen = impl::aten::buildGenerator(ctx, generator);
@@ -2525,7 +2525,7 @@ diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout,
 }
 
 diopiError_t diopiNormalTensorScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t mean, double std,
-                                     diopiConstGeneratorHandle_t generator) {
+                                     diopiGeneratorHandle_t generator) {
     impl::aten::setCurCtx(ctx);
     auto atOut = impl::aten::buildATen(out);
     auto atMean = impl::aten::buildATen(mean);
@@ -2537,7 +2537,7 @@ diopiError_t diopiNormalTensorScalar(diopiContextHandle_t ctx, diopiTensorHandle
 }
 
 diopiError_t diopiNormalScalarTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, diopiConstTensorHandle_t std,
-                                     diopiConstGeneratorHandle_t generator) {
+                                     diopiGeneratorHandle_t generator) {
     impl::aten::setCurCtx(ctx);
     auto atOut = impl::aten::buildATen(out);
     auto atStd = impl::aten::buildATen(std);
@@ -2549,7 +2549,7 @@ diopiError_t diopiNormalScalarTensor(diopiContextHandle_t ctx, diopiTensorHandle
 }
 
 diopiError_t diopiNormalTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t std,
-                               diopiConstGeneratorHandle_t generator) {
+                               diopiGeneratorHandle_t generator) {
     impl::aten::setCurCtx(ctx);
     auto atOut = impl::aten::buildATen(out);
     auto atMean = impl::aten::buildATen(mean);
@@ -4000,7 +4000,7 @@ diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
 }
 
 diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t num_samples, bool replacement,
-                              diopiConstGeneratorHandle_t generator) {
+                              diopiGeneratorHandle_t generator) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);

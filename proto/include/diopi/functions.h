@@ -2988,7 +2988,7 @@ DIOPI_API diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle
  * @param[in] generator a pseudorandom number generator for sampling
  */
 DIOPI_API diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, int64_t from, const int64_t* to,
-                                      diopiConstGeneratorHandle_t generator);
+                                      diopiGeneratorHandle_t generator);
 
 /**
  * @brief Fills self tensor with numbers sampled from the continuous uniform distribution: \f[P(x)= \frac{1}{to-from}\f]
@@ -2998,7 +2998,7 @@ DIOPI_API diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHandl
  * @param[in] to the upper bound of the random function. type = [double].
  * @param[in] generator a pseudorandom number generator for sampling
  */
-DIOPI_API diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to, diopiConstGeneratorHandle_t generator);
+DIOPI_API diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to, diopiGeneratorHandle_t generator);
 
 /**
  * @brief Draws binary random numbers (0 or 1) from a Bernoulli distribution.
@@ -3007,7 +3007,7 @@ DIOPI_API diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHand
  * @param[out] out the output tensor.
  * @param[in] generator a pseudorandom number generator for sampling
  */
-DIOPI_API diopiError_t diopiBernoulli(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstGeneratorHandle_t generator);
+DIOPI_API diopiError_t diopiBernoulli(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiGeneratorHandle_t generator);
 
 /**
  * @brief The in-place version of diopiBernoulli().
@@ -3015,7 +3015,7 @@ DIOPI_API diopiError_t diopiBernoulli(diopiContextHandle_t ctx, diopiTensorHandl
  * @param[in] inout the input tensor of probability values for the Bernoulli distribution.
  * @param[in] generator a pseudorandom number generator for sampling
  */
-DIOPI_API diopiError_t diopiBernoulliInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, diopiConstGeneratorHandle_t generator);
+DIOPI_API diopiError_t diopiBernoulliInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, diopiGeneratorHandle_t generator);
 
 /**
  * @brief Draws binary random numbers (0 or 1) from a Bernoulli distribution.
@@ -3024,7 +3024,7 @@ DIOPI_API diopiError_t diopiBernoulliInp(diopiContextHandle_t ctx, diopiTensorHa
  * @param[out] out the output tensor.
  * @param[in] generator a pseudorandom number generator for sampling
  */
-DIOPI_API diopiError_t diopiBernoulliScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, double p, diopiConstGeneratorHandle_t generator);
+DIOPI_API diopiError_t diopiBernoulliScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, double p, diopiGeneratorHandle_t generator);
 
 /**
  * @brief Returns a one-dimensional tensor that starts from start, increments by step, and ends at end.
@@ -3044,7 +3044,7 @@ DIOPI_API diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t
  * @param[out] out the output tensor. type = [int32, int64].
  * @param[in] generator a pseudorandom number generator for sampling
  */
-DIOPI_API diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, int64_t n, diopiConstGeneratorHandle_t generator);
+DIOPI_API diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, int64_t n, diopiGeneratorHandle_t generator);
 
 /**
  * @brief Returns a tensor of random numbers drawn from separate normal distributions whose mean and standard deviation are given.
@@ -3054,7 +3054,7 @@ DIOPI_API diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle
  * @param[out] out the output tensor.
  * @param[in] generator a pseudorandom number generator for sampling
  */
-DIOPI_API diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, double std, diopiConstGeneratorHandle_t generator);
+DIOPI_API diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, double std, diopiGeneratorHandle_t generator);
 
 /**
  * @brief Returns a tensor of random numbers drawn from separate normal distributions whose mean and standard deviation are given.
@@ -3065,7 +3065,7 @@ DIOPI_API diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t
  * @param[in] generator a pseudorandom number generator for sampling
  */
 DIOPI_API diopiError_t diopiNormalTensorScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t mean, double std,
-                                               diopiConstGeneratorHandle_t generator);
+                                               diopiGeneratorHandle_t generator);
 
 /**
  * @brief Returns a tensor of random numbers drawn from separate normal distributions whose mean and standard deviation are given.
@@ -3076,7 +3076,7 @@ DIOPI_API diopiError_t diopiNormalTensorScalar(diopiContextHandle_t ctx, diopiTe
  * @param[in] generator a pseudorandom number generator for sampling
  */
 DIOPI_API diopiError_t diopiNormalScalarTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, diopiConstTensorHandle_t std,
-                                               diopiConstGeneratorHandle_t generator);
+                                               diopiGeneratorHandle_t generator);
 
 /**
  * @brief Returns a tensor of random numbers drawn from separate normal distributions whose mean and standard deviation are given.
@@ -3087,7 +3087,7 @@ DIOPI_API diopiError_t diopiNormalScalarTensor(diopiContextHandle_t ctx, diopiTe
  * @param[in] generator a pseudorandom number generator for sampling
  */
 DIOPI_API diopiError_t diopiNormalTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t std,
-                                         diopiConstGeneratorHandle_t generator);
+                                         diopiGeneratorHandle_t generator);
 
 /**
  * @brief The in-place version of diopiNormal.
@@ -3097,7 +3097,7 @@ DIOPI_API diopiError_t diopiNormalTensor(diopiContextHandle_t ctx, diopiTensorHa
  * @param[in] inout the input and output tensor.
  * @param[in] generator a pseudorandom number generator for sampling
  */
-DIOPI_API diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std, diopiConstGeneratorHandle_t generator);
+DIOPI_API diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std, diopiGeneratorHandle_t generator);
 
 /**
  * @brief Creates grids of coordinates specified by 1D input tensors.
@@ -3119,7 +3119,7 @@ DIOPI_API diopiError_t diopiMeshGrid(diopiContextHandle_t ctx, diopiTensorHandle
  * @param[in] generator a pseudorandom number generator for sampling
  */
 DIOPI_API diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t num_samples,
-                                        bool replacement, diopiConstGeneratorHandle_t generator);
+                                        bool replacement, diopiGeneratorHandle_t generator);
 /**
  * @brief Applies Layer Normalization over a mini-batch of inputs.
  * type=[float32, float64, float16].
