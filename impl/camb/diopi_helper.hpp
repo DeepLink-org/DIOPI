@@ -124,9 +124,6 @@ public:
     int64_t elemsize() const;
     int64_t dim() const { return static_cast<int64_t>(this->shape().size()); }
 
-    /* DEPRECATED AND WILL BE REMOVED */
-    DiopiTensor contiguous(diopiContextHandle_t ctx, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous);
-
     bool isContiguous(diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous) const;
 
     DiopiTensor& asStrided(const std::vector<int64_t>& shape, const std::vector<int64_t>& stride);

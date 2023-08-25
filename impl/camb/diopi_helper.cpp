@@ -156,52 +156,6 @@ int64_t DiopiTensor::elemsize() const {
     return elemsize;
 }
 
-DiopiTensor DiopiTensor::contiguous(diopiContextHandle_t ctx, diopiMemoryFormat_t format) {
-    /* DEPRECATED AND WILL BE REMOVED */
-    if (this->isContiguous(format)) return *this;
-    int64_t dim = this->dim();
-    std::vector<int64_t> strides(dim);
-    int64_t stride = 1;
-    if (format == diopiMemoryFormat_t::Contiguous) {
-        for (size_t i = dim; i > 0; --i) {
-            strides[i - 1] = stride;
-            if (shape_[i - 1] == 0) {
-                continue;
-            }
-            if (stride != -1) {
-                stride *= shape_[i - 1];
-            }
-        }
-    } else if (format == diopiMemoryFormat_t::ChannelsLast) {
-        DIOPI_CHECK_ABORT(this->shape().size() == 4, "%s", "tensor size should be 4");
-        for (auto k : {1, 3, 2, 0}) {
-            strides[k] = stride;
-            if (shape_[k] == 0) {
-                continue;
-            }
-            if (stride != -1) {
-                stride *= shape_[k];
-            }
-        }
-    } else if (format == diopiMemoryFormat_t::ChannelsLast3d) {
-        DIOPI_CHECK_ABORT(this->shape().size() == 5, "%s", "tensor size should be 5");
-        for (auto k : {1, 4, 3, 2, 0}) {
-            strides[k] = stride;
-            if (shape_[k] == 0) {
-                continue;
-            }
-            if (stride != -1) {
-                stride *= shape_[k];
-            }
-        }
-    }
-    diopiSize_t strideDiopi{strides.data(), static_cast<int64_t>(strides.size())};
-    diopiSize_t shapeDiopi{this->shape().data(), static_cast<int64_t>(this->shape().size())};
-    diopiTensorHandle_t tensor = nullptr;
-    diopiRequireTensor(ctx, &tensor, &shapeDiopi, &strideDiopi, this->dtype(), this->device());
-    return DiopiTensor(tensor);
-}
-
 bool DiopiTensor::isContiguous(diopiMemoryFormat_t format) const {
     if (!defined()) {
         return true;
