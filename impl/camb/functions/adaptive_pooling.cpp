@@ -29,17 +29,16 @@ diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_
     }
 
     auto memoryFormat = diopiMemoryFormat_t::ChannelsLast;
-    auto inputChannelLast = inputTr.contiguous(ctx, memoryFormat);
-    DIOPI_CALL(cnnlTranspose(ctx, handle, inputTr, inputChannelLast, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC));
+    DIOPI_CALL(contiguous(ctx, inputTr, memoryFormat));
 
-    auto outputChannelLast = outputTmpTr;
+    DiopiTensor outputChannelLast = outputTmpTr;
     if (!outputChannelLast.isContiguous(memoryFormat)) {
         // for some special case like shape = [2, 2048, 1, 1], it's already been ChannelsLast
         outputChannelLast = requiresTensor(ctx, outputTmpTr.shape(), outputTmpTr.dtype(), diopiMemoryFormat_t::ChannelsLast);
     }
 
     cnnlTensorLayout_t layout = CNNL_LAYOUT_NHWC;
-    CnnlTensorDesc inputDesc(inputChannelLast, layout);
+    CnnlTensorDesc inputDesc(inputTr, layout);
     CnnlTensorDesc outputDesc(outputChannelLast, layout);
 
     cnnlPoolingMode_t mode = CNNL_POOLING_AVERAGE_COUNT_INCLUDE_PADDING;
@@ -53,13 +52,13 @@ diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_
 
     /* call adaptive pooling */
     DIOPI_CALLCNNL(cnnlAdaptivePoolingForward_v2(
-        handle, inputDesc.get(), inputChannelLast.data(), mode, workspacePtr, workspaceSize, outputDesc.get(), outputChannelLast.data(), nullptr, nullptr));
+        handle, inputDesc.get(), inputTr.data(), mode, workspacePtr, workspaceSize, outputDesc.get(), outputChannelLast.data(), nullptr, nullptr));
 #else
-    DIOPI_CALLCNNL(
-        cnnlAdaptivePoolingForward(handle, inputDesc.get(), inputChannelLast.data(), mode, outputDesc.get(), outputChannelLast.data(), nullptr, nullptr));
+    DIOPI_CALLCNNL(cnnlAdaptivePoolingForward(handle, inputDesc.get(), inputTr.data(), mode, outputDesc.get(), outputChannelLast.data(), nullptr, nullptr));
 #endif
     // NHWC -> NCHW
-    DIOPI_CALL(cnnlTranspose(ctx, handle, outputChannelLast, outputTmpTr, CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW));
+    DIOPI_CALL(impl::camb::contiguous(ctx, outputChannelLast, diopiMemoryFormat_t::Contiguous));
+    DIOPI_CALL(impl::camb::diopiCopyInp(ctx, outputChannelLast.tensorHandle(), outputTmpTr.tensorHandle()));
 
     if (outputTmpTr.dtype() != outputTr.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outputTr, outputTmpTr));
@@ -84,25 +83,24 @@ diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTenso
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
     auto memoryFormat = diopiMemoryFormat_t::ChannelsLast;
-    auto gradOutputChannelLast = gradOutputTr.contiguous(ctx, memoryFormat);
-    DIOPI_CALL(cnnlTranspose(ctx, handle, gradOutputTr, gradOutputChannelLast, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC));
+    DIOPI_CALL(contiguous(ctx, gradOutputTr, memoryFormat));
 
     DiopiTensor gradInputTmpTr = gradInputTr;
     if (gradInputTr.dtype() != gradOutputTr.dtype()) {
         gradInputTmpTr = requiresTensor(ctx, gradInputTr.shape(), gradOutputTr.dtype());
     }
 
-    auto gradInputChannelLast = gradInputTmpTr.contiguous(ctx, memoryFormat);
+    DiopiTensor gradInputChannelLast = requiresTensor(ctx, gradInputTmpTr.shape(), gradInputTmpTr.dtype(), diopiMemoryFormat_t::ChannelsLast);
 
     /* generate tensor desc */
     cnnlTensorLayout_t layout = CNNL_LAYOUT_NHWC;
-    CnnlTensorDesc gradOutputDesc(gradOutputChannelLast, layout);
+    CnnlTensorDesc gradOutputDesc(gradOutputTr, layout);
     CnnlTensorDesc gradInputDesc(gradInputChannelLast, layout);
 
     /* call adaptive pooling */
     DIOPI_CALLCNNL(cnnlAdaptivePoolingBackward(handle,
                                                gradOutputDesc.get(),
-                                               gradOutputChannelLast.data(),
+                                               gradOutputTr.data(),
                                                nullptr,
                                                nullptr,
                                                CNNL_POOLING_AVERAGE_COUNT_INCLUDE_PADDING,
@@ -110,7 +108,8 @@ diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTenso
                                                gradInputChannelLast.data()));
 
     // NHWC -> NCHW
-    DIOPI_CALL(cnnlTranspose(ctx, handle, gradInputChannelLast, gradInputTmpTr, CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW));
+    DIOPI_CALL(impl::camb::contiguous(ctx, gradInputChannelLast, diopiMemoryFormat_t::Contiguous));
+    DIOPI_CALL(impl::camb::diopiCopyInp(ctx, gradInputChannelLast.tensorHandle(), gradInputTmpTr.tensorHandle()));
 
     if (gradInputTmpTr.dtype() != gradInputTr.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, gradInputTr, gradInputTmpTr));
