@@ -7,9 +7,6 @@
 #include <diopi/functions.h>
 
 #include "../common/acloprunner.hpp"
-#include "../common/print.hpp"
-// #include "aten_helper.hpp"
-#include <numeric>
 
 namespace impl {
 namespace ascend {
@@ -19,12 +16,10 @@ DIOPI_API diopiError_t diopiLayerNorm(diopiContextHandle_t ctx, diopiTensorHandl
                                       diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias,
                                       diopiSize_t normalizedShape, double eps) {
     // gen begin normalized dim
-    int64_t beginDim = 0;
     diopiSize_t inShape;
     diopiGetTensorShape(input, &inShape);
-
     const int axis = inShape.len - normalizedShape.len;
-    beginDim = axis;
+    int64_t beginDim = axis;
 
     // call acl op
     AclOpRunner<3, 3>("LayerNorm", ctx)

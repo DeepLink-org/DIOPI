@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "../common/acloprunner.hpp"
-#include "../common/print.hpp"
 
 namespace impl {
 namespace ascend {
@@ -36,6 +35,7 @@ DIOPI_API diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t o
     for (size_t i = 0; i < dim.len; ++i) {
         dimVec.emplace_back(dim.data[i]);
     }
+    // default value is 2
     int64_t pValue = (p ? getValue<int64_t>(p) : 2);
     runner.addOutput(resultTmp).setAttr("p", pValue).setAttr("axes", dimVec).setAttr("keepdim", false).setAttr<float>("epsilon", 0.0).run();
 
