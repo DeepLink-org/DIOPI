@@ -76,11 +76,25 @@ int32_t initLibrary() { return diopiSuccess; }
 int32_t finalizeLibrary() { return diopiSuccess; }
 
 int32_t buildGeneratorState(diopiContextHandle_t ctx, diopiTensorHandle_t out) {
-    std::vector<int64_t> vec{1180672};
+    size_t stateSize = 0;
+    cnnlRandGetMTGP32StateSize(nullptr, &stateSize);
+    std::vector<int64_t> vec{static_cast<int64_t>(stateSize)};
     diopiSize_t size{vec.data(), static_cast<int64_t>(vec.size())};
-    diopiTensorHandle_t tensor = nullptr;
-    diopiRequireTensor(ctx, &tensor, &size, nullptr, diopi_dtype_uint8, diopi_device);
-    *out = *tensor;
+    diopiTensorHandle_t state = nullptr;
+    diopiRequireTensor(ctx, &state, &size, nullptr, diopi_dtype_uint8, diopi_device);
+
+    void* statePtr = nullptr;
+    diopiGetTensorData(state, &statePtr);
+    uint32_t seed = 0;
+    cnnlHandle_t handle;
+    cnnlCreate(&handle);
+    diopiStreamHandle_t streamHandle;
+    diopiGetStream(ctx, &streamHandle);
+    cnrtQueue_t queue = static_cast<cnrtQueue_t>(streamHandle);
+    cnnlSetQueue(handle, queue);
+    cnnlRandMakeMTGP32KernelState(handle, statePtr, nullptr, nullptr, seed);
+
+    *out = *state;
     return diopiSuccess;
 }
 
