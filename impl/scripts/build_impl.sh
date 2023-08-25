@@ -16,7 +16,7 @@ case $1 in
     -DENABLE_COVERAGE=${USE_COVERAGE} -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` \
     && make -j8;;
   torch_dyload)
-    mkdir -p build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=torch -DDEBUG=ON -DDYLOAD=ON -DTEST=${DIOPI_BUILD_TESTRT} \
+    mkdir -p build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=torch -DDEBUG=OFF -DDYLOAD=ON -DTEST=${DIOPI_BUILD_TESTRT} \
     -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` \
     && make -j8 && mkdir -p ${DIOPI_TEST_PATH}/lib && ln -sf ${CURRENT_DIR}/../lib/libdiopi_real_impl.so ${DIOPI_TEST_PATH}/lib;;
   camb_pytorch)

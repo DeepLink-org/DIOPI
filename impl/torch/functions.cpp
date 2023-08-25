@@ -756,7 +756,9 @@ diopiError_t diopiWhere(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     auto atCondition = impl::aten::buildATen(condition);
     auto atInput = impl::aten::buildATen(input);
     auto atOther = impl::aten::buildATen(other);
-    impl::aten::invokeATenFuncRet<at::Tensor (*)(at::Tensor const&, at::Tensor const&, at::Tensor const&)>(ctx, at::where, out, atCondition, atInput, atOther);
+    // impl::aten::invokeATenFuncRet<at::Tensor (*)(at::Tensor const&, at::Tensor const&, at::Tensor const&)>(ctx, at::where, out, atCondition, atInput,
+    // atOther);
+    at::where_out(atOut, atCondition, atInput, atOther);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -1116,7 +1118,7 @@ diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
     at::Tensor atInput = impl::aten::buildATen(input);
     at::Tensor atOther = impl::aten::buildATen(other);
     at::Scalar atAlpha = impl::aten::buildAtScalar(alpha);
-    at::add_out(atInput, atInput, atOther, atAlpha);
+    atInput.add_(atOther, atAlpha);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -1207,8 +1209,7 @@ diopiError_t diopiMulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
     impl::aten::setCurCtx(ctx);
     at::Tensor atInput = impl::aten::buildATen(input);
     at::Tensor atOther = impl::aten::buildATen(other);
-    at::mul_out(atInput, atInput, atOther);
-    // atInput.mul_(atOther);
+    atInput.mul_(atOther);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -1227,7 +1228,7 @@ diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
     impl::aten::setCurCtx(ctx);
     at::Tensor atInput = impl::aten::buildATen(input);
     at::Scalar atOther = impl::aten::buildAtScalar(other);
-    at::mul_out(atInput, atInput, atOther);
+    atInput.mul_(atOther);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -1789,15 +1790,13 @@ diopiError_t diopiAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 
 diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p, bool train) {
     impl::aten::setCurCtx(ctx);
-    at::Tensor atOut = impl::aten::buildATen(out);
     at::Tensor atInput = impl::aten::buildATen(input);
-    at::Tensor atMask = impl::aten::buildATen(mask);
     if (train) {
+        at::Tensor atOut = impl::aten::buildATen(out);
+        at::Tensor atMask = impl::aten::buildATen(mask);
         if (atInput.numel() == atMask.numel()) {
-            diopi_tensor_list vecOut = {out, mask};
-            impl::aten::invokeATenFuncRet(ctx, at::_fused_dropout, vecOut, atInput, 1 - p, c10::nullopt);
+            at::_fused_dropout_out(atOut, atMask, atInput, 1 - p, c10::nullopt);
         } else {
-            at::Tensor atOut = impl::aten::buildATen(out);
             atMask.bernoulli_(1 - p);
             at::mul_out(atOut, atInput, atMask);
             atOut.div_(1 - p);
@@ -1811,13 +1810,11 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
 
 diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t mask, double p, bool train) {
     impl::aten::setCurCtx(ctx);
-    at::Tensor atInput = impl::aten::buildATen(input);
-    at::Tensor atMask = impl::aten::buildATen(mask);
     if (train) {
+        at::Tensor atInput = impl::aten::buildATen(input);
+        at::Tensor atMask = impl::aten::buildATen(mask);
         if (atInput.numel() == atMask.numel()) {
-            auto atOuts = at::_fused_dropout(atInput, 1 - p, c10::nullopt);
-            impl::aten::updateATen2Tensor(ctx, std::get<0>(atOuts), input);
-            impl::aten::updateATen2Tensor(ctx, std::get<1>(atOuts), mask);
+            at::_fused_dropout_out(atInput, atMask, atInput, 1 - p, c10::nullopt);
         } else {
             atMask.bernoulli_(1 - p);
             atInput.mul_(atMask).div_(1 - p);
@@ -3254,9 +3251,7 @@ diopiError_t diopiLayerNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     c10::optional<at::Tensor> atWeight = weight ? c10::optional<at::Tensor>(impl::aten::buildATen(weight)) : c10::nullopt;
     c10::optional<at::Tensor> atBias = bias ? c10::optional<at::Tensor>(impl::aten::buildATen(bias)) : c10::nullopt;
     auto atNormalizedShape = impl::aten::buildAtIntArray(normalized_shape);
-    diopi_tensor_list vecOut = {out, save_mean, save_invstd};
-    // at::native_layer_norm_out(atOut, atSaveMean, atSaveInvstd, atInput, atNormalizedShape, atWeight, atBias, eps);
-    impl::aten::invokeATenFuncRet(ctx, at::native_layer_norm, vecOut, atInput, atNormalizedShape, atWeight, atBias, eps);
+    at::native_layer_norm_out(atOut, atSaveMean, atSaveInvstd, atInput, atNormalizedShape, atWeight, atBias, eps);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -3303,9 +3298,15 @@ diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
             atGradInput, atGradWeight, atGradBias, atGradOutput, atInput, atNormalizedShape, atSaveMean, atSaveVar, atWeight, atBias, grad_input_mask);
     } else {
         auto atOut = at::native_layer_norm_backward(atGradOutput, atInput, atNormalizedShape, atSaveMean, atSaveVar, atWeight, atBias, grad_input_mask);
-        impl::aten::updateATen2Tensor(ctx, std::get<0>(atOut), grad_input);
-        impl::aten::updateATen2Tensor(ctx, std::get<1>(atOut), grad_weight);
-        impl::aten::updateATen2Tensor(ctx, std::get<2>(atOut), grad_bias);
+        if (grad_input) {
+            impl::aten::updateATen2Tensor(ctx, std::get<0>(atOut), grad_input);
+        }
+        if (grad_weight) {
+            impl::aten::updateATen2Tensor(ctx, std::get<1>(atOut), grad_weight);
+        }
+        if (grad_bias) {
+            impl::aten::updateATen2Tensor(ctx, std::get<2>(atOut), grad_bias);
+        }
     }
 
     impl::aten::unsetCurCtx();
@@ -3838,7 +3839,7 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
         auto atGradWeight = impl::aten::buildATen(grad_weight);
         if (dims > 2) {
             auto atGradWeightTemp = at::matmul(atInput.transpose(dims - 2, dims - 1), atGradOutput);
-            atGradWeight = atGradWeight.transpose(dims - 2, dims - 1);
+            atGradWeightTemp.transpose_(dims - 2, dims - 1);
             std::vector<int64_t> sumDim;
             for (int i = 0; i < dims - 2; ++i) {
                 sumDim.push_back(i);
