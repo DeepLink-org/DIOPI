@@ -21,7 +21,7 @@ DIOPI_API diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandl
     DiopiTensor saveMeanTensor(saveMean);
     DiopiTensor saveInvstdTensor(saveInvstd);
 
-    if (inputTensor.numel() == 0) {
+    if (inputTensor.defined() && inputTensor.numel() == 0) {
         return diopiSuccess;
     }
     int inputDim = inputTensor.dim();
@@ -81,15 +81,15 @@ DIOPI_API diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTen
     DiopiTensor gradBiasTensor(gradBias);
     DiopiTensor gradOutputTensor(gradOutput);
 
-    if (inputTensor.numel() == 0) {
+    if (inputTensor.defined() && inputTensor.numel() == 0) {
         if (inputTensor.shape()[0] == 0) {
-            diopiScalar_t zero = {diopi_dtype_float64, {0}};
+            diopiScalar_t zero = constructDiopiScalarT(inputTensor.dtype(), 0);
             DIOPI_CALL(diopiFill(ctx, gradWeight, &zero));
             DIOPI_CALL(diopiFill(ctx, gradBias, &zero));
             return diopiSuccess;
         } else {
-            diopiScalar_t nan = {diopi_dtype_float64, NAN};
-            diopiScalar_t zero = {diopi_dtype_float64, {0}};
+            diopiScalar_t nan = constructDiopiScalarT(inputTensor.dtype(), NAN);
+            diopiScalar_t zero = constructDiopiScalarT(inputTensor.dtype(), 0);
             DIOPI_CALL(diopiFill(ctx, gradWeight, &nan));
             DIOPI_CALL(diopiFill(ctx, gradBias, &zero));
             return diopiSuccess;
