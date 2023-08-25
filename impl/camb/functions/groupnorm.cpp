@@ -83,7 +83,7 @@ DIOPI_API diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTen
 
     if (inputTensor.numel() == 0) {
         if (inputTensor.shape()[0] == 0) {
-            diopiScalar_t zero = {diopi_dtype_float64, 0};
+            diopiScalar_t zero = {diopi_dtype_float64, {0}};
             DIOPI_CALL(diopiFill(ctx, gradWeight, &zero));
             DIOPI_CALL(diopiFill(ctx, gradBias, &zero));
             return diopiSuccess;
