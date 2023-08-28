@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <vector>
 
 #include "../cnnl_helper.hpp"
@@ -31,13 +29,13 @@ static diopiError_t sqrt(diopiContextHandle_t ctx, DiopiTensor& output, DiopiTen
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiSqrtInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+diopiError_t diopiSqrtInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     DiopiTensor inputTensor(input);
     DIOPI_CALL(sqrt(ctx, inputTensor, inputTensor));
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiSqrt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+diopiError_t diopiSqrt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
     DIOPI_CALL(sqrt(ctx, outputTensor, inputTensor));

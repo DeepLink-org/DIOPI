@@ -25,6 +25,9 @@ str_to_diopi_dtype = {
     'float32': 'diopiDtype_t::diopi_dtype_float32',
     'float16': 'diopiDtype_t::diopi_dtype_float16',
     'bool': 'diopiDtype_t::diopi_dtype_bool',
+    'complex32': 'diopi_dtype_complex32',
+    'complex64': 'diopi_dtype_complex64',
+    'complex128':'diopi_dtype_complex128',
 }
 
 str_to_diopi_format = {
@@ -38,7 +41,8 @@ str_to_diopi_format = {
 
 default_cast_dtype = {
     'int64': 'int32',
-    'float64': 'float32'
+    'float64': 'float32',
+    'complex128': 'complex64'
 }
 
 cast_strategy = {
@@ -46,6 +50,7 @@ cast_strategy = {
     'Default': {
         'int64': 'int32',
         'float64': 'float32',
+        'complex128': 'complex64'
     },
 
     'CastFloatOnly': {
@@ -62,8 +67,78 @@ cast_strategy = {
 exclude_ops = ['CopyInp', 'CastDtype']
 inp_config = {
     'BatchNorm': ['running_mean', 'running_var'],
-    'IndexPut': ['out']
+    'IndexPut': ['out'],
+    'Adadelta': ['input', 'grad', 'square_avg', 'acc_delta'],
+    'IndexBackward':['zeros_like_input']
 }
+
+def findAllFile(base):
+    for root, ds, fs in os.walk(base):
+        for f in fs:
+            fullname = os.path.join(root, f)
+            yield fullname
+
+
+# search all the diopi func definitions under the directory dir
+def obtain_impl_func(dir):
+
+    impl_functions = {}
+    pattern = r'(?:^|\n)\s*(?:DIOPI_API)?\s*diopiError_t\s+(diopi\w+)\(([^)]*)\)\s*{'
+    pattern = re.compile(pattern)
+    files = findAllFile(dir)
+    for file_path in files:
+        with open(file_path, 'r') as file:
+            c_code = file.read()
+
+        matches = re.findall(pattern, c_code)
+
+        for match in matches:
+            func_name, arguments = match
+            arguments = arguments.strip().split(',')
+            args_after_fmt = []
+            for arg in arguments:
+                arg = arg.strip() #.replace("\r", "").replace("\n", "").replace("\t", "")
+                if(arg.strip().startswith('//')):
+                    continue
+                args_after_fmt.append(arg)
+            if func_name not in impl_functions.keys():
+                impl_functions[func_name] = {"func_name":func_name, "args":args_after_fmt, "return_type":"diopiError_t"}
+
+    return  impl_functions
+
+
+# get the func declararion in the file_path
+def obtain_func_declaration(file_path):
+
+    decl_functions = {}
+    with open(file_path, 'r') as file:
+        c_code = file.read()
+
+    pattern = r'(?:^|\n)\s*DIOPI_API\s+(\w+)\s+(\w+)\(([^)]*)\);'
+    pattern = re.compile(pattern)
+    matches = re.findall(pattern, c_code)
+
+    for match in matches:
+        comment, return_type, func_name, arguments = match
+        # skip the comment
+        if comment and (comment.strip().startswith('/*') or comment.strip().startswith('//') ):
+            continue
+
+        arguments = arguments.strip().split(',')
+
+        print("comment:", comment)
+        print("Function Name:", func_name)
+        print("Return Type:", return_type)
+        print("Arguments:")
+        args_after_fmt = []
+        for arg in arguments:
+            arg = arg.strip()
+            if(arg.startswith('//')):
+                continue
+            args_after_fmt.append(arg.strip())
+        if func_name not in decl_functions.keys():
+            decl_functions[func_name] = {"func_name":func_name, "args": args_after_fmt, "return_type":return_type}
+    return decl_functions
 
 
 def prepare():
@@ -88,6 +163,7 @@ def prepare():
     options = parser.parse_args()
     source = os.path.join(options.diopi_dir, 'proto/include/diopi')
     config_path = os.path.join(options.diopi_dir, 'impl/', options.config_device)
+    device = options.config_device
 
     def create_if_not_exist(name):
         if not os.path.exists(name):
@@ -97,7 +173,7 @@ def prepare():
     dirs = dict(source=source,
                 output_dir=options.output_dir,
                 config_path=config_path)
-    return dirs
+    return dirs, device
 
 
 def get_func_info(content):
@@ -122,12 +198,13 @@ def get_func_info(content):
     return ins, outs, args, ins_v
 
 
-def get_functions_support(source_dir):
+def get_functions_support(source_dir, impl_funcs):
     with open(os.path.join(source_dir, 'functions.h'), 'r', encoding='utf8')as f:
         content = f.readlines()
     funcs_info = {}
     func_dtypes = []
     param_dtypes = {}
+    funcs_decl = []
     func_name = ''
     sa_func = None
     for idx, row in enumerate(content):
@@ -175,6 +252,9 @@ def get_functions_support(source_dir):
                 continue
             else:
                 ins, outs, args, ins_v = get_func_info(temp_content)
+                if func_name in impl_funcs:
+                    func_decl = 'diopiError_t '  + func_name + ' '.join(temp_content).replace('\n', '') + '\n\n'
+                    funcs_decl.append(func_decl)
             if func_name not in funcs_info.keys():
                 funcs_info[func_name] = {}
             funcs_info[func_name]['call_args'] = args
@@ -219,7 +299,7 @@ def get_functions_support(source_dir):
                     funcs_info[func]['outs'][out] = from_func_info['outs'][out]
                 if 'grad_' + out in funcs_info[func]['ins']:
                     funcs_info[func]['ins']['grad_' + out] = from_func_info['outs'][out]
-    return funcs_info
+    return funcs_info, funcs_decl
 
 
 def deal_dtype(op_name, dtype_config, func_infos, tensor_name=None):
@@ -358,19 +438,19 @@ def memory_format_to_str(memory_format):
     return ', std::vector<diopiMemoryFormat_t>{' + ','.join(formats) + '}'
 
 
-def autogen_op_adaptor(op_configs, func_infos):
+def autogen_op_adaptor(op_configs, device, func_infos, impl_funcs):
     adaptors_code = []
     cast = op_configs['Common']['cast'] if 'Common' in op_configs.keys() else ''
     contiguous = op_configs['Common']['contiguous'] if 'Common' in op_configs.keys() else []
     layout = op_configs['Common']['layout'] if 'Common' in op_configs.keys() else []
     for func in func_infos:
         op_name = func.lstrip('diopi')
-        if op_name in exclude_ops:
+        if  func not in impl_funcs:
             continue
-        if (func not in op_configs.keys() and 'Common' not in op_configs.keys()) or len(list(func_infos[func].keys())) == 1:
+        if (func not in op_configs.keys() and 'Common' not in op_configs.keys()) or len(list(func_infos[func].keys())) == 1 or op_name in exclude_ops:
             call_args = [arg.split(' ')[-1] for arg in func_infos[func]['call_args']]
-            adaptors_code.append(OT.adaptor_template.substitute(env=dict(op_name=op_name, attrs=func_infos[func]['call_args'],
-                                                                         new_input='', cast_input='', cast_output='', call_func=func + '(' + ', '.join(call_args) + ');')))
+            adaptors_code.append(OT.adaptor_template.substitute(env=dict(op_name=op_name, attrs=func_infos[func]['call_args'], device=device,
+                                                                         new_input='', cast_input='', cast_output='', func_name=func, call_func=func + '(' + ', '.join(call_args) + ')')))
         else:
             op_config = op_configs[func] if func in op_configs.keys() else None
             new_ins = []
@@ -390,7 +470,7 @@ def autogen_op_adaptor(op_configs, func_infos):
                         new_ins_vector_template = CodeTemplate("""\
 std::vector<diopiConstTensorHandle_t> ${newinput}(${num}, diopiConstTensorHandle_t());
 for (int i = 0; i < ${num}; ++i) {
-    castImpl<diopiConstTensorHandle_t${cast}>(ctx, ${input}[i], &${newinput}[i]${memory_format}, true);
+    castImpl<diopiConstTensorHandle_t${cast}>(ctx, ${input}[i], &${newinput}[i]${memory_format});
 }
 """)
                         new_input.append(new_ins_vector_template.substitute(env=dict(input=tensor, newinput='new' + tensor.capitalize(), num=func_infos[func]['ins_vector'][tensor],
@@ -398,7 +478,7 @@ for (int i = 0; i < ${num}; ++i) {
                     else:
                         new_in = 'new' + tensor.capitalize()
                         new_ins.append(new_in)
-                        cast_impl = 'castImpl<diopiConstTensorHandle_t{cast}>(ctx, {tensor}, &{new_tensor}{memory_format}, true);'.format(
+                        cast_impl = 'castImpl<diopiConstTensorHandle_t{cast}>(ctx, {tensor}, &{new_tensor}{memory_format});'.format(
                                     cast=', ' + cast_method if cast_method else '', memory_format=format_str if format_str else '', tensor=tensor, new_tensor=new_in, contiguous=contiguous_str)
                         cast_ins.append(cast_impl)
                 outs = func_infos[func]['outs']
@@ -420,12 +500,11 @@ for (int i = 0; i < ${num}; ++i) {
                     new_name = name
                 call_args.append(new_name)
 
-            adaptors_code.append(OT.adaptor_template.substitute(env=dict(op_name=op_name, attrs=', '.join(func_infos[func]['call_args']),
-                                                                         new_input=new_input, cast_input=cast_ins, cast_output=cast_outs, call_func=func + '(' + ', '.join(call_args) + ');')))
+            adaptors_code.append(OT.adaptor_template.substitute(env=dict(op_name=op_name, attrs=', '.join(func_infos[func]['call_args']), device=device,
+                                                                         new_input=new_input, cast_input=cast_ins, cast_output=cast_outs, func_name=func, call_func=func + '(' + ', '.join(call_args) + ')')))
     return adaptors_code
 
-
-def gen_autogen_operators(dirs, adaptor_fm):
+def gen_autogen_operators(dirs, device, adaptor_fm):
     config_file_path = os.path.join(dirs.get('config_path'), 'convert_config.yaml')
     try:
         with open(config_file_path, 'r') as f:
@@ -434,25 +513,34 @@ def gen_autogen_operators(dirs, adaptor_fm):
         print(e)
         return
 
-    funcs_info = get_functions_support(dirs.get('source'))
+    # get the implemented functions
+    impl_func_dir = os.path.dirname(config_file_path)
+    impl_func_dir = os.path.join(impl_func_dir, "functions")
+    impl_funcs = obtain_impl_func(impl_func_dir).keys()
+
+    funcs_info, funcs_decl = get_functions_support(dirs.get('source'), impl_funcs)
     op_configs = analysis_configs(configs, funcs_info)
-    adaptors_code = autogen_op_adaptor(op_configs, funcs_info)
+    adaptors_code = autogen_op_adaptor(op_configs, device, funcs_info, impl_funcs)
     casts_code = autogen_cast_strategy()
 
-    adaptor_fm.write('diopi_adaptors.hpp',
+    adaptor_fm.write('diopi_adaptor.cpp',
                      OT.operators_template,
                      dict(adaptors=adaptors_code, cast_strategy=casts_code))
+    adaptor_fm.write('impl_functions.hpp',
+                     OT.impl_declaration_template,
+                     dict(device=device, impl_declaration=funcs_decl))
 
 
 def declare_outputs(adaptor_fm):
-    adaptor_fm.will_write('diopi_adaptors.hpp')
+    adaptor_fm.will_write('diopi_adaptor.cpp')
+    adaptor_fm.will_write('impl_functions.hpp')
 
 
 def gen_all_codes():
-    dirs = prepare()
+    dirs, device = prepare()
     adaptor_fm = FileManager(dirs.get('output_dir', '.'))
     declare_outputs(adaptor_fm)
-    gen_autogen_operators(dirs, adaptor_fm)
+    gen_autogen_operators(dirs, device, adaptor_fm)
     adaptor_fm.check_all_files_written()
 
 

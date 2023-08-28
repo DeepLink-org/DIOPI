@@ -1,12 +1,10 @@
-#include <diopi/functions.h>
+
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
-
-extern "C" {
 
 diopiError_t diopiPowTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t exponent) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -80,8 +78,6 @@ diopiError_t diopiPowScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, c
     DIOPI_CALL(diopiPowTensor(ctx, out, static_cast<diopiTensorHandle_t>(inputTensor), exponent));
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

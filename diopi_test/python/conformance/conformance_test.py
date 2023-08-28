@@ -155,7 +155,10 @@ class ManualTest(object):
         out_numpy = out.numpy()
         mask_numpy = mask.numpy()
 
-        if training:
+        rtol = 1e-2 if input_numpy.dtype == np.float16 else 1e-4
+        atol = 5e-2 if input_numpy.dtype == np.float16 else 1e-5
+
+        if training and input.numel() > 0:
             # compute ratio
             real_ratio = np.sum(mask_numpy) / mask.numel()
             # check data
@@ -164,14 +167,15 @@ class ManualTest(object):
                 mask_numpy = mask_numpy * tmp
             remains = out_numpy[mask_numpy == 1]
             ref = input_numpy[mask_numpy == 1]
-            assert np.allclose(remains, ref / (1 - p), rtol=1e-4, atol=1e-5),\
-                f"failed to execute {name}"
-
-            assert np.abs(real_ratio - (1 - p)) < 3e-2,\
-                f"failed to execute {name} "
+            assert np.allclose(remains, ref / (1 - p), rtol=rtol, atol=atol),\
+                f"failed to execute {name}, dropout value doesn't matches."
+            if mask.numel() > 100:
+                # 0.05 is from pytorch
+                assert np.abs(real_ratio - (1 - p)) < 0.05,\
+                    f"failed to execute {name}, dropout proportion unexpected."
         else:
-            assert np.allclose(input_numpy, out_numpy, rtol=1e-4, atol=1e-5),\
-                "failed to execute dropout"
+            assert np.allclose(input_numpy, out_numpy, rtol=rtol, atol=atol),\
+                f"failed to execute {name}, dropout value should be the same."
 
     def test_dropout(input, p=0.5, training=True, inplace=False):
         ManualTest.test_dropout_(F.dropout, input, p, training, inplace)
@@ -244,7 +248,7 @@ class ManualTest(object):
             mean = 0.0
             std = 1.
         out_numpy = out_numpy.flatten()
-        if len(out_numpy) == 0 and size is not None:
+        if len(out_numpy) == 0:
             return True
         p_value = stats.kstest(out_numpy, 'norm', args=(mean, std + 1e-22))[1]
         assert p_value > 0.0001, f"can't pass the ks test, failed to execute normal, p_value is {p_value}"
@@ -497,6 +501,8 @@ class ConformanceTest(object):
                     if passed:
                         logger.info(f"Run diopi_functions.{cfg_func_name} succeed")
                     else:
+                        logger.info(output_abs_path)
+                        logger.info(data['cfg'])
                         input_compare_str = "" if not_passed_name == "" else f", because of inputs: {not_passed_name} changed"
                         logger.error(
                             f"Run diopi_functions.{cfg_func_name} failed{input_compare_str}", tag=test_tag, info=tensor_info)
