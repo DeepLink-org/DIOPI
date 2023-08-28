@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <cstring>
 #include <numeric>
 
@@ -14,8 +12,6 @@
 
 namespace impl {
 namespace camb {
-
-extern "C" {
 
 diopiError_t diopiMeshGrid(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, diopiConstTensorHandle_t* inputs, int64_t inputsNum) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -53,8 +49,6 @@ diopiError_t diopiMeshGrid(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, 
 
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

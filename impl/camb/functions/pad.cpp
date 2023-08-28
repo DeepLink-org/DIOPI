@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <cstring>
 #include <numeric>
 
@@ -15,6 +13,7 @@
 
 namespace impl {
 namespace camb {
+
 namespace {
 
 std::vector<int> getDim(DiopiTensor tensor) {
@@ -75,8 +74,6 @@ void* getTypedValuePtr(diopiDtype_t dtype, const double* value) {
 }
 
 }  // namespace
-
-extern "C" {
 
 DIOPI_API diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t pad, const char* mode,
                                 const double* value) {
@@ -244,8 +241,6 @@ DIOPI_API diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

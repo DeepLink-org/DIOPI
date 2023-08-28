@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
@@ -27,7 +25,6 @@ std::vector<int> getDim(DiopiTensor tensor) {
 }
 
 }  // namespace
-extern "C" {
 
 diopiError_t diopiAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernelSize, diopiSize_t stride,
                             diopiSize_t padding, bool ceilMode, bool countIncludePad, const int64_t* divisorOverride) {
@@ -254,8 +251,6 @@ diopiError_t diopiAvgPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

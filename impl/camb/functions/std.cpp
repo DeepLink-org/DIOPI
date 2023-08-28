@@ -3,7 +3,6 @@
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  */
-#include <diopi/functions.h>
 
 #include <cstring>
 #include <iostream>
@@ -16,7 +15,6 @@
 namespace impl {
 namespace camb {
 
-extern "C" {
 /**
  * @brief Returns the standard derivation of all elements in the input tensor.
  * @param[in] ctx Context environment.
@@ -107,6 +105,5 @@ DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     return diopiSuccess;
 }
 
-}  // extern "C"
 }  // namespace camb
 }  // namespace impl
