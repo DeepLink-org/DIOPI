@@ -197,8 +197,6 @@ diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryF
 
     std::vector<int64_t> olderDestStride = dest.stride();
     std::vector<int64_t> olderDestShape = dest.shape();
-    std::vector<int64_t> olderSrcStride = src.stride();
-    std::vector<int64_t> olderSrcShape = src.shape();
     if (memoryFormat != diopiMemoryFormat_t::Contiguous) {
         DIOPI_CALL(permuteTensor(dest, order));
     } else {
@@ -207,9 +205,7 @@ diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryF
     DIOPI_CALL(transpose(ctx, src, dest, srcLayout, destLayout, order));
     // recovery the shape
     dest.asStrided(olderDestShape, olderDestStride);
-    src.asStrided(olderSrcShape, olderSrcStride);
     src = dest;
-    // printDevData(ctx, dest, "=====dest");
     return diopiSuccess;
 }
 }  // namespace camb

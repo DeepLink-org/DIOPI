@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include "../cnnl_helper.hpp"
+#include "../common/common.hpp"
 #include "../diopi_helper.hpp"
 #include "../mlu_helper.hpp"
 
@@ -39,9 +40,7 @@ extern "C" DIOPI_API diopiError_t diopiRoiAlignMmcv(diopiContextHandle_t ctx, di
     auto argmaxXTr = impl::camb::DiopiTensor(argmaxX);
 
     auto memoryFormat = diopiMemoryFormat_t::ChannelsLast;
-    auto inputTensor = inputTr.contiguous(ctx, memoryFormat);
-    cnnlHandle_t handle = impl::camb::cnnlHandlePool.get(ctx);
-    cnnlTranspose(ctx, handle, inputTr, inputTensor, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC);
+    DIOPI_CALL(impl::camb::contiguous(ctx, inputTr, memoryFormat));
 
     auto numRois = roisTr.size(0);
     auto channels = inputTr.size(1);
@@ -56,8 +55,7 @@ extern "C" DIOPI_API diopiError_t diopiRoiAlignMmcv(diopiContextHandle_t ctx, di
         return diopiSuccess;
     }
 
-    auto outputTrTemp = impl::camb::requiresTensor(ctx, {numRois, channels, alignedHeight, alignedWidth}, inputTr.dtype());
-    auto outputTrTmp = outputTrTemp.contiguous(ctx, memoryFormat);
+    auto outputTrTmp = impl::camb::requiresTensor(ctx, {numRois, channels, alignedHeight, alignedWidth}, inputTr.dtype(), memoryFormat);
 
     // get compute queue
     auto queue = impl::camb::getStream(ctx);
@@ -73,7 +71,7 @@ extern "C" DIOPI_API diopiError_t diopiRoiAlignMmcv(diopiContextHandle_t ctx, di
                                kType,
                                queue,
                                dataType,
-                               inputTensor.data(),
+                               inputTr.data(),
                                roisTr.data(),
                                channels,
                                aligned,
@@ -85,7 +83,9 @@ extern "C" DIOPI_API diopiError_t diopiRoiAlignMmcv(diopiContextHandle_t ctx, di
                                spatialScale,
                                numRois,
                                outputTrTmp.data());
-    cnnlTranspose(ctx, handle, outputTrTmp, outputTr, CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW);
+    // channels last -> contiguous
+    DIOPI_CALL(impl::camb::contiguous(ctx, outputTrTmp, diopiMemoryFormat_t::Contiguous));
+    DIOPI_CALL(impl::camb::diopiCopyInp(ctx, outputTrTmp.tensorHandle(), outputTr.tensorHandle()));
     return diopiSuccess;
 }
 
@@ -116,22 +116,17 @@ extern "C" diopiError_t diopiRoiAlignBackwardMmcv(diopiContextHandle_t ctx, diop
     int width = gradInputTr.size(3);
 
     auto memoryFormat = diopiMemoryFormat_t::ChannelsLast;
-    auto gradTrTmp = gradTr.contiguous(ctx, memoryFormat);
-    cnnlHandle_t handle = impl::camb::cnnlHandlePool.get(ctx);
-    cnnlTranspose(ctx, handle, gradTr, gradTrTmp, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC);
 
     auto dtype = gradTr.dtype();
-    auto gradInputTrTmp = impl::camb::requiresTensor(ctx, {batchSize, channels, height, width}, dtype);
+    auto gradInputTrTmp = impl::camb::requiresTensor(ctx, {batchSize, channels, height, width}, dtype, memoryFormat);
     diopiScalar_t scalar = impl::camb::constructDiopiScalarT(dtype, 0);
     DIOPI_CALL(impl::camb::diopiFill(ctx, diopiTensorHandle_t(gradInputTrTmp), &scalar));
-
-    auto gradInputTr1 = gradInputTrTmp.contiguous(ctx, memoryFormat);
-    cnnlTranspose(ctx, handle, gradInputTrTmp, gradInputTr1, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC);
 
     int boxesNum = roisTr.size(0);
     int hi = gradTr.size(2);
     int wi = gradTr.size(3);
     int c = gradTr.size(1);
+    DIOPI_CALL(impl::camb::contiguous(ctx, gradTr, memoryFormat));
 
     int no = gradInputTr.size(0);
     int ho = gradInputTr.size(2);
@@ -149,24 +144,10 @@ extern "C" diopiError_t diopiRoiAlignBackwardMmcv(diopiContextHandle_t ctx, diop
     cnrtDim3_t kDim = {dimX, dimY, 1};
     cnrtDataType_t kDtype = impl::camb::dtype2CnrtDtype(gradTr.dtype());
 
-    impl::camb::kernelRoiAlignBackward(kDim,
-                                       kType,
-                                       queue,
-                                       kDtype,
-                                       gradTrTmp.data(),
-                                       roisTr.data(),
-                                       gradInputTr1.data(),
-                                       boxesNum,
-                                       hi,
-                                       wi,
-                                       c,
-                                       no,
-                                       ho,
-                                       wo,
-                                       spatialScale,
-                                       samplingRatio,
-                                       aligned);
-
-    cnnlTranspose(ctx, handle, gradInputTr1, gradInputTr, CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW);
+    impl::camb::kernelRoiAlignBackward(
+        kDim, kType, queue, kDtype, gradTr.data(), roisTr.data(), gradInputTrTmp.data(), boxesNum, hi, wi, c, no, ho, wo, spatialScale, samplingRatio, aligned);
+    // channels last -> contiguous
+    DIOPI_CALL(impl::camb::contiguous(ctx, gradInputTrTmp, diopiMemoryFormat_t::Contiguous));
+    DIOPI_CALL(impl::camb::diopiCopyInp(ctx, gradInputTrTmp.tensorHandle(), gradInputTr.tensorHandle()));
     return diopiSuccess;
 }
