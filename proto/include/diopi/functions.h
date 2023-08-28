@@ -444,12 +444,13 @@ DIOPI_API diopiError_t diopiAdaptiveMaxPool2dBackward(diopiContextHandle_t ctx, 
  * @param[in] input the input tensor, type = [float32, float64].
  * @param[in] p the probability of an element in the input tensor being zeroed out. type = [float32, float64].
  * @param[in] train boolean, whether the module is in training mode. When set to False, the dropout operation will not be performed.
+ * @param[in] generator a pseudorandom number generator for sampling.
  * @param[out] mask A binary mask tensor of the same shape as the input tensor, where each element's value is either 0 or 1,
  * indicating whether the corresponding neuron at that position is dropped or not. type = [int32].
  * @param[out] out the output tensor. type = [float32, float64].
  */
 DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p,
-                                    bool train);
+                                    bool train, diopiGeneratorHandle_t generator);
 /**
  * @brief The in-place version of diopiDropout().
  * @param[in] ctx Context environment.
@@ -458,8 +459,10 @@ DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_
  * indicating whether the corresponding neuron at that position is dropped or not. type = [int32].
  * @param[in] p the probability of an element in the input tensor being zeroed out. type = [float32, float64].
  * @param[in] train boolean, whether the module is in training mode. When set to False, the dropout operation will not be performed.
+ * @param[in] generator a pseudorandom number generator for sampling.
  */
-DIOPI_API diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t mask, double p, bool train);
+DIOPI_API diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t mask, double p, bool train,
+                                       diopiGeneratorHandle_t generator);
 
 /**
  * @brief Measures the element-wise mean squared error

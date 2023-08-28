@@ -1768,20 +1768,23 @@ diopiError_t diopiAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     return diopiSuccess;
 }
 
-diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p, bool train) {
+diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p, bool train,
+                          diopiGeneratorHandle_t generator) {
     impl::aten::setCurCtx(ctx);
     at::Tensor atInput = impl::aten::buildATen(input);
     at::Tensor atMask = impl::aten::buildATen(mask);
     if (train) {
+        at::Generator gen = impl::aten::buildGenerator(ctx, generator);
         if (atInput.numel() == atMask.numel()) {
             diopi_tensor_list vecOut = {out, mask};
-            impl::aten::invokeATenFuncRet(ctx, at::_fused_dropout, vecOut, atInput, 1 - p, c10::nullopt);
+            impl::aten::invokeATenFuncRet(ctx, at::_fused_dropout, vecOut, atInput, 1 - p, gen);
         } else {
             at::Tensor atOut = impl::aten::buildATen(out);
-            atMask.bernoulli_(1 - p);
+            atMask.bernoulli_(1 - p, gen);
             at::mul_out(atOut, atInput, atMask);
             atOut.div_(1 - p);
         }
+        impl::aten::updateGeneratorHandleState(ctx, gen, generator);
     } else {
         impl::aten::updateATen2Tensor(ctx, atInput, out);
     }
@@ -1789,19 +1792,22 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     return diopiSuccess;
 }
 
-diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t mask, double p, bool train) {
+diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t mask, double p, bool train,
+                             diopiGeneratorHandle_t generator) {
     impl::aten::setCurCtx(ctx);
     at::Tensor atInput = impl::aten::buildATen(input);
     at::Tensor atMask = impl::aten::buildATen(mask);
     if (train) {
+        at::Generator gen = impl::aten::buildGenerator(ctx, generator);
         if (atInput.numel() == atMask.numel()) {
-            auto atOuts = at::_fused_dropout(atInput, 1 - p, c10::nullopt);
+            auto atOuts = at::_fused_dropout(atInput, 1 - p, gen);
             impl::aten::updateATen2Tensor(ctx, std::get<0>(atOuts), input);
             impl::aten::updateATen2Tensor(ctx, std::get<1>(atOuts), mask);
         } else {
-            atMask.bernoulli_(1 - p);
+            atMask.bernoulli_(1 - p, gen);
             atInput.mul_(atMask).div_(1 - p);
         }
+        impl::aten::updateGeneratorHandleState(ctx, gen, generator);
     }
     impl::aten::unsetCurCtx();
     return diopiSuccess;

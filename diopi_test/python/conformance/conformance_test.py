@@ -151,7 +151,9 @@ def compare_with_gen_output(output, cfg, output_reference, sum_to_compare=False)
 class ManualTest(object):
     def test_dropout_(func, input, p=0.5, training=True, inplace=False):
         input_numpy = input.numpy()
-        out, mask = func(input, p, training, inplace)
+        state = build_generator_state(input.context())
+        generator = Generator(state)
+        out, mask = func(input, p, training, inplace, generator)
         name = 'dropout' if func == F.dropout else 'dropout2d'
         out_numpy = out.numpy()
         mask_numpy = mask.numpy()

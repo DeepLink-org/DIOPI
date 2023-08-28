@@ -1004,30 +1004,30 @@ def adaptive_max_pool2d(input, output_size, return_indices=False):
 
 
 def dropout_impl(input: Tensor, size_mask: list, p: float = 0.5,
-                 training: bool = True, inplace: bool = False):
+                 training: bool = True, inplace: bool = False, generator = None):
     mask = Tensor(size_mask, Dtype.uint8)
     if inplace:
         out = input
         func = check_function("diopiDropoutInp")
-        ret = func(input.context(), out, mask, p, training)
+        ret = func(input.context(), out, mask, p, training, generator)
     else:
         out = raw_like(input)
         func = check_function("diopiDropout")
-        ret = func(input.context(), out, mask, input, p, training)
+        ret = func(input.context(), out, mask, input, p, training, generator)
 
     check_returncode(ret)
     return out, mask
 
 
-def dropout(input, p=0.5, training=True, inplace=False):
-    return dropout_impl(input, input.size().data, p, training, inplace)
+def dropout(input, p=0.5, training=True, inplace=False, generator=None):
+    return dropout_impl(input, input.size().data, p, training, inplace, generator)
 
 
-def dropout2d(input, p=0.5, training=True, inplace=False):
+def dropout2d(input, p=0.5, training=True, inplace=False, generator=None):
     sizeI = input.size().data
     for i in range(2, len(sizeI)):
         sizeI[i] = 1
-    return dropout_impl(input, sizeI, p, training, inplace)
+    return dropout_impl(input, sizeI, p, training, inplace, generator)
 
 
 def index_select(input, dim, index) -> Tensor:
