@@ -664,7 +664,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": (Skip((3, 9)), Skip((14, 6, 2)), Skip((5, 0, 9))),
+                    "shape": (Skip((3, 9)), Skip((14, 6, 2)), Skip((2, 0)), Skip((5, 0, 9))),
                 },
             ],
         ),
@@ -690,7 +690,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": (Skip((3, 9)), Skip((14, 6, 2)), Skip((5, 0, 9))),
+                    "shape": (Skip((3, 9)), Skip((14, 6, 2)), Skip((2, 0)), Skip((5, 0, 9))),
                 },
             ],
         ),
