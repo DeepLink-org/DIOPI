@@ -104,6 +104,8 @@ class glob_var(object):
         self.int_type = np.int64
         self.float_type = np.float64
         self._cur_test_func = ''
+        self._cur_test_nodeid = None
+        self._debug_level = 0
 
     def set_nhwc(self):
         self.nhwc = True
@@ -130,6 +132,22 @@ class glob_var(object):
     def cur_test_func(self, func):
         self._cur_test_func = func
 
+    @property
+    def cur_test_nodeid(self):
+        return self._cur_test_nodeid
+
+    @cur_test_nodeid.setter
+    def cur_test_nodeid(self, cur_test_nodeid):
+        self._cur_test_nodeid = cur_test_nodeid
+
+    @property
+    def debug_level(self):
+        return self._debug_level
+
+    @debug_level.setter
+    def debug_level(self, debug_level):
+        self._debug_level = debug_level
+
 
 glob_vars = glob_var()
 
@@ -144,7 +162,7 @@ class Log(object):
 
         # create formatter
         formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            '%(asctime)s - %(process)d - %(name)s - %(filename)s - %(lineno)d - %(levelname)s - %(message)s')
 
         # add formatter to ch
         ch.setFormatter(formatter)
@@ -186,8 +204,8 @@ def wrap_logger_debug(func):
 
 logger = Log(default_cfg_dict['log_level']).get_logger()
 is_ci = os.getenv('CI', 'null')
-logger.error = wrap_logger_error(logger.error)
-logger.debug = wrap_logger_debug(logger.debug)
+# logger.error = wrap_logger_error(logger.error)
+# logger.debug = wrap_logger_debug(logger.debug)
 
 
 def write_report():
@@ -232,6 +250,7 @@ def check_returncode(returncode, throw_exception=True):
 
 def check_function(fn_name):
     try:
+        glob_vars.cur_test_func = fn_name
         func = eval(f"export_functions.{fn_name}")
     except AttributeError as e:
         raise FunctionNotImplementedError(e.args)

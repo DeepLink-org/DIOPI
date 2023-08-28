@@ -17,6 +17,16 @@ class FunctionNotImplementedError(DiopiException):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
 
+
+class InputChangedException(DiopiException):
+    def __init__(self, *args: object):
+        super().__init__(*args)
+
+class OutputCheckFailedException(DiopiException):
+    def __init__(self, *args: object):
+        super().__init__(*args)
+
+
 def check_returncode(returncode, throw_exception=True):
     if 0 != returncode:
         if returncode == diopiError.diopi_no_implement:
