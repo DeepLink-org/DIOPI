@@ -45,6 +45,7 @@ DIOPI_API diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTe
     diopiSize_t sumSize;
     diopiGetTensorShape(gradOutput, &sumSize);
     std::vector<int64_t> sumSizeVec(sumSize.data, sumSize.data + sumSize.len);
+    if (dim < 0) dim += sumSize.len;
     sumSizeVec[dim] = 1;
     sumSize = vectorToDiopiSize(sumSizeVec);
     diopiTensorHandle_t sum, exp;
