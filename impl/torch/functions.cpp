@@ -3251,7 +3251,10 @@ diopiError_t diopiLayerNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     c10::optional<at::Tensor> atWeight = weight ? c10::optional<at::Tensor>(impl::aten::buildATen(weight)) : c10::nullopt;
     c10::optional<at::Tensor> atBias = bias ? c10::optional<at::Tensor>(impl::aten::buildATen(bias)) : c10::nullopt;
     auto atNormalizedShape = impl::aten::buildAtIntArray(normalized_shape);
-    at::native_layer_norm_out(atOut, atSaveMean, atSaveInvstd, atInput, atNormalizedShape, atWeight, atBias, eps);
+    // TODO: check dtype: when input is half, atSaveInvstd, atInput should be float?
+    // at::native_layer_norm_out(atOut, atSaveMean, atSaveInvstd, atInput, atNormalizedShape, atWeight, atBias, eps);
+    diopi_tensor_list vecOut = {out, save_mean, save_invstd};
+    impl::aten::invokeATenFuncRet(ctx, at::native_layer_norm, vecOut, atInput, atNormalizedShape, atWeight, atBias, eps);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -3836,19 +3839,18 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
 
     int64_t dims = atInput.dim();
     if (grad_weight) {
-        auto atGradWeight = impl::aten::buildATen(grad_weight);
+        auto atGradWeightTemp = at::matmul(atInput.transpose(dims - 2, dims - 1), atGradOutput);
+        atGradWeightTemp.transpose_(dims - 2, dims - 1);
         if (dims > 2) {
-            auto atGradWeightTemp = at::matmul(atInput.transpose(dims - 2, dims - 1), atGradOutput);
-            atGradWeightTemp.transpose_(dims - 2, dims - 1);
             std::vector<int64_t> sumDim;
             for (int i = 0; i < dims - 2; ++i) {
                 sumDim.push_back(i);
             }
             at::IntArrayRef atSumDim(sumDim.data(), sumDim.size());
+            auto atGradWeight = impl::aten::buildATen(grad_weight);
             at::sum_out(atGradWeight, atGradWeightTemp, atSumDim);
         } else {
-            at::matmul_out(atGradWeight, atInput.transpose(dims - 2, dims - 1), atGradOutput);
-            atGradWeight = atGradWeight.transpose(dims - 2, dims - 1);
+            impl::aten::updateATen2Tensor(ctx, atGradWeightTemp, grad_weight);
         }
     }
 
