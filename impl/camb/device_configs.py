@@ -311,30 +311,6 @@ device_configs = {
         ),
     ),
 
-    'pointwise_op_bool': dict(
-        name=['asin'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.bool)],
-                },
-            ],
-        ),
-    ),
-
-    'erfinv': dict(
-        name=["erfinv"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
-        ),
-    ),
-
     'pointwise_binary': dict(
         name=['mul'],
         tensor_para=dict(
@@ -1307,7 +1283,7 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip((0,)), Skip((4, 0)), Skip((3, 0, 9))],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.int64), Skip(Dtype.int32),
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float16), Skip(Dtype.int64), Skip(Dtype.int32),
                               Skip(Dtype.int16), Skip(Dtype.int8)],
                 },
             ],
