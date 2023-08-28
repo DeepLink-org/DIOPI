@@ -83,7 +83,6 @@ int32_t initLibrary() { return diopiSuccess; }
 
 int32_t finalizeLibrary() { return diopiSuccess; }
 
-#undef DIOPI_ATTR_WEAK
 #include "include/litert.hpp"
 diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diopiConstTensorHandle_t tensor, void* dst) {
     if (tensor->device() == diopi_device) {

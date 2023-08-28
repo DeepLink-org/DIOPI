@@ -547,6 +547,10 @@ class CustomizedTest(object):
         out = grad_input
         return out
 
+    def batch_norm_elemt(input, weight, bias, mean, invstd, eps):
+        out = torch.batch_norm_elemt(input, weight, bias, mean, invstd, eps)
+        return out
+
 
 def transfer_tensor_to_device(function_paras: dict):
     for para in function_paras["kwargs"].keys():

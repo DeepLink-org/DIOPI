@@ -71,7 +71,7 @@ inline void printDevData(diopiContextHandle_t ctx, DiopiTensor tensor, std::stri
         std::cout << tensor.stride()[i] << ", ";
     }
     std::cout << "], is_contiguous: " << tensor.isContiguous();
-    std::cout << ", is_contiguous(channelsLast): " << tensor.isContiguous(MemoryFormat::ChannelsLast) << std::endl;
+    std::cout << ", is_contiguous(channelsLast): " << tensor.isContiguous(diopiMemoryFormat_t::ChannelsLast) << std::endl;
     switch (tensor.dtype()) {
         case diopi_dtype_bool:
             printDevDataInternal<bool, int32_t>(ctx, dataIn, len, maxLen, beginIdx);
