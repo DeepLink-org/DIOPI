@@ -1,5 +1,4 @@
 
-#include <diopi/functions.h>
 
 #include <cstring>
 #include <numeric>
@@ -9,8 +8,6 @@
 
 namespace impl {
 namespace camb {
-
-extern "C" {
 
 diopiError_t diopiNeg(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -35,8 +32,6 @@ diopiError_t diopiNegInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     DIOPI_CALL(diopiNeg(ctx, input, input));
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

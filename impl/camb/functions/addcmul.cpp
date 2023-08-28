@@ -1,11 +1,8 @@
-#include <diopi/functions.h>
-
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
-extern "C" {
 
 diopiError_t diopiAddcmul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t tensor1,
                           diopiConstTensorHandle_t tensor2, const diopiScalar_t* value) {
@@ -63,6 +60,5 @@ diopiError_t diopiAddcmulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input
     return diopiSuccess;
 }
 
-}  // extern "C"
 }  // namespace camb
 }  // namespace impl

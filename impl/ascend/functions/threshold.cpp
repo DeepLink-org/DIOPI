@@ -29,7 +29,7 @@ DIOPI_API diopiError_t diopiThresholdInp(diopiContextHandle_t ctx, diopiTensorHa
 
 DIOPI_API diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                               diopiConstTensorHandle_t input, const diopiScalar_t* threshold) {
-    AclOpRunner<2, 1>("ThresholdGradV2D", ctx).addInput(gradOutput, input).setAttr("threshold", getValue<float>(threshold)).addOutput(gradInput).run();
+    AclOpRunner<2, 1>("ThresholdGradV2D", ctx).addInput(gradOutput).addInput(input).setAttr("threshold", getValue<float>(threshold)).addOutput(gradInput).run();
     return diopiSuccess;
 }
 

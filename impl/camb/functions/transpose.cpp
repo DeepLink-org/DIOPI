@@ -35,8 +35,6 @@ std::vector<int> getPerm(diopiConstTensorHandle_t tensorHandle, int64_t dim0, in
     return perms;
 }
 
-extern "C" {
-
 diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim0, int64_t dim1) {
     auto stream = getStream(ctx);
     CnnlResourceGuard<cnnlHandle_t, cnnlCreate, cnnlDestroy> cnnlHandle;
@@ -67,7 +65,6 @@ diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     DIOPI_CALLCNNL(cnnlTranspose_v2(handle, transposeDesc, inputDesc.get(), inputPtr, outputDesc.get(), outPtr, workspace, workspaceSize));
     return diopiSuccess;
 }
-}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl
