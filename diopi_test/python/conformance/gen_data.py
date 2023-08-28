@@ -13,7 +13,6 @@ from . import diopi_configs
 from .diopi_runtime import from_dtype_str, int_types, float_types
 from .utils import get_saved_pth_list, get_data_from_file, cfg_file_name
 import torch
-import torchvision
 
 
 _cur_dir = os.path.dirname(os.path.abspath(__file__))
