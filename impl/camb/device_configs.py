@@ -311,6 +311,18 @@ device_configs = {
         ),
     ),
 
+    'pointwise_op_uint8': dict(
+        name=['atan'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.uint8)],
+                },
+            ],
+        ),
+    ),
+
     'pointwise_binary': dict(
         name=['mul'],
         tensor_para=dict(
