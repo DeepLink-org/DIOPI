@@ -4,7 +4,7 @@ import math
 import itertools
 
 from ctypes import c_double, byref
-from .diopi_runtime import Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d, to_numpy_dtype
+from .diopi_runtime import Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d, to_numpy_dtype, Generator
 from .utils import check_returncode, check_function, glob_vars, get_capsule
 from . import raw_like, int_types, float_types
 from collections import namedtuple
@@ -1004,7 +1004,7 @@ def adaptive_max_pool2d(input, output_size, return_indices=False):
 
 
 def dropout_impl(input: Tensor, size_mask: list, p: float = 0.5,
-                 training: bool = True, inplace: bool = False, generator = None):
+                 training: bool = True, inplace: bool = False, generator: Generator = None):
     mask = Tensor(size_mask, Dtype.uint8)
     if inplace:
         out = input
