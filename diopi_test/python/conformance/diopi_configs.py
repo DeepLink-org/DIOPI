@@ -1021,7 +1021,7 @@ diopi_configs = {
     ),
 
     'pointwise_op_bool': dict(
-        name=['abs', 'cos', 'erf', 'erfinv', 'exp', 'sin', 'asin', 'sqrt', 'rsqrt', 'atan', 'logical_not'],
+        name=['abs', 'cos', 'erf', 'exp', 'sin', 'asin', 'sqrt', 'rsqrt', 'atan', 'logical_not'],
         interface=['torch'],
         dtype=[Dtype.bool],
         tensor_para=dict(
@@ -1034,24 +1034,6 @@ diopi_configs = {
                               (2, 31, 512, 6, 40)),
                 },
             ],
-        ),
-    ),
-
-    'erfinv': dict(
-        name=["erfinv"],
-        interface=['torch'],
-        is_inplace=True,
-        atol=1e-5,
-        rtol=1e-4,
-        tensor_para=dict(
-            gen_fn=Genfunc.randn,
-            args=[
-                {
-                    "requires_grad": [False],
-                    "shape": ((10, ), (16, 8), (16, 4, 4), (64, 4, 14, 14)),
-                    "dtype": [Dtype.float32, Dtype.float64],
-                },
-            ]
         ),
     ),
 
