@@ -30,13 +30,6 @@ extern "C" diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t o
     }
     if (inS.len != outS.len) {
         keepdim = false;
-    } else {
-        for (int i = 0; i < inS.len; i++) {
-            if (inS.data[i] != outS.data[i]) {
-                keepdim = false;
-                break;
-            }
-        }
     }
     runner.setAttr<uint8_t>("keep_dims", keepdim).addOutput(out).run();
     return diopiSuccess;
@@ -60,13 +53,6 @@ extern "C" diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t 
     }
     if (inS.len != outS.len) {
         keepdim = false;
-    } else {
-        for (int i = 0; i < inS.len; i++) {
-            if (inS.data[i] != outS.data[i]) {
-                keepdim = false;
-                break;
-            }
-        }
     }
     runner.setAttr<uint8_t>("keep_dims", keepdim).addOutput(out).run();
     return diopiSuccess;
