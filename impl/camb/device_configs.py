@@ -641,14 +641,14 @@ device_configs = {
             ],
         ),
     ),
-    
+
     'conv_transpose2d': dict(
         name=["conv_transpose2d"],
         tensor_para=dict(
             args=[
                 {
-                    "ins": ["weight"],
-                    "shape": (Skip((2, 4, 12, 16)), Skip((18, 3, 2, 1))),
+                    "ins": ["input"],
+                    "shape": (Skip((0, 16, 20, 8)),),
                 }
             ]
         ),
