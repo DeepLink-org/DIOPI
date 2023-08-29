@@ -12,7 +12,8 @@
 namespace impl {
 namespace camb {
 
-diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p, bool train) {
+diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p, bool train,
+                          diopiGeneratorHandle_t gen) {
     if (train) {
         cnnlHandle_t handle = cnnlHandlePool.get(ctx);
         DiopiTensor inputTensor(input);
@@ -39,22 +40,10 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
         cnnlRandGenerator_t generator;
         // MTGP32 algorithm performs better on MLU300 series than MLU200 series
         DIOPI_CALLCNNL(cnnlRandCreateGenerator(&generator, CNNL_RAND_RNG_MTGP32));
-        // set the period to the generator
-        DIOPI_CALLCNNL(cnnlRandSetMTGP32Period(generator, CNNL_RAND_MTGP32_P11213));
-        // create and set the state
-        size_t sizeState = 0;
-        DIOPI_CALLCNNL(cnnlRandGetMTGP32StateSize(generator, &sizeState));
-        void* state = nullptr;
-        state = requiresBuffer(ctx, sizeState).data();
-        cnnlMTGP32FastParams_t params;
-        DIOPI_CALLCNNL(cnnlRandGetMTGP32HostParam(generator, &params));
-        size_t sizeKernel = 0;
-        DIOPI_CALLCNNL(cnnlRandGetMTGP32KernelParamSize(generator, &sizeKernel));
-        void* kernelParams = nullptr;
-        kernelParams = requiresBuffer(ctx, sizeKernel).data();
-        DIOPI_CALLCNNL(cnnlRandMakeMTGP32Constants(handle, params, kernelParams));
-        int randSeed = time(nullptr);
-        DIOPI_CALLCNNL(cnnlRandMakeMTGP32KernelState(handle, state, params, kernelParams, randSeed));
+        diopiTensorHandle_t stateHandle = nullptr;
+        DIOPI_CALL(diopiGeneratorGetState(ctx, gen, &stateHandle));
+        void* statePtr = nullptr;
+        DIOPI_CALL(diopiGetTensorData(stateHandle, &statePtr));
 
         // cases for dropout2d when input_shape != mask_shape
         if (inputTensor.shape() != maskTensor.shape()) {
@@ -62,7 +51,7 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
             CnnlTensorDesc tempDesc(tempTensor, CNNL_LAYOUT_ARRAY);
 
             DIOPI_CALLCNNL(cnnlFusedDropout_v2(
-                handle, generator, tempDesc.get(), tempTensor.data(), p, state, maskDesc.get(), maskTensor.data(), tempDesc.get(), tempTensor.data()));
+                handle, generator, tempDesc.get(), tempTensor.data(), p, statePtr, maskDesc.get(), maskTensor.data(), tempDesc.get(), tempTensor.data()));
 
             DiopiTensor bcastTempTensor;
             DIOPI_CALL(dataTypeCast(ctx, tempTensor, outputTensorTemp.dtype()));
@@ -79,7 +68,7 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
                                                inputDesc.get(),
                                                inputTensor.data(),
                                                p,
-                                               state,
+                                               statePtr,
                                                maskDesc.get(),
                                                maskTensor.data(),
                                                outputDesc.get(),
@@ -88,6 +77,7 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
         if (outputTensorTemp.dtype() != outputTensor.dtype()) {
             DIOPI_CALL(dataTypeCast(ctx, outputTensor, outputTensorTemp));
         }
+        DIOPI_CALL(diopiGeneratorSetState(gen, stateHandle));
         DIOPI_CALLCNNL(cnnlRandDestroyGenerator(generator));
 
     } else {  // if in test_mode
@@ -96,8 +86,9 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     return diopiSuccess;
 }
 
-diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t mask, double p, bool train) {
-    diopiDropout(ctx, input, mask, input, p, train);
+diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t mask, double p, bool train,
+                             diopiGeneratorHandle_t generator) {
+    diopiDropout(ctx, input, mask, input, p, train, generator);
     return diopiSuccess;
 }
 
