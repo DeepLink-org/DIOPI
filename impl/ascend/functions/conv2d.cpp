@@ -31,14 +31,13 @@ extern "C" diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensor
         dilationsTemp[3] = dilation.data[1];
     }
     const std::vector<int64_t> paddingTemp = {padding.data[0], padding.data[0], padding.data[1], padding.data[1]};
-
     AclOpRunner<3, 1> runner("Conv2D", ctx);
     runner.addInput(input)
         .addInput(weight)
         .setAttr("strides", strideTemp)
         .setAttr("pads", paddingTemp)
         .setAttr("dilations", dilationsTemp)
-        .setAttr<int32_t>("groups", groups)
+        .setAttr<int64_t>("groups", 1)
         .setAttr("data_format", dataFormat)
         .addOutput(out);
     if (bias) {
@@ -101,7 +100,7 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
         .setAttr("strides", strideTemp)
         .setAttr("pads", paddingTemp)
         .setAttr("dilations", dilationsTemp)
-        .setAttr("groups", groups)
+        .setAttr<int64_t>("groups", 1)
         .setAttr("data_format", dataFormat)
         .run();
     if (gradInput != nullptr) {
@@ -116,7 +115,7 @@ extern "C" diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, dio
             .setAttr("pads", paddingTemp)
             .setAttr("dilations", dilationsTemp)
             .setAttr("data_format", dataFormat)
-            .setAttr("groups", groups)
+            .setAttr<int64_t>("groups", 1)
             .run();
     }
 
