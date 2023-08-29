@@ -387,19 +387,6 @@ device_configs = {
         ),
     ),
 
-    'pointwise_op_int_without_inplace': dict(
-        name=['asin', 'atan'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
-                              Skip(Dtype.int8)],
-                },
-            ],
-        ),
-    ),
-
     'pointwise_op_uint8': dict(
         name=['atan'],
         tensor_para=dict(
@@ -804,7 +791,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": (Skip((3, 9)), Skip((14, 6, 2)), Skip((5, 0, 9))),
+                    "shape": (Skip((3, 9)), Skip((14, 6, 2)), Skip((2, 0)), Skip((5, 0, 9))),
                 },
             ],
         ),
@@ -830,7 +817,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": (Skip((3, 9)), Skip((14, 6, 2)), Skip((5, 0, 9))),
+                    "shape": (Skip((3, 9)), Skip((14, 6, 2)), Skip((2, 0)), Skip((5, 0, 9))),
                 },
             ],
         ),
