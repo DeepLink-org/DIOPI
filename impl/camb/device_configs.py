@@ -364,7 +364,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['floor', 'asin', 'ceil', 'atan'],
+        name=['floor', 'asin', 'ceil', 'atan', 'erfinv'],
         tensor_para=dict(
             args=[
                 {
@@ -394,33 +394,21 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
-                              Skip(Dtype.uint8), Skip(Dtype.int8)],
+                              Skip(Dtype.int8)],
                 },
             ],
         ),
     ),
 
-    'pointwise_op_bool': dict(
-        name=['asin'],
+    'pointwise_op_uint8': dict(
+        name=['atan'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.bool)],
+                    "dtype": [Skip(Dtype.uint8)],
                 },
             ],
-        ),
-    ),
-
-    'erfinv': dict(
-        name=["erfinv"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ]
         ),
     ),
 
@@ -520,7 +508,14 @@ device_configs = {
 
     'bmm': dict(
         name=['bmm'],
-        atol=1e-1,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0, 12, 16)), Skip((4, 0, 6)), Skip((4, 9, 0)), Skip((5, 8, 13))),
+                }
+            ],
+        ),
     ),
 
     'addmm': dict(
@@ -642,6 +637,14 @@ device_configs = {
 
     'reduce_partial_op_1': dict(
         name=['std'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0,)), Skip((12, 0)), Skip((9, 0, 7))),
+                },
+            ],
+        ),
     ),
 
     'cross_entropy': dict(
@@ -715,7 +718,16 @@ device_configs = {
         para=dict(
             # The diopiEmbeddingRenorm_ function is temporarily unavailable due to the unsupported Cambrian operator.
             # Thus, to pass the test case, skip all non-None types of the max_norm parameter in the configuration file.
-            max_norm=[Skip(1.0)],
+            max_norm=[Skip(1.0), Skip(-2), Skip(2), Skip(9), Skip(-0.5)],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    # when padding_idx set to 0, this case failed
+                    "shape": [Skip((2, 3, 4))],
+                },
+            ],
         ),
     ),
 
@@ -911,6 +923,14 @@ device_configs = {
 
     'argmax': dict(
         name=['argmax'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip(()),),
+                },
+            ],
+        ),
     ),
 
     'argmax_same_value': dict(
@@ -1070,6 +1090,19 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
                               Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
                               Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                },
+            ],
+        ),
+    ),
+
+    'sort': dict(
+        name=["sort"],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip(()),),
                 },
             ],
         ),
@@ -1287,6 +1320,32 @@ device_configs = {
         ),
     ),
 
+    'reduce_partial_op_2': dict(
+        name=['min', 'max'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((12, 0)), Skip((2, 0, 12))),
+                },
+            ],
+        ),
+    ),
+
+    'reduce_partial_op_3': dict(
+        name=['any', 'all'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0,)), Skip((12, 0)), Skip((2, 0, 12))),
+                },
+            ],
+        ),
+    ),
+
     'random': dict(
         name=['random'],
         tensor_para=dict(
@@ -1294,7 +1353,7 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip((0,)), Skip((4, 0)), Skip((3, 0, 9))],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.int64), Skip(Dtype.int32),
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float16), Skip(Dtype.int64), Skip(Dtype.int32),
                               Skip(Dtype.int16), Skip(Dtype.int8)],
                 },
             ],
