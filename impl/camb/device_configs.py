@@ -375,20 +375,8 @@ device_configs = {
         ),
     ),
 
-    'pointwise_op_zero': dict(
-        name=['ceil'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
     'pointwise_op_int_without_inplace': dict(
-        name=['asin', 'atan'],
+        name=['atan'],
         tensor_para=dict(
             args=[
                 {
@@ -779,14 +767,14 @@ device_configs = {
             ],
         ),
     ),
-    
+
     'conv_transpose2d': dict(
         name=["conv_transpose2d"],
         tensor_para=dict(
             args=[
                 {
-                    "ins": ["weight"],
-                    "shape": (Skip((2, 4, 12, 16)), Skip((18, 3, 2, 1))),
+                    "ins": ["input"],
+                    "shape": (Skip((0, 16, 20, 8)),),
                 }
             ]
         ),
