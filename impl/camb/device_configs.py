@@ -375,13 +375,14 @@ device_configs = {
         ),
     ),
 
-    'pointwise_op_zero': dict(
-        name=['ceil'],
+    'pointwise_op_int_without_inplace': dict(
+        name=['atan'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
+                              Skip(Dtype.int8)],
                 },
             ],
         ),
