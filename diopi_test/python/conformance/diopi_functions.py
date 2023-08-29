@@ -852,6 +852,8 @@ def avg_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False,
 
     if isinstance(kernel_size, int):
         kernel_size = (kernel_size, kernel_size)
+    if stride is None:
+        stride = kernel_size
     if isinstance(stride, int):
         stride = (stride, stride)
     if isinstance(padding, int):
@@ -893,6 +895,8 @@ def max_pool2d(input, kernel_size, stride=None, padding=0, dilation=1,
 
     if isinstance(kernel_size, int):
         kernel_size = (kernel_size, kernel_size)
+    if stride is None:
+        stride = kernel_size
     if isinstance(stride, int):
         stride = (stride, stride)
     if isinstance(padding, int):
@@ -985,7 +989,7 @@ def adaptive_max_pool2d(input, output_size, return_indices=False):
 
     nhwc_stride = compute_nhwc_stride_2d(sizeO) if glob_vars.nhwc else None
     out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
-    output_size = Sizes(list(output_size))
+    output_size = Sizes(list([sizeO[-2], sizeO[-1]]))
 
     if return_indices:
         func = check_function("diopiAdaptiveMaxPool2dWithIndices")
@@ -2006,6 +2010,8 @@ def avg_pool2d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
     grad_input = raw_like(input)
     if isinstance(kernel_size, int):
         kernel_size = (kernel_size, kernel_size)
+    if stride is None:
+        stride = kernel_size
     if isinstance(stride, int):
         stride = (stride, stride)
     if isinstance(padding, int):
@@ -2202,6 +2208,8 @@ def max_pool2d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
 
     if isinstance(kernel_size, int):
         kernel_size = (kernel_size, kernel_size)
+    if stride is None:
+        stride = kernel_size
     if isinstance(stride, int):
         stride = (stride, stride)
     if isinstance(padding, int):
@@ -3025,7 +3033,7 @@ def adaptive_max_pool3d(input, output_size, return_indices=False):
 
     nhwc_stride = compute_nhwc_stride_3d(sizeO) if glob_vars.nhwc else None
     out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
-    output_size = Sizes(list(output_size))
+    output_size = Sizes(list([sizeO[-3], sizeO[-2], sizeO[-1]]))
 
     if return_indices:
         func = check_function("diopiAdaptiveMaxPool3dWithIndices")
@@ -3068,6 +3076,8 @@ def max_pool3d(input, kernel_size, stride=None, padding=0, dilation=1,
 
     if isinstance(kernel_size, int):
         kernel_size = (kernel_size, kernel_size, kernel_size)
+    if stride is None:
+        stride = kernel_size
     if isinstance(stride, int):
         stride = (stride, stride, stride)
     if isinstance(padding, int):
@@ -3116,6 +3126,8 @@ def max_pool3d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
 
     if isinstance(kernel_size, int):
         kernel_size = (kernel_size, kernel_size, kernel_size)
+    if stride is None:
+        stride = kernel_size
     if isinstance(stride, int):
         stride = (stride, stride, stride)
     if isinstance(padding, int):

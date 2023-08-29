@@ -175,10 +175,30 @@ device_configs = {
         ),
     ),
 
+    'mse_loss': dict(
+        name=["mse_loss"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0,)), Skip((16, 0)), Skip((4, 0, 9))),
+                },
+            ],
+        ),
+    ),
+
     'nll_loss': dict(
         name=["nll_loss"],
         atol=1e-3,
         rtol=1e-3,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((5, 16, 0)), Skip((0, 16,)), Skip((4, 82, 0, 3))),
+                },
+            ],
+        ),
     ),
 
     'conv_2d': dict(
@@ -246,11 +266,41 @@ device_configs = {
 
     'max_pool2d': dict(
         name=["max_pool2d"],
+        para=dict(
+            dilation=[Skip((4, 3)), Skip((2, 3)), Skip(2)],
+        ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+            ]
+        ),
+    ),
+
+    'max_pool2d_return_indices': dict(
+        name=["max_pool2d"],
+        para=dict(
+            dilation=[Skip((4, 3)), Skip((2, 3))],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+            ]
+        ),
+    ),
+
+    'adaptive_max_pool2d_return_indices': dict(
+        name=["adaptive_max_pool2d"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
                 },
             ]
         ),
@@ -272,6 +322,45 @@ device_configs = {
         name=["binary_cross_entropy"],
         atol=1e-2,
         rtol=1e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0,)), Skip((4, 0)), Skip((9, 0, 16))),
+                    "dtype": [Skip(Dtype.float16)],
+                },
+                {
+                    "ins": ['weight'],
+                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
+                              Skip(Dtype.uint8), Skip(Dtype.int8)],
+                },
+            ]
+        ),
+    ),
+
+    'binary_cross_entropy_with_logits': dict(
+        name=["binary_cross_entropy_with_logits"],
+        atol=1e-3,
+        rtol=1e-4,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": (Skip((0,)), Skip((4, 0)), Skip((9, 0, 16))),
+                },
+                {
+                    "ins": ['weight'],
+                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
+                              Skip(Dtype.uint8), Skip(Dtype.int8)],
+                },
+                {
+                    "ins": ['pos_weight'],
+                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
+                              Skip(Dtype.uint8), Skip(Dtype.int8)],
+                },
+            ],
+        ),
     ),
 
     'pointwise_op': dict(
@@ -471,6 +560,30 @@ device_configs = {
         ),
     ),
 
+    'avg_pool2d': dict(
+        name=["avg_pool2d"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((5, 2, 16, 7)), Skip((3, 4, 16, 7))),
+                },
+            ]
+        ),
+    ),
+
+    'adaptive_avg_pool2d': dict(
+        name=["adaptive_avg_pool2d"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((3, 16, 8)), Skip((4, 16, 12))),
+                },
+            ]
+        ),
+    ),
+
     'leaky_relu': dict(
         name=["leaky_relu"],
         tensor_para=dict(
@@ -535,15 +648,39 @@ device_configs = {
         name=["cross_entropy"],
         para=dict(
             # label_smoothing is not supported by camb kernel
-            label_smoothing=[Skip(0.5)],
+            label_smoothing=[Skip(True), Skip(1), Skip(0.3), Skip(-1.3), Skip(0.4)],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0, 16)), Skip((0, 5, 6)), Skip((4, 6, 0, 3))),
+                },
+            ],
+        ),
+    ),
+
+    'cross_entropy_empty_tensor': dict(
+        name=["cross_entropy"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((5, 0)),),
+                },
+            ],
         ),
     ),
 
     'cross_entropy_prob_target': dict(
         name=["cross_entropy"],
-        para=dict(
-            # label_smoothing is not supported by camb kernel
-            label_smoothing=[Skip(0.1), Skip(0.3), Skip(0.5)],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+            ],
         ),
     ),
 
@@ -816,7 +953,19 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16), Skip(Dtype.float64)],
+                },
+            ]
+        ),
+    ),
+
+    'max_pool3d_return_indices': dict(
+        name=['max_pool3d'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16), Skip(Dtype.float64)],
                 },
             ]
         ),
@@ -835,6 +984,18 @@ device_configs = {
     ),
 
     'adaptive_max_pool3d': dict(
+        name=["adaptive_max_pool3d"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+            ]
+        ),
+    ),
+
+    'adaptive_max_pool3d_return_indices': dict(
         name=["adaptive_max_pool3d"],
         tensor_para=dict(
             args=[
