@@ -112,7 +112,7 @@ diopiError_t diopiCTCLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     // ctc_loss descriptor
     CnnlResourceGuard<cnnlCTCLossDescriptor_t, cnnlCreateCTCLossDescriptor, cnnlDestroyCTCLossDescriptor> ctcLossDescObj;
     cnnlCTCLossDescriptor_t ctcLossDesc = ctcLossDescObj.get();
-    int maxInputLength = logProbsTensor.shape()[0];
+    int32_t maxInputLength = logProbsTensor.shape()[0];
     int32_t maxTargetLen = 0;
     DIOPI_CALL(maxTensorElement(ctx, targetLengthTensor, &maxTargetLen));
 
@@ -168,7 +168,7 @@ diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     CnnlResourceGuard<cnnlCTCLossDescriptor_t, cnnlCreateCTCLossDescriptor, cnnlDestroyCTCLossDescriptor> ctcLossDescObj;
     cnnlCTCLossDescriptor_t ctcLossDesc = ctcLossDescObj.get();
 
-    int maxInputLength = logProbsTensor.shape()[0];
+    int32_t maxInputLength = logProbsTensor.shape()[0];
     int32_t maxTargetLen = 0;
     DIOPI_CALL(maxTensorElement(ctx, targetLengthTensor, &maxTargetLen));
 
@@ -187,6 +187,8 @@ diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         lossTensor = requiresTensor(ctx, {1}, logProbsTensor.dtype());
     }
     DIOPI_CALL(ctcLoss(ctx, lossTensor, gradInputTensorTemp, logProbsTensor, targetTensor, inputLengthsTensor, targetLengthTensor, ctcLossDesc, true));
+    printDevData(ctx, gradInputTensorTemp, "diopiCTCLossBackward");
+    printDevData(ctx, gradInputTensor, "diopiCTCLossBackward");
     // if (gradInputTensorTemp.dtype() != gradInputTensor.dtype()) {
     //     DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensorTemp));
     // }
