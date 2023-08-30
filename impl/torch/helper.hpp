@@ -7,12 +7,14 @@
 #ifndef IMPL_TORCH_HELPER_HPP_
 #define IMPL_TORCH_HELPER_HPP_
 #include <ATen/ATen.h>
+#include <ATen/cuda/CUDAGeneratorImpl.h>
 #include <c10/cuda/CUDAStream.h>
 #include <cuda_runtime.h>
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 
 #include <iostream>
+#include <mutex>
 #include <utility>
 #include <vector>
 
@@ -90,7 +92,15 @@ namespace impl {
 
 namespace aten {
 
-inline void setCurCtx(diopiContextHandle_t ctx) { context = ctx; }
+inline void setCurCtx(diopiContextHandle_t ctx) {
+    context = ctx;
+    diopiStreamHandle_t stream_handle;
+    diopiGetStream(ctx, &stream_handle);
+    c10::cuda::CUDAStream cur_stream = c10::cuda::getStreamFromExternal(static_cast<cudaStream_t>(stream_handle), c10::cuda::current_device());
+    c10::cuda::setCurrentCUDAStream(cur_stream);
+    // Here, we set the current stream of cuda to the stream of diopi, but when the context is unloaded, it is not restored.
+    // The main reason is that the current stream of cuda is not used. However, there may be hidden bugs, which will be optimized later.
+}
 
 inline void unsetCurCtx() { context = nullptr; }
 
@@ -162,6 +172,13 @@ inline diopiDtype_t getDIOPITensorType(at::Tensor& input) {
         default:
             NOT_SUPPORTED("aten dtype");
     }
+}
+
+inline diopiDevice_t getDIOPIDevice(c10::DeviceType device) {
+    if (device == c10::DeviceType::CPU) {
+        return diopi_host;
+    }
+    return diopi_device;
 }
 
 inline c10::DeviceType getATenDevice(diopiDevice_t device) {
@@ -309,11 +326,36 @@ inline void invokeATenFuncInp(diopiContextHandle_t ctx, Func func, Args&&... arg
 inline void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
     at::IntArrayRef atSize = input.sizes();
     at::IntArrayRef atStride = input.strides();
-    diopiSize_t size(const_cast<int64_t*>(atSize.data()), atSize.size());
-    diopiSize_t stride(const_cast<int64_t*>(atStride.data()), atStride.size());
+    diopiSize_t size{atSize.data(), atSize.size()};
+    diopiSize_t stride{atStride.data(), atStride.size()};
     diopiDtype_t dtype = getDIOPITensorType(input);
-    diopiRequireTensor(ctx, out, &size, &stride, dtype, diopi_device);
+    diopiDevice_t device = getDIOPIDevice(input.device().type());
+    diopiRequireTensor(ctx, out, &size, &stride, dtype, device);
     updateATen2Tensor(ctx, input, *out);
+}
+
+// new cuda generator and pass dipu generator state into cuda generator state
+inline at::Generator buildGenerator(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t generator) {
+    auto gen = at::cuda::detail::createCUDAGenerator();
+    diopiTensorHandle_t state_handle = nullptr;
+    diopiGeneratorGetState(ctx, generator, &state_handle);
+    auto state = impl::aten::buildATen(state_handle);
+    {
+        std::lock_guard<std::mutex> lock(gen.mutex());
+        gen.set_state(state);
+    }
+    return gen;
+}
+
+inline void updateGeneratorHandleState(diopiContextHandle_t ctx, at::Generator& cuda_gen, diopiGeneratorHandle_t generator) {
+    at::Tensor new_state;
+    {
+        std::lock_guard<std::mutex> lock(cuda_gen.mutex());
+        new_state = cuda_gen.get_state();
+    }
+    diopiTensorHandle_t new_state_handle = nullptr;
+    buildDiopiTensor(ctx, new_state, &new_state_handle);
+    diopiGeneratorSetState(generator, new_state_handle);
 }
 
 inline c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding_mode) {

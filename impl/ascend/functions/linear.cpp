@@ -6,6 +6,8 @@
 
 #include <diopi/functions.h>
 
+#include <numeric>
+
 #include "../common/acloprunner.hpp"
 
 namespace impl {
@@ -24,11 +26,11 @@ extern "C" diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_
 
     AclOpRunner<3, 1> runner("MatMulV2", ctx);
 
-    if (inputSize.getLen() > 2) {
+    if (inputSize.len > 2) {
         const void* data;
         diopiGetTensorDataConst(input, &data);
-        std::vector<int64_t> dims({1, inputSize.data[inputSize.getLen() - 1]});
-        for (int i = 0; i < inputSize.getLen() - 1; i++) {
+        std::vector<int64_t> dims({1, inputSize.data[inputSize.len - 1]});
+        for (int i = 0; i < inputSize.len - 1; i++) {
             dims[0] = dims[0] * inputSize.data[i];
         }
         runner.addInput(data, numel * elemsize, dims, ACL_FORMAT_ND, dtype);
@@ -37,11 +39,11 @@ extern "C" diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_
     }
     runner.addInput(weight).setAttr<uint8_t>("transpose_x1", false).setAttr<uint8_t>("transpose_x2", true);
 
-    if (outputSize.getLen() > 2) {
+    if (outputSize.len > 2) {
         void* data;
         diopiGetTensorData(out, &data);
-        std::vector<int64_t> dims({1, outputSize.data[outputSize.getLen() - 1]});
-        for (int i = 0; i < outputSize.getLen() - 1; i++) {
+        std::vector<int64_t> dims({1, outputSize.data[outputSize.len - 1]});
+        for (int i = 0; i < outputSize.len - 1; i++) {
             dims[0] = dims[0] * outputSize.data[i];
         }
         runner.addOutput(data, numelOut * elemsize, dims, ACL_FORMAT_ND, dtype);
@@ -68,24 +70,24 @@ extern "C" diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTenso
     diopiGetTensorDtype(input, &dtype);
     diopiGetTensorDtype(gradInput, &dtypeGrad);
 
-    std::vector<int64_t> dimsGradOut({gradOutSize.data[gradOutSize.getLen() - 2], gradOutSize.data[gradOutSize.getLen() - 1]});
-    for (int i = 0; i < gradOutSize.getLen() - 2; i++) {
+    std::vector<int64_t> dimsGradOut({gradOutSize.data[gradOutSize.len - 2], gradOutSize.data[gradOutSize.len - 1]});
+    for (int i = 0; i < gradOutSize.len - 2; i++) {
         dimsGradOut[0] = dimsGradOut[0] * gradOutSize.data[i];
     }
     const void* dataGrad;
     diopiGetTensorDataConst(gradOutput, &dataGrad);
 
-    std::vector<int64_t> dims({inputSize.data[inputSize.getLen() - 2], inputSize.data[inputSize.getLen() - 1]});
+    std::vector<int64_t> dims({inputSize.data[inputSize.len - 2], inputSize.data[inputSize.len - 1]});
 
     AclOpRunner<2, 1> runner("MatMulV2", ctx);
     runner.addInput(dataGrad, numelGradOut * elemSizeGrad, dimsGradOut, ACL_FORMAT_ND, dtypeGrad)
         .addInput(weight)
         .setAttr<uint8_t>("transpose_x1", false)
         .setAttr<uint8_t>("transpose_x2", false);
-    if (inputSize.getLen() > 2) {
+    if (inputSize.len > 2) {
         void* data;
         diopiGetTensorData(gradInput, &data);
-        for (int i = 0; i < inputSize.getLen() - 2; i++) {
+        for (int i = 0; i < inputSize.len - 2; i++) {
             dims[0] = dims[0] * inputSize.data[i];
         }
         runner.addOutput(data, numel * elemSizeGrad, dims, ACL_FORMAT_ND, dtypeGrad);
@@ -99,7 +101,7 @@ extern "C" diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTenso
         .setAttr<uint8_t>("transpose_x1", true)
         .setAttr<uint8_t>("transpose_x2", false)
         .addOutput(gradWeight);
-    if (inputSize.getLen() > 2) {
+    if (inputSize.len > 2) {
         const void* data;
         diopiGetTensorDataConst(input, &data);
         runner2.addInput(data, numel * elemsize, dims, ACL_FORMAT_ND, dtype);
@@ -109,8 +111,9 @@ extern "C" diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTenso
     runner2.run();
 
     if (gradBias) {
-        std::vector<int64_t> dimVec({0});
-        diopiSize_t dim(dimVec.data(), dimVec.size());
+        std::vector<int64_t> dimVec(gradOutSize.len - 1);
+        std::iota(std::begin(dimVec), std::end(dimVec), 0);
+        diopiSize_t dim = vectorToDiopiSize(dimVec);
         diopiSum(ctx, gradBias, gradOutput, dim);
     }
     return diopiSuccess;

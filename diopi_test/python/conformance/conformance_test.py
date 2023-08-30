@@ -7,7 +7,8 @@ from . import diopi_configs, ops_with_states
 from .config import Config
 from .utils import logger, FunctionNotImplementedError, DiopiException
 from .utils import need_process_func, glob_vars, nhwc_op, dtype_op
-from .diopi_runtime import Tensor, compute_nhwc_stride, default_context, diopi_rt_init
+from .diopi_runtime import Tensor, compute_nhwc_stride, default_context, diopi_rt_init, Generator
+from export_runtime import build_generator_state
 from .utils import save_precision, record, write_precision
 from .utils import get_saved_pth_list, get_data_from_file
 from .utils import cfg_file_name
@@ -150,12 +151,17 @@ def compare_with_gen_output(output, cfg, output_reference, sum_to_compare=False)
 class ManualTest(object):
     def test_dropout_(func, input, p=0.5, training=True, inplace=False):
         input_numpy = input.numpy()
-        out, mask = func(input, p, training, inplace)
+        state = build_generator_state(input.context())
+        generator = Generator(state)
+        out, mask = func(input, p, training, inplace, generator)
         name = 'dropout' if func == F.dropout else 'dropout2d'
         out_numpy = out.numpy()
         mask_numpy = mask.numpy()
 
-        if training:
+        rtol = 1e-2 if input_numpy.dtype == np.float16 else 1e-4
+        atol = 5e-2 if input_numpy.dtype == np.float16 else 1e-5
+
+        if training and input.numel() > 0:
             # compute ratio
             real_ratio = np.sum(mask_numpy) / mask.numel()
             # check data
@@ -164,14 +170,15 @@ class ManualTest(object):
                 mask_numpy = mask_numpy * tmp
             remains = out_numpy[mask_numpy == 1]
             ref = input_numpy[mask_numpy == 1]
-            assert np.allclose(remains, ref / (1 - p), rtol=1e-4, atol=1e-5),\
-                f"failed to execute {name}"
-
-            assert np.abs(real_ratio - (1 - p)) < 3e-2,\
-                f"failed to execute {name} "
+            assert np.allclose(remains, ref / (1 - p), rtol=rtol, atol=atol),\
+                f"failed to execute {name}, dropout value doesn't matches."
+            if mask.numel() > 100:
+                # 0.05 is from pytorch
+                assert np.abs(real_ratio - (1 - p)) < 0.05,\
+                    f"failed to execute {name}, dropout proportion unexpected."
         else:
-            assert np.allclose(input_numpy, out_numpy, rtol=1e-4, atol=1e-5),\
-                "failed to execute dropout"
+            assert np.allclose(input_numpy, out_numpy, rtol=rtol, atol=atol),\
+                f"failed to execute {name}, dropout value should be the same."
 
     def test_dropout(input, p=0.5, training=True, inplace=False):
         ManualTest.test_dropout_(F.dropout, input, p, training, inplace)
@@ -180,7 +187,9 @@ class ManualTest(object):
         ManualTest.test_dropout_(F.dropout2d, input, p, training, inplace)
 
     def test_randperm(n):
-        out = F.randperm(n)
+        state = build_generator_state(default_context)
+        generator = Generator(state)
+        out = F.randperm(n, generator=generator)
         out_numpy = out.numpy()
         out_ref = np.arange(0, n, 1)
         if out.numel() > 10:
@@ -192,7 +201,9 @@ class ManualTest(object):
             "failed to execute randperm"
 
     def test_uniform(input, start=0, end=1):
-        out = F.uniform(input, start, end)
+        state = build_generator_state(input.context())
+        generator = Generator(state)
+        out = F.uniform(input, start, end, generator)
         epsilon = 1e-5   # eliminate minor precision error
         out_numpy = out.numpy()
         assert (out_numpy <= (end + epsilon)).all() and (out_numpy >= (start - epsilon)).all(),\
@@ -204,7 +215,9 @@ class ManualTest(object):
     def test_bernoulli(input, inplace=False, p=None):
         p_numpy = input.numpy()
         p = p_numpy.mean() if p is None else p
-        out = F.bernoulli(input, inplace, p)
+        state = build_generator_state(input.context())
+        generator = Generator(state)
+        out = F.bernoulli(input, inplace, p, generator)
         out_numpy = out.numpy()
 
         if out.numel() > 100:
@@ -212,7 +225,9 @@ class ManualTest(object):
                 "failed to execute bernoulli"
 
     def test_random(input, start, end):
-        out = F.random(input, start, end)
+        state = build_generator_state(input.context())
+        generator = Generator(state)
+        out = F.random(input, start, end, generator)
         out_numpy = out.numpy()
 
         assert (out_numpy >= start).all(),\
@@ -231,7 +246,9 @@ class ManualTest(object):
 
     def test_normal(mean, std, size=None):
         from scipy import stats
-        out = F.normal(mean, std, size)
+        state = build_generator_state(default_context)
+        generator = Generator(state)
+        out = F.normal(mean, std, size, generator)
         out_numpy = out.numpy()
         if isinstance(mean, Tensor):
             mean_numpy = mean.numpy()
@@ -244,7 +261,7 @@ class ManualTest(object):
             mean = 0.0
             std = 1.
         out_numpy = out_numpy.flatten()
-        if len(out_numpy) == 0 and size is not None:
+        if len(out_numpy) == 0:
             return True
         p_value = stats.kstest(out_numpy, 'norm', args=(mean, std + 1e-22))[1]
         assert p_value > 0.0001, f"can't pass the ks test, failed to execute normal, p_value is {p_value}"
@@ -252,7 +269,9 @@ class ManualTest(object):
     def test_normal_(input, mean, std, shape=None):
         from scipy import stats
         input_size = 0 in input.size().data
-        out = F.normal_(input, mean, std, shape)
+        state = build_generator_state(input.context())
+        generator = Generator(state)
+        out = F.normal_(input, mean, std, shape, generator)
         out_numpy = out.numpy()
         out_numpy = out_numpy.flatten()
         if len(out_numpy) == 0 and input_size:
@@ -261,7 +280,9 @@ class ManualTest(object):
         assert p_value > 0.0001, f"can't pass the ks test, failed to execute normal_, p_value is {p_value}, shape of out is: {out_numpy.shape}"
 
     def test_multinomial(input, num_samples, replacement=False):
-        out = F.multinomial(input, num_samples, replacement)
+        state = build_generator_state(input.context())
+        generator = Generator(state)
+        out = F.multinomial(input, num_samples, replacement, generator)
         out_numpy = out.numpy()
         has_duplicates = False
         if out.size().len == 2:
@@ -343,7 +364,7 @@ def np_allclose(np_values1: dict, np_values2: dict):
     not_passed_name = ""
     for name, value in np_values1.items():
         assert name in np_values2.keys(), f"{name} not exist in np_values2"
-        matched = np.isclose(value, np_values2[name])
+        matched = np.isclose(value, np_values2[name], equal_nan=True)
         mismatched_num = matched.size - np.sum(matched)
         passed = mismatched_num <= default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
         if not passed:

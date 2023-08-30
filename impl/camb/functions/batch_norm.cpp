@@ -4,15 +4,11 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
-
-extern "C" {
 
 diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t saveMean, diopiTensorHandle_t saveInvstd,
                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiTensorHandle_t runningMean,
@@ -40,24 +36,24 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     DIOPI_CHECK(dim == outputTr.dim(), "Input dim != out dim");
 
     if (!weightTr.defined()) {
-        diopiScalar_t val{diopi_dtype_float32, {1.0f}};
+        diopiScalar_t val = constructDiopiScalarT(diopi_dtype_float32, 1.0f);
         weightTr = requiresTensor(ctx, {inputTr.shape()[1]}, inputTr.dtype());
         DIOPI_CALL(diopiFill(ctx, weightTr.tensorHandle(), &val))
     }
     if (!biasTr.defined()) {
-        diopiScalar_t val{diopi_dtype_float32, {0.0f}};
+        diopiScalar_t val = constructDiopiScalarT(diopi_dtype_float32, 0.0f);
         biasTr = requiresTensor(ctx, {inputTr.shape()[1]}, inputTr.dtype());
         DIOPI_CALL(diopiFill(ctx, biasTr.tensorHandle(), &val))
     }
 
     if (3 == dim) {
         inputTr.unsqueeze(3);
-        outputTr.reshape(inputTr.shape());
+        outputTr.view(inputTr.shape());
     }
     if (2 == dim) {
         inputTr.unsqueeze(2);
         inputTr.unsqueeze(3);
-        outputTr.reshape(inputTr.shape());
+        outputTr.view(inputTr.shape());
     }
 
     std::vector<DiopiTensor*> pTensors{&inputTr, &weightTr, &biasTr};
@@ -71,7 +67,7 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
     // Note: 1. output.dtype = input.dtype  2. channelsLast format
-    MemoryFormat memoryFormat = inputTr.dim() == 4 ? MemoryFormat::ChannelsLast : MemoryFormat::ChannelsLast3d;
+    diopiMemoryFormat_t memoryFormat = inputTr.dim() == 4 ? diopiMemoryFormat_t::ChannelsLast : diopiMemoryFormat_t::ChannelsLast3d;
     DiopiTensor outputTmpTr = requiresTensor(ctx, outputTr.shape(), inputTr.dtype(), memoryFormat);
 
     /* Transpose to channels last */
@@ -135,7 +131,7 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     }
 
     // channels last -> contiguous
-    DIOPI_CALL(contiguous(ctx, outputTmpTr, MemoryFormat::Contiguous));
+    DIOPI_CALL(contiguous(ctx, outputTmpTr, diopiMemoryFormat_t::Contiguous));
     // Copy back to origin
     DIOPI_CALL(diopiCopyInp(ctx, outputTmpTr.tensorHandle(), outputTr.tensorHandle()));
     DIOPI_CALL(diopiCopyInp(ctx, runningMeanTr.tensorHandle(), runningMeanTrOrigin.tensorHandle()));
@@ -170,14 +166,14 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     if (3 == dim) {
         inputTr.unsqueeze(3);
         gradOutputTr.unsqueeze(3);
-        gradInputTr.reshape(inputTr.shape());
+        gradInputTr.view(inputTr.shape());
     }
     if (2 == dim) {
         inputTr.unsqueeze(2);
         inputTr.unsqueeze(3);
         gradOutputTr.unsqueeze(2);
         gradOutputTr.unsqueeze(3);
-        gradInputTr.reshape(inputTr.shape());
+        gradInputTr.view(inputTr.shape());
     }
 
     std::vector<DiopiTensor*> pTensors{&gradOutputTr, &inputTr, &weightTr};
@@ -200,7 +196,7 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     }
 
     /* Transpose */
-    MemoryFormat memoryFormat = inputTr.dim() == 4 ? MemoryFormat::ChannelsLast : MemoryFormat::ChannelsLast3d;
+    diopiMemoryFormat_t memoryFormat = inputTr.dim() == 4 ? diopiMemoryFormat_t::ChannelsLast : diopiMemoryFormat_t::ChannelsLast3d;
     DIOPI_CALL(contiguous(ctx, inputTr, memoryFormat));
     DIOPI_CALL(contiguous(ctx, gradOutputTr, memoryFormat));
 
@@ -292,15 +288,13 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     }
 
     // Channels last -> contiguous
-    DIOPI_CALL(contiguous(ctx, gradInputTmpTr, MemoryFormat::Contiguous));
+    DIOPI_CALL(contiguous(ctx, gradInputTmpTr, diopiMemoryFormat_t::Contiguous));
     DIOPI_CALL(diopiCopyInp(ctx, gradInputTmpTr.tensorHandle(), gradInputTr.tensorHandle()));
     DIOPI_CALL(diopiCopyInp(ctx, gradWeightTmpTr.tensorHandle(), gradWeightTr.tensorHandle()));
     DIOPI_CALL(diopiCopyInp(ctx, gradBiasTmpTr.tensorHandle(), gradBiasTr.tensorHandle()));
 
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

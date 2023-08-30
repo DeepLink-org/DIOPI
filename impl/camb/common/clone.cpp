@@ -9,9 +9,9 @@
 namespace impl {
 namespace camb {
 
-diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiTensor& outTensor, MemoryFormat memoryFormat) {
+diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiTensor& outTensor, diopiMemoryFormat_t memoryFormat) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    if (memoryFormat == MemoryFormat::Preserve) {
+    if (memoryFormat == diopiMemoryFormat_t::Preserve) {
         // torch.preserve_format: Used in functions like clone to preserve the memory format of the input tensor.
         // If input tensor is allocated in dense non-overlapping memory, the output tensor strides will be copied from the input.
         // Otherwise output strides will follow torch.contiguous_format.
