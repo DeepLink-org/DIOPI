@@ -68,8 +68,23 @@ def get_dtype(input) -> Dtype:
         assert 0, "not supported type of input"
 
 
+def infer_tensor_scalar_common_dtype(input: Tensor, other) -> Dtype:
+    dtype1, dtype2 = get_dtype(input), get_dtype(other)
+    if dtype1 in float_types:
+        return dtype1
+    if dtype1 not in float_types and dtype2 in float_types:
+        return Dtype.float32
+    if dtype1 == Dtype.bool and dtype2 != Dtype.bool:
+        return Dtype.float32 if dtype2 in float_types else Dtype.int64
+    return dtype1
+
+
 def common_dtype(input, other) -> Dtype:
     dtype1, dtype2 = get_dtype(input), get_dtype(other)
+    if isinstance(input, Tensor) and (isinstance(other, int) or isinstance(other, float)):
+        return infer_tensor_scalar_common_dtype(input, other)
+    if isinstance(other, Tensor) and (isinstance(input, int) or isinstance(input, float)):
+        return infer_tensor_scalar_common_dtype(other, input)
     if dtype1 in float_types and dtype2 not in float_types:
         return dtype1
     if dtype1 not in float_types and dtype2 in float_types:
