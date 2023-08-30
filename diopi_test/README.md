@@ -28,7 +28,7 @@ DIOPI_TEST 测试范围：
 
 ## **使用教学**
 
-参考 [DIOPI Readme](https://github.com/DeepLink-org/DIOPI/tree/main/DIOPI#readme)
+参考 [DIOPI Readme](https://github.com/DeepLink-org/DIOPI/#readme)
 
 ### 结果分析
 
