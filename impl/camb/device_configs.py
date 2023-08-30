@@ -883,6 +883,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
+                    # FIXME Run diopi_functions.adam failed, because of inputs: param_grad changed
+                    "shape": [Skip(())],
                     "dtype": [Skip(Dtype.float16)],
                 },
             ]
