@@ -6639,6 +6639,51 @@ diopi_configs = {
         ),
     ),
 
+    'index_put_bool_indices_value': dict(
+        name=['index_put'],
+        interface=['CustomizedTest'],
+        is_inplace=True,
+        para=dict(
+            accumulate=[True, False, True, False, True, True]
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((4,), (4, 4), (6, 4, 5), (3, 2, 2, 6), (3, 2, 2, 20), (4, 2, 2, 6, 2)),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int32,
+                              Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool],
+                },
+                {
+                    "ins": ['indices1'],
+                    "value": [[1, 0, 1, 0], [1, 0, 0, 1],
+                              [1, 0, 1, 0, 0, 1], [1, 1, 0],
+                              [[1, 0], [1, 1], [0, 1]], [1, 0, 0, 0]],
+                    "dtype": [Dtype.bool],
+                },
+                {
+                    "ins": ['indices2'],
+                    "value": [None, None, None, [[1, 0], [0, 1]], [1, 0],
+                              [[1, 1], [1, 1]]],
+                    "dtype": [Dtype.bool],
+                },
+                {
+                    "ins": ['indices3'],
+                    "value": [None, None, None, None, None,
+                              [[1, 1], [0, 0], [1, 0], [0, 1], [0, 0], [0, 0]]],
+                    "dtype": [Dtype.bool],
+                },
+                {
+                    "ins": ['values'],
+                    "shape": ((2,), (1,), (3, 4, 5), (2, 6), (80,), (4,)),
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16, Dtype.int32,
+                              Dtype.int64, Dtype.uint8, Dtype.int8, Dtype.bool]
+                },
+            ]
+        ),
+    ),
+
     'arange': dict(
         name=['arange'],
         interface=['torch'],

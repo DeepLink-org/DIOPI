@@ -206,6 +206,8 @@ def delete_fn(cfg_dict):
 def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
     np_int_types = [to_numpy_dtype(type) for type in int_types]
     if "value" in arg.keys():
+        if arg["value"] is None:
+            return None
         dtype = to_numpy_dtype(arg.get("dtype", None))
         value = np.array(arg["value"], dtype=dtype)
         return value
@@ -499,6 +501,7 @@ class CustomizedTest(object):
             indices.append(indices2)
         if indices3 is not None:
             indices.append(indices3)
+        logger.info((input.shape, [i.shape for i in indices], values.shape, accumulate))
         return torch.index_put(input, indices, values, accumulate)
 
     def im2col(input, kernel_size, dilation=1, padding=0, stride=1):
