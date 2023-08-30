@@ -52,7 +52,7 @@ typedef enum {
     diopi_device = 1,
 } diopiDevice_t;
 
-// In order to meet the requirements of common dtype inference in diopitest, all members in this enumeration should be assigned values in the order of
+// In order to meet the requirements of common dtype inference in diopi_test, all members in this enumeration should be assigned values in the order of
 // increasing dtype precision
 typedef enum {
     diopi_dtype_int8 = 0,
