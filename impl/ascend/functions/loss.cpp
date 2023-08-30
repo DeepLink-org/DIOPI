@@ -10,6 +10,78 @@
 
 namespace impl {
 namespace ascend {
+
+diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t totalWeight, diopiConstTensorHandle_t input,
+                                       diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
+    diopiSize_t inputShape;
+    diopiTensorHandle_t inputCopy, targetCopy;
+    diopiGetTensorShape(input, &inputShape);
+
+    std::vector<int64_t> calShapeVec;
+    std::vector<int64_t> calTargetShapeVec;
+
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(input, &dtype);
+
+    if (inputShape.len > 2) {
+        int64_t calShape0 = inputShape.data[0];
+        std::vector<int64_t> inputCopyShapeVec;
+        std::vector<int64_t> permuteDimVec;
+        inputCopyShapeVec.push_back(inputShape.data[0]);
+        permuteDimVec.push_back(0);
+        for (int i = 1; i < inputShape.len - 1; i++) {
+            inputCopyShapeVec.push_back(inputShape.data[i + 1]);
+            permuteDimVec.push_back(i + 1);
+            calShape0 *= inputShape.data[i + 1];
+        }
+        calShapeVec.push_back(calShape0);
+        calTargetShapeVec.push_back(calShape0);
+        inputCopyShapeVec.push_back(inputShape.data[1]);
+        calShapeVec.push_back(inputShape.data[1]);
+        permuteDimVec.push_back(1);
+        diopiSize_t inputCopyShape = vectorToDiopiSize(inputCopyShapeVec);
+        diopiSize_t permuteDim = vectorToDiopiSize(permuteDimVec);
+
+        diopiRequireTensor(ctx, &inputCopy, &inputCopyShape, nullptr, dtype, diopi_device);
+        diopiPermute(ctx, inputCopy, input, permuteDim);
+    } else {
+        inputCopy = contiguous(ctx, input);
+        calShapeVec.push_back(inputShape.data[0]);
+        calShapeVec.push_back(inputShape.data[1]);
+        calTargetShapeVec.push_back(inputShape.data[0]);
+    }
+
+    void *dataPtr, *targetPtr;
+    targetCopy = contiguous(ctx, target, diopi_dtype_int32);
+    diopiGetTensorData(inputCopy, &dataPtr);
+    diopiGetTensorData(targetCopy, &targetPtr);
+
+    AclOpRunner<3, 2> runner("NLLLoss", ctx);
+    runner.addInput(dataPtr, getBaseBufferSize(inputCopy), calShapeVec, ACL_FORMAT_ND, dtype)
+        .addInput(targetPtr, getBaseBufferSize(targetCopy), calTargetShapeVec, ACL_FORMAT_ND, diopi_dtype_int32)
+        .setAttr("ignore_index", ignoreIndex);
+
+    runner.addInput(weight, diopi_dtype_float32);
+
+    if (reduction == diopiReduction_t::ReductionMean) {
+        runner.setAttr("reduction", std::string("mean"));
+        runner.addOutput(out);
+    } else if (reduction == diopiReduction_t::ReductionSum) {
+        runner.setAttr("reduction", std::string("sum"));
+        runner.addOutput(out);
+    } else if (reduction == diopiReduction_t::ReductionNone) {
+        runner.setAttr("reduction", std::string("none"));
+        diopiDtype_t outDtype;
+        void *outPtr;
+        diopiGetTensorDtype(out, &outDtype);
+        diopiGetTensorData(out, &outPtr);
+        runner.addOutput(outPtr, getBaseBufferSize(out), calTargetShapeVec, ACL_FORMAT_ND, outDtype);
+    }
+    runner.addOutput(totalWeight);
+    runner.run();
+    return diopiSuccess;
+}
+
 extern "C" {
 std::string getReductionStr(const diopiReduction_t reduction) {
     std::string reductionStr = "none";
@@ -24,165 +96,153 @@ std::string getReductionStr(const diopiReduction_t reduction) {
 }
 DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                                     diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
-    auto totalWeightScalar = diopiScalar_t();
-    totalWeightScalar.stype = diopi_dtype_float64;
-    totalWeightScalar.fval = 0.0;
-    diopiTensorHandle_t totalWeight;
-    makeTensorFromScalar(ctx, &totalWeightScalar, &totalWeight, diopi_dtype_float32, diopi_device);
+    auto totalWeightSizeVec = std::vector<int64_t>({1});
+    auto totalWeightSize = vectorToDiopiSize(totalWeightSizeVec);
+    diopiTensorHandle_t totalWeight, weightCopy;
+    diopiRequireTensor(ctx, &totalWeight, &totalWeightSize, nullptr, diopi_dtype_float32, diopi_device);
 
-    AclOpRunner<3, 2> runner("NLLLoss", ctx);
-    runner.addInput(input).addInput(target).setAttr("ignore_index", ignoreIndex).addOutput(out).addOutput(totalWeight);
+    diopiSize_t inputShape;
+    diopiGetTensorShape(input, &inputShape);
+
     if (weight) {
-        runner.addInput(weight);
+        weightCopy = contiguous(ctx, weight, diopi_dtype_float32);
     } else {
-        diopiTensorHandle_t weightNew;
-        diopiSize_t inputShape;
-        diopiGetTensorShape(input, &inputShape);
         int64_t weightDim[] = {inputShape.data[1]};
         diopiSize_t weightShape = arrayToDiopiSize(weightDim, 1);
-        diopiRequireTensor(ctx, &weightNew, &weightShape, nullptr, diopi_dtype_float32, diopi_device);
-        fillTensor(ctx, &weightNew, 1.0);
-        runner.addInput(weightNew);
+        diopiRequireTensor(ctx, &weightCopy, &weightShape, nullptr, diopi_dtype_float32, diopi_device);
+        fillTensor(ctx, &weightCopy, 1.0);
     }
-    if (reduction == diopiReduction_t::ReductionMean) {
-        runner.setAttr("reduction", std::string("mean"));
-    } else if (reduction == diopiReduction_t::ReductionSum) {
-        runner.setAttr("reduction", std::string("sum"));
-    } else if (reduction == diopiReduction_t::ReductionNone) {
-        runner.setAttr("reduction", std::string("none"));
-    }
-    runner.run();
-    return diopiSuccess;
+
+    nllLossOutWithTotalWeight(ctx, out, totalWeight, input, target, weightCopy, reduction, ignoreIndex);
 }
 
 DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
                                             diopiReduction_t reduction, int64_t ignoreIndex) {
-    auto totalWeightScalar = diopiScalar_t();
-    totalWeightScalar.stype = diopi_dtype_float64;
-    totalWeightScalar.fval = 0.0;
-    diopiTensorHandle_t totalWeight, out;
-    makeTensorFromScalar(ctx, &totalWeightScalar, &totalWeight, diopi_dtype_float32, diopi_device);
+    auto totalWeightSizeVec = std::vector<int64_t>({1});
+    auto totalWeightSize = vectorToDiopiSize(totalWeightSizeVec);
+    diopiTensorHandle_t weightCopy, totalWeight, out, inputCopy, targetCopy, gradInputCopy;
+    diopiRequireTensor(ctx, &totalWeight, &totalWeightSize, nullptr, diopi_dtype_float32, diopi_device);
+    makeTensorLike(ctx, &out, gradOutput);
 
-    if (reduction == diopiReduction_t::ReductionNone) {
-        makeTensorLike(ctx, &out, gradOutput);
-    } else {
-        makeTensorFromScalar(ctx, &totalWeightScalar, &out, diopi_dtype_float32, diopi_device);
-    }
+    diopiSize_t inputShape;
+    diopiGetTensorShape(input, &inputShape);
 
-    diopiTensorHandle_t weightNew;
-
-    AclOpRunner<3, 2> runner1("NLLLoss", ctx);
-    runner1.addInput(input).addInput(target).setAttr("ignore_index", ignoreIndex).addOutput(out).addOutput(totalWeight);
     if (weight) {
-        runner1.addInput(weight);
+        weightCopy = contiguous(ctx, weight, diopi_dtype_float32);
     } else {
-        diopiSize_t inputShape;
-        diopiGetTensorShape(input, &inputShape);
         int64_t weightDim[] = {inputShape.data[1]};
         diopiSize_t weightShape = arrayToDiopiSize(weightDim, 1);
-        diopiRequireTensor(ctx, &weightNew, &weightShape, nullptr, diopi_dtype_float32, diopi_device);
-        fillTensor(ctx, &weightNew, 1.0);
-        runner1.addInput(weightNew);
+        diopiRequireTensor(ctx, &weightCopy, &weightShape, nullptr, diopi_dtype_float32, diopi_device);
+        fillTensor(ctx, &weightCopy, 1.0);
     }
-    if (reduction == diopiReduction_t::ReductionMean) {
-        runner1.setAttr("reduction", std::string("mean"));
-    } else if (reduction == diopiReduction_t::ReductionSum) {
-        runner1.setAttr("reduction", std::string("sum"));
-    } else if (reduction == diopiReduction_t::ReductionNone) {
-        runner1.setAttr("reduction", std::string("none"));
-    }
-    runner1.run();
 
-    AclOpRunner<5, 1> runner2("NLLLossGrad", ctx);
-    runner2.addInput(input).addInput(gradOutput).addInput(target).setAttr("ignore_index", ignoreIndex).addOutput(gradInput);
+    nllLossOutWithTotalWeight(ctx, out, totalWeight, input, target, weightCopy, reduction, ignoreIndex);
 
-    if (weight) {
-        runner2.addInput(weight).addInput(totalWeight);
+    std::vector<int64_t> calShapeVec;
+    std::vector<int64_t> calTargetShapeVec;
+
+    diopiDtype_t dtype, gradDtype;
+    diopiGetTensorDtype(input, &dtype);
+    diopiGetTensorDtype(gradInput, &gradDtype);
+
+    if (inputShape.len > 2) {
+        int64_t calShape0 = inputShape.data[0];
+        std::vector<int64_t> inputCopyShapeVec;
+        std::vector<int64_t> permuteDimVec;
+        inputCopyShapeVec.push_back(inputShape.data[0]);
+        permuteDimVec.push_back(0);
+        for (int i = 1; i < inputShape.len - 1; i++) {
+            inputCopyShapeVec.push_back(inputShape.data[i + 1]);
+            permuteDimVec.push_back(i + 1);
+            calShape0 *= inputShape.data[i + 1];
+        }
+        calShapeVec.push_back(calShape0);
+        calTargetShapeVec.push_back(calShape0);
+        inputCopyShapeVec.push_back(inputShape.data[1]);
+        calShapeVec.push_back(inputShape.data[1]);
+        permuteDimVec.push_back(1);
+        diopiSize_t inputCopyShape = vectorToDiopiSize(inputCopyShapeVec);
+        diopiSize_t permuteDim = vectorToDiopiSize(permuteDimVec);
+
+        diopiRequireTensor(ctx, &inputCopy, &inputCopyShape, nullptr, dtype, diopi_device);
+        diopiPermute(ctx, inputCopy, input, permuteDim);
+        diopiRequireTensor(ctx, &gradInputCopy, &inputCopyShape, nullptr, dtype, diopi_device);
     } else {
-        runner2.addInput(weightNew).addInput(totalWeight);
+        inputCopy = contiguous(ctx, input);
+        calShapeVec.push_back(inputShape.data[0]);
+        calShapeVec.push_back(inputShape.data[1]);
+        calTargetShapeVec.push_back(inputShape.data[0]);
     }
+
+    void *dataPtr, *targetPtr;
+    targetCopy = contiguous(ctx, target, diopi_dtype_int32);
+    diopiGetTensorData(inputCopy, &dataPtr);
+    diopiGetTensorData(targetCopy, &targetPtr);
+
+    AclOpRunner<5, 1> runner("NLLLossGrad", ctx);
+
+    runner.addInput(dataPtr, getBaseBufferSize(inputCopy), calShapeVec, ACL_FORMAT_ND, dtype);
+
     if (reduction == diopiReduction_t::ReductionMean) {
-        runner2.setAttr("reduction", std::string("mean"));
+        runner.setAttr("reduction", std::string("mean"));
+        runner.addInput(gradOutput);
     } else if (reduction == diopiReduction_t::ReductionSum) {
-        runner2.setAttr("reduction", std::string("sum"));
+        runner.setAttr("reduction", std::string("sum"));
+        runner.addInput(gradOutput);
     } else if (reduction == diopiReduction_t::ReductionNone) {
-        runner2.setAttr("reduction", std::string("none"));
+        runner.setAttr("reduction", std::string("none"));
+        auto gradOutputCopy = contiguous(ctx, gradOutput);
+        void *gradOutputPtr;
+        diopiGetTensorData(gradOutputCopy, &gradOutputPtr);
+        runner.addInput(gradOutputPtr, getBaseBufferSize(gradOutputCopy), calTargetShapeVec, ACL_FORMAT_ND, gradDtype);
     }
-    runner2.run();
+
+    runner.addInput(targetPtr, getBaseBufferSize(targetCopy), calTargetShapeVec, ACL_FORMAT_ND, diopi_dtype_int32).setAttr("ignore_index", ignoreIndex);
+
+    if (inputShape.len > 2) {
+        void *gradInputPtr;
+        diopiGetTensorData(gradInputCopy, &gradInputPtr);
+        runner.addOutput(gradInputPtr, getBaseBufferSize(gradInputCopy), calShapeVec, ACL_FORMAT_ND, gradDtype);
+    } else {
+        runner.addOutput(gradInput);
+    }
+    runner.addInput(weightCopy).addInput(totalWeight);
+    runner.run();
+
+    if (inputShape.len > 2) {
+        std::vector<int64_t> permuteDimVec;
+        permuteDimVec.push_back(0);
+        permuteDimVec.push_back(inputShape.len - 1);
+        for (int i = 1; i < inputShape.len - 1; i++) {
+            permuteDimVec.push_back(i);
+        }
+        diopiSize_t permuteDim = vectorToDiopiSize(permuteDimVec);
+        diopiPermute(ctx, gradInput, gradInputCopy, permuteDim);
+    }
     return diopiSuccess;
 }
 
 DIOPI_API diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                                              diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex, double labelSmoothing) {
-    check_args(labelSmoothing == 0, "label_smoothing %f not supported.", labelSmoothing);
-    check_args(weight == nullptr, "weights not supported.");
-    check_args(ignoreIndex < 0, "weights not supported.");
-
-    diopiTensorHandle_t targetOneHot, backProp;
-    diopiSize_t inputSize;
-
-    diopiGetTensorShape(input, &inputSize);
-
-    makeTensorLike(ctx, &targetOneHot, input);
-    makeTensorLike(ctx, &backProp, input);
-
-    diopiOneHot(ctx, targetOneHot, target, inputSize.data[1]);
-
-    AclOpRunner<2, 2> runner("SoftmaxCrossEntropyWithLogits", ctx);
-    runner.addInput(input).addInput(targetOneHot);
-
-    if (reduction == diopiReduction_t::ReductionNone) {
-        runner.addOutput(out).addOutput(backProp);
-        runner.run();
-    } else {
-        int64_t lossDim[] = {inputSize.data[0]};
-        diopiSize_t lossShape = arrayToDiopiSize(lossDim, 1);
-        diopiTensorHandle_t loss;
-        diopiRequireTensor(ctx, &loss, &lossShape, nullptr, diopi_dtype_float32, diopi_device);
-        runner.addOutput(loss).addOutput(backProp);
-        runner.run();
-
-        if (reduction == ReductionSum) {
-            diopiSum(ctx, out, loss, diopiSize_t());
-        } else if (reduction == ReductionMean) {
-            diopiMean(ctx, out, loss, diopiSize_t());
-        }
-    }
+    diopiTensorHandle_t logTensor;
+    makeTensorLike(ctx, &logTensor, input);
+    diopiLogSoftmax(ctx, logTensor, input, 1);
+    target = hostToDevice(ctx, target);
+    diopiNLLLoss(ctx, out, logTensor, target, weight, reduction, ignoreIndex);
     return diopiSuccess;
 }
 
 DIOPI_API diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                                      diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
                                                      diopiReduction_t reduction, int64_t ignoreIndex, double labelSmoothing) {
-    check_args(labelSmoothing == 0, "label_smoothing %f not supported.", labelSmoothing);
-    check_args(weight == nullptr, "weights not supported.");
-    check_args(ignoreIndex < 0, "weights not supported.");
-
-    diopiTensorHandle_t targetOneHot;
-    diopiSize_t inputSize;
-    diopiGetTensorShape(input, &inputSize);
-    makeTensorLike(ctx, &targetOneHot, input);
-    diopiOneHot(ctx, targetOneHot, target, inputSize.data[1]);
-
-    int64_t lossDim[] = {inputSize.data[0]};
-    diopiSize_t lossShape = arrayToDiopiSize(lossDim, 1);
-    diopiTensorHandle_t loss;
-    diopiRequireTensor(ctx, &loss, &lossShape, nullptr, diopi_dtype_float32, diopi_device);
-
-    AclOpRunner<2, 2> runner("SoftmaxCrossEntropyWithLogits", ctx);
-    runner.addInput(input).addInput(targetOneHot);
-    runner.addOutput(loss).addOutput(gradInput);
-    runner.run();
-
-    info("reduction is %d", reduction);
-
-    if (reduction == ReductionMean || reduction == ReductionNone) {
-        auto batchSize = diopiScalar_t();
-        batchSize.stype = diopi_dtype_float64;
-        batchSize.fval = inputSize.data[0];
-        diopiDivInpScalar(ctx, gradInput, &batchSize, RoundModeNone);
-    }
+    diopiTensorHandle_t logTensor, gradLog;
+    makeTensorLike(ctx, &logTensor, input);
+    diopiLogSoftmax(ctx, logTensor, input, 1);
+    makeTensorLike(ctx, &gradLog, gradInput);
+    target = hostToDevice(ctx, target);
+    diopiNLLLossBackward(ctx, gradLog, gradOutput, input, target, weight, reduction, ignoreIndex);
+    diopiLogSoftmaxBackward(ctx, gradInput, gradLog, logTensor, 1);
     return diopiSuccess;
 }
 

@@ -80,6 +80,7 @@ public:
     diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context, const void* src);
     diopiTensor() {}
     ~diopiTensor() {}
+    diopiTensor& operator=(const diopiTensor& other);
 
     diopiSize_t shape() const {
         diopiSize_t size{shape_.data(), static_cast<int64_t>(shape_.size())};
@@ -134,6 +135,20 @@ public:
     }
 
     diopiContextHandle_t getCtx() const { return context_; }
+};
+
+struct diopiGenerator {
+private:
+    diopiTensor state_;
+
+public:
+    diopiGenerator() = default;
+    ~diopiGenerator() = default;
+    explicit diopiGenerator(diopiConstTensorHandle_t state) { set_state(state); }
+
+    const diopiTensor& state() const { return state_; }
+
+    void set_state(diopiConstTensorHandle_t new_state) { state_ = *new_state; }
 };
 
 struct diopiContext {

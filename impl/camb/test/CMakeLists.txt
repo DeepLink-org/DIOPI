@@ -26,7 +26,7 @@ pybind11_add_module(${DIOPIRT} SHARED ${EXPORT_SRC})
 add_library(diopirt SHARED ${RUNTIME_SRC})
 
 target_link_libraries(${DIOPIRT} PRIVATE diopirt)
-target_link_libraries(diopirt cnrt cnmlrt)
+target_link_libraries(diopirt cnrt cnmlrt cnnl)
 
 file(GLOB TEST_TEMPLATE_CODE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${DIOPI_TEST_DIR}/codegen/*.py)
 add_custom_target(test_gen_dependency DEPENDS ${TEST_TEMPLATE_CODE})

@@ -34,6 +34,7 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
                                     std::vector<DiopiTensor>& indicesTensorsCast) {
     // expand bool tensor or byte tensor into 1 or more int tensors
     bool boolTensorConvertToEmptyTensor = false;
+    bool containIntTensor = false;
     for (auto indexTensor : indicesTensors) {
         if (!indexTensor.defined()) {
             indicesTensorsCast.emplace_back();
@@ -70,13 +71,14 @@ static diopiError_t indexPreProcess(diopiContextHandle_t ctx, DiopiTensor inputT
             } else {
                 // int tensor
                 indicesTensorsCast.emplace_back(std::move(indexTensor));
+                containIntTensor = true;
             }
         }
     }
     indicesTensorsCast.resize(indicesTensors.size());
 
-    // handle the broadcast of special empty index tensor
-    if (boolTensorConvertToEmptyTensor) {
+    // handle the broadcast of special empty index tensor when containing int index tensor
+    if (boolTensorConvertToEmptyTensor && containIntTensor) {
         bool first = true;
         std::vector<int64_t> sizes;
         for (const auto& indexTensorCast : indicesTensorsCast) {

@@ -6,6 +6,8 @@
 
 #include <diopi/functions.h>
 
+#include <numeric>
+
 #include "../common/acloprunner.hpp"
 
 namespace impl {
@@ -109,7 +111,8 @@ extern "C" diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTenso
     runner2.run();
 
     if (gradBias) {
-        std::vector<int64_t> dimVec({0});
+        std::vector<int64_t> dimVec(gradOutSize.len - 1);
+        std::iota(std::begin(dimVec), std::end(dimVec), 0);
         diopiSize_t dim = vectorToDiopiSize(dimVec);
         diopiSum(ctx, gradBias, gradOutput, dim);
     }

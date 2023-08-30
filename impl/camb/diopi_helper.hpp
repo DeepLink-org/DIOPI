@@ -153,6 +153,8 @@ DiopiTensor makeTensor(diopiContextHandle_t ctx, const diopiScalar_t* pScalar);
 
 DiopiTensor ones(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype);
 
+DiopiTensor zeros(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype);
+
 DiopiTensor requiresTensor(diopiContextHandle_t ctx, const diopiSize_t& size, diopiDtype_t dtype);
 
 DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, const std::vector<int64_t>& stride, diopiDtype_t dtype);

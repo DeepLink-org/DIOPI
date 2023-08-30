@@ -21,6 +21,13 @@ DIOPI_API diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandl
     DiopiTensor saveMeanTensor(saveMean);
     DiopiTensor saveInvstdTensor(saveInvstd);
 
+    if (!weightTensor.defined()) {
+        weightTensor = ones(ctx, {outTensor.shape()[1]}, inputTensor.dtype());
+    }
+    if (!biasTensor.defined()) {
+        biasTensor = zeros(ctx, {outTensor.shape()[1]}, inputTensor.dtype());
+    }
+
     if (inputTensor.defined() && inputTensor.numel() == 0) {
         return diopiSuccess;
     }
@@ -106,6 +113,16 @@ DIOPI_API diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTen
         inputTensor.unsqueeze(3);
         gradInputTensor.view(inputTensor.shape());
         gradOutputTensor.view(inputTensor.shape());
+    }
+
+    if (!weightTensor.defined()) {
+        weightTensor = ones(ctx, {gradOutputTensor.shape()[1]}, inputTensor.dtype());
+    }
+    if (!gradWeightTensor.defined()) {
+        gradWeightTensor = ones(ctx, {gradOutputTensor.shape()[1]}, inputTensor.dtype());
+    }
+    if (!gradBiasTensor.defined()) {
+        gradBiasTensor = ones(ctx, {gradOutputTensor.shape()[1]}, inputTensor.dtype());
     }
 
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_NCHW);

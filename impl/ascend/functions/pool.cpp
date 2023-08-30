@@ -32,25 +32,6 @@ DIOPI_API diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, 
         .run();
     return diopiSuccess;
 }
-
-DIOPI_API diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t indices, diopiConstTensorHandle_t input,
-                                                 diopiSize_t kernelSize, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceilMode) {
-    AclOpRunner<1, 2> runner("MaxPoolWithArgmaxV1", ctx);
-    if (stride.data)
-        runner.setAttr("strides", std::vector<int64_t>{1, stride.data[0], stride.data[1], 1});
-    else
-        runner.setAttr("strides", std::vector<int64_t>{1, kernelSize.data[0], kernelSize.data[1], 1});
-    runner.addInput(input)
-        .setAttr("ksize", std::vector<int64_t>{1, kernelSize.data[0], kernelSize.data[1], 1})
-        .setAttr("pads", std::vector<int64_t>{1, padding.data[0], padding.data[1], 1})
-        .setAttr("dilation", std::vector<int64_t>{1, dilation.data[0], dilation.data[1], 1})
-        .setAttr("ceil_mode", ceilMode)
-        .addOutput(out)
-        .addOutput(indices, ACL_FORMAT_NC1HWC0)
-        .run();
-
-    return diopiSuccess;
-}
 }
 
 }  // namespace ascend

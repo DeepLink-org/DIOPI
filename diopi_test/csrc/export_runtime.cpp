@@ -43,6 +43,18 @@ PYBIND11_MODULE(export_runtime, m) {
         .def("context", &diopiTensor::getCtx)
         .def_buffer(&diopiTensor::buffer);
 
+    py::class_<diopiGenerator, std::shared_ptr<diopiGenerator>>(m, "diopiGenerator", py::buffer_protocol())
+        .def(py::init([](diopiConstTensorHandle_t state) {
+            auto generator = diopiGenerator(state);
+            return generator;
+        }))
+        .def(py::init([]() {
+            auto generator = diopiGenerator();
+            return generator;
+        }))
+        .def("state", &diopiGenerator::state)
+        .def("set_state", &diopiGenerator::set_state);
+
     py::class_<diopiContext>(m, "Context", py::buffer_protocol()).def(py::init<>()).def("clear_tensors", &diopiContext::clearTensors);
 
     py::enum_<diopiDevice_t>(m, "Device").value("Host", diopiDevice_t::diopi_host).value("AIChip", diopiDevice_t::diopi_device);
@@ -139,4 +151,9 @@ PYBIND11_MODULE(export_runtime, m) {
     m.def("diopi_finalize", &diopiFinalize);
     m.def("init_library", &initLibrary);
     m.def("finalize_library", &finalizeLibrary);
+    m.def("build_generator_state", [](diopiContextHandle_t ctx) {
+        diopiTensor out;
+        buildGeneratorState(ctx, &out);
+        return out;
+    });
 }

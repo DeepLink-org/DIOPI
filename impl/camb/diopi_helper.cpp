@@ -293,6 +293,15 @@ DiopiTensor ones(diopiContextHandle_t ctx, const std::vector<int64_t>& size, dio
     return DiopiTensor(tensor);
 }
 
+DiopiTensor zeros(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype) {
+    diopiTensorHandle_t tensor = nullptr;
+    diopiSize_t sizeTmp{size.data(), static_cast<int64_t>(size.size())};
+    diopiRequireTensor(ctx, &tensor, &sizeTmp, nullptr, dtype, diopi_device);
+    diopiScalar_t scalar = constructDiopiScalarT(dtype, 0);
+    diopiFill(ctx, tensor, &scalar);
+    return DiopiTensor(tensor);
+}
+
 DiopiTensor requiresTensor(diopiContextHandle_t ctx, const diopiSize_t& size, diopiDtype_t dtype) {
     diopiTensorHandle_t tensor = nullptr;
     diopiRequireTensor(ctx, &tensor, &size, nullptr, dtype, diopi_device);
