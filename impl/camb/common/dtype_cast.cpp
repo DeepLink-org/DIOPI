@@ -44,16 +44,19 @@ inline bool canCastByFloat32(uint64_t castType) {
     constexpr uint64_t int8Uint8 = MAKE_KEY(diopi_dtype_int8, diopi_dtype_uint8);
     constexpr uint64_t int32Uint8 = MAKE_KEY(diopi_dtype_int32, diopi_dtype_uint8);
     constexpr uint64_t uint8Int32 = MAKE_KEY(diopi_dtype_uint8, diopi_dtype_int32);
+    constexpr uint64_t float64Uint8 = MAKE_KEY(diopi_dtype_float64, diopi_dtype_uint8);
+    constexpr uint64_t uint8Float64 = MAKE_KEY(diopi_dtype_uint8, diopi_dtype_float64);
+    constexpr uint64_t float64Int8 = MAKE_KEY(diopi_dtype_float64, diopi_dtype_int8);
+    constexpr uint64_t int8Float64 = MAKE_KEY(diopi_dtype_int8, diopi_dtype_float64);
 
     return int64Float64 == castType || float64Int64 == castType || uint8Int16 == castType || int16Uint8 == castType || uint8Int8 == castType ||
-           int8Uint8 == castType || int32Uint8 == castType || uint8Int32 == castType;
+           int8Uint8 == castType || int32Uint8 == castType || uint8Int32 == castType || float64Uint8 == castType || uint8Float64 == castType ||
+           float64Int8 == castType || int8Float64 == castType;
 }
 
 static diopiError_t dataTypeCastTwice(diopiContextHandle_t ctx, DiopiTensor& dest, const DiopiTensor& src) {
-    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     diopiDtype_t srcDtype = src.dtype();
     diopiDtype_t destDtype = dest.dtype();
-    cnnlCastDataType_t castType;
     // cast through middle
     auto key = MAKE_KEY(srcDtype, destDtype);
     if (canCastByInt32(key)) {

@@ -14,7 +14,7 @@ namespace ascend {
 extern "C" {
 
 diopiError_t diopiPowTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t exponent) {
-    AclOpRunner<2, 1>("Pow", ctx).addInput(input, exponent).addOutput(out).run();
+    AclOpRunner<2, 1>("Pow", ctx).addInput(input).addInput(exponent).addOutput(out).run();
     return diopiSuccess;
 }
 

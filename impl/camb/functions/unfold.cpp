@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <vector>
 
 #include "../cnnl_helper.hpp"
@@ -47,8 +45,6 @@ std::vector<uint32_t> getStride(int64_t dim, int64_t inputDim, int64_t step, con
 }
 
 }  // namespace
-
-extern "C" {
 
 DIOPI_API diopiError_t diopiUnfold(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim, int64_t size, int64_t step) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -97,8 +93,6 @@ DIOPI_API diopiError_t diopiUnfoldBackward(diopiContextHandle_t ctx, diopiTensor
 
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace camb
 }  // namespace impl

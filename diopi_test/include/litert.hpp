@@ -80,14 +80,15 @@ public:
     diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context, const void* src);
     diopiTensor() {}
     ~diopiTensor() {}
+    diopiTensor& operator=(const diopiTensor& other);
 
     diopiSize_t shape() const {
-        diopiSize_t size(shape_.data(), static_cast<int64_t>(shape_.size()));
+        diopiSize_t size{shape_.data(), static_cast<int64_t>(shape_.size())};
         return size;
     }
 
     diopiSize_t stride() const {
-        diopiSize_t stride(stride_.data(), static_cast<int64_t>(stride_.size()));
+        diopiSize_t stride{stride_.data(), static_cast<int64_t>(stride_.size())};
         return stride;
     }
 
@@ -134,6 +135,20 @@ public:
     }
 
     diopiContextHandle_t getCtx() const { return context_; }
+};
+
+struct diopiGenerator {
+private:
+    diopiTensor state_;
+
+public:
+    diopiGenerator() = default;
+    ~diopiGenerator() = default;
+    explicit diopiGenerator(diopiConstTensorHandle_t state) { set_state(state); }
+
+    const diopiTensor& state() const { return state_; }
+
+    void set_state(diopiConstTensorHandle_t new_state) { state_ = *new_state; }
 };
 
 struct diopiContext {
@@ -186,6 +201,8 @@ public:
 };
 
 DIOPI_RT_API diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diopiConstTensorHandle_t tensor, void* dst);
+
+DIOPI_RT_API diopiError_t diopiTensorCopyFromBuffer(diopiContextHandle_t ctx, const void* src, diopiTensorHandle_t tensor);
 
 DIOPI_RT_API diopiError_t diopiInit();
 

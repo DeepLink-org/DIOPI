@@ -9,13 +9,10 @@
 
 #include <stdint.h>
 
-#ifndef DIOPI_ATTR_WEAK
-#define DIOPI_API
+#define DIOPI_ATTR_WEEK __attribute__((weak))
+
+#define DIOPI_API DIOPI_ATTR_WEEK
 #define DIOPI_RT_API
-#else
-#define DIOPI_API __attribute__((weak))
-#define DIOPI_RT_API __attribute__((weak))
-#endif
 
 #if defined(__cplusplus)
 #include <iostream>
@@ -27,22 +24,9 @@ extern "C" {
 #define DIOPI_VER_PATCH 0
 #define DIOPI_VERSION (DIOPI_VER_MAJOR * 1000 + DIOPI_VER_MINOR * 100 + DIOPI_VER_PATCH)
 
-typedef struct diopiSize_t_ {
+typedef struct {
     const int64_t* data;
     int64_t len;
-
-#if defined(__cplusplus)
-    diopiSize_t_() : data(nullptr), len(0) {}
-    diopiSize_t_(const int64_t* d, int64_t l) : data(d), len(l) {}
-    int64_t getLen() const { return len; }
-    friend std::ostream& operator<<(std::ostream& os, const diopiSize_t_& obj) {
-        os << "Length: " << obj.len << "\nData: ";
-        for (int64_t i = 0; i < obj.len; ++i) {
-            os << obj.data[i] << " ";
-        }
-        return os;
-    }
-#endif  // __cplusplus
 } diopiSize_t;
 
 typedef enum {
@@ -89,6 +73,20 @@ typedef enum {
     diopi_dtype_unsupported = 255
 } diopiDtype_t;
 
+typedef struct {
+    diopiDtype_t stype;
+    union {
+        double fval;
+        int64_t ival;
+    };
+} diopiScalar_t;
+
+typedef enum { Contiguous = 0, ChannelsLast = 1, ChannelsLast3d = 2, Preserve = 3, ChannelsLast1d = 4 } diopiMemoryFormat_t;
+
+typedef enum { ReductionNone, ReductionMean, ReductionSum, ReductionEND } diopiReduction_t;
+
+typedef enum { RoundModeNone, RoundModeTrunc, RoundModeFloor, RoundModeEND } diopiRoundMode_t;
+
 /**
  * Opaque structure holding Context and Tensor
  **/
@@ -98,6 +96,10 @@ typedef struct diopiContext* diopiContextHandle_t;
 struct diopiTensor;
 typedef struct diopiTensor* diopiTensorHandle_t;
 typedef const struct diopiTensor* diopiConstTensorHandle_t;
+
+struct diopiGenerator;
+typedef struct diopiGenerator* diopiGeneratorHandle_t;
+typedef const struct diopiGenerator* diopiConstGeneratorHandle_t;
 
 /**
  * Opaque pointer of Stream
@@ -117,10 +119,10 @@ extern DIOPI_RT_API diopiError_t diopiGetTensorDataConst(diopiConstTensorHandle_
 extern DIOPI_RT_API diopiError_t diopiGetTensorShape(diopiConstTensorHandle_t th, diopiSize_t* size);
 extern DIOPI_RT_API diopiError_t diopiGetTensorStride(diopiConstTensorHandle_t th, diopiSize_t* stride);
 extern DIOPI_RT_API diopiError_t diopiGetTensorDtype(diopiConstTensorHandle_t th, diopiDtype_t* dtype);
-extern DIOPI_RT_API diopiError_t diopiGetTensorDevice(diopiConstTensorHandle_t th, diopiDevice_t* device);
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorDevice(diopiConstTensorHandle_t th, diopiDevice_t* device);
 
 extern DIOPI_RT_API diopiError_t diopiGetTensorNumel(diopiConstTensorHandle_t th, int64_t* numel);
-extern DIOPI_RT_API diopiError_t diopiGetTensorElemSize(diopiConstTensorHandle_t th, int64_t* itemsize);
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorElemSize(diopiConstTensorHandle_t th, int64_t* itemsize);
 
 /**
  * operations to require Stream and Tensor instances from a Context handle
@@ -129,7 +131,11 @@ extern DIOPI_RT_API diopiError_t diopiGetStream(diopiContextHandle_t ctx, diopiS
 
 extern DIOPI_RT_API diopiError_t diopiRequireTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor, const diopiSize_t* size, const diopiSize_t* stride,
                                                     const diopiDtype_t dtype, const diopiDevice_t device);
-extern DIOPI_RT_API diopiError_t diopiRequireBuffer(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor, int64_t num_bytes, diopiDevice_t device);
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiRequireBuffer(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor, int64_t num_bytes,
+                                                                    diopiDevice_t device);
+
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGeneratorGetState(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t th, diopiTensorHandle_t* data);
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGeneratorSetState(diopiGeneratorHandle_t th, diopiConstTensorHandle_t state);
 
 #if defined(__cplusplus)
 }

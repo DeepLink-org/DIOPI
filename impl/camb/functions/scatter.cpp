@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <vector>
 
 #include "../cnnl_helper.hpp"
@@ -13,18 +11,17 @@
 
 namespace impl {
 namespace camb {
-extern "C" {
 
-diopiError_t slice(cnnlHandle_t handle, DiopiTensor outTensor, DiopiTensor inputTensor, std::vector<int32_t> start, std::vector<int32_t> end,
-                   std::vector<int32_t> step) {
+static diopiError_t slice(cnnlHandle_t handle, DiopiTensor outTensor, DiopiTensor inputTensor, std::vector<int32_t> start, std::vector<int32_t> end,
+                          std::vector<int32_t> step) {
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
     DIOPI_CALLCNNL(cnnlStridedSlice(handle, inputDesc.get(), inputTensor.data(), start.data(), end.data(), step.data(), outDesc.get(), outTensor.data()));
     return diopiSuccess;
 }
 
-diopiError_t scatter(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor inputTensor, int64_t dim, DiopiTensor srcTensor, DiopiTensor indexTensor,
-                     const char* reduce) {
+static diopiError_t scatter(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor inputTensor, int64_t dim, DiopiTensor srcTensor,
+                            DiopiTensor indexTensor, const char* reduce) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor outTensorTmp = outTensor;
@@ -145,6 +142,5 @@ diopiError_t diopiScatterInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t
     return diopiSuccess;
 }
 
-}  // extern "C"
 }  // namespace camb
 }  // namespace impl
