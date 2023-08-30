@@ -1098,13 +1098,15 @@ device_configs = {
 
     'ctc_loss': dict(
         name=["ctc_loss"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['log_probs'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
+        para=dict(
+            blank=[Skip(9)]
+        ),
+    ),
+
+    'ctc_loss_un_padded': dict(
+        name=["ctc_loss"],
+        para=dict(
+            blank=[Skip(9)]
         ),
     ),
 
