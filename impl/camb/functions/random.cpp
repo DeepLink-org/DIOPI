@@ -26,7 +26,7 @@ extern "C" diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHand
         float min = from;
         float max;
         if (to != nullptr) {
-            max = *to;
+            max = *to - 1;
         } else {
             max = CNNL_DTYPE_FLOAT ? FLT_MAX : std::numeric_limits<half_float::half>::max();
         }
