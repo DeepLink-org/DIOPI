@@ -62,6 +62,8 @@ extern int32_t device_synchronize_stream(diopiStreamHandle_t stream);
 extern int32_t initLibrary();
 extern int32_t finalizeLibrary();
 
+extern int32_t buildGeneratorState(diopiContextHandle_t ctx, diopiTensorHandle_t out);
+
 #if defined(__cplusplus)
 }
 #endif

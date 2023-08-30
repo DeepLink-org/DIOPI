@@ -97,6 +97,10 @@ struct diopiTensor;
 typedef struct diopiTensor* diopiTensorHandle_t;
 typedef const struct diopiTensor* diopiConstTensorHandle_t;
 
+struct diopiGenerator;
+typedef struct diopiGenerator* diopiGeneratorHandle_t;
+typedef const struct diopiGenerator* diopiConstGeneratorHandle_t;
+
 /**
  * Opaque pointer of Stream
  **/
@@ -129,6 +133,9 @@ extern DIOPI_RT_API diopiError_t diopiRequireTensor(diopiContextHandle_t ctx, di
                                                     const diopiDtype_t dtype, const diopiDevice_t device);
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiRequireBuffer(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor, int64_t num_bytes,
                                                                     diopiDevice_t device);
+
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGeneratorGetState(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t th, diopiTensorHandle_t* data);
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGeneratorSetState(diopiGeneratorHandle_t th, diopiConstTensorHandle_t state);
 
 #if defined(__cplusplus)
 }
