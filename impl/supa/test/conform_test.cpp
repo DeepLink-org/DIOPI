@@ -83,6 +83,8 @@ int32_t initLibrary() { return diopiSuccess; }
 
 int32_t finalizeLibrary() { return diopiSuccess; }
 
+int32_t buildGeneratorState(diopiContextHandle_t ctx, diopiTensorHandle_t out) { return diopiNoImplement; }
+
 #include "include/litert.hpp"
 diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diopiConstTensorHandle_t tensor, void* dst) {
     if (tensor->device() == diopi_device) {
@@ -106,7 +108,6 @@ diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diopiConstTensorH
     }
     return diopiSuccess;
 }
-
 
 DIOPI_RT_API diopiError_t diopiTensorCopyFromBuffer(diopiContextHandle_t ctx, const void* src, diopiTensorHandle_t tensor) {
     if (tensor->device() == diopi_device) {
