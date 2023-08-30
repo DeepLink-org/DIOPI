@@ -92,7 +92,7 @@ DIOPI主要包含以下几个组件：
     2022-09-29 16:40:40,550 - DIOPI-Test - INFO - Run diopi_functions.relu succeed
     ```
 
-    如果测例失败，会打印对应测例的输入参数的张量信息用于调试。
+    调整diopi_test/python/conformance/utils.py中的log_level为DEBUG，如果测例失败，会打印对应测例的输入参数的张量信息在error_report.csv中用于调试。
 
     ```
     DIOPI-Test Error Report
