@@ -1482,6 +1482,19 @@ device_configs = {
         ),
     ),
 
+    # when accumulate is True and dtype of indices is bool, can't get the correct result
+    'index_put_bool_indices_value': dict(
+        name=['index_put'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['indices1'],
+                    "dtype": [Skip(Dtype.bool)],
+                },
+            ]
+        ),
+    ),
+
     'reduce_partial_op_2': dict(
         name=['min', 'max'],
         interface=['torch'],
