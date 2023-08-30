@@ -187,9 +187,9 @@ diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         lossTensor = requiresTensor(ctx, {1}, logProbsTensor.dtype());
     }
     DIOPI_CALL(ctcLoss(ctx, lossTensor, gradInputTensorTemp, logProbsTensor, targetTensor, inputLengthsTensor, targetLengthTensor, ctcLossDesc, true));
-    if (gradInputTensorTemp.dtype() != gradInputTensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensorTemp));
-    }
+    // if (gradInputTensorTemp.dtype() != gradInputTensor.dtype()) {
+    //     DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensorTemp));
+    // }
 
     return diopiSuccess;
 }
