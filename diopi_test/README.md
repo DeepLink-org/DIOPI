@@ -28,7 +28,7 @@ DIOPI_TEST 测试范围：
 
 ## **使用教学**
 
-参考 [DIOPI Readme](https://github.com/DeepLink-org/DIOPI/tree/main/DIOPI#readme)
+参考 [DIOPI Readme](https://github.com/DeepLink-org/DIOPI/#readme)
 
 ### 结果分析
 
@@ -36,15 +36,14 @@ DIOPI_TEST 测试范围：
   ```
   2022-09-29 16:40:40,550 - DIOPI-Test - INFO - Run diopi_functions.relu succeed
   ```
-如果测例失败，会打印对应测例的输入参数的张量信息用于调试。可以在utils.py中设置log_level，获取更多输入参数的张量信息用于调试。
-  ```
-  DIOPI-Test Error Report
-  ---------------------------------
-  1 Tests failed:
-  1--Run diopi_functions.batch_norm_backward failed.   TestTag: [float32, backward]  TensorInfo : [(input, float32, (32, 16, 112, 112)), (running_mean, float32, (16,)), (running_var, float32, (16,)), (weight, float32, (16,)), (bias, float32, (16,))]
-  ---------------------------------
-  Test skipped or op not implemented:
-  ```
+  调整diopi_test/python/conformance/utils.py中的log_level为DEBUG，如果测例失败，会打印对应测例的输入参数的张量信息在error_report.csv中用于调试。
+
+    DIOPI-Test Error Report
+    ---------------------------------
+    1 Tests failed:
+    1--Run diopi_functions.batch_norm_backward failed.   TestTag: [float32, backward]  TensorInfo : [(input, float32, (32, 16, 112, 112)), (running_mean, float32, (16,)), (running_var, float32, (16,)), (weight, float32, (16,)), (bias, float32, (16,))]
+    ---------------------------------
+    Test skipped or op not implemented:
 
 ### 可选测试模式
 DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其他测试模式
@@ -278,12 +277,12 @@ DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子
         name=['cdist'],
         dtype = [Skip(Dtype.float64)],
     ),
-``` 
+```
 
 原本的python/conformance/diopi_configs.py中，对应的配置有x1, x2两个tensor_para。以上配置会跳过所有x1为float64或x2为float64的测例。
 
 3. 跳过特定参数条件的测例
-   
+
 ```
     'cdist': dict(
         name=['cdist'],
@@ -299,7 +298,7 @@ DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子
             ],
         ),
     ),
-``` 
+```
 
 以上配置会跳过p=1 __或__ x1为float64类型的测例。
 
@@ -324,7 +323,7 @@ DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子
             ),
         ),
     }
-``` 
+```
 
 
 创建完device_configs.py后，可以在验证算子时通过impl_folder参数将device_configs.py所在文件夹路径传进来，
