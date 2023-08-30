@@ -162,7 +162,7 @@ diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     if (gradInputTensor.dtype() != logProbsTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, gradInputTensorTemp, logProbsTensor.dtype()));
     }
-    // syncStreamInCtx(ctx);
+    syncStreamInCtx(ctx);
 
     // ctc_loss descriptor
     CnnlResourceGuard<cnnlCTCLossDescriptor_t, cnnlCreateCTCLossDescriptor, cnnlDestroyCTCLossDescriptor> ctcLossDescObj;
@@ -190,7 +190,7 @@ diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     if (gradInputTensorTemp.dtype() != gradInputTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensorTemp));
     }
-    
+
     return diopiSuccess;
 }
 
