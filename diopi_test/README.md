@@ -36,7 +36,7 @@ DIOPI_TEST 测试范围：
   ```
   2022-09-29 16:40:40,550 - DIOPI-Test - INFO - Run diopi_functions.relu succeed
   ```
-如果测例失败，会打印对应测例的输入参数的张量信息用于调试。
+如果测例失败，会打印对应测例的输入参数的张量信息用于调试。可以在utils.py中设置log_level，获取更多输入参数的张量信息用于调试。
   ```
   DIOPI-Test Error Report
   ---------------------------------
