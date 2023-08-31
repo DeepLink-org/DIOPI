@@ -25,8 +25,17 @@ DIOPI_API diopiError_t diopiBernoulli(diopiContextHandle_t ctx, diopiTensorHandl
     DIOPI_CALL(diopiGeneratorGetState(ctx, generator, &stateHandle));
     void* statePtr = nullptr;
     DIOPI_CALL(diopiGetTensorData(stateHandle, &statePtr));
-    DIOPI_CALLCNNL(cnnlRandGenerateUniform(handle, cnnlGenerator, dtype, statePtr, inputTensor.numel(), 0, 1, outputTensor.data()));
-    DIOPI_CALL(diopiLtInp(ctx, out, input));
+
+    if (outputTensor.dtype() != inputTensor.dtype()) {
+        DiopiTensor outTemp = requiresTensor(ctx, inputTensor.shape(), inputTensor.dtype());
+        DIOPI_CALLCNNL(cnnlRandGenerateUniform(handle, cnnlGenerator, dtype, statePtr, inputTensor.numel(), 0, 1, outTemp.data()));
+        DIOPI_CALL(diopiLtInp(ctx, diopiTensorHandle_t(outTemp), input));
+        DIOPI_CALL(dataTypeCast(ctx, outputTensor, outTemp));
+    } else {
+        DIOPI_CALLCNNL(cnnlRandGenerateUniform(handle, cnnlGenerator, dtype, statePtr, inputTensor.numel(), 0, 1, outputTensor.data()));
+        DIOPI_CALL(diopiLtInp(ctx, out, input));
+    }
+
 
     DIOPI_CALLCNNL(cnnlRandDestroyGenerator(cnnlGenerator));
     return diopiSuccess;
