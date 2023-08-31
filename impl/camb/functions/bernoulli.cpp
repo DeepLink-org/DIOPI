@@ -36,7 +36,6 @@ DIOPI_API diopiError_t diopiBernoulli(diopiContextHandle_t ctx, diopiTensorHandl
         DIOPI_CALL(diopiLtInp(ctx, out, input));
     }
 
-
     DIOPI_CALLCNNL(cnnlRandDestroyGenerator(cnnlGenerator));
     return diopiSuccess;
 }
