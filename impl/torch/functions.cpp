@@ -1794,7 +1794,7 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
         if (atInput.numel() == atMask.numel()) {
             at::_fused_dropout_out(atOut, atMask, atInput, 1 - p, gen);
         } else {
-            atMask.bernoulli_(1 - p);
+            atMask.bernoulli_(1 - p, gen);
             at::mul_out(atOut, atInput, atMask);
             atOut.div_(1 - p);
         }
