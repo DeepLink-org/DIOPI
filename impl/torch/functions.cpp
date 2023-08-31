@@ -1130,8 +1130,6 @@ diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     at::Scalar atAlpha = impl::aten::buildAtScalar(alpha);
     at::Tensor atOut = impl::aten::buildATen(out);
     at::add_out(atOut, atInput, atOther, atAlpha);
-    // at::Tensor atOut = at::add(atInput, atOther, atAlpha);
-    // impl::aten::updateATen2Tensor(ctx, atOut, out);
 
     impl::aten::unsetCurCtx();
     return diopiSuccess;
@@ -1177,8 +1175,6 @@ diopiError_t diopiSubScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     at::Scalar atAlpha = impl::aten::buildAtScalar(alpha);
     at::Tensor atOut = impl::aten::buildATen(out);
     at::sub_out(atOut, atInput, atOther, atAlpha);
-    // at::Tensor atOut = at::sub(atInput, atOther, atAlpha);
-    // impl::aten::updateATen2Tensor(ctx, atOut, out);
 
     impl::aten::unsetCurCtx();
     return diopiSuccess;
