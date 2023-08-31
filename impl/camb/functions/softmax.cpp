@@ -18,10 +18,12 @@ diopiError_t softmaxForward(diopiContextHandle_t ctx, DiopiTensor input, DiopiTe
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor inputCasted = input;
-    DiopiTensor outputCasted = output;
-
-    std::vector<DiopiTensor*> tensors{&inputCasted, &outputCasted};
+    std::vector<DiopiTensor*> tensors{&inputCasted};
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64}));
+    DiopiTensor outputCasted = output;
+    if (output.dtype() != inputCasted.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outputCasted, inputCasted.dtype()));
+    }
     std::vector<int> srcInputShape{inputCasted.shape().begin(), inputCasted.shape().end()};
     std::vector<int> srcOutputShape{outputCasted.shape().begin(), outputCasted.shape().end()};
 
@@ -56,8 +58,8 @@ diopiError_t softmaxForward(diopiContextHandle_t ctx, DiopiTensor input, DiopiTe
         modeTmp = CNNL_SOFTMAX_MODE_MEDIUM_DIMENSION;
     }
 
-    const void * alpha = nullptr;
-    const void * beta = nullptr;
+    const void *alpha = nullptr;
+    const void *beta = nullptr;
 
     CnnlTensorDesc xDesc, yDesc;
     DIOPI_CALL(xDesc.set(inputCasted, CNNL_LAYOUT_ARRAY, inputShape));
@@ -81,12 +83,16 @@ diopiError_t softmaxBackward(diopiContextHandle_t ctx, DiopiTensor gradInputTens
                              bool isLog = false) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
-    DiopiTensor gradInputCasted = gradInputTensor;
     DiopiTensor gradOutputCasted = gradOutputTensor;
     DiopiTensor outputCasted = outputTensor;
 
-    std::vector<DiopiTensor*> tensors{&gradInputCasted, &gradOutputCasted, &outputCasted};
+    std::vector<DiopiTensor*> tensors{&gradOutputCasted, &outputCasted};
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64}));
+
+    DiopiTensor gradInputCasted = gradInputTensor;
+    if (gradInputTensor.dtype() != gradOutputCasted.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, gradInputCasted, gradOutputCasted.dtype()));
+    }
 
     std::vector<int> srcOutputShape{outputCasted.shape().begin(), outputCasted.shape().end()};
 
@@ -128,8 +134,8 @@ diopiError_t softmaxBackward(diopiContextHandle_t ctx, DiopiTensor gradInputTens
     DIOPI_CALL(gradOutputDesc.set(gradOutputCasted, CNNL_LAYOUT_ARRAY, outputShape));
     DIOPI_CALL(outputDesc.set(outputCasted, CNNL_LAYOUT_ARRAY, outputShape));
 
-    const void * alpha = nullptr;
-    const void * beta = nullptr;
+    const void *alpha = nullptr;
+    const void *beta = nullptr;
     DIOPI_CALLCNNL(cnnlSoftmaxBackward(handle,
                                        isLog ? CNNL_SOFTMAX_LOG : CNNL_SOFTMAX_ACCURATE,
                                        modeTmp,
