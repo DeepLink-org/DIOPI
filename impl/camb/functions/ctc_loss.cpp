@@ -121,14 +121,11 @@ diopiError_t diopiCTCLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     DIOPI_CALL(convertCTCLossReduction(&ctcLossReduceMode, reduction));
     cnnlCTCLossZeroInfinityMode_t ctcLossZeroInfMode = zeroInfinity ? CNNL_ZERO_INFINITY : CNNL_NONE_ZERO_INFINITY;
 
-    DIOPI_CHECK(blank == 0, "[diopiCTCLoss] ctc_loss only support blank = 0 on cambricon.");
     DIOPI_CALLCNNL(cnnlSetCTCLossDescriptor(ctcLossDesc, ctcLossNormMode, ctcLossReduceMode, ctcLossZeroInfMode, blank, maxInputLength, maxTargetLen));
 
     DiopiTensor gradTensor = requiresTensor(ctx, logProbsTensor.shape(), logProbsTensor.dtype());
     DIOPI_CALL(ctcLoss(ctx, outTensorTemp, gradTensor, logProbsTensor, targetTensor, inputLengthsTensor, targetLengthTensor, ctcLossDesc, false));
-    if (outTensorTemp.dtype() != outTensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTemp));
-    }
+    DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTemp));
 
     return diopiSuccess;
 }
@@ -177,7 +174,6 @@ diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     DIOPI_CALL(convertCTCLossReduction(&ctcLossReduceMode, reduction));
     cnnlCTCLossZeroInfinityMode_t ctcLossZeroInfMode = zeroInfinity ? CNNL_ZERO_INFINITY : CNNL_NONE_ZERO_INFINITY;
 
-    DIOPI_CHECK(blank == 0, "[diopiCTCLossBackward] ctc_loss only support blank = 0 on cambricon.");
     DIOPI_CALLCNNL(cnnlSetCTCLossDescriptor(ctcLossDesc, ctcLossNormMode, ctcLossReduceMode, ctcLossZeroInfMode, blank, maxInputLength, maxTargetLen));
 
     DiopiTensor lossTensor;
@@ -187,11 +183,7 @@ diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         lossTensor = requiresTensor(ctx, {1}, logProbsTensor.dtype());
     }
     DIOPI_CALL(ctcLoss(ctx, lossTensor, gradInputTensorTemp, logProbsTensor, targetTensor, inputLengthsTensor, targetLengthTensor, ctcLossDesc, true));
-    printDevData(ctx, gradInputTensorTemp, "diopiCTCLossBackward");
-    printDevData(ctx, gradInputTensor, "diopiCTCLossBackward");
-    // if (gradInputTensorTemp.dtype() != gradInputTensor.dtype()) {
-    //     DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensorTemp));
-    // }
+    DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensorTemp));
 
     return diopiSuccess;
 }
