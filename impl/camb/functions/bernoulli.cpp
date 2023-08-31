@@ -13,10 +13,10 @@ namespace camb {
 DIOPI_API diopiError_t diopiBernoulli(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiGeneratorHandle_t generator) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor(input);
+    DiopiTensor outputTensor(out);
 
     cnnlDataType_t dtype;
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, inputTensor.dtype()));
-    DiopiTensor outTemp = requiresTensor(ctx, inputTensor.shape(), inputTensor.dtype());
 
     cnnlRandGenerator_t cnnlGenerator = nullptr;
     DIOPI_CALLCNNL(cnnlRandCreateGenerator(&cnnlGenerator, CNNL_RAND_RNG_MTGP32));
@@ -25,8 +25,8 @@ DIOPI_API diopiError_t diopiBernoulli(diopiContextHandle_t ctx, diopiTensorHandl
     DIOPI_CALL(diopiGeneratorGetState(ctx, generator, &stateHandle));
     void* statePtr = nullptr;
     DIOPI_CALL(diopiGetTensorData(stateHandle, &statePtr));
-    DIOPI_CALLCNNL(cnnlRandGenerateUniform(handle, cnnlGenerator, dtype, statePtr, inputTensor.numel(), 0, 1, outTemp.data()));
-    DIOPI_CALL(diopiLt(ctx, out, diopiTensorHandle_t(outTemp), input));
+    DIOPI_CALLCNNL(cnnlRandGenerateUniform(handle, cnnlGenerator, dtype, statePtr, inputTensor.numel(), 0, 1, outputTensor.data()));
+    DIOPI_CALL(diopiLtInp(ctx, out, input));
 
     DIOPI_CALLCNNL(cnnlRandDestroyGenerator(cnnlGenerator));
     return diopiSuccess;
@@ -60,7 +60,6 @@ DIOPI_API diopiError_t diopiBernoulliScalar(diopiContextHandle_t ctx, diopiTenso
 
     cnnlDataType_t dtype;
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, outTensor.dtype()));
-    DiopiTensor outTemp = requiresTensor(ctx, outTensor.shape(), outTensor.dtype());
 
     cnnlRandGenerator_t cnnlGenerator = nullptr;
     DIOPI_CALLCNNL(cnnlRandCreateGenerator(&cnnlGenerator, CNNL_RAND_RNG_MTGP32));
@@ -69,10 +68,10 @@ DIOPI_API diopiError_t diopiBernoulliScalar(diopiContextHandle_t ctx, diopiTenso
     DIOPI_CALL(diopiGeneratorGetState(ctx, generator, &stateHandle));
     void* statePtr = nullptr;
     DIOPI_CALL(diopiGetTensorData(stateHandle, &statePtr));
-    DIOPI_CALLCNNL(cnnlRandGenerateUniform(handle, cnnlGenerator, dtype, statePtr, outTensor.numel(), 0, 1, outTemp.data()));
+    DIOPI_CALLCNNL(cnnlRandGenerateUniform(handle, cnnlGenerator, dtype, statePtr, outTensor.numel(), 0, 1, outTensor.data()));
 
     diopiScalar_t scalar = constructDiopiScalarT(outTensor.dtype(), p);
-    DIOPI_CALL(diopiLtScalar(ctx, out, diopiTensorHandle_t(outTemp), &scalar));
+    DIOPI_CALL(diopiLtInpScalar(ctx, out, &scalar));
 
     DIOPI_CALLCNNL(cnnlRandDestroyGenerator(cnnlGenerator));
     return diopiSuccess;
