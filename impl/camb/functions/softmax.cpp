@@ -18,7 +18,7 @@ diopiError_t softmaxForward(diopiContextHandle_t ctx, DiopiTensor input, DiopiTe
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor inputCasted = input;
-    std::vector<DiopiTensor*> tensors{&inputCasted};
+    std::vector<DiopiTensor *> tensors{&inputCasted};
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64}));
     DiopiTensor outputCasted = output;
     if (output.dtype() != inputCasted.dtype()) {
@@ -38,7 +38,7 @@ diopiError_t softmaxForward(diopiContextHandle_t ctx, DiopiTensor input, DiopiTe
             inputShape[1] = (inputRank == 1) ? 1 : srcInputShape[inputRank - 2];
             inputShape[0] = (inputRank == 3) ? srcInputShape[0] : 1;
         } else {
-            auto reduceDim = [](const std::vector<int>& data, int from, int to) -> int {
+            auto reduceDim = [](const std::vector<int> &data, int from, int to) -> int {
                 to = std::min<int>(to, data.size());
                 from = std::max<int>(0, from);
                 return std::accumulate(data.cbegin() + from, data.cbegin() + to + 1, 1LL, std::multiplies<>());
@@ -86,7 +86,7 @@ diopiError_t softmaxBackward(diopiContextHandle_t ctx, DiopiTensor gradInputTens
     DiopiTensor gradOutputCasted = gradOutputTensor;
     DiopiTensor outputCasted = outputTensor;
 
-    std::vector<DiopiTensor*> tensors{&gradOutputCasted, &outputCasted};
+    std::vector<DiopiTensor *> tensors{&gradOutputCasted, &outputCasted};
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64}));
 
     DiopiTensor gradInputCasted = gradInputTensor;
@@ -108,7 +108,7 @@ diopiError_t softmaxBackward(diopiContextHandle_t ctx, DiopiTensor gradInputTens
             outputShape[1] = (inputRank == 1) ? 1 : srcOutputShape[inputRank - 2];
             outputShape[0] = (inputRank == 3) ? srcOutputShape[0] : 1;
         } else {
-            auto reduceDim = [](const std::vector<int>& data, int from, int to) -> int {
+            auto reduceDim = [](const std::vector<int> &data, int from, int to) -> int {
                 to = std::min<int>(to, data.size());
                 from = std::max<int>(0, from);
                 return std::accumulate(data.cbegin() + from, data.cbegin() + to + 1, 1LL, std::multiplies<>());
