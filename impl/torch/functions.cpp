@@ -2483,7 +2483,7 @@ diopiError_t diopiBernoulliInp(diopiContextHandle_t ctx, diopiTensorHandle_t ino
     impl::aten::setCurCtx(ctx);
     auto atInOut = impl::aten::buildATen(inout);
     at::Generator gen = impl::aten::buildGenerator(ctx, generator);
-    at::bernoulli(atInOut, gen);
+    at::bernoulli_out(atInOut, atInOut, gen);
     impl::aten::updateGeneratorHandleState(ctx, gen, generator);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
@@ -2504,7 +2504,7 @@ diopiError_t diopiBernoulliScalar(diopiContextHandle_t ctx, diopiTensorHandle_t 
     impl::aten::setCurCtx(ctx);
     auto atOut = impl::aten::buildATen(out);
     at::Generator gen = impl::aten::buildGenerator(ctx, generator);
-    at::bernoulli(atOut, p, gen);
+    at::native::bernoulli_(atOut, p, gen);
     impl::aten::updateGeneratorHandleState(ctx, gen, generator);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
