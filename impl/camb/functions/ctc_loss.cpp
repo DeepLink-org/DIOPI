@@ -37,9 +37,9 @@ static diopiError_t convertCTCLossReduction(cnnlCTCLossReduceMode_t *ctclossRedu
 
 static diopiError_t maxTensorElement(diopiContextHandle_t ctx, DiopiTensor targetLengthTensor, int32_t *maxTargetLen) {
     std::vector<int32_t> targetLengthVector(targetLengthTensor.numel(), 0);
-    // syncStreamInCtx(ctx);
-    auto cnrtRet = cnrtMemcpy(targetLengthVector.data(), targetLengthTensor.data(), sizeof(int32_t) * targetLengthTensor.numel(), cnrtMemcpyDevToHost);
+    auto cnrtRet = cnrtMemcpyAsync(targetLengthVector.data(), targetLengthTensor.data(), sizeof(int32_t) * targetLengthTensor.numel(), getStream(ctx), cnrtMemcpyDevToHost);
     DIOPI_CHECK(cnrtRet == cnrtSuccess, "[diopiCTCLoss] Memory copy from Device to Host failed.");
+    syncStreamInCtx(ctx);
     *maxTargetLen = *std::max_element(targetLengthVector.begin(), targetLengthVector.end());
     return diopiSuccess;
 }
@@ -159,7 +159,6 @@ diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     if (gradInputTensor.dtype() != logProbsTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, gradInputTensorTemp, logProbsTensor.dtype()));
     }
-    syncStreamInCtx(ctx);
 
     // ctc_loss descriptor
     CnnlResourceGuard<cnnlCTCLossDescriptor_t, cnnlCreateCTCLossDescriptor, cnnlDestroyCTCLossDescriptor> ctcLossDescObj;
