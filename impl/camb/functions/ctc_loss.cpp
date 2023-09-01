@@ -37,8 +37,8 @@ static diopiError_t convertCTCLossReduction(cnnlCTCLossReduceMode_t *ctclossRedu
 
 static diopiError_t maxTensorElement(diopiContextHandle_t ctx, DiopiTensor targetLengthTensor, int32_t *maxTargetLen) {
     std::vector<int32_t> targetLengthVector(targetLengthTensor.numel(), 0);
-    auto cnrtRet = cnrtMemcpyAsync(targetLengthVector.data(), targetLengthTensor.data(), sizeof(int32_t) * targetLengthTensor.numel(),
-                                   getStream(ctx), cnrtMemcpyDevToHost);
+    auto cnrtRet = cnrtMemcpyAsync(targetLengthVector.data(), targetLengthTensor.data(),
+                                   sizeof(int32_t) * targetLengthTensor.numel(), getStream(ctx), cnrtMemcpyDevToHost);
     DIOPI_CHECK(cnrtRet == cnrtSuccess, "[diopiCTCLoss] Memory copy from Device to Host failed.");
     syncStreamInCtx(ctx);
     *maxTargetLen = *std::max_element(targetLengthVector.begin(), targetLengthVector.end());
