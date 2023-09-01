@@ -3547,7 +3547,7 @@ diopi_configs = {
         name=["log_softmax"],
         saved_args=dict(output=0),
         para=dict(
-            dim=[-1, 0, -2, 1, 3, -1, 1, -2],
+            dim=[-1, 0, -2, 1, 3, -1, 1, -2, 2],
         ),
         tensor_para=dict(
             args=[
@@ -3555,7 +3555,7 @@ diopi_configs = {
                     "ins": ['input'],
                     "requires_grad": [True],
                     "shape": ((), (13,), (78, 24), (2, 92, 29), (2, 150, 512, 512),
-                              (0,), (0, 15), (5, 0, 13)),
+                              (0,), (0, 15), (5, 0, 13), (26, 20, 38)),
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -3567,14 +3567,14 @@ diopi_configs = {
         name=["log_softmax"],
         saved_args=dict(output=0),
         para=dict(
-            dim=[-1, 0, -2, 1, 2],
+            dim=[-1, 0, -2, 1, 2, 2],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((), (1,), (1, 24), (2, 1, 29), (2, 150, 1, 512),),
+                    "shape": ((), (1,), (1, 24), (2, 1, 29), (2, 150, 1, 512), (26, 20, 38)),
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
@@ -5945,7 +5945,7 @@ diopi_configs = {
                     "shape": ((20, 10), (20, 14), (20, 11), (20, 54)),
                     # "dtype": [Dtype.int64, Dtype.int64, Dtype.int8, Dtype.int16, Dtype.int32, Dtype.uint8],
                     "dtype": [Dtype.int64, Dtype.int64],
-                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=80),
+                    "gen_fn": dict(fn=Genfunc.randint, low=1, high=80),
                 },
                 {
                     "ins": ['input_lengths'],
@@ -5991,7 +5991,7 @@ diopi_configs = {
                     "shape": ((10, ), (10, ), (10, ), (10, )),
                     # "dtype": [Dtype.int64, Dtype.int64, Dtype.int8, Dtype.int16, Dtype.int32, Dtype.uint8],
                     "dtype": [Dtype.int64, Dtype.int64],
-                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=80),
+                    "gen_fn": dict(fn=Genfunc.randint, low=1, high=80),
                 },
                 {
                     "ins": ['input_lengths'],
