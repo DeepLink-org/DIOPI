@@ -220,6 +220,7 @@ class ManualTest(object):
         out = F.bernoulli(input, inplace, p, generator)
         out_numpy = out.numpy()
 
+        assert np.all((out_numpy == 0) | (out_numpy == 1)), "bernoulli output must be 0 or 1"
         if out.numel() > 100:
             assert abs(out_numpy.mean() - p) < 1e-1,\
                 "failed to execute bernoulli"
