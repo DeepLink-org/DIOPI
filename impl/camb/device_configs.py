@@ -1796,4 +1796,20 @@ device_configs = {
         name=['linalgqr'],
         atol=1e-4,
     ),
+
+    'cast_dtype': dict(
+        name=["cast_dtype"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.int64), Skip(Dtype.bool)]
+                },
+                {
+                    "ins": ['out'],
+                    "dtype": [Skip(Dtype.float64)]
+                }
+            ]
+        ),
+    ),
 }
