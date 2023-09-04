@@ -21,9 +21,18 @@ densenet_config = {
         name=["normal_"],
         no_output_ref=True,
         para=dict(
-            size=[(1000, 1024)],
             mean=[0],
             std=[0.01],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(1000, 1024)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
         ),
     ),
 
