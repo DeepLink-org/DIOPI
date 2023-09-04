@@ -7269,9 +7269,11 @@ diopi_configs = {
         no_output_ref=True,
         para=dict(
             num_samples=[7, 8, 9,
-                         63, 257, 128],
+                         63, 257, 128,
+                         8, 9],
             replacement=[False, False, True,
-                         True, True, True],
+                         True, True, True,
+                         False, True],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.positive,
@@ -7279,7 +7281,8 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((8, ), (8, ), (8, ),
-                              (16, 64,), (128, 256,), (256, 128,)),
+                              (16, 64,), (128, 256,), (256, 128,),
+                              (0, 8), (0, 8)),
                     "dtype": [Dtype.float16, Dtype.float32, Dtype.float64],
                 },
             ],
