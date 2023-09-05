@@ -31,9 +31,9 @@ target_link_libraries(${DIOPIRT} PRIVATE diopirt)
 #target_link_libraries(${DIOPIRT} -Wl,--no-as-needed ${DEVICEIMPL} -Wl,--as-needed)
 target_link_libraries(diopirt -Wl,--no-as-needed ${DEVICEIMPL} -Wl,--as-needed)
 
-set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/csrc")
+set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/diopi_stub/csrc")
 
-set(TEST_GEN_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/codegen")
+set(TEST_GEN_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/diopi_stub/codegen")
 add_custom_target(test_code_gen COMMAND python3 ${TEST_GEN_PATH}/gen.py
     --device=topsrider --use_adaptor=${USE_ADAPTOR})
 add_custom_target(functions_copy ALL
@@ -56,7 +56,7 @@ endif()
 
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/../diopi_test/python)
 add_custom_target(python_copy ALL
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS}> ${CMAKE_SOURCE_DIR}/../diopi_test/python
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIRT}> ${CMAKE_SOURCE_DIR}/../diopi_test/python
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS}> ${CMAKE_SOURCE_DIR}/../diopi_test/python/diopilib
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIRT}> ${CMAKE_SOURCE_DIR}/../diopi_test/python/diopilib
     DEPENDS ${DIOPIFUNCTIONS} ${DIOPIRT})
 

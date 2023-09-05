@@ -8,7 +8,7 @@ from .config import Config
 from .utils import logger, FunctionNotImplementedError, DiopiException
 from .utils import need_process_func, glob_vars, nhwc_op, dtype_op
 from .diopi_runtime import Tensor, compute_nhwc_stride, default_context, diopi_rt_init, Generator
-from export_runtime import build_generator_state
+from diopilib import build_generator_state
 from .utils import save_precision, record, write_precision
 from .utils import get_saved_pth_list, get_data_from_file
 from .utils import cfg_file_name
