@@ -7,7 +7,7 @@ from conformance.diopi_configs import diopi_configs
 to generate a new device config file for diopi test
 
 usage example:
-    python generate_device_configs.py ../../impl/ascend/device_configs.py 
+    python generate_device_configs.py ../../impl/ascend/device_configs.py
 
 """
 
@@ -78,7 +78,6 @@ if __name__ == "__main__":
             output_str += "\t\t),\n"
         output_str += "\t),\n\n"
     output_str += "}\n"
-
 
     f = open(output_file, "w")
     f.write(output_str)
