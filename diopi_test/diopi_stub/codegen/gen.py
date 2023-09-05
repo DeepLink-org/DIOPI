@@ -177,10 +177,12 @@ def gen_functions(options, functions_fm):
 def declare_outputs(adaptor_fm):
     adaptor_fm.will_write('export_functions.cpp')
 
+
 def lib_init(diopilib_dir):
     from lib_init_template import diopilib_init_tmp
     with open(diopilib_dir + '__init__.py', 'w') as f:
         f.write(diopilib_init_tmp)
+
 
 def gen_all_codes():
     dirs = prepare()
