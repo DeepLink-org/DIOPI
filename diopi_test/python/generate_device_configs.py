@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
         if "tensor_para" in diopi_configs[config_name]:
             output_str += tab * 2 + "tensor_para=dict(\n"
-            output_str += tab * 3 + "args=[\n" + tab * 4 +"{\n"
+            output_str += tab * 3 + "args=[\n" + tab * 4 + "{\n"
 
             if "ins" in diopi_configs[config_name]["tensor_para"]["args"][0]:
                 ins = diopi_configs[config_name]["tensor_para"]["args"][0]["ins"]
