@@ -562,7 +562,7 @@ def transfer_tensor_to_device(function_paras: dict):
             if para in function_paras["requires_grad"].keys()\
                     and function_paras["requires_grad"][para] == [True]:
                 tensor.requires_grad = True
-            function_paras['kwargs'][para] = tensor.cpu()
+            function_paras['kwargs'][para] = tensor.cuda()
 
         if para == "tensors":
             tensors = function_paras['kwargs'][para]
