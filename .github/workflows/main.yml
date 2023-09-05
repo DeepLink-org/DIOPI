@@ -271,10 +271,16 @@ jobs:
     steps:
       - name: build
         run: |
+          docker run --rm --name ${GITHUB_JOB} -v ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/:/${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/ -e ASCEND_VISIBLE_DEVICES=1 registry.sensetime.com/parrots/dev:pt2_huawei /bin/bash -c """
           set -e
-          cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
+          yes | apt-get install python3-distutils
+          cd /${ASCEND_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export CI=true
           echo "test"
+          export DIOPI_BUILD_TESTRT=ON
+          export CPLUS_INCLUDE_PATH=/opt/conda/envs/py_3.8/include/python3.8/:$CPLUS_INCLUDE_PATH
+          cd impl && sh scripts/build_impl.sh ascend
+          """
 
   Test-Ascend:
     name: Test-Ascend
