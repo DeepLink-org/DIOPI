@@ -3709,7 +3709,8 @@ diopi_configs = {
                               ((2, 9), (0, 19), (2, 3, 1), (3, 5, 8, 9))),
                     "gen_fn": 'Genfunc.randn',
                     "dtype": [np.float32, np.float16, np.float64],
-                    "gen_num_range": [1, 5]
+                    "gen_num_range": [1, 5],
+                    "gen_policy": 'gen_tensor_list'
                 },
             ],
             seq_name='tensors',

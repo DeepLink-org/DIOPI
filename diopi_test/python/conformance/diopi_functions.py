@@ -2,17 +2,48 @@
 # -*- coding: UTF-8 -*-
 import math
 import itertools
-
-from ctypes import c_double, byref
-from .diopi_runtime import Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d, to_numpy_dtype, Generator
-from .utils import check_returncode, check_function, glob_vars, get_capsule
-from . import raw_like, int_types, float_types
-from collections import namedtuple
 import numpy as np
+from collections import namedtuple
+from ctypes import c_double, byref
+
+from .diopi_runtime import (Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, diopiError,
+                            compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d, to_numpy_dtype,
+                            Generator)
+from .diopi_runtime import raw_like, int_types, float_types
+from .utils import get_capsule
 
 
 GLOBAL_STATE = {}
 
+
+class DiopiException(Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+class FunctionNotImplementedError(DiopiException):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+def check_returncode(returncode, throw_exception=True):
+    if 0 != returncode:
+        if returncode == diopiError.diopi_no_implement:
+            raise FunctionNotImplementedError(glob_vars.cur_test_func + ' not implement')
+        error_info = f"Returncode: {returncode}"
+        error_detail = get_last_error()
+        error_info += ", Details: " + error_detail
+        if throw_exception:
+            raise DiopiException(error_info)
+        else:
+            logger.info(error_info)
+
+def check_function(fn_name):
+    try:
+        func = eval(f"diopilib.{fn_name}")
+    except AttributeError as e:
+        raise FunctionNotImplementedError(e.args)
+    return func
 
 def broadcast_out_size(size1, size2):
     sizeO = size1 if len(size1) > len(size2) else size2

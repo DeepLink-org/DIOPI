@@ -1,29 +1,14 @@
 # Copyright (c) 2023, DeepLink.
 import logging
-from . import diopi_runtime
-from .diopi_runtime import get_last_error, Dtype, diopiError
 import os
 import numpy as np
 import csv
 import pickle
 import ctypes
-import diopilib
 
-
-cfg_file_name = "test_config.cfg"
-
+cfg_file_name = '../cache/diopi_case_items.cfg'
 
 default_cfg_dict = dict(
-    default_option=dict(
-        atol=1e-5,
-        rtol=1e-5,
-        atol_half=1e-2,
-        rtol_half=5e-2,
-        mismatch_ratio_threshold=1e-3,
-        memory_format="NCHW",
-        fp16_exact_match=False,
-        train=True,
-    ),
     # set log_level = "DEBUG" for debug infos
     log_level="INFO"  # NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICA
 )
@@ -101,8 +86,8 @@ class glob_var(object):
         self.nhwc = nhwc
         self.nhwc_min_dim = nhwc_min_dim
         self.four_bytes = four_bytes
-        self.int_type = Dtype.int64
-        self.float_type = Dtype.float64
+        self.int_type = np.int64
+        self.float_type = np.float64
         self._cur_test_func = ''
 
     def set_nhwc(self):
@@ -116,8 +101,8 @@ class glob_var(object):
 
     def set_four_bytes(self):
         self.four_bytes = True
-        self.int_type = Dtype.int32
-        self.float_type = Dtype.float32
+        self.int_type = np.int32
+        self.float_type = np.float32
 
     def get_four_bytes(self):
         return self.four_bytes
@@ -205,40 +190,8 @@ def write_report():
             f.write(ele)
 
 
-class DiopiException(Exception):
-
-    def __init__(self, *args: object) -> None:
-        super().__init__(*args)
-
-
-class FunctionNotImplementedError(DiopiException):
-
-    def __init__(self, *args: object) -> None:
-        super().__init__(*args)
-
-
-def check_returncode(returncode, throw_exception=True):
-    if 0 != returncode:
-        if returncode == diopiError.diopi_no_implement:
-            raise FunctionNotImplementedError(glob_vars.cur_test_func + ' not implement')
-        error_info = f"Returncode: {returncode}"
-        error_detail = get_last_error()
-        error_info += ", Details: " + error_detail
-        if throw_exception:
-            raise DiopiException(error_info)
-        else:
-            logger.info(error_info)
-
-
-def check_function(fn_name):
-    try:
-        func = eval(f"diopilib.{fn_name}")
-    except AttributeError as e:
-        raise FunctionNotImplementedError(e.args)
-    return func
-
-
-def squeeze(input: diopi_runtime.Tensor, dim=None):
+# def squeeze(input: diopi_runtime.Tensor, dim=None):
+def squeeze(input, dim=None):
     size = input.size()
     new_size = []
     if dim < 0:
