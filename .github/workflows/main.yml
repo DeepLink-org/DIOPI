@@ -281,11 +281,16 @@ jobs:
   Test-Ascend:
     name: Test-Ascend
     runs-on: tps-ascend-ci
-    needs: [Build-Ascend]
+    needs: [Gen-Data, Build-Ascend]
+    env:
+      run_test: "python"    
     steps:
       - name: test
         run: |
           set -e
-          cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+          cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
           export CI=true
           echo "test"
+          rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
+          cd diopi_test/python && ${run_test} main.py --mode run_test --impl_folder ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/ascend/ \
+          && cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
