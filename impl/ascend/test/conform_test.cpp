@@ -73,6 +73,9 @@ int32_t finalizeLibrary() {
     return diopiSuccess;
 }
 
+// temporary solution, which needs to be re-implemented later
+int32_t buildGeneratorState(diopiContextHandle_t ctx, diopiTensorHandle_t out) { return diopiSuccess; }
+
 }  // extern "C"
 
 }  // namespace ascend
