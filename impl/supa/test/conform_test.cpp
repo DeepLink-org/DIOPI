@@ -83,6 +83,8 @@ int32_t initLibrary() { return diopiSuccess; }
 
 int32_t finalizeLibrary() { return diopiSuccess; }
 
+int32_t buildGeneratorState(diopiContextHandle_t ctx, diopiTensorHandle_t out) { return diopiNoImplement; }
+
 #include "include/litert.hpp"
 diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diopiConstTensorHandle_t tensor, void* dst) {
     if (tensor->device() == diopi_device) {
@@ -95,7 +97,7 @@ diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diopiConstTensorH
         diopiGetTensorDtype(tensor, &dtype);
         diopiGetTensorShape(tensor, &size);
         diopiGetTensorStride(tensor, &stride);
-        diopiRequireTensor(ctx, &dst_tensor, &size, &stride, dtype, dev);
+        diopiRequireTensor(ctx, &dst_tensor, &size, &stride, dtype, diopiDevice_t::diopi_host);
         diopiCopyInp(ctx, tensor, dst_tensor);
         diopiStreamHandle_t stream;
         diopiGetStream(ctx, &stream);
@@ -103,6 +105,31 @@ diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diopiConstTensorH
         device_synchronize_stream(stream);
     } else {
         std::memcpy(dst, tensor->data(), tensor->nbytes());
+    }
+    return diopiSuccess;
+}
+
+DIOPI_RT_API diopiError_t diopiTensorCopyFromBuffer(diopiContextHandle_t ctx, const void* src, diopiTensorHandle_t tensor) {
+    if (tensor->device() == diopi_device) {
+        diopiStreamHandle_t stream;
+
+        diopiTensorHandle_t dst_tensor;
+        diopiSize_t stride;
+        diopiDtype_t dtype;
+        diopiSize_t size;
+        diopiGetTensorDtype(tensor, &dtype);
+        diopiGetTensorShape(tensor, &size);
+        diopiGetTensorStride(tensor, &stride);
+        diopiRequireTensor(ctx, &dst_tensor, &size, &stride, dtype, diopiDevice_t::diopi_host);
+
+        diopiGetStream(ctx, &stream);
+        std::memcpy(dst_tensor->data(), src, tensor->nbytes());
+        device_synchronize_stream(stream);
+
+        diopiCopyInp(ctx, dst_tensor, tensor);
+        device_synchronize_stream(stream);
+    } else {
+        std::memcpy(tensor->data(), src, tensor->nbytes());
     }
     return diopiSuccess;
 }
