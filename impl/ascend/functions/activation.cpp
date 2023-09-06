@@ -11,12 +11,12 @@
 namespace impl {
 namespace ascend {
 extern "C" {
-diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+DIOPI_API diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     AclOpRunner<1, 1>("Relu", ctx).addInput(input).addOutput(out).run();
     return diopiSuccess;
 }
 
-diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+DIOPI_API diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     AclOpRunner<1, 1>("Relu", ctx).addInput(input).addOutput(input).run();
     return diopiSuccess;
 }
@@ -30,7 +30,7 @@ DIOPI_API diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_
 DIOPI_API diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                             diopiConstTensorHandle_t output, int64_t dim) {
     std::vector<int64_t> dimList = {dim};
-    AclOpRunner<2, 1>("SoftmaxGrad", ctx).addInput(output, gradOutput).setAttr<int64_t>("axes", dimList).addOutput(gradInput).run();
+    AclOpRunner<2, 1>("SoftmaxGrad", ctx).addInput(output).addInput(gradOutput).setAttr<int64_t>("axes", dimList).addOutput(gradInput).run();
     return diopiSuccess;
 }
 
@@ -43,7 +43,7 @@ DIOPI_API diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHand
 DIOPI_API diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                                diopiConstTensorHandle_t output, int64_t dim) {
     std::vector<int> dimList = {dim};
-    AclOpRunner<2, 1>("LogSoftmaxGrad", ctx).addInput(gradOutput, output).setAttr("axes", dimList).addOutput(gradInput).run();
+    AclOpRunner<2, 1>("LogSoftmaxGrad", ctx).addInput(gradOutput).addInput(output).setAttr("axes", dimList).addOutput(gradInput).run();
     return diopiSuccess;
 }
 
@@ -59,7 +59,7 @@ DIOPI_API diopiError_t diopiSiluBackward(diopiContextHandle_t ctx, diopiTensorHa
     diopiTensorHandle_t out;
     makeTensorLike(ctx, &out, input);
     diopiSilu(ctx, out, input);
-    AclOpRunner<3, 1>("SwishGrad", ctx).addInput(gradOutput, input, out).addOutput(gradInput).run();
+    AclOpRunner<3, 1>("SwishGrad", ctx).addInput(gradOutput).addInput(input).addInput(out).addOutput(gradInput).run();
     return diopiSuccess;
 }
 
@@ -70,7 +70,7 @@ DIOPI_API diopiError_t diopiSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_
 
 DIOPI_API diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                             diopiConstTensorHandle_t output) {
-    AclOpRunner<2, 1>("SigmoidGrad", ctx).addInput(output, gradOutput).addOutput(gradInput).run();
+    AclOpRunner<2, 1>("SigmoidGrad", ctx).addInput(output).addInput(gradOutput).addOutput(gradInput).run();
     return diopiSuccess;
 }
 
@@ -81,7 +81,7 @@ DIOPI_API diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t o
 
 DIOPI_API diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                          diopiConstTensorHandle_t input, const char* approximate) {
-    AclOpRunner<3, 1>("GeluGrad", ctx).addInput(gradOutput, input, gradOutput).addOutput(gradInput).run();
+    AclOpRunner<3, 1>("GeluGrad", ctx).addInput(gradOutput).addInput(input).addInput(gradOutput).addOutput(gradInput).run();
     return diopiSuccess;
 }
 
@@ -90,9 +90,18 @@ DIOPI_API diopiError_t diopiLeakyRelu(diopiContextHandle_t ctx, diopiTensorHandl
     return diopiSuccess;
 }
 
+DIOPI_API diopiError_t diopiLeakyReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* negativeSlope) {
+    return diopiLeakyRelu(ctx, input, input, negativeSlope);
+}
+
 DIOPI_API diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                               diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope, bool inputIsResult) {
-    AclOpRunner<2, 1>("LeakyReluGrad", ctx).addInput(gradOutput, input).setAttr("negative_slope", getValue<float>(negativeSlope)).addOutput(gradInput).run();
+    AclOpRunner<2, 1>("LeakyReluGrad", ctx)
+        .addInput(gradOutput)
+        .addInput(input)
+        .setAttr("negative_slope", getValue<float>(negativeSlope))
+        .addOutput(gradInput)
+        .run();
     return diopiSuccess;
 }
 
@@ -103,7 +112,7 @@ DIOPI_API diopiError_t diopiTanh(diopiContextHandle_t ctx, diopiTensorHandle_t o
 
 DIOPI_API diopiError_t diopiTanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                          diopiConstTensorHandle_t output) {
-    AclOpRunner<2, 1>("TanhGrad", ctx).addInput(output, gradOutput).addOutput(gradInput).run();
+    AclOpRunner<2, 1>("TanhGrad", ctx).addInput(output).addInput(gradOutput).addOutput(gradInput).run();
     return diopiSuccess;
 }
 }

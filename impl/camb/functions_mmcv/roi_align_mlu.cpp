@@ -4,7 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
 
 #include <iostream>
@@ -39,7 +38,7 @@ extern "C" DIOPI_API diopiError_t diopiRoiAlignMmcv(diopiContextHandle_t ctx, di
     auto argmaxYTr = impl::camb::DiopiTensor(argmaxY);
     auto argmaxXTr = impl::camb::DiopiTensor(argmaxX);
 
-    auto memoryFormat = impl::camb::MemoryFormat::ChannelsLast;
+    auto memoryFormat = diopiMemoryFormat_t::ChannelsLast;
     auto inputTensor = inputTr.contiguous(ctx, memoryFormat);
     cnnlHandle_t handle = impl::camb::cnnlHandlePool.get(ctx);
     cnnlTranspose(ctx, handle, inputTr, inputTensor, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC);
@@ -53,7 +52,7 @@ extern "C" DIOPI_API diopiError_t diopiRoiAlignMmcv(diopiContextHandle_t ctx, di
         auto dtype = inputTr.dtype();
         outputTr = impl::camb::requiresTensor(ctx, {numRois, channels, alignedHeight, alignedWidth}, dtype);
         diopiScalar_t scalar = impl::camb::constructDiopiScalarT(dtype, 0);
-        diopiFill(ctx, diopiTensorHandle_t(outputTr), &scalar);
+        DIOPI_CALL(impl::camb::diopiFill(ctx, diopiTensorHandle_t(outputTr), &scalar));
         return diopiSuccess;
     }
 
@@ -116,7 +115,7 @@ extern "C" diopiError_t diopiRoiAlignBackwardMmcv(diopiContextHandle_t ctx, diop
     int height = gradInputTr.size(2);
     int width = gradInputTr.size(3);
 
-    auto memoryFormat = impl::camb::MemoryFormat::ChannelsLast;
+    auto memoryFormat = diopiMemoryFormat_t::ChannelsLast;
     auto gradTrTmp = gradTr.contiguous(ctx, memoryFormat);
     cnnlHandle_t handle = impl::camb::cnnlHandlePool.get(ctx);
     cnnlTranspose(ctx, handle, gradTr, gradTrTmp, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC);
@@ -124,7 +123,7 @@ extern "C" diopiError_t diopiRoiAlignBackwardMmcv(diopiContextHandle_t ctx, diop
     auto dtype = gradTr.dtype();
     auto gradInputTrTmp = impl::camb::requiresTensor(ctx, {batchSize, channels, height, width}, dtype);
     diopiScalar_t scalar = impl::camb::constructDiopiScalarT(dtype, 0);
-    diopiFill(ctx, diopiTensorHandle_t(gradInputTrTmp), &scalar);
+    DIOPI_CALL(impl::camb::diopiFill(ctx, diopiTensorHandle_t(gradInputTrTmp), &scalar));
 
     auto gradInputTr1 = gradInputTrTmp.contiguous(ctx, memoryFormat);
     cnnlTranspose(ctx, handle, gradInputTrTmp, gradInputTr1, CNNL_LAYOUT_NCHW, CNNL_LAYOUT_NHWC);

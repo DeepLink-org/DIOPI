@@ -11,7 +11,17 @@
 namespace impl {
 namespace ascend {
 extern "C" {
-
+std::string getReductionStr(const diopiReduction_t reduction) {
+    std::string reductionStr = "none";
+    if (diopiReduction_t::ReductionMean == reduction) {
+        reductionStr = "mean";
+    } else if (diopiReduction_t::ReductionSum == reduction) {
+        reductionStr = "sum";
+    } else if (diopiReduction_t::ReductionEND == reduction) {
+        reductionStr = "end";
+    }
+    return reductionStr;
+}
 DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                                     diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
     auto totalWeightScalar = diopiScalar_t();
@@ -21,7 +31,7 @@ DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_
     makeTensorFromScalar(ctx, &totalWeightScalar, &totalWeight, diopi_dtype_float32, diopi_device);
 
     AclOpRunner<3, 2> runner("NLLLoss", ctx);
-    runner.addInput(input, target).setAttr("ignore_index", ignoreIndex).addOutput(out, totalWeight);
+    runner.addInput(input).addInput(target).setAttr("ignore_index", ignoreIndex).addOutput(out).addOutput(totalWeight);
     if (weight) {
         runner.addInput(weight);
     } else {
@@ -29,9 +39,9 @@ DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_
         diopiSize_t inputShape;
         diopiGetTensorShape(input, &inputShape);
         int64_t weightDim[] = {inputShape.data[1]};
-        diopiSize_t weightShape{weightDim, 1};
+        diopiSize_t weightShape = arrayToDiopiSize(weightDim, 1);
         diopiRequireTensor(ctx, &weightNew, &weightShape, nullptr, diopi_dtype_float32, diopi_device);
-        AclOpRunner<1, 1>("Fills", ctx).addInput(weightNew).setAttr<float>("value", 1.0).addOutput(weightNew).run();
+        fillTensor(ctx, &weightNew, 1.0);
         runner.addInput(weightNew);
     }
     if (reduction == diopiReduction_t::ReductionMean) {
@@ -63,16 +73,16 @@ DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTenso
     diopiTensorHandle_t weightNew;
 
     AclOpRunner<3, 2> runner1("NLLLoss", ctx);
-    runner1.addInput(input, target).setAttr("ignore_index", ignoreIndex).addOutput(out, totalWeight);
+    runner1.addInput(input).addInput(target).setAttr("ignore_index", ignoreIndex).addOutput(out).addOutput(totalWeight);
     if (weight) {
         runner1.addInput(weight);
     } else {
         diopiSize_t inputShape;
         diopiGetTensorShape(input, &inputShape);
         int64_t weightDim[] = {inputShape.data[1]};
-        diopiSize_t weightShape{weightDim, 1};
+        diopiSize_t weightShape = arrayToDiopiSize(weightDim, 1);
         diopiRequireTensor(ctx, &weightNew, &weightShape, nullptr, diopi_dtype_float32, diopi_device);
-        AclOpRunner<1, 1>("Fills", ctx).addInput(weightNew).setAttr<float>("value", 1.0).addOutput(weightNew).run();
+        fillTensor(ctx, &weightNew, 1.0);
         runner1.addInput(weightNew);
     }
     if (reduction == diopiReduction_t::ReductionMean) {
@@ -85,12 +95,12 @@ DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTenso
     runner1.run();
 
     AclOpRunner<5, 1> runner2("NLLLossGrad", ctx);
-    runner2.addInput(input, gradOutput, target).setAttr("ignore_index", ignoreIndex).addOutput(gradInput);
+    runner2.addInput(input).addInput(gradOutput).addInput(target).setAttr("ignore_index", ignoreIndex).addOutput(gradInput);
 
     if (weight) {
-        runner2.addInput(weight, totalWeight);
+        runner2.addInput(weight).addInput(totalWeight);
     } else {
-        runner2.addInput(weightNew, totalWeight);
+        runner2.addInput(weightNew).addInput(totalWeight);
     }
     if (reduction == diopiReduction_t::ReductionMean) {
         runner2.setAttr("reduction", std::string("mean"));
@@ -120,17 +130,17 @@ DIOPI_API diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx, diopiTens
     diopiOneHot(ctx, targetOneHot, target, inputSize.data[1]);
 
     AclOpRunner<2, 2> runner("SoftmaxCrossEntropyWithLogits", ctx);
-    runner.addInput(input, targetOneHot);
+    runner.addInput(input).addInput(targetOneHot);
 
     if (reduction == diopiReduction_t::ReductionNone) {
-        runner.addOutput(out, backProp);
+        runner.addOutput(out).addOutput(backProp);
         runner.run();
     } else {
         int64_t lossDim[] = {inputSize.data[0]};
-        diopiSize_t lossShape{lossDim, 1};
+        diopiSize_t lossShape = arrayToDiopiSize(lossDim, 1);
         diopiTensorHandle_t loss;
         diopiRequireTensor(ctx, &loss, &lossShape, nullptr, diopi_dtype_float32, diopi_device);
-        runner.addOutput(loss, backProp);
+        runner.addOutput(loss).addOutput(backProp);
         runner.run();
 
         if (reduction == ReductionSum) {
@@ -156,13 +166,13 @@ DIOPI_API diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, d
     diopiOneHot(ctx, targetOneHot, target, inputSize.data[1]);
 
     int64_t lossDim[] = {inputSize.data[0]};
-    diopiSize_t lossShape{lossDim, 1};
+    diopiSize_t lossShape = arrayToDiopiSize(lossDim, 1);
     diopiTensorHandle_t loss;
     diopiRequireTensor(ctx, &loss, &lossShape, nullptr, diopi_dtype_float32, diopi_device);
 
     AclOpRunner<2, 2> runner("SoftmaxCrossEntropyWithLogits", ctx);
-    runner.addInput(input, targetOneHot);
-    runner.addOutput(loss, gradInput);
+    runner.addInput(input).addInput(targetOneHot);
+    runner.addOutput(loss).addOutput(gradInput);
     runner.run();
 
     info("reduction is %d", reduction);
@@ -173,6 +183,24 @@ DIOPI_API diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, d
         batchSize.fval = inputSize.data[0];
         diopiDivInpScalar(ctx, gradInput, &batchSize, RoundModeNone);
     }
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiMSELoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
+                                    diopiReduction_t reduction) {
+    AclOpRunner<2, 1>("MseLoss", ctx).addInput(input).addInput(target).addOutput(out).setAttr<std::string>("reduction", getReductionStr(reduction)).run();
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiMSELossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiReduction_t reduction) {
+    AclOpRunner<3, 1>("MseLossGrad", ctx)
+        .addInput(input)
+        .addInput(target)
+        .addInput(gradOutput)
+        .addOutput(gradInput)
+        .setAttr<std::string>("reduction", getReductionStr(reduction))
+        .run();
     return diopiSuccess;
 }
 }

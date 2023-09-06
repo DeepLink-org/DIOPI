@@ -18,9 +18,9 @@ DIOPI_API diopiError_t diopiOneHot(diopiContextHandle_t ctx, diopiTensorHandle_t
 
     AclOpRunner<4, 1>("OneHot", ctx)
         .addInput(input)
-        .addConstInput<int>(static_cast<int>(numClasses))
-        .addConstInput<float>(1.0)
-        .addConstInput<float>(0.0)
+        .addConstInput(numClasses, diopi_dtype_int32)
+        .addConstInput(1.0, diopi_dtype_float32)
+        .addConstInput(0.0, diopi_dtype_float32)
         .setAttr<int>("axis", -1)
         .addOutput(out)
         .run();

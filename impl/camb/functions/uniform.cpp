@@ -4,16 +4,12 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <random>
 
 #include "../cnnl_helper.hpp"
 
 namespace impl {
 namespace camb {
-
-extern "C" {
 
 static uint32_t getSeed() {
     std::random_device rd;
@@ -23,7 +19,7 @@ static uint32_t getSeed() {
     return seed;
 }
 
-diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to, int64_t idx) {
+diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor tensor(inout);
@@ -46,7 +42,6 @@ diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout
     DIOPI_CALLCNNL(cnnlRandGenerateUniform(handle, generator, dtype, state.data(), tensor.numel(), from, to, tensor.data()));
     DIOPI_CALLCNNL(cnnlRandDestroyGenerator(generator));
     return diopiSuccess;
-}
 }
 
 }  // namespace camb
