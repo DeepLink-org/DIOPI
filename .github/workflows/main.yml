@@ -288,7 +288,7 @@ jobs:
       - name: test
         run: |
           set -e
-          cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1s
+          cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
           export CI=true
           yes | apt-get install rsync
           rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
