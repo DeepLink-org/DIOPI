@@ -275,7 +275,7 @@ jobs:
           cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export CI=true
           export DIOPI_BUILD_TESTRT=ON
-          export CPLUS_INCLUDE_PATH=/opt/conda/envs/py_3.8/include/python3.8/:$CPLUS_INCLUDE_PATH
+          export CPLUS_INCLUDE_PATH=${CONDA_PREFIX}/include/python3.8/:$CPLUS_INCLUDE_PATH
           cd impl && sh scripts/build_impl.sh ascend
 
   Op-Test-Ascend:
