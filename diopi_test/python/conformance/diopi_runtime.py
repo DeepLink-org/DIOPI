@@ -1,10 +1,13 @@
 # Copyright (c) 2023, DeepLink.
-import ctypes
-from ctypes import c_void_p
 import numpy as np
 import atexit
-from diopilib import diopiTensor, diopiSize, diopiScalar, diopiReduction, diopiRoundMode, diopiError, TensorP, Context, Device, Dtype, \
-    diopi_tensor_copy_to_buffer, get_last_error_string, finalize_library, diopi_finalize, init_library, diopiGenerator
+import ctypes
+from ctypes import c_void_p
+
+from diopilib import (diopiTensor, diopiSize, diopiScalar, diopiReduction, diopiRoundMode,
+                      diopiError, TensorP, Context, Device, Dtype,
+                      diopi_tensor_copy_to_buffer, get_last_error_string, finalize_library,
+                      diopi_finalize, init_library, diopiGenerator)
 
 
 def device(dev: str) -> Device:
@@ -194,7 +197,7 @@ class Sizes(diopiSize):
 class Scalar(diopiScalar):
 
     def __init__(self, value, dtype=None):
-        from conformance.utils import glob_vars
+        from conformance.global_settings import glob_vars
         if dtype is None:
             dtype = glob_vars.int_type if isinstance(value, int) else glob_vars.float_type
         diopiScalar.__init__(self, dtype, value)
@@ -239,6 +242,9 @@ class Tensor(diopiTensor):
 
     def size(self):
         return self.shape()
+    
+    def dtype(self):
+        return self.get_dtype()
 
     def reset_shape(self, shape):
         assert isinstance(shape, (tuple, list))

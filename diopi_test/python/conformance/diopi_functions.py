@@ -5,6 +5,7 @@ import itertools
 import numpy as np
 from collections import namedtuple
 from ctypes import c_double, byref
+import diopilib
 
 from .diopi_runtime import (Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, diopiError,
                             compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d, to_numpy_dtype,

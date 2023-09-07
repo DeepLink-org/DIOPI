@@ -1,7 +1,6 @@
 # Copyright (c) 2023, DeepLink.
-
-from .device_config_helper import Skip
-from .diopi_runtime import Dtype
+import numpy as np
+from skip import Skip
 
 device_configs = {
     'batch_norm': dict(
@@ -12,7 +11,7 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "dtype": [Skip(Dtype.float16)]
+                    "dtype": [Skip(np.float16)]
                 },
             ]
         ),
@@ -80,7 +79,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.uint8)],
+                    "dtype": [Skip(np.uint8)],
                 },
             ],
         ),
@@ -92,7 +91,7 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16), Skip(Dtype.float64)]
+                    "dtype": [Skip(np.float32), Skip(np.float16), Skip(np.float64)]
                 },
             ]
         ),
@@ -104,8 +103,8 @@ device_configs = {
             args=[
                 {
                     "ins": ["exponent"],
-                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
-                              Skip(Dtype.int8), Skip(Dtype.uint8)]
+                    "dtype": [Skip(np.int16), Skip(np.int32), Skip(np.int64),
+                              Skip(np.int8), Skip(np.uint8)]
                 },
             ]
         ),
@@ -117,8 +116,8 @@ device_configs = {
             args=[
                 {
                     "ins": ["exponent"],
-                    "dtype": [Skip(Dtype.float16), Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
-                              Skip(Dtype.int8), Skip(Dtype.uint8)]
+                    "dtype": [Skip(np.float16), Skip(np.int16), Skip(np.int32), Skip(np.int64),
+                              Skip(np.int8), Skip(np.uint8)]
                 },
             ]
         ),
@@ -130,8 +129,8 @@ device_configs = {
             args=[
                 {
                     "ins": ["exponent"],
-                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
-                              Skip(Dtype.int8)]
+                    "dtype": [Skip(np.int16), Skip(np.int32), Skip(np.int64),
+                              Skip(np.int8)]
                 },
             ]
         ),
@@ -143,8 +142,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
-                              Skip(Dtype.int8), Skip(Dtype.uint8)]
+                    "dtype": [Skip(np.int16), Skip(np.int32), Skip(np.int64),
+                              Skip(np.int8), Skip(np.uint8)]
                 },
             ],
         ),
@@ -156,8 +155,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
-                              Skip(Dtype.bool)]
+                    "dtype": [Skip(np.int16), Skip(np.int32), Skip(np.int64),
+                              Skip(np.bool_)]
                 },
             ],
         ),
@@ -169,7 +168,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64)]
+                    "dtype": [Skip(np.int16), Skip(np.int32), Skip(np.int64)]
                 },
             ],
         ),
@@ -221,7 +220,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ],
         ),
@@ -233,7 +232,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ],
         ),
@@ -245,7 +244,7 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16), Skip(Dtype.float64)],
+                    "dtype": [Skip(np.float32), Skip(np.float16), Skip(np.float64)],
                 },
             ]
         ),
@@ -258,7 +257,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float64)],
+                    "dtype": [Skip(np.float32), Skip(np.float64)],
                 },
             ],
         ),
@@ -273,7 +272,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float32), Skip(np.float16)],
                 },
             ]
         ),
@@ -288,7 +287,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ]
         ),
@@ -300,7 +299,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ]
         ),
@@ -312,7 +311,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ]
         ),
@@ -327,12 +326,12 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": (Skip((0,)), Skip((4, 0)), Skip((9, 0, 16))),
-                    "dtype": [Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float16)],
                 },
                 {
                     "ins": ['weight'],
-                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
-                              Skip(Dtype.uint8), Skip(Dtype.int8)],
+                    "dtype": [Skip(np.int16), Skip(np.int32), Skip(np.int64),
+                              Skip(np.uint8), Skip(np.int8)],
                 },
             ]
         ),
@@ -351,13 +350,13 @@ device_configs = {
                 },
                 {
                     "ins": ['weight'],
-                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
-                              Skip(Dtype.uint8), Skip(Dtype.int8)],
+                    "dtype": [Skip(np.int16), Skip(np.int32), Skip(np.int64),
+                              Skip(np.uint8), Skip(np.int8)],
                 },
                 {
                     "ins": ['pos_weight'],
-                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
-                              Skip(Dtype.uint8), Skip(Dtype.int8)],
+                    "dtype": [Skip(np.int16), Skip(np.int32), Skip(np.int64),
+                              Skip(np.uint8), Skip(np.int8)],
                 },
             ],
         ),
@@ -369,7 +368,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ],
         ),
@@ -381,8 +380,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
-                              Skip(Dtype.int8)],
+                    "dtype": [Skip(np.int16), Skip(np.int32), Skip(np.int64),
+                              Skip(np.int8)],
                 },
             ],
         ),
@@ -394,7 +393,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.uint8)],
+                    "dtype": [Skip(np.uint8)],
                 },
             ],
         ),
@@ -407,7 +406,7 @@ device_configs = {
                 {
                     "ins": ['input'],
                     # when dtype of input is uint8, output might overflow.
-                    "dtype": [Skip(Dtype.uint8)],
+                    "dtype": [Skip(np.uint8)],
                 },
 
             ],
@@ -444,11 +443,11 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.uint8)],
+                    "dtype": [Skip(np.uint8)],
                 },
                 {
                     "ins": ['other'],
-                    "dtype": [Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float16)],
                 },
             ],
         ),
@@ -460,11 +459,11 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.uint8)],
+                    "dtype": [Skip(np.uint8)],
                 },
                 {
                     "ins": ['other'],
-                    "dtype": [Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float16)],
                 },
             ],
         ),
@@ -488,7 +487,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ],
         ),
@@ -524,8 +523,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64),
-                              Skip(Dtype.uint8), Skip(Dtype.int8)],
+                    "dtype": [Skip(np.int16), Skip(np.int32), Skip(np.int64),
+                              Skip(np.uint8), Skip(np.int8)],
                 },
             ],
         ),
@@ -537,7 +536,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float16)],
                 },
             ],
         ),
@@ -590,7 +589,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(np.float16), Skip(np.float64), Skip(np.float32)],
                 },
 
             ],
@@ -604,7 +603,7 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": (Skip((16, 0, 9)),),
-                    "dtype": [Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float16)],
                 },
             ],
         ),
@@ -617,7 +616,7 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": (Skip((16, 0, 9)),),
-                    "dtype": [Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float16)],
                 },
             ],
         ),
@@ -669,7 +668,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ],
         ),
@@ -685,7 +684,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float16)],
                     "shape": (Skip((2, 0)), Skip((6, 0, 9))),
                 },
             ]
@@ -702,7 +701,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    # "dtype": [Skip(Dtype.float64)],
+                    # "dtype": [Skip(np.float64)],
                     "shape": (Skip((2, 0)), Skip((6, 0, 9))),
                 },
             ]
@@ -743,9 +742,9 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16),
+                              Skip(np.int64), Skip(np.int32), Skip(np.int16),
+                              Skip(np.int8), Skip(np.uint8), Skip(np.bool_)],
                 },
             ],
         ),
@@ -848,7 +847,7 @@ device_configs = {
             args=[
                 {
                     "ins": ["grads"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ],
         ),
@@ -860,7 +859,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64)],
+                    "dtype": [Skip(np.float64)],
                     "shape": [Skip(())],
                 },
             ],
@@ -885,7 +884,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['inputs'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(np.float64), Skip(np.float32)],
                 },
             ],
         ),
@@ -909,7 +908,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['scores'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(np.float64), Skip(np.float32)],
                 },
             ],
         ),
@@ -921,7 +920,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(np.float64), Skip(np.float32)],
                 },
             ],
         ),
@@ -933,7 +932,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(np.float16), Skip(np.float64), Skip(np.float32)],
                 },
             ],
         ),
@@ -945,7 +944,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(np.float16), Skip(np.float64), Skip(np.float32)],
                 },
             ],
         ),
@@ -957,8 +956,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                    "dtype": [Skip(np.int64), Skip(np.int32), Skip(np.int16),
+                              Skip(np.int8), Skip(np.uint8), Skip(np.bool_)],
                 },
             ],
         ),
@@ -970,7 +969,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ]
         ),
@@ -982,7 +981,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float32), Skip(np.float16)],
                 },
             ]
         ),
@@ -994,7 +993,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64)],
+                    "dtype": [Skip(np.float64)],
                 },
             ],
         ),
@@ -1006,7 +1005,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "dtype": [Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float16)],
                 },
             ]
         ),
@@ -1026,7 +1025,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['x1'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float64)],
+                    "dtype": [Skip(np.float32), Skip(np.float64)],
                 },
             ],
         ),
@@ -1060,7 +1059,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ]
         ),
@@ -1072,7 +1071,7 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ]
         ),
@@ -1084,7 +1083,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16), Skip(Dtype.float64)],
+                    "dtype": [Skip(np.float32), Skip(np.float16), Skip(np.float64)],
                 },
             ]
         ),
@@ -1096,7 +1095,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16), Skip(Dtype.float64)],
+                    "dtype": [Skip(np.float32), Skip(np.float16), Skip(np.float64)],
                 },
             ]
         ),
@@ -1108,7 +1107,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ]
         ),
@@ -1120,7 +1119,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ]
         ),
@@ -1132,7 +1131,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ]
         ),
@@ -1150,7 +1149,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ]
         ),
@@ -1162,7 +1161,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ]
         ),
@@ -1174,7 +1173,7 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ],
         ),
@@ -1186,7 +1185,7 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ]
         ),
@@ -1198,9 +1197,9 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16),
+                              Skip(np.int64), Skip(np.int32), Skip(np.int16),
+                              Skip(np.int8), Skip(np.uint8), Skip(np.bool_)],
                 },
             ],
         ),
@@ -1241,7 +1240,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['other'],
-                    "dtype": [Skip(Dtype.float16), Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64), Skip(Dtype.int8), Skip(Dtype.uint8)],
+                    "dtype": [Skip(np.float16), Skip(np.int16), Skip(np.int32), Skip(np.int64), Skip(np.int8), Skip(np.uint8)],
                 },
             ],
         ),
@@ -1255,7 +1254,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['other'],
-                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64), Skip(Dtype.int8), Skip(Dtype.uint8)],
+                    "dtype": [Skip(np.int16), Skip(np.int32), Skip(np.int64), Skip(np.int8), Skip(np.uint8)],
                 },
             ],
         ),
@@ -1269,7 +1268,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int8)],
+                    "dtype": [Skip(np.int16), Skip(np.int8)],
                 },
             ],
         ),
@@ -1283,7 +1282,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int8)],
+                    "dtype": [Skip(np.int16), Skip(np.int8)],
                 },
             ],
         ),
@@ -1297,7 +1296,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16), Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64), Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                    "dtype": [Skip(np.float16), Skip(np.int16), Skip(np.int32), Skip(np.int64), Skip(np.int8), Skip(np.uint8), Skip(np.bool_)],
                 },
             ],
         ),
@@ -1361,8 +1360,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float64), Skip(Dtype.float16), Skip(Dtype.int16),
-                              Skip(Dtype.int32), Skip(Dtype.int64), Skip(Dtype.uint8), Skip(Dtype.int8), Skip(Dtype.bool)],
+                    "dtype": [Skip(np.float32), Skip(np.float64), Skip(np.float16), Skip(np.int16),
+                              Skip(np.int32), Skip(np.int64), Skip(np.uint8), Skip(np.int8), Skip(np.bool_)],
                 },
             ]
         ),
@@ -1374,7 +1373,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32)],
+                    "dtype": [Skip(np.float32)],
                 },
             ]
         ),
@@ -1395,7 +1394,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float64)],
+                    "dtype": [Skip(np.float32), Skip(np.float64)],
                 },
             ]
         ),
@@ -1417,8 +1416,8 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip((16, 4, 4)), Skip((4, 5, 0))],
-                    "dtype": [Skip(Dtype.uint8),    # overflow issue
-                              Skip(Dtype.bool)],    # not supported by camb kernel when accumulate is true
+                    "dtype": [Skip(np.uint8),    # overflow issue
+                              Skip(np.bool_)],    # not supported by camb kernel when accumulate is true
                 },
             ]
         ),
@@ -1465,7 +1464,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['indices1'],
-                    "dtype": [Skip(Dtype.bool)],
+                    "dtype": [Skip(np.bool_)],
                 },
             ]
         ),
@@ -1478,7 +1477,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['indices1'],
-                    "dtype": [Skip(Dtype.bool)],
+                    "dtype": [Skip(np.bool_)],
                 },
             ]
         ),
@@ -1491,7 +1490,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['indices1'],
-                    "dtype": [Skip(Dtype.bool)],
+                    "dtype": [Skip(np.bool_)],
                 },
             ]
         ),
@@ -1530,8 +1529,8 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip((0,)), Skip((4, 0)), Skip((3, 0, 9))],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float16), Skip(Dtype.int64), Skip(Dtype.int32),
-                              Skip(Dtype.int16), Skip(Dtype.int8)],
+                    "dtype": [Skip(np.float64), Skip(np.float16), Skip(np.int64), Skip(np.int32),
+                              Skip(np.int16), Skip(np.int8)],
                 },
             ],
         ),
@@ -1543,7 +1542,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.uint8), Skip(Dtype.bool)],
+                    "dtype": [Skip(np.uint8), Skip(np.bool_)],
                 },
             ],
         ),
@@ -1562,7 +1561,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ],
         ),
@@ -1600,9 +1599,9 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16),
+                              Skip(np.int64), Skip(np.int32), Skip(np.int16),
+                              Skip(np.int8), Skip(np.uint8), Skip(np.bool_)],
                 },
             ]
         )
@@ -1614,7 +1613,7 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(np.float64), Skip(np.float32)],
                 },
             ]
         )
@@ -1641,7 +1640,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(np.float64), Skip(np.float32)],
                 },
             ],
         ),
@@ -1655,7 +1654,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
+                    "dtype": [Skip(np.float64), Skip(np.float32)],
                 },
             ],
         ),
@@ -1668,7 +1667,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float32), Skip(Dtype.float64)],
+                    "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64)],
                 },
             ]
         ),
@@ -1680,7 +1679,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['std'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ]
         ),
@@ -1692,7 +1691,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['mean'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ]
         ),
@@ -1704,7 +1703,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['mean'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ]
         ),
@@ -1716,11 +1715,11 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
                 {
                     "ins": ['end'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ],
         ),
@@ -1732,15 +1731,15 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
                 {
                     "ins": ['end'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
                 {
                     "ins": ['weight'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ],
         ),
@@ -1752,9 +1751,9 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16),
+                              Skip(np.int64), Skip(np.int32), Skip(np.int16),
+                              Skip(np.int8), Skip(np.uint8), Skip(np.bool_)],
                 },
             ],
         ),
@@ -1766,7 +1765,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.complex64), Skip(Dtype.complex128)],
+                    "dtype": [Skip(np.complex64), Skip(np.complex128)],
                 },
             ],
         ),
@@ -1778,7 +1777,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.complex64), Skip(Dtype.complex128)],
+                    "dtype": [Skip(np.complex64), Skip(np.complex128)],
                 },
             ],
         ),
@@ -1787,9 +1786,9 @@ device_configs = {
     'amax': dict(
         name=['amax'],
         interface=['torch'],
-        dtype=[Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-               Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-               Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+        dtype=[Skip(np.float64), Skip(np.float32), Skip(np.float16),
+               Skip(np.int64), Skip(np.int32), Skip(np.int16),
+               Skip(np.int8), Skip(np.uint8), Skip(np.bool_)],
     ),
 
     'linalgqr': dict(
