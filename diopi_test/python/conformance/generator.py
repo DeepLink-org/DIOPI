@@ -5,10 +5,15 @@ import scipy as sp
 class Genfunc:
     @staticmethod
     def rand(shape, dtype=np.float32):
+        if shape == ():
+            return np.array(np.random.rand()).astype(dtype)
         return np.array(np.random.rand(*shape)).astype(dtype)
 
     @staticmethod
     def randn(shape, dtype=np.float32):
+        print("shape = ", shape)
+        if shape == ():
+            return np.array(np.random.randn()).astype(dtype)
         return np.array(np.random.randn(*shape)).astype(dtype)
 
     @staticmethod
