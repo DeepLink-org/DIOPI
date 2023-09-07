@@ -9,6 +9,8 @@ class glob_var(object):
         self.int_type = Dtype.int64
         self.float_type = Dtype.float64
         self._cur_test_func = ''
+        self._cur_test_nodeid = None
+        self._debug_level = 0
 
     def set_nhwc(self):
         self.nhwc = True
@@ -34,5 +36,21 @@ class glob_var(object):
     @cur_test_func.setter
     def cur_test_func(self, func):
         self._cur_test_func = func
+
+    @property
+    def cur_test_nodeid(self):
+        return self._cur_test_nodeid
+
+    @cur_test_nodeid.setter
+    def cur_test_nodeid(self, cur_test_nodeid):
+        self._cur_test_nodeid = cur_test_nodeid
+
+    @property
+    def debug_level(self):
+        return self._debug_level
+
+    @debug_level.setter
+    def debug_level(self, debug_level):
+        self._debug_level = debug_level
 
 glob_vars = glob_var()

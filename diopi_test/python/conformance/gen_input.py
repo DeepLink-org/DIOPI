@@ -11,7 +11,9 @@ class GenPolicy:
     default = 'default'
     gen_tensor_by_value = 'gen_tensor_by_value'
     gen_tensor_list = 'gen_tensor_list'
-    gen_tensor_diff_shape = 'gen_tensor_diff_shape'
+    gen_tensor_list_diff_shape = 'gen_tensor_list_diff_shape'
+
+    gen_list_policy = [gen_tensor_list, gen_tensor_list_diff_shape]
 
 class GenInputData(object):
     r'''
@@ -31,7 +33,7 @@ class GenInputData(object):
             each_cfg_dict = all_cfg_dict[case_name]
             func_name = each_cfg_dict["name"]
             logger.info(f"Generate benchmark input data for diopi_functions.{func_name} [{case_name}]")
-            logger.info(f"diopi_functions.{func_name} [config] {each_cfg_dict}")
+            # logger.info(f"diopi_functions.{func_name} [config] {each_cfg_dict}")
             case_dict = GenParas(each_cfg_dict).gen_data()
             with open(os.path.join(input_path, case_name), "wb") as f:
                 pickle.dump(case_dict, f)
@@ -70,22 +72,18 @@ class GenParas(object):
 
         for arg in tensor_para_args_list:
             name = arg["ins"]
-            if arg['shape'] is None:
-                value = None
-                requires_grad = False
+            gen_tensor_obj = GenTensor(arg)
+            gen_policy = arg["gen_policy"]
+            if gen_policy == GenPolicy.default:
+                value, requires_grad = gen_tensor_obj.gen_single_tensor()
+            elif gen_policy == GenPolicy.gen_tensor_by_value:
+                value, requires_grad = gen_tensor_obj.gen_value()
+            elif gen_policy == GenPolicy.gen_tensor_list:
+                value, requires_grad = gen_tensor_obj.gen_tensor_list()
+            elif gen_policy == GenPolicy.gen_tensor_list_diff_shape:
+                value, requires_grad = gen_tensor_obj.gen_tensor_list_diff_shape()
             else:
-                gen_tensor_obj = GenTensor(arg)
-                gen_policy = arg["gen_policy"]
-                if gen_policy == GenPolicy.default:
-                    value, requires_grad = gen_tensor_obj.gen_single_tensor()
-                elif gen_policy == GenPolicy.gen_tensor_by_value:
-                    value, requires_grad = gen_tensor_obj.gen_value()
-                elif gen_policy == GenPolicy.gen_tensor_list:
-                    value, requires_grad = gen_tensor_obj.gen_tensor_list()
-                elif gen_policy == GenPolicy.gen_tensor_diff_shape:
-                    value, requires_grad = gen_tensor_obj.gen_tensor_list_diff_shape()
-                else:
-                    raise Exception(f'gen_policy {gen_policy} do not exist, only support default,gen_tensor_by_value,gen_tensor_list,gen_tensor_diff_shape')
+                raise Exception(f'gen_policy {gen_policy} do not exist, only support default,gen_tensor_by_value,gen_tensor_list,gen_tensor_diff_shape')
             function_paras["kwargs"][name] = value
             if requires_grad == [True]:
                 function_paras["requires_grad"][name] = requires_grad
@@ -186,12 +184,11 @@ if __name__ == '__main__':
            'tensor_para': {'args': [ 
                {'ins': 'tensors', 'shape': ((),), 'gen_fn': 'Genfunc.randn', 
                 'dtype': np.float32, 'gen_num_range': [1, 5], 
-                'gen_policy': 'gen_tensor_list', 'requires_grad': [False]}
+                'gen_policy': 'gen_tensor_list_diff_shape', 'requires_grad': [False]}
                 ], 
             'seq_name': 'tensors'}, 
             'requires_backward': [], 'tag': [], 'saved_args': {}}
-    
+
     gc = GenParas(cfg)
     d = gc.gen_data()
     print(d)
-    

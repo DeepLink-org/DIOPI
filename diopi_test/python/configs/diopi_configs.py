@@ -3710,7 +3710,7 @@ diopi_configs = {
                     "gen_fn": 'Genfunc.randn',
                     "dtype": [np.float32, np.float16, np.float64],
                     "gen_num_range": [1, 5],
-                    "gen_policy": 'gen_tensor_list'
+                    "gen_policy": 'gen_tensor_list_diff_shape'
                 },
             ],
             seq_name='tensors',
