@@ -4,8 +4,10 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <set>
 #include <diopi/functions.h>
+
+#include <set>
+
 #include "../common/acloprunner.hpp"
 
 namespace impl {
@@ -22,9 +24,10 @@ diopiError_t diopiSgn(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
     diopiDtype_t inputDtype;
     diopiGetTensorDtype(input, &inputDtype);
-    std::set<diopiDtype_t> typeSet {diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_int32, diopi_dtype_int64, diopi_dtype_float64, diopi_dtype_complex64, diopi_dtype_complex128};
+    std::set<diopiDtype_t> typeSet{
+        diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_int32, diopi_dtype_int64, diopi_dtype_float64, diopi_dtype_complex64, diopi_dtype_complex128};
 
-    // only support: float16, float32, int32, int64, double, complex64, complex128. 
+    // only support: float16, float32, int32, int64, double, complex64, complex128.
     if (typeSet.find(inputDtype) == typeSet.end()) {
         diopiTensorHandle_t inputTemp, outTemp;
         diopiSize_t tensorSize;
