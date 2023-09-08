@@ -411,7 +411,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['abs', 'cos', 'erf', 'erfinv', 'exp', 'floor', 'neg', 'sin', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'ceil', 'atan'],
+        name=['abs', 'erf', 'erfinv', 'exp', 'floor', 'neg', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'ceil', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -423,7 +423,7 @@ device_configs = {
     ),
 
     'pointwise_op_int_without_inplace': dict(
-        name=['abs', 'cos', 'erf', 'exp', 'neg', 'sin', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'atan'],
+        name=['abs', 'erf', 'exp', 'neg', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -435,7 +435,7 @@ device_configs = {
     ),
 
     'pointwise_op_uint8': dict(
-        name=['abs', 'cos', 'erf', 'exp', 'neg', 'sin', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'atan'],
+        name=['abs', 'erf', 'exp', 'neg', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -459,7 +459,7 @@ device_configs = {
     ),
 
     'pointwise_op_bool': dict(
-        name=['abs', 'cos', 'erf', 'exp', 'sin', 'asin', 'sqrt', 'rsqrt', 'atan', 'logical_not'],
+        name=['abs', 'erf', 'exp', 'asin', 'sqrt', 'rsqrt', 'atan', 'logical_not'],
         tensor_para=dict(
             args=[
                 {
