@@ -702,6 +702,8 @@ static inline diopiDtype_t promoteTypes(diopiDtype_t a, diopiDtype_t b) {
     return promoteTypesLookup[dtypeMap[a]][dtypeMap[b]];
 }
 
+std::pair<uint64_t, int64_t> getSeedAndOffset(diopiContextHandle_t ctx, diopiGeneratorHandle_t gen, uint64_t inc);
+
 }  // namespace ascend
 }  // namespace impl
 
