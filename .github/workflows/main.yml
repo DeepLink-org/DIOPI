@@ -274,16 +274,33 @@ jobs:
           set -e
           cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export CI=true
-          echo "test"
+          export DIOPI_BUILD_TESTRT=ON
+          cd impl && sh scripts/build_impl.sh ascend
 
-  Test-Ascend:
-    name: Test-Ascend
+  Op-Test-Ascend:
+    name: Op-Test-Ascend
     runs-on: tps-ascend-ci
-    needs: [Build-Ascend]
+    needs: [Gen-Data, Build-Ascend]
+    env:
+      run_test: "python"
     steps:
       - name: test
         run: |
           set -e
-          cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+          cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
           export CI=true
-          echo "test"
+          rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
+          cd diopi_test/python && ${run_test} main.py --mode run_test --impl_folder ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/ascend/ \
+          && cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+  
+  Rt-Test-Ascend:
+    name: Rt-Test-Ascend
+    runs-on: tps-ascend-ci
+    needs: Build-Ascend
+    steps:
+      - name: test
+        run: |
+          set -e
+          export CI=true
+          cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+          cd diopi_test/python && python main.py --mode utest
