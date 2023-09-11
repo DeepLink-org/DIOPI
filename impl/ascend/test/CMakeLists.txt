@@ -4,16 +4,18 @@ set(DIOPIFUNCTIONS export_functions)
 add_compile_options(-fno-elide-constructors)
 add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 build)
 
-include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/test/include")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/../diopi_test/diopi_stub/include")
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/../third_party/pybind11/include")
 
+set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/diopi_stub/csrc")
+set(TEST_GEN_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/diopi_stub/codegen")
+
 set(RUNTIME_SRC
-    litert.cpp
+    ${FUNCTION_SAVE_PATH}/litert.cpp
     conform_test.cpp
 )
-
 set(EXPORT_SRC
-    export_runtime.cpp
+    ${FUNCTION_SAVE_PATH}/export_runtime.cpp
 )
 
 message("CXX_LITERT_SRC:" ${CXX_LITERT_SRC})
@@ -24,9 +26,6 @@ add_library(diopirt SHARED ${RUNTIME_SRC})
 target_link_libraries(${DIOPIRT} PRIVATE diopirt)
 target_link_libraries(diopirt ${DEVICEIMPL})
 
-set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/diopi_stub/csrc")
-
-set(TEST_GEN_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/diopi_stub/codegen")
 add_custom_target(test_code_gen COMMAND python3 ${TEST_GEN_PATH}/gen.py
     --device=ascend)
 add_custom_target(functions_copy ALL
