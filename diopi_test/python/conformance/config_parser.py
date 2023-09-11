@@ -388,6 +388,7 @@ class ConfigItem(object):
                     item["ins"] = ["input"]
                 if "requires_grad" not in item.keys():
                     item["requires_grad"] = [False]
+                    # item["requires_grad"] = False
                 if "gen_num_range" not in item.keys():
                     item["gen_num_range"] = []
             # gen_fn and dtype maybe set in global zone,
