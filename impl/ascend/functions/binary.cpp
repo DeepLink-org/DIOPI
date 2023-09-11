@@ -9,6 +9,7 @@
 #include <cmath>
 
 #include "../common/acloprunner.hpp"
+#include "../common/promote_type.hpp"
 
 namespace impl {
 namespace ascend {
@@ -57,11 +58,11 @@ DIOPI_API diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
         outCopy = out;
     }
     if (isScalarOne(alpha)) {
-        AclOpRunner<2, 1, dtypeConvertor>("Add", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
+        AclOpRunner<2, 1, dtypeConvertor>("Add", ctx).addInput(input, {highType}).addInput(other, {highType}).addOutput(outCopy).run();
     } else {
         AclOpRunner<3, 1>("AxpyV2", ctx)
-            .addInput(input, highType)
-            .addInput(other, highType)
+            .addInput(input, {highType})
+            .addInput(other, {highType})
             .addConstInput(*alpha, diopi_dtype_float32)
             .addOutput(outCopy)
             .run();
@@ -103,11 +104,11 @@ extern "C" DIOPI_API diopiError_t diopiSub(diopiContextHandle_t ctx, diopiTensor
     }
     const float value = (alpha != nullptr) ? getValue<float>(alpha) : 1.0;
     if (value == 1.0) {
-        AclOpRunner<2, 1, dtypeConvertor>("Sub", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
+        AclOpRunner<2, 1, dtypeConvertor>("Sub", ctx).addInput(input, {highType}).addInput(other, {highType}).addOutput(outCopy).run();
     } else if (value == -1.0) {
-        AclOpRunner<2, 1, dtypeConvertor>("AddV2", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
+        AclOpRunner<2, 1, dtypeConvertor>("AddV2", ctx).addInput(input, {highType}).addInput(other, {highType}).addOutput(outCopy).run();
     } else {
-        AclOpRunner<2, 1>("Axpy", ctx).addInput(input, highType).addInput(other, highType).setAttr<float>("alpha", -value).addOutput(outCopy).run();
+        AclOpRunner<2, 1>("Axpy", ctx).addInput(input, {highType}).addInput(other, {highType}).setAttr<float>("alpha", -value).addOutput(outCopy).run();
     }
     if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);
     return diopiSuccess;
@@ -143,7 +144,7 @@ extern "C" DIOPI_API diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensor
     } else {
         outCopy = out;
     }
-    AclOpRunner<2, 1, dtypeConvertor>("Mul", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
+    AclOpRunner<2, 1, dtypeConvertor>("Mul", ctx).addInput(input, {highType}).addInput(other, {highType}).addOutput(outCopy).run();
     if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);
     return diopiSuccess;
 }
@@ -176,7 +177,7 @@ extern "C" DIOPI_API diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensor
     } else {
         outCopy = out;
     }
-    AclOpRunner<2, 1, dtypeConvertor>("RealDiv", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
+    AclOpRunner<2, 1, dtypeConvertor>("RealDiv", ctx).addInput(input, {highType}).addInput(other, {highType}).addOutput(outCopy).run();
     if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);
     return diopiSuccess;
 }
@@ -203,14 +204,14 @@ extern "C" DIOPI_API diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, di
 DIOPI_API diopiError_t diopiMaximum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
     diopiDtype_t dtype;
     diopiGetTensorDtype(out, &dtype);
-    AclOpRunner<2, 1>("Maximum", ctx).addInput(input, dtype).addInput(other, dtype).addOutput(out).run();
+    AclOpRunner<2, 1>("Maximum", ctx).addInput(input, {dtype}).addInput(other, {dtype}).addOutput(out).run();
     return diopiSuccess;
 }
 
 DIOPI_API diopiError_t diopiMinimum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
     diopiDtype_t dtype;
     diopiGetTensorDtype(out, &dtype);
-    AclOpRunner<2, 1>("Minimum", ctx).addInput(input, dtype).addInput(other, dtype).addOutput(out).run();
+    AclOpRunner<2, 1>("Minimum", ctx).addInput(input, {dtype}).addInput(other, {dtype}).addOutput(out).run();
     return diopiSuccess;
 }
 }

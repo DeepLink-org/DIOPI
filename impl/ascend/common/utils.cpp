@@ -1,4 +1,5 @@
 #include "acloprunner.hpp"
+#include "tensor_utils.hpp"
 
 namespace impl {
 namespace ascend {
@@ -141,6 +142,9 @@ diopiError_t makeOnesLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
     return makeOnesLike(ctx, out, src, dtype);
 }
 
+/**
+ * @brief change diopi dtype to ACL dtype
+*/
 aclDataType getAclDataType(diopiDtype_t type) {
     switch (type) {
         case diopi_dtype_float16:
@@ -172,7 +176,7 @@ aclDataType getAclDataType(diopiDtype_t type) {
         case diopi_dtype_complex128:
             return ACL_COMPLEX128;
     }
-    check_args(false, "acl not support dioptDtype_t:%d", type);
+    ASCEND_CHECK_ABORT(false, "acl not support dioptDtype_t:%d", type);
     return ACL_DT_UNDEFINED;
 }
 
@@ -239,16 +243,6 @@ bool isContiguous(diopiConstTensorHandle_t tensor, diopiMemoryFormat_t format) {
     return true;
 }
 
-class Element {
-public:
-    int64_t value;
-    int64_t index;
-    Element(int value, int index) : value(value), index(index) {}
-};
-
-// Custom comparator to sort elements based on their values
-bool compare(Element& a, Element& b) { return a.value > b.value; }
-
 std::vector<int64_t> getBaseShape(diopiConstTensorHandle_t src) {
     std::vector<int64_t> baseShapeVec;
     diopiSize_t shape;
@@ -313,6 +307,7 @@ int64_t getBaseBufferSize(diopiConstTensorHandle_t src) {
 }
 
 diopiTensorHandle_t clone(diopiContextHandle_t ctx, diopiConstTensorHandle_t src) {
+    std::cout << "=====debug=============  diopi contiguous.\n";
     diopiTensorHandle_t srcClone;
     diopiSize_t size, stride;
     diopiDtype_t dtype;

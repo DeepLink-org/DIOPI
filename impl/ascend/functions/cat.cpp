@@ -13,44 +13,8 @@ namespace ascend {
 
 extern "C" {
 DIOPI_API diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t* tensors, int64_t numInputs, int64_t dim) {
-    check_args(numInputs <= 2048, "cannot concat more than 2048 tensors");
-    if (numInputs <= 2) {
-        AclOpRunner<2, 1> runner("ConcatD", ctx);
-        for (int64_t i = 0; i < numInputs; i++) {
-            runner.addInput(tensors[i]);
-        }
-        runner.setAttr("N", numInputs).setAttr("concat_dim", dim).addOutput(out).run();
-    } else if (numInputs <= 8) {
-        AclOpRunner<8, 1> runner("ConcatD", ctx);
-        for (int64_t i = 0; i < numInputs; i++) {
-            runner.addInput(tensors[i]);
-        }
-        runner.setAttr("N", numInputs).setAttr("concat_dim", dim).addOutput(out).run();
-    } else if (numInputs <= 32) {
-        AclOpRunner<32, 1> runner("ConcatD", ctx);
-        for (int64_t i = 0; i < numInputs; i++) {
-            runner.addInput(tensors[i]);
-        }
-        runner.setAttr("N", numInputs).setAttr("concat_dim", dim).addOutput(out).run();
-    } else if (numInputs <= 128) {
-        AclOpRunner<128, 1> runner("ConcatD", ctx);
-        for (int64_t i = 0; i < numInputs; i++) {
-            runner.addInput(tensors[i]);
-        }
-        runner.setAttr("N", numInputs).setAttr("concat_dim", dim).addOutput(out).run();
-    } else if (numInputs <= 512) {
-        AclOpRunner<512, 1> runner("ConcatD", ctx);
-        for (int64_t i = 0; i < numInputs; i++) {
-            runner.addInput(tensors[i]);
-        }
-        runner.setAttr("N", numInputs).setAttr("concat_dim", dim).addOutput(out).run();
-    } else if (numInputs <= 2048) {
-        AclOpRunner<2048, 1> runner("ConcatD", ctx);
-        for (int64_t i = 0; i < numInputs; i++) {
-            runner.addInput(tensors[i]);
-        }
-        runner.setAttr("N", numInputs).setAttr("concat_dim", dim).addOutput(out).run();
-    }
+    std::vector<AscendTensor> dynamicInput(tensors, tensors + numInputs);
+    AclOpRunner<1, 1>("ConcatD", ctx).addDynamicInput(dynamicInput).setAttr("N", numInputs).setAttr("concat_dim", dim).addOutput(out).run();
     return diopiSuccess;
 }
 }

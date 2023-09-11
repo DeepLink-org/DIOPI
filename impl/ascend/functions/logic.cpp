@@ -7,6 +7,7 @@
 #include <diopi/functions.h>
 
 #include "../common/acloprunner.hpp"
+#include "../common/promote_type.hpp"
 
 namespace impl {
 namespace ascend {
@@ -18,7 +19,7 @@ diopiError_t logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConst
     diopiGetTensorDtype(input, &inputDtype);
     diopiGetTensorDtype(other, &otherDtype);
     diopiDtype_t highType = promoteTypes(inputDtype, otherDtype);
-    AclOpRunner<2, 1>(logicOp, ctx).addInput(input, highType).addInput(other, highType).addOutput(out).run();
+    AclOpRunner<2, 1>(logicOp, ctx).addInput(input, {highType}).addInput(other, {highType}).addOutput(out).run();
     return diopiSuccess;
 }
 

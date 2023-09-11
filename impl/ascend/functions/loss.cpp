@@ -61,7 +61,7 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
         .addInput(targetPtr, getBaseBufferSize(targetCopy), calTargetShapeVec, ACL_FORMAT_ND, diopi_dtype_int32)
         .setAttr("ignore_index", ignoreIndex);
 
-    runner.addInput(weight, diopi_dtype_float32);
+    runner.addInput(weight, {diopi_dtype_float32});
 
     if (reduction == diopiReduction_t::ReductionMean) {
         runner.setAttr("reduction", std::string("mean"));

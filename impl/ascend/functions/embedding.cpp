@@ -23,7 +23,7 @@ DIOPI_API diopiError_t diopiEmbeddingBackward(diopiContextHandle_t ctx, diopiTen
                                               diopiConstTensorHandle_t indices, int64_t numWeights, int64_t paddingIdx, bool scaleGradByfreq, bool sparse) {
     AclOpRunner<2, 1>("EmbeddingDenseGrad", ctx)
         .addInput(grad)
-        .addInput(indices, diopi_dtype_int32)
+        .addInput(indices, {diopi_dtype_int32})
         .setAttr("num_weights", numWeights)
         .setAttr("padding_idx", paddingIdx)
         .setAttr("scale_grad_by_freq", scaleGradByfreq)

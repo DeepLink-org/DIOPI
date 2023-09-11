@@ -60,8 +60,15 @@ DIOPI_API diopiError_t diopiErf(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 
 DIOPI_API diopiError_t diopiErfInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiErf(ctx, input, input); }
 
+// DIOPI_API diopiError_t diopiAbs(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+//     AclOpRunner<1, 1>("Abs", ctx).addInput(input).addOutput(out).run();
+//     return diopiSuccess;
+// }
+
 DIOPI_API diopiError_t diopiAbs(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AclOpRunner<1, 1>("Abs", ctx).addInput(input).addOutput(out).run();
+    AscendTensor inputTensor(input);
+    AscendTensor outputTensor(out);
+    AclOpRunner<1, 1>("Abs", ctx).addInput(inputTensor).addOutput(out).run();
     return diopiSuccess;
 }
 
