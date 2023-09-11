@@ -3,9 +3,10 @@ import numpy as np
 import os
 import sys
 import torch
+import torchvision
 
 from gen_input import GenPolicy
-from utils import logger, get_data_from_file
+from conformance.utils import logger, get_data_from_file
 
 
 class CustomizedTest(object):
@@ -125,11 +126,13 @@ class CustomizedTest(object):
                                         centered=centered)
         return param, param_grad, square_avg, grad_avg, momentum_buffer
 
-    def index_put(input, values, indices1, indices2=None, accumulate=False):
+    def index_put(input, values, indices1, indices2=None, indices3=None, accumulate=False):
+        indices = [indices1]
         if indices2 is not None:
-            indices = [indices1, indices2]
-        else:
-            indices = [indices1]
+            indices.append(indices2)
+        if indices3 is not None:
+            indices.append(indices3)
+        # logger.info((input.shape, [i.shape for i in indices], values.shape, accumulate))
         return torch.index_put(input, indices, values, accumulate)
 
     def im2col(input, kernel_size, dilation=1, padding=0, stride=1):
@@ -188,7 +191,7 @@ class GenOutputData(object):
     Generate output data for all functions by using torch and input data
     '''
     @staticmethod
-    def run(diopi_item_config_path='diopi_case_items.cfg', input_path='data/inputs/', output_path='data/outputs/'):
+    def run(diopi_item_config_path='diopi_case_items.cfg', input_path='data/inputs/', output_path='data/outputs/', fname='all_ops'):
         if not os.path.exists(input_path):
             logger.error("Input data is not generated!")
             sys.exit(0)
@@ -206,16 +209,21 @@ class GenOutputData(object):
         for case_name in all_cfg_dict:
             each_cfg_dict = all_cfg_dict[case_name]
             func_name = each_cfg_dict["name"]
-
+            if fname not in [func_name, 'all_ops']:
+                continue
             data_path = os.path.join(input_path, case_name)
             input_ = get_data_from_file(data_path, case_name, 'input')
             if "no_output_ref" in each_cfg_dict:
-                logger.info((case_name, each_cfg_dict))
+                logger.info(f'diopi_functions.{func_name} [{case_name}] is set to no_output_ref, skip generate output')
                 continue
 
             gen_tensor_obj = GenTensor(case_name, each_cfg_dict)
 
-            output, saved_grads = gen_tensor_obj.gen_data(input_)
+            try:
+                output, saved_grads = gen_tensor_obj.gen_data(input_)
+            except Exception as err_msg:
+                logger.error(f'Generate output data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}')
+                continue
             if output is not None:
                 with open(os.path.join(output_path, case_name), "wb") as f:
                     pickle.dump(GenOutputData.to_numpy(output), f, protocol=4)
@@ -271,6 +279,7 @@ class GenTensor(object):
         self.case_cfg = case_cfg
         self.func_name = case_cfg["name"]
         self.module = "torch.nn.functional"
+        self.input = None
         self.output = None
         self.if_forward_success = False
 
@@ -287,6 +296,7 @@ class GenTensor(object):
         kwargs = function_paras['kwargs']
         if self.module == "torch.Tensor":
             input = kwargs['input']
+            self.input = input
             self.module = "input"
             del kwargs['input']
         if 'dtype' in kwargs.keys():
@@ -308,7 +318,8 @@ class GenTensor(object):
         saved_grads = None
         if function_paras["requires_grad"]:
             if self.module == "input":
-                kwargs['input'] = input
+                kwargs['input'] = self.input
+            outputs = self.output
             if not isinstance(self.output, (list, tuple)):
                 outputs = [self.output]
 
@@ -349,9 +360,11 @@ class GenTensor(object):
         inputs_for_grad_key = []
         for k, v in function_paras["kwargs"].items():
             if function_paras["requires_grad"].get(k, []) == [True]:
-                inputs_for_grad_value.append(v)
                 inputs_for_grad_key.append(k)
-
+                if isinstance(v, (list, tuple)):
+                    inputs_for_grad_value.extend(v)
+                else:
+                    inputs_for_grad_value.append(v)
         return inputs_for_grad_key, inputs_for_grad_value
 
     def change_np_dtype_to_torch(self, dtype):

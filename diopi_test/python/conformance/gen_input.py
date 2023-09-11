@@ -4,7 +4,7 @@ import os
 from functools import partial
 
 from generator import Genfunc
-from utils import logger
+from conformance.utils import logger
 
 
 class GenPolicy:
@@ -19,7 +19,7 @@ class GenInputData(object):
     r'''
     '''
     @staticmethod
-    def run(diopi_item_config_path='diopi_case_items.cfg', input_path='data/inputs/'):
+    def run(diopi_item_config_path='diopi_case_items.cfg', input_path='data/inputs/', fname='all_ops'):
         if not os.path.exists(input_path):
             os.makedirs(input_path)
 
@@ -32,17 +32,21 @@ class GenInputData(object):
         for case_name in all_cfg_dict:
             each_cfg_dict = all_cfg_dict[case_name]
             func_name = each_cfg_dict["name"]
-            logger.info(f"Generate benchmark input data for diopi_functions.{func_name} [{case_name}]")
+            if fname not in [func_name, 'all_ops']:
+                continue
             # logger.info(f"diopi_functions.{func_name} [config] {each_cfg_dict}")
-            case_dict = GenParas(each_cfg_dict).gen_data()
-            with open(os.path.join(input_path, case_name), "wb") as f:
-                pickle.dump(case_dict, f)
-
-            case_counter += 1
+            try:
+                case_dict = GenParas(each_cfg_dict).gen_data()
+                with open(os.path.join(input_path, case_name), "wb") as f:
+                    pickle.dump(case_dict, f)
+                case_counter += 1
+                logger.info(f"Generate benchmark input data for diopi_functions.{func_name} [{case_name}]")
+            except Exception as err_msg:
+                logger.error(f'Generate input data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}')
 
         logger.info(f"Generate test cases number for input data: {case_counter}")
         if case_counter == 0:
-            logger.warn(f"No benchmark input data is generated, \"{func_name}\" may not be in the diopi-config")
+            logger.warn(f"No benchmark input data is generated, \"{fname}\" may not be in the diopi-config")
         else:
             logger.info("Generate benchmark input data done!")
 
@@ -72,8 +76,15 @@ class GenParas(object):
 
         for arg in tensor_para_args_list:
             name = arg["ins"]
+            shape = arg.get("shape", None)
+            value = arg.get("value", None)
             gen_tensor_obj = GenTensor(arg)
             gen_policy = arg["gen_policy"]
+
+            if ('shape' in arg and shape is None) or ('value' in arg and value is None):
+                function_paras["kwargs"][name] = None
+                continue
+
             if gen_policy == GenPolicy.default:
                 value, requires_grad = gen_tensor_obj.gen_single_tensor()
             elif gen_policy == GenPolicy.gen_tensor_by_value:
@@ -107,8 +118,10 @@ class GenTensor(object):
         self._check_item()
 
     def _check_item(self):
-        if self.gen_policy != GenPolicy.gen_tensor_by_value and self.shape is None:
-            raise Exception(f'either shape or value must be provided, but get arg: {self.arg}')
+        if self.gen_policy == GenPolicy.gen_tensor_by_value and 'value' not in self.arg:
+            raise Exception(f'when {GenPolicy.gen_tensor_by_value}, value must be provided, but got arg: {self.arg}')
+        if self.gen_policy != GenPolicy.gen_tensor_by_value and 'shape' not in self.arg:
+            raise Exception(f'shape must be provided, but got arg: {self.arg}')
         if self.gen_policy == GenPolicy.gen_tensor_list and len(self.arg['gen_num_range']) != 2:
             raise Exception(f'when gen_policy is gen_tensor_list, gen_num_range length must be 2, but got {len(self.arg["gen_num_range"])}')
 

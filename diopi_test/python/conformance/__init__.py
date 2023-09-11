@@ -1,4 +1,7 @@
 # Copyright (c) 2023, DeepLink.
+import os
+import sys
+
 from .diopi_runtime import Tensor, Dtype, Device, raw_like, diopiTensor, Context
 from .diopi_runtime import get_last_error, device
 from .diopi_runtime import from_numpy_dtype, to_numpy_dtype, float_types, int_types
@@ -7,6 +10,7 @@ from .diopi_runtime import from_numpy_dtype, to_numpy_dtype, float_types, int_ty
 # from .conformance_test import ConformanceTest
 from .skip import Skip 
 
+sys.path.append(os.path.dirname(__file__))
 
 int8 = Dtype.int8
 uint8 = Dtype.uint8

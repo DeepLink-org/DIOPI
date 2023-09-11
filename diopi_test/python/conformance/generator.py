@@ -11,7 +11,6 @@ class Genfunc:
 
     @staticmethod
     def randn(shape, dtype=np.float32):
-        print("shape = ", shape)
         if shape == ():
             return np.array(np.random.randn()).astype(dtype)
         return np.array(np.random.randn(*shape)).astype(dtype)
@@ -42,7 +41,7 @@ class Genfunc:
 
     @staticmethod
     def positive(shape, dtype=np.float32):
-        return np.abs(np.random.randn(*shape)).astype(dtype)
+        return np.array(np.abs(np.random.randn(*shape)).astype(dtype))
 
     @staticmethod
     def sym_mat(shape, dtype=np.float32):
