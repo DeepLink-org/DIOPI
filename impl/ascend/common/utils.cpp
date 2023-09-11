@@ -241,13 +241,13 @@ bool isContiguous(diopiConstTensorHandle_t tensor, diopiMemoryFormat_t format) {
 
 class Element {
 public:
-    int64_t value;
-    int64_t index;
-    Element(int value, int index) : value(value), index(index) {}
+    int64_t value_;
+    int64_t index_;
+    Element(int value, int index) : value_(value), index_(index) {}
 };
 
 // Custom comparator to sort elements based on their values
-bool compare(Element& a, Element& b) { return a.value > b.value; }
+bool compare(Element& a, Element& b) { return a.value_ > b.value_; }
 
 std::vector<int64_t> getBaseShape(diopiConstTensorHandle_t src) {
     std::vector<int64_t> baseShapeVec;

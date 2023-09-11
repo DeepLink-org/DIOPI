@@ -280,22 +280,22 @@ class AclOpRunner {
     std::array<aclDataBuffer*, InputSize> inputBuffers_;
     std::array<aclTensorDesc*, OutputSize> outputDescs_;
     std::array<aclDataBuffer*, OutputSize> outputBuffers_;
-    std::vector<int64_t> syncIdxs;
-    std::vector<diopiTensorHandle_t*> syncTensors;
-    std::vector<std::pair<diopiTensorHandle_t, diopiTensorHandle_t>> nonContiguousOutputPairs;
+    std::vector<int64_t> syncIdxs_;
+    std::vector<diopiTensorHandle_t*> syncTensors_;
+    std::vector<std::pair<diopiTensorHandle_t, diopiTensorHandle_t>> nonContiguousOutputPairs_;
     diopiContextHandle_t context_;
-    int inputIndex = 0;
-    int outputIndex = 0;
-    bool sync = false;
+    int inputIndex_ = 0;
+    int outputIndex_ = 0;
+    bool sync_ = false;
 
     std::string dumpRunnerInfo() {
         std::stringstream sstream;
-        sstream << "opname:" << opname_ << ",ins.size:" << inputIndex << ",outs.size:" << outputIndex << std::endl;
+        sstream << "opname:" << opname_ << ",ins.size:" << inputIndex_ << ",outs.size:" << outputIndex_ << std::endl;
         return sstream.str();
     }
 
 public:
-    explicit AclOpRunner(std::string opname, diopiContextHandle_t context) : context_(context), opname_(std::move(opname)), attr_(aclopCreateAttr()) {
+    explicit AclOpRunner(std::string opname, diopiContextHandle_t context) : opname_(std::move(opname)), attr_(aclopCreateAttr()), context_(context) {
         inputDescs_.fill(nullptr);
         inputBuffers_.fill(nullptr);
         outputDescs_.fill(nullptr);
@@ -341,19 +341,19 @@ public:
         for (size_t i = 0; i < dims.size(); ++i) {
             dims[i] = shape.data[i];
         }
-        if (dims.size() == 0 && numel == 1) {
+        if (dims.empty() && numel == 1) {
             dims.push_back(1);
         }
 
-        static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (PARROTS_DEBUG_ACLOPRUNNER > 0) {
-            info("%s input[%d]:%s", opname_.c_str(), inputIndex, dumpTensor(th).c_str());
+        static int parrotsDebugAcloprunner = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (parrotsDebugAcloprunner > 0) {
+            info("%s input[%d]:%s", opname_.c_str(), inputIndex_, dumpTensor(th).c_str());
         }
 
-        check_args(inputIndex >= 0 && inputIndex < InputSize, "check 0<=inputIndex<InputSize failed");
+        check_args(inputIndex_ >= 0 && inputIndex_ < InputSize, "check 0<=inputIndex<InputSize failed");
 
-        auto& desc = inputDescs_[inputIndex];
-        auto& buffer = inputBuffers_[inputIndex];
+        auto& desc = inputDescs_[inputIndex_];
+        auto& buffer = inputBuffers_[inputIndex_];
 
         if (isScalar)
             desc = aclCreateTensorDesc(dtypeCastStrategy(dtype), 0, nullptr, format);
@@ -367,7 +367,7 @@ public:
             if (numel > 0) CALL_ACLRT(aclSetTensorConst(desc, const_cast<void*>(ptr), numel * itemsize));
         }
         buffer = aclCreateDataBuffer(nullptr, 0);
-        inputIndex++;
+        inputIndex_++;
         return *this;
     }
 
@@ -421,8 +421,8 @@ public:
     }
 
     AclOpRunner& addInput(const void* ptr, int64_t buffersize, std::vector<int64_t>& dims, const aclFormat& format, diopiDtype_t dtype) {
-        static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (PARROTS_DEBUG_ACLOPRUNNER > 0) {
+        static int parrotsDebugAcloprunner = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (parrotsDebugAcloprunner > 0) {
             std::stringstream stream;
             stream << "Tensor:(";
             stream << " data:" << ptr;
@@ -430,18 +430,18 @@ public:
             stream << " ,shape:";
             std::for_each(dims.data(), dims.data() + dims.size(), [&stream](int64_t v) { stream << v << " "; });
             stream << ")";
-            info("%s input[%d]: %s", opname_.c_str(), inputIndex, stream.str().c_str());
+            info("%s input[%d]: %s", opname_.c_str(), inputIndex_, stream.str().c_str());
         }
 
-        check_args(inputIndex >= 0 && inputIndex < InputSize, "check 0<=inputIndex<InputSize failed");
+        check_args(inputIndex_ >= 0 && inputIndex_ < InputSize, "check 0<=inputIndex<InputSize failed");
 
-        auto& desc = inputDescs_[inputIndex];
-        auto& buffer = inputBuffers_[inputIndex];
+        auto& desc = inputDescs_[inputIndex_];
+        auto& buffer = inputBuffers_[inputIndex_];
 
         desc = aclCreateTensorDesc(dtypeCastStrategy(dtype), dims.size(), dims.data(), format);
         check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
         buffer = aclCreateDataBuffer(const_cast<void*>(ptr), buffersize);
-        inputIndex++;
+        inputIndex_++;
         return *this;
     }
 
@@ -455,20 +455,20 @@ public:
         std::vector<int64_t> dims = getBaseShape(th);
         int64_t buffSize = getBaseBufferSize(th);
 
-        static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (PARROTS_DEBUG_ACLOPRUNNER > 0) {
-            info("%s input[%d]:%s", opname_.c_str(), inputIndex, dumpTensor(th).c_str());
+        static int parrotsDebugAcloprunner = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (parrotsDebugAcloprunner > 0) {
+            info("%s input[%d]:%s", opname_.c_str(), inputIndex_, dumpTensor(th).c_str());
         }
 
-        check_args(inputIndex >= 0 && inputIndex < InputSize, "check 0<=inputIndex<InputSize failed");
+        check_args(inputIndex_ >= 0 && inputIndex_ < InputSize, "check 0<=inputIndex<InputSize failed");
 
-        auto& desc = inputDescs_[inputIndex];
-        auto& buffer = inputBuffers_[inputIndex];
+        auto& desc = inputDescs_[inputIndex_];
+        auto& buffer = inputBuffers_[inputIndex_];
 
         desc = aclCreateTensorDesc(dtypeCastStrategy(dtype), dims.size(), dims.data(), format);
         check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
         buffer = aclCreateDataBuffer(const_cast<void*>(ptr), buffSize);
-        inputIndex++;
+        inputIndex_++;
         return *this;
     }
 
@@ -485,8 +485,8 @@ public:
     }
 
     AclOpRunner& addOutput(void* ptr, int64_t buffersize, std::vector<int64_t>& dims, const aclFormat& format, diopiDtype_t dtype) {
-        static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (PARROTS_DEBUG_ACLOPRUNNER > 0) {
+        static int parrotsDebugAcloprunner = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (parrotsDebugAcloprunner > 0) {
             std::stringstream stream;
             stream << "Tensor:(";
             stream << " data:" << ptr;
@@ -494,16 +494,16 @@ public:
             stream << " ,shape:";
             std::for_each(dims.data(), dims.data() + dims.size(), [&stream](int64_t v) { stream << v << " "; });
             stream << ")";
-            info("%s output[%d]: %s", opname_.c_str(), outputIndex, stream.str().c_str());
+            info("%s output[%d]: %s", opname_.c_str(), outputIndex_, stream.str().c_str());
         }
 
-        check_args(outputIndex >= 0 && outputIndex < OutputSize, "check 0<=outputIndex<OutputSize failed");
-        auto& desc = outputDescs_[outputIndex];
-        auto& buffer = outputBuffers_[outputIndex];
+        check_args(outputIndex_ >= 0 && outputIndex_ < OutputSize, "check 0<=outputIndex<OutputSize failed");
+        auto& desc = outputDescs_[outputIndex_];
+        auto& buffer = outputBuffers_[outputIndex_];
         desc = aclCreateTensorDesc(dtypeCastStrategy(dtype), dims.size(), dims.data(), format);
         check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
         buffer = aclCreateDataBuffer(ptr, buffersize);
-        outputIndex++;
+        outputIndex_++;
         return *this;
     }
 
@@ -518,17 +518,17 @@ public:
         std::vector<int64_t> dims = getBaseShape(th);
         int64_t buffSize = getBaseBufferSize(th);
 
-        static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (PARROTS_DEBUG_ACLOPRUNNER > 0) {
-            info("%s output[%d]:%s", opname_.c_str(), outputIndex, dumpTensor(th).c_str());
+        static int parrotsDebugAcloprunner = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (parrotsDebugAcloprunner > 0) {
+            info("%s output[%d]:%s", opname_.c_str(), outputIndex_, dumpTensor(th).c_str());
         }
-        check_args(outputIndex >= 0 && outputIndex < OutputSize, "check 0<=outputIndex<OutputSize failed");
-        auto& desc = outputDescs_[outputIndex];
-        auto& buffer = outputBuffers_[outputIndex];
+        check_args(outputIndex_ >= 0 && outputIndex_ < OutputSize, "check 0<=outputIndex<OutputSize failed");
+        auto& desc = outputDescs_[outputIndex_];
+        auto& buffer = outputBuffers_[outputIndex_];
         desc = aclCreateTensorDesc(dtypeCastStrategy(dtype), dims.size(), dims.data(), format);
         check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
         buffer = aclCreateDataBuffer(ptr, buffSize);
-        outputIndex++;
+        outputIndex_++;
         return *this;
     }
 
@@ -542,7 +542,7 @@ public:
             diopiGetTensorShape(th, &shape);
             diopiGetTensorDtype(th, &dtype);
             diopiRequireTensor(context_, &thCopy, &shape, nullptr, dtype, diopi_device);
-            nonContiguousOutputPairs.push_back(std::pair<diopiTensorHandle_t, diopiTensorHandle_t>(th, thCopy));
+            nonContiguousOutputPairs_.emplace_back(th, thCopy);
             addOutput(thCopy, getAclDataFormat(th));
         }
     }
@@ -579,18 +579,18 @@ public:
     }
 
     AclOpRunner& addSyncOutput(diopiTensorHandle_t* th, const aclFormat format) {
-        syncIdxs.push_back(outputIndex);
-        syncTensors.push_back(th);
+        syncIdxs_.push_back(outputIndex_);
+        syncTensors_.push_back(th);
         addOutput(*th, format);
-        sync = true;
+        sync_ = true;
         return *this;
     }
 
     AclOpRunner& addSyncOutput(diopiTensorHandle_t* th) {
-        syncIdxs.push_back(outputIndex);
-        syncTensors.push_back(th);
+        syncIdxs_.push_back(outputIndex_);
+        syncTensors_.push_back(th);
         addOutput(*th, getAclDataFormat(*th));
-        sync = true;
+        sync_ = true;
         return *this;
     }
 
@@ -598,12 +598,12 @@ public:
     AclOpRunner& run() {
         diopiStreamHandle_t stream;
         diopiGetStream(context_, &stream);
-        if (sync) {
+        if (sync_) {
             CALL_ACLRT(aclopCompileAndExecuteV2(opname_.data(),
-                                                inputIndex,
+                                                inputIndex_,
                                                 inputDescs_.data(),
                                                 inputBuffers_.data(),
-                                                outputIndex,
+                                                outputIndex_,
                                                 outputDescs_.data(),
                                                 outputBuffers_.data(),
                                                 attr_,
@@ -613,10 +613,10 @@ public:
                                                 stream));
         } else {
             CALL_ACLRT(aclopCompileAndExecute(opname_.data(),
-                                              inputIndex,
+                                              inputIndex_,
                                               inputDescs_.data(),
                                               inputBuffers_.data(),
-                                              outputIndex,
+                                              outputIndex_,
                                               outputDescs_.data(),
                                               outputBuffers_.data(),
                                               attr_,
@@ -625,14 +625,14 @@ public:
                                               nullptr,
                                               stream));
         }
-        for (auto pair : nonContiguousOutputPairs) {
+        for (auto pair : nonContiguousOutputPairs_) {
             auto th = pair.first;
             auto thCopy = pair.second;
             diopiCopyInp(context_, thCopy, th);
         }
-        for (int64_t i = 0; i < syncIdxs.size(); i++) {
-            auto syncIdx = syncIdxs[i];
-            auto syncTensorPtr = syncTensors[i];
+        for (int64_t i = 0; i < syncIdxs_.size(); i++) {
+            auto syncIdx = syncIdxs_[i];
+            auto syncTensorPtr = syncTensors_[i];
             int descNumDims = aclGetTensorDescNumDims(outputDescs_[syncIdx]);
             std::vector<int64_t> realShape;
             int64_t dimSize = 0;
@@ -659,9 +659,9 @@ public:
         }
         CALL_ACLRT(aclrtSynchronizeStream(stream));
         // Get environment variables once when run is called for the first time
-        static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (PARROTS_DEBUG_ACLOPRUNNER > 0) {
-            info(dumpRunnerInfo().c_str());
+        static int parrotsDebugAcloprunner = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (parrotsDebugAcloprunner > 0) {
+            info("%s", "%s", dumpRunnerInfo().c_str());
         }
 
         return *this;
