@@ -1,9 +1,9 @@
 import numpy as np
 
-from diopi_runtime import Tensor
+from conformance.diopi_runtime import Tensor
 from conformance.exception import InputChangedException, OutputCheckFailedException
-from utils import logger
-from global_settings import glob_vars
+# from utils import logger
+from conformance.global_settings import glob_vars
 
 
 class CheckResult(object):

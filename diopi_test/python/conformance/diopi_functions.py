@@ -1,6 +1,7 @@
 # Copyright (c) 2023, DeepLink.
 # -*- coding: UTF-8 -*-
 import math
+import ctypes
 import itertools
 import numpy as np
 from collections import namedtuple
@@ -10,12 +11,21 @@ import diopilib
 from .diopi_runtime import (Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, diopiError,
                             compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d, to_numpy_dtype,
                             Generator)
-from .diopi_runtime import raw_like, int_types, float_types
-from .utils import get_capsule
+from .diopi_runtime import raw_like, int_types, float_types, get_last_error
+from .utils import logger
+from .global_settings import glob_vars
 
 
 GLOBAL_STATE = {}
 
+
+def get_capsule(src):
+    PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
+    PyCapsule_New = ctypes.pythonapi.PyCapsule_New
+    PyCapsule_New.restype = ctypes.py_object
+    PyCapsule_New.argtypes = (ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor)
+    capsule = PyCapsule_New(src, None, PyCapsule_Destructor(0))
+    return capsule
 
 class DiopiException(Exception):
     def __init__(self, *args: object) -> None:

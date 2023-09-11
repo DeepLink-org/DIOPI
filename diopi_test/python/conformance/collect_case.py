@@ -2,8 +2,6 @@
 
 import os
 import copy
-import subprocess
-import argparse
 import pickle
 
 from skip import Skip
@@ -55,8 +53,6 @@ class DeviceConfig(object):
             self._device_rules[cfg_name]['skip']['para'] = {}
             for k, v in value['para'].items():
                 self._device_rules[cfg_name]['skip']['para'][k] = set([i.value() for i in v])
-
-        print("after tol:", self._device_rules)
         
         if 'tensor_para' in value.keys() and 'args' in value['tensor_para'].keys():
             if 'skip' not in self._device_rules[cfg_name].keys():
@@ -114,8 +110,6 @@ class CollectCase(object):
             if 'skip' not in rule.keys():
                 return False
 
-            # import pdb
-            # pdb.set_trace()
             # 'para'
             if 'para' in rule['skip'].keys() and 'para' in case_cfg.keys():
                 para_case = case_cfg['para']
@@ -131,13 +125,14 @@ class CollectCase(object):
                 for ins in tp_case_args:
                     if ins['ins'] in tp_rule_args.keys():
                         for fk in tp_rule_args[ins['ins']].keys():
-                            if ins[fk] in tp_rule_args[ins['ins']][fk]:
+                            ins_fk_tmp = ins[fk] if not isinstance(ins[fk], list) else ins[fk][0]
+                            if ins_fk_tmp in tp_rule_args[ins['ins']][fk]:
                                 return True
             return False
         
         for key, item in self._diopi_items.items():
             if _filter(key, item, self._device_filter):
-                print(f"_filter: {key} : False")
+                # print(f"_filter: {key} : Filtered.")
                 continue
             self._device_cases[key] = item
 
@@ -157,11 +152,8 @@ if __name__ == '__main__':
     cur_dir = os.path.dirname(os.path.abspath(__file__))
     impl_folder = os.path.join(cur_dir, '../../../impl/camb')
     device_config_path = os.path.join(impl_folder, "device_configs.py")
-    print(device_config_path)
 
-    print(os.path.isfile(device_config_path))
     dst_path = os.path.join(cur_dir, "device_configs.py")
-    print(dst_path)
 
     def unlink_device():
         if os.path.islink(dst_path):
@@ -172,9 +164,8 @@ if __name__ == '__main__':
     atexit.register(unlink_device)
 
     from device_configs import device_configs
-    print(device_configs.keys())
 
-    diopi_cfg_path = '../cache/diopi_case_items.cfg'
+    diopi_cfg_path = './cache/diopi_case_items.cfg'
     if os.path.isfile(diopi_cfg_path):
         print(True)
     
@@ -183,11 +174,8 @@ if __name__ == '__main__':
 
     opt = DeviceConfig(device_configs)
     opt.run()
-    # print(opt.rules())
 
-    print("After:")
     coll = CollectCase(diopi_configs, opt.rules())
     coll.collect()
-    print(len(coll.get_cases()))
     with open('../cache/device_case_items.cfg', 'wb') as f:
         pickle.dump(coll.get_cases, f)
