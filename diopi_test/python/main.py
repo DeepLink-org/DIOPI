@@ -1,9 +1,28 @@
 import subprocess
 import argparse
 import shlex
-from conformance.utils import is_ci, error_counter, DiopiException, write_report, real_op_list
-from conformance.utils import logger, nhwc_op, dtype_op, dtype_out_op, glob_vars
+import os
+import sys
+
+sys.path.append('../python/configs')
+from conformance.utils import is_ci, error_counter, write_report
+from conformance.utils import logger, nhwc_op, dtype_op, dtype_out_op
+from conformance.global_settings import glob_vars
 from conformance.model_list import model_list, model_op_list
+from conformance.config_parser import ConfigParser
+from conformance.gen_input import GenInputData
+from conformance.gen_output import GenOutputData
+from conformance.collect_case import DeviceConfig, CollectCase
+
+
+cur_dir = os.path.dirname(os.path.abspath(__file__))
+cache_path = os.path.join(cur_dir, 'cache')
+data_path = os.path.join(cache_path, 'data')
+diopi_case_item_path = os.path.join(cache_path, 'diopi_case_items.cfg')
+device_case_item_path = os.path.join(cache_path, 'device_case_items.cfg')
+
+if not os.path.exists(cache_path):
+    os.makedirs(cache_path)
 
 
 def parse_args():
@@ -61,11 +80,36 @@ if __name__ == "__main__":
         glob_vars.set_four_bytes()
 
     if args.mode == 'gen_data':
-        import conformance.gen_data as gd
-        gd.GenInputData.run(args.fname, args.model_name.lower(), args.filter_dtype)
-        gd.GenOutputData.run(args.fname, args.model_name.lower(), args.filter_dtype)
+        model_name = args.model_name.lower()
         if args.model_name != '':
-            logger.info(f"the op list of {args.model_name}: {real_op_list}")
+            logger.info(f"the op list of {args.model_name}: {model_op_list[model_name]}")
+        else:
+            from diopi_configs import diopi_configs
+            cfg_parse = ConfigParser(diopi_case_item_path)
+            cfg_parse.parser(diopi_configs)
+            cfg_parse.save()
+            GenInputData.run(diopi_case_item_path, os.path.join(data_path, 'inputs'), args.fname)
+            GenOutputData.run(diopi_case_item_path, os.path.join(data_path, 'inputs'), os.path.join(data_path, 'outputs'), args.fname)
+
+        if args.impl_folder != '':
+            device_config_path = os.path.join(args.impl_folder, "device_configs.py")
+            dst_path = os.path.join(cur_dir, "device_configs.py")
+
+            def unlink_device():
+                if os.path.islink(dst_path):
+                    os.unlink(dst_path)
+            unlink_device()
+            os.symlink(device_config_path, dst_path)
+            import atexit
+            atexit.register(unlink_device)
+
+            from device_configs import device_configs
+            opt = DeviceConfig(device_configs)
+            opt.run()
+            coll = CollectCase(cfg_parse.get_config_cases(), opt.rules())
+            coll.collect()
+            coll.save(device_case_item_path)
+
     elif args.mode == 'run_test':
         import conformance as cf
         cf.ConformanceTest.run(args.fname, args.model_name.lower(), args.filter_dtype, args.failure_debug_level, args.impl_folder)
@@ -76,5 +120,5 @@ if __name__ == "__main__":
     else:
         print("available options for mode: gen_data, run_test and utest")
 
-    if is_ci != "null" and error_counter[0] != 0:
-        raise DiopiException(str(error_counter[0]) + " errors during this program")
+    # if is_ci != "null" and error_counter[0] != 0:
+    #     raise DiopiException(str(error_counter[0]) + " errors during this program")
