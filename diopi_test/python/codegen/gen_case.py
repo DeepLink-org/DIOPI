@@ -86,8 +86,8 @@ class GenTestCase(object):
                     break
             if 'no_output_ref' in cv.keys() and cv['no_output_ref'] == True:
                 test_function_forward_ref_compare = ''
-                if test_diopi_function_module != 'ManualTest':
-                    test_diopi_function_module = 'ManualTest'
+                if test_diopi_function_module != 'diopi_manual_functions.ManualTest':
+                    test_diopi_function_module = 'diopi_manual_functions.ManualTest'
                     test_diopi_func_name = f'test_{test_diopi_func_name}'
             else:
                 test_function_forward_ref_compare = CaseTemplate.test_function_forward_ref_compare.substitute(env={})
