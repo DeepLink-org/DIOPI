@@ -276,6 +276,11 @@ jobs:
           export CI=true
           export DIOPI_BUILD_TESTRT=ON
           cd impl && sh scripts/build_impl.sh ascend
+      - name: clang-tidy
+        run: |
+          set -e
+          cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+          cd impl && bash scripts/ci_script.sh clang-tidy || ( cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
 
   Op-Test-Ascend:
     name: Op-Test-Ascend
