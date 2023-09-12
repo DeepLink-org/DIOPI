@@ -22,7 +22,7 @@ pybind11_add_module(${DIOPIRT} SHARED ${EXPORT_SRC})
 add_library(diopirt SHARED ${RUNTIME_SRC})
 
 target_link_libraries(${DIOPIRT} PRIVATE diopirt)
-target_link_libraries(diopirt ${DEVICEIMPL})
+target_link_libraries(diopirt ascendcl acl_op_compiler)
 
 set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/diopi_stub/csrc")
 
