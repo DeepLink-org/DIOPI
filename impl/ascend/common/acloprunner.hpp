@@ -66,9 +66,10 @@ namespace ascend {
 aclDataType getAclDataType(diopiDtype_t type);
 aclDataType getAclDataType(diopiConstTensorHandle_t th);
 
-inline std::string dumpTensor(diopiConstTensorHandle_t th) {
+inline std::string dumpTensor(diopiConstTensorHandle_t th, std::string input = "") {
     std::stringstream stream;
     stream << "Tensor(handle:" << th;
+    stream << input << std::endl;
     if (th) {
         diopiSize_t shape;
         diopiSize_t stride;
@@ -371,6 +372,34 @@ public:
         return *this;
     }
 
+    AclOpRunner& addConstInput(const void* ptr, int64_t buffersize, std::vector<int64_t>& dims, const aclFormat& format, diopiDtype_t dtype,
+                               bool isScalar = false) {
+        static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (PARROTS_DEBUG_ACLOPRUNNER > 0) {
+            std::stringstream stream;
+            stream << "Tensor:(";
+            stream << " data:" << ptr;
+            stream << " ,dtype:" << dtype;
+            stream << " ,shape:";
+            std::for_each(dims.data(), dims.data() + dims.size(), [&stream](int64_t v) { stream << v << " "; });
+            stream << ")";
+            info("%s output[%d]: %s", opname_.c_str(), outputIndex, stream.str().c_str());
+        }
+
+        check_args(inputIndex >= 0 && inputIndex < InputSize, "check 0<=inputIndex<InputSize failed");
+
+        auto& desc = inputDescs_[inputIndex];
+        auto& buffer = inputBuffers_[inputIndex];
+
+        desc = aclCreateTensorDesc(dtypeCastStrategy(dtype), dims.size(), dims.data(), format);
+
+        check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
+        CALL_ACLRT(aclSetTensorConst(desc, const_cast<void*>(ptr), buffersize));
+        buffer = aclCreateDataBuffer(nullptr, 0);
+        inputIndex++;
+        return *this;
+    }
+
     AclOpRunner& addConstInput(diopiConstTensorHandle_t th, bool isScalar = false) {
         addConstInput(th, getAclDataFormat(th), isScalar);
         return *this;
@@ -551,6 +580,16 @@ public:
 
     template <typename T>
     AclOpRunner& setAttr(const std::string& attrName, const T& value) {
+        static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (PARROTS_DEBUG_ACLOPRUNNER > 0) {
+            std::stringstream stream;
+            stream << "attrName=" << attrName;
+            stream << ",dtype=" << typeid(T).name();
+            stream << ", Attr:(";
+            stream << value;
+            stream << ")";
+            info("%s attr: %s", opname_.c_str(), stream.str().c_str());
+        }
         if constexpr (std::is_same<T, int64_t>::value || std::is_same<T, int>::value) {
             CALL_ACLRT(aclopSetAttrInt(attr_, attrName.data(), value));
             return *this;
@@ -567,12 +606,26 @@ public:
             CALL_ACLRT(aclopSetAttrString(attr_, attrName.data(), value.data()));
             return *this;
         }
+        if constexpr (std::is_same<T, aclDataType>::value) {
+            CALL_ACLRT(aclopSetAttrDataType(attr_, attrName.data(), value));
+            return *this;
+        }
         check_args(false, "%s: no specialization for %s type.", dumpRunnerInfo().c_str(), typeid(T).name());
         return *this;
     }
 
     template <typename T>
     AclOpRunner& setAttr(const std::string& attrName, const typename std::vector<T>& value) {
+        static int PARROTS_DEBUG_ACLOPRUNNER = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (PARROTS_DEBUG_ACLOPRUNNER > 0) {
+            std::stringstream stream;
+            stream << "attrName=" << attrName;
+            stream << ",dtype=" << typeid(T).name();
+            stream << ", Attr:(";
+            std::for_each(value.data(), value.data() + value.size(), [&stream](int64_t v) { stream << v << " "; });
+            stream << ")";
+            info("%s attr: %s", opname_.c_str(), stream.str().c_str());
+        }
         std::vector<int64_t> vec(value.begin(), value.end());
         CALL_ACLRT(aclopSetAttrListInt(attr_, attrName.data(), vec.size(), vec.data()));
         return *this;
