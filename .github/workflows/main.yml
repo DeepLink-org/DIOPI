@@ -60,7 +60,7 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.CI_TOKEN }}"
         run: |
           PR_NUMBER="${{ github.event.pull_request.number || 0 }}"
-          cd ${GITHUB_WORKSPACE} && RUN_RESULT=$(python3 script/check_file.py ${PR_NUMBER})
+          cd ${GITHUB_WORKSPACE}/DIOPI && RUN_RESULT=$(python3 script/check_file.py ${PR_NUMBER})
           echo "RUN_RESULT=$RUN_RESULT" >> "$GITHUB_OUTPUT"
       - name: Rsync to Server
         run: |
