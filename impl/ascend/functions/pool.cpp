@@ -27,7 +27,9 @@ DIOPI_API diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, 
     diopiGetTensorShape(input, &shape);
     AclOpRunner<1, 1>("AdaptiveAvgPool2dGrad", ctx)
         .addInput(gradOutput)
-        .setAttr("orig_input_shape", std::vector<int32_t>{static_cast<int>(shape.data[0]), static_cast<int>(shape.data[1]), static_cast<int>(shape.data[2]), static_cast<int>(shape.data[3])})
+        .setAttr("orig_input_shape",
+                 std::vector<int32_t>{
+                     static_cast<int>(shape.data[0]), static_cast<int>(shape.data[1]), static_cast<int>(shape.data[2]), static_cast<int>(shape.data[3])})
         .addOutput(gradInput)
         .run();
     return diopiSuccess;
