@@ -82,7 +82,6 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
     return diopiSuccess;
 }
 
-extern "C" {
 std::string getReductionStr(const diopiReduction_t reduction) {
     std::string reductionStr = "none";
     if (diopiReduction_t::ReductionMean == reduction) {
@@ -94,6 +93,9 @@ std::string getReductionStr(const diopiReduction_t reduction) {
     }
     return reductionStr;
 }
+
+extern "C" {
+
 DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                                     diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
     auto totalWeightSizeVec = std::vector<int64_t>({1});
@@ -114,6 +116,7 @@ DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_
     }
 
     nllLossOutWithTotalWeight(ctx, out, totalWeight, input, target, weightCopy, reduction, ignoreIndex);
+    return diopiSuccess;
 }
 
 DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
@@ -263,6 +266,7 @@ DIOPI_API diopiError_t diopiMSELossBackward(diopiContextHandle_t ctx, diopiTenso
         .run();
     return diopiSuccess;
 }
-}
+
+}  // extern "C"
 }  // namespace ascend
 }  // namespace impl

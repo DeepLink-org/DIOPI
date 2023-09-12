@@ -171,9 +171,10 @@ aclDataType getAclDataType(diopiDtype_t type) {
             return ACL_COMPLEX64;
         case diopi_dtype_complex128:
             return ACL_COMPLEX128;
+        default:
+            check_args(false, "acl not support dioptDtype_t:%d", type);
+            return ACL_DT_UNDEFINED;
     }
-    check_args(false, "acl not support dioptDtype_t:%d", type);
-    return ACL_DT_UNDEFINED;
 }
 
 aclDataType getAclDataType(diopiConstTensorHandle_t th) {
