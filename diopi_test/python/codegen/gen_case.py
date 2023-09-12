@@ -1,3 +1,4 @@
+# Copyright (c) 2023, DeepLink.
 import os
 import re
 import pickle
@@ -42,7 +43,6 @@ class GenConfigTestCase(object):
 
     def gen_test_cases(self):
         for tk, tv in self.__function_set.items():
-            print(f'tk = {tk}')
             gc = GenTestCase(self._module, tk, tv, module_path=self._tests_path)
             gc.gen_test_module()
 
@@ -67,6 +67,7 @@ class GenTestCase(object):
         self._fm.will_write(mt_name)
 
     def gen_test_module(self):
+        test_diopi_function_module = 'diopi_functions'
         test_diopi_func_name = self._func_name
 
         test_case_items = []
@@ -83,12 +84,20 @@ class GenTestCase(object):
                     test_caompare_tol['atol'] = cv['atol_half']
                     test_caompare_tol['rtol'] = cv['rtol_half']
                     break
+            if 'no_output_ref' in cv.keys() and cv['no_output_ref'] == True:
+                test_function_forward_ref_compare = ''
+                if test_diopi_function_module != 'ManualTest':
+                    test_diopi_function_module = 'ManualTest'
+                    test_diopi_func_name = f'test_{test_diopi_func_name}'
+            else:
+                test_function_forward_ref_compare = CaseTemplate.test_function_forward_ref_compare.substitute(env={})
 
             forward = CaseTemplate.test_function_body_forward.substitute(env=dict(
                 input_data_path = input_data_path,
                 output_data_path = output_data_path,
                 test_caompare_tol = test_caompare_tol,
-                test_diopi_func_name = test_diopi_func_name
+                test_diopi_func_name = test_diopi_func_name,
+                test_function_forward_ref_compare = test_function_forward_ref_compare
             ))
 
             requires_grad = False
@@ -97,6 +106,8 @@ class GenTestCase(object):
                 if True in tensor['requires_grad']:
                     requires_grad = True
                     break
+            if 'is_inplace' in cv.keys() and cv['is_inplace'] == True:
+                requires_grad = False
 
             backward = ''
             if requires_grad:
@@ -118,6 +129,7 @@ class GenTestCase(object):
             test_case_items.append(test_function_templ)
 
         test_diopi_head_import = CaseTemplate.test_diopi_head_import.substitute(env=dict(
+            test_diopi_function_module = test_diopi_function_module,
             test_diopi_func_name = test_diopi_func_name,
             test_import_diopi_bp_func = test_import_diopi_bp_func
         ))

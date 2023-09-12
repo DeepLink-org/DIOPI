@@ -5,8 +5,10 @@ import os
 import sys
 
 sys.path.append('../python/configs')
+from conformance.op_nhwc import nhwc_op
+from conformance.op_four_types import dtype_op, dtype_out_op
 from conformance.utils import is_ci, error_counter, write_report
-from conformance.utils import logger, nhwc_op, dtype_op, dtype_out_op
+from conformance.utils import logger
 from conformance.global_settings import glob_vars
 from conformance.model_list import model_list, model_op_list
 from conformance.config_parser import ConfigParser

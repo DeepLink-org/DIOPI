@@ -20,7 +20,7 @@ class ${test_class_name}(object):
     test_diopi_head_import = CodeTemplate(r'''
 from conformance.diopi_runtime import Tensor
 from conformance.diopi_functions import ones_like
-from conformance.diopi_functions import ${test_diopi_func_name}
+from conformance.${test_diopi_function_module} import ${test_diopi_func_name}
 # from conformance.diopi_functions import {test_diopi_bp_func_name}
 ${test_import_diopi_bp_func}
 from conformance.check_result import CheckResult
@@ -52,6 +52,9 @@ for para_key, para_val in function_kwargs.items():
         function_kwargs[para_key] = Tensor.from_numpy(para_val)
 # output of device 
 dev_out = ${test_diopi_func_name}(**function_kwargs)
+${test_function_forward_ref_compare}
+''')
+    test_function_forward_ref_compare = CodeTemplate('''
 
 with open(f_out, 'rb') as f:
     ref_out = pickle.load(f)
