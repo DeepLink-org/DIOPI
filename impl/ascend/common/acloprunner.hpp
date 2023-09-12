@@ -543,30 +543,40 @@ public:
             diopiGetTensorDtype(th, &dtype);
             diopiRequireTensor(context_, &thCopy, &shape, nullptr, dtype, diopi_device);
             nonContiguousOutputPairs_.emplace_back(th, thCopy);
-            addOutput(thCopy, getAclDataFormat(th));
+            return addOutput(thCopy, getAclDataFormat(th));
         }
     }
 
     AclOpRunner& addOutputWithoutContiguous(diopiTensorHandle_t th) { return addOutput(th, getAclDataFormat(th)); }
 
     template <typename T>
-    AclOpRunner& setAttr(const std::string& attrName, const T& value) {
-        if constexpr (std::is_same<T, int64_t>::value || std::is_same<T, int>::value) {
-            CALL_ACLRT(aclopSetAttrInt(attr_, attrName.data(), value));
-            return *this;
-        }
-        if constexpr (std::is_same<T, float>::value) {
-            CALL_ACLRT(aclopSetAttrFloat(attr_, attrName.data(), value));
-            return *this;
-        }
-        if constexpr (std::is_same<T, uint8_t>::value || std::is_same<T, bool>::value) {
-            CALL_ACLRT(aclopSetAttrBool(attr_, attrName.data(), value));
-            return *this;
-        }
-        if constexpr (std::is_same<T, std::string>::value) {
-            CALL_ACLRT(aclopSetAttrString(attr_, attrName.data(), value.data()));
-            return *this;
-        }
+    std::enable_if_t<std::is_same<T, int64_t>::value || std::is_same<T, int>::value, AclOpRunner&> setAttr(const std::string& attrName,
+                                                                                                                        const T& value) {
+        CALL_ACLRT(aclopSetAttrInt(attr_, attrName.data(), value));
+        return *this;
+    }
+
+    template <typename T>
+    std::enable_if_t<std::is_same<T, float>::value, AclOpRunner&> setAttr(const std::string& attrName, const T& value) {
+        CALL_ACLRT(aclopSetAttrFloat(attr_, attrName.data(), value));
+        return *this;
+    }
+
+    template <typename T>
+    std::enable_if_t<std::is_same<T, uint8_t>::value || std::is_same<T, bool>::value, AclOpRunner&> setAttr(const std::string& attrName,
+                                                                                                                         const T& value) {
+        CALL_ACLRT(aclopSetAttrBool(attr_, attrName.data(), value));
+        return *this;
+    }
+
+    template <typename T>
+    std::enable_if_t<std::is_same<T, std::string>::value, AclOpRunner&> setAttr(const std::string& attrName, const T& value) {
+        CALL_ACLRT(aclopSetAttrString(attr_, attrName.data(), value.data()));
+        return *this;
+    }
+
+    template <typename T = void>
+    AclOpRunner& setAttr(const std::string& attrName, ...) {
         check_args(false, "%s: no specialization for %s type.", dumpRunnerInfo().c_str(), typeid(T).name());
         return *this;
     }
@@ -661,7 +671,7 @@ public:
         // Get environment variables once when run is called for the first time
         static int parrotsDebugAcloprunner = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
         if (parrotsDebugAcloprunner > 0) {
-            info("%s", "%s", dumpRunnerInfo().c_str());
+            info("%s", dumpRunnerInfo().c_str());
         }
 
         return *this;
