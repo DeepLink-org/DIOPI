@@ -43,7 +43,7 @@ def get_run_result(pr_number):
     else:
         print("Failed to fetch API")
         exit(1)
-    return run_result['RUN_ALL'] * 1000 + run_result['RUN_NV'] * 100 + run_result['RUN_CAMB'] * 10 + run_result['RUN_ASCEND']
+    return 10000 + run_result['RUN_ALL'] * 1000 + run_result['RUN_NV'] * 100 + run_result['RUN_CAMB'] * 10 + run_result['RUN_ASCEND']
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     pr_number = args.prnumber
     if pr_number == 0:
-        RUN_RESULT=1000
+        RUN_RESULT=11000
     else:
         RUN_RESULT=get_run_result(pr_number)
     print(RUN_RESULT)

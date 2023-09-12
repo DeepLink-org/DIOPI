@@ -10,10 +10,10 @@ on:
       - main
       - dev_v0.25
     paths-ignore:
-      - '**/*.md'
-      - '.github/ISSUE_TEMPLATE/**'
-      - '**/.git*'
-      - '**/CODE_OF_CONDUCT*'
+      - "**.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".git**"
+      - "CODE_OF_CONDUCT**"
 
 env:
   NFS_PATH: '/mnt/cache/share/parrotsci/github/cibuild/${{ github.repository }}'
@@ -121,7 +121,7 @@ jobs:
     name: Build-Camb
     runs-on: tps-diopi-ci
     needs: [Rsync]
-    if: ${{ startsWith(needs.Rsync.outputs.output, '1') || endsWith(needs.Rsync.outputs.output, '10') || endsWith(needs.Rsync.outputs.output, '11') }}
+    if: ${{ startsWith(needs.Rsync.outputs.output, '11') || endsWith(needs.Rsync.outputs.output, '10') || endsWith(needs.Rsync.outputs.output, '11') }}
     steps:
       - name: Build
         run: |
@@ -148,7 +148,7 @@ jobs:
     name: Build-Mmcv-Ext-Nvidia
     runs-on: tps-diopi-ci
     needs: [Rsync]
-    if: ${{ startsWith(needs.Rsync.outputs.output, '10') || startsWith(needs.Rsync.outputs.output, '11') }}
+    if: ${{ startsWith(needs.Rsync.outputs.output, '110') || startsWith(needs.Rsync.outputs.output, '111') }}
     steps:
       - name: build
         run: |
@@ -164,7 +164,7 @@ jobs:
     name: Op-Test-Mmcv-Ext-Nvidia
     runs-on: tps-diopi-ci
     needs: [Build-Mmcv-Ext-Nvidia]
-    if: ${{ startsWith(needs.Rsync.outputs.output, '10') || startsWith(needs.Rsync.outputs.output, '11') }}
+    if: ${{ startsWith(needs.Rsync.outputs.output, '110') || startsWith(needs.Rsync.outputs.output, '111') }}
     steps:
       - name: test
         run: |
@@ -198,7 +198,7 @@ jobs:
     name: Op-Test-Nvidia
     runs-on: tps-diopi-ci
     needs: Gen-Data
-    if: ${{ startsWith(needs.Rsync.outputs.output, '10') || startsWith(needs.Rsync.outputs.output, '11') }}
+    if: ${{ startsWith(needs.Rsync.outputs.output, '110') || startsWith(needs.Rsync.outputs.output, '111') }}
     env:
       run_test: "python"
     steps:
@@ -232,7 +232,7 @@ jobs:
     name: Rt-Test-Nvidia
     runs-on: tps-diopi-ci
     needs: Build-Nvidia
-    if: ${{ startsWith(needs.Rsync.outputs.output, '10') || startsWith(needs.Rsync.outputs.output, '11') }}
+    if: ${{ startsWith(needs.Rsync.outputs.output, '110') || startsWith(needs.Rsync.outputs.output, '111') }}
     steps:
       - name: test
         run: |
@@ -248,7 +248,7 @@ jobs:
     name: Op-Test-Camb
     runs-on: tps-diopi-ci
     needs: [Gen-Data, Build-Camb]
-    if: ${{ startsWith(needs.Rsync.outputs.output, '1') || endsWith(needs.Rsync.outputs.output, '10') || endsWith(needs.Rsync.outputs.output, '11') }}
+    if: ${{ startsWith(needs.Rsync.outputs.output, '11') || endsWith(needs.Rsync.outputs.output, '10') || endsWith(needs.Rsync.outputs.output, '11') }}
     env:
       run_test: "python"
     steps:
@@ -273,7 +273,7 @@ jobs:
     name: Rt-Test-Camb
     runs-on: tps-diopi-ci
     needs: Build-Camb
-    if: ${{ startsWith(needs.Rsync.outputs.output, '1') || endsWith(needs.Rsync.outputs.output, '10') || endsWith(needs.Rsync.outputs.output, '11') }}
+    if: ${{ startsWith(needs.Rsync.outputs.output, '11') || endsWith(needs.Rsync.outputs.output, '10') || endsWith(needs.Rsync.outputs.output, '11') }}
     steps:
       - name: test
         run: |
@@ -288,7 +288,7 @@ jobs:
     name: Build-Ascend
     runs-on: tps-ascend-ci
     needs: [Rsync]
-    if: ${{ startsWith(needs.Rsync.outputs.output, '1') || endsWith(needs.Rsync.outputs.output, '01') || endsWith(needs.Rsync.outputs.output, '11') }}
+    if: ${{ startsWith(needs.Rsync.outputs.output, '11') || endsWith(needs.Rsync.outputs.output, '01') || endsWith(needs.Rsync.outputs.output, '11') }}
     steps:
       - name: build
         run: |
@@ -302,7 +302,7 @@ jobs:
     name: Op-Test-Ascend
     runs-on: tps-ascend-ci
     needs: [Gen-Data, Build-Ascend]
-    if: ${{ startsWith(needs.Rsync.outputs.output, '1') || endsWith(needs.Rsync.outputs.output, '01') || endsWith(needs.Rsync.outputs.output, '11') }}
+    if: ${{ startsWith(needs.Rsync.outputs.output, '11') || endsWith(needs.Rsync.outputs.output, '01') || endsWith(needs.Rsync.outputs.output, '11') }}
     env:
       run_test: "python"
     steps:
@@ -319,7 +319,7 @@ jobs:
     name: Rt-Test-Ascend
     runs-on: tps-ascend-ci
     needs: Build-Ascend
-    if: ${{ startsWith(needs.Rsync.outputs.output, '1') || endsWith(needs.Rsync.outputs.output, '01') || endsWith(needs.Rsync.outputs.output, '11') }}
+    if: ${{ startsWith(needs.Rsync.outputs.output, '11') || endsWith(needs.Rsync.outputs.output, '01') || endsWith(needs.Rsync.outputs.output, '11') }}
     steps:
       - name: test
         run: |
