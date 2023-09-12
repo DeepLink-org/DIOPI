@@ -4,10 +4,9 @@ import argparse
 
 def get_run_result(pr_number):
     run_result = {
-        'RUN_NV': "F",
-        'RUN_CAMB': "F",
-        'RUN_ASCEND': "F",
-        'RUN_ALL': "F"
+        'NV': False,
+        'CAMB': False,
+        'ASCEND': False,
     }
 
     repository = os.environ.get("GITHUB_REPOSITORY")
@@ -29,21 +28,26 @@ def get_run_result(pr_number):
                 continue
             elif filenames.startswith('impl'):
                 if "impl/camb" in filenames:
-                    run_result['RUN_CAMB'] = "T"
+                    run_result['CAMB'] = True
                 elif "impl/torch" in filenames:
-                    run_result['RUN_NV'] = "T"
+                    run_result['CAMB'] = True
                 elif "impl/ascend" in filenames:
-                    run_result['RUN_ASCEND'] = "T"
+                    run_result['ASCEND'] = True
                 elif any(subpath in filenames for subpath in norunpaths):
                     continue
                 else:
-                    run_result['RUN_ALL'] = "T"
+                    run_result['CAMB'] = True
+                    run_result['NV'] = True
+                    run_result['ASCEND'] = True
             else:
-                run_result['RUN_ALL'] = "T"
+                run_result['CAMB'] = True
+                run_result['NV'] = True
+                run_result['ASCEND'] = True
     else:
         print("Failed to fetch API")
         exit(1)
-    return "ALL_" + run_result['RUN_ALL'] + "-NV_" + run_result['RUN_NV'] + "-CAMB_" + run_result['RUN_CAMB'] + "-ASCEND_" + run_result['RUN_ASCEND']
+    result_string = "_".join([key for key, value in run_result.items() if value])
+    return result_string
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -51,7 +55,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     pr_number = args.prnumber
     if pr_number == 0:
-        RUN_RESULT="ALL_T"
+        RUN_RESULT="NV_CAMB_ASCEND"
     else:
         RUN_RESULT=get_run_result(pr_number)
     print(RUN_RESULT)
