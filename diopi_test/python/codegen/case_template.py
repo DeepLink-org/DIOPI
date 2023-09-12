@@ -34,8 +34,8 @@ def test_${func_case_name}(self):
 ''')
 
     test_function_body_forward = CodeTemplate(r'''
-f_in = os.path.join(data_path, "inputs", '${input_data_path}')
-f_out = os.path.join(data_path, "outputs", '${output_data_path}')
+f_in = os.path.join(data_path, '${test_module_name}', 'inputs', '${input_data_path}')
+f_out = os.path.join(data_path, '${test_module_name}', 'outputs', '${output_data_path}')
 
 # read input from file
 with open(f_in, 'rb') as f:
@@ -65,7 +65,7 @@ CheckResult.compare_output(dev_out, ref_out, **tol)
     #backward
     test_function_body_backward = CodeTemplate(r'''
 # grad_output_path
-f_bp_out = os.path.join(data_path, 'outputs', '${bp_output_data_path}')
+f_bp_out = os.path.join(data_path, '${test_module_name}', 'outputs', '${bp_output_data_path}')
 
 if not isinstance(dev_out, (list, tuple)):
     dev_out = [dev_out]
