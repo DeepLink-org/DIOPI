@@ -11,6 +11,7 @@ from conformance.utils import is_ci, error_counter, write_report
 from conformance.utils import logger
 from conformance.global_settings import glob_vars
 from conformance.model_list import model_list, model_op_list
+from configs import model_config
 from conformance.config_parser import ConfigParser
 from conformance.gen_input import GenInputData
 from conformance.gen_output import GenOutputData
@@ -19,9 +20,7 @@ from conformance.collect_case import DeviceConfig, CollectCase
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 cache_path = os.path.join(cur_dir, 'cache')
-data_path = os.path.join(cache_path, 'data')
-diopi_case_item_path = os.path.join(cache_path, 'diopi_case_items.cfg')
-device_case_item_path = os.path.join(cache_path, 'device_case_items.cfg')
+
 
 if not os.path.exists(cache_path):
     os.makedirs(cache_path)
@@ -47,6 +46,10 @@ def parse_args():
                         help='Whether to use 4-bytes data type for partial tests')
     parser.add_argument('--impl_folder', type=str, default='',
                         help='folder to find device configs')
+    parser.add_argument('--cfg_path', type=str, default='./cache/diopi_case_items.cfg',
+                        help='case items cfg path')
+    parser.add_argument('--case_output_dir', type=str, default='./gencases/diopi_case',
+                        help='pytest case save dir')
     parser.add_argument('--failure_debug_level', type=int, default=0,
                         help='Whether to print debug information when failing the test. 0 for printing nothing, 1 for printing config, 2 for printing config, inputs and outputs')
     args = parser.parse_args()
@@ -82,24 +85,36 @@ if __name__ == "__main__":
         glob_vars.set_four_bytes()
 
     if args.mode == 'gen_data':
+        diopi_case_item_file = 'diopi_case_items.cfg'
+        device_case_item_file = '%s_case_items.cfg'
+        
         model_name = args.model_name.lower()
         if args.model_name != '':
             logger.info(f"the op list of {args.model_name}: {model_op_list[model_name]}")
+            diopi_configs = eval(f"model_config.{model_name}_config")
+            diopi_case_item_file = model_name + '_' + diopi_case_item_file
+            device_case_item_file = model_name + '_' + device_case_item_file
         else:
             from diopi_configs import diopi_configs
-            cfg_parse = ConfigParser(diopi_case_item_path)
-            cfg_parse.parser(diopi_configs)
-            cfg_parse.save()
-            GenInputData.run(diopi_case_item_path, os.path.join(data_path, 'inputs'), args.fname)
-            GenOutputData.run(diopi_case_item_path, os.path.join(data_path, 'inputs'), os.path.join(data_path, 'outputs'), args.fname)
+        diopi_case_item_path = os.path.join(cache_path, diopi_case_item_file)
+        device_case_item_path = os.path.join(cache_path, device_case_item_file)
+        cfg_parse = ConfigParser(diopi_case_item_path)
+        cfg_parse.parser(diopi_configs)
+        cfg_parse.save()
+        inputs_dir = os.path.join(cache_path, 'data/' + model_name + "/inputs")
+        outputs_dir = os.path.join(cache_path, 'data/' + model_name + "/outputs")
+        GenInputData.run(diopi_case_item_path, inputs_dir, args.fname)
+        GenOutputData.run(diopi_case_item_path, inputs_dir, outputs_dir, args.fname)
 
         if args.impl_folder != '':
+            device_name = os.path.basename(args.impl_folder)
             device_config_path = os.path.join(args.impl_folder, "device_configs.py")
             dst_path = os.path.join(cur_dir, "device_configs.py")
 
             def unlink_device():
-                if os.path.islink(dst_path):
-                    os.unlink(dst_path)
+                if os.getpid() == os.getppid():
+                    if os.path.islink(dst_path):
+                        os.unlink(dst_path)
             unlink_device()
             os.symlink(device_config_path, dst_path)
             import atexit
@@ -110,8 +125,13 @@ if __name__ == "__main__":
             opt.run()
             coll = CollectCase(cfg_parse.get_config_cases(), opt.rules())
             coll.collect()
-            coll.save(device_case_item_path)
-
+            coll.save(device_case_item_path % device_name)
+    elif args.mode == 'gen_case':
+        from codegen.gen_case import GenConfigTestCase
+        if not os.path.exists(args.case_output_dir):
+            os.makedirs(args.case_output_dir)
+        gctc = GenConfigTestCase(module=args.model_name, config_path=args.cfg_path, tests_path=args.case_output_dir)
+        gctc.gen_test_cases()
     elif args.mode == 'run_test':
         import conformance as cf
         cf.ConformanceTest.run(args.fname, args.model_name.lower(), args.filter_dtype, args.failure_debug_level, args.impl_folder)

@@ -1,6 +1,6 @@
 # Copyright (c) 2023, DeepLink.
 import os
-from code_template import CodeTemplate
+from codegen.code_template import CodeTemplate
 
 
 class FileManager(object):

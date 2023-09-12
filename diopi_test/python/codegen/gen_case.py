@@ -5,8 +5,8 @@ import pickle
 
 import numpy as np
 from collections import defaultdict
-from filemanager import FileManager
-from case_template import CaseTemplate
+from codegen.filemanager import FileManager
+from codegen.case_template import CaseTemplate
 
 class GenConfigTestCase(object):
     def __init__(self, module='diopi', config_path='./cache/device_case_items.cfg', tests_path='./gencases/diopi_case') -> None:

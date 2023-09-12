@@ -1,5 +1,5 @@
 # Copyright (c) 2023, DeepLink.
-from code_template import CodeTemplate
+from codegen.code_template import CodeTemplate
 
 
 class CaseTemplate:
