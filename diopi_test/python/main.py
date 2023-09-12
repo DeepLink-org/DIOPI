@@ -95,6 +95,8 @@ if __name__ == "__main__":
             diopi_case_item_file = model_name + '_' + diopi_case_item_file
             device_case_item_file = model_name + '_' + device_case_item_file
         else:
+            # set a prefix for dat save path like: data/diopi/inputs
+            model_name = 'diopi'
             from diopi_configs import diopi_configs
         diopi_case_item_path = os.path.join(cache_path, diopi_case_item_file)
         device_case_item_path = os.path.join(cache_path, device_case_item_file)
@@ -127,10 +129,11 @@ if __name__ == "__main__":
             coll.collect()
             coll.save(device_case_item_path % device_name)
     elif args.mode == 'gen_case':
+        model_name = args.model_name.lower() if args.model_name != '' else 'diopi'
         from codegen.gen_case import GenConfigTestCase
         if not os.path.exists(args.case_output_dir):
             os.makedirs(args.case_output_dir)
-        gctc = GenConfigTestCase(module=args.model_name, config_path=args.cfg_path, tests_path=args.case_output_dir)
+        gctc = GenConfigTestCase(module=model_name, config_path=args.cfg_path, tests_path=args.case_output_dir)
         gctc.gen_test_cases()
     elif args.mode == 'run_test':
         import conformance as cf
