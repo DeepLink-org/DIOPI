@@ -343,8 +343,8 @@ DIOPI_RT_API diopiError_t diopiGeneratorSetState(diopiGeneratorHandle_t th, diop
     return diopiSuccess;
 }
 
-DIOPI_RT_API diopiError_t diopiRecordFunctionStart(const char* record_name, diopiRecordFunctionHandle_t* record_function) { return diopiSuccess; }
+DIOPI_RT_API diopiError_t diopiRecordFunctionStart(const char* recordName, diopiRecordFunctionHandle_t* recordFunction) { return diopiSuccess; }
 
-DIOPI_RT_API diopiError_t diopiRecordFunctionEnd(diopiRecordFunctionHandle_t* record_function) { return diopiSuccess; }
+DIOPI_RT_API diopiError_t diopiRecordFunctionEnd(diopiRecordFunctionHandle_t* recordFunction) { return diopiSuccess; }
 
 }  // extern "C"
