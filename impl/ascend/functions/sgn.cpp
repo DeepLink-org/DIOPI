@@ -44,7 +44,7 @@ diopiError_t diopiSgn(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiSgnInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiSgn(ctx, input, input); }
+diopiError_t diopiSgnInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiSgn(ctx, input, input); }
 
 }  // extern "C"
 
