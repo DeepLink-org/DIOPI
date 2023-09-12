@@ -93,6 +93,7 @@ class GenTestCase(object):
                 test_function_forward_ref_compare = CaseTemplate.test_function_forward_ref_compare.substitute(env={})
 
             forward = CaseTemplate.test_function_body_forward.substitute(env=dict(
+                test_module_name = self._module,
                 input_data_path = input_data_path,
                 output_data_path = output_data_path,
                 test_caompare_tol = test_caompare_tol,
@@ -115,6 +116,7 @@ class GenTestCase(object):
                 bp_output_data_path = output_data_path.split('.pth')[0] + '_backward.pth'
                 test_diopi_bp_func_name = self._func_name + '_backward'
                 backward = CaseTemplate.test_function_body_backward.substitute(env=dict(
+                    test_module_name = self._module,
                     bp_output_data_path = bp_output_data_path,
                     test_diopi_bp_func_name = test_diopi_bp_func_name
                 ))
