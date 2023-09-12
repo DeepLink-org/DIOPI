@@ -550,8 +550,7 @@ public:
     AclOpRunner& addOutputWithoutContiguous(diopiTensorHandle_t th) { return addOutput(th, getAclDataFormat(th)); }
 
     template <typename T>
-    std::enable_if_t<std::is_same<T, int64_t>::value || std::is_same<T, int>::value, AclOpRunner&> setAttr(const std::string& attrName,
-                                                                                                                        const T& value) {
+    std::enable_if_t<std::is_same<T, int64_t>::value || std::is_same<T, int>::value, AclOpRunner&> setAttr(const std::string& attrName, const T& value) {
         CALL_ACLRT(aclopSetAttrInt(attr_, attrName.data(), value));
         return *this;
     }
@@ -563,8 +562,7 @@ public:
     }
 
     template <typename T>
-    std::enable_if_t<std::is_same<T, uint8_t>::value || std::is_same<T, bool>::value, AclOpRunner&> setAttr(const std::string& attrName,
-                                                                                                                         const T& value) {
+    std::enable_if_t<std::is_same<T, uint8_t>::value || std::is_same<T, bool>::value, AclOpRunner&> setAttr(const std::string& attrName, const T& value) {
         CALL_ACLRT(aclopSetAttrBool(attr_, attrName.data(), value));
         return *this;
     }
