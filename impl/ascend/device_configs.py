@@ -1970,6 +1970,18 @@ device_configs = {
         ),
     ),
 
+    'masked_fill_scalar_int': dict(
+        name=['masked_fill'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.uint8)],
+                },
+            ]
+        ),
+    ),
+    
     'reciprocal': dict(
         name=['reciprocal'],
         tensor_para=dict(
