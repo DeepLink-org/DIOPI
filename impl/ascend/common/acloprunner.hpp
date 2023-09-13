@@ -549,32 +549,32 @@ public:
 
     AclOpRunner& addOutputWithoutContiguous(diopiTensorHandle_t th) { return addOutput(th, getAclDataFormat(th)); }
 
-    template <typename T>
-    std::enable_if_t<std::is_same<T, int64_t>::value || std::is_same<T, int>::value, AclOpRunner&> setAttr(const std::string& attrName, const T& value) {
+    template <typename T, std::enable_if_t<std::is_same<T, int64_t>::value || std::is_same<T, int>::value, void*> = nullptr>
+    AclOpRunner& setAttr(const std::string& attrName, const T& value) {
         CALL_ACLRT(aclopSetAttrInt(attr_, attrName.data(), value));
         return *this;
     }
-
-    template <typename T>
-    std::enable_if_t<std::is_same<T, float>::value, AclOpRunner&> setAttr(const std::string& attrName, const T& value) {
+    // float, double, long double
+    template <typename T, std::enable_if_t<std::is_floating_point<T>::value, void*> = nullptr>
+    AclOpRunner& setAttr(const std::string& attrName, const T& value) {
         CALL_ACLRT(aclopSetAttrFloat(attr_, attrName.data(), value));
         return *this;
     }
 
-    template <typename T>
-    std::enable_if_t<std::is_same<T, uint8_t>::value || std::is_same<T, bool>::value, AclOpRunner&> setAttr(const std::string& attrName, const T& value) {
+    template <typename T, std::enable_if_t<std::is_same<T, uint8_t>::value || std::is_same<T, bool>::value, void*> = nullptr>
+    AclOpRunner& setAttr(const std::string& attrName, const T& value) {
         CALL_ACLRT(aclopSetAttrBool(attr_, attrName.data(), value));
         return *this;
     }
 
-    template <typename T>
-    std::enable_if_t<std::is_same<T, std::string>::value, AclOpRunner&> setAttr(const std::string& attrName, const T& value) {
+    template <typename T, std::enable_if_t<std::is_same<T, std::string>::value, void*> = nullptr>
+    AclOpRunner& setAttr(const std::string& attrName, const T& value) {
         CALL_ACLRT(aclopSetAttrString(attr_, attrName.data(), value.data()));
         return *this;
     }
 
-    template <typename T = void>
-    AclOpRunner& setAttr(const std::string& attrName, ...) {
+    template <typename T>
+    AclOpRunner& setAttr(const std::string& attrName, ...){
         check_args(false, "%s: no specialization for %s type.", dumpRunnerInfo().c_str(), typeid(T).name());
         return *this;
     }
