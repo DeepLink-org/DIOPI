@@ -60,6 +60,22 @@ dtype_mappings = {
     'complex<double>': ('[Dtype.complex128]', 'Genfunc.randn_cmplx')
 }
 
+gen_func = {
+    'cholesky_ex:input': 'Genfunc.sym_mat',
+    'normal:std': 'Genfunc.positive',
+    'adadelta:square_avg': 'Genfunc.positive',
+    'adadelta:acc_delta': 'Genfunc.positive',
+    'rsqrt:input': 'Genfunc.positive',
+    'multinomial:input': 'Genfunc.positive',
+    'batch_norm:running_var': 'Genfunc.positive',
+    'adamw:exp_avg_sq': 'Genfunc.positive',
+    'adam:exp_avg_sq': 'Genfunc.positive',
+    'erfinv:input': 'dict(fn=Genfunc.uniform, low=-1, high=1)',
+    'sqrt:input': 'Genfunc.positive',
+    'log:input': 'Genfunc.positive',
+    'log2:input': 'Genfunc.positive',
+    'log10:input': 'Genfunc.positive'
+}
 
 def convert_op_name(op):
     def camel_to_snake(name):
@@ -139,7 +155,8 @@ def gen_config_code(contents: dict, file_name: str) -> None:
                     if dtype is not None:
                         # TODO: currently we only support generate one dtype (update diopi)
                         assert dtype in dtype_mappings, "unexpected input!"
-                        dtype_str, gen_fn = dtype_mappings[dtype]
+                        dtype_str, gen_fn_default = dtype_mappings[dtype]
+                        gen_fn = gen_func.get(f"{name}:{k}", gen_fn_default)
                         tensor_para.append(tensor_indent + '"dtype": ' + dtype_str + ',\n')
                         tensor_para.append(tensor_indent + '"gen_fn": ' + gen_fn + ',\n')
                     tensor_para.append(para_indent + "    },\n")
