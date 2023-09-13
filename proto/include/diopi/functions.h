@@ -3364,10 +3364,8 @@ DIOPI_API diopiError_t diopiContiguous(diopiContextHandle_t ctx, diopiTensorHand
  *                                   the inverse of the scale factor by which @p
  *                                   scaled_grads are currently multiplied.
  */
-DIOPI_API diopiError_t diopiAmpForeachNonFiniteCheckAndUnscaleInp(
-    diopiContextHandle_t ctx, diopiTensorHandle_t* scaled_grads,
-    int64_t num_scaled_grads, diopiTensorHandle_t found_inf,
-    diopiConstTensorHandle_t inv_scale);
+DIOPI_API diopiError_t diopiAmpForeachNonFiniteCheckAndUnscaleInp(diopiContextHandle_t ctx, diopiTensorHandle_t* scaled_grads, int64_t num_scaled_grads,
+                                                                  diopiTensorHandle_t found_inf, diopiConstTensorHandle_t inv_scale);
 
 /**
  * @brief          Updates the scale tensor in place for AMP GradScaler.
@@ -3390,11 +3388,9 @@ DIOPI_API diopiError_t diopiAmpForeachNonFiniteCheckAndUnscaleInp(
  *                                  multiplied by growth_factor.
  * @see https://github.com/DeepLink-org/pytorch/blob/main/aten/src/ATen/native/cuda/AmpKernels.cu#L181
  */
-DIOPI_API diopiError_t diopiAmpUpdateScaleInp(
-    diopiContextHandle_t ctx, diopiTensorHandle_t current_scale,
-    diopiTensorHandle_t growth_tracker, diopiConstTensorHandle_t found_inf,
-    double scale_growth_factor, double scale_backoff_factor,
-    int32_t growth_interval);
+DIOPI_API diopiError_t diopiAmpUpdateScaleInp(diopiContextHandle_t ctx, diopiTensorHandle_t current_scale, diopiTensorHandle_t growth_tracker,
+                                              diopiConstTensorHandle_t found_inf, double scale_growth_factor, double scale_backoff_factor,
+                                              int32_t growth_interval);
 
 #if defined(__cplusplus)
 }
