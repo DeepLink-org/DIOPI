@@ -12,13 +12,12 @@
 #include <iostream>
 #include <mutex>
 
-#define SUPA_CALL(Expr)                                                                              \
-    {                                                                                                \
-        suError_t ret = Expr;                                                                        \
-        if (ret != suSuccess) {                                                                      \
-            std::cout << "Supa function (" << #Expr << ") failed. return code=" << ret << " at " <<  \
-            __FILE__ << ":" << __LINE__ << std::endl;                                                \
-        }                                                                                            \
+#define SUPA_CALL(Expr)                                                                                                                       \
+    {                                                                                                                                         \
+        suError_t ret = Expr;                                                                                                                 \
+        if (ret != suSuccess) {                                                                                                               \
+            std::cout << "Supa function (" << #Expr << ") failed. return code=" << ret << " at " << __FILE__ << ":" << __LINE__ << std::endl; \
+        }                                                                                                                                     \
     }
 
 extern "C" {
@@ -84,9 +83,16 @@ int32_t initLibrary() { return diopiSuccess; }
 
 int32_t finalizeLibrary() { return diopiSuccess; }
 
-int32_t buildGeneratorState(diopiContextHandle_t ctx, diopiTensorHandle_t out) { return diopiNoImplement; }
-
 #include "litert.hpp"
+
+int32_t buildGeneratorState(diopiContextHandle_t ctx, diopiTensorHandle_t out) {
+    const int64_t size_data[] = {2, 2};
+    diopiSize_t size{size_data, sizeof(size_data) / sizeof(size_data[0])};
+    diopiTensorHandle_t state = nullptr;
+    diopiRequireTensor(ctx, &state, &size, nullptr, diopi_dtype_int32, diopi_device);
+    *out = *state;
+    return diopiSuccess;
+}
 
 diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diopiConstTensorHandle_t tensor, void* dst) {
     if (tensor->device() == diopi_device) {
