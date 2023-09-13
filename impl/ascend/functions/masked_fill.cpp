@@ -66,22 +66,24 @@ diopiError_t diopiMaskedFillScalar(diopiContextHandle_t ctx, diopiTensorHandle_t
     diopiDtype_t inputDtype;
     diopiGetTensorDtype(input, &inputDtype);
     std::set<diopiDtype_t> typeSet{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_int8, diopi_dtype_int32, diopi_dtype_int64};
-    diopiTensorHandle_t scalarTensor;
-    makeTensorFromScalar(ctx, value, &scalarTensor, inputDtype, diopi_host);
-
     if (typeSet.find(inputDtype) == typeSet.end()) {
-        diopiTensorHandle_t inputTemp, outTemp, valueTemp;
+        diopiTensorHandle_t inputTemp, outTemp;
         makeTensorLike(ctx, &inputTemp, input, diopi_dtype_float32);
         diopiCastDtype(ctx, inputTemp, input);
         makeTensorLike(ctx, &outTemp, out, diopi_dtype_float32);
         diopiCastDtype(ctx, outTemp, out);
 
-        diopiTensorHandle_t valueDevice = hostToDevice(ctx, scalarTensor);
-        makeTensorLike(ctx, &valueTemp, valueDevice, diopi_dtype_float32);
-        diopiCastDtype(ctx, valueTemp, valueDevice);
-        AclOpRunner<3, 1>("MaskedFill", ctx).addInput(inputTemp).addInput(mask).addConstInput(valueTemp, ACL_FORMAT_ND, true).addOutput(outTemp).run();
+        diopiTensorHandle_t scalarTensor;
+        makeTensorFromScalar(ctx, value, &scalarTensor, diopi_dtype_float32, diopi_host);
+        AclOpRunner<3, 1>("MaskedFill", ctx).addInput(inputTemp).addInput(mask).addConstInput(scalarTensor, ACL_FORMAT_ND, true).addOutput(outTemp).run();
         diopiCastDtype(ctx, out, outTemp);
     } else {
+        diopiTensorHandle_t scalarTensor;
+        if (diopi_dtype_float16 != inputDtype) {
+            makeTensorFromScalar(ctx, value, &scalarTensor, inputDtype, diopi_host);
+        } else {
+            makeTensorFromScalar(ctx, value, &scalarTensor, diopi_dtype_float32, diopi_host);
+        }
         AclOpRunner<3, 1>("MaskedFill", ctx).addInput(input).addInput(mask).addConstInput(scalarTensor, ACL_FORMAT_ND, true).addOutput(out).run();
     }
 
