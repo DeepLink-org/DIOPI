@@ -1,4 +1,4 @@
-set(DIOPIRT export_runtime)
+set(EXPORT_RT export_runtime)
 set(DIOPIFUNCTIONS export_functions)
 
 add_compile_options(-fno-elide-constructors)
@@ -18,10 +18,10 @@ set(EXPORT_SRC
 
 message("CXX_LITERT_SRC:" ${CXX_LITERT_SRC})
 
-pybind11_add_module(${DIOPIRT} SHARED ${EXPORT_SRC})
+pybind11_add_module(${EXPORT_RT} SHARED ${EXPORT_SRC})
 add_library(diopirt SHARED ${RUNTIME_SRC})
 
-target_link_libraries(${DIOPIRT} PRIVATE diopirt)
+target_link_libraries(${EXPORT_RT} PRIVATE diopirt ${DEVICEIMPL})
 target_link_libraries(diopirt ascendcl acl_op_compiler)
 
 set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/diopi_stub/csrc")
@@ -49,5 +49,5 @@ endif()
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/../diopi_test/python)
 add_custom_target(python_copy ALL
     COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS}> ${CMAKE_SOURCE_DIR}/../diopi_test/python/diopilib
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIRT}> ${CMAKE_SOURCE_DIR}/../diopi_test/python/diopilib
-    DEPENDS ${DIOPIFUNCTIONS} ${DIOPIRT})
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${EXPORT_RT}> ${CMAKE_SOURCE_DIR}/../diopi_test/python/diopilib
+    DEPENDS ${DIOPIFUNCTIONS} ${EXPORT_RT})
