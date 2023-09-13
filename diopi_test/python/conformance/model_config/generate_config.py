@@ -77,6 +77,7 @@ gen_func = {
     'log10:input': 'Genfunc.positive'
 }
 
+
 def convert_op_name(op):
     def camel_to_snake(name):
         s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
@@ -187,15 +188,13 @@ def gen_config_code(contents: dict, file_name: str) -> None:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Generate configuration code.")
-    
-    # 输入文件的参数
-    parser.add_argument('--input_file', '-i', type=str, default='cv_configs/resnet50_ops.py', 
+
+    parser.add_argument('--input_file', '-i', type=str, default='cv_configs/resnet50_ops.py',
                         help='Input filename containing the operations')
-    
-    # 输出文件的参数
-    parser.add_argument('--output_file', '-o', type=str, default='cv_configs/resnet50_config.py', 
+
+    parser.add_argument('--output_file', '-o', type=str, default='cv_configs/resnet50_config.py',
                         help='Output filename for the generated configuration')
-    
+
     args = parser.parse_args()
 
     with open(args.input_file) as f:

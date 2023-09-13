@@ -103,8 +103,6 @@ def extract_args(args_str: str, op_name: str) -> dict:
     return result
 
 
-
-
 def aggregate_rows(group: pd.core.frame.DataFrame) -> str:
     aggregated_params_dict = {key: {'shape': [], 'dtype': [], 'requires_grad': []}
                               for key in group['extracted_args'].iloc[0].keys() if isinstance(group['extracted_args'].iloc[0][key], dict)}
@@ -136,6 +134,7 @@ def aggregate_rows(group: pd.core.frame.DataFrame) -> str:
             aggregated_params_dict['tensors']['shape'].extend(row_shapes)
 
     return f"'{group['diopi_fun'].iloc[0]}': {aggregated_params_dict}"
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Process some parameters.")
