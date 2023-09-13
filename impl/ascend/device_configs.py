@@ -3223,28 +3223,4 @@ device_configs = {
         ),
     ),
 
-    'sgn': dict(
-        name=['sgn'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((64, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),Skip((0,)),Skip((4, 0)),Skip((3, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
-    'sgn_zero': dict(
-        name=['sgn'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((64, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),],
-                },
-            ]
-        ),
-    ),
-
 }

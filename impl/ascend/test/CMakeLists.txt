@@ -24,7 +24,7 @@ pybind11_add_module(${DIOPIRT} SHARED ${EXPORT_SRC})
 add_library(diopirt SHARED ${RUNTIME_SRC})
 
 target_link_libraries(${DIOPIRT} PRIVATE diopirt)
-target_link_libraries(diopirt ${DEVICEIMPL})
+target_link_libraries(diopirt ascendcl acl_op_compiler)
 
 add_custom_target(test_code_gen COMMAND python3 ${TEST_GEN_PATH}/gen.py
     --device=ascend)
@@ -38,7 +38,7 @@ set(FUNCTIONS_SRC
 )
 
 pybind11_add_module(${DIOPIFUNCTIONS} SHARED ${FUNCTIONS_SRC})
-target_link_libraries(${DIOPIFUNCTIONS} PRIVATE diopirt)
+target_link_libraries(${DIOPIFUNCTIONS} PRIVATE diopirt -Wl,--no-as-needed ${DEVICEIMPL} -Wl,--as-needed)
 add_dependencies(${DIOPIFUNCTIONS} functions_copy)
 if(${USE_ADAPTOR} STREQUAL "true")
     add_dependencies(${DIOPIFUNCTIONS} adaptor_code_gen)
