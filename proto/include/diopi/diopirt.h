@@ -103,10 +103,6 @@ struct diopiGenerator;
 typedef struct diopiGenerator* diopiGeneratorHandle_t;
 typedef const struct diopiGenerator* diopiConstGeneratorHandle_t;
 
-struct diopiRecordFunction;
-typedef struct diopiRecordFunction* diopiRecordFunctionHandle_t;
-typedef const struct diopiRecordFunction* diopiConstRecordFunctionHandle_t;
-
 /**
  * Opaque pointer of Stream
  **/
@@ -143,8 +139,8 @@ extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiRequireBuffer(diopiContext
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGeneratorGetState(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t th, diopiTensorHandle_t* data);
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGeneratorSetState(diopiGeneratorHandle_t th, diopiConstTensorHandle_t state);
 
-extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiRecordFunctionStart(const char* record_name, diopiRecordFunctionHandle_t* record_function);
-extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiRecordFunctionEnd(diopiRecordFunctionHandle_t* record_function);
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiRecordStart(const char* record_name, void** record);
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiRecordEnd(void** record);
 
 #if defined(__cplusplus)
 }
