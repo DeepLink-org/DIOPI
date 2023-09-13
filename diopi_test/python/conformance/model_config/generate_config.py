@@ -1,7 +1,8 @@
 # Copyright (c) 2023, DeepLink.
-import cv_ops
 import os
 import re
+import ast
+import argparse
 
 name_translation = {
     "diopiConvolution2d": "conv2d",
@@ -83,6 +84,7 @@ def get_interface(op_name: str) -> str:
 
 def gen_config_code(contents: dict, file_name: str) -> None:
     names = {}
+    assert isinstance(contents, dict), "file content is not a dict!"
 
     os.system(f"rm -f {file_name}")
     with open(f'{file_name}', 'a') as f:
@@ -167,4 +169,17 @@ def gen_config_code(contents: dict, file_name: str) -> None:
 
 
 if __name__ == '__main__':
-    gen_config_code(cv_ops.resnet50_8xb32_in1k_config, "cv_configs/resnet50_config.py")
+    parser = argparse.ArgumentParser(description="Generate configuration code.")
+    
+    # 输入文件的参数
+    parser.add_argument('--input_file', '-i', type=str, default='cv_configs/resnet50_ops.py', 
+                        help='Input filename containing the operations')
+    
+    # 输出文件的参数
+    parser.add_argument('--output_file', '-o', type=str, default='cv_configs/resnet50_config.py', 
+                        help='Output filename for the generated configuration')
+    
+    args = parser.parse_args()
+
+    with open(args.input_file) as f:
+        gen_config_code(ast.literal_eval(f.read()), args.output_file)

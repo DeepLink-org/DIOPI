@@ -1,10 +1,7 @@
 import pandas as pd
 import ast
 import re
-
-df = pd.read_csv('dipu_ops.csv', index_col=None)
-
-df = df[~df['diopi_fun'].str.contains('Backward', case=False)]
+import argparse
 
 # param in op_tensor_param must be a tensor, even if it is not defined
 op_tensor_param = {
@@ -106,7 +103,6 @@ def extract_args(args_str: str, op_name: str) -> dict:
     return result
 
 
-df['extracted_args'] = df.apply(lambda row: extract_args(row['args'], row['diopi_fun']), axis=1)
 
 
 def aggregate_rows(group: pd.core.frame.DataFrame) -> str:
@@ -141,11 +137,21 @@ def aggregate_rows(group: pd.core.frame.DataFrame) -> str:
 
     return f"'{group['diopi_fun'].iloc[0]}': {aggregated_params_dict}"
 
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Process some parameters.")
+    parser.add_argument('--input', '-i', type=str, default='dipu_ops.csv', help='Input CSV filename')
+    parser.add_argument('--output', '-o', type=str, default='cv_configs/resnet50_ops.py', help='Output Python filename')
+    args = parser.parse_args()
 
-res = df.groupby('diopi_fun').apply(aggregate_rows).tolist()
+    df = pd.read_csv(args.input, index_col=None)
 
-with open('cv_ops.py', 'w') as f:
-    f.write('resnet50_8xb32_in1k_config = {\n')
-    for entry in res:
-        f.write('    ' + str(entry) + ',\n')
-    f.write('}\n')
+    df = df[~df['diopi_fun'].str.contains('Backward', case=False)]
+    df['extracted_args'] = df.apply(lambda row: extract_args(row['args'], row['diopi_fun']), axis=1)
+
+    res = df.groupby('diopi_fun').apply(aggregate_rows).tolist()
+
+    with open(args.output, 'w') as f:
+        f.write('{\n')
+        for entry in res:
+            f.write('    ' + str(entry) + ',\n')
+        f.write('}\n')
