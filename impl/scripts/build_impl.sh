@@ -24,7 +24,7 @@ case $1 in
     -DCMAKE_PREFIX_PATH=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'` \
     && make -j8;;
   camb)
-    mkdir -p build && cd build && cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=camb -DTEST=${DIOPI_BUILD_TESTRT} -DENABLE_COVERAGE=${USE_COVERAGE} && make -j8;;
+    mkdir -p build && cd build && cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=camb -DTEST=ON -DENABLE_COVERAGE=${USE_COVERAGE} && make -j8;;
   ascend)
     mkdir -p build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=ascend -DTEST=${DIOPI_BUILD_TESTRT} && make -j8;;
   hip_pytorch)
