@@ -15,6 +15,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <typeinfo>
 #include <utility>
 #include <vector>
@@ -554,6 +555,7 @@ public:
         CALL_ACLRT(aclopSetAttrInt(attr_, attrName.data(), value));
         return *this;
     }
+
     // float, double, long double
     template <typename T, std::enable_if_t<std::is_floating_point<T>::value, void*> = nullptr>
     AclOpRunner& setAttr(const std::string& attrName, const T& value) {
