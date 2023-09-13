@@ -11,7 +11,6 @@
 #include <limits>
 
 #include "../common/acloprunner.hpp"
-#include "../common/print.hpp"
 
 namespace impl {
 namespace ascend {
