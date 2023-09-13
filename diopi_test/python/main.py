@@ -3,6 +3,7 @@ import argparse
 import shlex
 import os
 import sys
+import pytest
 
 sys.path.append('../python/configs')
 from conformance.op_nhwc import nhwc_op
@@ -28,30 +29,43 @@ if not os.path.exists(cache_path):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Conformance Test for DIOPI')
-    parser.add_argument('--mode', type=str, default='test',
-                        help='running mode, available options: gen_data, run_test and utest')
-    parser.add_argument('--fname', type=str, default='all_ops',
-                        help='the name of the function for which the test will run (default: all_ops)')
-    parser.add_argument('--model_name', type=str, default='',
-                        help='Get op list of given model name')
-    parser.add_argument('--filter_dtype', type=str, nargs='*',
-                        help='The dtype in filter_dtype will not be processed')
-    parser.add_argument('--get_model_list', action='store_true',
-                        help='Whether return the supported model list')
-    parser.add_argument('--nhwc', action='store_true',
-                        help='Whether to use nhwc layout for partial tests')
-    parser.add_argument('--nhwc_min_dim', type=int, default=3,
-                        help='Whether to use nhwc layout for 3-dim Tensor')
-    parser.add_argument('--four_bytes', action='store_true',
-                        help='Whether to use 4-bytes data type for partial tests')
-    parser.add_argument('--impl_folder', type=str, default='',
-                        help='folder to find device configs')
-    parser.add_argument('--cfg_path', type=str, default='./cache/diopi_case_items.cfg',
-                        help='case items cfg path')
-    parser.add_argument('--case_output_dir', type=str, default='./gencases/diopi_case',
-                        help='pytest case save dir')
-    parser.add_argument('--failure_debug_level', type=int, default=0,
-                        help='Whether to print debug information when failing the test. 0 for printing nothing, 1 for printing config, 2 for printing config, inputs and outputs')
+
+    general_args = parser.add_argument_group('general')
+    general_args.add_argument('--mode', type=str, default='test',
+                              help='running mode, available options: gen_data, run_test and utest')
+    general_args.add_argument('--get_model_list', action='store_true',
+                               help='Whether return the supported model list')
+    general_args.add_argument('--failure_debug_level', type=int, default=0,
+                              help='Whether to print debug information when failing the test. 0 for printing nothing, 1 for printing config, 2 for printing config, inputs and outputs')
+
+    gen_data_args = parser.add_argument_group('gen_data')
+    gen_data_args.add_argument('--fname', type=str, default='all_ops',
+                               help='the name of the function for which the test will run (default: all_ops)')
+    gen_data_args.add_argument('--model_name', type=str, default='',
+                               help='Get op list of given model name')
+    gen_data_args.add_argument('--impl_folder', type=str, default='',
+                               help='impl_folder')
+
+    gen_case_args = parser.add_argument_group('gen_case')
+    gen_case_args.add_argument('--nhwc', action='store_true',
+                               help='Whether to use nhwc layout for partial tests')
+    gen_case_args.add_argument('--nhwc_min_dim', type=int, default=3,
+                               help='Whether to use nhwc layout for 3-dim Tensor')
+    gen_case_args.add_argument('--four_bytes', action='store_true',
+                               help='Whether to use 4-bytes data type for partial tests')
+    gen_case_args.add_argument('--cfg_path', type=str, default='./cache/diopi_case_items.cfg',
+                               help='case items cfg path')
+    gen_case_args.add_argument('--case_output_dir', type=str, default='./gencases/diopi_case',
+                               help='pytest case save dir')
+
+    run_test_args = parser.add_argument_group('run_test')
+    run_test_args.add_argument('--file_or_dir', type=str,
+                               help='pytest case file or dir')
+    run_test_args.add_argument('--html_report', action='store_true',
+                               help='generate html report')
+    run_test_args.add_argument('--filter_dtype', type=str, nargs='*',
+                               help='The dtype in filter_dtype will not be processed')
+
     args = parser.parse_args()
     return args
 
@@ -87,7 +101,7 @@ if __name__ == "__main__":
     if args.mode == 'gen_data':
         diopi_case_item_file = 'diopi_case_items.cfg'
         device_case_item_file = '%s_case_items.cfg'
-        
+
         model_name = args.model_name.lower()
         if args.model_name != '':
             logger.info(f"the op list of {args.model_name}: {model_op_list[model_name]}")
@@ -114,9 +128,8 @@ if __name__ == "__main__":
             dst_path = os.path.join(cur_dir, "device_configs.py")
 
             def unlink_device():
-                if os.getpid() == os.getppid():
-                    if os.path.islink(dst_path):
-                        os.unlink(dst_path)
+                if os.path.islink(dst_path):
+                    os.unlink(dst_path)
             unlink_device()
             os.symlink(device_config_path, dst_path)
             import atexit
@@ -136,9 +149,10 @@ if __name__ == "__main__":
         gctc = GenConfigTestCase(module=model_name, config_path=args.cfg_path, tests_path=args.case_output_dir)
         gctc.gen_test_cases()
     elif args.mode == 'run_test':
-        import conformance as cf
-        cf.ConformanceTest.run(args.fname, args.model_name.lower(), args.filter_dtype, args.failure_debug_level, args.impl_folder)
-        write_report()
+        pytest_args = [args.file_or_dir]
+        if args.html_report:
+            pytest_args.extend(['--report=report.html', '--title=DIOPI Test', '--template=2'])
+        pytest.main(pytest_args)
     elif args.mode == 'utest':
         call = "python3 -m pytest -vx tests"
         subprocess.call(shlex.split(call))  # nosec
