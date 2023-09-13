@@ -574,7 +574,7 @@ public:
     }
 
     template <typename T>
-    AclOpRunner& setAttr(const std::string& attrName, ...){
+    AclOpRunner& setAttr(const std::string& attrName, ...) {
         check_args(false, "%s: no specialization for %s type.", dumpRunnerInfo().c_str(), typeid(T).name());
         return *this;
     }
