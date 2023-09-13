@@ -151,8 +151,6 @@ public:
     void set_state(diopiConstTensorHandle_t new_state) { state_ = *new_state; }
 };
 
-struct diopiRecordFunction {};
-
 struct diopiContext {
 private:
     diopiStreamHandle_t stream_{nullptr};
