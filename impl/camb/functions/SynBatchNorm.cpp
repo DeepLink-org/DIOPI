@@ -83,24 +83,24 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
     DIOPI_CALLCNNL(cnnlSyncBatchnormBackwardReduce_v2(handle,
-                                                      grad_outDesc,
-                                                      grad_outTr,
-                                                      inputDesc,
-                                                      inputTr,
-                                                      meanDesc,
-                                                      meanTr,
-                                                      invstdDesc,
-                                                      invstdTr,
+                                                      grad_outDesc.get(),
+                                                      grad_outTr.data(),
+                                                      inputDesc.get(),
+                                                      inputTr.data(),
+                                                      meanDesc.get(),
+                                                      meanTr.data(),
+                                                      invstdDesc.get(),
+                                                      invstdTr.data(),
                                                       workspacePtr,
                                                       workspaceSize,
-                                                      grad_weightDesc,
-                                                      grad_weightTmpTr,
-                                                      grad_biasDesc,
-                                                      grad_biasTmpTr,
-                                                      sum_dyDesc,
-                                                      sum_dyTmpTr,
-                                                      sum_dy_xmuDesc,
-                                                      sum_dy_xmuTmpTr,
+                                                      grad_weightDesc.get(),
+                                                      grad_weightTmpTr.data(),
+                                                      grad_biasDesc.get(),
+                                                      grad_biasTmpTr.data(),
+                                                      sum_dyDesc.get(),
+                                                      sum_dyTmpTr.data(),
+                                                      sum_dy_xmuDesc.get(),
+                                                      sum_dy_xmuTmpTr.data(),
                                                       input_g,
                                                       weight_g,
                                                       bias_g))
@@ -143,7 +143,7 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
     }
 
     // check the input dtype
-    std::vector<DiopiTensor*> pTensors{&input, &weight, &bias, &mean, &invstd};
+    std::vector<DiopiTensor*> pTensors{&inputTr, &weightTr, &biasTr, &meanTr, &invstdTr};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
@@ -161,11 +161,22 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
     CnnlTensorDesc meanDesc(meanTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc invstdDesc(invstdTr, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlSyncBatchNormElemt(
-        handle, inputDesc, inputTr, meanDesc, meanTr, invstdDesc, invstdTr, weightDesc, weightTr, biasDesc, biasTr, outputDesc, outTmpTr))
+    DIOPI_CALLCNNL(cnnlSyncBatchNormElemt(handle,
+                                          inputDesc.get(),
+                                          inputTr.data(),
+                                          meanDesc.get(),
+                                          meanTr.data(),
+                                          invstdDesc.get(),
+                                          invstdTr.data(),
+                                          weightDesc.get(),
+                                          weightTr.data(),
+                                          biasDesc.get(),
+                                          biasTr.data(),
+                                          outputDesc.get(),
+                                          outTmpTr.data()))
 
     // channels last -> contiguous
-    DIOPI_CALL(contiguous(ctx, outputTmpTr, diopiMemoryFormat_t::Contiguous));
+    DIOPI_CALL(contiguous(ctx, outTmpTr, diopiMemoryFormat_t::Contiguous));
     // Copy back to origin
     DIOPI_CALL(diopiCopyInp(ctx, outTmpTr.tensorHandle(), outTr.tensorHandle()));
 }
@@ -178,4 +189,3 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
 
 }  // namespace camb
 }  // namespace impl
-
