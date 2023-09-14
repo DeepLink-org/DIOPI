@@ -30,7 +30,7 @@ DIOPI_API diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTensor
             .addOutput(out)
             .run();
     } else {
-        check_args(false, "unsupport mode %s", modeStr);
+        check_args(false, "unsupport mode %s", modeStr.c_str());
     }
     return diopiSuccess;
 }
@@ -53,7 +53,7 @@ DIOPI_API diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, dio
             .addOutput(gradInput)
             .run();
     } else {
-        check_args(false, "unsupport mode %s", modeStr);
+        check_args(false, "unsupport mode %s", modeStr.c_str());
     }
     return diopiSuccess;
 }
