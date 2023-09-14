@@ -1,5 +1,5 @@
 /**
- * file
+ *file
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  */
@@ -68,7 +68,7 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
     // get descriptor
     cnnlTensorLayout_t layout = inputTr.dim() == 4 ? CNNL_LAYOUT_NHWC : CNNL_LAYOUT_NDHWC;
     CnnlTensorDesc inputDesc(inputTr, layout);
-    CnnlTensorDesc grad_outDesc(gradOutTr, layout);
+    CnnlTensorDesc gradOutDesc(gradOutTr, layout);
     CnnlTensorDesc meanDesc(meanTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc invstdDesc(invstdTr, CNNL_LAYOUT_ARRAY);
 
@@ -83,7 +83,7 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
     DIOPI_CALLCNNL(cnnlSyncBatchnormBackwardReduce_v2(handle,
-                                                      grad_outDesc.get(),
+                                                      gradOutDesc.get(),
                                                       gradOutTr.data(),
                                                       inputDesc.get(),
                                                       inputTr.data(),
@@ -189,4 +189,3 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
 
 }  // namespace camb
 }  // namespace impl
-
