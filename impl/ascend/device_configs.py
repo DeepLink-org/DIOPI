@@ -1323,7 +1323,7 @@ device_configs = {
     ),
 
     'reduce_partial_op_3': dict(
-        name=['any', 'all'],
+        name=['all'],
         tensor_para=dict(
             args=[
                 {
@@ -1347,7 +1347,7 @@ device_configs = {
     ),
 
     'reduce_partial_op_zeros_input': dict(
-        name=['any', 'all'],
+        name=['all'],
         tensor_para=dict(
             args=[
                 {
@@ -1359,7 +1359,7 @@ device_configs = {
     ),
 
     'reduce_partial_op_ones_input': dict(
-        name=['any', 'all'],
+        name=['all'],
         tensor_para=dict(
             args=[
                 {
