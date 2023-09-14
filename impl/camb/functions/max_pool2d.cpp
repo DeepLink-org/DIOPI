@@ -47,10 +47,10 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     CnnlTensorDesc outDesc(outTmpTensor, CNNL_LAYOUT_NCHW);
 
     // structured bindings, introduced in c++17
-    auto [kernelH, kernelW] = extractDims(kernelSize);
-    auto [strideH, strideW] = stride.len == 0 ? std::make_pair(kernelH, kernelW) : extractDims(stride);
-    auto [padH, padW] = extractDims(padding);
-    auto [dilation0, dilation1] = extractDims(dilation);
+    auto[kernelH, kernelW] = extractDims(kernelSize);
+    auto[strideH, strideW] = stride.len == 0 ? std::make_pair(kernelH, kernelW) : extractDims(stride);
+    auto[padH, padW] = extractDims(padding);
+    auto[dilation0, dilation1] = extractDims(dilation);
 
     DIOPI_CHECK(dilation0 == 1 && dilation1 == 1, "Camb kernel only support dilation == 1");
 
@@ -119,10 +119,10 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     CnnlTensorDesc indicesDesc(indicesTr, CNNL_LAYOUT_NCHW);
     CnnlTensorDesc outDesc(outTmpTensor, CNNL_LAYOUT_NCHW);
 
-    auto [kernelH, kernelW] = extractDims(kernelSize);
-    auto [strideH, strideW] = stride.len == 0 ? std::make_pair(kernelH, kernelW) : extractDims(stride);
-    auto [padH, padW] = extractDims(padding);
-    auto [dilation0, dilation1] = extractDims(dilation);
+    auto[kernelH, kernelW] = extractDims(kernelSize);
+    auto[strideH, strideW] = stride.len == 0 ? std::make_pair(kernelH, kernelW) : extractDims(stride);
+    auto[padH, padW] = extractDims(padding);
+    auto[dilation0, dilation1] = extractDims(dilation);
 
     DIOPI_CHECK(dilation0 == 1 && dilation1 == 1, "Camb kernel only support dilation == 1");
 
@@ -229,10 +229,10 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     CnnlTensorDesc gradOutputDesc(gradOutputTr, CNNL_LAYOUT_NHWC);
     CnnlTensorDesc indicesDesc(indicesTr, CNNL_LAYOUT_NHWC);
 
-    auto [kernelH, kernelW] = extractDims(kernelSize);
-    auto [strideH, strideW] = stride.len == 0 ? std::make_pair(kernelH, kernelW) : extractDims(stride);
-    auto [padH, padW] = extractDims(padding);
-    auto [dilation0, dilation1] = extractDims(dilation);
+    auto[kernelH, kernelW] = extractDims(kernelSize);
+    auto[strideH, strideW] = stride.len == 0 ? std::make_pair(kernelH, kernelW) : extractDims(stride);
+    auto[padH, padW] = extractDims(padding);
+    auto[dilation0, dilation1] = extractDims(dilation);
 
     // calculate padding coefficients
     auto padLeft = padW, padRight = padW, padUp = padH, padDown = padH;
