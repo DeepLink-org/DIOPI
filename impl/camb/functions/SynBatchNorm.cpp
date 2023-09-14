@@ -16,16 +16,16 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     // output
     DiopiTensor sumDyTr(sumDy);            // MLU-sumDy
-    DiopiTensor sumDyXmuTr(sumDyXmu);    // MLU-sumDyXmu
+    DiopiTensor sumDyXmuTr(sumDyXmu);      // MLU-sumDyXmu
     DiopiTensor gradWeightTr(gradWeight);  // MLU-dfilter
     DiopiTensor gradBiasTr(gradBias);      // MLU-dbias
 
     // input
     DiopiTensor gradOutTr(gradOut);  // MLU-dz
-    DiopiTensor inputTr(input);        // MLU-x
-    DiopiTensor meanTr(mean);          // MLU-mean
-    DiopiTensor invstdTr(invstd);      // MLU-ivstd
-    DiopiTensor weightTr(weight);      // no found in MLU
+    DiopiTensor inputTr(input);      // MLU-x
+    DiopiTensor meanTr(mean);        // MLU-mean
+    DiopiTensor invstdTr(invstd);    // MLU-ivstd
+    DiopiTensor weightTr(weight);    // no found in MLU
 
     auto dim = inputTr.dim();
     DIOPI_CHECK(dim >= 2 && dim <= 5, "Input dim is out of range");
@@ -189,3 +189,4 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
 
 }  // namespace camb
 }  // namespace impl
+
