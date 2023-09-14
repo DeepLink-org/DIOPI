@@ -13,12 +13,6 @@
 namespace impl {
 namespace camb {
 
-std::pair<int64_t, int64_t> extractDims(const diopiSize_t& size) {
-    int64_t dimH = size.data[0];
-    int64_t dimW = size.len == 1 ? dimH : size.data[1];
-    return {dimH, dimW};
-}
-
 diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernelSize, diopiSize_t stride,
                             diopiSize_t padding, diopiSize_t dilation, bool ceilMode) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -46,11 +40,21 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     CnnlTensorDesc inputDesc(inputTr, CNNL_LAYOUT_NCHW);
     CnnlTensorDesc outDesc(outTmpTensor, CNNL_LAYOUT_NCHW);
 
-    // structured bindings, introduced in c++17
-    auto[kernelH, kernelW] = extractDims(kernelSize);
-    auto[strideH, strideW] = stride.len == 0 ? std::make_pair(kernelH, kernelW) : extractDims(stride);
-    auto[padH, padW] = extractDims(padding);
-    auto[dilation0, dilation1] = extractDims(dilation);
+    const int64_t kernelH = kernelSize.data[0];
+    const int64_t kernelW = kernelSize.len == 1 ? kernelH : kernelSize.data[1];
+    int64_t strideH = 0;
+    int64_t strideW = 0;
+    if (stride.len == 0) {
+        strideH = kernelH;
+        strideW = kernelW;
+    } else {
+        strideH = stride.data[0];
+        strideW = stride.len == 1 ? strideH : stride.data[1];
+    }
+    const int64_t padH = padding.data[0];
+    const int64_t padW = padding.len == 1 ? padH : padding.data[1];
+    const int64_t dilation0 = dilation.data[0];
+    const int64_t dilation1 = dilation.len == 1 ? dilation0 : dilation.data[1];
 
     DIOPI_CHECK(dilation0 == 1 && dilation1 == 1, "Camb kernel only support dilation == 1");
 
@@ -119,10 +123,21 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     CnnlTensorDesc indicesDesc(indicesTr, CNNL_LAYOUT_NCHW);
     CnnlTensorDesc outDesc(outTmpTensor, CNNL_LAYOUT_NCHW);
 
-    auto[kernelH, kernelW] = extractDims(kernelSize);
-    auto[strideH, strideW] = stride.len == 0 ? std::make_pair(kernelH, kernelW) : extractDims(stride);
-    auto[padH, padW] = extractDims(padding);
-    auto[dilation0, dilation1] = extractDims(dilation);
+    const int64_t kernelH = kernelSize.data[0];
+    const int64_t kernelW = kernelSize.len == 1 ? kernelH : kernelSize.data[1];
+    int64_t strideH = 0;
+    int64_t strideW = 0;
+    if (stride.len == 0) {
+        strideH = kernelH;
+        strideW = kernelW;
+    } else {
+        strideH = stride.data[0];
+        strideW = stride.len == 1 ? strideH : stride.data[1];
+    }
+    const int64_t padH = padding.data[0];
+    const int64_t padW = padding.len == 1 ? padH : padding.data[1];
+    const int64_t dilation0 = dilation.data[0];
+    const int64_t dilation1 = dilation.len == 1 ? dilation0 : dilation.data[1];
 
     DIOPI_CHECK(dilation0 == 1 && dilation1 == 1, "Camb kernel only support dilation == 1");
 
@@ -229,10 +244,21 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     CnnlTensorDesc gradOutputDesc(gradOutputTr, CNNL_LAYOUT_NHWC);
     CnnlTensorDesc indicesDesc(indicesTr, CNNL_LAYOUT_NHWC);
 
-    auto[kernelH, kernelW] = extractDims(kernelSize);
-    auto[strideH, strideW] = stride.len == 0 ? std::make_pair(kernelH, kernelW) : extractDims(stride);
-    auto[padH, padW] = extractDims(padding);
-    auto[dilation0, dilation1] = extractDims(dilation);
+    const int64_t kernelH = kernelSize.data[0];
+    const int64_t kernelW = kernelSize.len == 1 ? kernelH : kernelSize.data[1];
+    int64_t strideH = 0;
+    int64_t strideW = 0;
+    if (stride.len == 0) {
+        strideH = kernelH;
+        strideW = kernelW;
+    } else {
+        strideH = stride.data[0];
+        strideW = stride.len == 1 ? strideH : stride.data[1];
+    }
+    const int64_t padH = padding.data[0];
+    const int64_t padW = padding.len == 1 ? padH : padding.data[1];
+    const int64_t dilation0 = dilation.data[0];
+    const int64_t dilation1 = dilation.len == 1 ? dilation0 : dilation.data[1];
 
     // calculate padding coefficients
     auto padLeft = padW, padRight = padW, padUp = padH, padDown = padH;
