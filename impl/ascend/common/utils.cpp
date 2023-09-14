@@ -41,6 +41,12 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
             case diopiDtype_t::diopi_dtype_bool:
                 reinterpret_cast<bool*>(ptr)[0] = getValue<bool>(scalar);
                 break;
+            case diopiDtype_t::diopi_dtype_int16:
+                reinterpret_cast<int16_t*>(ptr)[0] = getValue<int16_t>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_uint16:
+                reinterpret_cast<uint16_t*>(ptr)[0] = getValue<uint16_t>(scalar);
+                break;
             default:
                 error("dtype %d not supported on host", dtype);
         }
@@ -171,9 +177,10 @@ aclDataType getAclDataType(diopiDtype_t type) {
             return ACL_COMPLEX64;
         case diopi_dtype_complex128:
             return ACL_COMPLEX128;
+        default:
+            check_args(false, "acl not support dioptDtype_t:%d", type);
+            return ACL_DT_UNDEFINED;
     }
-    check_args(false, "acl not support dioptDtype_t:%d", type);
-    return ACL_DT_UNDEFINED;
 }
 
 aclDataType getAclDataType(diopiConstTensorHandle_t th) {
@@ -238,16 +245,6 @@ bool isContiguous(diopiConstTensorHandle_t tensor, diopiMemoryFormat_t format) {
     }
     return true;
 }
-
-class Element {
-public:
-    int64_t value;
-    int64_t index;
-    Element(int value, int index) : value(value), index(index) {}
-};
-
-// Custom comparator to sort elements based on their values
-bool compare(Element& a, Element& b) { return a.value > b.value; }
 
 std::vector<int64_t> getBaseShape(diopiConstTensorHandle_t src) {
     std::vector<int64_t> baseShapeVec;

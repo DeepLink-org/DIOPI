@@ -19,7 +19,7 @@ extern "C" {
 DIOPI_API diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to, diopiGeneratorHandle_t generator) {
     auto pair = getSeedAndOffset(ctx, generator, 10);
     uint64_t seedList[1] = {pair.first};
-    uint64_t offsetList[2] = {0, pair.second};
+    uint64_t offsetList[2] = {0, static_cast<uint64_t>(pair.second)};
     int32_t alg = 1;
     diopiSize_t inputSize;
     diopiGetTensorShape(inout, &inputSize);
@@ -36,10 +36,10 @@ DIOPI_API diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHand
         .run();
 
     // output: U(0~1) --> U(from~to)
-    diopiTensorHandle_t tmp, otherTensor;
-    diopiScalar_t fromScalar{diopi_dtype_float64, from};
-    diopiScalar_t toScalar{diopi_dtype_float64, to};
-    diopiScalar_t zeroScalar{diopi_dtype_float64, 0};
+    diopiTensorHandle_t tmp;
+    diopiScalar_t fromScalar{diopi_dtype_float64, {from}};
+    diopiScalar_t toScalar{diopi_dtype_float64, {to}};
+    diopiScalar_t zeroScalar{diopi_dtype_float64, {0}};
     makeTensorLike(ctx, &tmp, inout);
     diopiMulInpScalar(ctx, tmp, &fromScalar);
     diopiSubInpScalar(ctx, tmp, &fromScalar, &zeroScalar);

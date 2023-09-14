@@ -176,31 +176,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'hardtanh_int': dict(
-        name=['hardtanh'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),],
-                },
-            ]
-        ),
-    ),
-
-    'hardtanh_uint': dict(
-        name=['hardtanh'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.uint8),],
+                    "dtype": [Skip(Dtype.float16),],
                 },
             ]
         ),
@@ -2860,7 +2836,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
+                    "dtype": [Skip(Dtype.float16),],
                 },
             ]
         ),

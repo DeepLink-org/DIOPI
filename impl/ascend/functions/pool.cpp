@@ -15,7 +15,7 @@ extern "C" {
 DIOPI_API diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t outputSize) {
     AclOpRunner<1, 1>("AdaptiveAvgPool2d", ctx)
         .addInput(input)
-        .setAttr("output_size", std::vector<int32_t>{outputSize.data[0], outputSize.data[1]})
+        .setAttr("output_size", std::vector<int32_t>{static_cast<int>(outputSize.data[0]), static_cast<int>(outputSize.data[1])})
         .addOutput(out)
         .run();
     return diopiSuccess;
@@ -27,7 +27,9 @@ DIOPI_API diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, 
     diopiGetTensorShape(input, &shape);
     AclOpRunner<1, 1>("AdaptiveAvgPool2dGrad", ctx)
         .addInput(gradOutput)
-        .setAttr("orig_input_shape", std::vector<int32_t>{shape.data[0], shape.data[1], shape.data[2], shape.data[3]})
+        .setAttr("orig_input_shape",
+                 std::vector<int32_t>{
+                     static_cast<int>(shape.data[0]), static_cast<int>(shape.data[1]), static_cast<int>(shape.data[2]), static_cast<int>(shape.data[3])})
         .addOutput(gradInput)
         .run();
     return diopiSuccess;
