@@ -267,15 +267,8 @@ device_configs = {
     'max_pool2d': dict(
         name=["max_pool2d"],
         para=dict(
+            # camb kernel only support dilation == 1
             dilation=[Skip((4, 3)), Skip((2, 3)), Skip(2)],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ]
         ),
     ),
 
