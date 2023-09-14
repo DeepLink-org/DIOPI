@@ -41,7 +41,7 @@ list(APPEND IMPL_CAMB "CAMB" "camb")
 list(APPEND IMPL_ASCEND "ASCEND" "ascend")
 list(APPEND IMPL_SUPA "SUPA" "supa")
 
-add_definitions(-std=c++14)
+add_definitions(-std=c++17)
 
 if (${IMPL_OPT} IN_LIST IMPL_CUDA)
     add_subdirectory(cuda)
