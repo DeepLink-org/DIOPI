@@ -68,7 +68,10 @@ class GenTestCase(object):
 
     def gen_test_module(self):
         test_diopi_function_module = 'diopi_functions'
+        test_diopi_func_import = self._func_name
         test_diopi_func_name = self._func_name
+
+        test_forward_func_call_prefix = 'dev_out = '
 
         test_case_items = []
         for ck, cv in self._case_set.items():
@@ -86,9 +89,11 @@ class GenTestCase(object):
                     break
             if 'no_output_ref' in cv.keys() and cv['no_output_ref'] == True:
                 test_function_forward_ref_compare = ''
-                if test_diopi_function_module != 'diopi_manual_functions.ManualTest':
-                    test_diopi_function_module = 'diopi_manual_functions.ManualTest'
-                    test_diopi_func_name = f'test_{test_diopi_func_name}'
+                if test_diopi_function_module != 'diopi_manual_functions':
+                    test_diopi_function_module = 'diopi_manual_functions'
+                    test_diopi_func_import = 'ManualTest'
+                    test_diopi_func_name = f'ManualTest.test_{test_diopi_func_name}'
+                    test_forward_func_call_prefix = ''
             else:
                 test_function_forward_ref_compare = CaseTemplate.test_function_forward_ref_compare.substitute(env={})
 
@@ -97,7 +102,7 @@ class GenTestCase(object):
                 input_data_path = input_data_path,
                 output_data_path = output_data_path,
                 test_caompare_tol = test_caompare_tol,
-                test_diopi_func_name = test_diopi_func_name,
+                test_diopi_func_name = test_forward_func_call_prefix + test_diopi_func_name,
                 test_function_forward_ref_compare = test_function_forward_ref_compare
             ))
 
@@ -132,6 +137,7 @@ class GenTestCase(object):
 
         test_diopi_head_import = CaseTemplate.test_diopi_head_import.substitute(env=dict(
             test_diopi_function_module = test_diopi_function_module,
+            test_diopi_func_import = test_diopi_func_import,
             test_diopi_func_name = test_diopi_func_name,
             test_import_diopi_bp_func = test_import_diopi_bp_func
         ))
