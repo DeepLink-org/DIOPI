@@ -261,16 +261,7 @@ const void* DiopiTensor::data() const {
     return p;
 }
 
-diopiTensorHandle_t DiopiTensor::tensorHandle() {
-    return tensor_;
-}
-
-diopiConstTensorHandle_t DiopiTensor::tensorHandle() const {
-    return tensor_;
-}
-
 // other funcs
-
 DiopiTensor makeTensor(diopiContextHandle_t ctx, const diopiScalar_t* pScalar) {
     diopiTensorHandle_t tensor = nullptr;
     std::vector<int64_t> shape{1};
