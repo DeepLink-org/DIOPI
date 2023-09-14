@@ -18,7 +18,7 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor inputTr(input);
-    DiopiTensor outTensor(out);
+    DiopiTensor outTr(out);
 
     DIOPI_CHECK(inputTr.dim() == 3 || inputTr.dim() == 4, "non-empty 3D or 4D (batch mode) tensor expected for input");
 
@@ -27,18 +27,18 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 
     if (inputTr.dim() == 3) {
         inputTr.unsqueeze(0);
-        outTensor.unsqueeze(0);
+        outTr.unsqueeze(0);
     }
 
-    DiopiTensor outTmpTensor = outTensor;
-    if (inputTr.dtype() != outTensor.dtype()) {
-        outTmpTensor = requiresTensor(ctx, outTensor.shape(), inputTr.dtype());
+    DiopiTensor outTmpTr = outTr;
+    if (inputTr.dtype() != outTr.dtype()) {
+        outTmpTr = requiresTensor(ctx, outTr.shape(), inputTr.dtype());
     }
 
     std::vector<int64_t> inputDim = inputTr.shape();
-    std::vector<int64_t> outDim = outTmpTensor.shape();
+    std::vector<int64_t> outDim = outTmpTr.shape();
     CnnlTensorDesc inputDesc(inputTr, CNNL_LAYOUT_NCHW);
-    CnnlTensorDesc outDesc(outTmpTensor, CNNL_LAYOUT_NCHW);
+    CnnlTensorDesc outDesc(outTmpTr, CNNL_LAYOUT_NCHW);
 
     const int64_t kernelH = kernelSize.data[0];
     const int64_t kernelW = kernelSize.len == 1 ? kernelH : kernelSize.data[1];
@@ -76,14 +76,14 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
         poolDesc, CNNL_POOLING_MAX, CNNL_PROPAGATE_NAN, kernelH, kernelW, padUp, padDown, padLeft, padRight, strideH, strideW, dilation0, dilation1, ceilMode));
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetPoolingWorkspaceSize(handle, CNNL_POOLING_MAX, outTensor.shape()[3], inputTr.shape()[2], &workspaceSize));
+    DIOPI_CALLCNNL(cnnlGetPoolingWorkspaceSize(handle, CNNL_POOLING_MAX, outTr.shape()[3], inputTr.shape()[2], &workspaceSize));
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
     DIOPI_CALLCNNL(cnnlPoolingForward_v2(
-        handle, poolDesc, nullptr, inputDesc.get(), inputTr.data(), nullptr, nullptr, outDesc.get(), outTmpTensor.data(), workspacePtr, workspaceSize));
+        handle, poolDesc, nullptr, inputDesc.get(), inputTr.data(), nullptr, nullptr, outDesc.get(), outTmpTr.data(), workspacePtr, workspaceSize));
 
-    if (outTmpTensor.dtype() != outTensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, outTensor, outTmpTensor));
+    if (outTmpTr.dtype() != outTr.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTr, outTmpTr));
     }
 
     return diopiSuccess;
@@ -94,7 +94,7 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor inputTr(input);
-    DiopiTensor outTensor(out);
+    DiopiTensor outTr(out);
     DiopiTensor indicesTr(indices);
 
     DIOPI_CHECK(inputTr.dim() == 3 || inputTr.dim() == 4, "non-empty 3D or 4D (batch mode) tensor expected for input");
@@ -102,26 +102,24 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     std::vector<DiopiTensor*> pTensors{&inputTr};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_float16, diopi_dtype_float32}));
 
-    std::vector<DiopiTensor*> pTensorsIndices{&indicesTr};
-    DIOPI_CALL(autoCastTensorType(ctx, pTensorsIndices, {diopi_dtype_int16, diopi_dtype_int32}));
-
     if (inputTr.dim() == 3) {
         inputTr.unsqueeze(0);
         indicesTr.unsqueeze(0);
-        outTensor.unsqueeze(0);
+        outTr.unsqueeze(0);
     }
 
-    DiopiTensor outTmpTensor = outTensor;
-    if (inputTr.dtype() != outTensor.dtype()) {
-        outTmpTensor = requiresTensor(ctx, outTensor.shape(), inputTr.dtype());
+    DiopiTensor outTmpTr = outTr;
+    if (inputTr.dtype() != outTr.dtype()) {
+        outTmpTr = requiresTensor(ctx, outTr.shape(), inputTr.dtype());
     }
+    diopiDtype_t indicesDtype = inputTr.dtype() == diopi_dtype_float16 ? diopi_dtype_int16 : diopi_dtype_int32;
+    DiopiTensor indicesTmpTr = requiresTensor(ctx, indicesTr.shape(), indicesDtype);
 
     std::vector<int64_t> inputDim = inputTr.shape();
-    std::vector<int64_t> indicesDim = indicesTr.shape();
-    std::vector<int64_t> outDim = outTmpTensor.shape();
+    std::vector<int64_t> outDim = outTmpTr.shape();
     CnnlTensorDesc inputDesc(inputTr, CNNL_LAYOUT_NCHW);
-    CnnlTensorDesc indicesDesc(indicesTr, CNNL_LAYOUT_NCHW);
-    CnnlTensorDesc outDesc(outTmpTensor, CNNL_LAYOUT_NCHW);
+    CnnlTensorDesc indicesDesc(indicesTmpTr, CNNL_LAYOUT_NCHW);
+    CnnlTensorDesc outDesc(outTmpTr, CNNL_LAYOUT_NCHW);
 
     const int64_t kernelH = kernelSize.data[0];
     const int64_t kernelW = kernelSize.len == 1 ? kernelH : kernelSize.data[1];
@@ -191,15 +189,16 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
                                                inputTr.data(),
                                                nullptr,
                                                outDesc.get(),
-                                               outTmpTensor.data(),
+                                               outTmpTr.data(),
                                                indicesDesc.get(),
-                                               indicesTr.data(),
+                                               indicesTmpTr.data(),
                                                workspacePtr,
                                                workspaceSize));
 
-    if (outTmpTensor.dtype() != outTensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, outTensor, outTmpTensor));
+    if (outTmpTr.dtype() != outTr.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTr, outTmpTr));
     }
+    DIOPI_CALL(dataTypeCast(ctx, indicesTr, indicesTmpTr));
 
     return diopiSuccess;
 }
@@ -226,8 +225,11 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     std::vector<DiopiTensor*> pTensors{&inputTr, &gradOutputTr};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_float16, diopi_dtype_float32}));
 
-    std::vector<DiopiTensor*> pTensorsIndices{&indicesTr};
-    DIOPI_CALL(autoCastTensorType(ctx, pTensorsIndices, {diopi_dtype_int16, diopi_dtype_int32}));
+    if (inputTr.dtype() == diopi_dtype_float16) {
+        DIOPI_CALL(dataTypeCast(ctx, indicesTr, diopi_dtype_int16));
+    } else {
+        DIOPI_CALL(dataTypeCast(ctx, indicesTr, diopi_dtype_int32));
+    }
 
     diopiMemoryFormat_t memoryFormat = diopiMemoryFormat_t::ChannelsLast;
     DIOPI_CALL(contiguous(ctx, inputTr, memoryFormat));
@@ -236,9 +238,7 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     DiopiTensor gradInputTmpTr = requiresTensor(ctx, gradInputTr.shape(), inputTr.dtype(), memoryFormat);
 
     std::vector<int64_t> inputDim = inputTr.shape();
-    std::vector<int64_t> gradInputDim = gradInputTmpTr.shape();
     std::vector<int64_t> gradOutputDim = gradOutputTr.shape();
-    std::vector<int64_t> indicesDim = indicesTr.shape();
     CnnlTensorDesc inputDesc(inputTr, CNNL_LAYOUT_NHWC);
     CnnlTensorDesc gradInputDesc(gradInputTmpTr, CNNL_LAYOUT_NHWC);
     CnnlTensorDesc gradOutputDesc(gradOutputTr, CNNL_LAYOUT_NHWC);
