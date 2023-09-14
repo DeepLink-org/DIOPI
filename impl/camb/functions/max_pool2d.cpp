@@ -113,7 +113,11 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
         outTmpTr = requiresTensor(ctx, outTr.shape(), inputTr.dtype());
     }
     diopiDtype_t indicesDtype = inputTr.dtype() == diopi_dtype_float16 ? diopi_dtype_int16 : diopi_dtype_int32;
-    DiopiTensor indicesTmpTr = requiresTensor(ctx, indicesTr.shape(), indicesDtype);
+    DiopiTensor indicesTmpTr = indicesTr;
+    if (indicesTr.dtype() != indicesDtype){
+        indicesTmpTr = requiresTensor(ctx, indicesTr.shape(), indicesDtype);
+    }
+
 
     std::vector<int64_t> inputDim = inputTr.shape();
     std::vector<int64_t> outDim = outTmpTr.shape();
@@ -198,7 +202,9 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     if (outTmpTr.dtype() != outTr.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTr, outTmpTr));
     }
-    DIOPI_CALL(dataTypeCast(ctx, indicesTr, indicesTmpTr));
+    if (indicesTr.dtype() != indicesDtype){
+        DIOPI_CALL(dataTypeCast(ctx, indicesTr, indicesTmpTr));
+    }
 
     return diopiSuccess;
 }
