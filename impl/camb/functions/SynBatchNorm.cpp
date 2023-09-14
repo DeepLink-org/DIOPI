@@ -1,5 +1,5 @@
 /**
- * @file
+ * file
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  */
@@ -9,19 +9,19 @@
 
 namespace impl {
 namespace camb {
-diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorHandle_t sum_dy, diopiTensorHandle_t sum_dy_xmu, diopiTensorHandle_t grad_weight,
-                                          diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t input,
-                                          diopiConstTensorHandle_t mean, diopiConstTensorHandle_t invstd, diopiConstTensorHandle_t weight, bool input_g,
-                                          bool weight_g, bool bias_g) {
+diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorHandle_t sumDy, diopiTensorHandle_t sumDyXmu, diopiTensorHandle_t gradWeight,
+                                          diopiTensorHandle_t gradBias, diopiConstTensorHandle_t gradOut, diopiConstTensorHandle_t input,
+                                          diopiConstTensorHandle_t mean, diopiConstTensorHandle_t invstd, diopiConstTensorHandle_t weight, bool inputG,
+                                          bool weightG, bool biasG) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     // output
-    DiopiTensor sum_dyTr(sum_dy);            // MLU-sum_dy
-    DiopiTensor sum_dy_xmuTr(sum_dy_xmu);    // MLU-sum_dy_xmu
-    DiopiTensor grad_weightTr(grad_weight);  // MLU-dfilter
-    DiopiTensor grad_biasTr(grad_bias);      // MLU-dbias
+    DiopiTensor sumDyTr(sumDy);            // MLU-sumDy
+    DiopiTensor sumDyXmuTr(sumDyXmu);    // MLU-sumDyXmu
+    DiopiTensor gradWeightTr(gradWeight);  // MLU-dfilter
+    DiopiTensor gradBiasTr(gradBias);      // MLU-dbias
 
     // input
-    DiopiTensor grad_outTr(grad_out);  // MLU-dz
+    DiopiTensor gradOutTr(gradOut);  // MLU-dz
     DiopiTensor inputTr(input);        // MLU-x
     DiopiTensor meanTr(mean);          // MLU-mean
     DiopiTensor invstdTr(invstd);      // MLU-ivstd
@@ -29,53 +29,53 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
 
     auto dim = inputTr.dim();
     DIOPI_CHECK(dim >= 2 && dim <= 5, "Input dim is out of range");
-    DIOPI_CHECK(dim == grad_outTr.dim(), "Input dim != out dim");
+    DIOPI_CHECK(dim == gradOutTr.dim(), "Input dim != out dim");
 
     // check the input dimension
     if (3 == dim) {
         inputTr.unsqueeze(3);
-        grad_outTr.unsqueeze(3);
+        gradOutTr.unsqueeze(3);
     } else if (2 == dim) {
         inputTr.unsqueeze(2);
         inputTr.unsqueeze(3);
-        grad_outTr.unsqueeze(2);
-        grad_outTr.unsqueeze(3);
+        gradOutTr.unsqueeze(2);
+        gradOutTr.unsqueeze(3);
     }
 
     // check the input dtype
-    std::vector<DiopiTensor*> pTensors{&grad_outTr, &inputTr, &meanTr, &invstdTr};
+    std::vector<DiopiTensor*> pTensors{&gradOutTr, &inputTr, &meanTr, &invstdTr};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
     /* Transpose to channels last */
     diopiMemoryFormat_t memoryFormat = inputTr.dim() == 4 ? diopiMemoryFormat_t::ChannelsLast : diopiMemoryFormat_t::ChannelsLast3d;
     DIOPI_CALL(contiguous(ctx, inputTr, memoryFormat));
-    DIOPI_CALL(contiguous(ctx, grad_outTr, memoryFormat));
+    DIOPI_CALL(contiguous(ctx, gradOutTr, memoryFormat));
 
     /*Get output tmp tensor*/
-    DiopiTensor grad_weightTmpTr = grad_weightTr;
-    DiopiTensor grad_biasTmpTr = grad_biasTr;
-    DiopiTensor sum_dyTmpTr = sum_dyTr;
-    DiopiTensor sum_dy_xmuTmpTr = sum_dy_xmuTr;
-    if (grad_weightTr.dtype() != inputTr.dtype() || grad_biasTr.dtype() != inputTr.dtype() || sum_dyTr.dtype() != inputTr.dtype() ||
-        sum_dy_xmuTr.dtype() != inputTr.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, grad_weightTmpTr, inputTr.dtype()));
-        DIOPI_CALL(dataTypeCast(ctx, grad_biasTmpTr, inputTr.dtype()));
-        DIOPI_CALL(dataTypeCast(ctx, sum_dyTmpTr, inputTr.dtype()));
-        DIOPI_CALL(dataTypeCast(ctx, sum_dy_xmuTmpTr, inputTr.dtype()));
+    DiopiTensor gradWeightTmpTr = gradWeightTr;
+    DiopiTensor gradBiasTmpTr = gradBiasTr;
+    DiopiTensor sumDyTmpTr = sumDyTr;
+    DiopiTensor sumDyXmuTmpTr = sumDyXmuTr;
+    if (gradWeightTr.dtype() != inputTr.dtype() || gradBiasTr.dtype() != inputTr.dtype() || sumDyTr.dtype() != inputTr.dtype() ||
+        sumDyXmuTr.dtype() != inputTr.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, gradWeightTmpTr, inputTr.dtype()));
+        DIOPI_CALL(dataTypeCast(ctx, gradBiasTmpTr, inputTr.dtype()));
+        DIOPI_CALL(dataTypeCast(ctx, sumDyTmpTr, inputTr.dtype()));
+        DIOPI_CALL(dataTypeCast(ctx, sumDyXmuTmpTr, inputTr.dtype()));
     }
 
     // get descriptor
     cnnlTensorLayout_t layout = inputTr.dim() == 4 ? CNNL_LAYOUT_NHWC : CNNL_LAYOUT_NDHWC;
     CnnlTensorDesc inputDesc(inputTr, layout);
-    CnnlTensorDesc grad_outDesc(grad_outTr, layout);
+    CnnlTensorDesc grad_outDesc(gradOutTr, layout);
     CnnlTensorDesc meanDesc(meanTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc invstdDesc(invstdTr, CNNL_LAYOUT_ARRAY);
 
-    CnnlTensorDesc grad_weightDesc(grad_weightTmpTr, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc grad_biasDesc(grad_biasTmpTr, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc sum_dyDesc(sum_dyTmpTr, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc sum_dy_xmuDesc(sum_dy_xmuTmpTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradWeightDesc(gradWeightTmpTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradBiasDesc(gradBiasTmpTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc sumDyDesc(sumDyTmpTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc sumDyXmuDesc(sumDyXmuTmpTr, CNNL_LAYOUT_ARRAY);
 
     /* Get Workspace */
     size_t workspaceSize = 0;
@@ -84,7 +84,7 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
 
     DIOPI_CALLCNNL(cnnlSyncBatchnormBackwardReduce_v2(handle,
                                                       grad_outDesc.get(),
-                                                      grad_outTr.data(),
+                                                      gradOutTr.data(),
                                                       inputDesc.get(),
                                                       inputTr.data(),
                                                       meanDesc.get(),
@@ -93,23 +93,23 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
                                                       invstdTr.data(),
                                                       workspacePtr,
                                                       workspaceSize,
-                                                      grad_weightDesc.get(),
-                                                      grad_weightTmpTr.data(),
-                                                      grad_biasDesc.get(),
-                                                      grad_biasTmpTr.data(),
-                                                      sum_dyDesc.get(),
-                                                      sum_dyTmpTr.data(),
-                                                      sum_dy_xmuDesc.get(),
-                                                      sum_dy_xmuTmpTr.data(),
-                                                      input_g,
-                                                      weight_g,
-                                                      bias_g))
+                                                      gradWeightDesc.get(),
+                                                      gradWeightTmpTr.data(),
+                                                      gradBiasDesc.get(),
+                                                      gradBiasTmpTr.data(),
+                                                      sumDyDesc.get(),
+                                                      sumDyTmpTr.data(),
+                                                      sumDyXmuDesc.get(),
+                                                      sumDyXmuTmpTr.data(),
+                                                      inputG,
+                                                      weightG,
+                                                      biasG))
 
-    if (grad_weightTmpTr.dtype() != grad_weightTr.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, grad_weightTr, grad_weightTmpTr));
-        DIOPI_CALL(dataTypeCast(ctx, grad_biasTr, grad_biasTmpTr));
-        DIOPI_CALL(dataTypeCast(ctx, sum_dyTr, sum_dyTmpTr));
-        DIOPI_CALL(dataTypeCast(ctx, sum_dy_xmuTr, sum_dy_xmuTmpTr));
+    if (gradWeightTmpTr.dtype() != gradWeightTr.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, gradWeightTr, gradWeightTmpTr));
+        DIOPI_CALL(dataTypeCast(ctx, gradBiasTr, gradBiasTmpTr));
+        DIOPI_CALL(dataTypeCast(ctx, sumDyTr, sumDyTmpTr));
+        DIOPI_CALL(dataTypeCast(ctx, sumDyXmuTr, sumDyXmuTmpTr));
     }
 
     return diopiSuccess;
@@ -189,3 +189,4 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
 
 }  // namespace camb
 }  // namespace impl
+
