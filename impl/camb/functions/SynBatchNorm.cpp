@@ -179,6 +179,8 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
     DIOPI_CALL(contiguous(ctx, outTmpTr, diopiMemoryFormat_t::Contiguous));
     // Copy back to origin
     DIOPI_CALL(diopiCopyInp(ctx, outTmpTr.tensorHandle(), outTr.tensorHandle()));
+
+    return diopiSuccess;
 }
 
 // DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd, diopiConstTensorHandle_t input,
@@ -189,4 +191,3 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
 
 }  // namespace camb
 }  // namespace impl
-
