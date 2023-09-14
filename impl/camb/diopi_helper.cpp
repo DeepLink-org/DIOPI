@@ -89,6 +89,7 @@ const char* DiopiDataType::dataTypeStr(diopiDtype_t dtype) {
 
 DiopiTensor::DiopiTensor(const diopiTensorHandle_t& tensor) : tensor_(tensor) {
     if (tensor_ != nullptr) {
+        DIOPI_CHECK_ABORT(this->device() == diopiDevice_t::diopi_device, "%s", "tensor_ is not on camb device.");
         diopiSize_t diopiShape;
         diopiSize_t diopiStride;
         diopiDtype_t diopiDtype;
@@ -261,16 +262,10 @@ const void* DiopiTensor::data() const {
 }
 
 diopiTensorHandle_t DiopiTensor::tensorHandle() {
-    if (this->defined()) {
-        DIOPI_CHECK_ABORT(this->device() == diopiDevice_t::diopi_device, "%s", "tensor_ is not on camb device.");
-    }
     return tensor_;
 }
 
 diopiConstTensorHandle_t DiopiTensor::tensorHandle() const {
-    if (this->defined()) {
-        DIOPI_CHECK_ABORT(this->device() == diopiDevice_t::diopi_device, "%s", "tensor_ is not on camb device.");
-    }
     return tensor_;
 }
 
