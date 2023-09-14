@@ -76,8 +76,7 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
     DIOPI_CALLCNNL(cnnlPoolingForward_v2(
-        handle, poolDesc, nullptr, inputDesc.get(), inputTr.data(), nullptr,
-        nullptr, outDesc.get(), outTmpTensor.data(), workspacePtr, workspaceSize));
+        handle, poolDesc, nullptr, inputDesc.get(), inputTr.data(), nullptr, nullptr, outDesc.get(), outTmpTensor.data(), workspacePtr, workspaceSize));
 
     if (outTmpTensor.dtype() != outTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTmpTensor));
@@ -120,7 +119,6 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     CnnlTensorDesc indicesDesc(indicesTr, CNNL_LAYOUT_NCHW);
     CnnlTensorDesc outDesc(outTmpTensor, CNNL_LAYOUT_NCHW);
 
-
     auto [kernelH, kernelW] = extractDims(kernelSize);
     auto [strideH, strideW] = stride.len == 0 ? std::make_pair(kernelH, kernelW) : extractDims(stride);
     auto [padH, padW] = extractDims(padding);
@@ -151,8 +149,20 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
         DIOPI_CALLCNNL(cnnlSetPoolingNdDescriptor_v2(
             poolDesc, CNNL_POOLING_MAX, CNNL_PROPAGATE_NAN, poolRank + 2, window.data(), paddingTmp.data(), strideTmp.data(), dilationTmp.data(), ceilMode));
     } else {
-        DIOPI_CALLCNNL(cnnlSetPooling2dDescriptor_v2(
-            poolDesc, CNNL_POOLING_MAX, CNNL_PROPAGATE_NAN, kernelH, kernelW, padUp, padDown, padLeft, padRight, strideH, strideW, dilation0, dilation1, ceilMode));
+        DIOPI_CALLCNNL(cnnlSetPooling2dDescriptor_v2(poolDesc,
+                                                     CNNL_POOLING_MAX,
+                                                     CNNL_PROPAGATE_NAN,
+                                                     kernelH,
+                                                     kernelW,
+                                                     padUp,
+                                                     padDown,
+                                                     padLeft,
+                                                     padRight,
+                                                     strideH,
+                                                     strideW,
+                                                     dilation0,
+                                                     dilation1,
+                                                     ceilMode));
     }
 
     size_t workspaceSize = 0;
