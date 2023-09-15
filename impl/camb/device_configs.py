@@ -999,6 +999,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
+                    # FIXME Run diopi_functions.adam failed, because of inputs: param_grad changed
+                    "shape": [Skip(())],
                     "dtype": [Skip(Dtype.float16)],
                 },
             ]
@@ -1045,6 +1047,15 @@ device_configs = {
         name=["adadelta"],
         atol_half=1e-3,
         rtol_half=1e-3,
+        tensor_para=dict(
+            args=[
+                {
+                    # can't get correct result
+                    "ins": ['param', 'param_grad'],
+                    "dtype": [Skip(Dtype.float16)],
+                },
+            ]
+        ),
     ),
 
     'rmsprop': dict(

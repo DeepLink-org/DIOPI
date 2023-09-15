@@ -4514,23 +4514,25 @@ diopi_configs = {
         atol_half=1e-4,
         rtol_half=1e-3,
         para=dict(
-            nesterov=[False, True],
-            lr=[0.1, 0.1],
-            momentum=[0.01, 0.01],
-            weight_decay=[0, 0.1],
-            dampening=[0.1, 0],
+            lr=[0.05, 0.001, 0.1, 0.1, 0, 3, 0.2, 0.07],
+            momentum=[0.5, 0, 0.01, 0.01, 1, 0.5, 2, 1.2],
+            weight_decay=[0, 0.5, 0, 0.1, 3, 2.3, 4.0, 5],
+            dampening=[0, -0.5, 0.1, 0, 2, 3.0, 0, 6.5],
+            nesterov=[True, False, False, True, False, False, True, False],
         ),
         tensor_para=dict(
             dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "shape": [(2, 3, 16), (4, 32, 7, 7)],
+                    "shape": [(), (16, 8), (2, 3, 16), (4, 32, 7, 7), (4, 16, 3, 8, 2),
+                              (0,), (3, 0), (4, 0, 9)],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ['buf'],
-                    "shape": [(2, 3, 16), (4, 32, 7, 7)],
+                    "shape": [(), (16, 8), (2, 3, 16), (4, 32, 7, 7), (4, 16, 3, 8, 2),
+                              (0,), (3, 0), (4, 0, 9)],
                     "gen_fn": Genfunc.rand,
                 },
             ]
@@ -4739,39 +4741,50 @@ diopi_configs = {
         ),
     ),
 
-    # 'adam': dict(
-    #     name=['adam', 'adamw'],
-    #     interface=["CustomizedTest"],
-    #     atol=1e-4,
-    #     rtol=1e-3,
-    #     atol_half=1e-4,
-    #     rtol_half=1e-3,
-
-    #     para=dict(
-    #         lr=[0.1, 0.1],
-    #         beta1=[0.9, 0.8],
-    #         beta2=[0.99, 0.88],
-    #         eps=[1e-08, 1e-09],
-    #         step=[1, 4],
-    #         weight_decay=[0, 0.1],
-    #         amsgrad=[False, True],
-    #     ),
-    #     tensor_para=dict(
-    #         dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
-    #         args=[
-    #             {
-    #                 "ins": ['param', 'param_grad'],
-    #                 "shape": [(2, 3, 16), (4, 32, 7, 7)],
-    #                 "gen_fn": Genfunc.rand,
-    #             },
-    #             {
-    #                 "ins": ['exp_avg', 'exp_avg_sq', 'max_exp_avg_sq'],
-    #                 "shape": [(2, 3, 16), (4, 32, 7, 7)],
-    #                 "gen_fn": Genfunc.zeros,
-    #             },
-    #         ]
-    #     ),
-    # ),
+    # FXIME adamw、adam输出精度不一致
+    'adam': dict(
+        name=['adam', 'adamw'],
+        interface=["CustomizedTest"],
+        atol=1e-4,
+        rtol=1e-3,
+        atol_half=1e-4,
+        rtol_half=1e-3,
+        para=dict(
+            # lr=[0, -0.2, 2, 0.001, 0.1, 3.2, -2, 0],
+            # beta1=[0, -1, 0.004, 0.9, 0.8, -2, 4.3, 0],
+            # beta2=[0.3, 0, -2, 0.99, 0.88, 1, -4, 0],
+            # eps=[-1e-02, 0, 1e-2, 1e-08, 1e-09, 0, 2, 1e-4],
+            # step=[3, 2, 0, 1, 4, 2, 4, 5],
+            # weight_decay=[-0.2, 0, 2, 0, 0.1, 2.5, 0, -3],
+            # amsgrad=[False, True, True, False, True, False, True, True],
+            lr=[0, 3.2, -2, 0],
+            beta1=[0, -2, 4.3, 0],
+            beta2=[0.3, 1, -4, 0],
+            eps=[-1e-02, 0, 2, 1e-4],
+            step=[3, 2, 4, 5],
+            weight_decay=[-0.2, 2.5, 0, -3],
+            amsgrad=[False, False, True, True],
+        ),
+        tensor_para=dict(
+            dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
+            args=[
+                {
+                    "ins": ['param', 'param_grad'],
+                    # "shape": [(), (16,), (16, 8), (2, 3, 16), (4, 32, 7, 7),
+                    #           (0,), (4, 0), (12, 0, 9)],
+                    "shape": [(), (0,), (4, 0), (12, 0, 9)],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ['exp_avg', 'exp_avg_sq', 'max_exp_avg_sq'],
+                    # "shape": [(), (16,), (16, 8), (2, 3, 16), (4, 32, 7, 7),
+                    #           (0,), (4, 0), (12, 0, 9)],
+                    "shape": [(), (0,), (4, 0), (12, 0, 9)],
+                    "gen_fn": Genfunc.randn,
+                },
+            ]
+        ),
+    ),
 
     # FIXME conv_transpose2d特定参数组合，反向传播失败
     'conv_transpose2d': dict(
@@ -5043,23 +5056,25 @@ diopi_configs = {
         atol_half=1e-4,
         rtol_half=1e-3,
         para=dict(
-            lr=[0.1, 0.1],
-            rho=[0.9, 0.88],
-            eps=[1e-6, 1e-6],
-            weight_decay=[0, 0.1],
+            lr=[1.0, 0, -0.5, 0.1, 0.1, 2.3, -2, 0],
+            rho=[-1, 1.2, 0, 0.9, 0.88, -3, 0.5, 0],
+            eps=[1e-2, 0, -1e-4, 1e-6, 1e-6, 0, 1e-4, -1e-6],
+            weight_decay=[1.2, 0.5, -1.3, 0, 0.1, 0.5, 0, -1.2],
         ),
         tensor_para=dict(
             dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "shape": [(2, 3, 16), (4, 32, 7, 7)],
-                    "gen_fn": Genfunc.rand,
+                    "shape": [(), (16,), (16, 8), (2, 3, 16), (4, 32, 7, 7),
+                              (0,), (4, 0), (12, 0, 9)],
+                    "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ['square_avg', 'acc_delta'],
-                    "shape": [(2, 3, 16), (4, 32, 7, 7)],
-                    "gen_fn": Genfunc.zeros,
+                    "shape": [(), (16,), (16, 8), (2, 3, 16), (4, 32, 7, 7),
+                              (0,), (4, 0), (12, 0, 9)],
+                    "gen_fn": Genfunc.randn,
                 },
             ]
         ),
@@ -5073,25 +5088,27 @@ diopi_configs = {
         atol=1e-5,
         rtol=1e-3,
         para=dict(
-            lr=[0.1, 0.01],
-            alpha=[0.9, 0.99],
-            eps=[1e-6, 1e-8],
-            weight_decay=[0, 0.1],
-            momentum=[0, 0.1],
-            centered=[False, True],
+            lr=[0, 1.2, -0.05, 0.1, 0.01, 0, 2, 2.3],
+            alpha=[-0.3, 0, 1.2, 0.9, 0.99, 3, 0, 0.4],
+            eps=[1e-2, 0, -1e-4, 1e-6, 1e-8, 0, 1e-4, -1e-6],
+            weight_decay=[1.2, 0.5, -1.3, 0, 0.1, 0.5, 0, -1.2],
+            momentum=[-2, 0.3, 1, 0, 0.1, 0.05, -3, 0],
+            centered=[True, False, True, False, True, True, False, True],
         ),
         tensor_para=dict(
             dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "shape": [(2, 3, 16), (4, 32, 7, 7)],
+                    "shape": [(), (16,), (16, 8), (2, 3, 16), (4, 32, 7, 7),
+                              (0,), (4, 0), (12, 0, 9)],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ['square_avg', 'grad_avg', 'momentum_buffer'],
-                    "shape": [(2, 3, 16), (4, 32, 7, 7)],
-                    "gen_fn": Genfunc.zeros,
+                    "shape": [(), (16,), (16, 8), (2, 3, 16), (4, 32, 7, 7),
+                              (0,), (4, 0), (12, 0, 9)],
+                    "gen_fn": Genfunc.randn,
                 },
             ]
         ),
