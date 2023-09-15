@@ -13,7 +13,7 @@ namespace ascend {
 
 extern "C" {
 
-diopiError_t logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other, char* logicOp) {
+diopiError_t logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other, const char* logicOp) {
     diopiDtype_t inputDtype, otherDtype;
     diopiGetTensorDtype(input, &inputDtype);
     diopiGetTensorDtype(other, &otherDtype);
@@ -22,11 +22,11 @@ diopiError_t logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConst
     return diopiSuccess;
 }
 
-diopiError_t logicInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, char* logicOp) {
+diopiError_t logicInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, const char* logicOp) {
     return logic(ctx, input, input, other, logicOp);
 }
 
-diopiError_t logicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other, char* logicOp) {
+diopiError_t logicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other, const char* logicOp) {
     diopiDtype_t inputDtype, otherDtype;
     diopiGetTensorDtype(input, &inputDtype);
     otherDtype = other->stype;
@@ -43,7 +43,7 @@ diopiError_t logicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     return diopiSuccess;
 }
 
-diopiError_t logicInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, char* logicOp) {
+diopiError_t logicInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, const char* logicOp) {
     return logicScalar(ctx, input, input, other, logicOp);
 }
 

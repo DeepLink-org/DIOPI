@@ -25,7 +25,7 @@ Checks: '
   -modernize-use-using,
   -modernize-use-trailing-return-type,
   -modernize-use-nodiscard,
-  -modernize-avoid-c-arrays
+  -modernize-avoid-c-arrays,
   performance-*,
   -performance-noexcept-move-constructor,
   -performance-unnecessary-value-param,

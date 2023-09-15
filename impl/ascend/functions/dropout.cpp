@@ -24,7 +24,7 @@ aclDataType dtypeConvertor(diopiDtype_t type) {
 
 extern "C" {
 DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p,
-                                    bool train) {
+                                    bool train, diopiGeneratorHandle_t generator) {
     if (train) {
         diopiTensorHandle_t maskTempTensor;
 
@@ -37,14 +37,15 @@ DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_
         diopiSize_t inputSize;
         diopiGetTensorShape(input, &inputSize);
 
-        int64_t offsetList[2] = {0, 0};
+        auto pair = getSeedAndOffset(ctx, generator, 10);
+        int64_t offsetList[2] = {0, pair.second};
         diopiSize_t offset = arrayToDiopiSize(offsetList, 2);
 
         float prob = 1. - p;
         AclOpRunner<5, 1, dtypeConvertor>("StatelessDropOutGenMask", ctx)
             .addConstInput(inputSize)
             .addConstInput(prob, diopi_dtype_float32)
-            .addConstInput(0, diopi_dtype_int32)
+            .addConstInput(pair.first, diopi_dtype_int32)
             .addConstInput(0, diopi_dtype_int32)
             .addConstInput(offset)
             .addOutput(maskTempTensor)
@@ -55,7 +56,6 @@ DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_
             .addConstInput(prob, diopi_dtype_float32)
             .addOutput(out)
             .run();
-
     } else {
         diopiCopyInp(ctx, input, out);
     }

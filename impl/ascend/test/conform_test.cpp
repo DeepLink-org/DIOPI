@@ -5,6 +5,7 @@
  *
  *************************************************************************************************/
 
+#include <conform_test.h>
 #include <diopi/diopirt.h>
 
 #include <cstdio>
@@ -30,41 +31,45 @@ void device_free(void* ptr) {
     }
 }
 
-int32_t device_make_stream(diopiStreamHandle_t* stream_handle_ptr) {
-    CALL_ACLRT(aclrtCreateStream(reinterpret_cast<aclrtStream*>(stream_handle_ptr)));
+int32_t device_make_stream(diopiStreamHandle_t* streamHandlePtr) {
+    CALL_ACLRT(aclrtCreateStream(reinterpret_cast<aclrtStream*>(streamHandlePtr)));
     return diopiSuccess;
 }
 
-int32_t device_destroy_stream(diopiStreamHandle_t stream_handle) {
-    CALL_ACLRT(aclrtDestroyStream(reinterpret_cast<aclrtStream>(stream_handle)));
+int32_t device_destroy_stream(diopiStreamHandle_t streamHandle) {
+    CALL_ACLRT(aclrtDestroyStream(reinterpret_cast<aclrtStream>(streamHandle)));
     return diopiSuccess;
 }
 
-int32_t device_synchronize_stream(diopiStreamHandle_t stream_handle) {
-    CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream_handle)));
+int32_t device_synchronize_stream(diopiStreamHandle_t streamHandle) {
+    CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(streamHandle)));
     return diopiSuccess;
 }
 
-int32_t device_memcpy_h2d_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
-    CALL_ACLRT(aclrtMemcpyAsync(dst, bytes, src, bytes, ACL_MEMCPY_HOST_TO_DEVICE, reinterpret_cast<aclrtStream>(stream_handle)));
+int32_t device_memcpy_h2d_async(diopiStreamHandle_t streamHandle, void* dst, const void* src, uint64_t bytes) {
+    if (nullptr != dst && nullptr != src) {
+        CALL_ACLRT(aclrtMemcpyAsync(dst, bytes, src, bytes, ACL_MEMCPY_HOST_TO_DEVICE, reinterpret_cast<aclrtStream>(streamHandle)));
+    }
     return diopiSuccess;
 }
 
-int32_t device_memcpy_d2h_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
-    CALL_ACLRT(aclrtMemcpyAsync(dst, bytes, src, bytes, ACL_MEMCPY_DEVICE_TO_HOST, reinterpret_cast<aclrtStream>(stream_handle)));
+int32_t device_memcpy_d2h_async(diopiStreamHandle_t streamHandle, void* dst, const void* src, uint64_t bytes) {
+    if (nullptr != dst && nullptr != src) {
+        CALL_ACLRT(aclrtMemcpyAsync(dst, bytes, src, bytes, ACL_MEMCPY_DEVICE_TO_HOST, reinterpret_cast<aclrtStream>(streamHandle)));
+    }
     return diopiSuccess;
 }
 
-int32_t device_memcpy_d2d_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
-    CALL_ACLRT(aclrtMemcpyAsync(dst, bytes, src, bytes, ACL_MEMCPY_DEVICE_TO_DEVICE, reinterpret_cast<aclrtStream>(stream_handle)));
+int32_t device_memcpy_d2d_async(diopiStreamHandle_t streamHandle, void* dst, const void* src, uint64_t bytes) {
+    CALL_ACLRT(aclrtMemcpyAsync(dst, bytes, src, bytes, ACL_MEMCPY_DEVICE_TO_DEVICE, reinterpret_cast<aclrtStream>(streamHandle)));
     return diopiSuccess;
 }
 
 int32_t initLibrary() {
-    CALL_ACLRT(aclInit(NULL));
+    CALL_ACLRT(aclInit(nullptr));
     CALL_ACLRT(aclrtSetDevice(0));
-    aclrtContext context_;
-    CALL_ACLRT(aclrtCreateContext(&context_, 0));
+    aclrtContext context;
+    CALL_ACLRT(aclrtCreateContext(&context, 0));
     return diopiSuccess;
 }
 

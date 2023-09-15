@@ -5,11 +5,15 @@ on:
     branches:
       - main
       - dev_v0.25
-      - wgs/*
   pull_request:
     branches:
       - main
       - dev_v0.25
+    paths-ignore:
+      - "**.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".git**"
+      - "CODE_OF_CONDUCT**"
 
 env:
   NFS_PATH: '/mnt/cache/share/parrotsci/github/cibuild/${{ github.repository }}'
@@ -38,6 +42,8 @@ jobs:
   Rsync:
     name: Rsync code
     runs-on: tps-diopi-ci
+    outputs:
+      output: ${{ steps.set-run-vars.outputs.RUN_RESULT }}
     steps:
       - name: clone repo
         run: |
@@ -47,8 +53,15 @@ jobs:
           else
           git checkout ${{ github.sha }}
           fi
-          ls
           git submodule update --init --recursive
+      - name: Set output variables
+        id: set-run-vars
+        env:
+          GITHUB_TOKEN: "${{ secrets.CI_TOKEN }}"
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number || 0 }}"
+          cd ${GITHUB_WORKSPACE}/DIOPI && RUN_RESULT=$(python3 scripts/filter_ci.py ${PR_NUMBER})
+          echo "RUN_RESULT=$RUN_RESULT" >> "$GITHUB_OUTPUT"
       - name: Rsync to Server
         run: |
           ssh ${CLUSTER_1988} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
@@ -108,6 +121,7 @@ jobs:
     name: Build-Camb
     runs-on: tps-diopi-ci
     needs: [Rsync]
+    if: ${{ contains( needs.Rsync.outputs.output, 'CAMB' ) }}
     steps:
       - name: Build
         run: |
@@ -134,6 +148,7 @@ jobs:
     name: Build-Mmcv-Ext-Nvidia
     runs-on: tps-diopi-ci
     needs: [Rsync]
+    if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
     steps:
       - name: build
         run: |
@@ -149,6 +164,7 @@ jobs:
     name: Op-Test-Mmcv-Ext-Nvidia
     runs-on: tps-diopi-ci
     needs: [Build-Mmcv-Ext-Nvidia]
+    if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
     steps:
       - name: test
         run: |
@@ -182,6 +198,7 @@ jobs:
     name: Op-Test-Nvidia
     runs-on: tps-diopi-ci
     needs: Gen-Data
+    if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
     env:
       run_test: "python"
     steps:
@@ -215,6 +232,7 @@ jobs:
     name: Rt-Test-Nvidia
     runs-on: tps-diopi-ci
     needs: Build-Nvidia
+    if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
     steps:
       - name: test
         run: |
@@ -230,6 +248,7 @@ jobs:
     name: Op-Test-Camb
     runs-on: tps-diopi-ci
     needs: [Gen-Data, Build-Camb]
+    if: ${{ contains( needs.Rsync.outputs.output, 'CAMB' ) }}
     env:
       run_test: "python"
     steps:
@@ -254,6 +273,7 @@ jobs:
     name: Rt-Test-Camb
     runs-on: tps-diopi-ci
     needs: Build-Camb
+    if: ${{ contains( needs.Rsync.outputs.output, 'CAMB' ) }}
     steps:
       - name: test
         run: |
@@ -268,22 +288,47 @@ jobs:
     name: Build-Ascend
     runs-on: tps-ascend-ci
     needs: [Rsync]
+    if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
     steps:
       - name: build
         run: |
           set -e
           cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export CI=true
-          echo "test"
+          export DIOPI_BUILD_TESTRT=ON
+          cd impl && sh scripts/build_impl.sh ascend
+      - name: clang-tidy
+        run: |
+          set -e
+          cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+          cd impl && bash scripts/ci_script.sh clang-tidy || ( cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
 
-  Test-Ascend:
-    name: Test-Ascend
+  Op-Test-Ascend:
+    name: Op-Test-Ascend
     runs-on: tps-ascend-ci
-    needs: [Build-Ascend]
+    needs: [Gen-Data, Build-Ascend]
+    if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
+    env:
+      run_test: "python"
     steps:
       - name: test
         run: |
           set -e
-          cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+          cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
           export CI=true
-          echo "test"
+          rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
+          cd diopi_test/python && ${run_test} main.py --mode run_test --impl_folder ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/ascend/ \
+          && cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+  
+  Rt-Test-Ascend:
+    name: Rt-Test-Ascend
+    runs-on: tps-ascend-ci
+    needs: Build-Ascend
+    if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
+    steps:
+      - name: test
+        run: |
+          set -e
+          export CI=true
+          cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+          cd diopi_test/python && python main.py --mode utest

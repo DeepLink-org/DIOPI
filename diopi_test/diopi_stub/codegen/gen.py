@@ -31,11 +31,13 @@ def prepare():
 
     _cur_dir = os.path.dirname(os.path.abspath(__file__))
     options = parser.parse_args()
-    source_dir = os.path.join(_cur_dir, '../../proto/include/diopi/')
+    source_dir = os.path.join(_cur_dir, '../proto/include/diopi/')
     output_dir = os.path.join(_cur_dir, '../csrc')
+    diopilib_dir = os.path.join(_cur_dir, '../../python/diopilib/')
     device = options.device
     options = dict(source_dir=source_dir,
                    output_dir=output_dir,
+                   diopilib_dir=diopilib_dir,
                    device=device)
 
     return options
@@ -176,8 +178,15 @@ def declare_outputs(adaptor_fm):
     adaptor_fm.will_write('export_functions.cpp')
 
 
+def lib_init(diopilib_dir):
+    from lib_init_template import diopilib_init_tmp
+    with open(diopilib_dir + '__init__.py', 'w') as f:
+        f.write(diopilib_init_tmp)
+
+
 def gen_all_codes():
     dirs = prepare()
+    lib_init(dirs.get('diopilib_dir', '.'))
     functions_fm = FileManager(dirs.get('output_dir', '.'))
     declare_outputs(functions_fm)
     gen_functions(dirs, functions_fm)

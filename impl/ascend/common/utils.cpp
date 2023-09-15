@@ -171,9 +171,10 @@ aclDataType getAclDataType(diopiDtype_t type) {
             return ACL_COMPLEX64;
         case diopi_dtype_complex128:
             return ACL_COMPLEX128;
+        default:
+            check_args(false, "acl not support dioptDtype_t:%d", type);
+            return ACL_DT_UNDEFINED;
     }
-    check_args(false, "acl not support dioptDtype_t:%d", type);
-    return ACL_DT_UNDEFINED;
 }
 
 aclDataType getAclDataType(diopiConstTensorHandle_t th) {
@@ -238,16 +239,6 @@ bool isContiguous(diopiConstTensorHandle_t tensor, diopiMemoryFormat_t format) {
     }
     return true;
 }
-
-class Element {
-public:
-    int64_t value;
-    int64_t index;
-    Element(int value, int index) : value(value), index(index) {}
-};
-
-// Custom comparator to sort elements based on their values
-bool compare(Element& a, Element& b) { return a.value > b.value; }
 
 std::vector<int64_t> getBaseShape(diopiConstTensorHandle_t src) {
     std::vector<int64_t> baseShapeVec;
