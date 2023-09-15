@@ -19,16 +19,13 @@
 
 #include "diopi_helper.hpp"
 
-namespace impl {
-namespace camb {
-
-#define DIOPI_CALLCNNL(Expr)                                                                                                        \
-    do {                                                                                                                            \
-        ::cnnlStatus_t ret = Expr;                                                                                                  \
-        if (ret != ::CNNL_STATUS_SUCCESS) {                                                                                         \
-            setLastErrorString("cnnl error %d: %s in %s at %s:%d\n", ret, ::cnnlGetErrorString(ret), __func__, __FILE__, __LINE__); \
-            return diopiErrorOccurred;                                                                                              \
-        }                                                                                                                           \
+#define DIOPI_CALLCNNL(Expr)                                                                                                                    \
+    do {                                                                                                                                        \
+        ::cnnlStatus_t ret = Expr;                                                                                                              \
+        if (ret != ::CNNL_STATUS_SUCCESS) {                                                                                                     \
+            impl::camb::setLastErrorString("cnnl error %d: %s in %s at %s:%d\n", ret, ::cnnlGetErrorString(ret), __func__, __FILE__, __LINE__); \
+            return diopiErrorOccurred;                                                                                                          \
+        }                                                                                                                                       \
     } while (false);
 
 #define DIOPI_CHECKCNNL(Expr)                                                                            \
@@ -39,6 +36,9 @@ namespace camb {
             std::abort();                                                                                \
         }                                                                                                \
     } while (false);
+
+namespace impl {
+namespace camb {
 
 class CnnlDataType final {
 public:

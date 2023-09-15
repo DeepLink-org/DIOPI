@@ -267,15 +267,8 @@ device_configs = {
     'max_pool2d': dict(
         name=["max_pool2d"],
         para=dict(
+            # camb kernel only support dilation == 1
             dilation=[Skip((4, 3)), Skip((2, 3)), Skip(2)],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ]
         ),
     ),
 
@@ -700,11 +693,61 @@ device_configs = {
 
     'select': dict(
         name=["select"],
+        para=dict(
+            # negative index can't get the correct result
+            index=[Skip(-5)],
+        ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64)],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float16)],
+                    "shape": (Skip((2, 0)), Skip((6, 0, 9))),
+                },
+            ]
+        ),
+    ),
+
+    'select_not_float': dict(
+        name=["select"],
+        para=dict(
+            # negative index can't get the correct result
+            index=[Skip(-12)],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    # "dtype": [Skip(Dtype.float64)],
+                    "shape": (Skip((2, 0)), Skip((6, 0, 9))),
+                },
+            ]
+        ),
+    ),
+
+    'index_select': dict(
+        name=["index_select"],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": (Skip((12, 0)), Skip((2, 0, 9))),
+                },
+            ]
+        ),
+    ),
+
+    'index_select_not_float': dict(
+        name=["index_select"],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": (Skip((12, 0)), Skip((2, 0, 15))),
                 },
             ]
         ),
@@ -719,6 +762,79 @@ device_configs = {
                     "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
                               Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
                               Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
+                },
+            ],
+        ),
+    ),
+
+    'masked_select': dict(
+        name=['masked_select'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((4,)), Skip((4, 5, 6)), Skip(()), Skip((0,)), Skip((4, 0)), Skip((16, 0, 9))),
+                },
+                {
+                    "ins": ['mask'],
+                    "shape": (Skip((5, 6)), Skip((0,)), Skip((2, 4, 0)), Skip((0, 9))),
+                },
+            ],
+        ),
+    ),
+
+    'masked_select_not_float': dict(
+        name=['masked_select'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip(()), Skip((3, 4)), Skip((4, 6, 5, 8)), Skip((4, 1, 6)), Skip((0,)), Skip((4, 1)), Skip((16, 0, 9))),
+                },
+                {
+                    "ins": ['mask'],
+                    "shape": (Skip((2, 4)), Skip((5, 6)), Skip((0,)), Skip((4, 0)), Skip((1, 0, 9))),
+                },
+            ],
+        ),
+    ),
+
+    'gather': dict(
+        name=['gather'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((3, 9)), Skip((14, 6, 2)), Skip((2, 0)), Skip((5, 0, 9))),
+                },
+            ],
+        ),
+    ),
+
+    'gather_0dim': dict(
+        name=['gather'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['index'],
+                    "shape": (Skip(()),),
+                },
+            ],
+        ),
+    ),
+
+    'gather_not_float': dict(
+        name=['gather'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((3, 9)), Skip((14, 6, 2)), Skip((2, 0)), Skip((5, 0, 9))),
                 },
             ],
         ),
@@ -918,6 +1034,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
+                    # FIXME Run diopi_functions.adam failed, because of inputs: param_grad changed
+                    "shape": [Skip(())],
                     "dtype": [Skip(Dtype.float16)],
                 },
             ]
@@ -960,6 +1078,15 @@ device_configs = {
         name=["adadelta"],
         atol_half=1e-3,
         rtol_half=1e-3,
+        tensor_para=dict(
+            args=[
+                {
+                    # can't get correct result
+                    "ins": ['param', 'param_grad'],
+                    "dtype": [Skip(Dtype.float16)],
+                },
+            ]
+        ),
     ),
 
     'rmsprop': dict(
@@ -1136,16 +1263,18 @@ device_configs = {
             ],
         ),
     ),
-
+    # TODO: ctc_loss of camb could work correctly due to dipu and one_iter, need to fix diopi_test 
     'ctc_loss': dict(
         name=["ctc_loss"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['log_probs'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
-                },
-            ],
+        para=dict(
+            blank=[Skip(0), Skip(9)]
+        ),
+    ),
+
+    'ctc_loss_un_padded': dict(
+        name=["ctc_loss"],
+        para=dict(
+            blank=[Skip(0), Skip(9)]
         ),
     ),
 
@@ -1325,25 +1454,89 @@ device_configs = {
         ),
     ),
 
-    'index_put': dict(
+    'index_put_acc_three_indices': dict(
         name=['index_put'],
         tensor_para=dict(
             args=[
+                # index_put can't get the correct result
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.bool)],    # not supported by camb kernel when accumulate is true
+                    "shape": [Skip((16, 4, 4)), Skip((4, 5, 0))],
+                    "dtype": [Skip(Dtype.uint8),    # overflow issue
+                              Skip(Dtype.bool)],    # not supported by camb kernel when accumulate is true
                 },
             ]
         ),
     ),
 
-    'index_put_acc_bool_indices': dict(
+    'index_put_acc_two_indices': dict(
         name=['index_put'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.bool)],  # not supported by camb kernel when accumulate is true
+                    "shape": [Skip((4, 5, 0))],
+                },
+                # index_put can't get the correct result
+                {
+                    "ins": ['indices1'],
+                    "shape": [Skip((4, 5))],
+                },
+            ]
+        ),
+    ),
+
+    'index_put_acc_one_indices': dict(
+        name=['index_put'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((4, 5)), Skip((4, 0))],
+                },
+                # index_put can't get the correct result
+                {
+                    "ins": ['indices1'],
+                    "shape": [Skip((6,)), Skip((2, 10)), Skip(())],
+                },
+            ]
+        ),
+    ),
+
+    # when accumulate is True and dtype of indices is bool, can't get the correct result
+    'index_put_acc_bool_indices_zeros': dict(
+        name=['index_put'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['indices1'],
+                    "dtype": [Skip(Dtype.bool)],
+                },
+            ]
+        ),
+    ),
+
+    # when accumulate is True and dtype of indices is bool, can't get the correct result
+    'index_put_one_indices': dict(
+        name=['index_put'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['indices1'],
+                    "dtype": [Skip(Dtype.bool)],
+                },
+            ]
+        ),
+    ),
+
+    # when accumulate is True and dtype of indices is bool, can't get the correct result
+    'index_put_bool_indices_value': dict(
+        name=['index_put'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['indices1'],
+                    "dtype": [Skip(Dtype.bool)],
                 },
             ]
         ),

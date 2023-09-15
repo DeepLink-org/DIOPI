@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "../cnnl_helper.hpp"
+#include "../common/float16.hpp"
 
 namespace impl {
 namespace camb {
@@ -27,7 +28,7 @@ extern "C" diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHand
         if (to != nullptr) {
             max = *to - 1;
         } else {
-            max = FLT_MAX;
+            max = CNNL_DTYPE_FLOAT ? FLT_MAX : std::numeric_limits<half_float::half>::max();
         }
         diopiTensorHandle_t stateHandle = nullptr;
         DIOPI_CALL(diopiGeneratorGetState(ctx, generator, &stateHandle));

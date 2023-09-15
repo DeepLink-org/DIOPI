@@ -52,6 +52,8 @@ typedef enum {
     diopi_device = 1,
 } diopiDevice_t;
 
+// In order to meet the requirements of common dtype inference in diopi_test, all members in this enumeration should be assigned values in the order of
+// increasing dtype precision
 typedef enum {
     diopi_dtype_int8 = 0,
     diopi_dtype_uint8 = 1,
@@ -136,6 +138,13 @@ extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiRequireBuffer(diopiContext
 
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGeneratorGetState(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t th, diopiTensorHandle_t* data);
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGeneratorSetState(diopiGeneratorHandle_t th, diopiConstTensorHandle_t state);
+
+/**
+ * operations to manipulate profiler record objects.
+ * Call diopiRecordStart at the beginning of code that you want to profile and call diopiRecordEnd at the end.
+ **/
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiRecordStart(const char* record_name, void** record);
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiRecordEnd(void** record);
 
 #if defined(__cplusplus)
 }

@@ -3201,7 +3201,8 @@ def copy_(input, other) -> Tensor:
 
 def gather(input, dim, index):
     assert isinstance(dim, int), "dim must be int"
-    assert len(input.size().data) == len(index.size().data), "input and index must have the same number of dimensions"
+    if len(input.size().data) > 1 and len(index.size().data) > 1:
+        assert len(input.size().data) == len(index.size().data), "input and index must have the same number of dimensions"
     out = Tensor(index.size().data, input.get_dtype())
     func = check_function("diopiGather")
     ret = func(input.context(), out, input, dim, index)
@@ -3296,13 +3297,13 @@ def ctc_loss_backward(log_probs, grad_outputs, targets, input_lengths, target_le
     return {"log_probs": log_softmax_backward(log_probs, [grad_input], log_probs_, 2)}
 
 
-def index_put(input, values, indices1, indices2=None, accumulate=False, inplace=False):
+def index_put(input, values, indices1, indices2=None, indices3=None, accumulate=False, inplace=False):
+    c_tensors = [TensorP(indices1)]
     if indices2 is not None:
-        c_tensors = [TensorP(indices1), TensorP(indices2)]
-        indices_counts = 2
-    else:
-        c_tensors = [TensorP(indices1)]
-        indices_counts = 1
+        c_tensors.append(TensorP(indices2))
+    if indices3 is not None:
+        c_tensors.append(TensorP(indices3))
+    indices_counts = len(c_tensors)
     call = "diopiIndexPut"
     out = raw_like(input)
     if inplace:
