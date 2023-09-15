@@ -137,8 +137,8 @@ public:
     void* data();
     const void* data() const;
 
-    diopiTensorHandle_t tensorHandle();
-    diopiConstTensorHandle_t tensorHandle() const;
+    diopiTensorHandle_t tensorHandle() { return tensor_; }
+    diopiConstTensorHandle_t tensorHandle() const { return tensor_; }
 
     bool isSame(DiopiTensor t) { return this->tensorHandle() == t.tensorHandle(); }
 
