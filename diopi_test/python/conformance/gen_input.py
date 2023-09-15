@@ -5,6 +5,7 @@ from functools import partial
 
 from generator import Genfunc
 from conformance.utils import logger
+from conformance.db_operation import db_conn
 
 
 class GenPolicy:
@@ -19,7 +20,7 @@ class GenInputData(object):
     r'''
     '''
     @staticmethod
-    def run(diopi_item_config_path='diopi_case_items.cfg', input_path='data/inputs/', fname='all_ops'):
+    def run(diopi_item_config_path='diopi_case_items.cfg', input_path='data/inputs/', fname='all_ops', model_name='diopi'):
         if not os.path.exists(input_path):
             os.makedirs(input_path)
 
@@ -29,10 +30,14 @@ class GenInputData(object):
         # XXX save case number in glob_var
         case_counter = 0
 
+        case_items = []
         for case_name in all_cfg_dict:
             each_cfg_dict = all_cfg_dict[case_name]
             func_name = each_cfg_dict["name"]
+            item = {'case_name': case_name, 'model_name': model_name,
+                    'func_name': func_name, 'case_config': each_cfg_dict, 'result': 'skipped'}
             if fname not in [func_name, 'all_ops']:
+                case_items.append(item)
                 continue
             # logger.info(f"diopi_functions.{func_name} [config] {each_cfg_dict}")
             try:
@@ -41,8 +46,13 @@ class GenInputData(object):
                     pickle.dump(case_dict, f)
                 case_counter += 1
                 logger.info(f"Generate benchmark input data for diopi_functions.{func_name} [{case_name}]")
+                item['result'] = 'passed'
             except Exception as err_msg:
                 logger.error(f'Generate input data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}')
+                item.update({'result': 'failed', 'err_msg': err_msg})
+            finally:
+                case_items.append(item)
+        db_conn.insert_benchmark_case(case_items)
 
         logger.info(f"Generate test cases number for input data: {case_counter}")
         if case_counter == 0:

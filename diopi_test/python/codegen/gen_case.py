@@ -7,6 +7,9 @@ import numpy as np
 from collections import defaultdict
 from codegen.filemanager import FileManager
 from codegen.case_template import CaseTemplate
+from conformance.db_operation import db_conn
+from conformance.utils import gen_pytest_case_nodeid
+
 
 class GenConfigTestCase(object):
     def __init__(self, module='diopi', config_path='./cache/device_case_items.cfg', tests_path='./gencases/diopi_case') -> None:
@@ -61,7 +64,7 @@ class GenTestCase(object):
         self._suite_name, self._func_name = suite_key.split('::')
         self._case_set = case_set
         self._fm = FileManager(module_path)
-    
+
     def _set_fm_write(self):
         mt_name = f'test_{self._module}_{self._suite_name}_{self._func_name}.py'
         self._fm.will_write(mt_name)
@@ -71,6 +74,7 @@ class GenTestCase(object):
         test_diopi_func_name = self._func_name
 
         test_case_items = []
+        all_case_items = []
         for ck, cv in self._case_set.items():
             # forward process
             case_config_name = ck.split('::')[1]
@@ -130,6 +134,14 @@ class GenTestCase(object):
 
             test_case_items.append(test_function_templ)
 
+            nodeid = gen_pytest_case_nodeid(self._fm.output_dir,
+                                             f'test_{self._module}_{self._suite_name}_{self._func_name}.py',
+                                             f'TestM{self._module}S{self._suite_name}F{self._func_name}',
+                                             f'test_{func_case_name}')
+            item = {'case_name': ck, 'model_name': self._module, 'pytest_nodeid': nodeid,
+                    'func_name': self._func_name, 'case_config': cv, 'result': 'skipped'}
+            all_case_items.append(item)
+
         test_diopi_head_import = CaseTemplate.test_diopi_head_import.substitute(env=dict(
             test_diopi_function_module = test_diopi_function_module,
             test_diopi_func_name = test_diopi_func_name,
@@ -145,6 +157,8 @@ class GenTestCase(object):
 
         file_name = f'test_{self._module}_{self._suite_name}_{self._func_name}.py'
         self._fm.write(file_name, test_class_templ)
+
+        db_conn.will_insert_device_case(all_case_items)
 
 if __name__ == '__main__':
     gctc = GenConfigTestCase()

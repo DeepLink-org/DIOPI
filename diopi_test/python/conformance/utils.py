@@ -33,7 +33,7 @@ class Log(object):
 
         # create formatter
         formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            '%(asctime)s - %(name)s - %(filename)s - %(lineno)d - %(levelname)s - %(message)s')
 
         # add formatter to ch
         ch.setFormatter(formatter)
@@ -75,8 +75,8 @@ def wrap_logger_debug(func):
 
 logger = Log(default_cfg_dict['log_level']).get_logger()
 is_ci = os.getenv('CI', 'null')
-logger.error = wrap_logger_error(logger.error)
-logger.debug = wrap_logger_debug(logger.debug)
+# logger.error = wrap_logger_error(logger.error)
+# logger.debug = wrap_logger_debug(logger.debug)
 
 
 def write_report():
@@ -224,3 +224,14 @@ def get_data_from_file(data_path, test_path, name=""):
     else:
         f.close()
     return data
+
+
+def gen_pytest_case_nodeid(dir, file, class_, func):
+    """e.g. 
+    dir: ./gencases/diopi_case
+    file: test_diopi_adadelta_adadelta.py
+    class_: TestMdiopiSadadeltaFadadelta
+    func: test_adadelta_0
+    ->
+    gencases/diopi_case/test_diopi_adadelta_adadelta.py::TestMdiopiSadadeltaFadadelta::test_adadelta_0"""
+    return f'{os.path.join(os.path.normpath(dir), file)}::{class_}::{func}'

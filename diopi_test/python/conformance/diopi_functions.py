@@ -13,7 +13,7 @@ from .diopi_runtime import (Sizes, Scalar, Tensor, TensorP, Dtype, diopiReductio
                             Generator)
 from .diopi_runtime import raw_like, int_types, float_types, get_last_error
 from .utils import logger
-from .global_settings import glob_vars
+from conformance.global_settings import glob_vars
 
 
 GLOBAL_STATE = {}
@@ -51,6 +51,7 @@ def check_returncode(returncode, throw_exception=True):
 
 def check_function(fn_name):
     try:
+        glob_vars.cur_test_func = fn_name
         func = eval(f"diopilib.{fn_name}")
     except AttributeError as e:
         raise FunctionNotImplementedError(e.args)

@@ -7,6 +7,7 @@ import torchvision
 
 from gen_input import GenPolicy
 from conformance.utils import logger, get_data_from_file
+from conformance.db_operation import db_conn
 
 
 class CustomizedTest(object):
@@ -191,7 +192,8 @@ class GenOutputData(object):
     Generate output data for all functions by using torch and input data
     '''
     @staticmethod
-    def run(diopi_item_config_path='diopi_case_items.cfg', input_path='data/inputs/', output_path='data/outputs/', fname='all_ops'):
+    def run(diopi_item_config_path='diopi_case_items.cfg', input_path='data/inputs/',
+            output_path='data/outputs/', fname='all_ops', model_name='diopi'):
         if not os.path.exists(input_path):
             logger.error("Input data is not generated!")
             sys.exit(0)
@@ -206,9 +208,11 @@ class GenOutputData(object):
         case_counter = 0
         func_name_list = []  # make the info log once
 
+        case_items = []
         for case_name in all_cfg_dict:
             each_cfg_dict = all_cfg_dict[case_name]
             func_name = each_cfg_dict["name"]
+            item = {'case_name': case_name, 'model_name': model_name}
             if fname not in [func_name, 'all_ops']:
                 continue
             data_path = os.path.join(input_path, case_name)
@@ -221,9 +225,13 @@ class GenOutputData(object):
 
             try:
                 output, saved_grads = gen_tensor_obj.gen_data(input_)
+                item['result'] = 'passed'
             except Exception as err_msg:
                 logger.error(f'Generate output data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}')
+                item.update({'result': 'failed', 'err_msg': err_msg})
                 continue
+            finally:
+                case_items.append(item)
             if output is not None:
                 with open(os.path.join(output_path, case_name), "wb") as f:
                     pickle.dump(GenOutputData.to_numpy(output), f, protocol=4)
@@ -239,6 +247,8 @@ class GenOutputData(object):
                     func_signature = f"diopi_functions.{func_name}"
                     logger.info(f"Generate benchmark {logger_str} data for {func_signature}")
                     func_name_list.append(func_name)
+
+        db_conn.update_benchmark_case(case_items)
 
         logger.info(f"Generate test cases number for output data: {case_counter}")
         if case_counter == 0:

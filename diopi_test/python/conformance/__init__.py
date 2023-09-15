@@ -47,4 +47,5 @@ __all__ = [
     'diopiTensor',
     'float_types',
     'int_types',
+    'db_operation'
 ]

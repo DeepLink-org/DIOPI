@@ -14,8 +14,6 @@ from conformance.global_settings import glob_vars
 from conformance.model_list import model_list, model_op_list
 from configs import model_config
 from conformance.config_parser import ConfigParser
-from conformance.gen_input import GenInputData
-from conformance.gen_output import GenOutputData
 from conformance.collect_case import DeviceConfig, CollectCase
 
 
@@ -33,6 +31,8 @@ def parse_args():
     general_args = parser.add_argument_group('general')
     general_args.add_argument('--mode', type=str, default='test',
                               help='running mode, available options: gen_data, run_test and utest')
+    general_args.add_argument('--use_db', action='store_true',
+                              help='use database to save test data')
     general_args.add_argument('--get_model_list', action='store_true',
                                help='Whether return the supported model list')
     general_args.add_argument('--failure_debug_level', type=int, default=0,
@@ -63,6 +63,8 @@ def parse_args():
                                help='pytest case file or dir')
     run_test_args.add_argument('--html_report', action='store_true',
                                help='generate html report')
+    run_test_args.add_argument('--pytest_args', type=str,
+                               help='pytest args')
     run_test_args.add_argument('--filter_dtype', type=str, nargs='*',
                                help='The dtype in filter_dtype will not be processed')
 
@@ -72,6 +74,12 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
+
+    glob_vars.use_db = args.use_db
+    from conformance.db_operation import db_conn, BenchMarkCase, DeviceCase
+    from conformance.gen_input import GenInputData
+    from conformance.gen_output import GenOutputData
+    db_conn.init_db()
 
     if args.get_model_list:
         print(f"The supported model_list: {model_list}")
@@ -119,8 +127,10 @@ if __name__ == "__main__":
         cfg_parse.save()
         inputs_dir = os.path.join(cache_path, 'data/' + model_name + "/inputs")
         outputs_dir = os.path.join(cache_path, 'data/' + model_name + "/outputs")
-        GenInputData.run(diopi_case_item_path, inputs_dir, args.fname)
-        GenOutputData.run(diopi_case_item_path, inputs_dir, outputs_dir, args.fname)
+
+        db_conn.drop_case_table(BenchMarkCase)
+        GenInputData.run(diopi_case_item_path, inputs_dir, args.fname, model_name)
+        GenOutputData.run(diopi_case_item_path, inputs_dir, outputs_dir, args.fname, model_name)
 
         if args.impl_folder != '':
             device_name = os.path.basename(args.impl_folder)
@@ -146,12 +156,16 @@ if __name__ == "__main__":
         from codegen.gen_case import GenConfigTestCase
         if not os.path.exists(args.case_output_dir):
             os.makedirs(args.case_output_dir)
+        db_conn.drop_case_table(DeviceCase)
         gctc = GenConfigTestCase(module=model_name, config_path=args.cfg_path, tests_path=args.case_output_dir)
         gctc.gen_test_cases()
+        db_conn.insert_device_case()
     elif args.mode == 'run_test':
         pytest_args = [args.file_or_dir]
         if args.html_report:
             pytest_args.extend(['--report=report.html', '--title=DIOPI Test', '--template=2'])
+        if args.pytest_args is not None:
+            pytest_args.extend(args.pytest_args.split())
         pytest.main(pytest_args)
     elif args.mode == 'utest':
         call = "python3 -m pytest -vx tests"
