@@ -9,6 +9,13 @@
 
 namespace impl {
 namespace camb {
+
+#define REQUIRES_TENSOR_BY_DTYPE_OR_NOT(tensor1, tensor2, targetDtype)                                  \
+    DiopiTensor tensor1 = tensor2;                                                                      \
+    if (tensor2.defined() && tensor1.dtype() != targetDtype) {                                          \
+        tensor1 = requiresTensor(ctx, tensor1.shape(), targetDtype, diopiMemoryFormat_t::ChannelsLast); \
+    }
+
 DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                            diopiConstTensorHandle_t bias, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t invstd, float eps) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -24,27 +31,16 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
     auto dim = inputTr.dim();
     DIOPI_CHECK(dim >= 2 && dim <= 5, "Input dim is out of range");
     DIOPI_CHECK(dim == outTr.dim(), "Input dim != out dim");
-
-    // check the input dimension
-    if (3 == dim) {
-        inputTr.unsqueeze(3);
-        outTr.view(inputTr.shape());
-    }
-    if (2 == dim) {
-        inputTr.unsqueeze(2);
-        inputTr.unsqueeze(3);
-        outTr.view(inputTr.shape());
-    }
+    DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast), "inputTensor should be ChannelsLast")
+    DIOPI_CHECK(outTr.isContiguous(diopiMemoryFormat_t::ChannelsLast), "outTr should be ChannelsLast")
 
     // check the input dtype
     std::vector<DiopiTensor*> pTensors{&inputTr, &weightTr, &biasTr, &meanTr, &invstdTr};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
-    /* Transpose to channels last */
-    diopiMemoryFormat_t memoryFormat = inputTr.dim() == 4 ? diopiMemoryFormat_t::ChannelsLast : diopiMemoryFormat_t::ChannelsLast3d;
-    DIOPI_CALL(contiguous(ctx, inputTr, memoryFormat));
-    DiopiTensor outTmpTr = requiresTensor(ctx, outTr.shape(), inputTr.dtype(), memoryFormat);
+    // check the output dtype
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(outTmpTr, outTr, inputTr.dtype());
 
     // get descriptor
     cnnlTensorLayout_t layout = inputTr.dim() == 4 ? CNNL_LAYOUT_NHWC : CNNL_LAYOUT_NDHWC;
@@ -69,10 +65,8 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
                                           outputDesc.get(),
                                           outTmpTr.data()))
 
-    // channels last -> contiguous
-    DIOPI_CALL(contiguous(ctx, outTmpTr, diopiMemoryFormat_t::Contiguous));
-    // Copy back to origin
-    DIOPI_CALL(diopiCopyInp(ctx, outTmpTr.tensorHandle(), outTr.tensorHandle()));
+    // Copy back to origin, if required
+    DIOPI_CALL(dataTypeCast(ctx, outTr, outTmpTr));
 
     return diopiSuccess;
 }
