@@ -172,7 +172,7 @@ aclDataType getAclDataType(diopiDtype_t type) {
         case diopi_dtype_complex128:
             return ACL_COMPLEX128;
         default:
-            check_args(false, "acl not support dioptDtype_t:%d", type);
+            ASCEND_CHECK_ABORT(false, "acl not support dioptDtype_t:%d", type);
             return ACL_DT_UNDEFINED;
     }
 }
