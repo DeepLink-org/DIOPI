@@ -36,18 +36,18 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
     DIOPI_CHECK(dim == outTr.dim(), "Input dim != out dim");
 
     if (3 == dim) {
-        DIOPI_CHECK(inputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "inputTensor's memory format should be channelsLast");
-        DIOPI_CHECK(outputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "outputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "inputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(outTr.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "outputTensor's memory format should be channelsLast");
         layout = CNNL_LAYOUT_NLC;
         memoryFormat = diopiMemoryFormat_t::ChannelsLast1d;
     } else if (4 == dim) {
-        DIOPI_CHECK(inputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast), "inputTensor's memory format should be channelsLast");
-        DIOPI_CHECK(outputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast), "outputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast), "inputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(outTr.isContiguous(diopiMemoryFormat_t::ChannelsLast), "outputTensor's memory format should be channelsLast");
         layout = CNNL_LAYOUT_NHWC;
         memoryFormat = diopiMemoryFormat_t::ChannelsLast;
     } else if (5 == dim) {
-        DIOPI_CHECK(inputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "inputTensor's memory format should be channelsLast");
-        DIOPI_CHECK(outputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "outputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "inputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(outTr.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "outputTensor's memory format should be channelsLast");
         layout = CNNL_LAYOUT_NDHWC;
         memoryFormat = diopiMemoryFormat_t::ChannelsLast3d;
     } else {
