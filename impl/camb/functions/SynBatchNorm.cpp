@@ -31,8 +31,16 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
     auto dim = inputTr.dim();
     DIOPI_CHECK(dim >= 2 && dim <= 5, "Input dim is out of range");
     DIOPI_CHECK(dim == outTr.dim(), "Input dim != out dim");
-    DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast), "inputTensor should be ChannelsLast")
-    DIOPI_CHECK(outTr.isContiguous(diopiMemoryFormat_t::ChannelsLast), "outTr should be ChannelsLast")
+    if (dim == 2) {
+        DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "inputTensor should be ChannelsLast")
+        DIOPI_CHECK(outTr.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "outTr should be ChannelsLast")
+    } else if (dim == 3) {
+        DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast), "inputTensor should be ChannelsLast")
+        DIOPI_CHECK(outTr.isContiguous(diopiMemoryFormat_t::ChannelsLast), "outTr should be ChannelsLast")
+    } else {
+        DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "inputTensor should be ChannelsLast")
+        DIOPI_CHECK(outTr.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "outTr should be ChannelsLast")
+    }
 
     // check the input dtype
     std::vector<DiopiTensor*> pTensors{&inputTr, &weightTr, &biasTr, &meanTr, &invstdTr};
