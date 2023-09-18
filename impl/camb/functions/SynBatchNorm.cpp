@@ -29,17 +29,25 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
     DiopiTensor outTr(out);
 
     auto dim = inputTr.dim();
+    cnnlTensorLayout_t layout;
+
     DIOPI_CHECK(dim >= 2 && dim <= 5, "Input dim is out of range");
     DIOPI_CHECK(dim == outTr.dim(), "Input dim != out dim");
-    if (dim == 3) {
-        DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "inputTensor should be ChannelsLast")
-        DIOPI_CHECK(outTr.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "outTr should be ChannelsLast")
-    } else if (dim == 4) {
-        DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast), "inputTensor should be ChannelsLast")
-        DIOPI_CHECK(outTr.isContiguous(diopiMemoryFormat_t::ChannelsLast), "outTr should be ChannelsLast")
+
+    if (3 == dim) {
+        DIOPI_CHECK(inputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "inputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(outputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "outputTensor's memory format should be channelsLast");
+        layout = CNNL_LAYOUT_NLC;
+    } else if (4 == dim) {
+        DIOPI_CHECK(inputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast), "inputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(outputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast), "outputTensor's memory format should be channelsLast");
+        layout = CNNL_LAYOUT_NHWC;
+    } else if (5 == dim) {
+        DIOPI_CHECK(inputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "inputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(outputTensor.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "outputTensor's memory format should be channelsLast");
+        layout = CNNL_LAYOUT_NDHWC;
     } else {
-        DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "inputTensor should be ChannelsLast")
-        DIOPI_CHECK(outTr.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "outTr should be ChannelsLast")
+        DIOPI_CHECK(false, "Dim of input tensor should be in [3,4,5].");
     }
 
     // check the input dtype
@@ -51,7 +59,6 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(outTmpTr, outTr, inputTr.dtype());
 
     // get descriptor
-    cnnlTensorLayout_t layout = inputTr.dim() == 4 ? CNNL_LAYOUT_NHWC : CNNL_LAYOUT_NDHWC;
     CnnlTensorDesc inputDesc(inputTr, layout);
     CnnlTensorDesc outputDesc(outTmpTr, layout);
     CnnlTensorDesc weightDesc(weightTr, CNNL_LAYOUT_ARRAY);
