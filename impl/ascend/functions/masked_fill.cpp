@@ -27,12 +27,10 @@ diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
 
     diopiDtype_t valueDtype;
     diopiGetTensorDtype(value, &valueDtype);
-    diopiTensorHandle_t valueTemp;
+    diopiTensorHandle_t valueTemp = (diopiTensorHandle_t)value;
     if (typeSet.find(valueDtype) == typeSet.end()) {
         makeTensorLike(ctx, &valueTemp, value, diopi_dtype_float32);
         diopiCastDtype(ctx, valueTemp, value);
-    } else {
-        valueTemp = (diopiTensorHandle_t)value;
     }
 
     diopiDtype_t inputDtype;
