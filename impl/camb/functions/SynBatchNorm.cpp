@@ -43,7 +43,6 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
         memoryFormat = diopiMemoryFormat_t::ChannelsLast1d;
         layout = CNNL_LAYOUT_ARRAY;
         std::cout << "[inputTr] " << __LINE__ << "input.shape = " << inputTr.shape()[0] << "," << inputTr.shape()[1] << "," << inputTr.shape()[2] << std::endl;
-        std::cout << "[mean] " << __LINE__ << "mean.shape =" << meanTr.shape()[0] << std::endl;
         std::cout << "stride: " << inputTr.stride()[0] << inputTr.stride()[1] << inputTr.stride()[2] << std::endl;
     } else if (3 == dim) {
         DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "inputTensor's memory format should be channelsLast");
