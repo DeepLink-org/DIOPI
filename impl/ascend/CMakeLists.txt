@@ -21,7 +21,7 @@ endif()
 
 
 file(GLOB_RECURSE IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions/*.cpp common/*.cpp)
-#list(APPEND IMPL_SRC acl_helper.cpp)
+list(APPEND IMPL_SRC ascend_tensor.cpp)
 
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
