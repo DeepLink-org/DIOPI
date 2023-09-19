@@ -95,7 +95,7 @@ AscendTensor& AscendTensor::unsqueeze(int dim) {
     return *this;
 }
 
-AscendTensor& AscendTensor::view(const std::vector<int64_t> shape) {
+AscendTensor& AscendTensor::view(const std::vector<int64_t>& shape) {
     // must be contiguous
     ASCEND_CHECK_ABORT(this->isContiguous(), "now only contiguous tensor support view by shape.");
     std::vector<int64_t> stride(shape.size());
@@ -105,6 +105,46 @@ AscendTensor& AscendTensor::view(const std::vector<int64_t> shape) {
         stride[j] = stride[j + 1] * shape[j + 1];
     }
     this->stride_ = stride;
+    return *this;
+}
+
+void AscendTensor::reset() {
+    dtype_ = diopi_dtype_unsupported;
+    shape_.clear();
+    stride_.clear();
+    device_ = diopiDevice_t::diopi_device;
+    numel_ = 0;
+    elemsize_ = 0;
+}
+
+AscendTensor& AscendTensor::update() {
+    if (nullptr == tensor_) {
+        reset();
+        return *this;
+    }
+    ASCEND_CHECK_ABORT(tensor_, "diopi tensor is nullptr, please check.");
+    diopiSize_t diopiShape;
+    diopiGetTensorShape(tensor_, &diopiShape);
+    std::vector<int64_t> shapeTmp(diopiShape.data, diopiShape.data + diopiShape.len);
+    shape_ = std::move(shapeTmp);
+
+    diopiSize_t diopiStride;
+    diopiGetTensorStride(tensor_, &diopiStride);
+    std::vector<int64_t> strideTmp(diopiStride.data, diopiStride.data + diopiStride.len);
+    stride_ = std::move(strideTmp);
+    ASCEND_CHECK_ABORT(stride_.size() == shape_.size(), "stride_.size() == shape_.size() check failed");
+
+    diopiDtype_t diopiDtype;
+    diopiGetTensorDtype(tensor_, &diopiDtype);
+    dtype_ = diopiDtype;
+
+    diopiDevice_t device;
+    diopiGetTensorDevice(tensor_, &device);
+    device_ = device;
+
+    diopiGetTensorNumel(tensor_, &numel_);
+    diopiGetTensorElemSize(tensor_, &elemsize_);
+
     return *this;
 }
 

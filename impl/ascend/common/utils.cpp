@@ -1,8 +1,214 @@
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
+
+#include "utils.hpp"
+
+#include "../ascend_tensor.hpp"
 #include "acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
 
+const char* diopiDtypeToStr(const diopiDtype_t dtype) {
+#define _dtype2str(type) \
+    if (type == dtype) return #type;
+    _dtype2str(diopi_dtype_float16);
+    _dtype2str(diopi_dtype_float32);
+    _dtype2str(diopi_dtype_float64);
+    _dtype2str(diopi_dtype_int8);
+    _dtype2str(diopi_dtype_uint8);
+    _dtype2str(diopi_dtype_int16);
+    _dtype2str(diopi_dtype_uint16);
+    _dtype2str(diopi_dtype_int32);
+    _dtype2str(diopi_dtype_uint32);
+    _dtype2str(diopi_dtype_int64);
+    _dtype2str(diopi_dtype_uint64);
+    _dtype2str(diopi_dtype_bool);
+    _dtype2str(diopi_dtype_bfloat16);
+    _dtype2str(diopi_dtype_tfloat32);
+    _dtype2str(diopi_dtype_complex64);
+    _dtype2str(diopi_dtype_complex128);
+
+    return nullptr;
+}
+
+// ascend tensor utils
+diopiError_t makeTensor(diopiContextHandle_t ctx, AscendTensor& dst, const diopiSize_t* size, const diopiSize_t* stride, diopiDtype_t dtype,
+                        diopiDevice_t device) {
+    diopiTensorHandle_t dstPtr;
+    diopiRequireTensor(ctx, &dstPtr, size, stride, dtype, device);
+    dst = AscendTensor(dstPtr);
+    ASCEND_CHECK_ABORT(dst.defined(), "generate Ascend Tensor failed, it's nullptr.");
+    return diopiSuccess;
+}
+
+diopiError_t makeTensor(diopiContextHandle_t ctx, AscendTensor& dst, const diopiSize_t* size, diopiDtype_t dtype, diopiDevice_t device) {
+    return makeTensor(ctx, dst, size, nullptr, dtype, device);
+}
+
+diopiError_t makeTensor(diopiContextHandle_t ctx, AscendTensor& dst, const std::vector<int64_t>& shape, const std::vector<int64_t>& stride, diopiDtype_t dtype,
+                        diopiDevice_t device) {
+    diopiSize_t shapeTmp{shape.data(), static_cast<int64_t>(shape.size())};
+    if (stride.empty()) {
+        return makeTensor(ctx, dst, &shapeTmp, nullptr, dtype, device);
+    } else {
+        diopiSize_t strideTmp{stride.data(), static_cast<int64_t>(stride.size())};
+        return makeTensor(ctx, dst, &shapeTmp, &strideTmp, dtype, device);
+    }
+    return diopiSuccess;
+}
+
+diopiError_t makeTensorLike(diopiContextHandle_t ctx, AscendTensor& dst, const AscendTensor& src, diopiDtype_t dtype) {
+    if (diopi_dtype_unsupported == dtype) {
+        return makeTensor(ctx, dst, src.shape(), src.stride(), src.dtype(), src.device());
+    } else {
+        return makeTensor(ctx, dst, src.shape(), src.stride(), dtype, src.device());
+    }
+}
+
+diopiError_t makeTensor(diopiContextHandle_t ctx, AscendTensor& dst, const std::vector<int64_t>& shape, diopiDtype_t dtype) {
+    return makeTensor(ctx, dst, shape, std::vector<int64_t>{}, dtype, diopi_device);
+}
+
+diopiError_t makeTensor(diopiContextHandle_t ctx, AscendTensor& dst, const diopiScalar_t* scalar, diopiDevice_t device) {
+    std::vector<int64_t> shape{1};
+    makeTensor(ctx, dst, shape, scalar->stype);
+    auto th = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(dst));
+    if (diopi_device == device) {
+        return diopiFill(ctx, th, scalar);
+    } else {
+        void* ptr;
+        diopiGetTensorData(th, &ptr);
+        if (isFloatingType(scalar->stype)) {
+            reinterpret_cast<double*>(ptr)[0] = getValue<double>(scalar);
+        } else {
+            reinterpret_cast<int64_t*>(ptr)[0] = getValue<int64_t>(scalar);
+        }
+        return diopiSuccess;
+    }
+}
+
+diopiError_t dataCopy(void* dstPtr, const void* srcPtr, int64_t size, diopiDtype_t dtype) {
+    switch (dtype) {
+        case diopi_dtype_int8:
+            dataCopy<int8_t, int8_t>(dstPtr, srcPtr, size);
+            break;
+        case diopi_dtype_uint8:
+            dataCopy<uint8_t, uint8_t>(dstPtr, srcPtr, size);
+            break;
+        case diopi_dtype_int16:
+            dataCopy<int16_t, int16_t>(dstPtr, srcPtr, size);
+            break;
+        case diopi_dtype_uint16:
+            dataCopy<uint16_t, uint16_t>(dstPtr, srcPtr, size);
+            break;
+        case diopi_dtype_int32:
+            dataCopy<int32_t, int32_t>(dstPtr, srcPtr, size);
+            break;
+        case diopi_dtype_uint32:
+            dataCopy<uint32_t, uint32_t>(dstPtr, srcPtr, size);
+            break;
+        case diopi_dtype_int64:
+            dataCopy<int64_t, int64_t>(dstPtr, srcPtr, size);
+            break;
+        case diopi_dtype_uint64:
+            dataCopy<uint64_t, uint64_t>(dstPtr, srcPtr, size);
+            break;
+        case diopi_dtype_float32:
+            dataCopy<float, float>(dstPtr, srcPtr, size);
+            break;
+        case diopi_dtype_float64:
+            dataCopy<double, double>(dstPtr, srcPtr, size);
+            break;
+        case diopi_dtype_bool:
+            dataCopy<bool, bool>(dstPtr, srcPtr, size);
+            break;
+        default:
+            ASCEND_CHECK_ABORT(false, "unsupport dtype %s", diopiDtypeToStr(dtype));
+            break;
+    }
+    return diopiSuccess;
+}
+
+diopiError_t fillAscendTensor(const AscendTensor& src, AscendTensor& dst) {
+    ASCEND_CHECK_ABORT(dst.shape() == src.shape(), "required input and output has the same shape.");
+    if (src.isSame(dst)) {
+        return diopiSuccess;
+    }
+    void* targetPtr;
+    auto targetObj = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(dst));
+    diopiGetTensorData(targetObj, &targetPtr);
+    dataCopy(targetPtr, src.data(), src.numel(), src.dtype());
+    dst = AscendTensor(targetObj);
+
+    return diopiSuccess;
+}
+
+diopiError_t reshape(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst, const std::vector<int64_t>& shape) {
+    ASCEND_CHECK_ABORT(src.isContiguous(), "now only contiguous tensor support reshape by shape.");
+    if (src.isSame(dst)) {
+        dst.view(shape);
+        return diopiSuccess;
+    }
+
+    // make dst tensor with `shape`
+    AscendTensor tmp = src;
+    tmp.view(shape);
+    makeTensorLike(ctx, dst, tmp);
+
+    // fill dst tensor with src
+    return fillAscendTensor(src, dst);
+}
+
+diopiError_t aclAsStrided(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst) {
+    diopiTensorHandle_t targetObj = nullptr;
+    AclOpRunner<4, 1>("AsStrided", ctx)
+        .addInput(src.data(), src.getAclMemBufferSize(), src.getAclMemShape(), ACL_FORMAT_ND, src.dtype())
+        .addConstInput(src.shape())
+        .addConstInput(src.stride())
+        .addConstInput(0, diopi_dtype_int64)
+        .addOutput(targetObj)
+        .run();
+
+    // update Ascend Tensor attribute.
+    dst = AscendTensor(targetObj);
+    return diopiSuccess;
+}
+
+diopiError_t contiguous(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst) {
+    if (src.isContiguous()) {
+        dst = const_cast<AscendTensor&>(src);
+        return diopiSuccess;
+    }
+
+    return aclAsStrided(ctx, src, dst);
+}
+
+diopiError_t castTensor(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst) {
+    ASCEND_CHECK_ABORT(dst.shape() == src.shape(), "required input and output has the same shape.");
+    if (src.data() == dst.data()) {
+        return diopiSuccess;
+    }
+
+    auto dstPtr = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(dst));
+    diopiCastDtype(ctx, dstPtr, static_cast<diopiConstTensorHandle_t>(src));
+    dst = AscendTensor(dstPtr);
+
+    return diopiSuccess;
+}
+
+diopiError_t castTensor(diopiContextHandle_t ctx, const std::vector<AscendTensor>& src, std::vector<AscendTensor>& dst, diopiDtype_t supportDtype) {
+    ASCEND_CHECK_ABORT(src.size() == dst.size(), "require input size equal output size.");
+    for (int i = 0; i < src.size(); ++i) {
+        CHECK_ASCENDRT(castTensor(ctx, src[i], dst[i]));
+    }
+    return diopiSuccess;
+}
+
+// diopi tensor utils
 diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* out, float val) {
     diopiScalar_t valScalar;
     valScalar.stype = diopi_dtype_float64;
@@ -328,11 +534,11 @@ diopiTensorHandle_t clone(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     return srcClone;
 }
 
-diopiTensorHandle_t contiguous(diopiContextHandle_t cxt, diopiConstTensorHandle_t src) {
+diopiTensorHandle_t contiguous(diopiContextHandle_t ctx, diopiConstTensorHandle_t src) {
     if (isContiguous(src)) {
         return const_cast<diopiTensorHandle_t>(src);
     } else {
-        return clone(cxt, src);
+        return clone(ctx, src);
     }
 }
 

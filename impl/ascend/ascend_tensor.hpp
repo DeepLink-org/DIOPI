@@ -4,6 +4,7 @@
 #include <acl/acl.h>
 #include <diopi/diopirt.h>
 
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -26,6 +27,15 @@ namespace ascend {
         if (ret != ::ACL_SUCCESS) {                                                               \
             throw std::runtime_error(std::string("ascend device error:") + aclGetRecentErrMsg()); \
         }                                                                                         \
+    } while (0);
+
+#define CHECK_ASCENDRT(Expr)                                                \
+    do {                                                                    \
+        TRACK_ACL(#Expr);                                                   \
+        ::diopiError_t ret = Expr;                                          \
+        if (ret != ::diopiSuccess) {                                        \
+            throw std::runtime_error(std::string("call function failed.")); \
+        }                                                                   \
     } while (0);
 
 #define ASCEND_CHECK_ABORT(condition, ...)               \
@@ -84,11 +94,9 @@ public:
         }
     }
 
-private:
-    // Constructor without parameters is not supported.
-    AscendTensor() = default;
-
 public:
+    // default construct
+    AscendTensor() = default;
     // Shallow copy.
     AscendTensor(const AscendTensor&) = default;
     AscendTensor& operator=(const AscendTensor&) = default;
@@ -132,7 +140,12 @@ public:
 
     int64_t stride(int i) const { return stride()[i]; }
 
-    int64_t dim() const { return static_cast<int64_t>(this->shape().size()); }
+    int64_t dim() const {
+        if (shape_.empty()) {
+            return 0;
+        }
+        return static_cast<int64_t>(this->shape().size());
+    }
 
     bool defined() const { return tensor_; }
 
@@ -164,8 +177,10 @@ public:
     // Those methods may change the class attribute.
     AscendTensor& asStrided(const std::vector<int64_t>& shape, const std::vector<int64_t>& stride);
     AscendTensor& unsqueeze(int dim);
-    AscendTensor& view(const std::vector<int64_t> shape);
-    void reshape(const std::vector<int64_t>& dims);
+    AscendTensor& view(const std::vector<int64_t>& shape);
+    // if you change the AscendTensor, must update the object attribute.
+    AscendTensor& update();
+    void reset();
 
 private:
     // diopi origin tensor
@@ -177,11 +192,6 @@ private:
     int64_t numel_{0};
     int64_t elemsize_{0};
 };
-
-// Those methods can generate new AscendTensor, so context is needed.
-diopiError_t contiguous(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst);
-diopiError_t makeTensor(diopiContextHandle_t ctx, AscendTensor& dst, const diopiSize_t* size, diopiDtype_t dtype);
-diopiError_t castTensor(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst, diopiDtype_t dtype);
 
 }  // namespace ascend
 }  // namespace impl
