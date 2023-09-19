@@ -77,8 +77,6 @@ if __name__ == "__main__":
 
     glob_vars.use_db = args.use_db
     from conformance.db_operation import db_conn, BenchMarkCase, DeviceCase
-    from conformance.gen_input import GenInputData
-    from conformance.gen_output import GenOutputData
     db_conn.init_db()
 
     if args.get_model_list:
@@ -107,6 +105,8 @@ if __name__ == "__main__":
         glob_vars.set_four_bytes()
 
     if args.mode == 'gen_data':
+        from conformance.gen_input import GenInputData
+        from conformance.gen_output import GenOutputData
         diopi_case_item_file = 'diopi_case_items.cfg'
         device_case_item_file = '%s_case_items.cfg'
 

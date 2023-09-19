@@ -76,8 +76,8 @@ outputs_for_backward = dev_out if len(requires_backward) == 0 \
 backward_para = {}
 grad_outputs = [ones_like(i) for i in outputs_for_backward]
 backward_para["grad_outputs"] = grad_outputs
-
-dev_bp_out = ${test_diopi_bp_func_name}(**function_kwargs, **grad_outputs)
+function_kwargs.update(backward_para)
+dev_bp_out = ${test_diopi_bp_func_name}(**function_kwargs)
                                            
 with open(f_bp_out, 'rb') as f:
     ref_bp_out = pickle.load(f)

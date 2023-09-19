@@ -34,8 +34,15 @@ class GenInputData(object):
         for case_name in all_cfg_dict:
             each_cfg_dict = all_cfg_dict[case_name]
             func_name = each_cfg_dict["name"]
-            item = {'case_name': case_name, 'model_name': model_name,
+            item = {'case_name': case_name, 'model_name': model_name, 'inplace_flag': 0, 'backward_flag': 0,
                     'func_name': func_name, 'case_config': each_cfg_dict, 'result': 'skipped'}
+            for tensor in each_cfg_dict['tensor_para']['args']:
+                if True in tensor['requires_grad']:
+                    item['backward_flag'] = 1
+                    break
+            if 'is_inplace' in each_cfg_dict.keys() and each_cfg_dict['is_inplace'] == True:
+                item['inplace_flag'] = 1
+
             if fname not in [func_name, 'all_ops']:
                 case_items.append(item)
                 continue
