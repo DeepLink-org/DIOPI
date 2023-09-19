@@ -144,9 +144,7 @@ DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensor
         handle, inputDesc.get(), inputTr.data(), workspacePtr, workspaceSize, epsValue, meanDesc.get(), meanTr.data(), invstdDesc.get(), invstdTmpTr.data()))
 
     // Copy back to origin, if required
-    if (invstdTr.dtype() != invstdTmpTr.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, invstdTr, invstdTmpTr));
-    }
+    DIOPI_CALL(dataTypeCast(ctx, invstdTr, invstdTmpTr));
 
     return diopiSuccess;
 }
