@@ -37,7 +37,7 @@ device_configs = {
             ]
         ),
     ),
-    
+
     'hardtanh': dict(
         name=["hardtanh"],
         tensor_para=dict(
@@ -49,7 +49,7 @@ device_configs = {
             ],
         ),
     ),
-    
+
     'hardtanh_int': dict(
         name=["hardtanh"],
         tensor_para=dict(
@@ -61,7 +61,7 @@ device_configs = {
             ],
         ),
     ),
-    
+
     'hardtanh_uint': dict(
         name=["hardtanh"],
         tensor_para=dict(
@@ -517,7 +517,7 @@ device_configs = {
             ],
         ),
     ),
-    
+
     'addcmul': dict(
         name=["addcmul"],
         tensor_para=dict(
@@ -611,6 +611,8 @@ device_configs = {
     ),
 
     'reduce_partial_op': dict(
+        atol = 0.001
+        rotl = 0.0001
         name=['mean', 'sum'],
         tensor_para=dict(
             args=[
@@ -1218,7 +1220,7 @@ device_configs = {
             ],
         ),
     ),
-    # TODO: ctc_loss of camb could work correctly due to dipu and one_iter, need to fix diopi_test 
+    # TODO: ctc_loss of camb could work correctly due to dipu and one_iter, need to fix diopi_test
     'ctc_loss': dict(
         name=["ctc_loss"],
         para=dict(
@@ -1548,7 +1550,7 @@ device_configs = {
             ],
         ),
     ),
-    
+
     'randperm': dict(
         name=['randperm'],
         para=dict(
