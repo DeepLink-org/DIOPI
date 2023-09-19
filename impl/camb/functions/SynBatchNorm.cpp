@@ -123,12 +123,9 @@ DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensor
     }
 
     // check the input dtype
-    std::vector<DiopiTensor*> pTensors{&meanTr};
+    std::vector<DiopiTensor*> pTensors{&inputTr, &meanTr};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
-    std::vector<DiopiTensor*> pInputTensors{&inputTr};
-    std::set<diopiDtype_t> supportedInputDtypes{diopi_dtype_float16, diopi_dtype_float32};
-    DIOPI_CALL(autoCastTensorType(ctx, pInputTensors, supportedInputDtypes));
 
     // check the output dtype
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(invstdTmpTr, invstdTr, meanTr.dtype(), diopiMemoryFormat_t::Contiguous);
