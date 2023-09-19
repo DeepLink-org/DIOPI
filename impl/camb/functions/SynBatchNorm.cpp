@@ -128,7 +128,9 @@ DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensor
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
     // check the output dtype
-    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(invstdTmpTr, invstdTr, meanTr.dtype(), diopiMemoryFormat_t::Contiguous);
+    if (invstdTr.dtype() != meanTr.dtype()) {
+        invstdTmpTr = requiresTensor(ctx, invstdTr.shape(), meanTr.dtype());
+    }
 
     // get descriptor
     CnnlTensorDesc inputDesc(inputTr, layout);
@@ -144,7 +146,7 @@ DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensor
         handle, inputDesc.get(), inputTr.data(), workspacePtr, workspaceSize, epsValue, meanDesc.get(), meanTr.data(), invstdDesc.get(), invstdTmpTr.data()))
 
     // Copy back to origin, if required
-    DIOPI_CALL(dataTypeCast(ctx, invstdTr, invstdTmpTr));
+    DIOPI_CALL(diopiCopyInp(ctx, invstdTmpTr.tensorHandle(), invstdTr.tensorHandle()));
 
     return diopiSuccess;
 }
