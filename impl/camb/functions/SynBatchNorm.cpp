@@ -93,5 +93,63 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
     return diopiSuccess;
 }
 
+DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd, diopiConstTensorHandle_t input,
+                                           double eps) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    // input
+    DiopiTensor inputTr(input);
+    DiopiTensor meanTr(mean);
+    float epsValue = static_cast<float>(eps);
+    // output
+    DiopiTensor invstdTr(invstd);
+
+    auto dim = inputTr.dim();
+    cnnlTensorLayout_t layout;
+    DIOPI_CHECK(dim >= 2 && dim <= 5, "Input dim is out of range");
+
+    if (2 == dim) {
+        layout = CNNL_LAYOUT_NC;
+    } else if (3 == dim) {
+        DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "inputTensor's memory format should be channelsLast");
+        layout = CNNL_LAYOUT_NLC;
+    } else if (4 == dim) {
+        DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast), "inputTensor's memory format should be channelsLast");
+        layout = CNNL_LAYOUT_NHWC;
+    } else if (5 == dim) {
+        DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "inputTensor's memory format should be channelsLast");
+        layout = CNNL_LAYOUT_NDHWC;
+    } else {
+        DIOPI_CHECK(false, "Dim of input tensor should be in [2,3,4,5].");
+    }
+
+    // check the input dtype
+    std::vector<DiopiTensor*> pTensors{&inputTr, &meanTr};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
+
+    // check the output dtype
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(invstdTmpTr, invstdTr, inputTr.dtype(), diopiMemoryFormat_t::Contiguous);
+
+    // get descriptor
+    CnnlTensorDesc inputDesc(inputTr, layout);
+    CnnlTensorDesc meanDesc(meanTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc invstdDesc(invstdTmpTr, CNNL_LAYOUT_ARRAY);
+
+    /* Get Workspace */
+    size_t workspaceSize = 0;
+    DIOPI_CALLCNNL(cnnlGetSyncBatchnormBackwardReduceWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
+    void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
+
+    DIOPI_CALLCNNL(cnnlSyncBatchNormStats_v2(
+        handle, inputDesc.get(), inputTr.data(), workspacePtr, workspaceSize, epsValue, meanDesc.get(), meanTr.data(), invstdDesc.get(), invstdTmpTr.data()))
+
+    // Copy back to origin, if required
+    if (invstdTr.dtype() != invstdTmpTr.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, invstdTr, invstdTmpTr));
+    }
+
+    return diopiSuccess;
+}
+
 }  // namespace camb
 }  // namespace impl
