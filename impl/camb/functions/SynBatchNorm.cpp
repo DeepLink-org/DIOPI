@@ -128,6 +128,7 @@ DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensor
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
     // check the output dtype
+    DiopiTensor invstdTmpTr = invstdTr;
     if (invstdTr.dtype() != meanTr.dtype()) {
         invstdTmpTr = requiresTensor(ctx, invstdTr.shape(), meanTr.dtype());
     }
