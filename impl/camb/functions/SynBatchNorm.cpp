@@ -137,7 +137,7 @@ DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensor
 
     /* Get Workspace */
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetSyncBatchnormBackwardReduceWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
+    DIOPI_CALLCNNL(cnnlGetSyncBatchNormStatsWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
     DIOPI_CALLCNNL(cnnlSyncBatchNormStats_v2(
