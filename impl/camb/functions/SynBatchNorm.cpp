@@ -114,7 +114,7 @@ DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t 
 
     // check the input dtype
     std::vector<DiopiTensor*> pTensors{&meanAllTr, &invstdAllTr, &countsTr};
-    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
     // check the output dtype
