@@ -1,5 +1,5 @@
 /**
- * @file
+ @ @file
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  */
@@ -128,15 +128,14 @@ DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensor
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
     // check the output dtype
-    // DiopiTensor invstdTmpTr = invstdTr;
-    // if (invstdTr.dtype() != meanTr.dtype()) {
-    //     invstdTmpTr = requiresTensor(ctx, invstdTr.shape(), meanTr.dtype());
-    // }
+    std::cout << "invstdTr.dtype" << invstdTr.dtype() << std::endl;
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(invstdTmpTr, invstdTr, meanTr.dtype(), diopiMemoryFormat_t::Contiguous);
+    std::cout << "invstdTmpTr.dtype" << invstdTmpTr.dtype() << std::endl;
 
     // get descriptor
     CnnlTensorDesc inputDesc(inputTr, layout);
     CnnlTensorDesc meanDesc(meanTr, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc invstdDesc(invstdTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc invstdDesc(invstdTmpTr, CNNL_LAYOUT_ARRAY);
 
     /* Get Workspace */
     size_t workspaceSize = 0;
@@ -144,10 +143,10 @@ DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensor
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
     DIOPI_CALLCNNL(cnnlSyncBatchNormStats_v2(
-        handle, inputDesc.get(), inputTr.data(), workspacePtr, workspaceSize, epsValue, meanDesc.get(), meanTr.data(), invstdDesc.get(), invstdTr.data()))
+        handle, inputDesc.get(), inputTr.data(), workspacePtr, workspaceSize, epsValue, meanDesc.get(), meanTr.data(), invstdDesc.get(), invstdTmpTr.data()))
 
     // Copy back to origin, if required
-    // DIOPI_CALL(diopiCopyInp(ctx, invstdTmpTr.tensorHandle(), invstdTr.tensorHandle()));
+    DIOPI_CALL(dataTypeCast(ctx, invstdTr, invstdTmpTr));
 
     return diopiSuccess;
 }
