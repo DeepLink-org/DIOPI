@@ -5,9 +5,11 @@
  */
 
 #include <diopi/functions.h>
-#include <set>
-#include <numeric>
+
 #include <cmath>
+#include <numeric>
+#include <set>
+
 #include "../common/acloprunner.hpp"
 
 namespace impl {
