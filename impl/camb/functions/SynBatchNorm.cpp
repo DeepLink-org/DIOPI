@@ -147,6 +147,7 @@ DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensor
 
     // Copy back to origin, if required
     DIOPI_CALL(dataTypeCast(ctx, invstdTr, invstdTmpTr));
+    std::cout << "FINAL.dtype" << invstdTr.dtype() << std::endl;
 
     return diopiSuccess;
 }
