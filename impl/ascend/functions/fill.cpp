@@ -5,7 +5,6 @@
  */
 
 #include <diopi/functions.h>
-#include <math.h>
 
 #include <cfloat>
 #include <cmath>
