@@ -7,7 +7,7 @@
 #include <diopi/functions.h>
 #include <set>
 #include <numeric>
-#include <math.h>
+#include <cmath>
 #include "../common/acloprunner.hpp"
 
 namespace impl {
