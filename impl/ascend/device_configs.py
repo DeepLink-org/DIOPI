@@ -1238,9 +1238,28 @@ device_configs = {
         ),
     ),
 
+    'reduce_op': dict(
+        name=['mean'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float16)],
+                },
+            ]
+        ),
+    ),
+    
     'reduce_partial_op': dict(
-        name=['sum'],
-        atol=1e-3
+        name=['mean'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float16),],
+                },
+            ]
+        ),
     ),
 
     'reduce_partial_op_1': dict(
