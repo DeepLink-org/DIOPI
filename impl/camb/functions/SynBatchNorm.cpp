@@ -1,5 +1,5 @@
 /**
- @ @file
+ * @file
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  */
@@ -123,18 +123,17 @@ DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensor
     }
 
     // check the input dtype
-    std::vector<DiopiTensor*> pTensors{&inputTr, &meanTr};
-    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
+    std::vector<DiopiTensor*> pTensors{&inputTr};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
     // check the output dtype
-    std::cout << "invstdTr.dtype" << invstdTr.dtype() << std::endl;
-    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(invstdTmpTr, invstdTr, meanTr.dtype(), diopiMemoryFormat_t::Contiguous);
-    std::cout << "invstdTmpTr.dtype" << invstdTmpTr.dtype() << std::endl;
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(invstdTmpTr, invstdTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(meanTmpTr, meanTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
 
     // get descriptor
     CnnlTensorDesc inputDesc(inputTr, layout);
-    CnnlTensorDesc meanDesc(meanTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc meanDesc(meanTmpTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc invstdDesc(invstdTmpTr, CNNL_LAYOUT_ARRAY);
 
     /* Get Workspace */
@@ -143,11 +142,11 @@ DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensor
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
     DIOPI_CALLCNNL(cnnlSyncBatchNormStats_v2(
-        handle, inputDesc.get(), inputTr.data(), workspacePtr, workspaceSize, epsValue, meanDesc.get(), meanTr.data(), invstdDesc.get(), invstdTmpTr.data()))
+        handle, inputDesc.get(), inputTr.data(), workspacePtr, workspaceSize, epsValue, meanDesc.get(), meanTmpTr.data(), invstdDesc.get(), invstdTmpTr.data()))
 
     // Copy back to origin, if required
+    DIOPI_CALL(dataTypeCast(ctx, meanTr, meanTmpTr));
     DIOPI_CALL(dataTypeCast(ctx, invstdTr, invstdTmpTr));
-    std::cout << "FINAL.dtype" << invstdTr.dtype() << std::endl;
 
     return diopiSuccess;
 }
