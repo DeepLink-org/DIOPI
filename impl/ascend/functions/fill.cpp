@@ -30,7 +30,7 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
         val = 1;
     } else if (val == -INFINITY) {
         val = -1;
-    } else if (isnan(val)) {
+    } else if (std::isnan(val)) {
         val = 0;
     } else {
         divByZero = false;
