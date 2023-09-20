@@ -5,6 +5,7 @@
  */
 
 #include <diopi/functions.h>
+#include <math.h>
 
 #include <cfloat>
 #include <cmath>
@@ -19,59 +20,72 @@ extern "C" {
 
 diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t *value) {
     int64_t numel = 0;
-    diopiSize_t shape;
     diopiGetTensorNumel(input, &numel);
-    diopiGetTensorShape(input, &shape);
     if (numel <= 0) {
         return diopiSuccess;
     }
-    float val = getValue<float>(value);
 
     bool divByZero = true;
-
+    float val = getValue<float>(value);
     if (val == INFINITY) {
         val = 1;
     } else if (val == -INFINITY) {
         val = -1;
-    } else if (val == NAN) {
+    } else if (isnan(val)) {
         val = 0;
     } else {
         divByZero = false;
     }
+
     diopiDtype_t dtype;
     diopiGetTensorDtype(input, &dtype);
     diopiTensorHandle_t inputCopy;
+    diopiSize_t shape;
+    diopiGetTensorShape(input, &shape);
+
     if (shape.len == 0) {
         int64_t sizeTmp[1] = {1};
         shape = arrayToDiopiSize(sizeTmp, 1);
         int64_t elemsize;
-        diopiStreamHandle_t stream;
         diopiGetTensorElemSize(input, &elemsize);
+        diopiStreamHandle_t stream;
         diopiGetStream(ctx, &stream);
         void *src, *dst;
         diopiScalar_t scalar;
         scalar.stype = diopi_dtype_float64;
         scalar.fval = val;
-        makeTensorFromScalar(ctx, &scalar, &inputCopy, dtype, diopi_host);
-        diopiGetTensorData(input, &dst);
-        diopiGetTensorData(inputCopy, &src);
-        CALL_ACLRT(aclrtMemcpyAsync(dst, elemsize, src, elemsize, ACL_MEMCPY_HOST_TO_DEVICE, stream));
-        CALL_ACLRT(aclrtSynchronizeStream(stream));
-    } else {
-        if (dtype == diopi_dtype_int8 || dtype == diopi_dtype_uint8) {
-            makeTensorLike(ctx, &inputCopy, input, diopi_dtype_int32);
+        if (diopi_dtype_float16 == dtype || diopi_dtype_int16 == dtype) {
+            diopiTensorHandle_t inputTemp;
+            makeTensorLike(ctx, &inputTemp, input, diopi_dtype_float32);
+            makeTensorFromScalar(ctx, &scalar, &inputCopy, diopi_dtype_float32, diopi_host);
+            diopiGetTensorData(inputTemp, &dst);
+            diopiGetTensorData(inputCopy, &src);
+            diopiGetTensorElemSize(inputTemp, &elemsize);
+            CALL_ACLRT(aclrtMemcpyAsync(dst, elemsize, src, elemsize, ACL_MEMCPY_HOST_TO_DEVICE, stream));
+            CALL_ACLRT(aclrtSynchronizeStream(stream));
+            diopiCastDtype(ctx, input, inputTemp);
         } else {
-            inputCopy = input;
+            makeTensorFromScalar(ctx, &scalar, &inputCopy, dtype, diopi_host);
+            diopiGetTensorData(input, &dst);
+            diopiGetTensorData(inputCopy, &src);
+            CALL_ACLRT(aclrtMemcpyAsync(dst, elemsize, src, elemsize, ACL_MEMCPY_HOST_TO_DEVICE, stream));
+            CALL_ACLRT(aclrtSynchronizeStream(stream));
         }
-        AclOpRunner<1, 1>("Fills", ctx).addInput(inputCopy).setAttr<float>("value", val).addOutput(inputCopy).run();
-        if (dtype == diopi_dtype_int8 || dtype == diopi_dtype_uint8) {
+    } else {
+        if (diopi_dtype_bool == dtype) {
+            makeTensorLike(ctx, &inputCopy, input, diopi_dtype_int32);
+            AclOpRunner<1, 1>("Fills", ctx).addInput(inputCopy).setAttr<float>("value", val).addOutput(inputCopy).run();
             diopiCastDtype(ctx, input, inputCopy);
+        } else {
+            AclOpRunner<1, 1>("Fills", ctx).addInput(input).setAttr<float>("value", val).addOutput(input).run();
         }
     }
     auto zeroValueScalar = diopiScalar_t();
-    zeroValueScalar.stype = diopi_dtype_float64;
+    zeroValueScalar.stype = diopi_dtype_float16;
     zeroValueScalar.fval = 0.0;
+
     if (divByZero) diopiDivInpScalar(ctx, input, &zeroValueScalar, diopiRoundMode_t::RoundModeNone);
+
     return diopiSuccess;
 }
 

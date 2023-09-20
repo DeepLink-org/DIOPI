@@ -7,7 +7,7 @@
 #include <diopi/functions.h>
 #include <set>
 #include <numeric>
-
+#include <math.h>
 #include "../common/acloprunner.hpp"
 
 namespace impl {
@@ -66,8 +66,8 @@ extern "C" diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t 
     int64_t numel = 0;
     diopiGetTensorNumel(input, &numel);
     if (0 == numel) {
-        fillTensor(ctx, &out, -1);
-        negativeInputRtnFillNan(ctx, out, out);
+        diopiScalar_t nanScalar = {diopi_dtype_float64, NAN};
+        diopiFill(ctx, out, &nanScalar);
         return diopiSuccess;
     }
 
