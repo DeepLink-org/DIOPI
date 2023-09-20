@@ -109,8 +109,9 @@ DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t 
     DiopiTensor runningMeanTr(runningMean);
     DiopiTensor runningVarTr(runningVar);
 
-    auto dim = inputTr.dim();
-    DIOPI_CHECK(dim >= 2 && dim <= 5, "Input dim is out of range");
+    auto dim = meanAllTr.dim();
+    DIOPI_CHECK(meanAllTr.dim() == 2, "meanAll dim is out of range");
+    DIOPI_CHECK(invstdAllTr.dim() == 2, "invstdAll dim is out of range");
 
     // check the input dtype
     std::vector<DiopiTensor*> pTensors{&meanAllTr, &invstdAllTr, &countsTr};
@@ -124,8 +125,8 @@ DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t 
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(runningVarTmpTr, runningVarTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
 
     // get descriptor
-    CnnlTensorDesc meanAllDesc(meanAllTr, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc invstdAllDesc(invstdAllTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc meanAllDesc(meanAllTr, CNNL_LAYOUT_NC);
+    CnnlTensorDesc invstdAllDesc(invstdAllTr, CNNL_LAYOUT_NC);
     CnnlTensorDesc countsDesc(countsTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc meanDesc(meanTmpTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc invstdDesc(invstdTmpTr, CNNL_LAYOUT_ARRAY);
