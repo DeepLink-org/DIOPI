@@ -109,7 +109,6 @@ DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t 
     DiopiTensor runningMeanTr(runningMean);
     DiopiTensor runningVarTr(runningVar);
 
-    auto dim = meanAllTr.dim();
     DIOPI_CHECK(meanAllTr.dim() == 2, "meanAll dim is out of range");
     DIOPI_CHECK(invstdAllTr.dim() == 2, "invstdAll dim is out of range");
 
