@@ -93,14 +93,80 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
     return diopiSuccess;
 }
 
+DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd,
+                                                           diopiConstTensorHandle_t input, diopiConstTensorHandle_t meanAll, diopiConstTensorHandle_t invstdAll,
+                                                           diopiTensorHandle_t runningMean, diopiTensorHandle_t runningVar, float momentum, float eps,
+                                                           diopiConstTensorHandle_t counts) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    // input
+    DiopiTensor inputTr(input);
+    DiopiTensor meanAllTr(meanAll);
+    DiopiTensor invstdAllTr(invstdAll);
+    DiopiTensor countsTr(counts);
+    // output
+    DiopiTensor meanTr(mean);
+    DiopiTensor invstdTr(invstd);
+    DiopiTensor runningMeanTr(runningMean);
+    DiopiTensor runningVarTr(runningVar);
+
+    auto dim = inputTr.dim();
+    DIOPI_CHECK(dim >= 2 && dim <= 5, "Input dim is out of range");
+
+    // check the input dtype
+    std::vector<DiopiTensor*> pTensors{&meanAllTr, &invstdAllTr, &countsTr};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
+
+    // check the output dtype
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(invstdTmpTr, invstdTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(meanTmpTr, meanTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(runningMeanTmpTr, runningMeanTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(runningVarTmpTr, runningVarTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+
+    // get descriptor
+    CnnlTensorDesc meanAllDesc(meanAllTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc invstdAllDesc(invstdAllTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc countsDesc(countsTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc meanDesc(meanTmpTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc invstdDesc(invstdTmpTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc runningMeanDesc(runningMeanTmpTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc runningVarDesc(runningVarTmpTr, CNNL_LAYOUT_ARRAY);
+
+    DIOPI_CALLCNNL(cnnlSyncBatchNormGatherStatsWithCounts(handle,
+                                                          meanAllDesc.get(),
+                                                          meanAllTr.data(),
+                                                          invstdAllDesc.get(),
+                                                          invstdAllTr.data(),
+                                                          runningMeanDesc.get(),
+                                                          runningMeanTmpTr.data(),
+                                                          runningVarDesc.get(),
+                                                          runningVarTmpTr.data(),
+                                                          momentum,
+                                                          eps,
+                                                          countsDesc.get(),
+                                                          countsTr.data(),
+                                                          meanDesc.get(),
+                                                          meanTmpTr.data(),
+                                                          invstdDesc.get(),
+                                                          invstdTmpTr.data()))
+
+    // Copy back to origin, if required
+    DIOPI_CALL(dataTypeCast(ctx, runningMeanTr, runningMeanTmpTr));
+    DIOPI_CALL(dataTypeCast(ctx, runningVarTr, runningVarTmpTr));
+    DIOPI_CALL(dataTypeCast(ctx, meanTr, meanTmpTr));
+    DIOPI_CALL(dataTypeCast(ctx, invstdTr, invstdTmpTr));
+
+    return diopiSuccess;
+}
+
 DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd, diopiConstTensorHandle_t input,
                                            double eps) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     // input
     DiopiTensor inputTr(input);
-    DiopiTensor meanTr(mean);
     float epsValue = static_cast<float>(eps);
     // output
+    DiopiTensor meanTr(mean);
     DiopiTensor invstdTr(invstd);
 
     auto dim = inputTr.dim();
