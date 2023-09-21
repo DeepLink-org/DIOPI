@@ -9,11 +9,9 @@
 #include <diopi/diopirt.h>
 
 #include <cstdio>
-#include <vector>
 
 #include "../common/acloprunner.hpp"
 #include "../error.hpp"
-#include "litert.hpp"
 
 namespace impl {
 namespace ascend {
@@ -81,14 +79,7 @@ int32_t finalizeLibrary() {
 }
 
 // temporary solution, which needs to be re-implemented later
-int32_t buildGeneratorState(diopiContextHandle_t ctx, diopiTensorHandle_t out) {
-    std::vector<int64_t> vec{808};
-    diopiSize_t size{vec.data(), static_cast<int64_t>(vec.size())};
-    diopiTensorHandle_t tensor = nullptr;
-    diopiRequireTensor(ctx, &tensor, &size, nullptr, diopi_dtype_uint8, diopi_host);
-    *out = *tensor;
-    return diopiSuccess;
-}
+int32_t buildGeneratorState(diopiContextHandle_t ctx, diopiTensorHandle_t out) { return diopiSuccess; }
 
 }  // extern "C"
 

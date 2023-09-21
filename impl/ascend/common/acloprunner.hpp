@@ -272,8 +272,8 @@ public:
             dims.push_back(1);
         }
 
-        static int parrotsDebugAcloprunner = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (parrotsDebugAcloprunner > 0) {
+        static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (aclDebugFlag > 0) {
             info("%s input[%d]:%s", opname_.c_str(), inputIndex_, dumpTensor(at).c_str());
         }
 
@@ -302,8 +302,8 @@ public:
 
     AclOpRunner& addConstInput(const void* ptr, int64_t buffersize, std::vector<int64_t>& dims, const aclFormat& format, diopiDtype_t dtype,
                                bool isScalar = false) {
-        static int parrotsDebugAcloprunner = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (parrotsDebugAcloprunner > 0) {
+        static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (aclDebugFlag > 0) {
             std::stringstream stream;
             stream << "Tensor:(";
             stream << " data:" << ptr;
@@ -372,8 +372,8 @@ public:
     }
 
     AclOpRunner& addInput(const void* ptr, int64_t buffersize, std::vector<int64_t>& dims, const aclFormat& format, diopiDtype_t dtype) {
-        static int parrotsDebugAcloprunner = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (parrotsDebugAcloprunner > 0) {
+        static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (aclDebugFlag > 0) {
             std::stringstream stream;
             stream << "Tensor:(";
             stream << " data:" << ptr;
@@ -399,8 +399,8 @@ public:
     AclOpRunner& addInput(const AscendTensor& at, const aclFormat& format) {
         ASCEND_CHECK_ABORT(at.defined(), "input should not be nullptr");
 
-        static int parrotsDebugAcloprunner = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (parrotsDebugAcloprunner > 0) {
+        static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (aclDebugFlag > 0) {
             info("%s input[%d]:%s", opname_.c_str(), inputIndex_, dumpTensor(at).c_str());
         }
 
@@ -453,8 +453,8 @@ public:
     }
 
     AclOpRunner& addOutput(void* ptr, int64_t buffersize, std::vector<int64_t>& dims, const aclFormat& format, diopiDtype_t dtype) {
-        static int parrotsDebugAcloprunner = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (parrotsDebugAcloprunner > 0) {
+        static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (aclDebugFlag > 0) {
             std::stringstream stream;
             stream << "Tensor:(";
             stream << " data:" << ptr;
@@ -478,8 +478,8 @@ public:
     AclOpRunner& addOutput(const AscendTensor& at, const aclFormat format) {
         ASCEND_CHECK_ABORT(at.defined(), "output should not be nullptr");
 
-        static int parrotsDebugAcloprunner = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (parrotsDebugAcloprunner > 0) {
+        static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (aclDebugFlag > 0) {
             info("%s output[%d]:%s", opname_.c_str(), outputIndex_, dumpTensor(at).c_str());
         }
         ASCEND_CHECK_ABORT(outputIndex_ >= 0 && outputIndex_ < OutputSize, "check 0<=outputIndex<OutputSize failed");
@@ -559,8 +559,8 @@ public:
 
     template <typename T>
     AclOpRunner& setAttr(const std::string& attrName, const typename std::vector<T>& value) {
-        static int parrotsDebugAcloprunner = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (parrotsDebugAcloprunner > 0) {
+        static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (aclDebugFlag > 0) {
             std::stringstream stream;
             stream << "attrName=" << attrName;
             stream << ",dtype=" << typeid(T).name();
@@ -653,8 +653,8 @@ public:
         }
         CALL_ACLRT(aclrtSynchronizeStream(stream));
         // Get environment variables once when run is called for the first time
-        static int parrotsDebugAcloprunner = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (parrotsDebugAcloprunner > 0) {
+        static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+        if (aclDebugFlag > 0) {
             info("%s", dumpRunnerInfo().c_str());
         }
 
