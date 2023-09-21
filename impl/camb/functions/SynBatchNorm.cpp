@@ -1,5 +1,5 @@
 /**
- * @fIle
+ * @file
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  */
@@ -62,10 +62,24 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
     // check the output dtype
-    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(sumDyTmpTr, sumDyTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
-    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(sumDyXmuTmpTr, sumDyXmuTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
-    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradWeightTmpTr, gradWeightTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
-    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradBiasTmpTr, gradBiasTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+    DiopiTensor sumDyTmpTr, sumDyXmuTmpTr, gradWeightTmpTr, gradBiasTmpTr;
+    if (inputG) {
+        REQUIRES_TENSOR_BY_DTYPE_OR_NOT(sumDyTmpTr, sumDyTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+        REQUIRES_TENSOR_BY_DTYPE_OR_NOT(sumDyXmuTmpTr, sumDyXmuTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+    } else {
+        sumDyTmpTr = sumDyTmpTr;
+        sumDyXmuTmpTr = sumDyXmuTr;
+    }
+    if (weightG) {
+        REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradWeightTmpTr, gradWeightTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+    } else {
+        gradWeightTmpTr = gradWeightTr;
+    }
+    if (biasG) {
+        REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradBiasTmpTr, gradBiasTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+    } else {
+        gradBiasTmpTr = gradBiasTr;
+    }
 
     // get descriptor
     CnnlTensorDesc inputDesc(inputTr, layout);
