@@ -33,6 +33,8 @@ def parse_args():
                               help='running mode, available options: gen_data, run_test and utest')
     general_args.add_argument('--use_db', action='store_true',
                               help='use database to save test data')
+    general_args.add_argument('--db_path', type=str, default='sqlite:///./cache/diopi_testrecord.db',
+                              help='database path')
     general_args.add_argument('--get_model_list', action='store_true',
                                help='Whether return the supported model list')
     general_args.add_argument('--failure_debug_level', type=int, default=0,
@@ -77,7 +79,7 @@ if __name__ == "__main__":
 
     glob_vars.use_db = args.use_db
     from conformance.db_operation import db_conn, BenchMarkCase, DeviceCase
-    db_conn.init_db()
+    db_conn.init_db(args.db_path)
 
     if args.get_model_list:
         print(f"The supported model_list: {model_list}")
