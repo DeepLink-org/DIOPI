@@ -31,7 +31,7 @@ diopiError_t diopiBmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     CnnlTensorDesc mat2Desc(mat2Casted, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outputCasted, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(
+    DIOPI_CALL_CNNL(
         cnnlBatchMatMul(handle, false, false, mat1Desc.get(), mat1Casted.data(), mat2Desc.get(), mat2Casted.data(), outDesc.get(), outputCasted.data()));
     DIOPI_CALL(dataTypeCast(ctx, outputTensor, outputCasted));
     return diopiSuccess;

@@ -103,24 +103,24 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     targetDesc.set(targetTensor, CNNL_LAYOUT_ARRAY, {n});
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetNlllossWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetNlllossWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
-    DIOPI_CALLCNNL(cnnlNlllossForward(handle,
-                                      reductionMode,
-                                      workspacePtr,
-                                      workspaceSize,
-                                      inputDesc.get(),
-                                      inputTensor.data(),
-                                      targetDesc.get(),
-                                      targetTensor.data(),
-                                      static_cast<int>(ignoreIndex),
-                                      weightDesc.get(),
-                                      weightTensor.data(),
-                                      twDesc.get(),
-                                      totalWeightTensor.data(),
-                                      outputDesc.get(),
-                                      outTmpTensor.data()));
+    DIOPI_CALL_CNNL(cnnlNlllossForward(handle,
+                                       reductionMode,
+                                       workspacePtr,
+                                       workspaceSize,
+                                       inputDesc.get(),
+                                       inputTensor.data(),
+                                       targetDesc.get(),
+                                       targetTensor.data(),
+                                       static_cast<int>(ignoreIndex),
+                                       weightDesc.get(),
+                                       weightTensor.data(),
+                                       twDesc.get(),
+                                       totalWeightTensor.data(),
+                                       outputDesc.get(),
+                                       outTmpTensor.data()));
 
     if (outTmpTensor.dtype() != outTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTmpTensor));
@@ -212,19 +212,19 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     targetDesc.set(targetTensor, CNNL_LAYOUT_ARRAY, {n});
     reduction == 0 ? gradOutputDesc.set(gradOutputTensor, CNNL_LAYOUT_ARRAY, {n}) : gradOutputDesc.set(gradOutputTensor, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlNlllossBackward(handle,
-                                       reductionMode,
-                                       gradOutputDesc.get(),
-                                       gradOutputTensor.data(),
-                                       targetDesc.get(),
-                                       targetTensor.data(),
-                                       static_cast<int>(ignoreIndex),
-                                       weightDesc.get(),
-                                       weightTensor.data(),
-                                       twDesc.get(),
-                                       totalWeightTensor.data(),
-                                       gradInputDesc.get(),
-                                       gradInputRealTensor.data()));
+    DIOPI_CALL_CNNL(cnnlNlllossBackward(handle,
+                                        reductionMode,
+                                        gradOutputDesc.get(),
+                                        gradOutputTensor.data(),
+                                        targetDesc.get(),
+                                        targetTensor.data(),
+                                        static_cast<int>(ignoreIndex),
+                                        weightDesc.get(),
+                                        weightTensor.data(),
+                                        twDesc.get(),
+                                        totalWeightTensor.data(),
+                                        gradInputDesc.get(),
+                                        gradInputRealTensor.data()));
     if (dim > 2) {
         // NHWC -> NCHW and dealing with data type
         gradInputRealTensor.view(inputTensor.shape());
@@ -320,7 +320,7 @@ diopiError_t diopiMSELoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
         descOut.set(trOutTmp, CNNL_LAYOUT_ARRAY);
     }
 
-    DIOPI_CALLCNNL(cnnlMSELoss(handle, cnnlReduction, descInput.get(), trInput.data(), descTarget.get(), trTarget.data(), descOut.get(), trOutTmp.data()));
+    DIOPI_CALL_CNNL(cnnlMSELoss(handle, cnnlReduction, descInput.get(), trInput.data(), descTarget.get(), trTarget.data(), descOut.get(), trOutTmp.data()));
     if (trOutTmp.dtype() != trOut.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, trOut, trOutTmp));
     }
@@ -369,16 +369,16 @@ diopiError_t diopiMSELossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         descGradInput.set(trGradInputTmp, CNNL_LAYOUT_ARRAY);
     }
 
-    DIOPI_CALLCNNL(cnnlMSELossBackward(handle,
-                                       cnnlReduction,
-                                       descInput.get(),
-                                       trInput.data(),
-                                       descTarget.get(),
-                                       trTarget.data(),
-                                       descGradOutput.get(),
-                                       trGradOutput.data(),
-                                       descGradInput.get(),
-                                       trGradInputTmp.data()));
+    DIOPI_CALL_CNNL(cnnlMSELossBackward(handle,
+                                        cnnlReduction,
+                                        descInput.get(),
+                                        trInput.data(),
+                                        descTarget.get(),
+                                        trTarget.data(),
+                                        descGradOutput.get(),
+                                        trGradOutput.data(),
+                                        descGradInput.get(),
+                                        trGradInputTmp.data()));
     if (trGradInputTmp.dtype() != trGradInput.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, trGradInput, trGradInputTmp));
     }
@@ -423,20 +423,20 @@ diopiError_t diopiSmoothL1Loss(diopiContextHandle_t ctx, diopiTensorHandle_t out
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetSmoothL1LossForwardWorkspaceSize(handle, inputDesc.get(), reductionMode, &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetSmoothL1LossForwardWorkspaceSize(handle, inputDesc.get(), reductionMode, &workspaceSize));
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
-    DIOPI_CALLCNNL(cnnlSmoothL1LossForward_v2(handle,
-                                              inputDesc.get(),
-                                              inputTensor.data(),
-                                              targetDesc.get(),
-                                              targetTensor.data(),
-                                              beta,
-                                              reductionMode,
-                                              workspacePtr,
-                                              workspaceSize,
-                                              outDesc.get(),
-                                              outTmpTensor.data()));
+    DIOPI_CALL_CNNL(cnnlSmoothL1LossForward_v2(handle,
+                                               inputDesc.get(),
+                                               inputTensor.data(),
+                                               targetDesc.get(),
+                                               targetTensor.data(),
+                                               beta,
+                                               reductionMode,
+                                               workspacePtr,
+                                               workspaceSize,
+                                               outDesc.get(),
+                                               outTmpTensor.data()));
 
     if (outTmpTensor.dtype() != outTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTmpTensor));
@@ -485,22 +485,22 @@ diopiError_t diopiSmoothL1LossBackward(diopiContextHandle_t ctx, diopiTensorHand
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetSmoothL1LossBackwardWorkspaceSize(handle, inputDesc.get(), reductionMode, &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetSmoothL1LossBackwardWorkspaceSize(handle, inputDesc.get(), reductionMode, &workspaceSize));
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
-    DIOPI_CALLCNNL(cnnlSmoothL1LossBackward_v2(handle,
-                                               inputDesc.get(),
-                                               inputTensor.data(),
-                                               targetDesc.get(),
-                                               targetTensor.data(),
-                                               gradOutputDesc.get(),
-                                               gradOutputTensor.data(),
-                                               beta,
-                                               reductionMode,
-                                               workspacePtr,
-                                               workspaceSize,
-                                               gradInputDesc.get(),
-                                               gradInputTmpTensor.data()));
+    DIOPI_CALL_CNNL(cnnlSmoothL1LossBackward_v2(handle,
+                                                inputDesc.get(),
+                                                inputTensor.data(),
+                                                targetDesc.get(),
+                                                targetTensor.data(),
+                                                gradOutputDesc.get(),
+                                                gradOutputTensor.data(),
+                                                beta,
+                                                reductionMode,
+                                                workspacePtr,
+                                                workspaceSize,
+                                                gradInputDesc.get(),
+                                                gradInputTmpTensor.data()));
 
     if (gradInputTmpTensor.dtype() != gradInputTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTmpTensor));

@@ -46,15 +46,15 @@ diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_
 // version should be greater than 1.15.2
 #if (CNNL_MAJOR * 10000 + CNNL_MINOR * 100 + CNNL_PATCHLEVEL >= 11502)
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetAdaptivePoolingForwardWorkspaceSize(handle, inputDesc.get(), mode, outputDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetAdaptivePoolingForwardWorkspaceSize(handle, inputDesc.get(), mode, outputDesc.get(), &workspaceSize));
 
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
     /* call adaptive pooling */
-    DIOPI_CALLCNNL(cnnlAdaptivePoolingForward_v2(
+    DIOPI_CALL_CNNL(cnnlAdaptivePoolingForward_v2(
         handle, inputDesc.get(), inputTr.data(), mode, workspacePtr, workspaceSize, outputDesc.get(), outputChannelLast.data(), nullptr, nullptr));
 #else
-    DIOPI_CALLCNNL(cnnlAdaptivePoolingForward(handle, inputDesc.get(), inputTr.data(), mode, outputDesc.get(), outputChannelLast.data(), nullptr, nullptr));
+    DIOPI_CALL_CNNL(cnnlAdaptivePoolingForward(handle, inputDesc.get(), inputTr.data(), mode, outputDesc.get(), outputChannelLast.data(), nullptr, nullptr));
 #endif
     // NHWC -> NCHW
     DIOPI_CALL(impl::camb::contiguous(ctx, outputChannelLast, diopiMemoryFormat_t::Contiguous));
@@ -98,14 +98,14 @@ diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTenso
     CnnlTensorDesc gradInputDesc(gradInputChannelLast, layout);
 
     /* call adaptive pooling */
-    DIOPI_CALLCNNL(cnnlAdaptivePoolingBackward(handle,
-                                               gradOutputDesc.get(),
-                                               gradOutputTr.data(),
-                                               nullptr,
-                                               nullptr,
-                                               CNNL_POOLING_AVERAGE_COUNT_INCLUDE_PADDING,
-                                               gradInputDesc.get(),
-                                               gradInputChannelLast.data()));
+    DIOPI_CALL_CNNL(cnnlAdaptivePoolingBackward(handle,
+                                                gradOutputDesc.get(),
+                                                gradOutputTr.data(),
+                                                nullptr,
+                                                nullptr,
+                                                CNNL_POOLING_AVERAGE_COUNT_INCLUDE_PADDING,
+                                                gradInputDesc.get(),
+                                                gradInputChannelLast.data()));
 
     // NHWC -> NCHW
     DIOPI_CALL(impl::camb::contiguous(ctx, gradInputChannelLast, diopiMemoryFormat_t::Contiguous));

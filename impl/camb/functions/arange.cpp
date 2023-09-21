@@ -21,14 +21,14 @@ diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t out, cons
     CnnlTensorDesc outDesc(out32Tensor, CNNL_LAYOUT_ARRAY);
 
     if (DiopiDataType::isInteger(out32Tensor.dtype())) {
-        DIOPI_CALLCNNL(cnnlArange_v2(handle, CNNL_COMPUTATION_ULTRAHIGH_PRECISION, &(start->ival), &(step->ival), outDesc.get(), out32Tensor.data()));
+        DIOPI_CALL_CNNL(cnnlArange_v2(handle, CNNL_COMPUTATION_ULTRAHIGH_PRECISION, &(start->ival), &(step->ival), outDesc.get(), out32Tensor.data()));
         if (out32Tensor.dtype() != outTensor.dtype()) {
             DIOPI_CALL(dataTypeCast(ctx, outTensor, out32Tensor));
         }
     } else if (DiopiDataType::isFloatPoint(out32Tensor.dtype())) {
         float startVal = DiopiDataType::isInteger(start->stype) ? start->ival : start->fval;
         float stepVal = DiopiDataType::isInteger(step->stype) ? step->ival : step->fval;
-        DIOPI_CALLCNNL(cnnlArange_v2(handle, CNNL_COMPUTATION_ULTRAHIGH_PRECISION, &(startVal), &(stepVal), outDesc.get(), out32Tensor.data()));
+        DIOPI_CALL_CNNL(cnnlArange_v2(handle, CNNL_COMPUTATION_ULTRAHIGH_PRECISION, &(startVal), &(stepVal), outDesc.get(), out32Tensor.data()));
     }
 
     return diopiSuccess;

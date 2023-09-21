@@ -19,7 +19,7 @@
 
 #include "diopi_helper.hpp"
 
-#define DIOPI_CALLCNNL(Expr)                                                                                                                    \
+#define DIOPI_CALL_CNNL(Expr)                                                                                                                   \
     do {                                                                                                                                        \
         ::cnnlStatus_t ret = Expr;                                                                                                              \
         if (ret != ::CNNL_STATUS_SUCCESS) {                                                                                                     \
@@ -28,7 +28,7 @@
         }                                                                                                                                       \
     } while (false);
 
-#define DIOPI_CHECKCNNL(Expr)                                                                            \
+#define DIOPI_CHECK_CNNL(Expr)                                                                           \
     do {                                                                                                 \
         ::cnnlStatus_t ret = Expr;                                                                       \
         if (ret != ::CNNL_STATUS_SUCCESS) {                                                              \
@@ -48,9 +48,9 @@ public:
 template <typename T, ::cnnlStatus_t (*fnCreate)(T*), ::cnnlStatus_t (*fnDestroy)(T)>
 class CnnlResourceGuard {
 public:
-    CnnlResourceGuard() { DIOPI_CHECKCNNL(fnCreate(&resource_)); }
+    CnnlResourceGuard() { DIOPI_CHECK_CNNL(fnCreate(&resource_)); }
 
-    ~CnnlResourceGuard() { DIOPI_CHECKCNNL(fnDestroy(resource_)); }
+    ~CnnlResourceGuard() { DIOPI_CHECK_CNNL(fnDestroy(resource_)); }
 
     T& get() { return resource_; }
 
@@ -76,7 +76,7 @@ public:
         std::vector<int32_t> strideTmp(dim);
         if (!dim) {
             std::vector<int> dimArray(1, 1);
-            DIOPI_CALLCNNL(cnnlSetTensorDescriptorEx(get(), CNNL_LAYOUT_ARRAY, dtype, 1, dimArray.data(), dimArray.data()));
+            DIOPI_CALL_CNNL(cnnlSetTensorDescriptorEx(get(), CNNL_LAYOUT_ARRAY, dtype, 1, dimArray.data(), dimArray.data()));
             return diopiSuccess;
         }
         if (layout == CNNL_LAYOUT_NHWC || layout == CNNL_LAYOUT_NDHWC || layout == CNNL_LAYOUT_NLC) {
@@ -102,7 +102,7 @@ public:
             shapeTmp = shape;
             strideTmp = stride;
         }
-        DIOPI_CALLCNNL(cnnlSetTensorDescriptorEx(get(), layout, dtype, shapeTmp.size(), shapeTmp.data(), strideTmp.data()));
+        DIOPI_CALL_CNNL(cnnlSetTensorDescriptorEx(get(), layout, dtype, shapeTmp.size(), shapeTmp.data(), strideTmp.data()));
         return diopiSuccess;
     }
     template <typename T>
@@ -129,7 +129,7 @@ public:
     diopiError_t set(T& t, cnnlTensorLayout_t layout, std::vector<int> dims) {
         cnnlDataType_t dtype;
         DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, t.dtype()));
-        DIOPI_CALLCNNL(cnnlSetTensorDescriptor(get(), layout, dtype, dims.size(), dims.data()));
+        DIOPI_CALL_CNNL(cnnlSetTensorDescriptor(get(), layout, dtype, dims.size(), dims.data()));
         return diopiSuccess;
     }
 };
@@ -173,7 +173,7 @@ public:
     CnnlTransposeDescriptor(const int dim, const int* permute) { set(dim, permute); }
 
     diopiError_t set(const int dim, const int* permute) {
-        DIOPI_CALLCNNL(cnnlSetTransposeDescriptor(get(), dim, permute));
+        DIOPI_CALL_CNNL(cnnlSetTransposeDescriptor(get(), dim, permute));
         return diopiSuccess;
     }
 };
@@ -189,7 +189,7 @@ public:
         for (int i = 0; i < axisNum; i++) {
             axisList[i] = static_cast<int>(axis[i]);
         }
-        DIOPI_CALLCNNL(cnnlSetReduceDescriptor(get(), axisList.data(), axisNum, reduceOp, tensorType, CNNL_NOT_PROPAGATE_NAN, isIndices, indicesType));
+        DIOPI_CALL_CNNL(cnnlSetReduceDescriptor(get(), axisList.data(), axisNum, reduceOp, tensorType, CNNL_NOT_PROPAGATE_NAN, isIndices, indicesType));
         return diopiSuccess;
     }
 };
@@ -200,9 +200,9 @@ public:
 
     diopiError_t set(cnnlTensorDescriptor_t inputDesc, const cnnlInterpMode_t mode, const cnnlInterpCoordinateTransformationMode_t coordinateTransMode,
                      float* scales) {
-        DIOPI_CALLCNNL(cnnlSetInterpDescriptor(this->get(), mode, coordinateTransMode));
+        DIOPI_CALL_CNNL(cnnlSetInterpDescriptor(this->get(), mode, coordinateTransMode));
         cnnlInterpRoundMode_t roundMode = CNNL_INTERP_FLOOR;
-        DIOPI_CALLCNNL(cnnlSetInterpDescriptorEx(this->get(), inputDesc, roundMode, scales, nullptr, -0.75, false));
+        DIOPI_CALL_CNNL(cnnlSetInterpDescriptorEx(this->get(), inputDesc, roundMode, scales, nullptr, -0.75, false));
         return diopiSuccess;
     }
 };

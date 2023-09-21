@@ -23,15 +23,15 @@ diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, doub
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, tensor.dtype()));
     cnnlRandGenerator_t cnnlGenerator;
     // cnnlRandRngType_t rng_type is recommended to be set as CNNL_RAND_RNG_MTGP32 on MLU300 series and CNNL_RAND_RNG_FAST on MLU200 series.
-    DIOPI_CALLCNNL(cnnlRandCreateGenerator(&cnnlGenerator, CNNL_RAND_RNG_MTGP32));
+    DIOPI_CALL_CNNL(cnnlRandCreateGenerator(&cnnlGenerator, CNNL_RAND_RNG_MTGP32));
 
     diopiTensorHandle_t stateHandle = nullptr;
     DIOPI_CALL(diopiGeneratorGetState(ctx, generator, &stateHandle));
     void* statePtr = nullptr;
     DIOPI_CALL(diopiGetTensorData(stateHandle, &statePtr));
-    DIOPI_CALLCNNL(cnnlRandGenerateNormal(handle, cnnlGenerator, dtype, statePtr, tensor.numel(), mean, std, tensor.data()));
+    DIOPI_CALL_CNNL(cnnlRandGenerateNormal(handle, cnnlGenerator, dtype, statePtr, tensor.numel(), mean, std, tensor.data()));
     DIOPI_CALL(diopiGeneratorSetState(generator, stateHandle));
-    DIOPI_CALLCNNL(cnnlRandDestroyGenerator(cnnlGenerator));
+    DIOPI_CALL_CNNL(cnnlRandDestroyGenerator(cnnlGenerator));
     return diopiSuccess;
 }
 

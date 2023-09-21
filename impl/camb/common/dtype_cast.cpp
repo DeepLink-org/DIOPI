@@ -116,7 +116,7 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const Dio
         CnnlTensorDesc srcTmpDesc(srcTmp, CNNL_LAYOUT_ARRAY);
         CnnlTensorDesc destTmpDesc(destTmp, CNNL_LAYOUT_ARRAY);
         cnnlCastDataType_t castType = it->second;
-        DIOPI_CALLCNNL(cnnlCastDataType(handle, srcTmpDesc.get(), srcTmp.data(), castType, destTmpDesc.get(), destTmp.data()));
+        DIOPI_CALL_CNNL(cnnlCastDataType(handle, srcTmpDesc.get(), srcTmp.data(), castType, destTmpDesc.get(), destTmp.data()));
     } else {
         DIOPI_CALL(dataTypeCastTwice(ctx, dest, src));
     }

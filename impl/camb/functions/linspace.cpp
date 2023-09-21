@@ -28,7 +28,7 @@ diopiError_t diopiLinspace(diopiContextHandle_t ctx, diopiTensorHandle_t out, co
     }
 
     CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlLinspace(handle, startValue, endValue, outDesc.get(), outTensor.data()));
+    DIOPI_CALL_CNNL(cnnlLinspace(handle, startValue, endValue, outDesc.get(), outTensor.data()));
     return diopiSuccess;
 }
 }  // namespace camb
