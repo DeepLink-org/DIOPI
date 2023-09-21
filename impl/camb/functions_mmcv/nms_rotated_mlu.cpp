@@ -30,6 +30,7 @@ extern "C" DIOPI_API diopiError_t diopiNmsRotatedMmcv(diopiContextHandle_t ctx, 
     impl::camb::DiopiTensor scoresTensor(scores);
     impl::camb::DiopiTensor labelsTensor(labels);
 
+    DIOPI_CHECK(boxesTensor.dtype() == diopi_dtype_float32 && scoresTensor.dtype() == diopi_dtype_float32, "mlu ops only support float32");
     if (multiLabel) {
         DIOPI_CHECK(labelsTensor.dim() == 2 || scoresTensor.dim() == 2, "labels' dim or scores' dim must equal to 2");
     }
@@ -49,7 +50,6 @@ extern "C" DIOPI_API diopiError_t diopiNmsRotatedMmcv(diopiContextHandle_t ctx, 
     impl::camb::MluOpTensorDesc scoresDesc(scoresTensor, MLUOP_LAYOUT_ARRAY);
     impl::camb::MluOpTensorDesc outputDesc(outputTensor, MLUOP_LAYOUT_ARRAY);
 
-    // workspace
     size_t workspaceSize = 0;
     DIOPI_CALLMLUOP(mluOpGetNmsRotatedWorkspaceSize(handle, boxesDesc.get(), &workspaceSize));
     void *workspace = nullptr;
@@ -67,13 +67,12 @@ extern "C" DIOPI_API diopiError_t diopiNmsRotatedMmcv(diopiContextHandle_t ctx, 
                                     workspaceSize,
                                     outputDesc.get(),
                                     outputTensor.data(),
-                                    (int *)outputSize.data()));
+                                    reinterpret_cast<int *>(outputSize.data())));
 
-    int bytes = sizeof(int) * outputSize.numel();
-    std::unique_ptr<char> outputSizeCpu(new char[bytes]);
-    cnrtMemcpyAsync(outputSizeCpu.get(), outputSize.data(), bytes, impl::camb::getStream(ctx), cnrtMemcpyDevToHost);
+    std::vector<int32_t> outputSizeCpu(1);
+    cnrtMemcpyAsync(outputSizeCpu.data(), outputSize.data(), sizeof(int32_t) * outputSize.numel(), impl::camb::getStream(ctx), cnrtMemcpyDevToHost);
     impl::camb::syncStreamInCtx(ctx);
-    int outputNum = reinterpret_cast<int *>(outputSizeCpu.get())[0];
+    int outputNum = outputSizeCpu[0];
 
     auto finalOutputTensor = impl::camb::requiresTensor(ctx, {outputNum}, outputTensor.dtype());
     DIOPI_CALL(impl::camb::diopiSlice(ctx, diopiTensorHandle_t(finalOutputTensor), diopiTensorHandle_t(outputTensor), 0, 0, outputNum, 1));
