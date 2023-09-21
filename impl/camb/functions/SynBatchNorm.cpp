@@ -1,5 +1,5 @@
 /**
- * @file
+ * @fIle
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  */
@@ -47,11 +47,11 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
         layout = CNNL_LAYOUT_NLC;
     } else if (4 == dim) {
         DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast), "inputTensor's memory format should be channelsLast2d");
-        DIOPI_CHECK(gradOutTr.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "inputTensor's memory format should be channelsLast2d");
+        DIOPI_CHECK(gradOutTr.isContiguous(diopiMemoryFormat_t::ChannelsLast), "inputTensor's memory format should be channelsLast2d");
         layout = CNNL_LAYOUT_NHWC;
     } else if (5 == dim) {
         DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "inputTensor's memory format should be channelsLast3d");
-        DIOPI_CHECK(gradOutTr.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "inputTensor's memory format should be channelsLast3d");
+        DIOPI_CHECK(gradOutTr.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "inputTensor's memory format should be channelsLast3d");
         layout = CNNL_LAYOUT_NDHWC;
     } else {
         DIOPI_CHECK(false, "Dim of input tensor should be in [2,3,4,5].");
