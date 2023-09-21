@@ -207,10 +207,10 @@ static diopiError_t batchMatmul(diopiContextHandle_t ctx, DiopiTensor outTensor,
     CnnlTensorDesc otherDesc(otherTensor, CNNL_LAYOUT_ARRAY);
 
     int32_t allowTf32Int = 1;
-    CnnlDescBase<cnnlMatMulDescriptor_t, cnnlMatMulDescCreate, cnnlMatMulDescDestroy> bmmDescGuard;
+    CnnlResourceGuard<cnnlMatMulDescriptor_t, cnnlMatMulDescCreate, cnnlMatMulDescDestroy> bmmDescGuard;
     cnnlSetMatMulDescAttr(bmmDescGuard.get(), CNNL_MATMUL_ALLOW_TF32, &allowTf32Int, sizeof(allowTf32Int));
-    CnnlDescBase<cnnlMatMulAlgo_t, cnnlMatMulAlgoCreate, cnnlMatMulAlgoDestroy> bmmAlgo;
-    CnnlDescBase<cnnlMatMulHeuristicResult_t, cnnlCreateMatMulHeuristicResult, cnnlDestroyMatMulHeuristicResult> bmmHeuristicResult;
+    CnnlResourceGuard<cnnlMatMulAlgo_t, cnnlMatMulAlgoCreate, cnnlMatMulAlgoDestroy> bmmAlgo;
+    CnnlResourceGuard<cnnlMatMulHeuristicResult_t, cnnlCreateMatMulHeuristicResult, cnnlDestroyMatMulHeuristicResult> bmmHeuristicResult;
 
     int returnAlgoCount = 0;
     cnnlGetBatchMatMulAlgoHeuristic(

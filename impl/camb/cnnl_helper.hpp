@@ -43,13 +43,10 @@ namespace camb {
 class CnnlDataType final {
 public:
     static diopiError_t convertToCnnlType(cnnlDataType_t* cnnlType, diopiDtype_t type);
-    static bool isFloatPoint(cnnlDataType_t cnnlDT);
-    static bool isInteger(cnnlDataType_t cnnlDT);
-    static bool isBool(cnnlDataType_t cnnlDT);
 };
 
 template <typename T, ::cnnlStatus_t (*fnCreate)(T*), ::cnnlStatus_t (*fnDestroy)(T)>
-class CnnlResourceGuard final {
+class CnnlResourceGuard {
 public:
     CnnlResourceGuard() { DIOPI_CHECKCNNL(fnCreate(&resource_)); }
 
@@ -61,20 +58,7 @@ protected:
     T resource_{0};
 };
 
-template <typename T, ::cnnlStatus_t (*fnCreate)(T*), ::cnnlStatus_t (*fnDestroy)(T)>
-class CnnlDescBase {
-public:
-    CnnlDescBase() { DIOPI_CHECKCNNL(fnCreate(&resource_)); }
-
-    virtual ~CnnlDescBase() { DIOPI_CHECKCNNL(fnDestroy(resource_)); }
-
-    T& get() { return resource_; }
-
-protected:
-    T resource_{0};
-};
-
-class CnnlTensorDesc : public CnnlDescBase<cnnlTensorDescriptor_t, cnnlCreateTensorDescriptor, cnnlDestroyTensorDescriptor> {
+class CnnlTensorDesc : public CnnlResourceGuard<cnnlTensorDescriptor_t, cnnlCreateTensorDescriptor, cnnlDestroyTensorDescriptor> {
 public:
     CnnlTensorDesc() = default;
 
@@ -182,7 +166,7 @@ private:
     std::mutex mutex_;
 };
 
-class CnnlTransposeDescriptor final : public CnnlDescBase<cnnlTransposeDescriptor_t, cnnlCreateTransposeDescriptor, cnnlDestroyTransposeDescriptor> {
+class CnnlTransposeDescriptor final : public CnnlResourceGuard<cnnlTransposeDescriptor_t, cnnlCreateTransposeDescriptor, cnnlDestroyTransposeDescriptor> {
 public:
     CnnlTransposeDescriptor() = default;
 
@@ -194,7 +178,7 @@ public:
     }
 };
 
-class CnnlReduceDescriptor final : public CnnlDescBase<cnnlReduceDescriptor_t, cnnlCreateReduceDescriptor, cnnlDestroyReduceDescriptor> {
+class CnnlReduceDescriptor final : public CnnlResourceGuard<cnnlReduceDescriptor_t, cnnlCreateReduceDescriptor, cnnlDestroyReduceDescriptor> {
 public:
     CnnlReduceDescriptor() = default;
 
@@ -210,7 +194,7 @@ public:
     }
 };
 
-class CnnlInterpDescriptor final : public CnnlDescBase<cnnlInterpDescriptor_t, cnnlCreateInterpDescriptor, cnnlDestroyInterpDescriptor> {
+class CnnlInterpDescriptor final : public CnnlResourceGuard<cnnlInterpDescriptor_t, cnnlCreateInterpDescriptor, cnnlDestroyInterpDescriptor> {
 public:
     CnnlInterpDescriptor() = default;
 

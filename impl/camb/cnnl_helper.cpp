@@ -60,15 +60,6 @@ diopiError_t CnnlDataType::convertToCnnlType(cnnlDataType_t* cnnlType, diopiDtyp
     }
     return diopiSuccess;
 }
-bool CnnlDataType::isFloatPoint(cnnlDataType_t cnnlDT) {
-    return cnnlDT == CNNL_DTYPE_HALF || cnnlDT == CNNL_DTYPE_FLOAT || cnnlDT == CNNL_DTYPE_DOUBLE || cnnlDT == CNNL_DTYPE_COMPLEX_HALF ||
-           cnnlDT == CNNL_DTYPE_COMPLEX_FLOAT;
-}
-bool CnnlDataType::isInteger(cnnlDataType_t cnnlDT) {
-    return cnnlDT == CNNL_DTYPE_INT8 || cnnlDT == CNNL_DTYPE_INT16 || cnnlDT == CNNL_DTYPE_INT31 || cnnlDT == CNNL_DTYPE_INT32 || cnnlDT == CNNL_DTYPE_INT64 ||
-           cnnlDT == CNNL_DTYPE_UINT8 || cnnlDT == CNNL_DTYPE_UINT16 || cnnlDT == CNNL_DTYPE_UINT32 || cnnlDT == CNNL_DTYPE_UINT64;
-}
-bool CnnlDataType::isBool(cnnlDataType_t cnnlDT) { return cnnlDT == CNNL_DTYPE_BOOL; }
 
 const std::unordered_map<std::vector<diopiDtype_t>, cnnlCastDataType_t, HashCnnlCastDType> gCnnlCastDataTypeMapping{
     {{diopi_dtype_bool, diopi_dtype_int32}, CNNL_CAST_BOOL_TO_INT32},
