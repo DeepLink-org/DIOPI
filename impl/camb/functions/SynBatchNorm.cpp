@@ -26,7 +26,6 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
     DiopiTensor inputTr(input);      // MLU-x
     DiopiTensor meanTr(mean);        // MLU-mean
     DiopiTensor invstdTr(invstd);    // MLU-ivstd
-    DiopiTensor weightTr(weight);    // no found in MLU
     // output
     DiopiTensor sumDyTr(sumDy);            // MLU-sumDy
     DiopiTensor sumDyXmuTr(sumDyXmu);      // MLU-sumDyXmu
