@@ -38,7 +38,7 @@ else()
   set(DIOPI_SUPA_DIR /usr/local/supa)
 endif()
 
-find_library(DIOPI_BR_LIB NAMES ${DEVICEIMPL} HINTS ${DIOPI_SUPA_DIR}/lib)
+find_library(DIOPI_BR_LIB NAMES ${DEVICEIMPL} HINTS ${DIOPI_SUPA_DIR}/lib ${DIOPI_SUPA_DIR}/lib64)
 message(STATUS "DIOPI-IMPL lib: ${DIOPI_BR_LIB}")
 if(NOT DIOPI_BR_LIB)
     message(FATAL_ERROR "${DEVICEIMPL} library not found !")
