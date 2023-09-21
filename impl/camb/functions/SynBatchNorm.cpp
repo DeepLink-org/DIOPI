@@ -104,6 +104,7 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
     size_t workspaceSize = 0;
     DIOPI_CALLCNNL(cnnlGetSyncBatchnormBackwardReduceWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
+    std::cout << "here6" << std::endl;
 
     DIOPI_CALLCNNL(cnnlSyncBatchnormBackwardReduce_v2(handle,
                                                       gradOutDesc.get(),
@@ -117,17 +118,17 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
                                                       workspacePtr,
                                                       workspaceSize,
                                                       gradWeightDesc.get(),
-                                                      gradWeightTmpTr.data(),
+                                                      weightG ? gradWeightTmpTr.data() : nullptr,
                                                       gradBiasDesc.get(),
-                                                      gradBiasTmpTr.data(),
+                                                      biasG ? gradBiasTmpTr.data() : nullptr,
                                                       sumDyDesc.get(),
-                                                      sumDyTmpTr.data(),
+                                                      inputG ? sumDyTmpTr.data() : nullptr,
                                                       sumDyXmuDesc.get(),
-                                                      sumDyXmuTmpTr.data(),
+                                                      inputG ? sumDyXmuTmpTr.data() : nullptr,
                                                       inputG,
                                                       weightG,
                                                       biasG))
-    std::cout << "here6" << std::endl;
+    std::cout << "here7" << std::endl;
 
     DIOPI_CALL(dataTypeCast(ctx, gradWeightTr, gradWeightTmpTr));
     DIOPI_CALL(dataTypeCast(ctx, gradBiasTr, gradBiasTmpTr));
