@@ -38,14 +38,14 @@ namespace ascend {
         }                                                                   \
     } while (0);
 
-#define ASCEND_CHECK_ABORT(condition, ...)               \
-    do {                                                 \
-        if (!(condition)) {                              \
-            printf("[%s:%d]: ", __FUNCTION__, __LINE__); \
-            printf(__VA_ARGS__);                         \
-            printf("\n");                                \
-            std::abort();                                \
-        }                                                \
+#define ASCEND_CHECK_ABORT(condition, ...)                            \
+    do {                                                              \
+        if (!(condition)) {                                           \
+            printf("[%s:%s:%d]: ", __FILE__, __FUNCTION__, __LINE__); \
+            printf(__VA_ARGS__);                                      \
+            printf("\n");                                             \
+            std::abort();                                             \
+        }                                                             \
     } while (0);
 
 #define ASCEND_CHECK_NULLPTR_ABORT(ptr) ASCEND_CHECK_ABORT(ptr, "Variable is nullptr, pls check.")
@@ -178,16 +178,13 @@ public:
     AscendTensor& asStrided(const std::vector<int64_t>& shape, const std::vector<int64_t>& stride);
     AscendTensor& unsqueeze(int dim);
     AscendTensor& view(const std::vector<int64_t>& shape);
-    // if you change the AscendTensor, must update the object attribute.
-    AscendTensor& update();
-    void reset();
 
 private:
     // diopi origin tensor
     diopiConstTensorHandle_t tensor_ = nullptr;
     diopiDtype_t dtype_{diopi_dtype_unsupported};
-    std::vector<int64_t> shape_{0};
-    std::vector<int64_t> stride_{0};
+    std::vector<int64_t> shape_{};
+    std::vector<int64_t> stride_{};
     diopiDevice_t device_ = diopiDevice_t::diopi_device;
     int64_t numel_{0};
     int64_t elemsize_{0};

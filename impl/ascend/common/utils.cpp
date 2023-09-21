@@ -6,33 +6,55 @@
 
 #include "utils.hpp"
 
+#include <string>
+#include <type_traits>
+#include <typeinfo>
+
 #include "../ascend_tensor.hpp"
 #include "acloprunner.hpp"
-
 namespace impl {
 namespace ascend {
 
-const char* diopiDtypeToStr(const diopiDtype_t dtype) {
-#define _dtype2str(type) \
-    if (type == dtype) return #type;
-    _dtype2str(diopi_dtype_float16);
-    _dtype2str(diopi_dtype_float32);
-    _dtype2str(diopi_dtype_float64);
-    _dtype2str(diopi_dtype_int8);
-    _dtype2str(diopi_dtype_uint8);
-    _dtype2str(diopi_dtype_int16);
-    _dtype2str(diopi_dtype_uint16);
-    _dtype2str(diopi_dtype_int32);
-    _dtype2str(diopi_dtype_uint32);
-    _dtype2str(diopi_dtype_int64);
-    _dtype2str(diopi_dtype_uint64);
-    _dtype2str(diopi_dtype_bool);
-    _dtype2str(diopi_dtype_bfloat16);
-    _dtype2str(diopi_dtype_tfloat32);
-    _dtype2str(diopi_dtype_complex64);
-    _dtype2str(diopi_dtype_complex128);
-
-    return nullptr;
+const char* diopiDtypeToStr(diopiDtype_t dtype) {
+    switch (dtype) {
+        case diopi_dtype_int8:
+            return "diopi_dtype_int8";
+        case diopi_dtype_uint8:
+            return "diopi_dtype_uint8";
+        case diopi_dtype_int16:
+            return "diopi_dtype_int16";
+        case diopi_dtype_uint16:
+            return "diopi_dtype_uint16";
+        case diopi_dtype_int32:
+            return "diopi_dtype_int32";
+        case diopi_dtype_uint32:
+            return "diopi_dtype_uint32";
+        case diopi_dtype_int64:
+            return "diopi_dtype_int64";
+        case diopi_dtype_uint64:
+            return "diopi_dtype_uint64";
+        case diopi_dtype_float16:
+            return "diopi_dtype_float16";
+        case diopi_dtype_float32:
+            return "diopi_dtype_float32";
+        case diopi_dtype_float64:
+            return "diopi_dtype_float64";
+        case diopi_dtype_bool:
+            return "diopi_dtype_bool";
+        case diopi_dtype_bfloat16:
+            return "diopi_dtype_bfloat16";
+        case diopi_dtype_tfloat32:
+            return "diopi_dtype_tfloat32";
+        case diopi_dtype_complex32:
+            return "diopi_dtype_complex32";
+        case diopi_dtype_complex64:
+            return "diopi_dtype_complex64";
+        case diopi_dtype_complex128:
+            return "diopi_dtype_complex128";
+        default:
+            return "unsupport dtype";
+    }
+    return "";
 }
 
 // ascend tensor utils
@@ -73,7 +95,7 @@ diopiError_t makeTensor(diopiContextHandle_t ctx, AscendTensor& dst, const std::
     return makeTensor(ctx, dst, shape, std::vector<int64_t>{}, dtype, diopi_device);
 }
 
-diopiError_t makeTensor(diopiContextHandle_t ctx, AscendTensor& dst, const diopiScalar_t* scalar, diopiDevice_t device) {
+diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, AscendTensor& dst, const diopiScalar_t* scalar, diopiDevice_t device) {
     std::vector<int64_t> shape{1};
     makeTensor(ctx, dst, shape, scalar->stype);
     auto th = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(dst));
@@ -164,7 +186,7 @@ diopiError_t reshape(diopiContextHandle_t ctx, const AscendTensor& src, AscendTe
 }
 
 diopiError_t aclAsStrided(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst) {
-    diopiTensorHandle_t targetObj = nullptr;
+    diopiTensorHandle_t targetObj = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(dst));
     AclOpRunner<4, 1>("AsStrided", ctx)
         .addInput(src.data(), src.getAclMemBufferSize(), src.getAclMemShape(), ACL_FORMAT_ND, src.dtype())
         .addConstInput(src.shape())
@@ -178,8 +200,8 @@ diopiError_t aclAsStrided(diopiContextHandle_t ctx, const AscendTensor& src, Asc
     return diopiSuccess;
 }
 
-diopiError_t contiguous(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst) {
-    if (src.isContiguous()) {
+diopiError_t contiguous(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst, diopiMemoryFormat_t format) {
+    if (src.isContiguous(format)) {
         dst = const_cast<AscendTensor&>(src);
         return diopiSuccess;
     }
@@ -534,26 +556,26 @@ diopiTensorHandle_t clone(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     return srcClone;
 }
 
-diopiTensorHandle_t contiguous(diopiContextHandle_t ctx, diopiConstTensorHandle_t src) {
-    if (isContiguous(src)) {
+diopiTensorHandle_t contiguous(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiMemoryFormat_t format) {
+    if (isContiguous(src, format)) {
         return const_cast<diopiTensorHandle_t>(src);
     } else {
         return clone(ctx, src);
     }
 }
 
-diopiTensorHandle_t contiguous(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiDtype_t dtype) {
+diopiTensorHandle_t contiguous(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiDtype_t dtype, diopiMemoryFormat_t format) {
     diopiDtype_t srcType;
     diopiGetTensorDtype(src, &srcType);
     if (srcType == dtype) {
-        return contiguous(ctx, src);
+        return contiguous(ctx, src, format);
     }
     diopiTensorHandle_t out;
-    if (isContiguous(src)) {
+    if (isContiguous(src, format)) {
         makeTensorLike(ctx, &out, src, dtype);
         diopiCastDtype(ctx, out, src);
     } else {
-        diopiTensorHandle_t outTemp = contiguous(ctx, src);
+        diopiTensorHandle_t outTemp = contiguous(ctx, src, format);
         makeTensorLike(ctx, &out, outTemp, dtype);
         diopiCastDtype(ctx, out, outTemp);
     }

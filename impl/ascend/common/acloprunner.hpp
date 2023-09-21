@@ -198,9 +198,10 @@ bool isContiguous(diopiConstTensorHandle_t tensor, diopiMemoryFormat_t format = 
 
 diopiTensorHandle_t clone(diopiContextHandle_t ctx, diopiConstTensorHandle_t src);
 
-diopiTensorHandle_t contiguous(diopiContextHandle_t ctx, diopiConstTensorHandle_t src);
+diopiTensorHandle_t contiguous(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous);
 
-diopiTensorHandle_t contiguous(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiDtype_t dtype);
+diopiTensorHandle_t contiguous(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiDtype_t dtype,
+                               diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous);
 
 int64_t getBaseBufferSize(diopiConstTensorHandle_t src);
 

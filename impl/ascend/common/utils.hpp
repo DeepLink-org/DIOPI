@@ -35,15 +35,17 @@ diopiError_t makeTensor(diopiContextHandle_t ctx, AscendTensor& dst, const std::
 
 diopiError_t makeTensorLike(diopiContextHandle_t ctx, AscendTensor& dst, const AscendTensor& src, diopiDtype_t dtype = diopi_dtype_unsupported);
 
-diopiError_t makeTensor(diopiContextHandle_t ctx, AscendTensor& dst, const diopiScalar_t* scalar, diopiDevice_t device = diopi_device);
+diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, AscendTensor& dst, const diopiScalar_t* scalar, diopiDevice_t device = diopi_device);
 
 diopiError_t reshape(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst, const std::vector<int64_t>& shape);
 
-diopiError_t contiguous(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst);
+diopiError_t contiguous(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous);
 
 diopiError_t castTensor(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst);
 
 diopiError_t castTensor(diopiContextHandle_t ctx, const std::vector<AscendTensor>& src, std::vector<AscendTensor>& dst, diopiDtype_t supportDtype);
+
+diopiError_t aclAsStrided(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst);
 
 }  // namespace ascend
 }  // namespace impl
