@@ -17,7 +17,7 @@
 
 #include "diopi_helper.hpp"
 
-#define DIOPI_CALLMLUOP(Expr)                                                                                                                     \
+#define DIOPI_CALL_MLU_OP(Expr)                                                                                                                   \
     do {                                                                                                                                          \
         mluOpStatus_t ret = Expr;                                                                                                                 \
         if (ret != ::MLUOP_STATUS_SUCCESS) {                                                                                                      \
@@ -26,7 +26,7 @@
         }                                                                                                                                         \
     } while (false);
 
-#define DIOPI_CHECKMLUOP(Expr)                                                                             \
+#define DIOPI_CHECK_MLU_OP(Expr)                                                                           \
     do {                                                                                                   \
         mluOpStatus_t ret = Expr;                                                                          \
         if (ret != MLUOP_STATUS_SUCCESS) {                                                                 \
@@ -40,17 +40,14 @@ namespace camb {
 class MluOpDataType final {
 public:
     static diopiError_t convertToMluOpType(mluOpDataType_t *mluOpType, diopiDtype_t type);
-    static bool isFloatPoint(mluOpDataType_t mluOpDT);
-    static bool isInteger(mluOpDataType_t mluOpDT);
-    static bool isBool(mluOpDataType_t mluOpDT);
 };
 
 template <typename T, mluOpStatus_t (*fnCreate)(T *), mluOpStatus_t (*fnDestroy)(T)>
 class MluOpResourceGuard final {
 public:
-    MluOpResourceGuard() { DIOPI_CHECKMLUOP(fnCreate(&resource_)); }
+    MluOpResourceGuard() { DIOPI_CHECK_MLU_OP(fnCreate(&resource_)); }
 
-    ~MluOpResourceGuard() { DIOPI_CHECKMLUOP(fnDestroy(resource_)); }
+    ~MluOpResourceGuard() { DIOPI_CHECK_MLU_OP(fnDestroy(resource_)); }
 
     T &get() { return resource_; }
 
@@ -61,9 +58,9 @@ protected:
 template <typename T, mluOpStatus_t (*fnCreate)(T *), mluOpStatus_t (*fnDestroy)(T)>
 class MluOpDescBase {
 public:
-    MluOpDescBase() { DIOPI_CHECKMLUOP(fnCreate(&resource_)); }
+    MluOpDescBase() { DIOPI_CHECK_MLU_OP(fnCreate(&resource_)); }
 
-    virtual ~MluOpDescBase() { DIOPI_CHECKMLUOP(fnDestroy(resource_)); }
+    virtual ~MluOpDescBase() { DIOPI_CHECK_MLU_OP(fnDestroy(resource_)); }
 
     T &get() { return resource_; }
 
@@ -90,7 +87,7 @@ public:
         std::vector<int32_t> strideTmp(dim);
         if (!dim) {
             std::vector<int> dimArray = {1};
-            DIOPI_CALLMLUOP(mluOpSetTensorDescriptorEx(get(), MLUOP_LAYOUT_ARRAY, dtype, 1, dimArray.data(), dimArray.data()));
+            DIOPI_CALL_MLU_OP(mluOpSetTensorDescriptorEx(get(), MLUOP_LAYOUT_ARRAY, dtype, 1, dimArray.data(), dimArray.data()));
             return diopiSuccess;
         }
         if (layout == MLUOP_LAYOUT_NHWC || layout == MLUOP_LAYOUT_NDHWC || layout == MLUOP_LAYOUT_NLC) {
@@ -116,7 +113,7 @@ public:
             shapeTmp = shape;
             strideTmp = stride;
         }
-        DIOPI_CALLMLUOP(mluOpSetTensorDescriptorEx(get(), layout, dtype, shapeTmp.size(), shapeTmp.data(), strideTmp.data()));
+        DIOPI_CALL_MLU_OP(mluOpSetTensorDescriptorEx(get(), layout, dtype, shapeTmp.size(), shapeTmp.data(), strideTmp.data()));
         return diopiSuccess;
     }
     template <typename T>
@@ -143,7 +140,7 @@ public:
     diopiError_t set(T &t, mluOpTensorLayout_t layout, std::vector<int> dims) {
         mluOpDataType_t mluOpDtype;
         DIOPI_CALL(MluOpDataType::convertToMluOpType(&mluOpDtype, t.dtype()));
-        DIOPI_CALLMLUOP(mluOpSetTensorDescriptor(get(), layout, mluOpDtype, dims.size(), dims.data()));
+        DIOPI_CALL_MLU_OP(mluOpSetTensorDescriptor(get(), layout, mluOpDtype, dims.size(), dims.data()));
         return diopiSuccess;
     }
 };

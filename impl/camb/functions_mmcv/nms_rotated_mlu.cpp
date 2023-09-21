@@ -22,9 +22,8 @@ extern "C" DIOPI_API diopiError_t diopiNmsRotatedMmcv(diopiContextHandle_t ctx, 
     impl::camb::DiopiTensor labelsTensor(labels);
 
     DIOPI_CHECK(boxesTensor.dtype() == diopi_dtype_float32 && scoresTensor.dtype() == diopi_dtype_float32, "mlu ops only support float32");
-    if (multiLabel) {
-        DIOPI_CHECK(labelsTensor.dim() == 2 || scoresTensor.dim() == 2, "labels' dim or scores' dim must equal to 2");
-    }
+    DIOPI_CHECK(!multiLabel, "mlu ops currently does not support multi_label nms_rotated");
+    // DIOPI_CHECK(labelsTensor.dim() == 2 || scoresTensor.dim() == 2, "labels' dim or scores' dim must equal to 2");
 
     if (boxesTensor.numel() == 0) {
         std::vector<int64_t> emptyShape{0};
@@ -60,10 +59,9 @@ extern "C" DIOPI_API diopiError_t diopiNmsRotatedMmcv(diopiContextHandle_t ctx, 
                                     outputTensor.data(),
                                     reinterpret_cast<int *>(outputSize.data())));
 
-    std::vector<int32_t> outputSizeCpu(1);
-    cnrtMemcpyAsync(outputSizeCpu.data(), outputSize.data(), sizeof(int32_t) * outputSize.numel(), impl::camb::getStream(ctx), cnrtMemcpyDevToHost);
+    int32_t outputNum;
+    cnrtMemcpyAsync(&outputNum, outputSize.data(), sizeof(int32_t) * outputSize.numel(), impl::camb::getStream(ctx), cnrtMemcpyDevToHost);
     impl::camb::syncStreamInCtx(ctx);
-    int outputNum = outputSizeCpu[0];
 
     auto finalOutputTensor = impl::camb::requiresTensor(ctx, {outputNum}, outputTensor.dtype());
     DIOPI_CALL(impl::camb::diopiSlice(ctx, diopiTensorHandle_t(finalOutputTensor), diopiTensorHandle_t(outputTensor), 0, 0, outputNum, 1));

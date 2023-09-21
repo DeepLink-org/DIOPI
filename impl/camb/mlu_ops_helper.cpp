@@ -61,18 +61,6 @@ diopiError_t MluOpDataType::convertToMluOpType(mluOpDataType_t* mluOpType, diopi
     return diopiSuccess;
 }
 
-bool MluOpDataType::isFloatPoint(mluOpDataType_t mluOpDT) {
-    return mluOpDT == MLUOP_DTYPE_HALF || mluOpDT == MLUOP_DTYPE_FLOAT || mluOpDT == MLUOP_DTYPE_DOUBLE || mluOpDT == MLUOP_DTYPE_COMPLEX_HALF ||
-           mluOpDT == MLUOP_DTYPE_COMPLEX_FLOAT;
-}
-
-bool MluOpDataType::isInteger(mluOpDataType_t mluOpDT) {
-    return mluOpDT == MLUOP_DTYPE_INT8 || mluOpDT == MLUOP_DTYPE_INT16 || mluOpDT == MLUOP_DTYPE_INT32 || mluOpDT == MLUOP_DTYPE_INT64 ||
-           mluOpDT == MLUOP_DTYPE_UINT8 || mluOpDT == MLUOP_DTYPE_UINT16 || mluOpDT == MLUOP_DTYPE_UINT32 || mluOpDT == MLUOP_DTYPE_UINT64;
-}
-
-bool MluOpDataType::isBool(mluOpDataType_t mluOpDT) { return mluOpDT == MLUOP_DTYPE_BOOL; }
-
 MluOpHandlePool mluOpHandlePool;
 
 }  // namespace camb
