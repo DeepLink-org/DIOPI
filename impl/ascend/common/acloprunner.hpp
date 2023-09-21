@@ -20,86 +20,21 @@
 #include <utility>
 #include <vector>
 
+#include "../ascend_tensor.hpp"
+#include "debug.hpp"
+
 namespace impl {
 namespace ascend {
 
-#define TRACK_ACL(x)                                                    \
-    {                                                                   \
-        static bool enable = std::getenv("DIOPI_TRACK_ACL") != nullptr; \
-        if (enable) {                                                   \
-            printf("[%s: %d]:%s\n", __FILE__, __LINE__, x);             \
-        }                                                               \
-    }
-
-#define CALL_ACLRT(Expr)                                                                          \
-    {                                                                                             \
-        TRACK_ACL(#Expr);                                                                         \
-        ::aclError ret = Expr;                                                                    \
-        if (ret != ::ACL_SUCCESS) {                                                               \
-            throw std::runtime_error(std::string("ascend device error:") + aclGetRecentErrMsg()); \
-        }                                                                                         \
-    }
-
-#define error(...)                               \
-    printf("[%s:%d]: ", __FUNCTION__, __LINE__); \
-    printf(__VA_ARGS__);                         \
-    printf("\n");                                \
-    std::abort();
-
-#define warning(...)                             \
-    printf("[%s:%d]: ", __FUNCTION__, __LINE__); \
-    printf(__VA_ARGS__);                         \
-    printf("\n");
-
-#define info(...)                                \
-    printf("[%s:%d]: ", __FUNCTION__, __LINE__); \
-    printf(__VA_ARGS__);                         \
-    printf("\n");
-
-#define check_args(condition, ...)                   \
-    if (!(condition)) {                              \
-        printf("[%s:%d]: ", __FUNCTION__, __LINE__); \
-        printf(__VA_ARGS__);                         \
-        printf("\n");                                \
-        std::abort();                                \
-    }
-
 aclDataType getAclDataType(diopiDtype_t type);
 aclDataType getAclDataType(diopiConstTensorHandle_t th);
-
-inline std::string dumpTensor(diopiConstTensorHandle_t th, const std::string& input = "") {
-    std::stringstream stream;
-    stream << "Tensor(handle:" << th;
-    stream << input << std::endl;
-    if (th) {
-        diopiSize_t shape;
-        diopiSize_t stride;
-        const void* ptr;
-        diopiDtype_t dtype;
-        diopiDevice_t device;
-        diopiGetTensorDtype(th, &dtype);
-        diopiGetTensorDataConst(th, &ptr);
-        diopiGetTensorShape(th, &shape);
-        diopiGetTensorStride(th, &stride);
-        diopiGetTensorDevice(th, &device);
-        stream << " ,data:" << ptr;
-        stream << " ,dtype:" << dtype;
-        stream << " ,device:" << device;
-        stream << " ,shape:";
-        std::for_each(shape.data, shape.data + shape.len, [&stream](int64_t v) { stream << v << " "; });
-        stream << " ,stride:";
-        std::for_each(stride.data, stride.data + stride.len, [&stream](int64_t v) { stream << v << " "; });
-    }
-    stream << ")";
-    return stream.str();
-}
 
 inline aclFormat getAclDataFormat(diopiConstTensorHandle_t th) {
     diopiSize_t shape;
     diopiSize_t stride;
     diopiGetTensorShape(th, &shape);
     diopiGetTensorStride(th, &stride);
-    check_args(stride.len == shape.len, "stride.len == shape.len check failed");
+    ASCEND_CHECK_ABORT(stride.len == shape.len, "stride.len == shape.len check failed");
     if (shape.len == 4) {
         std::array<int64_t, 4> thStride{stride.data[0], stride.data[1], stride.data[2], stride.data[3]};
         {
@@ -139,7 +74,7 @@ inline bool isFloatingType(const diopiDtype_t& type) { return (type <= 10 && typ
 
 template <typename T>
 T getValue(const diopiScalar_t* scalar) {
-    check_args(scalar != nullptr, "input should not be nullptr");
+    ASCEND_CHECK_ABORT(scalar != nullptr, "input should not be nullptr");
     if (isIntegralTypeWithBool(scalar->stype)) {
         return static_cast<T>(scalar->ival);
     } else {
@@ -278,8 +213,8 @@ template <int InputSize, int OutputSize, aclDataType (*dtypeCastStrategy)(diopiD
 class AclOpRunner {
     std::string opname_;
     aclopAttr* attr_;
-    std::array<aclTensorDesc*, InputSize> inputDescs_;
-    std::array<aclDataBuffer*, InputSize> inputBuffers_;
+    std::vector<aclTensorDesc*> inputDescs_;
+    std::vector<aclDataBuffer*> inputBuffers_;
     std::array<aclTensorDesc*, OutputSize> outputDescs_;
     std::array<aclDataBuffer*, OutputSize> outputBuffers_;
     std::vector<int64_t> syncIdxs_;
@@ -289,6 +224,8 @@ class AclOpRunner {
     int inputIndex_ = 0;
     int outputIndex_ = 0;
     bool sync_ = false;
+    bool hasDynamicInput_ = false;
+    int dynamcInputSize_ = -1;
 
     std::string dumpRunnerInfo() {
         std::stringstream sstream;
@@ -298,10 +235,10 @@ class AclOpRunner {
 
 public:
     explicit AclOpRunner(std::string opname, diopiContextHandle_t context) : opname_(std::move(opname)), attr_(aclopCreateAttr()), context_(context) {
-        inputDescs_.fill(nullptr);
-        inputBuffers_.fill(nullptr);
+        inputDescs_.resize(InputSize, nullptr);
+        inputBuffers_.resize(InputSize, nullptr);
         outputDescs_.fill(nullptr);
-        inputBuffers_.fill(nullptr);
+        outputBuffers_.fill(nullptr);
     }
 
     ~AclOpRunner() {
@@ -322,51 +259,41 @@ public:
         std::for_each(outputBuffers_.begin(), outputBuffers_.end(), destoryAclDataBuffer);
     }
 
-    AclOpRunner& addConstInput(diopiConstTensorHandle_t th, const aclFormat& format, bool isScalar = false) {
-        check_args(th != nullptr, "input should not be nullptr");
-        diopiSize_t shape;
-        diopiSize_t stride;
-        int64_t numel = 0;
-        int64_t itemsize = 0;
+    /**
+     * @brief Retrieve the actual count of input parameters. In the case of dynamic inputs, it returns the number of dynamic tensors.
+     * @return the actual count of input parameters.
+     */
+    int64_t inputSize() { return hasDynamicInput_ ? dynamcInputSize_ : InputSize; }
 
-        const void* ptr = nullptr;
-        diopiGetTensorShape(th, &shape);
-        diopiGetTensorStride(th, &stride);
-        diopiGetTensorNumel(th, &numel);
-        diopiGetTensorElemSize(th, &itemsize);
-        diopiGetTensorDataConst(th, &ptr);
-
-        diopiDtype_t dtype;
-        diopiGetTensorDtype(th, &dtype);
-
-        std::vector<int64_t> dims(shape.len);
-        for (size_t i = 0; i < dims.size(); ++i) {
-            dims[i] = shape.data[i];
-        }
-        if (dims.empty() && numel == 1) {
+    AclOpRunner& addConstInput(const AscendTensor& at, const aclFormat& format, bool isScalar = false) {
+        ASCEND_CHECK_ABORT(at.defined(), "input should not be nullptr");
+        std::vector<int64_t> dims = at.shape();
+        if (dims.empty() && at.numel() == 1) {
             dims.push_back(1);
         }
 
         static int parrotsDebugAcloprunner = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
         if (parrotsDebugAcloprunner > 0) {
-            info("%s input[%d]:%s", opname_.c_str(), inputIndex_, dumpTensor(th).c_str());
+            info("%s input[%d]:%s", opname_.c_str(), inputIndex_, dumpTensor(at).c_str());
         }
 
-        check_args(inputIndex_ >= 0 && inputIndex_ < InputSize, "check 0<=inputIndex_<InputSize failed");
+        ASCEND_CHECK_ABORT(inputIndex_ >= 0 && inputIndex_ < InputSize, "check 0<=inputIndex<InputSize failed");
 
         auto& desc = inputDescs_[inputIndex_];
         auto& buffer = inputBuffers_[inputIndex_];
 
-        if (isScalar)
-            desc = aclCreateTensorDesc(dtypeCastStrategy(dtype), 0, nullptr, format);
-        else
-            desc = aclCreateTensorDesc(dtypeCastStrategy(dtype), dims.size(), dims.data(), format);
-
-        check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
         if (isScalar) {
-            CALL_ACLRT(aclSetTensorConst(desc, const_cast<void*>(ptr), itemsize));
+            desc = aclCreateTensorDesc(dtypeCastStrategy(at.dtype()), 0, nullptr, format);
+
         } else {
-            if (numel > 0) CALL_ACLRT(aclSetTensorConst(desc, const_cast<void*>(ptr), numel * itemsize));
+            desc = aclCreateTensorDesc(dtypeCastStrategy(at.dtype()), dims.size(), dims.data(), format);
+        }
+
+        ASCEND_CHECK_ABORT(desc != nullptr, "aclTensorDesc should not be nullptr.");
+        if (isScalar) {
+            CALL_ACLRT(aclSetTensorConst(desc, const_cast<void*>(at.data()), at.elemsize()));
+        } else {
+            if (at.numel() > 0) CALL_ACLRT(aclSetTensorConst(desc, const_cast<void*>(at.data()), at.numel() * at.elemsize()));
         }
         buffer = aclCreateDataBuffer(nullptr, 0);
         inputIndex_++;
@@ -387,55 +314,50 @@ public:
             info("%s output[%d]: %s", opname_.c_str(), outputIndex_, stream.str().c_str());
         }
 
-        check_args(inputIndex_ >= 0 && inputIndex_ < InputSize, "check 0<=inputIndex_<InputSize failed");
+        ASCEND_CHECK_ABORT(inputIndex_ >= 0 && inputIndex_ < InputSize, "check 0<=inputIndex_<InputSize failed");
 
         auto& desc = inputDescs_[inputIndex_];
         auto& buffer = inputBuffers_[inputIndex_];
 
         desc = aclCreateTensorDesc(dtypeCastStrategy(dtype), dims.size(), dims.data(), format);
 
-        check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
+        ASCEND_CHECK_ABORT(desc != nullptr, "aclTensorDesc should not be nullptr.");
         CALL_ACLRT(aclSetTensorConst(desc, const_cast<void*>(ptr), buffersize));
         buffer = aclCreateDataBuffer(nullptr, 0);
         inputIndex_++;
         return *this;
     }
 
-    AclOpRunner& addConstInput(diopiConstTensorHandle_t th, bool isScalar = false) {
-        addConstInput(th, getAclDataFormat(th), isScalar);
-        return *this;
+    AclOpRunner& addConstInput(diopiConstTensorHandle_t th, const aclFormat& format, bool isScalar = false) {
+        AscendTensor at = AscendTensor(th);
+        return addConstInput(at, format, isScalar);
     }
 
+    AclOpRunner& addConstInput(diopiConstTensorHandle_t th, bool isScalar = false) { return addConstInput(th, getAclDataFormat(th), isScalar); }
+
     AclOpRunner& addConstInput(diopiTensorHandle_t th, bool isScalar = false) {
-        addConstInput(reinterpret_cast<diopiConstTensorHandle_t>(th), isScalar);
-        return *this;
+        return addConstInput(reinterpret_cast<diopiConstTensorHandle_t>(th), isScalar);
     }
 
     AclOpRunner& addConstInput(const diopiSize_t& size, diopiDtype_t dtype) {
         diopiTensorHandle_t sizeTensor;
         makeTensorFromSize(context_, &size, &sizeTensor, dtype);
-        addConstInput(sizeTensor, ACL_FORMAT_ND, false);
-        return *this;
+        return addConstInput(sizeTensor, ACL_FORMAT_ND, false);
     }
 
     AclOpRunner& addConstInput(const diopiSize_t& size) {
         diopiTensorHandle_t sizeTensor;
         makeTensorFromSize(context_, &size, &sizeTensor);
-        addConstInput(sizeTensor, ACL_FORMAT_ND, false);
-        return *this;
+        return addConstInput(sizeTensor, ACL_FORMAT_ND, false);
     }
 
     AclOpRunner& addConstInput(const diopiScalar_t& scalar, diopiDtype_t dtype) {
         diopiTensorHandle_t scalarTensor;
         makeTensorFromScalar(context_, &scalar, &scalarTensor, dtype);
-        addConstInput(scalarTensor, ACL_FORMAT_ND, true);
-        return *this;
+        return addConstInput(scalarTensor, ACL_FORMAT_ND, true);
     }
 
-    AclOpRunner& addConstInput(const diopiScalar_t& scalar) {
-        addConstInput(scalar, scalar.stype);
-        return *this;
-    }
+    AclOpRunner& addConstInput(const diopiScalar_t& scalar) { return addConstInput(scalar, scalar.stype); }
 
     AclOpRunner& addConstInput(const double val, diopiDtype_t dtype) {
         diopiScalar_t scalar = diopiScalar_t();
@@ -446,8 +368,7 @@ public:
             scalar.stype = diopi_dtype_float64;
             scalar.fval = val;
         }
-        addConstInput(scalar, dtype);
-        return *this;
+        return addConstInput(scalar, dtype);
     }
 
     AclOpRunner& addInput(const void* ptr, int64_t buffersize, std::vector<int64_t>& dims, const aclFormat& format, diopiDtype_t dtype) {
@@ -463,43 +384,42 @@ public:
             info("%s input[%d]: %s", opname_.c_str(), inputIndex_, stream.str().c_str());
         }
 
-        check_args(inputIndex_ >= 0 && inputIndex_ < InputSize, "check 0<=inputIndex_<InputSize failed");
+        ASCEND_CHECK_ABORT(inputIndex_ >= 0 && inputIndex_ < InputSize, "check 0<=inputIndex<InputSize failed");
 
         auto& desc = inputDescs_[inputIndex_];
         auto& buffer = inputBuffers_[inputIndex_];
 
         desc = aclCreateTensorDesc(dtypeCastStrategy(dtype), dims.size(), dims.data(), format);
-        check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
+        ASCEND_CHECK_ABORT(desc != nullptr, "aclTensorDesc should not be nullptr.");
         buffer = aclCreateDataBuffer(const_cast<void*>(ptr), buffersize);
         inputIndex_++;
         return *this;
     }
 
-    AclOpRunner& addInput(diopiConstTensorHandle_t th, const aclFormat& format) {
-        check_args(th != nullptr, "input should not be nullptr");
-        const void* ptr = nullptr;
-        diopiDtype_t dtype;
-        diopiGetTensorDtype(th, &dtype);
-        diopiGetTensorDataConst(th, &ptr);
-
-        std::vector<int64_t> dims = getBaseShape(th);
-        int64_t buffSize = getBaseBufferSize(th);
+    AclOpRunner& addInput(const AscendTensor& at, const aclFormat& format) {
+        ASCEND_CHECK_ABORT(at.defined(), "input should not be nullptr");
 
         static int parrotsDebugAcloprunner = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
         if (parrotsDebugAcloprunner > 0) {
-            info("%s input[%d]:%s", opname_.c_str(), inputIndex_, dumpTensor(th).c_str());
+            info("%s input[%d]:%s", opname_.c_str(), inputIndex_, dumpTensor(at).c_str());
         }
 
-        check_args(inputIndex_ >= 0 && inputIndex_ < InputSize, "check 0<=inputIndex_<InputSize failed");
+        ASCEND_CHECK_ABORT(inputIndex_ >= 0 && inputIndex_ < inputSize(), "check 0<=inputIndex<inputSize() failed");
 
         auto& desc = inputDescs_[inputIndex_];
         auto& buffer = inputBuffers_[inputIndex_];
 
-        desc = aclCreateTensorDesc(dtypeCastStrategy(dtype), dims.size(), dims.data(), format);
-        check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
-        buffer = aclCreateDataBuffer(const_cast<void*>(ptr), buffSize);
+        std::vector<int64_t> dims = at.getAclMemShape();
+        desc = aclCreateTensorDesc(dtypeCastStrategy(at.dtype()), dims.size(), dims.data(), format);
+        ASCEND_CHECK_ABORT(desc != nullptr, "aclTensorDesc should not be nullptr.");
+        buffer = aclCreateDataBuffer(const_cast<void*>(at.data()), at.getAclMemBufferSize());
         inputIndex_++;
         return *this;
+    }
+
+    AclOpRunner& addInput(diopiConstTensorHandle_t th, const aclFormat& format) {
+        AscendTensor at = AscendTensor(th);
+        return addInput(at, format);
     }
 
     AclOpRunner& addInput(diopiConstTensorHandle_t th) {
@@ -512,6 +432,24 @@ public:
     AclOpRunner& addInput(diopiConstTensorHandle_t th, diopiDtype_t dtype) {
         auto thCopy = contiguous(context_, th, dtype);
         return addInput(thCopy, getAclDataFormat(thCopy));
+    }
+
+    /**
+     * @brief: support input dynamic length tensors, need only one input(dynamic)
+     * @param[in] tensors diopi const tensors pointer.
+     * @return A reference to the modified AclOpRunner
+     */
+    template <typename T>
+    AclOpRunner& addDynamicInput(const std::vector<T>& tensors) {
+        ASCEND_CHECK_ABORT(hasDynamicInput_ || inputIndex_ == 0 || InputSize == 1, "only support one dynamic input");
+        hasDynamicInput_ = true;
+        dynamcInputSize_ = tensors.size();
+        inputDescs_.resize(dynamcInputSize_);
+        inputBuffers_.resize(dynamcInputSize_);
+        for (int i = 0; i < dynamcInputSize_; ++i) {
+            addInput(tensors[i]);
+        }
+        return *this;
     }
 
     AclOpRunner& addOutput(void* ptr, int64_t buffersize, std::vector<int64_t>& dims, const aclFormat& format, diopiDtype_t dtype) {
@@ -527,54 +465,57 @@ public:
             info("%s output[%d]: %s", opname_.c_str(), outputIndex_, stream.str().c_str());
         }
 
-        check_args(outputIndex_ >= 0 && outputIndex_ < OutputSize, "check 0<=outputIndex_<OutputSize failed");
+        ASCEND_CHECK_ABORT(outputIndex_ >= 0 && outputIndex_ < OutputSize, "check 0<=outputIndex<OutputSize failed");
         auto& desc = outputDescs_[outputIndex_];
         auto& buffer = outputBuffers_[outputIndex_];
         desc = aclCreateTensorDesc(dtypeCastStrategy(dtype), dims.size(), dims.data(), format);
-        check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
+        ASCEND_CHECK_ABORT(desc != nullptr, "aclTensorDesc should not be nullptr.");
         buffer = aclCreateDataBuffer(ptr, buffersize);
         outputIndex_++;
         return *this;
     }
 
-    AclOpRunner& addOutput(diopiTensorHandle_t th, const aclFormat format) {
-        check_args(th != nullptr, "output should not be nullptr");
-
-        void* ptr = nullptr;
-        diopiDtype_t dtype;
-        diopiGetTensorDtype(th, &dtype);
-        diopiGetTensorData(th, &ptr);
-
-        std::vector<int64_t> dims = getBaseShape(th);
-        int64_t buffSize = getBaseBufferSize(th);
+    AclOpRunner& addOutput(const AscendTensor& at, const aclFormat format) {
+        ASCEND_CHECK_ABORT(at.defined(), "output should not be nullptr");
 
         static int parrotsDebugAcloprunner = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
         if (parrotsDebugAcloprunner > 0) {
-            info("%s output[%d]:%s", opname_.c_str(), outputIndex_, dumpTensor(th).c_str());
+            info("%s output[%d]:%s", opname_.c_str(), outputIndex_, dumpTensor(at).c_str());
         }
-        check_args(outputIndex_ >= 0 && outputIndex_ < OutputSize, "check 0<=outputIndex_<OutputSize failed");
+        ASCEND_CHECK_ABORT(outputIndex_ >= 0 && outputIndex_ < OutputSize, "check 0<=outputIndex<OutputSize failed");
         auto& desc = outputDescs_[outputIndex_];
         auto& buffer = outputBuffers_[outputIndex_];
-        desc = aclCreateTensorDesc(dtypeCastStrategy(dtype), dims.size(), dims.data(), format);
-        check_args(desc != nullptr, "aclTensorDesc should not be nullptr.");
-        buffer = aclCreateDataBuffer(ptr, buffSize);
+
+        std::vector<int64_t> dims = at.getAclMemShape();
+        desc = aclCreateTensorDesc(dtypeCastStrategy(at.dtype()), dims.size(), dims.data(), format);
+        ASCEND_CHECK_ABORT(desc != nullptr, "aclTensorDesc should not be nullptr.");
+        // change const void* to void*
+        buffer = aclCreateDataBuffer(const_cast<void*>(at.data()), at.getAclMemBufferSize());
         outputIndex_++;
         return *this;
     }
 
-    AclOpRunner& addOutput(diopiTensorHandle_t th) {
-        if (isContiguous(th)) {
-            return addOutput(th, getAclDataFormat(th));
+    AclOpRunner& addOutput(diopiTensorHandle_t th, const aclFormat format) {
+        AscendTensor at = AscendTensor(th);
+        return addOutput(at, format);
+    }
+
+    AclOpRunner& addOutput(const AscendTensor& at) {
+        if (at.isContiguous()) {
+            return addOutput(at, at.getAclDataFormat());
         } else {
             diopiTensorHandle_t thCopy;
             diopiSize_t shape;
-            diopiDtype_t dtype;
-            diopiGetTensorShape(th, &shape);
-            diopiGetTensorDtype(th, &dtype);
-            diopiRequireTensor(context_, &thCopy, &shape, nullptr, dtype, diopi_device);
-            nonContiguousOutputPairs_.emplace_back(th, thCopy);
-            return addOutput(thCopy, getAclDataFormat(th));
+            diopiGetTensorShape(at.tensorHandle(), &shape);
+            diopiRequireTensor(context_, &thCopy, &shape, nullptr, at.dtype(), diopi_device);
+            nonContiguousOutputPairs_.emplace_back(const_cast<diopiTensorHandle_t>(at.tensorHandle()), thCopy);
+            return addOutput(thCopy, at.getAclDataFormat());
         }
+    }
+
+    AclOpRunner& addOutput(diopiTensorHandle_t th) {
+        AscendTensor at = AscendTensor(th);
+        return addOutput(at);
     }
 
     AclOpRunner& addOutputWithoutContiguous(diopiTensorHandle_t th) { return addOutput(th, getAclDataFormat(th)); }
@@ -612,7 +553,7 @@ public:
 
     template <typename T>
     AclOpRunner& setAttr(const std::string& attrName, ...) {
-        check_args(false, "%s: no specialization for %s type.", dumpRunnerInfo().c_str(), typeid(T).name());
+        ASCEND_CHECK_ABORT(false, "%s: no specialization for %s type.", dumpRunnerInfo().c_str(), typeid(T).name());
         return *this;
     }
 
@@ -636,17 +577,15 @@ public:
     AclOpRunner& addSyncOutput(diopiTensorHandle_t* th, const aclFormat format) {
         syncIdxs_.push_back(outputIndex_);
         syncTensors_.push_back(th);
-        addOutput(*th, format);
         sync_ = true;
-        return *this;
+        return addOutput(*th, format);
     }
 
     AclOpRunner& addSyncOutput(diopiTensorHandle_t* th) {
         syncIdxs_.push_back(outputIndex_);
         syncTensors_.push_back(th);
-        addOutput(*th, getAclDataFormat(*th));
         sync_ = true;
-        return *this;
+        return addOutput(*th, getAclDataFormat(*th));
     }
 
     template <aclEngineType EngineType = ACL_ENGINE_SYS, aclCompileType CompileType = ACL_COMPILE_SYS>
@@ -753,7 +692,7 @@ static inline diopiDtype_t promoteTypes(diopiDtype_t a, diopiDtype_t b) {
         /* b1 */ {u1, i1, i2, i4, i8, f2, f4, f8, c4, c8, b1},
     };
 
-    check_args((dtypeMap.count(a) != 0 && dtypeMap.count(b) != 0), "dtype a %d or b %d not supported.", a, b);
+    ASCEND_CHECK_ABORT((dtypeMap.count(a) != 0 && dtypeMap.count(b) != 0), "dtype a %d or b %d not supported.", a, b);
     return promoteTypesLookup[dtypeMap[a]][dtypeMap[b]];
 }
 
