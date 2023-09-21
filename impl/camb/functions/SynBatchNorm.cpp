@@ -66,28 +66,15 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
     std::cout << "here2" << std::endl;
+
     // check the output dtype
-    DiopiTensor sumDyTmpTr, sumDyXmuTmpTr, gradWeightTmpTr, gradBiasTmpTr;
-    if (inputG) {
-        REQUIRES_TENSOR_BY_DTYPE_OR_NOT(sumDyTmpTr, sumDyTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
-        REQUIRES_TENSOR_BY_DTYPE_OR_NOT(sumDyXmuTmpTr, sumDyXmuTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
-    } else {
-        sumDyTmpTr = sumDyTr;
-        sumDyXmuTmpTr = sumDyXmuTr;
-    }
-    std::cout << "here3" << std::endl;
-    if (weightG) {
-        REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradWeightTmpTr, gradWeightTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
-    } else {
-        gradWeightTmpTr = gradWeightTr;
-    }
-    std::cout << "here4" << std::endl;
-    if (biasG) {
-        REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradBiasTmpTr, gradBiasTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
-    } else {
-        gradBiasTmpTr = gradBiasTr;
-    }
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(sumDyTmpTr, sumDyTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(sumDyXmuTmpTr, sumDyXmuTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradWeightTmpTr, gradWeightTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradBiasTmpTr, gradBiasTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+
     std::cout << "here5" << std::endl;
+    std::cout << inputG << weightG << biasG << std::endl;
 
     // get descriptor
     CnnlTensorDesc inputDesc(inputTr, layout);
@@ -100,11 +87,12 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
     CnnlTensorDesc sumDyDesc(sumDyTmpTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc sumDyXmuDesc(sumDyXmuTmpTr, CNNL_LAYOUT_ARRAY);
 
+    std::cout << "here6" << std::endl;
     /* Get Workspace */
     size_t workspaceSize = 0;
     DIOPI_CALLCNNL(cnnlGetSyncBatchnormBackwardReduceWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
-    std::cout << "here6" << std::endl;
+    std::cout << "here7" << std::endl;
 
     DIOPI_CALLCNNL(cnnlSyncBatchnormBackwardReduce_v2(handle,
                                                       gradOutDesc.get(),
@@ -128,7 +116,7 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
                                                       inputG,
                                                       weightG,
                                                       biasG))
-    std::cout << "here7" << std::endl;
+    std::cout << "here8" << std::endl;
 
     DIOPI_CALL(dataTypeCast(ctx, gradWeightTr, gradWeightTmpTr));
     DIOPI_CALL(dataTypeCast(ctx, gradBiasTr, gradBiasTmpTr));
