@@ -80,7 +80,7 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
         }
     }
     auto zeroValueScalar = diopiScalar_t();
-    zeroValueScalar.stype = diopi_dtype_float16;
+    zeroValueScalar.stype = diopi_dtype_float64;
     zeroValueScalar.fval = 0.0;
 
     if (divByZero) diopiDivInpScalar(ctx, input, &zeroValueScalar, diopiRoundMode_t::RoundModeNone);
