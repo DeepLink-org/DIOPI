@@ -12,15 +12,6 @@
 #include "../diopi_helper.hpp"
 #include "../mlu_ops_helper.hpp"
 
-namespace impl {
-namespace camb {
-
-diopiError_t diopiSlice(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim, int64_t start, int64_t end,
-                        int64_t step);
-}  // namespace camb
-
-}  // namespace impl
-
 extern "C" DIOPI_API diopiError_t diopiNmsRotatedMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t dets,
                                                       diopiConstTensorHandle_t scores, diopiConstTensorHandle_t order, diopiConstTensorHandle_t detsSorted,
                                                       diopiConstTensorHandle_t labels, float iouThreshold, bool multiLabel) {
