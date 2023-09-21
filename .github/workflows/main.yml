@@ -346,8 +346,9 @@ jobs:
           cd diopi_test/python && python main.py --mode utest
 
   Build-Topsrider:
-    name: Clone-Topsrider
+    name: Build-Topsrider
     runs-on: tps-topsrider-ci
+    needs: Rsync
     if: contains( needs.Rsync.outputs.output, 'TOPSRIDER' )
     steps:
       - name: build
