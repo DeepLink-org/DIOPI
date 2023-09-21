@@ -43,7 +43,7 @@ public:
 };
 
 template <typename T, mluOpStatus_t (*fnCreate)(T *), mluOpStatus_t (*fnDestroy)(T)>
-class MluOpResourceGuard final {
+class MluOpResourceGuard {
 public:
     MluOpResourceGuard() { DIOPI_CHECK_MLU_OP(fnCreate(&resource_)); }
 
@@ -55,20 +55,7 @@ protected:
     T resource_{0};
 };
 
-template <typename T, mluOpStatus_t (*fnCreate)(T *), mluOpStatus_t (*fnDestroy)(T)>
-class MluOpDescBase {
-public:
-    MluOpDescBase() { DIOPI_CHECK_MLU_OP(fnCreate(&resource_)); }
-
-    virtual ~MluOpDescBase() { DIOPI_CHECK_MLU_OP(fnDestroy(resource_)); }
-
-    T &get() { return resource_; }
-
-protected:
-    T resource_{0};
-};
-
-class MluOpTensorDesc : public MluOpDescBase<mluOpTensorDescriptor_t, mluOpCreateTensorDescriptor, mluOpDestroyTensorDescriptor> {
+class MluOpTensorDesc : public MluOpResourceGuard<mluOpTensorDescriptor_t, mluOpCreateTensorDescriptor, mluOpDestroyTensorDescriptor> {
 public:
     MluOpTensorDesc() = default;
 

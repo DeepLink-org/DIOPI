@@ -41,23 +41,23 @@ extern "C" DIOPI_API diopiError_t diopiNmsRotatedMmcv(diopiContextHandle_t ctx, 
     impl::camb::MluOpTensorDesc outputDesc(outputTensor, MLUOP_LAYOUT_ARRAY);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLMLUOP(mluOpGetNmsRotatedWorkspaceSize(handle, boxesDesc.get(), &workspaceSize));
+    DIOPI_CALL_MLU_OP(mluOpGetNmsRotatedWorkspaceSize(handle, boxesDesc.get(), &workspaceSize));
     void *workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = impl::camb::requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLMLUOP(mluOpNmsRotated(handle,
-                                    iouThreshold,
-                                    boxesDesc.get(),
-                                    boxesTensor.data(),
-                                    scoresDesc.get(),
-                                    scoresTensor.data(),
-                                    workspace,
-                                    workspaceSize,
-                                    outputDesc.get(),
-                                    outputTensor.data(),
-                                    reinterpret_cast<int *>(outputSize.data())));
+    DIOPI_CALL_MLU_OP(mluOpNmsRotated(handle,
+                                      iouThreshold,
+                                      boxesDesc.get(),
+                                      boxesTensor.data(),
+                                      scoresDesc.get(),
+                                      scoresTensor.data(),
+                                      workspace,
+                                      workspaceSize,
+                                      outputDesc.get(),
+                                      outputTensor.data(),
+                                      reinterpret_cast<int *>(outputSize.data())));
 
     int32_t outputNum;
     cnrtMemcpyAsync(&outputNum, outputSize.data(), sizeof(int32_t) * outputSize.numel(), impl::camb::getStream(ctx), cnrtMemcpyDevToHost);
