@@ -32,6 +32,10 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
     DiopiTensor gradWeightTr(gradWeight);  // MLU-dfilter
     DiopiTensor gradBiasTr(gradBias);      // MLU-dbias
 
+    std::cout << &gradOutTr << "," << &inputTr << "," << &meanTr << "," << &invstdTr << std::endl;
+    std::cout << &sumDyTr << "," << &sumDyXmuTr << "," << &gradWeightTr << "," << &gradBiasTr << std::endl;
+    std::cout << "here1" << std::endl;
+
     auto dim = inputTr.dim();
     cnnlTensorLayout_t layout;
     DIOPI_CHECK(dim >= 2 && dim <= 5, "Input dim is out of range");
@@ -61,6 +65,7 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
+    std::cout << "here2" << std::endl;
     // check the output dtype
     DiopiTensor sumDyTmpTr, sumDyXmuTmpTr, gradWeightTmpTr, gradBiasTmpTr;
     if (inputG) {
@@ -70,16 +75,19 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
         sumDyTmpTr = sumDyTr;
         sumDyXmuTmpTr = sumDyXmuTr;
     }
+    std::cout << "here3" << std::endl;
     if (weightG) {
         REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradWeightTmpTr, gradWeightTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
     } else {
         gradWeightTmpTr = gradWeightTr;
     }
+    std::cout << "here4" << std::endl;
     if (biasG) {
         REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradBiasTmpTr, gradBiasTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
     } else {
         gradBiasTmpTr = gradBiasTr;
     }
+    std::cout << "here5" << std::endl;
 
     // get descriptor
     CnnlTensorDesc inputDesc(inputTr, layout);
@@ -119,6 +127,7 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
                                                       inputG,
                                                       weightG,
                                                       biasG))
+    std::cout << "here6" << std::endl;
 
     DIOPI_CALL(dataTypeCast(ctx, gradWeightTr, gradWeightTmpTr));
     DIOPI_CALL(dataTypeCast(ctx, gradBiasTr, gradBiasTmpTr));
