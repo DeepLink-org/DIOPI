@@ -67,7 +67,7 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
         REQUIRES_TENSOR_BY_DTYPE_OR_NOT(sumDyTmpTr, sumDyTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
         REQUIRES_TENSOR_BY_DTYPE_OR_NOT(sumDyXmuTmpTr, sumDyXmuTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
     } else {
-        sumDyTmpTr = sumDyTmpTr;
+        sumDyTmpTr = sumDyTr;
         sumDyXmuTmpTr = sumDyXmuTr;
     }
     if (weightG) {
