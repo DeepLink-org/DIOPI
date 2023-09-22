@@ -249,9 +249,12 @@ DIOPI_API diopiError_t diopiBatchNormBackwardElemt(diopiContextHandle_t ctx, dio
     }
 
     // check the input dtype
-    std::vector<DiopiTensor*> pTensors{&inputTr, &gradOutTr, &meanTr, &invstdTr, &weightTr, &sumDyTr, &sumDyXmuTr, &countTr};
+    std::vector<DiopiTensor*> pTensors{&inputTr, &gradOutTr, &meanTr, &invstdTr, &weightTr, &sumDyTr, &sumDyXmuTr};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
+    std::vector<DiopiTensor*> pCountTensors{&countTr};
+    std::set<diopiDtype_t> supportedCountDtypes{diopi_dtype_int32};
+    DIOPI_CALL(autoCastTensorType(ctx, pCountTensors, supportedCountDtypes));
 
     // check the output dtype
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradInputTmpTr, gradInputTr, inputTr.dtype(), memoryFormat);
