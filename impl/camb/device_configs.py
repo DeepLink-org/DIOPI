@@ -611,8 +611,8 @@ device_configs = {
     ),
 
     'reduce_partial_op': dict(
-        atol = 0.001
-        rotl = 0.0001
+        atol = 0.001,
+        rtol = 0.0001,
         name=['mean', 'sum'],
         tensor_para=dict(
             args=[
