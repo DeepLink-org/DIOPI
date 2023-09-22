@@ -6,6 +6,8 @@
 
 #include "debug.hpp"
 
+#include "utils.hpp"
+
 namespace impl {
 namespace ascend {
 
@@ -31,6 +33,8 @@ void printContiguousTensor(diopiContextHandle_t ctx, const AscendTensor& at, cha
         diopiGetTensorDataConst(at.tensorHandle(), &ptrHostCopy);
         ptrHost = const_cast<void*>(ptrHostCopy);
     }
+
+    std::cout << "numel = " << at.numel() << std::endl;
 
     for (int i = 0; i < at.dim(); ++i) {
         std::cout << "stride(" << i << ") = " << at.stride(i) << std::endl;
@@ -59,7 +63,7 @@ void printContiguousTensor(diopiContextHandle_t ctx, const AscendTensor& at, cha
                 printf("item %ld: %d\n", i, reinterpret_cast<bool*>(ptrHost)[i]);
                 break;
             default:
-                printf("unsupport dtype");
+                printf("unsupport dtype %s", diopiDtypeToStr(at.dtype()));
                 break;
         }
     }
