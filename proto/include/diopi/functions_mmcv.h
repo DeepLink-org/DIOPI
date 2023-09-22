@@ -558,17 +558,19 @@ DIOPI_API diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_
  * @brief Performs non-maximum suppression (NMS) on the rotated boxes according
  to their intersection-over-union (IoU).
  * @param[in] ctx diopi context.
- * @param dets Rotated boxes in shape (N, 5). They are expected to be in
-     (x_ctr, y_ctr, width, height, angle_radian) format.
- * @param order_t, dets_sorted order tensor and ordered dets
- * @param scores  scores in shape (N, ).
- * @param iou_threshold float: IoU thresh for NMS.
- * @param multi_label  boxes' label in shape (N,).
- * @param out indice, which is always the same data type as the input.
+ * @param dets Rotated boxes in shape (N, 5), indicating (x_ctr, y_ctr, width, height, angle_radian) for each row.
+ * @param scores  Scores of rotated boxes.
+ * @param order Element index of scores sorted in descending order.
+ * @param dets_sorted Dets sorted in descending order by scores.
+ * @param iou_threshold The threshold of IOU for NMS.
+ * @param multi_label When it is set to True, one rotated box can have multi labels, otherwise, one rotated box only has one label.
+ * @param labels  Rotated boxes' labels. If multi_label is true, the shape of labels should be (N, C). Otherwise, it should be (N, ). C is the total number of
+ categories.
+ * @param out The output tensor, indicating the index of each output box.
  */
 DIOPI_API diopiError_t diopiNmsRotatedMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t dets, diopiConstTensorHandle_t scores,
-                                           diopiConstTensorHandle_t order_t, diopiConstTensorHandle_t dets_sorted, double iou_threshold, int64_t multi_label);
-
+                                           diopiConstTensorHandle_t order, diopiConstTensorHandle_t dets_sorted, diopiConstTensorHandle_t labels,
+                                           float iou_threshold, bool multi_label);
 /**
  * @brief Find the box in which each point is(Part).
  * @param[in] ctx diopi context.
