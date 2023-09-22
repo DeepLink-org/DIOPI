@@ -1232,43 +1232,31 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'fill_not_float': dict(
-        name=['fill_'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),Skip(Dtype.bool),],
+                    "dtype": [Skip(Dtype.float16)],
                 },
             ]
         ),
     ),
 
     'reduce_op': dict(
-        name=['mean', 'sum'],
+        name=['mean'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
+                    "dtype": [Skip(Dtype.float16)],
                 },
             ]
         ),
     ),
-
+    
     'reduce_partial_op': dict(
-        name=['mean', 'sum'],
+        name=['mean'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
+                    "dtype": [Skip(Dtype.float16),],
                 },
             ]
         ),
@@ -1329,18 +1317,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.bool),Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                },
-            ]
-        ),
-    ),
-
-    'reduce_partial_op_4': dict(
-        name=['sum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),Skip(Dtype.bool),],
                 },
             ]
         ),
@@ -1970,66 +1946,18 @@ device_configs = {
         ),
     ),
 
-    'masked_fill_scalar': dict(
-        name=['masked_fill'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                },
-            ]
-        ),
-    ),
-
     'masked_fill_scalar_int': dict(
         name=['masked_fill'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),Skip(Dtype.bool),],
+                    "dtype": [Skip(Dtype.uint8)],
                 },
             ]
         ),
     ),
-
-    'masked_fill_scalar_without_inplace': dict(
-        name=['masked_fill'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'masked_fill_tensor': dict(
-        name=['masked_fill'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),Skip(Dtype.bool),],
-                },
-            ]
-        ),
-    ),
-
-    'masked_fill_tensor_without_inplace': dict(
-        name=['masked_fill'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),],
-                },
-            ]
-        ),
-    ),
-
+    
     'reciprocal': dict(
         name=['reciprocal'],
         tensor_para=dict(
