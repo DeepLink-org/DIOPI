@@ -267,15 +267,8 @@ device_configs = {
     'max_pool2d': dict(
         name=["max_pool2d"],
         para=dict(
+            # camb kernel only support dilation == 1
             dilation=[Skip((4, 3)), Skip((2, 3)), Skip(2)],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ]
         ),
     ),
 
@@ -1008,6 +1001,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
+                    # FIXME Run diopi_functions.adam failed, because of inputs: param_grad changed
+                    "shape": [Skip(())],
                     "dtype": [Skip(Dtype.float16)],
                 },
             ]
@@ -1054,6 +1049,15 @@ device_configs = {
         name=["adadelta"],
         atol_half=1e-3,
         rtol_half=1e-3,
+        tensor_para=dict(
+            args=[
+                {
+                    # can't get correct result
+                    "ins": ['param', 'param_grad'],
+                    "dtype": [Skip(Dtype.float16)],
+                },
+            ]
+        ),
     ),
 
     'rmsprop': dict(

@@ -20,26 +20,21 @@ diopiError_t diopiSinInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
 }
 
 diopiError_t diopiSin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    int64_t numel = 0;
-    diopiGetTensorNumel(input, &numel);
-    if (0 == numel) {
+    AscendTensor in(input);
+    if (0 == in.numel()) {
         return diopiSuccess;
     }
 
-    diopiDtype_t inputDtype;
-    diopiGetTensorDtype(input, &inputDtype);
     std::set<diopiDtype_t> typeSet{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64, diopi_dtype_complex64, diopi_dtype_complex128};
 
     // only support: float16, float32, int32, int64, double, complex64, complex128.
-    if (typeSet.find(inputDtype) == typeSet.end()) {
-        diopiTensorHandle_t inputTemp, outTemp;
-        diopiSize_t tensorSize;
-        diopiGetTensorShape(input, &tensorSize);
-        diopiRequireTensor(ctx, &inputTemp, &tensorSize, nullptr, diopi_dtype_float32, diopi_device);
-        diopiRequireTensor(ctx, &outTemp, &tensorSize, nullptr, diopi_dtype_float32, diopi_device);
-        diopiCastDtype(ctx, inputTemp, input);
-        AclOpRunner<1, 1>("Sin", ctx).addInput(inputTemp).addOutput(outTemp).run();
-        diopiCastDtype(ctx, out, outTemp);
+    if (typeSet.find(in.dtype()) == typeSet.end()) {
+        AscendTensor inputA, outA, inputTmp(input), outTmp(out);
+        makeTensorLike(ctx, outA, in, diopi_dtype_float32);
+        makeTensorLike(ctx, inputA, in, diopi_dtype_float32);
+        castTensor(ctx, inputTmp, inputA);
+        AclOpRunner<1, 1>("Sin", ctx).addInput(inputA).addOutput(outA).run();
+        diopiCastDtype(ctx, out, static_cast<diopiConstTensorHandle_t>(outA));
     } else {
         AclOpRunner<1, 1>("Sin", ctx).addInput(input).addOutput(out).run();
     }
