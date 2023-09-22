@@ -22,6 +22,7 @@
 
 #include "../ascend_tensor.hpp"
 #include "debug.hpp"
+#include "utils.hpp"
 
 namespace impl {
 namespace ascend {
@@ -197,9 +198,10 @@ bool isContiguous(diopiConstTensorHandle_t tensor, diopiMemoryFormat_t format = 
 
 diopiTensorHandle_t clone(diopiContextHandle_t ctx, diopiConstTensorHandle_t src);
 
-diopiTensorHandle_t contiguous(diopiContextHandle_t ctx, diopiConstTensorHandle_t src);
+diopiTensorHandle_t contiguous(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous);
 
-diopiTensorHandle_t contiguous(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiDtype_t dtype);
+diopiTensorHandle_t contiguous(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiDtype_t dtype,
+                               diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous);
 
 int64_t getBaseBufferSize(diopiConstTensorHandle_t src);
 
@@ -351,6 +353,8 @@ public:
         return addConstInput(sizeTensor, ACL_FORMAT_ND, false);
     }
 
+    AclOpRunner& addConstInput(const std::vector<int64_t>& size) { return addConstInput({size.data(), static_cast<int64_t>(size.size())}); }
+
     AclOpRunner& addConstInput(const diopiScalar_t& scalar, diopiDtype_t dtype) {
         diopiTensorHandle_t scalarTensor;
         makeTensorFromScalar(context_, &scalar, &scalarTensor, dtype);
@@ -371,7 +375,7 @@ public:
         return addConstInput(scalar, dtype);
     }
 
-    AclOpRunner& addInput(const void* ptr, int64_t buffersize, std::vector<int64_t>& dims, const aclFormat& format, diopiDtype_t dtype) {
+    AclOpRunner& addInput(const void* ptr, int64_t buffersize, const std::vector<int64_t>& dims, const aclFormat& format, diopiDtype_t dtype) {
         static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
         if (aclDebugFlag > 0) {
             std::stringstream stream;
@@ -415,6 +419,17 @@ public:
         buffer = aclCreateDataBuffer(const_cast<void*>(at.data()), at.getAclMemBufferSize());
         inputIndex_++;
         return *this;
+    }
+
+    AclOpRunner& addInput(const AscendTensor& at) {
+        if (at.isContiguous()) {
+            return addInput(at, at.getAclDataFormat());
+        } else {
+            AscendTensor atCopy;
+            makeTensorLike(context_, atCopy, at);
+            contiguous(context_, at, atCopy);
+            return addInput(atCopy, atCopy.getAclDataFormat());
+        }
     }
 
     AclOpRunner& addInput(diopiConstTensorHandle_t th, const aclFormat& format) {
