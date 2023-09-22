@@ -75,12 +75,12 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
     CnnlTensorDesc meanDesc(meanTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc invstdDesc(invstdTr, CNNL_LAYOUT_ARRAY);
 
+    /*Note: meanTr only for generating CnnlTensorDesc, which will not be used*/
     CnnlTensorDesc gradWeightDesc(weightG ? gradWeightTmpTr : meanTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc gradBiasDesc(biasG ? gradBiasTmpTr : meanTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc sumDyDesc(inputG ? sumDyTmpTr : meanTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc sumDyXmuDesc(inputG ? sumDyXmuTmpTr : meanTr, CNNL_LAYOUT_ARRAY);
 
-    std::cout << "here6" << std::endl;
     /* Get Workspace */
     size_t workspaceSize = 0;
     DIOPI_CALLCNNL(cnnlGetSyncBatchnormBackwardReduceWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
@@ -109,11 +109,16 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
                                                       weightG,
                                                       biasG))
     std::cout << "here8" << std::endl;
-
-    DIOPI_CALL(dataTypeCast(ctx, gradWeightTr, gradWeightTmpTr));
-    DIOPI_CALL(dataTypeCast(ctx, gradBiasTr, gradBiasTmpTr));
-    DIOPI_CALL(dataTypeCast(ctx, sumDyTr, sumDyTmpTr));
-    DIOPI_CALL(dataTypeCast(ctx, sumDyXmuTr, sumDyXmuTmpTr));
+    if (inputG) {
+        DIOPI_CALL(dataTypeCast(ctx, sumDyTr, sumDyTmpTr));
+        DIOPI_CALL(dataTypeCast(ctx, sumDyXmuTr, sumDyXmuTmpTr));
+    }
+    if (weightG) {
+        DIOPI_CALL(dataTypeCast(ctx, gradWeightTr, gradWeightTmpTr));
+    }
+    if (biasG) {
+        DIOPI_CALL(dataTypeCast(ctx, gradBiasTr, gradBiasTmpTr));
+    }
 
     return diopiSuccess;
 }
