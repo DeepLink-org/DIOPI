@@ -269,6 +269,12 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
             case diopiDtype_t::diopi_dtype_bool:
                 reinterpret_cast<bool*>(ptr)[0] = getValue<bool>(scalar);
                 break;
+            case diopiDtype_t::diopi_dtype_int16:
+                reinterpret_cast<int16_t*>(ptr)[0] = getValue<int16_t>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_uint16:
+                reinterpret_cast<uint16_t*>(ptr)[0] = getValue<uint16_t>(scalar);
+                break;
             default:
                 error("dtype %d not supported on host", dtype);
         }
