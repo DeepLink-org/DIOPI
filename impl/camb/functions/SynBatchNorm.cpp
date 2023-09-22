@@ -32,10 +32,6 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
     DiopiTensor gradWeightTr(gradWeight);  // MLU-dfilter
     DiopiTensor gradBiasTr(gradBias);      // MLU-dbias
 
-    std::cout << &gradOutTr << "," << &inputTr << "," << &meanTr << "," << &invstdTr << std::endl;
-    std::cout << &sumDyTr << "," << &sumDyXmuTr << "," << &gradWeightTr << "," << &gradBiasTr << std::endl;
-    std::cout << "here1" << std::endl;
-
     auto dim = inputTr.dim();
     cnnlTensorLayout_t layout;
     DIOPI_CHECK(dim >= 2 && dim <= 5, "Input dim is out of range");
@@ -65,15 +61,12 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
-    std::cout << "here2" << std::endl;
-
     // check the output dtype
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(sumDyTmpTr, sumDyTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(sumDyXmuTmpTr, sumDyXmuTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradWeightTmpTr, gradWeightTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradBiasTmpTr, gradBiasTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
 
-    std::cout << "here5" << std::endl;
     std::cout << inputG << weightG << biasG << std::endl;
 
     // get descriptor
@@ -82,17 +75,16 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
     CnnlTensorDesc meanDesc(meanTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc invstdDesc(invstdTr, CNNL_LAYOUT_ARRAY);
 
-    CnnlTensorDesc gradWeightDesc(gradWeightTmpTr, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc gradBiasDesc(gradBiasTmpTr, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc sumDyDesc(sumDyTmpTr, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc sumDyXmuDesc(sumDyXmuTmpTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradWeightDesc(weightG ? gradWeightTmpTr : meanTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradBiasDesc(biasG ? gradBiasTmpTr : meanTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc sumDyDesc(inputG ? sumDyTmpTr : meanTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc sumDyXmuDesc(inputG ? sumDyXmuTmpTr : meanTr, CNNL_LAYOUT_ARRAY);
 
     std::cout << "here6" << std::endl;
     /* Get Workspace */
     size_t workspaceSize = 0;
     DIOPI_CALLCNNL(cnnlGetSyncBatchnormBackwardReduceWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
-    std::cout << "here7" << std::endl;
 
     DIOPI_CALLCNNL(cnnlSyncBatchnormBackwardReduce_v2(handle,
                                                       gradOutDesc.get(),
