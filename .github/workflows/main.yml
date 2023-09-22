@@ -73,7 +73,6 @@ jobs:
           rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_ASCEND}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/
           ssh ${CLUSTER_TOPSRIDER} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source"
           rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_TOPSRIDER}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/
-          ssh ${CLUSTER_TOPSRIDER} "cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1}"
 
   lint:
     name: lint
@@ -125,7 +124,7 @@ jobs:
     name: Build-Camb
     runs-on: tps-diopi-ci
     needs: [Rsync]
-    if: ${{ contains( needs.Rsync.outputs.output, 'CAMB' ) || contains( needs.Rsync.outputs.output, 'TOPSRIDER' ) }}
+    if: ${{ contains( needs.Rsync.outputs.output, 'CAMB' ) }}
     steps:
       - name: Build
         run: |
@@ -292,7 +291,7 @@ jobs:
     name: Build-Ascend
     runs-on: tps-ascend-ci
     needs: [Rsync]
-    if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) || contains( needs.Rsync.outputs.output, 'TOPSRIDER' ) }}
+    if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
     steps:
       - name: build
         run: |
@@ -311,19 +310,16 @@ jobs:
     name: Op-Test-Ascend
     runs-on: tps-ascend-ci
     needs: [Gen-Data, Build-Ascend]
-    if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) || contains( needs.Rsync.outputs.output, 'TOPSRIDER' ) }}
+    if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
     env:
       run_test: "python"
     steps:
-      - name: rsync data to topsrider
-        run: |
-          rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
-          rsync -a ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${CLUSTER_TOPSRIDER}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
       - name: test
         run: |
           set -e
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
           export CI=true
+          rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
           cd diopi_test/python && ${run_test} main.py --mode run_test --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/ascend/ \
           && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
 
@@ -350,13 +346,13 @@ jobs:
         run: |
           set -e
           export CI=true
-          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           echo test
 
   Op-Test-Topsrider:
     name: Op-Test-Topsrider
     runs-on: tps-topsrider-ci
-    needs: [Build-Topsrider,Op-Test-Camb]
+    needs: Build-Topsrider
     if: contains( needs.Rsync.outputs.output, 'TOPSRIDER' )
     steps:
       - name: test
@@ -364,7 +360,7 @@ jobs:
           set -e
           export CI=true
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          echo Op-Test-Topsrider
+          echo "Op-test 的 gen-data 数据位于商汤机器上，会在每天凌晨开始同步前一天NV上生成的数据到燧原机器上，位于当前runner的/mnt/cache/share/deeplinkci/data下"
 
   Rt-Test-Topsrider:
     name: Rt-Test-Topsrider
