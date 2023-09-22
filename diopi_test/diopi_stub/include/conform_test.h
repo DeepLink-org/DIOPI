@@ -27,7 +27,7 @@ typedef void (*free_func_t)(void*);
 
 extern void* device_malloc(uint64_t bytes);
 extern void device_free(void* ptr);
-extern diopiError_t rdevice_memcpy_h2d_async(diopiStreamHandle_t stream, void* dst, const void* src, uint64_t bytes);
+extern diopiError_t device_memcpy_h2d_async(diopiStreamHandle_t stream, void* dst, const void* src, uint64_t bytes);
 extern diopiError_t device_memcpy_d2h_async(diopiStreamHandle_t stream, void* dst, const void* src, uint64_t bytes);
 extern diopiError_t device_memcpy_d2d_async(diopiStreamHandle_t stream, void* dst, const void* src, uint64_t bytes);
 extern diopiError_t device_make_stream(diopiStreamHandle_t*);
