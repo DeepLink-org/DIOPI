@@ -40,5 +40,8 @@
 - diopiBatchNormElemt:
     layout: NLC, NHWC, NDHWC
 
+- diopiBatchNormBackwardElemt:
+    layout: NLC, NHWC, NDHWC
+
 - diopiBatchNormStats:
     layout: NLC, NHWC, NDHWC

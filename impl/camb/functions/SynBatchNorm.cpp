@@ -67,8 +67,6 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradWeightTmpTr, gradWeightTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradBiasTmpTr, gradBiasTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
 
-    std::cout << inputG << weightG << biasG << std::endl;
-
     // get descriptor
     CnnlTensorDesc inputDesc(inputTr, layout);
     CnnlTensorDesc gradOutDesc(gradOutTr, layout);
@@ -108,7 +106,7 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
                                                       inputG,
                                                       weightG,
                                                       biasG))
-    std::cout << "here8" << std::endl;
+
     if (inputG) {
         DIOPI_CALL(dataTypeCast(ctx, sumDyTr, sumDyTmpTr));
         DIOPI_CALL(dataTypeCast(ctx, sumDyXmuTr, sumDyXmuTmpTr));
@@ -196,6 +194,101 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
 
     // Copy back to origin, if required
     DIOPI_CALL(dataTypeCast(ctx, outTr, outTmpTr));
+
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiBatchNormBackwardElemt(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOut,
+                                                   diopiConstTensorHandle_t input, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t invstd,
+                                                   diopiConstTensorHandle_t weight, diopiConstTensorHandle_t sumDy, diopiConstTensorHandle_t sumDyXmu,
+                                                   diopiConstTensorHandle_t count) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    // input
+    DiopiTensor gradOutTr(gradOut);
+    DiopiTensor inputTr(input);
+    DiopiTensor meanTr(mean);
+    DiopiTensor invstdTr(invstd);
+    DiopiTensor weightTr(weight);
+    DiopiTensor sumDyTr(sumDy);
+    DiopiTensor sumDyXmuTr(sumDyXmu);
+    DiopiTensor countTr(count);
+    // output
+    DiopiTensor gradInputTr(gradInput);
+
+    auto dim = inputTr.dim();
+    cnnlTensorLayout_t layout;
+    diopiMemoryFormat_t memoryFormat;
+
+    DIOPI_CHECK(dim >= 2 && dim <= 5, "Input dim is out of range");
+    DIOPI_CHECK(dim == gradOutTr.dim(), "Input dim != gradOutTr dim");
+    DIOPI_CHECK(dim == gradInputTr.dim(), "Input dim != gradInputTr dim");
+
+    if (2 == dim) {
+        memoryFormat = diopiMemoryFormat_t::Contiguous;
+        layout = CNNL_LAYOUT_NC;
+    } else if (3 == dim) {
+        DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "inputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(gradOutTr.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "gradOutTr's memory format should be channelsLast");
+        DIOPI_CHECK(gradInputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast1d), "gradInputTr's memory format should be channelsLast");
+        layout = CNNL_LAYOUT_NLC;
+        memoryFormat = diopiMemoryFormat_t::ChannelsLast1d;
+    } else if (4 == dim) {
+        DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast), "inputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(gradOutTr.isContiguous(diopiMemoryFormat_t::ChannelsLast), "gradOutTr's memory format should be channelsLast");
+        DIOPI_CHECK(gradInputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast), "gradInputTr's memory format should be channelsLast");
+        layout = CNNL_LAYOUT_NHWC;
+        memoryFormat = diopiMemoryFormat_t::ChannelsLast;
+    } else if (5 == dim) {
+        DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "inputTensor's memory format should be channelsLast");
+        DIOPI_CHECK(gradOutTr.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "gradOutTr's memory format should be channelsLast");
+        DIOPI_CHECK(gradInputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast3d), "gradInputTr's memory format should be channelsLast");
+        layout = CNNL_LAYOUT_NDHWC;
+        memoryFormat = diopiMemoryFormat_t::ChannelsLast3d;
+    } else {
+        DIOPI_CHECK(false, "Dim of input tensor should be in [2,3,4,5].");
+    }
+
+    // check the input dtype
+    std::vector<DiopiTensor*> pTensors{&inputTr, &gradOutTr, &meanTr, &invstdTr, &weightTr, &sumDyTr, &sumDyXmuTr, &countTr};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
+
+    // check the output dtype
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradInputTmpTr, gradInputTr, inputTr.dtype(), memoryFormat);
+
+    // get descriptor
+    CnnlTensorDesc inputDesc(inputTr, layout);
+    CnnlTensorDesc gradOutDesc(gradOutTr, layout);
+    CnnlTensorDesc meanDesc(meanTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc invstdDesc(invstdTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc weightDesc(weightTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc sumDyDesc(sumDyTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc sumDyXmuDesc(sumDyXmuTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc countDesc(countTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradInputDesc(gradInputTmpTr, layout);
+
+    DIOPI_CALLCNNL(cnnlSyncBatchNormBackwardElemtV2(handle,
+                                                    gradOutDesc.get(),
+                                                    gradOutTr.data(),
+                                                    inputDesc.get(),
+                                                    inputTr.data(),
+                                                    meanDesc.get(),
+                                                    meanTr.data(),
+                                                    invstdDesc.get(),
+                                                    invstdTr.data(),
+                                                    weightDesc.get(),
+                                                    weightTr.data(),
+                                                    sumDyDesc.get(),
+                                                    sumDyTr.data(),
+                                                    sumDyXmuDesc.get(),
+                                                    sumDyXmuTr.data(),
+                                                    countDesc.get(),
+                                                    countTr.data(),
+                                                    gradInputDesc.get(),
+                                                    gradInputTmpTr.data()))
+
+    // Copy back to origin, if required
+    DIOPI_CALL(dataTypeCast(ctx, gradInputTr, gradInputTmpTr));
 
     return diopiSuccess;
 }
