@@ -42,38 +42,38 @@ void device_free(void* ptr) {
     SUPA_CALL(suFree(ptr));
 }
 
-int32_t device_make_stream(diopiStreamHandle_t* streamHandlePtr) {
+diopiError_t device_make_stream(diopiStreamHandle_t* streamHandlePtr) {
     suStream_t stream = nullptr;
     SUPA_CALL(suStreamCreate(&stream));
     *streamHandlePtr = (diopiStreamHandle_t)stream;
     return diopiSuccess;
 }
 
-int32_t device_destroy_stream(diopiStreamHandle_t streamHandle) {
+diopiError_t device_destroy_stream(diopiStreamHandle_t streamHandle) {
     suStream_t stream = (suStream_t)streamHandle;
     SUPA_CALL(suStreamDestroy(stream));
     return diopiSuccess;
 }
 
-int32_t device_synchronize_stream(diopiStreamHandle_t streamHandle) {
+diopiError_t device_synchronize_stream(diopiStreamHandle_t streamHandle) {
     suStream_t stream = (suStream_t)streamHandle;
     SUPA_CALL(suStreamSynchronize(stream));
     return diopiSuccess;
 }
 
-int32_t device_memcpy_h2d_async(diopiStreamHandle_t streamHandle, void* dst, const void* src, uint64_t bytes) {
+diopiError_t device_memcpy_h2d_async(diopiStreamHandle_t streamHandle, void* dst, const void* src, uint64_t bytes) {
     suStream_t stream = (suStream_t)streamHandle;
     SUPA_CALL(suMemcpyAsync(dst, const_cast<void*>(src), bytes, stream, suMemcpyHostToDevice));
     return diopiSuccess;
 }
 
-int32_t device_memcpy_d2h_async(diopiStreamHandle_t streamHandle, void* dst, const void* src, uint64_t bytes) {
+diopiError_t device_memcpy_d2h_async(diopiStreamHandle_t streamHandle, void* dst, const void* src, uint64_t bytes) {
     suStream_t stream = (suStream_t)streamHandle;
     SUPA_CALL(suMemcpyAsync(dst, const_cast<void*>(src), bytes, stream, suMemcpyDeviceToHost));
     return diopiSuccess;
 }
 
-int32_t device_memcpy_d2d_async(diopiStreamHandle_t streamHandle, void* dst, const void* src, uint64_t bytes) {
+diopiError_t device_memcpy_d2d_async(diopiStreamHandle_t streamHandle, void* dst, const void* src, uint64_t bytes) {
     suStream_t stream = (suStream_t)streamHandle;
     SUPA_CALL(suMemcpyAsync(dst, const_cast<void*>(src), bytes, stream, suMemcpyDeviceToDevice));
     return diopiSuccess;
@@ -85,7 +85,7 @@ int32_t finalizeLibrary() { return diopiSuccess; }
 
 #include "litert.hpp"
 
-int32_t buildGeneratorState(diopiContextHandle_t ctx, diopiTensorHandle_t out) {
+diopiError_t buildGeneratorState(diopiContextHandle_t ctx, diopiTensorHandle_t out) {
     const int64_t size_data[] = {2, 2};
     diopiSize_t size{size_data, sizeof(size_data) / sizeof(size_data[0])};
     diopiTensorHandle_t state = nullptr;
