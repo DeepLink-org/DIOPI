@@ -70,62 +70,61 @@ class GenTestCase(object):
         self._fm.will_write(mt_name)
 
     def gen_test_module(self):
-        test_diopi_function_module = 'diopi_functions'
-        test_diopi_func_import = self._func_name
-        test_diopi_func_name = self._func_name
-
-        test_forward_func_call_prefix = 'dev_out = '
-
+        test_diopi_head_import = ''
         test_case_items = []
         all_case_items = []
         for ck, cv in self._case_set.items():
+            # test_diopi_function_module = 'diopi_functions'
+            test_diopi_func_name = self._func_name
+
             # forward process
             case_config_name = ck.split('::')[1]
             func_case_name = case_config_name.split('.pth')[0]
             input_data_path = ck
             output_data_path = ck
 
-            test_caompare_tol = dict(atol = cv['atol'], rtol=cv['rtol'])
+            # get tol
+            test_compare_tol = dict(atol = cv['atol'], rtol=cv['rtol'])
             for tensor in cv['tensor_para']['args']:
                 if tensor['ins'] == 'input' and tensor['dtype'] in [np.int16, np.float16, np.uint16]:
-                    test_caompare_tol['atol'] = cv['atol_half']
-                    test_caompare_tol['rtol'] = cv['rtol_half']
+                    test_compare_tol['atol'] = cv['atol_half']
+                    test_compare_tol['rtol'] = cv['rtol_half']
                     break
-            if 'no_output_ref' in cv.keys() and cv['no_output_ref'] == True:
-                test_function_forward_ref_compare = ''
-                if test_diopi_function_module != 'diopi_manual_functions':
-                    test_diopi_function_module = 'diopi_manual_functions'
-                    test_diopi_func_import = 'ManualTest'
-                    test_diopi_func_name = f'ManualTest.test_{test_diopi_func_name}'
-                    test_forward_func_call_prefix = ''
+
+            # no_output_ref
+            if 'no_output_ref' in cv.keys() and cv['no_output_ref'] is True:
+                test_function_forward_call = CaseTemplate.test_manual_function_forward_call.substitute(
+                    env=dict(test_diopi_func_name = test_diopi_func_name)
+                )
+                test_diopi_head_import = CaseTemplate.test_diopi_manual_import.substitute(env={})
+                test_function_ref_data_path = ''
             else:
-                test_function_forward_ref_compare = CaseTemplate.test_function_forward_ref_compare.substitute(env={})
+                test_function_forward_call = CaseTemplate.test_diopi_function_forward_call.substitute(
+                    env=dict(
+                        test_caompare_tol = test_compare_tol,
+                        test_diopi_func_name = test_diopi_func_name
+                    )
+                )
+                test_function_ref_data_path = f"f_out = os.path.join(data_path, '{self._module}', 'outputs', '{output_data_path}')"
+                # test_diopi_head_import = CaseTemplate.test_diopi_function_import
 
-            forward = CaseTemplate.test_function_body_forward.substitute(env=dict(
-                test_module_name = self._module,
-                input_data_path = input_data_path,
-                output_data_path = output_data_path,
-                test_caompare_tol = test_caompare_tol,
-                test_diopi_func_name = test_forward_func_call_prefix + test_diopi_func_name,
-                test_function_forward_ref_compare = test_function_forward_ref_compare
-            ))
+            forward = CaseTemplate.test_function_body_forward.substitute(
+                env=dict(
+                    test_module_name = self._module,
+                    input_data_path = input_data_path,
+                    # output_data_path = output_data_path,
+                    test_function_ref_data_path = test_function_ref_data_path,
+                    test_function_forward_call = test_function_forward_call
+                )
+            )
 
+            # process backward if needed
             requires_grad = False
             test_import_diopi_bp_func = ''
             for tensor in cv['tensor_para']['args']:
                 if True in tensor['requires_grad']:
                     requires_grad = True
                     break
-
-            nodeid = gen_pytest_case_nodeid(self._fm.output_dir,
-                                             f'test_{self._module}_{self._suite_name}_{self._func_name}.py',
-                                             f'TestM{self._module}S{self._suite_name}F{self._func_name}',
-                                             f'test_{func_case_name}')
-            item = {'case_name': ck, 'model_name': self._module, 'pytest_nodeid': nodeid, 'inplace_flag': 0, 'backward_flag': 0,
-                    'func_name': self._func_name, 'case_config': cv, 'result': 'skipped'}
-            if 'is_inplace' in cv.keys() and cv['is_inplace'] == True:
-                requires_grad = False
-                item['inplace_flag'] = 1
 
             backward = ''
             if requires_grad:
@@ -135,26 +134,47 @@ class GenTestCase(object):
                 backward = CaseTemplate.test_function_body_backward.substitute(env=dict(
                     test_module_name = self._module,
                     bp_output_data_path = bp_output_data_path,
-                    test_diopi_bp_func_name = test_diopi_bp_func_name
-                ))
-                item['backward_flag'] = 1
+                    test_diopi_bp_func_name = test_diopi_bp_func_name)
+                )
+            
+            forward_inp = ''
+            if 'is_inplace' in cv.keys() and cv['is_inplace'] is True:
+                if requires_grad is True:
+                    test_diopi_func_inp_remove_grad_args = CaseTemplate.test_diopi_func_inp_remove_grad_args.substitute({})
+                else:
+                    test_diopi_func_inp_remove_grad_args = ''
+                if 'no_output_ref' in cv.keys() and cv['no_output_ref'] is True:
+                    forward_inp = CaseTemplate.test_manual_function_inp_forward_call.substitute(
+                        env=dict(
+                            test_diopi_func_inp_remove_grad_args = test_diopi_func_inp_remove_grad_args,
+                            test_diopi_func_name = test_diopi_func_name
+                        )
+                    )
+                else:
+                    forward_inp = CaseTemplate.test_diopi_function_inp_forward_call.substitute(
+                        env=dict(
+                            test_diopi_func_inp_remove_grad_args = test_diopi_func_inp_remove_grad_args,
+                            test_diopi_func_name = test_diopi_func_name
+                        )
+                    )
 
             # test function
             test_function_templ = CaseTemplate.test_function_templ.substitute(env=dict(
                 func_case_name = func_case_name,
                 forward = forward,
-                backward = backward
+                backward = backward,
+                forward_inp = forward_inp
             ))
 
             test_case_items.append(test_function_templ)
-            all_case_items.append(item)
-
-        test_diopi_head_import = CaseTemplate.test_diopi_head_import.substitute(env=dict(
-            test_diopi_function_module = test_diopi_function_module,
-            test_diopi_func_import = test_diopi_func_import,
-            test_diopi_func_name = test_diopi_func_name,
-            test_import_diopi_bp_func = test_import_diopi_bp_func
-        ))
+            # one case
+        if test_diopi_head_import == '':
+            test_diopi_head_import = CaseTemplate.test_diopi_function_import.substitute(
+                env=dict(
+                    test_diopi_func_name = test_diopi_func_name,
+                    test_import_diopi_bp_func = test_import_diopi_bp_func
+                )
+            )
 
         test_class_name = f'TestM{self._module}S{self._suite_name}F{self._func_name}'
         test_class_templ = CaseTemplate.test_class_templ.substitute(env=dict(
