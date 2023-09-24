@@ -166,7 +166,14 @@ class GenTestCase(object):
                     )
 
             # test function
+            # import pdb
+            # pdb.set_trace()
+            if len(cv['tensor_para']['args']) > 0:
+                input_dtype =  cv['tensor_para']['args'][0]['dtype'].__name__;
+            else:
+                input_dtype = 'float32'
             test_function_templ = CaseTemplate.test_function_templ.substitute(env=dict(
+                input_dtype = input_dtype,
                 func_case_name = func_case_name,
                 forward = forward,
                 backward = backward,

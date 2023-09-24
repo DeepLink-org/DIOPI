@@ -7,6 +7,7 @@ class CaseTemplate:
     test_class_templ = CodeTemplate(r'''
 import os
 import pickle
+import pytest
 import numpy as np
 from conformance.diopi_runtime import Tensor
 from conformance.diopi_functions import ones_like
@@ -32,6 +33,7 @@ from conformance.diopi_manual_functions import ManualTest
 
     # test_case
     test_function_templ = CodeTemplate(r'''
+@pytest.mark.${input_dtype}
 def test_${func_case_name}(self):
     ${forward}
     ${backward}
