@@ -125,6 +125,12 @@ class GenTestCase(object):
                 if True in tensor['requires_grad']:
                     requires_grad = True
                     break
+            nodeid = gen_pytest_case_nodeid(self._fm.output_dir,
+                                             f'test_{self._module}_{self._suite_name}_{self._func_name}.py',
+                                             f'TestM{self._module}S{self._suite_name}F{self._func_name}',
+                                             f'test_{func_case_name}')
+            item = {'case_name': ck, 'model_name': self._module, 'pytest_nodeid': nodeid, 'inplace_flag': 0, 'backward_flag': 0,
+                    'func_name': self._func_name, 'case_config': cv, 'result': 'skipped'}
 
             backward = ''
             if requires_grad:
@@ -136,7 +142,8 @@ class GenTestCase(object):
                     bp_output_data_path = bp_output_data_path,
                     test_diopi_bp_func_name = test_diopi_bp_func_name)
                 )
-            
+                item['inplace_flag'] = 1
+
             forward_inp = ''
             if 'is_inplace' in cv.keys() and cv['is_inplace'] is True:
                 if requires_grad is True:
