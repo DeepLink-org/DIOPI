@@ -165,6 +165,9 @@ if __name__ == "__main__":
         db_conn.insert_device_case(gctc.db_case_items)
     elif args.mode == 'run_test':
         pytest_args = [args.file_or_dir]
+        if args.filter_dtype:
+            filter_dtype_str = ' and '.join([f'not {dtype}' for dtype in args.filter_dtype])
+            pytest_args.append(f'-m {filter_dtype_str}')
         if args.html_report:
             pytest_args.extend(['--report=report.html', '--title=DIOPI Test', '--template=2'])
         if args.pytest_args is not None:
