@@ -72,7 +72,7 @@ diopiError_t diopiSigmoidFocalLossBackwardMmcv(diopiContextHandle_t ctx, diopiTe
 }
 
 diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t voxels_, diopiTensorHandle_t coors_, diopiTensorHandle_t num_points_per_voxel_,
-                                   diopiConstTensorHandle_t points_, , int64_t* voxel_num, const float* voxel_size, int64_t voxel_size_len,
+                                   diopiConstTensorHandle_t points_, int64_t* voxel_num, const float* voxel_size, int64_t voxel_size_len,
                                    const float* coors_range, int64_t coors_range_len, int64_t max_points, int64_t max_voxels, int64_t NDim,
                                    bool deterministic) {
     impl::aten::setCurCtx(ctx);
