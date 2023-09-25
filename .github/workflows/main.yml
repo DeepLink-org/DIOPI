@@ -360,7 +360,7 @@ jobs:
           set -e
           export CI=true
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          echo "Op-test 的 gen-data 数据位于商汤机器上，会在每天凌晨开始同步前一天NV上生成的数据到燧原机器上，位于当前runner的/mnt/cache/share/deeplinkci/data下"
+          echo "Op-test 的 gen-data 数据位于商汤机器上，会在每周同步一次NV上生成的数据到燧原机器上，放置于当前runner的/mnt/cache/share/deeplinkci/data下"
 
   Rt-Test-Topsrider:
     name: Rt-Test-Topsrider
