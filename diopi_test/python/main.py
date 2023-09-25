@@ -133,6 +133,7 @@ if __name__ == "__main__":
         db_conn.drop_case_table(BenchMarkCase)
         GenInputData.run(diopi_case_item_path, inputs_dir, args.fname, model_name)
         GenOutputData.run(diopi_case_item_path, inputs_dir, outputs_dir, args.fname, model_name)
+        db_conn.insert_benchmark_case(GenInputData.db_case_items, GenOutputData.db_case_items)
 
         if args.impl_folder != '':
             device_name = os.path.basename(args.impl_folder)
@@ -161,7 +162,7 @@ if __name__ == "__main__":
         db_conn.drop_case_table(DeviceCase)
         gctc = GenConfigTestCase(module=model_name, config_path=args.cfg_path, tests_path=args.case_output_dir)
         gctc.gen_test_cases()
-        db_conn.insert_device_case()
+        db_conn.insert_device_case(gctc.db_case_items)
     elif args.mode == 'run_test':
         pytest_args = [args.file_or_dir]
         if args.html_report:

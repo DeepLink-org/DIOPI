@@ -14,8 +14,8 @@ def pytest_sessionstart(session):
     db_conn.drop_case_table(TestSummary)
     db_conn.drop_case_table(FuncList)
 
-def pytest_runtest_setup(item):
-    glob_vars.cur_pytest_nodeid = item.nodeid
+# def pytest_runtest_setup(item):
+#     glob_vars.cur_pytest_nodeid = item.nodeid
 
 @pytest.hookimpl(hookwrapper=True, tryfirst=True)
 def pytest_runtest_makereport(item, call):

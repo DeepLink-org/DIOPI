@@ -123,8 +123,8 @@ def after_cursor_execute(conn, cursor, statement,
 
 class DB_Operation(object):
     _instance_lock = threading.Lock()
-    all_case_items = []
     func_dict = {}
+    all_case_items = None
 
     def __init__(self):
         pass
@@ -142,30 +142,20 @@ class DB_Operation(object):
         self.session.commit()
 
     @use_db(glob_vars.use_db)
-    def insert_benchmark_case(self, case_items):
-        for item in case_items:
+    def insert_benchmark_case(self, geninput_case_items: list, genoutput_case_items: dict):
+        for item in geninput_case_items:
+            output_case_item = genoutput_case_items.get(item['case_name'])
+            if output_case_item is not None:
+                item.update(output_case_item)
             item['case_config'] = pickle.dumps(item['case_config'])
             item['delete_flag'] = 1
             item['created_time'] = datetime.now()
             item['updated_time'] = datetime.now()
-        self.session.bulk_insert_mappings(BenchMarkCase, case_items)
+        self.session.bulk_insert_mappings(BenchMarkCase, geninput_case_items)
         self.session.commit()
 
     @use_db(glob_vars.use_db)
-    def update_benchmark_case(self, case_items):
-        benchmark_model = self.session.query(BenchMarkCase).filter_by(delete_flag=1).all()
-        case_id_map = {i.case_name: i.id for i in benchmark_model}
-        for item in case_items:
-            # case_model = self.session.query(BenchMarkCase).filter_by(case_name=item['case_name'], model_name=item['model_name'], delete_flag=1).first()
-            if item.get('case_config'):
-                item['case_config'] = pickle.dumps(item['case_config'])
-            item['updated_time'] = datetime.now()
-            item['id'] = case_id_map[item['case_name']]
-        self.session.bulk_update_mappings(BenchMarkCase, case_items)
-        self.session.commit()
-
-    @use_db(glob_vars.use_db)
-    def will_insert_device_case(self, case_items):
+    def insert_device_case(self, case_items):
         for item in case_items:
             item['case_config'] = pickle.dumps(item['case_config'])
             item['not_implemented_flag'] = 0
@@ -173,11 +163,7 @@ class DB_Operation(object):
             item['test_flag'] = 0
             item['created_time'] = datetime.now()
             item['updated_time'] = datetime.now()
-        self.all_case_items.extend(case_items)
-
-    @use_db(glob_vars.use_db)
-    def insert_device_case(self):
-        self.session.bulk_insert_mappings(DeviceCase, self.all_case_items)
+        self.session.bulk_insert_mappings(DeviceCase, case_items)
         self.session.commit()
 
     @use_db(glob_vars.use_db)
@@ -187,29 +173,31 @@ class DB_Operation(object):
 
     @use_db(glob_vars.use_db)
     def will_update_device_case(self, case_item):
-        case_model = self.session.query(DeviceCase).filter_by(pytest_nodeid=case_item['pytest_nodeid'], delete_flag=1).first()
-        inplace_flag = case_model.inplace_flag
-        backward_flag = case_model.backward_flag
+        if self.all_case_items is None:
+            self.all_case_items = {i.pytest_nodeid: i.__dict__ for i in self.session.query(DeviceCase).filter_by(delete_flag=1).all()}
+        case_model = self.all_case_items[case_item['pytest_nodeid']]
+        inplace_flag = case_model['inplace_flag']
+        backward_flag = case_model['backward_flag']
         if case_item.get('case_config'):
             case_item['case_config'] = pickle.dumps(case_item['case_config'])
 
         last_diopi_func_name = case_item['diopi_func_name']
         diopi_func_name = case_item['diopi_func_name'].replace('Inp', '').replace('Backward', '')
         diopi_func_name_list = [diopi_func_name]
+        if backward_flag:
+            diopi_func_name_list.append(f'{diopi_func_name}Backward')
         if inplace_flag:
             if 'Scalar' in diopi_func_name:
                 diopi_func_name_list.append(f'{diopi_func_name.replace("Scalar", "")}InpScalar')
             else:
                 diopi_func_name_list.append(f'{diopi_func_name}Inp')
-        if backward_flag:
-            diopi_func_name_list.append(f'{diopi_func_name}Backward')
         case_item['diopi_func_name'] = ','.join(diopi_func_name_list)
         case_item['updated_time'] = datetime.now()
-        case_item['id'] = case_model.id
+        case_item['id'] = case_model['id']
         case_item['test_flag'] = 1
-        self.all_case_items.append(case_item)
+        self.all_case_items[case_item['pytest_nodeid']].update(case_item)
 
-        self.expand_func_list(last_diopi_func_name, case_item.get('not_implemented_flag', case_model.not_implemented_flag),
+        self.expand_func_list(last_diopi_func_name, case_item.get('not_implemented_flag', case_model['not_implemented_flag']),
                               diopi_func_name_list, case_item['result'])
 
     @use_db(glob_vars.use_db)
@@ -243,7 +231,7 @@ class DB_Operation(object):
 
     @use_db(glob_vars.use_db)
     def update_device_case(self):
-        self.session.bulk_update_mappings(DeviceCase, self.all_case_items)
+        self.session.bulk_update_mappings(DeviceCase, self.all_case_items.values())
         self.session.commit()
 
     @use_db(glob_vars.use_db)

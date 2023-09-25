@@ -16,6 +16,7 @@ class GenConfigTestCase(object):
         self._config_path = config_path
         self._tests_path = tests_path
         self._module = module
+        self.db_case_items = []
 
         self.__case_items = None
         # d = dict(
@@ -48,6 +49,7 @@ class GenConfigTestCase(object):
         for tk, tv in self.__function_set.items():
             gc = GenTestCase(self._module, tk, tv, module_path=self._tests_path)
             gc.gen_test_module()
+            self.db_case_items.extend(gc.db_case_items)
 
 ####################################################################################################
 # d = dict(
@@ -64,6 +66,7 @@ class GenTestCase(object):
         self._suite_name, self._func_name = suite_key.split('::')
         self._case_set = case_set
         self._fm = FileManager(module_path)
+        self.db_case_items = []
 
     def _set_fm_write(self):
         mt_name = f'test_{self._module}_{self._suite_name}_{self._func_name}.py'
@@ -72,7 +75,6 @@ class GenTestCase(object):
     def gen_test_module(self):
         test_diopi_head_import = ''
         test_case_items = []
-        all_case_items = []
         for ck, cv in self._case_set.items():
             # test_diopi_function_module = 'diopi_functions'
             test_diopi_func_name = self._func_name
@@ -142,10 +144,11 @@ class GenTestCase(object):
                     bp_output_data_path = bp_output_data_path,
                     test_diopi_bp_func_name = test_diopi_bp_func_name)
                 )
-                item['inplace_flag'] = 1
+                item['backward_flag'] = 1
 
             forward_inp = ''
             if 'is_inplace' in cv.keys() and cv['is_inplace'] is True:
+                item['inplace_flag'] = 1
                 if requires_grad is True:
                     test_diopi_func_inp_remove_grad_args = CaseTemplate.test_diopi_func_inp_remove_grad_args.substitute({})
                 else:
@@ -181,6 +184,7 @@ class GenTestCase(object):
             ))
 
             test_case_items.append(test_function_templ)
+            self.db_case_items.append(item)
             # one case
         if test_diopi_head_import == '':
             test_diopi_head_import = CaseTemplate.test_diopi_function_import.substitute(
@@ -199,8 +203,6 @@ class GenTestCase(object):
 
         file_name = f'test_{self._module}_{self._suite_name}_{self._func_name}.py'
         self._fm.write(file_name, test_class_templ)
-
-        db_conn.will_insert_device_case(all_case_items)
 
 if __name__ == '__main__':
     gctc = GenConfigTestCase()

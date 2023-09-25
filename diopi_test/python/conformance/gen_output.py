@@ -189,8 +189,10 @@ class CustomizedTest(object):
 
 class GenOutputData(object):
     r'''
-    Generate output data for all functions by using torch and input data
+    Generate output data for all functions by using numpy and input data
     '''
+    db_case_items = {}
+
     @staticmethod
     def run(diopi_item_config_path='diopi_case_items.cfg', input_path='data/inputs/',
             output_path='data/outputs/', fname='all_ops', model_name='diopi'):
@@ -208,7 +210,6 @@ class GenOutputData(object):
         case_counter = 0
         func_name_list = []  # make the info log once
 
-        case_items = []
         for case_name in all_cfg_dict:
             each_cfg_dict = all_cfg_dict[case_name]
             func_name = each_cfg_dict["name"]
@@ -231,7 +232,7 @@ class GenOutputData(object):
                 item.update({'result': 'failed', 'err_msg': err_msg})
                 continue
             finally:
-                case_items.append(item)
+                GenOutputData.db_case_items[case_name] = item
             if output is not None:
                 with open(os.path.join(output_path, case_name), "wb") as f:
                     pickle.dump(GenOutputData.to_numpy(output), f, protocol=4)
@@ -247,8 +248,6 @@ class GenOutputData(object):
                     func_signature = f"diopi_functions.{func_name}"
                     logger.info(f"Generate benchmark {logger_str} data for {func_signature}")
                     func_name_list.append(func_name)
-
-        db_conn.update_benchmark_case(case_items)
 
         logger.info(f"Generate test cases number for output data: {case_counter}")
         if case_counter == 0:

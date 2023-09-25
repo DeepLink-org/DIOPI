@@ -14,14 +14,6 @@ from conformance.db_operation import DB_Operation, db_conn, Base, BenchMarkCase,
 cache_path = os.path.join(os.path.dirname(__file__), 'cache')
 
 
-case_benchmark_case = {
-    'test normal case': [dict(case_name='test_batch_norm_batch_norm_0', model_name='diopi', inplace_flag=0, backward_flag=1, 
-                              func_name='batch_norm', case_config={}, result='skipped'),
-                         dict(case_name='test_batch_norm_batch_norm_1', model_name='diopi', inplace_flag=0, backward_flag=1, 
-                              func_name='batch_norm', case_config={}, result='skipped')],
-    'test zero case': []
-}
-
 case_device_case = {
     'test backward case': dict(insert_benchmark_case=[dict(case_name='test_batch_norm_batch_norm_0', model_name='diopi', inplace_flag=0, backward_flag=1,
                                                   func_name='batch_norm', case_config={}, result='skipped'),],
@@ -63,9 +55,9 @@ case_device_case = {
                                                    diopi_func_name='diopihardswishBackward', result='passed'),],
                           expect_funclist=dict(diopihardswish=dict(not_implemented_flag=0, case_num=1,
                                                                       success_case=1, failed_case=0, skipped_case=0),
-                                               diopihardswishInp=dict(not_implemented_flag=0, case_num=1,
-                                                                      success_case=1, failed_case=0, skipped_case=0),
                                                diopihardswishBackward=dict(not_implemented_flag=0, case_num=1,
+                                                                      success_case=1, failed_case=0, skipped_case=0),
+                                               diopihardswishInp=dict(not_implemented_flag=0, case_num=1,
                                                                       success_case=1, failed_case=0, skipped_case=0)),
                           expect_summary=dict(total_case=1, success_case=1, failed_case=0, skip_case=0,
                                               total_func=3, impl_func=3)
@@ -93,7 +85,7 @@ case_device_case = {
                                               dict(pytest_nodeid='gencases/diopi_case/test_diopi_add_add.py',
                                                    diopi_func_name='diopiaddInp', result='skipped'),
                                               dict(pytest_nodeid='gencases/diopi_case/test_diopi_hardswish_hardswish.py',
-                                                   diopi_func_name='diopihardswishBackward', result='failed'),],
+                                                   diopi_func_name='diopihardswishInp', result='failed'),],
                           expect_funclist=dict(diopiBatchNorm=dict(not_implemented_flag=0, case_num=1,
                                                                       success_case=1, failed_case=0, skipped_case=0),
                                                diopiBatchNormBackward=dict(not_implemented_flag=0, case_num=1,
@@ -104,9 +96,9 @@ case_device_case = {
                                                                       success_case=0, failed_case=0, skipped_case=1),
                                                diopihardswish=dict(not_implemented_flag=0, case_num=1,
                                                                       success_case=1, failed_case=0, skipped_case=0),
-                                               diopihardswishInp=dict(not_implemented_flag=0, case_num=1,
-                                                                      success_case=1, failed_case=0, skipped_case=0),
                                                diopihardswishBackward=dict(not_implemented_flag=0, case_num=1,
+                                                                      success_case=1, failed_case=0, skipped_case=0),
+                                               diopihardswishInp=dict(not_implemented_flag=0, case_num=1,
                                                                       success_case=0, failed_case=1, skipped_case=0)),
                           expect_summary=dict(total_case=3, success_case=1, failed_case=1, skip_case=1,
                                               total_func=7, impl_func=7)
@@ -134,7 +126,7 @@ case_device_case = {
                                               dict(pytest_nodeid='gencases/diopi_case/test_diopi_add_add.py',
                                                    not_implemented_flag=1, diopi_func_name='diopiaddInpScalar', result='failed'),
                                               dict(pytest_nodeid='gencases/diopi_case/test_diopi_hardswish_hardswish.py',
-                                                   not_implemented_flag=1, diopi_func_name='diopihardswishInp', result='failed'),],
+                                                   not_implemented_flag=1, diopi_func_name='diopihardswishBackward', result='failed'),],
                           expect_funclist=dict(diopiBatchNorm=dict(not_implemented_flag=0, case_num=1,
                                                                       success_case=1, failed_case=0, skipped_case=0),
                                                diopiBatchNormBackward=dict(not_implemented_flag=0, case_num=1,
@@ -145,9 +137,9 @@ case_device_case = {
                                                                       success_case=0, failed_case=1, skipped_case=0),
                                                diopihardswish=dict(not_implemented_flag=0, case_num=1,
                                                                       success_case=1, failed_case=0, skipped_case=0),
-                                               diopihardswishInp=dict(not_implemented_flag=1, case_num=1,
+                                               diopihardswishBackward=dict(not_implemented_flag=1, case_num=1,
                                                                       success_case=0, failed_case=1, skipped_case=0),
-                                               diopihardswishBackward=dict(not_implemented_flag=0, case_num=1,
+                                               diopihardswishInp=dict(not_implemented_flag=0, case_num=1,
                                                                       success_case=0, failed_case=0, skipped_case=1)),
                           expect_summary=dict(total_case=3, success_case=1, failed_case=2, skip_case=0,
                                               total_func=7, impl_func=5)
@@ -175,7 +167,7 @@ case_device_case = {
                                               dict(pytest_nodeid='gencases/diopi_case/test_diopi_add_add.py',
                                                    diopi_func_name='diopiaddInpScalar', result='failed'),
                                               dict(pytest_nodeid='gencases/diopi_case/test_diopi_hardswish_hardswish.py',
-                                                   diopi_func_name='diopihardswishBackward', result='failed'),],
+                                                   diopi_func_name='diopihardswishInp', result='failed'),],
                           expect_funclist=dict(diopiBatchNorm=dict(not_implemented_flag=0, case_num=1,
                                                                       success_case=0, failed_case=1, skipped_case=0),
                                                diopiBatchNormBackward=dict(not_implemented_flag=0, case_num=1,
@@ -186,9 +178,9 @@ case_device_case = {
                                                                       success_case=0, failed_case=1, skipped_case=0),
                                                diopihardswish=dict(not_implemented_flag=0, case_num=1,
                                                                       success_case=1, failed_case=0, skipped_case=0),
-                                               diopihardswishInp=dict(not_implemented_flag=0, case_num=1,
-                                                                      success_case=1, failed_case=0, skipped_case=0),
                                                diopihardswishBackward=dict(not_implemented_flag=0, case_num=1,
+                                                                      success_case=1, failed_case=0, skipped_case=0),
+                                               diopihardswishInp=dict(not_implemented_flag=0, case_num=1,
                                                                       success_case=0, failed_case=1, skipped_case=0)),
                           expect_summary=dict(total_case=3, success_case=0, failed_case=3, skip_case=0,
                                               total_func=7, impl_func=7)
@@ -223,82 +215,23 @@ class TestDBOperation(object):
         Base.metadata.drop_all(db_conn.engine)
 
     @pytest.fixture()
-    def drop_benchmark_case(self, request):
-        yield
-        db_conn.drop_case_table(BenchMarkCase)
-
-    @pytest.fixture()
     def drop_device_case(self, request):
         yield
-        db_conn.all_case_items = []
+        db_conn.all_case_items = None
         db_conn.func_dict = {}
         db_conn.drop_case_table(BenchMarkCase)
         db_conn.drop_case_table(DeviceCase)
         db_conn.drop_case_table(FuncList)
         db_conn.drop_case_table(TestSummary)
 
-    @pytest.mark.parametrize('case_items', case_benchmark_case.values(), ids=case_benchmark_case.keys())
-    @pytest.mark.usefixtures("drop_benchmark_case")
-    def test_benchmark_case(self, case_items, db_conn):
-        before_len = len(db_conn.session.query(BenchMarkCase).all())
-        time_1 = time.time()
-        time.sleep(0.5)
-        db_conn.insert_benchmark_case(case_items)
-        time.sleep(0.5)
-        after_len = len(db_conn.session.query(BenchMarkCase).all())
-        time_2 = time.time()
-        assert after_len == before_len + len(case_items)
-
-        if len(case_items) > 0:
-            db_model = db_conn.session.query(BenchMarkCase).filter_by(delete_flag=1).all()
-            for item in db_model:
-                created_time = datetime.timestamp(item.created_time)
-                updated_time = datetime.timestamp(item.updated_time)
-                assert item.delete_flag == 1
-                assert created_time > time_1
-                assert created_time < time_2
-                assert updated_time > time_1
-                assert updated_time < time_2
-
-        before_len = len(db_conn.session.query(BenchMarkCase).all())
-        time_3 = time.time()
-        time.sleep(0.5)
-        db_conn.update_benchmark_case(case_items)
-        time.sleep(0.5)
-        after_len = len(db_conn.session.query(BenchMarkCase).all())
-        time_4 = time.time()
-        assert after_len == before_len
-
-        if len(case_items) > 0:
-            db_model = db_conn.session.query(BenchMarkCase).filter_by(delete_flag=1).all()
-            for item in db_model:
-                created_time = datetime.timestamp(item.created_time)
-                updated_time = datetime.timestamp(item.updated_time)
-                assert item.delete_flag == 1
-                assert created_time < time_2
-                assert updated_time > time_3
-                assert updated_time < time_4
-
-            db_conn.drop_case_table(BenchMarkCase)
-            db_model = db_conn.session.query(BenchMarkCase).all()
-            for item in db_model:
-                assert item.delete_flag == 0
-
     @pytest.mark.parametrize('case_items', case_device_case.values(), ids=case_device_case.keys())
     @pytest.mark.usefixtures("drop_device_case")
     def test_device_case_funclist_summary(self, case_items, db_conn: DB_Operation):
-        db_conn.insert_benchmark_case(case_items['insert_benchmark_case'])
-
-        db_data = db_conn.session.query(BenchMarkCase).filter_by(delete_flag=1).all()
-        assert len(db_data) == len(case_items['insert_benchmark_case'])
-
-        db_conn.update_benchmark_case(case_items['update_benchmark_case'])
+        db_conn.insert_benchmark_case(case_items['insert_benchmark_case'], {i['case_name']:i for i in case_items['update_benchmark_case']})
         db_data = db_conn.session.query(BenchMarkCase).filter_by(delete_flag=1).all()
         assert len(db_data) == len(case_items['insert_benchmark_case']) == len(case_items['update_benchmark_case'])
 
-        db_conn.will_insert_device_case(case_items['insert_device_case'])
-        db_conn.insert_device_case()
-        db_conn.all_case_items = []
+        db_conn.insert_device_case(case_items['insert_device_case'])
         db_data = db_conn.session.query(DeviceCase).filter_by(delete_flag=1).all()
         assert len(db_data) == len(case_items['insert_device_case'])
 
