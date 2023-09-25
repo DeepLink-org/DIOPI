@@ -383,8 +383,6 @@ DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t 
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(meanTmpTr, meanTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(runningMeanTmpTr, runningMeanTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(runningVarTmpTr, runningVarTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
-    std::cout << "mean_all_dim:" << meanAllTr.shape()[0] << "," << meanAllTr.shape()[1] << std::endl;
-    std::cout << "count_all_dim:" << countsTr.shape()[0] << std::endl;
 
     // get descriptor
     CnnlTensorDesc meanAllDesc(meanAllTr, CNNL_LAYOUT_NC);
@@ -414,8 +412,8 @@ DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t 
                                                           invstdTmpTr.data()))
 
     // Copy back to origin, if required
-    DIOPI_CALL(dataTypeCast(ctx, runningMeanTr, runningMeanTmpTr));
-    DIOPI_CALL(dataTypeCast(ctx, runningVarTr, runningVarTmpTr));
+    // DIOPI_CALL(dataTypeCast(ctx, runningMeanTr, runningMeanTmpTr));
+    // DIOPI_CALL(dataTypeCast(ctx, runningVarTr, runningVarTmpTr));
     DIOPI_CALL(dataTypeCast(ctx, meanTr, meanTmpTr));
     DIOPI_CALL(dataTypeCast(ctx, invstdTr, invstdTmpTr));
 
