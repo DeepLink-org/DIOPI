@@ -52,27 +52,23 @@ static void policyFuncCalcPointsPerVoxel(cnrtDim3_t *kDim, cnrtFunctionType_t *k
 }
 
 extern "C" diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t voxelsTr, diopiTensorHandle_t coorsTr,
-                                              diopiTensorHandle_t numPointsPerVoxelTr, diopiTensorHandle_t voxelNumTr, diopiConstTensorHandle_t pointsTr,
-                                              diopiConstTensorHandle_t voxelSizeTr, diopiConstTensorHandle_t coorsRangeTr, const int64_t maxPoints,
-                                              const int64_t maxVoxels, const int64_t nDim, const bool deterministic) {
+                                              diopiTensorHandle_t numPointsPerVoxelTr, diopiConstTensorHandle_t pointsTr, int64_t *voxelNumTr,
+                                              const float *voxelSizeTr, int64_t voxelSizeLen, const float *coorsRangeTr, int64_t coorsRangeLen,
+                                              int64_t maxPoints, int64_t maxVoxels, int64_t nDim, bool deterministic) {
     auto voxels = impl::camb::DiopiTensor(voxelsTr);
     auto coors = impl::camb::DiopiTensor(coorsTr);
     auto numPointsPerVoxel = impl::camb::DiopiTensor(numPointsPerVoxelTr);
-    auto voxelNum = impl::camb::DiopiTensor(voxelNumTr);
     auto points = impl::camb::DiopiTensor(pointsTr);
-    auto voxelSize = impl::camb::DiopiTensor(voxelSizeTr);
-    auto coorsRange = impl::camb::DiopiTensor(coorsRangeTr);
 
     const int numPoints = points.size(0);
     const int numFeatures = points.size(1);
 
-    int64_t *voxelNumTrdata = reinterpret_cast<int64_t *>(voxelNum.data());
-    std::vector<float> voxelSizeV(reinterpret_cast<float *>(voxelSize.data()), reinterpret_cast<float *>(voxelSize.data()) + voxelSize.numel());
-    std::vector<float> coorsRangeV(reinterpret_cast<float *>(coorsRange.data()), reinterpret_cast<float *>(coorsRange.data()) + coorsRange.numel());
+    std::vector<float> voxelSizeV(voxelSizeTr, voxelSizeTr + voxelSizeLen);
+    std::vector<float> coorsRangeV(coorsRangeTr, coorsRangeTr + coorsRangeLen);
 
     // check zero element
     if (maxPoints == 0 || maxVoxels == 0) {
-        *voxelNumTrdata = 0;
+        *voxelNumTr = 0;
         return diopiSuccess;
     }
 
@@ -167,12 +163,9 @@ extern "C" diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx, diopiTen
                                         maxPoints,
                                         numPoints,
                                         numFeatures);
-
-    int bytes = sizeof(int) * voxelNumTrtmp.numel();
-    std::unique_ptr<char> voxelNumTrcpu(new char[bytes]);
-    cnrtMemcpyAsync(voxelNumTrcpu.get(), voxelNumTrtmp.data(), bytes, impl::camb::getStream(ctx), cnrtMemcpyDevToHost);
+    int32_t voxelNumTrcpu;
+    cnrtMemcpyAsync(&voxelNumTrcpu, voxelNumTrtmp.data(), sizeof(int32_t), impl::camb::getStream(ctx), cnrtMemcpyDevToHost);
     impl::camb::syncStreamInCtx(ctx);
-    int voxelNumTrint = reinterpret_cast<int *>(voxelNumTrcpu.get())[0];
-    *voxelNumTrdata = voxelNumTrint;
+    *voxelNumTr = voxelNumTrcpu;
     return diopiSuccess;
 }

@@ -890,10 +890,10 @@ DIOPI_API diopiError_t diopiUpfirdn2dOpMmcv(diopiContextHandle_t ctx, diopiTenso
  *  @param[in] ctx diopi context.
  * @param points  [N, ndim]. Points[:, :3] contain xyz points
      and points[:, 3:] contain other information like reflectivity.
- * @param voxel_size (tuple or float): The size of voxel with the shape of
-     [3].
- * @param coors_range (tuple or float): The coordinate range of voxel with
-     the shape of [6].
+ * @param voxel_size : An array representing the size of voxel, [voxelX, voxelY, voxelZ].
+ * @param voxel_size_len : The length of voxel_size array, default is 3.
+ * @param coors_range : An array representing the coordinate range of voxel, [coorsXMin, coorsYMin, coorsZMin, coorsXMax, coorsYMax, coorsZMax].
+ * @param coors_range_len : The length of coors_range array, default is 6.
  * @param max_points (int, optional): maximum points contained in a voxel. if
      max_points=-1, it means using dynamic_voxelize. Default: 35.
  * @param max_voxels (int, optional): maximum voxels this function create.
@@ -919,9 +919,9 @@ DIOPI_API diopiError_t diopiUpfirdn2dOpMmcv(diopiContextHandle_t ctx, diopiTenso
  max_points != -1. voxel_num is for index select.
  */
 DIOPI_API diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t voxels, diopiTensorHandle_t coors,
-                                             diopiTensorHandle_t num_points_per_voxel, diopiTensorHandle_t voxel_num, diopiConstTensorHandle_t points,
-                                             diopiConstTensorHandle_t voxel_size, diopiConstTensorHandle_t coors_range, const int64_t max_points,
-                                             const int64_t max_voxels, const int64_t NDim, const bool deterministic);
+                                             diopiTensorHandle_t num_points_per_voxel, diopiConstTensorHandle_t points, int64_t* voxel_num,
+                                             const float* voxel_size, int64_t voxel_size_len, const float* coors_range, int64_t coors_range_len,
+                                             int64_t max_points, int64_t max_voxels, int64_t NDim, bool deterministic);
 /**
  * @brief Convert kitti points(N, >=3) to voxels(max_points == -1 or max_voxels
  * == -1).
