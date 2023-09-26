@@ -2908,6 +2908,19 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
+                    "shape": [Skip((2, 1, 38, 45)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
+                },
+            ]
+        ),
+    ),
+
+    'copy_broadcast': dict(
+        name=['copy_'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
                     "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
                 },
             ]
