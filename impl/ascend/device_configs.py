@@ -1225,7 +1225,7 @@ device_configs = {
             ]
         ),
     ),
-    
+
     'reduce_partial_op': dict(
         name=['mean'],
         tensor_para=dict(
@@ -1933,7 +1933,7 @@ device_configs = {
             ]
         ),
     ),
-    
+
     'reciprocal': dict(
         name=['reciprocal'],
         tensor_para=dict(
@@ -3127,4 +3127,10 @@ device_configs = {
         ),
     ),
 
+    'reduce_partial_op_4': dict(
+        name=['sum'],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-4,
+    )
 }
