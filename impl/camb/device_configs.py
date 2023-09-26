@@ -1047,8 +1047,6 @@ device_configs = {
         name=["adadelta"],
         atol_half=1e-3,
         rtol_half=1e-3,
-        atol=1e-4,
-        rtol=1e-4,
         tensor_para=dict(
             args=[
                 {
