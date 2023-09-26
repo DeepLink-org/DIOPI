@@ -1790,4 +1790,10 @@ device_configs = {
         name=['linalgqr'],
         atol=1e-4,
     ),
+
+    'batch_norm_stats': dict(
+        name=["batch_norm_stats"],
+        atol=1e-2,
+        rtol=1e-3,
+    ),
 }
