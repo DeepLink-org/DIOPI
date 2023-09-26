@@ -79,9 +79,9 @@ diopiError_t device_memcpy_d2d_async(diopiStreamHandle_t streamHandle, void* dst
     return diopiSuccess;
 }
 
-int32_t initLibrary() { return diopiSuccess; }
+diopiError_t initLibrary() { return diopiSuccess; }
 
-int32_t finalizeLibrary() { return diopiSuccess; }
+diopiError_t finalizeLibrary() { return diopiSuccess; }
 
 #include "litert.hpp"
 
