@@ -698,9 +698,6 @@ diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     DIOPI_CHECK_PTR(tensors);
     auto tensorList = impl::aten::buildATenList(tensors, numTensors);
 
-    std::vector<at::Tensor> a = impl::aten::buildATenList(tensors, numTensors);
-    at::TensorList b = impl::aten::buildATenList(tensors, numTensors);
-
     auto atOut = impl::aten::buildATen(out);
     at::stack_out(atOut, tensorList, dim);
     impl::aten::unsetCurCtx();
@@ -3790,20 +3787,17 @@ diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     auto atInput = impl::aten::buildATen(input);
     auto atPad = impl::aten::buildAtIntArray(pad);
     torch::nn::functional::PadFuncOptions::mode_t pad_mode;
-    double atValue;
+    double atValue = 0;
     if (strcmp(mode, "constant") == 0) {
         DIOPI_CHECK_PTR(value);
         atValue = *value;
         pad_mode = torch::kConstant;
     } else if (strcmp(mode, "reflect") == 0) {
         pad_mode = torch::kReflect;
-        atValue = 0;
     } else if (strcmp(mode, "replicate") == 0) {
         pad_mode = torch::kReplicate;
-        atValue = 0;
     } else if (strcmp(mode, "circular") == 0) {
         pad_mode = torch::kCircular;
-        atValue = 0;
     } else {
         NOT_SUPPORTED("padding mode");
     }
