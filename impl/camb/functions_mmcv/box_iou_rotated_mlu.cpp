@@ -6,8 +6,6 @@
 
 #include <diopi/functions_mmcv.h>
 
-#include <memory>
-
 #include "../common/common.hpp"
 #include "../diopi_helper.hpp"
 #include "../mlu_ops_helper.hpp"
