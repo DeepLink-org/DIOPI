@@ -122,7 +122,7 @@ def aggregate_rows(group: pd.core.frame.DataFrame) -> str:
                         value['shape'] if value['shape'] is not None else [None])
                 aggregated_params_dict[key]['dtype'].extend(value['dtype'] if value['dtype'] is not None else [None])
                 aggregated_params_dict[key]['requires_grad'].extend(
-                    value['requires_grad'] if value['requires_grad'] is not None else [None])
+                    value['requires_grad'] if value.get('requires_grad') is not None else [None])
             else:
                 # normal param
                 if key not in aggregated_params_dict:
@@ -145,6 +145,7 @@ if __name__ == '__main__':
     df = pd.read_csv(args.input, index_col=None)
 
     df = df[~df['diopi_fun'].str.contains('Backward', case=False)]
+    df = df[~(df['args'] == '[]')].drop_duplicates()
     df['extracted_args'] = df.apply(lambda row: extract_args(row['args'], row['diopi_fun']), axis=1)
 
     res = df.groupby('diopi_fun').apply(aggregate_rows).tolist()
