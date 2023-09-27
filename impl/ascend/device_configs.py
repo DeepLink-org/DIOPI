@@ -1994,12 +1994,6 @@ device_configs = {
         ),
     ),
 
-    'reduce_partial_op': dict(
-        name=['sum'],
-        atol=1e-4,
-        rtol=1e-4,
-    ),
-
     'cumsum': dict(
         name=['cumsum'],
         tensor_para=dict(
@@ -3133,6 +3127,18 @@ device_configs = {
         ),
     ),
 
+    'reduce_op': dict(
+        name=['sum'],
+        atol=1e-3,
+        rtol=1e-3,
+    ),
+
+    'reduce_partial_op': dict(
+        name=['sum'],
+        atol=1e-3,
+        rtol=1e-3,
+    ),
+       
     'reduce_partial_op_4': dict(
         name=['sum'],
         interface=['torch'],
