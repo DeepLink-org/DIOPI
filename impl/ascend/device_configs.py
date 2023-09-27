@@ -1197,6 +1197,7 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip((182,)),Skip((384, 128)),Skip((1, 242991, 2)),Skip((2, 4, 100, 152)),Skip((0,)),Skip((2, 0,)),Skip((16, 0, 9)),],
+                    "dtype": [Skip(Dtype.float64)]
                 },
             ]
         ),
