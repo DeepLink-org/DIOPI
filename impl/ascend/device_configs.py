@@ -1215,26 +1215,30 @@ device_configs = {
     ),
 
     'reduce_op': dict(
-        name=['mean'],
+        name=['mean', 'sum'],
+        atol=1e-3,
+        rtol=1e-3,
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float16)],
                 },
-            ]
+            ],
         ),
     ),
 
     'reduce_partial_op': dict(
-        name=['mean'],
+        atol=1e-3,
+        rtol=1e-3,
+        name=['mean', 'sum'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),],
+                    "dtype": [Skip(Dtype.float16)],
                 },
-            ]
+            ],
         ),
     ),
 
@@ -3127,46 +3131,10 @@ device_configs = {
         ),
     ),
 
-    'reduce_op': dict(
-        name=['sum'],
-        atol=1e-3,
-        rtol=1e-3,
-    ),
-
-    'reduce_partial_op': dict(
-        name=['sum'],
-        atol=1e-3,
-        rtol=1e-3,
-    ),
-       
     'reduce_partial_op_4': dict(
         name=['sum'],
         interface=['torch'],
         atol=1e-4,
         rtol=1e-4,
-    ),
-    
-    'reduce_op': dict(
-        name=['mean'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
-
-    'reduce_partial_op': dict(
-        name=['mean'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16)],
-                },
-            ],
-        ),
-    ),
+    )
 }
