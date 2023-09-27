@@ -3144,5 +3144,29 @@ device_configs = {
         interface=['torch'],
         atol=1e-4,
         rtol=1e-4,
-    )
+    ),
+    
+    'reduce_op': dict(
+        name=['mean'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float16)],
+                },
+            ],
+        ),
+    ),
+
+    'reduce_partial_op': dict(
+        name=['mean'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float16)],
+                },
+            ],
+        ),
+    ),
 }
