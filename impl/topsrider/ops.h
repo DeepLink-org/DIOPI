@@ -2,7 +2,7 @@
 
 #include <diopi/functions.h>
 
-static int32_t TOPSOP_LOG_LEVEL = 1;
+static int32_t TOPSOP_LOG_LEVEL = 0;
 
 #define PRINT_COLOR_NONE "\033[0m"
 #define PRINT_RED "\033[1;31;40m"
@@ -117,8 +117,6 @@ DIOPI_API diopiError_t topsDivInp(diopiContextHandle_t ctx, diopiTensorHandle_t 
 DIOPI_API diopiError_t topsBitwiseAnd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other);
 
 DIOPI_API diopiError_t topsBitwiseAndScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t *other);
-
-DIOPI_API diopiError_t topsMax(diopiContextHandle_t ctx, diopiTensorHandle_t max, diopiTensorHandle_t max_indices, diopiConstTensorHandle_t input, int64_t dim);
 
 DIOPI_API diopiError_t topsMax(diopiContextHandle_t ctx, diopiTensorHandle_t max, diopiTensorHandle_t max_indices, diopiConstTensorHandle_t input, int64_t dim);
 
@@ -253,14 +251,14 @@ DIOPI_API diopiError_t topsLog2(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 DIOPI_API diopiError_t topsLog10Inp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
 DIOPI_API diopiError_t topsLog10(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
-DIOPI_API diopiError_t topsLogSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim, diopiDtype_t dtype);
+DIOPI_API diopiError_t topsLogSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim);
 DIOPI_API diopiError_t topsLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                              diopiConstTensorHandle_t output, int64_t dim, diopiDtype_t input_dtype);
+                                              diopiConstTensorHandle_t output, int64_t dim);
 
 DIOPI_API diopiError_t topsConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
                                                  diopiTensorHandle_t grad3, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
                                                  diopiConstTensorHandle_t weight, diopiSize_t *bias_sizes, diopiSize_t stride, diopiSize_t padding,
-                                                 diopiSize_t dilation, bool transposed, diopiSize_t output_padding, int64_t groups);
+                                                 diopiSize_t dilation, int64_t groups);
 
 DIOPI_API diopiError_t topsAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t *alpha);
 
@@ -316,7 +314,7 @@ DIOPI_API diopiError_t topsNeScalar(diopiContextHandle_t ctx, diopiTensorHandle_
 
 DIOPI_API diopiError_t topsBitwiseNot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
-DIOPI_API diopiError_t topsRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, int64_t n, int64_t idx);
+DIOPI_API diopiError_t topsRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, int64_t n);
 
 DIOPI_API diopiError_t topsMaxAll(diopiContextHandle_t ctx, diopiTensorHandle_t max, diopiConstTensorHandle_t input);
 
@@ -386,6 +384,72 @@ DIOPI_API diopiError_t topCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t o
 
 DIOPI_API diopiError_t topsAddMm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mat1,
                                  diopiConstTensorHandle_t mat2, const diopiScalar_t *beta, const diopiScalar_t *alpha);
+
+DIOPI_API diopiError_t topsMinAll(diopiContextHandle_t ctx, diopiTensorHandle_t min, diopiConstTensorHandle_t input);
+
+DIOPI_API diopiError_t topsNeg(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+DIOPI_API diopiError_t topsNms(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t dets, diopiConstTensorHandle_t scores,
+                               double iou_threshold, int64_t offset);
+
+DIOPI_API diopiError_t topsScatterScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim,
+                                         const diopiScalar_t *value, diopiConstTensorHandle_t index, const char *reduce);
+
+DIOPI_API diopiError_t topsIndex(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t *indices,
+                                 int64_t nums);
+
+DIOPI_API diopiError_t topsopUpsampleNearestBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                                     diopiSize_t out_size, diopiSize_t in_size);
+
+DIOPI_API diopiError_t topsopUpsampleLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                                    diopiSize_t out_size, diopiSize_t in_size, bool align_corners, const char *mode);
+
+DIOPI_API diopiError_t topsContiguous(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t input, diopiMemoryFormat_t memoryFormat);
+
+DIOPI_API diopiError_t topsUnique(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, const int64_t* dim, bool sorted,
+                                  bool return_counts, diopiTensorHandle_t indices, diopiTensorHandle_t* counts);
+DIOPI_API diopiError_t topsProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t *dim);
+
+DIOPI_API diopiError_t topsSilu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+DIOPI_API diopiError_t topsSiluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
+
+DIOPI_API diopiError_t topsWhere(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t condition, diopiConstTensorHandle_t input,
+                                 diopiConstTensorHandle_t other);
+
+DIOPI_API diopiError_t topsAddcdiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t tensor1,
+                                   diopiConstTensorHandle_t tensor2, const diopiScalar_t *value);
+
+DIOPI_API diopiError_t topsAddcdivInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t tensor1, diopiConstTensorHandle_t tensor2,
+                                      const diopiScalar_t *value);
+
+DIOPI_API diopiError_t topsAddcmul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t tensor1,
+                                   diopiConstTensorHandle_t tensor2, const diopiScalar_t *value);
+
+DIOPI_API diopiError_t topsAddcmulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t tensor1, diopiConstTensorHandle_t tensor2,
+                                      const diopiScalar_t *value);
+
+DIOPI_API diopiError_t topsMaskedFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask,
+                                      diopiConstTensorHandle_t value);
+
+DIOPI_API diopiError_t topsMaskedFillInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t mask, diopiConstTensorHandle_t value);
+
+DIOPI_API diopiError_t topsMaskedFillScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask,
+                                            const diopiScalar_t *value);
+
+DIOPI_API diopiError_t topsMaskedFillInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t mask, const diopiScalar_t *value);
+
+DIOPI_API diopiError_t topsSqrtInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
+
+DIOPI_API diopiError_t topsSqrt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+DIOPI_API diopiError_t topsIsNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+DIOPI_API diopiError_t topsNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
+                                   diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignore_index);
+
+DIOPI_API diopiError_t topsNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                           diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
+                                           diopiReduction_t reduction, int64_t ignore_index);
 
 int topsLibInit();
 
