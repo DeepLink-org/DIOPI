@@ -11,6 +11,7 @@
 #include <set>
 
 #include "../common/acloprunner.hpp"
+#include "../common/float16.hpp"
 
 namespace impl {
 namespace ascend {
@@ -67,14 +68,14 @@ extern "C" diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t o
 extern "C" diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
     int64_t numel = 0;
     diopiGetTensorNumel(input, &numel);
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(input, &dtype);
     if (0 == numel) {
-        diopiScalar_t nanScalar = {diopi_dtype_float64, NAN};
+        diopiScalar_t nanScalar = {diopi_dtype_float64, dtype == diopi_dtype_float16 ? std::numeric_limits<half_float::half>::quiet_NaN() : NAN};
         diopiFill(ctx, out, &nanScalar);
         return diopiSuccess;
     }
 
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(input, &dtype);
     std::set<diopiDtype_t> typeSet{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_int8, diopi_dtype_uint8};
 
     diopiTensorHandle_t inputTemp;
