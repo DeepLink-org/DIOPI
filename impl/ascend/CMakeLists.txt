@@ -24,9 +24,12 @@ file(GLOB_RECURSE IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions/*.cpp 
 list(APPEND IMPL_SRC ascend_tensor.cpp)
 
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
+# third_party include
+set(THIRD_PARTY_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/half/include)
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
 
 target_link_libraries(${DEVICEIMPL} ascendcl acl_op_compiler)
+target_include_directories(${DEVICEIMPL} SYSTEM PUBLIC ${THIRD_PARTY_INCLUDE_DIRS})
 
 if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
     set(ADAPTOR_GEN_PATH "${CMAKE_SOURCE_DIR}/../adaptor/codegen")
