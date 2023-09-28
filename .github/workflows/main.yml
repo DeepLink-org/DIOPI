@@ -403,7 +403,7 @@ jobs:
           set -e
           export CI=true
           export USE_COVERAGE=${USE_COVERAGE}
-          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}
           echo "rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/"
           source /mnt/cache/share/platform/env/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           echo "test and clean, you can refer to the CAMB"
