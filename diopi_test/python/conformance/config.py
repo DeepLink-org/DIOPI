@@ -145,12 +145,12 @@ def check_configs_format(cfgs_dict: dict):
                     for arg in args:
                         if "shape" in arg.keys():
                             assert length == len(arg["shape"]), \
-                                f"the length of {domain_tmp0}.shape" + \
-                                " should equal " + str(length)
+                                f"The length of {domain_tmp0}.shape " + \
+                                f"should equal to {length}, but got {len(arg['shape'])}"
                         if "value" in arg.keys():
                             assert length == len(arg["value"]), \
-                                f"the length of {domain_tmp0}.value" + \
-                                " should equal " + str(length)
+                                f"The length of {domain_tmp0}.value " + \
+                                f"should equal to {length}, but got {len(arg['value'])}"
 
 
 # expand test config according to key
