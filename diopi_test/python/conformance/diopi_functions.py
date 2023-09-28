@@ -2301,7 +2301,9 @@ def randperm(n: int, dtype=None, generator=None) -> Tensor:
     return out
 
 
-def uniform(input, start=0, end=1, generator=None) -> Tensor:
+def uniform(input, start=0, end=1, generator=None,
+            inplace=True) -> Tensor:
+    assert inplace, "DIOPI now doesn't support uniform without inplace"
     func = check_function("diopiUniformInp")
     ret = func(input.context(), input, start, end, generator)
     check_returncode(ret)

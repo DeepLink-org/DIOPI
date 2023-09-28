@@ -200,10 +200,10 @@ class ManualTest(object):
         assert np.allclose(out_numpy, out_ref, 1e-3),\
             "failed to execute randperm"
 
-    def test_uniform(input, start=0, end=1):
+    def test_uniform(input, start=0, end=1, inplace=True):
         state = build_generator_state(input.context())
         generator = Generator(state)
-        out = F.uniform(input, start, end, generator)
+        out = F.uniform(input, start, end, generator, inplace)
         epsilon = 1e-5   # eliminate minor precision error
         out_numpy = out.numpy()
         assert (out_numpy <= (end + epsilon)).all() and (out_numpy >= (start - epsilon)).all(),\
