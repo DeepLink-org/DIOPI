@@ -24,7 +24,7 @@ DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_
     diopiTensorHandle_t inCopy;
     makeTensorLike(ctx, &inCopy, input, execType);
     diopiCastDtype(ctx, inCopy, input);
-    AscendTensor as_inCopy(inCopy);
+    AscendTensor asInCopy(inCopy);
 
     diopiTensorHandle_t outCopy;
     makeTensorLike(ctx, &outCopy, out, execType);
@@ -39,16 +39,16 @@ DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_
     diopiCastDtype(ctx, batch2Copy, batch2);
 
     // get the size of batch1 * batch2
-    AscendTensor asTensor1 = AscendTensor(batch1);
-    AscendTensor asTensor2 = AscendTensor(batch2);
-    std::vector<int64_t> batch1_shape = asTensor1.shape();
-    std::vector<int64_t> batch2_shape = asTensor2.shape();
-    std::vector<int64_t> vectorSize_BatchMatMulTensor = {batch1_shape[0], batch1_shape[1], batch2_shape[2]};
+    AscendTensor asBatch1 = AscendTensor(batch1);
+    AscendTensor asBatch2 = AscendTensor(batch2);
+    std::vector<int64_t> batch1Shape = asBatch1.shape();
+    std::vector<int64_t> batch2Shape = asBatch2.shape();
+    std::vector<int64_t> vectorSizeBatchMatMulTensor = {batch1Shape[0], batch1Shape[1], batch2Shape[2]};
 
     // init a tensor according to the size of batch1 * batch2 ;
-    diopiSize_t diopiSize_BatchMatMulTensor = vectorToDiopiSize(vectorSize_BatchMatMulTensor);
-    AscendTensor as_BatchMatMulTensor;
-    makeTensor(ctx, as_BatchMatMulTensor, &diopiSize_BatchMatMulTensor, diopi_dtype_float32, diopiDevice_t::diopi_device);
+    diopiSize_t diopiSizeBatchMatMulTensor = vectorToDiopiSize(vectorSizeBatchMatMulTensor);
+    AscendTensor asBatchMatMulTensor;
+    makeTensor(ctx, asBatchMatMulTensor, &diopiSizeBatchMatMulTensor, diopi_dtype_float32, diopiDevice_t::diopi_device);
 
     // does batch1/batch2 need to transpose?
     bool isSelfT = false;
@@ -58,7 +58,7 @@ DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_
     AclOpRunner<5, 1>("BatchMatMul", ctx)
         .addInput(batch1Copy)
         .addInput(batch2Copy)
-        .addOutput(as_BatchMatMulTensor)
+        .addOutput(asBatchMatMulTensor)
         .setAttr("adj_x1", isSelfT)
         .setAttr("adj_x2", isMat2T)
         .run();
@@ -66,20 +66,20 @@ DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_
     // init memory based on the size of alphaMulTensor and betaMulTensor
     AscendTensor alphaMulTensor;
     AscendTensor betaMulTensor;
-    makeTensorLike(ctx, alphaMulTensor, as_BatchMatMulTensor, diopi_dtype_float32);
-    makeTensorLike(ctx, betaMulTensor, as_inCopy, diopi_dtype_float32);
+    makeTensorLike(ctx, alphaMulTensor, asBatchMatMulTensor, diopi_dtype_float32);
+    makeTensorLike(ctx, betaMulTensor, asInCopy, diopi_dtype_float32);
 
-    diopiScalar_t alpha_scalar = {diopi_dtype_float32, alpha};
-    diopiScalar_t beta_scalar = {diopi_dtype_float32, beta};
+    diopiScalar_t alphaScalar = {diopi_dtype_float32, alpha};
+    diopiScalar_t betaScalar = {diopi_dtype_float32, beta};
 
     // transform ascendTensor to diopiTensorHandle_t
     diopiTensorHandle_t diopiAlphaMulTensor = const_cast<diopiTensorHandle_t>(alphaMulTensor.tensorHandle());
     diopiTensorHandle_t diopiBateMulTensor = const_cast<diopiTensorHandle_t>(betaMulTensor.tensorHandle());
-    diopiTensorHandle_t diopi_as_BatchMatMulTensor = const_cast<diopiTensorHandle_t>(as_BatchMatMulTensor.tensorHandle());
+    diopiTensorHandle_t diopiAsBatchMatMulTensor = const_cast<diopiTensorHandle_t>(asBatchMatMulTensor.tensorHandle());
 
-    //\alpha times BatchMatMulTensor -> alphaMulTensor and \beta times input -> betaMulTensor
-    diopiMulScalar(ctx, diopiAlphaMulTensor, diopi_as_BatchMatMulTensor, &alpha_scalar);
-    diopiMulScalar(ctx, diopiBateMulTensor, inCopy, &beta_scalar);
+    // alpha times BatchMatMulTensor -> alphaMulTensor and beta times input -> betaMulTensor
+    diopiMulScalar(ctx, diopiAlphaMulTensor, diopiAsBatchMatMulTensor, &alphaScalar);
+    diopiMulScalar(ctx, diopiBateMulTensor, inCopy, &betaScalar);
 
     diopiScalar_t other;
     other.fval = 1;
