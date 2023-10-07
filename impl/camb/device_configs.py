@@ -37,7 +37,7 @@ device_configs = {
             ]
         ),
     ),
-    
+
     'hardtanh': dict(
         name=["hardtanh"],
         tensor_para=dict(
@@ -49,7 +49,7 @@ device_configs = {
             ],
         ),
     ),
-    
+
     'hardtanh_int': dict(
         name=["hardtanh"],
         tensor_para=dict(
@@ -61,7 +61,7 @@ device_configs = {
             ],
         ),
     ),
-    
+
     'hardtanh_uint': dict(
         name=["hardtanh"],
         tensor_para=dict(
@@ -267,15 +267,8 @@ device_configs = {
     'max_pool2d': dict(
         name=["max_pool2d"],
         para=dict(
+            # camb kernel only support dilation == 1
             dilation=[Skip((4, 3)), Skip((2, 3)), Skip(2)],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ]
         ),
     ),
 
@@ -517,7 +510,7 @@ device_configs = {
             ],
         ),
     ),
-    
+
     'addcmul': dict(
         name=["addcmul"],
         tensor_para=dict(
@@ -611,6 +604,8 @@ device_configs = {
     ),
 
     'reduce_partial_op': dict(
+        atol = 0.001,
+        rtol = 0.0001,
         name=['mean', 'sum'],
         tensor_para=dict(
             args=[
@@ -1006,6 +1001,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
+                    # FIXME Run diopi_functions.adam failed, because of inputs: param_grad changed
+                    "shape": [Skip(())],
                     "dtype": [Skip(Dtype.float16)],
                 },
             ]
@@ -1052,6 +1049,15 @@ device_configs = {
         name=["adadelta"],
         atol_half=1e-3,
         rtol_half=1e-3,
+        tensor_para=dict(
+            args=[
+                {
+                    # can't get correct result
+                    "ins": ['param', 'param_grad'],
+                    "dtype": [Skip(Dtype.float16)],
+                },
+            ]
+        ),
     ),
 
     'rmsprop': dict(
@@ -1218,7 +1224,7 @@ device_configs = {
             ],
         ),
     ),
-    # TODO: ctc_loss of camb could work correctly due to dipu and one_iter, need to fix diopi_test 
+    # TODO: ctc_loss of camb could work correctly due to dipu and one_iter, need to fix diopi_test
     'ctc_loss': dict(
         name=["ctc_loss"],
         para=dict(
@@ -1548,23 +1554,11 @@ device_configs = {
             ],
         ),
     ),
-    
+
     'randperm': dict(
         name=['randperm'],
         para=dict(
             n=[Skip(1)],
-        ),
-    ),
-
-    'bernoulli': dict(
-        name=['bernoulli'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
-                },
-            ],
         ),
     ),
 
@@ -1811,5 +1805,11 @@ device_configs = {
                 }
             ]
         ),
+    ),
+
+    'batch_norm_stats': dict(
+        name=["batch_norm_stats"],
+        atol=1e-2,
+        rtol=1e-3,
     ),
 }

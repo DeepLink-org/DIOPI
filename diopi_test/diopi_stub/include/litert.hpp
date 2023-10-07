@@ -200,9 +200,9 @@ public:
     }
 };
 
-DIOPI_RT_API diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diopiConstTensorHandle_t tensor, void* dst);
+DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diopiConstTensorHandle_t tensor, void* dst);
 
-DIOPI_RT_API diopiError_t diopiTensorCopyFromBuffer(diopiContextHandle_t ctx, const void* src, diopiTensorHandle_t tensor);
+DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiTensorCopyFromBuffer(diopiContextHandle_t ctx, const void* src, diopiTensorHandle_t tensor);
 
 DIOPI_RT_API diopiError_t diopiInit();
 

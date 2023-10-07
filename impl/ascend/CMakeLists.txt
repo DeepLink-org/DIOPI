@@ -1,14 +1,6 @@
 cmake_minimum_required(VERSION 3.4)
 project(ascend_impl)
 
-option(DEBUG "whether to use debug" OFF)
-
-if (DEBUG)
-    SET(CMAKE_BUILD_TYPE "Debug")
-else()
-    SET(CMAKE_BUILD_TYPE "Release")
-endif()
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(DEFINED ENV{ASCEND_CUSTOM_PATH})
@@ -29,7 +21,7 @@ endif()
 
 
 file(GLOB_RECURSE IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions/*.cpp common/*.cpp)
-#list(APPEND IMPL_SRC acl_helper.cpp)
+list(APPEND IMPL_SRC ascend_tensor.cpp)
 
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")

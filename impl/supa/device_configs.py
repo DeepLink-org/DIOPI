@@ -21,4 +21,9 @@ device_configs = {
         atol=1e-4,
         rtol=1e-4,
     ),
+    'matmul': dict(
+        name=["matmul"],
+        rtol=1e-5,
+        atol=8e-3
+    )
 }

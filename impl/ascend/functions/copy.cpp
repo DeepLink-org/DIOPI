@@ -13,6 +13,11 @@ namespace ascend {
 
 extern "C" {
 DIOPI_API diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiTensorHandle_t dest) {
+    int64_t numel = 0;
+    diopiGetTensorNumel(src, &numel);
+    if (0 == numel) {
+        return diopiSuccess;
+    }
     if (src != dest) {
         diopiDtype_t dstType, srcType;
         diopiGetTensorDtype(dest, &dstType);

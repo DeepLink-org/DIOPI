@@ -7,7 +7,7 @@ import numpy as np
 import csv
 import pickle
 import ctypes
-import export_functions
+import diopilib
 
 
 cfg_file_name = "test_config.cfg"
@@ -232,7 +232,7 @@ def check_returncode(returncode, throw_exception=True):
 
 def check_function(fn_name):
     try:
-        func = eval(f"export_functions.{fn_name}")
+        func = eval(f"diopilib.{fn_name}")
     except AttributeError as e:
         raise FunctionNotImplementedError(e.args)
     return func
