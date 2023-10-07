@@ -220,7 +220,7 @@ diopi_configs = {
                     "ins": ["count_all"],
                     "shape": ((2,), (7,), (3,), (4,)),
                     "requires_grad": [False],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": dict(fn=Genfunc.randint, low=2, high=6),
                 },
             ]
         ),

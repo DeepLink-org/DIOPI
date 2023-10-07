@@ -389,17 +389,21 @@ DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t 
     // check the output dtype
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(invstdTmpTr, invstdTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(meanTmpTr, meanTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
-    // REQUIRES_TENSOR_BY_DTYPE_OR_NOT(runningMeanTmpTr, runningMeanTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
-    // REQUIRES_TENSOR_BY_DTYPE_OR_NOT(runningVarTmpTr, runningVarTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(runningMeanTmpTr, runningMeanTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(runningVarTmpTr, runningVarTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+    DiopiTensor countIntTr = requiresTensor(ctx, countsTr.shape(), countsTr.dtype(), diopiMemoryFormat_t::Contiguous);
 
     // get descriptor
     CnnlTensorDesc meanAllDesc(meanAllTr, CNNL_LAYOUT_NC);
     CnnlTensorDesc invstdAllDesc(invstdAllTr, CNNL_LAYOUT_NC);
     CnnlTensorDesc countsDesc(countsTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc countsIntDesc(countIntTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc meanDesc(meanTmpTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc invstdDesc(invstdTmpTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc runningMeanDesc(runningMeanTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc runningVarDesc(runningVarTr, CNNL_LAYOUT_ARRAY);
+
+    DIOPI_CALLCNNL(cnnlTrunc(handle, countsDesc.get(), countsTr.data(), countsIntDesc.get(), countIntTr.data()))
 
     DIOPI_CALLCNNL(cnnlSyncBatchNormGatherStatsWithCounts(handle,
                                                           meanAllDesc.get(),
@@ -412,13 +416,12 @@ DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t 
                                                           runningVarTr.defined() ? runningVarTr.data() : nullptr,
                                                           momentum,
                                                           eps,
-                                                          countsDesc.get(),
-                                                          countsTr.data(),
+                                                          countsIntDesc.get(),
+                                                          countIntTr.data(),
                                                           meanDesc.get(),
                                                           meanTmpTr.data(),
                                                           invstdDesc.get(),
                                                           invstdTmpTr.data()))
-
     // Copy back to origin, if required
     DIOPI_CALL(diopiCopyInp(ctx, runningMeanTr.tensorHandle(), runningMeanTrOrigin.tensorHandle()));
     DIOPI_CALL(diopiCopyInp(ctx, runningVarTr.tensorHandle(), runningVarTrOrigin.tensorHandle()));
