@@ -1994,18 +1994,6 @@ device_configs = {
         ),
     ),
 
-    'cumsum': dict(
-        name=['cumsum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),Skip(Dtype.bool),],
-                },
-            ]
-        ),
-    ),
-
     'cdist': dict(
         name=['cdist'],
         tensor_para=dict(
