@@ -3,12 +3,19 @@ import os
 import re
 import ast
 import argparse
+import logging
+log_format = '%(asctime)s - %(levelname)s: %(message)s'
+logging.basicConfig(level=logging.INFO, format=log_format, datefmt='%Y-%m-%d %H:%M:%S')
 
 name_translation = {
     "diopiConvolution2d": "conv2d",
     "diopiCrossEntropyLoss": "cross_entropy",
     "diopiMaxPool2dWithIndices": "max_pool2d",
-    "diopiFill": 'fill_',
+    "diopiFill": "fill_",
+    "diopiMaxAll": "max",
+    "diopiMinAll": "min",
+    "diopiUpsampleNearest": "interpolate",
+    "diopiUpsampleLinear": "interpolate",
 }
 param_type_translation = {
     "training": bool,
@@ -16,12 +23,25 @@ param_type_translation = {
     "keepdim": bool,
     "reduction": lambda x: "none" if x == 0 else ("mean" if x == 1 else "sum"),
     "dim": lambda x: None if isinstance(x, list) and len(x) == 0 else x,
+    "accumulate": bool,
+    "descending": bool,
+    "largest": bool,
+    "sorted": bool,
+    "return_inverse": bool,
+    "return_counts": bool,
 }
 func_interface = {
     'torch': ['add', 'sub', 'mul', 'div', 'eq', 'ne', 'le',
-              'lt', 'gt', 'ge', 'logical_and', 'logical_or', 'cat', 'stack', 'flip', 'mean', 'fill', 'sum'],
+              'lt', 'gt', 'ge', 'logical_and', 'logical_or', 'cat',
+              'stack', 'flip', 'mean', 'fill', 'sum', 'abs', 'all',
+              'any', 'arange', 'bitwise_and', 'bitwise_or', 'clamp',
+              'clamp_min', 'clamp_max', 'exp', 'floor', 'neg',
+              'log', 'log2', 'log10', 'minimum', 'maximum', 'unique',
+              'max', 'min', 'nonzero', 'sgn', 'sort', 'topk',
+              'cos', 'erf', 'erfinv', 'sin', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'ceil', 'atan'],
     'torch.nn.functional': ['conv2d', 'batch_norm'],
-    'torch.Tensor': ['normal_', 'fill_']
+    'torch.Tensor': ['normal_', 'fill_', 'repeat'],
+    "CustomizedTest": ['index', 'index_put']
 }
 no_output_ref = ['randperm', 'uniform', 'dropout', 'dropout2d', 'normal', 'multinomial', 'normal_']
 saved_args = {"sigmoid": "0", 'softmax': '0', 'log_softmax': '0', 'tanh': '0', 'cholesky_ex': '0', 'cdist': '0',
@@ -30,7 +50,8 @@ saved_args = {"sigmoid": "0", 'softmax': '0', 'log_softmax': '0', 'tanh': '0', '
 requires_backward = {'cholesky_ex': '0', 'max_pool2d': '0'}
 # For some ops that doesn't have diopiBackward function, skip requires_grad
 skip_backward_ops = ['add', 'sub', 'mul', 'div', 'eq', 'ne', 'le',
-                     'lt', 'gt', 'ge', 'logical_and', 'logical_or', 'cat', 'stack', 'flip', 'mean', 'fill_', 'sum', 'relu', 'normal_']
+                     'lt', 'gt', 'ge', 'logical_and', 'logical_or', 'cat', 'stack', 'flip', 'mean', 'fill_', 'sum', 'relu', 'normal_', 'topk', 'abs', 'neg', 'sgn',
+                     'uniform']
 # For some ops that doesn't need to use is_inplace
 skip_inplace_ops = ['normal_', 'fill_']
 
@@ -77,6 +98,7 @@ gen_func = {
     'log10:input': 'Genfunc.positive'
 }
 
+warning_list = ['index_put', 'index']
 
 def convert_op_name(op):
     def camel_to_snake(name):
@@ -128,6 +150,9 @@ def gen_config_code(contents: dict, file_name: str) -> None:
                 names.update({name: 1})
             config.append(key_indent + 'name=["' + name + '"],\n')
 
+            if name in warning_list:
+                logging.warning(f"Need to check manually for `{name}` due to randomness or current limitation.")
+                # continue    # debug usage
             if name in atol_rtol:
                 for k, v in atol_rtol[name].items():
                     config.append(key_indent + f'{k}={v:.0e},\n')
@@ -152,7 +177,8 @@ def gen_config_code(contents: dict, file_name: str) -> None:
                         requires_grad = True in set(v["requires_grad"])
                         tensor_para.append(tensor_indent + '"requires_grad":[' + str(requires_grad) + '],\n')
                     tensor_para.append(tensor_indent + '"shape": ' + str(v["shape"]) + ",\n")
-                    dtype = v['dtype'][0]
+                    unique_dtypes = set(v['dtype']) - {None}
+                    dtype = next(iter(unique_dtypes)) if unique_dtypes else None
                     if dtype is not None:
                         # TODO: currently we only support generate one dtype (update diopi)
                         assert dtype in dtype_mappings, "unexpected input!"
