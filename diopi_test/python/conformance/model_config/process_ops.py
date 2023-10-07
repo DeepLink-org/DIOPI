@@ -2,6 +2,7 @@ import pandas as pd
 import ast
 import re
 import argparse
+from collections import defaultdict
 
 # param in op_tensor_param must be a tensor, even if it is not defined
 op_tensor_param = {
@@ -20,11 +21,31 @@ op_skip_param = {
     'diopiSoftmax': ['half_to_float'],
     'diopiNLLLoss': ['total_weight'],
     'diopiNormalInp': ['generator'],
+    'diopiUniformInp': ['generator'],
+    'diopiIndexPut': ['unsafe'],
+    'diopiMax': ['max_indices', 'max'],
+    'diopiMin': ['min_indices', 'min'],
+    'diopiSort': ['indices', 'values'],
+    'diopiTopk': ['indices', 'values'],
+    'diopiUnique': ['indices', 'counts'],
+    'diopiUpsampleNearest': ['scales_h', 'scales_w'],
+    'diopiUpsampleLinear': ['scales_h', 'scales_w'],
 }
-# param name translation
+# param name translation(all of the ops)
 param_name_translation = {
     "self": "input",
-    "indices": "return_indices",
+    "from": "start",
+    "to" : "end",
+    "output_size": "size",
+}
+# op param name translation(specific ops)
+op_param_name_translation = {
+    'diopiIndexPut': {
+        "indices": "indices1",
+    },
+    'diopiMaxPool2dWithIndices': {
+        "indices": "return_indices",
+    },
 }
 
 
@@ -54,7 +75,7 @@ def extract_requires_grad(args_str):
 
 
 def extract_args(args_str: str, op_name: str) -> dict:
-    args_str = args_str.replace('undefined', 'None')
+    args_str = re.sub(r"'undefined'|undefined", "None", args_str)
     args_list = ast.literal_eval(args_str)
     # filter out, out1, out2, output... but maintain output_size
     filtered_args = [arg for arg in args_list if not re.search(r'^(out(?=\d|\:)|^output:\[)', arg)]
@@ -62,9 +83,12 @@ def extract_args(args_str: str, op_name: str) -> dict:
     result = {}
     for item in filtered_args:
         key, values_str = item.split(':', 1)
-        key = param_name_translation.get(key, key)
         if key in op_skip_param.get(op_name, []):
             continue
+        # first scan for normal translation, then fetch the specific one
+        key = param_name_translation.get(key, key)
+        key = op_param_name_translation.get(op_name, {}).get(key, key)
+
 
         sizes = extract_sizes(values_str)
         dtypes = extract_dtype(values_str)
@@ -104,12 +128,17 @@ def extract_args(args_str: str, op_name: str) -> dict:
 
 
 def aggregate_rows(group: pd.core.frame.DataFrame) -> str:
-    aggregated_params_dict = {key: {'shape': [], 'dtype': [], 'requires_grad': []}
-                              for key in group['extracted_args'].iloc[0].keys() if isinstance(group['extracted_args'].iloc[0][key], dict)}
-
+    # group = group.iloc[0:10]   # debug usage
+    func_name = group['diopi_fun'].iloc[0]
+    aggregated_params_dict = defaultdict(list)
+        
     for _, row in group.iterrows():
         row_shapes = []  # To collect shapes for this specific row
 
+        # specific operations towards `upsample`
+        if 'Upsample' in func_name:
+            aggregated_params_dict['mode'].append(
+                func_name.split("Upsample", 1)[1].lower())
         for key, value in row['extracted_args'].items():
             if isinstance(value, dict) and 'shape' in value and 'dtype' in value:
                 # tensor param
@@ -118,22 +147,22 @@ def aggregate_rows(group: pd.core.frame.DataFrame) -> str:
                 if key == 'tensors':
                     row_shapes.append(value['shape'])
                 else:
+                    # TODO: update DIOPI to support random length of indices
+                    # Now we just fetch the first one
                     aggregated_params_dict[key]['shape'].extend(
-                        value['shape'] if value['shape'] is not None else [None])
+                        value['shape'][:1] if value['shape'] is not None else [None])
                 aggregated_params_dict[key]['dtype'].extend(value['dtype'] if value['dtype'] is not None else [None])
                 aggregated_params_dict[key]['requires_grad'].extend(
                     value['requires_grad'] if value.get('requires_grad') is not None else [None])
             else:
                 # normal param
-                if key not in aggregated_params_dict:
-                    aggregated_params_dict[key] = []
                 aggregated_params_dict[key].append(value)
 
         # Append the aggregated shapes for 'tensors' key
         if row_shapes and 'tensors' in aggregated_params_dict:
             aggregated_params_dict['tensors']['shape'].extend(row_shapes)
 
-    return f"'{group['diopi_fun'].iloc[0]}': {aggregated_params_dict}"
+    return f"'{func_name}': {dict(aggregated_params_dict)}"
 
 
 if __name__ == '__main__':
