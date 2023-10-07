@@ -3,7 +3,7 @@ import pytest
 import pickle
 
 from conformance.global_settings import glob_vars
-from conformance.db_operation import db_conn, TestSummary, FuncList
+from conformance.db_operation import db_conn, TestSummary, FuncList, ExcelOperation
 
 
 def pytest_addoption(parser):
@@ -36,3 +36,7 @@ def pytest_sessionfinish(session, exitstatus):
     db_conn.update_device_case()
     db_conn.insert_func_list()
     db_conn.insert_test_summary()
+
+
+def pytest_terminal_summary(terminalreporter):
+    ExcelOperation().gen_excel()

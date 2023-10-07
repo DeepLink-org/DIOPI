@@ -2,6 +2,7 @@ import threading
 import os
 import pickle
 import time
+import pandas as pd
 from datetime import datetime
 from sqlalchemy import Column, DateTime, Integer, FLOAT, String, create_engine, event, func
 from sqlalchemy.orm import sessionmaker
@@ -85,7 +86,7 @@ class TestSummary(Base):
     total_case = Column(Integer)
     success_case = Column(Integer)
     failed_case = Column(Integer)
-    skip_case = Column(Integer)
+    skipped_case = Column(Integer)
     total_func = Column(Integer)
     impl_func = Column(Integer)
     success_rate = Column(FLOAT)
@@ -246,7 +247,7 @@ class DB_Operation(object):
         total_case = self.session.query(func.count(BenchMarkCase.func_name)).filter_by(delete_flag=1).one()[0]
         success_case = self.session.query(func.count(DeviceCase.func_name)).filter_by(result='passed', delete_flag=1, test_flag=1).one()[0]
         failed_case = self.session.query(func.count(DeviceCase.func_name)).filter_by(result='failed', delete_flag=1, test_flag=1).one()[0]
-        skip_case = self.session.query(func.count(DeviceCase.func_name)).filter_by(result='skipped', delete_flag=1, test_flag=1).one()[0]
+        skipped_case = self.session.query(func.count(DeviceCase.func_name)).filter_by(result='skipped', delete_flag=1, test_flag=1).one()[0]
         total_func = sum([1 + i[1] + i[2] for i in self.session\
             .query(BenchMarkCase.func_name, BenchMarkCase.inplace_flag, BenchMarkCase.backward_flag) \
             .filter_by(delete_flag=1).group_by(BenchMarkCase.func_name).all()])
@@ -255,7 +256,7 @@ class DB_Operation(object):
             total_case=total_case,
             success_case=success_case,
             failed_case=failed_case,
-            skip_case=skip_case,
+            skipped_case=skipped_case,
             total_func=total_func,
             impl_func=impl_func,
             func_coverage_rate=impl_func / total_func,
@@ -267,6 +268,11 @@ class DB_Operation(object):
         self.session.add(TestSummary(**summary_item))
         self.session.commit()
 
+    @use_db(glob_vars.use_db)
+    def query_data(self, case_module, **kwargs):
+        data = self.session.query(case_module).filter_by(**kwargs).all()
+        return data
+
     def __new__(cls, *args, **kwargs):
         if not hasattr(DB_Operation, "_instance"):
             with DB_Operation._instance_lock:
@@ -276,3 +282,42 @@ class DB_Operation(object):
 
 
 db_conn = DB_Operation()
+
+
+class ExcelOperation(object):
+    def __init__(self) -> None:
+        self.excel_writer = pd.ExcelWriter('report.xlsx', engine='xlsxwriter')
+
+    def add_benchmark_case_sheet(self):
+        data_query = db_conn.query_data(BenchMarkCase, delete_flag=1)
+        df = pd.DataFrame([data.__dict__ for data in data_query], columns=BenchMarkCase.__table__.columns.keys())
+        df['case_config'] = df['case_config'].apply(lambda x: pickle.loads(x))
+        columns = ['case_name', 'model_name', 'func_name', 'case_config', 'result', 'error_msg']
+        df.to_excel(self.excel_writer, sheet_name='Benchmark Test Result', columns=columns)
+
+    def add_device_case_sheet(self):
+        data_query = db_conn.query_data(DeviceCase, delete_flag=1, test_flag=1)
+        df = pd.DataFrame([data.__dict__ for data in data_query], columns=DeviceCase.__table__.columns.keys())
+        df['case_config'] = df['case_config'].apply(lambda x: pickle.loads(x))
+        columns = ['pytest_nodeid', 'case_name', 'model_name', 'func_name', 'diopi_func_name', 'not_implemented_flag', 'case_config', 'result', 'error_msg']
+        df.to_excel(self.excel_writer, sheet_name='Device Test Result', columns=columns)
+
+    def add_func_list_sheet(self):
+        data_query = db_conn.query_data(FuncList, delete_flag=1)
+        df = pd.DataFrame([data.__dict__ for data in data_query], columns=FuncList.__table__.columns.keys())
+        columns = ['diopi_func_name', 'not_implemented_flag', 'case_num', 'success_case', 'failed_case', 'skipped_case', 'success_rate']
+        df.to_excel(self.excel_writer, sheet_name='Func List', columns=columns)
+
+    def add_sumary_sheet(self):
+        data_query = db_conn.query_data(TestSummary, delete_flag=1)
+        df = pd.DataFrame([data.__dict__ for data in data_query], columns=TestSummary.__table__.columns.keys())
+        columns = ['total_case', 'success_case', 'failed_case', 'skipped_case', 'total_func', 'impl_func', 'success_rate', 'func_coverage_rate']
+        df.to_excel(self.excel_writer, sheet_name='Sumary', columns=columns)
+
+    @use_db(glob_vars.use_db)
+    def gen_excel(self):
+        self.add_benchmark_case_sheet()
+        self.add_device_case_sheet()
+        self.add_func_list_sheet()
+        self.add_sumary_sheet()
+        self.excel_writer.close()
