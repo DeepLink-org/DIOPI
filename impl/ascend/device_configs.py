@@ -723,7 +723,7 @@ device_configs = {
     ),
 
     'pointwise_binary': dict(
-        name=['add', 'sub', 'mul', 'eq', 'ne', 'le', 'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
+        name=['add', 'mul', 'eq', 'ne', 'le', 'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
         tensor_para=dict(
             args=[
                 {
@@ -735,7 +735,7 @@ device_configs = {
     ),
 
     'pointwise_binary_broadcast': dict(
-        name=['add', 'sub', 'mul', 'div', 'eq', 'ne', 'le', 'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
+        name=['add', 'mul', 'div', 'eq', 'ne', 'le', 'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
         tensor_para=dict(
             args=[
                 {
@@ -747,7 +747,7 @@ device_configs = {
     ),
 
     'pointwise_binary_broadcast_inplace': dict(
-        name=['add', 'sub', 'mul', 'div', 'eq', 'ne', 'le', 'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
+        name=['add', 'mul', 'div', 'eq', 'ne', 'le', 'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
         tensor_para=dict(
             args=[
                 {
@@ -926,18 +926,6 @@ device_configs = {
         ),
     ),
 
-    'sub_scalar': dict(
-        name=['sub'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 64, 128)),Skip((128, 64, 3, 3)),Skip((128, 32, 2, 2)),Skip((2, 32, 130, 130)),],
-                },
-            ]
-        ),
-    ),
-
     'pointwise_binary_scalar': dict(
         name=['add', 'mul', 'div', 'eq', 'ne', 'le', 'lt', 'gt', 'ge'],
         tensor_para=dict(
@@ -1011,7 +999,7 @@ device_configs = {
     ),
 
     'pointwise_binary_with_alpha': dict(
-        name=['add', 'sub'],
+        name=['add'],
         tensor_para=dict(
             args=[
                 {
