@@ -100,6 +100,7 @@ gen_func = {
 
 warning_list = ['index_put', 'index']
 
+
 def convert_op_name(op):
     def camel_to_snake(name):
         s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)

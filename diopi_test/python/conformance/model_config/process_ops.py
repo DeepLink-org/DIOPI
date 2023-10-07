@@ -35,7 +35,7 @@ op_skip_param = {
 param_name_translation = {
     "self": "input",
     "from": "start",
-    "to" : "end",
+    "to": "end",
     "output_size": "size",
 }
 # op param name translation(specific ops)
@@ -89,7 +89,6 @@ def extract_args(args_str: str, op_name: str) -> dict:
         key = param_name_translation.get(key, key)
         key = op_param_name_translation.get(op_name, {}).get(key, key)
 
-
         sizes = extract_sizes(values_str)
         dtypes = extract_dtype(values_str)
         requires_grads = extract_requires_grad(values_str)
@@ -131,7 +130,7 @@ def aggregate_rows(group: pd.core.frame.DataFrame) -> str:
     # group = group.iloc[0:10]   # debug usage
     func_name = group['diopi_fun'].iloc[0]
     aggregated_params_dict = defaultdict(list)
-        
+
     for _, row in group.iterrows():
         row_shapes = []  # To collect shapes for this specific row
 
