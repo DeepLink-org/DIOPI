@@ -927,7 +927,7 @@ device_configs = {
     ),
 
     'pointwise_binary_scalar': dict(
-        name=['add', 'div', 'ne', 'le', 'lt'],
+        name=['div', 'ne', 'le', 'lt'],
         tensor_para=dict(
             args=[
                 {
