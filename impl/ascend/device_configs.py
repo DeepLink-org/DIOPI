@@ -1434,54 +1434,6 @@ device_configs = {
         ),
     ),
 
-    'nonzero': dict(
-        name=['nonzero'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((1482,)),Skip((16, 24)),Skip((5, 8, 20)),Skip((4, 4, 16, 20)),Skip((4, 4, 16, 2, 20)),Skip((0,)),Skip((12, 0)),Skip((2, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
-    'nonzero_float': dict(
-        name=['nonzero'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((1482,)),Skip((16, 24)),],
-                },
-            ]
-        ),
-    ),
-
-    'nonzero_int': dict(
-        name=['nonzero'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((4, 4, 16, 20)),Skip((4, 4, 16, 2, 20)),],
-                },
-            ]
-        ),
-    ),
-
-    'nonzero_uint': dict(
-        name=['nonzero'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((4, 4, 16, 20)),Skip((4, 4, 16, 2, 20)),],
-                },
-            ]
-        ),
-    ),
-
     'linear': dict(
         name=['linear'],
         tensor_para=dict(
