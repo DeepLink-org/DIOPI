@@ -6,6 +6,8 @@
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
+#include "../common/debug.hpp"
+// #include "../functions/reduce.cpp"
 
 namespace impl {
 namespace camb {
@@ -393,8 +395,6 @@ DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t 
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(runningVarTmpTr, runningVarTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
     DiopiTensor countIntTr = requiresTensor(ctx, countsTr.shape(), countsTr.dtype(), diopiMemoryFormat_t::Contiguous);
 
-    std::cout << static_cast<float>(reinterpret_cast<float*>(meanAllTr.data())[0]) << std::endl;
-
     // get descriptor
     CnnlTensorDesc meanAllDesc(meanAllTr, CNNL_LAYOUT_NC);
     CnnlTensorDesc invstdAllDesc(invstdAllTr, CNNL_LAYOUT_NC);
@@ -406,6 +406,15 @@ DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t 
     CnnlTensorDesc runningVarDesc(runningVarTr, CNNL_LAYOUT_ARRAY);
 
     DIOPI_CALLCNNL(cnnlTrunc(handle, countsDesc.get(), countsTr.data(), countsIntDesc.get(), countIntTr.data()))
+
+    // check whether the counts are all positive
+    DiopiTensor min = requiresTensor(ctx, {1}, countsTr.dtype(), diopiMemoryFormat_t::Contiguous);
+    DIOPI_CALL(diopiMinAll(ctx, min.tensorHandle(), countIntTr.tensorHandle()));
+    std::unique_ptr<float> ptr(new float[sizeof(float)]);
+    cnrtMemcpyAsync(ptr.get(), min.data(), sizeof(float), getStream(ctx), cnrtMemcpyDevToHost);
+    syncStreamInCtx(ctx);
+    int minCount = static_cast<float>(reinterpret_cast<float*>(ptr.get())[0]);
+    DIOPI_CHECK(minCount >= 0.0, "counts should be positive");
 
     DIOPI_CALLCNNL(cnnlSyncBatchNormGatherStatsWithCounts(handle,
                                                           meanAllDesc.get(),
