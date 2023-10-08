@@ -393,6 +393,8 @@ DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t 
     REQUIRES_TENSOR_BY_DTYPE_OR_NOT(runningVarTmpTr, runningVarTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
     DiopiTensor countIntTr = requiresTensor(ctx, countsTr.shape(), countsTr.dtype(), diopiMemoryFormat_t::Contiguous);
 
+    std::cout << static_cast<float>(reinterpret_cast<float*>(meanAllTr.data())[0]) << std::endl;
+
     // get descriptor
     CnnlTensorDesc meanAllDesc(meanAllTr, CNNL_LAYOUT_NC);
     CnnlTensorDesc invstdAllDesc(invstdAllTr, CNNL_LAYOUT_NC);
