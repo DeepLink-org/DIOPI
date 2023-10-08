@@ -723,7 +723,7 @@ device_configs = {
     ),
 
     'pointwise_binary': dict(
-        name=['add', 'mul', 'ne', 'le', 'lt', 'ge', 'logical_and', 'logical_or'],
+        name=['add', 'ne', 'le', 'lt', 'ge', 'logical_and', 'logical_or'],
         tensor_para=dict(
             args=[
                 {
@@ -735,7 +735,7 @@ device_configs = {
     ),
 
     'pointwise_binary_broadcast': dict(
-        name=['add', 'mul', 'div', 'ne', 'le', 'lt', 'ge', 'logical_and', 'logical_or'],
+        name=['add', 'div', 'ne', 'le', 'lt', 'ge', 'logical_and', 'logical_or'],
         tensor_para=dict(
             args=[
                 {
@@ -747,7 +747,7 @@ device_configs = {
     ),
 
     'pointwise_binary_broadcast_inplace': dict(
-        name=['add', 'mul', 'div', 'ne', 'le', 'lt', 'ge', 'logical_and', 'logical_or'],
+        name=['add', 'div', 'ne', 'le', 'lt', 'ge', 'logical_and', 'logical_or'],
         tensor_para=dict(
             args=[
                 {
@@ -759,7 +759,7 @@ device_configs = {
     ),
 
     'pointwise_binary_diff_dtype': dict(
-        name=['mul', 'ne', 'le', 'lt', 'ge', 'logical_and', 'logical_or'],
+        name=['ne', 'le', 'lt', 'ge', 'logical_and', 'logical_or'],
         tensor_para=dict(
             args=[
                 {
@@ -795,7 +795,7 @@ device_configs = {
     ),
 
     'pointwise_binary_dtype_bool': dict(
-        name=['add', 'mul', 'ne', 'le', 'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
+        name=['add', 'ne', 'le', 'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
         tensor_para=dict(
             args=[
                 {
@@ -927,7 +927,7 @@ device_configs = {
     ),
 
     'pointwise_binary_scalar': dict(
-        name=['add', 'mul', 'div', 'ne', 'le', 'lt'],
+        name=['add', 'div', 'ne', 'le', 'lt'],
         tensor_para=dict(
             args=[
                 {
