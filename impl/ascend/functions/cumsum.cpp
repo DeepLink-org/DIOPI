@@ -16,7 +16,6 @@ DIOPI_API diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t
     diopiDtype_t outputDataType;
     diopiGetTensorDtype(input, &inputDataType);
     diopiGetTensorDtype(out, &outputDataType);
-    
     if (inputDataType != outputDataType) {
         diopiTensorHandle_t inCopy;
         makeTensorLike(ctx, &inCopy, input, outputDataType);
@@ -30,7 +29,6 @@ DIOPI_API diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t
     } else {
         AclOpRunner<2, 1>("Cumsum", ctx).addInput(input).addConstInput(dim, diopi_dtype_int64).addOutput(out).run();
     }
-
     return diopiSuccess;
 }
 }

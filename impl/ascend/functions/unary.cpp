@@ -63,7 +63,6 @@ DIOPI_API diopiError_t diopiErfInp(diopiContextHandle_t ctx, diopiTensorHandle_t
 DIOPI_API diopiError_t diopiAbs(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     diopiDtype_t inputDataType;
     diopiGetTensorDtype(input, &inputDataType);
-
     if (inputDataType == diopi_dtype_uint8) {
         diopiTensorHandle_t inputCopy;
         makeTensorLike(ctx, &inputCopy, input, diopi_dtype_int16);
@@ -72,7 +71,6 @@ DIOPI_API diopiError_t diopiAbs(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     } else {
         AclOpRunner<1, 1>("Abs", ctx).addInput(input).addOutput(out).run();
     }
-
     return diopiSuccess;
 }
 
