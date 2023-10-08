@@ -500,7 +500,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
+                    "shape": [Skip(()), Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),Skip((0,)),Skip((16, 0)),Skip((1, 0, 6))],
                 },
             ]
         ),
@@ -512,7 +512,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
+                    "shape": [Skip(()), Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),Skip((0,)),Skip((16, 0)),Skip((1, 0, 6)),],
                 },
             ]
         ),
@@ -1136,7 +1136,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),],
                 },
             ]
         ),
@@ -1172,7 +1172,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((182,)),Skip((384, 128)),Skip((1, 242991, 2)),Skip((2, 4, 100, 152)),],
+                    "shape": [Skip((182,)),Skip((384, 128)),Skip((1, 242991, 2)),Skip((2, 4, 100, 152)),Skip((0,)),Skip((2, 0,)),Skip((16, 0, 9)),],
+                    "dtype": [Skip(Dtype.float64)]
                 },
             ]
         ),
@@ -1184,7 +1185,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((182,)),Skip((384, 128)),Skip((1, 242991, 2)),Skip((2, 4, 100, 152)),],
+                    "shape": [Skip((182,)),Skip((384, 128)),Skip((2, 4, 100, 152)),],
                 },
             ]
         ),
@@ -1196,7 +1197,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((182,)),Skip((384, 128)),Skip((1, 242991, 2)),Skip((2, 4, 100, 152)),],
+                    "shape": [Skip((182,)),Skip((384, 128)),Skip((2, 4, 100, 152)),],
                 },
             ]
         ),
@@ -1961,6 +1962,18 @@ device_configs = {
             ]
         ),
     ),
+    
+    'reciprocal_zero': dict(
+        name=['reciprocal'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),Skip(Dtype.bool)],
+                },
+            ]
+        ),
+    ),
 
     'conv_transpose2d': dict(
         name=['conv_transpose2d'],
@@ -2052,7 +2065,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.bool),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),],
+                    "dtype": [Skip(Dtype.bool),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),],
                 },
             ]
         ),
@@ -2280,7 +2293,19 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
+                },
+            ]
+        ),
+    ),
+
+    'mm_diff_dtype': dict(
+        name=['mm'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
                 },
             ]
         ),
@@ -2810,6 +2835,18 @@ device_configs = {
         ),
     ),
 
+    'bernoulli_int': dict(
+        name=['bernoulli'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.int64),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),Skip(Dtype.uint8),Skip(Dtype.bool),],
+                },
+            ]
+        ),
+    ),
+
     'layer_norm': dict(
         name=['layer_norm'],
         tensor_para=dict(
@@ -2840,13 +2877,27 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((192, 147)),Skip((1, 1, 384)),Skip((2, 1, 38, 45)),],
+                    "shape": [Skip(()),Skip((8,)),Skip((12,)),Skip((192, 147)),Skip((1, 1, 384)),Skip((2, 1, 38, 45)),
+                              Skip((0,12)),Skip((12,0,9))],
                 },
             ]
         ),
     ),
 
     'copy_different_dtype': dict(
+        name=['copy_'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((192, 147)),Skip((1, 1, 384)),Skip((2, 1, 38, 45)),Skip((100,100))],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
+                },
+            ]
+        ),
+    ),
+
+    'copy_broadcast': dict(
         name=['copy_'],
         tensor_para=dict(
             args=[
