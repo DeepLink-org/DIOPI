@@ -76,9 +76,9 @@ const char* device_get_last_error_string() {
     return strLastError;
 }
 
-int32_t initLibrary() { return diopiSuccess; }
+diopiError_t initLibrary() { return diopiSuccess; }
 
-int32_t finalizeLibrary() { return diopiSuccess; }
+diopiError_t finalizeLibrary() { return diopiSuccess; }
 
 }  // extern "C"
 

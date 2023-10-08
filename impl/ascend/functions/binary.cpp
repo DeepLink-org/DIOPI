@@ -107,6 +107,9 @@ extern "C" DIOPI_API diopiError_t diopiSub(diopiContextHandle_t ctx, diopiTensor
     } else if (value == -1.0) {
         AclOpRunner<2, 1, dtypeConvertor>("AddV2", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
     } else {
+        if (diopi_dtype_float64 == highType) {
+            highType = diopi_dtype_float32;
+        }
         AclOpRunner<2, 1>("Axpy", ctx).addInput(input, highType).addInput(other, highType).setAttr<float>("alpha", -value).addOutput(outCopy).run();
     }
     if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);

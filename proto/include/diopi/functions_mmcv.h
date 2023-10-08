@@ -128,20 +128,15 @@ DIOPI_API diopiError_t diopiBorderAlignBackwardMmcv(diopiContextHandle_t ctx, di
                                                     diopiConstTensorHandle_t boxes, diopiConstTensorHandle_t argmax_idx, int64_t pool_size);
 
 /**
- * @brief Return intersection-over-union (Jaccard index) of
- boxes(BoxIouRotated).
+ * @brief Return intersection-over-union (Jaccard index) of boxes(BoxIouRotated).
  * @param[in] ctx diopi context.
- * @param bboxes1   quadrilateral bboxes 1. It has shape (N, 8),
-     indicating (x1, y1, ..., x4, y4) for each row.
- * @param bboxes2   quadrilateral bboxes 2. It has shape (M, 8),
-     indicating (x1, y1, ..., x4, y4) for each row.
- * @param mode (str)  "iou" (intersection over union) or iof (intersection over
-     foreground).
- * @param aligned  If ``aligned`` is ``False``, then calculate the ious between
- each bbox of bboxes1 and bboxes2, otherwise the ious between each aligned pair
+ * @param bboxes1   Rotated bboxes 1. It has shape (N, 5), indicating (x, y, w, h, theta) for each row. Note that theta is in radian.
+ * @param bboxes2   Rotated bboxes 2. It has shape (M, 5), indicating (x, y, w, h, theta) for each row. Note that theta is in radian.
+ * @param mode  An integer value which decides to return a result of IOU (Intersection Over Union) or IOF (Intersection Over Foreground).
+ * The integer 0 represents IOU and 1 represents IOF.
+ * @param aligned  If aligned is False, then calculate the ious between each bbox of bboxes1 and bboxes2, otherwise the ious between each aligned pair
  of bboxes1 and bboxes2.
- * @param[out] ious  the ious betweens boxes. If ``aligned`` is ``False``,
-     the shape of ious is (N, M) else (N,).
+ * @param[out] ious  The ious betweens boxes. If aligned is False, the shape of ious is (N, M) else (N,).
  */
 DIOPI_API diopiError_t diopiBoxIouRotatedMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t ious, diopiConstTensorHandle_t bboxes1,
                                               diopiConstTensorHandle_t bboxes2, int64_t mode, bool aligned);
@@ -558,17 +553,19 @@ DIOPI_API diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_
  * @brief Performs non-maximum suppression (NMS) on the rotated boxes according
  to their intersection-over-union (IoU).
  * @param[in] ctx diopi context.
- * @param dets Rotated boxes in shape (N, 5). They are expected to be in
-     (x_ctr, y_ctr, width, height, angle_radian) format.
- * @param order_t, dets_sorted order tensor and ordered dets
- * @param scores  scores in shape (N, ).
- * @param iou_threshold float: IoU thresh for NMS.
- * @param multi_label  boxes' label in shape (N,).
- * @param out indice, which is always the same data type as the input.
+ * @param dets Rotated boxes in shape (N, 5), indicating (x_ctr, y_ctr, width, height, angle_radian) for each row.
+ * @param scores  Scores of rotated boxes.
+ * @param order Element index of scores sorted in descending order.
+ * @param dets_sorted Dets sorted in descending order by scores.
+ * @param iou_threshold The threshold of IOU for NMS.
+ * @param multi_label When it is set to True, one rotated box can have multi labels, otherwise, one rotated box only has one label.
+ * @param labels  Rotated boxes' labels. If multi_label is true, the shape of labels should be (N, C). Otherwise, it should be (N, ). C is the total number of
+ categories.
+ * @param out The output tensor, indicating the index of each output box.
  */
 DIOPI_API diopiError_t diopiNmsRotatedMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t dets, diopiConstTensorHandle_t scores,
-                                           diopiConstTensorHandle_t order_t, diopiConstTensorHandle_t dets_sorted, double iou_threshold, int64_t multi_label);
-
+                                           diopiConstTensorHandle_t order, diopiConstTensorHandle_t dets_sorted, diopiConstTensorHandle_t labels,
+                                           float iou_threshold, bool multi_label);
 /**
  * @brief Find the box in which each point is(Part).
  * @param[in] ctx diopi context.
@@ -888,10 +885,10 @@ DIOPI_API diopiError_t diopiUpfirdn2dOpMmcv(diopiContextHandle_t ctx, diopiTenso
  *  @param[in] ctx diopi context.
  * @param points  [N, ndim]. Points[:, :3] contain xyz points
      and points[:, 3:] contain other information like reflectivity.
- * @param voxel_size (tuple or float): The size of voxel with the shape of
-     [3].
- * @param coors_range (tuple or float): The coordinate range of voxel with
-     the shape of [6].
+ * @param voxel_size : An array representing the size of voxel, [voxelX, voxelY, voxelZ].
+ * @param voxel_size_len : The length of voxel_size array, default is 3.
+ * @param coors_range : An array representing the coordinate range of voxel, [coorsXMin, coorsYMin, coorsZMin, coorsXMax, coorsYMax, coorsZMax].
+ * @param coors_range_len : The length of coors_range array, default is 6.
  * @param max_points (int, optional): maximum points contained in a voxel. if
      max_points=-1, it means using dynamic_voxelize. Default: 35.
  * @param max_voxels (int, optional): maximum voxels this function create.
@@ -917,9 +914,9 @@ DIOPI_API diopiError_t diopiUpfirdn2dOpMmcv(diopiContextHandle_t ctx, diopiTenso
  max_points != -1. voxel_num is for index select.
  */
 DIOPI_API diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t voxels, diopiTensorHandle_t coors,
-                                             diopiTensorHandle_t num_points_per_voxel, diopiTensorHandle_t voxel_num, diopiConstTensorHandle_t points,
-                                             diopiConstTensorHandle_t voxel_size, diopiConstTensorHandle_t coors_range, const int64_t max_points,
-                                             const int64_t max_voxels, const int64_t NDim, const bool deterministic);
+                                             diopiTensorHandle_t num_points_per_voxel, diopiConstTensorHandle_t points, int64_t* voxel_num,
+                                             const float* voxel_size, int64_t voxel_size_len, const float* coors_range, int64_t coors_range_len,
+                                             int64_t max_points, int64_t max_voxels, int64_t NDim, bool deterministic);
 /**
  * @brief Convert kitti points(N, >=3) to voxels(max_points == -1 or max_voxels
  * == -1).

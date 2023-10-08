@@ -95,7 +95,7 @@ AscendTensor& AscendTensor::unsqueeze(int dim) {
     return *this;
 }
 
-AscendTensor& AscendTensor::view(const std::vector<int64_t> shape) {
+AscendTensor& AscendTensor::view(const std::vector<int64_t>& shape) {
     // must be contiguous
     ASCEND_CHECK_ABORT(this->isContiguous(), "now only contiguous tensor support view by shape.");
     std::vector<int64_t> stride(shape.size());
