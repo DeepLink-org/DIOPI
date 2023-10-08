@@ -173,6 +173,7 @@ public:
     int64_t getAclMemBufferSize() const;
     std::vector<int64_t> getAclMemShape() const;
     aclFormat getAclDataFormat() const;
+    aclDataType getAclDataType() const;
 
     // Those methods may change the class attribute.
     AscendTensor& asStrided(const std::vector<int64_t>& shape, const std::vector<int64_t>& stride);
