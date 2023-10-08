@@ -927,36 +927,12 @@ device_configs = {
     ),
 
     'pointwise_binary_scalar': dict(
-        name=['div', 'ne', 'le', 'lt'],
+        name=['ne', 'le', 'lt'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 64, 128)),Skip((128, 64, 3, 3)),Skip((128, 32, 2, 2)),Skip((2, 32, 130, 130)),],
-                },
-            ]
-        ),
-    ),
-
-    'div_zero': dict(
-        name=['div'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),],
-                },
-            ]
-        ),
-    ),
-
-    'pointwise_binary_scalar_div_zero': dict(
-        name=['div'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),],
                 },
             ]
         ),
