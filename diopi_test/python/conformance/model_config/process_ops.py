@@ -132,8 +132,37 @@ def aggregate_rows(group: pd.core.frame.DataFrame) -> str:
         # Append the aggregated shapes for 'tensors' key
         if row_shapes and 'tensors' in aggregated_params_dict:
             aggregated_params_dict['tensors']['shape'].extend(row_shapes)
-
+    drop_numerous_scalar_args(group['diopi_fun'].iloc[0], aggregated_params_dict)
     return f"'{group['diopi_fun'].iloc[0]}': {aggregated_params_dict}"
+
+
+def drop_numerous_scalar_args(func_name, params_dict):
+    from itertools import chain
+    import random
+    from functools import partial
+    # if params_dict.get('input'):
+    if func_name == 'diopiAddInp':
+        args_length = len(params_dict['input']['shape'])
+        print(func_name, params_dict.keys(), args_length)
+        index_map = {}
+        for index, shape in enumerate(params_dict['input']['shape']):
+            if shape not in index_map:
+                index_map[shape] = []
+            index_map[shape].append(index)
+        index_list = list(index_map.values())
+        for i, index in enumerate(index_list):
+            if len(index) > 10:
+                index_list[i] = random.sample(index, k=10)
+        index = list(chain(*index_list))
+        for k in params_dict:
+            if isinstance(params_dict[k], dict):
+                for k2 in params_dict[k]:
+                    print(k, k2)
+                    params_dict[k][k2] = [params_dict[k][k2][i] for i in index]
+            else:
+                params_dict[k] = [params_dict[k][i] for i in index]
+        args_length = len(params_dict['input']['shape'])
+        print(func_name, params_dict.keys(), args_length)
 
 
 if __name__ == '__main__':
