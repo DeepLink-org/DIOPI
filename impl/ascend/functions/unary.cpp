@@ -64,18 +64,15 @@ DIOPI_API diopiError_t diopiAbs(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     diopiDtype_t inputDataType;
     diopiGetTensorDtype(input, &inputDataType);
 
-    if(inputDataType == diopi_dtype_uint8){
+    if (inputDataType == diopi_dtype_uint8) {
         diopiTensorHandle_t inputCopy;
         makeTensorLike(ctx, &inputCopy, input, diopi_dtype_int16);
         diopiCastDtype(ctx, inputCopy, input);
-
         AclOpRunner<1, 1>("Abs", ctx).addInput(inputCopy).addOutput(out).run();
-    }else{
+    } else {
         AclOpRunner<1, 1>("Abs", ctx).addInput(input).addOutput(out).run();
     }
 
-
-    
     return diopiSuccess;
 }
 
