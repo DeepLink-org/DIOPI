@@ -185,10 +185,10 @@ diopiError_t reshape(diopiContextHandle_t ctx, const AscendTensor& src, AscendTe
     return fillAscendTensor(src, dst);
 }
 
-diopiError_t aclAsStrided(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst) {
+diopiError_t aclAsStridedCore(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst) {
     diopiTensorHandle_t targetObj = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(dst));
     AclOpRunner<4, 1>("AsStrided", ctx)
-        .addInput(src.data(), src.getAclMemBufferSize(), src.getAclMemShape(), ACL_FORMAT_ND, src.dtype())
+        .addInput(src.data(), src.getAclMemBufferSize(), src.getAclMemShape(), src.getAclDataFormat(), src.dtype())
         .addConstInput(src.shape())
         .addConstInput(src.stride())
         .addConstInput(0, diopi_dtype_int64)
@@ -228,6 +228,26 @@ diopiError_t castTensor(diopiContextHandle_t ctx, const std::vector<AscendTensor
         CHECK_ASCENDRT(castTensor(ctx, src[i], dst[i]));
     }
     return diopiSuccess;
+}
+
+diopiError_t castTensor(diopiContextHandle_t ctx, AscendTensor& src, diopiDtype_t dtype) {
+    AscendTensor temp;
+    makeTensorLike(ctx, temp, src, dtype);
+    castTensor(ctx, src, temp);
+    src = temp;
+    return diopiSuccess;
+}
+
+diopiError_t aclAsStrided(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst) {
+    if (src.dtype() != diopi_dtype_float64) {
+        return aclAsStridedCore(ctx, src, dst);
+    } else {
+        AscendTensor srcCpy = const_cast<AscendTensor&>(src);
+        castTensor(ctx, srcCpy, diopi_dtype_float32);
+        castTensor(ctx, dst, diopi_dtype_float32);
+
+        return aclAsStridedCore(ctx, srcCpy, dst);
+    }
 }
 
 // diopi tensor utils
@@ -548,16 +568,9 @@ diopiTensorHandle_t clone(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     if (isContiguous(src)) {
         diopiCopyInp(ctx, src, srcClone);
     } else {
-        const void* data;
-        diopiGetTensorDataConst(src, &data);
-        auto baseShapeVec = getBaseShape(src);
-        AclOpRunner<4, 1>("AsStrided", ctx)
-            .addInput(data, getBaseBufferSize(src), baseShapeVec, ACL_FORMAT_ND, dtype)
-            .addConstInput(size)
-            .addConstInput(stride)
-            .addConstInput(0, diopi_dtype_int64)
-            .addOutput(srcClone)
-            .run();
+        AscendTensor srcAt(src), srcCloneAt(srcClone);
+        aclAsStrided(ctx, srcAt, srcCloneAt);
+        srcClone = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(srcCloneAt));
     }
     return srcClone;
 }

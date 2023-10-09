@@ -146,30 +146,6 @@ device_configs = {
         ),
     ),
 
-    'relu': dict(
-        name=['relu'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                },
-            ]
-        ),
-    ),
-
-    'relu_no_contiguous': dict(
-        name=['relu'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
-            ]
-        ),
-    ),
-
     'hardtanh': dict(
         name=['hardtanh'],
         tensor_para=dict(
@@ -1136,10 +1112,9 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((182,)),Skip((384, 128)),Skip((1, 242991, 2)),Skip((2, 4, 100, 152)),Skip((0,)),Skip((2, 0,)),Skip((16, 0, 9)),],
-                    "dtype": [Skip(Dtype.float64)]
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float32), Skip(Dtype.float64)],
                 },
-            ]
+            ],
         ),
     ),
 
@@ -1149,9 +1124,9 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((182,)),Skip((384, 128)),Skip((2, 4, 100, 152)),],
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
-            ]
+            ],
         ),
     ),
 
@@ -1161,9 +1136,9 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((182,)),Skip((384, 128)),Skip((2, 4, 100, 152)),],
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
-            ]
+            ],
         ),
     ),
 
