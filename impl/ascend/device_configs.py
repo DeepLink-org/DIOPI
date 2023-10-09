@@ -2004,7 +2004,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "shape": [Skip(Dtype.float16), Skip(Dtype.float32), Skip(Dtype.float64),],
+                    "shape": [Skip(()), Skip((16,)), Skip((16, 8)), Skip((2, 3, 16)), Skip((4, 32, 7, 7)), Skip((0,)), Skip((4, 0)), Skip((12, 0, 9)),],
                 },
             ]
         ),
@@ -2016,7 +2016,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "shape": [Skip(Dtype.float16), Skip(Dtype.float32), Skip(Dtype.float64),],
+                    "shape": [Skip(()), Skip((16,)), Skip((16, 8)), Skip((2, 3, 16)), Skip((4, 32, 7, 7)), Skip((0,)), Skip((4, 0)), Skip((12, 0, 9)),],
                 },
             ]
         ),
