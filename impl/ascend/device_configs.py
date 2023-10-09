@@ -1812,7 +1812,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "shape": [Skip((2, 3, 16)),Skip((4, 32, 7, 7)),],
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float32), Skip(Dtype.float64)],
                 },
             ]
         ),
@@ -1824,7 +1824,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "shape": [Skip((2, 3, 16)),Skip((4, 32, 7, 7)),],
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float32)],
                 },
             ]
         ),
