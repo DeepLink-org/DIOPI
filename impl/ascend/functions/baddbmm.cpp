@@ -100,8 +100,7 @@ DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_
 
 DIOPI_API diopiError_t diopiBaddbmmInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t batch1, diopiConstTensorHandle_t batch2,
                                        double beta, double alpha) {
-    diopiBaddbmm(ctx, input, input, batch1, batch2, beta, alpha);
-    return diopiSuccess;
+    return diopiBaddbmm(ctx, input, input, batch1, batch2, beta, alpha);
 }
 
 }  // extern "C"
