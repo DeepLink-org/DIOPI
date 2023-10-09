@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <cfloat>
 #include <climits>
 
@@ -13,11 +11,9 @@
 
 namespace impl {
 namespace ascend {
-extern "C" {
 diopiError_t diopiContiguous(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, diopiMemoryFormat_t memoryFormat) {
     *out = contiguous(ctx, input, memoryFormat);
     return diopiSuccess;
-}
 }
 
 }  // namespace ascend

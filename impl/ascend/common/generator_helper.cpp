@@ -4,7 +4,7 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
+#include <impl_functions.hpp>
 
 #include <cstring>
 

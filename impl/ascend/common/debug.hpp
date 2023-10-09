@@ -7,7 +7,7 @@
 #ifndef IMPL_ASCEND_COMMON_DEBUG_HPP_
 #define IMPL_ASCEND_COMMON_DEBUG_HPP_
 
-#include <diopi/functions.h>
+#include <impl_functions.hpp>
 
 #include <algorithm>
 #include <sstream>

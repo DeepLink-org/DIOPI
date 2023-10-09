@@ -9,8 +9,10 @@
 #include <diopi/diopirt.h>
 
 #include <cstdio>
-
-#include "../common/acloprunner.hpp"
+#include <acl/acl.h>
+#include <acl/acl_op.h>
+#include <acl/acl_op_compiler.h>
+#include "../ascend_tensor.hpp"
 #include "../error.hpp"
 
 namespace impl {

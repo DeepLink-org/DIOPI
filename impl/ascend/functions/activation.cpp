@@ -4,46 +4,44 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <set>
 
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
-extern "C" {
-DIOPI_API diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+
+diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     AclOpRunner<1, 1>("Relu", ctx).addInput(input).addOutput(out).run();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     AclOpRunner<1, 1>("Relu", ctx).addInput(input).addOutput(input).run();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
+diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
     std::vector<int64_t> dimList = {dim};
     AclOpRunner<1, 1>("SoftmaxV2", ctx).addInput(input).setAttr<int64_t>("axes", dimList).addOutput(out).run();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                            diopiConstTensorHandle_t output, int64_t dim) {
+diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t output,
+                                  int64_t dim) {
     std::vector<int64_t> dimList = {dim};
     AclOpRunner<2, 1>("SoftmaxGrad", ctx).addInput(output).addInput(gradOutput).setAttr<int64_t>("axes", dimList).addOutput(gradInput).run();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
+diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
     std::vector<int64_t> dimList = {dim};
     AclOpRunner<1, 1>("LogSoftmaxV2", ctx).addInput(input).setAttr("axes", dimList).addOutput(out).run();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                               diopiConstTensorHandle_t output, int64_t dim) {
+diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                     diopiConstTensorHandle_t output, int64_t dim) {
     diopiSize_t sumSize;
     diopiGetTensorShape(gradOutput, &sumSize);
     std::vector<int64_t> sumSizeVec(sumSize.data, sumSize.data + sumSize.len);
@@ -67,15 +65,14 @@ DIOPI_API diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTe
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiSilu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+diopiError_t diopiSilu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     AclOpRunner<1, 1>("Swish", ctx).addInput(input).setAttr<float>("scale", 1.0).addOutput(out).run();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiSiluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiSilu(ctx, input, input); }
+diopiError_t diopiSiluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiSilu(ctx, input, input); }
 
-DIOPI_API diopiError_t diopiSiluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                         diopiConstTensorHandle_t input) {
+diopiError_t diopiSiluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input) {
     diopiTensorHandle_t out;
     makeTensorLike(ctx, &out, input);
     diopiSilu(ctx, out, input);
@@ -83,39 +80,39 @@ DIOPI_API diopiError_t diopiSiluBackward(diopiContextHandle_t ctx, diopiTensorHa
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+diopiError_t diopiSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     AclOpRunner<1, 1>("Sigmoid", ctx).addInput(input).addOutput(out).run();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                            diopiConstTensorHandle_t output) {
+diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                  diopiConstTensorHandle_t output) {
     AclOpRunner<2, 1>("SigmoidGrad", ctx).addInput(output).addInput(gradOutput).addOutput(gradInput).run();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char* approximate) {
+diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char* approximate) {
     AclOpRunner<1, 1>("Gelu", ctx).addInput(input).addOutput(out).run();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                         diopiConstTensorHandle_t input, const char* approximate) {
+diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
+                               const char* approximate) {
     AclOpRunner<3, 1>("GeluGrad", ctx).addInput(gradOutput).addInput(input).addInput(gradOutput).addOutput(gradInput).run();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiLeakyRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope) {
+diopiError_t diopiLeakyRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope) {
     AclOpRunner<1, 1>("LeakyRelu", ctx).addInput(input).setAttr("negative_slope", getValue<float>(negativeSlope)).addOutput(out).run();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiLeakyReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* negativeSlope) {
+diopiError_t diopiLeakyReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* negativeSlope) {
     return diopiLeakyRelu(ctx, input, input, negativeSlope);
 }
 
-DIOPI_API diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                              diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope, bool inputIsResult) {
+diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                    diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope, bool inputIsResult) {
     AclOpRunner<2, 1>("LeakyReluGrad", ctx)
         .addInput(gradOutput)
         .addInput(input)
@@ -125,19 +122,18 @@ DIOPI_API diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTen
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiTanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+diopiError_t diopiTanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     AclOpRunner<1, 1>("Tanh", ctx).addInput(input).addOutput(out).run();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiTanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                         diopiConstTensorHandle_t output) {
+diopiError_t diopiTanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t output) {
     AclOpRunner<2, 1>("TanhGrad", ctx).addInput(output).addInput(gradOutput).addOutput(gradInput).run();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiHardtanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* minVal,
-                                     const diopiScalar_t* maxVal) {
+diopiError_t diopiHardtanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* minVal,
+                           const diopiScalar_t* maxVal) {
     diopiDtype_t dtype;
     diopiGetTensorDtype(input, &dtype);
     diopiScalar_t min = *minVal;
@@ -154,12 +150,12 @@ DIOPI_API diopiError_t diopiHardtanh(diopiContextHandle_t ctx, diopiTensorHandle
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiHardtanhInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* minVal, const diopiScalar_t* maxVal) {
+diopiError_t diopiHardtanhInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* minVal, const diopiScalar_t* maxVal) {
     return diopiHardtanh(ctx, input, input, minVal, maxVal);
 }
 
-DIOPI_API diopiError_t diopiHardtanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                             diopiConstTensorHandle_t input, const diopiScalar_t* minVal, const diopiScalar_t* maxVal) {
+diopiError_t diopiHardtanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
+                                   const diopiScalar_t* minVal, const diopiScalar_t* maxVal) {
     diopiDtype_t inDtype;
     diopiGetTensorDtype(input, &inDtype);
     std::set<diopiDtype_t> supportDtypes{diopi_dtype_float16, diopi_dtype_float32};
@@ -190,6 +186,6 @@ DIOPI_API diopiError_t diopiHardtanhBackward(diopiContextHandle_t ctx, diopiTens
     }
     return diopiSuccess;
 }
-}
+
 }  // namespace ascend
 }  // namespace impl

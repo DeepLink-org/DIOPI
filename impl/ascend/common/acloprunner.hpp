@@ -4,7 +4,7 @@
 #include <acl/acl.h>
 #include <acl/acl_op.h>
 #include <acl/acl_op_compiler.h>
-#include <diopi/functions.h>
+#include <impl_functions.hpp>
 #include <stdint.h>
 
 #include <algorithm>
