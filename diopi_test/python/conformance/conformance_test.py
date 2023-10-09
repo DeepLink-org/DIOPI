@@ -96,8 +96,8 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
         else:
             assert tensor1.size == tensor2.size, "tensor1 element num does not equal tensor2's."
             diff = np.abs(tensor1 - tensor2)
-            max_diff = np.abs(tensor1 - tensor2).max()
-            max_diff_index = np.unravel_index(np.argmax(diff), diff.shape)
+            max_diff = np.nanmax(diff)
+            max_diff_index = np.unravel_index(np.nanargmax(diff), diff.shape)
             max_diff_elem = tensor1[max_diff_index]
             max_diff_elem_ref = tensor2[max_diff_index]
             logger.info(f"The count of elements that do not meet the accuracy requirement is {count}.")
@@ -214,7 +214,8 @@ class ManualTest(object):
 
     def test_bernoulli(input, inplace=False, p=None):
         p_numpy = input.numpy()
-        p = p_numpy.mean() if p is None else p
+        if input.numel() > 0:
+            p = p_numpy.mean() if p is None else p
         state = build_generator_state(input.context())
         generator = Generator(state)
         out = F.bernoulli(input, inplace, p, generator)
