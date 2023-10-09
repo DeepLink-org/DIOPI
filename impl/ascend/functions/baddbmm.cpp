@@ -6,8 +6,6 @@
 
 #include <diopi/functions.h>
 
-#include "../ascend_tensor.hpp"
-
 #include "../common/acloprunner.hpp"
 
 namespace impl {
