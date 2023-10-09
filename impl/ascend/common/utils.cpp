@@ -231,10 +231,10 @@ diopiError_t castTensor(diopiContextHandle_t ctx, const std::vector<AscendTensor
 }
 
 diopiError_t castTensor(diopiContextHandle_t ctx, AscendTensor& src, diopiDtype_t dtype) {
-    AscendTensor TemAscendTensor;
-    makeTensorLike(ctx, TemAscendTensor, src, dtype);
-    castTensor(ctx, src, TemAscendTensor);
-    src = TemAscendTensor;
+    AscendTensor temp;
+    makeTensorLike(ctx, temp, src, dtype);
+    castTensor(ctx, src, temp);
+    src = temp;
     return diopiSuccess;
 }
 
