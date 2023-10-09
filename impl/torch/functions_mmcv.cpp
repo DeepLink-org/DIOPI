@@ -15,7 +15,7 @@
 
 extern "C" {
 
-diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t dets, diopiConstTensorHandle_t scores,
+diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t dets, diopiConstTensorHandle_t scores,
                           double iouThreshold, int64_t offset) {
     impl::aten::setCurCtx(ctx);
     auto atDets = impl::aten::buildATen(dets);
@@ -77,23 +77,27 @@ diopiError_t diopiSigmoidFocalLossBackwardMmcv(diopiContextHandle_t ctx, diopiTe
 }
 
 diopiError_t diopiHardVoxelizeMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t voxels_, diopiTensorHandle_t coors_, diopiTensorHandle_t num_points_per_voxel_,
-                                   diopiConstTensorHandle_t points_, int64_t* voxel_num, const float* voxel_size, int64_t voxel_size_len,
-                                   const float* coors_range, int64_t coors_range_len, int64_t max_points, int64_t max_voxels, int64_t NDim,
-                                   bool deterministic) {
+                                   diopiTensorHandle_t voxel_num_, diopiConstTensorHandle_t points_, diopiConstTensorHandle_t voxel_size_,
+                                   diopiConstTensorHandle_t coors_range_, const int64_t max_points, const int64_t max_voxels, const int64_t NDim,
+                                   const bool deterministic) {
     impl::aten::setCurCtx(ctx);
     auto voxels = impl::aten::buildATen(voxels_);
     auto coors = impl::aten::buildATen(coors_);
     auto num_points_per_voxel = impl::aten::buildATen(num_points_per_voxel_);
+    auto voxel_num = impl::aten::buildATen(voxel_num_);
     auto points = impl::aten::buildATen(points_);
+    auto voxel_size = impl::aten::buildATen(voxel_size_);
+    auto coors_range = impl::aten::buildATen(coors_range_);
 
-    std::vector<float> voxel_size_v(voxel_size, voxel_size + voxel_size_len);
-    std::vector<float> coors_range_v(coors_range, coors_range + coors_range_len);
+    int64_t *voxel_num_data = voxel_num.data_ptr<int64_t>();
+    std::vector<float> voxel_size_v(voxel_size.data_ptr<float>(), voxel_size.data_ptr<float>() + voxel_size.numel());
+    std::vector<float> coors_range_v(coors_range.data_ptr<float>(), coors_range.data_ptr<float>() + coors_range.numel());
 
     if (deterministic) {
-        *voxel_num = mmcv::ops::HardVoxelizeForwardCUDAKernelLauncher(
+        *voxel_num_data = mmcv::ops::HardVoxelizeForwardCUDAKernelLauncher(
             points, voxels, coors, num_points_per_voxel, voxel_size_v, coors_range_v, max_points, max_voxels, NDim);
     } else {
-        *voxel_num = mmcv::ops::NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
+        *voxel_num_data = mmcv::ops::NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
             points, voxels, coors, num_points_per_voxel, voxel_size_v, coors_range_v, max_points, max_voxels, NDim);
     }
     return diopiSuccess;
