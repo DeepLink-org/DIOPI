@@ -208,14 +208,10 @@ DIOPI_API diopiError_t diopiMaximum(diopiContextHandle_t ctx, diopiTensorHandle_
     diopiGetTensorDtype(input, &dtype);
     // as this op do not support BOOL, UIT8, and Int16, these three data types are converted to Int32
     if (dtype == diopi_dtype_bool || dtype == diopi_dtype_uint8 || dtype == diopi_dtype_int16) {
-        diopiTensorHandle_t inputCopy;
-        makeTensorLike(ctx, &inputCopy, input, diopi_dtype_int32);
-        diopiCastDtype(ctx, inputCopy, input);
-
-        diopiTensorHandle_t otherCopy;
-        makeTensorLike(ctx, &otherCopy, other, diopi_dtype_int32);
-        diopiCastDtype(ctx, otherCopy, other);
-
+        AscendTensor inputCopy(input);
+        AscendTensor otherCopy(other);
+        castTensor(ctx, inputCopy, diopi_dtype_int32);
+        castTensor(ctx, otherCopy, diopi_dtype_int32);
         AclOpRunner<2, 1>("Maximum", ctx).addInput(inputCopy).addInput(otherCopy).addOutput(out).run();
     } else {
         AclOpRunner<2, 1>("Maximum", ctx).addInput(input, dtype).addInput(other, dtype).addOutput(out).run();
