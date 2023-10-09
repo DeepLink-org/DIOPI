@@ -128,20 +128,15 @@ DIOPI_API diopiError_t diopiBorderAlignBackwardMmcv(diopiContextHandle_t ctx, di
                                                     diopiConstTensorHandle_t boxes, diopiConstTensorHandle_t argmax_idx, int64_t pool_size);
 
 /**
- * @brief Return intersection-over-union (Jaccard index) of
- boxes(BoxIouRotated).
+ * @brief Return intersection-over-union (Jaccard index) of boxes(BoxIouRotated).
  * @param[in] ctx diopi context.
- * @param bboxes1   quadrilateral bboxes 1. It has shape (N, 8),
-     indicating (x1, y1, ..., x4, y4) for each row.
- * @param bboxes2   quadrilateral bboxes 2. It has shape (M, 8),
-     indicating (x1, y1, ..., x4, y4) for each row.
- * @param mode (str)  "iou" (intersection over union) or iof (intersection over
-     foreground).
- * @param aligned  If ``aligned`` is ``False``, then calculate the ious between
- each bbox of bboxes1 and bboxes2, otherwise the ious between each aligned pair
+ * @param bboxes1   Rotated bboxes 1. It has shape (N, 5), indicating (x, y, w, h, theta) for each row. Note that theta is in radian.
+ * @param bboxes2   Rotated bboxes 2. It has shape (M, 5), indicating (x, y, w, h, theta) for each row. Note that theta is in radian.
+ * @param mode  An integer value which decides to return a result of IOU (Intersection Over Union) or IOF (Intersection Over Foreground).
+ * The integer 0 represents IOU and 1 represents IOF.
+ * @param aligned  If aligned is False, then calculate the ious between each bbox of bboxes1 and bboxes2, otherwise the ious between each aligned pair
  of bboxes1 and bboxes2.
- * @param[out] ious  the ious betweens boxes. If ``aligned`` is ``False``,
-     the shape of ious is (N, M) else (N,).
+ * @param[out] ious  The ious betweens boxes. If aligned is False, the shape of ious is (N, M) else (N,).
  */
 DIOPI_API diopiError_t diopiBoxIouRotatedMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t ious, diopiConstTensorHandle_t bboxes1,
                                               diopiConstTensorHandle_t bboxes2, int64_t mode, bool aligned);
