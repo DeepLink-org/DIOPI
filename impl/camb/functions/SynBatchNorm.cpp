@@ -6,6 +6,8 @@
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
+#include "../common/debug.hpp"
+// #include "../functions/reduce.cpp"
 
 namespace impl {
 namespace camb {
@@ -348,6 +350,92 @@ DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensor
         handle, inputDesc.get(), inputTr.data(), workspacePtr, workspaceSize, epsValue, meanDesc.get(), meanTmpTr.data(), invstdDesc.get(), invstdTmpTr.data()))
 
     // Copy back to origin, if required
+    DIOPI_CALL(dataTypeCast(ctx, meanTr, meanTmpTr));
+    DIOPI_CALL(dataTypeCast(ctx, invstdTr, invstdTmpTr));
+
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t ctx, diopiTensorHandle_t mean, diopiTensorHandle_t invstd,
+                                                           diopiConstTensorHandle_t input, diopiConstTensorHandle_t meanAll, diopiConstTensorHandle_t invstdAll,
+                                                           diopiTensorHandle_t runningMean, diopiTensorHandle_t runningVar, float momentum, float eps,
+                                                           diopiConstTensorHandle_t counts) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    // input
+    DiopiTensor inputTr(input);
+    DiopiTensor meanAllTr(meanAll);
+    DiopiTensor invstdAllTr(invstdAll);
+    DiopiTensor countsTr(counts);
+    DiopiTensor runningMeanTr(runningMean);
+    DiopiTensor runningVarTr(runningVar);
+    // output
+    DiopiTensor meanTr(mean);
+    DiopiTensor invstdTr(invstd);
+    DiopiTensor runningMeanTrOrigin(runningMean);
+    DiopiTensor runningVarTrOrigin(runningVar);
+
+    DIOPI_CHECK(meanAllTr.dim() == 2, "meanAll dim is out of range");
+    DIOPI_CHECK(invstdAllTr.dim() == 2, "invstdAll dim is out of range");
+
+    // check the input dtype
+    std::vector<DiopiTensor*> pTensors{&meanAllTr, &invstdAllTr, &countsTr};
+    if (runningMeanTr.defined()) {
+        pTensors.push_back(&runningMeanTr);
+    }
+    if (runningVarTr.defined()) {
+        pTensors.push_back(&runningVarTr);
+    }
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
+
+    // check the output dtype
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(invstdTmpTr, invstdTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(meanTmpTr, meanTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(runningMeanTmpTr, runningMeanTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+    REQUIRES_TENSOR_BY_DTYPE_OR_NOT(runningVarTmpTr, runningVarTr, diopi_dtype_float32, diopiMemoryFormat_t::Contiguous);
+    DiopiTensor countIntTr = requiresTensor(ctx, countsTr.shape(), countsTr.dtype(), diopiMemoryFormat_t::Contiguous);
+
+    // get descriptor
+    CnnlTensorDesc meanAllDesc(meanAllTr, CNNL_LAYOUT_NC);
+    CnnlTensorDesc invstdAllDesc(invstdAllTr, CNNL_LAYOUT_NC);
+    CnnlTensorDesc countsDesc(countsTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc countsIntDesc(countIntTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc meanDesc(meanTmpTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc invstdDesc(invstdTmpTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc runningMeanDesc(runningMeanTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc runningVarDesc(runningVarTr, CNNL_LAYOUT_ARRAY);
+
+    DIOPI_CALLCNNL(cnnlTrunc(handle, countsDesc.get(), countsTr.data(), countsIntDesc.get(), countIntTr.data()))
+
+    // check whether the counts are all positive
+    DiopiTensor min = requiresTensor(ctx, {1}, countsTr.dtype(), diopiMemoryFormat_t::Contiguous);
+    DIOPI_CALL(diopiMinAll(ctx, min.tensorHandle(), countIntTr.tensorHandle()));
+    std::unique_ptr<float> ptr(new float[sizeof(float)]);
+    cnrtMemcpyAsync(ptr.get(), min.data(), sizeof(float), getStream(ctx), cnrtMemcpyDevToHost);
+    syncStreamInCtx(ctx);
+    int minCount = static_cast<float>(reinterpret_cast<float*>(ptr.get())[0]);
+    DIOPI_CHECK(minCount >= 0.0, "counts should be positive");
+
+    DIOPI_CALLCNNL(cnnlSyncBatchNormGatherStatsWithCounts(handle,
+                                                          meanAllDesc.get(),
+                                                          meanAllTr.data(),
+                                                          invstdAllDesc.get(),
+                                                          invstdAllTr.data(),
+                                                          runningMeanDesc.get(),
+                                                          runningMeanTr.defined() ? runningMeanTr.data() : nullptr,
+                                                          runningVarDesc.get(),
+                                                          runningVarTr.defined() ? runningVarTr.data() : nullptr,
+                                                          momentum,
+                                                          eps,
+                                                          countsIntDesc.get(),
+                                                          countIntTr.data(),
+                                                          meanDesc.get(),
+                                                          meanTmpTr.data(),
+                                                          invstdDesc.get(),
+                                                          invstdTmpTr.data()))
+    // Copy back to origin, if required
+    DIOPI_CALL(diopiCopyInp(ctx, runningMeanTr.tensorHandle(), runningMeanTrOrigin.tensorHandle()));
+    DIOPI_CALL(diopiCopyInp(ctx, runningVarTr.tensorHandle(), runningVarTrOrigin.tensorHandle()));
     DIOPI_CALL(dataTypeCast(ctx, meanTr, meanTmpTr));
     DIOPI_CALL(dataTypeCast(ctx, invstdTr, invstdTmpTr));
 
