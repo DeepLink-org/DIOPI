@@ -1950,13 +1950,13 @@ device_configs = {
         ),
     ),
 
-    'bitwise_not': dict(
+    'bitwise_not_uint8': dict(
         name=['bitwise_not'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.bool),Skip(Dtype.int32),],
+                    "dtype": [Skip(Dtype.uint8),],
                 },
             ]
         ),
