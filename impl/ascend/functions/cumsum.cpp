@@ -29,7 +29,7 @@ extern "C" DIOPI_API diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTen
         AclOpRunner<2, 1>("Cumsum", ctx).addInput(input).addConstInput(dim, diopi_dtype_int64).addOutput(out).run();
     }
     return diopiSuccess;
+}
 
-}  // extern "C"
 }  // namespace ascend
 }  // namespace impl
