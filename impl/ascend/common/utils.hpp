@@ -45,6 +45,17 @@ diopiError_t castTensor(diopiContextHandle_t ctx, const AscendTensor& src, Ascen
 
 diopiError_t castTensor(diopiContextHandle_t ctx, const std::vector<AscendTensor>& src, std::vector<AscendTensor>& dst, diopiDtype_t supportDtype);
 
+/**
+ * @brief Convert the data type of an AscendTensor src to the specified supported data type dtype.
+ *
+ * @param ctx              diopiContextHandle_t context handle for executing operations
+ * @param src              Source AscendTensor object for data type conversion
+ * @param dtype            Target data type (supported data type)
+ *
+ * @return diopiError_t    Returns diopiSuccess if the conversion is successful; otherwise, returns other error codes.
+ */
+diopiError_t castTensor(diopiContextHandle_t ctx, AscendTensor& src, diopiDtype_t supportDtype);
+
 diopiError_t aclAsStrided(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst);
 
 }  // namespace ascend
