@@ -4,7 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-
 #include "../common/acloprunner.hpp"
 
 namespace impl {
@@ -20,7 +19,7 @@ diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_
 }
 
 diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                                      diopiConstTensorHandle_t input) {
+                                            diopiConstTensorHandle_t input) {
     diopiSize_t shape;
     diopiGetTensorShape(input, &shape);
     AclOpRunner<1, 1>("AdaptiveAvgPool2dGrad", ctx)
@@ -31,7 +30,6 @@ diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTenso
         .addOutput(gradInput)
         .run();
     return diopiSuccess;
-
 }
 
 }  // namespace ascend

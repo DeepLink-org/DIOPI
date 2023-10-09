@@ -9,7 +9,7 @@
 namespace impl {
 namespace ascend {
 diopiError_t diopiWhere(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t condition, diopiConstTensorHandle_t input,
-                                  diopiConstTensorHandle_t other) {
+                        diopiConstTensorHandle_t other) {
     std::vector<int64_t> dimVec({0});
     AclOpRunner<3, 1>("Select", ctx).addInput(condition).addInput(input).addInput(other).addOutput(out).run();
     return diopiSuccess;

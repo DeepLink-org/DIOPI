@@ -9,7 +9,7 @@
 namespace impl {
 namespace ascend {
 diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t numSamples, bool replacement,
-                                        diopiGeneratorHandle_t generator) {
+                              diopiGeneratorHandle_t generator) {
     auto pair = getSeedAndOffset(ctx, generator, 10);
     AclOpRunner<3, 1>("MultinomialWithReplacement", ctx)
         .addInput(input)

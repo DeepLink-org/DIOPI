@@ -9,7 +9,7 @@
 namespace impl {
 namespace ascend {
 diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, diopiTensorHandle_t indices, diopiConstTensorHandle_t input, int64_t k,
-                                 int64_t dim, bool largest, bool sorted) {
+                       int64_t dim, bool largest, bool sorted) {
     std::vector<int64_t> kVec({k});
     diopiSize_t kSize = vectorToDiopiSize(kVec);
     AclOpRunner<2, 2>("TopKV2", ctx)

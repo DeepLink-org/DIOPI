@@ -19,8 +19,8 @@ diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTensorHandle_t 
     return diopiSuccess;
 }
 
-diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                                    diopiSize_t outSize, diopiSize_t inSize) {
+diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiSize_t outSize,
+                                          diopiSize_t inSize) {
     auto gradOutputCopy = contiguous(ctx, gradOutput);
     std::vector<int64_t> outputSizeVec({inSize.data[2], inSize.data[3]});
     diopiSize_t outputSize = vectorToDiopiSize(outputSizeVec);

@@ -10,7 +10,7 @@ namespace impl {
 namespace ascend {
 
 diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* threshold,
-                                      const diopiScalar_t* value) {
+                            const diopiScalar_t* value) {
     diopiTensorHandle_t thresholdTensor;
     diopiTensorHandle_t valueTensor;
     makeTensorFromScalar(ctx, threshold, &thresholdTensor);
@@ -24,7 +24,7 @@ diopiError_t diopiThresholdInp(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 }
 
 diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                              diopiConstTensorHandle_t input, const diopiScalar_t* threshold) {
+                                    diopiConstTensorHandle_t input, const diopiScalar_t* threshold) {
     AclOpRunner<2, 1>("ThresholdGradV2D", ctx).addInput(gradOutput).addInput(input).setAttr("threshold", getValue<float>(threshold)).addOutput(gradInput).run();
     return diopiSuccess;
 }
