@@ -566,18 +566,6 @@ device_configs = {
         ),
     ),
 
-    'sigmoid': dict(
-        name=['sigmoid'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
-            ]
-        ),
-    ),
-
     'silu': dict(
         name=['silu'],
         tensor_para=dict(
