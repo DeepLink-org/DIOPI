@@ -35,38 +35,44 @@ bool isScalarOne(const diopiScalar_t* alpha) {
 extern "C" {
 DIOPI_API diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                                 const diopiScalar_t* alpha) {
-    diopiDtype_t outDtype, inputDtype, otherDtype;
-    diopiGetTensorDtype(out, &outDtype);
-    diopiGetTensorDtype(input, &inputDtype);
-    diopiGetTensorDtype(other, &otherDtype);
-    diopiDtype_t highType = promoteTypes(inputDtype, otherDtype);
-    diopiTensorHandle_t outCopy;
+    //
+    //
+    // diopiDtype_t highType = promoteTypes(inputDtype, otherDtype);
+    // diopiTensorHandle_t outCopy;
 
-    if (!isScalarOne(alpha)) {
-        if (isIntegralType(highType)) {
-            highType = diopi_dtype_int32;
-        } else {
-            highType = diopi_dtype_float32;
-        }
-    }
-    highType = outDtype;
+    // if (!isScalarOne(alpha)) {
+    //     if (isIntegralType(highType)) {
+    //         highType = diopi_dtype_int32;
+    //     } else {
+    //         highType = diopi_dtype_float32;
+    //     }
+    // }
+    // highType = outDtype;
 
-    if (outDtype != highType) {
-        makeTensorLike(ctx, &outCopy, out, highType);
-    } else {
-        outCopy = out;
-    }
-    if (isScalarOne(alpha)) {
-        AclOpRunner<2, 1, dtypeConvertor>("Add", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
-    } else {
+    // if (outDtype != highType) {
+    //     makeTensorLike(ctx, &outCopy, out, highType);
+    // } else {
+    //     outCopy = out;
+    // }
+    if (isScalarOne(alpha))
+        AclOpRunner<2, 1, dtypeConvertor>("Add", ctx).addInput(input).addInput(other).addOutput(out).run();
+    else {
+        diopiDtype_t outDtype, castType;
+        diopiGetTensorDtype(out, &outDtype);
+
+        if (isFloatingType(outDtype))
+            castType = diopi_dtype_float32;
+        else
+            castType = diopi_dtype_int32;
+
         AclOpRunner<3, 1>("AxpyV2", ctx)
-            .addInput(input, highType)
-            .addInput(other, highType)
+            .addInput(input, castType)
+            .addInput(other, castType)
             .addConstInput(*alpha, diopi_dtype_float32)
-            .addOutput(outCopy)
+            .addOutput(out)
             .run();
+       // if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);
     }
-    if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);
     return diopiSuccess;
 }
 
