@@ -23,7 +23,7 @@ def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dt
         if glob_vars.four_bytes and (para in dtype_list) \
                 and tensor is not None and tensor.dtype == np.int64:
             tensor = tensor.astype(np.int32)
-        
+
         if not isinstance(tensor, np.ndarray):
             tensor = tensor.numpy()
         if isinstance(tensor, np.ndarray):
