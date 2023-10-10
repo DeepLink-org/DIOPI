@@ -26,7 +26,7 @@ device_configs = {
         ),
     ),
 
-    'batch_norm_no_contiguous': dict(
+    'batch_norm_no_continuous': dict(
         name=['batch_norm'],
         tensor_para=dict(
             args=[
