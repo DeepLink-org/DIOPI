@@ -85,8 +85,10 @@ diopiError_t diopiSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     return diopiSuccess;
 }
 
-diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                  diopiConstTensorHandle_t output) {
+DIOPI_API diopiError_t diopiSigmoidInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiSigmoid(ctx, input, input); }
+
+DIOPI_API diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                            diopiConstTensorHandle_t output) {
     AclOpRunner<2, 1>("SigmoidGrad", ctx).addInput(output).addInput(gradOutput).addOutput(gradInput).run();
     return diopiSuccess;
 }
