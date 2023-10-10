@@ -4,8 +4,8 @@ import sys,os
 
 CONTENT = 'export IS_cover=False\n'
 
-def C_coverage(rootdir, require_coverage):
-    c_coverage_file = rootdir + "/increment.txt"
+def C_coverage(coveragedir, require_coverage):
+    c_coverage_file = coveragedir + "increment.txt"
     with open(c_coverage_file, 'r') as file:
         tracefile = file.read()
 
@@ -14,12 +14,12 @@ def C_coverage(rootdir, require_coverage):
     for line in lines:
         coverage_percent = re.search(r'\|(.+?)%', line)
         if coverage_percent and float(coverage_percent.group(1)) < int(require_coverage):
-            with open(os.path.join(rootdir, 'IS_cover.txt'), 'a') as file:
+            with open(os.path.join(coveragedir, 'IS_cover.txt'), 'a') as file:
                 file.write(CONTENT)
 
-def python_coverage(python_coverage_file, rootdir):
+def python_coverage(python_coverage_file, coveragedir):
     max_filename_length = 60
-    gitdiff_file = rootdir + "/gitdiff.txt"
+    gitdiff_file = coveragedir + "gitdiff.txt"
     remove_part = os.path.dirname(gitdiff_file)
     cov = Coverage(data_file=python_coverage_file)
     cov.load()
@@ -41,14 +41,14 @@ def python_coverage(python_coverage_file, rootdir):
 
                 coverage_percent = round(coverage_percent, 1)
                 if coverage_percent < int(require_coverage):
-                    with open(os.path.join(rootdir, 'IS_cover.txt'), 'a') as file:
+                    with open(os.path.join(coveragedir, 'IS_cover.txt'), 'a') as file:
                         file.write(CONTENT)
 
                 filename = filename.replace(remove_part + '/', '')
                 print(f'Python Coverage {filename.ljust(max_filename_length)}: {coverage_percent}%')
 
 if __name__ == '__main__':
-    rootdir, require_coverage, python_coverage_file = sys.argv[1:4]
-    if os.path.exists(os.path.join(rootdir, 'increment.info')):
-        C_coverage(rootdir, require_coverage)
-    python_coverage(python_coverage_file, rootdir)
+    coveragedir, require_coverage, python_coverage_file = sys.argv[1:4]
+    if os.path.exists(os.path.join(coveragedir, 'increment.info')):
+        C_coverage(coveragedir, require_coverage)
+    python_coverage(python_coverage_file, coveragedir)
