@@ -17,15 +17,13 @@ extern "C" DIOPI_API diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTen
     diopiGetTensorDtype(out, &outputDtype);
 
     if (inputDtype != outputDtype) {
-        diopiTensorHandle_t inCopy;
-        makeTensorLike(ctx, &inCopy, input, outputDtype);
-        diopiCastDtype(ctx, inCopy, input);
-        AclOpRunner<2, 1>("Cumsum", ctx).addInput(inCopy).addConstInput(dim, diopi_dtype_int64).addOutput(out).run();
+        AscendTensor inputCopy(input);
+        castTensor(ctx, inputCopy, outputDtype);
+        AclOpRunner<2, 1>("Cumsum", ctx).addInput(inputCopy).addConstInput(dim, diopi_dtype_int64).addOutput(out).run();
     } else if (inputDtype == diopi_dtype_bool) {
-        diopiTensorHandle_t inCopy;
-        makeTensorLike(ctx, &inCopy, input, diopi_dtype_uint8);
-        diopiCastDtype(ctx, inCopy, input);
-        AclOpRunner<2, 1>("Cumsum", ctx).addInput(inCopy).addConstInput(dim, diopi_dtype_int64).addOutput(out).run();
+        AscendTensor inputCopy(input);
+        castTensor(ctx, inputCopy, outputDtype);
+        AclOpRunner<2, 1>("Cumsum", ctx).addInput(inputCopy).addConstInput(dim, diopi_dtype_int64).addOutput(out).run();
     } else {
         AclOpRunner<2, 1>("Cumsum", ctx).addInput(input).addConstInput(dim, diopi_dtype_int64).addOutput(out).run();
     }
