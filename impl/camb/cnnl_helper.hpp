@@ -19,9 +19,18 @@
 
 #include "diopi_helper.hpp"
 
+extern bool isRecordOn;
+
 #define DIOPI_CALLCNNL(Expr)                                                                                                                    \
     do {                                                                                                                                        \
+        void* record = nullptr;                                                                                                                 \
+        if (isRecordOn) {                                                                                                                       \
+            DIOPI_RECORD_START(Expr);                                                                                                           \
+        }                                                                                                                                       \
         ::cnnlStatus_t ret = Expr;                                                                                                              \
+        if (isRecordOn) {                                                                                                                       \
+            DIOPI_RECORD_END;                                                                                                                   \
+        }                                                                                                                                       \
         if (ret != ::CNNL_STATUS_SUCCESS) {                                                                                                     \
             impl::camb::setLastErrorString("cnnl error %d: %s in %s at %s:%d\n", ret, ::cnnlGetErrorString(ret), __func__, __FILE__, __LINE__); \
             return diopiErrorOccurred;                                                                                                          \

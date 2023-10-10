@@ -9,6 +9,16 @@
 namespace impl {
 namespace camb {
 
+void getFuncName(const char* expr, char* name) {
+    for (int i = 0; i < strlen(expr); ++i) {
+        if (expr[i] == '(') {
+            break;
+        }
+        name[i] = expr[i];
+    }
+    return;
+}
+
 // DiopiDataType
 
 bool DiopiDataType::isInteger(diopiDtype_t dtype) { return dtype < 8; }

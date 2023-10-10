@@ -193,11 +193,8 @@ diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     auto atStride = impl::aten::buildAtIntArray(stride);
     auto atPadding = impl::aten::buildAtIntArray(padding);
     auto atDilation = impl::aten::buildAtIntArray(dilation);
-    void* record = nullptr;
-    diopiRecordStart("at::convolution_out", &record);
     impl::aten::invokeATenFuncInp(
         ctx, at::convolution_out, atOut, atInput, atWeight, atBias, atStride, atPadding, atDilation, false, at::IntArrayRef(0), groups);
-    diopiRecordEnd(&record);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
