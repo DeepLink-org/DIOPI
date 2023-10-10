@@ -221,7 +221,7 @@ jobs:
           bash /mnt/cache/share/platform/dep/sonar/coverage_DIOPI_nv.sh ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} ${GITHUB_RUN_NUMBER} || echo "get coverage fail"
           """
       - name: increment coverage check
-        if: ${{ contains( github.event_name, 'pull_request' ) && contains( github.head_ref, 'main' }}
+        if: ${{ contains( github.event_name, 'pull_request' ) && contains( github.head_ref, 'main' ) }}
         run: |
           ssh ${CLUSTER_1988} """
           set -e
