@@ -4,7 +4,6 @@ export LANG=en_US.UTF-8
 ROOT_DIR=$(dirname "$(cd "$(dirname ${BASH_SOURCE[0]})" && pwd)")
 cd $ROOT_DIR
 echo "entering "$ROOT_DIR
-
 require_coverage=$1
 
 echo "==============C================"
@@ -42,7 +41,11 @@ if [ -f increment.info ];then
 else
     echo "C无增量代码，或测试未覆盖到"
 fi
-python $ROOT_DIR/scripts/increment_coverage.py $ROOT_DIR/increment.txt $ROOT_DIR $require_coverage $ROOT_DIR/diopi_test/python/.coverage gitdiff.txt
+python scripts/increment_coverage.py $ROOT_DIR $require_coverage diopi_test/python/.coverage
 rm -rf coverage.info gitdiff.txt increment.info
 source IS_cover.txt
-if  [ $IS_cover == 'True' ];then exit 0 ;else exit 1;fi
+if  [ $IS_cover == 'True' ];then
+  exit 0
+else
+  exit 1
+fi
