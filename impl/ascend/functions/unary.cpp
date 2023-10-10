@@ -63,7 +63,7 @@ DIOPI_API diopiError_t diopiErfInp(diopiContextHandle_t ctx, diopiTensorHandle_t
 DIOPI_API diopiError_t diopiAbs(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     diopiDtype_t inputDtype;
     diopiGetTensorDtype(input, &inputDtype);
-    if (inputDtype == diopi_dtype_uint8) {
+    if (inputDtype == diopi_dtype_uint8 || inputDtype == diopi_dtype_bool) {
         AscendTensor inCopy(input);
         castTensor(ctx, inCopy, diopi_dtype_int16);
         AclOpRunner<1, 1>("Abs", ctx).addInput(inCopy).addOutput(out).run();
