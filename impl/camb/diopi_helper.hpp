@@ -59,7 +59,7 @@ void getFuncName(const char* expr, char* name);
 
 #define DIOPI_RECORD_START(Expr)              \
     const int kFuncNameMaxLen = 100;          \
-    char funcName[funcNameMaxLen];            \
+    char funcName[kFuncNameMaxLen];           \
     impl::camb::getFuncName(#Expr, funcName); \
     diopiRecordStart(funcName, &record);
 
