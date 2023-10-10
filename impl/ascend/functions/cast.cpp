@@ -17,9 +17,7 @@ diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     }
 
     AscendTensor inputAt(input), outAt(out);
-    std::vector<int64_t> inputStride = inputAt.stride();
-    std::vector<int64_t> outStride = outAt.stride();
-    if (inputStride == outStride) {
+    if (inputAt.stride() == outAt.stride()) {
         AclOpRunner<1, 1>("Cast", ctx)
             .addInput(inputAt.data(), inputAt.getAclMemBufferSize(), inputAt.getAclMemShape(), inputAt.getAclDataFormat(), inputAt.dtype())
             .addOutput(const_cast<void *>(outAt.data()), outAt.getAclMemBufferSize(), outAt.getAclMemShape(), outAt.getAclDataFormat(), outAt.dtype())
