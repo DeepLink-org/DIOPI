@@ -214,7 +214,8 @@ class ManualTest(object):
 
     def test_bernoulli(input, inplace=False, p=None):
         p_numpy = input.numpy()
-        p = p_numpy.mean() if p is None else p
+        if input.numel() > 0:
+            p = p_numpy.mean() if p is None else p
         state = build_generator_state(input.context())
         generator = Generator(state)
         out = F.bernoulli(input, inplace, p, generator)
