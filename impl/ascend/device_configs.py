@@ -2107,7 +2107,7 @@ device_configs = {
     ),
 
     'imum': dict(
-        name=['maximum', 'minimum'],
+        name=['minimum'],
         tensor_para=dict(
             args=[
                 {
@@ -2119,7 +2119,7 @@ device_configs = {
     ),
 
     'imum_input_nan': dict(
-        name=['maximum', 'minimum'],
+        name=['minimum'],
         tensor_para=dict(
             args=[
                 {
@@ -2131,7 +2131,7 @@ device_configs = {
     ),
 
     'imum_other_nan': dict(
-        name=['maximum', 'minimum'],
+        name=['minimum'],
         tensor_para=dict(
             args=[
                 {
@@ -2143,7 +2143,7 @@ device_configs = {
     ),
 
     'imum_broadcast': dict(
-        name=['maximum', 'minimum'],
+        name=['minimum'],
         tensor_para=dict(
             args=[
                 {
@@ -2155,7 +2155,7 @@ device_configs = {
     ),
 
     'imum_ones': dict(
-        name=['maximum', 'minimum'],
+        name=['minimum'],
         tensor_para=dict(
             args=[
                 {
