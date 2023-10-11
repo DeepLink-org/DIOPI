@@ -1,10 +1,6 @@
 #ifndef IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_
 #define IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_
 
-#include <acl/acl.h>
-#include <acl/acl_op.h>
-#include <acl/acl_op_compiler.h>
-#include <diopi/functions.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -21,7 +17,11 @@
 #include <vector>
 
 #include "../ascend_tensor.hpp"
+#include "acl/acl.h"
+#include "acl/acl_op.h"
+#include "acl/acl_op_compiler.h"
 #include "debug.hpp"
+#include "impl_functions.hpp"
 #include "utils.hpp"
 
 namespace impl {
