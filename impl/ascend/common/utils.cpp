@@ -171,14 +171,9 @@ diopiError_t fillAscendTensor(const AscendTensor& src, AscendTensor& dst) {
 
 diopiError_t fillNan(diopiContextHandle_t ctx, AscendTensor& src) {
     // get nan value tensor
+    auto zeroValueScalar = constructDiopiScalarT(diopi_dtype_float64, 0.0);
+    makeTensorFromScalar(ctx, &zeroValueScalar, &nanValue, diopi_dtype_float32, diopi_device);
     diopiTensorHandle_t nanValue;
-    auto nanValueScalar = diopiScalar_t();
-    nanValueScalar.stype = diopi_dtype_float64;
-    nanValueScalar.fval = 0.0;
-    makeTensorFromScalar(ctx, &nanValueScalar, &nanValue, diopi_dtype_float32, diopi_device);
-    auto zeroValueScalar = diopiScalar_t();
-    zeroValueScalar.stype = diopi_dtype_float64;
-    zeroValueScalar.fval = 0.0;
     diopiDivInpScalar(ctx, nanValue, &zeroValueScalar, diopiRoundMode_t::RoundModeNone);
 
     diopiTensorHandle_t onePtr;

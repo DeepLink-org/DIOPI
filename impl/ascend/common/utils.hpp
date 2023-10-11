@@ -25,6 +25,18 @@ diopiError_t dataCopy(void* dst, const void* src, int64_t size) {
     return diopiSuccess;
 }
 
+template <typename T>
+diopiScalar_t constructDiopiScalarT(diopiDtype_t dtype, T val) {
+    diopiScalar_t scalar;
+    scalar.stype = dtype;
+    if (DiopiDataType::isFloatPoint(dtype)) {
+        scalar.fval = static_cast<double>(val);
+    } else {
+        scalar.ival = static_cast<int64_t>(val);
+    }
+    return scalar;
+}
+
 const char* diopiDtypeToStr(const diopiDtype_t dtype);
 
 // Those methods can generate new AscendTensor, so context is needed.
@@ -60,7 +72,7 @@ diopiError_t aclAsStrided(diopiContextHandle_t ctx, const AscendTensor& src, Asc
 
 diopiError_t fillAscendTensor(const AscendTensor& src, AscendTensor& dst);
 
-diopiError_t fillNan(diopiContextHandle_t ctx, AscendTensor &src);
+diopiError_t fillNan(diopiContextHandle_t ctx, AscendTensor& src);
 }  // namespace ascend
 }  // namespace impl
 
