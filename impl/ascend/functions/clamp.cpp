@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <cfloat>
 #include <climits>
 
@@ -13,9 +11,9 @@
 
 namespace impl {
 namespace ascend {
-extern "C" {
-DIOPI_API diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t min,
-                                  diopiConstTensorHandle_t max) {
+
+diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t min,
+                        diopiConstTensorHandle_t max) {
     diopiDtype_t dtype;
     diopiGetTensorDtype(input, &dtype);
     AclOpRunner<3, 1> runner("ClipByValue", ctx);
@@ -48,12 +46,12 @@ DIOPI_API diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t 
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiClampInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t min, diopiConstTensorHandle_t max) {
+diopiError_t diopiClampInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t min, diopiConstTensorHandle_t max) {
     return diopiClamp(ctx, input, input, min, max);
 }
 
-DIOPI_API diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* min,
-                                        const diopiScalar_t* max) {
+diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* min,
+                              const diopiScalar_t* max) {
     diopiDtype_t dtype;
     diopiGetTensorDtype(input, &dtype);
     AclOpRunner<3, 1> runner("ClipByValue", ctx);
@@ -80,9 +78,8 @@ DIOPI_API diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHan
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiClampInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* min, const diopiScalar_t* max) {
+diopiError_t diopiClampInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* min, const diopiScalar_t* max) {
     return diopiClampScalar(ctx, input, input, min, max);
-}
 }
 
 }  // namespace ascend

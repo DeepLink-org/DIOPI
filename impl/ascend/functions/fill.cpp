@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <cfloat>
 #include <cmath>
 #include <limits>
@@ -14,8 +12,6 @@
 
 namespace impl {
 namespace ascend {
-
-extern "C" {
 
 diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t *value) {
     int64_t numel = 0;
@@ -57,8 +53,6 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
 
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace ascend
 }  // namespace impl
