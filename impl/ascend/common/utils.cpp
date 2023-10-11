@@ -169,7 +169,7 @@ diopiError_t fillAscendTensor(const AscendTensor& src, AscendTensor& dst) {
     return diopiSuccess;
 }
 
-diopiError_t fillNan(diopiContextHandle_t ctx, AscendTensor &src) {
+diopiError_t fillNan(diopiContextHandle_t ctx, AscendTensor& src) {
     // get nan value tensor
     diopiTensorHandle_t nanValue;
     auto nanValueScalar = diopiScalar_t();
