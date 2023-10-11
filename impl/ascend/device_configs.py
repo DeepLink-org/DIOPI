@@ -363,7 +363,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['abs', 'erf', 'erfinv', 'exp', 'neg', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'ceil', 'atan'],
+        name=['erf', 'erfinv', 'exp', 'neg', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'ceil', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -375,7 +375,7 @@ device_configs = {
     ),
 
     'pointwise_op_int_without_inplace': dict(
-        name=['abs', 'erf', 'exp', 'neg', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'atan'],
+        name=['erf', 'exp', 'neg', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -387,7 +387,7 @@ device_configs = {
     ),
 
     'pointwise_op_uint8': dict(
-        name=['abs', 'erf', 'exp', 'neg', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'atan'],
+        name=['erf', 'exp', 'neg', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -411,7 +411,7 @@ device_configs = {
     ),
 
     'pointwise_op_bool': dict(
-        name=['abs', 'erf', 'exp', 'asin', 'sqrt', 'rsqrt', 'atan', 'logical_not'],
+        name=['erf', 'exp', 'asin', 'sqrt', 'rsqrt', 'atan', 'logical_not'],
         tensor_para=dict(
             args=[
                 {
@@ -507,7 +507,7 @@ device_configs = {
     ),
 
     'pointwise_op_zero': dict(
-        name=['abs', 'exp', 'neg', 'sqrt', 'logical_not', 'rsqrt', 'ceil'],
+        name=['exp', 'neg', 'sqrt', 'logical_not', 'rsqrt', 'ceil'],
         tensor_para=dict(
             args=[
                 {
@@ -519,7 +519,7 @@ device_configs = {
     ),
 
     'pointwise_op_without_inplace_zero': dict(
-        name=['abs', 'sign', 'exp', 'sqrt', 'logical_not', 'rsqrt'],
+        name=['sign', 'exp', 'sqrt', 'logical_not', 'rsqrt'],
         tensor_para=dict(
             args=[
                 {
@@ -1885,18 +1885,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.bool),Skip(Dtype.int64),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),Skip(Dtype.uint8),],
-                },
-            ]
-        ),
-    ),
-
-    'cumsum': dict(
-        name=['cumsum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),Skip(Dtype.bool),],
                 },
             ]
         ),

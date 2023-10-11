@@ -109,7 +109,7 @@ diopi_configs = {
         ),
     ),
 
-    'batch_norm_no_continuous': dict(
+    'batch_norm_no_contiguous': dict(
         name=["batch_norm"],
         dtype=[Dtype.float32, Dtype.float16, Dtype.float64],
         atol=1e-3,
