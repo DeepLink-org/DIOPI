@@ -31,7 +31,7 @@ case $1 in
     mkdir build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=TORCH -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DHIP=ON \
     && make -j8 || exit -1;;
   mmcv_ext)
-    (cd third_party/mmcv_diopi && rm -rf build && mkdir build \
+    (cd third_party/mmcv && rm -rf build && mkdir build \
         && MMCV_WITH_DIOPI=1 MMCV_WITH_OPS=1 python setup.py build_ext -i) \
     || exit -1;;
   supa)
