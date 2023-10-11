@@ -47,6 +47,6 @@ source coverage/IS_cover.txt
 if  [ $IS_cover == 'True' ];then
   exit 0
 else
-  error "Coverage does not exceed $require_coverage"
+  echo "coverage does not exceed $require_coverage"
   exit 1
 fi
