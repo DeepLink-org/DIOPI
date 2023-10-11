@@ -7,13 +7,12 @@
 #ifndef IMPL_ASCEND_COMMON_DEBUG_HPP_
 #define IMPL_ASCEND_COMMON_DEBUG_HPP_
 
-#include <diopi/functions.h>
-
 #include <algorithm>
 #include <sstream>
 #include <string>
 
 #include "../ascend_tensor.hpp"
+#include "impl_functions.hpp"
 
 namespace impl {
 namespace ascend {

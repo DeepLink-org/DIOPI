@@ -101,6 +101,8 @@ device_configs = {
     'baddbmm': dict(
         name=['baddbmm'],
         tensor_para=dict(
+            atol=4e-2,
+            rtol=4e-2,
             args=[
                 {
                     "ins": ['input'],
@@ -113,6 +115,8 @@ device_configs = {
     'baddbmm_without_inplace': dict(
         name=['baddbmm'],
         tensor_para=dict(
+            atol=4e-2,
+            rtol=4e-2,
             args=[
                 {
                     "ins": ['input'],

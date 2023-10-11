@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <cmath>
 #include <numeric>
 #include <set>
@@ -17,7 +15,7 @@ namespace ascend {
 
 extern diopiError_t negativeInputRtnFillNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
-extern "C" diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
+diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
     int64_t numel = 0;
     diopiGetTensorNumel(input, &numel);
     if (0 == numel) {
@@ -64,7 +62,7 @@ extern "C" diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t o
     return diopiSuccess;
 }
 
-extern "C" diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
+diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
     int64_t numel = 0;
     diopiGetTensorNumel(input, &numel);
     if (0 == numel) {
