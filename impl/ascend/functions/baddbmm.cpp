@@ -4,16 +4,13 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
-extern "C" {
 
-DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t batch1,
-                                    diopiConstTensorHandle_t batch2, double beta, double alpha) {
+diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t batch1,
+                          diopiConstTensorHandle_t batch2, double beta, double alpha) {
     diopiDtype_t outDtype;
     diopiGetTensorDtype(out, &outDtype);
     diopiDtype_t execType;
@@ -92,11 +89,10 @@ DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiBaddbmmInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t batch1, diopiConstTensorHandle_t batch2,
-                                       double beta, double alpha) {
+diopiError_t diopiBaddbmmInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t batch1, diopiConstTensorHandle_t batch2, double beta,
+                             double alpha) {
     return diopiBaddbmm(ctx, input, input, batch1, batch2, beta, alpha);
 }
 
-}  // extern "C"
 }  // namespace ascend
 }  // namespace impl
