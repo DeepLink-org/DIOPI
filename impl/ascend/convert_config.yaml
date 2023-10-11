@@ -1,6 +1,0 @@
-- common_config:
-    dtype: (int64)->int32, (float64)->float32, (complex128)->complex64
-    layout: NCHW
-
-- diopiRelu:
-    layout: NHWC
