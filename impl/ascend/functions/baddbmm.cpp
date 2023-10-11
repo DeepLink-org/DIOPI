@@ -25,22 +25,14 @@ DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_
         execType = outDtype;
     }
 
-    diopiTensorHandle_t inCopy;
-    makeTensorLike(ctx, &inCopy, input, execType);
-    diopiCastDtype(ctx, inCopy, input);
-    AscendTensor asInCopy(inCopy);
-
-    diopiTensorHandle_t outCopy;
-    makeTensorLike(ctx, &outCopy, out, execType);
-    diopiCastDtype(ctx, outCopy, out);
-
-    diopiTensorHandle_t batch1Copy;
-    makeTensorLike(ctx, &batch1Copy, batch1, execType);
-    diopiCastDtype(ctx, batch1Copy, batch1);
-
-    diopiTensorHandle_t batch2Copy;
-    makeTensorLike(ctx, &batch2Copy, batch2, execType);
-    diopiCastDtype(ctx, batch2Copy, batch2);
+    AscendTensor inputCopy(input);
+    AscendTensor outputCopy(out);
+    AscendTensor batch1Copy(batch1);
+    AscendTensor batch2Copy(batch2);
+    castTensor(ctx, outputCopy, execType);
+    castTensor(ctx, batch1Copy, execType);
+    castTensor(ctx, inputCopy, execType);
+    castTensor(ctx, batch2Copy, execType);
 
     // get the size of batch1 * batch2
     AscendTensor asBatch1 = AscendTensor(batch1Copy);
@@ -71,7 +63,7 @@ DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_
     AscendTensor alphaMulTensor;
     AscendTensor betaMulTensor;
     makeTensorLike(ctx, alphaMulTensor, asBatchMatMulTensor, execType);
-    makeTensorLike(ctx, betaMulTensor, asInCopy, execType);
+    makeTensorLike(ctx, betaMulTensor, inputCopy, execType);
 
     diopiScalar_t alphaScalar;
     alphaScalar.stype = execType;
@@ -84,16 +76,18 @@ DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_
     diopiTensorHandle_t diopiAlphaMulTensor = const_cast<diopiTensorHandle_t>(alphaMulTensor.tensorHandle());
     diopiTensorHandle_t diopiBateMulTensor = const_cast<diopiTensorHandle_t>(betaMulTensor.tensorHandle());
     diopiTensorHandle_t diopiAsBatchMatMulTensor = const_cast<diopiTensorHandle_t>(asBatchMatMulTensor.tensorHandle());
+    diopiTensorHandle_t diopiInputCopy = const_cast<diopiTensorHandle_t>(inputCopy.tensorHandle());
 
     // alpha times BatchMatMulTensor -> alphaMulTensor and beta times input -> betaMulTensor
     diopiMulScalar(ctx, diopiAlphaMulTensor, diopiAsBatchMatMulTensor, &alphaScalar);
-    diopiMulScalar(ctx, diopiBateMulTensor, inCopy, &betaScalar);
+    diopiMulScalar(ctx, diopiBateMulTensor, diopiInputCopy, &betaScalar);
 
     diopiScalar_t other;
     other.fval = 1;
     other.stype = outDtype;
-    diopiAdd(ctx, outCopy, diopiAlphaMulTensor, diopiBateMulTensor, &other);
-    diopiCastDtype(ctx, out, outCopy);
+    diopiTensorHandle_t diopiOutputCopy = const_cast<diopiTensorHandle_t>(outputCopy.tensorHandle());
+    diopiAdd(ctx, diopiOutputCopy, diopiAlphaMulTensor, diopiBateMulTensor, &other);
+    diopiCastDtype(ctx, out, diopiOutputCopy);
 
     return diopiSuccess;
 }
