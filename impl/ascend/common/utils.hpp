@@ -58,6 +58,9 @@ diopiError_t castTensor(diopiContextHandle_t ctx, AscendTensor& src, diopiDtype_
 
 diopiError_t aclAsStrided(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst);
 
+diopiError_t fillAscendTensor(const AscendTensor& src, AscendTensor& dst);
+
+diopiError_t fillNan(diopiContextHandle_t ctx, AscendTensor &src);
 }  // namespace ascend
 }  // namespace impl
 

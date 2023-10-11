@@ -1266,18 +1266,6 @@ device_configs = {
         ),
     ),
 
-    'nll_loss': dict(
-        name=['nll_loss'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((200, 79)),Skip((200, 80)),Skip((5, 16, 0)),Skip((0, 16)),Skip((4, 82, 0, 3)),],
-                },
-            ]
-        ),
-    ),
-
     'cross_entropy': dict(
         name=['cross_entropy'],
         tensor_para=dict(
