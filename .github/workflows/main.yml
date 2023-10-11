@@ -225,7 +225,7 @@ jobs:
           ssh ${CLUSTER_1988} """
           set -e
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          srun --job-name=coverage_check bash -c 'scripts/increment_coverage.sh ${REQUIRE_COVERAGE}'
+          srun --job-name=coverage_check --partition=${SLURM_PAR_SH1988} bash -c 'scripts/increment_coverage.sh ${REQUIRE_COVERAGE}'
           """
       - name: dyload-test
         run: |
@@ -284,7 +284,7 @@ jobs:
           ssh ${CLUSTER_CAMB} """
           set -e
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          srun --job-name=coverage_check bash -c 'scripts/increment_coverage.sh ${REQUIRE_COVERAGE}'
+          srun --job-name=coverage_check --partition=${SLURM_PAR_CAMB} bash -c 'scripts/increment_coverage.sh ${REQUIRE_COVERAGE}'
           """
 
   Rt-Test-Camb:
