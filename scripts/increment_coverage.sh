@@ -7,7 +7,7 @@ echo "entering "$ROOT_DIR
 require_coverage=$1
 
 echo "==============C================"
-lcov -c -d . --no-external -o coverage/coverage.info
+lcov -c -d . -o coverage/coverage.info
 newcommit=`git rev-parse --short HEAD`
 oldcommit=`git ls-remote origin main | cut -c 1-7`
 git diff $oldcommit $newcommit --name-only | xargs -I {} realpath {} > coverage/gitdiff.txt 2>/dev/null || echo "error can be ignored"
