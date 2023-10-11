@@ -36,7 +36,7 @@ extern "C" {
 DIOPI_API diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                                 const diopiScalar_t* alpha) {
     if (isScalarOne(alpha)) {
-        AclOpRunner<2, 1, dtypeConvertor>("Add", ctx).adFdInput(input).addInput(other).addOutput(out).run();
+        AclOpRunner<2, 1, dtypeConvertor>("Add", ctx).addInput(input).addInput(other).addOutput(out).run();
     } else {
         diopiDtype_t outDtype, castType;
         diopiGetTensorDtype(out, &outDtype);
