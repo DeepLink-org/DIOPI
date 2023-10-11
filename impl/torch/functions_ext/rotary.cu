@@ -28,21 +28,21 @@ void apply_rotary_cuda(const Tensor x1, const Tensor x2, const Tensor cos, const
 
     if (!conj) {
         AT_DISPATCH_FLOATING_TYPES_AND2(at::kBFloat16, at::kHalf, x1.scalar_type(), "rotary_kernel", [&] {
-            at::native::gpu_kernel_multiple_outputs(iter,
-                                                    [] GPU_LAMBDA(scalar_t x1, scalar_t x2, scalar_t cos, scalar_t sin) -> thrust::tuple<scalar_t, scalar_t> {
-                                                        scalar_t out1 = float(x1) * float(cos) - float(x2) * float(sin);
-                                                        scalar_t out2 = float(x1) * float(sin) + float(x2) * float(cos);
-                                                        return {out1, out2};
-                                                    });
+            at::native::gpu_kernel_multiple_outputs(
+                iter, [] GPU_LAMBDA(scalar_t x1, scalar_t x2, scalar_t cos, scalar_t sin) -> thrust::tuple<scalar_t, scalar_t> {
+                    scalar_t out1 = static_cast<float>(x1) * static_cast<float>(cos) - static_cast<float>(x2) * static_cast<float>(sin);
+                    scalar_t out2 = static_cast<float>(x1) * static_cast<float>(sin) + static_cast<float>(x2) * static_cast<float>(cos);
+                    return {out1, out2};
+                });
         });
     } else {
         AT_DISPATCH_FLOATING_TYPES_AND2(at::kBFloat16, at::kHalf, x1.scalar_type(), "rotary_kernel", [&] {
-            at::native::gpu_kernel_multiple_outputs(iter,
-                                                    [] GPU_LAMBDA(scalar_t x1, scalar_t x2, scalar_t cos, scalar_t sin) -> thrust::tuple<scalar_t, scalar_t> {
-                                                        scalar_t out1 = float(x1) * float(cos) + float(x2) * float(sin);
-                                                        scalar_t out2 = -float(x1) * float(sin) + float(x2) * float(cos);
-                                                        return {out1, out2};
-                                                    });
+            at::native::gpu_kernel_multiple_outputs(
+                iter, [] GPU_LAMBDA(scalar_t x1, scalar_t x2, scalar_t cos, scalar_t sin) -> thrust::tuple<scalar_t, scalar_t> {
+                    scalar_t out1 = static_cast<float>(x1) * static_cast<float>(cos) + static_cast<float>(x2) * static_cast<float>(sin);
+                    scalar_t out2 = -static_cast<float>(x1) * static_cast<float>(sin) + static_cast<float>(x2) * static_cast<float>(cos);
+                    return {out1, out2};
+                });
         });
     }
 }
