@@ -563,12 +563,12 @@ def transfer_tensor_to_device(function_paras: dict):
             if para in function_paras["requires_grad"].keys()\
                     and function_paras["requires_grad"][para] == [True]:
                 tensor.requires_grad = True
-            function_paras['kwargs'][para] = tensor.cuda()
+            function_paras['kwargs'][para] = tensor
 
         if para == "tensors":
             tensors = function_paras['kwargs'][para]
             for idx, ele in enumerate(tensors):
-                tensors[idx] = torch.from_numpy(ele).cuda()
+                tensors[idx] = torch.from_numpy(ele)
             function_paras['kwargs'][para] = tensors
 
 

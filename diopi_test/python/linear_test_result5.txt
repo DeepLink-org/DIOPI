@@ -1,0 +1,469 @@
+==========[Tensor name input]==========
+Tensor device: diopi_device
+numel = 2
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 2
+Tensor type 9 
+Tensor input:
+
+item 0: -0.997843
+item 1: 0.748010
+
+==========[Tensor name weight]==========
+Tensor device: diopi_device
+numel = 2
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 2
+Tensor type 9 
+Tensor weight:
+
+item 0: -0.976774
+item 1: -1.906797
+
+==========[Tensor name bias]==========
+Tensor device: diopi_device
+numel = 1
+stride(0) = 1
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 1
+Tensor type 9 
+Tensor bias:
+
+item 0: -1.635993
+
+==========[Tensor name output]==========
+Tensor device: diopi_device
+numel = 1
+stride(0) = 1
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 1
+2023-10-11 08:25:53,532 - ConformanceTest - INFO - Run diopi_functions.linear succeed
+2023-10-11 08:25:53,685 - ConformanceTest - ERROR - NotImplemented: linear not implement
+Tensor type 9 
+Tensor output:
+
+item 0: -2.087782
+
+==========[Tensor name input]==========
+Tensor device: diopi_device
+numel = 2
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 2
+Tensor type 9 
+Tensor input:
+
+item 0: 0.643716
+item 1: 1.558344
+
+==========[Tensor name weight]==========
+Tensor device: diopi_device
+numel = 2
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 2
+Tensor type 9 
+Tensor weight:
+
+item 0: -1.341724
+item 1: -0.174726
+
+==========[Tensor name bias]==========
+Tensor device: diopi_device
+numel = 1
+stride(0) = 1
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 1
+Tensor type 9 
+Tensor bias:
+
+item 0: 0.733176
+
+==========[Tensor name output]==========
+Tensor device: diopi_device
+numel = 1
+stride(0) = 1
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 1
+2023-10-11 08:25:53,692 - ConformanceTest - INFO - Run diopi_functions.linear succeed
+2023-10-11 08:25:53,693 - ConformanceTest - ERROR - NotImplemented: linear not implement
+Tensor type 9 
+Tensor output:
+
+item 0: -0.402380
+
+==========[Tensor name input]==========
+Tensor device: diopi_device
+numel = 2
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 2
+Tensor type 9 
+Tensor input:
+
+item 0: -1.167728
+item 1: 0.838207
+
+==========[Tensor name weight]==========
+Tensor device: diopi_device
+numel = 2
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 2
+Tensor type 9 
+Tensor weight:
+
+item 0: -0.006411
+item 1: 0.894009
+
+==========[Tensor name bias]==========
+Tensor device: diopi_device
+numel = 1
+stride(0) = 1
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 1
+Tensor type 9 
+Tensor bias:
+
+item 0: -0.259758
+
+==========[Tensor name output]==========
+Tensor device: diopi_device
+numel = 1
+stride(0) = 1
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 1
+2023-10-11 08:25:53,699 - ConformanceTest - INFO - Run diopi_functions.linear succeed
+2023-10-11 08:25:53,700 - ConformanceTest - ERROR - NotImplemented: linear not implement
+Tensor type 9 
+Tensor output:
+
+item 0: 0.497271
+
+==========[Tensor name input]==========
+Tensor device: diopi_device
+numel = 3
+stride(0) = 3
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 3
+Tensor type 9 
+Tensor input:
+
+item 0: -0.662720
+item 1: -0.976960
+item 2: -1.137061
+
+==========[Tensor name weight]==========
+Tensor device: diopi_device
+numel = 6
+stride(0) = 3
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 3
+Tensor type 9 
+Tensor weight:
+
+item 0: -0.594880
+item 1: -2.107633
+item 2: -0.435375
+item 3: 1.178105
+item 4: -2.036298
+item 5: -0.032318
+
+==========[Tensor name bias]==========
+Tensor device: diopi_device
+numel = 2
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 2
+Tensor type 9 
+Tensor bias:
+
+item 0: 0.266353
+item 1: -0.502668
+
+==========[Tensor name output]==========
+Tensor device: diopi_device
+numel = 2
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 2
+2023-10-11 08:25:53,877 - ConformanceTest - INFO - The count of elements that do not meet the accuracy requirement is 1.
+2023-10-11 08:25:53,877 - ConformanceTest - INFO - The dtype of out is float32.
+2023-10-11 08:25:53,877 - ConformanceTest - INFO - The shape of out is (1, 2).
+2023-10-11 08:25:53,877 - ConformanceTest - INFO - The stride of out is [2 1].
+2023-10-11 08:25:53,877 - ConformanceTest - INFO - The max of diff is 0.0015825629234313965. Specifically, the actual val is 0.7442904710769653 and the expected is 0.7427079081535339.
+2023-10-11 08:25:53,878 - ConformanceTest - INFO - /home/xyl/docker_work_space/code/DIOPI/diopi_test/python/conformance/../data//outputs/linear::linear_3.pth
+2023-10-11 08:25:53,878 - ConformanceTest - INFO - {'name': 'linear', 'atol': 0.001, 'rtol': 0.0001, 'atol_half': 0.1, 'rtol_half': 0.1, 'tensor_para': {'args': [{'ins': 'input', 'requires_grad': [True], 'shape': (1, 3), 'dtype': <Dtype.float32: 9>, 'gen_num_range': []}, {'ins': 'weight', 'requires_grad': [True], 'shape': (2, 3), 'dtype': <Dtype.float32: 9>, 'gen_num_range': []}, {'ins': 'bias', 'requires_grad': [True], 'shape': (1, 2), 'dtype': <Dtype.float32: 9>, 'gen_num_range': []}], 'seq_name': ''}, 'mismatch_ratio_threshold': 0.001, 'memory_format': 'NCHW', 'fp16_exact_match': False, 'train': True, 'requires_backward': [], 'para': {}, 'tag': ['float32'], 'saved_args': {}, 'interface': []}
+2023-10-11 08:25:53,879 - ConformanceTest - ERROR - Run diopi_functions.linear failed
+2023-10-11 08:25:53,988 - ConformanceTest - ERROR - NotImplemented: linear not implement
+Tensor type 9 
+Tensor output:
+
+item 0: 3.214297
+item 1: 0.744290
+
+==========[Tensor name input]==========
+Tensor device: diopi_device
+numel = 2
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 2
+Tensor type 10 
+Tensor input:
+
+item 0: -0.528006
+item 1: 1.320269
+
+==========[Tensor name weight]==========
+Tensor device: diopi_device
+numel = 2
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 2
+Tensor type 10 
+Tensor weight:
+
+item 0: -0.409568
+item 1: 1.273041
+
+==========[Tensor name bias]==========
+Tensor device: diopi_device
+numel = 1
+stride(0) = 1
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 1
+Tensor type 10 
+Tensor bias:
+
+item 0: 1.267937
+
+==========[Tensor name output]==========
+Tensor device: diopi_device
+numel = 1
+stride(0) = 1
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 1
+2023-10-11 08:25:54,314 - ConformanceTest - INFO - Run diopi_functions.linear succeed
+2023-10-11 08:25:54,413 - ConformanceTest - ERROR - NotImplemented: linear not implement
+Tensor type 10 
+Tensor output:
+
+item 0: 3.166016
+
+==========[Tensor name input]==========
+Tensor device: diopi_device
+numel = 2
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 2
+Tensor type 10 
+Tensor input:
+
+item 0: 0.321029
+item 1: 0.875467
+
+==========[Tensor name weight]==========
+Tensor device: diopi_device
+numel = 2
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 2
+Tensor type 10 
+Tensor weight:
+
+item 0: -0.890623
+item 1: -1.278775
+
+==========[Tensor name bias]==========
+Tensor device: diopi_device
+numel = 1
+stride(0) = 1
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 1
+Tensor type 10 
+Tensor bias:
+
+item 0: -0.057879
+
+==========[Tensor name output]==========
+Tensor device: diopi_device
+numel = 1
+stride(0) = 1
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 1
+2023-10-11 08:25:54,419 - ConformanceTest - INFO - Run diopi_functions.linear succeed
+2023-10-11 08:25:54,420 - ConformanceTest - ERROR - NotImplemented: linear not implement
+Tensor type 10 
+Tensor output:
+
+item 0: -1.462891
+
+==========[Tensor name input]==========
+Tensor device: diopi_device
+numel = 2
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 2
+Tensor type 10 
+Tensor input:
+
+item 0: 0.692619
+item 1: -0.696038
+
+==========[Tensor name weight]==========
+Tensor device: diopi_device
+numel = 2
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 2
+Tensor type 10 
+Tensor weight:
+
+item 0: -1.895351
+item 1: -0.687294
+
+==========[Tensor name bias]==========
+Tensor device: diopi_device
+numel = 1
+stride(0) = 1
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 1
+Tensor type 10 
+Tensor bias:
+
+item 0: -0.087757
+
+==========[Tensor name output]==========
+Tensor device: diopi_device
+numel = 1
+stride(0) = 1
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 1
+2023-10-11 08:25:54,426 - ConformanceTest - INFO - Run diopi_functions.linear succeed
+2023-10-11 08:25:54,427 - ConformanceTest - ERROR - NotImplemented: linear not implement
+Tensor type 10 
+Tensor output:
+
+item 0: -0.921875
+
+==========[Tensor name input]==========
+Tensor device: diopi_device
+numel = 3
+stride(0) = 3
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 3
+Tensor type 10 
+Tensor input:
+
+item 0: 0.866330
+item 1: 1.090959
+item 2: 0.877020
+
+==========[Tensor name weight]==========
+Tensor device: diopi_device
+numel = 6
+stride(0) = 3
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 3
+Tensor type 10 
+Tensor weight:
+
+item 0: 0.157607
+item 1: -0.513032
+item 2: 0.686065
+item 3: 2.499989
+item 4: -1.160135
+item 5: -0.674220
+
+==========[Tensor name bias]==========
+Tensor device: diopi_device
+numel = 2
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 2
+Tensor type 10 
+Tensor bias:
+
+item 0: 0.966025
+item 1: -2.173807
+
+==========[Tensor name output]==========
+Tensor device: diopi_device
+numel = 2
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 1
+shape(1) = 2
+2023-10-11 08:25:54,620 - ConformanceTest - INFO - Run diopi_functions.linear succeed
+2023-10-11 08:25:54,621 - ConformanceTest - ERROR - NotImplemented: linear not implement
+Tensor type 10 
+Tensor output:
+
+item 0: 1.144531
+item 1: -1.865234
+

@@ -1,0 +1,550 @@
+2023-10-11 07:12:29,176 - ConformanceTest - ERROR - FileNotFound: No benchmark output data 'linear::linear_0.pth' was generated (No such file or directory: /home/xyl/docker_work_space/code/DIOPI/diopi_test/python/conformance/../data//outputs/linear::linear_0.pth)
+2023-10-11 07:12:29,177 - ConformanceTest - ERROR - FileNotFound: No benchmark output data 'linear::linear_1.pth' was generated (No such file or directory: /home/xyl/docker_work_space/code/DIOPI/diopi_test/python/conformance/../data//outputs/linear::linear_1.pth)
+2023-10-11 07:12:29,177 - ConformanceTest - ERROR - FileNotFound: No benchmark output data 'linear::linear_2.pth' was generated (No such file or directory: /home/xyl/docker_work_space/code/DIOPI/diopi_test/python/conformance/../data//outputs/linear::linear_2.pth)
+==========[Tensor name input]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+Tensor type 8 
+Tensor input:
+
+unsupport dtype diopi_dtype_float16unsupport dtype diopi_dtype_float16unsupport dtype diopi_dtype_float16unsupport dtype diopi_dtype_float16
+==========[Tensor name weight]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+Tensor type 8 
+Tensor weight:
+
+unsupport dtype diopi_dtype_float16unsupport dtype diopi_dtype_float16unsupport dtype diopi_dtype_float16unsupport dtype diopi_dtype_float16
+==========[Tensor name biad]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+2023-10-11 07:12:37,061 - ConformanceTest - ERROR - ascend device error:E40021: Failed to compile Op [MatMulV2]. (oppath: [Compile /usr/local/Ascend/ascend-toolkit/6.3.RC2.alpha002/opp/built-in/op_impl/ai_core/tbe/impl/mat_mul.py failed with errormsg/stack: File "/usr/local/Ascend/ascend-toolkit/latest/python/site-packages/tbe/common/utils/errormgr/error_manager_vector.py", line 209, in raise_err_input_shape_invalid
+    raise RuntimeError(args_dict, msg)
+RuntimeError: ({'errCode': 'E80028', 'op_name': 'mat_mul', 'param_name': 'bias', 'error_detail': 'broadcast bias shape must be equal to shape n'}, 'In op[mat_mul], the shape of input[bias] is invalid, [broadcast bias shape must be equal to shape n].')
+], optype: [MatMulV2])
+        Solution: See the host log for details, and then check the Python stack where the error log is reported.
+        TraceBack (most recent call last):
+        Compile op[MatMulV2] failed, oppath[/usr/local/Ascend/ascend-toolkit/6.3.RC2.alpha002/opp/built-in/op_impl/ai_core/tbe/impl/mat_mul.py], optype[MatMulV2], taskID[6]. Please check op's compilation error message.[FUNC:ReportBuildErrMessage][FILE:fusion_op.cc][LINE:857]
+        [SubGraphOpt][Compile][ProcFailedCompTask] Thread[140660973762304] recompile single op[MatMulV2] failed[FUNC:ProcessAllFailedCompileTasks][FILE:tbe_op_store_adapter.cc][LINE:900]
+        [SubGraphOpt][Compile][ParalCompOp] Thread[140660973762304] process fail task failed[FUNC:ParallelCompileOp][FILE:tbe_op_store_adapter.cc][LINE:940]
+        [SubGraphOpt][Compile][CompOpOnly] CompileOp failed.[FUNC:CompileOpOnly][FILE:op_compiler.cc][LINE:1136]
+        [GraphOpt][FusedGraph][RunCompile] Failed to compile graph with compiler Normal mode Op Compiler[FUNC:SubGraphCompile][FILE:fe_graph_optimizer.cc][LINE:1299]
+        Call OptimizeFusedGraph failed, ret:-1, engine_name:AIcoreEngine, graph_name:partition0_rank1_new_sub_graph1[FUNC:OptimizeSubGraph][FILE:graph_optimize.cc][LINE:131]
+        subgraph 0 optimize failed[FUNC:OptimizeSubGraphWithMultiThreads][FILE:graph_manager.cc][LINE:767]
+        build graph failed, graph id:0, ret:-1[FUNC:BuildModel][FILE:ge_generator.cc][LINE:1492]
+        [Build][SingleOpModel]call ge interface generator.BuildSingleOpModel failed. ge result = 4294967295[FUNC:ReportCallError][FILE:log_inner.cpp][LINE:161]
+        [Build][Op]Fail to build op model[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:145]
+        build op model failed, result = 500002[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:145]
+
+Tensor type 8 
+Tensor biad:
+
+unsupport dtype diopi_dtype_float16unsupport dtype diopi_dtype_float16unsupport dtype diopi_dtype_float16unsupport dtype diopi_dtype_float16
+==========[Tensor name input]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+Tensor type 9 
+Tensor input:
+
+item 0: -0.813152
+item 1: 0.528971
+item 2: -0.498933
+item 3: 0.973257
+
+==========[Tensor name weight]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+Tensor type 9 
+Tensor weight:
+
+item 0: -0.798307
+item 1: -0.729651
+item 2: 0.418062
+item 3: 0.905886
+
+==========[Tensor name biad]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+2023-10-11 07:12:37,776 - ConformanceTest - ERROR - ascend device error:E40021: Failed to compile Op [MatMulV2]. (oppath: [Compile /usr/local/Ascend/ascend-toolkit/6.3.RC2.alpha002/opp/built-in/op_impl/ai_core/tbe/impl/mat_mul.py failed with errormsg/stack: File "/usr/local/Ascend/ascend-toolkit/latest/python/site-packages/tbe/common/utils/errormgr/error_manager_vector.py", line 209, in raise_err_input_shape_invalid
+    raise RuntimeError(args_dict, msg)
+RuntimeError: ({'errCode': 'E80028', 'op_name': 'mat_mul', 'param_name': 'bias', 'error_detail': 'broadcast bias shape must be equal to shape n'}, 'In op[mat_mul], the shape of input[bias] is invalid, [broadcast bias shape must be equal to shape n].')
+], optype: [MatMulV2])
+        Solution: See the host log for details, and then check the Python stack where the error log is reported.
+        TraceBack (most recent call last):
+        Compile op[MatMulV2] failed, oppath[/usr/local/Ascend/ascend-toolkit/6.3.RC2.alpha002/opp/built-in/op_impl/ai_core/tbe/impl/mat_mul.py], optype[MatMulV2], taskID[18]. Please check op's compilation error message.[FUNC:ReportBuildErrMessage][FILE:fusion_op.cc][LINE:857]
+        [SubGraphOpt][Compile][ProcFailedCompTask] Thread[140660799674112] recompile single op[MatMulV2] failed[FUNC:ProcessAllFailedCompileTasks][FILE:tbe_op_store_adapter.cc][LINE:900]
+        [SubGraphOpt][Compile][ParalCompOp] Thread[140660799674112] process fail task failed[FUNC:ParallelCompileOp][FILE:tbe_op_store_adapter.cc][LINE:940]
+        [SubGraphOpt][Compile][CompOpOnly] CompileOp failed.[FUNC:CompileOpOnly][FILE:op_compiler.cc][LINE:1136]
+        [GraphOpt][FusedGraph][RunCompile] Failed to compile graph with compiler Normal mode Op Compiler[FUNC:SubGraphCompile][FILE:fe_graph_optimizer.cc][LINE:1299]
+        Call OptimizeFusedGraph failed, ret:-1, engine_name:AIcoreEngine, graph_name:partition0_rank1_new_sub_graph1[FUNC:OptimizeSubGraph][FILE:graph_optimize.cc][LINE:131]
+        subgraph 0 optimize failed[FUNC:OptimizeSubGraphWithMultiThreads][FILE:graph_manager.cc][LINE:767]
+        build graph failed, graph id:1, ret:-1[FUNC:BuildModel][FILE:ge_generator.cc][LINE:1492]
+        [Build][SingleOpModel]call ge interface generator.BuildSingleOpModel failed. ge result = 4294967295[FUNC:ReportCallError][FILE:log_inner.cpp][LINE:161]
+        [Build][Op]Fail to build op model[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:145]
+        build op model failed, result = 500002[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:145]
+
+Tensor type 9 
+Tensor biad:
+
+item 0: -0.635891
+item 1: 1.384696
+item 2: 1.054217
+item 3: 1.407919
+
+==========[Tensor name input]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+Tensor type 9 
+Tensor input:
+
+item 0: -0.503314
+item 1: -1.026299
+item 2: 0.299004
+item 3: 1.225127
+
+==========[Tensor name weight]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+Tensor type 9 
+Tensor weight:
+
+item 0: 2.138476
+item 1: -0.010052
+item 2: 1.792896
+item 3: 1.942885
+
+==========[Tensor name biad]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+2023-10-11 07:12:37,998 - ConformanceTest - ERROR - ascend device error:E29999: Inner Error!
+E29999  [SubGraphOpt][Compile][ProcFailedCompTask] Thread[140660799674112] recompile single op[MatMulV2] failed[FUNC:ProcessAllFailedCompileTasks][FILE:tbe_op_store_adapter.cc][LINE:900]
+        TraceBack (most recent call last):
+        [SubGraphOpt][Compile][ParalCompOp] Thread[140660799674112] process fail task failed[FUNC:ParallelCompileOp][FILE:tbe_op_store_adapter.cc][LINE:940]
+        [SubGraphOpt][Compile][CompOpOnly] CompileOp failed.[FUNC:CompileOpOnly][FILE:op_compiler.cc][LINE:1136]
+        [GraphOpt][FusedGraph][RunCompile] Failed to compile graph with compiler Normal mode Op Compiler[FUNC:SubGraphCompile][FILE:fe_graph_optimizer.cc][LINE:1299]
+        Call OptimizeFusedGraph failed, ret:-1, engine_name:AIcoreEngine, graph_name:partition0_rank1_new_sub_graph1[FUNC:OptimizeSubGraph][FILE:graph_optimize.cc][LINE:131]
+        subgraph 0 optimize failed[FUNC:OptimizeSubGraphWithMultiThreads][FILE:graph_manager.cc][LINE:767]
+        build graph failed, graph id:2, ret:-1[FUNC:BuildModel][FILE:ge_generator.cc][LINE:1492]
+        [Build][SingleOpModel]call ge interface generator.BuildSingleOpModel failed. ge result = 4294967295[FUNC:ReportCallError][FILE:log_inner.cpp][LINE:161]
+        [Build][Op]Fail to build op model[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:145]
+        build op model failed, result = 500002[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:145]
+
+Tensor type 9 
+Tensor biad:
+
+item 0: -0.998343
+item 1: 0.808108
+item 2: 2.174823
+item 3: 1.802953
+
+==========[Tensor name input]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+Tensor type 9 
+Tensor input:
+
+item 0: -1.104057
+item 1: 1.338231
+item 2: 0.199328
+item 3: -1.744704
+
+==========[Tensor name weight]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+Tensor type 9 
+Tensor weight:
+
+item 0: -0.629674
+item 1: 0.497514
+item 2: 0.436529
+item 3: -1.714813
+
+==========[Tensor name biad]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+2023-10-11 07:12:38,254 - ConformanceTest - ERROR - ascend device error:E29999: Inner Error!
+E29999  [SubGraphOpt][Compile][ProcFailedCompTask] Thread[140660774496000] recompile single op[MatMulV2] failed[FUNC:ProcessAllFailedCompileTasks][FILE:tbe_op_store_adapter.cc][LINE:900]
+        TraceBack (most recent call last):
+        [SubGraphOpt][Compile][ParalCompOp] Thread[140660774496000] process fail task failed[FUNC:ParallelCompileOp][FILE:tbe_op_store_adapter.cc][LINE:940]
+        [SubGraphOpt][Compile][CompOpOnly] CompileOp failed.[FUNC:CompileOpOnly][FILE:op_compiler.cc][LINE:1136]
+        [GraphOpt][FusedGraph][RunCompile] Failed to compile graph with compiler Normal mode Op Compiler[FUNC:SubGraphCompile][FILE:fe_graph_optimizer.cc][LINE:1299]
+        Call OptimizeFusedGraph failed, ret:-1, engine_name:AIcoreEngine, graph_name:partition0_rank1_new_sub_graph1[FUNC:OptimizeSubGraph][FILE:graph_optimize.cc][LINE:131]
+        subgraph 0 optimize failed[FUNC:OptimizeSubGraphWithMultiThreads][FILE:graph_manager.cc][LINE:767]
+        build graph failed, graph id:3, ret:-1[FUNC:BuildModel][FILE:ge_generator.cc][LINE:1492]
+        [Build][SingleOpModel]call ge interface generator.BuildSingleOpModel failed. ge result = 4294967295[FUNC:ReportCallError][FILE:log_inner.cpp][LINE:161]
+        [Build][Op]Fail to build op model[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:145]
+        build op model failed, result = 500002[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:145]
+
+Tensor type 9 
+Tensor biad:
+
+item 0: 0.047545
+item 1: 0.704314
+item 2: 1.132129
+item 3: -0.477125
+
+==========[Tensor name input]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+Tensor type 9 
+Tensor input:
+
+item 0: -0.393943
+item 1: -0.823240
+item 2: 1.668566
+item 3: -0.827103
+
+==========[Tensor name weight]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+Tensor type 9 
+Tensor weight:
+
+item 0: 0.461251
+item 1: -0.180064
+item 2: -1.566708
+item 3: 0.101091
+
+==========[Tensor name biad]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+2023-10-11 07:12:38,461 - ConformanceTest - ERROR - ascend device error:E29999: Inner Error!
+E29999  [SubGraphOpt][Compile][ProcFailedCompTask] Thread[140660799674112] recompile single op[MatMulV2] failed[FUNC:ProcessAllFailedCompileTasks][FILE:tbe_op_store_adapter.cc][LINE:900]
+        TraceBack (most recent call last):
+        [SubGraphOpt][Compile][ParalCompOp] Thread[140660799674112] process fail task failed[FUNC:ParallelCompileOp][FILE:tbe_op_store_adapter.cc][LINE:940]
+        [SubGraphOpt][Compile][CompOpOnly] CompileOp failed.[FUNC:CompileOpOnly][FILE:op_compiler.cc][LINE:1136]
+        [GraphOpt][FusedGraph][RunCompile] Failed to compile graph with compiler Normal mode Op Compiler[FUNC:SubGraphCompile][FILE:fe_graph_optimizer.cc][LINE:1299]
+        Call OptimizeFusedGraph failed, ret:-1, engine_name:AIcoreEngine, graph_name:partition0_rank1_new_sub_graph1[FUNC:OptimizeSubGraph][FILE:graph_optimize.cc][LINE:131]
+        subgraph 0 optimize failed[FUNC:OptimizeSubGraphWithMultiThreads][FILE:graph_manager.cc][LINE:767]
+        build graph failed, graph id:4, ret:-1[FUNC:BuildModel][FILE:ge_generator.cc][LINE:1492]
+        [Build][SingleOpModel]call ge interface generator.BuildSingleOpModel failed. ge result = 4294967295[FUNC:ReportCallError][FILE:log_inner.cpp][LINE:161]
+        [Build][Op]Fail to build op model[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:145]
+        build op model failed, result = 500002[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:145]
+
+Tensor type 9 
+Tensor biad:
+
+item 0: -0.507731
+item 1: 1.125285
+item 2: 0.282480
+item 3: -0.012880
+
+==========[Tensor name input]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+Tensor type 10 
+Tensor input:
+
+item 0: -0.409534
+item 1: -0.643701
+item 2: 0.028905
+item 3: 0.241268
+
+==========[Tensor name weight]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+Tensor type 10 
+Tensor weight:
+
+item 0: -0.474759
+item 1: 0.837144
+item 2: 0.439610
+item 3: -1.293779
+
+==========[Tensor name biad]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+2023-10-11 07:12:38,823 - ConformanceTest - ERROR - ascend device error:E29999: Inner Error!
+E29999  [SubGraphOpt][Compile][ProcFailedCompTask] Thread[140660808066816] recompile single op[MatMulV2] failed[FUNC:ProcessAllFailedCompileTasks][FILE:tbe_op_store_adapter.cc][LINE:900]
+        TraceBack (most recent call last):
+        [SubGraphOpt][Compile][ParalCompOp] Thread[140660808066816] process fail task failed[FUNC:ParallelCompileOp][FILE:tbe_op_store_adapter.cc][LINE:940]
+        [SubGraphOpt][Compile][CompOpOnly] CompileOp failed.[FUNC:CompileOpOnly][FILE:op_compiler.cc][LINE:1136]
+        [GraphOpt][FusedGraph][RunCompile] Failed to compile graph with compiler Normal mode Op Compiler[FUNC:SubGraphCompile][FILE:fe_graph_optimizer.cc][LINE:1299]
+        Call OptimizeFusedGraph failed, ret:-1, engine_name:AIcoreEngine, graph_name:partition0_rank1_new_sub_graph1[FUNC:OptimizeSubGraph][FILE:graph_optimize.cc][LINE:131]
+        subgraph 0 optimize failed[FUNC:OptimizeSubGraphWithMultiThreads][FILE:graph_manager.cc][LINE:767]
+        build graph failed, graph id:6, ret:-1[FUNC:BuildModel][FILE:ge_generator.cc][LINE:1492]
+        [Build][SingleOpModel]call ge interface generator.BuildSingleOpModel failed. ge result = 4294967295[FUNC:ReportCallError][FILE:log_inner.cpp][LINE:161]
+        [Build][Op]Fail to build op model[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:145]
+        build op model failed, result = 500002[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:145]
+
+Tensor type 10 
+Tensor biad:
+
+item 0: -0.003363
+item 1: 1.030172
+item 2: -1.400457
+item 3: 0.576578
+
+==========[Tensor name input]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+Tensor type 10 
+Tensor input:
+
+item 0: -0.584711
+item 1: -0.412215
+item 2: 0.991676
+item 3: 0.501159
+
+==========[Tensor name weight]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+Tensor type 10 
+Tensor weight:
+
+item 0: 0.901044
+item 1: 1.331218
+item 2: 0.192559
+item 3: 0.568915
+
+==========[Tensor name biad]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+2023-10-11 07:12:39,011 - ConformanceTest - ERROR - ascend device error:E29999: Inner Error!
+E29999  [SubGraphOpt][Compile][ProcFailedCompTask] Thread[140660774496000] recompile single op[MatMulV2] failed[FUNC:ProcessAllFailedCompileTasks][FILE:tbe_op_store_adapter.cc][LINE:900]
+        TraceBack (most recent call last):
+        [SubGraphOpt][Compile][ParalCompOp] Thread[140660774496000] process fail task failed[FUNC:ParallelCompileOp][FILE:tbe_op_store_adapter.cc][LINE:940]
+        [SubGraphOpt][Compile][CompOpOnly] CompileOp failed.[FUNC:CompileOpOnly][FILE:op_compiler.cc][LINE:1136]
+        [GraphOpt][FusedGraph][RunCompile] Failed to compile graph with compiler Normal mode Op Compiler[FUNC:SubGraphCompile][FILE:fe_graph_optimizer.cc][LINE:1299]
+        Call OptimizeFusedGraph failed, ret:-1, engine_name:AIcoreEngine, graph_name:partition0_rank1_new_sub_graph1[FUNC:OptimizeSubGraph][FILE:graph_optimize.cc][LINE:131]
+        subgraph 0 optimize failed[FUNC:OptimizeSubGraphWithMultiThreads][FILE:graph_manager.cc][LINE:767]
+        build graph failed, graph id:7, ret:-1[FUNC:BuildModel][FILE:ge_generator.cc][LINE:1492]
+        [Build][SingleOpModel]call ge interface generator.BuildSingleOpModel failed. ge result = 4294967295[FUNC:ReportCallError][FILE:log_inner.cpp][LINE:161]
+        [Build][Op]Fail to build op model[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:145]
+        build op model failed, result = 500002[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:145]
+
+Tensor type 10 
+Tensor biad:
+
+item 0: 1.918502
+item 1: 1.370055
+item 2: 0.552397
+item 3: 0.726941
+
+==========[Tensor name input]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+Tensor type 10 
+Tensor input:
+
+item 0: -2.136290
+item 1: 0.417800
+item 2: 0.801638
+item 3: 0.231356
+
+==========[Tensor name weight]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+Tensor type 10 
+Tensor weight:
+
+item 0: -1.439149
+item 1: 0.125058
+item 2: -0.426060
+item 3: -1.516346
+
+==========[Tensor name biad]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+2023-10-11 07:12:39,220 - ConformanceTest - ERROR - ascend device error:E29999: Inner Error!
+E29999  [SubGraphOpt][Compile][ProcFailedCompTask] Thread[140660774496000] recompile single op[MatMulV2] failed[FUNC:ProcessAllFailedCompileTasks][FILE:tbe_op_store_adapter.cc][LINE:900]
+        TraceBack (most recent call last):
+        [SubGraphOpt][Compile][ParalCompOp] Thread[140660774496000] process fail task failed[FUNC:ParallelCompileOp][FILE:tbe_op_store_adapter.cc][LINE:940]
+        [SubGraphOpt][Compile][CompOpOnly] CompileOp failed.[FUNC:CompileOpOnly][FILE:op_compiler.cc][LINE:1136]
+        [GraphOpt][FusedGraph][RunCompile] Failed to compile graph with compiler Normal mode Op Compiler[FUNC:SubGraphCompile][FILE:fe_graph_optimizer.cc][LINE:1299]
+        Call OptimizeFusedGraph failed, ret:-1, engine_name:AIcoreEngine, graph_name:partition0_rank1_new_sub_graph1[FUNC:OptimizeSubGraph][FILE:graph_optimize.cc][LINE:131]
+        subgraph 0 optimize failed[FUNC:OptimizeSubGraphWithMultiThreads][FILE:graph_manager.cc][LINE:767]
+        build graph failed, graph id:8, ret:-1[FUNC:BuildModel][FILE:ge_generator.cc][LINE:1492]
+        [Build][SingleOpModel]call ge interface generator.BuildSingleOpModel failed. ge result = 4294967295[FUNC:ReportCallError][FILE:log_inner.cpp][LINE:161]
+        [Build][Op]Fail to build op model[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:145]
+        build op model failed, result = 500002[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:145]
+
+Tensor type 10 
+Tensor biad:
+
+item 0: 0.605893
+item 1: -0.542245
+item 2: 0.524285
+item 3: 0.352651
+
+==========[Tensor name input]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+Tensor type 10 
+Tensor input:
+
+item 0: 0.270325
+item 1: 1.741662
+item 2: 0.063067
+item 3: -0.144537
+
+==========[Tensor name weight]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+Tensor type 10 
+Tensor weight:
+
+item 0: 0.018174
+item 1: -1.947233
+item 2: 0.166671
+item 3: -0.990569
+
+==========[Tensor name biad]==========
+Tensor device: diopi_device
+numel = 4
+stride(0) = 2
+stride(1) = 1
+
+shape(0) = 2
+shape(1) = 2
+2023-10-11 07:12:39,381 - ConformanceTest - ERROR - ascend device error:E29999: Inner Error!
+E29999  [SubGraphOpt][Compile][ProcFailedCompTask] Thread[140660774496000] recompile single op[MatMulV2] failed[FUNC:ProcessAllFailedCompileTasks][FILE:tbe_op_store_adapter.cc][LINE:900]
+        TraceBack (most recent call last):
+        [SubGraphOpt][Compile][ParalCompOp] Thread[140660774496000] process fail task failed[FUNC:ParallelCompileOp][FILE:tbe_op_store_adapter.cc][LINE:940]
+        [SubGraphOpt][Compile][CompOpOnly] CompileOp failed.[FUNC:CompileOpOnly][FILE:op_compiler.cc][LINE:1136]
+        [GraphOpt][FusedGraph][RunCompile] Failed to compile graph with compiler Normal mode Op Compiler[FUNC:SubGraphCompile][FILE:fe_graph_optimizer.cc][LINE:1299]
+        Call OptimizeFusedGraph failed, ret:-1, engine_name:AIcoreEngine, graph_name:partition0_rank1_new_sub_graph1[FUNC:OptimizeSubGraph][FILE:graph_optimize.cc][LINE:131]
+        subgraph 0 optimize failed[FUNC:OptimizeSubGraphWithMultiThreads][FILE:graph_manager.cc][LINE:767]
+        build graph failed, graph id:9, ret:-1[FUNC:BuildModel][FILE:ge_generator.cc][LINE:1492]
+        [Build][SingleOpModel]call ge interface generator.BuildSingleOpModel failed. ge result = 4294967295[FUNC:ReportCallError][FILE:log_inner.cpp][LINE:161]
+        [Build][Op]Fail to build op model[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:145]
+        build op model failed, result = 500002[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:145]
+
+Tensor type 10 
+Tensor biad:
+
+item 0: -1.598326
+item 1: -0.450683
+item 2: -0.830333
+item 3: -0.248270
+

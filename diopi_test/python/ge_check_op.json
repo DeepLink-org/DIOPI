@@ -1,0 +1,144 @@
+{
+    "graph_id": 13,
+    "op": [
+        {
+            "error_type": "infer_shape_error",
+            "input0": {
+                "data_type": "DT_DOUBLE",
+                "layout": "ND",
+                "shape": [
+                    1,
+                    1
+                ]
+            },
+            "input1": {
+                "data_type": "DT_DOUBLE",
+                "layout": "ND",
+                "shape": [
+                    1,
+                    2
+                ]
+            },
+            "name": "MatMulV2",
+            "output0": {
+                "data_type": "DT_DOUBLE",
+                "layout": "ND",
+                "shape": [
+                    1,
+                    2
+                ]
+            },
+            "reason": "InferShapeFailed!",
+            "type": "MatMulV2"
+        }
+    ],
+    "session_id": 13
+}
+{
+    "graph_id": 14,
+    "op": [
+        {
+            "error_type": "infer_shape_error",
+            "input0": {
+                "data_type": "DT_DOUBLE",
+                "layout": "ND",
+                "shape": [
+                    1,
+                    1
+                ]
+            },
+            "input1": {
+                "data_type": "DT_DOUBLE",
+                "layout": "ND",
+                "shape": [
+                    1,
+                    2
+                ]
+            },
+            "name": "MatMulV2",
+            "output0": {
+                "data_type": "DT_DOUBLE",
+                "layout": "ND",
+                "shape": [
+                    1,
+                    2
+                ]
+            },
+            "reason": "InferShapeFailed!",
+            "type": "MatMulV2"
+        }
+    ],
+    "session_id": 14
+}
+{
+    "graph_id": 15,
+    "op": [
+        {
+            "error_type": "infer_shape_error",
+            "input0": {
+                "data_type": "DT_DOUBLE",
+                "layout": "ND",
+                "shape": [
+                    1,
+                    1
+                ]
+            },
+            "input1": {
+                "data_type": "DT_DOUBLE",
+                "layout": "ND",
+                "shape": [
+                    1,
+                    2
+                ]
+            },
+            "name": "MatMulV2",
+            "output0": {
+                "data_type": "DT_DOUBLE",
+                "layout": "ND",
+                "shape": [
+                    1,
+                    2
+                ]
+            },
+            "reason": "InferShapeFailed!",
+            "type": "MatMulV2"
+        }
+    ],
+    "session_id": 15
+}
+{
+    "graph_id": 17,
+    "op": [
+        {
+            "error_type": "infer_shape_error",
+            "input0": {
+                "data_type": "DT_DOUBLE",
+                "layout": "ND",
+                "shape": [
+                    1,
+                    2
+                ]
+            },
+            "input1": {
+                "data_type": "DT_DOUBLE",
+                "layout": "ND",
+                "shape": [
+                    2,
+                    3
+                ]
+            },
+            "name": "MatMulV2",
+            "output0": {
+                "data_type": "DT_DOUBLE",
+                "layout": "ND",
+                "shape": [
+                    1,
+                    3
+                ]
+            },
+            "reason": "InferShapeFailed!",
+            "type": "MatMulV2"
+        }
+    ],
+    "session_id": 17
+}

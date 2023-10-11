@@ -1,0 +1,2302 @@
+2023-10-09 13:03:18,781 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080010000 ,dtype:9 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240800a4000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080083000 ,dtype:9 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240801c5000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080031000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080200000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080072000 ,dtype:9 ,shape:32 32 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240801e6000 ,dtype:9 ,shape:32 32 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124080200000  ,data:0x124080200000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240801e6000  ,data:0x1240801e6000 ,dtype:9 ,device:1 ,shape:32 32 16  ,stride:512 16 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124080241000  ,data:0x124080241000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f1000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802f2000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080241000  ,data:0x124080241000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240802f2000  ,data:0x1240802f2000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240802af000  ,data:0x1240802af000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f5000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802f6000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x1240800a4000  ,data:0x1240800a4000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240802f6000  ,data:0x1240802f6000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240802d0000  ,data:0x1240802d0000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x1240802af000  ,data:0x1240802af000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x1240802d0000  ,data:0x1240802d0000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x1240801c5000  ,data:0x1240801c5000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240801c5000 ,dtype:9 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080083000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080010000 ,dtype:9 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802f9000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080010000 ,dtype:9 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x12408031a000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080031000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x12408033b000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.siz2023-10-09 13:03:18,788 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+e:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080072000 ,dtype:9 ,shape:32 32 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x12408037c000 ,dtype:9 ,shape:32 32 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x12408033b000  ,data:0x12408033b000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x12408037c000  ,data:0x12408037c000 ,dtype:9 ,device:1 ,shape:32 32 16  ,stride:512 16 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x12408038d000  ,data:0x12408038d000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803f0000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803f1000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x12408038d000  ,data:0x12408038d000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803f1000  ,data:0x1240803f1000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240803ae000  ,data:0x1240803ae000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803f2000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803f3000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x1240802f9000  ,data:0x1240802f9000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803f3000  ,data:0x1240803f3000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240803cf000  ,data:0x1240803cf000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x1240803ae000  ,data:0x1240803ae000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x1240803cf000  ,data:0x1240803cf000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x12408031a000  ,data:0x12408031a000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x12408031a000 ,dtype:9 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080010000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802af000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080031000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080200000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802f9000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800a4000 ,dtype:9 ,shape:32 64 8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080241000 ,dtype:9 ,shape:32 64 8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800b5000 ,dtype:9 ,shape:32 8 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080252000 ,dtype:9 ,shape:32 8 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124080241000  ,data:0x124080241000 ,dtype:9 ,device:1 ,shape:32 64 8  ,stride:512 8 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x124080252000  ,data:0x124080252000 ,dtype:9 ,device:1 ,shape:32 8 32  ,stride:256 32 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x12408033a000  ,data:0x12408033a000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 2023-10-09 13:03:19,311 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+32 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800c4000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802f2000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x12408033a000  ,data:0x12408033a000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240802f2000  ,data:0x1240802f2000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x12408025b000  ,data:0x12408025b000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x12408029e000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x12408029f000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080031000  ,data:0x124080031000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x12408029f000  ,data:0x12408029f000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080400000  ,data:0x124080400000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x12408025b000  ,data:0x12408025b000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x124080400000  ,data:0x124080400000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x1240802f9000  ,data:0x1240802f9000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f9000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080200000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802af000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080441000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802af000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080482000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800a4000 ,dtype:9 ,shape:32 64 8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080010000 ,dtype:9 ,shape:32 64 8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800b5000 ,dtype:9 ,shape:32 8 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802a2000 ,dtype:9 ,shape:32 8 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124080010000  ,data:0x124080010000 ,dtype:9 ,device:1 ,shape:32 64 8  ,stride:512 8 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240802a2000  ,data:0x1240802a2000 ,dtype:9 ,device:1 ,shape:32 8 32  ,stride:256 32 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x1240804c3000  ,data:0x1240804c3000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080021000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080022000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x1240804c3000  ,data:0x1240804c3000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x124080022000  ,data:0x124080022000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080504000  ,data:0x124080504000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2023-10-09 13:03:19,317 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+2048 32 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080023000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080024000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080441000  ,data:0x124080441000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x124080024000  ,data:0x124080024000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080545000  ,data:0x124080545000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124080504000  ,data:0x124080504000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x124080545000  ,data:0x124080545000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124080482000  ,data:0x124080482000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080482000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802af000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001200000 ,dtype:9 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124001e00000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001a00000 ,dtype:9 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124002200000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001600000 ,dtype:9 ,shape:168 52 38 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124002600000 ,dtype:9 ,shape:168 52 38 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001800000 ,dtype:9 ,shape:168 38 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124002800000 ,dtype:9 ,shape:168 38 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124002600000  ,data:0x124002600000 ,dtype:9 ,device:1 ,shape:168 52 38  ,stride:1976 38 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x124002800000  ,data:0x124002800000 ,dtype:9 ,device:1 ,shape:168 38 64  ,stride:2432 64 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124002a00000  ,data:0x124002a00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802aa000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240800c4000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124002a00000  ,data:0x124002a00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240800c4000  ,data:0x1240800c4000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124003400000  ,data:0x124003400000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f2000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803da000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124001e00000  ,data:0x124001e00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803da000  ,data:0x1240803da000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124003800000  ,data:0x124003800000 ,dtype:9 ,device:1 ,shap2023-10-09 13:03:20,144 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+e:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124003400000  ,data:0x124003400000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x124003800000  ,data:0x124003800000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124002200000  ,data:0x124002200000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124002200000 ,dtype:9 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124001a00000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001200000 ,dtype:9 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124003c00000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001200000 ,dtype:9 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124004000000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001600000 ,dtype:9 ,shape:168 52 38 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124004400000 ,dtype:9 ,shape:168 52 38 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001800000 ,dtype:9 ,shape:168 38 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124004600000 ,dtype:9 ,shape:168 38 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124004400000  ,data:0x124004400000 ,dtype:9 ,device:1 ,shape:168 52 38  ,stride:1976 38 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x124004600000  ,data:0x124004600000 ,dtype:9 ,device:1 ,shape:168 38 64  ,stride:2432 64 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124004800000  ,data:0x124004800000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803dd000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803de000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124004800000  ,data:0x124004800000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803de000  ,data:0x1240803de000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124004c00000  ,data:0x124004c00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803df000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e0000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124003c00000  ,data:0x124003c00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803e0000  ,data:0x1240803e0000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124005000000  ,data:0x124005000000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124004c00000  ,data:0x124004c00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x124005000000  ,data:0x124005000000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124004000000  ,data:0x124004000000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124004000000 ,dtype:9 ,shape:168 52 64 )2023-10-09 13:03:20,165 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124001200000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800c4000 ,dtype:9 ,shape:4 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803da000 ,dtype:9 ,shape:4 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f2000 ,dtype:9 ,shape:8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803dd000 ,dtype:9 ,shape:8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802aa000 ,dtype:9 ,shape:2 4 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803de000 ,dtype:9 ,shape:2 4 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240803dd000 ,dtype:9 ,shape:8 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x118351d0  ,data:0x118351d0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x117128d0  ,data:0x117128d0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x11f19b30  ,data:0x11f19b30 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240803de000  ,data:0x1240803de000 ,dtype:9 ,device:1 ,shape:2 4 2  ,stride:8 2 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e0000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e1000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803e1000  ,data:0x1240803e1000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e2000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e3000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240803da000 ,dtype:9 ,shape:4 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x103ef100  ,data:0x103ef100 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x1043e680  ,data:0x1043e680 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x11831e20  ,data:0x11831e20 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803e3000  ,data:0x1240803e3000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240803df000 ,dtype:9 ,shape:4 )
+[addConstIn2023-10-09 13:03:20,443 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+put:279]: AsStrided input[1]:AscendTensor(handle:0x103aed50  ,data:0x103aed50 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x103ac4c0  ,data:0x103ac4c0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x10436910  ,data:0x10436910 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: Add input[1]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800c4000 ,dtype:9 ,shape:4 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e4000 ,dtype:9 ,shape:4 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800c4000 ,dtype:9 ,shape:4 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e5000 ,dtype:9 ,shape:4 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f2000 ,dtype:9 ,shape:8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e6000 ,dtype:9 ,shape:8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802aa000 ,dtype:9 ,shape:2 4 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e7000 ,dtype:9 ,shape:2 4 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240803e6000 ,dtype:9 ,shape:8 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x116ca590  ,data:0x116ca590 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x11f0ba20  ,data:0x11f0ba20 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x104328d0  ,data:0x104328d0 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240803e7000  ,data:0x1240803e7000 ,dtype:9 ,device:1 ,shape:2 4 2  ,stride:8 2 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e9000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803ea000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803ea000  ,data:0x1240803ea000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803eb000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803ec000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240803e4000 ,dtype:9 ,shape:4 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x103adbb0  ,data:0x103adbb0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x116868e0  ,data:0x116868e0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInp2023-10-09 13:03:20,449 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+2023-10-09 13:03:20,450 - ConformanceTest - ERROR - FileNotFound: No benchmark output data 'baddbmm::baddbmm_4.pth' was generated (No such file or directory: /home/xyl/docker_work_space/code/DIOPI/diopi_test/python/conformance/../data//outputs/baddbmm::baddbmm_4.pth)
+2023-10-09 13:03:20,450 - ConformanceTest - ERROR - FileNotFound: No benchmark output data 'baddbmm::baddbmm_5.pth' was generated (No such file or directory: /home/xyl/docker_work_space/code/DIOPI/diopi_test/python/conformance/../data//outputs/baddbmm::baddbmm_5.pth)
+2023-10-09 13:03:20,451 - ConformanceTest - ERROR - FileNotFound: No benchmark output data 'baddbmm::baddbmm_6.pth' was generated (No such file or directory: /home/xyl/docker_work_space/code/DIOPI/diopi_test/python/conformance/../data//outputs/baddbmm::baddbmm_6.pth)
+ut:279]: AsStrided input[3]:AscendTensor(handle:0x11830900  ,data:0x11830900 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803ec000  ,data:0x1240803ec000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240803e8000 ,dtype:9 ,shape:4 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x103ef380  ,data:0x103ef380 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x11830920  ,data:0x11830920 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x10430900  ,data:0x10430900 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: Add input[1]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e5000 ,dtype:9 ,shape:4 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240800c4000 ,dtype:9 ,shape:4 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803da000 ,dtype:8 ,shape:4 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802aa000 ,dtype:8 ,shape:4 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803dd000 ,dtype:8 ,shape:8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802f2000 ,dtype:8 ,shape:8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803de000 ,dtype:8 ,shape:2 4 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803df000 ,dtype:8 ,shape:2 4 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240802f2000 ,dtype:8 ,shape:8 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x1043b1d0  ,data:0x1043b1d0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x11f19e50  ,data:0x11f19e50 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x104225f0  ,data:0x104225f0 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240803df000  ,data:0x1240803df000 ,dtype:8 ,device:1 ,shape:2 4 2  ,stride:8 2 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e1000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e2000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[add2023-10-09 13:03:20,883 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+Output:480]: Cast output[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803e2000  ,data:0x1240803e2000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e3000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e4000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240802aa000 ,dtype:8 ,shape:4 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x11620a80  ,data:0x11620a80 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x11f15a60  ,data:0x11f15a60 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x10439f80  ,data:0x10439f80 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803e4000  ,data:0x1240803e4000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e5000 ,dtype:9 ,shape:4 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e0000 ,dtype:8 ,shape:4 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240803e0000 ,dtype:8 ,shape:4 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x11825bd0  ,data:0x11825bd0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x11f1e9c0  ,data:0x11f1e9c0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x11f0fa40  ,data:0x11f0fa40 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: Add input[1]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803da000 ,dtype:8 ,shape:4 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240800c4000 ,dtype:8 ,shape:4 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803da000 ,dtype:8 ,shape:4 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e8000 ,dtype:8 ,shape:4 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803dd000 ,dtype:8 ,shape:8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e9000 ,dtype:8 ,shape:8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803de000 ,dtype:8 ,shape:2 4 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803ea000 ,dtype:8 ,shape:2 4 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240803e9000 ,dtype:8 ,shape:8 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x11817d80  ,data:0x11817d80 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x11f14c20  ,data:0x11f14c20 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x103b3b30  ,data:0x103b3b30 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240803ea000  ,data:0x1240803ea000 ,dtype:8 ,device:1 ,shape:2 4 2  ,stride:8 2 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803ec000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803ed000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803ed000  ,data:0x1240803ed000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803ee000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803ef000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240800c4000 ,dtype:8 ,shape:4 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x11676aa0  ,data:0x11676aa0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x10422aa0  ,data:0x10422aa0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x1043dcb0  ,data:0x1043dcb0 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803ef000  ,data:0x1240803ef000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803f0000 ,dtype:9 ,shape:4 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803eb000 ,dtype:8 ,shape:4 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,sh2023-10-09 13:03:20,889 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+ape:2 0 2  ,stride:0 2 1 )
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240803eb000 ,dtype:8 ,shape:4 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x1161eed0  ,data:0x1161eed0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x1182b530  ,data:0x1182b530 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x1043c3c0  ,data:0x1043c3c0 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: Add input[1]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e8000 ,dtype:8 ,shape:4 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803da000 ,dtype:8 ,shape:4 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802af000 ,dtype:10 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080051000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080010000 ,dtype:10 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080072000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080200000 ,dtype:10 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802f9000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240801c5000 ,dtype:10 ,shape:32 32 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240801e6000 ,dtype:9 ,shape:32 32 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x1240802f9000  ,data:0x1240802f9000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240801e6000  ,data:0x1240801e6000 ,dtype:9 ,device:1 ,shape:32 32 16  ,stride:512 16 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124080093000  ,data:0x124080093000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f2000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240800c4000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080093000  ,data:0x124080093000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240800c4000  ,data:0x1240800c4000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x12408033a000  ,data:0x12408033a000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802aa000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803dd000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080051000  ,data:0x124080051000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803dd000  ,data:0x1240803dd000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x12408035b000  ,data:0x12408035b000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x12408033a000  ,data:0x12408033a000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x12408035b000  ,dat2023-10-09 13:03:21,012 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+2023-10-09 13:03:21,021 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+a:0x12408035b000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124080072000  ,data:0x124080072000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080072000 ,dtype:9 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080010000 ,dtype:10 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802af000 ,dtype:10 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x12408037c000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802af000 ,dtype:10 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x12408039d000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080200000 ,dtype:10 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080400000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240801c5000 ,dtype:10 ,shape:32 32 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803be000 ,dtype:9 ,shape:32 32 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124080400000  ,data:0x124080400000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240803be000  ,data:0x1240803be000 ,dtype:9 ,device:1 ,shape:32 32 16  ,stride:512 16 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124080441000  ,data:0x124080441000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803da000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803cf000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080441000  ,data:0x124080441000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803cf000  ,data:0x1240803cf000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080462000  ,data:0x124080462000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803d0000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803d1000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x12408037c000  ,data:0x12408037c000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803d1000  ,data:0x1240803d1000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080483000  ,data:0x124080483000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124080462000  ,data:0x124080462000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x124080483000  ,data:0x124080483000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x12408039d000  ,data:0x12408039d000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x12408039d000 ,dtype:9 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802af000 ,dtype:10 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f9000 ,dtype:10 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080010000 ,dtype:9 ,shape:32 64 2023-10-09 13:03:21,031 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080200000 ,dtype:10 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080051000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x12408037a000 ,dtype:10 ,shape:32 64 8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e8000 ,dtype:9 ,shape:32 64 8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240801e6000 ,dtype:10 ,shape:32 8 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803dd000 ,dtype:9 ,shape:32 8 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x1240803e8000  ,data:0x1240803e8000 ,dtype:9 ,device:1 ,shape:32 64 8  ,stride:512 8 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240803dd000  ,data:0x1240803dd000 ,dtype:9 ,device:1 ,shape:32 8 32  ,stride:256 32 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124080400000  ,data:0x124080400000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802aa000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240800c4000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080400000  ,data:0x124080400000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240800c4000  ,data:0x1240800c4000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080441000  ,data:0x124080441000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f2000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803da000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080010000  ,data:0x124080010000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803da000  ,data:0x1240803da000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080482000  ,data:0x124080482000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124080441000  ,data:0x124080441000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x124080482000  ,data:0x124080482000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124080051000  ,data:0x124080051000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080051000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080200000 ,dtype:10 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f9000 ,dtype:10 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802af000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f9000 ,dtype:10 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240804c3000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x12408037a000 ,dtype:10 ,shape:32 64 8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080281000 ,dtype:9 ,shape:32 64 8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240801e6000 ,dtype:10 ,shape:32 8 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080292000 ,dtype:9 ,shape:32 82023-10-09 13:03:21,038 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+ 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124080281000  ,data:0x124080281000 ,dtype:9 ,device:1 ,shape:32 64 8  ,stride:512 8 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x124080292000  ,data:0x124080292000 ,dtype:9 ,device:1 ,shape:32 8 32  ,stride:256 32 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124080504000  ,data:0x124080504000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x12408029b000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803f9000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080504000  ,data:0x124080504000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803f9000  ,data:0x1240803f9000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080545000  ,data:0x124080545000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803fa000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803fb000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x1240802af000  ,data:0x1240802af000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803fb000  ,data:0x1240803fb000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080586000  ,data:0x124080586000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124080545000  ,data:0x124080545000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x124080586000  ,data:0x124080586000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x1240804c3000  ,data:0x1240804c3000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240804c3000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802f9000 ,dtype:10 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124005400000 ,dtype:10 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124004800000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124005a00000 ,dtype:10 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124003400000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001200000 ,dtype:10 ,shape:168 52 38 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124001800000 ,dtype:9 ,shape:168 52 38 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001a00000 ,dtype:10 ,shape:168 38 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124001600000 ,dtype:9 ,shape:168 38 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124001800000  ,data:0x124001800000 ,dtype:9 ,device:1 ,shape:168 52 38  ,stride:1976 38 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x124001600000  ,data:0x124001600000 ,dtype:9 ,device:1 ,shape:168 38 64  ,stride:2432 64 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124002a00000  ,data:0x124002a00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803da000 ,dtype:10 ,shape:1 )
+[addOutput:42023-10-09 13:03:21,095 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+80]: Cast output[0]: Tensor:( data:0x1240802f2000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124002a00000  ,data:0x124002a00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240802f2000  ,data:0x1240802f2000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124005000000  ,data:0x124005000000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800c4000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802aa000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124004800000  ,data:0x124004800000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240802aa000  ,data:0x1240802aa000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124002200000  ,data:0x124002200000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124005000000  ,data:0x124005000000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x124002200000  ,data:0x124002200000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124003400000  ,data:0x124003400000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124003400000 ,dtype:9 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124005a00000 ,dtype:10 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124005400000 ,dtype:10 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124004c00000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124005400000 ,dtype:10 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124004000000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001200000 ,dtype:10 ,shape:168 52 38 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124004400000 ,dtype:9 ,shape:168 52 38 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001a00000 ,dtype:10 ,shape:168 38 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124002600000 ,dtype:9 ,shape:168 38 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124004400000  ,data:0x124004400000 ,dtype:9 ,device:1 ,shape:168 52 38  ,stride:1976 38 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x124002600000  ,data:0x124002600000 ,dtype:9 ,device:1 ,shape:168 38 64  ,stride:2432 64 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124003c00000  ,data:0x124003c00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803dd000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803de000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124003c00000  ,data:0x124003c00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803de000  ,data:0x1240803de000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124001e00000  ,data:0x124001e00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803df000 2023-10-09 13:03:21,123 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e0000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124004c00000  ,data:0x124004c00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803e0000  ,data:0x1240803e0000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124003800000  ,data:0x124003800000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124001e00000  ,data:0x124001e00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x124003800000  ,data:0x124003800000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124004000000  ,data:0x124004000000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124004000000 ,dtype:9 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124005400000 ,dtype:10 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800c4000 ,dtype:10 ,shape:4 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803da000 ,dtype:9 ,shape:4 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:10 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802aa000 ,dtype:10 ,shape:8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803dd000 ,dtype:9 ,shape:8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f2000 ,dtype:10 ,shape:2 4 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803de000 ,dtype:9 ,shape:2 4 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240803dd000 ,dtype:9 ,shape:8 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x1182c240  ,data:0x1182c240 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x1182c220  ,data:0x1182c220 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x1041c410  ,data:0x1041c410 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240803de000  ,data:0x1240803de000 ,dtype:9 ,device:1 ,shape:2 4 2  ,stride:8 2 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e0000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e1000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803e1000  ,data:0x1240803e1000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e2000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e3000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240803da02023-10-09 13:03:21,130 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+00 ,dtype:9 ,shape:4 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x11740330  ,data:0x11740330 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x11f0b3e0  ,data:0x11f0b3e0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x117ef7a0  ,data:0x117ef7a0 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803e3000  ,data:0x1240803e3000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240803df000 ,dtype:9 ,shape:4 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x1041f540  ,data:0x1041f540 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x1161e230  ,data:0x1161e230 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x1161a0b0  ,data:0x1161a0b0 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: Add input[1]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:10 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800c4000 ,dtype:10 ,shape:4 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e4000 ,dtype:9 ,shape:4 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800c4000 ,dtype:10 ,shape:4 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e5000 ,dtype:9 ,shape:4 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802aa000 ,dtype:10 ,shape:8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e8000 ,dtype:9 ,shape:8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f2000 ,dtype:10 ,shape:2 4 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e9000 ,dtype:9 ,shape:2 4 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240803e8000 ,dtype:9 ,shape:8 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x10431990  ,data:0x10431990 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x4bb97e0  ,data:0x4bb97e0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x1163c3b0  ,data:0x1163c3b0 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240803e9000  ,data:0x1240803e9000 ,dtype:9 ,device:1 ,shape:2 4 2  ,stride:8 2 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,2023-10-09 13:03:21,135 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803eb000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803ec000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803ec000  ,data:0x1240803ec000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803ed000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803ee000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240803e4000 ,dtype:9 ,shape:4 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x11f05710  ,data:0x11f05710 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x1163df60  ,data:0x1163df60 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x1163dfc0  ,data:0x1163dfc0 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803ee000  ,data:0x1240803ee000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240803ea000 ,dtype:9 ,shape:4 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x1163bd20  ,data:0x1163bd20 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x1163b8d0  ,data:0x1163b8d0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x11695c70  ,data:0x11695c70 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: Add input[1]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e5000 ,dtype:9 ,shape:4 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240800c4000 ,dtype:10 ,shape:4 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240801c5000 ,dtype:9 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080221000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080200000 ,dtype:9 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080242000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802af000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080010000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240801e6000 ,dtype:9 ,shape:32 32 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e8000 ,dtype:9 ,shape:32 32 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124080010000  ,data:0x124080010000 ,dtype:9 ,device:12023-10-09 13:03:21,143 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+ ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240803e8000  ,data:0x1240803e8000 ,dtype:9 ,device:1 ,shape:32 32 16  ,stride:512 16 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124080263000  ,data:0x124080263000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f2000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802aa000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080263000  ,data:0x124080263000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240802aa000  ,data:0x1240802aa000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080051000  ,data:0x124080051000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803da000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803f9000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080221000  ,data:0x124080221000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803f9000  ,data:0x1240803f9000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080072000  ,data:0x124080072000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124080051000  ,data:0x124080051000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x124080072000  ,data:0x124080072000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124080242000  ,data:0x124080242000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080242000 ,dtype:9 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080200000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080221000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080010000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802af000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080051000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e8000 ,dtype:9 ,shape:32 64 8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080092000 ,dtype:9 ,shape:32 64 8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803dd000 ,dtype:9 ,shape:32 8 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240800a3000 ,dtype:9 ,shape:32 8 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124080092000  ,data:0x124080092000 ,dtype:9 ,device:1 ,shape:32 64 8  ,stride:512 8 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240800a3000  ,data:0x1240800a3000 ,dtype:9 ,device:1 ,shape:32 8 32  ,stride:256 32 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x1240802f9000  ,data:0x1240802f9000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800c4000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803da000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x1240802f9000  ,dat2023-10-09 13:03:21,151 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+a:0x1240802f9000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803da000  ,data:0x1240803da000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x12408033a000  ,data:0x12408033a000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f2000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802aa000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080010000  ,data:0x124080010000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240802aa000  ,data:0x1240802aa000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x12408037b000  ,data:0x12408037b000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x12408033a000  ,data:0x12408033a000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x12408037b000  ,data:0x12408037b000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124080051000  ,data:0x124080051000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080051000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802af000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001a00000 ,dtype:9 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124002a00000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001200000 ,dtype:9 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124004000000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124002600000 ,dtype:9 ,shape:168 52 38 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124001800000 ,dtype:9 ,shape:168 52 38 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124004400000 ,dtype:9 ,shape:168 38 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124001600000 ,dtype:9 ,shape:168 38 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124001800000  ,data:0x124001800000 ,dtype:9 ,device:1 ,shape:168 52 38  ,stride:1976 38 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x124001600000  ,data:0x124001600000 ,dtype:9 ,device:1 ,shape:168 38 64  ,stride:2432 64 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124004c00000  ,data:0x124004c00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802aa000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802f2000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124004c00000  ,data:0x124004c00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240802f2000  ,data:0x1240802f2000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124003800000  ,data:0x124003800000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803da000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240800c4000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:02023-10-09 13:03:21,176 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+x124002a00000  ,data:0x124002a00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240800c4000  ,data:0x1240800c4000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124001e00000  ,data:0x124001e00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124003800000  ,data:0x124003800000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x124001e00000  ,data:0x124001e00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124004000000  ,data:0x124004000000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124004000000 ,dtype:9 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124001200000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802aa000 ,dtype:9 ,shape:16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240800c4000 ,dtype:9 ,shape:16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240801c5000 ,dtype:9 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802af000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080200000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080241000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e8000 ,dtype:9 ,shape:32 32 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240801e6000 ,dtype:9 ,shape:32 32 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124080241000  ,data:0x124080241000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240801e6000  ,data:0x1240801e6000 ,dtype:9 ,device:1 ,shape:32 32 16  ,stride:512 16 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124080010000  ,data:0x124080010000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f2000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803f9000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080010000  ,data:0x124080010000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803f9000  ,data:0x1240803f9000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080031000  ,data:0x124080031000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803fa000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803fb000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x1240800c4000  ,data:0x1240800c4000 ,dtype:9 ,device:1 ,shape:16  ,stride:1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803fb000  ,data:0x1240803fb000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240803da000  ,data:0x1240803da000 ,dtype:9 ,device:1 ,shape:16  ,stride:1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124080031000  ,data:0x124080031000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x1240803da000  ,data:0x1240803da000 ,dtype:9 ,device:1 ,shape:16  ,stride:1 )
+[addOutput:498]: A2023-10-09 13:03:21,453 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+2023-10-09 13:03:21,764 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+dd output[0]:AscendTensor(handle:0x1240802af000  ,data:0x1240802af000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802af000 ,dtype:9 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240801c5000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803f9000 ,dtype:9 ,shape:64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e8000 ,dtype:9 ,shape:64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802af000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080200000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240801e6000 ,dtype:9 ,shape:32 64 8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080241000 ,dtype:9 ,shape:32 64 8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803dd000 ,dtype:9 ,shape:32 8 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803eb000 ,dtype:9 ,shape:32 8 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124080241000  ,data:0x124080241000 ,dtype:9 ,device:1 ,shape:32 64 8  ,stride:512 8 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240803eb000  ,data:0x1240803eb000 ,dtype:9 ,device:1 ,shape:32 8 32  ,stride:256 32 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124080252000  ,data:0x124080252000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802aa000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803da000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080252000  ,data:0x124080252000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803da000  ,data:0x1240803da000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080010000  ,data:0x124080010000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800c4000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802f2000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x1240803e8000  ,data:0x1240803e8000 ,dtype:9 ,device:1 ,shape:64 32  ,stride:32 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240802f2000  ,data:0x1240802f2000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240803f4000  ,data:0x1240803f4000 ,dtype:9 ,device:1 ,shape:64 32  ,stride:32 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124080010000  ,data:0x124080010000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x1240803f4000  ,data:0x1240803f4000 ,dtype:9 ,device:1 ,shape:64 32  ,stride:32 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124080200000  ,data:0x124080200000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080200000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802af000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080295000 ,dtype:9 ,shape:1 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803dd000 ,dtype:9 ,shape:1 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001200000 ,dtype:9 ,shape:168 52 64 2023-10-09 13:03:22,062 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+)
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124001a00000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124004400000 ,dtype:9 ,shape:168 52 38 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124001600000 ,dtype:9 ,shape:168 52 38 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124002600000 ,dtype:9 ,shape:168 38 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124001800000 ,dtype:9 ,shape:168 38 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124001600000  ,data:0x124001600000 ,dtype:9 ,device:1 ,shape:168 52 38  ,stride:1976 38 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x124001800000  ,data:0x124001800000 ,dtype:9 ,device:1 ,shape:168 38 64  ,stride:2432 64 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124001e00000  ,data:0x124001e00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e5000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802f2000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124001e00000  ,data:0x124001e00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240802f2000  ,data:0x1240802f2000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124002a00000  ,data:0x124002a00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800c4000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803da000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x1240803dd000  ,data:0x1240803dd000 ,dtype:9 ,device:1 ,shape:1 52 64  ,stride:3328 64 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803da000  ,data:0x1240803da000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240803e1000  ,data:0x1240803e1000 ,dtype:9 ,device:1 ,shape:1 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124002a00000  ,data:0x124002a00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x1240803e1000  ,data:0x1240803e1000 ,dtype:9 ,device:1 ,shape:1 52 64  ,stride:3328 64 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124001a00000  ,data:0x124001a00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001a00000 ,dtype:9 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124001200000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803da000 ,dtype:9 ,shape:32 1 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240800c4000 ,dtype:9 ,shape:32 1 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240801d6000 ,dtype:9 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802af000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080200000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080241000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240801c5000 ,dtype:9 ,shape:32 32 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080282000 ,dtype:9 ,shape:32 32 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124080241002023-10-09 13:03:22,345 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+0  ,data:0x124080241000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x124080282000  ,data:0x124080282000 ,dtype:9 ,device:1 ,shape:32 32 16  ,stride:512 16 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124080010000  ,data:0x124080010000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x12408029b000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803fb000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080010000  ,data:0x124080010000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803fb000  ,data:0x1240803fb000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080031000  ,data:0x124080031000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802aa000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080295000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x1240800c4000  ,data:0x1240800c4000 ,dtype:9 ,device:1 ,shape:32 1 16  ,stride:16 16 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x124080295000  ,data:0x124080295000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240802f2000  ,data:0x1240802f2000 ,dtype:9 ,device:1 ,shape:32 1 16  ,stride:16 16 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124080031000  ,data:0x124080031000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x1240802f2000  ,data:0x1240802f2000 ,dtype:9 ,device:1 ,shape:32 1 16  ,stride:16 16 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x1240802af000  ,data:0x1240802af000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802af000 ,dtype:9 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240801d6000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803df000 ,dtype:9 ,shape:32 64 1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e2000 ,dtype:9 ,shape:32 64 1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080200000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080241000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802af000 ,dtype:9 ,shape:32 64 8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080282000 ,dtype:9 ,shape:32 64 8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e8000 ,dtype:9 ,shape:32 8 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240801c5000 ,dtype:9 ,shape:32 8 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124080282000  ,data:0x124080282000 ,dtype:9 ,device:1 ,shape:32 64 8  ,stride:512 8 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240801c5000  ,data:0x1240801c5000 ,dtype:9 ,device:1 ,shape:32 8 32  ,stride:256 32 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124080010000  ,data:0x124080010000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e5000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803da000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTen2023-10-09 13:03:22,626 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+sor(handle:0x124080010000  ,data:0x124080010000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803da000  ,data:0x1240803da000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080051000  ,data:0x124080051000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802aa000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080295000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x1240803e2000  ,data:0x1240803e2000 ,dtype:9 ,device:1 ,shape:32 64 1  ,stride:64 1 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x124080295000  ,data:0x124080295000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240803f1000  ,data:0x1240803f1000 ,dtype:9 ,device:1 ,shape:32 64 1  ,stride:64 1 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124080051000  ,data:0x124080051000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x1240803f1000  ,data:0x1240803f1000 ,dtype:9 ,device:1 ,shape:32 64 1  ,stride:64 1 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124080241000  ,data:0x124080241000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080241000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080200000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802aa000 ,dtype:9 ,shape:64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080295000 ,dtype:9 ,shape:64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001200000 ,dtype:9 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124002a00000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124002600000 ,dtype:9 ,shape:168 52 38 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124001600000 ,dtype:9 ,shape:168 52 38 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124004400000 ,dtype:9 ,shape:168 38 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124001800000 ,dtype:9 ,shape:168 38 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124001600000  ,data:0x124001600000 ,dtype:9 ,device:1 ,shape:168 52 38  ,stride:1976 38 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x124001800000  ,data:0x124001800000 ,dtype:9 ,device:1 ,shape:168 38 64  ,stride:2432 64 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124001e00000  ,data:0x124001e00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803f6000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240800c4000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124001e00000  ,data:0x124001e00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240800c4000  ,data:0x1240800c4000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124001a00000  ,data:0x124001a00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803fb000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802f2000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(han2023-10-09 13:03:22,971 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+dle:0x124080295000  ,data:0x124080295000 ,dtype:9 ,device:1 ,shape:64  ,stride:1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240802f2000  ,data:0x1240802f2000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240803da000  ,data:0x1240803da000 ,dtype:9 ,device:1 ,shape:64  ,stride:1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124001a00000  ,data:0x124001a00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x1240803da000  ,data:0x1240803da000 ,dtype:9 ,device:1 ,shape:64  ,stride:1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124002a00000  ,data:0x124002a00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124002a00000 ,dtype:9 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124001200000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803f6000 ,dtype:9 ,shape:2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802aa000 ,dtype:9 ,shape:2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800c4000 ,dtype:9 ,shape:8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803da000 ,dtype:9 ,shape:8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080295000 ,dtype:9 ,shape:2 4 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803fb000 ,dtype:9 ,shape:2 4 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240803da000 ,dtype:9 ,shape:8 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x11796db0  ,data:0x11796db0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x117fc950  ,data:0x117fc950 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x104230e0  ,data:0x104230e0 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240803fb000  ,data:0x1240803fb000 ,dtype:9 ,device:1 ,shape:2 4 2  ,stride:8 2 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x12408029b000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080298000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x124080298000  ,data:0x124080298000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e3000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e4000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x1240802aa000  ,data:0x1240802aa000 ,dtype:9 ,device:1 ,shape:2  ,stride:1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803e4000  ,data:0x1240803e4000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x2023-10-09 13:03:23,151 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+1240802f2000  ,data:0x1240802f2000 ,dtype:9 ,device:1 ,shape:2  ,stride:1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x1240802f2000  ,data:0x1240802f2000 ,dtype:9 ,device:1 ,shape:2  ,stride:1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:9 ,shape:0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:9 ,shape:0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802aa000 ,dtype:9 ,shape:8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080295000 ,dtype:9 ,shape:8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080298000 ,dtype:9 ,shape:2 4 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240800c4000 ,dtype:9 ,shape:2 4 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x124080295000 ,dtype:9 ,shape:8 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x10361200  ,data:0x10361200 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x115ba670  ,data:0x115ba670 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x117a4e70  ,data:0x117a4e70 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240800c4000  ,data:0x1240800c4000 ,dtype:9 ,device:1 ,shape:2 4 2  ,stride:8 2 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803f6000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x12408029b000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x12408029b000  ,data:0x12408029b000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f2000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803da000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:0 2  ,stride:2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803da000  ,data:0x1240803da000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:0 2  ,stride:2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:0 2  ,stride:2 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,s2023-10-09 13:03:23,157 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+2023-10-09 13:03:23,157 - ConformanceTest - ERROR - FileNotFound: No benchmark output data 'baddbmm_without_inplace::baddbmm_11.pth' was generated (No such file or directory: /home/xyl/docker_work_space/code/DIOPI/diopi_test/python/conformance/../data//outputs/baddbmm_without_inplace::baddbmm_11.pth)
+2023-10-09 13:03:23,157 - ConformanceTest - ERROR - FileNotFound: No benchmark output data 'baddbmm_without_inplace::baddbmm_12.pth' was generated (No such file or directory: /home/xyl/docker_work_space/code/DIOPI/diopi_test/python/conformance/../data//outputs/baddbmm_without_inplace::baddbmm_12.pth)
+2023-10-09 13:03:23,159 - ConformanceTest - ERROR - FileNotFound: No benchmark output data 'baddbmm_without_inplace::baddbmm_13.pth' was generated (No such file or directory: /home/xyl/docker_work_space/code/DIOPI/diopi_test/python/conformance/../data//outputs/baddbmm_without_inplace::baddbmm_13.pth)
+2023-10-09 13:03:23,159 - ConformanceTest - ERROR - FileNotFound: No benchmark output data 'baddbmm_without_inplace::baddbmm_14.pth' was generated (No such file or directory: /home/xyl/docker_work_space/code/DIOPI/diopi_test/python/conformance/../data//outputs/baddbmm_without_inplace::baddbmm_14.pth)
+2023-10-09 13:03:23,159 - ConformanceTest - ERROR - FileNotFound: No benchmark output data 'baddbmm_without_inplace::baddbmm_15.pth' was generated (No such file or directory: /home/xyl/docker_work_space/code/DIOPI/diopi_test/python/conformance/../data//outputs/baddbmm_without_inplace::baddbmm_15.pth)
+2023-10-09 13:03:23,160 - ConformanceTest - ERROR - FileNotFound: No benchmark output data 'baddbmm_without_inplace::baddbmm_16.pth' was generated (No such file or directory: /home/xyl/docker_work_space/code/DIOPI/diopi_test/python/conformance/../data//outputs/baddbmm_without_inplace::baddbmm_16.pth)
+2023-10-09 13:03:23,160 - ConformanceTest - ERROR - FileNotFound: No benchmark output data 'baddbmm_without_inplace::baddbmm_17.pth' was generated (No such file or directory: /home/xyl/docker_work_space/code/DIOPI/diopi_test/python/conformance/../data//outputs/baddbmm_without_inplace::baddbmm_17.pth)
+2023-10-09 13:03:23,160 - ConformanceTest - ERROR - FileNotFound: No benchmark output data 'baddbmm_without_inplace::baddbmm_18.pth' was generated (No such file or directory: /home/xyl/docker_work_space/code/DIOPI/diopi_test/python/conformance/../data//outputs/baddbmm_without_inplace::baddbmm_18.pth)
+2023-10-09 13:03:23,161 - ConformanceTest - ERROR - FileNotFound: No benchmark output data 'baddbmm_without_inplace::baddbmm_19.pth' was generated (No such file or directory: /home/xyl/docker_work_space/code/DIOPI/diopi_test/python/conformance/../data//outputs/baddbmm_without_inplace::baddbmm_19.pth)
+tride:0 2 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803da000 ,dtype:8 ,shape:2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080298000 ,dtype:8 ,shape:2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x12408029b000 ,dtype:8 ,shape:8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802aa000 ,dtype:8 ,shape:8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803f6000 ,dtype:8 ,shape:2 4 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080295000 ,dtype:8 ,shape:2 4 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240802aa000 ,dtype:8 ,shape:8 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x117cedc0  ,data:0x117cedc0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x115ab090  ,data:0x115ab090 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x115b8890  ,data:0x115b8890 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x124080295000  ,data:0x124080295000 ,dtype:8 ,device:1 ,shape:2 4 2  ,stride:8 2 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f2000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803fb000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803fb000  ,data:0x1240803fb000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e3000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e4000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080298000 ,dtype:8 ,shape:2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240801c7000 ,dtype:9 ,shape:2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x1240801c7000  ,data:0x1240801c7000 ,dtype:9 ,device:1 ,shape:2  ,stride:1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803e4000  ,data:0x1240803e4000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240803e5000  ,data:0x1240803e5000 ,dtype:9 ,device:1 ,shape:2  ,stride:1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803e5000 ,dtype:9 ,shape:2 )
+[addOutput:480]: Cast output[2023-10-09 13:03:23,510 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+0]: Tensor:( data:0x1240800c4000 ,dtype:8 ,shape:2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x1240800c4000  ,data:0x1240800c4000 ,dtype:8 ,device:1 ,shape:2  ,stride:1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:8 ,shape:0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:8 ,shape:0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080298000 ,dtype:8 ,shape:8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803f6000 ,dtype:8 ,shape:8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080295000 ,dtype:8 ,shape:2 4 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x12408029b000 ,dtype:8 ,shape:2 4 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240803f6000 ,dtype:8 ,shape:8 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x11a070f0  ,data:0x11a070f0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x115a6090  ,data:0x115a6090 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x11eeb020  ,data:0x11eeb020 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x12408029b000  ,data:0x12408029b000 ,dtype:8 ,device:1 ,shape:2 4 2  ,stride:8 2 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803da000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803fb000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803fb000  ,data:0x1240803fb000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802aa000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240800c4000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:8 ,shape:0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:9 ,shape:0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:0 2  ,stride:2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(ha2023-10-09 13:03:23,515 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+ndle:0x1240800c4000  ,data:0x1240800c4000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:0 2  ,stride:2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:9 ,shape:0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:8 ,shape:0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:0 2  ,stride:2 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0  ,data:0 ,dtype:8 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:8 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802af000 ,dtype:10 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080051000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080010000 ,dtype:10 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080072000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080200000 ,dtype:10 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802f9000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240801d0000 ,dtype:10 ,shape:32 32 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080281000 ,dtype:9 ,shape:32 32 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x1240802f9000  ,data:0x1240802f9000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x124080281000  ,data:0x124080281000 ,dtype:9 ,device:1 ,shape:32 32 16  ,stride:512 16 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124080093000  ,data:0x124080093000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080292000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080295000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080093000  ,data:0x124080093000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x124080295000  ,data:0x124080295000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x12408033a000  ,data:0x12408033a000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080298000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803f6000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080051000  ,data:0x124080051000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803f6000  ,data:0x1240803f6000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x12408035b000  ,data:0x12408035b000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x12408033a000  ,data:0x12408033a000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x12408035b000  ,data:0x12408035b000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124080072000  ,data:0x124080072000 2023-10-09 13:03:23,527 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+2023-10-09 13:03:23,538 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080072000 ,dtype:9 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080010000 ,dtype:10 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f9000 ,dtype:10 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802af000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080200000 ,dtype:10 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080051000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x12408037a000 ,dtype:10 ,shape:32 64 8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240801d0000 ,dtype:9 ,shape:32 64 8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080281000 ,dtype:10 ,shape:32 8 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e8000 ,dtype:9 ,shape:32 8 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x1240801d0000  ,data:0x1240801d0000 ,dtype:9 ,device:1 ,shape:32 64 8  ,stride:512 8 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240803e8000  ,data:0x1240803e8000 ,dtype:9 ,device:1 ,shape:32 8 32  ,stride:256 32 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124080400000  ,data:0x124080400000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080292000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803f6000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080400000  ,data:0x124080400000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803f6000  ,data:0x1240803f6000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080441000  ,data:0x124080441000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080295000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080298000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x1240802af000  ,data:0x1240802af000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x124080298000  ,data:0x124080298000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080482000  ,data:0x124080482000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124080441000  ,data:0x124080441000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x124080482000  ,data:0x124080482000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124080051000  ,data:0x124080051000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080051000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080200000 ,dtype:10 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124005400000 ,dtype:10 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124001e00000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124005a00000 ,dtype:10 ,shape:168 52 64 )
+[addOutput:480]: Cast outp2023-10-09 13:03:23,592 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+ut[0]: Tensor:( data:0x124002a00000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001200000 ,dtype:10 ,shape:168 52 38 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124004400000 ,dtype:9 ,shape:168 52 38 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001a00000 ,dtype:10 ,shape:168 38 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124002600000 ,dtype:9 ,shape:168 38 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124004400000  ,data:0x124004400000 ,dtype:9 ,device:1 ,shape:168 52 38  ,stride:1976 38 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x124002600000  ,data:0x124002600000 ,dtype:9 ,device:1 ,shape:168 38 64  ,stride:2432 64 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124004000000  ,data:0x124004000000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080295000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803f6000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124004000000  ,data:0x124004000000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803f6000  ,data:0x1240803f6000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124004c00000  ,data:0x124004c00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080298000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803fb000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124001e00000  ,data:0x124001e00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803fb000  ,data:0x1240803fb000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124003800000  ,data:0x124003800000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124004c00000  ,data:0x124004c00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x124003800000  ,data:0x124003800000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124002a00000  ,data:0x124002a00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124002a00000 ,dtype:9 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124005a00000 ,dtype:10 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080298000 ,dtype:10 ,shape:16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803f6000 ,dtype:9 ,shape:16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802af000 ,dtype:10 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080091000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080010000 ,dtype:10 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080200000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240801d0000 ,dtype:10 ,shape:32 32 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080241000 ,dtype:9 ,shape:32 32 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124080200000  ,data:0x124080200000 ,2023-10-09 13:03:23,601 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x124080241000  ,data:0x124080241000 ,dtype:9 ,device:1 ,shape:32 32 16  ,stride:512 16 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124080252000  ,data:0x124080252000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803fb000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803da000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080252000  ,data:0x124080252000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803da000  ,data:0x1240803da000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240802f9000  ,data:0x1240802f9000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800c4000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x12408029b000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x1240803f6000  ,data:0x1240803f6000 ,dtype:9 ,device:1 ,shape:16  ,stride:1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x12408029b000  ,data:0x12408029b000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080295000  ,data:0x124080295000 ,dtype:9 ,device:1 ,shape:16  ,stride:1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x1240802f9000  ,data:0x1240802f9000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x124080295000  ,data:0x124080295000 ,dtype:9 ,device:1 ,shape:16  ,stride:1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124080091000  ,data:0x124080091000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080091000 ,dtype:9 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802af000 ,dtype:10 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240801f1000 ,dtype:10 ,shape:64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e3000 ,dtype:9 ,shape:64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080010000 ,dtype:10 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080211000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080091000 ,dtype:10 ,shape:32 64 8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240801d0000 ,dtype:9 ,shape:32 64 8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080200000 ,dtype:10 ,shape:32 8 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240800b2000 ,dtype:9 ,shape:32 8 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x1240801d0000  ,data:0x1240801d0000 ,dtype:9 ,device:1 ,shape:32 64 8  ,stride:512 8 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240800b2000  ,data:0x1240800b2000 ,dtype:9 ,device:1 ,shape:32 8 32  ,stride:256 32 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124080252000  ,data:0x124080252000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080298000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240801f6000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080252000  ,data:0x124080252000 ,dtype:9 2023-10-09 13:03:23,610 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240801f6000  ,data:0x1240801f6000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240802f9000  ,data:0x1240802f9000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803fb000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803f6000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x1240803e3000  ,data:0x1240803e3000 ,dtype:9 ,device:1 ,shape:64 32  ,stride:32 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803f6000  ,data:0x1240803f6000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240800bb000  ,data:0x1240800bb000 ,dtype:9 ,device:1 ,shape:64 32  ,stride:32 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x1240802f9000  ,data:0x1240802f9000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x1240800bb000  ,data:0x1240800bb000 ,dtype:9 ,device:1 ,shape:64 32  ,stride:32 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124080211000  ,data:0x124080211000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080211000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080010000 ,dtype:10 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800b2000 ,dtype:10 ,shape:1 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240800b9000 ,dtype:9 ,shape:1 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124005a00000 ,dtype:10 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124001e00000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001a00000 ,dtype:10 ,shape:168 52 38 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124002600000 ,dtype:9 ,shape:168 52 38 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001200000 ,dtype:10 ,shape:168 38 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124004400000 ,dtype:9 ,shape:168 38 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124002600000  ,data:0x124002600000 ,dtype:9 ,device:1 ,shape:168 52 38  ,stride:1976 38 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x124004400000  ,data:0x124004400000 ,dtype:9 ,device:1 ,shape:168 38 64  ,stride:2432 64 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124002a00000  ,data:0x124002a00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800bd000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803f6000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124002a00000  ,data:0x124002a00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803f6000  ,data:0x1240803f6000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124003800000  ,data:0x124003800000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080298000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803fb000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x1240800b9000  ,data:0x1240800b9000 ,dtype:9 ,dev2023-10-09 13:03:23,641 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+ice:1 ,shape:1 52 64  ,stride:3328 64 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803fb000  ,data:0x1240803fb000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240803e8000  ,data:0x1240803e8000 ,dtype:9 ,device:1 ,shape:1 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124003800000  ,data:0x124003800000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x1240803e8000  ,data:0x1240803e8000 ,dtype:9 ,device:1 ,shape:1 52 64  ,stride:3328 64 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124001e00000  ,data:0x124001e00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001e00000 ,dtype:9 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124005a00000 ,dtype:10 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240801cc000 ,dtype:10 ,shape:32 1 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080298000 ,dtype:9 ,shape:32 1 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802af000 ,dtype:10 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240801d0000 ,dtype:9 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080200000 ,dtype:10 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080010000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080091000 ,dtype:10 ,shape:32 32 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080281000 ,dtype:9 ,shape:32 32 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124080010000  ,data:0x124080010000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x124080281000  ,data:0x124080281000 ,dtype:9 ,device:1 ,shape:32 32 16  ,stride:512 16 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124080051000  ,data:0x124080051000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803f6000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803fb000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080051000  ,data:0x124080051000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803fb000  ,data:0x1240803fb000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240802f9000  ,data:0x1240802f9000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080295000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x12408029b000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080298000  ,data:0x124080298000 ,dtype:9 ,device:1 ,shape:32 1 16  ,stride:16 16 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x12408029b000  ,data:0x12408029b000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124080292000  ,data:0x124080292000 ,dtype:9 ,device:1 ,shape:32 1 16  ,stride:16 16 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x1240802f9000  ,data:0x1240802f9000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x124080292000  ,data:0x124080292000 ,dtype:9 ,device:1 ,shape:32 1 16  ,stride:16 16 1 )
+[addOutput:498]: Add outp2023-10-09 13:03:23,651 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+2023-10-09 13:03:23,660 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+ut[0]:AscendTensor(handle:0x1240801d0000  ,data:0x1240801d0000 ,dtype:9 ,device:1 ,shape:32 64 16  ,stride:1024 16 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240801d0000 ,dtype:9 ,shape:32 64 16 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802af000 ,dtype:10 ,shape:32 64 16 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800b2000 ,dtype:10 ,shape:32 64 1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e3000 ,dtype:9 ,shape:32 64 1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080200000 ,dtype:10 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080010000 ,dtype:9 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240801d0000 ,dtype:10 ,shape:32 64 8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080051000 ,dtype:9 ,shape:32 64 8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080281000 ,dtype:10 ,shape:32 8 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803e8000 ,dtype:9 ,shape:32 8 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124080051000  ,data:0x124080051000 ,dtype:9 ,device:1 ,shape:32 64 8  ,stride:512 8 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240803e8000  ,data:0x1240803e8000 ,dtype:9 ,device:1 ,shape:32 8 32  ,stride:256 32 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124080062000  ,data:0x124080062000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080292000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080295000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080062000  ,data:0x124080062000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x124080295000  ,data:0x124080295000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240802f9000  ,data:0x1240802f9000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803fb000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803f6000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x1240803e3000  ,data:0x1240803e3000 ,dtype:9 ,device:1 ,shape:32 64 1  ,stride:64 1 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803f6000  ,data:0x1240803f6000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240803f1000  ,data:0x1240803f1000 ,dtype:9 ,device:1 ,shape:32 64 1  ,stride:64 1 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x1240802f9000  ,data:0x1240802f9000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x1240803f1000  ,data:0x1240803f1000 ,dtype:9 ,device:1 ,shape:32 64 1  ,stride:64 1 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124080010000  ,data:0x124080010000 ,dtype:9 ,device:1 ,shape:32 64 32  ,stride:2048 32 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080010000 ,dtype:9 ,shape:32 64 32 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080200000 ,dtype:10 ,shape:32 64 32 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080295000 ,dtype:10 ,shape:64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803fb000 ,dtype:9 ,shape:64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124005a00000 ,dtype:10 ,shape:1682023-10-09 13:03:23,691 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+ 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124003800000 ,dtype:9 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001200000 ,dtype:10 ,shape:168 52 38 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124004400000 ,dtype:9 ,shape:168 52 38 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124001a00000 ,dtype:10 ,shape:168 38 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124002600000 ,dtype:9 ,shape:168 38 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0x124004400000  ,data:0x124004400000 ,dtype:9 ,device:1 ,shape:168 52 38  ,stride:1976 38 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x124002600000  ,data:0x124002600000 ,dtype:9 ,device:1 ,shape:168 38 64  ,stride:2432 64 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0x124002a00000  ,data:0x124002a00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x12408029b000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080298000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124002a00000  ,data:0x124002a00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x124080298000  ,data:0x124080298000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x124001e00000  ,data:0x124001e00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240800c4000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803da000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x1240803fb000  ,data:0x1240803fb000 ,dtype:9 ,device:1 ,shape:64  ,stride:1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803da000  ,data:0x1240803da000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240803f6000  ,data:0x1240803f6000 ,dtype:9 ,device:1 ,shape:64  ,stride:1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0x124001e00000  ,data:0x124001e00000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x1240803f6000  ,data:0x1240803f6000 ,dtype:9 ,device:1 ,shape:64  ,stride:1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0x124003800000  ,data:0x124003800000 ,dtype:9 ,device:1 ,shape:168 52 64  ,stride:3328 64 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124003800000 ,dtype:9 ,shape:168 52 64 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124005a00000 ,dtype:10 ,shape:168 52 64 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080298000 ,dtype:10 ,shape:2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x124080295000 ,dtype:9 ,shape:2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:10 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x12408029b000 ,dtype:10 ,shape:8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240800c4000 ,dtype:9 ,shape:8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803f6000 ,dtype:10 ,shape:2 4 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803da000 ,dtype:9 ,shape:2 4 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240800c4000 ,dtype:9 ,shape:8 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x11762c30  ,d2023-10-09 13:03:23,697 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+ata:0x11762c30 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x115a2280  ,data:0x115a2280 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x11598a10  ,data:0x11598a10 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x1240803da000  ,data:0x1240803da000 ,dtype:9 ,device:1 ,shape:2 4 2  ,stride:8 2 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802aa000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240802f2000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240802f2000  ,data:0x1240802f2000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240801c7000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240801cc000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0x124080295000  ,data:0x124080295000 ,dtype:9 ,device:1 ,shape:2  ,stride:1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240801cc000  ,data:0x1240801cc000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0x1240803fb000  ,data:0x1240803fb000 ,dtype:9 ,device:1 ,shape:2  ,stride:1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0x1240803fb000  ,data:0x1240803fb000 ,dtype:9 ,device:1 ,shape:2  ,stride:1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:10 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:10 ,shape:0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:9 ,shape:0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:10 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802aa000 ,dtype:10 ,shape:8 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803f6000 ,dtype:9 ,shape:8 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240803fb000 ,dtype:10 ,shape:2 4 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x12408029b000 ,dtype:9 ,shape:2 4 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:388]: AsStrided input[0]: Tensor:( data:0x1240803f6000 ,dtype:9 ,shape:8 )
+[addConstInput:279]: AsStrided input[1]:AscendTensor(handle:0x115b01c0  ,data:0x115b01c0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[2]:AscendTensor(handle:0x117f9ba0  ,data:0x117f9ba0 ,dtype:6 ,device:0 ,shape:3  ,stride:1 )
+[addConstInput:279]: AsStrided input[3]:AscendTensor(handle:0x10379350  ,data:0x10379350 ,dtype:6 ,device:0 ,shape:1  ,stride:1 )
+[addOutput:498]: AsStrided output[0]:AscendTensor(handle:0  ,data:0 2023-10-09 13:03:23,702 - ConformanceTest - INFO - Run diopi_functions.baddbmm succeed
+,dtype:9 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[run:673]: opname:AsStrided,ins.size:4,outs.size:1
+
+[addInput:408]: BatchMatMul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 4  ,stride:0 4 1 )
+[addInput:408]: BatchMatMul input[1]:AscendTensor(handle:0x12408029b000  ,data:0x12408029b000 ,dtype:9 ,device:1 ,shape:2 4 2  ,stride:8 2 1 )
+[addOutput:498]: BatchMatMul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:BatchMatMul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x124080298000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240803da000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240803da000  ,data:0x1240803da000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0x1240802f2000 ,dtype:10 ,shape:1 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0x1240800c4000 ,dtype:9 ,shape:1 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
+[addInput:408]: Mul input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:0 2  ,stride:2 1 )
+[addInput:408]: Mul input[1]:AscendTensor(handle:0x1240800c4000  ,data:0x1240800c4000 ,dtype:9 ,device:1 ,shape:1  ,stride:1 )
+[addOutput:498]: Mul output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:0 2  ,stride:2 1 )
+[run:673]: opname:Mul,ins.size:2,outs.size:1
+
+[addInput:408]: Add input[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[addInput:408]: Add input[1]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:0 2  ,stride:2 1 )
+[addOutput:498]: Add output[0]:AscendTensor(handle:0  ,data:0 ,dtype:9 ,device:1 ,shape:2 0 2  ,stride:0 2 1 )
+[run:673]: opname:Add,ins.size:2,outs.size:1
+
+[addInput:388]: Cast input[0]: Tensor:( data:0 ,dtype:9 ,shape:2 0 2 )
+[addOutput:480]: Cast output[0]: Tensor:( data:0 ,dtype:10 ,shape:2 0 2 )
+[run:673]: opname:Cast,ins.size:1,outs.size:1
+
