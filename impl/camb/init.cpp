@@ -8,20 +8,19 @@
 
 bool isEnvStateOn(const char* envName) {
     char* val = getenv(envName);
-    // the val is nullptr, 0, OFF or off will not turn the record on, otherwise turn it off
+    // the val is nullptr, 0, OFF or off will turn the state off, otherwise turn it on.
     if (!val || !strcmp(val, "0") || !strcmp(val, "OFF") || !strcmp(val, "off")) {
-        // turn record on
-        return true;
+        return false;
     }
-    return false;
+    return true;
 }
 
 bool isRecordOnFunc() { return isEnvStateOn("DIOPI_RECORD_ENV"); }
 
 // global vars are listed bellow
-bool isRecordOn;
+bool isRecordOn = false;
 
-int initFunc() {
+static int initFunc() {
     // init func is called  here;
     isRecordOn = isRecordOnFunc();
     return 0;
