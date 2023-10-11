@@ -198,5 +198,40 @@ aclFormat AscendTensor::getAclDataFormat() const {
     return ACL_FORMAT_ND;
 }
 
+aclDataType AscendTensor::getAclDataType() const {
+    switch (dtype_) {
+        case diopi_dtype_float16:
+            return ACL_FLOAT16;
+        case diopi_dtype_float32:
+            return ACL_FLOAT;
+        case diopi_dtype_float64:
+            return ACL_DOUBLE;
+        case diopi_dtype_int8:
+            return ACL_INT8;
+        case diopi_dtype_uint8:
+            return ACL_UINT8;
+        case diopi_dtype_int16:
+            return ACL_INT16;
+        case diopi_dtype_uint16:
+            return ACL_UINT16;
+        case diopi_dtype_int32:
+            return ACL_INT32;
+        case diopi_dtype_uint32:
+            return ACL_UINT32;
+        case diopi_dtype_int64:
+            return ACL_INT64;
+        case diopi_dtype_uint64:
+            return ACL_UINT64;
+        case diopi_dtype_bool:
+            return ACL_BOOL;
+        case diopi_dtype_complex64:
+            return ACL_COMPLEX64;
+        case diopi_dtype_complex128:
+            return ACL_COMPLEX128;
+        default:
+            return ACL_DT_UNDEFINED;
+    }
+}
+
 }  // namespace ascend
 }  // namespace impl

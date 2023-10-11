@@ -24,8 +24,13 @@ extern "C" diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_
     diopiGetTensorElemSize(input, &elemsize);
     diopiGetTensorDtype(input, &dtype);
 
+    if(dtype == diopi_dtype_float64)
+    AscendTensor inputCopy(input);
+    AscendTensor outputCopy(out);
+
     AclOpRunner<3, 1> runner("MatMulV2", ctx);
 
+    // if dim of input > 2, convetr it from (a, b, c) to (a * b, c)
     if (inputSize.len > 2) {
         const void* data;
         diopiGetTensorDataConst(input, &data);

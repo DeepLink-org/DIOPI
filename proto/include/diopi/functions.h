@@ -3347,6 +3347,51 @@ DIOPI_API diopiError_t diopiAmax(diopiContextHandle_t ctx, diopiTensorHandle_t o
 // this contiguous func is temporary, please do not use.
 DIOPI_API diopiError_t diopiContiguous(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, diopiMemoryFormat_t memoryFormat);
 
+/**
+ * @brief          Check inf/NaN and unscale gradients for AMP GradScaler.
+ * @details        Multiplies each tensor in scaled_grads by inv_scale in-place.
+ *                 If any element of any tensor in scaled_grads is inf or NaN,
+ *                 sets found_inf to 1.0.
+ * @param[in,out]  scaled_grads      Array of scaled gradient tensors. May
+ *                                   contain infs or NaNs.
+ * @param[in]      num_scaled_grads  Size of the tensor array @p scaled_grads.
+ * @param[out]     found_inf         A single-element float32 tensor to which
+ *                                   1.0 will be written if any gradient contain
+ *                                   infs/nans. Pre-zeroing found_inf, if
+ *                                   appropriate, is the responsibility of the
+ *                                   caller.
+ * @param[in]      inv_scale         A single-element float32 tensor, storing
+ *                                   the inverse of the scale factor by which @p
+ *                                   scaled_grads are currently multiplied.
+ */
+DIOPI_API diopiError_t diopiAmpForeachNonFiniteCheckAndUnscaleInp(diopiContextHandle_t ctx, diopiTensorHandle_t* scaled_grads, int64_t num_scaled_grads,
+                                                                  diopiTensorHandle_t found_inf, diopiConstTensorHandle_t inv_scale);
+
+/**
+ * @brief          Updates the scale tensor in place for AMP GradScaler.
+ * @param[in,out]  current_scale    A one-element float32 tensor containing the
+ *                                  scale value.
+ * @param[in,out]  growth_tracker   A one-element int32 tensor containing the
+ *                                  number of recent consecutive unskipped
+ *                                  steps.
+ * @param[in]      found_inf        A one-element float32 tensor. If > 0,
+ *                                  indicates that infs/NaNs were found by the
+ *                                  relevant prior
+ *                                  #diopiAmpForeachNonFiniteCheckAndUnscaleInp
+ *                                  call, and 0 if no infs/NaNs were found.
+ * @param[in]      growth_factor    Multiplier if no infs/NaNs were found
+ *                                  (typically slightly > 1).
+ * @param[in]      backoff_factor   Multiplier if infs/NaNs were found
+ *                                  (typically 0.5).
+ * @param[in]      growth_interval  Number of consecutive unskipped steps that
+ *                                  must occur for current_scale to be
+ *                                  multiplied by growth_factor.
+ * @see https://github.com/DeepLink-org/pytorch/blob/main/aten/src/ATen/native/cuda/AmpKernels.cu#L181
+ */
+DIOPI_API diopiError_t diopiAmpUpdateScaleInp(diopiContextHandle_t ctx, diopiTensorHandle_t current_scale, diopiTensorHandle_t growth_tracker,
+                                              diopiConstTensorHandle_t found_inf, double scale_growth_factor, double scale_backoff_factor,
+                                              int32_t growth_interval);
+
 #if defined(__cplusplus)
 }
 #endif  // __cplusplus

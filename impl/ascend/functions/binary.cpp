@@ -205,8 +205,18 @@ extern "C" DIOPI_API diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, di
 
 DIOPI_API diopiError_t diopiMaximum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
     diopiDtype_t dtype;
-    diopiGetTensorDtype(out, &dtype);
-    AclOpRunner<2, 1>("Maximum", ctx).addInput(input, dtype).addInput(other, dtype).addOutput(out).run();
+    diopiGetTensorDtype(input, &dtype);
+    // as this op do not support BOOL, UIT8, and Int16, these three data types are converted to Int32
+    if (dtype == diopi_dtype_bool || dtype == diopi_dtype_uint8 || dtype == diopi_dtype_int16) {
+        AscendTensor inputCopy(input);
+        AscendTensor otherCopy(other);
+        castTensor(ctx, inputCopy, diopi_dtype_int32);
+        castTensor(ctx, otherCopy, diopi_dtype_int32);
+        AclOpRunner<2, 1>("Maximum", ctx).addInput(inputCopy).addInput(otherCopy).addOutput(out).run();
+    } else {
+        AclOpRunner<2, 1>("Maximum", ctx).addInput(input, dtype).addInput(other, dtype).addOutput(out).run();
+    }
+
     return diopiSuccess;
 }
 
