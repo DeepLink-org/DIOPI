@@ -204,7 +204,7 @@ jobs:
     needs: Gen-Data
     if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
     env:
-      run_test: "python"
+      run_test: "coverage run -p"
     steps:
       - name: NHWC-32bit-test
         run: |
@@ -212,7 +212,6 @@ jobs:
           set -e
           export CI=true
           export USE_COVERAGE=ON
-          run_test="coverage run -p"
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=20 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && ${run_test} main.py --mode run_test --fname batch_norm --nhwc &&
           ${run_test} main.py --mode run_test --fname index_select --four_bytes && ${run_test} main.py --mode run_test --fname arange --four_bytes'
@@ -262,7 +261,7 @@ jobs:
     needs: [Gen-Data, Build-Camb]
     if: ${{ contains( needs.Rsync.outputs.output, 'CAMB' ) }}
     env:
-      run_test: "python"
+      run_test: "coverage run -p"
     steps:
       - name: test
         run: |
@@ -270,7 +269,6 @@ jobs:
           set -e
           export CI=true
           export USE_COVERAGE=ON
-          run_test="coverage run -p"
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && ls
           rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
