@@ -70,24 +70,20 @@ extern "C" diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTenso
     diopiGetTensorDtype(input, &dtype);
     diopiGetTensorDtype(gradInput, &dtypeGrad);
 
-    // Take out the last two data of gradOutSize and initialize dimsGradOut
     std::vector<int64_t> dimsGradOut({gradOutSize.data[gradOutSize.len - 2], gradOutSize.data[gradOutSize.len - 1]});
-
-    // Accumulate the previous 0~n-1 dim to the first dim
     for (int i = 0; i < gradOutSize.len - 2; i++) {
         dimsGradOut[0] = dimsGradOut[0] * gradOutSize.data[i];
     }
-    const void* dataGradOutput;
-    diopiGetTensorDataConst(gradOutput, &dataGradOutput);
+    const void* dataGrad;
+    diopiGetTensorDataConst(gradOutput, &dataGrad);
 
     std::vector<int64_t> dims({inputSize.data[inputSize.len - 2], inputSize.data[inputSize.len - 1]});
 
     AclOpRunner<2, 1> runner("MatMulV2", ctx);
-    runner.addInput(dataGradOutput, numelGradOut * elemSizeGrad, dimsGradOut, ACL_FORMAT_ND, dtypeGrad)
+    runner.addInput(dataGrad, numelGradOut * elemSizeGrad, dimsGradOut, ACL_FORMAT_ND, dtypeGrad)
         .addInput(weight)
         .setAttr<uint8_t>("transpose_x1", false)
         .setAttr<uint8_t>("transpose_x2", false);
-
     if (inputSize.len > 2) {
         void* data;
         diopiGetTensorData(gradInput, &data);
@@ -101,6 +97,10 @@ extern "C" diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTenso
     runner.run();
 
     AclOpRunner<2, 1> runner2("MatMulV2", ctx);
+    runner2.addInput(dataGrad, numelGradOut * elemSizeGrad, dimsGradOut, ACL_FORMAT_ND, dtypeGrad)
+        .setAttr<uint8_t>("transpose_x1", true)
+        .setAttr<uint8_t>("transpose_x2", false)
+        .addOutput(gradWeight);
     if (inputSize.len > 2) {
         const void* data;
         diopiGetTensorDataConst(input, &data);
@@ -108,11 +108,6 @@ extern "C" diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTenso
     } else {
         runner2.addInput(input);
     }
-    
-    runner2.addInput(dataGradOutput, numelGradOut * elemSizeGrad, dimsGradOut, ACL_FORMAT_ND, dtypeGrad)
-        .setAttr<uint8_t>("transpose_x1", true)
-        .setAttr<uint8_t>("transpose_x2", false)
-        .addOutput(gradWeight);
     runner2.run();
 
     if (gradBias) {
