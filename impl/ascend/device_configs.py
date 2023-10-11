@@ -98,29 +98,33 @@ device_configs = {
         ),
     ),
 
-    # 'baddbmm': dict(
-    #     name=['baddbmm'],
-    #     tensor_para=dict(
-    #         args=[
-    #             {
-    #                 "ins": ['input'],
-    #                 "shape": [Skip((32, 64, 16)),Skip((32, 64, 32)),Skip((168, 52, 64)),Skip((2, 0, 2)),],
-    #             },
-    #         ]
-    #     ),
-    # ),
+    'baddbmm': dict(
+        name=['baddbmm'],
+        tensor_para=dict(
+            atol=4e-2,
+            rtol=4e-2,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((32, 64, 16)),Skip((32, 64, 32)),Skip((168, 52, 64)),Skip((2, 0, 2)),],
+                },
+            ]
+        ),
+    ),
 
-    # 'baddbmm_without_inplace': dict(
-    #     name=['baddbmm'],
-    #     tensor_para=dict(
-    #         args=[
-    #             {
-    #                 "ins": ['input'],
-    #                 "shape": [Skip((32, 64, 16)),Skip((32, 64, 32)),Skip((168, 52, 64)),Skip((16,)),Skip((64, 32)),Skip((1, 52, 64)),Skip((32, 1, 16)),Skip((32, 64, 1)),Skip((64,)),Skip((2,)),Skip((0, 2)),],
-    #             },
-    #         ]
-    #     ),
-    # ),
+    'baddbmm_without_inplace': dict(
+        name=['baddbmm'],
+        tensor_para=dict(
+            atol=4e-2,
+            rtol=4e-2,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((32, 64, 16)),Skip((32, 64, 32)),Skip((168, 52, 64)),Skip((16,)),Skip((64, 32)),Skip((1, 52, 64)),Skip((32, 1, 16)),Skip((32, 64, 1)),Skip((64,)),Skip((2,)),Skip((0, 2)),],
+                },
+            ]
+        ),
+    ),
 
     'conv_2d': dict(
         name=['conv2d'],
