@@ -32,7 +32,7 @@ endif()
 file(GLOB_RECURSE IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions/*.cpp common/*.cpp)
 file(GLOB_RECURSE IMPL_SRC_MMCV RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions_mmcv/*.cpp functions/*.mlu )
 file(GLOB_RECURSE IMPL_SRC_MMCV_MLU RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions_mmcv/*.mlu)
-list(APPEND IMPL_SRC mlu_ops_helper.cpp cnnl_helper.cpp diopi_helper.cpp)
+list(APPEND IMPL_SRC mlu_ops_helper.cpp cnnl_helper.cpp diopi_helper.cpp init.cpp)
 list(APPEND IMPL_SRC ${IMPL_SRC_MMCV})
 list(APPEND IMPL_SRC ${IMPL_SRC_MMCV_MLU})
 
