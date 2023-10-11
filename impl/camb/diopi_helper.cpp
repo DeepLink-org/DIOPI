@@ -12,6 +12,7 @@ namespace camb {
 void getFuncName(const char* expr, char* name) {
     for (int i = 0; i < strlen(expr); ++i) {
         if (expr[i] == '(') {
+            name[i] = '\0';
             break;
         }
         name[i] = expr[i];
