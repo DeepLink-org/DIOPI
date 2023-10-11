@@ -43,7 +43,7 @@ else
     echo "C无增量代码，或测试未覆盖到"
 fi
 python scripts/increment_coverage.py $ROOT_DIR/coverage/ $require_coverage diopi_test/python/.coverage
-source IS_cover.txt
+source coverage/IS_cover.txt
 if  [ $IS_cover == 'True' ];then
   exit 0
 else
