@@ -1,5 +1,6 @@
 import re
 from coverage import Coverage
+from coverage.exceptions import NoSource
 import sys,os
 
 CONTENT = 'export IS_cover=False\n'
@@ -13,7 +14,7 @@ def C_coverage(coveragedir, require_coverage):
 
     for line in lines:
         coverage_percent = re.search(r'\|(.+?)%', line)
-        if coverage_percent and float(coverage_percent.group(1)) < int(require_coverage):
+        if coverage_percent and float(coverage_percent.group(1)) < float(require_coverage):
             with open(os.path.join(coveragedir, 'IS_cover.txt'), 'a') as file:
                 file.write(CONTENT)
 
@@ -30,8 +31,11 @@ def python_coverage(python_coverage_file, coveragedir):
     for line in lines:
         if line.endswith('.py\n'):
             filename = line[:-1]
-            file_report = cov.analysis2(filename)
-            filename, statements, excluded, missing, missing_formatted = file_report
+            try:
+                file_report = cov.analysis2(filename)
+                filename, statements, excluded, missing, missing_formatted = file_report
+            except NoSource:
+                pass
             if statements:
                 total_statements = len(statements)
                 total_missing = len(missing)
@@ -40,7 +44,7 @@ def python_coverage(python_coverage_file, coveragedir):
                 coverage_percent = (total_covered / total_statements) * 100
 
                 coverage_percent = round(coverage_percent, 1)
-                if coverage_percent < int(require_coverage):
+                if coverage_percent < float(require_coverage):
                     with open(os.path.join(coveragedir, 'IS_cover.txt'), 'a') as file:
                         file.write(CONTENT)
 

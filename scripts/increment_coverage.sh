@@ -7,30 +7,33 @@ echo "entering "$ROOT_DIR
 require_coverage=$1
 
 echo "==============C================"
-lcov -c -d . -o coverage/coverage.info
+lcov -c -d . -o coverage/coverage.info1
+if [ -s coverage/coverage.info1 ];then lcov --extract coverage/coverage.info1 "*/${ROOT_DIR#/mnt/*/}/*" --output-file coverage/coverage.info2 > /dev/null ;fi
+if [ -s coverage/coverage.info2 ];then lcov --remove coverage/coverage.info2 '*/platform/dep/*' -o coverage/coverage.info > /dev/null ;fi
 newcommit=`git rev-parse --short HEAD`
 oldcommit=`git ls-remote origin main | cut -c 1-7`
 git diff $oldcommit $newcommit --name-only | xargs -I {} realpath {} > coverage/gitdiff.txt 2>/dev/null || echo "error can be ignored"
-for dir in `cat coverage/gitdiff.txt`;do
-  skip=1
-  buffer=""
-  while IFS= read -r line; do
-      if [[ $line == "TN:"* ]]; then
-          buffer=$line
-          skip=1
-      elif [[ $line == *"SF:$dir" ]]; then
-          skip=0
-          echo "$buffer" >> "increment.info"
-          echo "$line" >> "increment.info"
-      elif [[ $skip -eq 0 ]]; then
-          echo "$line" >> "increment.info"
-      fi
-      if [[ $line == "end_of_record" ]]; then
-          skip=1
-      fi
-  done < "coverage/coverage.info"
-done
-
+if [ -s coverage/coverage.info ];then
+  for dir in `cat coverage/gitdiff.txt`;do
+    skip=1
+    buffer=""
+    while IFS= read -r line; do
+        if [[ $line == "TN:"* ]]; then
+            buffer=$line
+            skip=1
+        elif [[ $line == *"SF:$dir" ]]; then
+            skip=0
+            echo "$buffer" >> "increment.info"
+            echo "$line" >> "increment.info"
+        elif [[ $skip -eq 0 ]]; then
+            echo "$line" >> "increment.info"
+        fi
+        if [[ $line == "end_of_record" ]]; then
+            skip=1
+        fi
+    done < "coverage/coverage.info"
+  done
+fi
 echo "=============python============="
 cd diopi_test/python
 coverage combine
