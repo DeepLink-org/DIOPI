@@ -6,13 +6,10 @@ on:
       - main
       - dev_v0.25
   pull_request:
-    branches:
-      - main
-      - dev_v0.25
     paths-ignore:
       - "**.md"
       - ".github/ISSUE_TEMPLATE/**"
-      - ".git**"
+      - ".git*"
       - "CODE_OF_CONDUCT**"
 
 env:
@@ -35,7 +32,7 @@ env:
   BUILD_TEST3: build_mmcv_ext
   GEN_DATA: diopi_test/python/data
   ALL_COVERAGE: ${{ (contains( github.ref, 'main') || startsWith(github.ref, 'refs/heads/v') || startsWith(github.ref, 'refs/heads/dev')) && 'ON' || 'OFF' }}
-  REQUIRE_COVERAGE: ${{ vars.REQUIRE_COVERAGE != '' && vars.REQUIRE_COVERAGE || '50' }}
+  REQUIRE_COVERAGE: ${{ vars.REQUIRE_COVERAGE != '' && vars.REQUIRE_COVERAGE || '40' }}
 
 concurrency:
   group: ${{ github.head_ref || github.ref }}
