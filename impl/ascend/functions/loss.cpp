@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../common/acloprunner.hpp"
 
 namespace impl {
@@ -94,10 +92,8 @@ std::string getReductionStr(const diopiReduction_t reduction) {
     return reductionStr;
 }
 
-extern "C" {
-
-DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
-                                    diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
+diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
+                          diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
     auto totalWeightSizeVec = std::vector<int64_t>({1});
     auto totalWeightSize = vectorToDiopiSize(totalWeightSizeVec);
     diopiTensorHandle_t totalWeight, weightCopy;
@@ -119,9 +115,8 @@ DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
-                                            diopiReduction_t reduction, int64_t ignoreIndex) {
+diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
+                                  diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
     auto totalWeightSizeVec = std::vector<int64_t>({1});
     auto totalWeightSize = vectorToDiopiSize(totalWeightSizeVec);
     diopiTensorHandle_t weightCopy, totalWeight, out, inputCopy, targetCopy, gradInputCopy;
@@ -226,8 +221,8 @@ DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTenso
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
-                                             diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex, double labelSmoothing) {
+diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
+                                   diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex, double labelSmoothing) {
     diopiTensorHandle_t logTensor;
     makeTensorLike(ctx, &logTensor, input);
     diopiLogSoftmax(ctx, logTensor, input, 1);
@@ -236,9 +231,9 @@ DIOPI_API diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx, diopiTens
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                                     diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
-                                                     diopiReduction_t reduction, int64_t ignoreIndex, double labelSmoothing) {
+diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                           diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
+                                           diopiReduction_t reduction, int64_t ignoreIndex, double labelSmoothing) {
     diopiTensorHandle_t logTensor, gradLog;
     makeTensorLike(ctx, &logTensor, input);
     diopiLogSoftmax(ctx, logTensor, input, 1);
@@ -249,14 +244,14 @@ DIOPI_API diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, d
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiMSELoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
-                                    diopiReduction_t reduction) {
+diopiError_t diopiMSELoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
+                          diopiReduction_t reduction) {
     AclOpRunner<2, 1>("MseLoss", ctx).addInput(input).addInput(target).addOutput(out).setAttr<std::string>("reduction", getReductionStr(reduction)).run();
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiMSELossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiReduction_t reduction) {
+diopiError_t diopiMSELossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
+                                  diopiConstTensorHandle_t target, diopiReduction_t reduction) {
     AclOpRunner<3, 1>("MseLossGrad", ctx)
         .addInput(input)
         .addInput(target)
@@ -267,6 +262,5 @@ DIOPI_API diopiError_t diopiMSELossBackward(diopiContextHandle_t ctx, diopiTenso
     return diopiSuccess;
 }
 
-}  // extern "C"
 }  // namespace ascend
 }  // namespace impl
