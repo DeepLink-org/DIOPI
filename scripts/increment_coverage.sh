@@ -10,6 +10,7 @@ echo "==============C================"
 lcov -c -d . --include "*/${ROOT_DIR#/mnt/*/}/*" -o coverage/coverage.info
 newcommit=`git rev-parse --short HEAD`
 oldcommit=`git ls-remote origin main | cut -c 1-7`
+if [ -z $oldcommit ];then echo "can not get main commit" && exit 1;fi
 git diff $oldcommit $newcommit --name-only | xargs -I {} realpath {} > coverage/gitdiff.txt 2>/dev/null || echo "error can be ignored"
 for dir in `cat coverage/gitdiff.txt`;do
   skip=1
