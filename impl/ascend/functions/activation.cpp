@@ -29,8 +29,13 @@ diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
 
 diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t output,
                                   int64_t dim) {
+    AscendTensor gradOutputCopy(gradOutput);
+    AscendTensor OutputCopy(output);
+    diopiDtype_t execType = promoteTypes(gradOutputCopy.dtype(), OutputCopy.dtype());
+    if(execType == diopi_dtype_float64)
+        execType = diopi_dtype_float32;                                
     std::vector<int64_t> dimList = {dim};
-    AclOpRunner<2, 1>("SoftmaxGrad", ctx).addInput(output).addInput(gradOutput).setAttr<int64_t>("axes", dimList).addOutput(gradInput).run();
+    AclOpRunner<2, 1>("SoftmaxGrad", ctx).addInput(output, execType).addInput(gradOutput, execType).setAttr<int64_t>("axes", dimList).addOutput(gradInput).run();
     return diopiSuccess;
 }
 
