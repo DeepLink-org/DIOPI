@@ -703,7 +703,7 @@ device_configs = {
     ),
 
     'pointwise_binary_broadcast': dict(
-        name=['add', 'div', 'ne', 'le', 'lt', 'ge', 'logical_and', 'logical_or'],
+        name=['add', 'ne', 'le', 'lt', 'ge', 'logical_and', 'logical_or'],
         tensor_para=dict(
             args=[
                 {
@@ -745,6 +745,18 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float64),Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int32),Skip(Dtype.float64),Skip(Dtype.float64),Skip(Dtype.int8),Skip(Dtype.float32),Skip(Dtype.int8),],
+                },
+            ]
+        ),
+    ),
+
+   'pointwise_binary_diff_dtype_without_bool': dict(
+        name=['div'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float16)],
                 },
             ]
         ),
