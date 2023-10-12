@@ -346,7 +346,7 @@ jobs:
           set -e
           export CI=true
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
-          cd impl && cp -R /home/deeplink/*.so lib/
+          cd impl && mkdir lib && cp -R /home/deeplink/*.so lib/
 
   Op-Test-Topsrider:
     name: Op-Test-Topsrider
