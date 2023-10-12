@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <set>
 
 #include "../common/acloprunner.hpp"
@@ -13,7 +11,6 @@
 namespace impl {
 namespace ascend {
 
-extern "C" {
 diopiError_t diopiSinInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     diopiSin(ctx, input, input);
     return diopiSuccess;
@@ -41,8 +38,6 @@ diopiError_t diopiSin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace ascend
 }  // namespace impl
