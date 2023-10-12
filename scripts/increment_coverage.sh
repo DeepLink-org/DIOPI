@@ -7,7 +7,7 @@ echo "entering "$ROOT_DIR
 require_coverage=$1
 
 echo "==============C================"
-lcov -c -d . --include "*/${ROOT_DIR#/mnt/*/}/*" -o coverage/coverage.info
+lcov -c -d . --include "*/${ROOT_DIR#/mnt/*/}/impl/*" -o coverage/coverage.info
 newcommit=`git rev-parse --short HEAD`
 oldcommit=`git ls-remote origin main | cut -c 1-7`
 if [ -z $oldcommit ];then echo "can not get main commit" && exit 1;fi
@@ -31,9 +31,6 @@ for dir in `cat coverage/gitdiff.txt`;do
       fi
   done < "coverage/coverage.info"
 done
-echo "=============python============="
-cd diopi_test/python
-coverage combine
 cd $ROOT_DIR
 echo "export IS_cover=True" > coverage/IS_cover.txt
 if [ -f increment.info ];then

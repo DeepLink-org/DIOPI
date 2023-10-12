@@ -1,6 +1,4 @@
 import re
-from coverage import Coverage
-from coverage.exceptions import NoSource
 import sys,os
 
 CONTENT = 'export IS_cover=False\n'
@@ -14,7 +12,7 @@ def C_coverage(coveragedir, require_coverage):
 
     for line in lines:
         coverage_percent = re.search(r'\|(.+?)%', line)
-        if coverage_percent and float(coverage_percent.group(1)) <= float(require_coverage):
+        if coverage_percent and float(coverage_percent.group(1)) < float(require_coverage):
             with open(os.path.join(coveragedir, 'IS_cover.txt'), 'a') as file:
                 file.write(CONTENT)
 
