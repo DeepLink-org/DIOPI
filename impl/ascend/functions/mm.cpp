@@ -15,9 +15,6 @@ diopiError_t diopiMm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCon
     AscendTensor mat2Copy(mat2);
     diopiDtype_t highDType = promoteTypes(inputCopy.dtype(), mat2Copy.dtype());
     if (highDType == diopi_dtype_float64) highDType = diopi_dtype_float32;
-    printContiguousTensor(ctx, inputCopy, "input");
-    printContiguousTensor(ctx, mat2Copy, "mat2");
-
     AclOpRunner<2, 1>("MatMul", ctx)
         .addInput(input, highDType)
         .addInput(mat2, highDType)
@@ -25,9 +22,6 @@ diopiError_t diopiMm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCon
         .setAttr("adj_x1", false)
         .addOutput(out)
         .run();
-    AscendTensor outputCopy(out);
-
-    printContiguousTensor(ctx, outputCopy, "output");
     return diopiSuccess;
 }
 
