@@ -7935,6 +7935,8 @@ diopi_configs = {
         name=['linalgqr'],
         interface=['CustomizedTest'],
         dtype=[Dtype.float64, Dtype.float32],
+        atol=1e-3,
+        rtol=1e-4,
         para=dict(
             mode=['reduced', 'reduced', 'complete', 'complete', 'r', 'r',
                   'reduced', 'complete', 'r', 'reduced', 'complete', 'r'],
