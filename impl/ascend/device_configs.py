@@ -2952,10 +2952,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
-                {
-                    "ins": ['out'],
-                    "dtype": [Skip(Dtype.float64)]
                 }
             ]
         ),
