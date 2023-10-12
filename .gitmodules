@@ -1,3 +1,0 @@
-[submodule "diopi_test/third_party/mmcv"]
-	path = diopi_test/third_party/mmcv
-	url = https://github.com/open-mmlab/mmcv.git
