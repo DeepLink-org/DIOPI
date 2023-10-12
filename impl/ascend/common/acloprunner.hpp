@@ -449,6 +449,11 @@ public:
         return addInput(thCopy, getAclDataFormat(thCopy));
     }
 
+    AclOpRunner& addInput(AscendTensor th, diopiDtype_t dtype) {
+        castTensor(context_, th, dtype);
+        return addInput(th);
+    }
+
     /**
      * @brief: support input dynamic length tensors, need only one input(dynamic)
      * @param[in] tensors diopi const tensors pointer.

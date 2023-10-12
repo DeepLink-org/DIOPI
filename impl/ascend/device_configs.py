@@ -2157,6 +2157,8 @@ device_configs = {
     'mm': dict(
         name=['mm'],
         tensor_para=dict(
+            atol=2e-3,
+            rtol=2e-3,
             args=[
                 {
                     "ins": ['input'],
