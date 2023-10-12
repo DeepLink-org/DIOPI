@@ -32,44 +32,44 @@ void* device_malloc(uint64_t bytes) {
 
 void device_free(void* ptr) { CALL_TOPS(topsFree(ptr)); }
 
-int32_t device_make_stream(diopiStreamHandle_t* stream_handle_ptr) {
+diopiError_t device_make_stream(diopiStreamHandle_t* stream_handle_ptr) {
     topsStream_t ph_stream;
     CALL_TOPS(topsStreamCreate(&ph_stream));
     *stream_handle_ptr = (diopiStreamHandle_t)ph_stream;
     return diopiSuccess;
 }
 
-int32_t device_destroy_stream(diopiStreamHandle_t stream_handle) {
+diopiError_t device_destroy_stream(diopiStreamHandle_t stream_handle) {
     auto* ph_stream = (topsStream_t)stream_handle;
     CALL_TOPS(topsStreamDestroy(ph_stream));
     return diopiSuccess;
 }
 
-int32_t device_synchronize_stream(diopiStreamHandle_t stream_handle) {
+diopiError_t device_synchronize_stream(diopiStreamHandle_t stream_handle) {
     auto* ph_stream = (topsStream_t)stream_handle;
     CALL_TOPS(topsStreamSynchronize(ph_stream));
     return diopiSuccess;
 }
 
-int32_t device_memcpy_h2d_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
+diopiError_t device_memcpy_h2d_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
     auto* ph_stream = (topsStream_t)stream_handle;
     CALL_TOPS(topsMemcpyAsync(dst, src, bytes, topsMemcpyHostToDevice, ph_stream));
     return diopiSuccess;
 }
 
-int32_t device_memcpy_d2h_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
+diopiError_t device_memcpy_d2h_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
     auto* ph_stream = (topsStream_t)stream_handle;
     CALL_TOPS(topsMemcpyAsync(dst, src, bytes, topsMemcpyDeviceToHost, ph_stream));
     return diopiSuccess;
 }
 
-int32_t device_memcpy_d2d_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
+diopiError_t device_memcpy_d2d_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
     auto* ph_stream = (topsStream_t)stream_handle;
     CALL_TOPS(topsMemcpyAsync(dst, src, bytes, topsMemcpyDeviceToDevice, ph_stream));
     return diopiSuccess;
 }
 
-int32_t initLibrary() {
+diopiError_t initLibrary() {
     // impl::tops::topsLibInit();
 
     /*
@@ -87,7 +87,7 @@ int32_t initLibrary() {
     return diopiSuccess;
 }
 
-int32_t finalizeLibrary() {
+diopiError_t finalizeLibrary() {
     // impl::tops::topsLibFinalize();
     return diopiSuccess;
 }

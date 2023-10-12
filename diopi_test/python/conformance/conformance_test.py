@@ -23,7 +23,10 @@ def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dt
         if glob_vars.four_bytes and (para in dtype_list) \
                 and tensor is not None and tensor.dtype == np.int64:
             tensor = tensor.astype(np.int32)
-        if isinstance(function_paras['kwargs'][para], np.ndarray):
+
+        if isinstance(tensor, Tensor):
+            tensor = tensor.numpy()
+        if isinstance(tensor, np.ndarray):
             ndim = tensor.ndim
             if glob_vars.nhwc and (para in nhwc_list):
                 if ndim < glob_vars.nhwc_min_dim or ndim > 5:
@@ -96,8 +99,8 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
         else:
             assert tensor1.size == tensor2.size, "tensor1 element num does not equal tensor2's."
             diff = np.abs(tensor1 - tensor2)
-            max_diff = np.abs(tensor1 - tensor2).max()
-            max_diff_index = np.unravel_index(np.argmax(diff), diff.shape)
+            max_diff = np.nanmax(diff)
+            max_diff_index = np.unravel_index(np.nanargmax(diff), diff.shape)
             max_diff_elem = tensor1[max_diff_index]
             max_diff_elem_ref = tensor2[max_diff_index]
             logger.info(f"The count of elements that do not meet the accuracy requirement is {count}.")
@@ -214,7 +217,8 @@ class ManualTest(object):
 
     def test_bernoulli(input, inplace=False, p=None):
         p_numpy = input.numpy()
-        p = p_numpy.mean() if p is None else p
+        if input.numel() > 0:
+            p = p_numpy.mean() if p is None else p
         state = build_generator_state(input.context())
         generator = Generator(state)
         out = F.bernoulli(input, inplace, p, generator)

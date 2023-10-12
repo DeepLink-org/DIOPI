@@ -28,7 +28,7 @@ extern "C" diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHand
         if (to != nullptr) {
             max = *to - 1;
         } else {
-            max = CNNL_DTYPE_FLOAT ? FLT_MAX : std::numeric_limits<half_float::half>::max();
+            max = (dtype == CNNL_DTYPE_FLOAT ? FLT_MAX : std::numeric_limits<half_float::half>::max());
         }
         diopiTensorHandle_t stateHandle = nullptr;
         DIOPI_CALL(diopiGeneratorGetState(ctx, generator, &stateHandle));
