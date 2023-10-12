@@ -9,7 +9,7 @@ on:
     paths-ignore:
       - "**.md"
       - ".github/ISSUE_TEMPLATE/**"
-      - ".git**"
+      - ".git*"
       - "CODE_OF_CONDUCT**"
 
 env:
