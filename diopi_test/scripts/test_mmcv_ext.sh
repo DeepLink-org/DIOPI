@@ -28,7 +28,7 @@ else
     exit 1
 fi
 
-cd third_party/mmcv_diopi
+cd third_party/mmcv
 export PYTHONPATH=${PWD}:$PYTHONPATH
 cd tests/test_ops
 
