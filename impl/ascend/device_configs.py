@@ -1459,7 +1459,7 @@ device_configs = {
     ),
 
     'join': dict(
-        name=['cat', 'stack'],
+        name=['cat'],
         tensor_para=dict(
             args=[
                 {
