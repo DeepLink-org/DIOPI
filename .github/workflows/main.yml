@@ -359,7 +359,6 @@ jobs:
           set -e
           export CI=true
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          echo "Op-test 的 gen-data 数据位于商汤机器上，会在每周同步一次NV上生成的数据到燧原机器上，放置于当前runner的/mnt/cache/share/deeplinkci/data下"
           ln -sf /mnt/cache/share/deeplinkci/data ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
           cd diopi_test/python && python main.py --mode run_test --filter_dtype float64 int64 uint8
 
