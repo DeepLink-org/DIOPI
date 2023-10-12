@@ -6,6 +6,7 @@
 
 #include "utils.hpp"
 
+#include <numeric>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
@@ -393,6 +394,16 @@ diopiError_t makeOnesLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
     diopiDtype_t dtype;
     diopiGetTensorDtype(src, &dtype);
     return makeOnesLike(ctx, out, src, dtype);
+}
+
+diopiError_t transTensorTo2D(diopiContextHandle_t ctx, AscendTensor& th) {
+    if (th.shape().size() < 2) return diopiErrorOccurred;
+    std::vector<int64_t> dims;
+    std::vector<int64_t> thShape = th.shape();
+    int dim1 = std::accumulate(thShape.begin(), thShape.end() - 1, 1, std::multiplies<int>());
+    dims = {dim1, thShape.back()};
+    th.view(dims);
+    return diopiSuccess;
 }
 
 aclDataType getAclDataType(diopiDtype_t type) {
