@@ -3,6 +3,8 @@
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  */
+#include "env_vars.hpp"
+
 #include <cstdlib>
 #include <cstring>
 
