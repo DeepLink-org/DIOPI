@@ -20,7 +20,8 @@ void apply_rotary_cuda(const Tensor x1, const Tensor x2, const Tensor cos, const
 
 void rms_norm_forward(Tensor input, IntArrayRef normalized_shape, Tensor gamma, double epsilon, Tensor output, Tensor invvar);
 
-void rms_norm_backward(Tensor dout, Tensor invvar, Tensor input, IntArrayRef normalized_shape, Tensor gamma, double epsilon, Tensor grad_input, Tensor grad_gamma);
+void rms_norm_backward(Tensor dout, Tensor invvar, Tensor input, IntArrayRef normalized_shape, Tensor gamma, double epsilon, Tensor grad_input,
+                       Tensor grad_gamma);
 
 }  // namespace ops
 }  // namespace ext
