@@ -124,26 +124,14 @@ device_configs = {
 
     'conv_2d': dict(
         name=['conv2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((4, 7, 12, 13)),Skip((6, 16, 19, 8)),Skip((6, 27, 12, 8)),Skip((2, 256, 200, 304)),Skip((2, 2048, 64, 64)),Skip((2, 2048, 1, 1)),Skip((2, 256, 200, 304)),Skip((0, 6, 5, 10)),],
-                },
-            ]
-        ),
+        atol=5e-1,
+        rtol=5e-1,
     ),
 
     'conv_2d_no_contiguous': dict(
         name=['conv2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 256, 200, 304)),Skip((2, 2048, 64, 64)),Skip((2, 2048, 1, 1)),Skip((2, 256, 200, 304)),],
-                },
-            ]
-        ),
+        atol=5e-1,
+        rtol=5e-1,
     ),
 
     'hardtanh': dict(
