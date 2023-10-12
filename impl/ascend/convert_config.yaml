@@ -1,0 +1,9 @@
+
+
+- diopiConvolution2d:
+    dtype: (float64)->float16
+    layout: NCHW
+
+- diopiConvolution2dBackward:
+    dtype: (float64)->float16
+    layout: NCHW
