@@ -4,15 +4,12 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
 
-extern "C" {
-DIOPI_API diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t outputSize) {
+diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t outputSize) {
     AclOpRunner<1, 1>("AdaptiveAvgPool2d", ctx)
         .addInput(input)
         .setAttr("output_size", std::vector<int32_t>{static_cast<int>(outputSize.data[0]), static_cast<int>(outputSize.data[1])})
@@ -21,8 +18,8 @@ DIOPI_API diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTen
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                                      diopiConstTensorHandle_t input) {
+diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                            diopiConstTensorHandle_t input) {
     diopiSize_t shape;
     diopiGetTensorShape(input, &shape);
     AclOpRunner<1, 1>("AdaptiveAvgPool2dGrad", ctx)
@@ -33,7 +30,6 @@ DIOPI_API diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, 
         .addOutput(gradInput)
         .run();
     return diopiSuccess;
-}
 }
 
 }  // namespace ascend

@@ -238,28 +238,19 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
 
     if (gradWeightTensor.defined()) {
         REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradWeightTensorTmp, gradWeightTensor, inputTensor.dtype());
-        void *record = nullptr;
-        DIOPI_CALL(diopiRecordStart("convBackwardFilter", &record));
         DIOPI_CALL(convBackwardFilter(ctx, gradOutputTensor, gradWeightTensorTmp, inputTensor, stride, padding, dilation, groups));
-        DIOPI_CALL(diopiRecordEnd(&record));
         DIOPI_CALL(dataTypeCast(ctx, gradWeightTensor, gradWeightTensorTmp));
     }
 
     if (gradInputTensor.defined()) {
         REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradInputTensorTmp, gradInputTensor, inputTensor.dtype());
-        void *record = nullptr;
-        DIOPI_CALL(diopiRecordStart("convBackwardData", &record));
         DIOPI_CALL(convBackwardData(ctx, gradOutputTensor, gradInputTensorTmp, weightTensor, stride, padding, dilation, groups));
-        DIOPI_CALL(diopiRecordEnd(&record));
         DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensorTmp));
     }
 
     if (grad3 != nullptr) {
         REQUIRES_TENSOR_BY_DTYPE_OR_NOT(gradBiasTensorTmp, gradBiasTensor, inputTensor.dtype());
-        void *record = nullptr;
-        DIOPI_CALL(diopiRecordStart("convBackwardBias", &record));
         DIOPI_CALL(convBackwardBias(ctx, gradOutputTensor, gradBiasTensorTmp));
-        DIOPI_CALL(diopiRecordEnd(&record));
         DIOPI_CALL(dataTypeCast(ctx, gradBiasTensor, gradBiasTensorTmp))
     }
 
