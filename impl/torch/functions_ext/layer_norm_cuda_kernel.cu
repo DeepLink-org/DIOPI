@@ -9,7 +9,6 @@
 #include "ext_common.h"
 
 
-
 template<typename U> __device__
 void cuWelfordOnlineSum(
   const U curr,
@@ -836,6 +835,9 @@ void cuComputeGradInput(
 }
 
 
+namespace ext {
+namespace ops {
+
 template<typename T, typename U, typename V=T>
 void HostApplyLayerNorm(
     V* output,
@@ -1154,3 +1156,6 @@ void cuda_rms_norm_gradient(
         gamma != NULL ? grad_gamma->DATA_PTR<scalar_t_out>() : NULL);
     )
 }
+
+}  // namespace ops
+}  // namespace ext
