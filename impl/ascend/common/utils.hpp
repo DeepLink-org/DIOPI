@@ -13,6 +13,12 @@
 namespace impl {
 namespace ascend {
 
+inline bool isIntegralType(const diopiDtype_t& type) { return type < 8; }
+
+inline bool isIntegralTypeWithBool(const diopiDtype_t& type) { return type < 8 || type == 11; }
+
+inline bool isFloatingType(const diopiDtype_t& type) { return (type <= 10 && type >= 8) || type == 12 || type == 13; }
+
 template <typename srcT, typename dstT>
 diopiError_t dataCopy(void* dst, const void* src, int64_t size) {
     const srcT* srcArray = reinterpret_cast<const srcT*>(src);
@@ -29,12 +35,22 @@ template <typename T>
 diopiScalar_t constructDiopiScalarT(diopiDtype_t dtype, T val) {
     diopiScalar_t scalar;
     scalar.stype = dtype;
-    if (DiopiDataType::isFloatPoint(dtype)) {
+    if (isFloatingType(dtype)) {
         scalar.fval = static_cast<double>(val);
     } else {
         scalar.ival = static_cast<int64_t>(val);
     }
     return scalar;
+}
+
+template <typename T>
+T getValue(const diopiScalar_t* scalar) {
+    ASCEND_CHECK_ABORT(scalar != nullptr, "input should not be nullptr");
+    if (isIntegralTypeWithBool(scalar->stype)) {
+        return static_cast<T>(scalar->ival);
+    } else {
+        return static_cast<T>(scalar->fval);
+    }
 }
 
 const char* diopiDtypeToStr(const diopiDtype_t dtype);
