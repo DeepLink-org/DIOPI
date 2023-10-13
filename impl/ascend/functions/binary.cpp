@@ -147,14 +147,39 @@ diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     diopiGetTensorDtype(other, &otherDtype);
     diopiDtype_t highType = promoteTypes(inputDtype, otherDtype);
     diopiTensorHandle_t outCopy;
+
+    // only in float data can we get nan or inf
+    std::set<diopiDtype_t> supportDtype{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64, diopi_dtype_complex64, diopi_dtype_complex128};
+    if (supportDtype.find(highType) == supportDtype.end()) {
+        highType = diopi_dtype_float32;
+    }
+
     if (outDtype != highType) {
         makeTensorLike(ctx, &outCopy, out, highType);
     } else {
         outCopy = out;
     }
-    AclOpRunner<2, 1, dtypeConvertor>("RealDiv", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
-    if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);
-    return diopiSuccess;
+
+    if (RoundModeFloor == roundingMode) {
+        // floor
+        AclOpRunner<2, 1, dtypeConvertor>("FloorDiv", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
+        if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);
+        return diopiSuccess;
+    } else {
+        // default
+        AclOpRunner<2, 1, dtypeConvertor>("RealDiv", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
+        if (RoundModeTrunc == roundingMode) {
+            // trunc
+            // trunc only support float16, float32, int8, uint8, int32.
+            if (highType == diopi_dtype_float64) {
+                AclOpRunner<1, 1, dtypeConvertor>("Trunc", ctx).addInput(out, diopi_dtype_float32).addOutput(out).run();
+            } else {
+                AclOpRunner<1, 1, dtypeConvertor>("Trunc", ctx).addInput(out, highType).addOutput(out).run();
+            }
+        }
+        if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);
+        return diopiSuccess;
+    }
 }
 
 diopiError_t diopiDivInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, diopiRoundMode_t roundingMode) {

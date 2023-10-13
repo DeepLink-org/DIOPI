@@ -19,16 +19,14 @@
 
 #include "diopi_helper.hpp"
 
-extern bool isRecordOn;
-
 #define DIOPI_CALLCNNL(Expr)                                                                                                                    \
     do {                                                                                                                                        \
         void* record = nullptr;                                                                                                                 \
-        if (isRecordOn) {                                                                                                                       \
+        if (isRecordOn()) {                                                                                                                     \
             DIOPI_RECORD_START(Expr);                                                                                                           \
         }                                                                                                                                       \
         ::cnnlStatus_t ret = Expr;                                                                                                              \
-        if (isRecordOn) {                                                                                                                       \
+        if (isRecordOn()) {                                                                                                                     \
             DIOPI_RECORD_END;                                                                                                                   \
         }                                                                                                                                       \
         if (ret != ::CNNL_STATUS_SUCCESS) {                                                                                                     \

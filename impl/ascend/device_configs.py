@@ -1462,30 +1462,6 @@ device_configs = {
         ),
     ),
 
-    'join': dict(
-        name=['cat'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensor'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),Skip(Dtype.bool),Skip(Dtype.int32),],
-                },
-            ]
-        ),
-    ),
-
-    'cat_diff_size': dict(
-        name=['cat'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensors'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),Skip(Dtype.bool),Skip(Dtype.int32),],
-                },
-            ]
-        ),
-    ),
-
     'split': dict(
         name=['split'],
         tensor_para=dict(
