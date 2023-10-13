@@ -150,7 +150,7 @@ diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     diopiTensorHandle_t outCopy;
 
     // only in float data can we get nan or inf
-    std::set<diopiDtype_t> supportDtype{diopi_dtype_float32, diopi_dtype_float64, diopi_dtype_complex64, diopi_dtype_complex128};
+    std::set<diopiDtype_t> supportDtype{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64, diopi_dtype_complex64, diopi_dtype_complex128};
     if (supportDtype.find(highType) == supportDtype.end()) {
         highType = diopi_dtype_float32;
     }
