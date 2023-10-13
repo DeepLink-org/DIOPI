@@ -22,6 +22,14 @@ diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
 }
 
 diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
+    AscendTensor outputCopy(out);
+    AscendTensor inputCopy(input);
+
+    if (inputCopy.numel() == 0 || outputCopy.numel() == 0) {
+        diopiScalar_t zero = {outputCopy.dtype(), 0.0};
+        diopiFill(ctx, out, &zero);
+        return diopiSuccess;
+    }
     std::vector<int64_t> dimList = {dim};
     AclOpRunner<1, 1>("SoftmaxV2", ctx).addInput(input).setAttr<int64_t>("axes", dimList).addOutput(out).run();
     return diopiSuccess;
@@ -30,7 +38,15 @@ diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
 diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t output,
                                   int64_t dim) {
     AscendTensor gradOutputCopy(gradOutput);
+    AscendTensor gradInputCopy(gradInput);
     AscendTensor outputCopy(output);
+
+    if (inputCopy.numel() == 0 || gradOutputCopy.numel() == 0) {
+        diopiScalar_t zero = {gradInputCopy.dtype(), 0.0};
+        diopiFill(ctx, gradInput, &zero);
+        return diopiSuccess;
+    }
+    
     diopiDtype_t execType = promoteTypes(gradOutputCopy.dtype(), outputCopy.dtype());
     if (execType == diopi_dtype_float64) execType = diopi_dtype_float32;
     std::vector<int64_t> dimList = {dim};
