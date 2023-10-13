@@ -38,10 +38,11 @@ diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         diopiDtype_t outDtype, castType;
         diopiGetTensorDtype(out, &outDtype);
 
-        if (isFloatingType(outDtype))
+        if (isFloatingType(outDtype)) {
             castType = diopi_dtype_float32;
-        else
+        } else {
             castType = diopi_dtype_int32;
+        }
 
         AclOpRunner<3, 1>("AxpyV2", ctx).addInput(input, castType).addInput(other, castType).addConstInput(*alpha, diopi_dtype_float32).addOutput(out).run();
     }
