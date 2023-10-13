@@ -1320,30 +1320,6 @@ device_configs = {
         ),
     ),
 
-    'log_softmax': dict(
-        name=['log_softmax'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'log_softmax_specific': dict(
-        name=['log_softmax'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
-            ]
-        ),
-    ),
-
     'soft_max': dict(
         name=['softmax'],
         tensor_para=dict(
