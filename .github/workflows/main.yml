@@ -47,10 +47,10 @@ jobs:
       - name: clone repo
         run: |
           cd ${GITHUB_WORKSPACE} && rm -rf DIOPI 
-          if [ $GITHUB_EVENT_NAME == "pull_request_target" ]; then
+          if [ -n "${{ github.event.pull_request.head.repo.full_name }}" ] && [[ ! "${{ github.event.pull_request.head.repo.full_name }}" == *DeepLink-org* ]]; then
             git clone ${{ github.event.pull_request.head.repo.ssh_url }}
             cd ${GITHUB_WORKSPACE}/${{ github.event.repository.name }} && git checkout ${{ github.event.pull_request.head.sha }}
-            git remote remove mainrepo || echo "mainrepo not exist" && git remote add mainrepo git@github.com:${GITHUB_REPOSITORY}.git
+            git remote add mainrepo git@github.com:${GITHUB_REPOSITORY}.git
             git fetch  mainrepo && git merge --no-edit mainrepo/${GITHUB_REF_NAME}
           else
             git clone https://github.com/DeepLink-org/DIOPI.git && cd DIOPI 
