@@ -3,6 +3,8 @@
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  */
+#include "env_vars.hpp"
+
 #include <cstdlib>
 #include <cstring>
 
@@ -15,15 +17,7 @@ bool isEnvStateOn(const char* envName) {
     return true;
 }
 
-bool isRecordOnFunc() { return isEnvStateOn("DIOPI_RECORD_ENV"); }
-
-// global vars are listed bellow
-bool isRecordOn = false;
-
-static int initFunc() {
-    // init func is called  here;
-    isRecordOn = isRecordOnFunc();
-    return 0;
+bool isRecordOn() {
+    static bool isRecord = isEnvStateOn("DIOPI_RECORD_ENV");
+    return isRecord;
 }
-
-static int initGlobalVal = initFunc();
