@@ -46,7 +46,6 @@ diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         diopiFill(ctx, gradInput, &zero);
         return diopiSuccess;
     }
-    
     diopiDtype_t execType = promoteTypes(gradOutputCopy.dtype(), outputCopy.dtype());
     if (execType == diopi_dtype_float64) execType = diopi_dtype_float32;
     std::vector<int64_t> dimList = {dim};
