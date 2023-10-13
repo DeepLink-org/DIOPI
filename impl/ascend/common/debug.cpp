@@ -13,13 +13,21 @@ namespace ascend {
 
 void printContiguousTensor(diopiContextHandle_t ctx, const AscendTensor& at, char* name) {
     printf("==========[Tensor name %s]==========\n", name);
+    if (!at.defined()) {
+        printf("input tensor is nullptr.");
+        return;
+    }
     if (!at.isContiguous()) {
-        printf("input tensor is not contiguous. break;");
+        printf("input tensor is not contiguous. break;\n");
         return;
     }
     void* ptrHost;
 
     printf("Tensor device: %s\n", (at.device() ? "diopi_device" : "diopi_host"));
+    if (0 == at.numel() * at.elemsize()) {
+        printf("tensor %s has %ld element, element size %ld.\n", name, at.numel(), at.elemsize());
+        return;
+    }
 
     if (at.device() == diopiDevice_t::diopi_device) {
         diopiStreamHandle_t stream;
