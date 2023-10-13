@@ -6,7 +6,7 @@ cd $ROOT_DIR && rm -rf coverage && mkdir coverage
 echo "entering "$ROOT_DIR
 require_coverage=$1
 
-lcov -c -d . --include "*/${ROOT_DIR#/mnt/*/}/*" -o coverage/coverage.info
+lcov -c -d . --include "*/${ROOT_DIR#/mnt/*/}/impl/*" -o coverage/coverage.info
 newcommit=`git rev-parse --short HEAD`
 oldcommit=`git ls-remote origin main | cut -c 1-7`
 if [ -z $oldcommit ];then echo "can not get main commit" && exit 1;fi
@@ -20,10 +20,10 @@ for dir in `cat coverage/gitdiff.txt`;do
           skip=1
       elif [[ $line == *"SF:$dir" ]]; then
           skip=0
-          echo "$buffer" >> "increment.info"
-          echo "$line" >> "increment.info"
+          echo "$buffer" >> "coverage/increment.info"
+          echo "$line" >> "coverage/increment.info"
       elif [[ $skip -eq 0 ]]; then
-          echo "$line" >> "increment.info"
+          echo "$line" >> "coverage/increment.info"
       fi
       if [[ $line == "end_of_record" ]]; then
           skip=1
@@ -32,9 +32,9 @@ for dir in `cat coverage/gitdiff.txt`;do
 done
 cd $ROOT_DIR
 echo "export IS_cover=True" > coverage/IS_cover.txt
-if [ -f increment.info ];then
-    lcov --list increment.info
-    lcov --list increment.info > coverage/increment.txt
+if [ -f coverage/increment.info ];then
+    lcov --list coverage/increment.info
+    lcov --list coverage/increment.info > coverage/increment.txt
 else
     echo "No C/C++ in incremental code"
 fi
