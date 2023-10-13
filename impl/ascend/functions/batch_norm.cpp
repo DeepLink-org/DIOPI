@@ -81,7 +81,7 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
             .addOutput(outputAt)
             .setAttr("epsilon", static_cast<float>(eps))
             .run();
-        
+
         diopiTensorHandle_t runningVarBroadcasted;
         makeTensorLike(ctx, &runningVarBroadcasted, input);
         AscendTensor runningVarAt(runningVar);
