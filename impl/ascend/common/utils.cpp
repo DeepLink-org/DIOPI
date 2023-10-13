@@ -169,6 +169,21 @@ diopiError_t fillAscendTensor(const AscendTensor& src, AscendTensor& dst) {
     return diopiSuccess;
 }
 
+diopiError_t fillNan(diopiContextHandle_t ctx, AscendTensor& src) {
+    // get nan value tensor
+    diopiTensorHandle_t nanValue;
+    auto zeroValueScalar = constructDiopiScalarT(diopi_dtype_float64, 0.0);
+    makeTensorFromScalar(ctx, &zeroValueScalar, &nanValue, diopi_dtype_float32, diopi_device);
+    diopiDivInpScalar(ctx, nanValue, &zeroValueScalar, diopiRoundMode_t::RoundModeNone);
+
+    diopiTensorHandle_t onePtr;
+    makeOnesLike(ctx, &onePtr, src.tensorHandle());
+    AscendTensor nan(nanValue), one(onePtr);
+    castTensor(ctx, one, diopi_dtype_bool);
+    diopiMaskedFillInp(ctx, const_cast<diopiTensorHandle_t>(src.tensorHandle()), one.tensorHandle(), nan.tensorHandle());
+    return diopiSuccess;
+}
+
 diopiError_t reshape(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst, const std::vector<int64_t>& shape) {
     ASCEND_CHECK_ABORT(src.isContiguous(), "now only contiguous tensor support reshape by shape.");
     if (src.isSame(dst)) {
