@@ -758,6 +758,10 @@ device_configs = {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float16)],
                 },
+                {
+                    "ins": ['other'],
+                    "dtype": [Skip(Dtype.float16)],
+                },
             ]
         ),
     ),
