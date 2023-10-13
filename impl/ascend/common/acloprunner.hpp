@@ -462,8 +462,8 @@ public:
         inputDescs_.resize(dynamcInputSize_);
         inputBuffers_.resize(dynamcInputSize_);
         for (int i = 0; i < dynamcInputSize_; ++i) {
-            if (Type != diopi_dtype_unsupported) {
-                addInput(tensors[i], Type);
+            if (type != diopi_dtype_unsupported) {
+                addInput(tensors[i], type);
             } else {
                 addInput(tensors[i]);
             }
