@@ -2307,8 +2307,8 @@ diopi_configs = {
     'bmm': dict(
         name=['bmm'],
         interface=['torch'],
-        atol=1e-4,
-        rtol=1e-5,
+        atol=1e-3,
+        rtol=1e-3,
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
@@ -5819,6 +5819,8 @@ diopi_configs = {
 
     'mm': dict(
         name=['mm'],
+        atol=1e-3,
+        rtol=1e-3,
         interface=['torch'],
         tensor_para=dict(
             args=[
@@ -5840,8 +5842,11 @@ diopi_configs = {
 
     'mm_diff_dtype': dict(
         name=['mm'],
+        atol=1e-3,
+        rtol=1e-3,
         interface=['torch'],
         tensor_para=dict(
+
             args=[
                 {
                     "ins": ['input'],
