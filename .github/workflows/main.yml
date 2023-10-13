@@ -6,13 +6,10 @@ on:
       - main
       - dev_v0.25
   pull_request:
-    branches:
-      - main
-      - dev_v0.25
     paths-ignore:
       - "**.md"
       - ".github/ISSUE_TEMPLATE/**"
-      - ".git**"
+      - ".git*"
       - "CODE_OF_CONDUCT**"
 
 env:
