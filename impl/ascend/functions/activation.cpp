@@ -26,7 +26,9 @@ diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     AscendTensor inputCopy(input);
 
     if (inputCopy.numel() == 0 || outputCopy.numel() == 0) {
-        diopiScalar_t zero = {outputCopy.dtype(), 0.0};
+        diopiScalar_t zero;
+        zero.stype = outputCopy.dtype();
+        zero.fval = 0.0;
         diopiFill(ctx, out, &zero);
         return diopiSuccess;
     }
@@ -42,7 +44,9 @@ diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     AscendTensor outputCopy(output);
 
     if (outputCopy.numel() == 0 || gradOutputCopy.numel() == 0 || gradInputCopy.numel() == 0) {
-        diopiScalar_t zero = {gradInputCopy.dtype(), 0.0};
+        diopiScalar_t zero;
+        zero.stype = gradInputCopy.dtype();
+        zero.fval = 0.0;
         diopiFill(ctx, gradInput, &zero);
         return diopiSuccess;
     }
