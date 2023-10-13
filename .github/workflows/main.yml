@@ -50,11 +50,11 @@ jobs:
           if [ $GITHUB_EVENT_NAME == "pull_request_target" ]; then
           git clone ${{ github.event.pull_request.head.repo.ssh_url }}
           cd ${GITHUB_WORKSPACE}/${{ github.event.repository.name }} && git checkout ${{ github.event.pull_request.head.sha }}
+          git remote remove mainrepo || echo "mainrepo not exist" && git remote add mainrepo git@github.com:${GITHUB_REPOSITORY}.git
+          git fetch  mainrepo && git merge --no-edit mainrepo/${GITHUB_REF_NAME}
           else
           git clone https://github.com/DeepLink-org/DIOPI.git && cd DIOPI && git checkout ${{ github.sha }}
-          fi
-          if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
-          git merge --no-edit ${{ github.base_ref }}
+          git merge --no-edit ${{ github.base_ref }} || ehco "branch ci does not require merge"
           fi
           git submodule update --init --recursive
       - name: Set output variables
