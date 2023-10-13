@@ -53,8 +53,11 @@ jobs:
           git remote remove mainrepo || echo "mainrepo not exist" && git remote add mainrepo git@github.com:${GITHUB_REPOSITORY}.git
           git fetch  mainrepo && git merge --no-edit mainrepo/${GITHUB_REF_NAME}
           else
-          git clone https://github.com/DeepLink-org/DIOPI.git && cd DIOPI && git checkout ${{ github.sha }}
-          git merge --no-edit ${{ github.base_ref }} || ehco "branch ci does not require merge"
+          git clone https://github.com/DeepLink-org/DIOPI.git && cd DIOPI 
+          if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
+          git checkout ${{ github.event.pull_request.head.sha }} && git merge --no-edit ${{ github.base_ref }}
+          else
+          git checkout ${{ github.sha }}
           fi
           git submodule update --init --recursive
       - name: Set output variables
