@@ -27,12 +27,13 @@ if (DYLOAD)
     set(IMPL_SRC error.cpp wrap_func.cpp)
 endif()
 
-file(GLOB_RECURSE REAL_IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions_mmcv/*.cu)
+file(GLOB_RECURSE REAL_IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions_mmcv/*.cu functions_ext/*.cu)
 set(REAL_IMPL_SRC ${REAL_IMPL_SRC}
                   nms_kernel.cu
                   roi_align_kernel.cu
                   functions.cpp
                   functions_mmcv.cpp
+                  functions_ext.cpp
                   error.cpp)
 
 if(HIP)
