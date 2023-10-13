@@ -1,0 +1,7 @@
+- diopiBatchNorm:
+    dtype: (float64)->float32
+    layout: NCHW
+
+- diopiBatchNormBackward:
+    dtype: (float64)->float32
+    layout: NCHW
