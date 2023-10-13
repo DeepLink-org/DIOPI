@@ -9,7 +9,6 @@ namespace impl {
 namespace ascend {
 
 diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t* tensors, int64_t numInputs, int64_t dim) {
-    
     std::vector<diopiConstTensorHandle_t> dynamicInput;
     for (int i = 0; i < numInputs; i++) {
         int64_t tem;
