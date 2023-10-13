@@ -47,7 +47,6 @@ jobs:
     steps:
       - name: clone repo
         run: |
-          echo "${{ github.event_name }}" && echo $GITHUB_EVENT_NAME
           cd ${GITHUB_WORKSPACE} && rm -rf DIOPI && git clone https://github.com/DeepLink-org/DIOPI.git && cd DIOPI
           if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
           git checkout ${{ github.event.pull_request.head.sha }} && git merge --no-edit ${{ github.base_ref }}
