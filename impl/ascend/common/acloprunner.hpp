@@ -455,7 +455,7 @@ public:
      * @return A reference to the modified AclOpRunner
      */
     template <typename T>
-    AclOpRunner& addDynamicInput(const std::vector<T>& tensors, diopiDtype_t Type = diopi_dtype_unsupported) {
+    AclOpRunner& addDynamicInput(const std::vector<T>& tensors, diopiDtype_t type = diopi_dtype_unsupported) {
         ASCEND_CHECK_ABORT(hasDynamicInput_ || inputIndex_ == 0 || InputSize == 1, "only support one dynamic input");
         hasDynamicInput_ = true;
         dynamcInputSize_ = tensors.size();
