@@ -25,9 +25,9 @@ diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t *out, di
     return diopiSuccess;
 }
 
-diopiError_t diopiNmsRotatedMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t dets, diopiConstTensorHandle_t scores,
-                                           diopiConstTensorHandle_t order, diopiConstTensorHandle_t detsSorted, diopiConstTensorHandle_t labels,
-                                           float iouThreshold, bool multiLabel) {
+diopiError_t diopiNmsRotatedMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t dets, diopiConstTensorHandle_t scores,
+                                 diopiConstTensorHandle_t order, diopiConstTensorHandle_t detsSorted, diopiConstTensorHandle_t labels, float iouThreshold,
+                                 bool multiLabel) {
     impl::aten::setCurCtx(ctx);
     auto atDets = impl::aten::buildATen(dets);
     auto atScores = impl::aten::buildATen(scores);
