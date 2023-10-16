@@ -7,13 +7,12 @@
 #ifndef IMPL_ASCEND_COMMON_DEBUG_HPP_
 #define IMPL_ASCEND_COMMON_DEBUG_HPP_
 
-#include <diopi/functions.h>
-
 #include <algorithm>
 #include <sstream>
 #include <string>
 
 #include "../ascend_tensor.hpp"
+#include "impl_functions.hpp"
 
 namespace impl {
 namespace ascend {
@@ -50,13 +49,16 @@ inline std::string dumpTensor(const AscendTensor& at, const std::string& message
     if (at.defined()) {
         auto shape = at.shape();
         auto stride = at.stride();
-        stream << " ,data:" << at.data();
-        stream << " ,dtype:" << at.dtype();
-        stream << " ,device:" << at.device();
-        stream << " ,shape:";
+        stream << ", data:" << at.data();
+        stream << ", dtype:" << at.dtype();
+        stream << ", device:" << at.device();
+        stream << ", numel:" << at.numel();
+        stream << ", shape:";
         std::for_each(shape.begin(), shape.end(), [&stream](int64_t v) { stream << v << " "; });
-        stream << " ,stride:";
+        stream << ", stride:";
         std::for_each(stride.begin(), stride.end(), [&stream](int64_t v) { stream << v << " "; });
+    } else {
+        stream << "input tensor is nullptr.";
     }
     stream << ")";
     return stream.str();

@@ -4,17 +4,13 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
 
-extern "C" {
-
-DIOPI_API diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* threshold,
-                                      const diopiScalar_t* value) {
+diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* threshold,
+                            const diopiScalar_t* value) {
     diopiTensorHandle_t thresholdTensor;
     diopiTensorHandle_t valueTensor;
     makeTensorFromScalar(ctx, threshold, &thresholdTensor);
@@ -23,17 +19,15 @@ DIOPI_API diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandl
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiThresholdInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* threshold, const diopiScalar_t* value) {
+diopiError_t diopiThresholdInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* threshold, const diopiScalar_t* value) {
     return diopiThreshold(ctx, input, input, threshold, value);
 }
 
-DIOPI_API diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                              diopiConstTensorHandle_t input, const diopiScalar_t* threshold) {
+diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                    diopiConstTensorHandle_t input, const diopiScalar_t* threshold) {
     AclOpRunner<2, 1>("ThresholdGradV2D", ctx).addInput(gradOutput).addInput(input).setAttr("threshold", getValue<float>(threshold)).addOutput(gradInput).run();
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace ascend
 }  // namespace impl
