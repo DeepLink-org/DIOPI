@@ -1,12 +1,15 @@
-# !/bin/bash
 set -e
 export LANG=en_US.UTF-8
 ROOT_DIR=$(dirname "$(cd "$(dirname ${BASH_SOURCE[0]})" && pwd)")
+include='impl'
+if [[ $ROOT_DIR == *DIPU* ]]; then
+    include='dipu/torch_dipu/csrc_dipu'
+fi
 cd $ROOT_DIR && rm -rf coverage && mkdir coverage
 echo "entering "$ROOT_DIR
 require_coverage=$1
 
-lcov -c -d . --include "*/${ROOT_DIR#/mnt/*/}/impl/*" -o coverage/coverage.info
+lcov -c -d . --include "*/${ROOT_DIR#/mnt/*/}/${include}/*" -o coverage/coverage.info
 newcommit=`git rev-parse --short HEAD`
 oldcommit=`git reflog | grep 'checkout: moving from main to' | awk '{print $1}'`
 if [ -z $oldcommit ];then echo "is not Pull request" && exit 0;fi
