@@ -38,25 +38,11 @@ diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTenso
         return diopiSuccess;
     }
 
-    AscendTensor inputAt(input);
-    if (3 == inputAt.dim()) {
-        AscendTensor gradInputAt(gradInput);
-        AscendTensor gradOutputAt(gradOutput);
-        gradInputAt.unsqueeze(0);
-        gradOutputAt.unsqueeze(0);
-
-        AclOpRunner<1, 1>("AdaptiveAvgPool2dGrad", ctx)
-            .addInput(gradOutputAt)
-            .setAttr("orig_input_shape", std::vector<int32_t>{1, shape.data[0], shape.data[1], shape.data[2]})
-            .addOutput(gradInputAt)
-            .run();
-
-        return diopiSuccess;
-    }
-
     AclOpRunner<1, 1>("AdaptiveAvgPool2dGrad", ctx)
         .addInput(gradOutput)
-        .setAttr("orig_input_shape", std::vector<int32_t>{shape.data[0], shape.data[1], shape.data[2], shape.data[3]})
+        .setAttr("orig_input_shape",
+                 std::vector<int32_t>{
+                     static_cast<int>(shape.data[0]), static_cast<int>(shape.data[1]), static_cast<int>(shape.data[2]), static_cast<int>(shape.data[3])})
         .addOutput(gradInput)
         .run();
     return diopiSuccess;

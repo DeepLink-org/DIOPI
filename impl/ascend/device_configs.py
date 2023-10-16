@@ -692,7 +692,7 @@ device_configs = {
     ),
 
     'pointwise_binary_broadcast': dict(
-        name=['add', 'ne', 'le', 'lt', 'ge', 'logical_and', 'logical_or'],
+        name=['ne', 'le', 'lt', 'ge', 'logical_and', 'logical_or'],
         tensor_para=dict(
             args=[
                 {
