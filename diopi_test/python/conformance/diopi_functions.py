@@ -3922,7 +3922,7 @@ def linalgqr(input, mode):
 
 
 def rotary_emb(input, cos, sin, conj):
-    call = "diopidiopiRotaryEmbedding"
+    call = "diopiRotaryEmbedding"
     func = check_function(call)
     size = list(input.size().data)
     out = Tensor(size, input.get_dtype())
