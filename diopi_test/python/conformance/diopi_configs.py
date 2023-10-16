@@ -7995,4 +7995,30 @@ diopi_configs = {
             ],
         ),
     ),
+    
+    'rotary_emb': dict(
+        name=['rotary_emb'],
+        interface=['CustomizedTest'],
+        dtype=[Dtype.float64, Dtype.float32, Dtype.float16],
+        para=dict(
+            conj=[False, True],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1, 125, 16, 32), (1, 125, 16, 32)),
+                },
+                {
+                    "ins": ['cos'],
+                    "shape": ((125, 1, 16), (1, 125, 16, 32)),
+                },
+                {
+                    "ins": ['sin'],
+                    "shape": ((125, 1, 16), (1, 125, 16, 32)),
+                },
+            ],
+        ),
+    ),
 }

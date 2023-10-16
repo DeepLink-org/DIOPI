@@ -3919,3 +3919,12 @@ def linalgqr(input, mode):
     out = [q, r]
     check_returncode(ret)
     return out
+
+def rotary_emb(input, cos, sin, conj):
+    call = "diopidiopiRotaryEmbedding"
+    func = check_function(call)
+    size = list(input.size().data)
+    out = Tensor(size, input.get_dtype())
+    ret = func(input.context(), out, input, cos, sin, conj)
+    check_returncode(ret)
+    return out
