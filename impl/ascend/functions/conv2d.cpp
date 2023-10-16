@@ -102,7 +102,7 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
             .setAttr("data_format", dataFormat)
             .run();
     } else {
-        diopiScalar_t zero = {diopi_dtype_float32, {0}};
+        diopiScalar_t zero = constructDiopiScalarT(diopi_dtype_float32, 0);
         diopiFill(ctx, gradWeight, &zero);
     }
     if (gradInput != nullptr) {
