@@ -45,18 +45,16 @@ def parse_args():
                                help='the name of the function for which the test will run (default: all_ops)')
     gen_data_args.add_argument('--model_name', type=str, default='',
                                help='Get op list of given model name')
-    gen_data_args.add_argument('--impl_folder', type=str, default='',
-                               help='impl_folder')
 
     gen_case_args = parser.add_argument_group('gen_case')
+    gen_case_args.add_argument('--impl_folder', type=str, default='',
+                               help='impl_folder')
     gen_case_args.add_argument('--nhwc', action='store_true',
                                help='Whether to use nhwc layout for partial tests')
     gen_case_args.add_argument('--nhwc_min_dim', type=int, default=3,
                                help='Whether to use nhwc layout for 3-dim Tensor')
     gen_case_args.add_argument('--four_bytes', action='store_true',
                                help='Whether to use 4-bytes data type for partial tests')
-    gen_case_args.add_argument('--cfg_path', type=str, default='./cache/diopi_case_items.cfg',
-                               help='case items cfg path')
     gen_case_args.add_argument('--case_output_dir', type=str, default='./gencases/diopi_case',
                                help='pytest case save dir')
 
@@ -110,9 +108,27 @@ if __name__ == "__main__":
         from conformance.gen_input import GenInputData
         from conformance.gen_output import GenOutputData
         diopi_case_item_file = 'diopi_case_items.cfg'
-        device_case_item_file = '%s_case_items.cfg'
 
         model_name = args.model_name.lower()
+        if args.model_name != '':
+            logger.info(f"the op list of {args.model_name}: {model_op_list[model_name]}")
+            diopi_configs = eval(f"model_config.{model_name}_config")
+            diopi_case_item_file = model_name + '_' + diopi_case_item_file
+        else:
+            # set a prefix for dat save path like: data/diopi/inputs
+            model_name = 'diopi'
+            from diopi_configs import diopi_configs
+        diopi_case_item_path = os.path.join(cache_path, diopi_case_item_file)
+        inputs_dir = os.path.join(cache_path, 'data/' + model_name + "/inputs")
+        outputs_dir = os.path.join(cache_path, 'data/' + model_name + "/outputs")
+
+        db_conn.drop_case_table(BenchMarkCase)
+        GenInputData.run(diopi_case_item_path, inputs_dir, args.fname, model_name)
+        GenOutputData.run(diopi_case_item_path, inputs_dir, outputs_dir, args.fname, model_name)
+        db_conn.insert_benchmark_case(GenInputData.db_case_items, GenOutputData.db_case_items)
+    elif args.mode == 'gen_case':
+        diopi_case_item_file = 'diopi_case_items.cfg'
+        device_case_item_file = '%s_case_items.cfg'
         if args.model_name != '':
             logger.info(f"the op list of {args.model_name}: {model_op_list[model_name]}")
             diopi_configs = eval(f"model_config.{model_name}_config")
@@ -124,18 +140,14 @@ if __name__ == "__main__":
             from diopi_configs import diopi_configs
         diopi_case_item_path = os.path.join(cache_path, diopi_case_item_file)
         device_case_item_path = os.path.join(cache_path, device_case_item_file)
+        
         cfg_parse = ConfigParser(diopi_case_item_path)
         cfg_parse.parser(diopi_configs)
         cfg_parse.save()
-        inputs_dir = os.path.join(cache_path, 'data/' + model_name + "/inputs")
-        outputs_dir = os.path.join(cache_path, 'data/' + model_name + "/outputs")
-
-        db_conn.drop_case_table(BenchMarkCase)
-        GenInputData.run(diopi_case_item_path, inputs_dir, args.fname, model_name)
-        GenOutputData.run(diopi_case_item_path, inputs_dir, outputs_dir, args.fname, model_name)
-        db_conn.insert_benchmark_case(GenInputData.db_case_items, GenOutputData.db_case_items)
+        cfg_path = diopi_case_item_path
 
         if args.impl_folder != '':
+            cfg_path = device_case_item_path
             device_name = os.path.basename(args.impl_folder)
             device_config_path = os.path.join(args.impl_folder, "device_configs.py")
             dst_path = os.path.join(cur_dir, "device_configs.py")
@@ -154,13 +166,12 @@ if __name__ == "__main__":
             coll = CollectCase(cfg_parse.get_config_cases(), opt.rules())
             coll.collect()
             coll.save(device_case_item_path % device_name)
-    elif args.mode == 'gen_case':
-        model_name = args.model_name.lower() if args.model_name != '' else 'diopi'
+
         from codegen.gen_case import GenConfigTestCase
         if not os.path.exists(args.case_output_dir):
             os.makedirs(args.case_output_dir)
         db_conn.drop_case_table(DeviceCase)
-        gctc = GenConfigTestCase(module=model_name, config_path=args.cfg_path, tests_path=args.case_output_dir)
+        gctc = GenConfigTestCase(module=model_name, config_path=cfg_path, tests_path=args.case_output_dir)
         gctc.gen_test_cases()
         db_conn.insert_device_case(gctc.db_case_items)
     elif args.mode == 'run_test':
