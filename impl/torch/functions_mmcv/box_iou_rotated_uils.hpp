@@ -170,22 +170,21 @@ HOST_DEVICE_INLINE int convex_hull_graham(const Point<T> (&p)[24], const int& nu
         dist[i] = dot_2d<T>(q[i], q[i]);
     }
 
-  // In the future, we can potentially use thrust
-  // for sorting here to improve speed (though not guaranteed)
-  for (int i = 1; i < num_in - 1; i++) {
-    for (int j = i + 1; j < num_in; j++) {
-      T crossProduct = cross_2d<T>(q[i], q[j]);
-      if ((crossProduct < -1e-6) ||
-          (fabs(crossProduct) < 1e-6 && dist[i] > dist[j])) {
-        auto q_tmp = q[i];
-        q[i] = q[j];
-        q[j] = q_tmp;
-        auto dist_tmp = dist[i];
-        dist[i] = dist[j];
-        dist[j] = dist_tmp;
-      }
+    // In the future, we can potentially use thrust
+    // for sorting here to improve speed (though not guaranteed)
+    for (int i = 1; i < num_in - 1; i++) {
+        for (int j = i + 1; j < num_in; j++) {
+            T crossProduct = cross_2d<T>(q[i], q[j]);
+            if ((crossProduct < -1e-6) || (fabs(crossProduct) < 1e-6 && dist[i] > dist[j])) {
+                auto q_tmp = q[i];
+                q[i] = q[j];
+                q[j] = q_tmp;
+                auto dist_tmp = dist[i];
+                dist[i] = dist[j];
+                dist[j] = dist_tmp;
+            }
+        }
     }
-  }
 
     // Step 4:
     // Make sure there are at least 2 points (that don't overlap with each other)
@@ -233,10 +232,10 @@ HOST_DEVICE_INLINE int convex_hull_graham(const Point<T> (&p)[24], const int& nu
 
 template <typename T>
 HOST_DEVICE_INLINE T quadri_box_area(const Point<T> (&q)[4]) {
-  T area = 0;
-  area += fabs(cross_2d<T>(q[1] - q[0], q[2] - q[0]));
-  area += fabs(cross_2d<T>(q[2] - q[0], q[3] - q[0]));
-  return area / 2.0;
+    T area = 0;
+    area += fabs(cross_2d<T>(q[1] - q[0], q[2] - q[0]));
+    area += fabs(cross_2d<T>(q[2] - q[0], q[3] - q[0]));
+    return area / 2.0;
 }
 
 template <typename T>
