@@ -439,14 +439,18 @@ public:
      * @return A reference to the modified AclOpRunner
      */
     template <typename T>
-    AclOpRunner& addDynamicInput(const std::vector<T>& tensors) {
+    AclOpRunner& addDynamicInput(const std::vector<T>& tensors, diopiDtype_t type = diopi_dtype_unsupported) {
         ASCEND_CHECK_ABORT(hasDynamicInput_ || inputIndex_ == 0 || InputSize == 1, "only support one dynamic input");
         hasDynamicInput_ = true;
         dynamcInputSize_ = tensors.size();
         inputDescs_.resize(dynamcInputSize_);
         inputBuffers_.resize(dynamcInputSize_);
         for (int i = 0; i < dynamcInputSize_; ++i) {
-            addInput(tensors[i]);
+            if (type != diopi_dtype_unsupported) {
+                addInput(tensors[i], type);
+            } else {
+                addInput(tensors[i]);
+            }
         }
         return *this;
     }
