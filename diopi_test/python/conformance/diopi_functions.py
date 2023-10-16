@@ -3920,6 +3920,7 @@ def linalgqr(input, mode):
     check_returncode(ret)
     return out
 
+
 def rotary_emb(input, cos, sin, conj):
     call = "diopidiopiRotaryEmbedding"
     func = check_function(call)
