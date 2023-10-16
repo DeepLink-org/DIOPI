@@ -8001,22 +8001,22 @@ diopi_configs = {
         interface=['CustomizedTest'],
         dtype=[Dtype.float64, Dtype.float32, Dtype.float16],
         para=dict(
-            conj=[False, True],
+            conj=[False, True, False, True],
         ),
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((1, 125, 16, 32), (1, 125, 16, 32)),
+                    "shape": ((1, 125, 16, 32), (1, 125, 16, 32), (2, 64, 16, 32), (3, 100, 8, 64)),
                 },
                 {
                     "ins": ['cos'],
-                    "shape": ((125, 1, 16), (125, 1, 16)),
+                    "shape": ((125, 1, 16), (125, 1, 16), (64, 1, 16), (100, 1, 32)),
                 },
                 {
                     "ins": ['sin'],
-                    "shape": ((125, 1, 16), (125, 1, 16)),
+                    "shape": ((125, 1, 16), (125, 1, 16), (64, 1, 16), (100, 1, 32)),
                 },
             ],
         ),
