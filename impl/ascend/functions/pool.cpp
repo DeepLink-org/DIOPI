@@ -32,7 +32,7 @@ diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTenso
         float temp = shape.data[shape.len - 1] * shape.data[shape.len - 2];
         temp = temp == 0 ? 1 : temp;
         temp = 1 / temp;
-        diopiScalar_t scalarTemp = {diopi_dtype_float64, temp};
+        diopiScalar_t scalarTemp = constructDiopiScalarT(diopi_dtype_float64, temp);
         diopiFill(ctx, gradInput, &scalarTemp);
         diopiMulInp(ctx, gradInput, gradOutput);
         return diopiSuccess;
