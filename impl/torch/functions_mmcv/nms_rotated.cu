@@ -17,8 +17,6 @@ using namespace cuda::helper;
 namespace mmcv {
 namespace ops {
 
-using namespace at;
-
 int const threadsPerBlock = sizeof(unsigned long long int) * 8;
 
 __host__ __device__ inline int divideUP(const int x, const int y) { return (((x) + (y)-1) / (y)); }
