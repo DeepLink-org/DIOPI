@@ -723,7 +723,7 @@ public:
 };
 
 template <typename T>
-diopiScalar_t constructDiopiScalarT(diopiDtype_t dtype, T val) {
+static diopiScalar_t constructDiopiScalarT(diopiDtype_t dtype, T val) {
     diopiScalar_t scalar;
     scalar.stype = dtype;
     if (DiopiDataType::isFloatPoint(dtype)) {
