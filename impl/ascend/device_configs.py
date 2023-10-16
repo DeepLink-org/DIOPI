@@ -747,6 +747,10 @@ device_configs = {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float16)],
                 },
+                {
+                    "ins": ['other'],
+                    "dtype": [Skip(Dtype.float16)],
+                },
             ]
         ),
     ),
@@ -758,10 +762,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),],
-                },
-                {
-                    "ins": ['other'],
-                    "dtype": [Skip(Dtype.float16)],
                 },
             ]
         ),
