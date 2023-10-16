@@ -5,7 +5,7 @@
 #include <cassert>
 #include <cmath>
 
-#define HOST_DEVICE_INLINE __host__ __device__ __forceinline__
+#define DEVICE_INLINE __device__ __forceinline__
 
 namespace {
 
@@ -17,29 +17,29 @@ struct RotatedBox {
 template <typename T>
 struct Point {
     T x, y;
-    HOST_DEVICE_INLINE Point(const T& px = 0, const T& py = 0) : x(px), y(py) {}
-    HOST_DEVICE_INLINE Point operator+(const Point& p) const { return Point(x + p.x, y + p.y); }
-    HOST_DEVICE_INLINE Point& operator+=(const Point& p) {
+    DEVICE_INLINE Point(const T& px = 0, const T& py = 0) : x(px), y(py) {}
+    DEVICE_INLINE Point operator+(const Point& p) const { return Point(x + p.x, y + p.y); }
+    DEVICE_INLINE Point& operator+=(const Point& p) {
         x += p.x;
         y += p.y;
         return *this;
     }
-    HOST_DEVICE_INLINE Point operator-(const Point& p) const { return Point(x - p.x, y - p.y); }
-    HOST_DEVICE_INLINE Point operator*(const T coeff) const { return Point(x * coeff, y * coeff); }
+    DEVICE_INLINE Point operator-(const Point& p) const { return Point(x - p.x, y - p.y); }
+    DEVICE_INLINE Point operator*(const T coeff) const { return Point(x * coeff, y * coeff); }
 };
 
 template <typename T>
-HOST_DEVICE_INLINE T dot_2d(const Point<T>& A, const Point<T>& B) {
+DEVICE_INLINE T dot_2d(const Point<T>& A, const Point<T>& B) {
     return A.x * B.x + A.y * B.y;
 }
 
 template <typename T>
-HOST_DEVICE_INLINE T cross_2d(const Point<T>& A, const Point<T>& B) {
+DEVICE_INLINE T cross_2d(const Point<T>& A, const Point<T>& B) {
     return A.x * B.y - B.x * A.y;
 }
 
 template <typename T>
-HOST_DEVICE_INLINE void get_rotated_vertices(const RotatedBox<T>& box, Point<T> (&pts)[4]) {
+DEVICE_INLINE void get_rotated_vertices(const RotatedBox<T>& box, Point<T> (&pts)[4]) {
     // M_PI / 180. == 0.01745329251
     // double theta = box.a * 0.01745329251;
     // MODIFIED
@@ -59,7 +59,7 @@ HOST_DEVICE_INLINE void get_rotated_vertices(const RotatedBox<T>& box, Point<T> 
 }
 
 template <typename T>
-HOST_DEVICE_INLINE int get_intersection_points(const Point<T> (&pts1)[4], const Point<T> (&pts2)[4], Point<T> (&intersections)[24]) {
+DEVICE_INLINE int get_intersection_points(const Point<T> (&pts1)[4], const Point<T> (&pts2)[4], Point<T> (&intersections)[24]) {
     // Line vector
     // A line from p1 to p2 is: p1 + (p2-p1)*t, t=[0,1]
     Point<T> vec1[4], vec2[4];
@@ -135,7 +135,7 @@ HOST_DEVICE_INLINE int get_intersection_points(const Point<T> (&pts1)[4], const 
 }
 
 template <typename T>
-HOST_DEVICE_INLINE int convex_hull_graham(const Point<T> (&p)[24], const int& num_in, Point<T> (&q)[24], bool shift_to_zero = false) {
+DEVICE_INLINE int convex_hull_graham(const Point<T> (&p)[24], const int& num_in, Point<T> (&q)[24], bool shift_to_zero = false) {
     assert(num_in >= 2);
 
     // Step 1:
@@ -231,7 +231,7 @@ HOST_DEVICE_INLINE int convex_hull_graham(const Point<T> (&p)[24], const int& nu
 }
 
 template <typename T>
-HOST_DEVICE_INLINE T quadri_box_area(const Point<T> (&q)[4]) {
+DEVICE_INLINE T quadri_box_area(const Point<T> (&q)[4]) {
     T area = 0;
     area += fabs(cross_2d<T>(q[1] - q[0], q[2] - q[0]));
     area += fabs(cross_2d<T>(q[2] - q[0], q[3] - q[0]));
@@ -239,7 +239,7 @@ HOST_DEVICE_INLINE T quadri_box_area(const Point<T> (&q)[4]) {
 }
 
 template <typename T>
-HOST_DEVICE_INLINE T polygon_area(const Point<T> (&q)[24], const int& m) {
+DEVICE_INLINE T polygon_area(const Point<T> (&q)[24], const int& m) {
     if (m <= 2) {
         return 0;
     }
@@ -253,7 +253,7 @@ HOST_DEVICE_INLINE T polygon_area(const Point<T> (&q)[24], const int& m) {
 }
 
 template <typename T>
-HOST_DEVICE_INLINE T rotated_boxes_intersection(const RotatedBox<T>& box1, const RotatedBox<T>& box2) {
+DEVICE_INLINE T rotated_boxes_intersection(const RotatedBox<T>& box1, const RotatedBox<T>& box2) {
     // There are up to 4 x 4 + 4 + 4 = 24 intersections (including dups) returned
     // from rotated_rect_intersection_pts
     Point<T> intersectPts[24], orderedPts[24];
@@ -276,7 +276,7 @@ HOST_DEVICE_INLINE T rotated_boxes_intersection(const RotatedBox<T>& box1, const
 }
 
 template <typename T>
-HOST_DEVICE_INLINE T quadri_boxes_intersection(const Point<T> (&pts1)[4], const Point<T> (&pts2)[4]) {
+DEVICE_INLINE T quadri_boxes_intersection(const Point<T> (&pts1)[4], const Point<T> (&pts2)[4]) {
     // There are up to 4 x 4 + 4 + 4 = 24 intersections (including dups) returned
     // from rotated_rect_intersection_pts
     Point<T> intersectPts[24], orderedPts[24];
@@ -296,7 +296,7 @@ HOST_DEVICE_INLINE T quadri_boxes_intersection(const Point<T> (&pts1)[4], const 
 }  // namespace
 
 template <typename T>
-HOST_DEVICE_INLINE T single_box_iou_rotated(T const* const box1_raw, T const* const box2_raw, const int mode_flag) {
+DEVICE_INLINE T single_box_iou_rotated(T const* const box1_raw, T const* const box2_raw, const int mode_flag) {
     // shift center to the middle point to achieve higher precision in result
     RotatedBox<T> box1, box2;
     auto center_shift_x = (box1_raw[0] + box2_raw[0]) / 2.0;
@@ -330,7 +330,7 @@ HOST_DEVICE_INLINE T single_box_iou_rotated(T const* const box1_raw, T const* co
 }
 
 template <typename T>
-HOST_DEVICE_INLINE T single_box_iou_quadri(T const* const pts1_raw, T const* const pts2_raw, const int mode_flag) {
+DEVICE_INLINE T single_box_iou_quadri(T const* const pts1_raw, T const* const pts2_raw, const int mode_flag) {
     // shift center to the middle point to achieve higher precision in result
     Point<T> pts1[4], pts2[4];
 
