@@ -67,22 +67,6 @@ inline aclFormat getAclDataFormat(diopiConstTensorHandle_t th) {
     return ACL_FORMAT_ND;
 }
 
-inline bool isIntegralType(const diopiDtype_t& type) { return type < 8; }
-
-inline bool isIntegralTypeWithBool(const diopiDtype_t& type) { return type < 8 || type == 11; }
-
-inline bool isFloatingType(const diopiDtype_t& type) { return (type <= 10 && type >= 8) || type == 12 || type == 13; }
-
-template <typename T>
-T getValue(const diopiScalar_t* scalar) {
-    ASCEND_CHECK_ABORT(scalar != nullptr, "input should not be nullptr");
-    if (isIntegralTypeWithBool(scalar->stype)) {
-        return static_cast<T>(scalar->ival);
-    } else {
-        return static_cast<T>(scalar->fval);
-    }
-}
-
 diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* out, float val);
 
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out,
