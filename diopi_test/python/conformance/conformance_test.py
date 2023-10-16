@@ -23,7 +23,10 @@ def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dt
         if glob_vars.four_bytes and (para in dtype_list) \
                 and tensor is not None and tensor.dtype == np.int64:
             tensor = tensor.astype(np.int32)
-        if isinstance(function_paras['kwargs'][para], np.ndarray):
+
+        if isinstance(tensor, Tensor):
+            tensor = tensor.numpy()
+        if isinstance(tensor, np.ndarray):
             ndim = tensor.ndim
             if glob_vars.nhwc and (para in nhwc_list):
                 if ndim < glob_vars.nhwc_min_dim or ndim > 5:
@@ -214,7 +217,8 @@ class ManualTest(object):
 
     def test_bernoulli(input, inplace=False, p=None):
         p_numpy = input.numpy()
-        p = p_numpy.mean() if p is None else p
+        if input.numel() > 0:
+            p = p_numpy.mean() if p is None else p
         state = build_generator_state(input.context())
         generator = Generator(state)
         out = F.bernoulli(input, inplace, p, generator)

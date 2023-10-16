@@ -1,10 +1,6 @@
 #ifndef IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_
 #define IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_
 
-#include <acl/acl.h>
-#include <acl/acl_op.h>
-#include <acl/acl_op_compiler.h>
-#include <diopi/functions.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -21,7 +17,11 @@
 #include <vector>
 
 #include "../ascend_tensor.hpp"
+#include "acl/acl.h"
+#include "acl/acl_op.h"
+#include "acl/acl_op_compiler.h"
 #include "debug.hpp"
+#include "impl_functions.hpp"
 #include "utils.hpp"
 
 namespace impl {
@@ -65,22 +65,6 @@ inline aclFormat getAclDataFormat(diopiConstTensorHandle_t th) {
         warning("Acl only support NCHW or NHWC format! but get %s", dumpTensor(th).c_str());
     }
     return ACL_FORMAT_ND;
-}
-
-inline bool isIntegralType(const diopiDtype_t& type) { return type < 8; }
-
-inline bool isIntegralTypeWithBool(const diopiDtype_t& type) { return type < 8 || type == 11; }
-
-inline bool isFloatingType(const diopiDtype_t& type) { return (type <= 10 && type >= 8) || type == 12 || type == 13; }
-
-template <typename T>
-T getValue(const diopiScalar_t* scalar) {
-    ASCEND_CHECK_ABORT(scalar != nullptr, "input should not be nullptr");
-    if (isIntegralTypeWithBool(scalar->stype)) {
-        return static_cast<T>(scalar->ival);
-    } else {
-        return static_cast<T>(scalar->fval);
-    }
 }
 
 diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* out, float val);
@@ -467,7 +451,7 @@ public:
         return *this;
     }
 
-    AclOpRunner& addOutput(void* ptr, int64_t buffersize, std::vector<int64_t>& dims, const aclFormat& format, diopiDtype_t dtype) {
+    AclOpRunner& addOutput(void* ptr, int64_t buffersize, const std::vector<int64_t>& dims, const aclFormat& format, diopiDtype_t dtype) {
         static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
         if (aclDebugFlag > 0) {
             std::stringstream stream;
