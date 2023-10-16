@@ -701,26 +701,6 @@ static inline diopiDtype_t promoteTypes(diopiDtype_t a, diopiDtype_t b) {
 
 std::pair<uint64_t, int64_t> getSeedAndOffset(diopiContextHandle_t ctx, diopiGeneratorHandle_t gen, uint64_t inc);
 
-class DiopiDataType final {
-public:
-    static bool isInteger(diopiDtype_t dtype);
-    static bool isFloatPoint(diopiDtype_t dtype);
-    static diopiDtype_t complexDtype2Real(diopiDtype_t complexDtype);
-    static diopiDtype_t realDtype2Complex(diopiDtype_t realDtype);
-    static const char* dataTypeStr(diopiDtype_t dtype);
-};
-
-template <typename T>
-static diopiScalar_t constructDiopiScalarT(diopiDtype_t dtype, T val) {
-    diopiScalar_t scalar;
-    scalar.stype = dtype;
-    if (DiopiDataType::isFloatPoint(dtype)) {
-        scalar.fval = static_cast<double>(val);
-    } else {
-        scalar.ival = static_cast<int64_t>(val);
-    }
-    return scalar;
-}
 }  // namespace ascend
 }  // namespace impl
 
