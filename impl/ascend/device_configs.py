@@ -914,7 +914,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [],
+                    "shape": [((16, 726, 32), (16, 100, 100), (9, 5, 5), (0, 12, 16), (4, 0, 6), (4, 9, 0), (5, 8, 13))],
                 },
             ]
         ),
@@ -2084,7 +2084,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [],
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                 },
             ]
         ),
@@ -2098,7 +2098,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [],
+                    "dtype": [Dtype.float32, Dtype.float64, Dtype.float16],
                 },
             ]
         ),
