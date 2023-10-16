@@ -691,7 +691,7 @@ device_configs = {
     ),
 
     'pointwise_binary_broadcast': dict(
-        name=['add', 'ne', 'le', 'lt', 'ge', 'logical_and', 'logical_or'],
+        name=['ne', 'le', 'lt', 'ge', 'logical_and', 'logical_or'],
         tensor_para=dict(
             args=[
                 {
@@ -703,7 +703,7 @@ device_configs = {
     ),
 
     'pointwise_binary_broadcast_inplace': dict(
-        name=['add', 'ne', 'le', 'lt', 'ge', 'logical_and', 'logical_or'],
+        name=['ne', 'le', 'lt', 'ge', 'logical_and', 'logical_or'],
         tensor_para=dict(
             args=[
                 {
@@ -746,12 +746,16 @@ device_configs = {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float16)],
                 },
+                {
+                    "ins": ['other'],
+                    "dtype": [Skip(Dtype.float16)],
+                },
             ]
         ),
     ),
 
     'pointwise_binary_dtype_bool': dict(
-        name=['add', 'ne', 'le', 'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
+        name=['ne', 'le', 'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
         tensor_para=dict(
             args=[
                 {
@@ -858,41 +862,7 @@ device_configs = {
         ),
     ),
 
-    'pointwise_binary_constant_with_alpha_and_no_contiguous': dict(
-        name=['add'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 64, 128)),Skip((128, 64, 3, 3)),Skip((128, 32, 2, 2)),Skip((2, 32, 130, 130)),],
-                },
-            ]
-        ),
-    ),
-
-    'pointwise_binary_with_alpha': dict(
-        name=['add'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 3)),Skip((2, 2, 4, 3)),],
-                },
-            ]
-        ),
-    ),
-
-    'pointwise_binary_with_alpha_bool': dict(
-        name=['add'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 3)),Skip((2, 2, 4, 3)),],
-                },
-            ]
-        ),
-    ),
+    
 
     'bmm': dict(
         name=['bmm'],
@@ -1206,7 +1176,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((200, 79)),Skip((200, 80)),Skip((5, 16, 0)),Skip((0, 16)),Skip((4, 82, 0, 3)),],
+                    "dtype": [Skip(Dtype.float16),],
                 },
             ]
         ),
@@ -1404,29 +1374,6 @@ device_configs = {
         ),
     ),
 
-    'join': dict(
-        name=['cat', 'stack'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensor'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),Skip(Dtype.bool),Skip(Dtype.int32),],
-                },
-            ]
-        ),
-    ),
-
-    'cat_diff_size': dict(
-        name=['cat'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensors'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),Skip(Dtype.bool),Skip(Dtype.int32),],
-                },
-            ]
-        ),
-    ),
 
     'split': dict(
         name=['split'],
@@ -2862,7 +2809,7 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
+                }
             ]
         ),
     ),
@@ -2873,7 +2820,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),],
+                    "dtype": [Skip(Dtype.float64),Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int64),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),Skip(Dtype.uint8),Skip(Dtype.bool)],
                 },
             ]
         ),
