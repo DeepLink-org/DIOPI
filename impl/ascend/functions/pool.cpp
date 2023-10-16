@@ -28,8 +28,8 @@ diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTenso
     diopiGetTensorShape(input, &shape);
     diopiSize_t gradShape;
     diopiGetTensorShape(gradOutput, &gradShape);
-    if (gradShape.data[gradShape.len -1] == gradShape.data[gradShape.len-2] && 1 == gradShape.data[gradShape.len -1]) {
-        float temp = shape.data[shape.len -1] * shape.data[shape.len -2];
+    if (gradShape.data[gradShape.len - 1] == gradShape.data[gradShape.len - 2] && 1 == gradShape.data[gradShape.len - 1]) {
+        float temp = shape.data[shape.len - 1] * shape.data[shape.len - 2];
         temp = temp == 0 ? 1 : temp;
         temp = 1 / temp;
         diopiScalar_t scalarTemp = {diopi_dtype_float64, temp};
