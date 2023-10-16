@@ -4,16 +4,12 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <set>
 
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
-
-extern "C" {
 
 diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask,
                              diopiConstTensorHandle_t value) {
@@ -91,7 +87,6 @@ diopiError_t diopiMaskedFillScalar(diopiContextHandle_t ctx, diopiTensorHandle_t
 diopiError_t diopiMaskedFillInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t mask, const diopiScalar_t* value) {
     return diopiMaskedFillScalar(ctx, input, input, mask, value);
 }
-}  // extern "C"
 
 }  // namespace ascend
 }  // namespace impl

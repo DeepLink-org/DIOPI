@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <vector>
 
 #include "../common/acloprunner.hpp"
@@ -13,9 +11,7 @@
 namespace impl {
 namespace ascend {
 
-extern "C" {
-
-DIOPI_API diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* p, diopiSize_t dim) {
+diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* p, diopiSize_t dim) {
     diopiSize_t size;
     diopiGetTensorShape(out, &size);
     diopiDtype_t dtype;
@@ -42,7 +38,6 @@ DIOPI_API diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t o
     AclOpRunner<1, 1>("LpNormUpdate", ctx).addInput(resultTmp).addOutput(out).setAttr("p", pValue).setAttr<float>("epsilon", 0.0).run();
 
     return diopiSuccess;
-}
 }
 
 }  // namespace ascend
