@@ -5,15 +5,7 @@
 #include <cassert>
 #include <cmath>
 
-#ifdef __CUDACC__
-// Designates functions callable from the host (CPU) and the device (GPU)
-#define HOST_DEVICE __host__ __device__
-#define HOST_DEVICE_INLINE HOST_DEVICE __forceinline__
-#else
-#include <algorithm>
-#define HOST_DEVICE
-#define HOST_DEVICE_INLINE HOST_DEVICE inline
-#endif
+#define HOST_DEVICE_INLINE __host__ __device__ __forceinline__
 
 namespace {
 
@@ -178,38 +170,22 @@ HOST_DEVICE_INLINE int convex_hull_graham(const Point<T> (&p)[24], const int& nu
         dist[i] = dot_2d<T>(q[i], q[i]);
     }
 
-#ifdef __CUDACC__
-    // CUDA version
-    // In the future, we can potentially use thrust
-    // for sorting here to improve speed (though not guaranteed)
-    for (int i = 1; i < num_in - 1; i++) {
-        for (int j = i + 1; j < num_in; j++) {
-            T crossProduct = cross_2d<T>(q[i], q[j]);
-            if ((crossProduct < -1e-6) || (fabs(crossProduct) < 1e-6 && dist[i] > dist[j])) {
-                auto q_tmp = q[i];
-                q[i] = q[j];
-                q[j] = q_tmp;
-                auto dist_tmp = dist[i];
-                dist[i] = dist[j];
-                dist[j] = dist_tmp;
-            }
-        }
+  // In the future, we can potentially use thrust
+  // for sorting here to improve speed (though not guaranteed)
+  for (int i = 1; i < num_in - 1; i++) {
+    for (int j = i + 1; j < num_in; j++) {
+      T crossProduct = cross_2d<T>(q[i], q[j]);
+      if ((crossProduct < -1e-6) ||
+          (fabs(crossProduct) < 1e-6 && dist[i] > dist[j])) {
+        auto q_tmp = q[i];
+        q[i] = q[j];
+        q[j] = q_tmp;
+        auto dist_tmp = dist[i];
+        dist[i] = dist[j];
+        dist[j] = dist_tmp;
+      }
     }
-#else
-    // CPU version
-    std::sort(q + 1, q + num_in, [](const Point<T>& A, const Point<T>& B) -> bool {
-        T temp = cross_2d<T>(A, B);
-        if (fabs(temp) < 1e-6) {
-            return dot_2d<T>(A, A) < dot_2d<T>(B, B);
-        } else {
-            return temp > 0;
-        }
-    });
-    // compute distance to origin after sort, since the points are now different.
-    for (int i = 0; i < num_in; i++) {
-        dist[i] = dot_2d<T>(q[i], q[i]);
-    }
-#endif
+  }
 
     // Step 4:
     // Make sure there are at least 2 points (that don't overlap with each other)
