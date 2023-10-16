@@ -572,6 +572,7 @@ class CustomizedTest(object):
         out = torch.cat((out1, out2), dim=-1)
         return out
 
+
 def transfer_tensor_to_device(function_paras: dict):
     for para in function_paras["kwargs"].keys():
         if isinstance(function_paras['kwargs'][para], np.ndarray):
