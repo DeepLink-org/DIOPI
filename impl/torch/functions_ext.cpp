@@ -93,7 +93,7 @@ diopiError_t diopiApplyPenalty(
     dim3 block(BLOCK); // 线程块在每个维度上都有BLOCK个线程
 
     // 在CUDA流上运行_fwd_kernel_apply_penalty函数，并传递相应的参数
-    AT_DISPATCH_FLOATING_TYPES(Logits.scalar_type(), "_fwd_kernel_apply_penalty", ([&] {
+    AT_DISPATCH_FLOATING_TYPES(Logits.scalar_type(), "apply_penalty_cuda", ([&] {
         _fwd_kernel_apply_penalty<<<grid, block, 0, stream>>>(
             atLogits,
             atPresencePenalty,

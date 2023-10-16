@@ -23,6 +23,17 @@ void rms_norm_forward(Tensor input, IntArrayRef normalized_shape, Tensor gamma, 
 void rms_norm_backward(Tensor dout, Tensor invvar, Tensor input, IntArrayRef normalized_shape, Tensor gamma, double epsilon, Tensor grad_input,
                        Tensor grad_gamma);
 
+void apply_penalty_cuda(Tensor Logits, 
+        Tensor presence_penalty, 
+        Tensor frequency_penalty, 
+        Tensor p_token_ids, 
+        Tensor p_token_counts, 
+        Tensor p_cumsum_seq_len, 
+        int64_t stride_logit_b,
+        int64_t stride_logit_s,
+        int BLOCK_P
+    )
+
 }  // namespace ops
 }  // namespace ext
 #endif  // IMPL_TORCH_EXT_KERNEL_H_

@@ -20,7 +20,7 @@ namespace ops {
 
     using namespace at;
 
-    __global__ void _fwd_kernel_apply_penalty(
+    __global__ void apply_penalty_cuda(
         at::Tensor Logits, // Logits是模型的输出，它是一个形状为[batch_size, sequence_length, vocab_size]的张量
         at::Tensor presence_penalty, // presence_penalty的形状是(batch_size)，每个输入序列都有一个单独的存在性惩罚值和频率惩罚值
         at::Tensor frequency_penalty, // frequency_penalty与presence_penalty类似，形状是(batch_size)
