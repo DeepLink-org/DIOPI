@@ -14,7 +14,9 @@ diopiError_t diopiBmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     AscendTensor mat2Copy(mat2);
     AscendTensor outputCopy(out);
     if (inputCopy.numel() == 0 || mat2Copy.numel() == 0) {
-        diopiScalar_t zero = {outputCopy.dtype(), 0.0};
+        diopiScalar_t zero;
+        zero.stype = outputCopy.dtype();
+        zero.fval = 0.0;
         diopiFill(ctx, out, &zero);
         return diopiSuccess;
     }
