@@ -119,6 +119,9 @@ if __name__ == "__main__":
             model_name = 'diopi'
             from diopi_configs import diopi_configs
         diopi_case_item_path = os.path.join(cache_path, diopi_case_item_file)
+        cfg_parse = ConfigParser(diopi_case_item_path)
+        cfg_parse.parser(diopi_configs)
+        cfg_parse.save()
         inputs_dir = os.path.join(cache_path, 'data/' + model_name + "/inputs")
         outputs_dir = os.path.join(cache_path, 'data/' + model_name + "/outputs")
 
@@ -140,7 +143,7 @@ if __name__ == "__main__":
             from diopi_configs import diopi_configs
         diopi_case_item_path = os.path.join(cache_path, diopi_case_item_file)
         device_case_item_path = os.path.join(cache_path, device_case_item_file)
-        
+
         cfg_parse = ConfigParser(diopi_case_item_path)
         cfg_parse.parser(diopi_configs)
         cfg_parse.save()
