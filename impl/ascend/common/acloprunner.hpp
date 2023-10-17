@@ -36,63 +36,7 @@ inline aclFormat getAclDataFormat(diopiConstTensorHandle_t th) {
     diopiGetTensorShape(th, &shape);
     diopiGetTensorStride(th, &stride);
     ASCEND_CHECK_ABORT(stride.len == shape.len, "stride.len == shape.len check failed");
-    if (shape.len == 5) {
-        std::array<int64_t, 5> thStride{stride.data[0], stride.data[1], stride.data[2], stride.data[3], stride.data[4]};
-
-        int st = 1;
-        std::array<int64_t, 5> ncdhwStride;
-        for (auto k : {4, 3, 2, 1, 0}) {
-            ncdhwStride[k] = st;
-            if (shape.data[k] == 0) continue;
-            if (shape.data[k] == -1) st = -1;
-            if (st != -1) st *= shape.data[k];
-        }
-        if (thStride == ncdhwStride) {
-            return ACL_FORMAT_NCDHW;
-        }
-
-        st = 1;
-        std::array<int64_t, 5> ndhwcStride;
-        for (auto k : {1, 4, 3, 2, 0}) {
-            ndhwcStride[k] = st;
-            if (shape.data[k] == 0) continue;
-            if (shape.data[k] == -1) st = -1;
-            if (st != -1) st *= shape.data[k];
-        }
-        if (thStride == ndhwcStride) {
-            return ACL_FORMAT_NDHWC;
-        }
-
-        warning("Acl only support NCDHW or NDHWC format! but get %s", dumpTensor(th).c_str());
-    } else if (shape.len == 4) {
-        std::array<int64_t, 4> thStride{stride.data[0], stride.data[1], stride.data[2], stride.data[3]};
-        {
-            std::array<int64_t, 4> nchwStride;
-            int st = 1;
-            for (auto k : {3, 2, 1, 0}) {
-                nchwStride[k] = st;
-                if (shape.data[k] == 0) continue;
-                if (shape.data[k] == -1) st = -1;
-                if (st != -1) st *= shape.data[k];
-            }
-            if (thStride == nchwStride) {
-                return ACL_FORMAT_NCHW;
-            }
-        }
-        std::array<int64_t, 4> nhwcStride;
-        int st = 1;
-        for (auto k : {1, 3, 2, 0}) {
-            nhwcStride[k] = st;
-            if (shape.data[k] == 0) continue;
-            if (shape.data[k] == -1) st = -1;
-            if (st != -1) st *= shape.data[k];
-        }
-        if (thStride == nhwcStride) {
-            return ACL_FORMAT_NHWC;
-        }
-        warning("Acl only support NCHW or NHWC format! but get %s", dumpTensor(th).c_str());
-    }
-    return ACL_FORMAT_ND;
+    return AscendTensor(th).getAclDataFormat();
 }
 
 diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* out, float val);
