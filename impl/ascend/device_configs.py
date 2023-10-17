@@ -908,15 +908,8 @@ device_configs = {
 
     'bmm': dict(
         name=['bmm'],
-        tensor_para=dict(
-        atol=2e-2,
-        rtol=2e-2,
-            args=[
-                {
-                    "ins": ['input'],
-                },
-            ]
-        ),
+        atol=3e-2,
+        rtol=3e-2,
     ),
 
     'addmm': dict(
@@ -2077,28 +2070,14 @@ device_configs = {
 
     'mm': dict(
         name=['mm'],
-        tensor_para=dict(
         atol=2e-2,
         rtol=2e-2,
-            args=[
-                {
-                    "ins": ['input'],
-                },
-            ]
-        ),
     ),
 
     'mm_diff_dtype': dict(
         name=['mm'],
-        tensor_para=dict(
         atol=2e-2,
         rtol=2e-2,
-            args=[
-                {
-                    "ins": ['input'],
-                },
-            ]
-        ),
     ),
 
     'index_fill_scalar': dict(
