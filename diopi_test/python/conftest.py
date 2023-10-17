@@ -30,6 +30,7 @@ def pytest_runtest_makereport(item, call):
                 item['not_implemented_flag'] = 1
         item['result'] = report.outcome
         db_conn.will_update_device_case(item)
+    glob_vars.cur_test_func = ''
 
 
 def pytest_sessionfinish(session, exitstatus):

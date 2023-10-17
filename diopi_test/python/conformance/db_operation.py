@@ -198,8 +198,10 @@ class DB_Operation(object):
         case_item['test_flag'] = 1
         self.all_case_items[case_item['pytest_nodeid']].update(case_item)
 
-        self.expand_func_list(last_diopi_func_name, case_item.get('not_implemented_flag', case_model['not_implemented_flag']),
-                              diopi_func_name_list, case_item['result'])
+        # if failed before forward, diopi_func_name will be ''
+        if diopi_func_name != '':
+            self.expand_func_list(last_diopi_func_name, case_item.get('not_implemented_flag', case_model['not_implemented_flag']),
+                                diopi_func_name_list, case_item['result'])
 
     @use_db(glob_vars.use_db)
     def expand_func_list(self, last_diopi_func_name, not_implemented_flag, func_name_list, result):
