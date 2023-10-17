@@ -167,7 +167,35 @@ int64_t AscendTensor::getAclMemBufferSize() const {
 }
 
 aclFormat AscendTensor::getAclDataFormat() const {
-    if (dim() == 4) {
+    if (dim() == 5) {
+        std::array<int64_t, 5> thStride{stride(0), stride(1), stride(2), stride(3), stride(4)};
+
+        int st = 1;
+        std::array<int64_t, 5> ncdhwStride;
+        for (auto k : {4, 3, 2, 1, 0}) {
+            ncdhwStride[k] = st;
+            if (shape(k) == 0) continue;
+            if (shape(k) == -1) st = -1;
+            if (st != -1) st *= shape(k);
+        }
+        if (thStride == ncdhwStride) {
+            return ACL_FORMAT_NCDHW;
+        }
+
+        st = 1;
+        std::array<int64_t, 5> ndhwcStride;
+        for (auto k : {1, 4, 3, 2, 0}) {
+            ndhwcStride[k] = st;
+            if (shape(k) == 0) continue;
+            if (shape(k) == -1) st = -1;
+            if (st != -1) st *= shape(k);
+        }
+        if (thStride == ndhwcStride) {
+            return ACL_FORMAT_NDHWC;
+        }
+
+        warning("getAclDataFormat error. Acl only support NCDHW or NDHWC format! but get %s", dumpTensor(tensor_).c_str());
+    } else if (dim() == 4) {
         std::array<int64_t, 4> thStride{stride(0), stride(1), stride(2), stride(3)};
         {
             std::array<int64_t, 4> nchwStride;
