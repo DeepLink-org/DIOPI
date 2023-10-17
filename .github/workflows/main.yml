@@ -350,8 +350,10 @@ jobs:
         run: |
           set -e
           export CI=true
+          export DIOPI_BUILD_TESTRT=ON
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           cd impl && mkdir lib && cp -R /home/deeplink/*.so lib/
+          sh scripts/build_impl.sh tops
 
   Op-Test-Topsrider:
     name: Op-Test-Topsrider
