@@ -8,19 +8,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((2, 8, 32, 56, 56)),Skip((2, 64, 32, 32)),Skip((2, 96, 28)),Skip((2, 16)),],
-                },
-            ]
-        ),
-    ),
-
-    'batch_norm_nan': dict(
-        name=['batch_norm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 8, 32, 56, 56)),Skip((2, 64, 32, 32)),Skip((2, 96, 28)),Skip((16, 2)),],
+                    "dtype": [Skip(Dtype.float16),],
                 },
             ]
         ),
@@ -32,7 +20,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((2, 8, 32, 56, 56)),Skip((2, 64, 32, 32)),Skip((2, 96, 28)),Skip((32, 16)),],
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float64),],
                 },
             ]
         ),
