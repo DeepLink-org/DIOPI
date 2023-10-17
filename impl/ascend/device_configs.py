@@ -296,23 +296,12 @@ device_configs = {
 
     'adaptive_avg_pool2d': dict(
         name=['adaptive_avg_pool2d'],
+        atol=2e-2,
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'adaptive_avg_pool2d_zero_size': dict(
-        name=['adaptive_avg_pool2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "shape": [Skip((3,16,8)), Skip((4,16,12)), Skip((2,144,65,65))],
                 },
             ]
         ),
@@ -874,8 +863,6 @@ device_configs = {
         ),
     ),
 
-    
-
     'bmm': dict(
         name=['bmm'],
         tensor_para=dict(
@@ -1373,7 +1360,6 @@ device_configs = {
             ]
         ),
     ),
-
 
     'split': dict(
         name=['split'],
