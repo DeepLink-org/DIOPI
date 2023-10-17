@@ -21,3 +21,11 @@
 - diopiBatchNormBackward:
     dtype: (float64)->float32
     layout: NCHW
+
+- diopiAny:
+    dtype: (float16, float32, float64, int16, int32, int64, uint8, int8)->bool
+    layout: NCHW
+
+- diopiAll:
+    dtype: (float16, float32, float64, int16, int32, int64, uint8, int8)->bool
+    layout: NCHW
