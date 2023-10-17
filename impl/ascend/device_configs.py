@@ -1109,42 +1109,6 @@ device_configs = {
         ),
     ),
 
-    'reduce_partial_op_3': dict(
-        name=['any', 'all'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.bool),Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                },
-            ]
-        ),
-    ),
-
-    'reduce_partial_op_zeros_input': dict(
-        name=['any', 'all'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.bool),Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                },
-            ]
-        ),
-    ),
-
-    'reduce_partial_op_ones_input': dict(
-        name=['any', 'all'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.bool),Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                },
-            ]
-        ),
-    ),
-
     'mse_loss': dict(
         name=['mse_loss'],
         tensor_para=dict(
