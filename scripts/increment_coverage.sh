@@ -10,8 +10,8 @@ echo "entering "$ROOT_DIR
 require_coverage=$1
 
 lcov -c -d . --include "*/${ROOT_DIR#/mnt/*/}/${include}/*" -o coverage/coverage.info
-newcommit=`git rev-parse --short HEAD`
-oldcommit=`git reflog | grep 'checkout: moving from main to' | awk '{print $1}'`
+newcommit=`git rev-parse HEAD~1`
+oldcommit=`git merge-base ${newcommit} main`
 if [ -z $oldcommit ];then echo "is not Pull request" && exit 0;fi
 git diff $oldcommit $newcommit --name-only | xargs -I {} realpath {} > coverage/gitdiff.txt 2>/dev/null || echo "error can be ignored"
 for dir in `cat coverage/gitdiff.txt`;do

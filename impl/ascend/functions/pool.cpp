@@ -10,6 +10,10 @@ namespace impl {
 namespace ascend {
 
 diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t outputSize) {
+    if (0 == outputSize.data[0]) {
+        return diopiSuccess;
+    }
+
     AclOpRunner<1, 1>("AdaptiveAvgPool2d", ctx)
         .addInput(input)
         .setAttr("output_size", std::vector<int32_t>{static_cast<int>(outputSize.data[0]), static_cast<int>(outputSize.data[1])})
@@ -22,6 +26,18 @@ diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTenso
                                             diopiConstTensorHandle_t input) {
     diopiSize_t shape;
     diopiGetTensorShape(input, &shape);
+    diopiSize_t gradShape;
+    diopiGetTensorShape(gradOutput, &gradShape);
+    if (gradShape.data[gradShape.len - 1] == gradShape.data[gradShape.len - 2] && 1 == gradShape.data[gradShape.len - 1]) {
+        float temp = shape.data[shape.len - 1] * shape.data[shape.len - 2];
+        temp = temp == 0 ? 1 : temp;
+        temp = 1 / temp;
+        diopiScalar_t scalarTemp = constructDiopiScalarT(diopi_dtype_float64, temp);
+        diopiFill(ctx, gradInput, &scalarTemp);
+        diopiMulInp(ctx, gradInput, gradOutput);
+        return diopiSuccess;
+    }
+
     AclOpRunner<1, 1>("AdaptiveAvgPool2dGrad", ctx)
         .addInput(gradOutput)
         .setAttr("orig_input_shape",
