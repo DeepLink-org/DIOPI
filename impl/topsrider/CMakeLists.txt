@@ -34,7 +34,7 @@ if(OPS_FOUND)
     include_directories(SYSTEM ${OPS_INCLUDE_DIR})
 else()
     #add_subdirectory(ops ${CMAKE_CURRENT_SOURCE_DIR}/ops/build)
-    add_subdirectory(ops)
+    #add_subdirectory(ops)
 
     set(OPS_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/ops/)
     set(OPS_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/ops/build/libops.so)
