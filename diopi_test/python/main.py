@@ -150,8 +150,7 @@ if __name__ == "__main__":
         cfg_path = diopi_case_item_path
 
         if args.impl_folder != '':
-            cfg_path = device_case_item_path
-            device_name = os.path.basename(args.impl_folder)
+            cfg_path = device_case_item_path % os.path.basename(args.impl_folder)
             device_config_path = os.path.join(args.impl_folder, "device_configs.py")
             dst_path = os.path.join(cur_dir, "device_configs.py")
 
@@ -168,7 +167,7 @@ if __name__ == "__main__":
             opt.run()
             coll = CollectCase(cfg_parse.get_config_cases(), opt.rules())
             coll.collect()
-            coll.save(device_case_item_path % device_name)
+            coll.save(cfg_path)
 
         from codegen.gen_case import GenConfigTestCase
         if not os.path.exists(args.case_output_dir):
