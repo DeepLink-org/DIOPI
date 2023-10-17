@@ -23,7 +23,12 @@ diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
 
     AscendTensor outA(values);
     castTensor(ctx, outA, castType);
-
+    
+    AscendTensor tem(input);
+    if (tem.dim()== 0) {
+        diopiCastDtype(ctx, values, const_cast<diopiTensorHandle_t>(input));
+        return diopiSuccess;
+    }
     AclOpRunner<2, 2>("TopKV2", ctx)
         .addInput(input, castType)
         .addConstInput(kSize)
@@ -34,9 +39,8 @@ diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
         .addOutput(indices)
         .run();
 
+    castTensor(ctx, outA, outDtype);
     diopiCastDtype(ctx, values, static_cast<diopiConstTensorHandle_t>(outA));
-
-    AscendTensor o(indices);
 
     return diopiSuccess;
 }
