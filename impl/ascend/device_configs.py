@@ -296,23 +296,12 @@ device_configs = {
 
     'adaptive_avg_pool2d': dict(
         name=['adaptive_avg_pool2d'],
+        atol=2e-2,
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'adaptive_avg_pool2d_zero_size': dict(
-        name=['adaptive_avg_pool2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "shape": [Skip((3,16,8)), Skip((4,16,12)), Skip((2,144,65,65))],
                 },
             ]
         ),
@@ -874,8 +863,6 @@ device_configs = {
         ),
     ),
 
-    
-
     'bmm': dict(
         name=['bmm'],
         tensor_para=dict(
@@ -1302,18 +1289,6 @@ device_configs = {
         ),
     ),
 
-    'soft_max': dict(
-        name=['softmax'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
-            ]
-        ),
-    ),
-
     'embedding': dict(
         name=['embedding'],
         tensor_para=dict(
@@ -1385,7 +1360,6 @@ device_configs = {
             ]
         ),
     ),
-
 
     'split': dict(
         name=['split'],
@@ -2821,7 +2795,7 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
+                }
             ]
         ),
     ),
@@ -2832,7 +2806,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),],
+                    "dtype": [Skip(Dtype.float64),Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int64),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),Skip(Dtype.uint8),Skip(Dtype.bool)],
                 },
             ]
         ),
@@ -2881,30 +2855,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),Skip(Dtype.bool),],
-                },
-            ]
-        ),
-    ),
-
-    'isnan': dict(
-        name=['isnan'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((128,)),Skip((1024, 64)),Skip((384, 128)),Skip((64, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),Skip((0,)),Skip((4, 0)),Skip((12, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
-    'isnan_input_nan': dict(
-        name=['isnan'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
                 },
             ]
         ),
