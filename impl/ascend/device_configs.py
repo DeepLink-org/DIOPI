@@ -1437,26 +1437,14 @@ device_configs = {
 
     'topk_nonzero': dict(
         name=['topk'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip(()),Skip((8723,)),Skip((1024, 81)),Skip((5, 4, 6)),Skip((2, 2, 64, 64)),Skip((0,)),Skip((12, 0)),Skip((4, 0, 7)),],
-                },
-            ]
-        ),
+        atol=1e-2,
+        rtol=1e-2,
     ),
 
     'topk_zero': dict(
         name=['topk'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((1,)),Skip((16,)),Skip((50, 25, 10)),],
-                },
-            ]
-        ),
+        atol=1e-2,
+        rtol=1e-2,
     ),
 
     'transpose': dict(
