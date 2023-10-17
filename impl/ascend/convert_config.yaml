@@ -100,6 +100,7 @@
 
 - diopiLogicalNotInp:
     dtype: (float64)->bool, (float32)->bool, (float16)->bool, (int64)->bool, (int32)->bool, (int16)->bool, (int8)->bool, (uint8)->bool
+    layout: NCHW
 
 - diopiBatchNorm:
     dtype: (float64)->float32
