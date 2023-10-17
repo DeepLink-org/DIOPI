@@ -1,0 +1,16 @@
+
+- diopiConvolution2d:
+    dtype: (float64)->float16
+    layout: NCHW
+
+- diopiConvolution2dBackward:
+    dtype: (float64)->float16
+    layout: NCHW
+
+- diopiAdaptiveAvgPool2d:
+    dtype: (float64)->float32 , (float16)->float32
+    layout: NCHW
+
+- diopiAdaptiveAvgPool2dBackward:
+    dtype: (float64)->float32 , (float16)->float32
+    layout: NCHW

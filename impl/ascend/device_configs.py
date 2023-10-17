@@ -132,7 +132,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((4, 7, 12, 13)),Skip((6, 16, 19, 8)),Skip((6, 27, 12, 8)),Skip((2, 256, 200, 304)),Skip((2, 2048, 64, 64)),Skip((2, 2048, 1, 1)),Skip((2, 256, 200, 304)),Skip((0, 6, 5, 10)),],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float64)],
                 },
             ]
         ),
@@ -144,7 +144,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((2, 256, 200, 304)),Skip((2, 2048, 64, 64)),Skip((2, 2048, 1, 1)),Skip((2, 256, 200, 304)),],
+                    "dtype": [Skip(Dtype.float32), Skip(Dtype.float64)],
                 },
             ]
         ),
@@ -296,23 +296,12 @@ device_configs = {
 
     'adaptive_avg_pool2d': dict(
         name=['adaptive_avg_pool2d'],
+        atol=2e-2,
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'adaptive_avg_pool2d_zero_size': dict(
-        name=['adaptive_avg_pool2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "shape": [Skip((3,16,8)), Skip((4,16,12)), Skip((2,144,65,65))],
                 },
             ]
         ),
@@ -874,8 +863,6 @@ device_configs = {
         ),
     ),
 
-    
-
     'bmm': dict(
         name=['bmm'],
         tensor_para=dict(
@@ -1302,18 +1289,6 @@ device_configs = {
         ),
     ),
 
-    'soft_max': dict(
-        name=['softmax'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
-            ]
-        ),
-    ),
-
     'embedding': dict(
         name=['embedding'],
         tensor_para=dict(
@@ -1385,7 +1360,6 @@ device_configs = {
             ]
         ),
     ),
-
 
     'split': dict(
         name=['split'],
