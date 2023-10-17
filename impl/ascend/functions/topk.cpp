@@ -23,9 +23,9 @@ diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
 
     AscendTensor outA(values);
     castTensor(ctx, outA, castType);
-    
+
     AscendTensor tem(input);
-    if (tem.dim()== 0) {
+    if (tem.dim() == 0) {
         diopiCastDtype(ctx, values, const_cast<diopiTensorHandle_t>(input));
         return diopiSuccess;
     }
