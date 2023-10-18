@@ -220,6 +220,7 @@ class FunctionNotImplementedError(DiopiException):
 def check_returncode(returncode, throw_exception=True):
     if 0 != returncode:
         if returncode == diopiError.diopi_no_implement:
+            print("gqw333333333")
             raise FunctionNotImplementedError(glob_vars.cur_test_func + ' not implement')
         error_info = f"Returncode: {returncode}"
         error_detail = get_last_error()
@@ -234,6 +235,7 @@ def check_function(fn_name):
     try:
         func = eval(f"diopilib.{fn_name}")
     except AttributeError as e:
+        print("gqw44444444444")
         raise FunctionNotImplementedError(e.args)
     return func
 
