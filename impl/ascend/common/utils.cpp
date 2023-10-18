@@ -9,6 +9,7 @@
 #include <string>
 #include <type_traits>
 #include <typeinfo>
+#include <numeric>
 
 #include "../ascend_tensor.hpp"
 #include "acloprunner.hpp"
@@ -555,6 +556,18 @@ int64_t getBaseBufferSize(diopiConstTensorHandle_t src) {
             return elemsize;
         }
     }
+}
+
+diopiError_t transTensorTo2D(diopiContextHandle_t ctx, AscendTensor& th) {
+    if (th.shape().size() < 2) return diopiErrorOccurred;
+    std::vector<int64_t> dims;
+    std::vector<int64_t> thShape = th.shape();
+    int dim1 = std::accumulate(thShape.begin(), thShape.end() - 1, 1, std::multiplies<int>());
+    dims = {dim1, thShape.back()};
+    int64_t numel = std::accumulate(thShape.begin(), thShape.end(), 1, std::multiplies<int>());
+    int64_t numel_ = dim1 * thShape.back();
+    th.view(dims);
+    return diopiSuccess;
 }
 
 diopiTensorHandle_t clone(diopiContextHandle_t ctx, diopiConstTensorHandle_t src) {

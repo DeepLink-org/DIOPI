@@ -1380,14 +1380,8 @@ device_configs = {
 
     'linear': dict(
         name=['linear'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
-            ]
-        ),
+        atol = 3e-2,
+        rtol = 3e-2,
     ),
 
     'log_softmax': dict(

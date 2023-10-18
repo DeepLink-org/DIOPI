@@ -449,7 +449,7 @@ public:
         return addInput(thCopy, getAclDataFormat(thCopy));
     }
 
-    AclOpRunner& addInput(AscendTensor th, diopiDtype_t dtype) {
+    AclOpRunner& addInput(AscendTensor& th, diopiDtype_t dtype) {
         castTensor(context_, th, dtype);
         return addInput(th);
     }

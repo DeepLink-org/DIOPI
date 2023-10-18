@@ -1,0 +1,7 @@
+- diopiLinear:
+    dtype: (float64)->float32 , (float16)->float32
+    layout: NCHW
+
+- diopiLinearBackward:
+    dtype: (float64)->float32 , (float16)->float32
+    layout: NCHW

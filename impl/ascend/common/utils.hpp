@@ -56,6 +56,17 @@ diopiError_t castTensor(diopiContextHandle_t ctx, const std::vector<AscendTensor
  */
 diopiError_t castTensor(diopiContextHandle_t ctx, AscendTensor& src, diopiDtype_t supportDtype);
 
+/**
+ * @brief If the tensor's dims>2 and the shape is (dim0, dim1, ..., dimn), this function converts it into a shape (dim0 * dim1 *. * dimn-1, dimn)
+ *
+ * @param ctx              diopiContextHandle_t context handle for executing operations
+ * @param th               Tensors that need to be converted
+ *
+ * @return diopiError_t    Returns diopiSuccess if the conversion is successful; otherwise, returns other error codes.
+ */
+
+diopiError_t transTensorTo2D(diopiContextHandle_t ctx, AscendTensor& th);
+
 diopiError_t aclAsStrided(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst);
 
 }  // namespace ascend
