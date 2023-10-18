@@ -212,26 +212,14 @@ device_configs = {
 
     'gelu': dict(
         name=['gelu'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
-            ]
-        ),
+        atol=1e-3,
+        rtol=1e-3,
     ),
 
     'gelu_specific': dict(
         name=['gelu'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
-            ]
-        ),
+        atol=1e-3,
+        rtol=1e-3,
     ),
 
     'avg_pool2d': dict(
