@@ -31,9 +31,14 @@ ${test_import_diopi_bp_func}
 from conformance.diopi_manual_functions import ManualTest
 ''')
 
+    # marks 
+    test_function_case_dtype_marks = CodeTemplate(r'''
+@pytest.mark.${dtype}
+''')
+
     # test_case
     test_function_templ = CodeTemplate(r'''
-@pytest.mark.${input_dtype}
+${test_dtype_marks}
 def test_${func_case_name}(self):
     ${forward}
     ${backward}
@@ -52,6 +57,8 @@ function_paras = data_in['function_paras']
 function_kwargs = function_paras['kwargs']
 
 for para_key, para_val in function_kwargs.items():
+    if para_key == 'tensors' and isinstance(para_val, list):
+        function_kwargs[para_key] = [Tensor.from_numpy(v) for v in para_val]
     if isinstance(para_val, np.ndarray):
         function_kwargs[para_key] = Tensor.from_numpy(para_val)
 # output of device: dev_out

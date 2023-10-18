@@ -168,15 +168,15 @@ class GenTestCase(object):
                         )
                     )
 
-            # test function
-            # import pdb
-            # pdb.set_trace()
+            test_dtype_marks = []
             if len(cv['tensor_para']['args']) > 0:
-                input_dtype =  cv['tensor_para']['args'][0]['dtype'].__name__;
-            else:
-                input_dtype = 'float32'
+                for t in cv['tensor_para']['args']:
+                    mark = CaseTemplate.test_function_case_dtype_marks.substitute(env=dict(dtype = t['dtype'].__name__)).strip()
+                    if mark not in test_dtype_marks:
+                        test_dtype_marks.append(mark)
+
             test_function_templ = CaseTemplate.test_function_templ.substitute(env=dict(
-                input_dtype = input_dtype,
+                test_dtype_marks = test_dtype_marks,
                 func_case_name = func_case_name,
                 forward = forward,
                 backward = backward,
