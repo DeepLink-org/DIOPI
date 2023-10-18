@@ -34,7 +34,7 @@ std::vector<int64_t> inferSize(const std::vector<int64_t>& shape1, const std::ve
         auto sizeB = (dimB >= 0) ? shape2[dimB] : 1;
 
         // 1s map to the other size (even 0).
-        expandedSizes[i] = sizeA == 1 ? std::move(sizeB) : std::move(sizeA);
+        expandedSizes[i] = sizeA == 1 ? sizeB : sizeA;
     }
 
     return expandedSizes;
@@ -86,8 +86,6 @@ std::vector<int64_t> indexOutputSize(diopiContextHandle_t ctx, const AscendTenso
             diopiNonzero(ctx, &outPtr, index.tensorHandle());
             nonzero = AscendTensor(outPtr);
             for (int64_t j = 0; j < index.dim(); j++) {
-                // TODO: impl diopiSelect func
-                // newIndices.emplace_back(nonzero.select(1, j));
                 AscendTensor newIndex;
                 makeTensorLike(ctx, newIndex, nonzero);
                 diopiTensorHandle_t indexJ;
@@ -102,49 +100,49 @@ std::vector<int64_t> indexOutputSize(diopiContextHandle_t ctx, const AscendTenso
     }
 
     std::vector<int64_t> inferShape;
-    for (size_t i = 0; i < newIndices.size(); ++i) {
-        if (!newIndices[i].defined()) {
+    for (const auto& newIndice : newIndices) {
+        if (!newIndice.defined()) {
             continue;
         } else if (inferShape.empty()) {
-            inferShape = newIndices[i].shape();
+            inferShape = newIndice.shape();
         } else {
-            inferShape = inferSize(inferShape, newIndices[i].shape());
+            inferShape = inferSize(inferShape, newIndice.shape());
         }
     }
 
-    std::vector<AscendTensor> mid_indices(newIndices.size());
+    std::vector<AscendTensor> midIndices(newIndices.size());
     for (size_t i = 0; i < newIndices.size(); ++i) {
         if (!newIndices[i].defined()) {
             continue;
         } else if (newIndices[i].shape() == (inferShape)) {
-            mid_indices[i] = newIndices[i];
+            midIndices[i] = newIndices[i];
         } else {
             AscendTensor out;
             makeTensor(ctx, out, inferShape, newIndices[i].dtype());
             broadcast(ctx, out, newIndices[i], inferShape);
-            mid_indices[i] = out;
+            midIndices[i] = out;
         }
     }
 
-    while (mid_indices.size() < (size_t)self.dim()) {
-        mid_indices.emplace_back();
+    while (midIndices.size() < (size_t)self.dim()) {
+        midIndices.emplace_back();
     }
     AscendTensor src = self;
-    std::vector<AscendTensor> end_indices = mid_indices;
-    if (!hasContiguousSubspace(mid_indices)) {
-        end_indices.clear();
+    std::vector<AscendTensor> endIndices = midIndices;
+    if (!hasContiguousSubspace(midIndices)) {
+        endIndices.clear();
         std::vector<int64_t> dims;
         dims.reserve(self.dim());
         for (int64_t i = 0; i < self.dim(); i++) {
-            if (mid_indices[i].defined()) {
+            if (midIndices[i].defined()) {
                 dims.push_back(i);
-                end_indices.emplace_back(mid_indices[i]);
+                endIndices.emplace_back(midIndices[i]);
             }
         }
         for (int64_t i = 0; i < self.dim(); i++) {
-            if (!mid_indices[i].defined()) {
+            if (!midIndices[i].defined()) {
                 dims.push_back(i);
-                end_indices.emplace_back();
+                endIndices.emplace_back();
             }
         }
         auto inPtr = const_cast<diopiTensorHandle_t>(self.tensorHandle());
@@ -154,53 +152,50 @@ std::vector<int64_t> indexOutputSize(diopiContextHandle_t ctx, const AscendTenso
         src = AscendTensor(outPtr);
     }
 
-    int64_t dims_before = 0, dims_after = 0, dims_indexed = 0;
-    std::vector<int64_t> replacement_shape;
-    std::vector<int64_t> indexed_sizes;
-    for (size_t dim = 0; dim < end_indices.size(); dim++) {
-        if (!end_indices[dim].defined()) {
-            if (dims_indexed == 0) {
-                dims_before++;
+    int64_t dimsBefore = 0, dimsAfter = 0, dimsIndexed = 0;
+    std::vector<int64_t> replacementShape;
+    std::vector<int64_t> indexedSizes;
+    for (size_t dim = 0; dim < endIndices.size(); dim++) {
+        if (!endIndices[dim].defined()) {
+            if (dimsIndexed == 0) {
+                dimsBefore++;
             } else {
-                dims_after++;
+                dimsAfter++;
             }
         } else {
-            dims_indexed++;
-            replacement_shape = end_indices[dim].shape();
-            indexed_sizes.push_back(src.shape(dim));
+            dimsIndexed++;
+            replacementShape = endIndices[dim].shape();
+            indexedSizes.push_back(src.shape(dim));
         }
     }
-    auto self_shape = std::vector<int64_t>(src.shape());
-    int64_t end = dims_before + dims_indexed;
-    self_shape.erase(self_shape.begin() + dims_before, self_shape.begin() + end);
-    self_shape.insert(self_shape.begin() + dims_before, replacement_shape.begin(), replacement_shape.end());
+    auto selfShape = std::vector<int64_t>(src.shape());
+    int64_t end = dimsBefore + dimsIndexed;
+    selfShape.erase(selfShape.begin() + dimsBefore, selfShape.begin() + end);
+    selfShape.insert(selfShape.begin() + dimsBefore, replacementShape.begin(), replacementShape.end());
 
-    std::vector<int64_t> index_shape;
-    for (auto& index : end_indices) {
+    std::vector<int64_t> indexShape;
+    for (auto& index : endIndices) {
         if (index.defined()) {
             std::vector<int64_t> shape;
-            // shape.append(dims_before, 1);
-            for (int i = 0; i < dims_before; ++i) {
-                shape.push_back(1);
-            }
+            std::vector<int64_t> before(dimsBefore, 1);
+            shape.insert(shape.end(), before.begin(), before.end());
 
             for (int i = 0; i < index.shape().size(); ++i) {
                 shape.push_back(index.shape(i));
             }
-            for (int i = 0; i < dims_after; ++i) {
-                shape.push_back(1);
-            }
-            if (index_shape.empty()) {
-                index_shape = shape;
-            } else if (index_shape != shape) {
-                index_shape = inferSize(index_shape, shape);
+            std::vector<int64_t> after(dimsAfter, 1);
+            shape.insert(shape.end(), after.begin(), after.end());
+            if (indexShape.empty()) {
+                indexShape = shape;
+            } else if (indexShape != shape) {
+                indexShape = inferSize(indexShape, shape);
             }
         }
     }
 
-    std::vector<int64_t> outputSize = index_shape;
-    if (index_shape != self_shape) {
-        outputSize = inferSize(index_shape, self_shape);
+    std::vector<int64_t> outputSize = indexShape;
+    if (indexShape != selfShape) {
+        outputSize = inferSize(indexShape, selfShape);
     }
 
     return outputSize;
@@ -215,7 +210,7 @@ diopiError_t diopiIndexSelect(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 
 std::vector<AscendTensor> filterDefinedTensors(const std::vector<AscendTensor>& indices) {
     std::vector<AscendTensor> result;
-    for (auto index : indices) {
+    for (auto& index : indices) {
         if (!index.numel()) {
             result.emplace_back();
         } else {
@@ -229,15 +224,15 @@ std::vector<AscendTensor> broadcastTensors(diopiContextHandle_t ctx, const std::
     // Broadcast a list of Tensors, ignoring undefined (null) tensors.
     bool first = true;
     std::vector<int64_t> sizes;
-    for (int i = 0; i < tensors.size(); ++i) {
-        if (!tensors[i].defined()) {
+    for (const auto& tensor : tensors) {
+        if (!tensor.defined()) {
             continue;
         } else if (first) {
             // The initial value of sizes is the first defined tensor's shape.
-            sizes = tensors[i].shape();
+            sizes = tensor.shape();
             first = false;
         } else {
-            sizes = inferSize(sizes, tensors[i].shape());
+            sizes = inferSize(sizes, tensor.shape());
         }
     }
 
@@ -257,16 +252,17 @@ std::vector<AscendTensor> broadcastTensors(diopiContextHandle_t ctx, const std::
 diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t* indices, int64_t nums) {
     std::vector<AscendTensor> indicesVec;
     for (int i = 0; i < nums; ++i) {
-        indicesVec.emplace_back(AscendTensor(indices[i]));
+        AscendTensor tmp = AscendTensor(indices[i]);
+        indicesVec.emplace_back(tmp);
     }
     // indicesVec = filterDefinedTensors(indicesVec);
     indicesVec = broadcastTensors(ctx, indicesVec);
     std::vector<int64_t> masks;
     std::vector<AscendTensor> realIndices;
-    for (int i = 0; i < indicesVec.size(); ++i) {
-        if (indicesVec[i].defined()) {
+    for (auto& i : indicesVec) {
+        if (i.defined()) {
             masks.emplace_back(1);
-            realIndices.emplace_back(indicesVec[i]);
+            realIndices.emplace_back(i);
         } else {
             masks.emplace_back(0);
         }
@@ -281,7 +277,7 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diop
      * When input.size(0) = 1, if the dtype of indices is int64,
      * and indices only for 0 dimension, can broadcast to output.
      */
-    if (inputAt.shape(0) == 1 && masks.size() == 1 && masks[0] == 1 && (realIndices.size() > 0) && realIndices[0].dim() == 1) {
+    if (inputAt.shape(0) == 1 && masks.size() == 1 && masks[0] == 1 && (!realIndices.empty()) && realIndices[0].dim() == 1) {
         std::vector<int64_t> outputSize = inputAt.shape();
         outputSize[0] = realIndices[0].shape(0);
         AscendTensor result(*out);
