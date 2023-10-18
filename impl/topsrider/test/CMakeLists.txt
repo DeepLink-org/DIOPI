@@ -13,7 +13,7 @@ include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/../../dipu/third_party/DIOPI/i
 include_directories(SYSTEM "~/miniconda3/envs/dipu/include/python3.8")
 include_directories(SYSTEM "${DIOPI_TEST_DIR}/diopi_stub/include")
 
-set(FUNCTION_SAVE_PATH "${DIOPI_TEST_DIR}/csrc")
+set(FUNCTION_SAVE_PATH "${DIOPI_TEST_DIR}/diopi_stub/csrc")
 set(RUNTIME_SRC
     ${FUNCTION_SAVE_PATH}/litert.cpp
     conform_test.cpp)

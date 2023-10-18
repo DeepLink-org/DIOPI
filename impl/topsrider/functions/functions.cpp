@@ -5,7 +5,6 @@
  *
  *************************************************************************************************/
 #include <diopi/diopirt.h>
-#include <diopi/functions.h>
 
 #include <cstdio>
 #include <cstring>
@@ -16,11 +15,12 @@
 #include "log.h"
 #include "ops.h"
 
-extern "C" {
+namespace impl {
+namespace topsrider {
 
 class TopsOpInit {
 public:
-    TopsOpInit() { impl::tops::topsLibInit(); }
+    explicit TopsOpInit() { impl::tops::topsLibInit(); }
 
     ~TopsOpInit() { impl::tops::topsLibFinalize(); }
 };
@@ -354,13 +354,13 @@ DIOPI_API diopiError_t diopiArgmax(diopiContextHandle_t ctx, diopiTensorHandle_t
 }
 
 DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p,
-                                    bool train) {
-    TOPSOP_LOG();
-    return impl::tops::topsDropout(ctx, out, mask, input, p, train);
+                                    bool train, diopiGeneratorHandle_t generator) {
+    return impl::tops::topsDropout(ctx, out, mask, input, p, train, generator);
 }
-DIOPI_API diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t mask, double p, bool train) {
+DIOPI_API diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t mask, double p, bool train,
+                                       diopiGeneratorHandle_t generator) {
     TOPSOP_LOG();
-    return impl::tops::topsDropoutInp(ctx, input, mask, p, train);
+    return impl::tops::topsDropoutInp(ctx, input, mask, p, train, generator);
 }
 DIOPI_API diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t pad, const char *mode,
                                 const double *value) {
@@ -382,16 +382,13 @@ DIOPI_API diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensor
 
 DIOPI_API diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char *approximate) {
     TOPSOP_LOG();
-    return diopiErrorOccurred;
-    // return impl::tops::topsGelu(ctx, out, input, approximate);
+    return impl::tops::topsGelu(ctx, out, input, approximate);
 }
 
 DIOPI_API diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                          diopiConstTensorHandle_t input, const char *approximate) {
     TOPSOP_LOG();
-    return diopiErrorOccurred;
-    // return impl::tops::topsGeluBackward(ctx, grad_input, grad_output, input,
-    //                                     approximate);
+    return impl::tops::topsGeluBackward(ctx, grad_input, grad_output, input, approximate);
 }
 
 DIOPI_API diopiError_t diopiMatmul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
@@ -590,16 +587,16 @@ DIOPI_API diopiError_t diopiLog10(diopiContextHandle_t ctx, diopiTensorHandle_t 
 
 DIOPI_API diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
     TOPSOP_LOG();
-    return impl::tops::topsLogSoftmax(ctx, out, input, dim, diopi_dtype_float32);
+    return impl::tops::topsLogSoftmax(ctx, out, input, dim);
 }
 
 DIOPI_API diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
                                                   diopiTensorHandle_t grad3, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
                                                   diopiConstTensorHandle_t weight, diopiSize_t *bias_sizes, diopiSize_t stride, diopiSize_t padding,
-                                                  diopiSize_t dilation, bool transposed, diopiSize_t output_padding, int64_t groups) {
+                                                  diopiSize_t dilation, int64_t groups) {
     TOPSOP_LOG();
     return impl::tops::topsConvolution2dBackward(
-        ctx, grad_input, grad_weight, grad3, grad_output, input, weight, bias_sizes, stride, padding, dilation, transposed, output_padding, groups);
+        ctx, grad_input, grad_weight, grad3, grad_output, input, weight, bias_sizes, stride, padding, dilation, groups);
 }
 
 DIOPI_API diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t *alpha) {
@@ -640,17 +637,11 @@ DIOPI_API diopiError_t diopiNe(diopiContextHandle_t ctx, diopiTensorHandle_t out
     return impl::tops::topsNe(ctx, out, input, other);
 }
 
-// DIOPI_API diopiError_t
-// diopiLogSoftmaxBackward(diopiContextHandle_t ctx,
-//                         diopiTensorHandle_t grad_input,
-//                         diopiConstTensorHandle_t grad_output,
-//                         diopiConstTensorHandle_t output,
-//                         int64_t dim,
-//                         diopiDtype_t input_dtype) {
-// TOPSOP_LOG();
-//   return impl::tops::topsLogSoftmaxBackward(
-//       ctx, grad_input, grad_output, output, dim, input_dtype);
-// }
+DIOPI_API diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                               diopiConstTensorHandle_t output, int64_t dim) {
+    TOPSOP_LOG();
+    return impl::tops::topsLogSoftmaxBackward(ctx, grad_input, grad_output, output, dim);
+}
 
 DIOPI_API diopiError_t diopiExp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     TOPSOP_LOG();
@@ -697,9 +688,9 @@ DIOPI_API diopiError_t diopiBitwiseNot(diopiContextHandle_t ctx, diopiTensorHand
     return impl::tops::topsBitwiseNot(ctx, out, input);
 }
 
-DIOPI_API diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, int64_t n, int64_t idx) {
+DIOPI_API diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle_t out, int64_t n, diopiGeneratorHandle_t generator) {
     TOPSOP_LOG();
-    return impl::tops::topsRandperm(ctx, out, n, idx);
+    return impl::tops::topsRandperm(ctx, out, n, generator);
 }
 
 DIOPI_API diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
@@ -812,6 +803,11 @@ DIOPI_API diopiError_t diopiTril(diopiContextHandle_t ctx, diopiTensorHandle_t o
     return impl::tops::topsTril(ctx, out, input, diagonal);
 }
 
+DIOPI_API diopiError_t diopiTrilInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, int64_t diagonal) {
+    TOPSOP_LOG();
+    return impl::tops::topsTrilInp(ctx, input, diagonal);
+}
+
 // DIOPI_API diopiError_t diopiMultinomial(diopiContextHandle_t ctx,
 //                                         diopiTensorHandle_t out,
 //                                         diopiConstTensorHandle_t input,
@@ -863,15 +859,18 @@ DIOPI_API diopiError_t diopiFlip(diopiContextHandle_t ctx, diopiTensorHandle_t o
 }
 
 DIOPI_API diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    TOPSOP_LOG();
     return impl::tops::topsCastDtype(ctx, out, input);
 }
 
 DIOPI_API diopiError_t diopiIndexPutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t values, diopiConstTensorHandle_t *indices,
                                         int64_t indices_counts, bool accumulate) {
+    TOPSOP_LOG();
     return impl::tops::topsIndexPutInp(ctx, input, values, indices, indices_counts, accumulate);
 }
 DIOPI_API diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t values,
                                      diopiConstTensorHandle_t *indices, int64_t indices_counts, bool accumulate) {
+    TOPSOP_LOG();
     return impl::tops::topsIndexPut(ctx, out, input, values, indices, indices_counts, accumulate);
 }
 
@@ -893,4 +892,197 @@ DIOPI_API diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t 
     return impl::tops::topsAddMm(ctx, out, input, mat1, mat2, beta, alpha);
 }
 
-}  // extern "C"
+DIOPI_API diopiError_t diopiMinAll(diopiContextHandle_t ctx, diopiTensorHandle_t min, diopiConstTensorHandle_t input) {
+    TOPSOP_LOG();
+    return impl::tops::topsMinAll(ctx, min, input);
+}
+
+DIOPI_API diopiError_t diopiNeg(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    TOPSOP_LOG();
+    return impl::tops::topsNeg(ctx, out, input);
+}
+
+DIOPI_API diopiError_t diopiScatterScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim,
+                                          const diopiScalar_t *value, diopiConstTensorHandle_t index, const char *reduce) {
+    TOPSOP_LOG();
+    return impl::tops::topsScatterScalar(ctx, out, input, dim, value, index, reduce);
+}
+
+DIOPI_API diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t *indices,
+                                  int64_t nums) {
+    TOPSOP_LOG();
+    return impl::tops::topsIndex(ctx, out, input, indices, nums);
+}
+
+DIOPI_API diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                                    diopiSize_t out_size, diopiSize_t in_size) {
+    TOPSOP_LOG();
+    return impl::tops::topsopUpsampleNearestBackward(ctx, grad_input, grad_output, out_size, in_size);
+}
+
+DIOPI_API diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                                   diopiSize_t out_size, diopiSize_t in_size, bool align_corners, const char *mode) {
+    TOPSOP_LOG();
+    return impl::tops::topsopUpsampleLinearBackward(ctx, grad_input, grad_output, out_size, in_size, align_corners, mode);
+}
+
+DIOPI_API diopiError_t diopiContiguous(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t input, diopiMemoryFormat_t memoryFormat) {
+    TOPSOP_LOG();
+    return impl::tops::topsContiguous(ctx, out, input, memoryFormat);
+}
+
+DIOPI_API diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t *dim) {
+    TOPSOP_LOG();
+    return impl::tops::topsProd(ctx, out, input, dim);
+}
+
+DIOPI_API diopiError_t diopiSilu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    TOPSOP_LOG();
+    return impl::tops::topsSilu(ctx, out, input);
+}
+
+DIOPI_API diopiError_t diopiSiluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    TOPSOP_LOG();
+    return impl::tops::topsSiluInp(ctx, input);
+}
+
+DIOPI_API diopiError_t diopiWhere(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t condition, diopiConstTensorHandle_t input,
+                                  diopiConstTensorHandle_t other) {
+    TOPSOP_LOG();
+    return impl::tops::topsWhere(ctx, out, condition, input, other);
+}
+
+DIOPI_API diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, const int64_t* dim, bool sorted,
+                                  bool return_counts, diopiTensorHandle_t indices, diopiTensorHandle_t* counts) {
+    TOPSOP_LOG();
+    return impl::tops::topsUnique(ctx, out, input, dim, sorted, return_counts, indices, counts);
+}
+
+DIOPI_API diopiError_t diopiAddcdiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t tensor1,
+                                    diopiConstTensorHandle_t tensor2, const diopiScalar_t *value) {
+    TOPSOP_LOG();
+    return impl::tops::topsAddcdiv(ctx, out, input, tensor1, tensor2, value);
+}
+
+DIOPI_API diopiError_t diopiAddcdivInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t tensor1, diopiConstTensorHandle_t tensor2,
+                                       const diopiScalar_t *value) {
+    TOPSOP_LOG();
+    return impl::tops::topsAddcdivInp(ctx, input, tensor1, tensor2, value);
+}
+
+DIOPI_API diopiError_t diopiAddcmul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t tensor1,
+                                    diopiConstTensorHandle_t tensor2, const diopiScalar_t *value) {
+    TOPSOP_LOG();
+    return impl::tops::topsAddcmul(ctx, out, input, tensor1, tensor2, value);
+}
+
+DIOPI_API diopiError_t diopiAddcmulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t tensor1, diopiConstTensorHandle_t tensor2,
+                                       const diopiScalar_t *value) {
+    TOPSOP_LOG();
+    return impl::tops::topsAddcmulInp(ctx, input, tensor1, tensor2, value);
+}
+
+DIOPI_API diopiError_t diopiMaskedFillInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t mask, diopiConstTensorHandle_t value) {
+    return impl::tops::topsMaskedFillInp(ctx, input, mask, value);
+}
+
+DIOPI_API diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask,
+                                       diopiConstTensorHandle_t value) {
+    return impl::tops::topsMaskedFill(ctx, out, input, mask, value);
+}
+
+DIOPI_API diopiError_t diopiMaskedFillScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask,
+                                             const diopiScalar_t *value) {
+    return impl::tops::topsMaskedFillScalar(ctx, out, input, mask, value);
+}
+
+DIOPI_API diopiError_t diopiMaskedFillInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t mask,
+                                                const diopiScalar_t *value) {
+    return impl::tops::topsMaskedFillInpScalar(ctx, input, mask, value);
+}
+
+DIOPI_API diopiError_t diopiSqrtInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return impl::tops::topsSqrtInp(ctx, input); }
+
+DIOPI_API diopiError_t diopiSqrt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    return impl::tops::topsSqrt(ctx, out, input);
+}
+
+DIOPI_API diopiError_t diopiIsNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    return impl::tops::topsIsNan(ctx, out, input);
+}
+
+DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
+                                    diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignore_index) {
+    TOPSOP_LOG();
+    return impl::tops::topsNLLLoss(ctx, out, input, target, weight, reduction, ignore_index);
+}
+
+DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
+                                            diopiReduction_t reduction, int64_t ignore_index) {
+    TOPSOP_LOG();
+    return impl::tops::topsNLLLossBackward(ctx, grad_input, grad_output, input, target, weight, reduction, ignore_index);
+}
+
+DIOPI_API diopiError_t diopiCos(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    TOPSOP_LOG();
+    return impl::tops::topsCos(ctx, out, input);
+}
+
+DIOPI_API diopiError_t diopiCosInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    TOPSOP_LOG();
+    return impl::tops::topsCosInp(ctx, input);
+}
+
+DIOPI_API diopiError_t diopiSin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    TOPSOP_LOG();
+    return impl::tops::topsSin(ctx, out, input);
+}
+
+DIOPI_API diopiError_t diopiSinInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    TOPSOP_LOG();
+    return impl::tops::topsSinInp(ctx, input);
+}
+
+DIOPI_API diopiError_t diopiCeil(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    TOPSOP_LOG();
+    return impl::tops::topsCeil(ctx, out, input);
+}
+
+DIOPI_API diopiError_t diopiCeilInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    TOPSOP_LOG();
+    return impl::tops::topsCeilInp(ctx, input);
+}
+
+DIOPI_API diopiError_t diopiBitwiseOr(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
+    TOPSOP_LOG();
+    return impl::tops::topsBitwiseOr(ctx, out, input, other);
+}
+
+DIOPI_API diopiError_t diopiBitwiseOrScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t *other) {
+    TOPSOP_LOG();
+    return impl::tops::topsBitwiseOrScalar(ctx, out, input, other);
+}
+
+DIOPI_API diopiError_t diopiBitwiseOrInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
+    TOPSOP_LOG();
+    return impl::tops::topsBitwiseOrInp(ctx, input, other);
+}
+
+DIOPI_API diopiError_t diopiBitwiseOrInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t *other) {
+    TOPSOP_LOG();
+    return impl::tops::topsBitwiseOrInpScalar(ctx, input, other);
+}
+
+DIOPI_API diopiError_t diopiTriu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t diagonal) {
+    TOPSOP_LOG();
+    return impl::tops::topsTriu(ctx, out, input, diagonal);
+}
+
+DIOPI_API diopiError_t diopiTriuInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, int64_t diagonal) {
+    TOPSOP_LOG();
+    return impl::tops::topsTriuInp(ctx, input, diagonal);
+}
+
+}  // namespace topsrider
+}  // namespace impl
