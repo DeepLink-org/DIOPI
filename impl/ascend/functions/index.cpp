@@ -274,8 +274,6 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diop
 
     AscendTensor inputAt(input), outAt(*out);
     if (realIndices.empty()) {
-        diopiTensorHandle_t outPtr;
-        *out = outPtr;
         return diopiSuccess;
     }
 
