@@ -332,7 +332,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erf', 'erfinv', 'exp', 'neg', 'asin', 'sqrt', 'rsqrt', 'ceil', 'atan'],
+        name=['erf', 'erfinv', 'exp', 'asin', 'sqrt', 'rsqrt', 'ceil', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -344,7 +344,7 @@ device_configs = {
     ),
 
     'pointwise_op_int_without_inplace': dict(
-        name=['erf', 'exp', 'neg', 'asin', 'sqrt', 'rsqrt', 'atan'],
+        name=['erf', 'exp', 'asin', 'sqrt', 'rsqrt', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -356,7 +356,7 @@ device_configs = {
     ),
 
     'pointwise_op_uint8': dict(
-        name=['erf', 'exp', 'neg', 'asin', 'sqrt', 'rsqrt', 'atan'],
+        name=['erf', 'exp', 'asin', 'sqrt', 'rsqrt', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -476,7 +476,7 @@ device_configs = {
     ),
 
     'pointwise_op_zero': dict(
-        name=['exp', 'neg', 'sqrt', 'rsqrt', 'ceil'],
+        name=['exp', 'sqrt', 'rsqrt', 'ceil'],
         tensor_para=dict(
             args=[
                 {
@@ -489,18 +489,6 @@ device_configs = {
 
     'pointwise_op_without_inplace_zero': dict(
         name=['sign', 'exp', 'sqrt', 'rsqrt'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((16,)),Skip((8, 64)),],
-                },
-            ]
-        ),
-    ),
-
-    'neg_without_inplace_zero': dict(
-        name=['neg'],
         tensor_para=dict(
             args=[
                 {
