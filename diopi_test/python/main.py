@@ -6,8 +6,8 @@ import sys
 import pytest
 
 sys.path.append('../python/configs')
-from conformance.op_nhwc import nhwc_op
-from conformance.op_four_types import dtype_op, dtype_out_op
+from conformance.global_op_list import nhwc_op
+from conformance.global_op_list import dtype_op, dtype_out_op
 from conformance.utils import is_ci, error_counter, write_report
 from conformance.utils import logger
 from conformance.global_settings import glob_vars
