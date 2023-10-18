@@ -432,14 +432,6 @@ public:
         }
     }
 
-    AclOpRunner& addInput(const AscendTensor& at, diopiDtype_t dtype) {
-        AscendTensor atCopy;
-        makeTensorLike(context_, atCopy, at);
-        castTensor(context_, atCopy, dtype);
-        if (!at.isContiguous()) contiguous(context_, at, atCopy);
-        return addInput(atCopy, atCopy.getAclDataFormat());
-    }
-
     AclOpRunner& addInput(diopiConstTensorHandle_t th, const aclFormat& format) {
         AscendTensor at = AscendTensor(th);
         return addInput(at, format);
