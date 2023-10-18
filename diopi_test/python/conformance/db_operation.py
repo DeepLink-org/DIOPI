@@ -8,6 +8,7 @@ from sqlalchemy import Column, DateTime, Integer, FLOAT, String, create_engine, 
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine import Engine
+from sqlalchemy import text
 
 
 from conformance.global_settings import glob_vars
@@ -68,6 +69,7 @@ class FuncList(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     diopi_func_name = Column(String(100))
+    func_name = Column(String(100))
     not_implemented_flag = Column(Integer)
     case_num = Column(Integer)
     success_case = Column(Integer)
@@ -201,21 +203,22 @@ class DB_Operation(object):
         # if failed before forward, diopi_func_name will be ''
         if diopi_func_name != '':
             self.expand_func_list(last_diopi_func_name, case_item.get('not_implemented_flag', case_model['not_implemented_flag']),
-                                diopi_func_name_list, case_item['result'])
+                                diopi_func_name_list, case_item['result'], case_model['func_name'])
 
     @use_db(glob_vars.use_db)
-    def expand_func_list(self, last_diopi_func_name, not_implemented_flag, func_name_list, result):
+    def expand_func_list(self, last_diopi_func_name, not_implemented_flag, func_name_list, result, func_name):
         for index, func in enumerate(func_name_list):
             if func not in self.func_dict:
                 self.func_dict[func] = dict(diopi_func_name=func,
-                                           not_implemented_flag=0,
-                                           case_num=0,
-                                           success_case=0,
-                                           failed_case=0,
-                                           skipped_case=0,
-                                           delete_flag=1,
-                                           created_time=datetime.now(),
-                                           updated_time=datetime.now(),
+                                            func_name=func_name,
+                                            not_implemented_flag=0,
+                                            case_num=0,
+                                            success_case=0,
+                                            failed_case=0,
+                                            skipped_case=0,
+                                            delete_flag=1,
+                                            created_time=datetime.now(),
+                                            updated_time=datetime.now(),
                                     )
             if result == 'passed':
                 self.func_dict[func]['success_case'] += 1
@@ -250,9 +253,34 @@ class DB_Operation(object):
         success_case = self.session.query(func.count(DeviceCase.func_name)).filter_by(result='passed', delete_flag=1, test_flag=1).one()[0]
         failed_case = self.session.query(func.count(DeviceCase.func_name)).filter_by(result='failed', delete_flag=1, test_flag=1).one()[0]
         skipped_case = self.session.query(func.count(DeviceCase.func_name)).filter_by(result='skipped', delete_flag=1, test_flag=1).one()[0]
-        total_func = sum([1 + i[1] + i[2] for i in self.session\
-            .query(BenchMarkCase.func_name, BenchMarkCase.inplace_flag, BenchMarkCase.backward_flag) \
-            .filter_by(delete_flag=1).group_by(BenchMarkCase.func_name).all()])
+        sql = text("""
+            WITH FuncCounts AS (
+                SELECT
+                    func_name as func_name_benchmark,
+                    1 + COALESCE(inplace_flag, 0) + COALESCE(backward_flag, 0) AS total_func
+                FROM
+                    benchmark_case
+                WHERE
+                    delete_flag = 1
+                GROUP BY
+                    func_name_benchmark
+                UNION ALL
+                SELECT
+                    func_name as func_name_funclist,
+                    COUNT(*) as func_count
+                FROM func_list
+                WHERE delete_flag = 1
+                GROUP BY func_name_funclist
+            )
+            SELECT SUM(MaxCount) AS TotalMaxCount
+            FROM (
+                SELECT func_name_benchmark, MAX(total_func) AS MaxCount
+                FROM FuncCounts
+                GROUP BY func_name_benchmark
+            ) MaxCounts;
+        """)
+        result = self.session.execute(sql)
+        total_func = result.scalar()
         impl_func = self.session.query(func.count(FuncList.diopi_func_name)).filter_by(not_implemented_flag=0, delete_flag=1).one()[0]
         summary_item = dict(
             total_case=total_case,

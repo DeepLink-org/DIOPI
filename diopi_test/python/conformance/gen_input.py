@@ -44,9 +44,8 @@ class GenInputData(object):
                     break
             if 'is_inplace' in each_cfg_dict.keys() and each_cfg_dict['is_inplace'] == True:
                 item['inplace_flag'] = 1
-
             if fname not in [func_name, 'all_ops']:
-                GenInputData.db_case_items.append(item)
+                # GenInputData.db_case_items.append(item)
                 continue
             # logger.info(f"diopi_functions.{func_name} [config] {each_cfg_dict}")
             try:

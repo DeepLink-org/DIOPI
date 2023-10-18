@@ -9,6 +9,8 @@ from codegen.filemanager import FileManager
 from codegen.case_template import CaseTemplate
 from conformance.db_operation import db_conn
 from conformance.utils import gen_pytest_case_nodeid
+from conformance.global_settings import glob_vars
+from conformance.global_op_list import dtype_op, dtype_out_op, nhwc_op
 
 
 class GenConfigTestCase(object):
@@ -45,10 +47,10 @@ class GenConfigTestCase(object):
     def get_function_set(self):
         return dict(self.__function_set)
 
-    def gen_test_cases(self):
+    def gen_test_cases(self, fname='all_ops'):
         for tk, tv in self.__function_set.items():
             gc = GenTestCase(self._module, tk, tv, module_path=self._tests_path)
-            gc.gen_test_module()
+            gc.gen_test_module(fname)
             self.db_case_items.extend(gc.db_case_items)
 
 ####################################################################################################
@@ -72,9 +74,11 @@ class GenTestCase(object):
         mt_name = f'test_{self._module}_{self._suite_name}_{self._func_name}.py'
         self._fm.will_write(mt_name)
 
-    def gen_test_module(self):
+    def gen_test_module(self, fname):
         test_diopi_head_import = ''
         test_case_items = []
+        if fname not in [self._func_name, 'all_ops']:
+            return
         for ck, cv in self._case_set.items():
             # test_diopi_function_module = 'diopi_functions'
             test_diopi_func_name = self._func_name
@@ -110,13 +114,55 @@ class GenTestCase(object):
                 test_function_ref_data_path = f"f_out = os.path.join(data_path, '{self._module}', 'outputs', '{output_data_path}')"
                 # test_diopi_head_import = CaseTemplate.test_diopi_function_import
 
+            test_set_four_bytes = ''
+            if glob_vars.four_bytes and self._func_name in dtype_op:
+                test_set_four_bytes = CaseTemplate.test_set_four_bytes.substitute(
+                    env=dict(dtype_list=str(dtype_op[self._func_name]))
+                )
+
+            test_set_nhwc = ''
+            if glob_vars.nhwc and self._func_name in nhwc_op:
+                test_set_nhwc = CaseTemplate.test_set_nhwc.substitute(
+                    env=dict(nhwc_list=str(nhwc_op[self._func_name]),
+                             nhwc_min_dim=glob_vars.nhwc_min_dim)
+                )
+            test_set_stride = ''
+            has_stride = {i['ins'] + 'stride': i[i['ins'] + 'stride'] for i in cv['tensor_para']['args'] if i.get(i['ins'] + 'stride')}
+            if len(has_stride) > 0:
+                test_set_stride = CaseTemplate.test_set_stride.substitute(
+                    env=dict(
+                        has_stride=str(list(has_stride.keys())),
+                        args_stride=str(has_stride)
+                    )
+                )
+
+            gen_policy_args = [i['ins'] for i in cv['tensor_para']['args'] if i.get('gen_policy') in ['gen_tensor_list', 'gen_tensor_list_diff_shape']]
+            if len(gen_policy_args) > 0:
+                test_to_tensor = CaseTemplate.test_to_tensor_list.substitute(
+                    env=dict(
+                        gen_policy_args=str(gen_policy_args)
+                    )
+                )
+            else:
+                test_to_tensor = CaseTemplate.test_to_tensor.substitute({})
+
+            test_preprocess_parameters = CaseTemplate.test_preprocess_parameters.substitute(
+                env=dict(
+                    set_four_bytes=test_set_four_bytes,
+                    set_nhwc=test_set_nhwc,
+                    set_stride=test_set_stride,
+                    to_tensor=test_to_tensor
+                )
+            )
+
             forward = CaseTemplate.test_function_body_forward.substitute(
                 env=dict(
                     test_module_name = self._module,
                     input_data_path = input_data_path,
                     # output_data_path = output_data_path,
                     test_function_ref_data_path = test_function_ref_data_path,
-                    test_function_forward_call = test_function_forward_call
+                    test_function_forward_call = test_function_forward_call,
+                    preprocess_parameters = test_preprocess_parameters
                 )
             )
 

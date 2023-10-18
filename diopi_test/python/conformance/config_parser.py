@@ -25,9 +25,9 @@ class ConfigParser(object):
     def __str__(self):
         return str(self._items)
 
-    def parser(self, config):
+    def parser(self, config, fname='all_ops'):
         if isinstance(config, dict):
-            self._config_dict_parse(config)
+            self._config_dict_parse(config, fname)
         elif os.path.isfile(config):
             raise NotImplementedError("Will sopport config file.")
         elif os.path.isdir(config):
@@ -35,8 +35,10 @@ class ConfigParser(object):
         else:
             raise Exception(f"{__file__}: Parameter {config} passed with wrong type.")
 
-    def _config_dict_parse(self, config):
+    def _config_dict_parse(self, config, fname):
         for key, value in config.items():
+            if fname != 'all_ops' and fname not in value["name"]:
+                continue
             cfg_item = ConfigItem(key, value)
             cfg_item.generate_items()
             case_items = cfg_item.get_case_items()

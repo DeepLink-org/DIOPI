@@ -6,8 +6,8 @@ import sys
 import pytest
 
 sys.path.append('../python/configs')
-from conformance.op_nhwc import nhwc_op
-from conformance.op_four_types import dtype_op, dtype_out_op
+from conformance.global_op_list import nhwc_op
+from conformance.global_op_list import dtype_op, dtype_out_op
 from conformance.utils import is_ci, error_counter, write_report
 from conformance.utils import logger
 from conformance.global_settings import glob_vars
@@ -120,7 +120,7 @@ if __name__ == "__main__":
             from diopi_configs import diopi_configs
         diopi_case_item_path = os.path.join(cache_path, diopi_case_item_file)
         cfg_parse = ConfigParser(diopi_case_item_path)
-        cfg_parse.parser(diopi_configs)
+        cfg_parse.parser(diopi_configs, args.fname)
         cfg_parse.save()
         inputs_dir = os.path.join(cache_path, 'data/' + model_name + "/inputs")
         outputs_dir = os.path.join(cache_path, 'data/' + model_name + "/outputs")
@@ -145,8 +145,7 @@ if __name__ == "__main__":
         device_case_item_path = os.path.join(cache_path, device_case_item_file)
 
         cfg_parse = ConfigParser(diopi_case_item_path)
-        cfg_parse.parser(diopi_configs)
-        cfg_parse.save()
+        cfg_parse.parser(diopi_configs, args.fname)
         cfg_path = diopi_case_item_path
 
         if args.impl_folder != '':
@@ -174,7 +173,7 @@ if __name__ == "__main__":
             os.makedirs(args.case_output_dir)
         db_conn.drop_case_table(DeviceCase)
         gctc = GenConfigTestCase(module=model_name, config_path=cfg_path, tests_path=args.case_output_dir)
-        gctc.gen_test_cases()
+        gctc.gen_test_cases(args.fname)
         db_conn.insert_device_case(gctc.db_case_items)
     elif args.mode == 'run_test':
         pytest_args = [args.file_or_dir]
