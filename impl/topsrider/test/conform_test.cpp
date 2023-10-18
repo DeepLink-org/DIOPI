@@ -92,4 +92,6 @@ diopiError_t finalizeLibrary() {
     return diopiSuccess;
 }
 
+diopiError_t buildGeneratorState(diopiContextHandle_t ctx, diopiTensorHandle_t out) { return diopiSuccess; }
+
 }  // extern "C"
