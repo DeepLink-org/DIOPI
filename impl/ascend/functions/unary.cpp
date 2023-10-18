@@ -25,10 +25,16 @@ diopiError_t diopiRsqrtInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) 
 
 diopiError_t diopiSqrt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     AscendTensor inputCopy(input);
-    castTensor(ctx, inputCopy, diopi_dtype_float32);
-    diopiConstTensorHandle_t inputFloat32 = inputCopy.tensorHandle();
-    AclOpRunner<1, 1>("Sqrt", ctx).addInput(inputFloat32).addOutput(out).run();
-    negativeInputRtnFillNan(ctx, out, inputFloat32);
+    diopiDtype_t inputDType = inputCopy.dtype();
+    diopiConstTensorHandle_t inputTensor;
+    if (inputDType == diopi_dtype_float16) {
+        inputTensor = input;
+    } else {
+        castTensor(ctx, inputCopy, diopi_dtype_float32);
+        inputTensor = inputCopy.tensorHandle();
+    }
+    AclOpRunner<1, 1>("Sqrt", ctx).addInput(inputTensor).addOutput(out).run();
+    negativeInputRtnFillNan(ctx, out, inputTensor);
     return diopiSuccess;
 }
 
