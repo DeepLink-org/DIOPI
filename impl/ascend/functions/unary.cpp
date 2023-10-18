@@ -10,17 +10,7 @@ namespace impl {
 namespace ascend {
 
 diopiError_t diopiNeg(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AscendTensor inputCopy(input);
-    diopiDtype_t inputDType = inputCopy.dtype();
-    diopiConstTensorHandle_t inputTensor;
-    if (inputDType >= 0 && inputDType <= 7) {
-        castTensor(ctx, inputCopy, diopi_dtype_int64);
-        inputTensor = inputCopy.tensorHandle();
-    } else {
-        castTensor(ctx, inputCopy, diopi_dtype_float32);
-        inputTensor = inputCopy.tensorHandle();
-    }
-    AclOpRunner<1, 1>("Neg", ctx).addInput(inputTensor).addOutput(out).run();
+    AclOpRunner<1, 1>("Neg", ctx).addInput(input).addOutput(out).run();
     return diopiSuccess;
 }
 
