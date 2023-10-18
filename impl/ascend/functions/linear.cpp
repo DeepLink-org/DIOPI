@@ -70,16 +70,6 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
         transTensorTo2D(ctx, gradInputCopy);
     }
 
-    std::cout << "gradOutput shape: ";
-    std::for_each(gradOutputCopy.shape().begin(), gradOutputCopy.shape().end(), [](const int& i) { std::cout << i << " "; });
-    std::cout<<std::endl;
-    std::cout << "weight shape: ";
-    std::for_each(weightCopy.shape().begin(), weightCopy.shape().end(), [](const int& i) { std::cout << i << " "; });
-    std::cout<<std::endl;
-    std::cout<< "gradInputCopy shape";
-    std::for_each(gradInputCopy.shape().begin(), gradInputCopy.shape().end(), [](const int& i) { std::cout << i << " "; });
-    std::cout<<std::endl;
-
     AclOpRunner<2, 1>("MatMul", ctx)
         .addInput(gradOutputCopy)
         .addInput(weightCopy)
