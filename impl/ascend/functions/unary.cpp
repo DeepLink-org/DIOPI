@@ -53,10 +53,19 @@ diopiError_t diopiAbsInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { 
 
 void logInternal(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, float base) {
     AclOpRunner<1, 1>("Log", ctx).addInput(input).setAttr<float>("base", base).setAttr<float>("scale", 1).setAttr<float>("shift", 0).addOutput(out).run();
-    negativeInputRtnFillNan(ctx, out, input);
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(input, &dtype);
+    if (diopi_dtype_float64 != dtype) {
+        negativeInputRtnFillNan(ctx, out, input);
+    }
 }
 
 void logInpInternal(diopiContextHandle_t ctx, diopiTensorHandle_t input, float base) {
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(input, &dtype);
+    if (diopi_dtype_float64 != dtype) {
+        negativeInputRtnFillNan(ctx, input, input);
+    }
     negativeInputRtnFillNan(ctx, input, input);
     AclOpRunner<1, 1>("Log", ctx).addInput(input).setAttr<float>("base", base).setAttr<float>("scale", 1).setAttr<float>("shift", 0).addOutput(input).run();
 }
