@@ -212,6 +212,7 @@ class AclOpRunner {
     bool sync_ = false;
     bool hasDynamicInput_ = false;
     int dynamcInputSize_ = -1;
+    int64_t realInputSize_ = InputSize;
 
     std::string dumpRunnerInfo() {
         std::stringstream sstream;
@@ -249,7 +250,7 @@ public:
      * @brief Retrieve the actual count of input parameters. In the case of dynamic inputs, it returns the number of dynamic tensors.
      * @return the actual count of input parameters.
      */
-    int64_t inputSize() { return hasDynamicInput_ ? dynamcInputSize_ : InputSize; }
+    int64_t inputSize() { return hasDynamicInput_ ? realInputSize_ : InputSize; }
 
     AclOpRunner& addConstInput(const AscendTensor& at, const aclFormat& format, bool isScalar = false) {
         ASCEND_CHECK_ABORT(at.defined(), "input should not be nullptr");
@@ -416,6 +417,11 @@ public:
         }
     }
 
+    AclOpRunner& addInput(const AscendTensor& at, const diopiDtype_t& dtype) {
+        castTensor(context_, const_cast<AscendTensor&>(at), dtype);
+        return addInput(at);
+    }
+
     AclOpRunner& addInput(diopiConstTensorHandle_t th, const aclFormat& format) {
         AscendTensor at = AscendTensor(th);
         return addInput(at, format);
@@ -440,11 +446,12 @@ public:
      */
     template <typename T>
     AclOpRunner& addDynamicInput(const std::vector<T>& tensors, diopiDtype_t type = diopi_dtype_unsupported) {
-        ASCEND_CHECK_ABORT(hasDynamicInput_ || inputIndex_ == 0 || InputSize == 1, "only support one dynamic input");
+        ASCEND_CHECK_ABORT(!hasDynamicInput_, "only support one dynamic input");
         hasDynamicInput_ = true;
         dynamcInputSize_ = tensors.size();
-        inputDescs_.resize(dynamcInputSize_);
-        inputBuffers_.resize(dynamcInputSize_);
+        realInputSize_ = dynamcInputSize_ + InputSize - 1;
+        inputDescs_.resize(realInputSize_);
+        inputBuffers_.resize(realInputSize_);
         for (int i = 0; i < dynamcInputSize_; ++i) {
             if (type != diopi_dtype_unsupported) {
                 addInput(tensors[i], type);
