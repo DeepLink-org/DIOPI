@@ -117,3 +117,27 @@
 - diopiAll:
     dtype: (float16, float32, float64, int16, int32, int64, uint8, int8)->bool
     layout: NCHW
+
+- diopiLog:
+    dtype: (int16, int32, int64, uint8, int8)->float32
+    layout: NCHW
+
+- diopiLogInp:
+    dtype: (int16, int32, int64, uint8, int8)->float32
+    layout: NCHW
+
+- diopiLog2:
+    dtype: (float64, int16, int32, int64, uint8, int8)->float32
+    layout: NCHW
+
+- diopiLog2Inp:
+    dtype: (float64, int16, int32, int64, uint8, int8)->float32
+    layout: NCHW
+
+- diopiLog10:
+    dtype: (float64, int16, int32, int64, uint8, int8)->float32
+    layout: NCHW
+
+- diopiLog10Inp:
+    dtype: (float64, int16, int32, int64, uint8, int8)->float32
+    layout: NCHW

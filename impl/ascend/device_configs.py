@@ -409,7 +409,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),Skip((0,)),Skip((0, 16)),Skip((8, 0, 4)),],
+                    "dtype": [Skip(Dtype.float16),],
                 },
             ]
         ),
@@ -445,7 +445,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64), Skip(Dtype.uint8), Skip(Dtype.int8),],
                 },
             ]
         ),
