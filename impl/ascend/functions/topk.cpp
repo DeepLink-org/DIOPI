@@ -51,10 +51,7 @@ diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
         .addOutput(outB)
         .run();
 
-    castTensor(ctx, outA, outDtype);
     diopiCastDtype(ctx, values, static_cast<diopiConstTensorHandle_t>(outA));
-
-    castTensor(ctx, outB, idxDtype);
     diopiCastDtype(ctx, indices, static_cast<diopiConstTensorHandle_t>(outB));
 
     return diopiSuccess;
