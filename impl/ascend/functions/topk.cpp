@@ -24,13 +24,13 @@ diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
     AscendTensor outA(values);
     castTensor(ctx, outA, castType);
 
-    AscendTensor tem(input);
-    if (tem.dim() == 0 && k == 1) {
-        AscendTensor outB(input);
-        castTensor(ctx, outB, outDtype);
-        diopiCastDtype(ctx, values, static_cast<diopiConstTensorHandle_t>(outB));
-        return diopiSuccess;
-    }
+    // AscendTensor tem(input);
+    // if (tem.dim() == 0 && k == 1) {
+    //     AscendTensor outB(input);
+    //     castTensor(ctx, outB, outDtype);
+    //     diopiCastDtype(ctx, values, static_cast<diopiConstTensorHandle_t>(outB));
+    //     return diopiSuccess;
+    // }
     AclOpRunner<2, 2>("TopKV2", ctx)
         .addInput(input, castType)
         .addConstInput(kSize)
