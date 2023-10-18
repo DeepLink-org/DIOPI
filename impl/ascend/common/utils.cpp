@@ -6,9 +6,9 @@
 
 #include "utils.hpp"
 
+#include <numeric>
 #include <string>
 #include <type_traits>
-#include <numeric>
 #include <typeinfo>
 
 #include "../ascend_tensor.hpp"
