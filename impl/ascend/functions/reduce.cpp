@@ -111,5 +111,27 @@ diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     return diopiSuccess;
 }
 
+diopiError_t diopiAll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim) {
+    int64_t numel = 0;
+    diopiGetTensorNumel(input, &numel);
+    if (0 == numel) {
+        AclOpRunner<1, 1>("Fills", ctx).addInput(out).setAttr<float>("value", 1).addOutput(out).run();
+        return diopiSuccess;
+    }
+    AclOpRunner<2, 1>("ReduceAll", ctx).addInput(input).addConstInput({*dim}).setAttr("keep_dims", false).addOutput(out).run();
+    return diopiSuccess;
+}
+
+diopiError_t diopiAny(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim) {
+    int64_t numel = 0;
+    diopiGetTensorNumel(input, &numel);
+    if (0 == numel) {
+        AclOpRunner<1, 1>("Fills", ctx).addInput(out).setAttr<float>("value", 0).addOutput(out).run();
+        return diopiSuccess;
+    }
+    AclOpRunner<2, 1>("ReduceAny", ctx).addInput(input).addConstInput({*dim}).setAttr("keep_dims", false).addOutput(out).run();
+    return diopiSuccess;
+}
+
 }  // namespace ascend
 }  // namespace impl

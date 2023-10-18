@@ -23,11 +23,7 @@ diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
 
 diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
     std::vector<int64_t> dimList = {dim};
-    AclOpRunner<1, 1>("SoftmaxV2", ctx)
-        .addInput(input, diopi_dtype_float32)
-        .setAttr<int64_t>("axes", dimList)
-        .addOutput(out)
-        .run();
+    AclOpRunner<1, 1>("SoftmaxV2", ctx).addInput(input, diopi_dtype_float32).setAttr<int64_t>("axes", dimList).addOutput(out).run();
     return diopiSuccess;
 }
 
