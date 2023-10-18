@@ -12,107 +12,108 @@ namespace impl {
 namespace ascend {
 diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                          diopiConstTensorHandle_t bias) {
-    diopiSize_t inputSize, outputSize;
-    diopiGetTensorShape(input, &inputSize);
-    diopiGetTensorShape(out, &outputSize);
-    int64_t numel, numelOut, elemsize;
-    diopiDtype_t dtype;
-    diopiGetTensorNumel(input, &numel);
-    diopiGetTensorNumel(out, &numelOut);
-    diopiGetTensorElemSize(input, &elemsize);
-    diopiGetTensorDtype(input, &dtype);
+    // convert inputs to AscendTensor class
+    contiguous(ctx, out);
+    contiguous(ctx, input);
+    AscendTensor inputCopy(input);
+    AscendTensor outputCopy(out);
+    AscendTensor weightCopy(weight);
+    const std::vector<int64_t> outputPrimaryShape = outputCopy.shape();
+
+    if (inputCopy.numel() == 0 || weightCopy.numel() == 0) {
+        diopiScalar_t zero = constructDiopiScalarT(outputCopy.dtype(), 0.0);
+        diopiFill(ctx, out, &zero);
+        return diopiSuccess;
+    }
+
+    // mm's input matrix must be 2D, it needs to be converted if it isn't
+    bool transTensorTo2DFalg = false;
+    if (inputCopy.shape().size() > 2) {
+        transTensorTo2D(ctx, inputCopy);
+    }
+    if (outputCopy.shape().size() > 2) {
+        transTensorTo2DFalg = true;
+        transTensorTo2D(ctx, outputCopy);
+    }
 
     AclOpRunner<3, 1> runner("MatMulV2", ctx);
+    runner.addInput(inputCopy).addInput(weightCopy).setAttr<uint8_t>("transpose_x1", false).setAttr<uint8_t>("transpose_x2", true).addOutput(outputCopy);
 
-    if (inputSize.len > 2) {
-        const void* data;
-        diopiGetTensorDataConst(input, &data);
-        std::vector<int64_t> dims({1, inputSize.data[inputSize.len - 1]});
-        for (int i = 0; i < inputSize.len - 1; i++) {
-            dims[0] = dims[0] * inputSize.data[i];
-        }
-        runner.addInput(data, numel * elemsize, dims, ACL_FORMAT_ND, dtype);
-    } else {
-        runner.addInput(input);
+    // if bias is not nullptr, also add bias to input
+    if (bias) {
+        runner.addInput(bias);
     }
-    runner.addInput(weight).setAttr<uint8_t>("transpose_x1", false).setAttr<uint8_t>("transpose_x2", true);
-
-    if (outputSize.len > 2) {
-        void* data;
-        diopiGetTensorData(out, &data);
-        std::vector<int64_t> dims({1, outputSize.data[outputSize.len - 1]});
-        for (int i = 0; i < outputSize.len - 1; i++) {
-            dims[0] = dims[0] * outputSize.data[i];
-        }
-        runner.addOutput(data, numelOut * elemsize, dims, ACL_FORMAT_ND, dtype);
-    } else {
-        runner.addOutput(out);
-    }
-    if (bias) runner.addInput(bias);
     runner.run();
+
+    if (transTensorTo2DFalg) outputCopy.view(outputPrimaryShape);
+    diopiTensorHandle_t diopiOutputCopy = const_cast<diopiTensorHandle_t>(outputCopy.tensorHandle());
+    diopiCastDtype(ctx, out, diopiOutputCopy);
+
     return diopiSuccess;
 }
 
 diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight, diopiTensorHandle_t gradBias,
                                  diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight) {
-    diopiSize_t inputSize, gradOutSize;
-    diopiGetTensorShape(input, &inputSize);
-    diopiGetTensorShape(gradOutput, &gradOutSize);
-    int64_t numel, numelGradOut, elemsize, elemSizeGrad;
-    diopiDtype_t dtype, dtypeGrad;
-    diopiGetTensorNumel(input, &numel);
-    diopiGetTensorNumel(gradOutput, &numelGradOut);
-    diopiGetTensorElemSize(input, &elemsize);
-    diopiGetTensorElemSize(gradInput, &elemSizeGrad);
-    diopiGetTensorDtype(input, &dtype);
-    diopiGetTensorDtype(gradInput, &dtypeGrad);
+    AscendTensor gradInputCopy(gradInput);
+    AscendTensor gradWeightCopy(gradWeight);
+    AscendTensor gradOutputCopy(gradOutput);
+    AscendTensor inputCopy(input);
+    AscendTensor weightCopy(weight);
 
-    std::vector<int64_t> dimsGradOut({gradOutSize.data[gradOutSize.len - 2], gradOutSize.data[gradOutSize.len - 1]});
-    for (int i = 0; i < gradOutSize.len - 2; i++) {
-        dimsGradOut[0] = dimsGradOut[0] * gradOutSize.data[i];
+    const std::vector<int64_t> gradInputPrimaryShape = gradInputCopy.shape();
+    bool transTensorTo2DFalg = false;
+
+    if (weightCopy.shape().size() > 2) transTensorTo2D(ctx, weightCopy);
+    if (gradOutputCopy.shape().size() > 2) transTensorTo2D(ctx, gradOutputCopy);
+    if (gradInputCopy.shape().size() > 2) {
+        transTensorTo2DFalg = true;
+        transTensorTo2D(ctx, gradInputCopy);
     }
-    const void* dataGrad;
-    diopiGetTensorDataConst(gradOutput, &dataGrad);
 
-    std::vector<int64_t> dims({inputSize.data[inputSize.len - 2], inputSize.data[inputSize.len - 1]});
+    std::cout << "gradOutput shape: ";
+    std::for_each(gradOutputCopy.shape().begin(), gradOutputCopy.shape().end(), [](const int& i) { std::cout << i << " "; });
+    std::cout<<std::endl;
+    std::cout << "weight shape: ";
+    std::for_each(weightCopy.shape().begin(), weightCopy.shape().end(), [](const int& i) { std::cout << i << " "; });
+    std::cout<<std::endl;
+    std::cout<< "gradInputCopy shape";
+    std::for_each(gradInputCopy.shape().begin(), gradInputCopy.shape().end(), [](const int& i) { std::cout << i << " "; });
+    std::cout<<std::endl;
 
-    AclOpRunner<2, 1> runner("MatMulV2", ctx);
-    runner.addInput(dataGrad, numelGradOut * elemSizeGrad, dimsGradOut, ACL_FORMAT_ND, dtypeGrad)
-        .addInput(weight)
+    AclOpRunner<2, 1>("MatMul", ctx)
+        .addInput(gradOutputCopy)
+        .addInput(weightCopy)
         .setAttr<uint8_t>("transpose_x1", false)
-        .setAttr<uint8_t>("transpose_x2", false);
-    if (inputSize.len > 2) {
-        void* data;
-        diopiGetTensorData(gradInput, &data);
-        for (int i = 0; i < inputSize.len - 2; i++) {
-            dims[0] = dims[0] * inputSize.data[i];
-        }
-        runner.addOutput(data, numel * elemSizeGrad, dims, ACL_FORMAT_ND, dtypeGrad);
-    } else {
-        runner.addOutput(gradInput);
-    }
-    runner.run();
+        .setAttr<uint8_t>("transpose_x2", false)
+        .addOutput(gradInputCopy)
+        .run();
 
-    AclOpRunner<2, 1> runner2("MatMulV2", ctx);
-    runner2.addInput(dataGrad, numelGradOut * elemSizeGrad, dimsGradOut, ACL_FORMAT_ND, dtypeGrad)
+    if (inputCopy.shape().size() > 2) transTensorTo2D(ctx, inputCopy);
+    if (gradWeightCopy.shape().size() > 2) transTensorTo2D(ctx, gradWeightCopy);
+    AclOpRunner<2, 1>("MatMul", ctx)
+        .addInput(gradOutputCopy)
+        .addInput(inputCopy)
         .setAttr<uint8_t>("transpose_x1", true)
         .setAttr<uint8_t>("transpose_x2", false)
-        .addOutput(gradWeight);
-    if (inputSize.len > 2) {
-        const void* data;
-        diopiGetTensorDataConst(input, &data);
-        runner2.addInput(data, numel * elemsize, dims, ACL_FORMAT_ND, dtype);
-    } else {
-        runner2.addInput(input);
-    }
-    runner2.run();
+        .addOutput(gradWeightCopy)
+        .run();
 
+    if (transTensorTo2DFalg) {
+        gradInputCopy.view(gradInputPrimaryShape);
+    }
+    diopiTensorHandle_t diopiGradOutputCopy = const_cast<diopiTensorHandle_t>(gradOutputCopy.tensorHandle());
+    diopiTensorHandle_t diopiGradInputCopy = const_cast<diopiTensorHandle_t>(gradInputCopy.tensorHandle());
+    diopiTensorHandle_t diopiGradWeightCopy = const_cast<diopiTensorHandle_t>(gradWeightCopy.tensorHandle());
     if (gradBias) {
-        std::vector<int64_t> dimVec(gradOutSize.len - 1);
+        std::vector<int64_t> dimVec(gradOutputCopy.shape().size() - 1);
         std::iota(std::begin(dimVec), std::end(dimVec), 0);
         diopiSize_t dim = vectorToDiopiSize(dimVec);
-        diopiSum(ctx, gradBias, gradOutput, dim);
+        diopiSum(ctx, gradBias, diopiGradOutputCopy, dim);
     }
+
+    // return gradInputCopy、gradWeightCopy、gradBiasCopy
+    diopiCastDtype(ctx, gradInput, diopiGradInputCopy);
+    diopiCastDtype(ctx, gradWeight, diopiGradWeightCopy);
     return diopiSuccess;
 }
 

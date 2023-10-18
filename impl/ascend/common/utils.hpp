@@ -86,6 +86,8 @@ diopiError_t castTensor(diopiContextHandle_t ctx, const std::vector<AscendTensor
  */
 diopiError_t castTensor(diopiContextHandle_t ctx, AscendTensor& src, diopiDtype_t supportDtype);
 
+diopiError_t transTensorTo2D(diopiContextHandle_t ctx, AscendTensor& th);
+
 diopiError_t aclAsStrided(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst);
 
 diopiError_t fillAscendTensor(const AscendTensor& src, AscendTensor& dst);

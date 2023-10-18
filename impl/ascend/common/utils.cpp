@@ -8,6 +8,7 @@
 
 #include <string>
 #include <type_traits>
+#include <numeric>
 #include <typeinfo>
 
 #include "../ascend_tensor.hpp"
@@ -649,6 +650,16 @@ diopiSize_t arrayToDiopiSize(int64_t* data, int64_t len) {
     size.len = len;
     size.data = data;
     return size;
+}
+
+diopiError_t transTensorTo2D(diopiContextHandle_t ctx, AscendTensor& th) {
+    if (th.shape().size() < 2) return diopiErrorOccurred;
+    std::vector<int64_t> dims;
+    std::vector<int64_t> thShape = th.shape();
+    int dim1 = std::accumulate(thShape.begin(), thShape.end() - 1, 1, std::multiplies<int>());
+    dims = {dim1, thShape.back()};
+    th.view(dims);
+    return diopiSuccess;
 }
 
 diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, diopiConstTensorHandle_t src) {
