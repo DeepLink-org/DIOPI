@@ -25,10 +25,10 @@ diopiError_t diopiRsqrtInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) 
 
 diopiError_t diopiSqrt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     AscendTensor inputCopy(input);
-    castTensor(ctx, inputCopy, diopi_dtype_float64);
-    diopiConstTensorHandle_t inputFloat64 = inputCopy.tensorHandle();
-    AclOpRunner<1, 1>("Sqrt", ctx).addInput(inputFloat64).addOutput(out).run();
-    negativeInputRtnFillNan(ctx, out, inputFloat64);
+    castTensor(ctx, inputCopy, diopi_dtype_float32);
+    diopiConstTensorHandle_t inputFloat32 = inputCopy.tensorHandle();
+    AclOpRunner<1, 1>("Sqrt", ctx).addInput(inputFloat32).addOutput(out).run();
+    negativeInputRtnFillNan(ctx, out, inputFloat32);
     return diopiSuccess;
 }
 
@@ -57,21 +57,15 @@ DIOPI_API diopiError_t diopiAbs(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 diopiError_t diopiAbsInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiAbs(ctx, input, input); }
 
 diopiError_t diopiLog(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AscendTensor inputCopy(input);
-    castTensor(ctx, inputCopy, diopi_dtype_float64);
-    diopiConstTensorHandle_t inputFloat64 = inputCopy.tensorHandle();
-    AclOpRunner<1, 1>("Log", ctx)
-        .addInput(inputFloat64)
-        .setAttr<float>("base", -1.0)
-        .setAttr<float>("scale", 1.0)
-        .setAttr<float>("shift", 0.0)
-        .addOutput(out)
-        .run();
-    negativeInputRtnFillNan(ctx, out, inputFloat64);
+    AclOpRunner<1, 1>("Log", ctx).addInput(input).setAttr<float>("base", -1.0).setAttr<float>("scale", 1.0).setAttr<float>("shift", 0.0).addOutput(out).run();
+    negativeInputRtnFillNan(ctx, out, input);
     return diopiSuccess;
 }
 
-diopiError_t diopiLogInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiLog(ctx, input, input); }
+diopiError_t diopiLogInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    AclOpRunner<1, 1>("Log", ctx).addInput(input).setAttr<float>("base", -1.0).setAttr<float>("scale", 1.0).setAttr<float>("shift", 0.0).addOutput(input).run();
+    return diopiSuccess;
+}
 
 diopiError_t diopiExp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     AclOpRunner<1, 1>("Exp", ctx).addInput(input).addOutput(out).run();

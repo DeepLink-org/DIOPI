@@ -404,7 +404,7 @@ device_configs = {
     ),
 
     'pointwise_op_abs_input': dict(
-        name=['log2', 'log10', 'rsqrt'],
+        name=['log', 'log2', 'log10', 'rsqrt'],
         tensor_para=dict(
             args=[
                 {
@@ -416,7 +416,7 @@ device_configs = {
     ),
 
     'log_integer_input': dict(
-        name=['log2', 'log10'],
+        name=['log', 'log2', 'log10'],
         tensor_para=dict(
             args=[
                 {
@@ -428,7 +428,7 @@ device_configs = {
     ),
 
     'log_zero_input': dict(
-        name=['log2', 'log10'],
+        name=['log', 'log2', 'log10'],
         tensor_para=dict(
             args=[
                 {
@@ -440,7 +440,7 @@ device_configs = {
     ),
 
     'log_neg_input': dict(
-        name=['log2', 'log10'],
+        name=['log', 'log2', 'log10'],
         tensor_para=dict(
             args=[
                 {
