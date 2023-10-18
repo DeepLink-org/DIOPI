@@ -36,51 +36,7 @@ inline aclFormat getAclDataFormat(diopiConstTensorHandle_t th) {
     diopiGetTensorShape(th, &shape);
     diopiGetTensorStride(th, &stride);
     ASCEND_CHECK_ABORT(stride.len == shape.len, "stride.len == shape.len check failed");
-    if (shape.len == 4) {
-        std::array<int64_t, 4> thStride{stride.data[0], stride.data[1], stride.data[2], stride.data[3]};
-        {
-            std::array<int64_t, 4> nchwStride;
-            int st = 1;
-            for (auto k : {3, 2, 1, 0}) {
-                nchwStride[k] = st;
-                if (shape.data[k] == 0) continue;
-                if (shape.data[k] == -1) st = -1;
-                if (st != -1) st *= shape.data[k];
-            }
-            if (thStride == nchwStride) {
-                return ACL_FORMAT_NCHW;
-            }
-        }
-        std::array<int64_t, 4> nhwcStride;
-        int st = 1;
-        for (auto k : {1, 3, 2, 0}) {
-            nhwcStride[k] = st;
-            if (shape.data[k] == 0) continue;
-            if (shape.data[k] == -1) st = -1;
-            if (st != -1) st *= shape.data[k];
-        }
-        if (thStride == nhwcStride) {
-            return ACL_FORMAT_NHWC;
-        }
-        warning("Acl only support NCHW or NHWC format! but get %s", dumpTensor(th).c_str());
-    }
-    return ACL_FORMAT_ND;
-}
-
-inline bool isIntegralType(const diopiDtype_t& type) { return type < 8; }
-
-inline bool isIntegralTypeWithBool(const diopiDtype_t& type) { return type < 8 || type == 11; }
-
-inline bool isFloatingType(const diopiDtype_t& type) { return (type <= 10 && type >= 8) || type == 12 || type == 13; }
-
-template <typename T>
-T getValue(const diopiScalar_t* scalar) {
-    ASCEND_CHECK_ABORT(scalar != nullptr, "input should not be nullptr");
-    if (isIntegralTypeWithBool(scalar->stype)) {
-        return static_cast<T>(scalar->ival);
-    } else {
-        return static_cast<T>(scalar->fval);
-    }
+    return AscendTensor(th).getAclDataFormat();
 }
 
 diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* out, float val);
@@ -455,14 +411,18 @@ public:
      * @return A reference to the modified AclOpRunner
      */
     template <typename T>
-    AclOpRunner& addDynamicInput(const std::vector<T>& tensors) {
+    AclOpRunner& addDynamicInput(const std::vector<T>& tensors, diopiDtype_t type = diopi_dtype_unsupported) {
         ASCEND_CHECK_ABORT(hasDynamicInput_ || inputIndex_ == 0 || InputSize == 1, "only support one dynamic input");
         hasDynamicInput_ = true;
         dynamcInputSize_ = tensors.size();
         inputDescs_.resize(dynamcInputSize_);
         inputBuffers_.resize(dynamcInputSize_);
         for (int i = 0; i < dynamcInputSize_; ++i) {
-            addInput(tensors[i]);
+            if (type != diopi_dtype_unsupported) {
+                addInput(tensors[i], type);
+            } else {
+                addInput(tensors[i]);
+            }
         }
         return *this;
     }

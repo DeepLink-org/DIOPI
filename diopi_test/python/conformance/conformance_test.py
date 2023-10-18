@@ -290,7 +290,9 @@ class ManualTest(object):
         out = F.multinomial(input, num_samples, replacement, generator)
         out_numpy = out.numpy()
         has_duplicates = False
-        if out.size().len == 2:
+        if 0 in input.size().data:
+            assert len(out_numpy) == 0, "failed to execute multinomial"
+        elif out.size().len == 2:
             has_duplicates = len(out_numpy[0]) != len(set(out_numpy[0]))
         else:
             has_duplicates = len(out_numpy) != len(set(out_numpy))

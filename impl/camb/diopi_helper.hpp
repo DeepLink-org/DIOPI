@@ -19,6 +19,7 @@
 #include <utility>
 #include <vector>
 
+#include "env_vars.hpp"
 #include "error.hpp"
 #include "impl_functions.hpp"
 
@@ -66,16 +67,14 @@ void getFuncName(const char* expr, char* name);
 // cant' use this macro DIOPI_RECORD_END alone, but use it in pairs with DIOPI_RECORD_START
 #define DIOPI_RECORD_END diopiRecordEnd(&record);
 
-extern bool isRecordOn;
-
 #define DIOPI_CALL(Expr)                                                                                                            \
     do {                                                                                                                            \
         void* record = nullptr;                                                                                                     \
-        if (isRecordOn) {                                                                                                           \
+        if (isRecordOn()) {                                                                                                         \
             DIOPI_RECORD_START(Expr);                                                                                               \
         }                                                                                                                           \
         diopiError_t ret = Expr;                                                                                                    \
-        if (isRecordOn) {                                                                                                           \
+        if (isRecordOn()) {                                                                                                         \
             DIOPI_RECORD_END;                                                                                                       \
         }                                                                                                                           \
         if (diopiSuccess != ret) {                                                                                                  \

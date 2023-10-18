@@ -10,7 +10,13 @@ namespace impl {
 namespace ascend {
 
 diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t totalWeight, diopiConstTensorHandle_t input,
-                                       diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
+                                       diopiConstTensorHandle_t target, diopiTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
+    AscendTensor inputAt0(input), outAt0(out);
+    if (0 == inputAt0.numel()) {
+        fillNan(ctx, outAt0);
+        return diopiSuccess;
+    }
+
     diopiSize_t inputShape;
     diopiTensorHandle_t inputCopy, targetCopy;
     diopiGetTensorShape(input, &inputShape);
@@ -49,34 +55,45 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
         calTargetShapeVec.push_back(inputShape.data[0]);
     }
 
-    void *dataPtr, *targetPtr;
     targetCopy = contiguous(ctx, target, diopi_dtype_int32);
-    diopiGetTensorData(inputCopy, &dataPtr);
-    diopiGetTensorData(targetCopy, &targetPtr);
+    AscendTensor inputAt(inputCopy), outAt(out), targetAt(targetCopy);
 
     AclOpRunner<3, 2> runner("NLLLoss", ctx);
-    runner.addInput(dataPtr, getBaseBufferSize(inputCopy), calShapeVec, ACL_FORMAT_ND, dtype)
-        .addInput(targetPtr, getBaseBufferSize(targetCopy), calTargetShapeVec, ACL_FORMAT_ND, diopi_dtype_int32)
-        .setAttr("ignore_index", ignoreIndex);
+    if (inputAt.dtype() != diopi_dtype_float32) {
+        castTensor(ctx, inputAt, diopi_dtype_float32);
+    }
 
-    runner.addInput(weight, diopi_dtype_float32);
+    AscendTensor weightAt(weight);
+    castTensor(ctx, weightAt, diopi_dtype_float32);
+    if (0 <= ignoreIndex && ignoreIndex < inputAt.shape(-1)) {
+        diopiStreamHandle_t stream;
+        void *ptr = reinterpret_cast<uint8_t *>(const_cast<void *>(weightAt.data())) + ignoreIndex * weightAt.elemsize();
+        float val = 0.0f;
+        diopiGetStream(ctx, &stream);
+        aclrtMemcpyAsync(ptr, sizeof(float), &val, sizeof(float), ACL_MEMCPY_HOST_TO_DEVICE, stream);
+        aclrtSynchronizeStream(stream);
+    }
+    runner.addInput(inputAt).addInput(targetAt).addInput(weightAt).setAttr("ignore_index", ignoreIndex);
 
+    diopiDtype_t outOriginDtype = outAt.dtype();
+    if (outOriginDtype != diopi_dtype_float32) {
+        castTensor(ctx, outAt, diopi_dtype_float32);
+    }
     if (reduction == diopiReduction_t::ReductionMean) {
         runner.setAttr("reduction", std::string("mean"));
-        runner.addOutput(out);
+        runner.addOutput(outAt);
     } else if (reduction == diopiReduction_t::ReductionSum) {
         runner.setAttr("reduction", std::string("sum"));
-        runner.addOutput(out);
+        runner.addOutput(outAt);
     } else if (reduction == diopiReduction_t::ReductionNone) {
         runner.setAttr("reduction", std::string("none"));
-        diopiDtype_t outDtype;
-        void *outPtr;
-        diopiGetTensorDtype(out, &outDtype);
-        diopiGetTensorData(out, &outPtr);
-        runner.addOutput(outPtr, getBaseBufferSize(out), calTargetShapeVec, ACL_FORMAT_ND, outDtype);
+        runner.addOutput(outAt);
     }
     runner.addOutput(totalWeight);
     runner.run();
+    AscendTensor outOri(out);
+    castTensor(ctx, outAt, outOri);
+
     return diopiSuccess;
 }
 
@@ -178,22 +195,26 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     diopiGetTensorData(inputCopy, &dataPtr);
     diopiGetTensorData(targetCopy, &targetPtr);
 
+    AscendTensor inputAt(inputCopy), yGradAt(gradOutput);
+
+    if (inputAt.dtype() != diopi_dtype_float32 || yGradAt.dtype() != diopi_dtype_float32) {
+        castTensor(ctx, inputAt, diopi_dtype_float32);
+        castTensor(ctx, yGradAt, diopi_dtype_float32);
+    }
+
     AclOpRunner<5, 1> runner("NLLLossGrad", ctx);
 
-    runner.addInput(dataPtr, getBaseBufferSize(inputCopy), calShapeVec, ACL_FORMAT_ND, dtype);
+    runner.addInput(inputAt.data(), inputAt.getAclMemBufferSize(), calShapeVec, ACL_FORMAT_ND, inputAt.dtype());
 
     if (reduction == diopiReduction_t::ReductionMean) {
         runner.setAttr("reduction", std::string("mean"));
-        runner.addInput(gradOutput);
+        runner.addInput(yGradAt);
     } else if (reduction == diopiReduction_t::ReductionSum) {
         runner.setAttr("reduction", std::string("sum"));
-        runner.addInput(gradOutput);
+        runner.addInput(yGradAt);
     } else if (reduction == diopiReduction_t::ReductionNone) {
         runner.setAttr("reduction", std::string("none"));
-        auto gradOutputCopy = contiguous(ctx, gradOutput);
-        void *gradOutputPtr;
-        diopiGetTensorData(gradOutputCopy, &gradOutputPtr);
-        runner.addInput(gradOutputPtr, getBaseBufferSize(gradOutputCopy), calTargetShapeVec, ACL_FORMAT_ND, gradDtype);
+        runner.addInput(yGradAt);
     }
 
     runner.addInput(targetPtr, getBaseBufferSize(targetCopy), calTargetShapeVec, ACL_FORMAT_ND, diopi_dtype_int32).setAttr("ignore_index", ignoreIndex);

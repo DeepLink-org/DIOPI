@@ -89,17 +89,22 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
     diopiSize_t weightShape;
     diopiGetTensorShape(gradWeight, &weightShape);
 
-    AclOpRunner<3, 1>("Conv2DBackpropFilter", ctx)
-        .addInput(input)
-        .addConstInput(weightShape, diopi_dtype_int32)
-        .addInput(gradOutputCopy)
-        .addOutput(gradWeight)
-        .setAttr("strides", strideTemp)
-        .setAttr("pads", paddingTemp)
-        .setAttr("dilations", dilationsTemp)
-        .setAttr<int64_t>("groups", 1)
-        .setAttr("data_format", dataFormat)
-        .run();
+    if (AscendTensor(input).numel()) {
+        AclOpRunner<3, 1>("Conv2DBackpropFilter", ctx)
+            .addInput(input)
+            .addConstInput(weightShape, diopi_dtype_int32)
+            .addInput(gradOutputCopy)
+            .addOutput(gradWeight)
+            .setAttr("strides", strideTemp)
+            .setAttr("pads", paddingTemp)
+            .setAttr("dilations", dilationsTemp)
+            .setAttr<int64_t>("groups", 1)
+            .setAttr("data_format", dataFormat)
+            .run();
+    } else {
+        diopiScalar_t zero = constructDiopiScalarT(diopi_dtype_float32, 0);
+        diopiFill(ctx, gradWeight, &zero);
+    }
     if (gradInput != nullptr) {
         diopiSize_t inputShape;
         diopiGetTensorShape(input, &inputShape);
