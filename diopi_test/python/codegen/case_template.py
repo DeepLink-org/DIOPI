@@ -31,9 +31,14 @@ ${test_import_diopi_bp_func}
 from conformance.diopi_manual_functions import ManualTest
 ''')
 
+    # marks 
+    test_function_case_dtype_marks = CodeTemplate(r'''
+@pytest.mark.${dtype}
+''')
+
     # test_case
     test_function_templ = CodeTemplate(r'''
-@pytest.mark.${input_dtype}
+${test_dtype_marks}
 def test_${func_case_name}(self):
     ${forward}
     ${backward}
