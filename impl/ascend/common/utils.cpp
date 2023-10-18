@@ -425,10 +425,18 @@ diopiError_t negativeInputRtnFillNan(diopiContextHandle_t ctx, diopiTensorHandle
     // get negative mask
     diopiTensorHandle_t mask;
     makeTensorLike(ctx, &mask, input, diopi_dtype_bool);
+
+    //convert input dtype
     AscendTensor inputCopy(input);
-    castTensor(ctx, inputCopy, diopi_dtype_float64);
-    diopiConstTensorHandle_t inputFloat64 = inputCopy.tensorHandle();
-    diopiLtScalar(ctx, mask, inputFloat64, &zeroValueScalar);
+    diopiDtype_t inputDType = inputCopy.dtype();
+    diopiConstTensorHandle_t inputTensor;
+    if (inputDType == diopi_dtype_float16) {
+        inputTensor = input;
+    } else {
+        castTensor(ctx, inputCopy, diopi_dtype_float32);
+        inputTensor = inputCopy.tensorHandle();
+    }
+    diopiLtScalar(ctx, mask, inputTensor, &zeroValueScalar);
 
     // masked_fill nan
     return diopiMaskedFillInp(ctx, out, mask, nanValue);
