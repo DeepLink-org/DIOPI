@@ -952,8 +952,8 @@ DIOPI_API diopiError_t diopiWhere(diopiContextHandle_t ctx, diopiTensorHandle_t 
     return impl::tops::topsWhere(ctx, out, condition, input, other);
 }
 
-DIOPI_API diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, const int64_t* dim, bool sorted,
-                                   bool return_counts, diopiTensorHandle_t indices, diopiTensorHandle_t* counts) {
+DIOPI_API diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t input, const int64_t *dim, bool sorted,
+                                   bool return_counts, diopiTensorHandle_t indices, diopiTensorHandle_t *counts) {
     TOPSOP_LOG();
     return impl::tops::topsUnique(ctx, out, input, dim, sorted, return_counts, indices, counts);
 }

@@ -408,8 +408,8 @@ DIOPI_API diopiError_t topsopUpsampleLinearBackward(diopiContextHandle_t ctx, di
 
 DIOPI_API diopiError_t topsContiguous(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t input, diopiMemoryFormat_t memoryFormat);
 
-DIOPI_API diopiError_t topsUnique(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, const int64_t* dim, bool sorted,
-                                  bool return_counts, diopiTensorHandle_t indices, diopiTensorHandle_t* counts);
+DIOPI_API diopiError_t topsUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t input, const int64_t *dim, bool sorted,
+                                  bool return_counts, diopiTensorHandle_t indices, diopiTensorHandle_t *counts);
 
 DIOPI_API diopiError_t topsProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t *dim);
 
