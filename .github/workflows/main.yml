@@ -166,7 +166,7 @@ jobs:
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME_MMCV}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST3} && cp -R source ${BUILD_TEST3} && cd ${BUILD_TEST3}
           export CI=true
-          cd diopi_test && git clone https://github.com/DeepLink-org/DIPU.git && source scripts/ci_nv_env.sh
+          cd diopi_test && source scripts/ci_nv_env.sh
           cd DIPU/dipu
           rsync -a /mnt/lustre/share_data/PAT/datasets/huggingface mmlab_pack/
 
