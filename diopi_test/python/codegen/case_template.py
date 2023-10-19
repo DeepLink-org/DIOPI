@@ -9,7 +9,7 @@ import os
 import pickle
 import pytest
 import numpy as np
-from conformance.diopi_runtime import Tensor
+from conformance.diopi_runtime import Tensor, from_dtype_str
 from conformance.diopi_functions import ones_like
 from conformance.check_result import CheckResult
 ${test_diopi_head_import}
@@ -161,6 +161,8 @@ for para_key, para_val in function_kwargs.items():
 for para_key, para_val in function_kwargs.items():
     if isinstance(para_val, np.ndarray):
         function_kwargs[para_key] = Tensor.from_numpy(para_val)
+    if para_key == 'dtype':
+        function_kwargs[para_key] = from_dtype_str(para_val)
 ''')
 
     test_to_tensor_list = CodeTemplate(r'''
