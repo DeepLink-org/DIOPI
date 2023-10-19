@@ -1499,7 +1499,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16)],
+                    "dtype": [Skip(Dtype.float16),],
                 },
             ]
         ),
@@ -1511,7 +1511,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16)],
+                    "dtype": [Skip(Dtype.float16),],
                 },
             ]
         ),
@@ -1523,7 +1523,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16)],
+                    "dtype": [Skip(Dtype.float16),],
                 },
             ]
         ),
