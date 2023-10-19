@@ -159,9 +159,9 @@
     layout: NCHW    
 
 - diopiAddcmul:
-    dtype: (int16, uint16, uint32, uint64)->int64, (float64)->float32
+    dtype: (int16, uint16, uint32, uint64)->int64, (float64)->float32, (float16)->float64
     layout: NCHW
 
 - diopiAddcmulInp:
-    dtype: (int16, uint16, uint32, uint64)->int64, (float64)->float32
+    dtype: (int16, uint16, uint32, uint64)->int64, (float64)->float32, (float16)->float64
     layout: NCHW 
