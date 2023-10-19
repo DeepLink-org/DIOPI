@@ -157,7 +157,7 @@ jobs:
   Build-Mmcv-Ext-Nvidia:
     name: Build-Mmcv-Ext-Nvidia
     runs-on: tps-diopi-ci
-    needs: [Rsync]
+    needs: [Rsync,Build-Nvidia]
     if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
     steps:
       - name: build
