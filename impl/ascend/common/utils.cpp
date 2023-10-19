@@ -296,7 +296,7 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
                 reinterpret_cast<int64_t*>(ptr)[0] = getValue<int64_t>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_uint64:
-                reinterpret_cast<int64_t*>(ptr)[0] = getValue<uint64_t>(scalar);
+                reinterpret_cast<uint64_t*>(ptr)[0] = getValue<uint64_t>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_uint8:
                 reinterpret_cast<uint8_t*>(ptr)[0] = getValue<uint8_t>(scalar);
