@@ -240,7 +240,7 @@ jobs:
           export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST2}
           rm -rf ${GEN_DATA} && ln -s ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${GEN_DATA}
-          export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST2}/impl/lib
+          export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/lib
           echo \$LD_LIBRARY_PATH
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=20 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode run_test'
           """
