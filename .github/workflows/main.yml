@@ -166,7 +166,12 @@ jobs:
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME_MMCV}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST3} && cp -R source ${BUILD_TEST3} && cd ${BUILD_TEST3}
           export CI=true
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 ls && cd diopi_test && bash scripts/build_mmcv.sh mmcv_ext || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST3} && exit 1 )
+          cd diopi_test && git clone https://github.com/DeepLink-org/DIPU.git && source scripts/ci_nv_env.sh
+          cd DIPU/dipu
+          rsync -a /mnt/lustre/share_data/PAT/datasets/huggingface mmlab_pack/
+
+          srun --job-name=${GITHUB_RUN_NUMBER}_${GITHUB_JOB} --partition=${CUDA_PARTATION} --gres=gpu:${GPU_REQUESTS} --time=30 bash scripts/ci/nv/ci_nv_script.sh build_dipu \
+          || ( cd ${CUDA_CI_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} && exit 1 )
           """
 
   Op-Test-Mmcv-Ext-Nvidia:
