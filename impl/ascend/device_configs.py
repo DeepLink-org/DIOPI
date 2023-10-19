@@ -212,26 +212,14 @@ device_configs = {
 
     'gelu': dict(
         name=['gelu'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
-            ]
-        ),
+        atol=1e-3,
+        rtol=1e-3,
     ),
 
     'gelu_specific': dict(
         name=['gelu'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
-            ]
-        ),
+        atol=1e-3,
+        rtol=1e-3,
     ),
 
     'avg_pool2d': dict(
@@ -344,7 +332,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erf', 'erfinv', 'exp', 'neg', 'asin', 'sqrt', 'rsqrt', 'ceil', 'atan'],
+        name=['erf', 'erfinv', 'exp', 'asin', 'sqrt', 'rsqrt', 'ceil', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -356,7 +344,7 @@ device_configs = {
     ),
 
     'pointwise_op_int_without_inplace': dict(
-        name=['erf', 'exp', 'neg', 'asin', 'sqrt', 'rsqrt', 'atan'],
+        name=['erf', 'exp', 'asin', 'sqrt', 'rsqrt', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -368,7 +356,7 @@ device_configs = {
     ),
 
     'pointwise_op_uint8': dict(
-        name=['erf', 'exp', 'neg', 'asin', 'sqrt', 'rsqrt', 'atan'],
+        name=['erf', 'exp', 'asin', 'sqrt', 'rsqrt', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -404,7 +392,7 @@ device_configs = {
     ),
 
     'pointwise_op_abs_input': dict(
-        name=['log', 'log2', 'log10', 'sqrt', 'rsqrt'],
+        name=['sqrt', 'rsqrt'],
         tensor_para=dict(
             args=[
                 {
@@ -416,7 +404,7 @@ device_configs = {
     ),
 
     'log_integer_input': dict(
-        name=['log', 'log2', 'log10'],
+        name=['log2', 'log10'],
         tensor_para=dict(
             args=[
                 {
@@ -428,7 +416,7 @@ device_configs = {
     ),
 
     'log_zero_input': dict(
-        name=['log', 'log2', 'log10'],
+        name=['log2', 'log10'],
         tensor_para=dict(
             args=[
                 {
@@ -440,12 +428,12 @@ device_configs = {
     ),
 
     'log_neg_input': dict(
-        name=['log', 'log2', 'log10'],
+        name=['log2', 'log10'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
+                    "dtype": [Skip(Dtype.int16), Skip(Dtype.int32), Skip(Dtype.int64), Skip(Dtype.uint8), Skip(Dtype.int8),],
                 },
             ]
         ),
@@ -488,7 +476,7 @@ device_configs = {
     ),
 
     'pointwise_op_zero': dict(
-        name=['exp', 'neg', 'sqrt', 'rsqrt', 'ceil'],
+        name=['exp', 'sqrt', 'rsqrt', 'ceil'],
         tensor_para=dict(
             args=[
                 {
@@ -501,18 +489,6 @@ device_configs = {
 
     'pointwise_op_without_inplace_zero': dict(
         name=['sign', 'exp', 'sqrt', 'rsqrt'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((16,)),Skip((8, 64)),],
-                },
-            ]
-        ),
-    ),
-
-    'neg_without_inplace_zero': dict(
-        name=['neg'],
         tensor_para=dict(
             args=[
                 {
@@ -1281,26 +1257,14 @@ device_configs = {
 
     'topk_nonzero': dict(
         name=['topk'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip(()),Skip((8723,)),Skip((1024, 81)),Skip((5, 4, 6)),Skip((2, 2, 64, 64)),Skip((0,)),Skip((12, 0)),Skip((4, 0, 7)),],
-                },
-            ]
-        ),
+        atol=1e-2,
+        rtol=1e-2,
     ),
 
     'topk_zero': dict(
         name=['topk'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((1,)),Skip((16,)),Skip((50, 25, 10)),],
-                },
-            ]
-        ),
+        atol=1e-2,
+        rtol=1e-2,
     ),
 
     'transpose': dict(
