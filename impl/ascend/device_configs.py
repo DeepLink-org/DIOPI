@@ -2620,18 +2620,6 @@ device_configs = {
         ),
     ),
 
-    'multinomial': dict(
-        name=['multinomial'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                }
-            ]
-        ),
-    ),
-
     'cast_dtype': dict(
         name=['cast_dtype'],
         tensor_para=dict(
