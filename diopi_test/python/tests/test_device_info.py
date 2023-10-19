@@ -1,4 +1,4 @@
-from conformance.utils import check_function, logger
+from conformance.diopi_functions import check_function, logger
 from ctypes import c_char_p, c_char, cast, POINTER
 
 

@@ -144,6 +144,7 @@ inline caffe2::TypeMeta getATenType(diopiDtype_t dt) {
             return caffe2::TypeMeta::Make<c10::complex<double>>();
         default:
             NOT_SUPPORTED("diopi dytpe");
+            return caffe2::TypeMeta();
     }
 }
 
@@ -171,6 +172,7 @@ inline diopiDtype_t getDIOPITensorType(at::Tensor& input) {
             return diopi_dtype_float64;
         default:
             NOT_SUPPORTED("aten dtype");
+            return diopi_dtype_unsupported;
     }
 }
 
@@ -184,11 +186,8 @@ inline diopiDevice_t getDIOPIDevice(c10::DeviceType device) {
 inline c10::DeviceType getATenDevice(diopiDevice_t device) {
     if (device == diopi_host) {
         return c10::DeviceType::CPU;
-    } else if (device == diopi_device) {
-        return c10::DeviceType::CUDA;
-    } else {
-        NOT_SUPPORTED("device dtype");
     }
+    return c10::DeviceType::CUDA;
 }
 
 inline at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef strides, const std::function<void(void*)>& deleter,
@@ -326,8 +325,8 @@ inline void invokeATenFuncInp(diopiContextHandle_t ctx, Func func, Args&&... arg
 inline void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
     at::IntArrayRef atSize = input.sizes();
     at::IntArrayRef atStride = input.strides();
-    diopiSize_t size{atSize.data(), atSize.size()};
-    diopiSize_t stride{atStride.data(), atStride.size()};
+    diopiSize_t size{atSize.data(), static_cast<int64_t>(atSize.size())};
+    diopiSize_t stride{atStride.data(), static_cast<int64_t>(atStride.size())};
     diopiDtype_t dtype = getDIOPITensorType(input);
     diopiDevice_t device = getDIOPIDevice(input.device().type());
     diopiRequireTensor(ctx, out, &size, &stride, dtype, device);
@@ -370,6 +369,7 @@ inline c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding
             return "";
         default:
             NOT_SUPPORTED("diopi round mode");
+            return "";
     }
 }
 

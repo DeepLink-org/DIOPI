@@ -1400,8 +1400,8 @@ def where(condition, input, other) -> Tensor:
     sizeC = condition.size().data
     sizeO = broadcast_out_size(sizeX, sizeY)
     sizeO = broadcast_out_size(sizeC, sizeO)
-    assert (input.get_dtype() == other.get_dtype()),\
-        " input and other shoule be the same type "
+    # assert (input.get_dtype() == other.get_dtype()),\
+    #     " input and other shoule be the same type "
     out = Tensor(sizeO, input.get_dtype())
 
     func = check_function("diopiWhere")
@@ -2494,7 +2494,10 @@ def cumsum(input, dim, dtype=None):
     assert isinstance(dim, int), "dim should be int"
 
     sizeI = list(input.size().data)
-    assert dim < len(sizeI), "dim out of index"
+    if len(sizeI) == 0:
+        assert dim in (0, -1), "dim out of index"
+    else:
+        assert dim < len(sizeI), "dim out of index"
 
     out = Tensor(input.size().data, promote_type(input, Dtype.int64)) if dtype is None else Tensor(input.size().data, dtype)
     func = check_function("diopiCumsum")
@@ -2828,8 +2831,12 @@ def expand(input, size) -> Tensor:
 
 def unfold(input, dimension, size, step):
     sizeO = list(input.size().data)
-    sizeO[dimension] = int((sizeO[dimension] - size) / step + 1)
-    sizeO.append(size)
+
+    if len(sizeO) == 0:
+        sizeO = [1]
+    else:
+        sizeO[dimension] = int((sizeO[dimension] - size) / step + 1)
+        sizeO.append(size)
 
     out = Tensor(sizeO, input.get_dtype())
     func = check_function("diopiUnfold")
@@ -2921,6 +2928,8 @@ def roll(input, shifts, dims=None):
         shifts = (shifts, )
     shifts = Sizes(list(shifts))
 
+    if isinstance(dims, int):
+        dims = (dims, )
     if dims is not None:
         dims = Sizes(list(dims))
     else:

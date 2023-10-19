@@ -5,30 +5,34 @@ on:
     branches:
       - main
       - dev_v0.25
-      - wgs/*
   pull_request:
-    branches:
-      - main
-      - dev_v0.25
+    paths-ignore:
+      - "**.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".git*"
+      - "CODE_OF_CONDUCT**"
 
 env:
   NFS_PATH: '/mnt/cache/share/parrotsci/github/cibuild/${{ github.repository }}'
   NFS_PATH_LUSTRE: '/mnt/lustre/share/parrotsci/github/cibuild/${{ github.repository }}'
-  ASCEND_PATH: '/mnt/cache/share/deeplinkci/github/${{ github.repository }}'
+  DEEPLINK_PATH: '/mnt/cache/share/deeplinkci/github/${{ github.repository }}'
   ENV_PATH: '/mnt/cache/share/platform/cienv'
   ENV_NAME: 'pt2.0_diopi'
   ENV_NAME_MMCV: 'pt1.11v1'
   GPU_REQUESTS: 1
   SLURM_PAR_SH1988: ${{ vars.SLURM_PAR_SH1984 != '' && vars.SLURM_PAR_SH1984 || 'pat_rd -x SH-IDC1-10-198-8-58,SH-IDC1-10-198-8-87' }}
   SLURM_PAR_CAMB: ${{ vars.SLURM_PAR_CAMB != '' && vars.SLURM_PAR_CAMB || 'camb_mlu370_m8 --exclude HOST-10-142-11-120,HOST-10-142-11-126' }}
-  CLUSTER_1988: SH1984
+  CLUSTER_1988: SH1988
   CLUSTER_CAMB: CAMB
   CLUSTER_ASCEND: ASCEND
+  CLUSTER_TOPSRIDER: TOPSRIDER
+  CLUSTER_SUPA: SUPA
   BUILD_TEST1: build_test
   BUILD_TEST2: build_test_dy
   BUILD_TEST3: build_mmcv_ext
   GEN_DATA: diopi_test/python/data
-  USE_COVERAGE: ${{ (contains( github.ref, 'main') || startsWith(github.ref, 'refs/heads/v') || startsWith(github.ref, 'refs/heads/dev')) && 'ON' || 'OFF' }}
+  ALL_COVERAGE: ${{ (contains( github.ref, 'main') || startsWith(github.ref, 'refs/heads/v') || startsWith(github.ref, 'refs/heads/dev')) && 'ON' || 'OFF' }}
+  REQUIRE_COVERAGE: ${{ vars.REQUIRE_COVERAGE != '' && vars.REQUIRE_COVERAGE || '40' }}
 
 concurrency:
   group: ${{ github.head_ref || github.ref }}
@@ -38,25 +42,46 @@ jobs:
   Rsync:
     name: Rsync code
     runs-on: tps-diopi-ci
+    outputs:
+      output: ${{ steps.set-run-vars.outputs.RUN_RESULT }}
     steps:
       - name: clone repo
         run: |
-          cd ${GITHUB_WORKSPACE} && rm -rf DIOPI && git clone https://github.com/DeepLink-org/DIOPI.git && cd DIOPI
-          if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
-          git checkout ${{ github.event.pull_request.head.sha }} && git merge --no-edit ${{ github.base_ref }}
+          cd ${GITHUB_WORKSPACE} && rm -rf DIOPI 
+          if [ -n "${{ github.event.pull_request.head.repo.full_name }}" ] && [[ ! "${{ github.event.pull_request.head.repo.full_name }}" == *DeepLink-org* ]]; then
+            git clone ${{ github.event.pull_request.head.repo.ssh_url }}
+            cd ${GITHUB_WORKSPACE}/${{ github.event.repository.name }} && git checkout ${{ github.event.pull_request.head.sha }}
+            git remote add mainrepo git@github.com:${GITHUB_REPOSITORY}.git
+            git fetch  mainrepo && git merge --no-edit mainrepo/${{ github.base_ref }}
           else
-          git checkout ${{ github.sha }}
+            git clone https://github.com/DeepLink-org/DIOPI.git && cd DIOPI 
+            if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
+            git checkout ${{ github.event.pull_request.head.sha }} && git merge --no-edit ${{ github.base_ref }}
+            else
+            git checkout ${{ github.sha }}
+            fi
           fi
-          ls
           git submodule update --init --recursive
+      - name: Set output variables
+        id: set-run-vars
+        env:
+          GITHUB_TOKEN: "${{ secrets.CI_TOKEN != '' && secrets.CI_TOKEN || 'NONE' }}"
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number || 0 }}"
+          cd ${GITHUB_WORKSPACE}/DIOPI && RUN_RESULT=$(python3 scripts/filter_ci.py ${PR_NUMBER})
+          echo "RUN_RESULT=$RUN_RESULT" >> "$GITHUB_OUTPUT"
       - name: Rsync to Server
         run: |
-          ssh ${CLUSTER_1988} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
-          rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
-          ssh ${CLUSTER_CAMB} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source"
-          rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/
-          ssh ${CLUSTER_ASCEND} "mkdir -p ${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/source"
-          rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_ASCEND}:${ASCEND_PATH}/${GITHUB_RUN_NUMBER}/source/
+          ssh ${CLUSTER_1988} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source" \
+          && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to sh1988"
+          ssh ${CLUSTER_CAMB} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source" \
+          && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to camb"
+          ssh ${CLUSTER_ASCEND} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
+          && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_ASCEND}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to ascend"
+          ssh ${CLUSTER_TOPSRIDER} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
+          && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_TOPSRIDER}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to topsrider"
+          ssh ${CLUSTER_SUPA} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
+          && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_SUPA}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to supa"
 
   lint:
     name: lint
@@ -86,11 +111,10 @@ jobs:
         run: |
           ssh ${CLUSTER_1988} """
           set -e
-          export USE_COVERAGE=${USE_COVERAGE}
+          export USE_COVERAGE=ON
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export CI=true
-          export DIOPI_BUILD_TESTRT=ON
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh torch' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
           """
       - name: build-dyload
@@ -100,7 +124,6 @@ jobs:
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST2} && cp -R source ${BUILD_TEST2} && cd ${BUILD_TEST2}
           export CI=true
-          export DIOPI_BUILD_TESTRT=ON
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh torch_dyload' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST2} && exit 1 )
           """
 
@@ -108,17 +131,17 @@ jobs:
     name: Build-Camb
     runs-on: tps-diopi-ci
     needs: [Rsync]
+    if: ${{ contains( needs.Rsync.outputs.output, 'CAMB' ) }}
     steps:
       - name: Build
         run: |
           ssh ${CLUSTER_CAMB} """
           set -e
-          export USE_COVERAGE=${USE_COVERAGE}
+          export USE_COVERAGE=ON
           cd ${NFS_PATH}/ && ls -al && find ${NFS_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export CI=true
-          export DIOPI_BUILD_TESTRT=ON
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh camb' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
           """
       - name: clang-tidy
@@ -134,6 +157,7 @@ jobs:
     name: Build-Mmcv-Ext-Nvidia
     runs-on: tps-diopi-ci
     needs: [Rsync]
+    if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
     steps:
       - name: build
         run: |
@@ -149,6 +173,7 @@ jobs:
     name: Op-Test-Mmcv-Ext-Nvidia
     runs-on: tps-diopi-ci
     needs: [Build-Mmcv-Ext-Nvidia]
+    if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
     steps:
       - name: test
         run: |
@@ -182,22 +207,30 @@ jobs:
     name: Op-Test-Nvidia
     runs-on: tps-diopi-ci
     needs: Gen-Data
+    if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
     env:
-      run_test: "python"
+      run_test: "coverage run -p"
     steps:
       - name: NHWC-32bit-test
         run: |
-          if [ "${USE_COVERAGE}" = "ON" ]; then
-            run_test="coverage run -p"
-          fi
           ssh ${CLUSTER_1988} """
           set -e
           export CI=true
-          export USE_COVERAGE=${USE_COVERAGE}
+          export USE_COVERAGE=ON
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=20 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && ${run_test} main.py --mode run_test --fname batch_norm --nhwc &&
           ${run_test} main.py --mode run_test --fname index_select --four_bytes && ${run_test} main.py --mode run_test --fname arange --four_bytes'
+          if [ "${ALL_COVERAGE}" = "ON" ]; then
           bash /mnt/cache/share/platform/dep/sonar/coverage_DIOPI_nv.sh ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} ${GITHUB_RUN_NUMBER} || echo "get coverage fail"
+          fi
+          """
+      - name: increment coverage check
+        if: ${{ contains( github.event_name, 'pull_request' ) && contains( github.base_ref, 'main' ) }}
+        run: |
+          ssh ${CLUSTER_1988} """
+          set -e
+          source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+          bash scripts/increment_coverage.sh ${REQUIRE_COVERAGE}
           """
       - name: dyload-test
         run: |
@@ -215,6 +248,7 @@ jobs:
     name: Rt-Test-Nvidia
     runs-on: tps-diopi-ci
     needs: Build-Nvidia
+    if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
     steps:
       - name: test
         run: |
@@ -230,30 +264,39 @@ jobs:
     name: Op-Test-Camb
     runs-on: tps-diopi-ci
     needs: [Gen-Data, Build-Camb]
+    if: ${{ contains( needs.Rsync.outputs.output, 'CAMB' ) }}
     env:
-      run_test: "python"
+      run_test: "coverage run -p"
     steps:
       - name: test
         run: |
-          if [ "${USE_COVERAGE}" = "ON" ]; then
-            run_test="coverage run -p"
-          fi
           ssh ${CLUSTER_CAMB} """
           set -e
           export CI=true
-          export USE_COVERAGE=${USE_COVERAGE}
+          export USE_COVERAGE=ON
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && ls
           rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=20 --gres=mlu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && ${run_test} main.py --mode run_test --impl_folder ${NFS_PATH_LUSTRE}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/camb/' \
           && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+          if [ "${ALL_COVERAGE}" = "ON" ]; then
           bash /mnt/lustre/share/platform/dep/sonar/coverage_DIOPI_camb.sh ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} ${GITHUB_RUN_NUMBER} ${USE_COVERAGE}|| echo "get coverage fail"
+          fi
+          """
+      - name: increment coverage check
+        if: ${{ contains( github.event_name, 'pull_request' ) && contains( github.base_ref, 'main' ) }}
+        run: |
+          ssh ${CLUSTER_CAMB} """
+          set -e
+          source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+          bash scripts/increment_coverage.sh ${REQUIRE_COVERAGE}
           """
 
   Rt-Test-Camb:
     name: Rt-Test-Camb
     runs-on: tps-diopi-ci
     needs: Build-Camb
+    if: ${{ contains( needs.Rsync.outputs.output, 'CAMB' ) }}
     steps:
       - name: test
         run: |
@@ -268,22 +311,136 @@ jobs:
     name: Build-Ascend
     runs-on: tps-ascend-ci
     needs: [Rsync]
+    if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
     steps:
       - name: build
         run: |
           set -e
-          cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export CI=true
-          echo "test"
+          cd impl && sh scripts/build_impl.sh ascend
+      - name: clang-tidy
+        run: |
+          set -e
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+          cd impl && bash scripts/ci_script.sh clang-tidy || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
 
-  Test-Ascend:
-    name: Test-Ascend
+  Op-Test-Ascend:
+    name: Op-Test-Ascend
     runs-on: tps-ascend-ci
-    needs: [Build-Ascend]
+    needs: [Gen-Data, Build-Ascend]
+    if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
+    env:
+      run_test: "python"
     steps:
       - name: test
         run: |
           set -e
-          cd ${ASCEND_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
           export CI=true
-          echo "test"
+          rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
+          cd diopi_test/python && ${run_test} main.py --mode run_test --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/ascend/ \
+          && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+
+  Rt-Test-Ascend:
+    name: Rt-Test-Ascend
+    runs-on: tps-ascend-ci
+    needs: Build-Ascend
+    if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
+    steps:
+      - name: test
+        run: |
+          set -e
+          export CI=true
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+          cd diopi_test/python && python main.py --mode utest
+
+  Build-Topsrider:
+    name: Build-Topsrider
+    runs-on: tps-topsrider-ci
+    needs: Rsync
+    if: contains( needs.Rsync.outputs.output, 'TOPSRIDER' )
+    steps:
+      - name: build
+        run: |
+          set -e
+          export CI=true
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
+          echo test
+
+  Op-Test-Topsrider:
+    name: Op-Test-Topsrider
+    runs-on: tps-topsrider-ci
+    needs: Build-Topsrider
+    if: contains( needs.Rsync.outputs.output, 'TOPSRIDER' )
+    steps:
+      - name: test
+        run: |
+          set -e
+          export CI=true
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+          echo "Op-test 的 gen-data 数据位于商汤机器上，会在每周同步一次NV上生成的数据到燧原机器上，放置于当前runner的/mnt/cache/share/deeplinkci/data下"
+
+  Rt-Test-Topsrider:
+    name: Rt-Test-Topsrider
+    runs-on: tps-topsrider-ci
+    needs: Build-Topsrider
+    if: contains( needs.Rsync.outputs.output, 'TOPSRIDER' )
+    steps:
+      - name: build
+        run: |
+          set -e
+          export CI=true
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+          echo Rt-Test-Topsrider
+
+  Build-Supa:
+    name: Build-Supa
+    runs-on: tps-diopi-ci
+    needs: [Rsync]
+    if: ${{ contains( needs.Rsync.outputs.output, 'SUPA' ) }}
+    steps:
+      - name: Build
+        run: |
+          ssh ${CLUSTER_SUPA} """
+          set -e
+          cd ${NFS_PATH}/ && ls -al && find ${DEEPLINK_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
+          source /mnt/cache/share/platform/env/pt2.0_diopi
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
+          export CI=true
+          echo "no partitions, just execute the script directly on the machine"
+          """
+
+  Op-Test-Supa:
+    name: Op-Test-Supa
+    runs-on: tps-diopi-ci
+    needs: [Gen-Data, Build-Supa]
+    if: ${{ contains( needs.Rsync.outputs.output, 'SUPA' ) }}
+    steps:
+      - name: test
+        run: |
+          ssh ${CLUSTER_SUPA} """
+          set -e
+          export CI=true
+          export USE_COVERAGE=ON
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}
+          echo "rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/"
+          source /mnt/cache/share/platform/env/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+          echo "test and clean, you can refer to the CAMB"
+          """
+
+  Rt-Test-Supa:
+    name: Rt-Test-Supa
+    runs-on: tps-diopi-ci
+    needs: Build-Supa
+    if: ${{ contains( needs.Rsync.outputs.output, 'SUPA' ) }}
+    steps:
+      - name: test
+        run: |
+          ssh ${CLUSTER_SUPA} """
+          set -e
+          export CI=true
+          source /mnt/cache/share/platform/env/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+          echo "test and clean, you can refer to the CAMB"
+          """
+
