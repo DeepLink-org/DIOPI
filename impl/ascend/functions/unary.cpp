@@ -108,7 +108,7 @@ diopiError_t diopiExp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 diopiError_t diopiExpInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiExp(ctx, input, input); }
 
 diopiError_t diopiReciprocal(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AclOpRunner<1, 1>("Reciprocal", ctx).addInput(input).addOutput(out).run();
+    AclOpRunner<1, 1>("Reciprocal", ctx).addInput(input, diopi_dtype_float32).addOutput(out).run();
     return diopiSuccess;
 }
 

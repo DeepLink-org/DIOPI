@@ -1493,42 +1493,6 @@ device_configs = {
         ),
     ),
 
-    'reciprocal': dict(
-        name=['reciprocal'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'reciprocal_int': dict(
-        name=['reciprocal'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),Skip(Dtype.bool),],
-                },
-            ]
-        ),
-    ),
-    
-    'reciprocal_zero': dict(
-        name=['reciprocal'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),Skip(Dtype.bool)],
-                },
-            ]
-        ),
-    ),
-
     'conv_transpose2d': dict(
         name=['conv_transpose2d'],
         tensor_para=dict(
