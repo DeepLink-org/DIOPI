@@ -12,6 +12,7 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif  // __cplusplus
+#define DIOPI_API
 
 DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t x, diopiConstTensorHandle_t cos,
                                             diopiConstTensorHandle_t sin, const bool conj);
@@ -23,6 +24,7 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
                                             diopiTensorHandle_t gradBias, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
                                             diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiConstTensorHandle_t invRMS,
                                             diopiSize_t normalized_shape, double eps);
+#define DIOPI_API __attribute__((weak))
 
 #if defined(__cplusplus)
 }
