@@ -185,8 +185,7 @@ try:
     CheckResult.compare_output(dev_out, ref_out, **tol)
 except Exception as e:
     print(f'Test {function_config["name"]}: {function_config}')
-    print(f'{e}')
-    assert False
+    raise Exception(f'{e}')
 ''')
 
     test_diopi_function_inp_forward_call = CodeTemplate(r'''
@@ -198,8 +197,7 @@ try:
     CheckResult.compare_output(dev_inp_out, ref_out, **tol)
 except Exception as e:
     print(f'Test {function_config["name"]}  inplace: {function_config}')
-    print(f'{e}')
-    assert False
+    raise Exception(f'{e}')
 ''')
     test_diopi_func_inp_remove_grad_args = CodeTemplate(r'''
 function_kwargs.pop(*backward_para.keys())
@@ -240,6 +238,5 @@ try:
     CheckResult.compare_output(dev_bp_out, ref_bp_out, **tol)
 except Exception as e:
     print(f'Test {function_config["name"]} backward: {function_config}')
-    print(e)
-    assert False
+    raise Exception(f'{e}')
 ''')

@@ -24,8 +24,8 @@ def pytest_runtest_makereport(item, call):
     item = {'pytest_nodeid': item.nodeid, 'diopi_func_name': glob_vars.cur_test_func}
     if report.when == 'call':
         if report.failed:
-            err_msg = f"[message] {report.longrepr.reprcrash.message[:900]}......, [path] {report.longrepr.reprcrash.path}, [lineno] {report.longrepr.reprcrash.lineno}".replace('\'','')
-            item['error_msg'] = err_msg
+            # err_msg = f"[message] {report.longrepr.reprcrash.message[:900]}......, [path] {report.longrepr.reprcrash.path}, [lineno] {report.longrepr.reprcrash.lineno}".replace('\'','')
+            item['error_msg'] = f'{report.longrepr.reprcrash.message[:900]}......'
             if 'FunctionNotImplementedError' in report.longrepr.reprcrash.message:
                 item['not_implemented_flag'] = 1
         item['result'] = report.outcome

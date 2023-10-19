@@ -237,8 +237,9 @@ class DB_Operation(object):
 
     @use_db(glob_vars.use_db)
     def update_device_case(self):
-        self.session.bulk_update_mappings(DeviceCase, self.all_case_items.values())
-        self.session.commit()
+        if self.all_case_items:
+            self.session.bulk_update_mappings(DeviceCase, self.all_case_items.values())
+            self.session.commit()
 
     @use_db(glob_vars.use_db)
     def insert_func_list(self):
@@ -319,30 +320,50 @@ class ExcelOperation(object):
         self.excel_writer = pd.ExcelWriter('report.xlsx', engine='xlsxwriter')
 
     def add_benchmark_case_sheet(self):
+        sheet_name = 'Benchmark Test Result'
         data_query = db_conn.query_data(BenchMarkCase, delete_flag=1)
         df = pd.DataFrame([data.__dict__ for data in data_query], columns=BenchMarkCase.__table__.columns.keys())
         df['case_config'] = df['case_config'].apply(lambda x: pickle.loads(x))
         columns = ['case_name', 'model_name', 'func_name', 'case_config', 'result', 'error_msg']
-        df.to_excel(self.excel_writer, sheet_name='Benchmark Test Result', columns=columns)
+        df.index = df.index + 1
+        df.to_excel(self.excel_writer, sheet_name=sheet_name, columns=columns)
+        self.adjust_column(df, sheet_name)
 
     def add_device_case_sheet(self):
+        sheet_name = 'Device Test Result'
         data_query = db_conn.query_data(DeviceCase, delete_flag=1, test_flag=1)
         df = pd.DataFrame([data.__dict__ for data in data_query], columns=DeviceCase.__table__.columns.keys())
         df['case_config'] = df['case_config'].apply(lambda x: pickle.loads(x))
         columns = ['pytest_nodeid', 'case_name', 'model_name', 'func_name', 'diopi_func_name', 'not_implemented_flag', 'case_config', 'result', 'error_msg']
+        df.index = df.index + 1
         df.to_excel(self.excel_writer, sheet_name='Device Test Result', columns=columns)
+        self.adjust_column(df, sheet_name)
 
     def add_func_list_sheet(self):
+        sheet_name = 'Func List'
         data_query = db_conn.query_data(FuncList, delete_flag=1)
         df = pd.DataFrame([data.__dict__ for data in data_query], columns=FuncList.__table__.columns.keys())
         columns = ['diopi_func_name', 'not_implemented_flag', 'case_num', 'success_case', 'failed_case', 'skipped_case', 'success_rate']
+        df.index = df.index + 1
         df.to_excel(self.excel_writer, sheet_name='Func List', columns=columns)
+        self.adjust_column(df, sheet_name)
 
     def add_sumary_sheet(self):
+        sheet_name = 'Sumary'
         data_query = db_conn.query_data(TestSummary, delete_flag=1)
         df = pd.DataFrame([data.__dict__ for data in data_query], columns=TestSummary.__table__.columns.keys())
         columns = ['total_case', 'success_case', 'failed_case', 'skipped_case', 'total_func', 'impl_func', 'success_rate', 'func_coverage_rate']
+        df.index = df.index + 1
         df.to_excel(self.excel_writer, sheet_name='Sumary', columns=columns)
+        self.adjust_column(df, sheet_name)
+
+    def adjust_column(self, data, sheet_name):
+        worksheet = self.excel_writer.sheets[sheet_name]
+        for i, column_name in enumerate(data.columns):
+            format_percent = None
+            if column_name in ['success_rate', 'func_coverage_rate']:
+                format_percent = self.excel_writer.book.add_format({'num_format': '0.00%'})
+            worksheet.set_column(i, i, len(column_name) + 2, format_percent)
 
     @use_db(glob_vars.use_db)
     def gen_excel(self):
