@@ -20,9 +20,9 @@ namespace topsrider {
 
 class TopsOpInit {
 public:
-    ~TopsOpInit() { impl::tops::topsLibInit(); }
+    int TopsOpInit() { impl::tops::topsLibInit(); }
 
-    ~TopsOpInit() { impl::tops::topsLibFinalize(); }
+    int TopsOpInit() { impl::tops::topsLibFinalize(); }
 };
 
 static TopsOpInit topsop_init;
