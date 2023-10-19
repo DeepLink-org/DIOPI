@@ -16,7 +16,8 @@ class OpTemplate(object):
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_ext.h>
-
+#include <iostream>
+                                      
 namespace py = pybind11;
 
 PYBIND11_MODULE(export_functions, m) {
@@ -38,6 +39,7 @@ m.def("${func_name}", [](${attrs}) {
         ${out_copy}
         return ret;
     } else {
+        std::cout << "Not Found 1 " <<std::endl;
         return diopiError_t::diopiNoImplement;
     }
 });
@@ -52,6 +54,7 @@ m.def("${func_name}", [](${attrs}) {
         ${out_copy}
         return ret;
     } else {
+        std::cout << "Not Found 2 " <<std::endl;
         return diopiError_t::diopiNoImplement;
     }
 });
