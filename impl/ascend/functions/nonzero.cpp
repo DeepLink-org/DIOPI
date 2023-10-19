@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../common/acloprunner.hpp"
 
 namespace impl {
@@ -21,8 +19,7 @@ std::vector<int64_t> nonzeroNpuMaxOutputSize(diopiConstTensorHandle_t input) {
     return maxOutputSize;
 }
 
-extern "C" {
-DIOPI_API diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input) {
+diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input) {
     auto outputSizeVec = nonzeroNpuMaxOutputSize(input);
     diopiSize_t outputSize = vectorToDiopiSize(outputSizeVec);
 
@@ -32,7 +29,6 @@ DIOPI_API diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_
     AclOpRunner<1, 1>("NonZero", ctx).addInput(input).setAttr("transpose", false).addSyncOutput(&output, ACL_FORMAT_NCHW).run();
     *out = output;
     return diopiSuccess;
-}
 }
 }  // namespace ascend
 }  // namespace impl

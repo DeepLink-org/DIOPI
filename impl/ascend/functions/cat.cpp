@@ -4,55 +4,38 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../common/acloprunner.hpp"
-
 namespace impl {
 namespace ascend {
 
-extern "C" {
-DIOPI_API diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t* tensors, int64_t numInputs, int64_t dim) {
-    check_args(numInputs <= 2048, "cannot concat more than 2048 tensors");
-    if (numInputs <= 2) {
-        AclOpRunner<2, 1> runner("ConcatD", ctx);
-        for (int64_t i = 0; i < numInputs; i++) {
-            runner.addInput(tensors[i]);
-        }
-        runner.setAttr("N", numInputs).setAttr("concat_dim", dim).addOutput(out).run();
-    } else if (numInputs <= 8) {
-        AclOpRunner<8, 1> runner("ConcatD", ctx);
-        for (int64_t i = 0; i < numInputs; i++) {
-            runner.addInput(tensors[i]);
-        }
-        runner.setAttr("N", numInputs).setAttr("concat_dim", dim).addOutput(out).run();
-    } else if (numInputs <= 32) {
-        AclOpRunner<32, 1> runner("ConcatD", ctx);
-        for (int64_t i = 0; i < numInputs; i++) {
-            runner.addInput(tensors[i]);
-        }
-        runner.setAttr("N", numInputs).setAttr("concat_dim", dim).addOutput(out).run();
-    } else if (numInputs <= 128) {
-        AclOpRunner<128, 1> runner("ConcatD", ctx);
-        for (int64_t i = 0; i < numInputs; i++) {
-            runner.addInput(tensors[i]);
-        }
-        runner.setAttr("N", numInputs).setAttr("concat_dim", dim).addOutput(out).run();
-    } else if (numInputs <= 512) {
-        AclOpRunner<512, 1> runner("ConcatD", ctx);
-        for (int64_t i = 0; i < numInputs; i++) {
-            runner.addInput(tensors[i]);
-        }
-        runner.setAttr("N", numInputs).setAttr("concat_dim", dim).addOutput(out).run();
-    } else if (numInputs <= 2048) {
-        AclOpRunner<2048, 1> runner("ConcatD", ctx);
-        for (int64_t i = 0; i < numInputs; i++) {
-            runner.addInput(tensors[i]);
-        }
-        runner.setAttr("N", numInputs).setAttr("concat_dim", dim).addOutput(out).run();
+diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t* tensors, int64_t numInputs, int64_t dim) {
+    std::vector<diopiConstTensorHandle_t> dynamicInput;
+    for (int i = 0; i < numInputs; i++) {
+        int64_t tem;
+        diopiGetTensorNumel(tensors[i], &tem);
+        if (tem != 0) dynamicInput.push_back(tensors[i]);
     }
+    diopiDtype_t outDtype, castType;
+    diopiGetTensorDtype(out, &outDtype);
+
+    if (isFloatingType(outDtype)) {
+        castType = diopi_dtype_float32;
+    } else {
+        castType = diopi_dtype_int32;
+    }
+
+    AscendTensor outA(out);
+    castTensor(ctx, outA, castType);
+
+    numInputs = dynamicInput.size();
+    if (numInputs == 1) {
+        diopiCastDtype(ctx, out, const_cast<diopiTensorHandle_t>(dynamicInput[0]));
+        return diopiSuccess;
+    }
+    AclOpRunner<1, 1>("ConcatD", ctx).addDynamicInput(dynamicInput, castType).setAttr("N", numInputs).setAttr("concat_dim", dim).addOutput(outA).run();
+    castTensor(ctx, outA, outDtype);
+    diopiCastDtype(ctx, out, static_cast<diopiConstTensorHandle_t>(outA));
     return diopiSuccess;
-}
 }
 
 }  // namespace ascend

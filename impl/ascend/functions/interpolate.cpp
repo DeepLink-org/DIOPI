@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include <cfloat>
 #include <cmath>
 #include <limits>
@@ -16,10 +14,8 @@
 namespace impl {
 namespace ascend {
 
-extern "C" {
-
-DIOPI_API diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size,
-                                           bool alignCorners, const char* mode) {
+diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size, bool alignCorners,
+                                 const char* mode) {
     std::string modeStr(mode);
     if ("bilinear" == modeStr) {
         AclOpRunner<2, 1>("ResizeBilinearV2", ctx)
@@ -30,13 +26,13 @@ DIOPI_API diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTensor
             .addOutput(out)
             .run();
     } else {
-        check_args(false, "unsupport mode %s", modeStr);
+        ASCEND_CHECK_ABORT(false, "unsupport mode %s", modeStr.c_str());
     }
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                                   diopiSize_t outSize, diopiSize_t inSize, bool alignCorners, const char* mode) {
+diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiSize_t outSize,
+                                         diopiSize_t inSize, bool alignCorners, const char* mode) {
     diopiDtype_t dtype;
     diopiGetTensorDtype(gradOutput, &dtype);
     diopiSize_t stride;
@@ -53,12 +49,10 @@ DIOPI_API diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, dio
             .addOutput(gradInput)
             .run();
     } else {
-        check_args(false, "unsupport mode %s", modeStr);
+        ASCEND_CHECK_ABORT(false, "unsupport mode %s", modeStr.c_str());
     }
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace ascend
 }  // namespace impl

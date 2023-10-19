@@ -64,7 +64,7 @@ target_link_libraries(${DIOPIRT_PYBIND} PRIVATE ${DIOPIRT})
 set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/diopi_stub/csrc")
 set(TEST_GEN_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/diopi_stub/codegen")
 add_custom_target(test_code_gen COMMAND python3 ${TEST_GEN_PATH}/gen.py
-    --device=torch --use_adaptor=${USE_ADAPTOR})
+    --device=torch)
 add_custom_target(functions_copy ALL
     COMMAND ln -f ${FUNCTION_SAVE_PATH}/export_functions.cpp ${PROJECT_SOURCE_DIR}/test
     DEPENDS test_code_gen)
