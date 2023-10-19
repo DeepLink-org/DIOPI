@@ -2345,18 +2345,6 @@ device_configs = {
         ),
     ),
 
-    'uniform': dict(
-        name=['uniform'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                },
-            ]
-        ),
-    ),
-
     'random': dict(
         name=['random'],
         tensor_para=dict(
