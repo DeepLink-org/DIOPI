@@ -3927,6 +3927,5 @@ def rotary_emb(input, cos, sin, conj):
     size = list(input.size().data)
     out = Tensor(size, input.get_dtype())
     ret = func(input.context(), out, input, cos, sin, conj)
-    print(ret)
     check_returncode(ret)
     return out

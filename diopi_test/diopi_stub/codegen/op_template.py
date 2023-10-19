@@ -32,7 +32,6 @@ PYBIND11_MODULE(export_functions, m) {
 
     function_template = CodeTemplate("""\
 m.def("${func_name}", [](${attrs}) {
-    std::cout << ${func_name} <<std::endl;
     if (${func_name}) {
         ${convert}
         diopiError_t ret = ${call_func};
