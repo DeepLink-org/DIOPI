@@ -125,3 +125,11 @@
 - diopiNegInp:
     dtype: (int8, int16, uint8, uint16, uint32, uint64)->int64, (float64)->float32, (complex32)->complex64
     layout: NCHW
+
+- diopiAddcmul:
+    dtype: (int16, uint16, uint32, uint64)->int64, (float64)->float32
+    layout: NCHW
+
+- diopiAddcmulInp:
+    dtype: (int16, uint16, uint32, uint64)->int64, (float64)->float32
+    layout: NCHW    
