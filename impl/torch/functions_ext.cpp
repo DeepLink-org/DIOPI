@@ -4,6 +4,7 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <ATen/ATen.h>
 #include <diopi/functions.h>
 #include <diopi/functions_ext.h>
 
@@ -64,51 +65,34 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
     return diopiSuccess;
 }
 
-diopiError_t diopiApplyPenalty(
-    diopiContextHandle_t ctx,
-    diopiTensorHandle_t Logits,
-    diopiConstTensorHandle_t presence_penalty,
-    diopiConstTensorHandle_t frequency_penalty,
-    diopiConstTensorHandle_t p_token_ids,
-    diopiConstTensorHandle_t p_token_counts,
-    diopiConstTensorHandle_t p_cumsum_seq_len,
-    int p_max_len_in_batch
-) {
+diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t Logits, diopiConstTensorHandle_t presence_penalty,
+                               diopiConstTensorHandle_t frequency_penalty, diopiConstTensorHandle_t p_token_ids, diopiConstTensorHandle_t p_token_counts,
+                               diopiConstTensorHandle_t p_cumsum_seq_len, int p_max_len_in_batch) {
     impl::aten::setCurCtx(ctx);
     auto atLogits = impl::aten::buildATen(Logits);
     auto atPresencePenalty = impl::aten::buildATen(presence_penalty);
-    auto atFrequencyPenalty = impl::aten::buildATen(frequency_penalety);
+    auto atFrequencyPenalty = impl::aten::buildATen(frequency_penalty);
     auto atPTokenIds = impl::aten::buildATen(p_token_ids);
     auto atPTokenCounts = impl::aten::buildATen(p_token_counts);
     auto atPCumsumSeqLen = impl::aten::buildATen(p_cumsum_seq_len);
 
-    // 确保Logits是连续的
-    assert(atLogits.is_contiguous());
-
-    // 计算块的大小BLOCK
-    int BLOCK = (p_max_len_in_batch > 1024) ? 1024 : p_max_len_in_batch;
-
-    // 计算网格和块的大小
-    dim3 grid(atLogits.size(0)); // 线程网格在第0维上有 Logits.size(0) 个线程块
-    dim3 block(BLOCK); // 线程块在每个维度上都有BLOCK个线程
-
-    // 在CUDA流上运行_fwd_kernel_apply_penalty函数，并传递相应的参数
-    AT_DISPATCH_FLOATING_TYPES(Logits.scalar_type(), "apply_penalty_cuda", ([&] {
-        _fwd_kernel_apply_penalty<<<grid, block, 0, stream>>>(
-            atLogits,
-            atPresencePenalty,
-            atFrequencyPenalty,
-            atPTokenIds,
-            atPTokenCounts,
-            atPCumsumSeqLen,
-            atLogits.stride(0),
-            atLogits.stride(1),
-            BLOCK
-        );
-    }));
-
+    at::Tensor atBatchCount = at::zeros_like(atLogits);
+    int batch_left_delimiter = 0;
+    int batch_right_delimiter = 0;
+    int* cumsum_delimiter_ptr = atPCumsumSeqLen.data_ptr<int>();
+    int* p_token_ids_ptr = atPTokenIds.data_ptr<int>();
+    int* p_token_counts_ptr = atPTokenCounts.data_ptr<int>();
+    for (int i = 0; i < atPCumsumSeqLen.numel(); i++) {
+        batch_left_delimiter = batch_right_delimiter;
+        batch_right_delimiter = cumsum_delimiter_ptr[i];
+        for (int j = batch_left_delimiter; j < batch_right_delimiter; j++) {
+            int p_token_id = p_token_ids_ptr[j];
+            int p_token_count = p_token_counts_ptr[j];
+            atBatchCount[i][p_token_id] = p_token_count;
+        }
+    }
+    atLogits = atLogits - atBatchCount * atFrequencyPenalty - atPresencePenalty;
     return diopiSuccess;
 }
-
 
 }  // extern "C"
