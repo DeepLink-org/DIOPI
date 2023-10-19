@@ -119,9 +119,9 @@
     layout: NCHW
 
 - diopiLinear:
-    dtype: (float64)->float32
+    dtype: (float16, float64)->float32
     layout: NCHW
 
 - diopiLinearBackward:
-    dtype: (float64)->float32
+    dtype: (float16, float64)->float32
     layout: NCHW
