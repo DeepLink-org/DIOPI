@@ -539,7 +539,6 @@ class ConformanceTest(object):
                                 logger.error(f"output_reference:\n{output_reference}")
                                 logger.error(f"output:\n{output}")
                 except FunctionNotImplementedError as e:
-                    print("gqw111111111111")
                     logger.error(f"NotImplemented: {e}")
                     continue
                 except AttributeError as e:
@@ -594,7 +593,6 @@ class ConformanceTest(object):
                                     logger.error(f"grad:\n{grad_input}")
                         write_precision(data["cfg"], cfg_func_name + '_bp', passed)
                     except FunctionNotImplementedError as e:
-                        print("gqw2222222222")
                         logger.error(f"NotImplemented: {e}")
                     except AttributeError as e:
                         logger.error(f"AttributeError: {e}")

@@ -31,7 +31,6 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto out2 = chunks_out[1];
     ext::ops::apply_rotary_cuda(x1, x2, atCos, atSin, out1, out2, conj);
     impl::aten::unsetCurCtx();
-    std::cout << "正确return" <<std::endl;
     return diopiSuccess;
 }
 
