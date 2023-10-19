@@ -1,6 +1,12 @@
+/**************************************************************************************************
+ * Copyright 2022 Enflame. All Rights Reserved.
+ * License: BSD 3-Clause
+ * Author: boris.wu
+ *
+ *************************************************************************************************/
 #include <diopi/diopirt.h>
-
 #include <tops/tops_ext.h>
+
 #include <cstdio>
 #include <mutex>
 
