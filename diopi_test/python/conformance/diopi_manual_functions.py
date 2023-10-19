@@ -1,6 +1,8 @@
+# Copyright (c) 2023, DeepLink.
+# -*- coding: UTF-8 -*-
 import numpy as np
 from diopilib import build_generator_state
-from .diopi_runtime import Generator, default_context
+from .diopi_runtime import Tensor, Generator, default_context
 from . import diopi_functions as F
 
 class ManualTest(object):

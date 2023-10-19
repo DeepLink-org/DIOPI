@@ -227,6 +227,8 @@ outputs_for_backward = dev_out if len(requires_backward) == 0 \
 backward_para = {}
 grad_outputs = [ones_like(i) for i in outputs_for_backward]
 backward_para["grad_outputs"] = grad_outputs
+for k, v in function_config['saved_args'].items():
+    backward_para[k] = dev_out[v]
 function_kwargs.update(backward_para)
 dev_bp_out = ${test_diopi_bp_func_name}(**function_kwargs)
                                            
