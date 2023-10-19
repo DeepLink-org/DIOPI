@@ -557,6 +557,7 @@ class CustomizedTest(object):
 
     def rotary_emb(input, cos, sin, conj):
         x1, x2 = input.chunk(2, dim=-1)
+        data_type = input.dtype
         x1 = x1.to(torch.float32)
         x2 = x2.to(torch.float32)
         cos = cos.to(torch.float32)
@@ -567,8 +568,8 @@ class CustomizedTest(object):
         else:
             out1 = x1 * cos + x2 * sin
             out2 = -x1 * sin + x2 * cos
-        out1 = out1.to(torch.float16)
-        out2 = out2.to(torch.float16)
+        out1 = out1.to(data_type)
+        out2 = out2.to(data_type)
         out = torch.cat((out1, out2), dim=-1)
         return out
 
