@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <numeric>
-
 #include "../common/acloprunner.hpp"
 
 namespace impl {
@@ -13,8 +11,6 @@ namespace ascend {
 diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                          diopiConstTensorHandle_t bias) {
     // convert inputs to AscendTensor class
-    contiguous(ctx, out);
-    contiguous(ctx, input);
     AscendTensor inputCopy(input);
     AscendTensor outputCopy(out);
     AscendTensor weightCopy(weight);
