@@ -8,6 +8,7 @@
 
 #include <numeric>
 #include <string>
+#include <functional>
 #include <type_traits>
 #include <typeinfo>
 
