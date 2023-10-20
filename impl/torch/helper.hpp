@@ -376,8 +376,26 @@ inline c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding
 inline at::Tensor nllLossNdBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, diopiConstTensorHandle_t weight, int64_t reduction,
                                     int64_t ignore_index) {
     auto atWeight = buildATen(weight);
-    auto atTempTotalWeight = atInput.clone();
-    auto atTotalWeight = atTempTotalWeight.resize_({1}).fill_(atTarget.numel());
+
+    /*
+     * A tensor representing the sum of weights for each element considered in the NLL loss computation.
+     * In case a weight tensor is provided, total_weight represents the sum of weights for all the non-ignored indices in the target tensor.
+     * When no weight tensor is provided, total_weight corresponds to the count of all non-ignored indices.
+     */
+    at::Tensor atTotalWeight;
+    // Flatten the target tensor for easier processing
+    auto flatTarget = atTarget.view(-1);
+
+    // Create a mask corresponding to ignore_index if it's provided
+    auto mask = (ignore_index >= 0) ? (flatTarget != ignore_index) : at::ones(flatTarget.sizes(), flatTarget.options()).to(at::kBool);
+
+    if (atWeight.defined()) {
+        // Filter out the targets using the mask and compute total weight using index_select
+        atTotalWeight = atWeight.index_select(0, flatTarget.masked_select(mask)).sum();
+    } else {
+        // If weight is not defined, compute total weight by counting the valid targets
+        atTotalWeight = at::scalar_tensor(mask.sum().item<float>(), atInput.options());
+    }
 
     auto dim = atInput.dim();
     assert(dim > 1);
