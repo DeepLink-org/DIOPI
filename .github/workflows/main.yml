@@ -186,8 +186,9 @@ jobs:
           ssh ${CLUSTER_1988} """
           set -e
           export CI=true
-          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST3} && cp -R source ${BUILD_TEST3} && cd ${BUILD_TEST3}
-          cd diopi_test/DIPU/dipu/mmlab_pack/
+          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} cd ${BUILD_TEST3}
+          cd diopi_test && source scripts/ci_nv_env.sh
+          cd DIPU/dipu
           export PYTHONPATH=\${basic_path}/mmengine:\$PYTHONPATH
           export PYTHONPATH=\${basic_path}/mmcv:\$PYTHONPATH
           export PYTHONPATH=\${pwd}:\$PYTHONPATH
