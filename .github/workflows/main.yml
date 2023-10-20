@@ -188,13 +188,14 @@ jobs:
           export CI=true
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} cd ${BUILD_TEST3}
           cd build_mmcv_ext
-          ls
           cd diopi_test && source scripts/ci_nv_env.sh
           cd DIPU/dipu
           export PYTHONPATH=\${basic_path}/mmengine:\$PYTHONPATH
           export PYTHONPATH=\${basic_path}/mmcv:\$PYTHONPATH
           export PYTHONPATH=\${pwd}:\$PYTHONPATH
+          rsync -a /mnt/lustre/share_data/PAT/datasets/huggingface mmlab_pack/
           cd mmlab_pack
+          ls
           srun --job-name=${GITHUB_RUN_NUMBER}_${GITHUB_JOB} --partition=${CUDA_PARTATION} --gres=gpu:${GPU_REQUESTS} --time=20 bash ../scripts/ci/ci_one_iter.sh build_cuda
           """
 
