@@ -284,34 +284,34 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
         diopiGetTensorData(outCopy, &ptr);
         switch (dtype) {
             case diopiDtype_t::diopi_dtype_float32:
-                reinterpret_cast<float*>(ptr)[0] = getValue<float>(scalar);
+                *reinterpret_cast<float*>(ptr) = getValue<float>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_float64:
-                reinterpret_cast<double*>(ptr)[0] = getValue<double>(scalar);
+                *reinterpret_cast<double*>(ptr) = getValue<double>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_int32:
-                reinterpret_cast<int*>(ptr)[0] = getValue<int>(scalar);
+                *reinterpret_cast<int*>(ptr) = getValue<int>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_int64:
-                reinterpret_cast<int64_t*>(ptr)[0] = getValue<int64_t>(scalar);
+                *reinterpret_cast<int64_t*>(ptr) = getValue<int64_t>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_uint64:
-                reinterpret_cast<uint64_t*>(ptr)[0] = getValue<uint64_t>(scalar);
+                *reinterpret_cast<uint64_t*>(ptr) = getValue<uint64_t>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_uint8:
-                reinterpret_cast<uint8_t*>(ptr)[0] = getValue<uint8_t>(scalar);
+                *reinterpret_cast<uint8_t*>(ptr) = getValue<uint8_t>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_int8:
-                reinterpret_cast<int8_t*>(ptr)[0] = getValue<int8_t>(scalar);
+                *reinterpret_cast<int8_t*>(ptr) = getValue<int8_t>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_bool:
-                reinterpret_cast<bool*>(ptr)[0] = getValue<bool>(scalar);
+                *reinterpret_cast<bool*>(ptr) = getValue<bool>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_int16:
-                reinterpret_cast<int16_t*>(ptr)[0] = getValue<int16_t>(scalar);
+                *reinterpret_cast<int16_t*>(ptr) = getValue<int16_t>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_uint16:
-                reinterpret_cast<uint16_t*>(ptr)[0] = getValue<uint16_t>(scalar);
+                *reinterpret_cast<uint16_t*>(ptr) = getValue<uint16_t>(scalar);
                 break;
             default:
                 error("dtype %d not supported on host", dtype);
