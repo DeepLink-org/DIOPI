@@ -1971,7 +1971,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.int64), Skip(Dtype.bool)]
+                    "dtype": [Skip(Dtype.int64)]
                 },
                 {
                     "ins": ['out'],
