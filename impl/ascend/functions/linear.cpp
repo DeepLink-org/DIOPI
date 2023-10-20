@@ -63,22 +63,20 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
     const std::vector<int64_t> gradInputPrimaryShape = gradInputCopy.shape();
     bool transTensorTo2DFalg = false;
 
+    if (gradOutputCopy.numel() == 0 || weightCopy.numel() == 0 || inputCopy.numel() == 0) {
+        diopiScalar_t zero = constructDiopiScalarT(gradInputCopy.dtype(), 0.0);
+        diopiFill(ctx, gradInput, &zero);
+        diopiFill(ctx, gradWeight, &zero);
+        diopiFill(ctx, gradBias, &zero);
+        return diopiSuccess;
+    }
+
     if (weightCopy.shape().size() > 2) transTensorTo2D(ctx, weightCopy);
     if (gradOutputCopy.shape().size() > 2) transTensorTo2D(ctx, gradOutputCopy);
     if (gradInputCopy.shape().size() > 2) {
         transTensorTo2DFalg = true;
         transTensorTo2D(ctx, gradInputCopy);
     }
-
-    std::cout << "gradOutput shape: ";
-    std::for_each(gradOutputCopy.shape().begin(), gradOutputCopy.shape().end(), [](const int& i) { std::cout << i << " "; });
-    std::cout<<std::endl;
-    std::cout << "weight shape: ";
-    std::for_each(weightCopy.shape().begin(), weightCopy.shape().end(), [](const int& i) { std::cout << i << " "; });
-    std::cout<<std::endl;
-    std::cout<< "gradInputCopy shape";
-    std::for_each(gradInputCopy.shape().begin(), gradInputCopy.shape().end(), [](const int& i) { std::cout << i << " "; });
-    std::cout<<std::endl;
 
     AclOpRunner<2, 1>("MatMul", ctx)
         .addInput(gradOutputCopy)
@@ -88,8 +86,24 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
         .addOutput(gradInputCopy)
         .run();
 
+    std::cout<<"----"<<std::endl;
+
     if (inputCopy.shape().size() > 2) transTensorTo2D(ctx, inputCopy);
     if (gradWeightCopy.shape().size() > 2) transTensorTo2D(ctx, gradWeightCopy);
+
+    std::cout << "gradOutputCopy: ";
+    std::for_each(gradOutputCopy.shape().begin(), gradOutputCopy.shape().end(), [](const int& i) { std::cout << i << " "; });
+    std::cout<<std::endl;
+
+    std::cout << "inputCopy shape: ";
+    std::for_each(inputCopy.shape().begin(), inputCopy.shape().end(), [](const int& i) { std::cout << i << " "; });
+    std::cout<<std::endl;
+
+    std::cout<< "gradWeightCopy shape";
+    std::for_each(gradWeightCopy.shape().begin(), gradWeightCopy.shape().end(), [](const int& i) { std::cout << i << " "; });
+    std::cout<<std::endl;
+
+
     AclOpRunner<2, 1>("MatMul", ctx)
         .addInput(gradOutputCopy)
         .addInput(inputCopy)
@@ -101,10 +115,42 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
     if (transTensorTo2DFalg) {
         gradInputCopy.view(gradInputPrimaryShape);
     }
-    diopiTensorHandle_t diopiGradOutputCopy = const_cast<diopiTensorHandle_t>(gradOutputCopy.tensorHandle());
+
+    AscendTensor reshapedGradOutputCopy;
+    makeTensorLike(ctx, reshapedGradOutputCopy, gradOutputCopy,  gradOutputCopy.dtype());
+    auto x = gradOutputCopy.shape();
+    for (int i =0; i < x.size(); ++i) {
+        std::cout << x[i] << '\t';
+    }
+    
+    std::cout<<std::endl;
+    reshape(ctx, gradOutputCopy, reshapedGradOutputCopy, gradOutputCopy.shape());
+
+    diopiSize_t shape;
+    diopiGetTensorShape(reshapedGradOutputCopy.tensorHandle(), &shape);
+    std::cout<<"before shape"<<std::endl;
+    for(int i=0; i<shape.len; i++){
+        std::cout<<shape.data[i]<<" ";
+    }
+    std::cout<<std::endl;
+
+    diopiTensorHandle_t diopiGradOutputCopy = const_cast<diopiTensorHandle_t>(reshapedGradOutputCopy.tensorHandle());
     diopiTensorHandle_t diopiGradInputCopy = const_cast<diopiTensorHandle_t>(gradInputCopy.tensorHandle());
     diopiTensorHandle_t diopiGradWeightCopy = const_cast<diopiTensorHandle_t>(gradWeightCopy.tensorHandle());
+
+    diopiSize_t reshapedSize;
+    diopiGetTensorShape(diopiGradOutputCopy, &reshapedSize);
+    std::cout<<"after shape"<<std::endl;
+    for(int i=0; i<reshapedSize.len; i++){
+        std::cout<<reshapedSize.data[i]<<" ";
+    }
+    std::cout<<std::endl;
+
+    
+
+    
     if (gradBias) {
+        AscendTensor gradBiasCopy(gradBias);
         std::vector<int64_t> dimVec(gradOutputCopy.shape().size() - 1);
         std::iota(std::begin(dimVec), std::end(dimVec), 0);
         diopiSize_t dim = vectorToDiopiSize(dimVec);
