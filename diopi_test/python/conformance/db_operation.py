@@ -202,19 +202,10 @@ class DB_Operation(object):
         if case_item.get("case_config"):
             case_item["case_config"] = pickle.dumps(case_item["case_config"])
 
-        diopi_func_name = (
-            case_item["diopi_func_name"].replace("Inp", "").replace("Backward", "")
-        )
-        diopi_func_name_list = [diopi_func_name]
-        if backward_flag:
-            diopi_func_name_list.append(f"{diopi_func_name}Backward")
-        if inplace_flag:
-            if "Scalar" in diopi_func_name:
-                diopi_func_name_list.append(
-                    f'{diopi_func_name.replace("Scalar", "")}InpScalar'
-                )
-            else:
-                diopi_func_name_list.append(f"{diopi_func_name}Inp")
+        diopi_func_name = glob_vars.cur_test_func
+        diopi_func_name_list = list(glob_vars.func_status.keys())
+        if case_model["func_name"] != 'fill_' and 'diopiFill' in diopi_func_name_list:
+            diopi_func_name_list.remove('diopiFill')
         case_item["diopi_func_name"] = ",".join(diopi_func_name_list)
         case_item["updated_time"] = datetime.now()
         case_item["id"] = case_model["id"]
@@ -222,14 +213,14 @@ class DB_Operation(object):
         self.all_case_items[case_item["pytest_nodeid"]].update(case_item)
 
         # if failed before forward, diopi_func_name will be ''
-        if diopi_func_name != "":
-            self.expand_func_list(
-                case_item.get(
-                    "not_implemented_flag", case_model["not_implemented_flag"]
-                ),
-                diopi_func_name_list,
-                case_model["func_name"],
-            )
+        # if diopi_func_name != "":
+        self.expand_func_list(
+            case_item.get(
+                "not_implemented_flag", case_model["not_implemented_flag"]
+            ),
+            diopi_func_name_list,
+            case_model["func_name"],
+        )
 
     @use_db(glob_vars.use_db)
     def expand_func_list(
