@@ -33,6 +33,7 @@ def pytest_runtest_makereport(item, call):
         item['result'] = report.outcome
         db_conn.will_update_device_case(item)
     glob_vars.cur_test_func = ''
+    glob_vars._func_status.clear()
 
 
 def pytest_sessionfinish(session, exitstatus):

@@ -55,7 +55,9 @@ def check_function(fn_name):
     try:
         glob_vars.cur_test_func = fn_name
         func = eval(f"diopilib.{fn_name}")
+        glob_vars.func_status[glob_vars.cur_test_func] = 'passed'
     except AttributeError as e:
+        glob_vars.func_status[glob_vars.cur_test_func] = 'failed'
         raise FunctionNotImplementedError(e.args)
     return func
 

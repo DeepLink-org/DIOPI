@@ -202,7 +202,6 @@ class DB_Operation(object):
         if case_item.get("case_config"):
             case_item["case_config"] = pickle.dumps(case_item["case_config"])
 
-        last_diopi_func_name = case_item["diopi_func_name"]
         diopi_func_name = (
             case_item["diopi_func_name"].replace("Inp", "").replace("Backward", "")
         )
@@ -225,25 +224,23 @@ class DB_Operation(object):
         # if failed before forward, diopi_func_name will be ''
         if diopi_func_name != "":
             self.expand_func_list(
-                last_diopi_func_name,
                 case_item.get(
                     "not_implemented_flag", case_model["not_implemented_flag"]
                 ),
                 diopi_func_name_list,
-                case_item["result"],
                 case_model["func_name"],
             )
 
     @use_db(glob_vars.use_db)
     def expand_func_list(
         self,
-        last_diopi_func_name,
         not_implemented_flag,
         func_name_list,
-        result,
         func_name,
     ):
-        for index, diopi_func in enumerate(func_name_list):
+        tmp_func_status = {i: "skipped" for i in func_name_list}
+        tmp_func_status.update(glob_vars.func_status)
+        for _, diopi_func in enumerate(func_name_list):
             if diopi_func not in self.func_dict:
                 self.func_dict[diopi_func] = dict(
                     diopi_func_name=diopi_func,
@@ -257,19 +254,14 @@ class DB_Operation(object):
                     created_time=datetime.now(),
                     updated_time=datetime.now(),
                 )
-            if result == "passed":
+            if tmp_func_status[diopi_func] == "passed":
                 self.func_dict[diopi_func]["success_case"] += 1
-            elif result == "skipped":
+            elif tmp_func_status[diopi_func] == "skipped":
                 self.func_dict[diopi_func]["skipped_case"] += 1
             else:
-                if diopi_func == last_diopi_func_name:
-                    self.func_dict[diopi_func]["failed_case"] += 1
-                    if not_implemented_flag == 1:
-                        self.func_dict[diopi_func]["not_implemented_flag"] = 1
-                elif index < func_name_list.index(last_diopi_func_name):
-                    self.func_dict[diopi_func]["success_case"] += 1
-                else:
-                    self.func_dict[diopi_func]["skipped_case"] += 1
+                self.func_dict[diopi_func]["failed_case"] += 1
+                if not_implemented_flag == 1:
+                    self.func_dict[diopi_func]["not_implemented_flag"] = 1
             self.func_dict[diopi_func]["case_num"] += 1
 
     @use_db(glob_vars.use_db)
@@ -281,7 +273,9 @@ class DB_Operation(object):
     @use_db(glob_vars.use_db)
     def insert_func_list(self):
         for diopi_func in self.func_dict.values():
-            diopi_func["success_rate"] = diopi_func["success_case"] / diopi_func["case_num"]
+            diopi_func["success_rate"] = (
+                diopi_func["success_case"] / diopi_func["case_num"]
+            )
         self.session.bulk_insert_mappings(FuncList, self.func_dict.values())
         self.session.commit()
 

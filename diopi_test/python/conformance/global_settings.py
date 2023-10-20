@@ -10,6 +10,7 @@ class glob_var(object):
         self.int_type = Dtype.int64
         self.float_type = Dtype.float64
         self._cur_test_func = ''
+        self._func_status = {}
         self._debug_level = 0
         self._use_db = None
 
@@ -37,6 +38,14 @@ class glob_var(object):
     @cur_test_func.setter
     def cur_test_func(self, func):
         self._cur_test_func = func
+
+    @property
+    def func_status(self):
+        return self._func_status
+
+    @func_status.setter
+    def func_status(self, func, status):
+        self._func_status[func] = status
 
     @property
     def debug_level(self):

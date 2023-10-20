@@ -20,7 +20,9 @@ class CheckResult(object):
             mismatched_num = matched.size - np.sum(matched)
             # passed = mismatched_num <= default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
             passed = mismatched_num == 0
+            glob_vars.func_status[glob_vars.cur_test_func] = 'passed'
             if not passed:
+                glob_vars.func_status[glob_vars.cur_test_func] = 'failed'
                 debug_level = glob_vars.debug_level
                 error_info = f'Run {glob_vars.cur_test_func} failed, because of inputs: {name} changed'
                 if debug_level > 1:
@@ -83,7 +85,9 @@ class CheckResult(object):
         mismatched_num = matched.size - np.sum(matched)
         # passed = mismatched_num <= default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
         passed = mismatched_num == 0
+        glob_vars.func_status[glob_vars.cur_test_func] = 'passed'
         if not passed:
+            glob_vars.func_status[glob_vars.cur_test_func] = 'failed'
             sum1 = tensor1.sum()
             sum2 = tensor2.sum()
             mask = np.isclose(tensor1, tensor2, rtol, atol, True)

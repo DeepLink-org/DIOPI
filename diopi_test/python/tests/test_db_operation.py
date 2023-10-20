@@ -318,9 +318,9 @@ case_device_case = {
             diopiadd=dict(
                 not_implemented_flag=0,
                 case_num=1,
-                success_case=0,
+                success_case=1,
                 failed_case=0,
-                skipped_case=1,
+                skipped_case=0,
             ),
             diopiaddInp=dict(
                 not_implemented_flag=0,
@@ -1029,7 +1029,45 @@ class TestDBOperation(object):
         )
         assert len(db_data) == len(case_items["insert_device_case"])
 
-        for each_case_item in case_items["update_device_case"]:
+        # generate func_status
+        func_status = []
+        for index in range(len(case_items['insert_device_case'])):
+            inplace_flag = case_items['insert_device_case'][index]["inplace_flag"]
+            backward_flag = case_items['insert_device_case'][index]["backward_flag"]
+            diopi_func_name = (
+                case_items['update_device_case'][index]["diopi_func_name"].replace("Inp", "").replace("Backward", "")
+            )
+            diopi_func_name_list = [diopi_func_name]
+            if backward_flag:
+                diopi_func_name_list.append(f"{diopi_func_name}Backward")
+            if inplace_flag:
+                if "Scalar" in diopi_func_name:
+                    diopi_func_name_list.append(
+                        f'{diopi_func_name.replace("Scalar", "")}InpScalar'
+                    )
+                else:
+                    diopi_func_name_list.append(f"{diopi_func_name}Inp")
+            each_func_status = {i: 'passed' for i in diopi_func_name_list}
+            if case_items['update_device_case'][index]['result'] == 'failed':
+                flag = True
+                for func in each_func_status:
+                    if func == case_items['update_device_case'][index]["diopi_func_name"]:
+                        each_func_status[func] = 'failed'
+                        flag = False
+                    else:
+                        each_func_status[func] = 'passed' if flag else 'skipped'
+            elif case_items['update_device_case'][index]['result'] == 'skipped':
+                flag = True
+                for func in each_func_status:
+                    if func == case_items['update_device_case'][index]["diopi_func_name"]:
+                        each_func_status[func] = 'skipped'
+                        flag = False
+                    else:
+                        each_func_status[func] = 'passed' if flag else 'skipped'
+
+            func_status.append(each_func_status)
+        for index, each_case_item in enumerate(case_items["update_device_case"]):
+            glob_vars._func_status = func_status[index]
             db_conn.will_update_device_case(each_case_item)
         db_conn.update_device_case()
         db_data = db_conn.session.query(DeviceCase).filter_by(delete_flag=1).all()
@@ -1049,7 +1087,7 @@ class TestDBOperation(object):
         for actual_data in db_data:
             expect_data = case_items["expect_funclist"].get(actual_data.diopi_func_name)
             for key, each_expect_data in expect_data.items():
-                assert each_expect_data == getattr(actual_data, key)
+                assert each_expect_data == getattr(actual_data, key), f'{actual_data.diopi_func_name} {key}: {getattr(actual_data, key)}'
             assert (
                 actual_data.success_rate == expect_data["success_case"] / expect_data["case_num"]
             )
