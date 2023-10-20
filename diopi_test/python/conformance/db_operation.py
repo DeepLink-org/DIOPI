@@ -4,7 +4,16 @@ import pickle
 import time
 import pandas as pd
 from datetime import datetime
-from sqlalchemy import Column, DateTime, Integer, FLOAT, String, create_engine, event, func
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Integer,
+    FLOAT,
+    String,
+    create_engine,
+    event,
+    func,
+)
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine import Engine
@@ -18,7 +27,7 @@ Base = declarative_base()
 
 
 class BenchMarkCase(Base):
-    __tablename__ = 'benchmark_case'
+    __tablename__ = "benchmark_case"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     case_name = Column(String(100))
@@ -34,13 +43,13 @@ class BenchMarkCase(Base):
     updated_time = Column(DateTime)
 
     def __repr__(self):
-        return f'id: {self.id}, case name: {self.case_name}, model name: {self.model_name}, \
+        return f"id: {self.id}, case name: {self.case_name}, model name: {self.model_name}, \
             func name: {self.func_name}, result: {self.result}, delete_flag: {self.delete_flag}, \
-                created_time:{self.created_time}, updated_time: {self.updated_time}'
+                created_time:{self.created_time}, updated_time: {self.updated_time}"
 
 
 class DeviceCase(Base):
-    __tablename__ = 'device_case'
+    __tablename__ = "device_case"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     pytest_nodeid = Column(String(100))
@@ -60,12 +69,12 @@ class DeviceCase(Base):
     updated_time = Column(DateTime)
 
     def __repr__(self):
-        return f'id: {self.id}, case name: {self.case_name}, model name: {self.model_name}, \
-            func name: {self.func_name}, result: {self.result}'
+        return f"id: {self.id}, case name: {self.case_name}, model name: {self.model_name}, \
+            func name: {self.func_name}, result: {self.result}"
 
 
 class FuncList(Base):
-    __tablename__ = 'func_list'
+    __tablename__ = "func_list"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     diopi_func_name = Column(String(100))
@@ -82,7 +91,7 @@ class FuncList(Base):
 
 
 class TestSummary(Base):
-    __tablename__ = 'test_summary'
+    __tablename__ = "test_summary"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     total_case = Column(Integer)
@@ -103,24 +112,24 @@ def use_db(if_use_db):
         def decorator(*args, **kwargs):
             if if_use_db:
                 return func(*args, **kwargs)
+
         return decorator
+
     return wrapper
 
 
 @event.listens_for(Engine, "before_cursor_execute")
-def before_cursor_execute(conn, cursor, statement, 
-                        parameters, context, executemany):
+def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
     context._query_start_time = time.time()
     logger.debug("Start Query:\n%s" % statement)
     # logger.debug("Parameters:\n%r" % (parameters,))
 
 
 @event.listens_for(Engine, "after_cursor_execute")
-def after_cursor_execute(conn, cursor, statement, 
-                        parameters, context, executemany):
+def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
     total = time.time() - context._query_start_time
     logger.debug("Query Complete!")
-    logger.debug("Total Time: %.02fms" % (total*1000))
+    logger.debug("Total Time: %.02fms" % (total * 1000))
     logger.debug("affected row count: %d" % context.rowcount)
 
 
@@ -133,107 +142,135 @@ class DB_Operation(object):
         pass
 
     @use_db(glob_vars.use_db)
-    def init_db(self, db_path='sqlite:///./cache/testrecord.db'):
-        self.engine = create_engine(f'{db_path}?check_same_thread=False', echo=False)
+    def init_db(self, db_path="sqlite:///./cache/testrecord.db"):
+        self.engine = create_engine(f"{db_path}?check_same_thread=False", echo=False)
         Base.metadata.create_all(self.engine)
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
 
     @use_db(glob_vars.use_db)
     def drop_case_table(self, case_module):
-        self.session.query(case_module).filter_by(delete_flag=1).update({'delete_flag': 0})
+        self.session.query(case_module).filter_by(delete_flag=1).update(
+            {"delete_flag": 0}
+        )
         self.session.commit()
 
     @use_db(glob_vars.use_db)
-    def insert_benchmark_case(self, geninput_case_items: list, genoutput_case_items: dict):
+    def insert_benchmark_case(
+        self, geninput_case_items: list, genoutput_case_items: dict
+    ):
         for item in geninput_case_items:
-            output_case_item = genoutput_case_items.get(item['case_name'])
+            output_case_item = genoutput_case_items.get(item["case_name"])
             if output_case_item is not None:
                 item.update(output_case_item)
-            item['case_config'] = pickle.dumps(item['case_config'])
-            item['delete_flag'] = 1
-            item['created_time'] = datetime.now()
-            item['updated_time'] = datetime.now()
+            item["case_config"] = pickle.dumps(item["case_config"])
+            item["delete_flag"] = 1
+            item["created_time"] = datetime.now()
+            item["updated_time"] = datetime.now()
         self.session.bulk_insert_mappings(BenchMarkCase, geninput_case_items)
         self.session.commit()
 
     @use_db(glob_vars.use_db)
     def insert_device_case(self, case_items):
         for item in case_items:
-            item['case_config'] = pickle.dumps(item['case_config'])
-            item['not_implemented_flag'] = 0
-            item['delete_flag'] = 1
-            item['test_flag'] = 0
-            item['created_time'] = datetime.now()
-            item['updated_time'] = datetime.now()
+            item["case_config"] = pickle.dumps(item["case_config"])
+            item["not_implemented_flag"] = 0
+            item["delete_flag"] = 1
+            item["test_flag"] = 0
+            item["created_time"] = datetime.now()
+            item["updated_time"] = datetime.now()
         self.session.bulk_insert_mappings(DeviceCase, case_items)
         self.session.commit()
 
     @use_db(glob_vars.use_db)
     def init_test_flag(self):
-        self.session.query(DeviceCase).filter_by(delete_flag=1, test_flag=1).update({'test_flag': 0})
+        self.session.query(DeviceCase).filter_by(delete_flag=1, test_flag=1).update(
+            {"test_flag": 0}
+        )
         self.session.commit()
 
     @use_db(glob_vars.use_db)
     def will_update_device_case(self, case_item):
         if self.all_case_items is None:
-            self.all_case_items = {i.pytest_nodeid: i.__dict__ for i in self.session.query(DeviceCase).filter_by(delete_flag=1).all()}
-        case_model = self.all_case_items[case_item['pytest_nodeid']]
-        inplace_flag = case_model['inplace_flag']
-        backward_flag = case_model['backward_flag']
-        if case_item.get('case_config'):
-            case_item['case_config'] = pickle.dumps(case_item['case_config'])
+            self.all_case_items = {
+                i.pytest_nodeid: i.__dict__
+                for i in self.session.query(DeviceCase).filter_by(delete_flag=1).all()
+            }
+        case_model = self.all_case_items[case_item["pytest_nodeid"]]
+        inplace_flag = case_model["inplace_flag"]
+        backward_flag = case_model["backward_flag"]
+        if case_item.get("case_config"):
+            case_item["case_config"] = pickle.dumps(case_item["case_config"])
 
-        last_diopi_func_name = case_item['diopi_func_name']
-        diopi_func_name = case_item['diopi_func_name'].replace('Inp', '').replace('Backward', '')
+        last_diopi_func_name = case_item["diopi_func_name"]
+        diopi_func_name = (
+            case_item["diopi_func_name"].replace("Inp", "").replace("Backward", "")
+        )
         diopi_func_name_list = [diopi_func_name]
         if backward_flag:
-            diopi_func_name_list.append(f'{diopi_func_name}Backward')
+            diopi_func_name_list.append(f"{diopi_func_name}Backward")
         if inplace_flag:
-            if 'Scalar' in diopi_func_name:
-                diopi_func_name_list.append(f'{diopi_func_name.replace("Scalar", "")}InpScalar')
+            if "Scalar" in diopi_func_name:
+                diopi_func_name_list.append(
+                    f'{diopi_func_name.replace("Scalar", "")}InpScalar'
+                )
             else:
-                diopi_func_name_list.append(f'{diopi_func_name}Inp')
-        case_item['diopi_func_name'] = ','.join(diopi_func_name_list)
-        case_item['updated_time'] = datetime.now()
-        case_item['id'] = case_model['id']
-        case_item['test_flag'] = 1
-        self.all_case_items[case_item['pytest_nodeid']].update(case_item)
+                diopi_func_name_list.append(f"{diopi_func_name}Inp")
+        case_item["diopi_func_name"] = ",".join(diopi_func_name_list)
+        case_item["updated_time"] = datetime.now()
+        case_item["id"] = case_model["id"]
+        case_item["test_flag"] = 1
+        self.all_case_items[case_item["pytest_nodeid"]].update(case_item)
 
         # if failed before forward, diopi_func_name will be ''
-        if diopi_func_name != '':
-            self.expand_func_list(last_diopi_func_name, case_item.get('not_implemented_flag', case_model['not_implemented_flag']),
-                                diopi_func_name_list, case_item['result'], case_model['func_name'])
+        if diopi_func_name != "":
+            self.expand_func_list(
+                last_diopi_func_name,
+                case_item.get(
+                    "not_implemented_flag", case_model["not_implemented_flag"]
+                ),
+                diopi_func_name_list,
+                case_item["result"],
+                case_model["func_name"],
+            )
 
     @use_db(glob_vars.use_db)
-    def expand_func_list(self, last_diopi_func_name, not_implemented_flag, func_name_list, result, func_name):
-        for index, func in enumerate(func_name_list):
-            if func not in self.func_dict:
-                self.func_dict[func] = dict(diopi_func_name=func,
-                                            func_name=func_name,
-                                            not_implemented_flag=0,
-                                            case_num=0,
-                                            success_case=0,
-                                            failed_case=0,
-                                            skipped_case=0,
-                                            delete_flag=1,
-                                            created_time=datetime.now(),
-                                            updated_time=datetime.now(),
-                                    )
-            if result == 'passed':
-                self.func_dict[func]['success_case'] += 1
-            elif result == 'skipped':
-                self.func_dict[func]['skipped_case'] += 1
+    def expand_func_list(
+        self,
+        last_diopi_func_name,
+        not_implemented_flag,
+        func_name_list,
+        result,
+        func_name,
+    ):
+        for index, diopi_func in enumerate(func_name_list):
+            if diopi_func not in self.func_dict:
+                self.func_dict[diopi_func] = dict(
+                    diopi_func_name=diopi_func,
+                    func_name=func_name,
+                    not_implemented_flag=0,
+                    case_num=0,
+                    success_case=0,
+                    failed_case=0,
+                    skipped_case=0,
+                    delete_flag=1,
+                    created_time=datetime.now(),
+                    updated_time=datetime.now(),
+                )
+            if result == "passed":
+                self.func_dict[diopi_func]["success_case"] += 1
+            elif result == "skipped":
+                self.func_dict[diopi_func]["skipped_case"] += 1
             else:
-                if func == last_diopi_func_name:
-                    self.func_dict[func]['failed_case'] += 1
+                if diopi_func == last_diopi_func_name:
+                    self.func_dict[diopi_func]["failed_case"] += 1
                     if not_implemented_flag == 1:
-                        self.func_dict[func]['not_implemented_flag'] = 1
+                        self.func_dict[diopi_func]["not_implemented_flag"] = 1
                 elif index < func_name_list.index(last_diopi_func_name):
-                    self.func_dict[func]['success_case'] += 1
+                    self.func_dict[diopi_func]["success_case"] += 1
                 else:
-                    self.func_dict[func]['skipped_case'] += 1
-            self.func_dict[func]['case_num'] += 1
+                    self.func_dict[diopi_func]["skipped_case"] += 1
+            self.func_dict[diopi_func]["case_num"] += 1
 
     @use_db(glob_vars.use_db)
     def update_device_case(self):
@@ -243,18 +280,35 @@ class DB_Operation(object):
 
     @use_db(glob_vars.use_db)
     def insert_func_list(self):
-        for func in self.func_dict.values():
-            func['success_rate'] = func['success_case'] / func['case_num']
+        for diopi_func in self.func_dict.values():
+            diopi_func["success_rate"] = diopi_func["success_case"] / diopi_func["case_num"]
         self.session.bulk_insert_mappings(FuncList, self.func_dict.values())
         self.session.commit()
 
     @use_db(glob_vars.use_db)
     def insert_test_summary(self):
-        total_case = self.session.query(func.count(BenchMarkCase.func_name)).filter_by(delete_flag=1).one()[0]
-        success_case = self.session.query(func.count(DeviceCase.func_name)).filter_by(result='passed', delete_flag=1, test_flag=1).one()[0]
-        failed_case = self.session.query(func.count(DeviceCase.func_name)).filter_by(result='failed', delete_flag=1, test_flag=1).one()[0]
-        skipped_case = self.session.query(func.count(DeviceCase.func_name)).filter_by(result='skipped', delete_flag=1, test_flag=1).one()[0]
-        sql = text("""
+        total_case = (
+            self.session.query(func.count(BenchMarkCase.func_name))
+            .filter_by(delete_flag=1)
+            .one()[0]
+        )
+        success_case = (
+            self.session.query(func.count(DeviceCase.func_name))
+            .filter_by(result="passed", delete_flag=1, test_flag=1)
+            .one()[0]
+        )
+        failed_case = (
+            self.session.query(func.count(DeviceCase.func_name))
+            .filter_by(result="failed", delete_flag=1, test_flag=1)
+            .one()[0]
+        )
+        skipped_case = (
+            self.session.query(func.count(DeviceCase.func_name))
+            .filter_by(result="skipped", delete_flag=1, test_flag=1)
+            .one()[0]
+        )
+        sql = text(
+            """
             WITH FuncCounts AS (
                 SELECT
                     func_name as func_name_benchmark,
@@ -279,10 +333,15 @@ class DB_Operation(object):
                 FROM FuncCounts
                 GROUP BY func_name_benchmark
             ) MaxCounts;
-        """)
+        """
+        )
         result = self.session.execute(sql)
         total_func = result.scalar()
-        impl_func = self.session.query(func.count(FuncList.diopi_func_name)).filter_by(not_implemented_flag=0, delete_flag=1).one()[0]
+        impl_func = (
+            self.session.query(func.count(FuncList.diopi_func_name))
+            .filter_by(not_implemented_flag=0, delete_flag=1)
+            .one()[0]
+        )
         summary_item = dict(
             total_case=total_case,
             success_case=success_case,
@@ -294,7 +353,7 @@ class DB_Operation(object):
             success_rate=success_case / total_case,
             delete_flag=1,
             created_time=datetime.now(),
-            updated_time=datetime.now()
+            updated_time=datetime.now(),
         )
         self.session.add(TestSummary(**summary_item))
         self.session.commit()
@@ -317,52 +376,100 @@ db_conn = DB_Operation()
 
 class ExcelOperation(object):
     def __init__(self) -> None:
-        self.excel_writer = pd.ExcelWriter('report.xlsx', engine='xlsxwriter')
+        self.excel_writer = pd.ExcelWriter("report.xlsx", engine="xlsxwriter")
 
     def add_benchmark_case_sheet(self):
-        sheet_name = 'Benchmark Test Result'
+        sheet_name = "Benchmark Test Result"
         data_query = db_conn.query_data(BenchMarkCase, delete_flag=1)
-        df = pd.DataFrame([data.__dict__ for data in data_query], columns=BenchMarkCase.__table__.columns.keys())
-        df['case_config'] = df['case_config'].apply(lambda x: pickle.loads(x))
-        columns = ['case_name', 'model_name', 'func_name', 'case_config', 'result', 'error_msg']
+        df = pd.DataFrame(
+            [data.__dict__ for data in data_query],
+            columns=BenchMarkCase.__table__.columns.keys(),
+        )
+        df["case_config"] = df["case_config"].apply(lambda x: pickle.loads(x))
+        columns = [
+            "case_name",
+            "model_name",
+            "func_name",
+            "case_config",
+            "result",
+            "error_msg",
+        ]
         df.index = df.index + 1
         df.to_excel(self.excel_writer, sheet_name=sheet_name, columns=columns)
         self.adjust_column(df, sheet_name)
 
     def add_device_case_sheet(self):
-        sheet_name = 'Device Test Result'
+        sheet_name = "Device Test Result"
         data_query = db_conn.query_data(DeviceCase, delete_flag=1, test_flag=1)
-        df = pd.DataFrame([data.__dict__ for data in data_query], columns=DeviceCase.__table__.columns.keys())
-        df['case_config'] = df['case_config'].apply(lambda x: pickle.loads(x))
-        columns = ['pytest_nodeid', 'case_name', 'model_name', 'func_name', 'diopi_func_name', 'not_implemented_flag', 'case_config', 'result', 'error_msg']
+        df = pd.DataFrame(
+            [data.__dict__ for data in data_query],
+            columns=DeviceCase.__table__.columns.keys(),
+        )
+        df["case_config"] = df["case_config"].apply(lambda x: pickle.loads(x))
+        columns = [
+            "pytest_nodeid",
+            "case_name",
+            "model_name",
+            "func_name",
+            "diopi_func_name",
+            "not_implemented_flag",
+            "case_config",
+            "result",
+            "error_msg",
+        ]
         df.index = df.index + 1
-        df.to_excel(self.excel_writer, sheet_name='Device Test Result', columns=columns)
+        df.to_excel(self.excel_writer, sheet_name="Device Test Result", columns=columns)
         self.adjust_column(df, sheet_name)
 
     def add_func_list_sheet(self):
-        sheet_name = 'Func List'
+        sheet_name = "Func List"
         data_query = db_conn.query_data(FuncList, delete_flag=1)
-        df = pd.DataFrame([data.__dict__ for data in data_query], columns=FuncList.__table__.columns.keys())
-        columns = ['diopi_func_name', 'not_implemented_flag', 'case_num', 'success_case', 'failed_case', 'skipped_case', 'success_rate']
+        df = pd.DataFrame(
+            [data.__dict__ for data in data_query],
+            columns=FuncList.__table__.columns.keys(),
+        )
+        columns = [
+            "diopi_func_name",
+            "not_implemented_flag",
+            "case_num",
+            "success_case",
+            "failed_case",
+            "skipped_case",
+            "success_rate",
+        ]
         df.index = df.index + 1
-        df.to_excel(self.excel_writer, sheet_name='Func List', columns=columns)
+        df.to_excel(self.excel_writer, sheet_name="Func List", columns=columns)
         self.adjust_column(df, sheet_name)
 
     def add_sumary_sheet(self):
-        sheet_name = 'Sumary'
+        sheet_name = "Sumary"
         data_query = db_conn.query_data(TestSummary, delete_flag=1)
-        df = pd.DataFrame([data.__dict__ for data in data_query], columns=TestSummary.__table__.columns.keys())
-        columns = ['total_case', 'success_case', 'failed_case', 'skipped_case', 'total_func', 'impl_func', 'success_rate', 'func_coverage_rate']
+        df = pd.DataFrame(
+            [data.__dict__ for data in data_query],
+            columns=TestSummary.__table__.columns.keys(),
+        )
+        columns = [
+            "total_case",
+            "success_case",
+            "failed_case",
+            "skipped_case",
+            "total_func",
+            "impl_func",
+            "success_rate",
+            "func_coverage_rate",
+        ]
         df.index = df.index + 1
-        df.to_excel(self.excel_writer, sheet_name='Sumary', columns=columns)
+        df.to_excel(self.excel_writer, sheet_name="Sumary", columns=columns)
         self.adjust_column(df, sheet_name)
 
     def adjust_column(self, data, sheet_name):
         worksheet = self.excel_writer.sheets[sheet_name]
         for i, column_name in enumerate(data.columns):
             format_percent = None
-            if column_name in ['success_rate', 'func_coverage_rate']:
-                format_percent = self.excel_writer.book.add_format({'num_format': '0.00%'})
+            if column_name in ["success_rate", "func_coverage_rate"]:
+                format_percent = self.excel_writer.book.add_format(
+                    {"num_format": "0.00%"}
+                )
             worksheet.set_column(i, i, len(column_name) + 2, format_percent)
 
     @use_db(glob_vars.use_db)

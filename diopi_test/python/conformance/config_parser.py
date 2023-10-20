@@ -7,15 +7,17 @@ import numpy as np
 from enum import Enum
 
 
-def diopi_config_parse(case_item_path='./cache/diopi_case_items.cfg'):
-    '''
+def diopi_config_parse(case_item_path="./cache/diopi_case_items.cfg"):
+    """
     todo: config file defined by user
-    '''
-    sys.path.append('../python/configs')
+    """
+    sys.path.append("../python/configs")
     from diopi_configs import diopi_configs
+
     ci = ConfigParser(ofile=case_item_path)
     ci.parser(diopi_configs)
     ci.save()
+
 
 class ConfigParser(object):
     def __init__(self, ofile="test_config.cfg") -> None:
@@ -25,7 +27,7 @@ class ConfigParser(object):
     def __str__(self):
         return str(self._items)
 
-    def parser(self, config, fname='all_ops'):
+    def parser(self, config, fname="all_ops"):
         if isinstance(config, dict):
             self._config_dict_parse(config, fname)
         elif os.path.isfile(config):
@@ -37,7 +39,7 @@ class ConfigParser(object):
 
     def _config_dict_parse(self, config, fname):
         for key, value in config.items():
-            if fname != 'all_ops' and fname not in value["name"]:
+            if fname != "all_ops" and fname not in value["name"]:
                 continue
             cfg_item = ConfigItem(key, value)
             cfg_item.generate_items()
@@ -50,25 +52,27 @@ class ConfigParser(object):
     def reset(self):
         self._items = {}
 
-    def save(self, path=''):
-        path = path if path !='' else self._ofile
+    def save(self, path=""):
+        path = path if path != "" else self._ofile
         with open(path, "wb") as f:
             pickle.dump(self._items, f)
 
+
 # *********************************************************************************
-# internal helper function 
+# internal helper function
 # *********************************************************************************
 def _assert_exist(cfg_name, cfg_dict, keys):
-    err = f'key %s not in {cfg_name}'
+    err = f"key %s not in {cfg_name}"
     for key in keys:
-        assert key in cfg_dict.keys(), (err % key)
+        assert key in cfg_dict.keys(), err % key
+
 
 def _assert_type(cfg_name, cfg_dict, require_type, item_keys):
     if isinstance(require_type, (list, tuple)):
         types_str = ""
         for t in require_type:
             types_str += t.__name__
-            types_str += ' or '
+            types_str += " or "
         types_str = types_str[:-4]
     else:
         types_str = require_type.__name__
@@ -76,12 +80,16 @@ def _assert_type(cfg_name, cfg_dict, require_type, item_keys):
     err = f"key %s: should be {types_str} in {cfg_name} items"
     for k in item_keys:
         if k in cfg_dict.keys():
-            assert isinstance(cfg_dict[k], require_type), (err % k)
+            assert isinstance(cfg_dict[k], require_type), err % k
+
 
 def _assert_unnested_type(cfg_name, obj):
     assert isinstance(obj, (list, tuple))
     for o in obj:
-        assert not isinstance(o, (list, tuple)), f'{cfg_name} should not be nested list or tuple'
+        assert not isinstance(
+            o, (list, tuple)
+        ), f"{cfg_name} should not be nested list or tuple"
+
 
 def _check_and_expand_in_args(domain, args: dict, key):
     length = 1
@@ -108,6 +116,7 @@ def _check_and_expand_in_args(domain, args: dict, key):
             if length != 1:
                 arg[key] = arg[key] * length
 
+
 def _tensor_para_default(case_v, key, default_v):
     for item in case_v["tensor_para"]["args"]:
         if key not in item.keys():
@@ -119,6 +128,7 @@ def _tensor_para_default(case_v, key, default_v):
             else:
                 item[key] = case_v["tensor_para"][key]
 
+
 # expand elements
 def _dict_elem_length(dict_obj):
     if dict_obj == {} or dict_obj is None:
@@ -126,12 +136,13 @@ def _dict_elem_length(dict_obj):
     keys = list(dict_obj.keys())
     return len(dict_obj[keys[0]])
 
+
 def _expand_para(para_dict: dict, paras_list: list):
-    r'''
+    r"""
     dict(a = [1,2], b = [11,22])
     --->
     [dict(a = 1, b = 11), dict(a=2, b=22)]
-    '''
+    """
     length = _dict_elem_length(para_dict)
     for i in range(length):
         tmp_para_dict = {}
@@ -139,8 +150,9 @@ def _expand_para(para_dict: dict, paras_list: list):
             tmp_para_dict[k] = copy.deepcopy(v[i])
         paras_list.append(tmp_para_dict)
 
+
 def _expand_tensor_para(args_list, tensor_paras_list):
-    r'''
+    r"""
     [
         dict(
             "ins" = ["input", "weight"],
@@ -177,7 +189,7 @@ def _expand_tensor_para(args_list, tensor_paras_list):
             "shape"=[(2,3)]
         )],
     ]
-    '''
+    """
     if len(args_list) == 0 or args_list is None:
         return
     # expand ins, requires_grad
@@ -190,18 +202,22 @@ def _expand_tensor_para(args_list, tensor_paras_list):
 
     args0_dict = tmp_args_list[0]
     assert "shape" in args0_dict or "value" in args0_dict
-    num = len(args0_dict["shape"]) if "shape" in args0_dict else len(args0_dict["value"])
+    num = (
+        len(args0_dict["shape"]) if "shape" in args0_dict else len(args0_dict["value"])
+    )
 
     for j in range(num):
         args_ins_expand_list = copy.deepcopy(tmp_args_list)
         for i in range(len(tmp_args_list)):
-            stride_name = str(tmp_args_list[i]['ins']) + "stride"
+            stride_name = str(tmp_args_list[i]["ins"]) + "stride"
             if "value" in tmp_args_list[i].keys():
                 args_ins_expand_list[i]["value"] = copy.deepcopy(
-                    tmp_args_list[i]["value"][j])
+                    tmp_args_list[i]["value"][j]
+                )
             elif "shape" in tmp_args_list[i].keys():
                 args_ins_expand_list[i]["shape"] = copy.deepcopy(
-                    tmp_args_list[i]["shape"][j])
+                    tmp_args_list[i]["shape"][j]
+                )
             if "stride" in tmp_args_list[i].keys():
                 if j >= len(args0_dict["stride"]):
                     del args_ins_expand_list[i]["stride"]
@@ -209,18 +225,29 @@ def _expand_tensor_para(args_list, tensor_paras_list):
                 elif tmp_args_list[i]["stride"][j] is None:
                     del args_ins_expand_list[i]["stride"]
                     continue
-                args_ins_expand_list[0][stride_name] = copy.deepcopy(tmp_args_list[i]["stride"][j])
+                args_ins_expand_list[0][stride_name] = copy.deepcopy(
+                    tmp_args_list[i]["stride"][j]
+                )
                 # 判断stride和shape是否符合标准，不符合报错
                 tmp_stride = args_ins_expand_list[0][stride_name]
                 tmp_shape = args_ins_expand_list[i]["shape"]
-                assert len(tmp_stride) == len(tmp_shape), "stride and shape must have the same dim"
+                assert len(tmp_stride) == len(
+                    tmp_shape
+                ), "stride and shape must have the same dim"
                 stride_dic = []
-                for index, s, st in zip(range(len(list(tmp_shape))), list(tmp_shape), tmp_stride):
+                for index, s, st in zip(
+                    range(len(list(tmp_shape))), list(tmp_shape), tmp_stride
+                ):
                     stride_dic.append((s, st))
                 sorted_stride = sorted(stride_dic, key=lambda x: x[1])
                 for index in range(len(sorted_stride) - 1):
-                    assert (sorted_stride[index][0] - 1) * sorted_stride[index][1] < sorted_stride[index + 1][1], "wrong stride for shape (might have memory overlap)"
+                    assert (sorted_stride[index][0] - 1) * sorted_stride[index][
+                        1
+                    ] < sorted_stride[index + 1][
+                        1
+                    ], "wrong stride for shape (might have memory overlap)"
         tensor_paras_list.append(args_ins_expand_list)
+
 
 def _expand_config_with_para(config_item: dict):
     paras_list = []
@@ -229,6 +256,7 @@ def _expand_config_with_para(config_item: dict):
     _expand_para(config_item["para"], paras_list)
     _expand_tensor_para(config_item["tensor_para"]["args"], tensor_paras_list)
     return paras_list, tensor_paras_list
+
 
 def _expand_config_all(conif_item: dict, paras_list, tensor_paras_list):
     cfg_expand_list = []
@@ -246,10 +274,10 @@ def _expand_config_all(conif_item: dict, paras_list, tensor_paras_list):
                     filter_dtype = False
                     tmp_cfg_dict = copy.deepcopy(conif_item)
                     tmp_cfg_dict["tensor_para"]["args"] = copy.deepcopy(
-                        tensor_paras_list[j])
+                        tensor_paras_list[j]
+                    )
                     if len(paras_list) != 0:
-                        tmp_cfg_dict["para"] = copy.deepcopy(
-                            paras_list[j])
+                        tmp_cfg_dict["para"] = copy.deepcopy(paras_list[j])
                     for arg in tmp_cfg_dict["tensor_para"]["args"]:
                         if arg.get("dtype") is not None:
                             entry_dtype = arg["dtype"][i]
@@ -266,7 +294,8 @@ def _expand_config_all(conif_item: dict, paras_list, tensor_paras_list):
                 tmp_cfg_dict = copy.deepcopy(conif_item)
                 tmp_cfg_dict["para"] = copy.deepcopy(paras_list[i])
                 tmp_cfg_dict["tensor_para"]["args"] = copy.deepcopy(
-                    tensor_paras_list[i])
+                    tensor_paras_list[i]
+                )
                 cfg_expand_list.append(tmp_cfg_dict)
     elif len(paras_list) != 0:
         for i in range(len(paras_list)):
@@ -276,13 +305,15 @@ def _expand_config_all(conif_item: dict, paras_list, tensor_paras_list):
 
     return cfg_expand_list
 
+
 def _expand_config_with_all(config_item: dict):
     paras_list, tensor_para_list = _expand_config_with_para(config_item)
     # print(colored(f"{len(paras_list)} == {len(tensor_para_list)}", 'yellow'))
     config_case_items = _expand_config_all(config_item, paras_list, tensor_para_list)
-    
+
     # print(colored(f"{len(config_case_items)}", 'red'))
     return config_case_items
+
 
 class ConfigItem(object):
     def __init__(self, item_name="batch_norm", item_config: dict = {}) -> None:
@@ -290,68 +321,90 @@ class ConfigItem(object):
         self._orig = item_config
 
         # cache result
-        self._config_items = {} # {'batch'}
-        self._case_items ={}
+        self._config_items = {}  # {'batch'}
+        self._case_items = {}
 
     def __str__(self) -> str:
         return str(self._case_items)
 
     def _check_format(self):
-        _assert_type(self._name, self._orig, list, ['dtype', 'pytorch'])
-        _assert_exist(self._name, self._orig, ['name'])
-        _assert_type(self._name, self._orig, list, ['name', 'arch'])
+        _assert_type(self._name, self._orig, list, ["dtype", "pytorch"])
+        _assert_exist(self._name, self._orig, ["name"])
+        _assert_type(self._name, self._orig, list, ["name", "arch"])
         # tensor_para
-        if 'tensor_para' in self._orig.keys():
-            _assert_type(self._name, self._orig, dict, ['tensor_para'])
-            if 'dtype' in self._orig.keys():
+        if "tensor_para" in self._orig.keys():
+            _assert_type(self._name, self._orig, dict, ["tensor_para"])
+            if "dtype" in self._orig.keys():
                 _assert_type(self._name, self._orig, list, ["dtype"])
                 _assert_unnested_type(self._name, self._orig["dtype"])
-            _assert_exist(self._name + '.tensor_para', self._orig['tensor_para'], ['args'])
-            _assert_type(self._name + '.tensor_para', self._orig['tensor_para'], (list, tuple) ,['args'])
+            _assert_exist(
+                self._name + ".tensor_para", self._orig["tensor_para"], ["args"]
+            )
+            _assert_type(
+                self._name + ".tensor_para",
+                self._orig["tensor_para"],
+                (list, tuple),
+                ["args"],
+            )
 
             # check args: []
-            args_name = self._name + '.tensor_para.args'
-            for arg in self._orig['tensor_para']['args']:
-                _assert_type(args_name, arg, (list, tuple), [k for k in arg.keys() if k not in ['gen_fn', 'gen_policy']])
+            args_name = self._name + ".tensor_para.args"
+            for arg in self._orig["tensor_para"]["args"]:
+                _assert_type(
+                    args_name,
+                    arg,
+                    (list, tuple),
+                    [k for k in arg.keys() if k not in ["gen_fn", "gen_policy"]],
+                )
                 # should design gen policy: map
                 for k, v in arg.items():
-                    if k == 'dtype':
-                        _assert_unnested_type(args_name + f'{k}.dtype', v)
+                    if k == "dtype":
+                        _assert_unnested_type(args_name + f"{k}.dtype", v)
 
-        if 'para' in self._orig.keys():
-            _assert_type(self._name, self._orig, dict, ['para'])
-            para_obj = self._orig['para']
+        if "para" in self._orig.keys():
+            _assert_type(self._name, self._orig, dict, ["para"])
+            para_obj = self._orig["para"]
             # is there gen_fn in para dict ？
-            _assert_type(self._name + '.para', para_obj, (list, tuple), [k for k in para_obj.keys()])
-        
+            _assert_type(
+                self._name + ".para",
+                para_obj,
+                (list, tuple),
+                [k for k in para_obj.keys()],
+            )
 
-        length  = 0
-        if 'para' in self._orig.keys():
-            para_obj = self._orig['para']
+        length = 0
+        if "para" in self._orig.keys():
+            para_obj = self._orig["para"]
             for k, v in para_obj.items():
                 if length == 0:
                     length = len(v)
                 else:
-                    assert len(v) == length, (f'{self._name}.para.{k}: length not matched.')
+                    assert (
+                        len(v) == length
+                    ), f"{self._name}.para.{k}: length not matched."
 
-            if 'tensor_para' in self._orig.keys():
+            if "tensor_para" in self._orig.keys():
                 # shape, value
-                args = self._orig['tensor_para']['args']
+                args = self._orig["tensor_para"]["args"]
                 for i, arg in enumerate(args):
-                    if 'shape' in arg.keys():
-                        assert len(arg['shape']) == length, \
-                            (f'{self._name}.tensor_para.args[{i}].shape: length not matched.')
-                    if 'value' in arg.keys():
-                        assert len(arg['value']) == length, \
-                            (f'{self._name}.tensor_para.args[{i}].value: length not matched.')
+                    if "shape" in arg.keys():
+                        assert (
+                            len(arg["shape"]) == length
+                        ), f"{self._name}.tensor_para.args[{i}].shape: length not matched."
+                    if "value" in arg.keys():
+                        assert (
+                            len(arg["value"]) == length
+                        ), f"{self._name}.tensor_para.args[{i}].value: length not matched."
 
-    def _expand_by_name(self, key='name'):
+    def _expand_by_name(self, key="name"):
         expand_names = self._orig[key]
-        expand_names = expand_names if isinstance(expand_names, (list, tuple)) else [expand_names]
+        expand_names = (
+            expand_names if isinstance(expand_names, (list, tuple)) else [expand_names]
+        )
         for en in expand_names:
             cfg_item = copy.deepcopy(self._orig)
             cfg_item[key] = en
-            self._config_items[f'{self._name}::{str(en)}'] = cfg_item
+            self._config_items[f"{self._name}::{str(en)}"] = cfg_item
 
     def _expand_config_items(self):
         for key in self._config_items:
@@ -360,7 +413,7 @@ class ConfigItem(object):
             # print(colored(f'config_item_list = {len(config_items_list)}', 'blue'))
             # case_sn = 0
             for sn, cil in enumerate(config_items_list):
-                self._case_items[key + f'_{sn}.pth'] = CaseItem(cil).get_item()
+                self._case_items[key + f"_{sn}.pth"] = CaseItem(cil).get_item()
                 # case_sn += 1
 
     def _config_format(self):
@@ -395,8 +448,11 @@ class ConfigItem(object):
                     item["gen_num_range"] = []
             # gen_fn and dtype maybe set in global zone,
             # we don't recommend the set key in global zone.
-            _tensor_para_default(case_v, "dtype", 
-                                 [np.float16, np.float32, np.float64, np.int32, np.int64])
+            _tensor_para_default(
+                case_v,
+                "dtype",
+                [np.float16, np.float32, np.float64, np.int32, np.int64],
+            )
             _tensor_para_default(case_v, "gen_fn", "Genfunc.randn")
             _tensor_para_default(case_v, "gen_policy", "default")
 
@@ -404,12 +460,12 @@ class ConfigItem(object):
             _check_and_expand_in_args(case_sig, case_v["tensor_para"]["args"], "dtype")
             _check_and_expand_in_args(case_sig, case_v["tensor_para"]["args"], "shape")
 
-            if 'dtype' in case_v:
-                case_v.pop('dtype')
-            if 'gen_fn' in case_v:
-                case_v.pop('gen_fn')
-            if 'gen_policy' in case_v:
-                case_v.pop('gen_policy')
+            if "dtype" in case_v:
+                case_v.pop("dtype")
+            if "gen_fn" in case_v:
+                case_v.pop("gen_fn")
+            if "gen_policy" in case_v:
+                case_v.pop("gen_policy")
 
     def generate_items(self):
         # check format and expand by 'name'
@@ -422,26 +478,28 @@ class ConfigItem(object):
     def get_case_items(self):
         return self._case_items
 
+
 # a case item
 class CaseItem(object):
     def __init__(self, item: dict = {}) -> None:
-        self._item = {'atol': 1e-5,
-                     'rtol': 1e-5,
-                     'atol_half': 1e-2,
-                     'rtol_half': 5e-2,
-                     'mismatch_ratio_threshold': 1e-3,
-                     'memory_format': 'NCHW',
-                     'fp16_exact_match': False,
-                     'train': True,
-                     'gen_policy': 'dafault'
-                     }
+        self._item = {
+            "atol": 1e-5,
+            "rtol": 1e-5,
+            "atol_half": 1e-2,
+            "rtol_half": 5e-2,
+            "mismatch_ratio_threshold": 1e-3,
+            "memory_format": "NCHW",
+            "fp16_exact_match": False,
+            "train": True,
+            "gen_policy": "dafault",
+        }
         for key, val in item.items():
             self._item[key] = val
 
     def __str__(self) -> str:
         # print(f"{__file__}:{self.__class__}:{self.__module__}")
         return str(self._item)
-    
+
     def get_item(self) -> dict:
         return self._item
 
@@ -456,7 +514,7 @@ class CaseItem(object):
         self._item[key] = val
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # only for module test
     diopi_config_parse()
     # import sys

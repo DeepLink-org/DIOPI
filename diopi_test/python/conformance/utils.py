@@ -23,6 +23,7 @@ error_counter = [0]
 error_content = []
 error_content_other = []
 
+
 class Log(object):
     def __init__(self, level):
         self.logger = logging.getLogger("ConformanceTest")
@@ -227,7 +228,7 @@ def get_data_from_file(data_path, test_path, name=""):
 
 
 def gen_pytest_case_nodeid(dir, file, class_, func):
-    """e.g. 
+    """e.g.
     dir: ./gencases/diopi_case
     file: test_diopi_adadelta_adadelta.py
     class_: TestMdiopiSadadeltaFadadelta

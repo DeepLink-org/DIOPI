@@ -7,6 +7,6 @@ class Skip(object):
 
     def __str__(self) -> str:
         return str(self._value)
-    
+
     def value(self):
         return self._value

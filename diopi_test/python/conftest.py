@@ -9,6 +9,7 @@ from conformance.db_operation import db_conn, TestSummary, FuncList, ExcelOperat
 def pytest_addoption(parser):
     parser.addoption('--impl_folder', type=str, default='', help='folder to find device configs')
 
+
 def pytest_sessionstart(session):
     db_conn.init_test_flag()
     db_conn.drop_case_table(TestSummary)
@@ -16,6 +17,7 @@ def pytest_sessionstart(session):
 
 # def pytest_runtest_setup(item):
 #     glob_vars.cur_pytest_nodeid = item.nodeid
+
 
 @pytest.hookimpl(hookwrapper=True, tryfirst=True)
 def pytest_runtest_makereport(item, call):

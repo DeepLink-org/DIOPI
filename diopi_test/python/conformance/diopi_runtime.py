@@ -4,10 +4,24 @@ import atexit
 import ctypes
 from ctypes import c_void_p
 
-from diopilib import (diopiTensor, diopiSize, diopiScalar, diopiReduction, diopiRoundMode,
-                      diopiError, TensorP, Context, Device, Dtype,
-                      diopi_tensor_copy_to_buffer, get_last_error_string, finalize_library,
-                      diopi_finalize, init_library, diopiGenerator)
+from diopilib import (
+    diopiTensor,
+    diopiSize,
+    diopiScalar,
+    diopiReduction,
+    diopiRoundMode,
+    diopiError,
+    TensorP,
+    Context,
+    Device,
+    Dtype,
+    diopi_tensor_copy_to_buffer,
+    get_last_error_string,
+    finalize_library,
+    diopi_finalize,
+    init_library,
+    diopiGenerator,
+)
 
 
 def device(dev: str) -> Device:
@@ -26,29 +40,29 @@ default = all_types
 
 
 def from_dtype_str(dtype_str: str) -> Dtype:
-    if dtype_str == 'int8':
+    if dtype_str == "int8":
         return Dtype.int8
-    elif dtype_str == 'uint8':
+    elif dtype_str == "uint8":
         return Dtype.uint8
-    elif dtype_str == 'int16':
+    elif dtype_str == "int16":
         return Dtype.int16
-    elif dtype_str == 'uint16':
+    elif dtype_str == "uint16":
         return Dtype.uint16
-    elif dtype_str == 'int32':
+    elif dtype_str == "int32":
         return Dtype.int32
-    elif dtype_str == 'uint32':
+    elif dtype_str == "uint32":
         return Dtype.uint32
-    elif dtype_str == 'int64':
+    elif dtype_str == "int64":
         return Dtype.int64
-    elif dtype_str == 'uint64':
+    elif dtype_str == "uint64":
         return Dtype.uint64
-    elif dtype_str == 'float16':
+    elif dtype_str == "float16":
         return Dtype.float16
-    elif dtype_str == 'float32':
+    elif dtype_str == "float32":
         return Dtype.float32
-    elif dtype_str == 'float64':
+    elif dtype_str == "float64":
         return Dtype.float64
-    elif dtype_str == 'bool':
+    elif dtype_str == "bool":
         return Dtype.bool
     else:
         return None
@@ -155,9 +169,9 @@ def compute_nhwc_stride_3d(sizes, itemsize=1):
 
 
 def compute_nhwc_stride(size, itemsize=1, name=None):
-    if name == '2d':
+    if name == "2d":
         return compute_nhwc_stride_2d(size, itemsize)
-    if name == '3d':
+    if name == "3d":
         return compute_nhwc_stride_3d(size, itemsize)
 
     dim = len(size)
@@ -188,18 +202,19 @@ default_context = Context()
 
 
 class Sizes(diopiSize):
-
     def __init__(self, shape=()):
         super(Sizes, self).__init__(list(shape), len(shape))
         self.shape = self.data
 
 
 class Scalar(diopiScalar):
-
     def __init__(self, value, dtype=None):
         from conformance.global_settings import glob_vars
+
         if dtype is None:
-            dtype = glob_vars.int_type if isinstance(value, int) else glob_vars.float_type
+            dtype = (
+                glob_vars.int_type if isinstance(value, int) else glob_vars.float_type
+            )
         diopiScalar.__init__(self, dtype, value)
 
 
@@ -211,7 +226,7 @@ class Tensor(diopiTensor):
         stride=None,
         context=default_context,
         data_ptr=None,
-        device=Device.AIChip
+        device=Device.AIChip,
     ):
         if size is None:
             return diopiTensor.__init__(self)
@@ -220,11 +235,9 @@ class Tensor(diopiTensor):
             size = Sizes(list(size))
 
         if data_ptr is None:
-            diopiTensor.__init__(self, size, stride, dtype,
-                                 device, context)
+            diopiTensor.__init__(self, size, stride, dtype, device, context)
         else:
-            diopiTensor.__init__(self, size, stride, dtype,
-                                 device, context, data_ptr)
+            diopiTensor.__init__(self, size, stride, dtype, device, context, data_ptr)
 
     def __str__(self):
         array = self.numpy()
@@ -237,12 +250,17 @@ class Tensor(diopiTensor):
         size = self.size()
         stride = self.get_stride()
         dtype = self.get_dtype()
-        return Tensor(size=size, dtype=dtype, stride=stride,
-                      context=self.context(), device=self.get_device())
+        return Tensor(
+            size=size,
+            dtype=dtype,
+            stride=stride,
+            context=self.context(),
+            device=self.get_device(),
+        )
 
     def size(self):
         return self.shape()
-    
+
     def dtype(self):
         return self.get_dtype()
 
@@ -255,36 +273,72 @@ class Tensor(diopiTensor):
         if not isinstance(darray, (np.generic, np.ndarray)):
             raise TypeError(f"expected np.ndarray (got {type(darray)})")
         dtype = from_numpy_dtype(darray.dtype)
-        stride = [int(darray.strides[i] / darray.itemsize)
-                  for i in range(len(darray.strides))]
+        stride = [
+            int(darray.strides[i] / darray.itemsize) for i in range(len(darray.strides))
+        ]
 
         size = Sizes(list(darray.shape))
         stride = Sizes(list(stride))
         PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
         PyCapsule_New = ctypes.pythonapi.PyCapsule_New
         PyCapsule_New.restype = ctypes.py_object
-        PyCapsule_New.argtypes = (ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor)
-        capsule = PyCapsule_New(c_void_p(darray.ctypes.data), None, PyCapsule_Destructor(0))
+        PyCapsule_New.argtypes = (
+            ctypes.c_void_p,
+            ctypes.c_char_p,
+            PyCapsule_Destructor,
+        )
+        capsule = PyCapsule_New(
+            c_void_p(darray.ctypes.data), None, PyCapsule_Destructor(0)
+        )
         if context:
-            tr = cls(size=size, dtype=dtype, stride=stride, data_ptr=capsule, context=context, device=device)
+            tr = cls(
+                size=size,
+                dtype=dtype,
+                stride=stride,
+                data_ptr=capsule,
+                context=context,
+                device=device,
+            )
         else:
-            tr = cls(size=size, dtype=dtype, stride=stride, data_ptr=capsule, device=device)
+            tr = cls(
+                size=size, dtype=dtype, stride=stride, data_ptr=capsule, device=device
+            )
         return tr
 
     def numpy(self) -> np.ndarray:
         data = np.empty((1,), to_numpy_dtype(self.get_dtype()))
         element_size = data.itemsize
-        sumsize = int(sum([(s - 1) * st for s, st in zip(list(self.size().data), [int(stride * element_size) for stride in self.get_stride().data])]) / element_size + 1)
+        sumsize = int(
+            sum(
+                [
+                    (s - 1) * st
+                    for s, st in zip(
+                        list(self.size().data),
+                        [
+                            int(stride * element_size)
+                            for stride in self.get_stride().data
+                        ],
+                    )
+                ]
+            ) / element_size + 1
+        )
         darray = np.empty(sumsize, to_numpy_dtype(self.get_dtype()))
         PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
         PyCapsule_New = ctypes.pythonapi.PyCapsule_New
         PyCapsule_New.restype = ctypes.py_object
-        PyCapsule_New.argtypes = (ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor)
-        capsule = PyCapsule_New(c_void_p(darray.ctypes.data), None, PyCapsule_Destructor(0))
+        PyCapsule_New.argtypes = (
+            ctypes.c_void_p,
+            ctypes.c_char_p,
+            PyCapsule_Destructor,
+        )
+        capsule = PyCapsule_New(
+            c_void_p(darray.ctypes.data), None, PyCapsule_Destructor(0)
+        )
         diopi_tensor_copy_to_buffer(self.context(), self, capsule)
-        strides = [int(stride * darray.itemsize)
-                   for stride in self.get_stride().data]
-        darray = np.lib.stride_tricks.as_strided(darray, shape=list(self.size().data), strides=strides)
+        strides = [int(stride * darray.itemsize) for stride in self.get_stride().data]
+        darray = np.lib.stride_tricks.as_strided(
+            darray, shape=list(self.size().data), strides=strides
+        )
         return darray
 
 

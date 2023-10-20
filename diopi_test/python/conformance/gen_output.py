@@ -251,7 +251,7 @@ class GenOutputData(object):
 
         logger.info(f"Generate test cases number for output data: {case_counter}")
         if case_counter == 0:
-            logger.info(f"No benchmark output data is generated")
+            logger.info("No benchmark output data is generated")
         else:
             logger.info("Generate benchmark output and backward data done!")
 
@@ -384,5 +384,5 @@ class GenTensor(object):
 
 if __name__ == '__main__':
     GenOutputData.run(os.path.join(os.path.dirname(__file__), '../cache/diopi_case_items.cfg'),
-                     os.path.join(os.path.dirname(__file__), '../cache/data/inputs/'),
-                     os.path.join(os.path.dirname(__file__), '../cache/data/outputs/'))
+                      os.path.join(os.path.dirname(__file__), '../cache/data/inputs/'),
+                      os.path.join(os.path.dirname(__file__), '../cache/data/outputs/'))

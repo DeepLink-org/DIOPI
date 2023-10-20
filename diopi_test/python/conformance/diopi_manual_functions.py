@@ -5,13 +5,14 @@ from diopilib import build_generator_state
 from .diopi_runtime import Tensor, Generator, default_context
 from . import diopi_functions as F
 
+
 class ManualTest(object):
     def test_dropout_(func, input, p=0.5, training=True, inplace=False):
         input_numpy = input.numpy()
         state = build_generator_state(input.context())
         generator = Generator(state)
         out, mask = func(input, p, training, inplace, generator)
-        name = 'dropout' if func == F.dropout else 'dropout2d'
+        name = "dropout" if func == F.dropout else "dropout2d"
         out_numpy = out.numpy()
         mask_numpy = mask.numpy()
 
@@ -27,15 +28,18 @@ class ManualTest(object):
                 mask_numpy = mask_numpy * tmp
             remains = out_numpy[mask_numpy == 1]
             ref = input_numpy[mask_numpy == 1]
-            assert np.allclose(remains, ref / (1 - p), rtol=rtol, atol=atol),\
-                f"failed to execute {name}, dropout value doesn't matches."
+            assert np.allclose(
+                remains, ref / (1 - p), rtol=rtol, atol=atol
+            ), f"failed to execute {name}, dropout value doesn't matches."
             if mask.numel() > 100:
                 # 0.05 is from pytorch
-                assert np.abs(real_ratio - (1 - p)) < 0.05,\
-                    f"failed to execute {name}, dropout proportion unexpected."
+                assert (
+                    np.abs(real_ratio - (1 - p)) < 0.05
+                ), f"failed to execute {name}, dropout proportion unexpected."
         else:
-            assert np.allclose(input_numpy, out_numpy, rtol=rtol, atol=atol),\
-                f"failed to execute {name}, dropout value should be the same."
+            assert np.allclose(
+                input_numpy, out_numpy, rtol=rtol, atol=atol
+            ), f"failed to execute {name}, dropout value should be the same."
 
     def test_dropout(input, p=0.5, training=True, inplace=False):
         ManualTest.test_dropout_(F.dropout, input, p, training, inplace)
@@ -50,24 +54,26 @@ class ManualTest(object):
         out_numpy = out.numpy()
         out_ref = np.arange(0, n, 1)
         if out.numel() > 10:
-            assert not np.allclose(out_numpy, out_ref, 1e-3),\
-                "failed to execute randperm"
+            assert not np.allclose(
+                out_numpy, out_ref, 1e-3
+            ), "failed to execute randperm"
 
         out_numpy.sort()
-        assert np.allclose(out_numpy, out_ref, 1e-3),\
-            "failed to execute randperm"
+        assert np.allclose(out_numpy, out_ref, 1e-3), "failed to execute randperm"
 
     def test_uniform(input, start=0, end=1):
         state = build_generator_state(input.context())
         generator = Generator(state)
         out = F.uniform(input, start, end, generator)
-        epsilon = 1e-5   # eliminate minor precision error
+        epsilon = 1e-5  # eliminate minor precision error
         out_numpy = out.numpy()
-        assert (out_numpy <= (end + epsilon)).all() and (out_numpy >= (start - epsilon)).all(),\
-            "failed to execute uniform"
+        assert (out_numpy <= (end + epsilon)).all() and (
+            out_numpy >= (start - epsilon)
+        ).all(), "failed to execute uniform"
         if out.numel() > 100:
-            assert abs(out_numpy.mean() - (end + start) / 2) < 1e-1,\
-                "failed to execute uniform"
+            assert (
+                abs(out_numpy.mean() - (end + start) / 2) < 1e-1
+            ), "failed to execute uniform"
 
     def test_bernoulli(input, inplace=False, p=None):
         p_numpy = input.numpy()
@@ -77,10 +83,11 @@ class ManualTest(object):
         out = F.bernoulli(input, inplace, p, generator)
         out_numpy = out.numpy()
 
-        assert np.all((out_numpy == 0) | (out_numpy == 1)), "bernoulli output must be 0 or 1"
+        assert np.all(
+            (out_numpy == 0) | (out_numpy == 1)
+        ), "bernoulli output must be 0 or 1"
         if out.numel() > 100:
-            assert abs(out_numpy.mean() - p) < 1e-1,\
-                "failed to execute bernoulli"
+            assert abs(out_numpy.mean() - p) < 1e-1, "failed to execute bernoulli"
 
     def test_random(input, start, end):
         state = build_generator_state(input.context())
@@ -88,22 +95,24 @@ class ManualTest(object):
         out = F.random(input, start, end, generator)
         out_numpy = out.numpy()
 
-        assert (out_numpy >= start).all(),\
-            "failed to execute random"
+        assert (out_numpy >= start).all(), "failed to execute random"
         if end is not None:
-            assert (out_numpy <= end - 1).all(),\
-                "failed to execute random"
+            assert (out_numpy <= end - 1).all(), "failed to execute random"
 
     def test_randn(size):
         from scipy import stats
+
         out = F.randn(size)
         out_numpy = out.numpy().flatten()
-        p_value = stats.kstest(out_numpy, 'norm', args=(0.0, 1.))[1]
+        p_value = stats.kstest(out_numpy, "norm", args=(0.0, 1.0))[1]
         # pytorch uses 0.0001
-        assert p_value > 0.0001, f"can't pass the ks test, failed to execute normal, p_value is {p_value}"
+        assert (
+            p_value > 0.0001
+        ), f"can't pass the ks test, failed to execute normal, p_value is {p_value}"
 
     def test_normal(mean, std, size=None):
         from scipy import stats
+
         state = build_generator_state(default_context)
         generator = Generator(state)
         out = F.normal(mean, std, size, generator)
@@ -117,15 +126,18 @@ class ManualTest(object):
             std_numpy = std.numpy()
             out_numpy /= std_numpy
             mean = 0.0
-            std = 1.
+            std = 1.0
         out_numpy = out_numpy.flatten()
         if len(out_numpy) == 0:
             return True
-        p_value = stats.kstest(out_numpy, 'norm', args=(mean, std + 1e-22))[1]
-        assert p_value > 0.0001, f"can't pass the ks test, failed to execute normal, p_value is {p_value}"
+        p_value = stats.kstest(out_numpy, "norm", args=(mean, std + 1e-22))[1]
+        assert (
+            p_value > 0.0001
+        ), f"can't pass the ks test, failed to execute normal, p_value is {p_value}"
 
     def test_normal_(input, mean, std, shape=None):
         from scipy import stats
+
         input_size = 0 in input.size().data
         state = build_generator_state(input.context())
         generator = Generator(state)
@@ -134,8 +146,10 @@ class ManualTest(object):
         out_numpy = out_numpy.flatten()
         if len(out_numpy) == 0 and input_size:
             return True
-        p_value = stats.kstest(out_numpy, 'norm', args=(mean, std))[1]
-        assert p_value > 0.0001, f"can't pass the ks test, failed to execute normal_, p_value is {p_value}, shape of out is: {out_numpy.shape}"
+        p_value = stats.kstest(out_numpy, "norm", args=(mean, std))[1]
+        assert (
+            p_value > 0.0001
+        ), f"can't pass the ks test, failed to execute normal_, p_value is {p_value}, shape of out is: {out_numpy.shape}"
 
     def test_multinomial(input, num_samples, replacement=False):
         state = build_generator_state(input.context())
@@ -151,4 +165,3 @@ class ManualTest(object):
             assert has_duplicates is False, "failed to execute multinomial"
         out_numpy = out_numpy.flatten()
         assert len(out_numpy) % num_samples == 0, "failed to execute multinomial"
-

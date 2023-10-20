@@ -4,6 +4,7 @@ import math
 import ctypes
 import itertools
 import numpy as np
+import diopilib
 
 from collections import namedtuple
 from ctypes import c_double, byref

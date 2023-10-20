@@ -1,6 +1,7 @@
 # Copyright (c) 2023, DeepLink.
 from diopilib import Dtype
 
+
 class glob_var(object):
     def __init__(self, nhwc=False, nhwc_min_dim=3, four_bytes=False):
         self.nhwc = nhwc
@@ -52,5 +53,6 @@ class glob_var(object):
     @use_db.setter
     def use_db(self, use_db):
         self._use_db = use_db
+
 
 glob_vars = glob_var()

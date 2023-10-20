@@ -2,6 +2,7 @@
 import numpy as np
 import scipy as sp
 
+
 class Genfunc:
     @staticmethod
     def rand(shape, dtype=np.float32):
@@ -52,7 +53,7 @@ class Genfunc:
     # def real(low=0, high=1, shape=(1,), dtype=np.float32):
     @staticmethod
     def randn_int(low=0, high=1, shape=(1,), dtype=np.float32):
-        if np.dtype(dtype) in ['i', 'u']:
+        if np.dtype(dtype) in ["i", "u"]:
             return np.random.randint(low=low, high=high, size=shape).astype(dtype)
         else:
             return np.array(np.random.randn(*shape)).astype(dtype)
@@ -60,15 +61,16 @@ class Genfunc:
     @staticmethod
     def randn_complx(shape, dtype=np.float32):
         return np.array(np.random.randn(*shape) + 1j * np.random.randn(*shape)).astype(dtype)
-    
+
     @staticmethod
     def log_softmax(shape, dim, dtype=np.float32):
         val = np.array(np.random.randn(*shape) + 1j * np.random.randn(*shape)).astype(dtype)
         return sp.special.log_softmax(val, dim)
 
+
 # only for Genfunc test
-if __name__ == '__main__':
+if __name__ == "__main__":
     func = Genfunc.rand
-    ret = func((3,4), dtype=np.float16)
+    ret = func((3, 4), dtype=np.float16)
     print(ret.dtype)
-    print(eval(f"Genfunc.randn((4, 4), dtype=np.float16)"))
+    print(eval("Genfunc.randn((4, 4), dtype=np.float16)"))

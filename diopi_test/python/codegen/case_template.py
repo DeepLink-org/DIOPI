@@ -4,7 +4,8 @@ from codegen.code_template import CodeTemplate
 
 class CaseTemplate:
     # class
-    test_class_templ = CodeTemplate(r'''
+    test_class_templ = CodeTemplate(
+        r"""
 import os
 import pickle
 import pytest
@@ -18,34 +19,44 @@ data_path = './cache/data'
 
 class ${test_class_name}(object):
     ${test_case_items}
-''')
+"""
+    )
 
     # import
-    test_diopi_function_import = CodeTemplate(r'''
+    test_diopi_function_import = CodeTemplate(
+        r"""
 from conformance.diopi_functions import ${test_diopi_func_name}
 ${test_import_diopi_bp_func}
-''')
+"""
+    )
 
     # import
-    test_diopi_manual_import = CodeTemplate(r'''
+    test_diopi_manual_import = CodeTemplate(
+        r"""
 from conformance.diopi_manual_functions import ManualTest
-''')
+"""
+    )
 
-    # marks 
-    test_function_case_dtype_marks = CodeTemplate(r'''
+    # marks
+    test_function_case_dtype_marks = CodeTemplate(
+        r"""
 @pytest.mark.${dtype}
-''')
+"""
+    )
 
     # test_case
-    test_function_templ = CodeTemplate(r'''
+    test_function_templ = CodeTemplate(
+        r"""
 ${test_dtype_marks}
 def test_${func_case_name}(self):
     ${forward}
     ${backward}
     ${forward_inp}
-''')
+"""
+    )
 
-    test_function_body_forward = CodeTemplate(r'''
+    test_function_body_forward = CodeTemplate(
+        r"""
 f_in = os.path.join(data_path, '${test_module_name}', 'inputs', '${input_data_path}')
 ${test_function_ref_data_path}
 
@@ -60,20 +71,26 @@ ${preprocess_parameters}
 
 # output of device: dev_out
 ${test_function_forward_call}
-''')
+"""
+    )
 
-    test_preprocess_parameters = CodeTemplate(r'''
+    test_preprocess_parameters = CodeTemplate(
+        r"""
 ${set_four_bytes}${set_nhwc}${set_stride}${to_tensor}
-''')
+"""
+    )
 
-    test_set_four_bytes = CodeTemplate(r'''
+    test_set_four_bytes = CodeTemplate(
+        r"""
 # set four bytes
 for para_key, para_val in function_kwargs.items():
     if para_key in ${dtype_list} and para_val is not None and para_val.dtype == np.int64:
         function_kwargs[para_key] = para_val.astype(np.int32)
-''')
+"""
+    )
 
-    test_set_nhwc = CodeTemplate(r'''
+    test_set_nhwc = CodeTemplate(
+        r"""
 # set nhwc
 def compute_nhwc_stride_2d(sizes, itemsize=1):
     dim = len(sizes)
@@ -139,9 +156,11 @@ for para_key, para_val in function_kwargs.items():
         para_val_nhwc.strides = compute_nhwc_stride(para_val_nchw.shape, para_val_nchw.itemsize, ${nhwc_list}[0])
         para_val = para_val_nhwc
         function_kwargs[para_key] = para_val
-''')
+"""
+    )
 
-    test_set_stride = CodeTemplate(r'''
+    test_set_stride = CodeTemplate(
+        r"""
 # set stride
 args_stride = ${args_stride}
 for para_key, para_val in function_kwargs.items():
@@ -154,18 +173,22 @@ for para_key, para_val in function_kwargs.items():
         np.copyto(stride_para_val, para_val)
         para_val = stride_para_val
         function_kwargs[para_key] = para_val
-''')
+"""
+    )
 
-    test_to_tensor = CodeTemplate(r'''
+    test_to_tensor = CodeTemplate(
+        r"""
 # to_tensor
 for para_key, para_val in function_kwargs.items():
     if isinstance(para_val, np.ndarray):
         function_kwargs[para_key] = Tensor.from_numpy(para_val)
     if para_key == 'dtype':
         function_kwargs[para_key] = from_dtype_str(para_val)
-''')
+"""
+    )
 
-    test_to_tensor_list = CodeTemplate(r'''
+    test_to_tensor_list = CodeTemplate(
+        r"""
 # to_tensor
 for para_key, para_val in function_kwargs.items():
     if para_key in ${gen_policy_args}:
@@ -173,13 +196,15 @@ for para_key, para_val in function_kwargs.items():
             function_kwargs[para_key][idx] = Tensor.from_numpy(ele)
     elif isinstance(para_val, np.ndarray):
         function_kwargs[para_key] = Tensor.from_numpy(para_val)
-''')
+"""
+    )
 
-    test_diopi_function_forward_call = CodeTemplate(r'''
+    test_diopi_function_forward_call = CodeTemplate(
+        r"""
 tol = ${test_caompare_tol}
 dev_out = ${test_diopi_func_name}(**function_kwargs)
 
-# read ref_out 
+# read ref_out
 with open(f_out, 'rb') as f:
     ref_out = pickle.load(f)
 
@@ -188,9 +213,11 @@ try:
 except Exception as e:
     print(f'Test {function_config["name"]}: {function_config}')
     assert False, f'{e}'
-''')
+"""
+    )
 
-    test_diopi_function_inp_forward_call = CodeTemplate(r'''
+    test_diopi_function_inp_forward_call = CodeTemplate(
+        r"""
 # inplace call for the function
 ${test_diopi_func_inp_remove_grad_args}
 function_kwargs.update({'inplace': True})
@@ -200,22 +227,30 @@ try:
 except Exception as e:
     print(f'Test {function_config["name"]}  inplace: {function_config}')
     assert False, f'{e}'
-''')
-    test_diopi_func_inp_remove_grad_args = CodeTemplate(r'''
+"""
+    )
+    test_diopi_func_inp_remove_grad_args = CodeTemplate(
+        r"""
 function_kwargs = {key: value for key, value in function_kwargs.items() if key not in backward_para.keys()}
-''')
+"""
+    )
 
-    test_manual_function_forward_call = CodeTemplate(r'''
+    test_manual_function_forward_call = CodeTemplate(
+        r"""
 ManualTest.test_${test_diopi_func_name}(**function_kwargs)
-''')
-    test_manual_function_inp_forward_call = CodeTemplate(r'''
+"""
+    )
+    test_manual_function_inp_forward_call = CodeTemplate(
+        r"""
 ${test_diopi_func_inp_remove_grad_args}
 function_kwargs.update({'inplace': True})
 ManualTest.test_${test_diopi_func_name}(**function_kwargs)
-''')
+"""
+    )
 
-    #backward
-    test_function_body_backward = CodeTemplate(r'''
+    # backward
+    test_function_body_backward = CodeTemplate(
+        r"""
 # grad_output_path
 f_bp_out = os.path.join(data_path, '${test_module_name}', 'outputs', '${bp_output_data_path}')
 
@@ -231,7 +266,7 @@ for k, v in function_config['saved_args'].items():
     backward_para[k] = dev_out[v]
 function_kwargs.update(backward_para)
 dev_bp_out = ${test_diopi_bp_func_name}(**function_kwargs)
-                                           
+
 with open(f_bp_out, 'rb') as f:
     ref_bp_out = pickle.load(f)
 
@@ -241,4 +276,5 @@ try:
 except Exception as e:
     print(f'Test {function_config["name"]} backward: {function_config}')
     assert False, f'{e}'
-''')
+"""
+    )
