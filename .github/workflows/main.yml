@@ -193,7 +193,7 @@ jobs:
           export PYTHONPATH=\${basic_path}/mmengine:\$PYTHONPATH
           export PYTHONPATH=\${basic_path}/mmcv:\$PYTHONPATH
           export PYTHONPATH=\${pwd}:\$PYTHONPATH
-          cd mmlab_pack
+          mkdir mmlab_pack && cd mmlab_pack
           /mnt/lustre/share/git clone https://github.com/open-mmlab/mmcv.git
           cd mmcv && git checkout ea53ed02d7bcd856a1de42c6b408244c4fed5fa1 && cd ..
           /mnt/lustre/share/git clone https://github.com/open-mmlab/mmengine.git
