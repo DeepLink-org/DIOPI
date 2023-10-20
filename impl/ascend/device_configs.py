@@ -2321,18 +2321,6 @@ device_configs = {
         ),
     ),
 
-    'uniform': dict(
-        name=['uniform'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                },
-            ]
-        ),
-    ),
-
     'random': dict(
         name=['random'],
         tensor_para=dict(
@@ -2592,18 +2580,6 @@ device_configs = {
                     "ins": ['tensors'],
                     "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),Skip(Dtype.bool),],
                 },
-            ]
-        ),
-    ),
-
-    'multinomial': dict(
-        name=['multinomial'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                }
             ]
         ),
     ),
