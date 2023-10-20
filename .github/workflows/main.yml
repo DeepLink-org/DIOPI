@@ -187,6 +187,9 @@ jobs:
           set -e
           export CI=true
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} cd ${BUILD_TEST3}
+          pwd
+          ls
+          cd Build-Mmcv-Ext-Nvidia
           cd diopi_test && source scripts/ci_nv_env.sh
           cd DIPU/dipu
           export PYTHONPATH=\${basic_path}/mmengine:\$PYTHONPATH
