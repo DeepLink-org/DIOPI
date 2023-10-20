@@ -577,6 +577,11 @@ public:
         return *this;
     }
 
+    AclOpRunner& setAttr(const std::string& attrName, diopiSize_t value) {
+        CALL_ACLRT(aclopSetAttrListInt(attr_, attrName.data(), value.len, value.data));
+        return *this;
+    }
+
     AclOpRunner& addSyncOutput(diopiTensorHandle_t* th, const aclFormat format) {
         syncIdxs_.push_back(outputIndex_);
         syncTensors_.push_back(th);
