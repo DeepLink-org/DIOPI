@@ -19,18 +19,6 @@ inline bool isIntegralTypeWithBool(const diopiDtype_t& type) { return type < 8 |
 
 inline bool isFloatingType(const diopiDtype_t& type) { return (type <= 10 && type >= 8) || type == 12 || type == 13; }
 
-template <typename srcT, typename dstT>
-diopiError_t dataCopy(void* dst, const void* src, int64_t size) {
-    const srcT* srcArray = reinterpret_cast<const srcT*>(src);
-    dstT* dstArray = reinterpret_cast<dstT*>(dst);
-
-    for (int64_t i = 0; i < size; ++i) {
-        dstArray[i] = static_cast<dstT>(srcArray[i]);
-    }
-
-    return diopiSuccess;
-}
-
 template <typename T>
 diopiScalar_t constructDiopiScalarT(diopiDtype_t dtype, T val) {
     diopiScalar_t scalar;
@@ -89,8 +77,6 @@ diopiError_t castTensor(diopiContextHandle_t ctx, AscendTensor& src, diopiDtype_
 diopiError_t transTensorTo2D(diopiContextHandle_t ctx, AscendTensor& th);
 
 diopiError_t aclAsStrided(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst);
-
-diopiError_t fillAscendTensor(const AscendTensor& src, AscendTensor& dst);
 
 diopiError_t fillNan(diopiContextHandle_t ctx, AscendTensor& src);
 }  // namespace ascend

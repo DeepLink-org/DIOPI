@@ -6,9 +6,9 @@
 
 #include "utils.hpp"
 
+#include <numeric>
 #include <string>
 #include <type_traits>
-#include <numeric>
 #include <typeinfo>
 
 #include "../ascend_tensor.hpp"
@@ -114,66 +114,6 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, AscendTensor& dst, c
     }
 }
 
-diopiError_t dataCopy(void* dstPtr, const void* srcPtr, int64_t size, diopiDtype_t dtype) {
-        std::cout << "开始copy\n";
-
-    switch (dtype) {
-        case diopi_dtype_int8:
-            dataCopy<int8_t, int8_t>(dstPtr, srcPtr, size);
-            break;
-        case diopi_dtype_uint8:
-            dataCopy<uint8_t, uint8_t>(dstPtr, srcPtr, size);
-            break;
-        case diopi_dtype_int16:
-            dataCopy<int16_t, int16_t>(dstPtr, srcPtr, size);
-            break;
-        case diopi_dtype_uint16:
-            dataCopy<uint16_t, uint16_t>(dstPtr, srcPtr, size);
-            break;
-        case diopi_dtype_int32:
-            dataCopy<int32_t, int32_t>(dstPtr, srcPtr, size);
-            break;
-        case diopi_dtype_uint32:
-            dataCopy<uint32_t, uint32_t>(dstPtr, srcPtr, size);
-            break;
-        case diopi_dtype_int64:
-            dataCopy<int64_t, int64_t>(dstPtr, srcPtr, size);
-            break;
-        case diopi_dtype_uint64:
-            dataCopy<uint64_t, uint64_t>(dstPtr, srcPtr, size);
-            break;
-        case diopi_dtype_float32:
-            dataCopy<float, float>(dstPtr, srcPtr, size);
-            break;
-        case diopi_dtype_float64:
-            dataCopy<double, double>(dstPtr, srcPtr, size);
-            break;
-        case diopi_dtype_bool:
-            dataCopy<bool, bool>(dstPtr, srcPtr, size);
-            break;
-        default:
-            ASCEND_CHECK_ABORT(false, "unsupport dtype %s", diopiDtypeToStr(dtype));
-            break;
-    }
-        std::cout << "完成copy\n";
-
-    return diopiSuccess;
-}
-
-diopiError_t fillAscendTensor(const AscendTensor& src, AscendTensor& dst) {
-    ASCEND_CHECK_ABORT(dst.shape() == src.shape(), "required input and output has the same shape.");
-    if (src.isSame(dst)) {
-        return diopiSuccess;
-    }
-    void* targetPtr;
-    auto targetObj = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(dst));
-    diopiGetTensorData(targetObj, &targetPtr);
-    dataCopy(targetPtr, src.data(), src.numel(), src.dtype());
-    dst = AscendTensor(targetObj);
-
-    return diopiSuccess;
-}
-
 diopiError_t fillNan(diopiContextHandle_t ctx, AscendTensor& src) {
     // get nan value tensor
     diopiTensorHandle_t nanValue;
@@ -192,7 +132,6 @@ diopiError_t fillNan(diopiContextHandle_t ctx, AscendTensor& src) {
 diopiError_t reshape(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst, const std::vector<int64_t>& shape) {
     ASCEND_CHECK_ABORT(src.isContiguous(), "now only contiguous tensor support reshape by shape.");
     if (src.isSame(dst)) {
-        std::cout << "同一个元素\n";
         dst.view(shape);
         return diopiSuccess;
     }
@@ -202,11 +141,14 @@ diopiError_t reshape(diopiContextHandle_t ctx, const AscendTensor& src, AscendTe
     tmp.view(shape);
     makeTensorLike(ctx, dst, tmp);
 
-    printContiguousTensor(ctx, dst, "输出结果");
-    printContiguousTensor(ctx, tmp, "输入数据");
-    std::cout << "转换完毕\n";
-    // fill dst tensor with src
-    return fillAscendTensor(src, dst);
+    auto sourcePtr = const_cast<void*>(src.data());
+    auto destPtr = const_cast<void*>(dst.data());
+    diopiStreamHandle_t stream;
+    diopiGetStream(ctx, &stream);
+    aclrtMemcpyAsync(destPtr, dst.getAclMemBufferSize(), sourcePtr, src.getAclMemBufferSize(), ACL_MEMCPY_DEVICE_TO_DEVICE, stream);
+    aclrtSynchronizeStream(stream);
+
+    return diopiSuccess;
 }
 
 diopiError_t aclAsStridedCore(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst) {
