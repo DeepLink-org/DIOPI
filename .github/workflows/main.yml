@@ -369,7 +369,6 @@ jobs:
           export DIOPI_BUILD_TESTRT=ON
           cd impl && mkdir lib 
           cp -R /home/deeplink/*.so lib/
-          cp -R /home/deeplink/libdiopi_impl.so lib/
           sh scripts/build_impl.sh tops
 
   Op-Test-Topsrider:
