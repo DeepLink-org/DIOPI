@@ -16,7 +16,7 @@ class OpTemplate(object):
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_ext.h>
-                          
+
 namespace py = pybind11;
 
 PYBIND11_MODULE(export_functions, m) {

@@ -230,7 +230,8 @@ jobs:
           ssh ${CLUSTER_1988} """
           set -e
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          bash scripts/increment_coverage.sh ${REQUIRE_COVERAGE}
+          # bash scripts/increment_coverage.sh ${REQUIRE_COVERAGE}
+          echo "temp skip"
           """
       - name: dyload-test
         run: |

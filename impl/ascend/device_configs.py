@@ -2915,7 +2915,7 @@ device_configs = {
         interface=['torch'],
         atol=1e-4,
         rtol=1e-4,
-    )
+    ),
 
     'rotary_emb': dict(
         name=["rotary_emb"],
@@ -2939,5 +2939,5 @@ device_configs = {
                 },
             ],
         ),
-    ),
+    )
 }
