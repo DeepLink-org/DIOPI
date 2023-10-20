@@ -985,6 +985,8 @@ class TestDBOperation(object):
     def create_and_drop_table(self, request):
         cur_path = os.path.dirname(os.path.abspath(__file__))
         cache_path = os.path.join(cur_path, "cache")
+        if not os.path.exists(cache_path):
+            os.makedirs(cache_path)
         db_conn.init_db(f"sqlite:///{cache_path}/testrecord.db")
 
         yield db_conn

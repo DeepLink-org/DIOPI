@@ -49,7 +49,6 @@ class GenConfigTestCase(object):
     def _gen_function_set(self):
         for key, value in self.__case_items.items():
             prefix_key, _ = re.split(r"_[0-9]+\.", key)
-            print(prefix_key)
             self.__function_set[prefix_key][key] = value
 
     def get_function_set(self):
