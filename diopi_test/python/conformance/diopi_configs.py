@@ -8024,4 +8024,31 @@ diopi_configs = {
             ],
         ),
     ),
+
+    'rms_norm': dict(
+        name=['rms_norm'],
+        interface=['CustomizedTest'],
+        dtype=[Dtype.float32],
+        para=dict(
+            eps=[1e-6, 1e-6, 1e-6, 1e-6],
+            normalized_shape=[(5, ), (32, ), (64, ), (8, )],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((5, 5), (35, 125, 32), (16, 64, 64), (1, 32, 32, 8)),
+                },
+                {
+                    "ins": ['weight'],
+                    "shape": ((5, ), (32, ), (64, ), (8, )),
+                },
+                {
+                    "ins": ['bias'],
+                    "shape": ((5, ), (32, ), (64, ), (8, )),
+                },
+            ],
+        ),
+    ),
 }

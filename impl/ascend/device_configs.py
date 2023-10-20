@@ -2916,4 +2916,28 @@ device_configs = {
         atol=1e-4,
         rtol=1e-4,
     )
+
+    'rotary_emb': dict(
+        name=["rotary_emb"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16)],
+                },
+            ],
+        ),
+    ),
+
+    'rms_norm': dict(
+        name=["rms_norm"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float32)],
+                },
+            ],
+        ),
+    ),
 }

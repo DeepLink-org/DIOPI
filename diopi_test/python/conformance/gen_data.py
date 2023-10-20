@@ -573,6 +573,11 @@ class CustomizedTest(object):
         out = torch.cat((out1, out2), dim=-1)
         return out
 
+    def rms_norm(input, normalized_shape, weight, bias, eps):
+        variance = input.to(torch.float32).pow(2).mean(-1, keepdim=True)
+        input = input * torch.rsqrt(variance + eps)
+        out = weight * input
+        return out
 
 def transfer_tensor_to_device(function_paras: dict):
     for para in function_paras["kwargs"].keys():

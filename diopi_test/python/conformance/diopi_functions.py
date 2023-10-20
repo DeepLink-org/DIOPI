@@ -3929,3 +3929,15 @@ def rotary_emb(input, cos, sin, conj):
     ret = func(input.context(), out, input, cos, sin, conj)
     check_returncode(ret)
     return out
+
+
+def rms_norm(input, normalized_shape, weight, bias, eps):
+    call = "diopiRMSNorm"
+    func = check_function(call)
+    size = list(input.size().data)
+    out = Tensor(size, input.get_dtype())
+    inv_rms = Tensor(size, input.get_dtype())
+    normalized_shape = Sizes(list(normalized_shape))
+    ret = func(input.context(), out, inv_rms, input, normalized_shape, weight, bias, eps)
+    check_returncode(ret)
+    return out
