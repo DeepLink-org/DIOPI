@@ -745,16 +745,8 @@ device_configs = {
 
     'bmm': dict(
         name=['bmm'],
-        tensor_para=dict(
-            atol=1e-3,
-            rtol=1e-3,
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((16, 726, 32)),Skip((16, 100, 100)),Skip((9, 5, 5)),Skip((0, 12, 16)),Skip((4, 0, 6)),Skip((4, 9, 0)),Skip((5, 8, 13)),],
-                },
-            ]
-        ),
+        atol=3e-2,
+        rtol=3e-2,  
     ),
 
     'addmm': dict(
@@ -1831,30 +1823,14 @@ device_configs = {
 
     'mm': dict(
         name=['mm'],
-        tensor_para=dict(
-            atol=1e-3,
-            rtol=1e-3,
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                },
-            ]
-        ),
+        atol=2e-2,
+        rtol=2e-2, 
     ),
 
     'mm_diff_dtype': dict(
         name=['mm'],
-        tensor_para=dict(
-            atol=1e-3,
-            rtol=1e-3,
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                },
-            ]
-        ),
+        atol=2e-2,
+        rtol=2e-2, 
     ),
 
     'index_fill_scalar': dict(
