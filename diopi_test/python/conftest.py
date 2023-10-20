@@ -4,7 +4,6 @@ import pickle
 
 from conformance.global_settings import glob_vars
 from conformance.db_operation import db_conn, TestSummary, FuncList, ExcelOperation
-from conformance.diopi_functions import FunctionNotImplementedError
 
 
 def pytest_addoption(parser):
@@ -29,7 +28,7 @@ def pytest_runtest_makereport(item, call):
         if report.failed:
             # err_msg = f"[message] {report.longrepr.reprcrash.message[:900]}......, [path] {report.longrepr.reprcrash.path}, [lineno] {report.longrepr.reprcrash.lineno}".replace('\'','')
             item['error_msg'] = report.longrepr.reprcrash.message
-            if isinstance(report.longrepr[1], FunctionNotImplementedError):
+            if 'FunctionNotImplementedError' in report.longrepr.reprcrash.message:
                 report.outcome = 'skipped'
                 item['not_implemented_flag'] = 1
         item['result'] = report.outcome
