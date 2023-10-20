@@ -193,9 +193,11 @@ jobs:
           export PYTHONPATH=\${basic_path}/mmengine:\$PYTHONPATH
           export PYTHONPATH=\${basic_path}/mmcv:\$PYTHONPATH
           export PYTHONPATH=\${pwd}:\$PYTHONPATH
-          rsync -a /mnt/lustre/share_data/PAT/datasets/huggingface mmlab_pack/
           cd mmlab_pack
-          bash ../scripts/ci/ci_one_iter.sh clone
+          /mnt/lustre/share/git clone https://github.com/open-mmlab/mmcv.git
+          cd mmcv && git checkout ea53ed02d7bcd856a1de42c6b408244c4fed5fa1 && cd ..
+          /mnt/lustre/share/git clone https://github.com/open-mmlab/mmengine.git
+          cd mmcv && git checkout v0.7.4 && cd ..
           srun --job-name=${GITHUB_RUN_NUMBER}_${GITHUB_JOB} --partition=${CUDA_PARTATION} --gres=gpu:${GPU_REQUESTS} --time=20 bash ../scripts/ci/ci_one_iter.sh build_cuda
           """
 
