@@ -4,10 +4,9 @@ import math
 import ctypes
 import itertools
 import numpy as np
+
 from collections import namedtuple
 from ctypes import c_double, byref
-import diopilib
-
 from .diopi_runtime import (Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, diopiError,
                             compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d, to_numpy_dtype,
                             Generator)
@@ -26,6 +25,7 @@ def get_capsule(src):
     PyCapsule_New.argtypes = (ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor)
     capsule = PyCapsule_New(src, None, PyCapsule_Destructor(0))
     return capsule
+
 
 class DiopiException(Exception):
     def __init__(self, *args: object) -> None:
@@ -49,6 +49,7 @@ def check_returncode(returncode, throw_exception=True):
         else:
             logger.info(error_info)
 
+
 def check_function(fn_name):
     try:
         glob_vars.cur_test_func = fn_name
@@ -56,6 +57,7 @@ def check_function(fn_name):
     except AttributeError as e:
         raise FunctionNotImplementedError(e.args)
     return func
+
 
 def broadcast_out_size(size1, size2):
     sizeO = size1 if len(size1) > len(size2) else size2

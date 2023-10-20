@@ -184,10 +184,14 @@ if __name__ == "__main__":
             pytest_args.extend(['--report=report.html', '--title=DIOPI Test', '--template=2'])
         if args.pytest_args is not None:
             pytest_args.extend(args.pytest_args.split())
-        pytest.main(pytest_args)
+        exit_code = pytest.main(pytest_args)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
     elif args.mode == 'utest':
         call = "python3 -m pytest -vx tests"
-        subprocess.call(shlex.split(call))  # nosec
+        exit_code = subprocess.call(shlex.split(call))  # nosec
+        if exit_code != 0:
+            raise SystemExit(exit_code)
     else:
         print("available options for mode: gen_data, run_test and utest")
 
