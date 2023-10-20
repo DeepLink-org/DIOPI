@@ -38,6 +38,8 @@ class Genfunc:
 
     @staticmethod
     def randint(low=0, high=1, shape=(1,), dtype=np.float32):
+        if dtype == np.uint8:
+            return np.random.randint(low=0, high=high, size=shape).astype(dtype)
         return np.random.randint(low=low, high=high, size=shape).astype(dtype)
 
     @staticmethod
