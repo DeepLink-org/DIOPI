@@ -166,7 +166,8 @@ jobs:
           set -e
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST3} && cp -R source ${BUILD_TEST3} && cd ${BUILD_TEST3}
           export CI=true
-          cd diopi_test && source scripts/ci_nv_env.sh
+          cd diopi_test && /mnt/lustre/share/git clone https://github.com/DeepLink-org/DIPU.git
+          source scripts/ci_nv_env.sh
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 bash -c 'cd ../impl && bash scripts/build_impl.sh torch'
           cd DIPU/dipu
           rsync -a /mnt/lustre/share_data/PAT/datasets/huggingface mmlab_pack/
@@ -195,7 +196,7 @@ jobs:
           export PYTHONPATH=\${pwd}:\$PYTHONPATH
           rsync -a /mnt/lustre/share_data/PAT/datasets/huggingface mmlab_pack/
           cd mmlab_pack
-          ls
+          bash ../scripts/ci/ci_one_iter.sh clone
           srun --job-name=${GITHUB_RUN_NUMBER}_${GITHUB_JOB} --partition=${CUDA_PARTATION} --gres=gpu:${GPU_REQUESTS} --time=20 bash ../scripts/ci/ci_one_iter.sh build_cuda
           """
 
