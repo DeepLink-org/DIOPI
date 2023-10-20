@@ -125,6 +125,7 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
     
     std::cout<<std::endl;
     reshape(ctx, gradOutputCopy, reshapedGradOutputCopy, gradOutputCopy.shape());
+    std::cout << "reshape 完毕\n";
 
     diopiSize_t shape;
     diopiGetTensorShape(reshapedGradOutputCopy.tensorHandle(), &shape);
