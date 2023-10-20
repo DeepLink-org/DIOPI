@@ -182,92 +182,96 @@ DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiCo
     return diopiSuccess;
 }
 
-// DIOPI_API diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
-//                                                        diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t out,
-//                                                        diopiConstTensorHandle_t logsumexp, diopiConstTensorHandle_t cum_seq_q,
-//                                                        diopiConstTensorHandle_t cum_seq_k, int64_t* max_q, int64_t* max_k, double dropout_p, bool is_causal,
-//                                                        diopiGeneratorHandle_t gen, double* scale, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
-//                                                        diopiTensorHandle_t grad_v) {
-//     impl::aten::setCurCtx(ctx);
-//     auto atQ = impl::aten::buildATen(q).clone();
-//     auto atK = impl::aten::buildATen(k).clone();
-//     auto atV = impl::aten::buildATen(v).clone();
-//     auto atGrad_out = impl::aten::buildATen(grad_out)
-//     auto atOut = impl::aten::buildATen(out)
-//     auto atLogsumexp = impl::aten::buildATen(out)
+DIOPI_API diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
+                                                       diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t out,
+                                                       diopiConstTensorHandle_t logsumexp, diopiConstTensorHandle_t cum_seq_q,
+                                                       diopiConstTensorHandle_t cum_seq_k, int64_t* max_q, int64_t* max_k, double dropout_p, bool is_causal,
+                                                       diopiGeneratorHandle_t gen, double* scale, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
+                                                       diopiTensorHandle_t grad_v) {
+    impl::aten::setCurCtx(ctx);
+    auto atGrad_q = impl::aten::buildATen(grad_q);
+    auto atGrad_k = impl::aten::buildATen(grad_k);
+    auto atGrad_v = impl::aten::buildATen(grad_v);
 
-//     at::Tensor atOutput, atLog_sumexp, atDebug_attn_mask;
-//     int64_t atPhilox_seed{0}, atPhilox_offset{0};
-//     if (max_q == nullptr && max_k == nullptr && cum_seq_q == nullptr && cum_seq_q == nullptr) {
-//         TORCH_CHECK(false, "There are currently cuda memory errors being returned from this path.")
-//         // Query -> Query (Batch x {Q_seq_len}  x Num_heads x Dim_per_head)
-//         // Key   -> Key   (Batch x {KV_seq_len} x Num_heads x Dim_per_head)
-//         // Value -> Value (Batch x {KV_seq_len} x Num_heads x Dim_per_head)
-//         const int64_t batch_size = atQ.size(0);
-//         const int64_t q_seq_len = atQ.size(1);
-//         const int64_t num_heads = atQ.size(2);
-//         const int64_t head_dim = atQ.size(3);
+    auto atQ = impl::aten::buildATen(q);
+    auto atK = impl::aten::buildATen(k);
+    auto atV = impl::aten::buildATen(v);
+    auto atGrad_out = impl::aten::buildATen(grad_out);
+    auto atOut = impl::aten::buildATen(out);
+    auto atLogsumexp = impl::aten::buildATen(logsumexp);
+    at::Generator cuda_gen = impl::aten::buildGenerator(ctx, gen);
 
-//         atQ = atQ.contiguous();
-//         atK = atK.contiguous();
-//         atV = atV.contiguous();
+    int64_t atPhilox_seed{0}, atPhilox_offset{0};
+    atPhilox_seed = cuda_gen.current_seed();
+    atPhilox_offset = cuda_gen.get_offset();
 
-//         // K and V have to have the same Nnz, should probably torch_check
-//         // assume in order to not iterate over v
+    if (max_q == nullptr && max_k == nullptr && cum_seq_q == nullptr && cum_seq_q == nullptr) {
+        TORCH_CHECK(false, "There are currently cuda memory errors being returned from this path.")
+        // Query -> Query (Batch x {Q_seq_len}  x Num_heads x Dim_per_head)
+        // Key   -> Key   (Batch x {KV_seq_len} x Num_heads x Dim_per_head)
+        // Value -> Value (Batch x {KV_seq_len} x Num_heads x Dim_per_head)
+        const int64_t batch_size = atQ.size(0);
+        const int64_t q_seq_len = atQ.size(1);
+        const int64_t num_heads = atQ.size(2);
+        const int64_t head_dim = atQ.size(3);
 
-//         auto cumulative_and_max_q = cumulative_and_max_seq_len(atQ);
-//         auto cumulative_and_max_k = cumulative_and_max_seq_len(atK);
+        atQ = atQ.contiguous();
+        atK = atK.contiguous();
+        atV = atV.contiguous();
+        atGrad_out = atGrad_out.contiguous();
+        atOut = atOut.contiguous();
 
-//         at::Tensor cumulative_sequence_length_q = std::get<0>(cumulative_and_max_q);
-//         at::Tensor cumulative_sequence_length_k = std::get<0>(cumulative_and_max_k);
+        // K and V have to have the same Nnz, should probably torch_check
+        // assume in order to not iterate over v
 
-//         const int64_t max_seqlen_batch_q = std::get<1>(cumulative_and_max_q);
-//         const int64_t max_seqlen_batch_k = std::get<1>(cumulative_and_max_k);
+        auto cumulative_and_max_q = cumulative_and_max_seq_len(atQ);
+        auto cumulative_and_max_k = cumulative_and_max_seq_len(atK);
 
-//         const int64_t Nnz_q = cumulative_sequence_length_q[-1].item<int64_t>();
-//         const int64_t Nnz_kv = cumulative_sequence_length_k[-1].item<int64_t>();
+        at::Tensor cumulative_sequence_length_q = std::get<0>(cumulative_and_max_q);
+        at::Tensor cumulative_sequence_length_k = std::get<0>(cumulative_and_max_k);
 
-        
-//         auto query_buffer_reshaped = atQ.view({Nnz_q, num_heads, head_dim});
-//         auto key_buffer_reshaped = atK.view({Nnz_kv, num_heads, head_dim});
-//         auto value_buffer_reshaped = atV.view({Nnz_kv, num_heads, head_dim});
+        const int64_t max_seqlen_batch_q = std::get<1>(cumulative_and_max_q);
+        const int64_t max_seqlen_batch_k = std::get<1>(cumulative_and_max_k);
 
-//         //(Tensor grad_out, Tensor query, Tensor key, Tensor value, Tensor out, Tensor logsumexp, Tensor cum_seq_q, Tensor cum_seq_k, int max_q, int max_k,
-//         //float dropout_p, bool is_causal, int philox_seed, int philox_offset) -> (Tensor, Tensor, Tensor)
+        const int64_t Nnz_q = cumulative_sequence_length_q[-1].item<int64_t>();
+        const int64_t Nnz_kv = cumulative_sequence_length_k[-1].item<int64_t>();
 
-//         std::tie(atOutput, atLog_sumexp, atPhilox_seed, atPhilox_offset, atDebug_attn_mask) = at::_flash_attention_forward(query_buffer_reshaped,
-//                                                                                                                            key_buffer_reshaped,
-//                                                                                                                            value_buffer_reshaped,
-//                                                                                                                            cumulative_sequence_length_q,
-//                                                                                                                            cumulative_sequence_length_k,
-//                                                                                                                            max_seqlen_batch_q,
-//                                                                                                                            max_seqlen_batch_k,
-//                                                                                                                            dropout_p,
-//                                                                                                                            is_causal,
-//                                                                                                                            return_debug_mask);
-//         atOutput = atOutput.view({batch_size, q_seq_len, num_heads, head_dim});
-//     } else {
-//         auto atCum_seq_q = impl::aten::buildATen(*cum_seq_q);
-//         auto atCum_seq_k = impl::aten::buildATen(*cum_seq_k);
-//         std::tie(atOutput, atLog_sumexp, atPhilox_seed, atPhilox_offset, atDebug_attn_mask) =
-//             at::_flash_attention_forward(atQ, atK, atV, atCum_seq_q, atCum_seq_k, *max_q, *max_k, dropout_p, is_causal, return_debug_mask);
-//     }
+        auto grad_query_buffer_reshaped = atGrad_out.view({Nnz_q, num_heads, head_dim});
+        auto query_buffer_reshaped = atQ.view({Nnz_q, num_heads, head_dim});
+        auto key_buffer_reshaped = atK.view({Nnz_kv, num_heads, head_dim});
+        auto value_buffer_reshaped = atV.view({Nnz_kv, num_heads, head_dim});
+        auto out_reshaped = atOut.view({Nnz_kv, num_heads, head_dim});
+        auto lse_reshaped = atLogsumexp.view({Nnz_kv, num_heads, head_dim});
 
-//     // impl::aten::setCurCtx(ctx);
-//     // auto atGrad_out = impl::aten::buildATen(grad_out);
-//     // auto atQ = impl::aten::buildATen(q);
-//     // auto atK = impl::aten::buildATen(k);
-//     // auto atV = impl::aten::buildATen(v);
-//     // auto atOut = impl::aten::buildATen(out);
-//     // auto atLogsumexp = impl::aten::buildATen(logsumexp);
-//     // auto atCum_seq_q = impl::aten::buildATen(cum_seq_q);
-//     // auto atCum_seq_k = impl::aten::buildATen(cum_seq_k);
-//     // auto OutRes = at::_flash_attention_backward(
-//     //     atGrad_out, atQ, atK, atV, atOut, atLogsumexp, atCum_seq_q, atCum_seq_k, max_q, max_k, dropout_p, is_causal, philox_seed, philox_offset);
-//     // impl::aten::updateATen2Tensor(ctx, std::get<0>(OutRes), grad_q);
-//     // impl::aten::updateATen2Tensor(ctx, std::get<1>(OutRes), grad_k);
-//     // impl::aten::updateATen2Tensor(ctx, std::get<2>(OutRes), grad_v);
-//     return diopiSuccess;
-// }
+        //(Tensor grad_out, Tensor query, Tensor key, Tensor value, Tensor out, Tensor logsumexp, Tensor cum_seq_q, Tensor cum_seq_k, int max_q, int max_k,
+        // float dropout_p, bool is_causal, int philox_seed, int philox_offset) -> (Tensor, Tensor, Tensor)
+
+        std::tie(atGrad_q, atGrad_k, atGrad_v) = at::_flash_attention_backward(grad_query_buffer_reshaped,
+                                                                               query_buffer_reshaped,
+                                                                               key_buffer_reshaped,
+                                                                               value_buffer_reshaped,
+                                                                               out_reshaped,
+                                                                               lse_reshaped,
+                                                                               cumulative_sequence_length_q,
+                                                                               cumulative_sequence_length_k,
+                                                                               max_seqlen_batch_q,
+                                                                               max_seqlen_batch_k,
+                                                                               dropout_p,
+                                                                               is_causal,
+                                                                               atPhilox_seed,
+                                                                               atPhilox_offset);
+        atOutput = atOutput.view({batch_size, q_seq_len, num_heads, head_dim});
+    } else {
+        auto atCum_seq_q = impl::aten::buildATen(*cum_seq_q);
+        auto atCum_seq_k = impl::aten::buildATen(*cum_seq_k);
+        std::tie(atGrad_q, atGrad_k, atGrad_v) = at::_flash_attention_backward(
+            atGrad_out, atQ, atK, atV, atOut, atLogsumexp, atCum_seq_q, atCum_seq_k, *max_q, *max_k, dropout_p, atPhilox_seed, atPhilox_offset);
+    }
+
+    impl::aten::updateATen2Tensor(ctx, atGrad_q, grad_q);
+    impl::aten::updateATen2Tensor(ctx, atGrad_k, grad_k);
+    impl::aten::updateATen2Tensor(ctx, atGrad_v, grad_v);
+    return diopiSuccess;
+}
 
 }  // extern "C"
