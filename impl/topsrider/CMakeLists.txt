@@ -71,7 +71,7 @@ else()
     target_compile_options(${DEVICEIMPL} PUBLIC -std=c++17 -O3)
 endif()
 
-target_link_directories(${DEVICEIMPL} PUBLIC ${TOPS_HOME}/lib/ ${CMAKE_CURRENT_LIST_DIR}/prebuilt)
+target_link_directories(${DEVICEIMPL} PUBLIC ${TOPS_HOME}/lib/ ${CMAKE_CURRENT_LIST_DIR}/../lib)
 
 # third_party include
 set(THIRD_PARTY_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/half/include)
