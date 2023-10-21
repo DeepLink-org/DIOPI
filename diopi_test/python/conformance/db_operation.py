@@ -204,8 +204,9 @@ class DB_Operation(object):
 
         diopi_func_name = glob_vars.cur_test_func
         diopi_func_name_list = list(glob_vars.func_status.keys())
-        if case_model["func_name"] != 'fill_' and 'diopiFill' in diopi_func_name_list:
-            diopi_func_name_list.remove('diopiFill')
+        for diopi_func in diopi_func_name_list:
+            if case_model["func_name"].replace('_','') not in diopi_func.lower():
+                diopi_func_name_list.remove(diopi_func)
         case_item["diopi_func_name"] = ",".join(diopi_func_name_list)
         case_item["updated_time"] = datetime.now()
         case_item["id"] = case_model["id"]
