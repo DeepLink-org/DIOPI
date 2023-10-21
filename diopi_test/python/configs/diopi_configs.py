@@ -6308,7 +6308,7 @@ diopi_configs = {
         para=dict(
             dim=[0, -1, 0, -1, 1, 3, -1, 0, -2],
             dtype=[np.float32, np.float64, np.float16, np.int16, np.int32,
-                   np.int64, np.uint8, np.int8, np.bool]
+                   np.int64, np.uint8, np.int8, np.bool_]
         ),
         tensor_para=dict(
             args=[
