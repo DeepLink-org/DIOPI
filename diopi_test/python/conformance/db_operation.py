@@ -197,15 +197,12 @@ class DB_Operation(object):
                 for i in self.session.query(DeviceCase).filter_by(delete_flag=1).all()
             }
         case_model = self.all_case_items[case_item["pytest_nodeid"]]
-        inplace_flag = case_model["inplace_flag"]
-        backward_flag = case_model["backward_flag"]
         if case_item.get("case_config"):
             case_item["case_config"] = pickle.dumps(case_item["case_config"])
 
-        diopi_func_name = glob_vars.cur_test_func
         diopi_func_name_list = list(glob_vars.func_status.keys())
         for diopi_func in diopi_func_name_list:
-            if case_model["func_name"].replace('_','') not in diopi_func.lower():
+            if case_model["func_name"].replace('_', '') not in diopi_func.lower():
                 diopi_func_name_list.remove(diopi_func)
         case_item["diopi_func_name"] = ",".join(diopi_func_name_list)
         case_item["updated_time"] = datetime.now()
@@ -213,8 +210,6 @@ class DB_Operation(object):
         case_item["test_flag"] = 1
         self.all_case_items[case_item["pytest_nodeid"]].update(case_item)
 
-        # if failed before forward, diopi_func_name will be ''
-        # if diopi_func_name != "":
         self.expand_func_list(
             case_item.get(
                 "not_implemented_flag", case_model["not_implemented_flag"]
