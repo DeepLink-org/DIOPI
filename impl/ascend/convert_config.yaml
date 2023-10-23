@@ -149,3 +149,15 @@
 - diopiNegInp:
     dtype: (int8, int16, uint8, uint16, uint32, uint64)->int64, (float64)->float32, (complex32)->complex64
     layout: NCHW
+
+- diopiThreshold:
+    dtype: (float64, int16, int64)->float32
+    layout: NCHW
+
+- diopiThresholdInp:
+    dtype: (float64, int16, int64)->float32
+    layout: NCHW
+
+- diopiThresholdBackward:
+    dtype: (float64, int16, int64)->float32
+    layout: NCHW
