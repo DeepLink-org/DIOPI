@@ -29,4 +29,8 @@ DIOPI_API diopiError_t diopiFusedFfn(diopiContextHandle_t ctx, diopiTensorHandle
                                      diopiConstTensorHandle_t weight2, diopiConstTensorHandle_t weight3,
                                      const int act_type = 0);
 
-#endif
+#if defined(__cplusplus)
+}
+#endif  // __cplusplus
+
+#endif  // _PROJECT_DIOPERATOR_INTERFACE_FUNCTIONS_LMDEPLOY_H_
