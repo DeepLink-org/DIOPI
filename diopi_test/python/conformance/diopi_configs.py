@@ -8013,7 +8013,7 @@ diopi_configs = {
         para=dict(
             p_max_len_in_batch=(8,)),
         tensor_para=dict(
-            args = [
+            args=[
                 {
                     "ins": ['logits'],
                     "value": ([[0.1, 0.5, 0.4, 0.3, 0.5],
@@ -8022,30 +8022,31 @@ diopi_configs = {
                     "dtype": [Dtype.float32],
 
                 },
-                {   "ins":["presence_penalty"],
+                {
+                    "ins": ["presence_penalty"],
                     "value": ([0.1, 0.8, 1.0],),
                     "dtype": [Dtype.float32],
-                },    
+                },
                 {
-                    "ins":["frequency_penalty"],
+                    "ins": ["frequency_penalty"],
                     "value": ([0.3, 0.5, 0.4],),
                     "dtype": [Dtype.float32],
                 },
-                {   "ins":["p_token_ids"],
+                {
+                    "ins": ["p_token_ids"],
                     "value": ([0, 1, 2, 3, 4, 0, 1, 0, 1, 2, 3],),
                     "dtype": [Dtype.int32],
                 },
                 {
-                    "ins":["p_token_counts"],
+                    "ins": ["p_token_counts"],
                     "value": ([3, 3, 2, 2, 1, 3, 3, 3, 3, 2, 2],),
                     "dtype": [Dtype.int32],
                 },
                 {
-                    "ins":["p_cumsum_seq_len"],
-                    "value":([0, 5, 7, 11],),
+                    "ins": ["p_cumsum_seq_len"],
+                    "value": ([0, 5, 7, 11],),
                     "dtype": [Dtype.float32],
                 },
-                
             ]
         )
     ),

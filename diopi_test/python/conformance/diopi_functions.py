@@ -3920,8 +3920,8 @@ def linalgqr(input, mode):
     check_returncode(ret)
     return out
 
+
 def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch):
-    import pdb; pdb.set_trace()
     call = "diopiApplyPenalty"
     func = check_function(call)
     # some checks

@@ -556,20 +556,21 @@ class CustomizedTest(object):
         return out
 
     def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch):
-        batch_token_counts = torch.zeros_like(logits) # logits的形状为[batch_size, voc_len]
-        batch_left_delimiter = 0 # 使用batch_left_delimiter和batch_right_delimiter来根据p_cumsum_seq_len来确定每个seq的长度
+        batch_token_counts = torch.zeros_like(logits)  # logits的形状为[batch_size, voc_len]
+        batch_left_delimiter = 0  # 使用batch_left_delimiter和batch_right_delimiter来根据p_cumsum_seq_len来确定每个seq的长度
         batch_right_delimiter = 0
         for i in range(1, len(p_cumsum_seq_len)):
             batch_left_delimiter = batch_right_delimiter
             batch_right_delimiter = p_cumsum_seq_len[i]
             for j in range(int(batch_left_delimiter), int(batch_right_delimiter)):
-                p_token_id = p_token_ids[j] # 获取每个token在词汇表中的索引
-                p_token_count = p_token_counts[j] # 获取每个token的计数，用于后续计算频率惩罚
-                batch_token_counts[i-1][int(p_token_id)]  = p_token_count
+                p_token_id = p_token_ids[j]  # 获取每个token在词汇表中的索引
+                p_token_count = p_token_counts[j]    # 获取每个token的计数，用于后续计算频率惩罚
+                batch_token_counts[i - 1][int(p_token_id)] = p_token_count
         frequency_penalty = torch.unsqueeze(frequency_penalty, 1)
         presence_penalty = torch.unsqueeze(presence_penalty, 1)
         out = logits - batch_token_counts * frequency_penalty - presence_penalty
         return out
+
 
 def transfer_tensor_to_device(function_paras: dict):
     for para in function_paras["kwargs"].keys():
