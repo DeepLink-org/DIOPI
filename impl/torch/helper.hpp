@@ -398,8 +398,7 @@ inline at::Tensor nllLossNdBackward(at::Tensor& atInput, at::Tensor& atGradOutpu
     }
 
     auto dim = atInput.dim();
-    assert(dim > 1);
-    if (dim != 2 && dim != 4) {
+    if (dim >= 3 && dim != 4) {
         auto n = atInput.size(0);
         auto c = atInput.size(1);
         int64_t inputLastSize = 1;
@@ -419,10 +418,10 @@ inline at::Tensor nllLossNdBackward(at::Tensor& atInput, at::Tensor& atGradOutpu
         }
     }
     at::Tensor atGradInput;
-    if (dim == 2) {
-        atGradInput = at::nll_loss_backward(atGradOutput, atInput, atTarget, atWeight, reduction, ignore_index, atTotalWeight);
-    } else {
+    if (dim >= 3) {
         atGradInput = at::nll_loss2d_backward(atGradOutput, atInput, atTarget, atWeight, reduction, ignore_index, atTotalWeight);
+    } else {
+        atGradInput = at::nll_loss_backward(atGradOutput, atInput, atTarget, atWeight, reduction, ignore_index, atTotalWeight);
     }
     return atGradInput;
 }
