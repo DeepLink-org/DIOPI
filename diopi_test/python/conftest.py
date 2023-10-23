@@ -27,7 +27,7 @@ def pytest_runtest_makereport(item, call):
     if report.when == 'call':
         if report.failed:
             # err_msg = f"[message] {report.longrepr.reprcrash.message[:900]}......, [path] {report.longrepr.reprcrash.path}, [lineno] {report.longrepr.reprcrash.lineno}".replace('\'','')
-            item['error_msg'] = report.longrepr.reprcrash.message
+            item['error_msg'] = f'{report.longrepr.reprcrash.message}'
             if 'FunctionNotImplementedError' in report.longrepr.reprcrash.message:
                 report.outcome = 'skipped'
                 item['not_implemented_flag'] = 1
