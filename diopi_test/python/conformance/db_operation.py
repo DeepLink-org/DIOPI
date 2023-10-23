@@ -23,6 +23,19 @@ from sqlalchemy import text
 from conformance.global_settings import glob_vars
 from conformance.utils import logger
 
+
+pytorch_diopi_func_map = {
+    'conv2d': ['diopiConvolution2d', 'diopiConvolution2dBackward'],
+    'binary_cross_entropy': ['diopiBCELoss', 'diopiBCELossBackward'],
+    'binary_cross_entropy_with_logits': ['diopiBCEWithLogits', 'diopiBCEWithLogitsBackward'],
+    'dropout2d': ['diopiDropout', 'diopiDropoutInp'],
+    'slice_op': ['diopiSlice'],
+    'conv3d': ['diopiConvolution3d', 'diopiConvolution3dBackward'],
+    'interpolate': ['diopiUpsampleNearest', 'diopiUpsampleLinear'],
+    'cholesky_ex': ['diopiCholesky', 'diopiCholeskyBackward'],
+}
+
+
 Base = declarative_base()
 
 
@@ -200,7 +213,10 @@ class DB_Operation(object):
         if case_item.get("case_config"):
             case_item["case_config"] = pickle.dumps(case_item["case_config"])
         diopi_func_name_list = list(glob_vars.func_status.keys())
-        diopi_func_name_list = list(filter(lambda x: case_model["func_name"].replace('_', '') in x.lower(), diopi_func_name_list))
+        if case_model["func_name"] in pytorch_diopi_func_map:
+            diopi_func_name_list = pytorch_diopi_func_map[case_model["func_name"]]
+        else:
+            diopi_func_name_list = list(filter(lambda x: case_model["func_name"].replace('_', '') in x.lower(), diopi_func_name_list))
         case_item["diopi_func_name"] = ",".join(diopi_func_name_list)
         case_item["updated_time"] = datetime.now()
         case_item["id"] = case_model["id"]
@@ -452,6 +468,7 @@ class ExcelOperation(object):
 
     @use_db(glob_vars.use_db)
     def gen_excel(self):
+        import pandas as pd
         self.add_benchmark_case_sheet()
         self.add_device_case_sheet()
         self.add_func_list_sheet()

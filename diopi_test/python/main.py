@@ -256,7 +256,7 @@ if __name__ == "__main__":
         if exit_code != 0:
             raise SystemExit(exit_code)
     elif args.mode == "utest":
-        call = f"python3 -m pytest -vx tests"
+        call = "python3 -m pytest -vx tests"
         exit_code = subprocess.call(shlex.split(call))  # nosec
         if exit_code != 0:
             raise SystemExit(exit_code)
