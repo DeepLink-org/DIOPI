@@ -202,6 +202,9 @@ for para_key, para_val in function_kwargs.items():
     test_diopi_function_forward_call = CodeTemplate(
         r"""
 tol = ${test_caompare_tol}
+# sum_to_compare
+sum_to_compare = True if 'sorted' in function_kwargs and ~function_kwargs['sorted'] else False
+tol['sum_to_compare'] = sum_to_compare
 dev_out = ${test_diopi_func_name}(**function_kwargs)
 
 # read ref_out
