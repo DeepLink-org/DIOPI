@@ -201,7 +201,7 @@ jobs:
           srun --job-name=${GITHUB_RUN_NUMBER}_${GITHUB_JOB} --partition=${CUDA_PARTATION} --gres=gpu:${GPU_REQUESTS} --time=20 bash ../scripts/ci/ci_one_iter.sh build_cuda
           cd ..
           source scripts/ci/ci_one_iter.sh export_pythonpath_cuda ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST3}/build_mmcv_ext/diopi_test/DIPU/dipu/mmlab_pack
-
+          """
       - name: test
         run: |
           ssh ${CLUSTER_1988} """
