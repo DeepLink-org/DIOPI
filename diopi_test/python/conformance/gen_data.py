@@ -562,15 +562,14 @@ class CustomizedTest(object):
         for i in range(1, len(p_cumsum_seq_len)):
             batch_left_delimiter = batch_right_delimiter
             batch_right_delimiter = p_cumsum_seq_len[i]
-            for j in range(batch_left_delimiter, batch_right_delimiter):
+            for j in range(int(batch_left_delimiter), int(batch_right_delimiter)):
                 p_token_id = p_token_ids[j] # 获取每个token在词汇表中的索引
                 p_token_count = p_token_counts[j] # 获取每个token的计数，用于后续计算频率惩罚
-                batch_token_counts[i-1][p_token_id]  = p_token_count
+                batch_token_counts[i-1][int(p_token_id)]  = p_token_count
         frequency_penalty = torch.unsqueeze(frequency_penalty, 1)
         presence_penalty = torch.unsqueeze(presence_penalty, 1)
         out = logits - batch_token_counts * frequency_penalty - presence_penalty
         return out
-
 
 def transfer_tensor_to_device(function_paras: dict):
     for para in function_paras["kwargs"].keys():

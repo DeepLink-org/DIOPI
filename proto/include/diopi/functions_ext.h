@@ -25,7 +25,11 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
                                             diopiSize_t normalized_shape, double eps);
 
 /**
- * @brief Use presence_penalty and frequency_penalty to suppress generating tokens repeatedly.
+ * @brief This function applies a penalty to the given logits based on the presence and frequency of certain tokens in the input sequence to suppress 
+ * generating tokens repeatedly. 
+ * The p_cumsum_seq_len is used to determine the sequence length, which is then used to extract the corresponding token_id from p_token_ids and 
+ * token_count from p_token_counts.
+ * For each token，the final logit_value = original_logit_value - corresponding_frequency_penalty * token_count - corresponding_presence_penalty.
  * @param[in] ctx Context environment.
  * @param[inout] Logits Tensor representing the logits. Shape: [batch_size, voc_len]. It contains the predicted scores for each token in the input sequences.
  * It will be penalized by frequency_penalty and presence_penalty.
