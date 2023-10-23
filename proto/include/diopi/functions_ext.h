@@ -58,16 +58,53 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
                                             diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiConstTensorHandle_t invRMS,
                                             diopiSize_t normalized_shape, double eps);
 
-// imitate  `_flash_attention_forward` in pytorch
-// philox_seed
-// philox_offset 是决定generator的种子，因此我们使用diopi generator来替代
-// 估计这个softmax_logsumexp是指的
 
+/**
+ * @brief Compute the forward pass for MultiheadAttention.
+ * @param[in] ctx Context environment.
+ * @param[in] q Query tensor. type = [float32, float16, float64].
+ * @param[in] k Key tensor. type = [float32, float16, float64].
+ * @param[in] v Value tensor. type = [float32, float16, float64].
+ * @param[in] cum_seq_q Cumulative sequence length for the query. For tensors that have already been padded, pass nullptr. type = [int64, int32].
+ * @param[in] cum_seq_k Cumulative sequence length for the key. For tensors that have already been padded, pass nullptr. type = [int64, int32].
+ * @param[in] max_q Maximum sequence length for the query. For tensors already padded, pass nullptr.   type = [int64].
+ * @param[in] max_k Maximum sequence length for the key. For tensors already padded, pass nullptr.  type = [int64].
+ * @param[in] dropout_p Dropout probability. type = [float32, float16, float64].
+ * @param[in] is_causal Flag to determine if the attention should be causal, masking future tokens. type = [bool]
+ * @param[in] return_debug_mask Flag indicating if the attention debug mask should be returned. type = [bool].
+ * @param[in] scale Scaling factor for attention weights. type = [float32, float16, float64].
+ * @param[out] out Tensor containing the result after applying multi-head attention. type = [float32, float16, float64].
+ * @param[out] softmax_lse Tensor representing the log-sum-exp of the softmax values. type = [float32, float16, float64].
+ * @param[out] gen Handle for the random number generator used in dropout.
+ * @param[out] debug_attn_mask Debugging tensor for the attention mask (returned if return_debug_mask is true). type = [bool].
+ */
 DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                                diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k, int64_t* max_q, int64_t* max_k,
-                                               double dropout_p, bool is_causal, bool return_debug_mask, double* scale, diopiTensorHandle_t output,
+                                               double dropout_p, bool is_causal, bool return_debug_mask, double* scale, diopiTensorHandle_t out,
                                                diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask);
 
+/**
+ * @brief Compute the forward pass for MultiheadAttention.
+ * @param[in] ctx Context environment.
+ * @param[in] grad_out The gradient of the output tensor.
+ * @param[in] q Query tensor from the forward pass. type = [float32, float16, float64].
+ * @param[in] k Key tensor from the forward pass. type = [float32, float16, float64].
+ * @param[in] v Value tensor from the forward pass. type = [float32, float16, float64].
+ * @param[in] out Output tensor from the forward pass.  type = [float32, float16, float64].
+ * @param[in] softmax_lse Tensor representing the log-sum-exp of softmax values from the forward pass. type = [float32, float16, float64].
+ * @param[in] cum_seq_q Cumulative sequence length for the query. For tensors that have already been padded, pass nullptr. type = [int64, int32].
+ * @param[in] cum_seq_k Cumulative sequence length for the key. For tensors that have already been padded, pass nullptr. type = [int64, int32].
+ * @param[in] max_q Maximum sequence length for the query. For tensors already padded, pass nullptr.   type = [int64].
+ * @param[in] max_k Maximum sequence length for the key. For tensors already padded, pass nullptr.  type = [int64].
+ * @param[in] dropout_p Dropout probability. type = [float32, float16, float64].
+ * @param[in] is_causal Flag to determine if the attention should be causal, masking future tokens. type = [bool]
+ * @param[in] return_debug_mask Flag from the forward pass indicating if the attention was causal (masking future tokens). type = [bool].
+ * @param[in] gen Handle representing the random number generator used for dropout in the forward pass.
+ * @param[in] scale Pointer to the scaling factor used for attention weights in the forward pass. type = [float32, float16, float64].
+ * @param[out] grad_q The gradient of the query tensor. type = [float32, float16, float64].
+ * @param[out] grad_k The gradient of the key tensor. type = [float32, float16, float64].
+ * @param[out] grad_v The gradient of the value tensor. type = [float32, float16, float64].
+ */
 DIOPI_API diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
                                                        diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t out,
                                                        diopiConstTensorHandle_t softmax_lse, diopiConstTensorHandle_t cum_seq_q,

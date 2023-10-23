@@ -112,7 +112,7 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
 
 DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                                diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k, int64_t* max_q, int64_t* max_k,
-                                               double dropout_p, bool is_causal, bool return_debug_mask, double* scale, diopiTensorHandle_t output,
+                                               double dropout_p, bool is_causal, bool return_debug_mask, double* scale, diopiTensorHandle_t out,
                                                diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask) {
     impl::aten::setCurCtx(ctx);
     auto atQ = impl::aten::buildATen(q).clone();
@@ -172,9 +172,9 @@ DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiCo
             at::_flash_attention_forward(atQ, atK, atV, atCum_seq_q, atCum_seq_k, *max_q, *max_k, dropout_p, is_causal, return_debug_mask);
     }
 
-    // 目前pytorch2.0版本返回的是(Tensor output, Tensor softmax_lse, int philox_seed, int philox_offset, Tensor debug_attn_mask)
+    // 目前pytorch2.0版本返回的是(Tensor out, Tensor softmax_lse, int philox_seed, int philox_offset, Tensor debug_attn_mask)
     // 但是main分支的是返回的是五个tensor，因此存在一个转换的问题
-    impl::aten::updateATen2Tensor(ctx, atOutput, output);
+    impl::aten::updateATen2Tensor(ctx, atOutput, out);
     impl::aten::updateATen2Tensor(ctx, atLog_sumexp, softmax_lse);
     impl::aten::updateATen2Tensor(ctx, atDebug_attn_mask, debug_attn_mask);
 
