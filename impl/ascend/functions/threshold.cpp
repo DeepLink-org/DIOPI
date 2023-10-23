@@ -11,7 +11,12 @@ namespace ascend {
 
 diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* threshold,
                             const diopiScalar_t* value) {
-    AclOpRunner<1, 1>("ThresholdV2D", ctx).addInput(input).setAttr("threshold", getValue<float>(threshold)).setAttr("value", getValue<float>(value)).addOutput(out).run();
+    AclOpRunner<1, 1>("ThresholdV2D", ctx)
+        .addInput(input)
+        .setAttr("threshold", getValue<float>(threshold))
+        .setAttr("value", getValue<float>(value))
+        .addOutput(out)
+        .run();
     return diopiSuccess;
 }
 
