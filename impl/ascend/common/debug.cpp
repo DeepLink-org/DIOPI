@@ -54,7 +54,6 @@ void printContiguousTensor(diopiContextHandle_t ctx, const AscendTensor& at, cha
     printf("Tensor type %d \n", at.dtype());
     printf("Tensor %s:\n\n", name);
     for (int64_t i = 0; i < at.numel(); i++) {
-        break; 
         switch (at.dtype()) {
             case diopi_dtype_float32:
                 printf("item %ld: %f\n", i, reinterpret_cast<float*>(ptrHost)[i]);

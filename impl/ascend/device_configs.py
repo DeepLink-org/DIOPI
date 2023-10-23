@@ -1118,7 +1118,7 @@ device_configs = {
         atol = 3e-2,
         rtol = 3e-2,
     ),
-    
+
     'embedding': dict(
         name=['embedding'],
         tensor_para=dict(

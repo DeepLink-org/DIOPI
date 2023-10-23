@@ -6,7 +6,7 @@
 
 #include "utils.hpp"
 
-#include <numeric>
+#include <functional>
 #include <string>
 #include <type_traits>
 #include <typeinfo>

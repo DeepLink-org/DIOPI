@@ -109,7 +109,6 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
     diopiTensorHandle_t diopiGradWeightCopy = const_cast<diopiTensorHandle_t>(gradWeightCopy.tensorHandle());
 
     if (gradBias) {
-        AscendTensor gradBiasCopy(gradBias);
         std::vector<int64_t> dimVec(gradOutputCopy.shape().size() - 1);
         std::iota(std::begin(dimVec), std::end(dimVec), 0);
         diopiSize_t dim = vectorToDiopiSize(dimVec);
