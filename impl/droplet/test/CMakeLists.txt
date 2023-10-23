@@ -14,10 +14,13 @@ find_program(DROPLET_CLANG_EXECUTABLE
     HINTS ${DROPLET_INSTALL}/bin
 )
 
+set(DIOPI_TEST_DIR "${CMAKE_SOURCE_DIR}/../diopi_test")
+
 include_directories(SYSTEM "${DROPLET_INSTALL}/include")
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/test/include")
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/../third_party/pybind11/include")
 include_directories(SYSTEM $ENV{PYTHON_INCLUDE_DIR})
+include_directories(SYSTEM "${DIOPI_TEST_DIR}/diopi_stub/include")
 set(RUNTIME_SRC
     litert.cpp
     conform_test.cpp
@@ -35,7 +38,7 @@ add_library(diopirt SHARED ${RUNTIME_SRC})
 if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
     set(ADAPTOR_GEN_PATH "${CMAKE_SOURCE_DIR}/../adaptor/codegen")
     add_custom_target(adaptor_code_gen COMMAND python3 ${ADAPTOR_GEN_PATH}/gen.py
-        --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${CMAKE_SOURCE_DIR}/../proto/include/diopi/
+        --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${CMAKE_SOURCE_DIR}/../adaptor
         --config_device=droplet)
     set(USE_ADAPTOR "true")
     add_dependencies(diopirt adaptor_code_gen)
@@ -46,13 +49,13 @@ endif()
 
 target_link_libraries(${DIOPIRT} PRIVATE diopirt)
 target_link_libraries(diopirt tangrt_shared)
-target_link_libraries(diopirt ${DEVICEIMPL})
+target_link_libraries(diopirt ${DIOPI_DROPLET_LIB})
 
-set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/csrc")
+set(FUNCTION_SAVE_PATH "${DIOPI_TEST_DIR}/diopi_stub/csrc")
 
-set(TEST_GEN_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/codegen")
+set(TEST_GEN_PATH "${DIOPI_TEST_DIR}/diopi_stub/codegen")
 add_custom_target(test_code_gen COMMAND python3 ${TEST_GEN_PATH}/gen.py
-    --device=droplet --use_adaptor=${USE_ADAPTOR})
+    --device=droplet)
 add_custom_target(functions_copy ALL
     COMMAND ln -f ${FUNCTION_SAVE_PATH}/export_functions.cpp ${PROJECT_SOURCE_DIR}/test
     DEPENDS test_code_gen)

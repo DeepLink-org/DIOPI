@@ -137,4 +137,5 @@ kernel_meta_*
 
 # generate files
 impl/camb/test/export_functions.cpp
+impl/droplet/test/export_functions.cpp
 proto/include/diopi/diopi_adaptors.hpp
