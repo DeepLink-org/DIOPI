@@ -637,7 +637,7 @@ diopiError_t transTensorTo2D(diopiContextHandle_t ctx, AscendTensor& th) {
     if (th.shape().size() < 2) return diopiErrorOccurred;
     std::vector<int64_t> dims;
     std::vector<int64_t> thShape = th.shape();
-    int dim1 = std::accumulate(thShape.begin(), thShape.end() - 1, 1, std::multiplies<int>());
+    int dim1 = std::accumulate(thShape.begin(), thShape.end() - 1, 1, std::multiplies<>());
     dims = {dim1, thShape.back()};
     th.view(dims);
     return diopiSuccess;
