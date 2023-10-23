@@ -46,7 +46,7 @@ if(NOT DIOPI_BR_LIB)
 endif()
 
 # ln -s /*/libdiopi_impl.so impl/lib/libdiopi_impl.so
-execute_process(COMMAND ln -s ${DIOPI_BR_LIB} ${LIBRARY_OUTPUT_PATH}/${DEVICEIMPL})
+execute_process(COMMAND ln -s ${DIOPI_BR_LIB} ${LIBRARY_OUTPUT_PATH}/lib${DEVICEIMPL}.so)
 
 if (TEST)
   add_subdirectory(test)
