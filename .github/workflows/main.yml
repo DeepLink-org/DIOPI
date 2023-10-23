@@ -198,16 +198,12 @@ jobs:
           cd mmcv && git checkout ea53ed02d7bcd856a1de42c6b408244c4fed5fa1 && cd ..
           /mnt/lustre/share/git clone https://github.com/open-mmlab/mmengine.git
           cd mmengine && git checkout v0.7.4 && cd ..
-          /mnt/lustre/share/git clone https://github.com/DeepLink-org/SMART.git
-          cd SMART && git checkout dev_for_mmcv2.0 && cd ..
           srun --job-name=${GITHUB_RUN_NUMBER}_${GITHUB_JOB} --partition=${CUDA_PARTATION} --gres=gpu:${GPU_REQUESTS} --time=20 bash ../scripts/ci/ci_one_iter.sh build_cuda
           
-          cd ..
-          source scripts/ci/ci_one_iter.sh export_pythonpath_cuda ${NFS_PATH}/${GITHUB_RUN_NUMBER}/{BUILD_TEST3}/build_mmcv_ext/diopi_test/DIPU/dipu/mmlab_pack
-          cd mmlab_pack
-          rm -rf one_iter_data
-          python ../scripts/ci/ci_run_one_iter.py cuda  ${GITHUB_RUN_NUMBER}_${GITHUB_JOB} "gpu:${GPU_REQUESTS}" ${CUDA_PARTATION}  && rm -rf one_iter_data || (rm -rf one_iter_data && exit 1)
-
+          cd ../../../..
+          pip install -U pytest
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=40 --gres=gpu:${GPU_REQUESTS} ls && cd diopi_test && bash scripts/test_mmcv_ext.sh CUDA \
+          && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST3} || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST3} && exit 1 )
           """
 
   Gen-Data:
