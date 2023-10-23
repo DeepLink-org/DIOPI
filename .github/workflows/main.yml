@@ -211,6 +211,7 @@ jobs:
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} cd ${BUILD_TEST3}
           cd build_mmcv_ext
           pip install -U pytest
+          pip install mmengine
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=40 --gres=gpu:${GPU_REQUESTS} ls && cd diopi_test && bash scripts/test_mmcv_ext.sh CUDA \
           && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST3} || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST3} && exit 1 )
           """
