@@ -10,7 +10,7 @@ import os
 import pickle
 import pytest
 import numpy as np
-from conformance.diopi_runtime import Tensor, from_dtype_str
+from conformance.diopi_runtime import Tensor, from_numpy_dtype
 from conformance.diopi_functions import ones_like
 from conformance.check_result import CheckResult
 ${test_diopi_head_import}
@@ -183,7 +183,7 @@ for para_key, para_val in function_kwargs.items():
     if isinstance(para_val, np.ndarray):
         function_kwargs[para_key] = Tensor.from_numpy(para_val)
     if para_key == 'dtype':
-        function_kwargs[para_key] = from_dtype_str(para_val)
+        function_kwargs[para_key] = from_numpy_dtype(para_val)
 """
     )
 
@@ -211,8 +211,7 @@ with open(f_out, 'rb') as f:
 try:
     CheckResult.compare_output(dev_out, ref_out, **tol)
 except Exception as e:
-    print(f'Test {function_config["name"]}: {function_config}')
-    assert False, f'{e}'
+    assert False, f'Test {function_config["name"]}: {function_config} traceback: {e}'
 """
     )
 
@@ -225,8 +224,7 @@ dev_inp_out = ${test_diopi_func_name}(**function_kwargs)
 try:
     CheckResult.compare_output(dev_inp_out, ref_out, **tol)
 except Exception as e:
-    print(f'Test {function_config["name"]}  inplace: {function_config}')
-    assert False, f'{e}'
+    assert False, f'Test {function_config["name"]}  inplace: {function_config} traceback: {e}'
 """
     )
     test_diopi_func_inp_remove_grad_args = CodeTemplate(
@@ -274,7 +272,6 @@ with open(f_bp_out, 'rb') as f:
 try:
     CheckResult.compare_output(dev_bp_out, ref_bp_out, **tol)
 except Exception as e:
-    print(f'Test {function_config["name"]} backward: {function_config}')
-    assert False, f'{e}'
+    assert False, f'Test {function_config["name"]} backward: {function_config} traceback: {e}'
 """
     )

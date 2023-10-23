@@ -102,7 +102,7 @@ class GenTestCase(object):
             # get tol
             test_compare_tol = dict(atol=cv["atol"], rtol=cv["rtol"])
             for tensor in cv["tensor_para"]["args"]:
-                if tensor["ins"] == "input" and tensor["dtype"] in [
+                if tensor["dtype"] in [
                     np.int16,
                     np.float16,
                     np.uint16,

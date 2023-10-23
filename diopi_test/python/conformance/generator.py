@@ -34,7 +34,7 @@ class Genfunc:
 
     @staticmethod
     def mask(shape, dtype=np.float32):
-        return np.random.uniform(low=0, high=2, size=shape).astype(dtype)
+        return np.random.randint(low=0, high=2, size=shape).astype(dtype)
 
     @staticmethod
     def randint(low=0, high=1, shape=(1,), dtype=np.float32):

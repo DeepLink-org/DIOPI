@@ -199,11 +199,8 @@ class DB_Operation(object):
         case_model = self.all_case_items[case_item["pytest_nodeid"]]
         if case_item.get("case_config"):
             case_item["case_config"] = pickle.dumps(case_item["case_config"])
-
         diopi_func_name_list = list(glob_vars.func_status.keys())
-        for diopi_func in diopi_func_name_list:
-            if case_model["func_name"].replace('_', '') not in diopi_func.lower():
-                diopi_func_name_list.remove(diopi_func)
+        diopi_func_name_list = list(filter(lambda x: case_model["func_name"].replace('_', '') in x.lower(), diopi_func_name_list))
         case_item["diopi_func_name"] = ",".join(diopi_func_name_list)
         case_item["updated_time"] = datetime.now()
         case_item["id"] = case_model["id"]
