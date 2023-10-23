@@ -13,6 +13,9 @@
 #include "ext_kernel.h"
 #include "helper.hpp"
 
+#include <ATen/NestedTensorImpl.h>
+#include <ATen/core/Generator.h>
+
 /**
  * copyed from `aten/src/ATen/native/nested/cuda/NestedTensorTransformerFunctions.cpp`
  * This function is used to calculate two pieces of metadata that are needed
@@ -23,14 +26,14 @@
  * @return A tuple of cumulative sequence lengths and the maximum sequence length,
  * and the last element in the cumulative_sequence_lengths
  */
-std::tuple<Tensor, int64_t, int64_t> cumulative_and_max_seq_len(Tensor qkv) {
+std::tuple<at::Tensor, int64_t, int64_t> cumulative_and_max_seq_len(at::Tensor qkv) {
     TORCH_CHECK(qkv.is_nested(), "QKV must be nested for flash cumulative_seq_len calculation.")
-    auto* nt_impl = get_nested_tensor_impl(qkv);
+    auto* nt_impl = at::native::get_nested_tensor_impl(qkv);
     const auto& sizes = nt_impl->get_nested_size_tensor();
     auto size_tensor_stride = sizes.stride(0);
 
     const int64_t batch_size = qkv.size(0);
-    auto cumulative_seqlen = at::zeros({batch_size + 1}, TensorOptions().device(at::kCPU).dtype(at::kInt));
+    auto cumulative_seqlen = at::zeros({batch_size + 1}, c10::TensorOptions().device(at::kCPU).dtype(at::kInt));
 
     auto* sizes_ptr = sizes.data_ptr<int64_t>();
     auto* cumulative_seqlen_ptr = cumulative_seqlen.data_ptr<int32_t>();
@@ -49,8 +52,8 @@ std::tuple<Tensor, int64_t, int64_t> cumulative_and_max_seq_len(Tensor qkv) {
     }
     // Send to GPU, this is pretty light weight calc for normal batch size
     // but maybe this needs to be on gpu
-    cumulative_seqlen = cumulative_seqlen.to(TensorOptions().device(at::kCUDA));
-    return std::tuple<Tensor, int64_t, int64_t>{cumulative_seqlen, max_seqlen, sum};
+    cumulative_seqlen = cumulative_seqlen.to(c10::TensorOptions().device(at::kCUDA));
+    return std::tuple<at::Tensor, int64_t, int64_t>{cumulative_seqlen, max_seqlen, sum};
 }
 
 extern "C" {
@@ -117,7 +120,7 @@ DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiCo
     auto atV = impl::aten::buildATen(v).clone();
 
     at::Tensor atOutput, atLog_sumexp, atDebug_attn_mask;
-    int64_t atPhilox_seed{0}, atPhilox_offset{0};
+    uint64_t atPhilox_seed{0}, atPhilox_offset{0};
     if (max_q == nullptr && max_k == nullptr && cum_seq_q == nullptr && cum_seq_q == nullptr) {
         TORCH_CHECK(false, "There are currently cuda memory errors being returned from this path.")
         // Query -> Query (Batch x {Q_seq_len}  x Num_heads x Dim_per_head)
@@ -163,8 +166,8 @@ DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiCo
                                                                                                                            return_debug_mask);
         atOutput = atOutput.view({batch_size, q_seq_len, num_heads, head_dim});
     } else {
-        auto atCum_seq_q = impl::aten::buildATen(*cum_seq_q);
-        auto atCum_seq_k = impl::aten::buildATen(*cum_seq_k);
+        auto atCum_seq_q = impl::aten::buildATen(cum_seq_q);
+        auto atCum_seq_k = impl::aten::buildATen(cum_seq_k);
         std::tie(atOutput, atLog_sumexp, atPhilox_seed, atPhilox_offset, atDebug_attn_mask) =
             at::_flash_attention_forward(atQ, atK, atV, atCum_seq_q, atCum_seq_k, *max_q, *max_k, dropout_p, is_causal, return_debug_mask);
     }
@@ -174,10 +177,16 @@ DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiCo
     impl::aten::updateATen2Tensor(ctx, atOutput, output);
     impl::aten::updateATen2Tensor(ctx, atLog_sumexp, softmax_logsumexp);
     impl::aten::updateATen2Tensor(ctx, atDebug_attn_mask, debug_attn_mask);
-    at::Generator cuda_gen = at::default_generator(at::kCUDA);
-    cuda_gen.set_current_seed(atPhilox_seed);
-    cuda_gen.set_offset(atPhilox_offset);
-    impl::aten::updateGeneratorHandleState(ctx, cuda_gen, gen);
+
+    at::Tensor new_state = at::empty({2});
+    // 可能存在bug，先测试
+    new_state[0].fill_(static_cast<double>(atPhilox_seed));;
+    new_state[1].fill_(static_cast<double>(atPhilox_offset));
+
+    diopiTensorHandle_t new_state_handle = nullptr;
+    impl::aten::buildDiopiTensor(ctx, new_state, &new_state_handle);
+    diopiGeneratorSetState(gen, new_state_handle);
+
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -199,11 +208,12 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx,
     auto atGrad_out = impl::aten::buildATen(grad_out);
     auto atOut = impl::aten::buildATen(out);
     auto atLogsumexp = impl::aten::buildATen(logsumexp);
-    at::Generator cuda_gen = impl::aten::buildGenerator(ctx, gen);
 
-    int64_t atPhilox_seed{0}, atPhilox_offset{0};
-    atPhilox_seed = cuda_gen.current_seed();
-    atPhilox_offset = cuda_gen.get_offset();
+    diopiTensorHandle_t* state_ptr = nullptr;
+    diopiGeneratorGetState(ctx, gen, state_ptr);
+    auto atState = impl::aten::buildATen(*state_ptr);
+    uint64_t atPhilox_seed = atState[0].item<uint64_t>();
+    uint64_t atPhilox_offset = atState[1].item<uint64_t>();
 
     if (max_q == nullptr && max_k == nullptr && cum_seq_q == nullptr && cum_seq_q == nullptr) {
         TORCH_CHECK(false, "There are currently cuda memory errors being returned from this path.")
@@ -260,12 +270,14 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx,
                                                                                is_causal,
                                                                                atPhilox_seed,
                                                                                atPhilox_offset);
-        atOutput = atOutput.view({batch_size, q_seq_len, num_heads, head_dim});
+        atGrad_q = atGrad_q.view({batch_size, q_seq_len, num_heads, head_dim});
+        atGrad_k = atGrad_k.view({batch_size, q_seq_len, num_heads, head_dim});
+        atGrad_v = atGrad_v.view({batch_size, q_seq_len, num_heads, head_dim});
     } else {
-        auto atCum_seq_q = impl::aten::buildATen(*cum_seq_q);
-        auto atCum_seq_k = impl::aten::buildATen(*cum_seq_k);
+        auto atCum_seq_q = impl::aten::buildATen(cum_seq_q);
+        auto atCum_seq_k = impl::aten::buildATen(cum_seq_k);
         std::tie(atGrad_q, atGrad_k, atGrad_v) = at::_flash_attention_backward(
-            atGrad_out, atQ, atK, atV, atOut, atLogsumexp, atCum_seq_q, atCum_seq_k, *max_q, *max_k, dropout_p, atPhilox_seed, atPhilox_offset);
+            atGrad_out, atQ, atK, atV, atOut, atLogsumexp, atCum_seq_q, atCum_seq_k, *max_q, *max_k, dropout_p,is_causal, atPhilox_seed, atPhilox_offset);
     }
 
     impl::aten::updateATen2Tensor(ctx, atGrad_q, grad_q);
