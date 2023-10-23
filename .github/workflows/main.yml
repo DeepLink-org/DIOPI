@@ -191,7 +191,7 @@ jobs:
           cd diopi_test && source scripts/ci_nv_env.sh
           cd DIPU/dipu
           mkdir mmlab_pack && cd mmlab_pack
-          basic_path = ${pwd}
+          basic_path = \${pwd}
           export PYTHONPATH=\${basic_path}/mmengine:\$PYTHONPATH
           export PYTHONPATH=\${basic_path}/mmcv:\$PYTHONPATH
           export PYTHONPATH=\${pwd}:\$PYTHONPATH
@@ -200,8 +200,12 @@ jobs:
           /mnt/lustre/share/git clone https://github.com/open-mmlab/mmengine.git
           cd mmengine && git checkout v0.7.4 && cd ..
           srun --job-name=${GITHUB_RUN_NUMBER}_${GITHUB_JOB} --partition=${CUDA_PARTATION} --gres=gpu:${GPU_REQUESTS} --time=20 bash ../scripts/ci/ci_one_iter.sh build_cuda
+          
+          cd ..
+          source scripts/ci/ci_one_iter.sh export_pythonpath_cuda \${basic_path}
+          cd mmlab_pack
           rm -rf one_iter_data
-
+          python ../scripts/ci/ci_run_one_iter.py cuda  ${GITHUB_RUN_NUMBER}_${GITHUB_JOB} "gpu:${GPU_REQUESTS}" ${CUDA_PARTATION}  && rm -rf one_iter_data || (rm -rf one_iter_data && exit 1)
           """
 
   Gen-Data:
