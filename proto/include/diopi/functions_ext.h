@@ -28,14 +28,15 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
 // philox_seed
 // philox_offset 是决定generator的种子，因此我们使用diopi generator来替代
 // 估计这个softmax_logsumexp是指的
+
 DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                                diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k, int64_t* max_q, int64_t* max_k,
                                                double dropout_p, bool is_causal, bool return_debug_mask, double* scale, diopiTensorHandle_t output,
-                                               diopiTensorHandle_t softmax_logsumexp, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask);
+                                               diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask);
 
 DIOPI_API diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
                                                        diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t out,
-                                                       diopiConstTensorHandle_t logsumexp, diopiConstTensorHandle_t cum_seq_q,
+                                                       diopiConstTensorHandle_t softmax_lse, diopiConstTensorHandle_t cum_seq_q,
                                                        diopiConstTensorHandle_t cum_seq_k, int64_t* max_q, int64_t* max_k, double dropout_p, bool is_causal,
                                                        diopiGeneratorHandle_t gen, double* scale, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
                                                        diopiTensorHandle_t grad_v);

@@ -113,14 +113,14 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
 DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                                diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k, int64_t* max_q, int64_t* max_k,
                                                double dropout_p, bool is_causal, bool return_debug_mask, double* scale, diopiTensorHandle_t output,
-                                               diopiTensorHandle_t softmax_logsumexp, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask) {
+                                               diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask) {
     impl::aten::setCurCtx(ctx);
     auto atQ = impl::aten::buildATen(q).clone();
     auto atK = impl::aten::buildATen(k).clone();
     auto atV = impl::aten::buildATen(v).clone();
 
     at::Tensor atOutput, atLog_sumexp, atDebug_attn_mask;
-    uint64_t atPhilox_seed{0}, atPhilox_offset{0};
+    int64_t atPhilox_seed{0}, atPhilox_offset{0};
     if (max_q == nullptr && max_k == nullptr && cum_seq_q == nullptr && cum_seq_q == nullptr) {
         TORCH_CHECK(false, "There are currently cuda memory errors being returned from this path.")
         // Query -> Query (Batch x {Q_seq_len}  x Num_heads x Dim_per_head)
@@ -172,16 +172,16 @@ DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiCo
             at::_flash_attention_forward(atQ, atK, atV, atCum_seq_q, atCum_seq_k, *max_q, *max_k, dropout_p, is_causal, return_debug_mask);
     }
 
-    // 目前pytorch2.0版本返回的是(Tensor output, Tensor softmax_logsumexp, int philox_seed, int philox_offset, Tensor debug_attn_mask)
+    // 目前pytorch2.0版本返回的是(Tensor output, Tensor softmax_lse, int philox_seed, int philox_offset, Tensor debug_attn_mask)
     // 但是main分支的是返回的是五个tensor，因此存在一个转换的问题
     impl::aten::updateATen2Tensor(ctx, atOutput, output);
-    impl::aten::updateATen2Tensor(ctx, atLog_sumexp, softmax_logsumexp);
+    impl::aten::updateATen2Tensor(ctx, atLog_sumexp, softmax_lse);
     impl::aten::updateATen2Tensor(ctx, atDebug_attn_mask, debug_attn_mask);
 
-    at::Tensor new_state = at::empty({2});
+    at::Tensor new_state = at::empty({2}, at::kLong);
     // 可能存在bug，先测试
-    new_state[0].fill_(static_cast<double>(atPhilox_seed));;
-    new_state[1].fill_(static_cast<double>(atPhilox_offset));
+    new_state[0].fill_(atPhilox_seed);
+    new_state[1].fill_(atPhilox_offset);
 
     diopiTensorHandle_t new_state_handle = nullptr;
     impl::aten::buildDiopiTensor(ctx, new_state, &new_state_handle);
@@ -193,7 +193,7 @@ DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiCo
 
 DIOPI_API diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
                                                        diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t out,
-                                                       diopiConstTensorHandle_t logsumexp, diopiConstTensorHandle_t cum_seq_q,
+                                                       diopiConstTensorHandle_t softmax_lse, diopiConstTensorHandle_t cum_seq_q,
                                                        diopiConstTensorHandle_t cum_seq_k, int64_t* max_q, int64_t* max_k, double dropout_p, bool is_causal,
                                                        diopiGeneratorHandle_t gen, double* scale, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
                                                        diopiTensorHandle_t grad_v) {
@@ -207,13 +207,13 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx,
     auto atV = impl::aten::buildATen(v);
     auto atGrad_out = impl::aten::buildATen(grad_out);
     auto atOut = impl::aten::buildATen(out);
-    auto atLogsumexp = impl::aten::buildATen(logsumexp);
+    auto atLogsumexp = impl::aten::buildATen(softmax_lse);
 
     diopiTensorHandle_t* state_ptr = nullptr;
     diopiGeneratorGetState(ctx, gen, state_ptr);
     auto atState = impl::aten::buildATen(*state_ptr);
-    uint64_t atPhilox_seed = atState[0].item<uint64_t>();
-    uint64_t atPhilox_offset = atState[1].item<uint64_t>();
+    int64_t atPhilox_seed = atState[0].item<int64_t>();
+    int64_t atPhilox_offset = atState[1].item<int64_t>();
 
     if (max_q == nullptr && max_k == nullptr && cum_seq_q == nullptr && cum_seq_q == nullptr) {
         TORCH_CHECK(false, "There are currently cuda memory errors being returned from this path.")
@@ -253,7 +253,7 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx,
         auto out_reshaped = atOut.view({Nnz_kv, num_heads, head_dim});
         auto lse_reshaped = atLogsumexp.view({Nnz_kv, num_heads, head_dim});
 
-        //(Tensor grad_out, Tensor query, Tensor key, Tensor value, Tensor out, Tensor logsumexp, Tensor cum_seq_q, Tensor cum_seq_k, int max_q, int max_k,
+        //(Tensor grad_out, Tensor query, Tensor key, Tensor value, Tensor out, Tensor softmax_lse, Tensor cum_seq_q, Tensor cum_seq_k, int max_q, int max_k,
         // float dropout_p, bool is_causal, int philox_seed, int philox_offset) -> (Tensor, Tensor, Tensor)
 
         std::tie(atGrad_q, atGrad_k, atGrad_v) = at::_flash_attention_backward(grad_query_buffer_reshaped,
