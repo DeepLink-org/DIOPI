@@ -41,7 +41,9 @@ class FunctionNotImplementedError(DiopiException):
 def check_returncode(returncode, throw_exception=True):
     if 0 != returncode:
         if returncode == diopiError.diopi_no_implement:
+            glob_vars.func_status[glob_vars.cur_test_func] = 'skipped'
             raise FunctionNotImplementedError(glob_vars.cur_test_func + ' not implement')
+        glob_vars.func_status[glob_vars.cur_test_func] = 'failed'
         error_info = f"Returncode: {returncode}"
         error_detail = get_last_error()
         error_info += ", Details: " + error_detail

@@ -242,10 +242,10 @@ class DB_Operation(object):
                 self.func_dict[diopi_func]["success_case"] += 1
             elif tmp_func_status[diopi_func] == "skipped":
                 self.func_dict[diopi_func]["skipped_case"] += 1
-            else:
-                self.func_dict[diopi_func]["failed_case"] += 1
                 if not_implemented_flag == 1:
                     self.func_dict[diopi_func]["not_implemented_flag"] = 1
+            else:
+                self.func_dict[diopi_func]["failed_case"] += 1
             self.func_dict[diopi_func]["case_num"] += 1
 
     @use_db(glob_vars.use_db)

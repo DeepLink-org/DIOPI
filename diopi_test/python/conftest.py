@@ -23,16 +23,17 @@ def pytest_sessionstart(session):
 def pytest_runtest_makereport(item, call):
     out = yield
     report = out.get_result()
-    item = {'pytest_nodeid': item.nodeid, 'diopi_func_name': glob_vars.cur_test_func}
+    db_data = {'pytest_nodeid': item.nodeid, 'diopi_func_name': glob_vars.cur_test_func}
     if report.when == 'call':
         if report.failed:
             # err_msg = f"[message] {report.longrepr.reprcrash.message[:900]}......, [path] {report.longrepr.reprcrash.path}, [lineno] {report.longrepr.reprcrash.lineno}".replace('\'','')
-            item['error_msg'] = f'{report.longrepr.reprcrash.message}'
+            db_data['error_msg'] = f'{report.longrepr.reprcrash.message}'
             if 'FunctionNotImplementedError' in report.longrepr.reprcrash.message:
                 report.outcome = 'skipped'
-                item['not_implemented_flag'] = 1
-        item['result'] = report.outcome
-        db_conn.will_update_device_case(item)
+                report.longrepr = (item.path, report.longrepr.reprcrash.lineno, f'Skipped: {report.longrepr.reprcrash.message}')
+                db_data['not_implemented_flag'] = 1
+        db_data['result'] = report.outcome
+        db_conn.will_update_device_case(db_data)
     glob_vars.cur_test_func = ''
     glob_vars._func_status.clear()
 
