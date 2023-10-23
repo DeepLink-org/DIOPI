@@ -45,8 +45,11 @@ if(NOT DIOPI_BR_LIB)
     message(FATAL_ERROR "${DEVICEIMPL} library not found !")
 endif()
 
-# ln -s /*/libdiopi_impl.so impl/lib/libdiopi_impl.so
-execute_process(COMMAND ln -s ${DIOPI_BR_LIB} ${LIBRARY_OUTPUT_PATH}/lib${DEVICEIMPL}.so)
+# ln -sf /*/libdiopi_impl.so impl/lib/libdiopi_impl.so
+execute_process(
+    COMMAND mkdir -p ${LIBRARY_OUTPUT_PATH}
+    COMMAND ln -fs ${DIOPI_BR_LIB} ${LIBRARY_OUTPUT_PATH}/lib${DEVICEIMPL}.so
+)
 
 if (TEST)
   add_subdirectory(test)
