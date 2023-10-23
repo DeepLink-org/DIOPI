@@ -20,10 +20,13 @@ extern "C" {
  * @param[in] x The input tensor which rotary embedding will be applied. type = [float32, float16, float64].
  * @param[in] cos The cosine values. type = [float32, float16, float64].
  * @param[in] sin The sine values. type = [float32, float16, float64].
- * @param[in] conj bool: If `false`, computes regular rotary embeddings. If `true`, computes the complex conjugate of the rotary embeddings.
+ * @param[in] conj bool: If `true`, computes the complex conjugate of the rotary embeddings for forward.If `false`, computes regular rotary embeddings for backward.
+ * @param[in] interleaved bool: 
+ *   - When set to `false`, rotary embedding is applied by splitting 'x' in half and separately applying sine and cosine to each half.
+ *   - When set to `true`, rotary embedding is applied by pairing every two elements in 'x' and applying sine and cosine to each pair.
  */
 DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t x, diopiConstTensorHandle_t cos,
-                                            diopiConstTensorHandle_t sin, const bool conj);
+                                            diopiConstTensorHandle_t sin, const bool conj, const bool interleaved);
 
 /**
  * @brief Apply Root Mean Square (RMS) Normalization to the input tensor.
