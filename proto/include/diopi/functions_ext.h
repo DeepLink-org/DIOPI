@@ -140,8 +140,14 @@ DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiCo
  * @param[in] gen Handle representing the random number generator used for dropout in the forward pass.
  * @param[in] scale Scaling factor used for attention weights in the forward pass. type = [float32, float16, float64].
  * @param[out] grad_q The gradient of the query tensor. type = [float32, float16, float64].
+ *   - for unpaded: shape = [q_nums, head_num, head_dim]
+ *   - for padded: shape = [batch_size, q_seq_len, head_num, head_dim]
  * @param[out] grad_k The gradient of the key tensor. type = [float32, float16, float64].
+ *   - for unpaded: shape = [k_nums, head_num, head_dim]
+ *   - for padded: shape = [batch_size, k_seq_len, head_num, head_dim]
  * @param[out] grad_v The gradient of the value tensor. type = [float32, float16, float64].
+ *   - for unpaded: shape = [v_nums, head_num, head_dim]
+ *   - for padded: shape = [batch_size, v_seq_len, head_num, head_dim]
  */
 DIOPI_API diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
                                                        diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t out,
