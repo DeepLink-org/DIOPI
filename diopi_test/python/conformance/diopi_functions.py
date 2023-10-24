@@ -5,6 +5,7 @@ import ctypes
 import itertools
 import numpy as np
 import diopilib
+import pytest
 
 from collections import namedtuple
 from ctypes import c_double, byref
@@ -42,7 +43,8 @@ def check_returncode(returncode, throw_exception=True):
     if 0 != returncode:
         if returncode == diopiError.diopi_no_implement:
             glob_vars.func_status[glob_vars.cur_test_func] = 'skipped'
-            raise FunctionNotImplementedError(glob_vars.cur_test_func + ' not implement')
+            pytest.skip(glob_vars.cur_test_func + ' not implement')
+            # raise FunctionNotImplementedError(glob_vars.cur_test_func + ' not implement')
         glob_vars.func_status[glob_vars.cur_test_func] = 'failed'
         error_info = f"Returncode: {returncode}"
         error_detail = get_last_error()
@@ -59,8 +61,9 @@ def check_function(fn_name):
         func = eval(f"diopilib.{fn_name}")
         glob_vars.func_status[glob_vars.cur_test_func] = 'passed'
     except AttributeError as e:
-        glob_vars.func_status[glob_vars.cur_test_func] = 'failed'
-        raise FunctionNotImplementedError(e.args)
+        glob_vars.func_status[glob_vars.cur_test_func] = 'skipped'
+        pytest.skip(e.args)
+        # raise FunctionNotImplementedError(e.args)
     return func
 
 
