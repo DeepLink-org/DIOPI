@@ -206,7 +206,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
 
 // For cnnl version（1.20.0), there is a bug in kernel causing grad_input
 // all zero randomly. We pass a wrong totalweight here.
-// TODO: remove this when cnnl fixes this bug
+// TODO(someone): remove this when cnnl fixes this bug
 #if (CNNL_MAJOR * 10000 + CNNL_MINOR * 100 + CNNL_PATCHLEVEL <= 20000)
     diopiScalar_t scalar = constructDiopiScalarT(weightTensor.dtype(), targetTensor.numel());
     DIOPI_CALL(diopiFill(ctx, totalWeightTensor.tensorHandle(), &scalar));
