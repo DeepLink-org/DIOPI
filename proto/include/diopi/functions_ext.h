@@ -20,7 +20,7 @@ extern "C" {
  * @param[in] x The input tensor which rotary embedding will be applied. type = [float32, float16, float64].
  * @param[in] cos The cosine values. type = [float32, float16, float64].
  * @param[in] sin The sine values. type = [float32, float16, float64].
- * @param[in] conj bool: If `true`, computes the complex conjugate of the rotary embeddings for forward.If `false`, computes regular rotary embeddings for
+ * @param[in] conj bool: If `false`, computes the complex conjugate of the rotary embeddings for forward. If `true`, computes regular rotary embeddings for
  * backward.
  * @param[in] interleaved bool:
  *   - When set to `false`, rotary embedding is applied by splitting 'x' in half and separately applying sine and cosine to each half.
@@ -35,7 +35,7 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
  * @param[out] out the output tensor containing the normalized values. type = [float32, float16, float64].
  * @param[in] invRMS The tensor containing the inverse of root mean square. type = [float32, float16, float64].
  * @param[in] input The input tensor to be normalized. type = [float32, float16, float64].
- * @param[in] normalized_shape The shape of the normalization. Shape is equal to weight.shape. type = [int32, int64].
+ * @param[in] normalized_shape The shape of the normalization. type = [int32, int64].
  * @param[in] weight The gain parameter used to re-scale the standardized summed inputs type = [float32, float16, float64].
  * @param[in] bias The bias tensor for the normalization. type = [float32, float16, float64].
  * @param[in] eps A small value to avoid division by zero. type = [float64].
@@ -54,7 +54,7 @@ DIOPI_API diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_
  * @param[in] weight The weight parameter used in the forward pass. type = [float32, float16, float64].
  * @param[in] bias The bias used in the forward pass. type = [float32, float16, float64].
  * @param[in] invRMS The inverse of the root mean square values computed in the forward pass. type = [float32, float16, float64].
- * @param[in] normalized_shape The shape of the normalization. Shape is equal to weight.shape. type = [int32, int64].
+ * @param[in] normalized_shape The shape of the normalization. type = [int32, int64].
  * @param[in] eps A small value used in the computation to avoid division by zero. type = [float64].
  */
 DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight,
@@ -65,96 +65,102 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
 /**
  * @brief Compute the forward pass for MultiheadAttention.
  * @param[in] ctx Context environment.
- * @param[in] q Query tensor. type = [float32, float16, float64].
- *   - for unpaded: shape = [q_nums, head_num, head_dim]
- *   - for padded: shape = [batch_size, q_seq_len, head_num, head_dim]
- * @param[in] k Key tensor. type = [float32, float16, float64].
- *   - for unpaded: shape = [k_nums, head_num, head_dim]
- *   - for padded: shape = [batch_size, k_seq_len, head_num, head_dim]
- * @param[in] v Value tensor. type = [float32, float16, float64].
- *   - for unpaded: shape = [v_nums, head_num, head_dim]
- *   - for padded: shape = [batch_size, v_seq_len, head_num, head_dim]
- * @param[in] cum_seq_q Cumulative sequence length for the query. type = [int64, int32].
- *   - for unpaded: shape = [batch_size+1, ]
- *   - for padded: nullptr
- * @param[in] cum_seq_k Cumulative sequence length for the key. type = [int64, int32].
- *   - for unpaded: shape = [batch_size+1, ]
- *   - for padded: nullptr
- * @param[in] max_q Maximum sequence length for the query. For tensors already padded, pass nullptr.   type = [int64].
- * @param[in] max_k Maximum sequence length for the key. For tensors already padded, pass nullptr.  type = [int64].
+ * @param[in] q Query tensor. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[in] k Key tensor. shape = [batch_size, k_seq_len, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[in] v Value tensor. shape = [batch_size, v_seq_len, head_num, head_dim]. type = [float32, float16, float64].
  * @param[in] dropout_p Dropout probability. type = [float32, float16, float64].
  * @param[in] is_causal Flag to determine if the attention should be causal, masking future tokens. type = [bool]
  * @param[in] return_debug_mask Flag indicating if the attention debug mask should be returned. type = [bool].
  * @param[in] scale Scaling factor for attention weights. type = [float32, float16, float64].
- * @param[out] out Tensor containing the result after applying multi-head attention. type = [float32, float16, float64].
- *   - for unpaded: shape = [q_nums, head_num, head_dim]
- *   - for padded: shape = [batch_size, q_seq_len, head_num, head_dim]
- * @param[out] softmax_lse Tensor representing the log-sum-exp of the softmax values. type = [float32, float16, float64].
- *   - for unpaded: shape = [batch_size, head_num, max_q]
- *   - for padded: shape = [batch_size, head_num, q_seq_len]
+ * @param[out] out Tensor containing the result after applying multi-head attention. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [float32,
+ * float16, float64].
+ * @param[out] softmax_lse Tensor representing the log-sum-exp of the softmax values. shape = [batch_size, head_num, q_seq_len]. type = [float32, float16,
+ * float64].
  * @param[out] gen Handle for the random number generator used in dropout.
- * @param[out] debug_attn_mask Debugging tensor for the attention mask (returned if return_debug_mask is true). type = [bool].
- *   - for unpadded: shape = [batch_size, num_heads, max_q, max_k]
- *   - for padded: shape = [batch_size, num_heads, q_seq_len, k_seq_len]
+ * @param[out] debug_attn_mask Debugging tensor for the attention mask (returned if return_debug_mask is true). shape = [batch_size, num_heads, q_seq_len,
+ * k_seq_len]. type = [bool].
  */
 DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                               diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k, const int64_t* max_q,
-                                               const int64_t* max_k, double dropout_p, bool is_causal, bool return_debug_mask, double* scale,
-                                               diopiTensorHandle_t out, diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen,
-                                               diopiTensorHandle_t debug_attn_mask);
+                                               double dropout_p, bool is_causal, bool return_debug_mask, double scale, diopiTensorHandle_t out,
+                                               diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask);
 
 /**
  * @brief Compute the forward pass for MultiheadAttention.
  * @param[in] ctx Context environment.
- * @param[in] grad_out The gradient of the output tensor.
- *   - for unpaded: shape = [q_nums, head_num, head_dim]
- *   - for padded: shape = [batch_size, q_seq_len, head_num, head_dim]
- * @param[in] q Query tensor from the forward pass. type = [float32, float16, float64].
- *   - for unpaded: shape = [q_nums, head_num, head_dim]
- *   - for padded: shape = [batch_size, q_seq_len, head_num, head_dim]
- * @param[in] k Key tensor from the forward pass. type = [float32, float16, float64].
- *   - for unpaded: shape = [k_nums, head_num, head_dim]
- *   - for padded: shape = [batch_size, k_seq_len, head_num, head_dim]
- * @param[in] v Value tensor from the forward pass. type = [float32, float16, float64].
- *   - for unpaded: shape = [v_nums, head_num, head_dim]
- *   - for padded: shape = [batch_size, v_seq_len, head_num, head_dim]
- * @param[in] out Output tensor from the forward pass.  type = [float32, float16, float64].
- *   - for unpaded: shape = [q_nums, head_num, head_dim]
- *   - for padded: shape = [batch_size, q_seq_len, head_num, head_dim]
- * @param[in] softmax_lse Tensor representing the log-sum-exp of softmax values from the forward pass. type = [float32, float16, float64].
- *   - for unpaded: shape = [batch_size, head_num, max_q]
- *   - for padded: shape = [batch_size, head_num, q_seq_len]
- * @param[in] cum_seq_q Cumulative sequence length for the query. type = [int64, int32].
- *   - for unpaded: shape = [batch_size+1, ]
- *   - for padded: nullptr
- * @param[in] cum_seq_k Cumulative sequence length for the key. type = [int64, int32].
- *   - for unpaded: shape = [batch_size+1, ]
- *   - for padded: nullptr
- * @param[in] max_q Maximum sequence length for the query. For tensors already padded, pass nullptr.   type = [int64].
- * @param[in] max_k Maximum sequence length for the key. For tensors already padded, pass nullptr.  type = [int64].
+ * @param[in] grad_out The gradient of the output tensor. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[in] q Query tensor from the forward pass. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[in] k Key tensor from the forward pass. shape = [batch_size, k_seq_len, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[in] v Value tensor from the forward pass. shape = [batch_size, v_seq_len, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[in] out Output tensor from the forward pass. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[in] softmax_lse Tensor representing the log-sum-exp of softmax values from the forward pass. shape = [batch_size, head_num, q_seq_len]. type =
+ * [float32, float16, float64].
  * @param[in] dropout_p Dropout probability. type = [float32, float16, float64].
  * @param[in] is_causal Flag to determine if the attention should be causal, masking future tokens. type = [bool]
- * @param[in] return_debug_mask Flag from the forward pass indicating if the attention was causal (masking future tokens). type = [bool].
- *   - for unpadded: shape = [batch_size, num_heads, max_q, max_k]
- *   - for padded: shape = [batch_size, num_heads, q_seq_len, k_seq_len]
  * @param[in] gen Handle representing the random number generator used for dropout in the forward pass.
  * @param[in] scale Scaling factor used for attention weights in the forward pass. type = [float32, float16, float64].
- * @param[out] grad_q The gradient of the query tensor. type = [float32, float16, float64].
- *   - for unpaded: shape = [q_nums, head_num, head_dim]
- *   - for padded: shape = [batch_size, q_seq_len, head_num, head_dim]
- * @param[out] grad_k The gradient of the key tensor. type = [float32, float16, float64].
- *   - for unpaded: shape = [k_nums, head_num, head_dim]
- *   - for padded: shape = [batch_size, k_seq_len, head_num, head_dim]
- * @param[out] grad_v The gradient of the value tensor. type = [float32, float16, float64].
- *   - for unpaded: shape = [v_nums, head_num, head_dim]
- *   - for padded: shape = [batch_size, v_seq_len, head_num, head_dim]
+ * @param[out] grad_q The gradient of the query tensor. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[out] grad_k The gradient of the key tensor. shape = [batch_size, k_seq_len, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[out] grad_v The gradient of the value tensor. shape = [batch_size, v_seq_len, head_num, head_dim]. type = [float32, float16, float64].
  */
 DIOPI_API diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
                                                        diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t out,
-                                                       diopiConstTensorHandle_t softmax_lse, diopiConstTensorHandle_t cum_seq_q,
-                                                       diopiConstTensorHandle_t cum_seq_k, const int64_t* max_q, const int64_t* max_k, double dropout_p,
-                                                       bool is_causal, diopiGeneratorHandle_t gen, double* scale, diopiTensorHandle_t grad_q,
-                                                       diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v);
+                                                       diopiConstTensorHandle_t softmax_lse, double dropout_p, bool is_causal, diopiGeneratorHandle_t gen,
+                                                       double scale, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v);
+
+/**
+ * @brief Compute the forward pass for MultiheadAttentionVarLen.
+ * @param[in] ctx Context environment.
+ * @param[in] q Query tensor. shape = [q_nums, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[in] k Key tensor. shape = [k_nums, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[in] v Value tensor. shape = [v_nums, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[in] cum_seq_q Cumulative sequence length for the query. shape = [batch_size+1, ]. type = [int64, int32].
+ * @param[in] cum_seq_k Cumulative sequence length for the key. shape = [batch_size+1, ]. type = [int64, int32].
+ * @param[in] max_q Maximum sequence length for the query. type = [int64, int32].
+ * @param[in] max_k Maximum sequence length for the key. type = [int64, int32].
+ * @param[in] dropout_p Dropout probability. type = [float32, float16, float64].
+ * @param[in] is_causal Flag to determine if the attention should be causal, masking future tokens. type = [bool]
+ * @param[in] return_debug_mask Flag indicating if the attention debug mask should be returned. type = [bool].
+ * @param[in] scale Scaling factor for attention weights. type = [float32, float16, float64].
+ * @param[out] out Tensor containing the result after applying multi-head attention. shape = [q_nums, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[out] softmax_lse Tensor representing the log-sum-exp of the softmax values. shape = [batch_size, head_num, max_q]. type = [float32, float16, float64].
+ * @param[out] gen Handle for the random number generator used in dropout.
+ * @param[out] debug_attn_mask Debugging tensor for the attention mask (returned if return_debug_mask is true). shape = [batch_size, num_heads, max_q, max_k].
+ * type = [bool].
+ */
+DIOPI_API diopiError_t diopiMultiHeadAttentionVarLen(diopiContextHandle_t ctx, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
+                                                     diopiConstTensorHandle_t v, diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k,
+                                                     int64_t max_q, int64_t max_k, double dropout_p, bool is_causal, bool return_debug_mask, double scale,
+                                                     diopiTensorHandle_t out, diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen,
+                                                     diopiTensorHandle_t debug_attn_mask);
+
+/**
+ * @brief Compute the forward pass for MultiheadAttentionVarLen.
+ * @param[in] ctx Context environment.
+ * @param[in] grad_out The gradient of the output tensor. shape = [q_nums, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[in] q Query tensor from the forward pass. shape = [q_nums, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[in] k Key tensor from the forward pass. shape = [k_nums, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[in] v Value tensor from the forward pass. shape = [v_nums, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[in] out Output tensor from the forward pass. shape = [q_nums, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[in] softmax_lse Tensor representing the log-sum-exp of softmax values from the forward pass. shape = [batch_size, head_num, max_q]. type = [float32,
+ * float16, float64].
+ * @param[in] cum_seq_q Cumulative sequence length for the query. shape = [batch_size+1, ]. type = [int64, int32].
+ * @param[in] cum_seq_k Cumulative sequence length for the key. shape = [batch_size+1, ]. type = [int64, int32].
+ * @param[in] max_q Maximum sequence length for the query. type = [int64, int32].
+ * @param[in] max_k Maximum sequence length for the key. type = [int64, int32].
+ * @param[in] dropout_p Dropout probability. type = [float32, float16, float64].
+ * @param[in] is_causal Flag to determine if the attention should be causal, masking future tokens. type = [bool]
+ * @param[in] gen Handle representing the random number generator used for dropout in the forward pass.
+ * @param[in] scale Scaling factor used for attention weights in the forward pass. type = [float32, float16, float64].
+ * @param[out] grad_q The gradient of the query tensor. shape = [q_nums, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[out] grad_k The gradient of the key tensor. shape = [k_nums, head_num, head_dim]. type = [float32, float16, float64].
+ * @param[out] grad_v The gradient of the value tensor. shape = [v_nums, head_num, head_dim]. type = [float32, float16, float64].
+ */
+DIOPI_API diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
+                                                             diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t out,
+                                                             diopiConstTensorHandle_t softmax_lse, diopiConstTensorHandle_t cum_seq_q,
+                                                             diopiConstTensorHandle_t cum_seq_k, int64_t max_q, int64_t max_k, double dropout_p, bool is_causal,
+                                                             diopiGeneratorHandle_t gen, double scale, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
+                                                             diopiTensorHandle_t grad_v);
 
 #if defined(__cplusplus)
 }
