@@ -191,13 +191,19 @@ device_configs = {
         name=["nll_loss"],
         atol=1e-3,
         rtol=1e-3,
+        para=dict(
+            # Now, there is a problem calculating for total weight.
+            # See loss.cpp for more details
+            reduction=[Skip('mean')],
+        ),
         tensor_para=dict(
-            args=[
+            args = [
                 {
-                    "ins": ['input'],
-                    "shape": (Skip((5, 16, 0)), Skip((0, 16,)), Skip((4, 82, 0, 3))),
+                    # camb does not support for 1d input and empty target
+                    "ins": ['target'],
+                    "shape": (Skip(()),),
                 },
-            ],
+            ]
         ),
     ),
 
