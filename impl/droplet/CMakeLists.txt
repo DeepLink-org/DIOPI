@@ -2,13 +2,6 @@ cmake_minimum_required(VERSION 3.5)
 project(droplet_impl)
 
 option(TEST "whether to test by using conformance test" ON)
-option(DEBUG "whether to use debug" OFF)
-
-if (DEBUG)
-    SET(CMAKE_BUILD_TYPE "Debug")
-else()
-    SET(CMAKE_BUILD_TYPE "Release")
-endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 

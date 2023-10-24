@@ -4,7 +4,7 @@
  * Author
  *
  *************************************************************************************************/
-#include <diopi/diopirt.h>
+#include "diopi/diopirt.h"
 #include <conform_test.h>
 #include <tang_runtime.h>
 #include <tang_compiler_api.h>
@@ -52,22 +52,19 @@ int32_t device_synchronize_stream(diopiStreamHandle_t stream_handle) {
     return diopiSuccess;
 }
 
-int32_t device_memcpy_h2d_async(diopiStreamHandle_t stream_handle,
-                                void* dst, const void* src, uint64_t bytes) {
+int32_t device_memcpy_h2d_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
     tangStream_t phStream = (tangStream_t)stream_handle;
     CALL_DROPLET(tangMemcpyAsync(dst, src, bytes, tangMemcpyHostToDevice, phStream));
     return diopiSuccess;
 }
 
-int32_t device_memcpy_d2h_async(diopiStreamHandle_t stream_handle,
-                                void* dst, const void* src, uint64_t bytes) {
+int32_t device_memcpy_d2h_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
     tangStream_t phStream = (tangStream_t)stream_handle;
     CALL_DROPLET(tangMemcpyAsync(dst, src, bytes, tangMemcpyDeviceToHost, phStream));
     return diopiSuccess;
 }
 
-int32_t device_memcpy_d2d_async(diopiStreamHandle_t stream_handle,
-                                void* dst, const void* src, uint64_t bytes) {
+int32_t device_memcpy_d2d_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
     tangStream_t phStream = (tangStream_t)stream_handle;
     CALL_DROPLET(tangMemcpyAsync(dst, src, bytes, tangMemcpyDeviceToDevice, phStream));
     return diopiSuccess;
@@ -80,8 +77,7 @@ static std::mutex mtxLastError;
 const char* device_get_last_error_string() {
     tangError_t error = tangGetLastError();
     std::lock_guard<std::mutex> lock(mtxLastError);
-    sprintf(strLastError, "droplet error: %s; other error: %s",
-            tangGetErrorString(error), strLastErrorOther);
+    sprintf(strLastError, "droplet error: %s; other error: %s", tangGetErrorString(error), strLastErrorOther);
     return strLastError;
 }
 
@@ -89,7 +85,10 @@ const char* device_get_last_error_string() {
 int32_t finalizeLibrary() {
     return diopiSuccess;
 }
-int32_t initLibrary() { return diopiSuccess; }
+
+int32_t initLibrary() { 
+    return diopiSuccess; 
+}
 
 #if defined(__cplusplus)
 }  // extern "C"
