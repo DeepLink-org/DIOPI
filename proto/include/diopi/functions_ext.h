@@ -162,6 +162,8 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_
                                                              diopiGeneratorHandle_t gen, double scale, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
                                                              diopiTensorHandle_t grad_v);
 
+// ============================================lightllm begin========================================
+
 /**
  * @brief This function applies a penalty to the given logits based on the presence and frequency of certain tokens in the input sequence to suppress
  * generating tokens repeatedly.
@@ -253,6 +255,8 @@ DIOPI_API diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ct
 DIOPI_API diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTensorHandle_t context_attention_out, diopiConstTensorHandle_t q,
                                                       diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t b_start_loc,
                                                       diopiConstTensorHandle_t b_seq_len, int max_input_len);
+
+// ============================================lightllm end========================================
 
 #if defined(__cplusplus)
 }
