@@ -43,10 +43,6 @@ diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     }
     runner.run();
 
-    if (transTensorTo2DFalg) outputCopy.view(outputPrimaryShape);
-    diopiTensorHandle_t diopiOutputCopy = const_cast<diopiTensorHandle_t>(outputCopy.tensorHandle());
-    diopiCastDtype(ctx, out, diopiOutputCopy);
-
     return diopiSuccess;
 }
 
@@ -101,13 +97,9 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
 
     AscendTensor reshapedGradOutputCopy;
     makeTensorLike(ctx, reshapedGradOutputCopy, gradOutputCopy, gradOutputCopy.dtype());
-
     reshape(ctx, gradOutputCopy, reshapedGradOutputCopy, gradOutputCopy.shape());
 
     diopiTensorHandle_t diopiGradOutputCopy = const_cast<diopiTensorHandle_t>(reshapedGradOutputCopy.tensorHandle());
-    diopiTensorHandle_t diopiGradInputCopy = const_cast<diopiTensorHandle_t>(gradInputCopy.tensorHandle());
-    diopiTensorHandle_t diopiGradWeightCopy = const_cast<diopiTensorHandle_t>(gradWeightCopy.tensorHandle());
-
     if (gradBias) {
         std::vector<int64_t> dimVec(gradOutputCopy.shape().size() - 1);
         std::iota(std::begin(dimVec), std::end(dimVec), 0);
@@ -115,9 +107,6 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
         diopiSum(ctx, gradBias, diopiGradOutputCopy, dim);
     }
 
-    // return gradInputCopy、gradWeightCopy、gradBiasCopy
-    diopiCastDtype(ctx, gradInput, diopiGradInputCopy);
-    diopiCastDtype(ctx, gradWeight, diopiGradWeightCopy);
     return diopiSuccess;
 }
 
