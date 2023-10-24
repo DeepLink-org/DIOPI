@@ -29,9 +29,9 @@ pytorch_diopi_func_map = {
     'binary_cross_entropy': ['diopiBCELoss', 'diopiBCELossBackward'],
     'binary_cross_entropy_with_logits': ['diopiBCEWithLogits', 'diopiBCEWithLogitsBackward'],
     'dropout2d': ['diopiDropout', 'diopiDropoutInp'],
-    'slice_op': ['diopiSlice'],
+    'slice_op': ['diopiSlice', 'diopiSliceBackward'],
     'conv3d': ['diopiConvolution3d', 'diopiConvolution3dBackward'],
-    'interpolate': ['diopiUpsampleNearest', 'diopiUpsampleLinear'],
+    'interpolate': ['diopiUpsampleNearest', 'diopiUpsampleLinear', 'diopiUpsampleNearestBackward', 'diopiUpsampleLinearBackward'],
     'cholesky_ex': ['diopiCholesky', 'diopiCholeskyBackward'],
 }
 
