@@ -1965,6 +1965,22 @@ device_configs = {
         atol=1e-4,
     ),
 
+    'cast_dtype': dict(
+        name=["cast_dtype"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float64), Skip(Dtype.int64), Skip(Dtype.bool)]
+                },
+                {
+                    "ins": ['out'],
+                    "dtype": [Skip(Dtype.float64)]
+                }
+            ]
+        ),
+    ),
+
     'batch_norm_stats': dict(
         name=["batch_norm_stats"],
         atol=1e-2,

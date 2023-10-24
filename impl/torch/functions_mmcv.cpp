@@ -25,6 +25,19 @@ diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t *out, di
     return diopiSuccess;
 }
 
+diopiError_t diopiNmsRotatedMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t dets, diopiConstTensorHandle_t scores,
+                                 diopiConstTensorHandle_t order, diopiConstTensorHandle_t detsSorted, diopiConstTensorHandle_t labels, float iouThreshold,
+                                 bool multiLabel) {
+    impl::aten::setCurCtx(ctx);
+    auto atDets = impl::aten::buildATen(dets);
+    auto atScores = impl::aten::buildATen(scores);
+    auto atOrder = impl::aten::buildATen(order);
+    auto atDetsSorted = impl::aten::buildATen(detsSorted);
+    auto atOut = mmcv::ops::NMSRotatedCUDAKernelLauncher(atDets, atScores, atOrder, atDetsSorted, iouThreshold, multiLabel);
+    impl::aten::buildDiopiTensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
 diopiError_t diopiRoiAlignMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t output_, diopiTensorHandle_t argmax_y_, diopiTensorHandle_t argmax_x_,
                                diopiConstTensorHandle_t input_, diopiConstTensorHandle_t rois_, int64_t aligned_height, int64_t aligned_width,
                                int64_t sampling_ratio, int64_t pool_mode, float spatial_scale, bool aligned) {
