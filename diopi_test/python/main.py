@@ -104,7 +104,7 @@ def parse_args():
     run_test_args.add_argument(
         "--html_report", action="store_true", help="generate html report"
     )
-    run_test_args.add_argument("--pytest_args", type=str, help="pytest args")
+    run_test_args.add_argument("--pytest_args", action="store_true", type=str, help="pytest args", default='')
     run_test_args.add_argument(
         "--filter_dtype",
         type=str,
