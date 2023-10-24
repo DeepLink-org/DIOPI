@@ -8045,7 +8045,7 @@ diopi_configs = {
                 {
                     "ins": ["p_cumsum_seq_len"],
                     "value": ([0, 5, 7, 11],),
-                    "dtype": [Dtype.float32],
+                    "dtype": [Dtype.int32],
                 },
             ]
         )
