@@ -14,6 +14,8 @@ from .diopi_runtime import from_dtype_str, int_types, float_types
 from .utils import get_saved_pth_list, get_data_from_file, cfg_file_name
 import torch
 import torchvision
+from . import triton_kernels
+
 
 
 _cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -572,7 +574,6 @@ class CustomizedTest(object):
     #     return out
 
     def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch):
-        from . import triton_kernels
         triton_kernels.apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch)
         return logits
     
