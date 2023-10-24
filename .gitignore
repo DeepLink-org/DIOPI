@@ -139,5 +139,5 @@ wrap_func.cpp
 kernel_meta_*
 
 # generate files
-impl/camb/test/export_functions.cpp
+impl/*/test/export_functions.cpp
 proto/include/diopi/diopi_adaptors.hpp
