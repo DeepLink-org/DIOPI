@@ -85,8 +85,8 @@ int32_t finalizeLibrary() {
     return diopiSuccess;
 }
 
-int32_t initLibrary() { 
-    return diopiSuccess; 
+int32_t initLibrary() {
+    return diopiSuccess;
 }
 
 #if defined(__cplusplus)
