@@ -3940,3 +3940,12 @@ def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_to
     out = logits
     check_returncode(ret)
     return out
+
+
+def destindex_copy_kv(k, dest_loc, out):
+    call = "diopiDestindexCopyKV"
+    func = check_function(call)
+    
+    ret = func(k.context(), out, k, dest_loc)
+    check_returncode(ret)
+    return out
