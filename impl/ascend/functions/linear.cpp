@@ -25,12 +25,10 @@ diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     }
 
     // mm's input matrix must be 2D, it needs to be converted if it isn't
-    bool transTensorTo2DFalg = false;
     if (inputCopy.shape().size() > 2) {
         transTensorTo2D(ctx, inputCopy);
     }
     if (outputCopy.shape().size() > 2) {
-        transTensorTo2DFalg = true;
         transTensorTo2D(ctx, outputCopy);
     }
 
