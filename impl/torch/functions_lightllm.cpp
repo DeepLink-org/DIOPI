@@ -65,16 +65,13 @@ namespace {
         }
     };
 
-    template<const char* kernel_name>
+    template<int kernel_id>
     class TritonKernelRunner {
         public:
-        template<int gridX, int gridY, int gridZ, int num_warps, int num_ctas, int clusterDimX, int clusterDimY, int clusterDimZ, int shared_memory>
-        void run(CUstream stream, void** kernelParams, void** extra) {
-            static CUfunction  function = [&]() {
-                    CUfunction  function_temp;
-                    checkCudaErrors(cuModuleGetFunction(&function_temp, CuKernelModuleLoader::get(), kernel_name));
-                    return function_temp;
-                }();
+
+        void run(int gridX, int gridY, int gridZ, int num_warps, int num_ctas, int clusterDimX, int clusterDimY, int clusterDimZ, int shared_memory, const char* kernel_name, CUstream stream, void** kernelParams, void** extra) {
+            CUfunction  function;
+            checkCudaErrors(cuModuleGetFunction(&function, CuKernelModuleLoader::get(), kernel_name));
             if (gridX * gridY * gridZ > 0) {
                 if (num_ctas == 1) {
                     checkCudaErrors(cuLaunchKernel(function, gridX, gridY, gridZ, 32*num_warps, 1, 1, shared_memory, stream, kernelParams, extra));
@@ -118,6 +115,8 @@ namespace {
         }
     };
 
+    #define TritonKernelRunner_t TritonKernelRunner<__LINE__>
+
     unsigned int next_power_of_2(unsigned int x) {
         return std::pow(2, std::ceil(std::log(x) / std::log(2)));
     }
@@ -157,10 +156,28 @@ diopiError_t diopiDestindexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t 
     int BLOCK_HEAD = next_power_of_2(head_num);
 
     assert(atK.size(1) == atOut.size(1) && atK.size(2) == atOut.size(2));
-    int num_warps = 1;
 
-    TritonKernelRunner<"_fwd_kernel_destindex_copy_kv_0d1d2d3de4de5c6de7de8c9de"> kernel;
-    kernel<>
+    TritonKernelRunner_t kernel;
+    const int gridX = atDestLoc.size(0);
+    const int gridY = 1;
+    const int gridZ = 1;
+    const int num_warps = 1;
+    const int num_ctas = 1;
+    const int clusterDimX = 1;
+    const int clusterDimY = 1;
+    const int clusterDimZ = 1;
+    const int shared_memory = 0;
+
+    const char* kernel_name = "_fwd_kernel_destindex_copy_kv_0d1d2d3de4de5c6de7de8c9de";
+    CUstream stream = NULL;
+    void* k_ptr = atK.data_ptr();
+    void* out_ptr = atOut.data_ptr();
+    void* destLoc_ptr = atDestLoc.data_ptr();
+    unsigned int k_stride[] = {atK.stride(0), atK.stride(1), atK.stride(2)};
+    unsigned int out_stride[] = {atOut.stride(0), atOut.stride(1), atOut.stride(2)};
+    void** extra_param = NULL;
+    void *kernel_params[] = { &k_ptr, &destLoc_ptr, &out_ptr , &head_dim, &k_stride[0], &k_stride[1], &k_stride[2], &out_stride[0], &out_stride[1], &out_stride[2]};
+    kernel.run(gridX, gridY, gridZ, num_warps, num_ctas, clusterDimX, clusterDimY, clusterDimZ, shared_memory, kernel_name, stream, kernel_params, extra_param);
 
     impl::aten::unsetCurCtx();
     return diopiSuccess;

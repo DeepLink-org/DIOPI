@@ -8010,34 +8010,70 @@ diopi_configs = {
     'apply_penalty': dict(
         name=['apply_penalty'],
         interface=['CustomizedTest'],
+        para=dict(
+            p_max_len_in_batch=(8,)),
         tensor_para=dict(
-            args = [
+            args=[
                 {
                     "ins": ['logits'],
                     "value": ([[0.1, 0.5, 0.4, 0.3, 0.5],
-                              [0.2, 0.4, 0,   0,   0],
-                              [0.3, 0.4, 0.5, 0.3, 0]])
-                },
-                {   "ins":["presence_penalty"],
-                    "value": ([0.1, 0.8, 1.0]),
-                },    
-                {
-                    "ins":["frequency_penalty"],
-                    "value": ([0.3, 0.5, 0.4]),
-                },
-                {   "ins":["p_token_ids"],
-                    "value": ([0, 1, 2, 3, 4, 0, 1, 0, 1, 2, 3])
+                              [0.2, 0.4, 0.0, 0.0, 0.0],
+                              [0.3, 0.4, 0.5, 0.3, 0.0]],),
+                    "dtype": [Dtype.float32],
+
                 },
                 {
-                    "ins":["p_token_counts"],
-                    "value": ([3, 3, 2, 2, 1, 3, 3, 3, 3, 2, 2])
+                    "ins": ["presence_penalty"],
+                    "value": ([0.1, 0.8, 1.0],),
+                    "dtype": [Dtype.float32],
                 },
                 {
-                    "ins":["p_cumsum_seq_len"],
-                    "value":([0, 5, 7, 11])
-                }
-                
+                    "ins": ["frequency_penalty"],
+                    "value": ([0.3, 0.5, 0.4],),
+                    "dtype": [Dtype.float32],
+                },
+                {
+                    "ins": ["p_token_ids"],
+                    "value": ([0, 1, 2, 3, 4, 0, 1, 0, 1, 2, 3],),
+                    "dtype": [Dtype.int32],
+                },
+                {
+                    "ins": ["p_token_counts"],
+                    "value": ([3, 3, 2, 2, 1, 3, 3, 3, 3, 2, 2],),
+                    "dtype": [Dtype.int32],
+                },
+                {
+                    "ins": ["p_cumsum_seq_len"],
+                    "value": ([0, 5, 7, 11],),
+                    "dtype": [Dtype.int32],
+                },
             ]
         )
     ),
+
+    'destindex_copy_kv':dict(
+        name=['destindex_copy_kv'],
+        interface=['CustomizedTest'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins":['k'],
+                    "shape": ((32*1024, 12, 128),),
+                    "dtype": [Dtype.float16],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins":['dest_loc'],
+                    "shape": ((0, 32*1024),),
+                    "dtype":[Dtype.int32],
+                },
+                {
+                    "ins":['out'],
+                    "shape": ((32*1024, 12, 128),),
+                    "dtype": [Dtype.float16],
+                    "gen_fn": Genfunc.randn,
+                }
+            ]
+        )
+    )
 }
