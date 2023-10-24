@@ -4,13 +4,12 @@
  * Author
  *
  *************************************************************************************************/
-#include "diopi/diopirt.h"
 #include <conform_test.h>
-#include <tang_runtime.h>
-#include <tang_compiler_api.h>
-
 #include <cstdio>
 #include <mutex>
+#include <tang_runtime.h>
+#include <tang_compiler_api.h>
+#include <diopi/diopirt.h>
 
 #if defined(__cplusplus)
 extern "C" {
