@@ -98,9 +98,10 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
  *   - for padded: shape = [batch_size, num_heads, q_seq_len, k_seq_len]
  */
 DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                               diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k, int64_t* max_q, int64_t* max_k,
-                                               double dropout_p, bool is_causal, bool return_debug_mask, double* scale, diopiTensorHandle_t out,
-                                               diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask);
+                                               diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k, const int64_t* max_q,
+                                               const int64_t* max_k, double dropout_p, bool is_causal, bool return_debug_mask, double* scale,
+                                               diopiTensorHandle_t out, diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen,
+                                               diopiTensorHandle_t debug_attn_mask);
 
 /**
  * @brief Compute the forward pass for MultiheadAttention.
@@ -145,9 +146,9 @@ DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiCo
 DIOPI_API diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
                                                        diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t out,
                                                        diopiConstTensorHandle_t softmax_lse, diopiConstTensorHandle_t cum_seq_q,
-                                                       diopiConstTensorHandle_t cum_seq_k, int64_t* max_q, int64_t* max_k, double dropout_p, bool is_causal,
-                                                       diopiGeneratorHandle_t gen, double* scale, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
-                                                       diopiTensorHandle_t grad_v);
+                                                       diopiConstTensorHandle_t cum_seq_k, const int64_t* max_q, const int64_t* max_k, double dropout_p,
+                                                       bool is_causal, diopiGeneratorHandle_t gen, double* scale, diopiTensorHandle_t grad_q,
+                                                       diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v);
 
 #if defined(__cplusplus)
 }
