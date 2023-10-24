@@ -1233,18 +1233,6 @@ device_configs = {
         ),
     ),
 
-    'topk_nonzero': dict(
-        name=['topk'],
-        atol=1e-2,
-        rtol=1e-2,
-    ),
-
-    'topk_zero': dict(
-        name=['topk'],
-        atol=1e-2,
-        rtol=1e-2,
-    ),
-
     'transpose': dict(
         name=['transpose'],
         tensor_para=dict(
