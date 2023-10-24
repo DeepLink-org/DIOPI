@@ -162,3 +162,6 @@
     dtype: (float16)->float32
     layout: NCHW
 
+- diopiTopk:
+    dtype: (float32)->float64
+    layout: NCHW
