@@ -13,13 +13,23 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "env_vars.hpp"
 #include "error.hpp"
 #include "impl_functions.hpp"
+
+namespace impl {
+namespace camb {
+
+void getFuncName(const char* expr, char* name);
+
+}  // namespace camb
+}  // namespace impl
 
 #define DIOPI_CHECK(cond, fmt, args...)                                                      \
     do {                                                                                     \
@@ -48,9 +58,25 @@
         }                                                            \
     } while (false);
 
+#define DIOPI_RECORD_START(Expr)              \
+    const int kFuncNameMaxLen = 100;          \
+    char funcName[kFuncNameMaxLen];           \
+    impl::camb::getFuncName(#Expr, funcName); \
+    diopiRecordStart(funcName, &record);
+
+// cant' use this macro DIOPI_RECORD_END alone, but use it in pairs with DIOPI_RECORD_START
+#define DIOPI_RECORD_END diopiRecordEnd(&record);
+
 #define DIOPI_CALL(Expr)                                                                                                            \
     do {                                                                                                                            \
+        void* record = nullptr;                                                                                                     \
+        if (isRecordOn()) {                                                                                                         \
+            DIOPI_RECORD_START(Expr);                                                                                               \
+        }                                                                                                                           \
         diopiError_t ret = Expr;                                                                                                    \
+        if (isRecordOn()) {                                                                                                         \
+            DIOPI_RECORD_END;                                                                                                       \
+        }                                                                                                                           \
         if (diopiSuccess != ret) {                                                                                                  \
             impl::camb::setLastErrorString("%s: %s at %s:%d\n", ::impl::camb::getDiopiErrorStr(ret), __func__, __FILE__, __LINE__); \
             printf("%s", impl::camb::cambGetLastErrorString(false));                                                                \

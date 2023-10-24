@@ -2983,7 +2983,10 @@ DIOPI_API diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle
                                      diopiConstTensorHandle_t* indices, int64_t indices_counts, bool accumulate);
 
 /**
- * @brief Distribution and random numbers.
+ * @brief Gnereate random numbers from discrete uniform distribution.
+ *
+ * Fills inout tensor with numbers sampled from the discrete uniform distribution over [from, to - 1]. If not specified, the values are usually only bounded by
+ * self tensor’s data type. However, for floating point types, if unspecified, range will be [0, 2^mantissa] to ensure that every value is representable.
  * @param[in] ctx Context environment.
  * @param[in] inout the input and output tensor, type = [float32, float64, float16, int64, int32, int16, int8]
  * @param[in] from the lower bound of the random function. type = [int64].

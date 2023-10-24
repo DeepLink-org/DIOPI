@@ -169,6 +169,21 @@ diopiError_t fillAscendTensor(const AscendTensor& src, AscendTensor& dst) {
     return diopiSuccess;
 }
 
+diopiError_t fillNan(diopiContextHandle_t ctx, AscendTensor& src) {
+    // get nan value tensor
+    diopiTensorHandle_t nanValue;
+    auto zeroValueScalar = constructDiopiScalarT(diopi_dtype_float64, 0.0);
+    makeTensorFromScalar(ctx, &zeroValueScalar, &nanValue, diopi_dtype_float32, diopi_device);
+    diopiDivInpScalar(ctx, nanValue, &zeroValueScalar, diopiRoundMode_t::RoundModeNone);
+
+    diopiTensorHandle_t onePtr;
+    makeOnesLike(ctx, &onePtr, src.tensorHandle());
+    AscendTensor nan(nanValue), one(onePtr);
+    castTensor(ctx, one, diopi_dtype_bool);
+    diopiMaskedFillInp(ctx, const_cast<diopiTensorHandle_t>(src.tensorHandle()), one.tensorHandle(), nan.tensorHandle());
+    return diopiSuccess;
+}
+
 diopiError_t reshape(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst, const std::vector<int64_t>& shape) {
     ASCEND_CHECK_ABORT(src.isContiguous(), "now only contiguous tensor support reshape by shape.");
     if (src.isSame(dst)) {
@@ -269,31 +284,34 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
         diopiGetTensorData(outCopy, &ptr);
         switch (dtype) {
             case diopiDtype_t::diopi_dtype_float32:
-                reinterpret_cast<float*>(ptr)[0] = getValue<float>(scalar);
+                *reinterpret_cast<float*>(ptr) = getValue<float>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_float64:
-                reinterpret_cast<double*>(ptr)[0] = getValue<double>(scalar);
+                *reinterpret_cast<double*>(ptr) = getValue<double>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_int32:
-                reinterpret_cast<int*>(ptr)[0] = getValue<int>(scalar);
+                *reinterpret_cast<int*>(ptr) = getValue<int>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_int64:
-                reinterpret_cast<int64_t*>(ptr)[0] = getValue<int64_t>(scalar);
+                *reinterpret_cast<int64_t*>(ptr) = getValue<int64_t>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_uint64:
+                *reinterpret_cast<uint64_t*>(ptr) = getValue<uint64_t>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_uint8:
-                reinterpret_cast<uint8_t*>(ptr)[0] = getValue<uint8_t>(scalar);
+                *reinterpret_cast<uint8_t*>(ptr) = getValue<uint8_t>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_int8:
-                reinterpret_cast<int8_t*>(ptr)[0] = getValue<int8_t>(scalar);
+                *reinterpret_cast<int8_t*>(ptr) = getValue<int8_t>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_bool:
-                reinterpret_cast<bool*>(ptr)[0] = getValue<bool>(scalar);
+                *reinterpret_cast<bool*>(ptr) = getValue<bool>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_int16:
-                reinterpret_cast<int16_t*>(ptr)[0] = getValue<int16_t>(scalar);
+                *reinterpret_cast<int16_t*>(ptr) = getValue<int16_t>(scalar);
                 break;
             case diopiDtype_t::diopi_dtype_uint16:
-                reinterpret_cast<uint16_t*>(ptr)[0] = getValue<uint16_t>(scalar);
+                *reinterpret_cast<uint16_t*>(ptr) = getValue<uint16_t>(scalar);
                 break;
             default:
                 error("dtype %d not supported on host", dtype);
@@ -393,6 +411,54 @@ diopiError_t makeOnesLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
     diopiDtype_t dtype;
     diopiGetTensorDtype(src, &dtype);
     return makeOnesLike(ctx, out, src, dtype);
+}
+
+diopiError_t negativeInputRtnFillNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    // get nan value tensor
+    diopiTensorHandle_t nanValue;
+    auto nanValueScalar = diopiScalar_t();
+    nanValueScalar.stype = diopi_dtype_float64;
+    nanValueScalar.fval = 0.0;
+    makeTensorFromScalar(ctx, &nanValueScalar, &nanValue, diopi_dtype_float32, diopi_device);
+    auto zeroValueScalar = diopiScalar_t();
+    zeroValueScalar.stype = diopi_dtype_float64;
+    zeroValueScalar.fval = 0.0;
+    diopiDivInpScalar(ctx, nanValue, &zeroValueScalar, diopiRoundMode_t::RoundModeNone);
+
+    diopiDtype_t inputDtype;
+    diopiGetTensorDtype(input, &inputDtype);
+    diopiTensorHandle_t inputTemp;
+    if (diopi_dtype_float16 == inputDtype) {
+        makeTensorLike(ctx, &inputTemp, input, diopi_dtype_float32);
+        diopiCastDtype(ctx, inputTemp, input);
+    } else {
+        inputTemp = const_cast<diopiTensorHandle_t>(input);
+    }
+
+    // get negative mask
+    diopiTensorHandle_t mask;
+    makeTensorLike(ctx, &mask, inputTemp, diopi_dtype_bool);
+    diopiLtScalar(ctx, mask, inputTemp, &zeroValueScalar);
+
+    // NaN of float16 can only be cast from NaN of float64
+    diopiDtype_t outputDtype;
+    diopiGetTensorDtype(out, &outputDtype);
+    diopiTensorHandle_t outputTemp;
+    if (diopi_dtype_float16 == outputDtype) {
+        makeTensorLike(ctx, &outputTemp, out, diopi_dtype_float64);
+        diopiCastDtype(ctx, outputTemp, out);
+    } else {
+        outputTemp = out;
+    }
+
+    // masked_fill nan
+    diopiMaskedFillInp(ctx, outputTemp, mask, nanValue);
+
+    if (diopi_dtype_float16 == outputDtype) {
+        diopiCastDtype(ctx, out, outputTemp);
+    }
+
+    return diopiSuccess;
 }
 
 aclDataType getAclDataType(diopiDtype_t type) {

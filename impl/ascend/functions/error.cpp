@@ -7,7 +7,6 @@
 #include "../error.hpp"
 
 #include <acl/acl.h>
-#include <diopi/functions.h>
 
 #include <cstdio>
 
@@ -24,7 +23,7 @@ const char* ascendGetLastErrorString() {
     return strLastError;
 }
 
-extern "C" DIOPI_RT_API const char* diopiGetLastErrorString() { return ascendGetLastErrorString(); }
+const char* diopiGetLastErrorString() { return ascendGetLastErrorString(); }
 
 }  // namespace ascend
 

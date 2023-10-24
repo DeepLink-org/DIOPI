@@ -5,14 +5,17 @@
  *
  *************************************************************************************************/
 
+#include <acl/acl.h>
+#include <acl/acl_op.h>
+#include <acl/acl_op_compiler.h>
 #include <conform_test.h>
 #include <diopi/diopirt.h>
 
 #include <cstdio>
 
-#include "../common/acloprunner.hpp"
+#include "../ascend_tensor.hpp"
 #include "../error.hpp"
-
+#include "litert.hpp"
 namespace impl {
 namespace ascend {
 
@@ -78,8 +81,15 @@ diopiError_t finalizeLibrary() {
     return diopiSuccess;
 }
 
-// temporary solution, which needs to be re-implemented later
-diopiError_t buildGeneratorState(diopiContextHandle_t ctx, diopiTensorHandle_t out) { return diopiSuccess; }
+diopiError_t buildGeneratorState(diopiContextHandle_t ctx, diopiTensorHandle_t out) {
+    // state size = seed size + offset size
+    std::vector<int64_t> vec{sizeof(uint64_t) + sizeof(int64_t)};
+    diopiSize_t size{vec.data(), static_cast<int64_t>(vec.size())};
+    diopiTensorHandle_t tensor = nullptr;
+    diopiRequireTensor(ctx, &tensor, &size, nullptr, diopi_dtype_uint8, diopi_host);
+    *out = *tensor;
+    return diopiSuccess;
+}
 
 }  // extern "C"
 
