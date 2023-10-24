@@ -179,9 +179,9 @@
     layout: NCHW 
 
 - diopiAddcdiv:
-    dtype: (int8, int16, int32, int64, uint8, uint16, uint32, uint64)->int64, (float16)->float64
+    dtype: (int8, int16, int32, int64, uint8, uint16, uint32, uint64, float64)->float32, (float16)->float64
     layout: NCHW
 
 - diopiAddcdivInp:
-    dtype: (int8, int16, int32, int64, uint8, uint16, uint32, uint64)->int64, (float16)->float64
+    dtype: (int8, int16, int32, int64, uint8, uint16, uint32, uint64, float64)->float32, (float16)->float64
     layout: NCHW 
