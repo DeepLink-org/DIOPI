@@ -305,7 +305,7 @@ jobs:
           set -e
           export CI=true
           source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode utest --pytest_args "-k \'not TestGenInputData\'"' \
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode utest --pytest_args "-k \"not TestGenInputData\""' \
           """
 
   Build-Ascend:
@@ -354,7 +354,7 @@ jobs:
           set -e
           export CI=true
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          cd diopi_test/python && python main.py --mode utest --pytest_args "-k 'not TestGenInputData'"
+          cd diopi_test/python && python main.py --mode utest --pytest_args "-k \"not TestGenInputData\""
 
   Build-Topsrider:
     name: Build-Topsrider
