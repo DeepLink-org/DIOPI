@@ -185,6 +185,75 @@ DIOPI_API diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHa
                                          diopiConstTensorHandle_t frequency_penalty, diopiConstTensorHandle_t p_token_ids,
                                          diopiConstTensorHandle_t p_token_counts, diopiConstTensorHandle_t p_cumsum_seq_len, int p_max_len_in_batch);
 
+/**
+ * @brief Copies the elements from k tensor into out tensor according to dest_loc tensor. It can be expressed in detail as: out[dest_loc] = k. During
+ * model initialization, the KV cache is pre-allocated based on the user-set max_total_token_num and a Token Table is created to record the actual storage
+ * locations of input tokens. For details, please refer to the official implementation using the triton kernel:
+ * https://github.com/ModelTC/lightllm/blob/main/docs/TokenAttention.md.
+ * https://github.com/ModelTC/lightllm/blob/main/lightllm/common/basemodel/triton_kernel/destindex_copy_kv.py.
+ * @param[in] ctx diopi context.
+ * @param[in] k Tensor representing the src tensor to be copied. shape = [seq_len, head_num, head_dim].
+ * @param[in] dest_loc Tensor representing the destination location to be covered by the src tensor in the out tensor. shape = [seq_len, ].
+ * @param[out] out Tensor representing the output tensor that needs to be partially covered by the src tensor based on the destination location tensor. shape =
+ * [max_total_token_num, head_num, head_dim].
+ */
+DIOPI_API diopiError_t diopiDestindexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t k, diopiConstTensorHandle_t dest_loc);
+
+/**
+ * @brief The nopad implementation of \text{token_attention_out}(\mathrm{q},\mathrm{k})=\frac{\mathrm{qk}^\mathrm{T}}{\sqrt{\mathrm{d_k}}}.
+ * For details, please refer to the official implementation using the triton kernel:
+ * https://github.com/ModelTC/lightllm/blob/main/lightllm/models/llama/triton_kernel/token_attention_nopad_att1.py.
+ * @param[in] ctx diopi context.
+ * @param[in] q Tensor representing the query matrix in the attention mechanism. shape = [batch_size, head_num, head_dim].
+ * @param[in] k Tensor representing the key matrix in the attention mechanism. shape = [max_total_token_num, head_num, head_dim].
+ * @param[in] b_loc Tensor representing the locations of all tokens in the sequence in each batch. shape = [batch_size, N].
+ * @param[in] b_start_loc Tensor representing the starting location of each batch in the entire sequence. shape = [batch_size, ].
+ * @param[in] b_seq_len Tensor representing the sequence length in each batch. shape = [batch_size, ].
+ * @param[in] max_input_len The maximum length of all batch corresponding sequences.
+ * @param[out] token_attention_out The output tensor of token attention's calculation. shape = [head_num, sum_batch_seq_len]. sum_batch_seq_len is the sum of
+ * the lengths of all batch corresponding sequences, and also the sum of the elements in b_seq_len tensor.
+ */
+DIOPI_API diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorHandle_t token_attention_out, diopiConstTensorHandle_t q,
+                                                    diopiConstTensorHandle_t k, diopiConstTensorHandle_t b_loc, diopiConstTensorHandle_t b_start_loc,
+                                                    diopiConstTensorHandle_t b_seq_len, int max_input_len);
+
+/**
+ * @brief The nopad implementation of \mathrm{out}=\mathrm{softmax(\mathrm{logics})}*\mathrm{v}. For details, please refer to the official implementation using
+ * the triton kernel: https://github.com/ModelTC/lightllm/blob/main/lightllm/models/llama/triton_kernel/token_attention_softmax_and_reducev.py.
+ * @param[in] ctx diopi context.
+ * @param[in] logics Tensor representing the input tensor. shape = [head_num, sum_batch_seq_len]. sum_batch_seq_len is the sum of the
+ * lengths of all batch corresponding sequences, and also the sum of the elements in b_seq_len tensor.
+ * @param[in] v Tensor representing the value matrix in the attention mechanism. shape = [max_total_token_num, head_num, head_dim].
+ * @param[in] b_loc Tensor representing the locations of all tokens in the sequence in each batch. shape = [batch_size, N].
+ * @param[in] b_start_loc Tensor representing the starting location of each batch in the entire sequence. shape = [batch_size, ].
+ * @param[in] b_seq_len Tensor representing the sequence length in each batch. shape = [batch_size, ].
+ * @param[in] max_input_len The maximum length of all batch corresponding sequences.
+ * @param[in] other_kv_index To avoid reading nan data, other_kv_index is set as b_loc[0, max_input_len - 1].item().
+ * @param[in] out The output tensor of softmax_reduceV operation. shape = [batch_size, head_num, head_dim].
+ */
+DIOPI_API diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t logics,
+                                                         diopiConstTensorHandle_t v, diopiConstTensorHandle_t b_loc, diopiConstTensorHandle_t b_start_loc,
+                                                         diopiConstTensorHandle_t b_seq_len, int max_input_len, int other_kv_index);
+
+/**
+ * @brief The nopad implementation of
+ * \text{context_attention_out}(\mathrm{q},\mathrm{k},\mathrm{v})=\text{softmax}(\frac{\mathrm{qk}^\mathrm{T}}{\sqrt{\mathrm{d_k}}})\mathrm{v}. For details,
+ * please refer to the official implementation using the triton kernel:
+ * https://github.com/ModelTC/lightllm/blob/main/lightllm/models/llama/triton_kernel/context_flashattention_nopad.py.
+ * @param[in] ctx diopi context.
+ * @param[in] q Tensor representing the query matrix in the attention mechanism. shape = [sum_batch_seq_len, head_num, head_dim]. sum_batch_seq_len is the sum
+ * of the lengths of all batch corresponding sequences, and also the sum of the elements in b_seq_len tensor.
+ * @param[in] k Tensor representing the key matrix in the attention mechanism. shape = [sum_batch_seq_len, head_num, head_dim]
+ * @param[in] v Tensor representing the value matrix in the attention mechanism. shape = [sum_batch_seq_len, head_num, head_dim]
+ * @param[in] b_start_loc Tensor representing the starting location of each batch in the entire sequence. shape = [batch_size, ]
+ * @param[in] b_seq_len Tensor representing the sequence length in each batch. shape = [batch_size, ]
+ * @param[in] max_input_len The maximum length of all batch corresponding sequences.
+ * @param[in] context_attention_out The output tensor of context attention operation. shape = [sum_batch_seq_len, head_num, head_dim]
+ */
+DIOPI_API diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTensorHandle_t context_attention_out, diopiConstTensorHandle_t q,
+                                                      diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t b_start_loc,
+                                                      diopiConstTensorHandle_t b_seq_len, int max_input_len);
+
 #if defined(__cplusplus)
 }
 #endif  // __cplusplus
