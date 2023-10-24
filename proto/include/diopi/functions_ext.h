@@ -35,7 +35,7 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
  * @param[out] out the output tensor containing the normalized values. type = [float32, float16, float64].
  * @param[in] invRMS The tensor containing the inverse of root mean square. type = [float32, float16, float64].
  * @param[in] input The input tensor to be normalized. type = [float32, float16, float64].
- * @param[in] normalized_shape The shape of the normalization.
+ * @param[in] normalized_shape The shape of the normalization. Shape is equal to weight.shape. type = [int32, int64].
  * @param[in] weight The gain parameter used to re-scale the standardized summed inputs type = [float32, float16, float64].
  * @param[in] bias The bias tensor for the normalization. type = [float32, float16, float64].
  * @param[in] eps A small value to avoid division by zero. type = [float64].
@@ -54,7 +54,7 @@ DIOPI_API diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_
  * @param[in] weight The weight parameter used in the forward pass. type = [float32, float16, float64].
  * @param[in] bias The bias used in the forward pass. type = [float32, float16, float64].
  * @param[in] invRMS The inverse of the root mean square values computed in the forward pass. type = [float32, float16, float64].
- * @param[in] normalized_shape The shape of the normalization.
+ * @param[in] normalized_shape The shape of the normalization. Shape is equal to weight.shape. type = [int32, int64].
  * @param[in] eps A small value used in the computation to avoid division by zero. type = [float64].
  */
 DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight,
