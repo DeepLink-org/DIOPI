@@ -104,7 +104,7 @@ def parse_args():
     run_test_args.add_argument(
         "--html_report", action="store_true", help="generate html report"
     )
-    run_test_args.add_argument("--pytest_args", action="store_true", type=str, help="pytest args", default='')
+    run_test_args.add_argument("--pytest_args", type=str, help="pytest args", default='')
     run_test_args.add_argument(
         "--filter_dtype",
         type=str,
@@ -256,9 +256,7 @@ if __name__ == "__main__":
         if exit_code != 0:
             raise SystemExit(exit_code)
     elif args.mode == "utest":
-        call = "python3 -m pytest -vx tests "
-        if args.pytest_args:
-            call += args.pytest_args
+        call = f"python3 -m pytest -vx tests {args.pytest_args}"
         exit_code = subprocess.call(shlex.split(call))  # nosec
         if exit_code != 0:
             raise SystemExit(exit_code)
