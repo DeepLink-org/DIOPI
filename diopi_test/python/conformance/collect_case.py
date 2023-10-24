@@ -53,8 +53,9 @@ class DeviceConfig(object):
                     self._device_rules[cfg_name]["tol"] = {}
                 self._device_rules[cfg_name]["tol"][tol] = value[tol]
 
+        self._device_rules[cfg_name]["skip"] = {}
         if "para" in value.keys():
-            self._device_rules[cfg_name]["skip"] = {}
+            # self._device_rules[cfg_name]["skip"] = {}
             self._device_rules[cfg_name]["skip"]["para"] = {}
             for k, v in value["para"].items():
                 self._device_rules[cfg_name]["skip"]["para"][k] = set(
@@ -62,8 +63,8 @@ class DeviceConfig(object):
                 )
 
         if "tensor_para" in value.keys() and "args" in value["tensor_para"].keys():
-            if "skip" not in self._device_rules[cfg_name].keys():
-                self._device_rules[cfg_name]["skip"] = dict()
+            # if "skip" not in self._device_rules[cfg_name].keys():
+            #     self._device_rules[cfg_name]["skip"] = dict()
             self._device_rules[cfg_name]["skip"][
                 "tensor_para"
             ] = {}  # no need args for filter rule
@@ -90,6 +91,12 @@ class DeviceConfig(object):
                                 self._device_rules[cfg_name]["skip"]["tensor_para"][
                                     ins_key
                                 ][k].add(sk.value())
+        if "dtype" in value.keys():
+            if "dtype" not in self._device_rules[cfg_name]["skip"].keys():
+                self._device_rules[cfg_name]["skip"]["dtype"] = set()
+            for d in value["dtype"]:
+                if isinstance(d, Skip):
+                    self._device_rules[cfg_name]["skip"]["dtype"].add(d.value())
 
     # @staticmethod
     def run(self):
@@ -148,11 +155,16 @@ class CollectCase(object):
                             )
                             if ins_fk_tmp in tp_rule_args[ins["ins"]][fk]:
                                 return True
+            # dtype
+            if "dtype" in rule["skip"].keys():
+                tp_case_args = case_cfg["tensor_para"]["args"]
+                for ins in tp_case_args:
+                    if ins["dtype"] in rule["skip"]["dtype"]:
+                        return True
             return False
 
         for key, item in self._diopi_items.items():
             if _filter(key, item, self._device_filter):
-                # print(f"_filter: {key} : Filtered.")
                 continue
             self._device_cases[key] = item
 
