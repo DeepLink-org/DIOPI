@@ -138,18 +138,6 @@ device_configs = {
         ),
     ),
 
-    'hardtanh': dict(
-        name=['hardtanh'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),],
-                },
-            ]
-        ),
-    ),
-
     'hardswish': dict(
         name=['hardswish'],
         tensor_para=dict(
