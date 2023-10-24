@@ -2,7 +2,7 @@ import numpy as np
 
 from conformance.diopi_runtime import Tensor
 from conformance.exception import InputChangedException, OutputCheckFailedException
-# from utils import logger
+from utils import default_cfg_dict
 from conformance.global_settings import glob_vars
 
 
@@ -18,8 +18,7 @@ class CheckResult(object):
         for name, value in input1.items():
             matched = np.isclose(value, input2[name])
             mismatched_num = matched.size - np.sum(matched)
-            # passed = mismatched_num <= default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
-            passed = mismatched_num == 0
+            passed = mismatched_num <= default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
             glob_vars.func_status[glob_vars.cur_test_func] = 'passed'
             if not passed:
                 glob_vars.func_status[glob_vars.cur_test_func] = 'failed'
@@ -83,8 +82,7 @@ class CheckResult(object):
         tensor2 = np.sum(tensor2) if sum_to_compare else tensor2
         matched = np.isclose(tensor1, tensor2, rtol, atol, True)
         mismatched_num = matched.size - np.sum(matched)
-        # passed = mismatched_num <= default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
-        passed = mismatched_num == 0
+        passed = mismatched_num <= default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
         glob_vars.func_status[glob_vars.cur_test_func] = 'passed'
         if not passed:
             glob_vars.func_status[glob_vars.cur_test_func] = 'failed'

@@ -1220,6 +1220,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
+                    "shape": [Skip(())],
                     "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ],

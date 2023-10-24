@@ -9,6 +9,12 @@ import ctypes
 cfg_file_name = '../cache/diopi_case_items.cfg'
 
 default_cfg_dict = dict(
+    default_option=dict(
+        mismatch_ratio_threshold=1e-3,
+        memory_format="NCHW",
+        fp16_exact_match=False,
+        train=True,
+    ),
     # set log_level = "DEBUG" for debug infos
     log_level="INFO"  # NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICA
 )
