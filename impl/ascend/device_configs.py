@@ -1103,14 +1103,8 @@ device_configs = {
 
     'linear': dict(
         name=['linear'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                },
-            ]
-        ),
+        atol = 3e-2,
+        rtol = 3e-2,
     ),
 
     'embedding': dict(
@@ -1231,18 +1225,6 @@ device_configs = {
                 },
             ]
         ),
-    ),
-
-    'topk_nonzero': dict(
-        name=['topk'],
-        atol=1e-2,
-        rtol=1e-2,
-    ),
-
-    'topk_zero': dict(
-        name=['topk'],
-        atol=1e-2,
-        rtol=1e-2,
     ),
 
     'transpose': dict(
@@ -2498,27 +2480,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),Skip(Dtype.bool),],
-                },
-            ]
-        ),
-    ),
-
-    'normal': dict(
-        name=['normal'],
-        para=dict(
-            mean=[Skip(-1),Skip(-0.5),Skip(0),Skip(0.1),Skip(2),Skip(True),Skip(False),Skip(0.2),Skip(-2),Skip(0),],
-            std=[Skip(0),Skip(0.5),Skip(1),Skip(2.3),Skip(3),Skip(True),Skip(True),Skip(0.5),Skip(0),Skip(3),],
-            size=[Skip(()),Skip((1280,)),Skip((32, 160)),Skip((320, 8)),Skip((32, 80)),Skip((2, 2, 20, 16)),Skip((320, 2, 3, 3)),Skip((0,)),Skip((4, 0)),Skip((2, 0, 9)),],
-        ),
-    ),
-
-    'normal_': dict(
-        name=['normal_'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
                 },
             ]
         ),
