@@ -80,12 +80,13 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
     atol = cfg.get('atol_half', 1e-8) if tensor1.dtype == np.float16 else cfg.get('atol', 1e-8)
     tensor1 = np.sum(tensor1) if sum_to_compare else tensor1
     tensor2 = np.sum(tensor2) if sum_to_compare else tensor2
-    matched = np.isclose(tensor1, tensor2, rtol, atol, True)
+    matched = np.isclose(tensor1, tensor2, rtol, atol, equal_nan=True)
     mismatched_num = matched.size - np.sum(matched)
     passed = mismatched_num <= default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
     if record:
         save_precision(cfg, tensor1, tensor2, passed, var_name)
     if not passed:
+        import pdb;pdb.set_trace()
         sum1 = tensor1.sum()
         sum2 = tensor2.sum()
         mask = np.isclose(tensor1, tensor2, rtol, atol, True)
