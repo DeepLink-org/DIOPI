@@ -1,5 +1,5 @@
-set(DIOPIEXPORTRT export_runtime)
-set(DIOPIFUNCTIONS export_functions)
+set(DIOPI_EXPORT_RT export_runtime)
+set(DIOPI_EXPORT_FUNCTIONS export_functions)
 
 add_compile_options(-fno-elide-constructors)
 add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 build)
@@ -32,7 +32,7 @@ set(EXPORT_SRC
 
 message("CXX_LITERT_SRC:" ${CXX_LITERT_SRC})
 
-pybind11_add_module(${DIOPIEXPORTRT} SHARED ${EXPORT_SRC})
+pybind11_add_module(${DIOPI_EXPORT_RT} SHARED ${EXPORT_SRC})
 add_library(diopiruntime SHARED ${RUNTIME_SRC})
 
 if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
@@ -47,7 +47,7 @@ else()
     set(USE_ADAPTOR "false")
 endif()
 
-target_link_libraries(${DIOPIEXPORTRT} PRIVATE diopiruntime)
+target_link_libraries(${DIOPI_EXPORT_RT} PRIVATE -Wl,--no-as-needed diopiruntime -Wl,--no-as-needed)
 target_link_libraries(diopiruntime tangrt_shared)
 target_link_libraries(diopiruntime ${DIOPI_DROPLET_LIB})
 
@@ -66,16 +66,16 @@ set(FUNCTIONS_SRC
     export_functions.cpp
 )
 
-pybind11_add_module(${DIOPIFUNCTIONS} SHARED ${FUNCTIONS_SRC})
-target_link_libraries(${DIOPIFUNCTIONS} PRIVATE diopiruntime)
-add_dependencies(${DIOPIFUNCTIONS} functions_copy)
+pybind11_add_module(${DIOPI_EXPORT_FUNCTIONS} SHARED ${FUNCTIONS_SRC})
+target_link_libraries(${DIOPI_EXPORT_FUNCTIONS} PRIVATE -Wl,--no-as-needed diopiruntime -Wl,--no-as-needed)
+add_dependencies(${DIOPI_EXPORT_FUNCTIONS} functions_copy)
 if(${USE_ADAPTOR} STREQUAL "true")
-    add_dependencies(${DIOPIFUNCTIONS} adaptor_code_gen)
+    add_dependencies(${DIOPI_EXPORT_FUNCTIONS} adaptor_code_gen)
 endif()
 
 
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/../diopi_test/python)
 add_custom_target(python_copy ALL
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS}> ${CMAKE_SOURCE_DIR}/../diopi_test/python
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIEXPORTRT}> ${CMAKE_SOURCE_DIR}/../diopi_test/python
-    DEPENDS ${DIOPIFUNCTIONS} ${DIOPIEXPORTRT})
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPI_EXPORT_FUNCTIONS}> ${CMAKE_SOURCE_DIR}/../diopi_test/python
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPI_EXPORT_RT}> ${CMAKE_SOURCE_DIR}/../diopi_test/python
+    DEPENDS ${DIOPI_EXPORT_FUNCTIONS} ${DIOPI_EXPORT_RT})
