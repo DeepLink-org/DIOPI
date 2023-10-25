@@ -170,3 +170,6 @@
     dtype: (float16)->float32
     layout: NCHW
 
+- diopiGroupNorm:
+    dtype: (float64)->float32
+    layout: NCHW
