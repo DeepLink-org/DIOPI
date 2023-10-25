@@ -16,7 +16,7 @@
 extern "C" {
 
 diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t x, diopiConstTensorHandle_t cos,
-                                  diopiConstTensorHandle_t sin, const bool conj) {
+                                  diopiConstTensorHandle_t sin, const bool conj, const bool interleaved) {
     impl::aten::setCurCtx(ctx);
     auto atX = impl::aten::buildATen(x);
     auto atCos = impl::aten::buildATen(cos);
