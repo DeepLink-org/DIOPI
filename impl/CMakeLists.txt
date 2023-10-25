@@ -71,3 +71,6 @@ else()
     message(WARNING "No implementation module is compiled, cmake requires option -DIMPL_OPT=CUDA or TORCH")
 endif()
 
+# install
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/../proto/include/ TYPE INCLUDE)
+install(DIRECTORY lib/ TYPE INCLUDE)
