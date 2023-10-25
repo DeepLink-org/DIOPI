@@ -1,0 +1,164 @@
+- diopiConvolution2d:
+    dtype: (float64)->float16
+    layout: NCHW
+
+- diopiConvolution2dBackward:
+    dtype: (float64)->float16
+    layout: NCHW
+
+- diopiAdaptiveAvgPool2d:
+    dtype: (float64)->float32 , (float16)->float32
+    layout: NCHW
+
+- diopiAdaptiveAvgPool2dBackward:
+    dtype: (float64)->float32 , (float16)->float32
+    layout: NCHW
+
+- diopiLtScalar:
+    dtype: (bool)->float32
+    layout: NCHW
+
+- diopiLtInpScalar:
+    dtype: (bool)->float32
+    layout: NCHW
+
+- diopiLt:
+    dtype: (bool)->float32
+    layout: NCHW
+
+- diopiLtInp:
+    dtype: (bool)->float32
+    layout: NCHW
+
+- diopiGtScalar:
+    dtype: (bool)->float32
+    layout: NCHW
+
+- diopiGtInpScalar:
+    dtype: (bool)->float32
+    layout: NCHW
+
+- diopiGt:
+    dtype: (bool)->float32
+    layout: NCHW
+
+- diopiGtInp:
+    dtype: (bool)->float32
+    layout: NCHW
+
+- diopiLeScalar:
+    dtype: (bool)->float32
+    layout: NCHW
+
+- diopiLeInpScalar:
+    dtype: (bool)->float32
+    layout: NCHW
+
+- diopiLe:
+    dtype: (bool)->float32
+    layout: NCHW
+
+- diopiLeInp:
+    dtype: (bool)->float32
+    layout: NCHW
+
+- diopiGeScalar:
+    dtype: (bool)->float32
+    layout: NCHW
+
+- diopiGeInpScalar:
+    dtype: (bool)->float32
+    layout: NCHW
+
+- diopiGe:
+    dtype: (bool)->float32
+    layout: NCHW
+
+- diopiGeInp:
+    dtype: (bool)->float32
+    layout: NCHW
+
+- diopiLogicalAnd:
+    dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
+    layout: NCHW
+
+- diopiLogicalAndInp:
+    dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
+    layout: NCHW
+
+- diopiLogicalOr:
+    dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
+    layout: NCHW
+
+- diopiLogicalOrInp:
+    dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
+    layout: NCHW
+
+- diopiLogicalNot:
+    dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
+    layout: NCHW
+
+- diopiLogicalNotInp:
+    dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
+    layout: NCHW
+
+- diopiBatchNorm:
+    dtype: (float64)->float32
+    layout: NCHW
+
+- diopiBatchNormBackward:
+    dtype: (float64)->float32
+    layout: NCHW
+
+- diopiAny:
+    dtype: (float16, float32, float64, int16, int32, int64, uint8, int8)->bool
+    layout: NCHW
+
+- diopiAll:
+    dtype: (float16, float32, float64, int16, int32, int64, uint8, int8)->bool
+    layout: NCHW
+
+- diopiLog:
+    dtype: (float16, float32, int16, int32, int64, uint8, int8)->float64
+    layout: NCHW
+
+- diopiLogInp:
+    dtype: (float16, float32, int16, int32, int64, uint8, int8)->float64
+    layout: NCHW
+
+- diopiLog2:
+    dtype: (float64, int16, int32, int64, uint8, int8)->float32
+    layout: NCHW
+
+- diopiLog2Inp:
+    dtype: (float64, int16, int32, int64, uint8, int8)->float32
+    layout: NCHW
+
+- diopiLog10:
+    dtype: (float64, int16, int32, int64, uint8, int8)->float32
+    layout: NCHW
+
+- diopiLog10Inp:
+    dtype: (float64, int16, int32, int64, uint8, int8)->float32
+    layout: NCHW
+
+- diopiNeg:
+    dtype: (int8, int16, uint8, uint16, uint32, uint64)->int64, (float64)->float32, (complex32)->complex64
+    layout: NCHW
+
+- diopiNegInp:
+    dtype: (int8, int16, uint8, uint16, uint32, uint64)->int64, (float64)->float32, (complex32)->complex64
+    layout: NCHW
+
+- diopiHardtanh:
+    dtype: (float16)->float32
+    layout: NCHW
+
+- diopiHardtanhInp:
+    dtype: (float16)->float32
+    layout: NCHW
+
+- diopiHardtanhBackward:
+    dtype: (float16)->float32
+    layout: NCHW
+

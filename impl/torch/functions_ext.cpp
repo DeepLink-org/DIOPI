@@ -30,7 +30,6 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto out1 = chunks_out[0];
     auto out2 = chunks_out[1];
     ext::ops::apply_rotary_cuda(x1, x2, atCos, atSin, out1, out2, conj);
-    impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
 
@@ -44,7 +43,6 @@ diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     auto atWeight = impl::aten::buildATen(weight);
     auto atBias = impl::aten::buildATen(bias);  // bias在这里实际上没有使用
     ext::ops::rms_norm_forward(atInput, atNormalized_shape, atWeight, eps, atOut, atInvRMS);
-    impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
 
@@ -63,7 +61,6 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
     auto atWeight = impl::aten::buildATen(weight);
     auto atBias = impl::aten::buildATen(bias);  // bias在这里实际上没有使用
     ext::ops::rms_norm_backward(atGradOutput, atInvRMS, atInput, atNormalized_shape, atWeight, eps, atGradInput, atGradWeight);
-    impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
 
