@@ -73,7 +73,6 @@ case_device_case = {
             success_case=1,
             failed_case=0,
             skipped_case=0,
-            total_func=2,
             impl_func=2,
         ),
     ),
@@ -132,7 +131,6 @@ case_device_case = {
             success_case=1,
             failed_case=0,
             skipped_case=0,
-            total_func=2,
             impl_func=2,
         ),
     ),
@@ -202,7 +200,6 @@ case_device_case = {
             success_case=1,
             failed_case=0,
             skipped_case=0,
-            total_func=3,
             impl_func=3,
         ),
     ),
@@ -354,7 +351,6 @@ case_device_case = {
             success_case=1,
             failed_case=1,
             skipped_case=1,
-            total_func=7,
             impl_func=7,
         ),
     ),
@@ -508,7 +504,6 @@ case_device_case = {
             success_case=1,
             failed_case=0,
             skipped_case=2,
-            total_func=7,
             impl_func=4,
         ),
     ),
@@ -660,7 +655,6 @@ case_device_case = {
             success_case=0,
             failed_case=3,
             skipped_case=0,
-            total_func=7,
             impl_func=7,
         ),
     ),
@@ -723,7 +717,6 @@ case_device_case = {
             success_case=0,
             failed_case=1,
             skipped_case=0,
-            total_func=2,
             impl_func=2,
         ),
     ),
@@ -971,7 +964,6 @@ case_device_case = {
             success_case=4,
             failed_case=1,
             skipped_case=1,
-            total_func=11,
             impl_func=10,
         ),
     ),
@@ -1097,9 +1089,6 @@ class TestDBOperation(object):
             assert expect_data == getattr(db_data[0], key)
         assert (
             db_data[0].success_rate == case_items["expect_summary"]["success_case"] / case_items["expect_summary"]["total_case"]
-        )
-        assert (
-            db_data[0].func_coverage_rate == case_items["expect_summary"]["impl_func"] / case_items["expect_summary"]["total_func"]
         )
 
         for model in [BenchMarkCase, DeviceCase, FuncList, TestSummary]:

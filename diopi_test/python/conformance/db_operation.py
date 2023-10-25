@@ -111,10 +111,8 @@ class TestSummary(Base):
     success_case = Column(Integer)
     failed_case = Column(Integer)
     skipped_case = Column(Integer)
-    total_func = Column(Integer)
     impl_func = Column(Integer)
     success_rate = Column(FLOAT)
-    func_coverage_rate = Column(FLOAT)
     delete_flag = Column(Integer)
     created_time = Column(DateTime)
     updated_time = Column(DateTime)
@@ -301,36 +299,6 @@ class DB_Operation(object):
             .filter_by(result="skipped", delete_flag=1, test_flag=1)
             .one()[0]
         )
-        sql = text(
-            """
-            WITH FuncCounts AS (
-                SELECT
-                    func_name as func_name_benchmark,
-                    1 + COALESCE(inplace_flag, 0) + COALESCE(backward_flag, 0) AS total_func
-                FROM
-                    benchmark_case
-                WHERE
-                    delete_flag = 1
-                GROUP BY
-                    func_name_benchmark
-                UNION ALL
-                SELECT
-                    func_name as func_name_funclist,
-                    COUNT(*) as func_count
-                FROM func_list
-                WHERE delete_flag = 1
-                GROUP BY func_name_funclist
-            )
-            SELECT SUM(MaxCount) AS TotalMaxCount
-            FROM (
-                SELECT func_name_benchmark, MAX(total_func) AS MaxCount
-                FROM FuncCounts
-                GROUP BY func_name_benchmark
-            ) MaxCounts;
-        """
-        )
-        result = self.session.execute(sql)
-        total_func = result.scalar()
         impl_func = (
             self.session.query(func.count(FuncList.diopi_func_name))
             .filter_by(not_implemented_flag=0, delete_flag=1)
@@ -341,9 +309,7 @@ class DB_Operation(object):
             success_case=success_case,
             failed_case=failed_case,
             skipped_case=skipped_case,
-            total_func=total_func,
             impl_func=impl_func,
-            func_coverage_rate=impl_func / total_func,
             success_rate=success_case / total_case,
             delete_flag=1,
             created_time=datetime.now(),
@@ -447,10 +413,8 @@ class ExcelOperation(object):
             "success_case",
             "failed_case",
             "skipped_case",
-            "total_func",
             "impl_func",
             "success_rate",
-            "func_coverage_rate",
         ]
         df.index = df.index + 1
         df.to_excel(self.excel_writer, sheet_name="Sumary", columns=columns)

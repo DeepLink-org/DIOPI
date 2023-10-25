@@ -43,7 +43,7 @@ def check_returncode(returncode, throw_exception=True):
     if 0 != returncode:
         if returncode == diopiError.diopi_no_implement:
             glob_vars.func_status[glob_vars.cur_test_func] = 'skipped'
-            pytest.skip(glob_vars.cur_test_func + ' not implement')
+            pytest.skip(f"FunctionNotImplementedError: {glob_vars.cur_test_func} not implement")
             # raise FunctionNotImplementedError(glob_vars.cur_test_func + ' not implement')
         glob_vars.func_status[glob_vars.cur_test_func] = 'failed'
         error_info = f"Returncode: {returncode}"
@@ -63,8 +63,9 @@ def check_function(fn_name):
         return func
     else:
         glob_vars.func_status[glob_vars.cur_test_func] = 'skipped'
-        pytest.skip(f"diopilib dose not have attribute {fn_name}")
+        pytest.skip(f"FunctionNotImplementedError: diopilib dose not have attribute {fn_name}")
         return None
+
 
 def broadcast_out_size(size1, size2):
     sizeO = size1 if len(size1) > len(size2) else size2
