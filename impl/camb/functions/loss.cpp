@@ -19,6 +19,7 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     DiopiTensor targetTensor(target);
     DiopiTensor weightTensor(weight);
     if (inputTensor.numel() == 0) {
+        // Case in empty tensor
         diopiScalar_t scalar = constructDiopiScalarT(inputTensor.dtype(), reduction == 1 ? std::numeric_limits<float>::quiet_NaN() : 0);
         DIOPI_CALL(diopiFill(ctx, out, &scalar));
         return diopiSuccess;
@@ -47,7 +48,9 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     }
 
     auto dim = inputTensor.dim();
-    if (dim == 2) {
+    if (dim == 1) {
+        DIOPI_CHECK(targetTensor.dim() == 0, "0D target_tr tensor expected, multi-target_tr not supported");
+    } else if (dim == 2) {
         DIOPI_CHECK(targetTensor.dim() == 1, "1D target_tr tensor expected, multi-target_tr not supported");
         DIOPI_CHECK(inputTensor.shape()[0] == targetTensor.shape()[0], "size mismatch ");
         DIOPI_CHECK(!weightTensor.defined() || weightTensor.numel() == inputTensor.shape()[1],
@@ -67,7 +70,7 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     }
 
     auto inputSize = inputTensor.shape();
-    int c = inputSize[1];
+    int c = dim == 1 ? inputSize[0] : inputSize[1];
     int n = std::accumulate(inputSize.begin(), inputSize.end(), 1, std::multiplies<>()) / c;
     DIOPI_CHECK(n == targetTensor.numel(), "Target size need be equal as input N*H*W.");
     DIOPI_CHECK(c == weightTensor.numel(), "Weight size need be equal as input C.");
@@ -161,7 +164,9 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     }
 
     auto dim = inputTensor.dim();
-    if (dim == 2) {
+    if (dim == 1) {
+        DIOPI_CHECK(targetTensor.dim() == 0, "0D target_tr tensor expected, multi-target_tr not supported");
+    } else if (dim == 2) {
         DIOPI_CHECK(targetTensor.dim() == 1, "1D target_tr tensor expected, multi-target_tr not supported");
         DIOPI_CHECK(inputTensor.shape()[0] == targetTensor.shape()[0], "size mismatch ");
         DIOPI_CHECK(!weightTensor.defined() || weightTensor.numel() == inputTensor.shape()[1],
@@ -181,7 +186,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     }
 
     auto inputSize = inputTensor.shape();
-    int c = inputSize[1];
+    int c = dim == 1 ? inputSize[0] : inputSize[1];
     int n = std::accumulate(inputSize.begin(), inputSize.end(), 1, std::multiplies<>()) / c;
     DIOPI_CHECK(n == targetTensor.numel(), "Target size need be equal as input N*H*W.");
     DIOPI_CHECK(c == weightTensor.numel(), "Weight size need be equal as input C.");
@@ -204,14 +209,14 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto gradInputRealTensor = requiresTensor(ctx, {n, c}, inputTensor.dtype());
     auto totalWeightTensor = requiresTensor(ctx, {1}, weightTensor.dtype());
 
-// For cnnl version（1.20.0), there is a bug in kernel causing grad_input
-// all zero randomly. We pass a wrong totalweight here.
-// TODO(someone): remove this when cnnl fixes this bug
-#if (CNNL_MAJOR * 10000 + CNNL_MINOR * 100 + CNNL_PATCHLEVEL <= 20000)
+    // For cnnl version（1.20.0), there is a bug in kernel causing grad_input
+    // all zero randomly. We pass a wrong totalweight here.
+    // TODO(someone): remove this when cnnl fixes this bug
     diopiScalar_t scalar = constructDiopiScalarT(weightTensor.dtype(), targetTensor.numel());
     DIOPI_CALL(diopiFill(ctx, totalWeightTensor.tensorHandle(), &scalar));
-#else
-    // Flatten the target tensor
+
+    // The appropriate calculation for nll loss:
+    /* // Flatten the target tensor
     auto flatTargetTensor = requiresTensor(ctx, {targetTensor.numel()}, targetTensor.dtype());
     DIOPI_CALL(diopiCopyInp(ctx, targetTensor.tensorHandle(), flatTargetTensor.tensorHandle()));
 
@@ -236,8 +241,8 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         // If weight is not defined, compute total weight by counting the valid targets
         std::vector<int64_t> dims = {0};
         DIOPI_CALL(diopiSum(ctx, totalWeightTensor.tensorHandle(), maskTensor.tensorHandle(), vec2diopiSizeT(dims)));
-    }
-#endif
+    } */
+
     CnnlTensorDesc gradOutputDesc;
     CnnlTensorDesc targetDesc;
     CnnlTensorDesc weightDesc(weightTensor, CNNL_LAYOUT_ARRAY);
