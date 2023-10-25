@@ -13,7 +13,6 @@
 extern "C" {
 #endif  // __cplusplus
 
-
 /**
  * @brief Apply rotary embedding operation to an input tensor.
  * @param[in] ctx Context environment.
@@ -62,7 +61,6 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
                                             diopiTensorHandle_t gradBias, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
                                             diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiConstTensorHandle_t invRMS,
                                             diopiSize_t normalized_shape, double eps);
-
 
 /**
  * @brief Compute the forward pass for MultiheadAttention.
@@ -187,10 +185,8 @@ DIOPI_API diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHa
                                          diopiConstTensorHandle_t frequency_penalty, diopiConstTensorHandle_t p_token_ids,
                                          diopiConstTensorHandle_t p_token_counts, diopiConstTensorHandle_t p_cumsum_seq_len, int p_max_len_in_batch);
 
-
 #if defined(__cplusplus)
 }
 #endif  // __cplusplus
 
 #endif  // _PROJECT_DIOPERATOR_INTERFACE_FUNCTIONS_EXT_H_
-
