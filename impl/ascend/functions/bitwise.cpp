@@ -4,16 +4,12 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
 
-extern "C" {
-
-DIOPI_API diopiError_t diopiBitwiseNot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+diopiError_t diopiBitwiseNot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     diopiDtype_t dtype;
     diopiGetTensorDtype(input, &dtype);
     if (diopi_dtype_bool == dtype) {
@@ -24,7 +20,7 @@ DIOPI_API diopiError_t diopiBitwiseNot(diopiContextHandle_t ctx, diopiTensorHand
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiBitwiseAnd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
+diopiError_t diopiBitwiseAnd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
     diopiDtype_t dtype;
     diopiGetTensorDtype(input, &dtype);
     if (diopi_dtype_bool == dtype) {
@@ -34,8 +30,6 @@ DIOPI_API diopiError_t diopiBitwiseAnd(diopiContextHandle_t ctx, diopiTensorHand
     }
     return diopiSuccess;
 }
-
-}  // extern "C"
 
 }  // namespace ascend
 }  // namespace impl

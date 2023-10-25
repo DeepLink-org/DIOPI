@@ -18,6 +18,9 @@ using namespace at;
 
 Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold, int offset);
 
+Tensor NMSRotatedCUDAKernelLauncher(const Tensor boxes, const Tensor scores, const Tensor order_t, const Tensor boxes_sorted, float iou_threshold,
+                                    const int multi_label);
+
 void ROIAlignForwardCUDAKernelLauncher(Tensor input, Tensor rois, Tensor output, Tensor argmax_y, Tensor argmax_x, int aligned_height, int aligned_width,
                                        float spatial_scale, int sampling_ratio, int pool_mode, bool aligned);
 

@@ -11,6 +11,16 @@ include_directories("${PROJECT_SOURCE_DIR}/../adaptor/csrc")
 set (ADAPTOR_DIR "${CMAKE_SOURCE_DIR}/../adaptor")
 set (DIOPI_TEST_DIR "${CMAKE_SOURCE_DIR}/../diopi_test")
 
+if (TEST)
+    # find the file Python.h and add it in the include path.
+    execute_process(COMMAND  sh -c "dirname $(find  $(dirname $(which python))/../ -name Python.h)" OUTPUT_VARIABLE PYTHON_INCLUDE_DIR)
+    if ("${PYTHON_INCLUDE_DIR}" STREQUAL "")
+        message(FATAL_ERROR "no Python.h is found")
+    endif()
+    message(STATUS "PYTHON_INCLUDE_DIR: " ${PYTHON_INCLUDE_DIR})
+    include_directories(${PYTHON_INCLUDE_DIR})
+endif(TEST)
+
 # use gcover
 option(ENABLE_COVERAGE "Use gcov" OFF)
 message(STATUS ENABLE_COVERAGE=${ENABLE_COVERAGE})
@@ -64,3 +74,6 @@ else()
     message(WARNING "No implementation module is compiled, cmake requires option -DIMPL_OPT=CUDA or TORCH")
 endif()
 
+# install
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/../proto/include/ TYPE INCLUDE)
+install(DIRECTORY lib/ TYPE INCLUDE)
