@@ -67,7 +67,7 @@ set(FUNCTIONS_SRC
 )
 
 pybind11_add_module(${DIOPI_EXPORT_FUNCTIONS} SHARED ${FUNCTIONS_SRC})
-target_link_libraries(${DIOPI_EXPORT_FUNCTIONS} PRIVATE -Wl,--no-as-needed diopiruntime -Wl,--no-as-needed)
+target_link_libraries(${DIOPI_EXPORT_FUNCTIONS} PRIVATE -Wl,--no-as-needed diopiruntime -Wl,--as-needed)
 add_dependencies(${DIOPI_EXPORT_FUNCTIONS} functions_copy)
 if(${USE_ADAPTOR} STREQUAL "true")
     add_dependencies(${DIOPI_EXPORT_FUNCTIONS} adaptor_code_gen)
