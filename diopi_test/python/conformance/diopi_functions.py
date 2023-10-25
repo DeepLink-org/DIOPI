@@ -3919,3 +3919,16 @@ def linalgqr(input, mode):
     out = [q, r]
     check_returncode(ret)
     return out
+
+def multiheadforward(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
+    call = "diopiMultiHeadAttention"
+    func = check_function(call)
+    q_size = list(q.size().data)
+    k_size = list(k.size().data)
+    out = Tensor(q_size, q.get_dtype())
+    softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], q.get_dtype())
+    gen = None
+    debug_attn_mask = Tensor([q_size[0], q_size[2], q_size[1], k_size[1]], q.get_dtype())
+    ret = func(q.context(), q, k, v, dropout_p, is_causal, return_debug_mask, scale, out, softmax_lse, gen, debug_attn_mask)
+    check_returncode(ret)
+    return out

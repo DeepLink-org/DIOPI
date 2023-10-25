@@ -20,11 +20,11 @@ _cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 def expand_para(para_dict: dict, paras_list: list):
-    r'''
+    r"""
     dict(a = [1,2], b = [11,22])
     --->
     [dict(a = 1, b = 11), dict(a=2, b=22)]
-    '''
+    """
     length = dict_elem_length(para_dict)
     for i in range(length):
         tmp_para_dict = {}
@@ -34,7 +34,7 @@ def expand_para(para_dict: dict, paras_list: list):
 
 
 def expand_tensor_para(args_list, tensor_paras_list):
-    r'''
+    r"""
     [
         dict(
             "ins" = ["input", "weight"],
@@ -71,7 +71,7 @@ def expand_tensor_para(args_list, tensor_paras_list):
             "shape"=[(2,3)]
         )],
     ]
-    '''
+    """
     if len(args_list) == 0 or args_list is None:
         return
     # expand ins, requires_grad
@@ -86,18 +86,22 @@ def expand_tensor_para(args_list, tensor_paras_list):
 
     args0_dict = tmp_args_list[0]
     assert "shape" in args0_dict or "value" in args0_dict
-    num = len(args0_dict["shape"]) if "shape" in args0_dict else len(args0_dict["value"])
+    num = (
+        len(args0_dict["shape"]) if "shape" in args0_dict else len(args0_dict["value"])
+    )
 
     for j in range(num):
         args_ins_expand_list = copy.deepcopy(tmp_args_list)
         for i in range(len(tmp_args_list)):
-            stride_name = str(tmp_args_list[i]['ins']) + "stride"
+            stride_name = str(tmp_args_list[i]["ins"]) + "stride"
             if "value" in tmp_args_list[i].keys():
                 args_ins_expand_list[i]["value"] = copy.deepcopy(
-                    tmp_args_list[i]["value"][j])
+                    tmp_args_list[i]["value"][j]
+                )
             elif "shape" in tmp_args_list[i].keys():
                 args_ins_expand_list[i]["shape"] = copy.deepcopy(
-                    tmp_args_list[i]["shape"][j])
+                    tmp_args_list[i]["shape"][j]
+                )
             if "stride" in tmp_args_list[i].keys():
                 if j >= len(args0_dict["stride"]):
                     del args_ins_expand_list[i]["stride"]
@@ -105,17 +109,27 @@ def expand_tensor_para(args_list, tensor_paras_list):
                 elif tmp_args_list[i]["stride"][j] is None:
                     del args_ins_expand_list[i]["stride"]
                     continue
-                args_ins_expand_list[0][stride_name] = copy.deepcopy(tmp_args_list[i]["stride"][j])
+                args_ins_expand_list[0][stride_name] = copy.deepcopy(
+                    tmp_args_list[i]["stride"][j]
+                )
                 # 判断stride和shape是否符合标准，不符合报错
                 tmp_stride = args_ins_expand_list[0][stride_name]
                 tmp_shape = args_ins_expand_list[i]["shape"]
-                assert len(tmp_stride) == len(tmp_shape), "stride and shape must have the same dim"
+                assert len(tmp_stride) == len(
+                    tmp_shape
+                ), "stride and shape must have the same dim"
                 stride_dic = []
-                for index, s, st in zip(range(len(list(tmp_shape))), list(tmp_shape), tmp_stride):
+                for index, s, st in zip(
+                    range(len(list(tmp_shape))), list(tmp_shape), tmp_stride
+                ):
                     stride_dic.append((s, st))
                 sorted_stride = sorted(stride_dic, key=lambda x: x[1])
                 for index in range(len(sorted_stride) - 1):
-                    assert (sorted_stride[index][0] - 1) * sorted_stride[index][1] < sorted_stride[index + 1][1], "wrong stride for shape (might have memory overlap)"
+                    assert (sorted_stride[index][0] - 1) * sorted_stride[index][
+                        1
+                    ] < sorted_stride[index + 1][
+                        1
+                    ], "wrong stride for shape (might have memory overlap)"
         tensor_paras_list.append(args_ins_expand_list)
 
 
@@ -143,10 +157,10 @@ def expand_cfg_all(paras_list, tensor_paras_list, cfg_dict, filter_dtype_list) -
                     filter_dtype = False
                     tmp_cfg_dict = copy.deepcopy(cfg_dict)
                     tmp_cfg_dict["tensor_para"]["args"] = copy.deepcopy(
-                        tensor_paras_list[j])
+                        tensor_paras_list[j]
+                    )
                     if len(paras_list) != 0:
-                        tmp_cfg_dict["para"] = copy.deepcopy(
-                            paras_list[j])
+                        tmp_cfg_dict["para"] = copy.deepcopy(paras_list[j])
                     for arg in tmp_cfg_dict["tensor_para"]["args"]:
                         if arg.get("dtype") is not None:
                             entry_dtype = arg["dtype"][i]
@@ -163,7 +177,8 @@ def expand_cfg_all(paras_list, tensor_paras_list, cfg_dict, filter_dtype_list) -
                 tmp_cfg_dict = copy.deepcopy(cfg_dict)
                 tmp_cfg_dict["para"] = copy.deepcopy(paras_list[i])
                 tmp_cfg_dict["tensor_para"]["args"] = copy.deepcopy(
-                    tensor_paras_list[i])
+                    tensor_paras_list[i]
+                )
                 cfg_expand_list.append(tmp_cfg_dict)
     elif len(paras_list) != 0:
         for i in range(len(paras_list)):
@@ -176,7 +191,9 @@ def expand_cfg_all(paras_list, tensor_paras_list, cfg_dict, filter_dtype_list) -
 
 def expand_cfg_by_all_options(cfg_dict: dict, filter_dtype_list: list) -> list:
     paras_list, tensor_paras_list = expand_cfg_by_para(cfg_dict)
-    cfg_expand_list = expand_cfg_all(paras_list, tensor_paras_list, cfg_dict, filter_dtype_list)
+    cfg_expand_list = expand_cfg_all(
+        paras_list, tensor_paras_list, cfg_dict, filter_dtype_list
+    )
     return cfg_expand_list
 
 
@@ -224,20 +241,26 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
                 high = 10
         else:
             gen_fn = arg["gen_fn"]["fn"]
-            assert (gen_fn == Genfunc.randint or gen_fn == Genfunc.uniform or Genfunc.randn_int), "only randint & uniform & randn_int needs args"
+            assert (
+                gen_fn == Genfunc.randint
+                or gen_fn == Genfunc.uniform
+                or Genfunc.randn_int
+            ), "only randint & uniform & randn_int needs args"
             low = arg["gen_fn"].get("low", 0)
             high = arg["gen_fn"].get("high", 10)
         dtype = to_numpy_dtype(arg["dtype"])
 
-        if 0 in shape and "empty" not in cfg_dict['tag']:
-            cfg_dict['tag'].append("empty")
+        if 0 in shape and "empty" not in cfg_dict["tag"]:
+            cfg_dict["tag"].append("empty")
 
         if gen_fn == Genfunc.randn:
             value = np.array(np.random.randn(*shape)).astype(dtype)
         elif gen_fn == Genfunc.rand:
             value = np.array(np.random.rand(*shape)).astype(dtype)
         elif gen_fn == Genfunc.uniform:
-            value = np.array(np.random.uniform(low=low, high=high, size=shape)).astype(dtype)
+            value = np.array(np.random.uniform(low=low, high=high, size=shape)).astype(
+                dtype
+            )
         elif gen_fn == Genfunc.ones:
             value = np.ones(shape, dtype=dtype)
         elif gen_fn == Genfunc.zeros:
@@ -257,7 +280,9 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
             mat = np.random.randn(*shape).astype(dtype)
             value = mat @ mat.transpose(axis) + 1e-3
         elif gen_fn == Genfunc.randn_cmplx:
-            value = np.array(np.random.randn(*shape) + 1j * np.random.randn(*shape)).astype(dtype)
+            value = np.array(
+                np.random.randn(*shape) + 1j * np.random.randn(*shape)
+            ).astype(dtype)
         elif gen_fn == Genfunc.randn_int:
             if dtype in np_int_types:
                 value = np.random.randint(low=low, high=high, size=shape).astype(dtype)
@@ -277,7 +302,9 @@ def gen_tensor(arg: dict, cfg_dict: dict) -> np.ndarray:
     return value
 
 
-def gen_and_dump_data(dir_path: str, cfg_name: str, cfg_expand_list: list, cfg_save_dict: dict):
+def gen_and_dump_data(
+    dir_path: str, cfg_name: str, cfg_expand_list: list, cfg_save_dict: dict
+):
     construct_paras = {}
     function_paras = {"kwargs": {}, "requires_grad": {}}
     tensor_list = []
@@ -293,10 +320,10 @@ def gen_and_dump_data(dir_path: str, cfg_name: str, cfg_expand_list: list, cfg_s
         for arg in tensor_para_args_list:
             name = arg["ins"]
             # length of gen_num_range must be 2, otherwise ignore gen_num_range
-            if name == 'tensors':
-                for idx in range(len(arg['shape'])):
+            if name == "tensors":
+                for idx in range(len(arg["shape"])):
                     new_arg = copy.deepcopy(arg)
-                    new_arg['shape'] = arg['shape'][idx]
+                    new_arg["shape"] = arg["shape"][idx]
                     value = gen_tensor(new_arg, cfg_dict)
                     tensor_list.append(value)
             elif len(arg["gen_num_range"]) != 2:
@@ -305,13 +332,16 @@ def gen_and_dump_data(dir_path: str, cfg_name: str, cfg_expand_list: list, cfg_s
                 if arg["requires_grad"] == [True] and arg["shape"] is not None:
                     function_paras["requires_grad"][name] = arg["requires_grad"]
             else:
-                tensors_num = np.random.randint(arg['gen_num_range'][0],
-                                                arg['gen_num_range'][1])
+                tensors_num = np.random.randint(
+                    arg["gen_num_range"][0], arg["gen_num_range"][1]
+                )
                 arg.setdefault("tensors_num", tensors_num)
                 for _ in range(tensors_num):
                     value = gen_tensor(arg, cfg_dict)
                     tensor_list.append(value)
-                assert (cfg_dict["tensor_para"]["seq_name"] != ""), "need a name the list of tensors"
+                assert (
+                    cfg_dict["tensor_para"]["seq_name"] != ""
+                ), "need a name the list of tensors"
         # tie all the function_paras in a list named seq_name
         if cfg_dict["tensor_para"]["seq_name"] != "":
             name = cfg_dict["tensor_para"]["seq_name"]
@@ -334,14 +364,14 @@ def gen_and_dump_data(dir_path: str, cfg_name: str, cfg_expand_list: list, cfg_s
             pickle.dump(cfg_info, f, protocol=4)
 
         tensor_list = []
-        function_paras['kwargs'] = {}
+        function_paras["kwargs"] = {}
         function_paras["requires_grad"] = {}
 
 
 class GenInputData(object):
-    r'''
+    r"""
     Generate input data for all functions by using diopi_configs
-    '''
+    """
 
     @staticmethod
     def run(func_name, model_name, filter_dtype_str_list):
@@ -361,9 +391,13 @@ class GenInputData(object):
             cfg_func_name = configs[cfg_name]["name"]
             if not need_process_func(cfg_func_name, func_name, model_name):
                 continue
-            logger.info(f"Generate benchmark input data for diopi_functions.{cfg_func_name}")
+            logger.info(
+                f"Generate benchmark input data for diopi_functions.{cfg_func_name}"
+            )
             filter_dtype_list = get_filter_dtype_list(filter_dtype_str_list)
-            cfg_expand_list = expand_cfg_by_all_options(configs[cfg_name], filter_dtype_list)
+            cfg_expand_list = expand_cfg_by_all_options(
+                configs[cfg_name], filter_dtype_list
+            )
             cfg_counter += len(cfg_expand_list)
             gen_and_dump_data(inputs_dir_path, cfg_name, cfg_expand_list, cfg_save_dict)
 
@@ -372,8 +406,10 @@ class GenInputData(object):
 
         logger.info(f"Generate test cases number for input data: {cfg_counter}")
         if cfg_counter == 0:
-            logger.warn(f"No benchmark input data is generated, \"--fname {func_name}\" may not be in the diopi-config, "
-                        f"check the arguments --fname")
+            logger.warn(
+                f'No benchmark input data is generated, "--fname {func_name}" may not be in the diopi-config, '
+                f"check the arguments --fname"
+            )
         else:
             logger.info("Generate benchmark input data done!")
 
@@ -405,15 +441,46 @@ class CustomizedTest(object):
                 new_args.append(ele)
         return torch.Tensor.__getitem__(input, new_args)
 
-    def sgd(param, param_grad, lr, buf=None, momentum=0, dampening=0, weight_decay=0, nesterov=False):
+    def sgd(
+        param,
+        param_grad,
+        lr,
+        buf=None,
+        momentum=0,
+        dampening=0,
+        weight_decay=0,
+        nesterov=False,
+    ):
         param.requires_grad = True
         param.grad = param_grad
-        optimizer = torch.optim.SGD([param, ], lr, momentum, dampening, weight_decay, nesterov)
-        optimizer.state[param]['momentum_buffer'] = buf
+        optimizer = torch.optim.SGD(
+            [
+                param,
+            ],
+            lr,
+            momentum,
+            dampening,
+            weight_decay,
+            nesterov,
+        )
+        optimizer.state[param]["momentum_buffer"] = buf
         optimizer.step()
         return param, buf
 
-    def adam(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr, beta1, beta2, eps, weight_decay, step, amsgrad):
+    def adam(
+        param,
+        param_grad,
+        exp_avg,
+        exp_avg_sq,
+        max_exp_avg_sq,
+        lr,
+        beta1,
+        beta2,
+        eps,
+        weight_decay,
+        step,
+        amsgrad,
+    ):
         params_with_grad = [param]
         grads = [param_grad]
         exp_avgs = [exp_avg]
@@ -421,22 +488,37 @@ class CustomizedTest(object):
         max_exp_avg_sqs = [max_exp_avg_sq]
         state_steps = [torch.tensor(float(step))]
 
-        torch.optim._functional.adam(params_with_grad,
-                                     grads,
-                                     exp_avgs,
-                                     exp_avg_sqs,
-                                     max_exp_avg_sqs,
-                                     state_steps,
-                                     amsgrad=amsgrad,
-                                     beta1=beta1,
-                                     beta2=beta2,
-                                     lr=lr,
-                                     weight_decay=weight_decay,
-                                     eps=eps,
-                                     maximize=False)
+        torch.optim._functional.adam(
+            params_with_grad,
+            grads,
+            exp_avgs,
+            exp_avg_sqs,
+            max_exp_avg_sqs,
+            state_steps,
+            amsgrad=amsgrad,
+            beta1=beta1,
+            beta2=beta2,
+            lr=lr,
+            weight_decay=weight_decay,
+            eps=eps,
+            maximize=False,
+        )
         return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
 
-    def adamw(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr, beta1, beta2, eps, step, weight_decay, amsgrad):
+    def adamw(
+        param,
+        param_grad,
+        exp_avg,
+        exp_avg_sq,
+        max_exp_avg_sq,
+        lr,
+        beta1,
+        beta2,
+        eps,
+        step,
+        weight_decay,
+        amsgrad,
+    ):
         params_with_grad = [param]
         grads = [param_grad]
         exp_avgs = [exp_avg]
@@ -444,19 +526,21 @@ class CustomizedTest(object):
         max_exp_avg_sqs = [max_exp_avg_sq]
         state_steps = [torch.tensor(float(step))]
 
-        torch.optim._functional.adamw(params_with_grad,
-                                      grads,
-                                      exp_avgs,
-                                      exp_avg_sqs,
-                                      max_exp_avg_sqs,
-                                      state_steps,
-                                      amsgrad=amsgrad,
-                                      beta1=beta1,
-                                      beta2=beta2,
-                                      lr=lr,
-                                      weight_decay=weight_decay,
-                                      eps=eps,
-                                      maximize=False)
+        torch.optim._functional.adamw(
+            params_with_grad,
+            grads,
+            exp_avgs,
+            exp_avg_sqs,
+            max_exp_avg_sqs,
+            state_steps,
+            amsgrad=amsgrad,
+            beta1=beta1,
+            beta2=beta2,
+            lr=lr,
+            weight_decay=weight_decay,
+            eps=eps,
+            maximize=False,
+        )
         return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
 
     def adadelta(param, param_grad, square_avg, acc_delta, lr, rho, eps, weight_decay):
@@ -465,38 +549,56 @@ class CustomizedTest(object):
         square_avgs = [square_avg]
         acc_deltas = [acc_delta]
 
-        torch.optim._functional.adadelta(params_with_grad,
-                                         grads,
-                                         square_avgs,
-                                         acc_deltas,
-                                         lr=lr,
-                                         rho=rho,
-                                         eps=eps,
-                                         weight_decay=weight_decay,
-                                         maximize=False)
+        torch.optim._functional.adadelta(
+            params_with_grad,
+            grads,
+            square_avgs,
+            acc_deltas,
+            lr=lr,
+            rho=rho,
+            eps=eps,
+            weight_decay=weight_decay,
+            maximize=False,
+        )
         return param, param_grad, square_avg, acc_delta
 
-    def rmsprop(param, param_grad, square_avg, grad_avg, momentum_buffer, lr, alpha, eps, weight_decay, momentum, centered):
+    def rmsprop(
+        param,
+        param_grad,
+        square_avg,
+        grad_avg,
+        momentum_buffer,
+        lr,
+        alpha,
+        eps,
+        weight_decay,
+        momentum,
+        centered,
+    ):
         params = [param]
         grads = [param_grad]
         square_avgs = [square_avg]
         grad_avgs = [grad_avg]
         momentum_buffer_list = [momentum_buffer]
 
-        torch.optim._functional.rmsprop(params,
-                                        grads,
-                                        square_avgs,
-                                        grad_avgs,
-                                        momentum_buffer_list,
-                                        lr=lr,
-                                        alpha=alpha,
-                                        eps=eps,
-                                        weight_decay=weight_decay,
-                                        momentum=momentum,
-                                        centered=centered)
+        torch.optim._functional.rmsprop(
+            params,
+            grads,
+            square_avgs,
+            grad_avgs,
+            momentum_buffer_list,
+            lr=lr,
+            alpha=alpha,
+            eps=eps,
+            weight_decay=weight_decay,
+            momentum=momentum,
+            centered=centered,
+        )
         return param, param_grad, square_avg, grad_avg, momentum_buffer
 
-    def index_put(input, values, indices1, indices2=None, indices3=None, accumulate=False):
+    def index_put(
+        input, values, indices1, indices2=None, indices3=None, accumulate=False
+    ):
         indices = [indices1]
         if indices2 is not None:
             indices.append(indices2)
@@ -519,11 +621,29 @@ class CustomizedTest(object):
             tensor = torch.empty_like(grad)
             tensor.grad = grad
             parameters.append(tensor)
-        return torch.nn.utils.clip_grad_norm_(parameters, max_norm, norm_type, error_if_nonfinite)
+        return torch.nn.utils.clip_grad_norm_(
+            parameters, max_norm, norm_type, error_if_nonfinite
+        )
 
-    def ctc_loss(log_probs, targets, input_lengths, target_lengths, blank=0, reduction='mean', zero_infinity=False):
+    def ctc_loss(
+        log_probs,
+        targets,
+        input_lengths,
+        target_lengths,
+        blank=0,
+        reduction="mean",
+        zero_infinity=False,
+    ):
         log_probs_ = log_probs.log_softmax(2)
-        loss = torch.nn.functional.ctc_loss(log_probs_, targets, input_lengths, target_lengths, blank=blank, reduction=reduction, zero_infinity=zero_infinity)
+        loss = torch.nn.functional.ctc_loss(
+            log_probs_,
+            targets,
+            input_lengths,
+            target_lengths,
+            blank=blank,
+            reduction=reduction,
+            zero_infinity=zero_infinity,
+        )
         return loss
 
     def linalgqr(input, mode):
@@ -536,18 +656,37 @@ class CustomizedTest(object):
         out = (mean, invstd)
         return out
 
-    def batch_norm_gather_stats_with_counts(input, mean_all, invstd_all, running_mean, running_var, momentum, eps, count_all):
-        mean, invstd = torch.batch_norm_gather_stats_with_counts(input, mean_all, invstd_all, running_mean, running_var, momentum, eps, count_all)
+    def batch_norm_gather_stats_with_counts(
+        input, mean_all, invstd_all, running_mean, running_var, momentum, eps, count_all
+    ):
+        mean, invstd = torch.batch_norm_gather_stats_with_counts(
+            input,
+            mean_all,
+            invstd_all,
+            running_mean,
+            running_var,
+            momentum,
+            eps,
+            count_all,
+        )
         out = (mean, invstd)
         return out
 
-    def batch_norm_backward_reduce(grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g):
-        sum_dy, sum_dy_xmu, grad_weight, grad_bias = torch.batch_norm_backward_reduce(grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g)
+    def batch_norm_backward_reduce(
+        grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g
+    ):
+        sum_dy, sum_dy_xmu, grad_weight, grad_bias = torch.batch_norm_backward_reduce(
+            grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g
+        )
         out = (sum_dy, sum_dy_xmu, grad_weight, grad_bias)
         return out
 
-    def batch_norm_backward_elemt(grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count):
-        grad_input = torch.batch_norm_backward_elemt(grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count)
+    def batch_norm_backward_elemt(
+        grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count
+    ):
+        grad_input = torch.batch_norm_backward_elemt(
+            grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count
+        )
         out = grad_input
         return out
 
@@ -555,29 +694,51 @@ class CustomizedTest(object):
         out = torch.batch_norm_elemt(input, weight, bias, mean, invstd, eps)
         return out
 
+    def multiheadforward(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
+        # 为了保证精度，因此在test的时候不使用dropout
+        from einops import rearrange
+        import math
+
+        batch_size, seqlen = q.shape[0], q.shape[1]
+        # scale 默认是 1.0 / math.sqrt(q.shape[-1])
+        # softmax_scale = scale or 1.0 / math.sqrt(q.shape[-1])
+        softmax_scale = 1.0 / math.sqrt(q.shape[-1])
+        scores = torch.einsum("bthd,bshd->bhts", q, k * softmax_scale)
+
+        if is_causal:
+            causal_mask = torch.triu(
+                torch.full((seqlen, seqlen), -10000.0, device=scores.device), 1
+            )
+            scores = scores + causal_mask.to(dtype=scores.dtype)
+        attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
+        output = torch.einsum("bhts,bshd->bthd", attention, v)
+        return output
+
 
 def transfer_tensor_to_device(function_paras: dict):
     for para in function_paras["kwargs"].keys():
-        if isinstance(function_paras['kwargs'][para], np.ndarray):
-            tensor = torch.from_numpy(function_paras['kwargs'][para])
-            if para in function_paras["requires_grad"].keys()\
-                    and function_paras["requires_grad"][para] == [True]:
+        if isinstance(function_paras["kwargs"][para], np.ndarray):
+            tensor = torch.from_numpy(function_paras["kwargs"][para])
+            if para in function_paras["requires_grad"].keys() and function_paras[
+                "requires_grad"
+            ][para] == [True]:
                 tensor.requires_grad = True
-            function_paras['kwargs'][para] = tensor.cuda()
+            function_paras["kwargs"][para] = tensor.cuda()
 
         if para == "tensors":
-            tensors = function_paras['kwargs'][para]
+            tensors = function_paras["kwargs"][para]
             for idx, ele in enumerate(tensors):
                 tensors[idx] = torch.from_numpy(ele).cuda()
-            function_paras['kwargs'][para] = tensors
+            function_paras["kwargs"][para] = tensors
 
 
 def get_name_and_data_for_grad(function_paras):
     inputs_for_grad_value = []
     inputs_for_grad_key = []
     for k, v in function_paras["kwargs"].items():
-        if k in function_paras["requires_grad"].keys() \
-                and function_paras["requires_grad"][k] == [True]:
+        if k in function_paras["requires_grad"].keys() and function_paras[
+            "requires_grad"
+        ][k] == [True]:
             inputs_for_grad_value.append(v)
             inputs_for_grad_key.append(k)
 
@@ -611,9 +772,9 @@ def to_numpy(tensors):
 
 
 class GenOutputData(object):
-    r'''
+    r"""
     Generate output data for all functions by using torch and input data
-    '''
+    """
 
     @staticmethod
     def run(func_name, model_name, filter_dtype_str_list):
@@ -636,20 +797,24 @@ class GenOutputData(object):
 
             input_abs_path = os.path.join(inputs_dir_path, saved_pth)
             data = get_data_from_file(input_abs_path, saved_pth, "input")
-            if data is None or "no_output_ref" in data['cfg']:
+            if data is None or "no_output_ref" in data["cfg"]:
                 continue
 
             logger_str = "output"
-            module = data["cfg"]["interface"][0] if data["cfg"]['interface'] else "torch.nn.functional"
+            module = (
+                data["cfg"]["interface"][0]
+                if data["cfg"]["interface"]
+                else "torch.nn.functional"
+            )
             function_paras = data["function_paras"]
             transfer_tensor_to_device(function_paras)
-            kwargs = function_paras['kwargs']
+            kwargs = function_paras["kwargs"]
             if module == "torch.Tensor":
-                input = kwargs['input']
+                input = kwargs["input"]
                 module = "input"
-                del kwargs['input']
-            if 'dtype' in kwargs.keys():
-                kwargs['dtype'] = eval(str(kwargs['dtype']).replace("Dtype.", "torch."))
+                del kwargs["input"]
+            if "dtype" in kwargs.keys():
+                kwargs["dtype"] = eval(str(kwargs["dtype"]).replace("Dtype.", "torch."))
             func_call = f"{module}.{cfg_func_name}(**kwargs)"
 
             try:
@@ -665,36 +830,51 @@ class GenOutputData(object):
 
             if function_paras["requires_grad"]:
                 if module == "input":
-                    kwargs['input'] = input
+                    kwargs["input"] = input
                 saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
                 if not isinstance(outputs, (list, tuple)):
                     outputs = [outputs]
 
                 requires_backward = data["cfg"]["requires_backward"]
-                outputs_for_backward = outputs if len(requires_backward) == 0 \
+                outputs_for_backward = (
+                    outputs
+                    if len(requires_backward) == 0
                     else [outputs[i] for i in requires_backward]
+                )
 
-                inputs_name_for_grad, inputs_for_grad = get_name_and_data_for_grad(function_paras)
+                inputs_name_for_grad, inputs_for_grad = get_name_and_data_for_grad(
+                    function_paras
+                )
                 saved_grads = None
                 if len(inputs_for_grad) != 0:
                     grad_outputs = [torch.ones_like(i) for i in outputs_for_backward]
                     grads = torch.autograd.grad(
-                        outputs_for_backward, inputs_for_grad, grad_outputs, allow_unused=True)
+                        outputs_for_backward,
+                        inputs_for_grad,
+                        grad_outputs,
+                        allow_unused=True,
+                    )
                     saved_grads = {k: v for k, v in zip(inputs_name_for_grad, grads)}
 
-                with open(os.path.join(outputs_dir_path, saved_backward_pth), "wb") as f:
+                with open(
+                    os.path.join(outputs_dir_path, saved_backward_pth), "wb"
+                ) as f:
                     pickle.dump(to_numpy(saved_grads), f, protocol=4)
 
                 logger_str = f"{logger_str} and backward"
 
             if cfg_func_name not in func_name_list:
                 func_signature = f"diopi_functions.{cfg_func_name}"
-                logger.info(f"Generate benchmark {logger_str} data for {func_signature}")
+                logger.info(
+                    f"Generate benchmark {logger_str} data for {func_signature}"
+                )
                 func_name_list.append(cfg_func_name)
 
         logger.info(f"Generate test cases number for output data: {gen_counter}")
         if gen_counter == 0:
-            logger.info(f"No benchmark output data is generated, \"--fname {func_name}\" may not be in the diopi-config, "
-                        f"or \"{func_name}\" doesn't need output data")
+            logger.info(
+                f'No benchmark output data is generated, "--fname {func_name}" may not be in the diopi-config, '
+                f'or "{func_name}" doesn\'t need output data'
+            )
         else:
             logger.info("Generate benchmark output and backward data done!")
