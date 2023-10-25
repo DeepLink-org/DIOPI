@@ -192,18 +192,10 @@ device_configs = {
         atol=1e-3,
         rtol=1e-3,
         para=dict(
-            # Now, there is a problem calculating for total weight.
+            # Now, there is a problem calculating for total weight,
+            # which will be fixed in later cnnl kernel update.
             # See loss.cpp for more details
             reduction=[Skip('mean')],
-        ),
-        tensor_para=dict(
-            args = [
-                {
-                    # camb does not support for 1d input and empty target
-                    "ins": ['target'],
-                    "shape": (Skip(()),),
-                },
-            ]
         ),
     ),
 
