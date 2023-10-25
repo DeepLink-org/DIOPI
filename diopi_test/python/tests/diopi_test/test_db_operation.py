@@ -5,12 +5,10 @@ import os
 import time
 from datetime import datetime
 
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), "conformance"))
 from conformance.global_settings import glob_vars
 
 glob_vars.use_db = True
-from conformance.db_operation import DB_Operation, db_conn, Base, BenchMarkCase, DeviceCase, TestSummary, FuncList
-
+from conformance.db_operation import DB_Operation, db_conn, Base, BenchMarkCase, DeviceCase, TestSummary, FuncList # noqa
 
 cache_path = os.path.join(os.path.dirname(__file__), "cache")
 

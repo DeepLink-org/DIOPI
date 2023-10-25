@@ -5,7 +5,6 @@ import sys
 import os
 import pickle
 
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), "conformance"))
 from conformance.gen_input import GenInputData, GenPolicy
 
 
