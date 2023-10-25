@@ -6,7 +6,7 @@
 #include <cuda_runtime_api.h>
 #include <cudnn.h>
 #include <diopi/functions.h>
-#include <diopi/functions_lightllm.h>
+#include <diopi/functions_ext.h>
 #include <torch/nn.h>
 #include <torch/optim.h>
 #include "cuda.h"
@@ -125,7 +125,7 @@ namespace {
 
 extern "C" {
 
-diopiError_t diopiDestindexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t k, diopiConstTensorHandle_t destLoc) {
+diopiError_t diopiDestIndexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t k, diopiConstTensorHandle_t destLoc) {
     /*
     seq_len = DestLoc.shape[0]
     head_num = K.shape[1]
@@ -150,6 +150,10 @@ diopiError_t diopiDestindexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t 
     at::Tensor atK = impl::aten::buildATen(k);
     at::Tensor atOut = impl::aten::buildATen(out);
     at::Tensor atDestLoc = impl::aten::buildATen(destLoc);
+    std::cout << "out:\n" << atOut << std::endl;
+    std::cout << "k:\n" << atK << std::endl;
+    std::cout << "destLoc:\n" << atDestLoc<< std::endl;
+
     int seq_len = atK.size(0);
     int head_num = atK.size(1);
     int head_dim = atK.size(2);
@@ -168,17 +172,23 @@ diopiError_t diopiDestindexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t 
     const int clusterDimZ = 1;
     const int shared_memory = 0;
 
-    const char* kernel_name = "_fwd_kernel_destindex_copy_kv_0d1d2d3de4de5c6de7de8c9de";
-    CUstream stream = NULL;
+    diopiStreamHandle_t stream_handle;
+    diopiGetStream(ctx, &stream_handle);
+    const char* kernel_name = "_fwd_kernel_destindex_copy_kv_0d1d2d3c4c5c6c7c8c9c";
+    CUstream stream = static_cast<cudaStream_t>(stream_handle);
     void* k_ptr = atK.data_ptr();
     void* out_ptr = atOut.data_ptr();
     void* destLoc_ptr = atDestLoc.data_ptr();
     unsigned int k_stride[] = {atK.stride(0), atK.stride(1), atK.stride(2)};
     unsigned int out_stride[] = {atOut.stride(0), atOut.stride(1), atOut.stride(2)};
     void** extra_param = NULL;
-    void *kernel_params[] = { &k_ptr, &destLoc_ptr, &out_ptr , &head_dim, &k_stride[0], &k_stride[1], &k_stride[2], &out_stride[0], &out_stride[1], &out_stride[2]};
+    void *kernel_params[] = { &k_ptr, &destLoc_ptr, &out_ptr, &k_stride[0], &k_stride[1], &k_stride[2], &out_stride[0], &out_stride[1], &out_stride[2]};
     kernel.run(gridX, gridY, gridZ, num_warps, num_ctas, clusterDimX, clusterDimY, clusterDimZ, shared_memory, kernel_name, stream, kernel_params, extra_param);
-
+    impl::aten::sync(ctx);
+    std::cout << "after" << std::endl;
+    std::cout << "out:\n" << atOut << std::endl;
+    std::cout << "k:\n" << atK << std::endl;
+    std::cout << "destLoc:\n" << atDestLoc<< std::endl;
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
