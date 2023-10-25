@@ -47,7 +47,7 @@ else()
     set(USE_ADAPTOR "false")
 endif()
 
-target_link_libraries(${DIOPI_EXPORT_RT} PRIVATE -Wl,--no-as-needed diopiruntime -Wl,--no-as-needed)
+target_link_libraries(${DIOPI_EXPORT_RT} PRIVATE -Wl,--no-as-needed diopiruntime -Wl,--as-needed)
 target_link_libraries(diopiruntime tangrt_shared)
 target_link_libraries(diopiruntime ${DIOPI_DROPLET_LIB})
 
