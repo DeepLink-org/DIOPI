@@ -3291,7 +3291,7 @@ diopi_configs = {
                           79, 0, 79, 100,
                           -100, 94, 62, 0],
         ),
-        dtype=[Dtype.float32],
+        dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
@@ -3315,6 +3315,37 @@ diopi_configs = {
                     "shape": (None, (79, ), (92, ), None,
                               (79,), (80,), (79, ), (80, ),
                               (16,), (16,), (5,), (82,)),
+                },
+            ],
+        ),
+    ),
+    
+    'nll_loss_empty_tensor': dict(
+        name=["nll_loss"],
+        atol=1e-4,
+        rtol=1e-5,
+        para=dict(
+            reduction=['none', 'mean', 'sum', 'mean'],
+            ignore_index=[0, 0, 0, 0],
+        ),
+        dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((0,), (16, 0,), (5, 0, 5, 6, 0, 3), (4, 0, 8, 3)),
+                },
+                {
+                    "ins": ['target'],
+                    "shape": ((), (16,), (5, 5, 6, 0, 3), (4, 8, 3)),
+                    "dtype": [Dtype.int64],
+                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=1),
+                },
+                {
+                    "ins": ['weight'],
+                    "shape": (None, (0,), (0,), (0,)),
                 },
             ],
         ),
