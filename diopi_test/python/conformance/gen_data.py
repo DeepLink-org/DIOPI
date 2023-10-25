@@ -694,6 +694,30 @@ class CustomizedTest(object):
         out = torch.batch_norm_elemt(input, weight, bias, mean, invstd, eps)
         return out
 
+    def rotary_emb(input, cos, sin, conj):
+        x1, x2 = input.chunk(2, dim=-1)
+        data_type = input.dtype
+        x1 = x1.to(torch.float32)
+        x2 = x2.to(torch.float32)
+        cos = cos.to(torch.float32)
+        sin = sin.to(torch.float32)
+        if not conj:
+            out1 = x1 * cos - x2 * sin
+            out2 = x1 * sin + x2 * cos
+        else:
+            out1 = x1 * cos + x2 * sin
+            out2 = -x1 * sin + x2 * cos
+        out1 = out1.to(data_type)
+        out2 = out2.to(data_type)
+        out = torch.cat((out1, out2), dim=-1)
+        return out
+
+    def rms_norm(input, normalized_shape, weight, bias, eps):
+        variance = input.to(torch.float32).pow(2).mean(-1, keepdim=True)
+        input = input * torch.rsqrt(variance + eps)
+        out = weight * input
+        return out
+
     def multiheadforward(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
         # 为了保证精度，因此在test的时候不使用dropout
         from einops import rearrange

@@ -8007,6 +8007,59 @@ diopi_configs = {
         ),
     ),
 
+    'rotary_emb': dict(
+        name=['rotary_emb'],
+        interface=['CustomizedTest'],
+        dtype=[Dtype.float64, Dtype.float32, Dtype.float16],
+        para=dict(
+            conj=[False, True, False, True],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1, 125, 16, 32), (1, 125, 16, 32), (2, 64, 16, 32), (3, 100, 8, 64)),
+                },
+                {
+                    "ins": ['cos'],
+                    "shape": ((125, 1, 16), (125, 1, 16), (64, 1, 16), (100, 1, 32)),
+                },
+                {
+                    "ins": ['sin'],
+                    "shape": ((125, 1, 16), (125, 1, 16), (64, 1, 16), (100, 1, 32)),
+                },
+            ],
+        ),
+    ),
+
+    'rms_norm': dict(
+        name=['rms_norm'],
+        interface=['CustomizedTest'],
+        dtype=[Dtype.float32],
+        para=dict(
+            eps=[1e-6, 1e-6, 1e-6, 1e-6],
+            normalized_shape=[(5, ), (32, ), (64, ), (8, )],
+        ),
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((5, 5), (35, 125, 32), (16, 64, 64), (1, 32, 32, 8)),
+                },
+                {
+                    "ins": ['weight'],
+                    "shape": ((5, ), (32, ), (64, ), (8, )),
+                },
+                {
+                    "ins": ['bias'],
+                    "shape": ((5, ), (32, ), (64, ), (8, )),
+                },
+            ],
+        ),
+    ),
+
     'multiheadforward': dict(
         name=['multiheadforward'],
         interface=['CustomizedTest'],
