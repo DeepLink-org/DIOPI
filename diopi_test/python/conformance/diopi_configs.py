@@ -3319,7 +3319,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'nll_loss_empty_tensor': dict(
         name=["nll_loss"],
         atol=1e-4,
