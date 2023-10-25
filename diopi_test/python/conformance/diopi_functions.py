@@ -56,16 +56,15 @@ def check_returncode(returncode, throw_exception=True):
 
 
 def check_function(fn_name):
-    try:
-        glob_vars.cur_test_func = fn_name
+    glob_vars.cur_test_func = fn_name
+    if hasattr(diopilib, f"{fn_name}"):
         func = eval(f"diopilib.{fn_name}")
         glob_vars.func_status[glob_vars.cur_test_func] = 'passed'
-    except AttributeError as e:
+        return func
+    else:
         glob_vars.func_status[glob_vars.cur_test_func] = 'skipped'
-        pytest.skip(e.args)
-        # raise FunctionNotImplementedError(e.args)
-    return func
-
+        pytest.skip(f"diopilib dose not have attribute {fn_name}")
+        return None
 
 def broadcast_out_size(size1, size2):
     sizeO = size1 if len(size1) > len(size2) else size2
