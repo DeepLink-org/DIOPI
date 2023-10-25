@@ -12,7 +12,7 @@ function get_available_cards_on_supa()
 function get_available_cards_on_ascend()
 {
     # for example available_cards:1 2 3 4 ...
-    available_cards=$(npu-smi info | grep  -E "/.*/" | awk -F " " '{print $10}' | grep -nw 0 | awk -F : '{print $1}')
+    available_cards=$(npu-smi info | grep  -E "/.*/" | awk -F " " '{print $10}' | grep -nw 1 | awk -F : '{print $1}') # grep -nw 1 for docker, otherwise grep -nw 0
     echo "$available_cards"
 }
 
