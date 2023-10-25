@@ -555,6 +555,27 @@ class CustomizedTest(object):
         out = torch.batch_norm_elemt(input, weight, bias, mean, invstd, eps)
         return out
 
+    def multiheadforward(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
+        # 为了保证精度，因此在test的时候不使用dropout
+        from einops import rearrange
+        import math
+
+        batch_size, seqlen = q.shape[0], q.shape[1]
+        # scale 默认是 1.0 / math.sqrt(q.shape[-1])
+        # softmax_scale = scale or 1.0 / math.sqrt(q.shape[-1])
+        softmax_scale = 1.0 / math.sqrt(q.shape[-1])
+        scores = torch.einsum("bthd,bshd->bhts", q, k * softmax_scale)
+
+        if is_causal:
+            causal_mask = torch.triu(
+                torch.full((seqlen, seqlen), -10000.0, device=scores.device), 1
+            )
+            scores = scores + causal_mask.to(dtype=scores.dtype)
+        attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
+        output = torch.einsum("bhts,bshd->bthd", attention, v)
+        print(output)
+        return output
+
 
 def transfer_tensor_to_device(function_paras: dict):
     for para in function_paras["kwargs"].keys():
