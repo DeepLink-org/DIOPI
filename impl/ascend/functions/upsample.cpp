@@ -4,14 +4,11 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
-extern "C" {
-DIOPI_API diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size) {
+diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size) {
     AclOpRunner<2, 1>("ResizeNearestNeighborV2", ctx)
         .addInput(input)
         .addConstInput(size, diopi_dtype_int32)
@@ -22,8 +19,8 @@ DIOPI_API diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTenso
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                                    diopiSize_t outSize, diopiSize_t inSize) {
+diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiSize_t outSize,
+                                          diopiSize_t inSize) {
     auto gradOutputCopy = contiguous(ctx, gradOutput);
     std::vector<int64_t> outputSizeVec({inSize.data[2], inSize.data[3]});
     diopiSize_t outputSize = vectorToDiopiSize(outputSizeVec);
@@ -35,7 +32,6 @@ DIOPI_API diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, di
         .addOutput(gradInput)
         .run();
     return diopiSuccess;
-}
 }
 
 }  // namespace ascend
