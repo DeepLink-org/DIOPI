@@ -41,4 +41,6 @@ if [ "$VENDOR" = "supa" ];then
     run supa SUPA_VISIABLE_DEVICES
 elif [ "$VENDOR" = "ascend" ];then
     run ascend ASCEND_VISIABLE_DEVICES
+else
+    echo "Invalid VENDOR parameter: $VENDOR" 1>&2; exit 1
 fi
