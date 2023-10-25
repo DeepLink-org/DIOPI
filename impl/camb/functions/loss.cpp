@@ -19,7 +19,7 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     DiopiTensor targetTensor(target);
     DiopiTensor weightTensor(weight);
     if (inputTensor.numel() == 0) {
-        diopiScalar_t scalar = constructDiopiScalarT(inputTensor.dtype(), 0);
+        diopiScalar_t scalar = constructDiopiScalarT(inputTensor.dtype(), reduction == 1 ? std::numeric_limits<float>::quiet_NaN() : 0);
         DIOPI_CALL(diopiFill(ctx, out, &scalar));
         return diopiSuccess;
     }
