@@ -138,3 +138,4 @@ kernel_meta_*
 # generate files
 impl/*/test/export_functions.cpp
 proto/include/diopi/diopi_adaptors.hpp
+
