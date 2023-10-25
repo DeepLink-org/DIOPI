@@ -23,15 +23,15 @@ function run()
     env_var_need_export=$2
 
     available_cards=$(get_available_cards_on_"${vendor}")
-    # no available cards, not export the valiable_devices env var
+    # no available card, not export the valiable_devices env var
     if [ "$available_cards" = "" ];then
         echo "no available card to pick, run on the default card"
         return 0
     fi
-    echo available cards is $available_cards
+    echo "available cards are $available_cards"
     mapfile -t array <<< "$available_cards" # convert to the type array
     visiable_device=$((array[-1]-1))  #get the last one
-    echo run on the picked card "$visiable_device"
+    echo "run on the picked card $visiable_device"
 
     # export the visiable_devices env var
     export "${env_var_need_export}"="$visiable_device"
