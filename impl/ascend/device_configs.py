@@ -152,7 +152,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "shape": [Skip(()), Skip((64, 28, 28)), Skip((2, 144, 28, 28)), Skip((64, 3, 7, 28, 28))],
                 },
             ]
         ),
@@ -164,7 +164,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),],
+                    "shape": [Skip((2, 96, 56, 56)),],
                 },
             ]
         ),
