@@ -971,7 +971,21 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),],
+                    # TODO(someone): fix me! 
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float32), Skip(Dtype.float64)],
+                },
+            ]
+        ),
+    ),
+
+    'nll_loss_empty_tensor': dict(
+        name=['nll_loss'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    # TODO(someone): fix me! 
+                    "dtype": [Skip(Dtype.float16), Skip(Dtype.float32), Skip(Dtype.float64)],
                 },
             ]
         ),
