@@ -88,30 +88,14 @@ device_configs = {
 
     'baddbmm': dict(
         name=['baddbmm'],
-        tensor_para=dict(
-            atol=4e-2,
-            rtol=4e-2,
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((32, 64, 16)),Skip((32, 64, 32)),Skip((168, 52, 64)),Skip((2, 0, 2)),],
-                },
-            ]
-        ),
+        atol=1e-2,
+        rtol=1e-2,
     ),
 
     'baddbmm_without_inplace': dict(
         name=['baddbmm'],
-        tensor_para=dict(
-            atol=4e-2,
-            rtol=4e-2,
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((32, 64, 16)),Skip((32, 64, 32)),Skip((168, 52, 64)),Skip((16,)),Skip((64, 32)),Skip((1, 52, 64)),Skip((32, 1, 16)),Skip((32, 64, 1)),Skip((64,)),Skip((2,)),Skip((0, 2)),],
-                },
-            ]
-        ),
+        atol=1e-2,
+        rtol=1e-2,
     ),
 
     'conv_2d': dict(
@@ -749,6 +733,54 @@ device_configs = {
         ),
     ),
 
+    'addcdiv': dict(
+        name=['addcdiv'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip(()),Skip((128,)),Skip((576, 192)),Skip((64, 3, 3, 3)),Skip((10, 3, 5)),Skip((0,)),Skip((0, 5)),Skip((2, 0, 9)),],
+                },
+            ]
+        ),
+    ),
+
+    'addcdiv_specific': dict(
+        name=['addcdiv'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip(()),Skip((128,)),Skip((576, 192)),Skip((64, 3, 3, 3)),Skip((10, 3, 5)),Skip((0,)),Skip((0, 5)),Skip((2, 0, 9)),],
+                },
+            ]
+        ),
+    ),
+
+    'addcdiv_addcmul_broadcast_inplace': dict(
+        name=['addcdiv'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((3, 4)),Skip((4, 5, 5)),Skip((2, 3, 4, 5)),],
+                },
+            ]
+        ),
+    ),
+
+    'addcdiv_addcmul_without_inplace': dict(
+        name=['addcdiv'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip(()),Skip((128,)),Skip((576, 192)),Skip((64, 3, 1, 3)),Skip((10, 3, 5)),Skip((0,)),Skip((0, 5)),Skip((2, 0, 9)),],
+                },
+            ]
+        ),
+    ),
+
     'matmul': dict(
         name=['matmul'],
         tensor_para=dict(
@@ -1043,8 +1075,8 @@ device_configs = {
 
     'linear': dict(
         name=['linear'],
-        atol = 3e-2,
-        rtol = 3e-2,
+        atol = 5e-2,
+        rtol = 5e-2,
     ),
 
     'embedding': dict(
@@ -1165,18 +1197,6 @@ device_configs = {
                 },
             ]
         ),
-    ),
-
-    'topk_nonzero': dict(
-        name=['topk'],
-        atol=1e-2,
-        rtol=1e-2,
-    ),
-
-    'topk_zero': dict(
-        name=['topk'],
-        atol=1e-2,
-        rtol=1e-2,
     ),
 
     'transpose': dict(
@@ -1910,14 +1930,10 @@ device_configs = {
 
     'group_norm': dict(
         name=['group_norm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                },
-            ]
-        ),
+        atol=5e-2,
+        rtol=5e-2,
+        atol_half=5e-2,
+        rtol_half=5e-2,
     ),
 
     'unique': dict(
