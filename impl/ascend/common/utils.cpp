@@ -404,7 +404,7 @@ diopiError_t makeTensorLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, 
 
 diopiError_t makeOnesLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t src, diopiDtype_t dtype) {
     makeTensorLike(ctx, out, src, dtype);
-    fillTensor(ctx, *out, (float)1.);
+    fillTensor(ctx, *out, static_cast<float>(1.0));
     return diopiSuccess;
 }
 
