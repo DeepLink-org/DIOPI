@@ -3954,6 +3954,11 @@ def token_attention(q, k, out, b_loc, b_start_loc, b_seq_len, max_input_len):
     call = "diopiTokenAttentionInference"
     func = check_function(call)
     
+    # shape constraints
+    Lq, Lk = q.shape[-1], k.shape[-1]
+    assert Lq == Lk
+    assert Lk in {16, 32, 64, 128}
+    
     ret = func(q.context(), out, q, k, b_loc, b_start_loc, b_seq_len, max_input_len)
     check_returncode(ret)
     return out
@@ -3969,6 +3974,11 @@ def token_softmax_reducev(logics, v, out, b_loc, b_start_loc, b_seq_len, max_inp
 def context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len):
     call = "diopiContextAttentionInference"
     func = check_function(call)
+    
+    # shape constraints
+    Lq, Lk, Lv = q.shape[-1], k.shape[-1], v.shape[-1]
+    assert Lq == Lk and Lk == Lv
+    assert Lk in {16, 32, 64, 128}
     
     ret = func(q.context(), out, q, k, v, b_start_loc, b_seq_len, max_input_len)
     check_returncode(ret)
