@@ -383,7 +383,7 @@ jobs:
           set -e
           export CI=true
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          cd diopi_test/python && python main.py --mode run_test --filter_dtype float64 int64 uint8
+          cd diopi_test/python && ln -sf /mnt/cache/share/deeplinkci/data/ data && python main.py --mode run_test --filter_dtype float64 int64 uint8
 
   Rt-Test-Topsrider:
     name: Rt-Test-Topsrider
@@ -396,7 +396,7 @@ jobs:
           set -e
           export CI=true
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          cd diopi_test/python && python main.py --mode utest
+          cd diopi_test/python && ln -sf /mnt/cache/share/deeplinkci/data/ data && python main.py --mode utest
 
   Build-Supa:
     name: Build-Supa
