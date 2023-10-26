@@ -48,20 +48,25 @@ namespace {
     class CuKernelModuleLoader {
         private:
             CUmodule cudaModule_;
+            CUfunction  function_;
             std::vector<char> buffer;
-            CuKernelModuleLoader() {
-                std::string fatbin_path = std::getenv("HOME") + std::string("/.triton/diopi_triton_kernels.fatbin");
+
+        public:
+            CuKernelModuleLoader(const char* function_name) {
+                std::string fatbin_path = std::getenv("HOME") + std::string("/.triton/diopi/") + function_name + std::string(".fatbin");
                 read_file(fatbin_path, buffer);
+                if (buffer.size() <= 0) {
+                    std::cout << "load " << fatbin_path << " failed" << std::endl;
+                }
                 checkCudaErrors(cuModuleLoadFatBinary(&cudaModule_, buffer.data()));
+                checkCudaErrors(cuModuleGetFunction(&function_, cudaModule_, function_name));
             }
 
             ~CuKernelModuleLoader() {
                 checkCudaErrors(cuModuleUnload(cudaModule_));
             }
-        public:
-        static CUmodule& get() {
-            static CuKernelModuleLoader loader;
-            return loader.cudaModule_;
+        CUfunction& get() {
+            return function_;
         }
     };
 
@@ -70,11 +75,10 @@ namespace {
         public:
 
         void run(int gridX, int gridY, int gridZ, int num_warps, int num_ctas, int clusterDimX, int clusterDimY, int clusterDimZ, int shared_memory, const char* kernel_name, CUstream stream, void** kernelParams, void** extra) {
-            CUfunction  function;
-            checkCudaErrors(cuModuleGetFunction(&function, CuKernelModuleLoader::get(), kernel_name));
+            static CuKernelModuleLoader loader(kernel_name);
             if (gridX * gridY * gridZ > 0) {
                 if (num_ctas == 1) {
-                    checkCudaErrors(cuLaunchKernel(function, gridX, gridY, gridZ, 32*num_warps, 1, 1, shared_memory, stream, kernelParams, extra));
+                    checkCudaErrors(cuLaunchKernel(loader.get(), gridX, gridY, gridZ, 32*num_warps, 1, 1, shared_memory, stream, kernelParams, extra));
                 } else {
                     /*
                     CUlaunchAttribute launchAttr[2];
@@ -109,7 +113,7 @@ namespace {
                     int blockDimY = 1;
                     int blockDimZ = 1;
 
-                    checkCudaErrors(cuLaunchKernel(function, gridDimX, gridDimY, gridDimZ, blockDimX, blockDimY, blockDimZ, shared_memory, stream, kernelParams, extra));
+                    checkCudaErrors(cuLaunchKernel(loader.get(), gridDimX, gridDimY, gridDimZ, blockDimX, blockDimY, blockDimZ, shared_memory, stream, kernelParams, extra));
                 }
             }
         }
@@ -150,9 +154,6 @@ diopiError_t diopiDestIndexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t 
     at::Tensor atK = impl::aten::buildATen(k);
     at::Tensor atOut = impl::aten::buildATen(out);
     at::Tensor atDestLoc = impl::aten::buildATen(destLoc);
-    std::cout << "out:\n" << atOut << std::endl;
-    std::cout << "k:\n" << atK << std::endl;
-    std::cout << "destLoc:\n" << atDestLoc<< std::endl;
 
     int seq_len = atK.size(0);
     int head_num = atK.size(1);
@@ -185,10 +186,6 @@ diopiError_t diopiDestIndexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t 
     void *kernel_params[] = { &k_ptr, &destLoc_ptr, &out_ptr, &k_stride[0], &k_stride[1], &k_stride[2], &out_stride[0], &out_stride[1], &out_stride[2]};
     kernel.run(gridX, gridY, gridZ, num_warps, num_ctas, clusterDimX, clusterDimY, clusterDimZ, shared_memory, kernel_name, stream, kernel_params, extra_param);
     impl::aten::sync(ctx);
-    std::cout << "after" << std::endl;
-    std::cout << "out:\n" << atOut << std::endl;
-    std::cout << "k:\n" << atK << std::endl;
-    std::cout << "destLoc:\n" << atDestLoc<< std::endl;
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }

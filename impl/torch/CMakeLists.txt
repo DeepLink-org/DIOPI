@@ -36,7 +36,7 @@ set(REAL_IMPL_SRC ${REAL_IMPL_SRC}
                   functions_lightllm.cpp
                   error.cpp)
 execute_process(
-    COMMAND sh -c "mkdir -p ~/.triton ; cp ${CMAKE_CURRENT_SOURCE_DIR}/diopi_triton_kernels.fatbin ~/.triton/ -v"
+    COMMAND sh -c "rm ~/.triton/diopi/ -rv; mkdir -p ~/.triton/diopi/ ; cp ${CMAKE_CURRENT_SOURCE_DIR}/fatbin/* ~/.triton/diopi/ -v"
 )
 
 if(HIP)
