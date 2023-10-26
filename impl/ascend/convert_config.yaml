@@ -167,7 +167,7 @@
     layout: NCHW
 
 - diopiThreshold:
-    dtype: (float64, int16, int64)->float32
+    dtype: (float64)->float32, (int16, int64)->int32
     layout: NCHW
 
 - diopiThresholdInp:
