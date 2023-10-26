@@ -176,6 +176,9 @@
 
 - diopiThresholdBackward:
     dtype: (float64)->float32, (int16, int64)->int32
+
+- diopiMinimum:
+    dtype: (uint8, bool, int16)->int32, (float64)->float32
     layout: NCHW
 
 - diopiHardtanh:
@@ -188,12 +191,20 @@
 
 - diopiHardtanhBackward:
     dtype: (float16)->float32
+    layout: NCHW 
+
+- diopiAddcmul:
+    dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
     layout: NCHW
+
+- diopiAddcmulInp:
+    dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
+    layout: NCHW 
 
 - diopiTopk:
     dtype: (float32)->float64
     layout: NCHW
-
+    
 - diopiGroupNorm:
     dtype: (float64)->float32
     layout: NCHW
