@@ -76,6 +76,8 @@ else ()
     else()
         cuda_add_library(${DEVICEIMPL} SHARED ${REAL_IMPL_SRC})
         target_link_libraries(${DEVICEIMPL} ${CUDA_LIBRARIES} ${TORCH_LIBRARIES})
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/functions_ext/flash-attention)
+        add_dependencies(${DEVICEIMPL} diopi_torch_ext_flash_attn)
     endif()
 endif()
 
