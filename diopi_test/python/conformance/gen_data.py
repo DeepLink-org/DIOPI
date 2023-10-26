@@ -584,6 +584,18 @@ class CustomizedTest(object):
         triton_kernels.destindex_copy_kv(k, dest_loc, out)
         return out
 
+    def token_attention(q, k, out, b_loc, b_start_loc, b_seq_len, max_input_len):
+        triton_kernels.token_attention_fwd(q, k, out, b_loc, b_start_loc, b_seq_len, max_input_len)
+        return out
+        
+    def token_softmax_reducev(logics, v, out, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index):
+        triton_kernels.token_softmax_reducev_fwd(logics, v, out, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index)
+        return out
+        
+    def context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len):
+        triton_kernels.context_attention_fwd(q, k, v, out, b_start_loc, b_seq_len, max_input_len)
+        return out
+        
 
 def transfer_tensor_to_device(function_paras: dict):
     for para in function_paras["kwargs"].keys():
