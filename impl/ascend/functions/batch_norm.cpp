@@ -64,7 +64,7 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     if (runningVar == nullptr) {
         makeTensorLike(ctx, &runningVar, weight, diopi_dtype_float32);
         diopiScalar_t one = constructDiopiScalarT(diopi_dtype_float32, 1);
-        diopiFill(ctx, runningMean, &one);
+        diopiFill(ctx, runningVar, &one);
     }
 
     AscendTensor inputAt(input), outputAt(out);
