@@ -576,8 +576,11 @@ class CustomizedTest(object):
     def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch):
         triton_kernels.apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch)
         return logits
-    
+
     def destindex_copy_kv(k, dest_loc, out):
+        print(f"k:{k}")
+        print(f"dest_lo:{dest_loc}")
+        print(f"out:{out}")
         triton_kernels.destindex_copy_kv(k, dest_loc, out)
         return out
 

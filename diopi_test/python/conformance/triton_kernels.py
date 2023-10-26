@@ -5,7 +5,7 @@ import triton.language as tl
 @triton.jit
 def _fwd_kernel_apply_penalty(
     Logits, presence_penalty, frequency_penalty,
-    p_token_ids, p_token_counts, p_cumsum_seq_len, 
+    p_token_ids, p_token_counts, p_cumsum_seq_len,
     stride_logit_b, stride_logit_s,
     BLOCK_P: tl.constexpr
 ):
@@ -18,7 +18,7 @@ def _fwd_kernel_apply_penalty(
     cur_batch_id_offset = cur_batch_start_index + tl.arange(0, BLOCK_P)
     batch_ids = tl.load(p_token_ids + cur_batch_id_offset, mask=cur_batch_id_offset<cur_batch_end_index, other=0)
     batch_ids_count = tl.load(p_token_counts + cur_batch_id_offset, mask=cur_batch_id_offset<cur_batch_end_index, other=0)
-    
+
     row_start_ptr = Logits + cur_batch * stride_logit_b
     cur_offset = row_start_ptr + batch_ids
     cur_logits = tl.load(cur_offset, mask=cur_batch_id_offset<cur_batch_end_index, other=0.0)

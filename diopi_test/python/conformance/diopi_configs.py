@@ -8054,24 +8054,26 @@ diopi_configs = {
     'destindex_copy_kv':dict(
         name=['destindex_copy_kv'],
         interface=['CustomizedTest'],
+        is_inplace=True,
         tensor_para=dict(
             args=[
                 {
                     "ins":['k'],
-                    "shape": ((32*1024, 12, 128),),
+                    "shape": ((5, 1, 1),),
                     "dtype": [Dtype.float16],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.randint,
                 },
                 {
                     "ins":['dest_loc'],
-                    "shape": ((0, 32*1024),),
+                    "shape": ((2,),),
                     "dtype":[Dtype.int32],
+                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=4),
                 },
                 {
                     "ins":['out'],
-                    "shape": ((32*1024, 12, 128),),
+                    "shape": ((10, 1, 1),),
                     "dtype": [Dtype.float16],
-                    "gen_fn": Genfunc.randn,
+                    "gen_fn": Genfunc.zeros,
                 }
             ]
         )
