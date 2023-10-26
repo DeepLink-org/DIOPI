@@ -24,17 +24,8 @@ diopiError_t diopiRsqrt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
 diopiError_t diopiRsqrtInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiRsqrt(ctx, input, input); }
 
 diopiError_t diopiSqrt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AscendTensor inputCopy(input);
-    diopiDtype_t inputDType = inputCopy.dtype();
-    diopiConstTensorHandle_t inputTensor;
-    if (inputDType == diopi_dtype_float16) {
-        inputTensor = input;
-    } else {
-        castTensor(ctx, inputCopy, diopi_dtype_float32);
-        inputTensor = inputCopy.tensorHandle();
-    }
-    AclOpRunner<1, 1>("Sqrt", ctx).addInput(inputTensor).addOutput(out).run();
-    negativeInputRtnFillNan(ctx, out, inputTensor);
+    AclOpRunner<1, 1>("Sqrt", ctx).addInput(input).addOutput(out).run();
+    negativeInputRtnFillNan(ctx, out, input);
     return diopiSuccess;
 }
 
