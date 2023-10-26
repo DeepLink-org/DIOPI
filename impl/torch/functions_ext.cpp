@@ -6,15 +6,28 @@
 
 #include <ATen/NestedTensorImpl.h>
 #include <ATen/core/Generator.h>
+#include <c10/util/Optional.h>
 #include <diopi/functions.h>
 #include <diopi/functions_ext.h>
-
-#include <iostream>
 
 #include "context.h"
 #include "ext_kernel.h"
 #include "functions_ext/flash-attention/include/flash_attn/flash_api.h"
 #include "helper.hpp"
+
+namespace {
+
+c10::optional<at::Generator> buildGeneratorForMha(diopiContextHandle_t ctx, diopiGeneratorHandle_t gen, double dropoutP) {
+    if (gen == nullptr) {
+        if (dropoutP != 0) {
+            throw std::runtime_error("dropout option requires a generator to be set");
+        }
+        return c10::nullopt;
+    }
+    return impl::aten::buildGenerator(ctx, gen);
+}
+
+}  // namespace
 
 /**
  * copyed from `aten/src/ATen/native/nested/cuda/NestedTensorTransformerFunctions.cpp`
@@ -116,7 +129,7 @@ diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiConstTensorH
     auto atQ = impl::aten::buildATen(q);
     auto atK = impl::aten::buildATen(k);
     auto atV = impl::aten::buildATen(v);
-    auto atGen = impl::aten::buildGenerator(ctx, gen);
+    auto atGen = buildGeneratorForMha(ctx, gen, dropout_p);
     at::Tensor atOutput, atLog_sumexp, atDebug_attn_mask, atQpaded, atKpaded, atVpaded, atOutpaded;
     auto atRng_state = at::empty({2}, at::kLong);
     // TORCH_CHECK(false, "There are currently cuda memory errors being returned from this path.")
@@ -173,7 +186,7 @@ diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiCons
     auto atQ = impl::aten::buildATen(q);
     auto atK = impl::aten::buildATen(k);
     auto atV = impl::aten::buildATen(v);
-    auto atGen = impl::aten::buildGenerator(ctx, gen);
+    auto atGen = buildGeneratorForMha(ctx, gen, dropout_p);
     auto atGrad_out = impl::aten::buildATen(grad_out);
     auto atOut = impl::aten::buildATen(out);
     auto atLogsumexp = impl::aten::buildATen(softmax_lse);
