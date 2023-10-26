@@ -13,7 +13,7 @@ from . import diopi_configs
 from .diopi_runtime import from_dtype_str, int_types, float_types
 from .utils import get_saved_pth_list, get_data_from_file, cfg_file_name
 import torch
-import torchvision
+# import torchvision
 
 
 _cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -736,6 +736,7 @@ class CustomizedTest(object):
             scores = scores + causal_mask.to(dtype=scores.dtype)
         attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
         output = torch.einsum("bhts,bshd->bthd", attention, v)
+        print(output)
         return output
 
 

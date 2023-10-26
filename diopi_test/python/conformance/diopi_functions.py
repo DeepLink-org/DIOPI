@@ -3948,9 +3948,12 @@ def multiheadforward(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
     q_size = list(q.size().data)
     k_size = list(k.size().data)
     out = Tensor(q_size, q.get_dtype())
-    softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], q.get_dtype())
+    softmax_lse = Tensor([q_size[0], q_size[2], q_size[2] * q_size[0]], q.get_dtype())
     gen = None
-    debug_attn_mask = Tensor([q_size[0], q_size[2], q_size[1], k_size[1]], q.get_dtype())
+    debug_attn_mask = Tensor([0], q.get_dtype())
+    # print(softmax_lse)
+    # print(debug_attn_mask)
     ret = func(q.context(), q, k, v, dropout_p, is_causal, return_debug_mask, scale, out, softmax_lse, gen, debug_attn_mask)
+    # print(out.max())
     check_returncode(ret)
     return out

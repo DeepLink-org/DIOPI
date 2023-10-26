@@ -4,6 +4,7 @@ import shlex
 from conformance.utils import is_ci, error_counter, DiopiException, write_report, real_op_list
 from conformance.utils import logger, nhwc_op, dtype_op, dtype_out_op, glob_vars
 from conformance.model_list import model_list, model_op_list
+# import debugat
 
 
 def parse_args():

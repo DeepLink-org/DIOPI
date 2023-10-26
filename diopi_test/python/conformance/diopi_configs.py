@@ -8077,19 +8077,19 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['q'],
-                    "shape": ((2, 5, 3, 3),),
+                    "shape": ((2, 5, 8, 8),),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ['k'],
-                    "shape": ((2, 5, 3, 3),),
+                    "shape": ((2, 5, 8, 8),),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ['v'],
-                    "shape": ((2, 5, 3, 3),),
+                    "shape": ((2, 5, 8, 8),),
                     "dtype": [Dtype.float32, Dtype.float64],
                     "gen_fn": Genfunc.randn,
                 },
