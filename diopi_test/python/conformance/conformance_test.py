@@ -513,6 +513,7 @@ class ConformanceTest(object):
                     if is_inplace:
                         ignore_paras_for_input_check.add("input")
                     ignore_paras_for_input_check.add("out")
+                    ignore_paras_for_input_check.add("logits")
                     np_inputs_orign = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
                     info = convert_input_tensors(function_paras, test_tag, nhwc_list, dtype_list, filter_dtype_str_list)
                     tensor_info = info if info else tensor_info
