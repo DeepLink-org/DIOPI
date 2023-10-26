@@ -1,0 +1,1619 @@
+-- The C compiler identification is GNU 7.5.0
+-- The CXX compiler identification is GNU 7.5.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /nvme/share/share/platform/dep/gcc-7.5/bin/gcc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /nvme/share/share/platform/dep/gcc-7.5/bin/g++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- PYTHON_INCLUDE_DIR: /nvme/share/share/platform/env/miniconda3.8/envs/pt2.0_diopi/bin/../include/python3.8
+
+-- ENABLE_COVERAGE=
+-- Found CUDA: /nvme/share/share/platform/dep/cuda-11.7 (found version "11.7") 
+-- The CUDA compiler identification is NVIDIA 11.2.152
+-- Detecting CUDA compiler ABI info
+-- Detecting CUDA compiler ABI info - done
+-- Check for working CUDA compiler: /usr/local/cuda/bin/nvcc - skipped
+-- Detecting CUDA compile features
+-- Detecting CUDA compile features - done
+-- Caffe2: CUDA detected: 11.7
+-- Caffe2: CUDA nvcc is: /nvme/share/share/platform/dep/cuda-11.7/bin/nvcc
+-- Caffe2: CUDA toolkit directory: /nvme/share/share/platform/dep/cuda-11.7
+-- Caffe2: Header version is: 11.7
+-- /nvme/share/share/platform/dep/cuda-11.7/lib64/libnvrtc.so shorthash is d833c4f3
+-- USE_CUDNN is set to 0. Compiling without cuDNN support
+-- Autodetected CUDA architecture(s):  7.0 7.0 7.0 7.0 7.0 7.0 7.0 7.0
+-- Added CUDA NVCC flags for: -gencode;arch=compute_70,code=sm_70
+-- Found Torch: /home/yuyue.p/torch/pytorch/torch/lib/libtorch.so (Required is at least version "2.0") 
+-- CXX compile options:  -Wall -Wno-sign-compare -O3 -std=c++17 -fPIC -D_GLIBCXX_USE_CXX11_ABI=1
+-- Found Torch Version: 2.0.0
+-- pybind11 v2.11.0 dev1
+-- Found PythonInterp: /nvme/share/share/platform/env/miniconda3.8/envs/pt2.0_diopi/bin/python (found suitable version "3.8.16", minimum required is "3.6") 
+-- Found PythonLibs: /nvme/share/share/platform/env/miniconda3.8/envs/pt2.0_diopi/lib/libpython3.8.so
+-- Performing Test HAS_FLTO
+-- Performing Test HAS_FLTO - Success
+CXX_LITERT_SRC:
+-- Configuring done (16.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/yuyue.p/temp/flash/DIOPI/impl/build
+[  4%] Building NVCC (Device) object torch/CMakeFiles/diopi_impl.dir/functions_mmcv/diopi_impl_generated_voxelization.cu.o
+[  8%] Building NVCC (Device) object torch/CMakeFiles/diopi_impl.dir/diopi_impl_generated_nms_kernel.cu.o
+[ 13%] Building NVCC (Device) object torch/CMakeFiles/diopi_impl.dir/diopi_impl_generated_roi_align_kernel.cu.o
+[ 17%] Building NVCC (Device) object torch/CMakeFiles/diopi_impl.dir/functions_ext/diopi_impl_generated_rmsnorm.cu.o
+[ 21%] Building NVCC (Device) object torch/CMakeFiles/diopi_impl.dir/functions_ext/diopi_impl_generated_layer_norm_cuda_kernel.cu.o
+[ 26%] Building NVCC (Device) object torch/CMakeFiles/diopi_impl.dir/functions_ext/diopi_impl_generated_rotary.cu.o
+[ 30%] Building NVCC (Device) object torch/CMakeFiles/diopi_impl.dir/functions_mmcv/diopi_impl_generated_focal_loss.cu.o
+[ 30%] Built target test_gen_dependency
+[ 34%] Building NVCC (Device) object torch/CMakeFiles/diopi_impl.dir/functions_mmcv/diopi_impl_generated_modulated_deform_conv.cu.o
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: argument list for class template "std::pair" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: template parameter "_T1" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: argument list for class template "std::pair" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: template parameter "_T1" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: argument list for class template "std::pair" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: template parameter "_T1" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: argument list for class template "std::pair" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: template parameter "_T1" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: argument list for class template "std::pair" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: template parameter "_T1" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: argument list for class template "std::pair" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: template parameter "_T1" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: argument list for class template "std::pair" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: template parameter "_T1" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: argument list for class template "std::pair" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: template parameter "_T1" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/stl_pair.h(442): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: argument list for class template "std::array" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: template parameter "_Tp" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(245): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: template parameter "_UTypes" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(879): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(879): error: "pair" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(882): error: declaration is incompatible with template parameter "_UTypes"
+(880): here
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(882): error: too many template parameters -- does not match previous declaration (declared 
+(880): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(884): error: declaration is incompatible with template parameter "_T1"
+(882): here
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: argument list for class template "std::array" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(884): error: too few template parameters -- does not match previous declaration (declared 
+(882): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(899): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(901): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: template parameter "_Tp" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(245): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(969): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(980): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: argument list for class template "std::array" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: argument list for class template "std::array" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: argument list for class template "std::array" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: template parameter "_Tp" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(245): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: template parameter "_Tp" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(245): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: template parameter "_Tp" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(245): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1066): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1077): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1089): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: template parameter "_UTypes" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(879): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(879): error: "pair" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1099): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(882): error: declaration is incompatible with template parameter "_UTypes"
+(880): here
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1109): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(882): error: too many template parameters -- does not match previous declaration (declared 
+(880): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1115): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(884): error: declaration is incompatible with template parameter "_T1"
+(882): here
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1119): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: template parameter "_UTypes" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(879): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(879): error: "pair" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: template parameter "_UTypes" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(879): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(879): error: "pair" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: template parameter "_UTypes" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(879): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(879): error: "pair" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(884): error: too few template parameters -- does not match previous declaration (declared 
+(882): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(899): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(901): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1128): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(882): error: declaration is incompatible with template parameter "_UTypes"
+(880): here
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(882): error: declaration is incompatible with template parameter "_UTypes"
+(880): here
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(882): error: declaration is incompatible with template parameter "_UTypes"
+(880): here
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(882): error: too many template parameters -- does not match previous declaration (declared 
+(880): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1140): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(882): error: too many template parameters -- does not match previous declaration (declared 
+(880): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(882): error: too many template parameters -- does not match previous declaration (declared 
+(880): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(969): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(884): error: declaration is incompatible with template parameter "_T1"
+(882): here
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(884): error: declaration is incompatible with template parameter "_T1"
+(882): here
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(884): error: declaration is incompatible with template parameter "_T1"
+(882): here
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1152): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(980): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(884): error: too few template parameters -- does not match previous declaration (declared 
+(882): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(899): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(901): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(884): error: too few template parameters -- does not match previous declaration (declared 
+(882): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(899): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(901): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(884): error: too few template parameters -- does not match previous declaration (declared 
+(882): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(899): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(901): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1162): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1066): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1173): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(969): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(969): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(969): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1077): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1183): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(980): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(980): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(980): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1089): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1193): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1099): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1066): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1066): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1066): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1203): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1109): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1077): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1077): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1077): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1115): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1089): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1089): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1089): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1119): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1099): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1099): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1099): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1128): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1109): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1109): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1109): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1140): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1115): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1115): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1115): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1119): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1152): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1119): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1119): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: argument list for class template "std::function" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: expected a type specifier
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: function returning function is not allowed
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: template parameter "_Res" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: argument list for class template "std::function" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: template parameter "_Functor" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1128): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1162): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1128): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1128): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1140): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1173): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1140): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1140): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1152): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1183): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1152): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1152): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1162): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1193): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1162): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1162): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1173): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1203): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1173): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1173): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1183): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1183): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1183): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1193): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1193): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1193): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1203): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1203): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1203): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: argument list for class template "std::function" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: expected a type specifier
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: function returning function is not allowed
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: template parameter "_Res" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: argument list for class template "std::function" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: template parameter "_Functor" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: argument list for class template "std::function" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: expected a type specifier
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: function returning function is not allowed
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: template parameter "_Res" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: argument list for class template "std::function" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: expected a type specifier
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: argument list for class template "std::function" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: template parameter "_Functor" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: function returning function is not allowed
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: template parameter "_Res" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: argument list for class template "std::function" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: expected a type specifier
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: function returning function is not allowed
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: template parameter "_Res" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: argument list for class template "std::function" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: template parameter "_Functor" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: argument list for class template "std::function" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: template parameter "_Functor" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: argument list for class template "std::array" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: template parameter "_Tp" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(245): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: argument list for class template "std::array" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: template parameter "_Tp" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(245): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: template parameter "_UTypes" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(879): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(879): error: "pair" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: argument list for class template "std::optional" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: too few template parameters -- does not match previous declaration (declared 
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(243): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(882): error: declaration is incompatible with template parameter "_UTypes"
+(880): here
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(882): error: too many template parameters -- does not match previous declaration (declared 
+(880): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(884): error: declaration is incompatible with template parameter "_T1"
+(882): here
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(884): error: too few template parameters -- does not match previous declaration (declared 
+(882): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(899): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(901): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(969): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(980): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: template parameter "_UTypes" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(879): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(879): error: "pair" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(882): error: declaration is incompatible with template parameter "_UTypes"
+(880): here
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1066): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(882): error: too many template parameters -- does not match previous declaration (declared 
+(880): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1077): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(884): error: declaration is incompatible with template parameter "_T1"
+(882): here
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(884): error: too few template parameters -- does not match previous declaration (declared 
+(882): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1089): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(899): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(901): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1099): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: argument list for class template "std::optional" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: too few template parameters -- does not match previous declaration (declared 
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(243): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(969): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1109): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(980): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1115): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1119): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1066): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: argument list for class template "std::optional" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: too few template parameters -- does not match previous declaration (declared 
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(243): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: argument list for class template "std::optional" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: too few template parameters -- does not match previous declaration (declared 
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(243): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1128): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1077): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: argument list for class template "std::optional" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: too few template parameters -- does not match previous declaration (declared 
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(243): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1140): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1089): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1152): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1099): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1162): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1109): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1173): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1115): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1183): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1119): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1193): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1128): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1203): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1140): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1152): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1162): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1173): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1183): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1193): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: argument list for class template "std::function" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: expected a type specifier
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: function returning function is not allowed
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: template parameter "_Res" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: argument list for class template "std::function" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: template parameter "_Functor" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1203): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: argument list for class template "std::array" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(244): error: template parameter "_Tp" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(245): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: argument list for class template "std::function" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: expected a type specifier
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: function returning function is not allowed
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: template parameter "_Res" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: argument list for class template "std::function" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: template parameter "_Functor" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: template parameter "_UTypes" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(877): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(879): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(879): error: "pair" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(881): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(882): error: declaration is incompatible with template parameter "_UTypes"
+(880): here
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(882): error: too many template parameters -- does not match previous declaration (declared 
+(880): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(883): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: argument list for class template "std::tuple" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: expected a ")"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(884): error: declaration is incompatible with template parameter "_T1"
+(882): here
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(884): error: too few template parameters -- does not match previous declaration (declared 
+(882): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(885): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(899): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(901): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(969): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(980): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1066): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1077): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1089): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1099): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1109): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1115): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1119): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1128): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1140): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1152): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1162): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1173): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1183): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1193): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/tuple(1203): error: argument list for variable template "std::allocator_arg_t" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: argument list for class template "std::optional" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: too few template parameters -- does not match previous declaration (declared 
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(243): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: argument list for class template "std::function" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: expected a type specifier
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: function returning function is not allowed
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: template parameter "_Res" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(662): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: argument list for class template "std::function" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: template parameter "_Functor" may not be redeclared in this scope
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/std_function.h(666): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: argument list for class template "std::optional" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: too few template parameters -- does not match previous declaration (declared 
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(243): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(360): error: argument list for class template "std::shared_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(360): error: "weak_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(362): error: argument list for class template "std::shared_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(362): error: "unique_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(589): error: argument list for class template "std::weak_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(589): error: "shared_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: argument list for class template "std::optional" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: too few template parameters -- does not match previous declaration (declared 
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/array(243): here)
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/optional(1035): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(139): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(140): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/functional(141): error: class template "std::_Mem_fn_traits" has already been defined
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(360): error: argument list for class template "std::shared_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(360): error: "weak_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(362): error: argument list for class template "std::shared_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(362): error: "unique_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(589): error: argument list for class template "std::weak_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(589): error: "shared_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(360): error: argument list for class template "std::shared_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(360): error: "weak_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(362): error: argument list for class template "std::shared_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(362): error: "unique_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(589): error: argument list for class template "std::weak_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(589): error: "shared_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(360): error: argument list for class template "std::shared_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(360): error: "weak_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(362): error: argument list for class template "std::shared_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(362): error: "unique_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(360): error: argument list for class template "std::shared_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(360): error: "weak_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(362): error: argument list for class template "std::shared_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(362): error: "unique_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(589): error: argument list for class template "std::weak_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(589): error: "shared_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(589): error: argument list for class template "std::weak_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(589): error: "shared_ptr" is not a function or static data member
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: argument list for class template "c10::guts::array" is missing
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: expected a ")"
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: template parameter "_Tp" may not be redeclared in this scope
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: expected a ";"
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: argument list for class template "c10::guts::array" is missing
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: expected a ")"
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: template parameter "_Tp" may not be redeclared in this scope
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: expected a ";"
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: argument list for class template "c10::guts::array" is missing
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: expected a ")"
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: template parameter "_Tp" may not be redeclared in this scope
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: expected a ";"
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: argument list for class template "c10::guts::array" is missing
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: expected a ")"
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: template parameter "_Tp" may not be redeclared in this scope
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: expected a ";"
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: argument list for class template "c10::guts::array" is missing
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: expected a ")"
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: template parameter "_Tp" may not be redeclared in this scope
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(360): error: argument list for class template "std::shared_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(360): error: "weak_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(362): error: argument list for class template "std::shared_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(362): error: "unique_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(589): error: argument list for class template "std::weak_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(589): error: "shared_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(360): error: argument list for class template "std::shared_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(360): error: "weak_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(362): error: argument list for class template "std::shared_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(362): error: "unique_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(589): error: argument list for class template "std::weak_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(589): error: "shared_ptr" is not a function or static data member
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: argument list for class template "c10::guts::array" is missing
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: expected a ")"
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: template parameter "_Tp" may not be redeclared in this scope
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: expected a ";"
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: argument list for class template "c10::guts::array" is missing
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: expected a ")"
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: template parameter "_Tp" may not be redeclared in this scope
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: expected a ";"
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(360): error: argument list for class template "std::shared_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(360): error: "weak_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(362): error: argument list for class template "std::shared_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(362): error: "unique_ptr" is not a function or static data member
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(589): error: argument list for class template "std::weak_ptr" is missing
+
+/nvme/share/share/platform/dep/gcc-7.5/include/c++/7.5.0/bits/shared_ptr.h(589): error: "shared_ptr" is not a function or static data member
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: argument list for class template "c10::guts::array" is missing
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: expected a ")"
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: template parameter "_Tp" may not be redeclared in this scope
+
+/home/yuyue.p/torch/pytorch/torch/include/c10/util/Array.h(236): error: expected a ";"
+
+/home/yuyue.p/temp/flash/DIOPI/impl/torch/functions_ext/rotary.cu(30): warning #2912-D: constexpr if statements are a C++17 feature
+
+/home/yuyue.p/temp/flash/DIOPI/impl/torch/roi_align_kernel.cu(309): warning #2912-D: constexpr if statements are a C++17 feature
+
+/home/yuyue.p/temp/flash/DIOPI/impl/torch/functions_mmcv/modulated_deform_conv.cu(351): warning #2912-D: constexpr if statements are a C++17 feature
+
+/home/yuyue.p/temp/flash/DIOPI/impl/torch/nms_kernel.cu(117): warning #2912-D: constexpr if statements are a C++17 feature
+
+/home/yuyue.p/temp/flash/DIOPI/impl/torch/functions_mmcv/focal_loss.cu(152): warning #2912-D: constexpr if statements are a C++17 feature
+
+/home/yuyue.p/temp/flash/DIOPI/impl/torch/functions_mmcv/voxelization.cu(263): warning #2912-D: constexpr if statements are a C++17 feature
+
+91 errors detected in the compilation of "/home/yuyue.p/temp/flash/DIOPI/impl/torch/functions_ext/rotary.cu".
+CMake Error at diopi_impl_generated_rotary.cu.o.Release.cmake:277 (message):
+  Error generating file
+  /home/yuyue.p/temp/flash/DIOPI/impl/build/torch/CMakeFiles/diopi_impl.dir/functions_ext/./diopi_impl_generated_rotary.cu.o
+
+
+make[2]: *** [torch/CMakeFiles/diopi_impl.dir/functions_ext/diopi_impl_generated_rotary.cu.o] Error 1
+make[2]: *** Waiting for unfinished jobs....
+91 errors detected in the compilation of "/home/yuyue.p/temp/flash/DIOPI/impl/torch/roi_align_kernel.cu".
+[ 34%] Built target test_code_gen
+91 errors detected in the compilation of "/home/yuyue.p/temp/flash/DIOPI/impl/torch/functions_mmcv/modulated_deform_conv.cu".
+91 errors detected in the compilation of "/home/yuyue.p/temp/flash/DIOPI/impl/torch/nms_kernel.cu".
+91 errors detected in the compilation of "/home/yuyue.p/temp/flash/DIOPI/impl/torch/functions_mmcv/focal_loss.cu".
+91 errors detected in the compilation of "/home/yuyue.p/temp/flash/DIOPI/impl/torch/functions_ext/rmsnorm.cu".
+91 errors detected in the compilation of "/home/yuyue.p/temp/flash/DIOPI/impl/torch/functions_ext/layer_norm_cuda_kernel.cu".
+91 errors detected in the compilation of "/home/yuyue.p/temp/flash/DIOPI/impl/torch/functions_mmcv/voxelization.cu".
+CMake Error at diopi_impl_generated_roi_align_kernel.cu.o.Release.cmake:277 (message):
+  Error generating file
+  /home/yuyue.p/temp/flash/DIOPI/impl/build/torch/CMakeFiles/diopi_impl.dir//./diopi_impl_generated_roi_align_kernel.cu.o
+
+
+make[2]: *** [torch/CMakeFiles/diopi_impl.dir/diopi_impl_generated_roi_align_kernel.cu.o] Error 1
+CMake Error at diopi_impl_generated_modulated_deform_conv.cu.o.Release.cmake:277 (message):
+  Error generating file
+  /home/yuyue.p/temp/flash/DIOPI/impl/build/torch/CMakeFiles/diopi_impl.dir/functions_mmcv/./diopi_impl_generated_modulated_deform_conv.cu.o
+
+
+make[2]: *** [torch/CMakeFiles/diopi_impl.dir/functions_mmcv/diopi_impl_generated_modulated_deform_conv.cu.o] Error 1
+CMake Error at diopi_impl_generated_nms_kernel.cu.o.Release.cmake:277 (message):
+  Error generating file
+  /home/yuyue.p/temp/flash/DIOPI/impl/build/torch/CMakeFiles/diopi_impl.dir//./diopi_impl_generated_nms_kernel.cu.o
+
+
+make[2]: *** [torch/CMakeFiles/diopi_impl.dir/diopi_impl_generated_nms_kernel.cu.o] Error 1
+CMake Error at diopi_impl_generated_rmsnorm.cu.o.Release.cmake:277 (message):
+  Error generating file
+  /home/yuyue.p/temp/flash/DIOPI/impl/build/torch/CMakeFiles/diopi_impl.dir/functions_ext/./diopi_impl_generated_rmsnorm.cu.o
+
+
+make[2]: *** [torch/CMakeFiles/diopi_impl.dir/functions_ext/diopi_impl_generated_rmsnorm.cu.o] Error 1
+CMake Error at diopi_impl_generated_focal_loss.cu.o.Release.cmake:277 (message):
+  Error generating file
+  /home/yuyue.p/temp/flash/DIOPI/impl/build/torch/CMakeFiles/diopi_impl.dir/functions_mmcv/./diopi_impl_generated_focal_loss.cu.o
+
+
+make[2]: *** [torch/CMakeFiles/diopi_impl.dir/functions_mmcv/diopi_impl_generated_focal_loss.cu.o] Error 1
+CMake Error at diopi_impl_generated_layer_norm_cuda_kernel.cu.o.Release.cmake:277 (message):
+  Error generating file
+  /home/yuyue.p/temp/flash/DIOPI/impl/build/torch/CMakeFiles/diopi_impl.dir/functions_ext/./diopi_impl_generated_layer_norm_cuda_kernel.cu.o
+
+
+make[2]: *** [torch/CMakeFiles/diopi_impl.dir/functions_ext/diopi_impl_generated_layer_norm_cuda_kernel.cu.o] Error 1
+CMake Error at diopi_impl_generated_voxelization.cu.o.Release.cmake:277 (message):
+  Error generating file
+  /home/yuyue.p/temp/flash/DIOPI/impl/build/torch/CMakeFiles/diopi_impl.dir/functions_mmcv/./diopi_impl_generated_voxelization.cu.o
+
+
+make[2]: *** [torch/CMakeFiles/diopi_impl.dir/functions_mmcv/diopi_impl_generated_voxelization.cu.o] Error 1
+make[1]: *** [torch/CMakeFiles/diopi_impl.dir/all] Error 2
+make: *** [all] Error 2

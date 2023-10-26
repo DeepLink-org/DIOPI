@@ -1,13 +1,6 @@
-file(GLOB FLASH_ATTN_CXX_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/flash_attn/*.cpp")
-file(GLOB FLASH_ATTN_CU_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/flash_attn/src/*.cu")
-cuda_add_library(diopi_torch_ext_flash_attn STATIC ${FLASH_ATTN_CXX_SRCS} ${FLASH_ATTN_CU_SRCS})
-target_include_directories(diopi_torch_ext_flash_attn SYSTEM
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/cutlass/include
-  INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(diopi_torch_ext_flash_attn ${CUDA_LIBRARIES} ${TORCH_LIBRARIES})
+add_library(diopi_torch_ext_flash_attn SHARED IMPORTED)
+
 set_target_properties(diopi_torch_ext_flash_attn PROPERTIES
-  POSITION_INDEPENDENT_CODE ON
-  CUDA_SEPARABLE_COMPILATION ON
-  CUDA_STANDARD 17
-  CUDA_STANDARD_REQUIRED ON
-  CUDA_EXTENSIONS OFF)
+  IMPORTED_LOCATION /home/yuyue.p/temp/flash/temp/flash-attention/build/lib.linux-x86_64-3.8/flash_attn_2_cuda.cpython-38-x86_64-linux-gnu.so)
+target_include_directories(diopi_torch_ext_flash_attn SYSTEM
+  INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include )
