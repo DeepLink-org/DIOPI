@@ -38,6 +38,7 @@ echo "export IS_cover=True" > coverage/IS_cover.txt
 if [ -f coverage/increment.info ];then
     lcov --list coverage/increment.info
     lcov --list coverage/increment.info > coverage/increment.txt
+    genhtml coverage/increment.info -o coverage/html
 else
     echo "No C/C++ in incremental code"
 fi
@@ -47,5 +48,6 @@ if  [ $IS_cover == 'True' ];then
   exit 0
 else
   echo "coverage does not exceed $require_coverage"
+  echo "HTML: ${ROOT_DIR}/coverage/html"
   exit 1
 fi

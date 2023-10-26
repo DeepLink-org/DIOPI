@@ -39,7 +39,9 @@ inline aclFormat getAclDataFormat(diopiConstTensorHandle_t th) {
     return AscendTensor(th).getAclDataFormat();
 }
 
-diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* out, float val);
+diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, float val);
+
+diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, int val);
 
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out,
                                   diopiDevice_t device = diopiDevice_t::diopi_host);
@@ -546,6 +548,11 @@ public:
         }
         std::vector<int64_t> vec(value.begin(), value.end());
         CALL_ACLRT(aclopSetAttrListInt(attr_, attrName.data(), vec.size(), vec.data()));
+        return *this;
+    }
+
+    AclOpRunner& setAttr(const std::string& attrName, diopiSize_t value) {
+        CALL_ACLRT(aclopSetAttrListInt(attr_, attrName.data(), value.len, value.data));
         return *this;
     }
 
