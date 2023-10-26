@@ -266,19 +266,15 @@ diopiError_t aclAsStrided(diopiContextHandle_t ctx, const AscendTensor& src, Asc
 }
 
 // diopi tensor utils
-diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* out, float val) {
-    diopiScalar_t valScalar;
-    valScalar.stype = diopi_dtype_float64;
-    valScalar.fval = val;
-    diopiFill(ctx, *out, &valScalar);
+diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, float val) {
+    auto valScalar = constructDiopiScalarT(diopi_dtype_float64, val);
+    diopiFill(ctx, out, &valScalar);
     return diopiSuccess;
 }
 
-diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* out, int val) {
-    diopiScalar_t valScalar;
-    valScalar.stype = diopi_dtype_int64;
-    valScalar.ival = val;
-    diopiFill(ctx, *out, &valScalar);
+diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, int val) {
+    auto valScalar = constructDiopiScalarT(diopi_dtype_int64, val);
+    diopiFill(ctx, out, &valScalar);
     return diopiSuccess;
 }
 
@@ -408,7 +404,7 @@ diopiError_t makeTensorLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, 
 
 diopiError_t makeOnesLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t src, diopiDtype_t dtype) {
     makeTensorLike(ctx, out, src, dtype);
-    fillTensor(ctx, out, 1);
+    fillTensor(ctx, *out, (float)1.);
     return diopiSuccess;
 }
 

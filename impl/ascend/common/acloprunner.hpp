@@ -67,7 +67,9 @@ inline aclFormat getAclDataFormat(diopiConstTensorHandle_t th) {
     return ACL_FORMAT_ND;
 }
 
-diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* out, float val);
+diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, float val);
+
+diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, int val);
 
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out,
                                   diopiDevice_t device = diopiDevice_t::diopi_host);
