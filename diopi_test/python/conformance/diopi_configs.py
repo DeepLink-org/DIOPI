@@ -8083,38 +8083,40 @@ diopi_configs = {
         name=['token_attention'],
         interface=['CustomizedTest'],
         para=dict(
-            max_input_len=[3, 5],
+            max_input_len=[5, ],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['q'],
-                    "shape": ([3, 32, 128], [3, 32, 128]),
+                    "shape": ([3, 32, 128], ),
                     "dtype": [Dtype.float16],
                 },
                 {
                     "ins": ["k"],
-                    "value": ([100, 32, 128], [100, 32, 128]),
+                    "shape": ([100, 32, 128], ),
                     "dtype": [Dtype.float16],
                 },
                 {
                     "ins": ["out"],
-                    "shape": ([32, 7], [32, 10]),
+                    "shape": ([32, 13], ),
                     "dtype": [Dtype.float16],
                 },
                 {
                     "ins": ["b_loc"],
-                    "value": ([0.3, 0.5, 0.4],),
+                    "value": ([[ 0,  0,  1,  2, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+        [ 3,  4,  5,  6, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+        [ 0,  7,  8,  9, 12,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],],),
                     "dtype": [Dtype.int32],
                 },
                 {
                     "ins": ["b_start_loc"],
-                    "value": ([0, 2, 5], [0, 2, 7]),
+                    "value": ([0, 4, 9], ),
                     "dtype": [Dtype.int32],
                 },
                 {
                     "ins": ["b_seq_len"],
-                    "value": ([2, 3, 2], [2, 5, 3]),
+                    "value": ([4, 5, 4], ),
                     "dtype": [Dtype.int32],
                 },
             ]
@@ -8125,39 +8127,41 @@ diopi_configs = {
         name=['token_softmax_reducev'],
         interface=['CustomizedTest'],
         para=dict(
-            max_input_len=[3, 5],
-            other_kv_index=[3, 5],
+            max_input_len=[5, ],
+            other_kv_index=[10, ],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['logics'],
-                    "shape": ((32, 7), (32, 10)),
+                    "shape": ((32, 13), ),
                     "dtype": [Dtype.float16],
                 },
                 {
                     "ins": ["v"],
-                    "value": ((100, 32, 128), (100, 32, 128)),
+                    "shape": ((100, 32, 128), ),
                     "dtype": [Dtype.float16],
                 },
                 {
                     "ins": ["out"],
-                    "shape": ((3, 32, 128), (3, 32, 128)),
+                    "shape": ((3, 32, 128),),
                     "dtype": [Dtype.float16],
                 },
                 {
                     "ins": ["b_loc"],
-                    "value": ([0.3, 0.5, 0.4],),
+                    "value": ([[ 0,  0,  1,  2, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+        [ 3,  4,  5,  6, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+        [ 0,  7,  8,  9, 12,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],]),
                     "dtype": [Dtype.int32],
                 },
                 {
                     "ins": ["b_start_loc"],
-                    "value": ([0, 2, 5], [0, 2, 7]),
+                    "value": ([0, 4, 9],),
                     "dtype": [Dtype.int32],
                 },
                 {
                     "ins": ["b_seq_len"],
-                    "value": ([2, 3, 2], [2, 5, 3]),
+                    "value": ([4, 5, 4],),
                     "dtype": [Dtype.int32],
                 },
             ]
@@ -8179,12 +8183,12 @@ diopi_configs = {
                 },
                 {
                     "ins": ["k"],
-                    "value": ((7, 32, 128), (10, 32, 128)),
+                    "shape": ((7, 32, 128), (10, 32, 128)),
                     "dtype": [Dtype.float16],
                 },
                 {
                     "ins": ["v"],
-                    "value": ((7, 32, 128), (10, 32, 128)),
+                    "shape": ((7, 32, 128), (10, 32, 128)),
                     "dtype": [Dtype.float16],
                 },
                 {
