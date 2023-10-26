@@ -8054,7 +8054,6 @@ diopi_configs = {
     'destindex_copy_kv':dict(
         name=['destindex_copy_kv'],
         interface=['CustomizedTest'],
-        is_inplace=True,
         tensor_para=dict(
             args=[
                 {
