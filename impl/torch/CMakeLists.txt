@@ -5,7 +5,7 @@ option(HIP "Whether to use HIP when available" OFF)
 
 find_package(Torch 2.0 REQUIRED)
 if (Torch_FOUND)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++17 -fPIC")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++14 -fPIC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
     list(APPEND CUDA_NVCC_FLAGS "-D__CUDA_NO_HALF_OPERATORS__")
     message(STATUS "CXX compile options: ${CMAKE_CXX_FLAGS}")

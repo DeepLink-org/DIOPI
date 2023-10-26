@@ -13,6 +13,7 @@
 
 #include "context.h"
 #include "ext_kernel.h"
+#include "functions_ext/flash-attention/include/flash_attn/flash_api.h"
 #include "helper.hpp"
 
 /**
@@ -112,70 +113,48 @@ diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiConstTensorH
                                      double dropout_p, bool is_causal, bool return_debug_mask, double scale, diopiTensorHandle_t out,
                                      diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask) {
     impl::aten::setCurCtx(ctx);
-    auto atQ = impl::aten::buildATen(q).clone();
-    auto atK = impl::aten::buildATen(k).clone();
-    auto atV = impl::aten::buildATen(v).clone();
-
-    at::Tensor atOutput, atLog_sumexp, atDebug_attn_mask;
-    int64_t atPhilox_seed{0}, atPhilox_offset{0};
-    TORCH_CHECK(false, "There are currently cuda memory errors being returned from this path.")
+    auto atQ = impl::aten::buildATen(q);
+    auto atK = impl::aten::buildATen(k);
+    auto atV = impl::aten::buildATen(v);
+    auto atGen = impl::aten::buildGenerator(ctx, gen);
+    at::Tensor atOutput, atLog_sumexp, atDebug_attn_mask, atQpaded, atKpaded, atVpaded, atOutpaded;
+    auto atRng_state = at::empty({2}, at::kLong);
+    // TORCH_CHECK(false, "There are currently cuda memory errors being returned from this path.")
     // Query -> Query (Batch x {Q_seq_len}  x Num_heads x Dim_per_head)
     // Key   -> Key   (Batch x {KV_seq_len} x Num_heads x Dim_per_head)
     // Value -> Value (Batch x {KV_seq_len} x Num_heads x Dim_per_head)
-    const int64_t batch_size = atQ.size(0);
-    const int64_t q_seq_len = atQ.size(1);
-    const int64_t num_heads = atQ.size(2);
-    const int64_t head_dim = atQ.size(3);
-
+    // const int64_t batch_size = atQ.size(0);
+    // const int64_t q_seq_len = atQ.size(1);
+    // const int64_t num_heads = atQ.size(2);
+    // const int64_t head_dim = atQ.size(3);
     atQ = atQ.contiguous();
     atK = atK.contiguous();
     atV = atV.contiguous();
-
-    // K and V have to have the same Nnz, should probably torch_check
-    // assume in order to not iterate over v
-
-    auto cumulative_and_max_q = cumulative_and_max_seq_len(atQ);
-    auto cumulative_and_max_k = cumulative_and_max_seq_len(atK);
-
-    at::Tensor cumulative_sequence_length_q = std::get<0>(cumulative_and_max_q);
-    at::Tensor cumulative_sequence_length_k = std::get<0>(cumulative_and_max_k);
-
-    const int64_t max_seqlen_batch_q = std::get<1>(cumulative_and_max_q);
-    const int64_t max_seqlen_batch_k = std::get<1>(cumulative_and_max_k);
-
-    const int64_t Nnz_q = cumulative_sequence_length_q[-1].item<int64_t>();
-    const int64_t Nnz_kv = cumulative_sequence_length_k[-1].item<int64_t>();
-
-    auto query_buffer_reshaped = atQ.view({Nnz_q, num_heads, head_dim});
-    auto key_buffer_reshaped = atK.view({Nnz_kv, num_heads, head_dim});
-    auto value_buffer_reshaped = atV.view({Nnz_kv, num_heads, head_dim});
-
-    std::tie(atOutput, atLog_sumexp, atPhilox_seed, atPhilox_offset, atDebug_attn_mask) = at::_flash_attention_forward(query_buffer_reshaped,
-                                                                                                                       key_buffer_reshaped,
-                                                                                                                       value_buffer_reshaped,
-                                                                                                                       cumulative_sequence_length_q,
-                                                                                                                       cumulative_sequence_length_k,
-                                                                                                                       max_seqlen_batch_q,
-                                                                                                                       max_seqlen_batch_k,
-                                                                                                                       dropout_p,
-                                                                                                                       is_causal,
-                                                                                                                       return_debug_mask);
-    atOutput = atOutput.view({batch_size, q_seq_len, num_heads, head_dim});
-
-    // 目前pytorch2.0版本返回的是(Tensor out, Tensor softmax_lse, int philox_seed, int philox_offset, Tensor debug_attn_mask)
-    // 但是main分支的是返回的是五个tensor，因此存在一个转换的问题
+    // std::vector<at::Tensor> mha_fwd(at::Tensor &q,                    // batch_size x seqlen_q x num_heads x head_size
+    //                                 const at::Tensor &k,              // batch_size x seqlen_k x num_heads_k x head_size
+    //                                 const at::Tensor &v,              // batch_size x seqlen_k x num_heads_k x head_size
+    //                                 c10::optional<at::Tensor> &out_,  // batch_size x seqlen_q x num_heads x head_size
+    //                                 const float p_dropout, const float softmax_scale, bool is_causal, const int window_size_left, int window_size_right,
+    //                                 const bool return_softmax, c10::optional<at::Generator> gen_);
+    // {out, q_padded, k_padded, v_padded, out_padded, softmax_lse, p, rng_state};
+    auto atOutputOpt = c10::optional<at::Tensor>(atOutput);
+    std::vector<at::Tensor> result = mha_fwd(atQ, atK, atV, atOutputOpt, dropout_p, scale, is_causal, -1, -1, return_debug_mask, atGen);
+    //(atOutput, atQpaded, atKpaded, atVpaded, atOutpaded, atLog_sumexp, atDebug_attn_mask, atRng_state)
+    atOutput = result[0];
+    atQpaded = result[1];
+    atKpaded = result[2];
+    atVpaded = result[3];
+    atOutpaded = result[4];
+    atLog_sumexp = result[5];
+    atDebug_attn_mask = result[6];
+    atRng_state = result[7];
     impl::aten::updateATen2Tensor(ctx, atOutput, out);
-    impl::aten::updateATen2Tensor(ctx, atLog_sumexp, softmax_lse);
-    impl::aten::updateATen2Tensor(ctx, atDebug_attn_mask, debug_attn_mask);
+    // impl::aten::updateATen2Tensor(ctx, atLog_sumexp, softmax_lse);
+    // impl::aten::updateATen2Tensor(ctx, atDebug_attn_mask, debug_attn_mask);
 
-    at::Tensor new_state = at::empty({2}, at::kLong);
-    // 可能存在bug，先测试
-    new_state[0].fill_(atPhilox_seed);
-    new_state[1].fill_(atPhilox_offset);
-
-    diopiTensorHandle_t new_state_handle = nullptr;
-    impl::aten::buildDiopiTensor(ctx, new_state, &new_state_handle);
-    diopiGeneratorSetState(gen, new_state_handle);
+    // diopiTensorHandle_t new_state_handle = nullptr;
+    // impl::aten::buildDiopiTensor(ctx, atRng_state, &new_state_handle);
+    // diopiGeneratorSetState(gen, new_state_handle);
 
     impl::aten::unsetCurCtx();
     return diopiSuccess;
@@ -186,13 +165,15 @@ diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiCons
                                              diopiConstTensorHandle_t softmax_lse, double dropout_p, bool is_causal, diopiGeneratorHandle_t gen, double scale,
                                              diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v) {
     impl::aten::setCurCtx(ctx);
+    // at::Tensor atGrad_q, atGrad_k, atGrad_v;
     auto atGrad_q = impl::aten::buildATen(grad_q);
     auto atGrad_k = impl::aten::buildATen(grad_k);
     auto atGrad_v = impl::aten::buildATen(grad_v);
-
+    // at::Tensor atGrad_softmax;
     auto atQ = impl::aten::buildATen(q);
     auto atK = impl::aten::buildATen(k);
     auto atV = impl::aten::buildATen(v);
+    auto atGen = impl::aten::buildGenerator(ctx, gen);
     auto atGrad_out = impl::aten::buildATen(grad_out);
     auto atOut = impl::aten::buildATen(out);
     auto atLogsumexp = impl::aten::buildATen(softmax_lse);
@@ -202,8 +183,9 @@ diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiCons
     auto atState = impl::aten::buildATen(*state_ptr);
     int64_t atPhilox_seed = atState[0].item<int64_t>();
     int64_t atPhilox_offset = atState[1].item<int64_t>();
-
-    TORCH_CHECK(false, "There are currently cuda memory errors being returned from this path.")
+    // c10::optional<at::tensor>
+    // c10::optional<at::Tensor> atState =
+    // TORCH_CHECK(false, "There are currently cuda memory errors being returned from this path.")
     // Query -> Query (Batch x {Q_seq_len}  x Num_heads x Dim_per_head)
     // Key   -> Key   (Batch x {KV_seq_len} x Num_heads x Dim_per_head)
     // Value -> Value (Batch x {KV_seq_len} x Num_heads x Dim_per_head)
@@ -221,45 +203,43 @@ diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiCons
     // K and V have to have the same Nnz, should probably torch_check
     // assume in order to not iterate over v
 
-    auto cumulative_and_max_q = cumulative_and_max_seq_len(atQ);
-    auto cumulative_and_max_k = cumulative_and_max_seq_len(atK);
-
-    at::Tensor cumulative_sequence_length_q = std::get<0>(cumulative_and_max_q);
-    at::Tensor cumulative_sequence_length_k = std::get<0>(cumulative_and_max_k);
-
-    const int64_t max_seqlen_batch_q = std::get<1>(cumulative_and_max_q);
-    const int64_t max_seqlen_batch_k = std::get<1>(cumulative_and_max_k);
-
-    const int64_t Nnz_q = cumulative_sequence_length_q[-1].item<int64_t>();
-    const int64_t Nnz_kv = cumulative_sequence_length_k[-1].item<int64_t>();
-
-    auto grad_query_buffer_reshaped = atGrad_out.view({Nnz_q, num_heads, head_dim});
-    auto query_buffer_reshaped = atQ.view({Nnz_q, num_heads, head_dim});
-    auto key_buffer_reshaped = atK.view({Nnz_kv, num_heads, head_dim});
-    auto value_buffer_reshaped = atV.view({Nnz_kv, num_heads, head_dim});
-    auto out_reshaped = atOut.view({Nnz_kv, num_heads, head_dim});
-    auto lse_reshaped = atLogsumexp.view({Nnz_kv, num_heads, head_dim});
-
     //(Tensor grad_out, Tensor query, Tensor key, Tensor value, Tensor out, Tensor softmax_lse, Tensor cum_seq_q, Tensor cum_seq_k, int max_q, int max_k,
     // float dropout_p, bool is_causal, int philox_seed, int philox_offset) -> (Tensor, Tensor, Tensor)
 
-    std::tie(atGrad_q, atGrad_k, atGrad_v) = at::_flash_attention_backward(grad_query_buffer_reshaped,
-                                                                           query_buffer_reshaped,
-                                                                           key_buffer_reshaped,
-                                                                           value_buffer_reshaped,
-                                                                           out_reshaped,
-                                                                           lse_reshaped,
-                                                                           cumulative_sequence_length_q,
-                                                                           cumulative_sequence_length_k,
-                                                                           max_seqlen_batch_q,
-                                                                           max_seqlen_batch_k,
-                                                                           dropout_p,
-                                                                           is_causal,
-                                                                           atPhilox_seed,
-                                                                           atPhilox_offset);
-    atGrad_q = atGrad_q.view({batch_size, q_seq_len, num_heads, head_dim});
-    atGrad_k = atGrad_k.view({batch_size, q_seq_len, num_heads, head_dim});
-    atGrad_v = atGrad_v.view({batch_size, q_seq_len, num_heads, head_dim});
+    // std::vector<at::Tensor>
+    // mha_bwd(const at::Tensor &dout,  // batch_size x seqlen_q x num_heads, x head_size_og
+    //         const at::Tensor &q,   // batch_size x seqlen_q x num_heads x head_size
+    //         const at::Tensor &k,   // batch_size x seqlen_k x num_heads_k x head_size
+    //         const at::Tensor &v,   // batch_size x seqlen_k x num_heads_k x head_size
+    //         const at::Tensor &out,   // batch_size x seqlen_q x num_heads x head_size
+    //         const at::Tensor &softmax_lse,     // b x h x seqlen_q
+    //         c10::optional<at::Tensor> &dq_,   // batch_size x seqlen_q x num_heads x head_size
+    //         c10::optional<at::Tensor> &dk_,   // batch_size x seqlen_k x num_heads_k x head_size
+    //         c10::optional<at::Tensor> &dv_,   // batch_size x seqlen_k x num_heads_k x head_size
+    //         const float p_dropout,         // probability to drop
+    //         const float softmax_scale,
+    //         const bool is_causal,
+    //         const int window_size_left,
+    //         int window_size_right,
+    //         c10::optional<at::Generator> gen_,
+    //         c10::optional<at::Tensor> &rng_state)
+
+    //     return { dq, dk, dv, softmax_d };
+    auto atGrad_qOpt = c10::optional<at::Tensor>(atGrad_q);
+    auto atGrad_kOpt = c10::optional<at::Tensor>(atGrad_k);
+    auto atGrad_vOpt = c10::optional<at::Tensor>(atGrad_v);
+    auto atStateOpt = c10::optional<at::Tensor>(atState);
+    std::vector<at::Tensor> result =
+        mha_bwd(atGrad_out, atQ, atK, atV, atOut, atLogsumexp, atGrad_qOpt, atGrad_kOpt, atGrad_vOpt, dropout_p, scale, is_causal, -1, -1, atGen, atStateOpt);
+    //(atGrad_q, atGrad_k, atGrad_v, atGrad_softmax)
+    atGrad_q = result[0];
+    atGrad_k = result[1];
+    atGrad_v = result[2];
+    // at::Tensor atGrad_softmax = result[3];
+
+    // atGrad_q = atGrad_q.view({batch_size, q_seq_len, num_heads, head_dim});
+    // atGrad_k = atGrad_k.view({batch_size, q_seq_len, num_heads, head_dim});
+    // atGrad_v = atGrad_v.view({batch_size, q_seq_len, num_heads, head_dim});
 
     impl::aten::updateATen2Tensor(ctx, atGrad_q, grad_q);
     impl::aten::updateATen2Tensor(ctx, atGrad_k, grad_k);
