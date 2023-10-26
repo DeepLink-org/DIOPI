@@ -14,8 +14,14 @@ diopiError_t diopiAddcdiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     diopiTensorHandle_t trOther = nullptr;
     diopiDtype_t dtype;
     diopiGetTensorDtype(out, &dtype);
+    if (dtype == diopi_dtype_float16) {
+        dtype = diopi_dtype_float64;
+    } else {
+        dtype = diopi_dtype_float32;
+    }
     makeTensorFromScalar(ctx, value, &trOther, dtype, diopiDevice_t::diopi_device);
-    AclOpRunner<4, 1>("Addcdiv", ctx).addInput(input).addInput(tensor1).addInput(tensor2).addInput(trOther).addOutput(out).run();
+
+    AclOpRunner<4, 1>("Addcdiv", ctx).addInput(input, dtype).addInput(tensor1, dtype).addInput(tensor2, dtype).addInput(trOther, dtype).addOutput(out).run();
     return diopiSuccess;
 }
 
