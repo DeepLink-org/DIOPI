@@ -79,27 +79,27 @@
     layout: NCHW
 
 - diopiLogicalAnd:
-    dtype: (float64)->bool, (float32)->bool, (float16)->bool, (int64)->bool, (int32)->bool, (int16)->bool, (int8)->bool, (uint8)->bool
+    dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
     layout: NCHW
 
 - diopiLogicalAndInp:
-    dtype: (float64)->bool, (float32)->bool, (float16)->bool, (int64)->bool, (int32)->bool, (int16)->bool, (int8)->bool, (uint8)->bool
+    dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
     layout: NCHW
 
 - diopiLogicalOr:
-    dtype: (float64)->bool, (float32)->bool, (float16)->bool, (int64)->bool, (int32)->bool, (int16)->bool, (int8)->bool, (uint8)->bool
+    dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
     layout: NCHW
 
 - diopiLogicalOrInp:
-    dtype: (float64)->bool, (float32)->bool, (float16)->bool, (int64)->bool, (int32)->bool, (int16)->bool, (int8)->bool, (uint8)->bool
+    dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
     layout: NCHW
 
 - diopiLogicalNot:
-    dtype: (float64)->bool, (float32)->bool, (float16)->bool, (int64)->bool, (int32)->bool, (int16)->bool, (int8)->bool, (uint8)->bool
+    dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
     layout: NCHW
 
 - diopiLogicalNotInp:
-    dtype: (float64)->bool, (float32)->bool, (float16)->bool, (int64)->bool, (int32)->bool, (int16)->bool, (int8)->bool, (uint8)->bool
+    dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
     layout: NCHW
 
 - diopiBatchNorm:
@@ -110,10 +110,82 @@
     dtype: (float64)->float32
     layout: NCHW
 
+- diopiLinear:
+    dtype: (float16, float64)->float32
+    layout: NCHW
+
+- diopiLinearBackward:
+    dtype: (float16, float64)->float32
+    layout: NCHW
+
 - diopiAny:
     dtype: (float16, float32, float64, int16, int32, int64, uint8, int8)->bool
     layout: NCHW
 
 - diopiAll:
     dtype: (float16, float32, float64, int16, int32, int64, uint8, int8)->bool
+    layout: NCHW
+
+- diopiLog:
+    dtype: (float16, float32, int16, int32, int64, uint8, int8)->float64
+    layout: NCHW
+
+- diopiLogInp:
+    dtype: (float16, float32, int16, int32, int64, uint8, int8)->float64
+    layout: NCHW
+
+- diopiLog2:
+    dtype: (float64, int16, int32, int64, uint8, int8)->float32
+    layout: NCHW
+
+- diopiLog2Inp:
+    dtype: (float64, int16, int32, int64, uint8, int8)->float32
+    layout: NCHW
+
+- diopiLog10:
+    dtype: (float64, int16, int32, int64, uint8, int8)->float32
+    layout: NCHW
+
+- diopiLog10Inp:
+    dtype: (float64, int16, int32, int64, uint8, int8)->float32
+    layout: NCHW
+
+- diopiNeg:
+    dtype: (int8, int16, uint8, uint16, uint32, uint64)->int64, (float64)->float32, (complex32)->complex64
+    layout: NCHW
+
+- diopiNegInp:
+    dtype: (int8, int16, uint8, uint16, uint32, uint64)->int64, (float64)->float32, (complex32)->complex64
+    layout: NCHW
+
+- diopiMinimum:
+    dtype: (uint8, bool, int16)->int32, (float64)->float32
+    layout: NCHW
+
+- diopiHardtanh:
+    dtype: (float16)->float32
+    layout: NCHW
+
+- diopiHardtanhInp:
+    dtype: (float16)->float32
+    layout: NCHW
+
+- diopiHardtanhBackward:
+    dtype: (float16)->float32
+    layout: NCHW 
+
+- diopiAddcmul:
+    dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
+    layout: NCHW
+
+- diopiAddcmulInp:
+    dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
+    layout: NCHW 
+
+- diopiTopk:
+    dtype: (float32)->float64
+    layout: NCHW
+    
+- diopiGroupNorm:
+    dtype: (float64)->float32
     layout: NCHW
