@@ -2299,25 +2299,9 @@ device_configs = {
 
     'layer_norm': dict(
         name=['layer_norm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 5, 3, 5)),Skip((2, 3136, 128)),Skip((2, 64)),Skip((32,)),Skip((2, 5, 3, 5)),Skip((2, 16, 128)),],
-                },
-            ]
-        ),
-    ),
-
-    'layer_norm_empty_tensor': dict(
-        name=['layer_norm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((0,)),Skip((0, 12)),Skip((6, 0, 9)),],
-                },
-            ]
+        atol=1e-4,
+        para=dict(
+            eps=[Skip(2),],
         ),
     ),
 

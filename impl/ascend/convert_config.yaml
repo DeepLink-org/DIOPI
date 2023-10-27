@@ -209,3 +209,11 @@
 - diopiGroupNorm:
     dtype: (float64)->float32
     layout: NCHW
+
+- diopiLayerNorm:
+    dtype: (float64)->float32
+    layout: NCHW
+
+- diopiLayerNormBackward:
+    dtype: (float64)->float32
+    layout: NCHW
