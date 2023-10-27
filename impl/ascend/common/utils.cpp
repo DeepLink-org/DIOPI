@@ -647,6 +647,45 @@ diopiError_t transTensorTo2D(diopiContextHandle_t ctx, AscendTensor& th) {
     return diopiSuccess;
 }
 
+diopiError_t broadcast(diopiContextHandle_t ctx, AscendTensor& out, const AscendTensor& input, const std::vector<int64_t>& size) {
+    if (size.empty()) {
+        out = input;
+        return diopiSuccess;
+    }
+    // Avoid modifying the input tensor (when input == out).
+    AscendTensor tmp = out;
+    if (!out.defined() || input.isSame(out)) {
+        AscendTensor tmp1;
+        makeTensor(ctx, tmp1, size, input.dtype());
+        tmp = tmp1;
+    }
+    auto ptr = const_cast<diopiTensorHandle_t>(tmp.tensorHandle());
+    AclOpRunner<2, 1>("BroadcastTo", ctx).addInput(input).addConstInput(size).addOutput(ptr).run();
+    out = AscendTensor(ptr);
+    return diopiSuccess;
+}
+
+std::vector<int64_t> inferSize(const std::vector<int64_t>& shape1, const std::vector<int64_t>& shape2) {
+    size_t dimsA = shape1.size();
+    size_t dimsB = shape2.size();
+    size_t ndim = dimsA > dimsB ? dimsA : dimsB;
+    std::vector<int64_t> expandedSizes(ndim);
+
+    // Use ptrdiff_t to ensure signed comparison.
+    for (ptrdiff_t i = (ptrdiff_t)ndim - 1; i >= 0; --i) {
+        ptrdiff_t offset = ndim - 1 - i;
+        ptrdiff_t dimA = dimsA - 1 - offset;
+        ptrdiff_t dimB = dimsB - 1 - offset;
+        auto sizeA = (dimA >= 0) ? shape1[dimA] : 1;
+        auto sizeB = (dimB >= 0) ? shape2[dimB] : 1;
+
+        // 1s map to the other size (even 0).
+        expandedSizes[i] = sizeA == 1 ? sizeB : sizeA;
+    }
+
+    return expandedSizes;
+}
+
 diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, diopiConstTensorHandle_t src) {
     diopiDevice_t device;
     diopiGetTensorDevice(src, &device);
