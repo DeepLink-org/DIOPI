@@ -230,6 +230,12 @@ diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, int v
     return diopiSuccess;
 }
 
+diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, double val) {
+    auto valScalar = constructDiopiScalarT(diopi_dtype_float64, val);
+    diopiFill(ctx, out, &valScalar);
+    return diopiSuccess;
+}
+
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out, diopiDtype_t dtype, diopiDevice_t device) {
     int64_t sizeTmp[1] = {1};
     diopiSize_t sSize = arrayToDiopiSize(sizeTmp, 1);
