@@ -78,8 +78,6 @@ def convert_input_tensors(function_paras: dict, test_tag: list, nhwc_list=[], dt
 def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare=False, var_name="out") -> bool:
     rtol = cfg.get('rtol_half', 1e-5) if tensor1.dtype == np.float16 else cfg.get('rtol', 1e-5)
     atol = cfg.get('atol_half', 1e-8) if tensor1.dtype == np.float16 else cfg.get('atol', 1e-8)
-    # print(tensor1)
-    # print(tensor2)
     tensor1 = np.sum(tensor1) if sum_to_compare else tensor1
     tensor2 = np.sum(tensor2) if sum_to_compare else tensor2
     matched = np.isclose(tensor1, tensor2, rtol, atol, equal_nan=True)
