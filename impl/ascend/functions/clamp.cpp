@@ -6,88 +6,57 @@
 
 #include <cfloat>
 #include <climits>
+#include <limits>
 
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
-std::string getAclVersion() {
-    int32_t majorVersion, minorVersion, patchVersion;
-    CALL_ACLRT(aclrtGetVersion(&majorVersion, &minorVersion, &patchVersion));
-    return std::to_string(majorVersion) + "." + std::to_string(minorVersion) + "." + std::to_string(patchVersion);
-}
-// diopiError_t broadcast(diopiContextHandle_t ctx, AscendTensor& out, const AscendTensor& input, const std::vector<int64_t>& size) {
-
-//     auto ptr = const_cast<diopiConstTensorHandle_t>(out.tensorHandle());
-//     out = AscendTensor(ptr);
-//     return diopiSuccess;
-// }
 
 diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t min,
                         diopiConstTensorHandle_t max) {
-    std::cout << getAclVersion() << std::endl;
-
-    AscendTensor tem(input);
-    std::cout << tem.numel() << std::endl;
-    if (tem.numel() == 0) {
-        return diopiSuccess;
-    }
-
     diopiDtype_t dtype;
     diopiGetTensorDtype(input, &dtype);
-
-    diopiDtype_t outDtype, castType;
-    diopiGetTensorDtype(out, &outDtype);
-    if (isFloatingType(outDtype)) {
-        castType = diopi_dtype_float32;
-    } else {
-        castType = diopi_dtype_int32;
-    }
+    dtype = diopi_dtype_float64;
 
     AclOpRunner<3, 1> runner("ClipByValue", ctx);
-    runner.addInput(input, castType);
+    runner.addInput(input, dtype);
+
+    diopiTensorHandle_t minTmp, maxTmp, bool_out;
+    makeTensorLike(ctx, &minTmp, input, dtype);
+    makeTensorLike(ctx, &maxTmp, input, dtype);
+    makeTensorLike(ctx, &bool_out, input, diopi_dtype_bool);
+
+    std::vector<int64_t> sizes;
+    diopiSize_t diopiShape;
+    diopiGetTensorShape(input, &diopiShape);
+    std::vector<int64_t> shapeTmp(diopiShape.data, diopiShape.data + diopiShape.len);
+    sizes = std::move(shapeTmp);
 
     if (min != nullptr) {
-        diopiTensorHandle_t minTmp;
-        makeTensorLike(ctx, &minTmp, input, castType);
-        std::vector<int64_t> sizes;
-        diopiSize_t diopiShape;
-        diopiGetTensorShape(input, &diopiShape);
-        std::vector<int64_t> shapeTmp(diopiShape.data, diopiShape.data + diopiShape.len);
-        sizes = std::move(shapeTmp);
-        AclOpRunner<2, 1>("BroadcastTo", ctx).addInput(min, castType).addConstInput(sizes).addOutput(minTmp).run();
-        runner.addInput(minTmp, castType);
-    } else {
-        diopiTensorHandle_t minTmp;
-        makeTensorLike(ctx, &minTmp, input, dtype);
-        if (isIntegralType(dtype)) {
-            fillTensor(ctx, minTmp, static_cast<float>(INT_MIN));
+        if (sizes.size() > 0) {
+            AclOpRunner<2, 1>("BroadcastTo", ctx).addInput(min, dtype).addConstInput(sizes).addOutput(minTmp).run();
         } else {
-            fillTensor(ctx, minTmp, static_cast<float>(-FLT_MAX));
+            minTmp = const_cast<diopiTensorHandle_t>(min);
         }
-        runner.addInput(minTmp, castType);
+    } else {
+        fillTensor(ctx, minTmp, -std::numeric_limits<double>::max());
     }
+
     if (max != nullptr) {
-        diopiTensorHandle_t maxTmp;
-        makeTensorLike(ctx, &maxTmp, input, castType);
-        std::vector<int64_t> sizes;
-        diopiSize_t diopiShape;
-        diopiGetTensorShape(input, &diopiShape);
-        std::vector<int64_t> shapeTmp(diopiShape.data, diopiShape.data + diopiShape.len);
-        sizes = std::move(shapeTmp);
-        AclOpRunner<2, 1>("BroadcastTo", ctx).addInput(max, castType).addConstInput(sizes).addOutput(maxTmp).run();
-        runner.addInput(maxTmp, castType);
-    } else {
-        diopiTensorHandle_t maxTmp;
-        makeTensorLike(ctx, &maxTmp, input, dtype);
-        if (isIntegralType(dtype)) {
-            fillTensor(ctx, maxTmp, static_cast<float>(INT_MAX));
+        if (sizes.size() > 0) {
+            AclOpRunner<2, 1>("BroadcastTo", ctx).addInput(max, dtype).addConstInput(sizes).addOutput(maxTmp).run();
         } else {
-            fillTensor(ctx, maxTmp, static_cast<float>(FLT_MAX));
+            maxTmp = const_cast<diopiTensorHandle_t>(max);
         }
-        runner.addInput(maxTmp, castType);
+    } else {
+        fillTensor(ctx, maxTmp, std::numeric_limits<double>::max());
     }
-    runner.addOutput(out).run();
+
+    diopiLt(ctx, bool_out, maxTmp, minTmp);
+    diopiMaskedFill(ctx, minTmp, minTmp, bool_out, maxTmp);
+
+    runner.addInput(minTmp, dtype).addInput(maxTmp, dtype).addOutput(out).run();
 
     return diopiSuccess;
 }
@@ -98,51 +67,69 @@ diopiError_t diopiClampInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, 
 
 diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* min,
                               const diopiScalar_t* max) {
-    std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA----------------------------------------------------" << std::endl;
-    AscendTensor tem(input);
-    if (tem.numel() > 1) {
-        diopiTensorHandle_t minTmp = nullptr, maxTmp = nullptr;
-        if (min != nullptr) makeTensorFromScalar(ctx, min, &minTmp, diopi_dtype_float64, diopi_device);
-        if (max != nullptr) makeTensorFromScalar(ctx, max, &maxTmp, diopi_dtype_float64, diopi_device);
-        diopiClamp(ctx, out, input, minTmp, maxTmp);
-        return diopiSuccess;
-    }
-
-    diopiDtype_t outDtype;
-    diopiGetTensorDtype(out, &outDtype);
-
     diopiDtype_t dtype;
-    if (isFloatingType(outDtype)) {
-        dtype = diopi_dtype_float32;
-    } else {
-        dtype = diopi_dtype_int32;
-    }
+    dtype = diopi_dtype_float64;
+
     AclOpRunner<3, 1> runner("ClipByValue", ctx);
     runner.addInput(input, dtype);
+
+    if (min != nullptr && max != nullptr) {
+        double minn = getValue<double>(min);
+        double maxn = getValue<double>(max);
+        if (maxn < minn) {
+            runner.addConstInput(*max, dtype).addConstInput(*max, dtype).addOutput(out).run();
+            return diopiSuccess;
+        }
+    }
     if (min != nullptr) {
         runner.addConstInput(*min, dtype);
     } else {
-        if (isIntegralType(dtype)) {
-            runner.addConstInput(INT_MIN, dtype);
-        } else {
-            runner.addConstInput(-FLT_MAX, dtype);
-        }
+        runner.addConstInput(-std::numeric_limits<double>::max(), dtype);
     }
+
     if (max != nullptr) {
         runner.addConstInput(*max, dtype);
     } else {
-        if (isIntegralType(dtype)) {
-            runner.addConstInput(INT_MAX, dtype);
-        } else {
-            runner.addConstInput(FLT_MAX, dtype);
-        }
+        runner.addConstInput(std::numeric_limits<double>::max(), dtype);
     }
+
     runner.addOutput(out).run();
     return diopiSuccess;
 }
-
 diopiError_t diopiClampInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* min, const diopiScalar_t* max) {
     return diopiClampScalar(ctx, input, input, min, max);
+}
+
+DIOPI_API diopiError_t diopiClampMinInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* min) {
+    return diopiClampMinScalar(ctx, input, input, min);
+}
+
+DIOPI_API diopiError_t diopiClampMinInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t min) {
+    return diopiClampMin(ctx, input, input, min);
+}
+
+DIOPI_API diopiError_t diopiClampMinScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* min) {
+    return diopiClampScalar(ctx, out, input, min, nullptr);
+}
+
+DIOPI_API diopiError_t diopiClampMin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t min) {
+    return diopiClamp(ctx, out, input, min, nullptr);
+}
+
+DIOPI_API diopiError_t diopiClampMaxInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* max) {
+    return diopiClampMaxScalar(ctx, input, input, max);
+}
+
+DIOPI_API diopiError_t diopiClampMaxInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t max) {
+    return diopiClampMax(ctx, input, input, max);
+}
+
+DIOPI_API diopiError_t diopiClampMaxScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* max) {
+    return diopiClampScalar(ctx, out, input, nullptr, max);
+}
+
+DIOPI_API diopiError_t diopiClampMax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t max) {
+    return diopiClamp(ctx, out, input, nullptr, max);
 }
 
 }  // namespace ascend
