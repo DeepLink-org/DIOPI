@@ -82,7 +82,7 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
     # print(tensor2)
     tensor1 = np.sum(tensor1) if sum_to_compare else tensor1
     tensor2 = np.sum(tensor2) if sum_to_compare else tensor2
-    matched = np.isclose(tensor1, tensor2, rtol, atol, True)
+    matched = np.isclose(tensor1, tensor2, rtol, atol, equal_nan=True)
     mismatched_num = matched.size - np.sum(matched)
     passed = mismatched_num <= default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
     if record:
