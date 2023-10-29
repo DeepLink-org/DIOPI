@@ -34,7 +34,7 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     sizes = std::move(shapeTmp);
 
     if (min != nullptr) {
-        if (sizes.size() > 0) {
+        if (!sizes.empty() > 0) {
             AclOpRunner<2, 1>("BroadcastTo", ctx).addInput(min, dtype).addConstInput(sizes).addOutput(minTmp).run();
         } else {
             minTmp = const_cast<diopiTensorHandle_t>(min);
