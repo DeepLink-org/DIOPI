@@ -22,10 +22,10 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     AclOpRunner<3, 1> runner("ClipByValue", ctx);
     runner.addInput(input, dtype);
 
-    diopiTensorHandle_t minTmp, maxTmp, bool_out;
+    diopiTensorHandle_t minTmp, maxTmp, boolOut;
     makeTensorLike(ctx, &minTmp, input, dtype);
     makeTensorLike(ctx, &maxTmp, input, dtype);
-    makeTensorLike(ctx, &bool_out, input, diopi_dtype_bool);
+    makeTensorLike(ctx, &boolOut, input, diopi_dtype_bool);
 
     std::vector<int64_t> sizes;
     diopiSize_t diopiShape;
@@ -44,7 +44,7 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     }
 
     if (max != nullptr) {
-        if (sizes.size() > 0) {
+        if (!sizes.empty() > 0) {
             AclOpRunner<2, 1>("BroadcastTo", ctx).addInput(max, dtype).addConstInput(sizes).addOutput(maxTmp).run();
         } else {
             maxTmp = const_cast<diopiTensorHandle_t>(max);
@@ -53,8 +53,8 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
         fillTensor(ctx, maxTmp, std::numeric_limits<double>::max());
     }
 
-    diopiLt(ctx, bool_out, maxTmp, minTmp);
-    diopiMaskedFill(ctx, minTmp, minTmp, bool_out, maxTmp);
+    diopiLt(ctx, boolOut, maxTmp, minTmp);
+    diopiMaskedFill(ctx, minTmp, minTmp, boolOut, maxTmp);
 
     runner.addInput(minTmp, dtype).addInput(maxTmp, dtype).addOutput(out).run();
 
