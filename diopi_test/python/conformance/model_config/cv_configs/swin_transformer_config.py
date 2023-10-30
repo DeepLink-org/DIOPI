@@ -548,7 +548,7 @@ swin_transformer_config = {
                     "requires_grad":[False],
                     "shape": [(2401,), (2401,), (2401,), (2401,)],
                     "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, low=-169, high=169),
+                    "gen_fn": dict(fn=Genfunc.randint, low=-169, high=169),
                 },
             ],
         ),
@@ -574,7 +574,7 @@ swin_transformer_config = {
                     "requires_grad":[False],
                     "shape": [(2401,), (2401,), (2401,), (2401,)],
                     "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, low=-169, high=169),
+                    "gen_fn": dict(fn=Genfunc.randint, low=-169, high=169),
                 },
                 {
                     "ins": ["values"],

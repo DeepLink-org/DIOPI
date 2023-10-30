@@ -565,7 +565,7 @@ cascade_rcnn_config = {
                     "requires_grad":[False],
                     "shape": [(152,), (250,), (2904,), (255,), (3,), (3,), (48,), (48,)],
                     "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, low=-3, high=3),
+                    "gen_fn": dict(fn=Genfunc.randint, low=-3, high=3),
                 },
             ],
         ),
@@ -591,7 +591,7 @@ cascade_rcnn_config = {
                     "requires_grad":[False],
                     "shape": [(107156,), (498,), (13,), (10,), (6,), (17,)],
                     "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, low=-29, high=29),
+                    "gen_fn": dict(fn=Genfunc.randint, low=-29, high=29),
                 },
                 {
                     "ins": ["values"],

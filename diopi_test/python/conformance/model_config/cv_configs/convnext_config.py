@@ -421,7 +421,7 @@ convnext_config = {
                     "requires_grad":[False],
                     "shape": [(64,), (64,), (64,), (15,)],
                     "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, low=-15, high=15),
+                    "gen_fn": dict(fn=Genfunc.randint, low=-15, high=15),
                 },
             ],
         ),

@@ -1110,7 +1110,7 @@ pointpillars_config = {
                     "requires_grad":[False],
                     "shape": [(31735, 1, 64), (36985, 1, 64)],
                     "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, high=32),
+                    "gen_fn": dict(fn=Genfunc.randint, high=32),
                 },
                 {
                     "ins": ["src"],

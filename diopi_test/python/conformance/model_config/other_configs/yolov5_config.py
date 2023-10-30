@@ -493,7 +493,7 @@ yolov5_config = {
                     "requires_grad":[False],
                     "shape": [(94,), (136,), (30,), (136,), (151,), (164,)],
                     "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, low=-1, high=1),
+                    "gen_fn": dict(fn=Genfunc.randint, low=-1, high=1),
                 },
                 {
                     "ins": ["values"],

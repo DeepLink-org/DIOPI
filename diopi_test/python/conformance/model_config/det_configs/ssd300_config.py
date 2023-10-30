@@ -439,7 +439,7 @@ ssd300_config = {
                     "requires_grad":[False],
                     "shape": [(569,), (734,), (913,), (80,), (3,), (3,)],
                     "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, low=-3, high=3),
+                    "gen_fn": dict(fn=Genfunc.randint, low=-3, high=3),
                 },
             ],
         ),
@@ -465,7 +465,7 @@ ssd300_config = {
                     "requires_grad":[False],
                     "shape": [(207,), (120,), (121,), (51,)],
                     "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, low=-8732, high=8732),
+                    "gen_fn": dict(fn=Genfunc.randint, low=-8732, high=8732),
                 },
                 {
                     "ins": ["values"],
@@ -868,7 +868,7 @@ ssd300_config = {
                     "requires_grad":[False],
                     "shape": [(165,), (531,)],
                     "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, high=8555),
+                    "gen_fn": dict(fn=Genfunc.randint, high=8555),
                 },
                 {
                     "ins": ["src"],

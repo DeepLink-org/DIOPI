@@ -453,7 +453,7 @@ retinanet_config = {
                     "requires_grad":[False],
                     "shape": [(514,), (249,), (436,), (52,), (3,), (3,)],
                     "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, low=-3, high=3),
+                    "gen_fn": dict(fn=Genfunc.randint, low=-3, high=3),
                 },
             ],
         ),

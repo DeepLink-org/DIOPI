@@ -747,7 +747,7 @@ dyhead_config = {
                     "requires_grad":[False],
                     "shape": [(71,), (62,), (45, 42), (45, 16), (3,), (3,)],
                     "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, low=-3, high=3),
+                    "gen_fn": dict(fn=Genfunc.randint, low=-3, high=3),
                 },
             ],
         ),
@@ -773,7 +773,7 @@ dyhead_config = {
                     "requires_grad":[False],
                     "shape": [(200,), (113,), (31,), (45,)],
                     "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, low=-384, high=384),
+                    "gen_fn": dict(fn=Genfunc.randint, low=-384, high=384),
                 },
                 {
                     "ins": ["values"],

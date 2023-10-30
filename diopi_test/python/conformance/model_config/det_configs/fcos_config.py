@@ -572,7 +572,7 @@ fcos_config = {
                     "requires_grad":[False],
                     "shape": [(194,), (2,), (20805,), (53,), (17609,), (20805,)],
                     "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, low=-8, high=8),
+                    "gen_fn": dict(fn=Genfunc.randint, low=-8, high=8),
                 },
             ],
         ),

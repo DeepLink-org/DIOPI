@@ -697,7 +697,7 @@ dbnet_config = {
                     "requires_grad":[False],
                     "shape": [(68877,), (39255,)],
                     "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, high=6553600),
+                    "gen_fn": dict(fn=Genfunc.randint, high=6553600),
                 },
                 {
                     "ins": ["src"],

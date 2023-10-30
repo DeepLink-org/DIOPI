@@ -639,7 +639,7 @@ detr_config = {
                     "requires_grad":[False],
                     "shape": [(3,), (3,), (44,), (42,), (55,), (0,)],
                     "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, low=-3, high=3),
+                    "gen_fn": dict(fn=Genfunc.randint, low=-3, high=3),
                 },
             ],
         ),
@@ -665,7 +665,7 @@ detr_config = {
                     "requires_grad":[False],
                     "shape": [(40,), (46,), (59,), (23,)],
                     "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, low=-100, high=100),
+                    "gen_fn": dict(fn=Genfunc.randint, low=-100, high=100),
                 },
                 {
                     "ins": ["values"],
