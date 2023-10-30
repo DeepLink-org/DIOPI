@@ -3305,8 +3305,8 @@ diopi_configs = {
                     "shape": ((), (200,), (2, 29), (2, 128, 128),
                               (), (180,), (2, 64, 64), (3, 25, 24, 5),
                               (5, 0), (0,), (0, 6, 1, 3), (4, 0, 3)),
-                    "dtype": [Dtype.int64],
-                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=80),
+                    "dtype": [np.int64],
+                    "gen_fn": dict(fn='Genfunc.randint', low=0, high=80),
                 },
                 {
                     "ins": ['weight'],
@@ -3326,7 +3326,7 @@ diopi_configs = {
             reduction=['none', 'mean', 'sum', 'mean'],
             ignore_index=[0, 0, 0, 0],
         ),
-        dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
+        dtype=[np.float16, np.float32, np.float64],
         tensor_para=dict(
             gen_fn=Genfunc.randn,
             args=[
@@ -3338,8 +3338,8 @@ diopi_configs = {
                 {
                     "ins": ['target'],
                     "shape": ((), (16,), (5, 5, 6, 0, 3), (4, 8, 3)),
-                    "dtype": [Dtype.int64],
-                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=1),
+                    "dtype": [np.int64],
+                    "gen_fn": dict(fn='Genfunc.randint', low=0, high=1),
                 },
                 {
                     "ins": ['weight'],
