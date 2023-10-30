@@ -17,7 +17,7 @@ class Genfunc:
         return np.array(np.random.randn(*shape)).astype(dtype)
 
     @staticmethod
-    def uniform(low=0, high=1, shape=(1,), dtype=np.float32):
+    def uniform(low=0, high=10, shape=(1,), dtype=np.float32):
         return np.random.uniform(low=low, high=high, size=shape).astype(dtype)
 
     @staticmethod
@@ -37,7 +37,7 @@ class Genfunc:
         return np.random.randint(low=0, high=2, size=shape).astype(dtype)
 
     @staticmethod
-    def randint(low=0, high=1, shape=(1,), dtype=np.float32):
+    def randint(low=0, high=10, shape=(1,), dtype=np.float32):
         if dtype == np.uint8:
             return np.random.randint(low=0, high=high, size=shape).astype(dtype)
         return np.random.randint(low=low, high=high, size=shape).astype(dtype)
@@ -54,7 +54,7 @@ class Genfunc:
 
     # def real(low=0, high=1, shape=(1,), dtype=np.float32):
     @staticmethod
-    def randn_int(low=0, high=1, shape=(1,), dtype=np.float32):
+    def randn_int(low=0, high=10, shape=(1,), dtype=np.float32):
         if np.dtype(dtype) in ["i", "u"]:
             return np.random.randint(low=low, high=high, size=shape).astype(dtype)
         else:
