@@ -1380,18 +1380,6 @@ device_configs = {
             ]
         ),
     ),
-
-    'reciprocal_int': dict(
-        name=['reciprocal'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16)],
-                },
-            ]
-        ),
-    ),
     
     'reciprocal_zero': dict(
         name=['reciprocal'],
