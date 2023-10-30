@@ -733,18 +733,6 @@ device_configs = {
         ),
     ),
 
-    'addcdiv': dict(
-        name=['addcdiv'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((128,)),Skip((576, 192)),Skip((64, 3, 3, 3)),Skip((10, 3, 5)),Skip((0,)),Skip((0, 5)),Skip((2, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
     'addcdiv_specific': dict(
         name=['addcdiv'],
         tensor_para=dict(
@@ -752,30 +740,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip(()),Skip((128,)),Skip((576, 192)),Skip((64, 3, 3, 3)),Skip((10, 3, 5)),Skip((0,)),Skip((0, 5)),Skip((2, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
-    'addcdiv_addcmul_broadcast_inplace': dict(
-        name=['addcdiv'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((3, 4)),Skip((4, 5, 5)),Skip((2, 3, 4, 5)),],
-                },
-            ]
-        ),
-    ),
-
-    'addcdiv_addcmul_without_inplace': dict(
-        name=['addcdiv'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((128,)),Skip((576, 192)),Skip((64, 3, 1, 3)),Skip((10, 3, 5)),Skip((0,)),Skip((0, 5)),Skip((2, 0, 9)),],
                 },
             ]
         ),

@@ -395,6 +395,11 @@ public:
         return addInput(at, format);
     }
 
+    AclOpRunner& addInput(const AscendTensor& at, const diopiDtype_t& dtype) {
+        castTensor(context_, const_cast<AscendTensor&>(at), dtype);
+        return addInput(at);
+    }
+
     AclOpRunner& addInput(diopiConstTensorHandle_t th) {
         auto thCopy = contiguous(context_, th);
         return addInput(thCopy, getAclDataFormat(thCopy));
