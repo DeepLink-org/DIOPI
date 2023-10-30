@@ -24,9 +24,9 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
         diopiTensorHandle_t minTmp;
         makeTensorLike(ctx, &minTmp, input, dtype);
         if (isIntegralType(dtype)) {
-            fillTensor(ctx, &minTmp, static_cast<float>(INT_MIN));
+            fillTensor(ctx, minTmp, static_cast<float>(INT_MIN));
         } else {
-            fillTensor(ctx, &minTmp, static_cast<float>(-FLT_MAX));
+            fillTensor(ctx, minTmp, static_cast<float>(-FLT_MAX));
         }
         runner.addInput(minTmp);
     }
@@ -36,9 +36,9 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
         diopiTensorHandle_t maxTmp;
         makeTensorLike(ctx, &maxTmp, input, dtype);
         if (isIntegralType(dtype)) {
-            fillTensor(ctx, &maxTmp, static_cast<float>(INT_MAX));
+            fillTensor(ctx, maxTmp, static_cast<float>(INT_MAX));
         } else {
-            fillTensor(ctx, &maxTmp, static_cast<float>(FLT_MAX));
+            fillTensor(ctx, maxTmp, static_cast<float>(FLT_MAX));
         }
         runner.addInput(maxTmp);
     }

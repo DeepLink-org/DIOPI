@@ -3277,24 +3277,17 @@ diopi_configs = {
     #     ),
     # ),
 
-    # FIXME nll_loss执行报错
     'nll_loss': dict(
         name=["nll_loss"],
         atol=1e-4,
         rtol=1e-5,
         para=dict(
-            # reduction=['mean', 'none', 'mean', 'sum',
-            #            'sum', 'sum', 'mean', 'none',
-            #            'none', 'mean', 'sum', 'mean'],
-            # ignore_index=[-100, 79, -100, 0,
-            #               79, 0, 79, 100,
-            #               -100, 94, 62, 0],
-            reduction=['none',
-                       'sum',
-                       'none', 'mean', 'mean'],
-            ignore_index=[79,
-                          0,
-                          -100, 94, 0],
+            reduction=['mean', 'none', 'mean', 'sum',
+                       'sum', 'sum', 'mean', 'none',
+                       'none', 'mean', 'sum', 'mean'],
+            ignore_index=[-100, 79, -100, 0,
+                          79, 0, 79, 100,
+                          -100, 94, 62, 0],
         ),
         dtype=[np.float16, np.float32, np.float64],
         tensor_para=dict(
@@ -3303,73 +3296,58 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    # "shape": ((100,), (200, 79), (2, 92, 29), (2, 150, 512, 512),
-                    #           (79,), (200, 80), (2, 79, 512, 512), (3, 80, 25, 24, 5),
-                    #           (5, 16, 0), (0, 16,), (0, 5, 6, 0, 3), (4, 82, 0, 3)),
-                    "shape": ((200, 79),
-                              (200, 80),
-                              (5, 16, 0), (0, 16,), (4, 82, 0, 3)),
+                    "shape": ((100,), (200, 79), (2, 92, 29), (2, 150, 128, 128),
+                              (79,), (180, 80), (2, 79, 64, 64), (3, 80, 25, 24, 5),
+                              (5, 16, 0), (0, 16,), (0, 5, 6, 1, 3), (4, 82, 0, 3)),
                 },
                 {
                     "ins": ['target'],
-                    # "shape": ((), (200, ), (2, 29), (2, 512, 512),
-                    #           (), (200,), (2, 512, 512), (3, 25, 24, 5),
-                    #           (5, 0), (0,), (0, 6, 0, 3), (4, 0, 3)),
-                    "shape": ((200, ),
-                              (200,),
-                              (5, 0), (0,), (4, 0, 3)),
-                    "dtype": [np.int64],
-                    "gen_fn": dict(fn='Genfunc.randint', low=0, high=80),
+                    "shape": ((), (200,), (2, 29), (2, 128, 128),
+                              (), (180,), (2, 64, 64), (3, 25, 24, 5),
+                              (5, 0), (0,), (0, 6, 1, 3), (4, 0, 3)),
+                    "dtype": [Dtype.int64],
+                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=80),
                 },
                 {
                     "ins": ['weight'],
-                    # "shape": (None, (79, ), (92, ), None,
-                    #           (79,), (80,), (79, ), (80, ),
-                    #           (16,), (16,), (5,), (82,)),
-                    "shape": ((79, ),
-                              (80,),
-                              (16,), (16,), (82,)),
+                    "shape": (None, (79, ), (92, ), None,
+                              (79,), (80,), (79, ), (80, ),
+                              (16,), (16,), (5,), (82,)),
                 },
             ],
         ),
     ),
 
-    # FIXME nll_loss执行报错
-    # 'nll_loss_empty_tensor': dict(
-    #     name=["nll_loss"],
-    #     atol=1e-4,
-    #     rtol=1e-5,
-    #     para=dict(
-    #         # reduction=['none', 'mean', 'sum', 'mean'],
-    #         # ignore_index=[0, 0, 0, 0],
-    #         reduction=['mean', 'sum', 'mean'],
-    #         ignore_index=[0, 0, 0],
-    #     ),
-    #     dtype=[np.float16, np.float32, np.float64],
-    #     tensor_para=dict(
-    #         gen_fn='Genfunc.randn',
-    #         args=[
-    #             {
-    #                 "ins": ['input'],
-    #                 "requires_grad": [True],
-    #                 # "shape": ((0,), (16, 0,), (5, 0, 5, 6, 0, 3), (4, 0, 8, 3)),
-    #                 "shape": ((16, 0,), (5, 0, 5, 6, 0, 3), (4, 0, 8, 3)),
-    #             },
-    #             {
-    #                 "ins": ['target'],
-    #                 # "shape": ((), (16,), (5, 5, 6, 0, 3), (4, 8, 3)),
-    #                 "shape": ((16,), (5, 5, 6, 0, 3), (4, 8, 3)),
-    #                 "dtype": [np.int64],
-    #                 "gen_fn": dict(fn='Genfunc.randint', low=0, high=1),
-    #             },
-    #             {
-    #                 "ins": ['weight'],
-    #                 # "shape": (None, (0,), (0,), (0,)),
-    #                 "shape": ((0,), (0,), (0,)),
-    #             },
-    #         ],
-    #     ),
-    # ),
+    'nll_loss_empty_tensor': dict(
+        name=["nll_loss"],
+        atol=1e-4,
+        rtol=1e-5,
+        para=dict(
+            reduction=['none', 'mean', 'sum', 'mean'],
+            ignore_index=[0, 0, 0, 0],
+        ),
+        dtype=[Dtype.float16, Dtype.float32, Dtype.float64],
+        tensor_para=dict(
+            gen_fn=Genfunc.randn,
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((0,), (16, 0,), (5, 0, 5, 6, 0, 3), (4, 0, 8, 3)),
+                },
+                {
+                    "ins": ['target'],
+                    "shape": ((), (16,), (5, 5, 6, 0, 3), (4, 8, 3)),
+                    "dtype": [Dtype.int64],
+                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=1),
+                },
+                {
+                    "ins": ['weight'],
+                    "shape": (None, (0,), (0,), (0,)),
+                },
+            ],
+        ),
+    ),
 
     # FIXME cross_entropy输入指定shape报错
     'cross_entropy': dict(

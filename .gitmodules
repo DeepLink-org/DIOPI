@@ -1,3 +1,0 @@
-[submodule "diopi_test/third_party/mmcv_diopi"]
-    path = diopi_test/third_party/mmcv_diopi
-    url = https://github.com/DeepLink-org/mmcv_diopi.git

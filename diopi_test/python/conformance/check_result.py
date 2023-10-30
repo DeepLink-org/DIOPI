@@ -16,7 +16,7 @@ class CheckResult(object):
 
         passed = True
         for name, value in input1.items():
-            matched = np.isclose(value, input2[name])
+            matched = np.isclose(value, input2[name], equal_nan=True)
             mismatched_num = matched.size - np.sum(matched)
             passed = mismatched_num <= default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
             glob_vars.func_status[glob_vars.cur_test_func] = 'passed'
@@ -80,7 +80,7 @@ class CheckResult(object):
         atol = kwargs.get('atol', 1e-8)
         tensor1 = np.sum(tensor1) if sum_to_compare else tensor1
         tensor2 = np.sum(tensor2) if sum_to_compare else tensor2
-        matched = np.isclose(tensor1, tensor2, rtol, atol, True)
+        matched = np.isclose(tensor1, tensor2, rtol, atol, equal_nan=True)
         mismatched_num = matched.size - np.sum(matched)
         passed = mismatched_num <= default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
         glob_vars.func_status[glob_vars.cur_test_func] = 'passed'
@@ -88,7 +88,7 @@ class CheckResult(object):
             glob_vars.func_status[glob_vars.cur_test_func] = 'failed'
             sum1 = tensor1.sum()
             sum2 = tensor2.sum()
-            mask = np.isclose(tensor1, tensor2, rtol, atol, True)
+            mask = np.isclose(tensor1, tensor2, rtol, atol, equal_nan=True)
             count = np.count_nonzero(np.equal(mask, False))
             debug_level = glob_vars.debug_level
             if tensor1.dtype == np.bool_:
@@ -97,7 +97,7 @@ class CheckResult(object):
                     f"Max of diff is {max_diff}.\n"
             else:
                 assert tensor1.size == tensor2.size, "tensor1 element num does not equal tensor2's."
-                diff = np.abs(tensor1 - tensor2)
+                diff = np.abs(tensor1 - tensor2) * ~matched
                 max_diff = np.abs(tensor1 - tensor2).max()
                 max_diff_index = np.unravel_index(np.argmax(diff), diff.shape)
                 max_diff_elem = tensor1[max_diff_index]
