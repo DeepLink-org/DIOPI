@@ -1,24 +1,24 @@
 from ...config import Genfunc
 from ...diopi_runtime import Dtype
 
-yolov3_config = {
+yolov5_config = {
     'add': dict(
         name=["add"],
         interface=["torch"],
         para=dict(
-            alpha=[1, 1, 1, 0.0005, 1, 1, 1, 1, 1],
+            alpha=[1, 1, 1, 1, 0.0005, 1, 1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(17,), (19,), (8, 256, 28, 40), (64, 128, 1, 1), (52, 1), (18, 1), (1, 3, 4), (1, 3, 4), ()],
+                    "shape": [(161,), (464,), (237, 2), (78, 2), (64, 64, 3, 3), (1, 32, 160, 160), ()],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["other"],
-                    "shape": [(17,), (19,), (8, 256, 28, 40), (64, 128, 1, 1), (1, 6300), (1, 6300), (1280, 1, 4), (100, 1, 4), ()],
+                    "shape": [(161,), (464,), (237, 2), (78, 2), (64, 64, 3, 3), (1, 32, 160, 160), ()],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -31,19 +31,19 @@ yolov3_config = {
         interface=["torch"],
         is_inplace=[True],
         para=dict(
-            alpha=[1, -0.000864932, -0.00014097, -0.000617309, 1, 1, 1, 1],
+            alpha=[0.800059, 1, -1.69079e-06, -3.09978e-06, 1, 1, 1, 1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(8, 256, 36, 40), (255, 256, 1, 1), (64,), (64,), (8, 840, 80), (8, 960, 2), (8, 960), (8, 3360)],
+                    "shape": [(64,), (154,), (255, 512, 1, 1), (128, 256, 1, 1), (36, 2), (247, 80), (1, 3, 85, 80, 80), (1, 3, 85, 40, 40)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["other"],
-                    "shape": [(8, 256, 36, 40), (255, 256, 1, 1), (64,), (64,), (8, 840, 80), (8, 960, 2), (8, 960), (8, 3360)],
+                    "shape": [(64,), (154,), (255, 512, 1, 1), (128, 256, 1, 1), (36, 2), (247, 80), (1, 3, 85, 80, 80), (1, 3, 85, 40, 40)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -56,16 +56,16 @@ yolov3_config = {
         interface=["torch"],
         is_inplace=[True],
         para=dict(
-            other=[1],
-            alpha=[1],
+            other=[-5.29832, -6.68461, -3.91202, -4.88027, 1],
+            alpha=[1, 1, 1, 1, 1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [()],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
+                    "shape": [(3,), (3,), (3,), (3, 80), ()],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
                 },
             ],
         ),
@@ -75,14 +75,14 @@ yolov3_config = {
         name=["add"],
         interface=["torch"],
         para=dict(
-            other=[0.5, 0.5, 0, 1e-06],
-            alpha=[1, 1, 1, 1],
+            other=[1e-07, 1e-07, 1, 1, 0],
+            alpha=[1, 1, 1, 1, 1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(91,), (8,), (), ()],
+                    "shape": [(11,), (213,), (1, 32, 160, 160), (1, 64, 160, 160), ()],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -90,13 +90,19 @@ yolov3_config = {
         ),
     ),
 
-    'arange': dict(
-        name=["arange"],
+    'atan': dict(
+        name=["atan"],
         interface=["torch"],
-        para=dict(
-            start=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            end=[32, 28, 40, 7, 9, 18, 10, 20, 14, 16, 36, 8, 6, 12, 24],
-            step=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[True],
+                    "shape": [(94,), (406,)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
         ),
     ),
 
@@ -108,44 +114,44 @@ yolov3_config = {
         rtol_half=1e-02,
         interface=["torch.nn.functional"],
         para=dict(
-            training=[False, False],
-            momentum=[0.1, 0.1],
-            eps=[1e-05, 1e-05],
+            training=[True, True],
+            momentum=[0.03, 0.03],
+            eps=[0.001, 0.001],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
                     "requires_grad":[True],
-                    "shape": [(8, 32, 224, 320), (8, 64, 160, 160)],
+                    "shape": [(1, 64, 160, 160), (1, 64, 80, 80)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["weight"],
                     "requires_grad":[True],
-                    "shape": [(32,), (64,)],
+                    "shape": [(64,), (64,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["bias"],
                     "requires_grad":[True],
-                    "shape": [(32,), (64,)],
+                    "shape": [(64,), (64,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["running_mean"],
                     "requires_grad":[False],
-                    "shape": [(32,), (64,)],
+                    "shape": [(64,), (64,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["running_var"],
                     "requires_grad":[False],
-                    "shape": [(32,), (64,)],
+                    "shape": [(64,), (64,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.positive,
                 },
@@ -161,30 +167,14 @@ yolov3_config = {
                 {
                     "ins": ["input"],
                     "requires_grad":[False],
-                    "shape": [(8, 3840, 80), (8, 1200, 80), (3780,), (5040,), (8, 4800), (8, 3360)],
+                    "shape": [(62, 80), (306, 80), (2, 3, 20, 20), (1, 3, 20, 20)],
                     "dtype": [Dtype.bool],
                     "gen_fn": Genfunc.mask,
                 },
                 {
                     "ins": ["other"],
                     "requires_grad":[False],
-                    "shape": [(8, 3840, 80), (8, 1200, 80), (3780,), (5040,), (8, 4800), (8, 3360)],
-                    "dtype": [Dtype.bool],
-                    "gen_fn": Genfunc.mask,
-                },
-            ],
-        ),
-    ),
-
-    'bitwise_not': dict(
-        name=["bitwise_not"],
-        interface=["torch"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "requires_grad":[False],
-                    "shape": [(5040,), (6300,), (5670,), (4410,), (3780,)],
+                    "shape": [(62, 80), (306, 80), (2, 3, 20, 20), (1, 3, 20, 20)],
                     "dtype": [Dtype.bool],
                     "gen_fn": Genfunc.mask,
                 },
@@ -196,13 +186,13 @@ yolov3_config = {
         name=["cat"],
         interface=["torch"],
         para=dict(
-            dim=[0, 0, 1, 1, 0, 0],
+            dim=[1, 1, 1, 1, 0, 0, 1, 1, 0],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["tensors"],
-                    "shape": [[(270,), (1080,), (4320,)], [(300,), (1200,), (4800,)], [(8, 128, 40, 28), (8, 256, 40, 28)], [(8, 256, 20, 20), (8, 512, 20, 20)], [(3,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,)], [(864,), (32,), (32,), (18432,), (64,), (64,), (2048,), (32,), (32,), (18432,), (64,), (64,), (73728,), (128,), (128,), (8192,), (64,), (64,), (73728,), (128,), (128,), (8192,), (64,), (64,), (73728,), (128,), (128,), (294912,), (256,), (256,), (32768,), (128,), (128,), (294912,), (256,), (256,), (32768,), (128,), (128,), (294912,), (256,), (256,), (32768,), (128,), (128,), (294912,), (256,), (256,), (32768,), (128,), (128,), (294912,), (256,), (256,), (32768,), (128,), (128,), (294912,), (256,), (256,), (32768,), (128,), (128,), (294912,), (256,), (256,), (32768,), (128,), (128,), (294912,), (256,), (256,), (32768,), (128,), (128,), (294912,), (256,), (256,), (1179648,), (512,), (512,), (131072,), (256,), (256,), (1179648,), (512,), (512,), (131072,), (256,), (256,), (1179648,), (512,), (512,), (131072,), (256,), (256,), (1179648,), (512,), (512,), (131072,), (256,), (256,), (1179648,), (512,), (512,), (131072,), (256,), (256,), (1179648,), (512,), (512,), (131072,), (256,), (256,), (1179648,), (512,), (512,), (131072,), (256,), (256,), (1179648,), (512,), (512,), (131072,), (256,), (256,), (1179648,), (512,), (512,), (4718592,), (1024,), (1024,), (524288,), (512,), (512,), (4718592,), (1024,), (1024,), (524288,), (512,), (512,), (4718592,), (1024,), (1024,), (524288,), (512,), (512,), (4718592,), (1024,), (1024,), (524288,), (512,), (512,), (4718592,), (1024,), (1024,), (524288,), (512,), (512,), (4718592,), (1024,), (1024,), (524288,), (512,), (512,), (4718592,), (1024,), (1024,), (524288,), (512,), (512,), (131072,), (256,), (256,), (196608,), (256,), (256,), (1179648,), (512,), (512,), (131072,), (256,), (256,), (1179648,), (512,), (512,), (131072,), (256,), (256,), (32768,), (128,), (128,), (49152,), (128,), (128,), (294912,), (256,), (256,), (32768,), (128,), (128,), (294912,), (256,), (256,), (32768,), (128,), (128,), (4718592,), (1024,), (1024,), (1179648,), (512,), (512,), (294912,), (256,), (256,), (261120,), (255,), (130560,), (255,), (65280,), (255,), (3,), (32,), (32,), (64,), (64,), (32,), (32,), (64,), (64,), (128,), (128,), (64,), (64,), (128,), (128,), (64,), (64,), (128,), (128,), (256,), (256,), (128,), (128,), (256,), (256,), (128,), (128,), (256,), (256,), (128,), (128,), (256,), (256,), (128,), (128,), (256,), (256,), (128,), (128,), (256,), (256,), (128,), (128,), (256,), (256,), (128,), (128,), (256,), (256,), (128,), (128,), (256,), (256,), (512,), (512,), (256,), (256,), (512,), (512,), (256,), (256,), (512,), (512,), (256,), (256,), (512,), (512,), (256,), (256,), (512,), (512,), (256,), (256,), (512,), (512,), (256,), (256,), (512,), (512,), (256,), (256,), (512,), (512,), (256,), (256,), (512,), (512,), (1024,), (1024,), (512,), (512,), (1024,), (1024,), (512,), (512,), (1024,), (1024,), (512,), (512,), (1024,), (1024,), (512,), (512,), (1024,), (1024,), (512,), (512,), (1024,), (1024,), (512,), (512,), (1024,), (1024,), (512,), (512,), (256,), (256,), (256,), (256,), (512,), (512,), (256,), (256,), (512,), (512,), (256,), (256,), (128,), (128,), (128,), (128,), (256,), (256,), (128,), (128,), (256,), (256,), (128,), (128,), (1024,), (1024,), (512,), (512,), (256,), (256,)]],
+                    "shape": [[(118, 2), (118, 2)], [(201, 2), (201, 2)], [(21, 1), (21, 1), (21, 4)], [(1, 1), (1, 1), (1, 4)], [(1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,), (1,)], [(3456,), (32,), (32,), (18432,), (64,), (64,), (2048,), (32,), (32,), (2048,), (32,), (32,), (4096,), (64,), (64,), (1024,), (32,), (32,), (9216,), (32,), (32,), (73728,), (128,), (128,), (8192,), (64,), (64,), (8192,), (64,), (64,), (16384,), (128,), (128,), (4096,), (64,), (64,), (36864,), (64,), (64,), (4096,), (64,), (64,), (36864,), (64,), (64,), (294912,), (256,), (256,), (32768,), (128,), (128,), (32768,), (128,), (128,), (65536,), (256,), (256,), (16384,), (128,), (128,), (147456,), (128,), (128,), (16384,), (128,), (128,), (147456,), (128,), (128,), (16384,), (128,), (128,), (147456,), (128,), (128,), (1179648,), (512,), (512,), (131072,), (256,), (256,), (131072,), (256,), (256,), (262144,), (512,), (512,), (65536,), (256,), (256,), (589824,), (256,), (256,), (131072,), (256,), (256,), (524288,), (512,), (512,), (131072,), (256,), (256,), (65536,), (128,), (128,), (65536,), (128,), (128,), (65536,), (256,), (256,), (16384,), (128,), (128,), (147456,), (128,), (128,), (32768,), (128,), (128,), (16384,), (64,), (64,), (16384,), (64,), (64,), (16384,), (128,), (128,), (4096,), (64,), (64,), (36864,), (64,), (64,), (147456,), (128,), (128,), (589824,), (256,), (256,), (32768,), (128,), (128,), (32768,), (128,), (128,), (65536,), (256,), (256,), (16384,), (128,), (128,), (147456,), (128,), (128,), (131072,), (256,), (256,), (131072,), (256,), (256,), (262144,), (512,), (512,), (65536,), (256,), (256,), (589824,), (256,), (256,), (32640,), (255,), (65280,), (255,), (130560,), (255,), (3,), (3,), (32,), (32,), (64,), (64,), (32,), (32,), (32,), (32,), (64,), (64,), (32,), (32,), (32,), (32,), (128,), (128,), (64,), (64,), (64,), (64,), (128,), (128,), (64,), (64,), (64,), (64,), (64,), (64,), (64,), (64,), (256,), (256,), (128,), (128,), (128,), (128,), (256,), (256,), (128,), (128,), (128,), (128,), (128,), (128,), (128,), (128,), (128,), (128,), (128,), (128,), (512,), (512,), (256,), (256,), (256,), (256,), (512,), (512,), (256,), (256,), (256,), (256,), (256,), (256,), (512,), (512,), (256,), (256,), (128,), (128,), (128,), (128,), (256,), (256,), (128,), (128,), (128,), (128,), (128,), (128,), (64,), (64,), (64,), (64,), (128,), (128,), (64,), (64,), (64,), (64,), (128,), (128,), (256,), (256,), (128,), (128,), (128,), (128,), (256,), (256,), (128,), (128,), (128,), (128,), (256,), (256,), (256,), (256,), (512,), (512,), (256,), (256,), (256,), (256,), (18,), (10,), (3,)], [(2, 256, 20, 20), (2, 256, 20, 20), (2, 256, 20, 20), (2, 256, 20, 20)], [(1, 256, 20, 20), (1, 256, 20, 20), (1, 256, 20, 20), (1, 256, 20, 20)], [(19, 6)]],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -223,7 +213,7 @@ yolov3_config = {
                 {
                     "ins": ["input"],
                     "requires_grad":[False],
-                    "shape": [(8, 4320, 80), (2, 2880, 80), (8, 240), (2, 180)],
+                    "shape": [(255, 80), (135, 80), (2, 3, 40, 40), (1, 3, 80, 80)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -237,15 +227,15 @@ yolov3_config = {
         rtol=1e-05,
         interface=["torch"],
         para=dict(
-            min=[0, 0, 1e-06, 1e-06, None],
-            max=[None, None, None, 0.999999, 1],
+            min=[0, 0, 0, 0],
+            max=[None, None, None, None],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad":[False],
-                    "shape": [(34, 6300, 2), (20, 6300, 2), (36,), (67,), ()],
+                    "requires_grad":[True],
+                    "shape": [(165,), (20,), (224, 2), (196, 2)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -260,7 +250,7 @@ yolov3_config = {
         interface=["torch.nn.functional"],
         para=dict(
             stride=[(1, 1), (1, 1)],
-            padding=[(1, 1), (1, 1)],
+            padding=[(1, 1), (0, 0)],
             dilation=[(1, 1), (1, 1)],
             groups=[1, 1],
         ),
@@ -269,14 +259,14 @@ yolov3_config = {
                 {
                     "ins": ["input"],
                     "requires_grad":[True],
-                    "shape": [(8, 32, 160, 112), (8, 3, 320, 224)],
+                    "shape": [(1, 64, 80, 80), (1, 256, 40, 40)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["weight"],
                     "requires_grad":[True],
-                    "shape": [(64, 32, 3, 3), (32, 3, 3, 3)],
+                    "shape": [(64, 64, 3, 3), (256, 256, 1, 1)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -296,13 +286,13 @@ yolov3_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(49, 5670), (60, 6300), (3, 320, 211), (3, 186, 320), (42,), (14,)],
+                    "shape": [(304,), (189,), (3, 18, 2), (3, 56, 2)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["other"],
-                    "shape": [(49, 5670), (60, 6300), (3, 1, 1), (3, 1, 1), (42,), (14,)],
+                    "shape": [(304,), (189,), (3, 1, 2), (3, 1, 2)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -313,14 +303,33 @@ yolov3_config = {
     'div_case_2': dict(
         name=["div"],
         interface=["torch"],
+        is_inplace=[True],
         para=dict(
-            other=[8, 16, 1, 1],
+            other=[640, 640],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(15,), (45,), (), ()],
+                    "shape": [(40, 2), (21, 2)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'div_case_3': dict(
+        name=["div"],
+        interface=["torch"],
+        para=dict(
+            other=[2, 2, 64, 4, 1, 1, 2400, 9600],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(154, 2), (168, 2), (64,), (60,), (), (), (2, 3, 20, 20), (2, 3, 40, 40)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -335,33 +344,15 @@ yolov3_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(4410,), (5040,), (6300,), (5670,), (3780,)],
+                    "shape": [(152, 2), (11, 2), (209,), (77,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["other"],
-                    "shape": [(), (), (), (), ()],
+                    "shape": [(152, 2), (11, 2), (209,), (77,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'eq_case_2': dict(
-        name=["eq"],
-        interface=["torch"],
-        para=dict(
-            other=[0, 0, 0, 0, 0],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(5670,), (5040,), (4410,), (6300,), (3780,)],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
                 },
             ],
         ),
@@ -376,7 +367,7 @@ yolov3_config = {
                 {
                     "ins": ["input"],
                     "requires_grad":[False],
-                    "shape": [(2, 720, 80), (8, 240, 80), (2, 180), (8, 3360)],
+                    "shape": [(137, 80), (204, 80), (1, 3, 40, 40), (2, 3, 20, 20)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -388,31 +379,15 @@ yolov3_config = {
         name=["fill_"],
         interface=["torch.Tensor"],
         para=dict(
-            value=[-1, -1, 1, 0, 0, 0, 42, 86],
+            value=[1, 1, 1, 1, 0, 0, 1, 1, 0, 1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(4410,), (3780,), (8, 270, 2), (3, 320, 224), (43, 80), (12, 80), (), ()],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
-                },
-            ],
-        ),
-    ),
-
-    'floor': dict(
-        name=["floor"],
-        interface=["torch"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "requires_grad":[False],
-                    "shape": [(51,), (8,)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "shape": [(58,), (180,), (366, 80), (69, 80), (2, 3, 4, 80, 80), (2, 3, 85, 80, 80), (1, 32, 320, 320), (2, 256, 40, 40), (), ()],
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask,
                 },
             ],
         ),
@@ -422,13 +397,13 @@ yolov3_config = {
         name=["ge"],
         interface=["torch"],
         para=dict(
-            other=[0, 0, 0, 0, 0, 0],
+            other=[0, 0, 0, -1, 0, 0],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(8, 840), (8, 1080), (5670,), (6300,), (8, 3360, 80), (8, 240, 80)],
+                    "shape": [(164, 2), (76, 2), (253,), (78,), (2, 3, 20, 20), (1, 3, 40, 40)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -439,14 +414,35 @@ yolov3_config = {
     'gt': dict(
         name=["gt"],
         interface=["torch"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(198, 2), (156, 2), (287,), (153,)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["other"],
+                    "shape": [(198, 2), (156, 2), (287,), (153,)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'gt_case_2': dict(
+        name=["gt"],
+        interface=["torch"],
         para=dict(
-            other=[0, 1, 0, 0.5, 0, 0.5, 0.5, 0, 0, 0.5, 0, 0.5],
+            other=[1, 1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(), (), (5040,), (5040,), (4410,), (4410,), (6300,), (6300,), (5670,), (5670,), (3780,), (3780,)],
+                    "shape": [(5, 2), (13, 2)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -461,17 +457,17 @@ yolov3_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad":[False],
-                    "shape": [(13, 4), (34, 80), (42,), (12,), (3, 320, 305), (3, 266, 320)],
+                    "requires_grad":[True],
+                    "shape": [(2, 3, 80, 80, 80), (2, 3, 4, 40, 40), (5, 36, 7), (3, 12, 7), (3, 2), (3, 2), (7,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["indices"],
                     "requires_grad":[False],
-                    "shape": [(26,), (25,), (48,), (9,), (3,), (3,)],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, low=-3, high=3),
+                    "shape": [(261,), (189,), (5, 36), (3, 12), (172,), (375,), (2,)],
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask,
                 },
             ],
         ),
@@ -481,28 +477,28 @@ yolov3_config = {
         name=["index_put"],
         interface=["CustomizedTest"],
         para=dict(
-            accumulate=[False, False, False, False],
+            accumulate=[False, False, True, True, False, False],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
                     "requires_grad":[False],
-                    "shape": [(400,), (1600,), (52, 6300), (5040, 80)],
+                    "shape": [(2, 3, 40, 40), (1, 3, 40, 40), (2, 3, 80, 20, 20), (1, 3, 80, 40, 40), (151, 80), (164, 80)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["indices1"],
                     "requires_grad":[False],
-                    "shape": [(31,), (33,), (6300,), (37,)],
-                    "dtype": [Dtype.bool],
-                    "gen_fn": Genfunc.mask,
+                    "shape": [(94,), (136,), (30,), (136,), (151,), (164,)],
+                    "dtype": [Dtype.int64],
+                    "gen_fn": dict(Genfunc.randint, low=-1, high=1),
                 },
                 {
                     "ins": ["values"],
                     "requires_grad":[False],
-                    "shape": [(), (), (), (37, 80)],
+                    "shape": [(94,), (136,), (30, 80), (136, 80), (), ()],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -514,13 +510,13 @@ yolov3_config = {
         name=["le"],
         interface=["torch"],
         para=dict(
-            other=[0.5, 0.5, 0.5, 0.5, 0.5],
+            other=[1, 1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(4410,), (5670,), (6300,), (5040,), (3780,)],
+                    "shape": [(101,), (15,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -528,19 +524,25 @@ yolov3_config = {
         ),
     ),
 
-    'leaky_relu': dict(
-        name=["leaky_relu"],
-        interface=["torch.nn.functional"],
-        is_inplace=[True],
+    'lerp': dict(
+        name=["lerp"],
+        interface=["torch"],
         para=dict(
-            negative_slope=[0.1, 0.1],
+            weight=[0.981181, 0.962235, 0.954092, 0.982654],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad":[True],
-                    "shape": [(8, 128, 20, 20), (8, 1024, 8, 10)],
+                    "requires_grad":[False],
+                    "shape": [(128, 128, 3, 3), (128, 512, 1, 1), (255,), (32,)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["end"],
+                    "requires_grad":[False],
+                    "shape": [(128, 128, 3, 3), (128, 512, 1, 1), (255,), (32,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -551,29 +553,13 @@ yolov3_config = {
     'log': dict(
         name=["log"],
         interface=["torch"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "requires_grad":[False],
-                    "shape": [(35,), (74,)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.positive,
-                },
-            ],
-        ),
-    ),
-
-    'log_case_2': dict(
-        name=["log"],
-        interface=["torch"],
         is_inplace=[True],
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
                     "requires_grad":[False],
-                    "shape": [(2, 2880, 80), (8, 4320, 80), (2, 2880), (8, 960)],
+                    "shape": [(15, 80), (321, 80), (1, 3, 40, 40), (2, 3, 80, 80)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.positive,
                 },
@@ -581,27 +567,89 @@ yolov3_config = {
         ),
     ),
 
-    'mse_loss': dict(
-        name=["mse_loss"],
-        interface=["torch.nn.functional"],
+    'logical_and': dict(
+        name=["logical_and"],
+        interface=["torch"],
+        is_inplace=[True],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(303,), (93,)],
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask,
+                },
+                {
+                    "ins": ["other"],
+                    "shape": [(303,), (93,)],
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask,
+                },
+            ],
+        ),
+    ),
+
+    'lt': dict(
+        name=["lt"],
+        interface=["torch"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(241, 2), (266, 2), (89,), (138,)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["other"],
+                    "shape": [(241, 2), (266, 2), (89,), (138,)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'lt_case_2': dict(
+        name=["lt"],
+        interface=["torch"],
         para=dict(
-            reduction=['none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none'],
+            other=[4, 4],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad":[True],
-                    "shape": [(8, 3360, 2), (8, 840, 2), (8, 210, 2), (8, 3840, 2), (8, 4800, 2), (8, 300, 2), (8, 1080, 2), (8, 270, 2), (8, 4320, 2), (8, 240, 2), (8, 1200, 2), (8, 960, 2), (2, 720, 2), (2, 2880, 2), (2, 180, 2)],
+                    "shape": [(3, 18), (3, 60)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'masked_fill': dict(
+        name=["masked_fill"],
+        interface=["torch"],
+        is_inplace=[True],
+        para=dict(
+            value=[0, 0, 0, 0],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[False],
+                    "shape": [(158,), (147,), (82, 2), (136, 2)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
-                    "ins": ["target"],
+                    "ins": ["mask"],
                     "requires_grad":[False],
-                    "shape": [(8, 3360, 2), (8, 840, 2), (8, 210, 2), (8, 3840, 2), (8, 4800, 2), (8, 300, 2), (8, 1080, 2), (8, 270, 2), (8, 4320, 2), (8, 240, 2), (8, 1200, 2), (8, 960, 2), (2, 720, 2), (2, 2880, 2), (2, 180, 2)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "shape": [(158,), (147,), (82, 2), (136, 2)],
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask,
                 },
             ],
         ),
@@ -611,7 +659,7 @@ yolov3_config = {
         name=["max"],
         interface=["torch"],
         para=dict(
-            dim=[0, 1],
+            dim=[2, 2],
             keepdim=[False, False],
         ),
         tensor_para=dict(
@@ -619,7 +667,7 @@ yolov3_config = {
                 {
                     "ins": ["input"],
                     "requires_grad":[False],
-                    "shape": [(26, 5040), (1, 6300)],
+                    "shape": [(3, 56, 2), (3, 42, 2)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -627,15 +675,24 @@ yolov3_config = {
         ),
     ),
 
-    'max_case_2': dict(
-        name=["max"],
-        interface=["torch"],
+    'max_pool2d': dict(
+        name=["max_pool2d"],
+        interface=["torch.nn.functional"],
+        requires_backward=[0],
+        para=dict(
+            kernel_size=[(5, 5), (5, 5)],
+            stride=[(1, 1), (1, 1)],
+            padding=[(2, 2), (2, 2)],
+            dilation=[(1, 1), (1, 1)],
+            ceil_mode=[False, False],
+            return_indices=[True, True],
+        ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad":[False],
-                    "shape": [(8, 210), (8, 4800), (40,), (74,)],
+                    "requires_grad":[True],
+                    "shape": [(2, 256, 20, 20), (1, 256, 20, 20)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -650,15 +707,15 @@ yolov3_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad":[False],
-                    "shape": [(20, 5670), (3, 5670), (28, 1, 2), (11, 1, 2)],
+                    "requires_grad":[True],
+                    "shape": [(309,), (232,), (342, 2), (109, 2), (3, 27, 2), (3, 34, 2)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["other"],
                     "requires_grad":[False],
-                    "shape": [(1,), (1,), (1, 5040, 2), (1, 5670, 2)],
+                    "shape": [(309,), (232,), (342, 2), (109, 2), (3, 27, 2), (3, 34, 2)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -670,33 +727,17 @@ yolov3_config = {
         name=["mean"],
         interface=["torch"],
         para=dict(
-            dim=[None, None, None, None, None],
-            keepdim=[False, False, False, False, False],
-            dtype=[None, None, None, None, None],
+            dim=[None, None, None, None, None, None],
+            keepdim=[False, False, False, False, False, False],
+            dtype=[None, None, None, None, None, None],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(256, 128, 3, 3), (128, 384, 1, 1), (256,), (32,), ()],
+                    "shape": [(174,), (245,), (60, 80), (224, 80), (255, 512, 1, 1), (64, 32, 3, 3)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'min': dict(
-        name=["min"],
-        interface=["torch"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "requires_grad":[False],
-                    "shape": [(66,), (29,)],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
                 },
             ],
         ),
@@ -709,15 +750,15 @@ yolov3_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad":[False],
-                    "shape": [(30, 1, 2), (27, 1, 2)],
+                    "requires_grad":[True],
+                    "shape": [(169,), (207,), (118, 2), (48, 2)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["other"],
                     "requires_grad":[False],
-                    "shape": [(1, 5040, 2), (1, 6300, 2)],
+                    "shape": [(169,), (207,), (118, 2), (48, 2)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -732,13 +773,13 @@ yolov3_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(49, 6300), (3, 6300), (8, 960, 80), (8, 960, 1), (53,), (10,)],
+                    "shape": [(192, 2), (324, 2), (156,), (147,), (1, 256, 40, 40), (2, 32, 320, 320), (3, 16, 7), (3, 45, 7)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["other"],
-                    "shape": [(49, 6300), (3, 6300), (8, 960, 80), (8, 960, 80), (53,), (10,)],
+                    "shape": [(192, 2), (324, 2), (156,), (147,), (1, 256, 40, 40), (2, 32, 320, 320), (7,), (7,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -754,13 +795,13 @@ yolov3_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(256, 512, 1, 1), (255, 512, 1, 1), (8, 4800, 2), (8, 240, 2), (8, 270), (8, 1200), (64,), (256,)],
+                    "shape": [(78, 80), (15, 80), (2, 3, 80, 80), (1, 3, 80, 80)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["other"],
-                    "shape": [(), (), (8, 4800, 2), (8, 240, 2), (8, 270), (8, 1200), (), ()],
+                    "shape": [(78, 80), (15, 80), (2, 3, 80, 80), (1, 3, 80, 80)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -773,13 +814,13 @@ yolov3_config = {
         interface=["torch"],
         is_inplace=[True],
         para=dict(
-            other=[0.9, 0.9, 0.9, 0.9],
+            other=[0.800049, 0.800079, 0.800053, 0.845649],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(64, 32, 3, 3), (512, 1024, 1, 1), (255,), (512,)],
+                    "shape": [(32, 32, 3, 3), (32, 32, 3, 3), (255,), (512,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -791,15 +832,15 @@ yolov3_config = {
         name=["mul"],
         interface=["torch"],
         para=dict(
-            other=[10, 20, 1, 1, 35, 2],
+            other=[0.5, 2, 2, 0.405285, 1, 1, 1, 1, 1, 0.05],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(37,), (48,), (256, 128, 3, 3), (64, 128, 1, 1), (), ()],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
+                    "shape": [(218, 2), (253, 2), (97,), (105,), (3, 22, 2), (3, 56, 2), (255, 256, 1, 1), (255, 512, 1, 1), (), ()],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
                 },
             ],
         ),
@@ -815,7 +856,7 @@ yolov3_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(8, 960, 2), (8, 210, 80), (2, 2880), (8, 840)],
+                    "shape": [(140, 80), (375, 80), (2, 3, 80, 80), (1, 3, 40, 40)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -830,7 +871,7 @@ yolov3_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(8, 840, 80), (8, 240, 80), (2, 180), (2, 180)],
+                    "shape": [(42,), (140,), (97, 80), (150, 80), (1, 3, 20, 20), (2, 3, 20, 20)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -846,7 +887,7 @@ yolov3_config = {
                 {
                     "ins": ["input"],
                     "requires_grad":[False],
-                    "shape": [(5670,), (5040,), (4410,), (6300,), (3780,)],
+                    "shape": [(5, 94), (3, 34)],
                     "dtype": [Dtype.bool],
                     "gen_fn": Genfunc.mask,
                 },
@@ -854,40 +895,18 @@ yolov3_config = {
         ),
     ),
 
-    'norm': dict(
-        name=["norm"],
+    'pow': dict(
+        name=["pow"],
         interface=["torch"],
         para=dict(
-            p=[2, 2, 2, 2],
-            dim=[(0, 1, 2, 3), (0, 1, 2, 3), (0,), (0,)],
-            keepdim=[False, False, False, False],
+            exponent=[2, 1, 2, 2],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad":[False],
-                    "shape": [(256, 128, 3, 3), (255, 512, 1, 1), (1024,), (64,)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'normal_': dict(
-        name=["normal_"],
-        no_output_ref=True,
-        interface=["torch.nn.functional"],
-        para=dict(
-            mean=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            std=[0.0146583, 0.01, 0.0879497, 0.0207299, 0.01, 0.12438, 0.0879497, 0.01, 0.0621898, 0.01, 0.0293166, 0.01, 0.0829198, 0.12438, 0.01],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(1024, 512, 3, 3), (1024, 512, 3, 3), (256, 512, 1, 1), (512, 256, 3, 3), (512, 256, 3, 3), (128, 256, 1, 1), (256, 768, 1, 1), (255, 1024, 1, 1), (512, 1024, 1, 1), (256, 128, 3, 3), (256, 128, 3, 3), (255, 512, 1, 1), (32, 3, 3, 3), (128, 384, 1, 1), (255, 256, 1, 1)],
+                    "requires_grad":[True],
+                    "shape": [(369, 2), (329, 2), (216,), (118,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -903,7 +922,26 @@ yolov3_config = {
                 {
                     "ins": ["input"],
                     "requires_grad":[False],
-                    "shape": [()],
+                    "shape": [(3, 60, 2), (3, 40, 2)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'remainder': dict(
+        name=["remainder"],
+        interface=["torch"],
+        para=dict(
+            other=[1, 1],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[False],
+                    "shape": [(33, 2), (60, 2)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -915,43 +953,16 @@ yolov3_config = {
         name=["repeat"],
         interface=["torch.Tensor"],
         para=dict(
-            repeats=[(1, 20), (1, 20), (1080,), (180,), (9,), (10,)],
+            repeats=[(1, 3, 1), (1, 45, 1), (5, 1, 1), (5, 1, 1)],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
                     "requires_grad":[False],
-                    "shape": [(12, 1), (20, 1), (), (), (10,), (10,)],
+                    "shape": [(5, 1, 2), (5, 1, 2), (42, 7), (36, 7)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'scatter': dict(
-        name=["scatter"],
-        interface=["torch"],
-        para=dict(
-            dim=[-1, -1],
-            value=[1, 1],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "requires_grad":[False],
-                    "shape": [(13, 80), (9, 80)],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
-                },
-                {
-                    "ins": ["index"],
-                    "requires_grad":[False],
-                    "shape": [(13, 1), (9, 1)],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": dict(Genfunc.randint, high=80),
                 },
             ],
         ),
@@ -966,7 +977,23 @@ yolov3_config = {
                 {
                     "ins": ["input"],
                     "requires_grad":[True],
-                    "shape": [(8, 1080, 2), (8, 300, 80), (2, 180), (8, 240)],
+                    "shape": [(287, 4), (232, 4), (1, 64, 80, 80), (1, 128, 40, 40)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'silu': dict(
+        name=["silu"],
+        interface=["torch.nn.functional"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[True],
+                    "shape": [(2, 32, 320, 320), (1, 128, 40, 40)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -978,15 +1005,15 @@ yolov3_config = {
         name=["stack"],
         interface=["torch"],
         para=dict(
-            dim=[1, 1, 0, 0, 0, 0, 0],
+            dim=[0, 0, 0, 0],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["tensors"],
-                    "shape": [[(60,), (60,), (60,), (60,)], [(2,), (2,), (2,), (2,)], [(), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), ()], [(5040,), (5040,), (5040,), (5040,), (5040,), (5040,), (5040,), (5040,)], [(5670, 85), (5670, 85), (5670, 85), (5670, 85), (5670, 85), (5670, 85), (5670, 85), (5670, 85)], [(3780, 85), (3780, 85)], [(3, 192, 320), (3, 192, 320)]],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
+                    "shape": [[(89,), (89,), (89,), (89,), (89,)], [(20,), (20,), (20,), (20,), (20,)], [(3, 640, 640), (3, 640, 640)], [(3, 640, 640)]],
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask,
                 },
             ],
             seq_name='tensors',
@@ -997,21 +1024,21 @@ yolov3_config = {
         name=["sub"],
         interface=["torch"],
         para=dict(
-            alpha=[1, 1, 1, 1, 1, 1],
+            alpha=[1, 1, 1, 1, 1, 1, 1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(3, 320, 134), (56, 5670, 2), (48, 6300), (36, 6300), (58,), (19,)],
+                    "shape": [(196,), (48,), (48, 2), (272, 2), (2, 3, 20, 20), (1, 3, 20, 20), (3, 640, 640)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["other"],
-                    "shape": [(3, 1, 1), (56, 5670, 2), (48, 6300), (36, 6300), (58,), (19,)],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
+                    "shape": [(196,), (48,), (48, 2), (272, 2), (2, 3, 20, 20), (1, 3, 20, 20), (3, 1, 1)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
                 },
             ],
         ),
@@ -1028,13 +1055,13 @@ yolov3_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(8, 270, 80), (8, 270, 2), (2, 2880), (8, 210)],
+                    "shape": [(150, 80), (122, 80), (2, 3, 40, 40), (2, 64, 80, 80)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["other"],
-                    "shape": [(8, 270, 80), (8, 270, 2), (2, 2880), (8, 210)],
+                    "shape": [(150, 80), (122, 80), (2, 3, 40, 40), (2, 64, 80, 80)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -1046,16 +1073,16 @@ yolov3_config = {
         name=["sub"],
         interface=["torch"],
         para=dict(
-            other=[1, 1, 1],
-            alpha=[1, 1, 1],
+            other=[0.5, 0.5],
+            alpha=[1, 1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(55,), (48,), ()],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
+                    "shape": [(222, 2), (216, 2)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
                 },
             ],
         ),
@@ -1065,15 +1092,15 @@ yolov3_config = {
         name=["sum"],
         interface=["torch"],
         para=dict(
-            dim=[None, None, None, None],
-            keepdim=[False, False, False, False],
-            dtype=[None, None, None, None],
+            dim=[None, None, None],
+            keepdim=[False, False, False],
+            dtype=[None, None, None],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(8, 240), (8, 300), (8, 4320, 80), (2, 720, 2)],
+                    "shape": [(1,), (2, 240, 80, 80), (2, 12, 80, 80)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -1081,22 +1108,22 @@ yolov3_config = {
         ),
     ),
 
-    'unique': dict(
-        name=["unique"],
-        interface=["torch"],
+    'uniform': dict(
+        name=["uniform"],
+        no_output_ref=True,
+        interface=["torch.nn.functional"],
+        is_inplace=[True],
         para=dict(
-            sorted=[True, True],
-            return_inverse=[False, False],
-            return_counts=[False, False],
+            start=[-0.0589256, -0.0441942],
+            end=[0.0589256, 0.0441942],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad":[False],
-                    "shape": [(43,), (5640,)],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
+                    "shape": [(32, 32, 3, 3), (128, 512, 1, 1)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
                 },
             ],
         ),
@@ -1106,15 +1133,45 @@ yolov3_config = {
         name=["interpolate"],
         interface=["torch.nn.functional"],
         para=dict(
-            mode=['nearest', 'nearest', 'nearest', 'nearest', 'nearest', 'nearest', 'nearest', 'nearest', 'nearest', 'nearest', 'nearest', 'nearest', 'nearest', 'nearest', 'nearest', 'nearest'],
-            size=[(20, 16), (20, 18), (40, 28), (20, 20), (28, 40), (40, 40), (36, 40), (18, 20), (32, 40), (20, 14), (40, 32), (14, 20), (16, 20), (40, 36), (12, 20), (24, 40)],
+            mode=['nearest', 'nearest', 'nearest', 'nearest'],
+            size=[(40, 40), (80, 80), (80, 80), (40, 40)],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
                     "requires_grad":[True],
-                    "shape": [(8, 256, 10, 8), (8, 256, 10, 9), (8, 128, 20, 14), (8, 256, 10, 10), (8, 128, 14, 20), (8, 128, 20, 20), (8, 128, 18, 20), (8, 256, 9, 10), (8, 128, 16, 20), (8, 256, 10, 7), (8, 128, 20, 16), (8, 256, 7, 10), (8, 256, 8, 10), (8, 128, 20, 18), (2, 256, 6, 10), (2, 128, 12, 20)],
+                    "shape": [(2, 256, 20, 20), (2, 128, 40, 40), (1, 128, 40, 40), (1, 256, 20, 20)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'where': dict(
+        name=["where"],
+        interface=["torch"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["condition"],
+                    "requires_grad":[False],
+                    "shape": [(115,), (253,), (51, 2), (86, 2)],
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask,
+                },
+                {
+                    "ins": ["input"],
+                    "requires_grad":[False],
+                    "shape": [(115,), (253,), (51, 2), (86, 2)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["other"],
+                    "requires_grad":[False],
+                    "shape": [(), (), (51, 2), ()],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },

@@ -2,129 +2,16 @@ from ...config import Genfunc
 from ...diopi_runtime import Dtype
 
 ssd300_config = {
-    'conv2d': dict(
-        name=["conv2d"],
-        atol=1e-03,
-        rtol=1e-03,
-        para=dict(
-            stride=[(1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (2, 2), (1, 1), (2, 2), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (2, 2), (1, 1), (2, 2), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1)],
-            padding=[(1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (6, 6), (0, 0), (0, 0), (1, 1), (0, 0), (1, 1), (0, 0), (0, 0), (0, 0), (0, 0), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (6, 6), (0, 0), (0, 0), (1, 1), (0, 0), (1, 1), (0, 0), (0, 0), (0, 0), (0, 0), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1)],
-            dilation=[(1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (6, 6), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (6, 6), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1)],
-            groups=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        ),
+    'abs': dict(
+        name=["abs"],
+        interface=["torch"],
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
-                    "shape": [(8, 3, 300, 300), (8, 64, 300, 300), (8, 64, 150, 150), (8, 128, 150, 150), (8, 128, 75, 75), (8, 256, 75, 75), (8, 256, 38, 38), (8, 512, 38, 38), (8, 512, 19, 19), (8, 512, 19, 19), (8, 1024, 19, 19), (8, 1024, 19, 19), (8, 256, 19, 19), (8, 512, 10, 10), (8, 128, 10, 10), (8, 256, 5, 5), (8, 128, 5, 5), (8, 256, 3, 3), (8, 128, 3, 3), (8, 512, 38, 38), (8, 512, 38, 38), (8, 1024, 19, 19), (8, 1024, 19, 19), (8, 512, 10, 10), (8, 512, 10, 10), (8, 256, 5, 5), (8, 256, 5, 5), (8, 256, 3, 3), (8, 256, 3, 3), (8, 256, 1, 1), (8, 256, 1, 1), (1, 3, 300, 300), (1, 64, 300, 300), (1, 64, 150, 150), (1, 128, 150, 150), (1, 128, 75, 75), (1, 256, 75, 75), (1, 256, 38, 38), (1, 512, 38, 38), (1, 512, 19, 19), (1, 512, 19, 19), (1, 1024, 19, 19), (1, 1024, 19, 19), (1, 256, 19, 19), (1, 512, 10, 10), (1, 128, 10, 10), (1, 256, 5, 5), (1, 128, 5, 5), (1, 256, 3, 3), (1, 128, 3, 3), (1, 512, 38, 38), (1, 512, 38, 38), (1, 1024, 19, 19), (1, 1024, 19, 19), (1, 512, 10, 10), (1, 512, 10, 10), (1, 256, 5, 5), (1, 256, 5, 5), (1, 256, 3, 3), (1, 256, 3, 3), (1, 256, 1, 1), (1, 256, 1, 1)],
+                    "shape": [(), (8732, 4)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
-                },
-                {
-                    "ins": ["weight"],
-                    "requires_grad": [True],
-                    "shape": [(64, 3, 3, 3), (64, 64, 3, 3), (128, 64, 3, 3), (128, 128, 3, 3), (256, 128, 3, 3), (256, 256, 3, 3), (512, 256, 3, 3), (512, 512, 3, 3), (512, 512, 3, 3), (1024, 512, 3, 3), (1024, 1024, 1, 1), (256, 1024, 1, 1), (512, 256, 3, 3), (128, 512, 1, 1), (256, 128, 3, 3), (128, 256, 1, 1), (256, 128, 3, 3), (128, 256, 1, 1), (256, 128, 3, 3), (324, 512, 3, 3), (16, 512, 3, 3), (486, 1024, 3, 3), (24, 1024, 3, 3), (486, 512, 3, 3), (24, 512, 3, 3), (486, 256, 3, 3), (24, 256, 3, 3), (324, 256, 3, 3), (16, 256, 3, 3), (324, 256, 3, 3), (16, 256, 3, 3), (64, 3, 3, 3), (64, 64, 3, 3), (128, 64, 3, 3), (128, 128, 3, 3), (256, 128, 3, 3), (256, 256, 3, 3), (512, 256, 3, 3), (512, 512, 3, 3), (512, 512, 3, 3), (1024, 512, 3, 3), (1024, 1024, 1, 1), (256, 1024, 1, 1), (512, 256, 3, 3), (128, 512, 1, 1), (256, 128, 3, 3), (128, 256, 1, 1), (256, 128, 3, 3), (128, 256, 1, 1), (256, 128, 3, 3), (324, 512, 3, 3), (16, 512, 3, 3), (486, 1024, 3, 3), (24, 1024, 3, 3), (486, 512, 3, 3), (24, 512, 3, 3), (486, 256, 3, 3), (24, 256, 3, 3), (324, 256, 3, 3), (16, 256, 3, 3), (324, 256, 3, 3), (16, 256, 3, 3)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-                {
-                    "ins": ["bias"],
-                    "requires_grad": [True],
-                    "shape": [(64,), (64,), (128,), (128,), (256,), (256,), (512,), (512,), (512,), (1024,), (1024,), (256,), (512,), (128,), (256,), (128,), (256,), (128,), (256,), (324,), (16,), (486,), (24,), (486,), (24,), (486,), (24,), (324,), (16,), (324,), (16,), (64,), (64,), (128,), (128,), (256,), (256,), (512,), (512,), (512,), (1024,), (1024,), (256,), (512,), (128,), (256,), (128,), (256,), (128,), (256,), (324,), (16,), (486,), (24,), (486,), (24,), (486,), (24,), (324,), (16,), (324,), (16,)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'relu': dict(
-        name=["relu"],
-        para=dict(
-            inplace=[True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(8, 64, 300, 300), (8, 128, 150, 150), (8, 256, 75, 75), (8, 512, 38, 38), (8, 512, 19, 19), (8, 1024, 19, 19), (8, 256, 19, 19), (8, 512, 10, 10), (8, 128, 10, 10), (8, 256, 5, 5), (8, 128, 5, 5), (8, 256, 3, 3), (8, 128, 3, 3), (8, 256, 1, 1), (1, 64, 300, 300), (1, 128, 150, 150), (1, 256, 75, 75), (1, 512, 38, 38), (1, 512, 19, 19), (1, 1024, 19, 19), (1, 256, 19, 19), (1, 512, 10, 10), (1, 128, 10, 10), (1, 256, 5, 5), (1, 128, 5, 5), (1, 256, 3, 3), (1, 128, 3, 3), (1, 256, 1, 1)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'max_pool2d': dict(
-        name=["max_pool2d"],
-        para=dict(
-            kernel_size=[2, 2, 2, 2, 3, 2, 2, 2, 2, 3],
-            stride=[2, 2, 2, 2, 1, 2, 2, 2, 2, 1],
-            padding=[0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-            dilation=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            ceil_mode=[True, True, True, True, False, True, True, True, True, False],
-            return_indices=[False, False, False, False, False, False, False, False, False, False],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "requires_grad": [True],
-                    "shape": [(8, 64, 300, 300), (8, 128, 150, 150), (8, 256, 75, 75), (8, 512, 38, 38), (8, 512, 19, 19), (1, 64, 300, 300), (1, 128, 150, 150), (1, 256, 75, 75), (1, 512, 38, 38), (1, 512, 19, 19)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'pow': dict(
-        name=["pow"],
-        interface=["torch.Tensor"],
-        para=dict(
-            exponent=[2, 2],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(8, 512, 38, 38), (1, 512, 38, 38)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'sum': dict(
-        name=["sum"],
-        interface=["torch.Tensor"],
-        para=dict(
-            dim=[1, 1],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(8, 512, 38, 38), (1, 512, 38, 38)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'sqrt': dict(
-        name=["sqrt"],
-        interface=["torch.Tensor"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(8, 1, 38, 38), (1, 1, 38, 38)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.positive,
                 },
             ],
         ),
@@ -132,54 +19,21 @@ ssd300_config = {
 
     'add': dict(
         name=["add"],
-        interface=["torch.Tensor"],
+        interface=["torch"],
         para=dict(
-            other=[1e-10, 1e-10],
+            alpha=[1, 1, 0.0005, 0.0005, 1, 1, 1, 1, 1, 1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(8, 1, 38, 38), (1, 1, 38, 38)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'expand': dict(
-        name=["expand"],
-        interface=["torch.Tensor"],
-        para=dict(
-            size=[(8, 512, 38, 38), (1, 512, 38, 38)],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(1, 512, 1, 1), (1, 512, 1, 1)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'mul': dict(
-        name=["mul"],
-        interface=["torch.Tensor"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(8, 512, 38, 38), (14,), (8732,), (14, 8732), (9,), (9, 8732), (6,), (6, 8732), (1,), (1, 8732), (3,), (3, 8732), (5,), (5, 8732), (8732, 4), (1, 512, 38, 38), (1000, 4), (1000, 2), (672, 4), (672, 2), (2672,)],
+                    "shape": [(135,), (183,), (24, 512, 3, 3), (324, 256, 3, 3), (2048, 2), (1805, 2), (1, 6, 4), (1, 4, 4), (), ()],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["other"],
-                    "shape": [(8, 512, 38, 38), (14,), (8732,), (14, 8732), (9,), (9, 8732), (6,), (6, 8732), (1,), (1, 8732), (3,), (3, 8732), (5,), (5, 8732), (8732, 4), (1, 512, 38, 38), (1, 4), (1000, 2), (1, 4), (672, 2), ()],
+                    "shape": [(135,), (183,), (24, 512, 3, 3), (324, 256, 3, 3), (2048, 2), (1805, 2), (100, 1, 4), (1, 1, 4), (), ()],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -187,22 +41,77 @@ ssd300_config = {
         ),
     ),
 
-    'div': dict(
-        name=["div"],
-        interface=["torch.Tensor"],
+    'add_case_2': dict(
+        name=["add"],
+        interface=["torch"],
+        is_inplace=[True],
+        para=dict(
+            alpha=[-0.000679679, 1, -0.000325325, -0.000467467, 1],
+        ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(8, 512, 38, 38), (14, 8732), (71,), (19,), (9, 8732), (13,), (6, 8732), (34,), (1, 8732), (2,), (8,), (3, 8732), (17,), (5, 8732), (30,), (1, 512, 38, 38)],
+                    "shape": [(24, 256, 3, 3), (8, 256, 1, 1), (1024,), (24,), (8732, 4)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["other"],
-                    "shape": [(8, 1, 38, 38), (14, 8732), (71,), (19,), (9, 8732), (13,), (6, 8732), (34,), (1, 8732), (2,), (8,), (3, 8732), (17,), (5, 8732), (30,), (1, 1, 38, 38)],
+                    "shape": [(24, 256, 3, 3), (8, 256, 1, 1), (1024,), (24,), (8732, 4)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'add_case_3': dict(
+        name=["add"],
+        interface=["torch"],
+        para=dict(
+            other=[1, 1, 0, 1e-10, 1e-10],
+            alpha=[1, 1, 1, 1, 1],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(83,), (16,), (), (8, 1, 38, 38), (8, 1, 38, 38)],
+                    "dtype": [Dtype.int64],
+                    "gen_fn": Genfunc.randint,
+                },
+            ],
+        ),
+    ),
+
+    'all': dict(
+        name=["all"],
+        interface=["torch"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[False],
+                    "shape": [(2202,), (1876,)],
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask,
+                },
+            ],
+        ),
+    ),
+
+    'any': dict(
+        name=["any"],
+        interface=["torch"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[False],
+                    "shape": [(8732,)],
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask,
                 },
             ],
         ),
@@ -213,100 +122,27 @@ ssd300_config = {
         interface=["torch"],
         para=dict(
             start=[0, 0, 0, 0, 0, 0],
-            end=[38, 19, 10, 5, 3, 1],
+            end=[38, 1, 19, 3, 10, 5],
+            step=[1, 1, 1, 1, 1, 1],
         ),
     ),
 
-    'mul_1': dict(
-        name=["mul"],
-        interface=["torch.Tensor"],
-        para=dict(
-            other=[8, 16, 32, 64, 100, 300, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(38,), (19,), (10,), (5,), (3,), (1,), (71,), (19,), (13,), (34,), (2,), (8,), (17,), (30,), (1000, 2), (672, 2)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'stack': dict(
-        name=["stack"],
+    'bitwise_and': dict(
+        name=["bitwise_and"],
         interface=["torch"],
-        para=dict(
-            dim=[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["tensors"],
-                    "shape": [((1444,), (1444,), (1444,), (1444,)), ((361,), (361,), (361,), (361,)), ((100,), (100,), (100,), (100,)), ((25,), (25,), (25,), (25,)), ((9,), (9,), (9,), (9,)), ((1,), (1,), (1,), (1,)), ((71,), (71,), (71,), (71,)), ((19,), (19,), (19,), (19,)), ((13,), (13,), (13,), (13,)), ((34,), (34,), (34,), (34,)), ((2,), (2,), (2,), (2,)), ((8,), (8,), (8,), (8,)), ((17,), (17,), (17,), (17,)), ((30,), (30,), (30,), (30,))],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-            seq_name='tensors',
-        ),
-    ),
-
-    'add_1': dict(
-        name=["add"],
-        interface=["torch.Tensor"],
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(1, 4, 4), (1, 6, 4), (1, 6, 4), (1, 6, 4), (1, 4, 4), (1, 4, 4), (14, 1), (71,), (19,), (9, 1), (13,), (6, 1), (34,), (1, 1), (2,), (8,), (3, 1), (17,), (5, 1), (30,), (), (1000, 4), (1000, 2), (672, 4), (672, 2), (2672, 4)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-                {
-                    "ins": ["other"],
-                    "shape": [(1444, 1, 4), (361, 1, 4), (100, 1, 4), (25, 1, 4), (9, 1, 4), (1, 1, 4), (1, 8732), (71,), (19,), (1, 8732), (13,), (1, 8732), (34,), (1, 8732), (2,), (8,), (1, 8732), (17,), (1, 8732), (30,), (), (1, 4), (1000, 2), (1, 4), (672, 2), (2672, 1)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'logical_and': dict(
-        name=["logical_and"],
-        interface=["torch.Tensor"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(1444,), (361,), (100,), (25,), (9,), (1,), (8732,)],
+                    "requires_grad":[False],
+                    "shape": [(1462,), (2333,)],
                     "dtype": [Dtype.bool],
                     "gen_fn": Genfunc.mask,
                 },
                 {
                     "ins": ["other"],
-                    "shape": [(1444,), (361,), (100,), (25,), (9,), (1,), (8732,)],
-                    "dtype": [Dtype.bool],
-                    "gen_fn": Genfunc.mask,
-                },
-            ],
-        ),
-    ),
-
-    'expand_1': dict(
-        name=["expand"],
-        interface=["torch.Tensor"],
-        para=dict(
-            size=[(1444, 4), (361, 6), (100, 6), (25, 6), (9, 4), (1, 4)],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(1444, 1), (361, 1), (100, 1), (25, 1), (9, 1), (1, 1)],
+                    "requires_grad":[False],
+                    "shape": [(1462,), (2333,)],
                     "dtype": [Dtype.bool],
                     "gen_fn": Genfunc.mask,
                 },
@@ -317,110 +153,19 @@ ssd300_config = {
     'cat': dict(
         name=["cat"],
         interface=["torch"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["tensors"],
-                    "shape": [((5776, 4), (2166, 4), (600, 4), (150, 4), (36, 4), (4, 4)), ((1000, 4), (1000, 4), (672, 4), (0, 4), (0, 4), (0, 4)), ((1000,), (1000,), (672,), (0,), (0,), (0,))],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-            seq_name='tensors',
+        para=dict(
+            dim=[0, 1, 0, 0, 1, 0],
         ),
-    ),
-
-    'cat_1': dict(
-        name=["cat"],
-        interface=["torch"],
         tensor_para=dict(
             args=[
                 {
                     "ins": ["tensors"],
-                    "shape": [((5776,), (2166,), (600,), (150,), (36,), (4,))],
+                    "shape": [[(387,), (223,), (122,), (1,), (0,), (0,)], [(1000,), (1000,), (414,), (131,), (27,), (19,)], [(1728,), (64,), (36864,), (64,), (73728,), (128,), (147456,), (128,), (294912,), (256,), (589824,), (256,), (589824,), (256,), (1179648,), (512,), (2359296,), (512,), (2359296,), (512,), (2359296,), (512,), (2359296,), (512,), (2359296,), (512,), (4718592,), (1024,), (1048576,), (1024,), (512,), (262144,), (256,), (1179648,), (512,), (65536,), (128,), (294912,), (256,), (32768,), (128,), (294912,), (256,), (32768,), (128,), (294912,), (256,), (1492992,), (324,), (4478976,), (486,), (2239488,), (486,), (1119744,), (486,), (746496,), (324,), (746496,), (324,), (73728,), (16,), (221184,), (24,), (110592,), (24,), (55296,), (24,), (36864,), (16,), (36864,), (16,), (3,)], [(5776, 4), (2166, 4), (600, 4), (150, 4), (36, 4)], [(355, 4), (355, 1)], [(826, 4), (826, 1)]],
                     "dtype": [Dtype.bool],
                     "gen_fn": Genfunc.mask,
                 },
             ],
             seq_name='tensors',
-        ),
-    ),
-
-    'any': dict(
-        name=["any"],
-        interface=["torch.Tensor"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(8732,)],
-                    "dtype": [Dtype.bool],
-                    "gen_fn": Genfunc.mask,
-                },
-            ],
-        ),
-    ),
-
-    'sub': dict(
-        name=["sub"],
-        interface=["torch.Tensor"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(14,), (8732,), (14, 8732, 2), (14, 8732), (71,), (19,), (9,), (9, 8732, 2), (9, 8732), (13,), (6,), (6, 8732, 2), (6, 8732), (34,), (1,), (1, 8732, 2), (1, 8732), (2,), (8,), (3,), (3, 8732, 2), (3, 8732), (17,), (5,), (5, 8732, 2), (5, 8732), (30,), (8732, 4), (1000, 2), (672, 2)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-                {
-                    "ins": ["other"],
-                    "shape": [(14,), (8732,), (14, 8732, 2), (14, 8732), (71,), (19,), (9,), (9, 8732, 2), (9, 8732), (13,), (6,), (6, 8732, 2), (6, 8732), (34,), (1,), (1, 8732, 2), (1, 8732), (2,), (8,), (3,), (3, 8732, 2), (3, 8732), (17,), (5,), (5, 8732, 2), (5, 8732), (30,), (8732, 4), (1000, 2), (672, 2)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'maximum': dict(
-        name=["maximum"],
-        interface=["torch"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(14, 1, 2), (14, 8732), (9, 1, 2), (9, 8732), (6, 1, 2), (6, 8732), (1, 1, 2), (1, 8732), (3, 1, 2), (3, 8732), (5, 1, 2), (5, 8732)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-                {
-                    "ins": ["other"],
-                    "shape": [(1, 8732, 2), (1,), (1, 8732, 2), (1,), (1, 8732, 2), (1,), (1, 8732, 2), (1,), (1, 8732, 2), (1,), (1, 8732, 2), (1,)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'minimum': dict(
-        name=["minimum"],
-        interface=["torch"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(14, 1, 2), (9, 1, 2), (6, 1, 2), (1, 1, 2), (3, 1, 2), (5, 1, 2)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-                {
-                    "ins": ["other"],
-                    "shape": [(1, 8732, 2), (1, 8732, 2), (1, 8732, 2), (1, 8732, 2), (1, 8732, 2), (1, 8732, 2)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
         ),
     ),
 
@@ -428,16 +173,18 @@ ssd300_config = {
         name=["clamp"],
         atol=1e-04,
         rtol=1e-05,
-        interface=["torch.Tensor"],
+        interface=["torch"],
+        is_inplace=[True],
         para=dict(
-            min=[0, 0, 0, 0, 0, 0],
-            max=[None, None, None, None, None, None],
+            min=[0, 0],
+            max=[300, 300],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(14, 8732, 2), (9, 8732, 2), (6, 8732, 2), (1, 8732, 2), (3, 8732, 2), (5, 8732, 2)],
+                    "requires_grad":[False],
+                    "shape": [(2253, 2), (2044, 2)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -445,17 +192,21 @@ ssd300_config = {
         ),
     ),
 
-    'max': dict(
-        name=["max"],
-        interface=["torch.Tensor"],
+    'clamp_case_2': dict(
+        name=["clamp"],
+        atol=1e-04,
+        rtol=1e-05,
+        interface=["torch"],
         para=dict(
-            dim=[0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+            min=[0, 0, -4.13517, -4.13517],
+            max=[None, None, 4.13517, 4.13517],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(14, 8732), (14, 8732), (9, 8732), (9, 8732), (6, 8732), (6, 8732), (1, 8732), (1, 8732), (3, 8732), (3, 8732), (5, 8732), (5, 8732)],
+                    "requires_grad":[False],
+                    "shape": [(60, 8732, 2), (45, 8732, 2), (1516, 2), (598, 2)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -463,17 +214,37 @@ ssd300_config = {
         ),
     ),
 
-    'ge': dict(
-        name=["ge"],
-        interface=["torch.Tensor"],
+    'conv2d': dict(
+        name=["conv2d"],
+        atol=1e-03,
+        rtol=1e-03,
+        interface=["torch.nn.functional"],
         para=dict(
-            other=[0, 0.5, 0.0],
+            stride=[(1, 1), (1, 1)],
+            padding=[(0, 0), (0, 0)],
+            dilation=[(1, 1), (1, 1)],
+            groups=[1, 1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(8732,), (8732,), ()],
+                    "requires_grad":[True],
+                    "shape": [(8, 1024, 19, 19), (8, 1024, 19, 19)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["weight"],
+                    "requires_grad":[True],
+                    "shape": [(1024, 1024, 1, 1), (256, 1024, 1, 1)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["bias"],
+                    "requires_grad":[True],
+                    "shape": [(1024,), (256,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -481,103 +252,62 @@ ssd300_config = {
         ),
     ),
 
-    'lt': dict(
-        name=["lt"],
-        interface=["torch.Tensor"],
-        para=dict(
-            other=[0.5, 1.0],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(8732,), (8732, 4)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'add_2': dict(
-        name=["add"],
-        interface=["torch.Tensor"],
-        para=dict(
-            other=[1, 1, 1, 1, 1, 1, 1],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(71,), (8,), (11,), (34,), (2,), (17,), (30,)],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
-                },
-            ],
-        ),
-    ),
-
-    'gt': dict(
-        name=["gt"],
-        interface=["torch.Tensor"],
-        para=dict(
-            other=[0],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(8732,)],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
-                },
-            ],
-        ),
-    ),
-
-    'nonzero': dict(
-        name=["nonzero"],
+    'div': dict(
+        name=["div"],
         interface=["torch"],
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(8732,)],
-                    "dtype": [Dtype.bool],
-                    "gen_fn": Genfunc.mask,
+                    "shape": [(166,), (30,), (59, 8732), (62, 8732), (2, 512, 38, 38), (2, 1, 38, 38), (3, 300, 300)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["other"],
+                    "shape": [(166,), (30,), (59, 8732), (62, 8732), (2, 1, 38, 38), (2, 1, 38, 38), (3, 1, 1)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
                 },
             ],
         ),
     ),
 
-    'sub_1': dict(
-        name=["sub"],
-        interface=["torch.Tensor"],
+    'div_case_2': dict(
+        name=["div"],
+        interface=["torch"],
+        is_inplace=[True],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(183, 4), (93, 4)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["other"],
+                    "shape": [(1, 4), (1, 4)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'div_case_3': dict(
+        name=["div"],
+        interface=["torch"],
         para=dict(
-            other=[1, 1, 1, 1, 1, 1, 1, 1],
+            other=[346, 264, 1, 1, 1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(71,), (19,), (13,), (34,), (2,), (8,), (17,), (30,)],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
-                },
-            ],
-        ),
-    ),
-
-    'unique': dict(
-        name=["unique"],
-        interface=["torch.Tensor"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(71,), (8661,), (19,), (8713,), (13,), (8719,), (34,), (8698,), (2,), (8730,), (8,), (8724,), (17,), (8715,), (30,), (8702,)],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
+                    "shape": [(), (), (8732, 4), (8732, 4), (1,)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
                 },
             ],
         ),
@@ -585,7 +315,28 @@ ssd300_config = {
 
     'eq': dict(
         name=["eq"],
-        interface=["torch.Tensor"],
+        interface=["torch"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [()],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["other"],
+                    "shape": [()],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'eq_case_2': dict(
+        name=["eq"],
+        interface=["torch"],
         para=dict(
             other=[0, 80],
         ),
@@ -601,6 +352,132 @@ ssd300_config = {
         ),
     ),
 
+    'exp': dict(
+        name=["exp"],
+        interface=["torch"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[False],
+                    "shape": [(2641, 2), (1863, 2)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'fill_': dict(
+        name=["fill_"],
+        interface=["torch.Tensor"],
+        para=dict(
+            value=[0, 0, 75, 3, 0, 0],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(3,), (8581,), (), (), (8732, 4), (1, 512)],
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask,
+                },
+            ],
+        ),
+    ),
+
+    'ge': dict(
+        name=["ge"],
+        interface=["torch"],
+        para=dict(
+            other=[0, 0, 0, 0.5],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(), (8732,), (8732,), (8732,)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'gt': dict(
+        name=["gt"],
+        interface=["torch"],
+        para=dict(
+            other=[0, 0, 0.02, 0.02],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(2047,), (906,), (36, 80), (5776, 80)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'index': dict(
+        name=["index"],
+        interface=["CustomizedTest"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[False],
+                    "shape": [(2566,), (1800,), (2494, 4), (30, 4), (3, 300, 300), (3, 300, 300)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["indices"],
+                    "requires_grad":[False],
+                    "shape": [(569,), (734,), (913,), (80,), (3,), (3,)],
+                    "dtype": [Dtype.int64],
+                    "gen_fn": dict(Genfunc.randint, low=-3, high=3),
+                },
+            ],
+        ),
+    ),
+
+    'index_put': dict(
+        name=["index_put"],
+        interface=["CustomizedTest"],
+        para=dict(
+            accumulate=[False, False, False, False],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[False],
+                    "shape": [(8732,), (8732,), (8732, 4), (8732, 4)],
+                    "dtype": [Dtype.int64],
+                    "gen_fn": Genfunc.randint,
+                },
+                {
+                    "ins": ["indices1"],
+                    "requires_grad":[False],
+                    "shape": [(207,), (120,), (121,), (51,)],
+                    "dtype": [Dtype.int64],
+                    "gen_fn": dict(Genfunc.randint, low=-8732, high=8732),
+                },
+                {
+                    "ins": ["values"],
+                    "requires_grad":[False],
+                    "shape": [(207,), (120,), (), (51, 4)],
+                    "dtype": [Dtype.int64],
+                    "gen_fn": Genfunc.randint,
+                },
+            ],
+        ),
+    ),
+
     'log': dict(
         name=["log"],
         interface=["torch"],
@@ -608,7 +485,8 @@ ssd300_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(71,), (19,), (13,), (34,), (2,), (8,), (17,), (30,)],
+                    "requires_grad":[False],
+                    "shape": [(158,), (167,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.positive,
                 },
@@ -616,215 +494,37 @@ ssd300_config = {
         ),
     ),
 
-    'sub_2': dict(
-        name=["sub"],
-        is_inplace=[True],
-        interface=["torch.Tensor"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(71, 4), (19, 4), (13, 4), (34, 4), (2, 4), (8, 4), (17, 4), (30, 4)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-                {
-                    "ins": ["other"],
-                    "shape": [(1, 4), (1, 4), (1, 4), (1, 4), (1, 4), (1, 4), (1, 4), (1, 4)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'div_1': dict(
-        name=["div"],
-        is_inplace=[True],
-        interface=["torch.Tensor"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(71, 4), (19, 4), (13, 4), (34, 4), (2, 4), (8, 4), (17, 4), (30, 4)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-                {
-                    "ins": ["other"],
-                    "shape": [(1, 4), (1, 4), (1, 4), (1, 4), (1, 4), (1, 4), (1, 4), (1, 4)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'stack_1': dict(
-        name=["stack"],
-        interface=["torch"],
+    'log_softmax': dict(
+        name=["log_softmax"],
+        interface=["torch.nn.functional"],
+        saved_args=dict(output=0),
         para=dict(
-            dim=[0],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["tensors"],
-                    "shape": [((8732,), (8732,), (8732,), (8732,), (8732,), (8732,), (8732,), (8732,))],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
-                },
-            ],
-            seq_name='tensors',
-        ),
-    ),
-
-    'stack_2': dict(
-        name=["stack"],
-        interface=["torch"],
-        para=dict(
-            dim=[0, 0],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["tensors"],
-                    "shape": [((8732,), (8732,), (8732,), (8732,), (8732,), (8732,), (8732,), (8732,)), ((8732, 4), (8732, 4), (8732, 4), (8732, 4), (8732, 4), (8732, 4), (8732, 4), (8732, 4))],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-            seq_name='tensors',
-        ),
-    ),
-
-    'permute': dict(
-        name=["permute"],
-        interface=["torch.Tensor"],
-        para=dict(
-            dims=[(0, 2, 3, 1), (0, 2, 3, 1), (0, 2, 3, 1), (0, 2, 3, 1), (0, 2, 3, 1), (0, 2, 3, 1), (0, 2, 3, 1), (0, 2, 3, 1), (0, 2, 3, 1), (0, 2, 3, 1), (0, 2, 3, 1), (0, 2, 3, 1)],
+            dim=[1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(8, 324, 38, 38), (8, 486, 19, 19), (8, 486, 10, 10), (8, 486, 5, 5), (8, 324, 3, 3), (8, 324, 1, 1), (8, 16, 38, 38), (8, 24, 19, 19), (8, 24, 10, 10), (8, 24, 5, 5), (8, 16, 3, 3), (8, 16, 1, 1)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'cat_2': dict(
-        name=["cat"],
-        interface=["torch"],
-        para=dict(
-            dim=[1, -1, -2, -1],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["tensors"],
-                    "shape": [((8, 5776, 81), (8, 2166, 81), (8, 600, 81), (8, 150, 81), (8, 36, 81), (8, 4, 81)), ((8, 5776), (8, 2166), (8, 600), (8, 150), (8, 36), (8, 4)), ((8, 5776, 4), (8, 2166, 4), (8, 600, 4), (8, 150, 4), (8, 36, 4), (8, 4, 4)), ((1701, 4), (1701, 1))],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-            seq_name='tensors',
-        ),
-    ),
-
-    'cat_3': dict(
-        name=["cat"],
-        interface=["torch"],
-        para=dict(
-            dim=[-1],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["tensors"],
-                    "shape": [((8, 5776), (8, 2166), (8, 600), (8, 150), (8, 36), (8, 4))],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
-                },
-            ],
-            seq_name='tensors',
-        ),
-    ),
-
-    'cross_entropy': dict(
-        name=["cross_entropy"],
-        para=dict(
-            reduction=['none'],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "requires_grad": [True],
+                    "requires_grad":[True],
                     "shape": [(8732, 81)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
-                {
-                    "ins": ["target"],
-                    "shape": [(8732,)],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
-                },
             ],
         ),
     ),
 
-    'ge_1': dict(
-        name=["ge"],
-        interface=["torch.Tensor"],
-        para=dict(
-            other=[0],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(8732,)],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
-                },
-            ],
-        ),
-    ),
-
-    'lt_1': dict(
+    'lt': dict(
         name=["lt"],
-        interface=["torch.Tensor"],
+        interface=["torch"],
         para=dict(
-            other=[80],
+            other=[1, 80, 0.5],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(8732,)],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
-                },
-            ],
-        ),
-    ),
-
-    'topk': dict(
-        name=["topk"],
-        interface=["torch.Tensor"],
-        para=dict(
-            k=[213, 57, 39, 102, 6, 24, 51, 90],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(8661,), (8713,), (8719,), (8698,), (8730,), (8724,), (8715,), (8702,)],
+                    "shape": [(8732, 4), (8732,), (8732,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -832,32 +532,19 @@ ssd300_config = {
         ),
     ),
 
-    'sum_1': dict(
-        name=["sum"],
-        interface=["torch.Tensor"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(71,), (213,), (8732, 4), (19,), (57,), (13,), (39,), (34,), (102,), (2,), (6,), (8,), (24,), (17,), (51,), (30,), (90,)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'div_2': dict(
-        name=["div"],
-        interface=["torch.Tensor"],
+    'max': dict(
+        name=["max"],
+        interface=["torch"],
         para=dict(
-            other=[194, 1.0, 194.0000001192093],
+            dim=[0, 1],
+            keepdim=[False, False],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(), (8732, 4), ()],
+                    "requires_grad":[False],
+                    "shape": [(21, 8732), (63, 8732)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -865,14 +552,15 @@ ssd300_config = {
         ),
     ),
 
-    'abs': dict(
-        name=["abs"],
+    'max_case_2': dict(
+        name=["max"],
         interface=["torch"],
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(8732, 4)],
+                    "requires_grad":[False],
+                    "shape": [(2486, 4), (2554, 4)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -880,17 +568,24 @@ ssd300_config = {
         ),
     ),
 
-    'mul_2': dict(
-        name=["mul"],
-        interface=["torch.Tensor"],
+    'max_pool2d': dict(
+        name=["max_pool2d"],
+        interface=["torch.nn.functional"],
+        requires_backward=[0],
         para=dict(
-            other=[0.5],
+            kernel_size=[(2, 2), (2, 2)],
+            stride=[(2, 2), (2, 2)],
+            padding=[(0, 0), (0, 0)],
+            dilation=[(1, 1), (1, 1)],
+            ceil_mode=[True, True],
+            return_indices=[True, True],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(8732, 4)],
+                    "requires_grad":[True],
+                    "shape": [(8, 64, 300, 300), (2, 64, 300, 300)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -898,44 +593,22 @@ ssd300_config = {
         ),
     ),
 
-    'sub_3': dict(
-        name=["sub"],
-        interface=["torch.Tensor"],
-        para=dict(
-            other=[0.5],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(8732, 4)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'where': dict(
-        name=["where"],
+    'maximum': dict(
+        name=["maximum"],
         interface=["torch"],
         tensor_para=dict(
             args=[
                 {
-                    "ins": ["condition"],
-                    "shape": [(8732, 4)],
-                    "dtype": [Dtype.bool],
-                    "gen_fn": Genfunc.mask,
-                },
-                {
                     "ins": ["input"],
-                    "shape": [(8732, 4)],
+                    "requires_grad":[False],
+                    "shape": [(44, 1, 2), (72, 1, 2), (50, 8732), (65, 8732)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["other"],
-                    "shape": [(8732, 4)],
+                    "requires_grad":[False],
+                    "shape": [(1, 8732, 2), (1, 8732, 2), (1,), (1,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -945,12 +618,17 @@ ssd300_config = {
 
     'mean': dict(
         name=["mean"],
-        interface=["torch.Tensor"],
+        interface=["torch"],
+        para=dict(
+            dim=[None, None, None, None, None],
+            keepdim=[False, False, False, False, False],
+            dtype=[None, None, None, None, None],
+        ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(1,), ()],
+                    "shape": [(324, 256, 3, 3), (486, 512, 3, 3), (), (24,), (64,)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -958,11 +636,120 @@ ssd300_config = {
         ),
     ),
 
-    'add_3': dict(
-        name=["add"],
-        interface=["torch.Tensor"],
+    'minimum': dict(
+        name=["minimum"],
+        interface=["torch"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[False],
+                    "shape": [(24, 1, 2), (21, 1, 2)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["other"],
+                    "requires_grad":[False],
+                    "shape": [(1, 8732, 2), (1, 8732, 2)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'mul': dict(
+        name=["mul"],
+        interface=["torch"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(1072,), (1833,), (2476, 2), (2186, 4), (2, 512, 38, 38), (2, 512, 38, 38), ()],
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask,
+                },
+                {
+                    "ins": ["other"],
+                    "shape": [(), (), (2476, 2), (1, 4), (2, 512, 38, 38), (2, 512, 38, 38), ()],
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask,
+                },
+            ],
+        ),
+    ),
+
+    'mul_case_2': dict(
+        name=["mul"],
+        interface=["torch"],
+        is_inplace=[True],
         para=dict(
-            other=[0],
+            other=[0.9, 0.9, 0.9, 0.9],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(486, 512, 3, 3), (16, 256, 3, 3), (324,), (486,)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'mul_case_3': dict(
+        name=["mul"],
+        interface=["torch"],
+        para=dict(
+            other=[2, 1, 0.5, 0.5, 0.5, 0.5],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(8, 1, 38, 38), (486, 1024, 3, 3), (32,), (106,), (2719, 2), (2547, 2)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'nll_loss': dict(
+        name=["nll_loss"],
+        interface=["torch.nn.functional"],
+        para=dict(
+            weight=[None],
+            reduction=['none'],
+            ignore_index=[-100],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[True],
+                    "shape": [(8732, 81)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["target"],
+                    "requires_grad":[False],
+                    "shape": [(8732,)],
+                    "dtype": [Dtype.int64],
+                    "gen_fn": Genfunc.randint,
+                },
+            ],
+        ),
+    ),
+
+    'ne': dict(
+        name=["ne"],
+        interface=["torch"],
+        para=dict(
+            other=['inf'],
         ),
         tensor_para=dict(
             args=[
@@ -976,45 +763,14 @@ ssd300_config = {
         ),
     ),
 
-    'sgd': dict(
-        name=["sgd"],
-        interface=["CustomizedTest"],
-        para=dict(
-            nesterov=[False for i in range(32)],
-            lr=[2.000000000000002e-06 for i in range(32)],
-            momentum=[0.9 for i in range(32)],
-            weight_decay=[0.0005 for i in range(32)],
-            dampening=[0 for i in range(32)],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["param", "param_grad"],
-                    "shape": [(64, 3, 3, 3), (64,), (64, 64, 3, 3), (128, 64, 3, 3), (128,), (128, 128, 3, 3), (256, 128, 3, 3), (256,), (256, 256, 3, 3), (512, 256, 3, 3), (512,), (512, 512, 3, 3), (1024, 512, 3, 3), (1024,), (1024, 1024, 1, 1), (256, 1024, 1, 1), (128, 512, 1, 1), (128, 256, 1, 1), (324, 512, 3, 3), (324,), (486, 1024, 3, 3), (486,), (486, 512, 3, 3), (486, 256, 3, 3), (324, 256, 3, 3), (16, 512, 3, 3), (16,), (24, 1024, 3, 3), (24,), (24, 512, 3, 3), (24, 256, 3, 3), (16, 256, 3, 3)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-                {
-                    "ins": ["buf"],
-                    "shape": [(64, 3, 3, 3), (64,), (64, 64, 3, 3), (128, 64, 3, 3), (128,), (128, 128, 3, 3), (256, 128, 3, 3), (256,), (256, 256, 3, 3), (512, 256, 3, 3), (512,), (512, 512, 3, 3), (1024, 512, 3, 3), (1024,), (1024, 1024, 1, 1), (256, 1024, 1, 1), (128, 512, 1, 1), (128, 256, 1, 1), (324, 512, 3, 3), (324,), (486, 1024, 3, 3), (486,), (486, 512, 3, 3), (486, 256, 3, 3), (324, 256, 3, 3), (16, 512, 3, 3), (16,), (24, 1024, 3, 3), (24,), (24, 512, 3, 3), (24, 256, 3, 3), (16, 256, 3, 3)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'permute_1': dict(
-        name=["permute"],
-        interface=["torch.Tensor"],
-        para=dict(
-            dims=[(1, 2, 0), (1, 2, 0), (1, 2, 0), (1, 2, 0), (1, 2, 0), (1, 2, 0), (1, 2, 0), (1, 2, 0), (1, 2, 0), (1, 2, 0), (1, 2, 0), (1, 2, 0)],
-        ),
+    'neg': dict(
+        name=["neg"],
+        interface=["torch"],
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(16, 38, 38), (324, 38, 38), (24, 19, 19), (486, 19, 19), (24, 10, 10), (486, 10, 10), (24, 5, 5), (486, 5, 5), (16, 3, 3), (324, 3, 3), (16, 1, 1), (324, 1, 1)],
+                    "shape": [(8, 512, 38, 38), (2, 512, 38, 38)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -1022,32 +778,15 @@ ssd300_config = {
         ),
     ),
 
-    'gt_1': dict(
-        name=["gt"],
-        interface=["torch.Tensor"],
-        para=dict(
-            other=[0.02, 0.02, 0.02, 0.02, 0.02, 0.02],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(5776, 80), (2166, 80), (600, 80), (150, 80), (36, 80), (4, 80)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'nonzero_1': dict(
+    'nonzero': dict(
         name=["nonzero"],
         interface=["torch"],
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(5776, 80), (2166, 80), (600, 80), (150, 80), (36, 80), (4, 80)],
+                    "requires_grad":[False],
+                    "shape": [(1691,), (2266,), (4, 80), (5776, 80)],
                     "dtype": [Dtype.bool],
                     "gen_fn": Genfunc.mask,
                 },
@@ -1055,71 +794,175 @@ ssd300_config = {
         ),
     ),
 
-    'sort': dict(
-        name=["sort"],
-        interface=["torch.Tensor"],
-        para=dict(
-            descending=[True, True, True, True],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(76774,), (19898,), (672,), (0,)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'clamp_1': dict(
-        name=["clamp"],
-        atol=1e-04,
-        rtol=1e-05,
-        interface=["torch.Tensor"],
-        para=dict(
-            min=[-4.135166556742356, -4.135166556742356],
-            max=[4.135166556742356, 4.135166556742356],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(1000, 2), (672, 2)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'exp': dict(
-        name=["exp"],
-        interface=["torch.Tensor"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(1000, 2), (672, 2)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'cat_4': dict(
-        name=["cat"],
+    'pow': dict(
+        name=["pow"],
         interface=["torch"],
         para=dict(
-            dim=[-1, -1, 1],
+            exponent=[1, 2, 2, 2, 1],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[True],
+                    "shape": [(8, 512, 38, 38), (8, 512, 38, 38), (8, 512, 38, 38), (2, 512, 38, 38), (2, 512, 38, 38)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'relu': dict(
+        name=["relu"],
+        interface=["torch.nn.functional"],
+        is_inplace=[True],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(8, 1024, 19, 19), (8, 1024, 19, 19)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'repeat': dict(
+        name=["repeat"],
+        interface=["torch.Tensor"],
+        para=dict(
+            repeats=[(1, 1), (1, 1), (19,), (3,)],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[False],
+                    "shape": [(1360, 4), (1232, 4), (19,), (3,)],
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask,
+                },
+            ],
+        ),
+    ),
+
+    'scatter': dict(
+        name=["scatter"],
+        interface=["torch"],
+        para=dict(
+            dim=[-1, -1],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[False],
+                    "shape": [(8677,), (8555,)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["index"],
+                    "requires_grad":[False],
+                    "shape": [(165,), (531,)],
+                    "dtype": [Dtype.int64],
+                    "gen_fn": dict(Genfunc.randint, high=8555),
+                },
+                {
+                    "ins": ["src"],
+                    "requires_grad":[False],
+                    "shape": [(165,), (531,)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'sgn': dict(
+        name=["sgn"],
+        interface=["torch"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(8732, 4)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'softmax': dict(
+        name=["softmax"],
+        interface=["torch.nn.functional"],
+        saved_args=dict(output=0),
+        para=dict(
+            dim=[-1, -1, -1, -1, -1, -1],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[False],
+                    "shape": [(36, 81), (2166, 81), (150, 81), (4, 81), (600, 81), (5776, 81)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'sort': dict(
+        name=["sort"],
+        interface=["torch"],
+        para=dict(
+            dim=[-1, -1],
+            descending=[True, True],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[False],
+                    "shape": [(268,), (787,)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'sqrt': dict(
+        name=["sqrt"],
+        interface=["torch"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[True],
+                    "shape": [(8, 1, 38, 38), (8, 1, 38, 38), (2, 1, 38, 38)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.positive,
+                },
+            ],
+        ),
+    ),
+
+    'stack': dict(
+        name=["stack"],
+        interface=["torch"],
+        para=dict(
+            dim=[1, 1, 0, 0, 0, 0],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["tensors"],
-                    "shape": [((1000, 2), (1000, 2)), ((672, 2), (672, 2)), ((1701, 4), (1701, 1))],
+                    "shape": [[(11,), (11,), (11,), (11,)], [(80,), (80,), (80,), (80,)], [(8732,), (8732,), (8732,), (8732,), (8732,), (8732,), (8732,), (8732,)], [(8732, 4), (8732, 4), (8732, 4), (8732, 4), (8732, 4), (8732, 4), (8732, 4), (8732, 4)], [(8732,), (8732,)], [(3, 300, 300), (3, 300, 300)]],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -1128,43 +971,23 @@ ssd300_config = {
         ),
     ),
 
-    'clamp_2': dict(
-        name=["clamp"],
-        atol=1e-04,
-        rtol=1e-05,
-        is_inplace=[True],
-        interface=["torch.Tensor"],
+    'sub': dict(
+        name=["sub"],
+        interface=["torch"],
         para=dict(
-            min=[0, 0],
-            max=[300, 300],
+            alpha=[1, 1, 1, 1, 1, 1],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(1000, 2), (672, 2)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
-
-    'div_3': dict(
-        name=["div"],
-        is_inplace=[True],
-        interface=["torch.Tensor"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(2672, 4)],
+                    "shape": [(2284,), (2174,), (42, 8732, 2), (46, 8732, 2), (1970, 2), (2102, 2)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["other"],
-                    "shape": [(4,)],
+                    "shape": [(2284,), (2174,), (42, 8732, 2), (46, 8732, 2), (1970, 2), (2102, 2)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
@@ -1172,30 +995,156 @@ ssd300_config = {
         ),
     ),
 
-    'cat_5': dict(
-        name=["cat"],
+    'sub_case_2': dict(
+        name=["sub"],
         interface=["torch"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["tensors"],
-                    "shape": [((1000,), (1000,), (672,), (0,), (0,), (0,))],
-                    "dtype": [Dtype.int64],
-                    "gen_fn": Genfunc.randint,
-                },
-            ],
-            seq_name='tensors',
+        is_inplace=[True],
+        para=dict(
+            alpha=[1, 1],
         ),
-    ),
-
-    'max_1': dict(
-        name=["max"],
-        interface=["torch.Tensor"],
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [(2672, 4)],
+                    "shape": [(110, 4), (187, 4)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["other"],
+                    "shape": [(1, 4), (1, 4)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'sub_case_3': dict(
+        name=["sub"],
+        interface=["torch"],
+        para=dict(
+            other=[1, 1, 0.5, 1],
+            alpha=[1, 1, 1, 1],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(135,), (148,), (8732, 4), ()],
+                    "dtype": [Dtype.int64],
+                    "gen_fn": Genfunc.randint,
+                },
+            ],
+        ),
+    ),
+
+    'sum': dict(
+        name=["sum"],
+        interface=["torch"],
+        para=dict(
+            dim=[None, None, [1], [1], None],
+            keepdim=[False, False, True, True, False],
+            dtype=[None, None, None, None, None],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(366,), (231,), (8, 512, 38, 38), (8, 512, 38, 38), (8732, 4)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'topk': dict(
+        name=["topk"],
+        interface=["torch"],
+        para=dict(
+            k=[276, 30],
+            dim=[0, 0],
+            largest=[True, True],
+            sorted=[True, True],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(8640,), (8722,)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'uniform': dict(
+        name=["uniform"],
+        no_output_ref=True,
+        interface=["torch.nn.functional"],
+        is_inplace=[True],
+        para=dict(
+            start=[-0.0258457, -0.0282391],
+            end=[0.0258457, 0.0282391],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [(486, 512, 3, 3), (324, 512, 3, 3)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+            ],
+        ),
+    ),
+
+    'unique': dict(
+        name=["unique"],
+        interface=["torch"],
+        para=dict(
+            sorted=[True, True],
+            return_inverse=[False, False],
+            return_counts=[False, False],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[False],
+                    "shape": [(177,), (85,)],
+                    "dtype": [Dtype.int64],
+                    "gen_fn": Genfunc.randint,
+                },
+            ],
+        ),
+    ),
+
+    'where': dict(
+        name=["where"],
+        interface=["torch"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["condition"],
+                    "requires_grad":[False],
+                    "shape": [(8732, 4), (8732, 4), (8732, 4)],
+                    "dtype": [Dtype.bool],
+                    "gen_fn": Genfunc.mask,
+                },
+                {
+                    "ins": ["input"],
+                    "requires_grad":[True],
+                    "shape": [(8732, 4), (), (8732, 4)],
+                    "dtype": [Dtype.float32],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["other"],
+                    "requires_grad":[True],
+                    "shape": [(), (8732, 4), (8732, 4)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },

@@ -11,6 +11,8 @@ from .cv_configs.shufflenet_v2_config import shufflenet_v2_config  # 1.9G
 from .cv_configs.swin_transformer_config import swin_transformer_config  # 21G
 from .cv_configs.vit_config import vit_config  # 4.1G
 from .cv_configs.inceptionv3_config import inceptionv3_config  # 8G
+from .cv_configs.convnext_config import convnext_config
+from .cv_configs.mobilenet_v3_config import mobilenet_v3_config
 
 # 6 models for segmentation
 from .seg_configs.unet_config import unet_config  # 32G
@@ -32,6 +34,8 @@ from .det_configs.mask_rcnn_config import mask_rcnn_config  # 16G
 from .det_configs.detr_config import detr_config  # 12G
 from .det_configs.centernet_config import centernet_config  # 7.7G
 from .det_configs.solo_config import solo_config  # 24G
+from .det_configs.dyhead_config import dyhead_config
+from .det_configs.pointpillars_config import pointpillars_config
 
 # 8 models for action/pose
 from .other_configs.deeppose_config import deeppose_config  # 10G
@@ -43,6 +47,7 @@ from .other_configs.crnn_config import crnn_config  # 2.1G
 from .other_configs.slowfast_config import slowfast_config  # 18G
 from .other_configs.tsn_config import tsn_config  # 20G
 from .other_configs.llama_config import llama_config
+from .other_configs.yolov5_config import yolov5_config
 
 
 __all__ = ['resnet50_config',
