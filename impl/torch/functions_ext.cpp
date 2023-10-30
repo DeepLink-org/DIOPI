@@ -6,9 +6,13 @@
 
 #include <ATen/NestedTensorImpl.h>
 #include <ATen/core/Generator.h>
+#include <ATen/core/TensorBody.h>
+#include <ATen/cuda/CUDAGeneratorImpl.h>
 #include <c10/util/Optional.h>
 #include <diopi/functions.h>
 #include <diopi/functions_ext.h>
+
+#include <cstdint>
 
 #include "context.h"
 #include "ext_kernel.h"
@@ -27,47 +31,18 @@ c10::optional<at::Generator> buildGeneratorForMha(diopiContextHandle_t ctx, diop
     return impl::aten::buildGenerator(ctx, gen);
 }
 
-}  // namespace
-
-/**
- * copyed from `aten/src/ATen/native/nested/cuda/NestedTensorTransformerFunctions.cpp`
- * This function is used to calculate two pieces of metadata that are needed
- * for use with flash-attention and efficient_attention kernels. They are the
- * cumulative sequence_length over a batch of sequences and the maximum sequence
- * length.
- *
- * @return A tuple of cumulative sequence lengths and the maximum sequence length,
- * and the last element in the cumulative_sequence_lengths
- */
-std::tuple<at::Tensor, int64_t, int64_t> cumulative_and_max_seq_len(at::Tensor qkv) {
-    TORCH_CHECK(qkv.is_nested(), "QKV must be nested for flash cumulative_seq_len calculation.")
-    auto* nt_impl = at::native::get_nested_tensor_impl(qkv);
-    const auto& sizes = nt_impl->get_nested_size_tensor();
-    auto size_tensor_stride = sizes.stride(0);
-
-    const int64_t batch_size = qkv.size(0);
-    auto cumulative_seqlen = at::zeros({batch_size + 1}, c10::TensorOptions().device(at::kCPU).dtype(at::kInt));
-
-    auto* sizes_ptr = sizes.data_ptr<int64_t>();
-    auto* cumulative_seqlen_ptr = cumulative_seqlen.data_ptr<int32_t>();
-
-    int32_t sum = 0;
-    int64_t max_seqlen = -1;
-    cumulative_seqlen_ptr[0] = sum;
-    for (const auto i : c10::irange(batch_size)) {
-        // Calculate the cumulative sum of the sequence lengths
-        auto current_seq_len = sizes_ptr[(i * size_tensor_stride)];
-        sum += current_seq_len;
-        cumulative_seqlen_ptr[i + 1] = sum;
-
-        // Find the max element while we traverse
-        max_seqlen = std::max(max_seqlen, current_seq_len);
+void updateGeneratorStateForMha(diopiContextHandle_t ctx, diopiGeneratorHandle_t gen, const at::Tensor& atRngState) {
+    if (gen == nullptr) {
+        return;
     }
-    // Send to GPU, this is pretty light weight calc for normal batch size
-    // but maybe this needs to be on gpu
-    cumulative_seqlen = cumulative_seqlen.to(c10::TensorOptions().device(at::kCUDA));
-    return std::tuple<at::Tensor, int64_t, int64_t>{cumulative_seqlen, max_seqlen, sum};
+    auto cudaGen = at::cuda::detail::createCUDAGenerator();
+    auto cudaGenImpl = at::check_generator<at::CUDAGeneratorImpl>(cudaGen);
+    cudaGenImpl->set_current_seed(atRngState[0].item<std::int64_t>());
+    cudaGenImpl->set_philox_offset_per_thread(atRngState[1].item<std::int64_t>());
+    impl::aten::updateGeneratorHandleState(ctx, cudaGen, gen);
 }
+
+}  // namespace
 
 extern "C" {
 
@@ -130,8 +105,6 @@ diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiConstTensorH
     auto atK = impl::aten::buildATen(k);
     auto atV = impl::aten::buildATen(v);
     auto atGen = buildGeneratorForMha(ctx, gen, dropout_p);
-    at::Tensor atOutput, atLog_sumexp, atDebug_attn_mask, atQpaded, atKpaded, atVpaded, atOutpaded;
-    auto atRng_state = at::empty({2}, at::kLong);
     // TORCH_CHECK(false, "There are currently cuda memory errors being returned from this path.")
     // Query -> Query (Batch x {Q_seq_len}  x Num_heads x Dim_per_head)
     // Key   -> Key   (Batch x {KV_seq_len} x Num_heads x Dim_per_head)
@@ -150,24 +123,23 @@ diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiConstTensorH
     //                                 const float p_dropout, const float softmax_scale, bool is_causal, const int window_size_left, int window_size_right,
     //                                 const bool return_softmax, c10::optional<at::Generator> gen_);
     // {out, q_padded, k_padded, v_padded, out_padded, softmax_lse, p, rng_state};
-    auto atOutputOpt = c10::optional<at::Tensor>(atOutput);
-    std::vector<at::Tensor> result = mha_fwd(atQ, atK, atV, atOutputOpt, dropout_p, scale, is_causal, -1, -1, return_debug_mask, atGen);
+    c10::optional<at::Tensor> outputNull;
+    std::vector<at::Tensor> result = mha_fwd(atQ, atK, atV, outputNull, dropout_p, scale, is_causal, -1, -1, return_debug_mask, atGen);
     //(atOutput, atQpaded, atKpaded, atVpaded, atOutpaded, atLog_sumexp, atDebug_attn_mask, atRng_state)
-    atOutput = result[0];
-    atQpaded = result[1];
-    atKpaded = result[2];
-    atVpaded = result[3];
-    atOutpaded = result[4];
-    atLog_sumexp = result[5];
-    atDebug_attn_mask = result[6];
-    atRng_state = result[7];
+    auto atOutput = result[0];
+    auto atQpaded = result[1];
+    auto atKpaded = result[2];
+    auto atVpaded = result[3];
+    auto atOutpaded = result[4];
+    auto atLogSumexp = result[5];
+    auto atDebugAttnMask = result[6];
+    auto atRngState = result[7];
     impl::aten::updateATen2Tensor(ctx, atOutput, out);
-    // impl::aten::updateATen2Tensor(ctx, atLog_sumexp, softmax_lse);
-    // impl::aten::updateATen2Tensor(ctx, atDebug_attn_mask, debug_attn_mask);
-
-    // diopiTensorHandle_t new_state_handle = nullptr;
-    // impl::aten::buildDiopiTensor(ctx, atRng_state, &new_state_handle);
-    // diopiGeneratorSetState(gen, new_state_handle);
+    impl::aten::updateATen2Tensor(ctx, atLogSumexp, softmax_lse);
+    if (return_debug_mask) {
+        impl::aten::updateATen2Tensor(ctx, atDebugAttnMask, debug_attn_mask);
+    }
+    updateGeneratorStateForMha(ctx, gen, atRngState);
 
     impl::aten::unsetCurCtx();
     return diopiSuccess;
@@ -191,9 +163,9 @@ diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiCons
     auto atOut = impl::aten::buildATen(out);
     auto atLogsumexp = impl::aten::buildATen(softmax_lse);
 
-    diopiTensorHandle_t* state_ptr = nullptr;
-    diopiGeneratorGetState(ctx, gen, state_ptr);
-    auto atState = impl::aten::buildATen(*state_ptr);
+    diopiTensorHandle_t state_ptr = nullptr;
+    diopiGeneratorGetState(ctx, gen, &state_ptr);
+    auto atState = impl::aten::buildATen(state_ptr);
     int64_t atPhilox_seed = atState[0].item<int64_t>();
     int64_t atPhilox_offset = atState[1].item<int64_t>();
     // c10::optional<at::tensor>
