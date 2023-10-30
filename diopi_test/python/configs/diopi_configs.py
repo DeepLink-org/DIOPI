@@ -3328,7 +3328,7 @@ diopi_configs = {
         ),
         dtype=[np.float16, np.float32, np.float64],
         tensor_para=dict(
-            gen_fn=Genfunc.randn,
+            gen_fn='Genfunc.randn',
             args=[
                 {
                     "ins": ['input'],
