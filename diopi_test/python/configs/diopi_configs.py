@@ -4703,14 +4703,14 @@ diopi_configs = {
                     "ins": ['idx1'],
                     # "shape": (None, (24,), None, (1, ), None, (1, )),
                     "shape": ((24,), (1, ), None, (1, )),
-                    "gen_fn": dict(fn='Genfunc.randint', high=3),
+                    "gen_fn": dict(fn='Genfunc.randint', low=-3, high=3),
                     "dtype": [np.int64, np.int32, np.int64],
                 },
                 {
                     "ins": ['idx2'],
                     # "shape": (None, None, (11, 64), (1, ), None, None),
                     "shape": (None, (1, ), None, None),
-                    "gen_fn": dict(fn='Genfunc.randint', high=2),
+                    "gen_fn": dict(fn='Genfunc.randint', low=-2, high=2),
                     "dtype": [np.int32],
                 },
                 {
@@ -4742,14 +4742,14 @@ diopi_configs = {
                     "ins": ['idx1'],
                     # "shape": (None, (5,), (1,)),
                     "shape": ((5,), (1,)),
-                    "gen_fn": dict(fn='Genfunc.randint', high=3),
+                    "gen_fn": dict(fn='Genfunc.randint', low=-3, high=3),
                     "dtype": [np.int64],
                 },
                 {
                     "ins": ['idx2'],
                     # "shape": (None, None, None),
                     "shape": (None, None),
-                    "gen_fn": dict(fn='Genfunc.randint', high=2),
+                    "gen_fn": dict(fn='Genfunc.randint', low=-2, high=2),
                     "dtype": [np.int64],
                 },
                 {
@@ -4780,7 +4780,7 @@ diopi_configs = {
                     "ins": ['idx1'],
                     # "shape": (None, None, None, (1, ), (2,), (1, 4)),
                     "shape": (None, (1, )),
-                    "gen_fn": dict(fn='Genfunc.randint', high=3),
+                    "gen_fn": dict(fn='Genfunc.randint', low=-3, high=3),
                     "dtype": [np.int64],
                 },
                 {
@@ -4794,7 +4794,7 @@ diopi_configs = {
                     "ins": ['idx3'],
                     # "shape": (None, None, None, (1, ), (128, 2), (23, 4,)),
                     "shape": (None, (1, )),
-                    "gen_fn": dict(fn='Genfunc.randint', high=2),
+                    "gen_fn": dict(fn='Genfunc.randint', low=-2, high=2),
                     "dtype": [np.int32],
                 },
             ],
@@ -5911,7 +5911,7 @@ diopi_configs = {
                     "ins": ['index'],
                     "shape": ((20,), (3,), (5,), (), (10,)),
                     "dtype": [np.int64],
-                    "gen_fn": dict(fn='Genfunc.randint', high=3)
+                    "gen_fn": dict(fn='Genfunc.randint', low=-3, high=3)
                 },
             ]
         ),
@@ -5939,7 +5939,7 @@ diopi_configs = {
                     "ins": ['index'],
                     "shape": ((), (3,), (0,), (0,), (0,)),
                     "dtype": [np.int64],
-                    "gen_fn": dict(fn='Genfunc.randint', high=1)
+                    "gen_fn": dict(fn='Genfunc.randint', low=-1, high=1)
                 },
             ]
         ),
@@ -5975,7 +5975,7 @@ diopi_configs = {
                     "ins": ['index'],
                     "shape": ((), (3,), (0,), (0,), (0,)),
                     "dtype": [np.int64],
-                    "gen_fn": dict(fn='Genfunc.randint', high=1)
+                    "gen_fn": dict(fn='Genfunc.randint', low=-1, high=1)
                 },
             ]
         ),
@@ -6011,7 +6011,7 @@ diopi_configs = {
                     "ins": ['index'],
                     "shape": ((50, ), (3,), (5,), (), (10,)),
                     "dtype": [np.int64],
-                    "gen_fn": dict(fn='Genfunc.randint', high=3)
+                    "gen_fn": dict(fn='Genfunc.randint', low=-3, high=3)
                 },
             ]
         ),
@@ -6827,7 +6827,7 @@ diopi_configs = {
                               (6,)
                               ),
                     "dtype": [np.int64],
-                    "gen_fn": dict(fn='Genfunc.randint', low=0, high=4),
+                    "gen_fn": dict(fn='Genfunc.randint', low=-4, high=4),
                 },
                 {
                     "ins": ['values'],
@@ -6883,7 +6883,7 @@ diopi_configs = {
                               (4, 5),
                               (4, 5)),
                     "dtype": [np.int64],
-                    "gen_fn": dict(fn='Genfunc.randint', low=0, high=4),
+                    "gen_fn": dict(fn='Genfunc.randint', low=-4, high=4),
                 },
                 {
                     "ins": ['values'],
@@ -6938,7 +6938,7 @@ diopi_configs = {
                               (6,), (), (2, 10), (4,),
                               (4,)),
                     "dtype": [np.int64],
-                    "gen_fn": dict(fn='Genfunc.randint', low=0, high=4),
+                    "gen_fn": dict(fn='Genfunc.randint', low=-4, high=4),
                 },
                 {
                     "ins": ['values'],
@@ -6982,13 +6982,13 @@ diopi_configs = {
     #                 "ins": ['indices2'],
     #                 "shape": ((4,), (4, 5), (6,), (4,), (4,)),
     #                 "dtype": [np.int64],
-    #                 "gen_fn": dict(fn='Genfunc.randint', low=0, high=4),
+    #                 "gen_fn": dict(fn='Genfunc.randint', low=-4, high=4),
     #             },
     #             {
     #                 "ins": ['indices3'],
     #                 "shape": ((16, 1, 4), (5,), (4, 1, 6), None, None),
     #                 "dtype": [np.int64],
-    #                 "gen_fn": dict(fn='Genfunc.randint', low=0, high=4),
+    #                 "gen_fn": dict(fn='Genfunc.randint', low=-4, high=4),
     #             },
     #             {
     #                 "ins": ['values'],
