@@ -374,7 +374,7 @@ class GenInputData(object):
                             f"check the arguments --fname")
             else:
                 logger.info("Generate benchmark input data done!")
-        
+
         with open(os.path.join(inputs_dir_path, cfg_file_name), "wb") as f:
             pickle.dump(cfg_save_dict, f)
 

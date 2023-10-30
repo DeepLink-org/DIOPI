@@ -98,7 +98,7 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
                     \n" + f"{var_name} is {tensor1},\n{var_name}_ref is {tensor2},\nMask is {mask}\n")
         else:
             assert tensor1.size == tensor2.size, "tensor1 element num does not equal tensor2's."
-            diff = np.abs(tensor1 - tensor2)
+            diff = np.abs(tensor1 - tensor2) * ~matched
             max_diff = np.nanmax(diff)
             max_diff_index = np.unravel_index(np.nanargmax(diff), diff.shape)
             max_diff_elem = tensor1[max_diff_index]
