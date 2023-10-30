@@ -53,14 +53,6 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
         fillTensor(ctx, maxTmp, std::numeric_limits<double>::max());
     }
 
-    AscendTensor a(maxTmp);
-    AscendTensor b(minTmp);
-    AscendTensor c(input);
-
-    printContiguousTensor(ctx, a, "max");
-    printContiguousTensor(ctx, b, "min");
-    printContiguousTensor(ctx, c, "input");
-
     diopiLt(ctx, boolOut, maxTmp, minTmp);
     diopiMaskedFill(ctx, minTmp, minTmp, boolOut, maxTmp);
 
