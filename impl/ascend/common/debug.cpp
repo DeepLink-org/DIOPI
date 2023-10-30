@@ -11,22 +11,22 @@
 namespace impl {
 namespace ascend {
 
-void printScalar(const AscendTensor& at, void* ptrHost) {
+void printTensorHelper0(const AscendTensor& at, void* ptrHost) {
     switch (at.dtype()) {
         case diopi_dtype_float32:
-            printf("scalar: %f\n", reinterpret_cast<float*>(ptrHost)[0]);
+            printf("item[0]: %f\n", reinterpret_cast<float*>(ptrHost)[0]);
             break;
         case diopi_dtype_float64:
-            printf(" scalar: %f\n", reinterpret_cast<double*>(ptrHost)[0]);
+            printf("item[0]: %f\n", reinterpret_cast<double*>(ptrHost)[0]);
             break;
         case diopi_dtype_int32:
-            printf(" scalar: %d\n", reinterpret_cast<int*>(ptrHost)[0]);
+            printf("item[0]: %d\n", reinterpret_cast<int*>(ptrHost)[0]);
             break;
         case diopi_dtype_int64:
-            printf(" scalar: %ld\n", reinterpret_cast<int64_t*>(ptrHost)[0]);
+            printf("item[0]: %ld\n", reinterpret_cast<int64_t*>(ptrHost)[0]);
             break;
         case diopi_dtype_bool:
-            printf(" scalar: %d\n", reinterpret_cast<bool*>(ptrHost)[0]);
+            printf("item[0]: %d\n", reinterpret_cast<bool*>(ptrHost)[0]);
             break;
         default:
             printf("unsupport dtype %s", diopiDtypeToStr(at.dtype()));
@@ -34,7 +34,7 @@ void printScalar(const AscendTensor& at, void* ptrHost) {
     }
 }
 
-void printTensor(const AscendTensor& at, void* ptrHost) {
+void printTensorHelper1(const AscendTensor& at, void* ptrHost) {
     size_t index = 0;
     switch (at.dtype()) {
         case diopi_dtype_float32: {
@@ -116,9 +116,9 @@ void printContiguousTensor(diopiContextHandle_t ctx, const AscendTensor& at, cha
     printf("Tensor type %d \n", at.dtype());
     printf("Tensor %s:\n", name);
     if (at.shape().empty()) {
-        printScalar(at, ptrHost);
+        printTensorHelper0(at, ptrHost);
     } else {
-        printTensor(at, ptrHost);
+        printTensorHelper1(at, ptrHost);
     }
 }
 
