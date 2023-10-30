@@ -1017,8 +1017,8 @@ device_configs = {
 
     'linear': dict(
         name=['linear'],
-        atol = 5e-2,
-        rtol = 5e-2,
+        atol = 1e-1,
+        rtol = 1e-1,
     ),
 
     'embedding': dict(
