@@ -37,7 +37,7 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
         if (!sizes.empty()) {
             AclOpRunner<2, 1>("BroadcastTo", ctx).addInput(min, dtype).addConstInput(sizes).addOutput(minTmp).run();
         } else {
-            diopiCopyInp(ctx, min, minTmp);
+            diopiCastDtype(ctx, minTmp, min);
         }
     } else {
         fillTensor(ctx, minTmp, -std::numeric_limits<double>::max());
@@ -47,7 +47,7 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
         if (!sizes.empty()) {
             AclOpRunner<2, 1>("BroadcastTo", ctx).addInput(max, dtype).addConstInput(sizes).addOutput(maxTmp).run();
         } else {
-            diopiCopyInp(ctx, max, maxTmp);
+            diopiCastDtype(ctx, maxTmp, max);
         }
     } else {
         fillTensor(ctx, maxTmp, std::numeric_limits<double>::max());
