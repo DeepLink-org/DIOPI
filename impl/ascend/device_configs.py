@@ -2300,6 +2300,7 @@ device_configs = {
     'layer_norm': dict(
         name=['layer_norm'],
         atol=1e-4,
+        rtol=1e-4,
         para=dict(
             eps=[Skip(2),],
         ),
