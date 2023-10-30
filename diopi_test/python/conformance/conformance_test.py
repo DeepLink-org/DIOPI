@@ -98,6 +98,8 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
                     \n" + f"{var_name} is {tensor1},\n{var_name}_ref is {tensor2},\nMask is {mask}\n")
         else:
             assert tensor1.size == tensor2.size, "tensor1 element num does not equal tensor2's."
+            # logger.warning(f"tensor1 {tensor1}")
+            # logger.warning(f"tensor2 {tensor2}")
             diff = np.abs(tensor1 - tensor2) * ~matched
             max_diff = np.nanmax(diff)
             max_diff_index = np.unravel_index(np.nanargmax(diff), diff.shape)
@@ -505,6 +507,8 @@ class ConformanceTest(object):
 
             ignore_paras_for_input_check = ops_with_states.get(test_func_name, set())
             for func_call, is_inplace in zip(func_call_list, is_inplaces):
+                logger.warning(output_abs_path)
+                logger.warning(data['cfg'])
                 if is_inplace:
                     if test_tag and test_tag[-1] == 'backward':
                         test_tag.pop()
