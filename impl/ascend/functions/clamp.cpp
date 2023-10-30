@@ -34,24 +34,32 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     sizes = std::move(shapeTmp);
 
     if (min != nullptr) {
-        if (!sizes.empty() > 0) {
+        if (!sizes.empty()) {
             AclOpRunner<2, 1>("BroadcastTo", ctx).addInput(min, dtype).addConstInput(sizes).addOutput(minTmp).run();
         } else {
-            minTmp = const_cast<diopiTensorHandle_t>(min);
+            diopiCopyInp(ctx,min,minTmp);
         }
     } else {
         fillTensor(ctx, minTmp, -std::numeric_limits<double>::max());
     }
 
     if (max != nullptr) {
-        if (!sizes.empty() > 0) {
+        if (!sizes.empty()) {
             AclOpRunner<2, 1>("BroadcastTo", ctx).addInput(max, dtype).addConstInput(sizes).addOutput(maxTmp).run();
         } else {
-            maxTmp = const_cast<diopiTensorHandle_t>(max);
+            diopiCopyInp(ctx,max,maxTmp);
         }
     } else {
         fillTensor(ctx, maxTmp, std::numeric_limits<double>::max());
     }
+
+    AscendTensor a(maxTmp);
+    AscendTensor b(minTmp);
+    AscendTensor c(input);
+
+    printContiguousTensor(ctx, a, "max");
+    printContiguousTensor(ctx, b, "min");
+    printContiguousTensor(ctx, c, "input");
 
     diopiLt(ctx, boolOut, maxTmp, minTmp);
     diopiMaskedFill(ctx, minTmp, minTmp, boolOut, maxTmp);
