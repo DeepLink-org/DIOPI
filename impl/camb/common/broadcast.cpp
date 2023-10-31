@@ -42,5 +42,33 @@ diopiError_t broadcastHelper(diopiContextHandle_t ctx, DiopiTensor inputTensor, 
     return diopiSuccess;
 }
 
+bool checkBroadCast(const DiopiTensor& src, const std::vector<int64_t>& targetShape, std::vector<int64_t>& outStrides) {
+    std::vector<int64_t> srcShape = src.shape();
+    std::vector<int64_t> srcStride = src.stride();
+    int64_t srcNDims = src.dim();
+    int64_t targetNDims = targetShape.size();
+    if (srcNDims > targetNDims) {
+        return false;
+    }
+    for (int64_t iSrcDim = srcNDims - 1, iTargetDim = targetNDims - 1; iSrcDim >= 0; iSrcDim--, iTargetDim--) {
+        if (srcShape[iSrcDim] == targetShape[iTargetDim]) {
+            outStrides[iTargetDim] = src.stride()[iSrcDim];
+        } else if (srcShape[iSrcDim] == 1) {
+            outStrides[iSrcDim] = 0;
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool broadcast1(DiopiTensor inputTensor, const std::vector<int64_t>& targetShape, DiopiTensor* outTensor) {
+    std::vector<int64_t> strides;
+    if (checkBroadCast(inputTensor, targetShape, strides)) {
+        *outTensor = inputTensor.asStrided(targetShape, strides);
+        return diopiSuccess;
+    }
+    return diopiErrorOccurred;
+}
 }  // namespace camb
 }  // namespace impl
