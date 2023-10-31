@@ -13,6 +13,7 @@ ops_with_states = {"batch_norm": {"running_mean", "running_var"},
                    "copy_": {"input"},
                    "cast_dtype": {"out"},
                    "batch_norm_gather_stats_with_counts": {"running_mean", "running_var"},
+                   "apply_penalty": {"logits"}
                    }
 
 
@@ -8119,4 +8120,92 @@ diopi_configs = {
         ),
     ),
 
+    'token_attention': dict(
+        name=['token_attention'],
+        interface=['CustomizedTest'],
+        para=dict(
+            max_input_len=[5, ],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((3, 32, 128), ),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["k"],
+                    "shape": ((100, 32, 128), ),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["out"],
+                    "shape": ((32, 13), ),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["b_loc"],
+                    "value": ([[0, 0, 1, 2, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                               [3, 4, 5, 6, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                               [0, 7, 8, 9, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], ],),
+                    "dtype": [Dtype.int32],
+                },
+                {
+                    "ins": ["b_start_loc"],
+                    "value": ([0, 4, 9], ),
+                    "dtype": [Dtype.int32],
+                },
+                {
+                    "ins": ["b_seq_len"],
+                    "value": ([4, 5, 4], ),
+                    "dtype": [Dtype.int32],
+                },
+            ]
+        )
+    ),
+
+    'token_softmax_reducev': dict(
+        name=['token_softmax_reducev'],
+        interface=['CustomizedTest'],
+        para=dict(
+            max_input_len=[5, ],
+            other_kv_index=[10, ],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['logics'],
+                    "shape": ((32, 13), ),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["v"],
+                    "shape": ((100, 32, 128), ),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["out"],
+                    "shape": ((3, 32, 128),),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["b_loc"],
+                    "value": ([[0, 0, 1, 2, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                               [3, 4, 5, 6, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                               [0, 7, 8, 9, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], ],),
+                    "dtype": [Dtype.int32],
+                },
+                {
+                    "ins": ["b_start_loc"],
+                    "value": ([0, 4, 9],),
+                    "dtype": [Dtype.int32],
+                },
+                {
+                    "ins": ["b_seq_len"],
+                    "value": ([4, 5, 4],),
+                    "dtype": [Dtype.int32],
+                },
+            ]
+        )
+    ),
 }

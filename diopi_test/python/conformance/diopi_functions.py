@@ -3967,8 +3967,10 @@ def token_softmax_reducev(logics, v, out, b_loc, b_start_loc, b_seq_len, max_inp
     call = "diopiTokenSoftmaxReduceVInference"
     func = check_function(call)
 
+    print(out)
     ret = func(logics.context(), out, logics, v, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index)
     check_returncode(ret)
+    print('after:',out)
     return out
 
 def context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len):

@@ -32,7 +32,6 @@ namespace {
             CUmodule cudaModule_;
             CUfunction  function_;
 
-
         public:
             CuKernelModuleLoader(const char* function_name) {
                 std::string fatbin_path = std::getenv("HOME") + std::string("/.triton/diopi/") + function_name + std::string(".fatbin");
@@ -176,16 +175,123 @@ diopiError_t diopiDestIndexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t 
 }
 
 diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                          diopiConstTensorHandle_t bLoc, diopiConstTensorHandle_t bStartLoc, diopiConstTensorHandle_t bSeqlen,
+                                          diopiConstTensorHandle_t bLoc, diopiConstTensorHandle_t bStartLoc, diopiConstTensorHandle_t bSeqLen,
                                           int maxInputLen) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atQ = impl::aten::buildATen(q);
+    at::Tensor atK = impl::aten::buildATen(k);
+    at::Tensor atBLoc = impl::aten::buildATen(bLoc);
+    at::Tensor atBStartLoc = impl::aten::buildATen(bStartLoc);
+    at::Tensor atBSeqLen = impl::aten::buildATen(bSeqLen);
+    at::Tensor atOut = impl::aten::buildATen(attentionOut);
 
+    int block = 32;
+    int dimK = atK.size(-1);
+    float smScale = 1.0 / std::sqrt(dimK);  // 计算scale系数
+    int batch = atBLoc.size(0);
+    int head_num = atQ.size(1);
 
+    TritonKernelRunner_t kernel;
+    const int gridX = batch;
+    const int gridY = head_num;
+    const int gridZ = std::max(1, maxInputLen / block);
+    const int num_warps = 4;
+    const int num_ctas = 1;
+    const int clusterDimX = 1;
+    const int clusterDimY = 1;
+    const int clusterDimZ = 1;
+    const int shared_memory = 256;
+
+    diopiStreamHandle_t stream_handle;
+    diopiGetStream(ctx, &stream_handle);
+    const char* kernel_name = "_fwd_kernel_token_atttention_0d1d23d4d5d67d89c10de11de12c13de14de15c1617c";
+    CUstream stream = static_cast<cudaStream_t>(stream_handle);
+    void* q_ptr = atQ.data_ptr();
+    void* k_ptr = atK.data_ptr();
+    void* b_loc_ptr = atBLoc.data_ptr();
+    void* b_start_loc_ptr = atBStartLoc.data_ptr();
+    void* b_seq_len_ptr = atBSeqLen.data_ptr();
+    void* out_ptr = atOut.data_ptr();
+
+    unsigned int q_stride[] = {atQ.stride(0), atQ.stride(1), atQ.stride(2)};
+    unsigned int k_stride[] = {atK.stride(0), atK.stride(1), atK.stride(2)};
+    unsigned int b_loc_stride[] = {atBLoc.stride(0), atBLoc.stride(1)};
+    unsigned int out_stride[] = {atOut.stride(0), atOut.stride(1)};
+
+    void** extra_param = NULL;
+    void* kernel_params[] = {
+        &q_ptr,
+        &k_ptr,
+        &smScale,
+        &b_loc_ptr,
+        &b_start_loc_ptr,
+        &b_seq_len_ptr,
+        &maxInputLen,
+        &out_ptr,
+        b_loc_stride,
+        q_stride,
+        q_stride + 1,
+        k_stride,
+        k_stride + 1,
+        out_stride,
+    };
+    kernel.run(gridX, gridY, gridZ, num_warps, num_ctas, clusterDimX, clusterDimY, clusterDimZ, shared_memory, kernel_name, stream, kernel_params, extra_param);
+    impl::aten::sync(ctx);
+    impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
 
 diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t logics, diopiConstTensorHandle_t v,
                                                diopiConstTensorHandle_t bLoc, diopiConstTensorHandle_t bStartLoc, diopiConstTensorHandle_t bSeqlen,
                                                int maxInputLen, int otherKVIndex) {
+    const char* kernel_name = "_fwd_kernel_token_softmax_reducev_0d1d2d3d4d5d678c9de10de11c12de13de14c1516c17";
+    const int BLOCK = 64;
+    at::Tensor atOut = impl::aten::buildATen(out);
+    at::Tensor atV = impl::aten::buildATen(v);
+    at::Tensor atLogics = impl::aten::buildATen(logics);
+    at::Tensor atBLoc = impl::aten::buildATen(bLoc);
+    at::Tensor atBStartLoc = impl::aten::buildATen(bStartLoc);
+    at::Tensor atBSeqlen = impl::aten::buildATen(bSeqlen);
+    const int batch = atBSeqlen.size(0);
+    const int head = atLogics.size(0);
+    void* logics_ptr = atLogics.data_ptr();
+    void* out_ptr = atOut.data_ptr();
+    void* v_ptr = atV.data_ptr();
+    void* bLoc_ptr = atBLoc.data_ptr();
+    void* bStartLoc_ptr = atBStartLoc.data_ptr();
+    void* bSeqLen_ptr = atBSeqlen.data_ptr();
+    unsigned int logics_stride[] = {atLogics.stride(0), atLogics.stride(1)};
+    unsigned int v_stride[] = {atV.stride(0), atV.stride(1)};
+    unsigned int o_stride[] = {atOut.stride(0), atOut.stride(1)};
+    unsigned int b_loc_stride[] = {atBLoc.stride(0), atBLoc.stride(1)};
+    void** extra_param = NULL;
+    void* kernel_params[] = {
+        &logics_ptr, &v_ptr, &out_ptr, &bLoc_ptr, &bStartLoc_ptr, &bSeqLen_ptr, &maxInputLen,
+        logics_stride,
+        v_stride, v_stride + 1,
+        o_stride, o_stride + 1,
+        b_loc_stride,
+        &otherKVIndex
+    };
+
+    const int gridX = batch;
+    const int gridY = head;
+    const int gridZ = 1;
+    const int num_warps = 1;
+    const int num_ctas = 1;
+    const int clusterDimX = 1;
+    const int clusterDimY = 1;
+    const int clusterDimZ = 1;
+    const int shared_memory = 256;
+
+    diopiStreamHandle_t stream_handle;
+    diopiGetStream(ctx, &stream_handle);
+    CUstream stream = static_cast<CUstream>(stream_handle);
+    TritonKernelRunner_t kernel;
+    kernel.run(gridX, gridY, gridZ, num_warps, num_ctas, clusterDimX, clusterDimY, clusterDimZ, shared_memory, kernel_name, stream, kernel_params, extra_param);
+
+    impl::aten::sync(ctx);
+    impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
 
@@ -210,7 +316,6 @@ diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTenso
     const int batch = atBSeqLen.size(0);
     const int head = atQ.size(1);
 
-    TritonKernelRunner_t kernel;
     const int gridX = batch;
     const int gridY = head;
     const int gridZ = std::max(1, maxInputLen / block);
@@ -221,10 +326,9 @@ diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTenso
     const int clusterDimZ = 1;
     const int shared_memory = 40960;
 
-    diopiStreamHandle_t stream_handle;
-    diopiGetStream(ctx, &stream_handle);
+
     const char* kernel_name = "context_attention_fwd_kernel_0d1d2d34d5d6d7de8de9c10de11de12c13de14de15c16de17de18c";
-    CUstream stream = static_cast<CUstream>(stream_handle);
+
     void* q_ptr = atQ.data_ptr();
     void* k_ptr = atK.data_ptr();
     void* v_ptr = atV.data_ptr();
@@ -246,10 +350,92 @@ diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTenso
         &out_stride[0], &out_stride[1],
         &block, &Lk, &block,
     };
+    diopiStreamHandle_t stream_handle;
+    diopiGetStream(ctx, &stream_handle);
+    CUstream stream = static_cast<CUstream>(stream_handle);
+    TritonKernelRunner_t kernel;
     kernel.run(gridX, gridY, gridZ, num_warps, num_ctas, clusterDimX, clusterDimY, clusterDimZ, shared_memory, kernel_name, stream, kernel_params, extra_param);
     impl::aten::sync(ctx);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
+
+diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t presence_penalty,
+                                         diopiConstTensorHandle_t frequency_penalty, diopiConstTensorHandle_t p_token_ids,
+                                         diopiConstTensorHandle_t p_token_counts, diopiConstTensorHandle_t p_cumsum_seq_len, int p_max_len_in_batch) {
+       /*
+    assert Logits.is_contiguous()
+    BLOCK = triton.next_power_of_2(p_max_len_in_batch)
+    if BLOCK <= 512:
+        BLOCK = 512
+    elif BLOCK <= 1024:
+        BLOCK = 1024
+    num_warps = 8
+    _fwd_kernel_apply_penalty[(Logits.shape[0], )](
+        Logits, presence_penalty, frequency_penalty,
+        p_token_ids, p_token_counts, p_cumsum_seq_len,
+        Logits.stride(0), Logits.stride(1),
+        num_warps=num_warps,
+        BLOCK_P=BLOCK
+    )
+    */
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atLogits = impl::aten::buildATen(logits);
+    assert(atLogits.is_contiguous());
+    at::Tensor atPresencePenalty = impl::aten::buildATen(presence_penalty);
+    at::Tensor atFrequencyPenalty = impl::aten::buildATen(frequency_penalty);
+    at::Tensor atPTokenIds = impl::aten::buildATen(p_token_ids);
+    at::Tensor atPTokenCounts = impl::aten::buildATen(p_token_counts);
+    at::Tensor atPCumsumSeqLen = impl::aten::buildATen(p_cumsum_seq_len);
+    int BLOCK = next_power_of_2(p_max_len_in_batch);
+    if (BLOCK <= 512) {
+        BLOCK = 512;
+    } else {
+        if (BLOCK <= 1024) {
+            BLOCK = 1024;
+        }
+    }
+
+    TritonKernelRunner_t kernel;
+    const int gridX = atLogits.size(0);
+    const int gridY = 1;
+    const int gridZ = 1;
+    int num_warps = 8;
+    const int num_ctas = 1;
+    const int clusterDimX = 1;
+    const int clusterDimY = 1;
+    const int clusterDimZ = 1;
+    const int shared_memory = 0;
+
+    diopiStreamHandle_t stream_handle;
+    diopiGetStream(ctx, &stream_handle);
+    const char* kernel_name = "_fwd_kernel_apply_penalty_0d1d2d3d4d5d67c";
+    CUstream stream = static_cast<cudaStream_t>(stream_handle);
+    void* logits_ptr = atLogits.data_ptr();
+    void* presence_penalty_ptr = atPresencePenalty.data_ptr();
+    void* frequency_penalty_ptr = atFrequencyPenalty.data_ptr();
+    void* p_token_ids_ptr = atPTokenIds.data_ptr();
+    void* p_token_counts_ptr = atPTokenCounts.data_ptr();
+    void* p_cumsum_seq_len_ptr = atPCumsumSeqLen.data_ptr();
+    int logits_stride[] = {atLogits.stride(0), atLogits.stride(1)};
+
+    void** extra_param = NULL;
+    void* kernel_params[] = {&logits_ptr,
+                             &presence_penalty_ptr,
+                             &frequency_penalty_ptr,
+                             &p_token_ids_ptr,
+                             &p_token_counts_ptr,
+                             &p_cumsum_seq_len_ptr,
+                             &logits_stride[0],
+                             &logits_stride[1],
+                             &num_warps,
+                             &BLOCK};
+    kernel.run(gridX, gridY, gridZ, num_warps, num_ctas, clusterDimX, clusterDimY, clusterDimZ, shared_memory, kernel_name, stream, kernel_params, extra_param);
+    impl::aten::sync(ctx);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+
+}
+
 
 }  // extern "C"
