@@ -218,6 +218,15 @@
     dtype: (float64)->float32
     layout: NCHW
 
+- diopiSqrt:
+# 这里转为float64的原因有三，SqrtInp同理：1.float16会产生NAN数据，只有转化为float64才能解决 2.float32数据会在某些用例下产生华为算子的E39999错误 3.Sqrt底层算子不支持int类型
+    dtype: (int8, int16, int32, int64, uint8, uint16, uint32, uint64, bool, float16, float32)->float64, (complex32)->complex64
+    layout: NCHW
+
+- diopiSqrtInp:
+    dtype: (int8, int16, int32, int64, uint8, uint16, uint32, uint64, bool, float16, float32)->float64, (complex32)->complex64
+    layout: NCHW
+
 - diopiLayerNorm:
     dtype: (float64)->float32
     layout: NCHW
