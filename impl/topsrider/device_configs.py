@@ -14,30 +14,6 @@ device_configs = {
         ),
     ),
 
-    'baddbmm': dict(
-        name=['baddbmm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((32, 64, 16)),Skip((32, 64, 32)),Skip((168, 52, 64)),],
-                },
-            ]
-        ),
-    ),
-
-    'baddbmm_without_inplace': dict(
-        name=['baddbmm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((32, 64, 16)),Skip((32, 64, 32)),Skip((168, 52, 64)),Skip((16,)),Skip((64, 32)),Skip((1, 52, 64)),Skip((32, 1, 16)),Skip((32, 64, 1)),Skip((64,)),Skip((2,)),],
-                },
-            ]
-        ),
-    ),
-
     'conv_2d': dict(
         name=['conv2d'],
         tensor_para=dict(
@@ -50,39 +26,14 @@ device_configs = {
         ),
     ),
 
-    'conv_2d_no_contiguous': dict(
-        name=['conv2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 256, 200, 304)),Skip((2, 2048, 64, 64)),Skip((2, 2048, 1, 1)),Skip((2, 256, 200, 304)),],
-                },
-            ]
-        ),
-    ),
-
     'relu': dict(
         name=['relu'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((1024,)),Skip((2, 4096)),Skip((64, 28, 28)),Skip((32, 64, 112, 112)),Skip((64, 3, 7, 28, 28)),],
-                },
-            ]
-        ),
-    ),
-
-    'relu_no_contiguous': dict(
-        name=['relu'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip((3, 3)),Skip((64, 28, 28)),Skip((32, 64, 112, 112)),Skip((64, 3, 7, 28, 28)),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((1024,)),Skip((2, 4096)),Skip((64, 28, 28)),Skip((32, 64, 112, 112)),Skip((64, 3, 7, 28, 28)),],
                 },
             ]
         ),
@@ -94,34 +45,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip(()),Skip((128,)),Skip((2, 4096)),Skip((64, 28, 28)),Skip((2, 96, 56, 56)),Skip((64, 3, 7, 28, 28)),],
-                },
-            ]
-        ),
-    ),
-
-    'hardtanh_int': dict(
-        name=['hardtanh'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((128,)),Skip((2, 4096)),Skip((64, 28, 28)),Skip((2, 96, 56, 56)),Skip((64, 3, 7, 28, 28)),],
-                },
-            ]
-        ),
-    ),
-
-    'hardtanh_uint': dict(
-        name=['hardtanh'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.uint8),],
-                    "shape": [Skip(()),Skip((128,)),Skip((2, 4096)),Skip((64, 28, 28)),Skip((2, 96, 56, 56)),Skip((64, 3, 7, 28, 28)),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),],
+                    "shape": [Skip((128,)),Skip((2, 4096)),Skip((64, 28, 28)),Skip((2, 96, 56, 56)),Skip((64, 3, 7, 28, 28)),],
                 },
             ]
         ),
@@ -133,21 +58,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip(()),Skip((1024,)),Skip((2, 4096)),Skip((64, 28, 28)),Skip((32, 64, 112, 112)),Skip((64, 3, 7, 28, 28)),],
-                },
-            ]
-        ),
-    ),
-
-    'hardswish_domain': dict(
-        name=['hardswish'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip(()),Skip((1024,)),Skip((2, 4096)),Skip((64, 28, 28)),Skip((32, 64, 112, 112)),Skip((64, 3, 7, 28, 28)),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),],
+                    "shape": [Skip((1024,)),Skip((2, 4096)),Skip((64, 28, 28)),Skip((32, 64, 112, 112)),Skip((64, 3, 7, 28, 28)),],
                 },
             ]
         ),
@@ -159,8 +71,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip(()),Skip((64,)),Skip((2, 4096)),Skip((64, 28, 28)),Skip((2, 144, 28, 28)),Skip((64, 3, 7, 28, 28)),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),],
+                    "shape": [Skip((64,)),Skip((2, 4096)),Skip((64, 28, 28)),Skip((2, 144, 28, 28)),Skip((64, 3, 7, 28, 28)),],
                 },
             ]
         ),
@@ -172,21 +84,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((128,)),Skip((2, 4096)),Skip((64, 28, 28)),Skip((2, 96, 56, 56)),Skip((64, 3, 7, 28, 28)),],
-                },
-            ]
-        ),
-    ),
-
-    'threshold_uint': dict(
-        name=['threshold'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.uint8),],
-                    "shape": [Skip(()),Skip((128,)),Skip((2, 4096)),Skip((64, 28, 28)),Skip((2, 96, 56, 56)),Skip((64, 3, 7, 28, 28)),],
+                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((128,)),Skip((2, 4096)),Skip((64, 28, 28)),Skip((2, 96, 56, 56)),Skip((64, 3, 7, 28, 28)),],
                 },
             ]
         ),
@@ -198,21 +97,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip(()),Skip((32,)),Skip((16, 7)),Skip((64, 28, 28)),Skip((16, 3, 14, 14)),Skip((64, 3, 7, 28, 28)),],
-                },
-            ]
-        ),
-    ),
-
-    'gelu_specific': dict(
-        name=['gelu'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip((32,)),Skip((16, 7)),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),],
+                    "shape": [Skip((32,)),Skip((16, 7)),Skip((64, 28, 28)),Skip((16, 3, 14, 14)),Skip((64, 3, 7, 28, 28)),],
                 },
             ]
         ),
@@ -231,40 +117,14 @@ device_configs = {
         ),
     ),
 
-    'avg_pool2d_float64': dict(
-        name=['avg_pool2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64),],
-                    "shape": [Skip((2, 1024, 14, 14)),Skip((256, 28, 28)),],
-                },
-            ]
-        ),
-    ),
-
     'max_pool2d': dict(
         name=['max_pool2d'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),],
                     "shape": [Skip((3, 12, 20)),Skip((5, 4, 17, 22)),Skip((6, 17, 23)),Skip((1, 4, 17, 23)),Skip((2, 64, 352, 528)),Skip((2, 256, 12, 40)),Skip((2, 512, 4, 26)),Skip((3, 4, 10)),],
-                },
-            ]
-        ),
-    ),
-
-    'max_pool2d_return_indices': dict(
-        name=['max_pool2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip((3, 12, 20)),Skip((5, 4, 17, 22)),Skip((6, 17, 23)),Skip((1, 4, 17, 23)),],
                 },
             ]
         ),
@@ -276,47 +136,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),],
                     "shape": [Skip((3, 16, 8)),Skip((4, 7, 27, 39)),Skip((4, 16, 12)),Skip((2, 2048, 8, 6)),Skip((2, 288, 33, 33)),Skip((2, 144, 65, 65)),Skip((2, 1280, 7, 7)),Skip((2, 265, 7, 7)),Skip((2, 265, 7, 7)),],
-                },
-            ]
-        ),
-    ),
-
-    'adaptive_avg_pool2d_zero_size': dict(
-        name=['adaptive_avg_pool2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip((4, 7, 27, 39)),],
-                },
-            ]
-        ),
-    ),
-
-    'adaptive_max_pool2d': dict(
-        name=['adaptive_max_pool2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.float64),],
-                    "shape": [Skip((3, 16, 8)),Skip((4, 7, 27, 39)),Skip((4, 16, 12)),Skip((288, 33, 33)),Skip((2, 144, 33, 33)),Skip((2, 16, 130, 130)),Skip((2, 144, 33, 33)),Skip((2, 144, 33, 33)),],
-                },
-            ]
-        ),
-    ),
-
-    'adaptive_max_pool2d_return_indices': dict(
-        name=['adaptive_max_pool2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.float64),],
-                    "shape": [Skip((3, 16, 8)),Skip((4, 7, 27, 39)),Skip((4, 16, 12)),Skip((4, 16, 12)),],
                 },
             ]
         ),
@@ -328,7 +149,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((16,)),Skip((72,)),Skip((2, 11856)),Skip((2, 741, 80)),Skip((4, 4, 16, 20)),],
+                    "shape": [Skip((16,)),Skip((72,)),Skip((2, 11856)),Skip((2, 741, 80)),Skip((4, 4, 16, 20)),],
                 },
             ]
         ),
@@ -340,7 +161,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((16,)),Skip((72,)),Skip((2, 11856)),Skip((2, 741, 80)),Skip((4, 4, 16, 20)),],
+                    "shape": [Skip((16,)),Skip((72,)),Skip((2, 11856)),Skip((2, 741, 80)),Skip((4, 4, 16, 20)),],
                 },
             ]
         ),
@@ -352,7 +173,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
+                    "shape": [Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
                 },
             ]
         ),
@@ -364,19 +185,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
-                },
-            ]
-        ),
-    ),
-
-    'pointwise_op_uint8': dict(
-        name=['abs', 'cos', 'erf', 'exp', 'neg', 'sin', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'atan'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),],
+                    "shape": [Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
                 },
             ]
         ),
@@ -394,25 +203,13 @@ device_configs = {
         ),
     ),
 
-    'pointwise_op_bool': dict(
-        name=['abs', 'cos', 'erf', 'exp', 'sin', 'asin', 'sqrt', 'rsqrt', 'atan', 'logical_not'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
-                },
-            ]
-        ),
-    ),
-
     'pointwise_op_abs_input': dict(
         name=['log', 'log2', 'log10', 'sqrt', 'rsqrt'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
+                    "shape": [Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
                 },
             ]
         ),
@@ -460,7 +257,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
+                    "shape": [Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
                 },
             ]
         ),
@@ -472,7 +269,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
+                    "shape": [Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
                 },
             ]
         ),
@@ -484,7 +281,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
+                    "shape": [Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
                 },
             ]
         ),
@@ -514,26 +311,14 @@ device_configs = {
         ),
     ),
 
-    'neg_without_inplace_zero': dict(
-        name=['neg'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((16,)),Skip((8, 64)),],
-                },
-            ]
-        ),
-    ),
-
     'sigmoid': dict(
         name=['sigmoid'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip(()),Skip((182400,)),Skip((20267, 80)),Skip((8, 200, 304)),Skip((32, 16, 1, 1)),Skip((16, 32, 130, 130)),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),],
+                    "shape": [Skip((182400,)),Skip((20267, 80)),Skip((8, 200, 304)),Skip((32, 16, 1, 1)),Skip((16, 32, 130, 130)),],
                 },
             ]
         ),
@@ -545,7 +330,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),],
                     "shape": [Skip((182400,)),Skip((20267, 80)),Skip((8, 200, 304)),Skip((32, 16, 1, 1)),Skip((16, 32, 130, 130)),],
                 },
             ]
@@ -558,8 +343,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip(()),Skip((16,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),],
+                    "shape": [Skip((16,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),],
                 },
             ]
         ),
@@ -571,8 +356,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),],
-                    "shape": [Skip(()),Skip((16,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),],
+                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((16,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),],
                 },
             ]
         ),
@@ -584,7 +369,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),],
+                    "shape": [Skip((1,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),],
                 },
             ]
         ),
@@ -596,7 +381,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),],
+                    "shape": [Skip((1,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),],
                 },
             ]
         ),
@@ -608,7 +393,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((2, 1, 128)),Skip((2, 64, 1, 128)),Skip((2, 32, 130, 130)),Skip((8, 16, 1)),],
+                    "shape": [Skip((2, 1, 128)),Skip((2, 64, 1, 128)),Skip((2, 32, 130, 130)),Skip((8, 16, 1)),],
                 },
             ]
         ),
@@ -626,26 +411,13 @@ device_configs = {
         ),
     ),
 
-    'pow_diff_dtype_cast': dict(
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64),Skip(Dtype.int32),Skip(Dtype.int16),],
-                    "shape": [Skip((1024,)),],
-                },
-            ]
-        ),
-    ),
-
     'pow_diff_dtype': dict(
         name=['pow'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64),Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int32),Skip(Dtype.float64),Skip(Dtype.float32),Skip(Dtype.float32),Skip(Dtype.int16),Skip(Dtype.int64),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int32),Skip(Dtype.float32),Skip(Dtype.float32),Skip(Dtype.int16),],
                     "shape": [Skip((1024,)),],
                 },
             ]
@@ -658,8 +430,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['exponent'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),],
-                    "shape": [Skip(()),Skip((8,)),Skip((125, 1)),Skip((70, 1, 2)),Skip((4, 256, 16, 16)),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((8,)),Skip((125, 1)),Skip((70, 1, 2)),Skip((4, 256, 16, 16)),],
                 },
             ]
         ),
@@ -671,7 +443,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['exponent'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
                     "shape": [Skip((70, 1, 2)),Skip((4, 256, 16, 16)),],
                 },
             ]
@@ -684,7 +456,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 16, 128)),Skip((2, 32, 130, 130)),],
+                    "shape": [Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 16, 128)),Skip((2, 32, 130, 130)),],
                 },
             ]
         ),
@@ -696,7 +468,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((64,)),Skip((2, 1024)),Skip((2, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 1, 128)),Skip((2, 32, 130, 130)),Skip((8, 16, 1)),],
+                    "shape": [Skip((64,)),Skip((2, 1024)),Skip((2, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 1, 128)),Skip((2, 32, 130, 130)),Skip((8, 16, 1)),],
                 },
             ]
         ),
@@ -720,7 +492,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64),Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int64),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),Skip(Dtype.uint8),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),],
                     "shape": [Skip((1024,)),],
                 },
             ]
@@ -733,33 +505,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64),Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int32),Skip(Dtype.float64),Skip(Dtype.float64),Skip(Dtype.int8),Skip(Dtype.float32),Skip(Dtype.int8),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int32),Skip(Dtype.int8),Skip(Dtype.float32),Skip(Dtype.int8),],
                     "shape": [Skip((1024,)),],
-                },
-            ]
-        ),
-    ),
-
-    'pointwise_binary_diff_dtype_without_bool': dict(
-        name=['div'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64),Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int32),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),Skip(Dtype.uint8),Skip(Dtype.float32),],
-                    "shape": [Skip((1024,)),],
-                },
-            ]
-        ),
-    ),
-
-    'pointwise_binary_dtype_bool': dict(
-        name=['add', 'mul', 'eq', 'ne', 'le', 'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),],
                 },
             ]
         ),
@@ -771,58 +518,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input', 'other'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_op_diff_dtype': dict(
-        name=['bitwise_and', 'bitwise_or'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_op_broadcast': dict(
-        name=['bitwise_and', 'bitwise_or'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((1024,)),Skip((128,)),Skip((128, 1, 3, 3)),Skip((2, 32, 1, 130)),Skip((9, 1, 4)),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_op_scalar': dict(
-        name=['bitwise_and', 'bitwise_or'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_op_scalar_bool': dict(
-        name=['bitwise_and', 'bitwise_or'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),],
+                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),],
                 },
             ]
         ),
@@ -834,7 +531,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 16, 128)),Skip((2, 32, 130, 130)),],
+                    "shape": [Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 16, 128)),Skip((2, 32, 130, 130)),],
                 },
             ]
         ),
@@ -846,7 +543,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((64,)),Skip((2, 1024)),Skip((2, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 1, 128)),Skip((2, 32, 130, 130)),Skip((8, 16, 1)),],
+                    "shape": [Skip((64,)),Skip((2, 1024)),Skip((2, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 1, 128)),Skip((2, 32, 130, 130)),Skip((8, 16, 1)),],
                 },
             ]
         ),
@@ -858,7 +555,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64),Skip(Dtype.float32),Skip(Dtype.float16),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
                     "shape": [Skip((1024,)),],
                 },
             ]
@@ -866,18 +563,6 @@ device_configs = {
     ),
 
     'div_rounding_mode': dict(
-        name=['div'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),],
-                },
-            ]
-        ),
-    ),
-
-    'div_dtype_int_and_bool': dict(
         name=['div'],
         tensor_para=dict(
             args=[
@@ -895,43 +580,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 64, 128)),Skip((128, 64, 3, 3)),Skip((128, 32, 2, 2)),Skip((2, 32, 130, 130)),],
-                },
-            ]
-        ),
-    ),
-
-    'pointwise_binary_scalar': dict(
-        name=['add', 'mul', 'div', 'eq', 'ne', 'le', 'lt', 'gt', 'ge'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 64, 128)),Skip((128, 64, 3, 3)),Skip((128, 32, 2, 2)),Skip((2, 32, 130, 130)),],
-                },
-            ]
-        ),
-    ),
-
-    'div_zero': dict(
-        name=['div'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),],
-                },
-            ]
-        ),
-    ),
-
-    'pointwise_binary_scalar_div_zero': dict(
-        name=['div'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),],
+                    "shape": [Skip((1024,)),Skip((384, 128)),Skip((2, 64, 128)),Skip((128, 64, 3, 3)),Skip((128, 32, 2, 2)),Skip((2, 32, 130, 130)),],
                 },
             ]
         ),
@@ -955,7 +604,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 64, 128)),Skip((128, 64, 3, 3)),Skip((128, 32, 2, 2)),Skip((2, 32, 130, 130)),],
+                    "shape": [Skip((1024,)),Skip((384, 128)),Skip((2, 64, 128)),Skip((128, 64, 3, 3)),Skip((128, 32, 2, 2)),Skip((2, 32, 130, 130)),],
                 },
             ]
         ),
@@ -967,7 +616,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 64, 128)),Skip((128, 64, 3, 3)),Skip((128, 32, 2, 2)),Skip((2, 32, 130, 130)),],
+                    "shape": [Skip((1024,)),Skip((384, 128)),Skip((2, 64, 128)),Skip((128, 64, 3, 3)),Skip((128, 32, 2, 2)),Skip((2, 32, 130, 130)),],
                 },
             ]
         ),
@@ -975,18 +624,6 @@ device_configs = {
 
     'pointwise_binary_with_alpha': dict(
         name=['add', 'sub'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 3)),Skip((2, 2, 4, 3)),],
-                },
-            ]
-        ),
-    ),
-
-    'pointwise_binary_with_alpha_bool': dict(
-        name=['add'],
         tensor_para=dict(
             args=[
                 {
@@ -1015,7 +652,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((2, 10)),Skip((768,)),Skip((1, 400)),Skip((4, 1)),Skip((1, 5)),Skip(()),],
+                    "shape": [Skip((2, 10)),Skip((768,)),Skip((1, 400)),Skip((4, 1)),Skip((1, 5)),],
                 },
             ]
         ),
@@ -1027,7 +664,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((128,)),Skip((576, 192)),Skip((64, 3, 3, 3)),Skip((10, 3, 5)),],
+                    "shape": [Skip((128,)),Skip((576, 192)),Skip((64, 3, 3, 3)),Skip((10, 3, 5)),],
                 },
             ]
         ),
@@ -1039,7 +676,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((128,)),Skip((576, 192)),Skip((64, 3, 3, 3)),Skip((10, 3, 5)),],
+                    "shape": [Skip((128,)),Skip((576, 192)),Skip((64, 3, 3, 3)),Skip((10, 3, 5)),],
                 },
             ]
         ),
@@ -1051,7 +688,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((128,)),Skip((576, 192)),Skip((64, 3, 3, 3)),Skip((10, 3, 5)),],
+                    "shape": [Skip((128,)),Skip((576, 192)),Skip((64, 3, 3, 3)),Skip((10, 3, 5)),],
                 },
             ]
         ),
@@ -1075,7 +712,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((128,)),Skip((576, 192)),Skip((64, 3, 1, 3)),Skip((10, 3, 5)),],
+                    "shape": [Skip((128,)),Skip((576, 192)),Skip((64, 3, 1, 3)),Skip((10, 3, 5)),],
                 },
             ]
         ),
@@ -1099,8 +736,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),],
-                    "shape": [Skip(()),Skip((182,)),Skip((384, 128)),Skip((1, 242991, 2)),Skip((384, 128)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((182,)),Skip((384, 128)),Skip((1, 242991, 2)),Skip((384, 128)),],
                 },
             ]
         ),
@@ -1112,8 +749,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((182,)),Skip((384, 128)),Skip((1, 242991, 2)),Skip((2, 4, 100, 152)),Skip((384, 128)),Skip(()),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((182,)),Skip((384, 128)),Skip((1, 242991, 2)),Skip((2, 4, 100, 152)),Skip((384, 128)),],
                 },
             ]
         ),
@@ -1125,8 +762,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((182,)),Skip((384, 128)),Skip((1, 242991, 2)),Skip((2, 4, 100, 152)),Skip((384, 128)),Skip(()),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((182,)),Skip((384, 128)),Skip((1, 242991, 2)),Skip((2, 4, 100, 152)),Skip((384, 128)),],
                 },
             ]
         ),
@@ -1138,7 +775,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((182,)),Skip((384, 128)),Skip((1, 242991, 2)),Skip((2, 4, 100, 152)),],
+                    "shape": [Skip((182,)),Skip((384, 128)),Skip((1, 242991, 2)),Skip((2, 4, 100, 152)),],
                 },
             ]
         ),
@@ -1174,8 +811,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                    "shape": [Skip(()),Skip((1,)),Skip((64,)),Skip((4, 49)),Skip((1276, 49, 49)),Skip((2, 8, 726, 726)),Skip((2, 31, 6, 40, 1)),Skip((1,)),Skip((64,)),Skip((4, 49)),Skip((1276, 49, 49)),Skip((2, 8, 726, 726)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
+                    "shape": [Skip((1,)),Skip((64,)),Skip((4, 49)),Skip((1276, 49, 49)),Skip((2, 8, 726, 726)),Skip((2, 31, 6, 40, 1)),Skip((1,)),Skip((64,)),Skip((4, 49)),Skip((1276, 49, 49)),Skip((2, 8, 726, 726)),],
                 },
             ]
         ),
@@ -1187,8 +824,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((1,)),Skip((64,)),Skip((4, 49)),Skip((1276, 49, 49)),Skip((2, 8, 726, 726)),],
+                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((1,)),Skip((64,)),Skip((4, 49)),Skip((1276, 49, 49)),Skip((2, 8, 726, 726)),],
                 },
             ]
         ),
@@ -1200,8 +837,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                    "shape": [Skip(()),Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
+                    "shape": [Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
                 },
             ]
         ),
@@ -1213,8 +850,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                    "shape": [Skip(()),Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
+                    "shape": [Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
                 },
             ]
         ),
@@ -1226,8 +863,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                    "shape": [Skip(()),Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
+                    "shape": [Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
                 },
             ]
         ),
@@ -1239,8 +876,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
                 },
             ]
         ),
@@ -1253,7 +890,7 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float32),],
-                    "shape": [Skip(()),Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
+                    "shape": [Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
                 },
             ]
         ),
@@ -1265,8 +902,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
                 },
             ]
         ),
@@ -1278,8 +915,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
                 },
             ]
         ),
@@ -1291,8 +928,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
+                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
                 },
             ]
         ),
@@ -1304,8 +941,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
                 },
             ]
         ),
@@ -1317,8 +954,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((64,)),Skip((169, 4)),Skip((17100, 2)),Skip((1, 1, 384)),Skip((4, 133, 128, 128)),Skip((2, 64, 3, 3, 3)),],
                 },
             ]
         ),
@@ -1330,19 +967,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((64,)),Skip((2, 11856, 2)),Skip((16, 2, 2964, 2)),Skip((2964, 32)),],
-                },
-            ]
-        ),
-    ),
-
-    'nll_loss': dict(
-        name=['nll_loss'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((200, 79)),Skip((200, 80)),],
+                    "shape": [Skip((64,)),Skip((2, 11856, 2)),Skip((16, 2, 2964, 2)),Skip((2964, 32)),],
                 },
             ]
         ),
@@ -1360,37 +985,13 @@ device_configs = {
         ),
     ),
 
-    'cross_entropy_empty_tensor': dict(
-        name=['cross_entropy'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((5, 0)),],
-                },
-            ]
-        ),
-    ),
-
-    'cross_entropy_prob_target': dict(
-        name=['cross_entropy'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((3, 5, 6, 6)),Skip((1024, 81)),Skip((64, 8, 8)),Skip((3, 5, 6, 6)),Skip((1024, 81)),Skip((64, 8)),],
-                },
-            ]
-        ),
-    ),
-
     'select': dict(
         name=['select'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
                 },
             ]
         ),
@@ -1402,7 +1003,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
+                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
                 },
             ]
         ),
@@ -1414,7 +1015,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
                     "shape": [Skip((5,)),Skip((5, 3)),Skip((16, 8)),Skip((1, 800, 1216)),Skip((4, 4, 14, 14)),],
                 },
             ]
@@ -1427,7 +1028,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
+                    "dtype": [Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),],
                     "shape": [Skip((12,)),Skip((10, 10)),Skip((16, 12)),Skip((1, 800, 1216)),Skip((4, 4, 14, 14)),],
                 },
             ]
@@ -1440,8 +1041,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((16,)),Skip((12, 13)),Skip((12, 13, 14)),Skip((12, 13, 14, 16)),Skip((4, 4)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((16,)),Skip((12, 13)),Skip((12, 13, 14)),Skip((12, 13, 14, 16)),Skip((4, 4)),],
                 },
             ]
         ),
@@ -1483,25 +1084,13 @@ device_configs = {
         ),
     ),
 
-    'nonzero_uint': dict(
-        name=['nonzero'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((4, 4, 16, 20)),Skip((4, 4, 16, 2, 20)),],
-                },
-            ]
-        ),
-    ),
-
     'linear': dict(
         name=['linear'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),],
                     "shape": [Skip((2, 512)),Skip((128, 49, 128)),Skip((2, 31, 6, 40, 512)),Skip((16, 8)),],
                 },
             ]
@@ -1514,8 +1103,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip(()),Skip((13,)),Skip((78, 24)),Skip((2, 92, 29)),Skip((2, 150, 512, 512)),Skip((26, 20, 38)),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),],
+                    "shape": [Skip((13,)),Skip((78, 24)),Skip((2, 92, 29)),Skip((2, 150, 512, 512)),Skip((26, 20, 38)),],
                 },
             ]
         ),
@@ -1527,7 +1116,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),],
                     "shape": [Skip(()),Skip((1,)),Skip((1, 24)),Skip((2, 1, 29)),Skip((2, 150, 1, 512)),Skip((26, 20, 38)),],
                 },
             ]
@@ -1540,8 +1129,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip(()),Skip((16,)),Skip((2, 24)),Skip((2, 128, 24)),Skip((8, 16, 49, 49)),Skip((4, 12, 577, 577)),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),],
+                    "shape": [Skip((16,)),Skip((2, 24)),Skip((2, 128, 24)),Skip((8, 16, 49, 49)),Skip((4, 12, 577, 577)),],
                 },
             ]
         ),
@@ -1553,21 +1142,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64),Skip(Dtype.int64),Skip(Dtype.int32),],
+                    "dtype": [Skip(Dtype.int32),],
                     "shape": [Skip(()),Skip((2,)),Skip((2, 30)),Skip((2, 3, 4)),Skip((12, 4, 3, 8)),Skip((64,)),Skip((2, 16)),Skip((12, 4, 18)),Skip((1, 32)),],
-                },
-            ]
-        ),
-    ),
-
-    'embedding_forward': dict(
-        name=['embedding'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64),Skip(Dtype.int64),Skip(Dtype.int32),],
-                    "shape": [Skip((1, 32)),],
                 },
             ]
         ),
@@ -1579,8 +1155,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['grads'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.float64),],
-                    "shape": [Skip(()),Skip((10,)),Skip((10, 2, 5)),Skip((20,)),Skip((10, 5, 1)),Skip((20, 3, 4, 5)),Skip((20, 2, 3, 4, 5)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
+                    "shape": [Skip((10,)),Skip((10, 2, 5)),Skip((20,)),Skip((10, 5, 1)),Skip((20, 3, 4, 5)),Skip((20, 2, 3, 4, 5)),],
                 },
             ]
         ),
@@ -1592,8 +1168,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['tensors'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.float64),],
-                    "shape": [Skip(((),)),Skip(((10,), (10, 2, 5))),Skip(((), (9, 10, 4, 2))),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
+                    "shape": [Skip((10,)),Skip((10, 2, 5)),],
                 },
             ]
         ),
@@ -1605,21 +1181,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
                     "shape": [Skip((8, 9)),Skip((6, 7)),Skip((6, 6)),Skip((9, 9)),Skip((6, 8, 8)),Skip((64, 7, 28, 28)),],
-                },
-            ]
-        ),
-    ),
-
-    'one_hot': dict(
-        name=['one_hot'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64),],
-                    "shape": [Skip(()),Skip((2,)),Skip((6, 8)),Skip((64, 7, 28)),],
                 },
             ]
         ),
@@ -1631,7 +1194,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['tensor'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),Skip(Dtype.int32),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int8),Skip(Dtype.int32),],
                     "shape": [Skip((3,)),Skip((512, 4)),Skip((2, 31, 512)),Skip((2, 512, 8, 8)),Skip((1, 64, 4, 56, 56)),],
                 },
             ]
@@ -1644,7 +1207,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['tensors'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),Skip(Dtype.int32),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int8),Skip(Dtype.int32),],
                     "shape": [Skip(((8,), (16,))),Skip(((2, 8), (16, 8), (3, 8), (4, 8), (1, 8))),Skip(((3, 16, 8), (3, 2, 8), (3, 7, 8))),Skip(((2, 512, 8, 8), (2, 128, 8, 8), (2, 2, 8, 8), (2, 1, 8, 8))),Skip(((2, 31, 0), (2, 31, 512), (2, 31, 128))),],
                 },
             ]
@@ -1657,7 +1220,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['tensor'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
                     "shape": [Skip((1, 4)),Skip((4, 5, 12)),Skip((20267,)),Skip((9, 12, 17, 6, 5)),Skip((4, 6, 10, 9, 8)),],
                 },
             ]
@@ -1670,7 +1233,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((11400,)),Skip((12, 8)),Skip((8, 12, 9)),Skip((4, 4, 16, 20)),Skip((4, 4, 16, 2, 20)),Skip((24180,)),],
+                    "shape": [Skip((11400,)),Skip((12, 8)),Skip((8, 12, 9)),Skip((4, 4, 16, 20)),Skip((4, 4, 16, 2, 20)),Skip((24180,)),],
                 },
             ]
         ),
@@ -1694,7 +1257,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip(()),Skip((8723,)),Skip((1024, 81)),Skip((5, 4, 6)),Skip((2, 2, 64, 64)),],
+                    "shape": [Skip((8723,)),Skip((1024, 81)),Skip((5, 4, 6)),Skip((2, 2, 64, 64)),],
                 },
             ]
         ),
@@ -1718,7 +1281,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((32,)),Skip((2, 1536, 950)),Skip((16, 8)),Skip((660, 6, 49, 32)),],
+                    "shape": [Skip((32,)),Skip((2, 1536, 950)),Skip((16, 8)),Skip((660, 6, 49, 32)),],
                 },
             ]
         ),
@@ -1730,7 +1293,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float32),],
                     "shape": [Skip((2, 4096)),Skip((32, 49, 256)),Skip((2, 16, 64, 64)),Skip((1, 2304, 1, 1, 1)),],
                 },
             ]
@@ -1743,7 +1306,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float32),],
                     "shape": [Skip((2, 4096)),Skip((32, 49, 256)),Skip((2, 16, 64, 64)),Skip((1, 2304, 1, 1, 1)),],
                 },
             ]
@@ -1756,7 +1319,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float32),],
                     "shape": [Skip((32, 49, 256)),Skip((32, 49, 64, 64)),],
                 },
             ]
@@ -1769,8 +1332,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip(()),Skip((128,)),Skip((16, 7)),Skip((64, 28, 28)),Skip((2, 32, 208, 304)),Skip((64, 3, 7, 28, 28)),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),],
+                    "shape": [Skip((128,)),Skip((16, 7)),Skip((64, 28, 28)),Skip((2, 32, 208, 304)),Skip((64, 3, 7, 28, 28)),],
                 },
             ]
         ),
@@ -1782,7 +1345,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['inputs'],
-                    "shape": [Skip(()),Skip((64,)),Skip((16, 7)),Skip((2, 11856, 2)),Skip((16, 2, 2964, 2)),],
+                    "shape": [Skip((64,)),Skip((16, 7)),Skip((2, 11856, 2)),Skip((16, 2, 2964, 2)),],
                 },
             ]
         ),
@@ -1794,7 +1357,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['boxes'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float32),],
                 },
             ]
         ),
@@ -1842,21 +1405,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),],
                     "shape": [Skip((12,)),Skip((128, 2, 2)),Skip((2, 3, 224, 224)),Skip((3, 2, 6, 197, 64)),],
-                },
-            ]
-        ),
-    ),
-
-    'index_int': dict(
-        name=['index'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip((12,)),Skip((128, 2, 2)),],
                 },
             ]
         ),
@@ -1868,7 +1418,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "shape": [Skip(()),Skip((16, 8)),Skip((2, 3, 16)),Skip((4, 32, 7, 7)),Skip((4, 16, 3, 8, 2)),],
+                    "shape": [Skip((16, 8)),Skip((2, 3, 16)),Skip((4, 32, 7, 7)),Skip((4, 16, 3, 8, 2)),],
                 },
             ]
         ),
@@ -1892,60 +1442,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
                     "shape": [Skip((1,)),Skip((64,)),Skip((4, 49)),Skip((1276, 49, 49)),Skip((2, 8, 726, 726)),Skip((2, 31, 6, 40, 23)),Skip((4, 49)),Skip((4, 49)),Skip((4, 49)),],
-                },
-            ]
-        ),
-    ),
-
-    'masked_fill_scalar_int': dict(
-        name=['masked_fill'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip((1,)),Skip((64,)),Skip((4, 49)),Skip((1276, 49, 49)),Skip((2, 8, 726, 726)),Skip((2, 31, 6, 40, 1)),],
-                },
-            ]
-        ),
-    ),
-
-    'masked_fill_scalar_without_inplace': dict(
-        name=['masked_fill'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64),],
-                    "shape": [Skip((1,)),Skip((3,)),Skip((4,)),Skip((2, 3, 1)),Skip((2, 8, 1, 10)),Skip((2, 1, 6, 1, 23)),Skip((4, 4)),Skip((4, 4)),Skip((5,)),],
-                },
-            ]
-        ),
-    ),
-
-    'masked_fill_tensor': dict(
-        name=['masked_fill'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip((1,)),Skip((64,)),Skip((4, 49)),Skip((1276, 49, 49)),Skip((2, 8, 726, 726)),Skip((2, 31, 6, 40, 1)),],
-                },
-            ]
-        ),
-    ),
-
-    'masked_fill_tensor_without_inplace': dict(
-        name=['masked_fill'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),],
-                    "shape": [Skip(()),Skip((5,)),Skip((1, 3)),Skip((2, 1, 5)),Skip((2, 8, 1, 3)),Skip((2, 31, 6, 2, 1)),Skip((5,)),],
                 },
             ]
         ),
@@ -1957,8 +1455,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                    "shape": [Skip(()),Skip((1,)),Skip((182,)),Skip((64, 128)),Skip((2, 1, 640, 640)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
+                    "shape": [Skip((1,)),Skip((182,)),Skip((64, 128)),Skip((2, 1, 640, 640)),],
                 },
             ]
         ),
@@ -1970,7 +1468,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
+                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
                     "shape": [Skip((1,)),Skip((182,)),Skip((64, 128)),Skip((2, 1, 640, 640)),],
                 },
             ]
@@ -1983,20 +1481,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
                     "shape": [Skip((182,)),],
-                },
-            ]
-        ),
-    ),
-
-    'adam': dict(
-        name=['adam', 'adamw'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['param', 'param_grad'],
-                    "shape": [Skip(()),],
                 },
             ]
         ),
@@ -2008,7 +1494,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
                     "shape": [Skip((6, 16, 20, 8)),Skip((2, 256, 14, 14)),Skip((2, 128, 32, 32)),Skip((2, 64, 160, 160)),Skip((2, 64, 320, 320)),Skip((2, 64, 320, 320)),],
                 },
             ]
@@ -2021,8 +1507,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                    "shape": [Skip((2, 128, 56, 56)),Skip((2, 512, 14, 14)),Skip((2, 96, 200, 304)),Skip((2, 128, 36)),Skip((10, 20)),Skip((16,)),Skip((20,)),Skip(()),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
+                    "shape": [Skip((2, 128, 56, 56)),Skip((2, 512, 14, 14)),Skip((2, 96, 200, 304)),Skip((2, 128, 36)),Skip((10, 20)),Skip((16,)),Skip((20,)),],
                 },
             ]
         ),
@@ -2034,7 +1520,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),Skip(Dtype.uint8),],
+                    "dtype": [Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),],
                     "shape": [Skip((2, 128, 56, 56)),Skip((2, 512, 14, 14)),Skip((2, 96, 200, 304)),Skip((2, 128, 36)),Skip((16,)),],
                 },
             ]
@@ -2047,8 +1533,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((12,)),Skip((2, 22, 33)),Skip((2, 2, 10, 16)),Skip((1, 20)),Skip((2, 2, 20)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((12,)),Skip((2, 22, 33)),Skip((2, 2, 10, 16)),Skip((1, 20)),Skip((2, 2, 20)),],
                 },
             ]
         ),
@@ -2060,7 +1546,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['x1'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float32),],
                     "shape": [Skip((2, 50, 4)),Skip((1, 32, 32)),Skip((4, 31, 256)),Skip((4, 256, 256)),Skip((10, 128)),Skip((2, 50, 4)),Skip((1, 32, 32)),Skip((4, 31, 256)),],
                 },
             ]
@@ -2073,21 +1559,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['x1'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float32),],
                     "shape": [Skip((5, 4)),Skip((2, 256, 256)),Skip((2, 16, 256)),Skip((5, 4, 256, 256)),Skip((3, 5, 4)),Skip((2, 256, 256)),Skip((3, 2, 16, 256)),Skip((5, 4, 26, 256)),Skip((5, 4)),Skip((2, 256, 256)),Skip((2, 16, 256)),Skip((5, 4, 256, 256)),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_not_uint8': dict(
-        name=['bitwise_not'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.uint8),],
-                    "shape": [Skip(()),Skip((1,)),Skip((100, 4)),Skip((2, 256, 256)),],
                 },
             ]
         ),
@@ -2099,7 +1572,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),],
+                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
                     "shape": [Skip((10,)),Skip((100, 4)),Skip((2, 256, 256)),],
                 },
             ]
@@ -2112,8 +1585,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((1,)),Skip((1024, 80)),Skip((2, 256, 256)),Skip((2, 1, 64, 64)),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),],
+                    "shape": [Skip((1,)),Skip((1024, 80)),Skip((2, 256, 256)),Skip((2, 1, 64, 64)),],
                 },
             ]
         ),
@@ -2138,7 +1611,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "shape": [Skip(()),Skip((16,)),Skip((16, 8)),Skip((2, 3, 16)),Skip((4, 32, 7, 7)),],
+                    "shape": [Skip((16,)),Skip((16, 8)),Skip((2, 3, 16)),Skip((4, 32, 7, 7)),],
                 },
             ]
         ),
@@ -2150,7 +1623,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "shape": [Skip(()),Skip((16,)),Skip((16, 8)),Skip((2, 3, 16)),Skip((4, 32, 7, 7)),],
+                    "shape": [Skip((16,)),Skip((16, 8)),Skip((2, 3, 16)),Skip((4, 32, 7, 7)),],
                 },
             ]
         ),
@@ -2162,86 +1635,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip(()),Skip((64,)),Skip((2964, 32)),Skip((2, 11856, 2)),Skip((16, 2, 2964, 2)),Skip((2, 16, 128, 128)),],
-                },
-            ]
-        ),
-    ),
-
-    'conv3d': dict(
-        name=['conv3d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                    "shape": [Skip((4, 7, 12, 13, 9)),Skip((6, 16, 19, 8, 10)),Skip((1, 3, 4, 224, 224)),Skip((1, 16, 32, 56, 56)),Skip((1, 128, 4, 56, 56)),Skip((1, 256, 4, 56, 56)),],
-                },
-            ]
-        ),
-    ),
-
-    'max_pool3d': dict(
-        name=['max_pool3d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip((5, 15, 12, 20)),Skip((5, 4, 9, 17, 22)),Skip((6, 17, 10, 23)),Skip((1, 4, 17, 10, 23)),Skip((9, 6, 6, 8, 6)),Skip((4, 6, 8, 9, 12)),Skip((6, 9, 8, 10, 7)),],
-                },
-            ]
-        ),
-    ),
-
-    'max_pool3d_return_indices': dict(
-        name=['max_pool3d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip((5, 15, 12, 20)),Skip((5, 4, 9, 17, 22)),Skip((6, 17, 10, 23)),Skip((1, 4, 17, 10, 23)),],
-                },
-            ]
-        ),
-    ),
-
-    'adaptive_avg_pool3d': dict(
-        name=['adaptive_avg_pool3d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.float64),],
-                    "shape": [Skip((2, 5, 12, 4, 8)),Skip((4, 16, 9, 20)),Skip((12, 16, 32, 16)),Skip((1, 2048, 4, 7, 7)),Skip((2, 512, 4, 4)),Skip((2, 1024, 14, 14)),Skip((2, 720, 17, 17)),],
-                },
-            ]
-        ),
-    ),
-
-    'adaptive_max_pool3d': dict(
-        name=['adaptive_max_pool3d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.float64),],
-                    "shape": [Skip((2, 5, 12, 4, 8)),Skip((4, 16, 9, 20)),Skip((12, 16, 32, 16)),Skip((1, 2048, 4, 7, 7)),Skip((2, 512, 4, 4)),Skip((2, 1024, 14, 14)),Skip((2, 1024, 14, 14)),Skip((2, 1024, 14, 14)),],
-                },
-            ]
-        ),
-    ),
-
-    'adaptive_max_pool3d_return_indices': dict(
-        name=['adaptive_max_pool3d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.float64),],
-                    "shape": [Skip((2, 5, 12, 4, 8)),Skip((4, 16, 9, 20)),Skip((12, 16, 32, 16)),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float32),],
+                    "shape": [Skip((64,)),Skip((2964, 32)),Skip((2, 11856, 2)),Skip((16, 2, 2964, 2)),Skip((2, 16, 128, 128)),],
                 },
             ]
         ),
@@ -2253,21 +1648,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                    "shape": [Skip(()),Skip((4,)),Skip((1,)),Skip((16,)),Skip((8, 48)),Skip((4, 128, 128)),Skip((256, 8, 8)),Skip((4, 5, 6)),],
-                },
-            ]
-        ),
-    ),
-
-    'masked_select_not_float': dict(
-        name=['masked_select'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip(()),Skip((3, 4)),Skip((1,)),Skip((16,)),Skip((8, 48)),Skip((4, 128, 128)),Skip((256, 8, 8)),Skip((4, 1, 6)),Skip((4, 6, 5, 8)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
+                    "shape": [Skip((4,)),Skip((1,)),Skip((16,)),Skip((8, 48)),Skip((4, 128, 128)),Skip((256, 8, 8)),Skip((4, 5, 6)),],
                 },
             ]
         ),
@@ -2279,8 +1661,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input', 'other'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int64),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),Skip(Dtype.uint8),],
-                    "shape": [Skip(()),Skip((1,)),Skip((16,)),Skip((8, 48)),Skip((4, 128, 128)),Skip((256, 8, 8)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),],
+                    "shape": [Skip((1,)),Skip((16,)),Skip((8, 48)),Skip((4, 128, 128)),Skip((256, 8, 8)),],
                 },
             ]
         ),
@@ -2292,7 +1674,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
                 },
             ]
         ),
@@ -2316,8 +1698,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                    "shape": [Skip(()),Skip((12,)),Skip((4, 128, 128)),Skip((1, 8, 8)),Skip((5, 1, 6, 7)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
+                    "shape": [Skip((12,)),Skip((4, 128, 128)),Skip((1, 8, 8)),Skip((5, 1, 6, 7)),],
                 },
             ]
         ),
@@ -2329,7 +1711,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float32),],
                     "shape": [Skip((1, 8, 8)),],
                 },
             ]
@@ -2342,21 +1724,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
                     "shape": [Skip((8, 48)),Skip((4, 128)),Skip((256, 8)),],
-                },
-            ]
-        ),
-    ),
-
-    'mm_diff_dtype': dict(
-        name=['mm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.float64),],
-                    "shape": [Skip((256, 8)),],
                 },
             ]
         ),
@@ -2368,20 +1737,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip((3,)),Skip((5, 3)),Skip((16, 8)),Skip((16, 4, 4)),Skip((4, 4, 14, 14)),],
-                },
-            ]
-        ),
-    ),
-
-    'index_fill_tensor_specific': dict(
-        name=['index_fill'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
                     "shape": [Skip((3,)),Skip((5, 3)),Skip((16, 8)),Skip((16, 4, 4)),Skip((4, 4, 14, 14)),],
                 },
             ]
@@ -2394,19 +1750,10 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.float64),Skip(Dtype.int64),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),Skip(Dtype.uint8),],
-                    "shape": [Skip(()),Skip(()),Skip(()),Skip((8,)),Skip((60800, 1)),Skip((100, 1)),Skip((70, 1, 2)),Skip((3, 1)),Skip((4, 1, 6, 8)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),],
+                    "shape": [Skip((8,)),Skip((60800, 1)),Skip((100, 1)),Skip((70, 1, 2)),Skip((3, 1)),Skip((4, 1, 6, 8)),],
                 },
             ]
-        ),
-    ),
-
-    'linspace': dict(
-        name=['linspace'],
-        para=dict(
-            start=[Skip(0),Skip(1.4),Skip(-10),Skip(False),Skip(True),Skip(2),Skip(-2.5),Skip(-10),Skip(0.0001),Skip(0),Skip(5),],
-            end=[Skip(0.5),Skip(-2.4),Skip(True),Skip(100.232),Skip(False),Skip(2),Skip(-2.5),Skip(10),Skip(0.001),Skip(10),Skip(-2),],
-            steps=[Skip(24),Skip(23),Skip(152),Skip(100),Skip(76),Skip(50),Skip(38),Skip(25),Skip(5),Skip(1),],
         ),
     ),
 
@@ -2416,8 +1763,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((2, 8, 7, 8, 7, 128)),Skip((49, 49, 4)),Skip((2, 3, 200, 304)),Skip((20267, 1)),Skip((2, 3, 4)),Skip((1,)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((2, 8, 7, 8, 7, 128)),Skip((49, 49, 4)),Skip((2, 3, 200, 304)),Skip((20267, 1)),Skip((2, 3, 4)),Skip((1,)),],
                 },
             ]
         ),
@@ -2429,7 +1776,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
                     "shape": [Skip((4, 5)),Skip((2, 56, 56)),Skip((12, 4, 8)),Skip((2, 3, 260, 260)),Skip((2, 144, 65, 65)),Skip((3, 576, 862, 2, 3)),Skip((4, 5)),Skip((2, 56, 56)),Skip((12, 4, 8)),Skip((2, 3, 260, 260)),Skip((2, 144, 65, 65)),Skip((3, 576, 862, 2, 3)),Skip((2, 56, 56)),Skip((2, 3, 260, 260)),Skip((3, 576, 862, 2, 3)),],
                 },
             ]
@@ -2442,7 +1789,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
+                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
                     "shape": [Skip((2, 56, 56)),],
                 },
             ]
@@ -2455,21 +1802,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((5,)),Skip((2, 3)),Skip((4, 5)),Skip((2, 56, 56)),Skip((2, 3, 260, 260)),Skip((2, 144, 65, 65)),Skip((3, 576, 862)),Skip((3, 4, 5)),Skip((3, 4, 5, 6)),Skip((3, 4, 5, 6, 7)),],
-                },
-            ]
-        ),
-    ),
-
-    'constant_pad_positive': dict(
-        name=['pad'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.uint8),],
-                    "shape": [Skip((2, 56, 56)),Skip((2, 3, 260, 260)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((5,)),Skip((2, 3)),Skip((4, 5)),Skip((2, 56, 56)),Skip((2, 3, 260, 260)),Skip((2, 144, 65, 65)),Skip((3, 576, 862)),Skip((3, 4, 5)),Skip((3, 4, 5, 6)),Skip((3, 4, 5, 6, 7)),],
                 },
             ]
         ),
@@ -2481,7 +1815,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int64),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),Skip(Dtype.uint8),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),],
                 },
             ]
         ),
@@ -2493,7 +1827,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
                 },
             ]
         ),
@@ -2505,7 +1839,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
                     "shape": [Skip((2, 256)),Skip((2, 256, 7, 10)),Skip((2, 256, 24)),Skip((2, 256, 12, 12)),Skip((3, 27, 4)),Skip((5, 6)),Skip((12, 15, 8, 9)),],
                 },
             ]
@@ -2518,8 +1852,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((252,)),Skip((2, 256)),Skip((4, 64, 128)),Skip((4, 2, 12, 3)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((252,)),Skip((2, 256)),Skip((4, 64, 128)),Skip((4, 2, 12, 3)),],
                 },
             ]
         ),
@@ -2531,7 +1865,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.uint8),Skip(Dtype.int8),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
                     "shape": [Skip((252,)),Skip((2, 256)),Skip((4, 64, 128)),Skip((4, 2, 12, 3)),],
                 },
             ]
@@ -2544,8 +1878,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((42,)),Skip((56, 1)),Skip((70, 1, 2)),Skip((2, 512, 38, 38)),Skip((2, 80, 128, 128, 1)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((42,)),Skip((56, 1)),Skip((70, 1, 2)),Skip((2, 512, 38, 38)),Skip((2, 80, 128, 128, 1)),],
                 },
             ]
         ),
@@ -2557,21 +1891,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['log_probs'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float32),],
                     "shape": [Skip((26, 20, 38)),Skip((26, 20, 38)),Skip((26, 20, 38)),Skip((32, 20, 10)),],
-                },
-            ]
-        ),
-    ),
-
-    'ctc_loss_un_padded': dict(
-        name=['ctc_loss'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['log_probs'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip((26, 10, 38)),Skip((26, 10, 38)),Skip((26, 10, 38)),Skip((32, 10, 10)),],
                 },
             ]
         ),
@@ -2583,8 +1904,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['other'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),],
-                    "shape": [Skip(()),Skip((6,)),Skip((4, 1)),Skip((1, 28, 28)),Skip((16, 3, 7, 14, 14)),Skip((1, 28, 28)),Skip((1, 28, 28)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((6,)),Skip((4, 1)),Skip((1, 28, 28)),Skip((16, 3, 7, 14, 14)),Skip((1, 28, 28)),Skip((1, 28, 28)),],
                 },
             ]
         ),
@@ -2596,7 +1917,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['other'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
                     "shape": [Skip((6,)),Skip((4, 1)),],
                 },
             ]
@@ -2609,8 +1930,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((6,)),Skip((4, 5)),Skip((5,)),Skip((2, 3, 4, 5)),Skip((14, 1, 28)),Skip((16, 1, 7, 14, 14)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((6,)),Skip((4, 5)),Skip((5,)),Skip((2, 3, 4, 5)),Skip((14, 1, 28)),Skip((16, 1, 7, 14, 14)),],
                 },
             ]
         ),
@@ -2622,7 +1943,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
                     "shape": [Skip((16, 1, 7, 14, 14)),],
                 },
             ]
@@ -2635,8 +1956,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((6,)),Skip((4, 1)),Skip((1, 28, 28)),Skip((16, 3, 7, 14, 14)),Skip((1, 28, 28)),Skip((1, 28, 28)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((6,)),Skip((4, 1)),Skip((1, 28, 28)),Skip((16, 3, 7, 14, 14)),Skip((1, 28, 28)),Skip((1, 28, 28)),],
                 },
             ]
         ),
@@ -2648,7 +1969,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
                     "shape": [Skip((6,)),Skip((4, 1)),],
                 },
             ]
@@ -2661,7 +1982,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
                     "shape": [Skip((8,)),Skip((9,)),Skip((3, 9)),Skip((16, 4, 4)),Skip((14, 6, 2)),Skip((64, 4, 14, 14)),Skip((64, 4, 16, 16)),],
                 },
             ]
@@ -2674,7 +1995,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
                     "shape": [Skip(()),Skip(()),],
                 },
             ]
@@ -2687,7 +2008,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
+                    "dtype": [Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
                     "shape": [Skip((8,)),Skip((9,)),Skip((3, 9)),Skip((16, 4, 4)),Skip((14, 6, 2)),Skip((64, 4, 14, 14)),Skip((64, 4, 16, 16)),],
                 },
             ]
@@ -2700,7 +2021,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
                     "shape": [Skip((4,)),Skip((5,)),Skip((2, 8)),Skip((5, 9, 16)),Skip((16, 4, 4)),Skip((2, 8, 64, 64)),Skip((2, 8, 64, 64)),],
                 },
             ]
@@ -2713,7 +2034,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float32),],
                     "shape": [Skip((16, 4, 4)),Skip((2, 8, 64, 64)),],
                 },
             ]
@@ -2726,7 +2047,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
                     "shape": [Skip((4,)),Skip((5,)),Skip((2, 8)),Skip((5, 9, 16)),Skip((16, 4, 4)),Skip((2, 8, 64, 64)),Skip((2, 8, 64, 64)),],
                 },
             ]
@@ -2739,86 +2060,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float32),],
                     "shape": [Skip((16, 4, 4)),Skip((64, 4, 14, 14)),],
-                },
-            ]
-        ),
-    ),
-
-    'index_put_acc_three_indices': dict(
-        name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip((16, 4, 4)),Skip((16, 4, 4)),Skip((16, 4, 4)),Skip((64, 4, 14, 14)),Skip((4, 5, 0)),Skip((16, 4, 4)),],
-                },
-            ]
-        ),
-    ),
-
-    'index_put_acc_two_indices': dict(
-        name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip((4, 5)),Skip((4, 5)),Skip((16, 4, 4)),Skip((64, 4, 14, 14)),Skip((4, 5, 0)),Skip((4, 5)),Skip((4, 5, 0)),],
-                },
-            ]
-        ),
-    ),
-
-    'index_put_acc_one_indices': dict(
-        name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip((6,)),Skip((4,)),Skip((5,)),Skip((4, 5)),Skip((16, 4, 4)),Skip((64, 4, 14, 14)),Skip((4, 0)),Skip((6,)),Skip((4,)),Skip((5,)),Skip((4, 5)),Skip((4, 0)),],
-                },
-            ]
-        ),
-    ),
-
-    'index_put_acc_bool_indices_zeros': dict(
-        name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.int64),],
-                    "shape": [Skip((4, 4)),Skip((4, 4)),],
-                },
-            ]
-        ),
-    ),
-
-    'index_put_one_indices': dict(
-        name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip((6, 4, 5)),Skip((6, 4, 5)),Skip((16, 4, 4)),Skip((64, 4, 14, 14)),Skip((4, 4)),],
-                },
-            ]
-        ),
-    ),
-
-    'index_put_bool_indices_value': dict(
-        name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip((4,)),Skip((4, 4)),Skip((6, 4, 5)),Skip((3, 2, 2, 6)),Skip((3, 2, 2, 20)),Skip((4, 2, 2, 6, 2)),],
                 },
             ]
         ),
@@ -2843,7 +2086,7 @@ device_configs = {
     'randperm': dict(
         name=['randperm'],
         para=dict(
-            n=[Skip(2),Skip(1999),Skip(640000),Skip(1),],
+            n=[Skip(2),Skip(1999),Skip(640000),Skip(0),Skip(1),],
         ),
     ),
 
@@ -2853,8 +2096,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                    "shape": [Skip(()),Skip((1,)),Skip((64, 64)),Skip((16, 1, 3, 3)),Skip((96, 48, 3, 3)),Skip((4, 3, 5)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
+                    "shape": [Skip((1,)),Skip((64, 64)),Skip((16, 1, 3, 3)),Skip((96, 48, 3, 3)),Skip((4, 3, 5)),],
                 },
             ]
         ),
@@ -2866,8 +2109,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int64),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),],
-                    "shape": [Skip(()),Skip((1,)),Skip((64, 64)),Skip((16, 1, 3, 3)),Skip((96, 48, 3, 3)),Skip((16, 1, 3, 3)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),],
+                    "shape": [Skip((1,)),Skip((64, 64)),Skip((16, 1, 3, 3)),Skip((96, 48, 3, 3)),Skip((16, 1, 3, 3)),],
                 },
             ]
         ),
@@ -2879,8 +2122,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                    "shape": [Skip(()),Skip((1,)),Skip((64, 64)),Skip((16, 1, 3, 3)),Skip((96, 48, 3, 3)),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),],
+                    "shape": [Skip((1,)),Skip((64, 64)),Skip((16, 1, 3, 3)),Skip((96, 48, 3, 3)),],
                 },
             ]
         ),
@@ -2892,8 +2135,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.int64),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),Skip(Dtype.uint8),],
-                    "shape": [Skip(()),Skip((5,)),Skip((2, 3)),Skip((2, 1, 6)),],
+                    "dtype": [Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),],
+                    "shape": [Skip((5,)),Skip((2, 3)),Skip((2, 1, 6)),],
                 },
             ]
         ),
@@ -2917,7 +2160,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(()),Skip((8,)),Skip((12,)),Skip((192, 147)),Skip((1, 1, 384)),Skip((2, 1, 38, 45)),],
+                    "shape": [Skip((8,)),Skip((12,)),Skip((192, 147)),Skip((1, 1, 384)),Skip((2, 1, 38, 45)),],
                 },
             ]
         ),
@@ -2929,7 +2172,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int64),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),Skip(Dtype.uint8),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int32),Skip(Dtype.int16),Skip(Dtype.int8),],
                     "shape": [Skip((192, 147)),Skip((1, 1, 384)),Skip((2, 1, 38, 45)),Skip((100, 100)),],
                 },
             ]
@@ -2966,7 +2209,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),],
                     "shape": [Skip((2, 576, 46464)),Skip((2, 512, 240)),Skip((2, 2048, 62)),Skip((3, 36, 9)),],
                 },
             ]
@@ -2979,7 +2222,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),],
                     "shape": [Skip((2, 16, 32, 24)),Skip((2, 5, 3, 3)),Skip((2, 64, 352, 528)),Skip((2, 256, 12, 40)),Skip((2, 512, 4, 26)),Skip((3, 4, 10, 10)),],
                 },
             ]
@@ -2992,33 +2235,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),],
-                },
-            ]
-        ),
-    ),
-
-    'cholesky': dict(
-        name=['cholesky_ex'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip((3, 4)),Skip((2, 3, 3)),Skip((2, 3, 4)),Skip((6, 3, 4, 5)),],
-                },
-            ]
-        ),
-    ),
-
-    'triangular_solve': dict(
-        name=['triangular_solve'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip((2, 2, 2)),Skip((3, 3)),Skip((7, 6, 5)),Skip((7, 2, 1)),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
                 },
             ]
         ),
@@ -3030,86 +2247,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),],
-                    "shape": [Skip(()),Skip(()),Skip(()),Skip((3,)),Skip((3,)),Skip((1, 2)),Skip((1, 2)),Skip((1, 2, 3)),Skip((4, 2, 3, 5)),],
-                },
-            ]
-        ),
-    ),
-
-    'normal_': dict(
-        name=['normal_'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip(()),Skip((128,)),Skip((320, 8)),Skip((32, 80)),Skip((32, 8)),Skip((16, 64, 32)),],
-                },
-            ]
-        ),
-    ),
-
-    'normal_std_tensor': dict(
-        name=['normal'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['std'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip(()),Skip((16,)),Skip((8, 4)),Skip((256, 256, 3, 3)),Skip((256, 128, 1, 1)),],
-                },
-            ]
-        ),
-    ),
-
-    'normal_mean_tensor': dict(
-        name=['normal'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['mean'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip(()),Skip((16,)),Skip((8, 4)),Skip((256, 256, 3, 3)),Skip((256, 128, 1, 1)),],
-                },
-            ]
-        ),
-    ),
-
-    'normal_tensor': dict(
-        name=['normal'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['mean'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip(()),Skip((16, 64)),Skip((8, 8, 16)),Skip((256, 1, 3, 3)),Skip((256, 128, 3, 1)),],
-                },
-            ]
-        ),
-    ),
-
-    'meshgrid': dict(
-        name=['meshgrid'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensors'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),],
-                    "shape": [Skip(((8,), (8,), (8,))),Skip(((32,), (16,))),],
-                },
-            ]
-        ),
-    ),
-
-    'multinomial': dict(
-        name=['multinomial'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),],
-                    "shape": [Skip((8,)),Skip((8,)),Skip((8,)),Skip((16, 64)),Skip((128, 256)),Skip((256, 128)),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int8),],
+                    "shape": [Skip((3,)),Skip((3,)),Skip((1, 2)),Skip((1, 2)),Skip((1, 2, 3)),Skip((4, 2, 3, 5)),],
                 },
             ]
         ),
@@ -3121,129 +2260,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),],
+                    "dtype": [Skip(Dtype.float32),Skip(Dtype.int8),],
                     "shape": [Skip((32, 64)),Skip((128, 24, 32)),Skip((16, 8)),Skip((24, 12)),],
-                },
-            ]
-        ),
-    ),
-
-    'polar': dict(
-        name=['polar'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['abs'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((64, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),],
-                },
-            ]
-        ),
-    ),
-
-    'lerp': dict(
-        name=['lerp'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 16, 128)),Skip((2, 32, 130, 130)),],
-                },
-            ]
-        ),
-    ),
-
-    'lerp_tensor': dict(
-        name=['lerp'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 16, 128)),Skip((2, 32, 130, 130)),],
-                },
-            ]
-        ),
-    ),
-
-    'triu': dict(
-        name=['triu'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.uint8),Skip(Dtype.int8),],
-                    "shape": [Skip((1024, 64)),Skip((384, 128)),Skip((64, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),Skip((8, 9)),Skip((6, 7)),Skip((6, 6)),Skip((9, 9)),Skip((6, 8, 8)),Skip((64, 7, 28, 28)),],
-                },
-            ]
-        ),
-    ),
-
-    'isnan': dict(
-        name=['isnan'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((128,)),Skip((1024, 64)),Skip((384, 128)),Skip((64, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),],
-                },
-            ]
-        ),
-    ),
-
-    'isnan_input_nan': dict(
-        name=['isnan'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'amax': dict(
-        name=['amax'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip(()),Skip((18,)),Skip((1024, 64)),Skip((384, 128)),Skip((64, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),Skip((128, 64, 32, 3)),Skip((384, 128)),],
-                },
-            ]
-        ),
-    ),
-
-    'linalgqr': dict(
-        name=['linalgqr'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((1024, 384)),Skip((384, 1024)),Skip((64, 1, 128)),Skip((128, 64, 32, 3)),Skip((2, 32, 130, 100)),Skip((2, 32, 100, 150)),Skip((4, 2, 1024, 1024)),Skip((4, 284, 284)),Skip((64, 64)),],
-                },
-            ]
-        ),
-    ),
-
-    'sgn': dict(
-        name=['sgn'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((64, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),],
-                },
-            ]
-        ),
-    ),
-
-    'sgn_zero': dict(
-        name=['sgn'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((64, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),],
                 },
             ]
         ),
