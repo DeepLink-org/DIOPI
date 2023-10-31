@@ -230,6 +230,12 @@ diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, int v
     return diopiSuccess;
 }
 
+diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, double val) {
+    auto valScalar = constructDiopiScalarT(diopi_dtype_float64, val);
+    diopiFill(ctx, out, &valScalar);
+    return diopiSuccess;
+}
+
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out, diopiDtype_t dtype, diopiDevice_t device) {
     int64_t sizeTmp[1] = {1};
     diopiSize_t sSize = arrayToDiopiSize(sizeTmp, 1);
@@ -647,9 +653,15 @@ diopiError_t transTensorTo2D(diopiContextHandle_t ctx, AscendTensor& th) {
     return diopiSuccess;
 }
 
+diopiError_t broadcast(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const std::vector<int64_t>& size) {
+    AscendTensor atout(out);
+    const AscendTensor atinp(input);
+    return broadcast(ctx, atout, atinp, size);
+}
+
 diopiError_t broadcast(diopiContextHandle_t ctx, AscendTensor& out, const AscendTensor& input, const std::vector<int64_t>& size) {
     if (size.empty()) {
-        out = input;
+        diopiCastDtype(ctx, const_cast<diopiTensorHandle_t>(out.tensorHandle()), const_cast<diopiTensorHandle_t>(input.tensorHandle()));
         return diopiSuccess;
     }
     // Avoid modifying the input tensor (when input == out).
