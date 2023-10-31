@@ -199,15 +199,6 @@ diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTenso
     at::Tensor atBSeqLen = impl::aten::buildATen(bSeqlen);
     at::Tensor atOut = impl::aten::buildATen(out);
 
-    #if 0
-    std::cout << "q:\n" << atQ << std::endl;
-    std::cout << "k:\n" << atK << std::endl;
-    std::cout << "v:\n" << atV << std::endl;
-    #endif
-    std::cout << "atBStartLoc:\n" << atBStartLoc << std::endl;
-    std::cout << "atBSeqLen:\n" << atBSeqLen << std::endl;
-    std::cout << "maxInputLen:\n" << maxInputLen << std::endl;
-
     const int Lq = atQ.size(-1);
     int Lk = atK.size(-1);
     const int Lv = atV.size(-1);
@@ -218,7 +209,6 @@ diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTenso
     float smScale = 1.0 / std::sqrt(Lq);  // 计算scale系数
     const int batch = atBSeqLen.size(0);
     const int head = atQ.size(1);
-
 
     TritonKernelRunner_t kernel;
     const int gridX = batch;
@@ -234,7 +224,7 @@ diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTenso
     diopiStreamHandle_t stream_handle;
     diopiGetStream(ctx, &stream_handle);
     const char* kernel_name = "context_attention_fwd_kernel_0d1d2d34d5d6d7de8de9c10de11de12c13de14de15c16de17de18c";
-    CUstream stream = static_cast<cudaStream_t>(stream_handle);
+    CUstream stream = static_cast<CUstream>(stream_handle);
     void* q_ptr = atQ.data_ptr();
     void* k_ptr = atK.data_ptr();
     void* v_ptr = atV.data_ptr();
@@ -249,25 +239,15 @@ diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTenso
     void** extra_param = NULL;
     void* kernel_params[] = {
         &q_ptr, &k_ptr, &v_ptr, &smScale,
-        &b_start_loc_ptr, &b_seq_len_ptr,
-        &out_ptr,
-        &q_stride[0], &q_stride[1],   &q_stride[2],
-        &k_stride[0], &k_stride[1],   &k_stride[2],
-        &v_stride[0], &v_stride[1],   &v_stride[2],
-        &out_stride[0], &out_stride[1], &out_stride[2],
+        &b_start_loc_ptr, &b_seq_len_ptr, &out_ptr,
+        &q_stride[0], &q_stride[1],
+        &k_stride[0], &k_stride[1],
+        &v_stride[0], &v_stride[1],
+        &out_stride[0], &out_stride[1],
         &block, &Lk, &block,
     };
     kernel.run(gridX, gridY, gridZ, num_warps, num_ctas, clusterDimX, clusterDimY, clusterDimZ, shared_memory, kernel_name, stream, kernel_params, extra_param);
     impl::aten::sync(ctx);
-    #if 0
-    std::cout << "after" << std::endl;
-    std::cout << "q:\n" << atQ << std::endl;
-    std::cout << "k:\n" << atK << std::endl;
-    std::cout << "v:\n" << atV << std::endl;
-    #endif
-    std::cout << "atBStartLoc:\n" << atBStartLoc << std::endl;
-    std::cout << "atBSeqLen:\n" << atBSeqLen << std::endl;
-    std::cout << "maxInputLen:\n" << maxInputLen << std::endl;
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
