@@ -10,8 +10,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Conformance Test for DIOPI')
     parser.add_argument('--mode', type=str, default='test',
                         help='running mode, available options: gen_data, run_test and utest')
-    parser.add_argument('--fname', type=str, default='all_ops',
-                        help='the name of the function for which the test will run (default: all_ops)')
+    parser.add_argument('--fname', metavar='N', type=str, nargs='+', default=['all_ops'], help='the name list of the function for which the test will run (default: all_ops)')
     parser.add_argument('--model_name', type=str, default='',
                         help='Get op list of given model name')
     parser.add_argument('--filter_dtype', type=str, nargs='*',

@@ -125,7 +125,7 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
         int64_t weightDim[] = {inputShape.data[1]};
         diopiSize_t weightShape = arrayToDiopiSize(weightDim, 1);
         diopiRequireTensor(ctx, &weightCopy, &weightShape, nullptr, diopi_dtype_float32, diopi_device);
-        fillTensor(ctx, &weightCopy, 1.0);
+        fillTensor(ctx, weightCopy, static_cast<float>(1.0));
     }
 
     nllLossOutWithTotalWeight(ctx, out, totalWeight, input, target, weightCopy, reduction, ignoreIndex);
@@ -149,7 +149,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         int64_t weightDim[] = {inputShape.data[1]};
         diopiSize_t weightShape = arrayToDiopiSize(weightDim, 1);
         diopiRequireTensor(ctx, &weightCopy, &weightShape, nullptr, diopi_dtype_float32, diopi_device);
-        fillTensor(ctx, &weightCopy, 1.0);
+        fillTensor(ctx, weightCopy, static_cast<float>(1.0));
     }
 
     nllLossOutWithTotalWeight(ctx, out, totalWeight, input, target, weightCopy, reduction, ignoreIndex);
