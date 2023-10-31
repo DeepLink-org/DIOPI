@@ -37,7 +37,6 @@ namespace {
                 std::string fatbin_path = std::getenv("HOME") + std::string("/.triton/diopi/") + function_name + std::string(".fatbin");
 
                 checkCudaErrors(cuModuleLoad(&cudaModule_, fatbin_path.c_str()));
-                //checkCudaErrors(cuModuleLoadFatBinary(&cudaModule_, cuModuleBin_.data_ptr()));
                 checkCudaErrors(cuModuleGetFunction(&function_, cudaModule_, function_name));
             }
 
@@ -108,26 +107,6 @@ namespace {
 extern "C" {
 
 diopiError_t diopiDestIndexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t k, diopiConstTensorHandle_t destLoc) {
-    /*
-    seq_len = DestLoc.shape[0]
-    head_num = K.shape[1]
-    head_dim = K.shape[2]
-    assert K.shape[1] == Out.shape[1] and K.shape[2] == Out.shape[2]
-    BLOCK_HEAD = triton.next_power_of_2(head_num)
-    grid = (seq_len,)
-    num_warps = 1
-
-    _fwd_kernel_destindex_copy_kv[grid](
-        K, DestLoc, Out,
-        K.stride(0), K.stride(1), K.stride(2),
-        Out.stride(0), Out.stride(1), Out.stride(2),
-        head_num,
-        BLOCK_DMODEL=head_dim,
-        BLOCK_HEAD=BLOCK_HEAD,
-        num_warps=num_warps,
-        num_stages=1,
-    )
-    */
     impl::aten::setCurCtx(ctx);
     at::Tensor atK = impl::aten::buildATen(k);
     at::Tensor atOut = impl::aten::buildATen(out);
@@ -363,22 +342,6 @@ diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTenso
 diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t presence_penalty,
                                          diopiConstTensorHandle_t frequency_penalty, diopiConstTensorHandle_t p_token_ids,
                                          diopiConstTensorHandle_t p_token_counts, diopiConstTensorHandle_t p_cumsum_seq_len, int p_max_len_in_batch) {
-       /*
-    assert Logits.is_contiguous()
-    BLOCK = triton.next_power_of_2(p_max_len_in_batch)
-    if BLOCK <= 512:
-        BLOCK = 512
-    elif BLOCK <= 1024:
-        BLOCK = 1024
-    num_warps = 8
-    _fwd_kernel_apply_penalty[(Logits.shape[0], )](
-        Logits, presence_penalty, frequency_penalty,
-        p_token_ids, p_token_counts, p_cumsum_seq_len,
-        Logits.stride(0), Logits.stride(1),
-        num_warps=num_warps,
-        BLOCK_P=BLOCK
-    )
-    */
     impl::aten::setCurCtx(ctx);
     at::Tensor atLogits = impl::aten::buildATen(logits);
     assert(atLogits.is_contiguous());
