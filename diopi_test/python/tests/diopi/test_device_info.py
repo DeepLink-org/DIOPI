@@ -1,4 +1,5 @@
-from conformance.diopi_functions import check_function, logger
+from conformance.diopi_functions import check_function
+from conformance.utils import logger
 from ctypes import c_char_p, c_char, cast, POINTER
 
 
@@ -12,3 +13,15 @@ class TestDeviceInfo(object):
         assert "Device" in vendor_name
 
         logger.info(f"Vendor name is {vendor_name}.")
+
+    def test_impl_version(self):
+        func = check_function("diopiGetImplVersion")
+        diopirt_func = check_function("diopiGetVersion")
+        impl_version = func()
+        diopi_version = diopirt_func()
+
+        assert impl_version is not None, "no return value"
+        assert diopi_version is not None, "no return value"
+        assert diopi_version in impl_version
+
+        logger.info(f"Impl_version is {impl_version}.")
