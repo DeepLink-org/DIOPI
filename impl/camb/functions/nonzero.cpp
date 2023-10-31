@@ -26,6 +26,8 @@ diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
         DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_int32));
     } else if (inputTensor.dtype() == diopi_dtype_float64) {
         DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_float32));
+    }else if (inputTensor.dtype() == diopi_dtype_bool) {
+        DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_int32));
     }
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
 
