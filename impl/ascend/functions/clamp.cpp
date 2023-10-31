@@ -27,32 +27,23 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     makeTensorLike(ctx, &maxTmp, input, dtype);
     makeTensorLike(ctx, &boolOut, input, diopi_dtype_bool);
 
-    std::vector<int64_t> sizes;
-    diopiSize_t diopiShape;
-    diopiGetTensorShape(input, &diopiShape);
-    std::vector<int64_t> shapeTmp(diopiShape.data, diopiShape.data + diopiShape.len);
-    sizes = std::move(shapeTmp);
+    AscendTensor Tem(input);
+    const std::vector<int64_t> sizes = Tem.shape();
 
     if (min != nullptr) {
-        if (!sizes.empty()) {
-            AclOpRunner<2, 1>("BroadcastTo", ctx).addInput(min, dtype).addConstInput(sizes).addOutput(minTmp).run();
-        } else {
-            diopiCastDtype(ctx, minTmp, min);
-        }
+        broadcast(ctx, minTmp, min, sizes);
     } else {
         fillTensor(ctx, minTmp, -std::numeric_limits<double>::max());
     }
 
     if (max != nullptr) {
-        if (!sizes.empty()) {
-            AclOpRunner<2, 1>("BroadcastTo", ctx).addInput(max, dtype).addConstInput(sizes).addOutput(maxTmp).run();
-        } else {
-            diopiCastDtype(ctx, maxTmp, max);
-        }
+        broadcast(ctx, maxTmp, max, sizes);
     } else {
         fillTensor(ctx, maxTmp, std::numeric_limits<double>::max());
     }
 
+    // Perform a clamp operation according PyTorch's special handling of the case when max is less than min.
+    // In this case, update the value of min to be equal to max to ensure correct behavior.
     diopiLt(ctx, boolOut, maxTmp, minTmp);
     diopiMaskedFill(ctx, minTmp, minTmp, boolOut, maxTmp);
 
@@ -77,6 +68,7 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
             return diopiSuccess;
         }
     }
+
     if (min != nullptr) {
         runner.addConstInput(*min, dtype);
     } else {
