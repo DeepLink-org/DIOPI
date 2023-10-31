@@ -66,9 +66,9 @@ bool broadcast1(DiopiTensor inputTensor, const std::vector<int64_t>& targetShape
     std::vector<int64_t> strides;
     if (checkBroadCast(inputTensor, targetShape, strides)) {
         *outTensor = inputTensor.asStrided(targetShape, strides);
-        return diopiSuccess;
+        return true;
     }
-    return diopiErrorOccurred;
+    return false;
 }
 }  // namespace camb
 }  // namespace impl
