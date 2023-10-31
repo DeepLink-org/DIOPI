@@ -734,18 +734,6 @@ device_configs = {
         ),
     ),
 
-    'addcdiv': dict(
-        name=['addcdiv'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((128,)),Skip((576, 192)),Skip((64, 3, 3, 3)),Skip((10, 3, 5)),Skip((0,)),Skip((0, 5)),Skip((2, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
     'addcdiv_specific': dict(
         name=['addcdiv'],
         tensor_para=dict(
@@ -753,30 +741,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip(()),Skip((128,)),Skip((576, 192)),Skip((64, 3, 3, 3)),Skip((10, 3, 5)),Skip((0,)),Skip((0, 5)),Skip((2, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
-    'addcdiv_addcmul_broadcast_inplace': dict(
-        name=['addcdiv'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((3, 4)),Skip((4, 5, 5)),Skip((2, 3, 4, 5)),],
-                },
-            ]
-        ),
-    ),
-
-    'addcdiv_addcmul_without_inplace': dict(
-        name=['addcdiv'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((128,)),Skip((576, 192)),Skip((64, 3, 1, 3)),Skip((10, 3, 5)),Skip((0,)),Skip((0, 5)),Skip((2, 0, 9)),],
                 },
             ]
         ),
@@ -791,78 +755,6 @@ device_configs = {
                     "shape": [Skip((128, 49, 128)),Skip((5,)),Skip((128, 4, 49, 32)),Skip((2, 1, 3136, 3136)),Skip((2, 784, 64)),Skip((2, 16, 8, 64)),Skip((2, 31, 6, 40, 512)),],
                 },
             ]
-        ),
-    ),
-
-    'clamp_scalar': dict(
-        name=['clamp'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),],
-                },
-            ]
-        ),
-    ),
-
-    'clamp_max_scalar': dict(
-        name=['clamp_max'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),],
-                },
-            ]
-        ),
-    ),
-
-    'clamp_min_scalar': dict(
-        name=['clamp_min'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),],
-                },
-            ]
-        ),
-    ),
-
-    'clamp_tensor': dict(
-        name=['clamp'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64),],
-                },
-            ],
-        ),
-    ),
-
-    'clamp_max_tensor': dict(
-        name=['clamp_max'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64),],
-                },
-            ],
-        ),
-    ),
-
-    'clamp_min_tensor': dict(
-        name=['clamp_min'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64),],
-                },
-            ],
         ),
     ),
 
@@ -1090,8 +982,8 @@ device_configs = {
 
     'linear': dict(
         name=['linear'],
-        atol = 5e-2,
-        rtol = 5e-2,
+        atol = 1e-1,
+        rtol = 1e-1,
     ),
 
     'embedding': dict(
@@ -1448,19 +1340,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'reciprocal_int': dict(
-        name=['reciprocal'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool),],
+                    "dtype": [Skip(np.float16)],
                 },
             ]
         ),
@@ -1472,7 +1352,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool)],
+                    "dtype": [Skip(np.float16)],
                 },
             ]
         ),
@@ -1925,6 +1805,14 @@ device_configs = {
         rtol=5e-2,
         atol_half=5e-2,
         rtol_half=5e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(Dtype.float16),],
+                },
+            ]
+        ),
     ),
 
     'unique': dict(

@@ -43,6 +43,8 @@ diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, float
 
 diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, int val);
 
+diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, double val);
+
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out,
                                   diopiDevice_t device = diopiDevice_t::diopi_host);
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out, diopiDtype_t dtype,
@@ -393,6 +395,11 @@ public:
     AclOpRunner& addInput(diopiConstTensorHandle_t th, const aclFormat& format) {
         AscendTensor at = AscendTensor(th);
         return addInput(at, format);
+    }
+
+    AclOpRunner& addInput(const AscendTensor& at, const diopiDtype_t& dtype) {
+        castTensor(context_, const_cast<AscendTensor&>(at), dtype);
+        return addInput(at);
     }
 
     AclOpRunner& addInput(diopiConstTensorHandle_t th) {

@@ -49,6 +49,8 @@ diopiError_t makeTensor(diopiContextHandle_t ctx, AscendTensor& dst, const diopi
 diopiError_t makeTensor(diopiContextHandle_t ctx, AscendTensor& dst, const std::vector<int64_t>& shape, const std::vector<int64_t>& stride, diopiDtype_t dtype,
                         diopiDevice_t device);
 
+diopiError_t makeTensor(diopiContextHandle_t ctx, AscendTensor& dst, const std::vector<int64_t>& shape, diopiDtype_t dtype);
+
 diopiError_t makeTensorLike(diopiContextHandle_t ctx, AscendTensor& dst, const AscendTensor& src, diopiDtype_t dtype = diopi_dtype_unsupported);
 
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, AscendTensor& dst, const diopiScalar_t* scalar, diopiDevice_t device = diopi_device);
@@ -77,6 +79,12 @@ diopiError_t castTensor(diopiContextHandle_t ctx, AscendTensor& src, diopiDtype_
 diopiError_t aclAsStrided(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst);
 
 diopiError_t transTensorTo2D(diopiContextHandle_t ctx, AscendTensor& th);
+
+diopiError_t broadcast(diopiContextHandle_t ctx, AscendTensor& out, const AscendTensor& input, const std::vector<int64_t>& size);
+
+diopiError_t broadcast(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const std::vector<int64_t>& size);
+
+std::vector<int64_t> inferSize(const std::vector<int64_t>& shape1, const std::vector<int64_t>& shape2);
 
 diopiError_t fillNan(diopiContextHandle_t ctx, AscendTensor& src);
 
