@@ -655,8 +655,8 @@ diopiError_t transTensorTo2D(diopiContextHandle_t ctx, AscendTensor& th) {
 
 diopiError_t broadcast(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const std::vector<int64_t>& size) {
     AscendTensor atout(out);
-    const AscendTensor atout(input);
-    return broadcast(ctx, atout, atout, size);
+    const AscendTensor atinp(input);
+    return broadcast(ctx, atout, atinp, size);
 }
 
 diopiError_t broadcast(diopiContextHandle_t ctx, AscendTensor& out, const AscendTensor& input, const std::vector<int64_t>& size) {
