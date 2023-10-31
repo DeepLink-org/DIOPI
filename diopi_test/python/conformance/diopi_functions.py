@@ -3920,6 +3920,29 @@ def linalgqr(input, mode):
     check_returncode(ret)
     return out
 
+
+def rotary_emb(input, cos, sin, conj):
+    call = "diopiRotaryEmbedding"
+    func = check_function(call)
+    size = list(input.size().data)
+    out = Tensor(size, input.get_dtype())
+    ret = func(input.context(), out, input, cos, sin, conj)
+    check_returncode(ret)
+    return out
+
+
+def rms_norm(input, normalized_shape, weight, bias, eps):
+    call = "diopiRMSNorm"
+    func = check_function(call)
+    size = list(input.size().data)
+    out = Tensor(size, input.get_dtype())
+    inv_rms = Tensor(size, input.get_dtype())
+    normalized_shape = Sizes(list(normalized_shape))
+    ret = func(input.context(), out, inv_rms, input, normalized_shape, weight, bias, eps)
+    check_returncode(ret)
+    return out
+
+
 def multiheadforward(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
     call = "diopiMultiHeadAttention"
     func = check_function(call)
