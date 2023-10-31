@@ -118,6 +118,14 @@
     dtype: (float16, float64)->float32
     layout: NCHW
 
+- diopiLinear:
+    dtype: (float16, float64)->float32
+    layout: NCHW
+
+- diopiLinearBackward:
+    dtype: (float16, float64)->float32
+    layout: NCHW
+
 - diopiAny:
     dtype: (float16, float32, float64, int16, int32, int64, uint8, int8)->bool
     layout: NCHW
@@ -158,6 +166,18 @@
     dtype: (int8, int16, uint8, uint16, uint32, uint64)->int64, (float64)->float32, (complex32)->complex64
     layout: NCHW
 
+- diopiThreshold:
+    dtype: (float64)->float32, (int16, int64)->int32
+    layout: NCHW
+
+- diopiThresholdInp:
+    dtype: (float64)->float32, (int16, int64)->int32
+    layout: NCHW
+
+- diopiThresholdBackward:
+    dtype: (float64)->float32, (int16, int64)->int32
+    layout: NCHW
+
 - diopiMinimum:
     dtype: (uint8, bool, int16)->int32, (float64)->float32
     layout: NCHW
@@ -180,7 +200,15 @@
 
 - diopiAddcmulInp:
     dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
-    layout: NCHW 
+    layout: NCHW
+
+- diopiAddcdiv:
+    dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
+    layout: NCHW
+
+- diopiAddcdivInp:
+    dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
+    layout: NCHW
 
 - diopiTopk:
     dtype: (float32)->float64
@@ -196,4 +224,12 @@
 
 - diopiSqrtInp:
     dtype: (int8, int16, int32, int64, uint8, uint16, uint32, uint64, bool, float16, float32)->float64, (complex32)->complex64
+    layout: NCHW
+
+- diopiLayerNorm:
+    dtype: (float64)->float32
+    layout: NCHW
+
+- diopiLayerNormBackward:
+    dtype: (float64)->float32
     layout: NCHW
