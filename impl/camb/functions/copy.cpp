@@ -74,10 +74,6 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
         DiopiTensor srcBroadcasted;
         if (broadcast1(srcTr, destTr.shape(), &srcBroadcasted)) {
             srcTr = srcBroadcasted;
-        } else {
-            DIOPI_CHECK(false, "copy failed because the shapes are not match")
-            std::cout << "src's shape: " << srcTr.shape() << ", dest's shape: " << destTr.shape() << std::endl;
-            return diopiErrorOccurred;
         }
     }
 
