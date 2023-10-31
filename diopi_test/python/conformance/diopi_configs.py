@@ -8058,23 +8058,65 @@ diopi_configs = {
             args=[
                 {
                     "ins":['k'],
-                    "shape": ((5, 1, 1),),
+                    "shape": ((7, 32, 128), (16, 32, 128)),
                     "dtype": [Dtype.float16],
                     "gen_fn": Genfunc.randint,
                 },
                 {
                     "ins":['dest_loc'],
-                    "shape": ((2,),),
                     "dtype":[Dtype.int32],
-                    "gen_fn": dict(fn=Genfunc.randint, low=0, high=4),
+                    "value": ((0, 1, 2), (2, 4, 5)),
                 },
                 {
                     "ins":['out'],
-                    "shape": ((10, 1, 1),),
+                    "shape": ((10, 32, 128), (16, 32, 128)),
                     "dtype": [Dtype.float16],
                     "gen_fn": Genfunc.zeros,
                 }
             ]
         )
-    )
+    ),
+
+    'context_attention': dict(
+        name=['context_attention'],
+        interface=['CustomizedTest'],
+        para=dict(
+            max_input_len=(32,),
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((64, 32, 128),),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["k"],
+                    "shape": ((64, 32, 128),),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["v"],
+                    "shape": ((64, 32, 128),),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["out"],
+                    "shape": ((64, 32, 128), ),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["b_start_loc"],
+                    "value": ([0, 16, 48], ),
+                    "dtype": [Dtype.int32],
+                },
+                {
+                    "ins": ["b_seq_len"],
+                    "value": ([16, 32, 16],),
+                    "dtype": [Dtype.int32],
+                },
+            ]
+        ),
+    ),
+
 }
