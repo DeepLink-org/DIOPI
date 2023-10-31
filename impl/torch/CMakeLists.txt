@@ -27,7 +27,7 @@ if (DYLOAD)
     set(IMPL_SRC error.cpp wrap_func.cpp)
 endif()
 
-file(GLOB_RECURSE REAL_IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions_mmcv/*.cu functions_ext/*.cu)
+file(GLOB REAL_IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions_mmcv/*.cu functions_ext/*.cu)
 set(REAL_IMPL_SRC ${REAL_IMPL_SRC}
                   nms_kernel.cu
                   roi_align_kernel.cu
@@ -76,6 +76,8 @@ else ()
     else()
         cuda_add_library(${DEVICEIMPL} SHARED ${REAL_IMPL_SRC})
         target_link_libraries(${DEVICEIMPL} ${CUDA_LIBRARIES} ${TORCH_LIBRARIES})
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/functions_ext/flash-attention)
+        target_link_libraries(${DEVICEIMPL} diopi_torch_ext_flash_attn)
     endif()
 endif()
 
