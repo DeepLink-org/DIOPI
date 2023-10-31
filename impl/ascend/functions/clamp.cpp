@@ -27,8 +27,8 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     makeTensorLike(ctx, &maxTmp, input, dtype);
     makeTensorLike(ctx, &boolOut, input, diopi_dtype_bool);
 
-    AscendTensor Tem(input);
-    const std::vector<int64_t> sizes = Tem.shape();
+    AscendTensor temp(input);
+    const std::vector<int64_t>& sizes = temp.shape();
 
     if (min != nullptr) {
         broadcast(ctx, minTmp, min, sizes);
