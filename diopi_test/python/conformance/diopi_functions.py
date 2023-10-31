@@ -3948,11 +3948,7 @@ def destindex_copy_kv(k, dest_loc, out):
 
     ret = func(k.context(), out, k, dest_loc)
     check_returncode(ret)
-    if 1:
-        print(f"k:{k}")
-        print(f"dest_loc:{dest_loc}")
-        print(f"out:{out}")
-
+    
     return out
 
 def token_attention(q, k, out, b_loc, b_start_loc, b_seq_len, max_input_len):
@@ -3967,22 +3963,13 @@ def token_softmax_reducev(logics, v, out, b_loc, b_start_loc, b_seq_len, max_inp
     call = "diopiTokenSoftmaxReduceVInference"
     func = check_function(call)
 
-    print(out)
     ret = func(logics.context(), out, logics, v, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index)
     check_returncode(ret)
-    print('after:',out)
     return out
 
 def context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len):
     call = "diopiContextAttentionInference"
     func = check_function(call)
-    print(f"q:{q}")
-    print(f"v:{v}")
-    print(f"b_start_loc:{b_start_loc}")
-    print(f"b_seq_len:{b_seq_len}")
-    print(f"max_input_len:{max_input_len}")
     ret = func(q.context(), out, q, k, v, b_start_loc, b_seq_len, max_input_len)
-    print(f"after:q:{q}")
-    print(f"v:{v}")
     check_returncode(ret)
     return out

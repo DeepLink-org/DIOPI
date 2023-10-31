@@ -579,10 +579,7 @@ class CustomizedTest(object):
         return logits
 
     def destindex_copy_kv(k, dest_loc, out):
-        print(f"k:{k}")
         triton_kernels.destindex_copy_kv(k, dest_loc, out)
-        print(f"dest_lo:{dest_loc}")
-        print(f"out:{out}")
         return out
 
     def token_attention(q, k, out, b_loc, b_start_loc, b_seq_len, max_input_len):
@@ -594,9 +591,7 @@ class CustomizedTest(object):
         return out
 
     def context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len):
-        print("hello")
         triton_kernels.context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len)
-        print("hello2")
         return out
 
 
