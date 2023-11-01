@@ -536,14 +536,37 @@ faster_rcnn_r50_config = {
                 {
                     "ins": ["input"],
                     "requires_grad":[False],
-                    "shape": [(8746, 4), (2, 4), (159620,), (16,), (4096, 256, 7, 7), (4096, 256, 7, 7), (3, 800, 1188), (3, 1225, 800)],
-                    "dtype": [Dtype.float32],
+                    "shape": [(159620,), (4096, 256, 7, 7), (8746, 4), (2, 4), (16,), (4096, 256, 7, 7)],
+                    "dtype": [Dtype.float32, Dtype.int64, Dtype.uint8],
                     "gen_fn": Genfunc.randn,
                 },
                 {
                     "ins": ["indices"],
                     "requires_grad":[False],
-                    "shape": [(3645,), (10,), (250,), (3,), (48,), (85,), (3,), (3,)],
+                    "shape": [(250,), (48,), (3645,), (10,), (3,), (85,)],
+                    "dtype": [Dtype.int64],
+                    "gen_fn": dict(fn=Genfunc.randint, low=-2, high=2),
+                },
+            ],
+        ),
+    ),
+
+    'index_2': dict(
+        name=["index"],
+        interface=["CustomizedTest"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad":[False],
+                    "shape": [(3, 800, 1188), (3, 1225, 800)],
+                    "dtype": [Dtype.float32, Dtype.int64, Dtype.uint8],
+                    "gen_fn": Genfunc.randn,
+                },
+                {
+                    "ins": ["indices"],
+                    "requires_grad":[False],
+                    "shape": [(3,), (3,)],
                     "dtype": [Dtype.bool],
                     "gen_fn": Genfunc.mask,
                 },
@@ -555,29 +578,29 @@ faster_rcnn_r50_config = {
         name=["index_put"],
         interface=["CustomizedTest"],
         para=dict(
-            accumulate=[False, False, False, False, False, False, True, True],
+            accumulate=[False, False, False, False, False],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
                     "requires_grad":[True],
-                    "shape": [(217413,), (217413,), (236313, 4), (268569, 4), (4096, 256, 7, 7), (4096, 256, 7, 7), (4096, 80, 4), (4096, 80, 4)],
-                    "dtype": [Dtype.int64],
+                    "shape": [(217413,), (217413,), (236313, 4), (4096, 256, 7, 7), (4096, 256, 7, 7)],
+                    "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randint,
                 },
                 {
                     "ins": ["indices1"],
                     "requires_grad":[False],
-                    "shape": [(16,), (246,), (42,), (268569,), (78,), (85,), (4096,), (4096,)],
-                    "dtype": [Dtype.bool],
-                    "gen_fn": Genfunc.mask,
+                    "shape": [(16,), (246,), (42,), (78,), (85,)],
+                    "dtype": [Dtype.int64],
+                    "gen_fn": dict(fn=Genfunc.randint, low=-4096, high=4096),
                 },
                 {
                     "ins": ["values"],
                     "requires_grad":[True],
-                    "shape": [(16,), (), (42, 4), (217413, 4), (78, 256, 7, 7), (85, 256, 7, 7), (87, 4), (78, 4)],
-                    "dtype": [Dtype.int64],
+                    "shape": [(16,), (), (42, 4), (78, 256, 7, 7), (85, 256, 7, 7)],
+                    "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randint,
                 },
             ],

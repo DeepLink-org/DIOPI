@@ -6,7 +6,7 @@ inceptionv3_config = {
         name=["adaptive_avg_pool2d"],
         interface=["torch.nn.functional"],
         para=dict(
-            size=[(1, 1), (1, 1), (1, 1)],
+            output_size=[(1, 1), (1, 1), (1, 1)],
         ),
         tensor_para=dict(
             args=[
@@ -132,19 +132,20 @@ inceptionv3_config = {
     'avg_pool2d': dict(
         name=["avg_pool2d"],
         interface=["torch.nn.functional"],
+        para=dict(
+            kernel_size=[(3, 3), (3, 3), (3, 3), (3, 3), (3, 3), (3, 3)],
+            stride=[(1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1)],
+            padding=[(1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1)],
+            ceil_mode=[False, False, False, False, False, False],
+            count_include_pad=[True, True, True, True, True, True],
+            divisor_override=[None, None, None, None, None, None],
+        ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ["input"],
                     "requires_grad":[True],
                     "shape": [(32, 256, 35, 35), (32, 288, 35, 35), (32, 2048, 8, 8), (32, 768, 17, 17), (32, 1280, 8, 8), (32, 192, 35, 35)],
-                    "dtype": [Dtype.float32],
-                    "gen_fn": Genfunc.randn,
-                },
-                {
-                    "ins": ["grad_output"],
-                    "requires_grad":[False],
-                    "shape": [(32, 288, 35, 35), (32, 1280, 8, 8), (32, 2048, 8, 8), (32, 256, 35, 35), (32, 768, 17, 17), (32, 192, 35, 35)],
                     "dtype": [Dtype.float32],
                     "gen_fn": Genfunc.randn,
                 },
