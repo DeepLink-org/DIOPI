@@ -32,6 +32,9 @@ set(EXPORT_SRC
 
 message("CXX_LITERT_SRC:" ${CXX_LITERT_SRC})
 
+find_package(Python COMPONENTS Interpreter Development)
+set(PYBIND11_PYTHON_VERSION ${Python_VERSION})
+
 pybind11_add_module(${DIOPI_EXPORT_RT} SHARED ${EXPORT_SRC})
 add_library(diopiruntime SHARED ${RUNTIME_SRC})
 
@@ -76,6 +79,6 @@ endif()
 
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/../diopi_test/python)
 add_custom_target(python_copy ALL
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPI_EXPORT_FUNCTIONS}> ${CMAKE_SOURCE_DIR}/../diopi_test/python
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPI_EXPORT_RT}> ${CMAKE_SOURCE_DIR}/../diopi_test/python
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPI_EXPORT_FUNCTIONS}> ${CMAKE_SOURCE_DIR}/../diopi_test/python/diopilib
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPI_EXPORT_RT}> ${CMAKE_SOURCE_DIR}/../diopi_test/python/diopilib
     DEPENDS ${DIOPI_EXPORT_FUNCTIONS} ${DIOPI_EXPORT_RT})
