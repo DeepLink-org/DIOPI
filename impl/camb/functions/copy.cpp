@@ -30,6 +30,28 @@ static bool probableMemoryFormat(const DiopiTensor& src, diopiMemoryFormat_t* ou
     return true;
 }
 
+void removeTheFrontOneInShape(DiopiTensor& src, const std::vector<int64_t>& destShape) {
+    int64_t srcDim = src.dim();
+    int64_t destDim = destShape.size();
+    if (srcDim <= destDim) {
+        return;
+    }
+    // remove the front one in shape
+    int64_t diffDim = srcDim - destDim;
+    bool canRemoveFlag = true;
+    for (int i = 0; i < diffDim; ++i) {
+        if (src.shape()[i] != 1) {
+            canRemoveFlag = false;
+            break;
+        }
+    }
+    int64_t offset = canRemoveFlag ? diffDim : 0;
+    std::vector<int64_t> newSrcShape(src.shape().begin() + offset, src.shape().end());
+    std::vector<int64_t> newSrcStrides(src.stride().begin() + offset, src.stride().end());
+    src.asStrided(newSrcShape, newSrcStrides);
+    return;
+}
+
 diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiTensorHandle_t dest) {
     if (src == dest) {
         // the same address of pointers, return earlier
@@ -67,12 +89,14 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     if (srcTr.shape() != destTr.shape()) {
         std::vector<int64_t> destStrides;
         DiopiTensor srcBroadcasted;
+        removeTheFrontOneInShape(srcTr, destTr.shape());  // remove this when some ops (max_pool2d etc.) are refactored by right shape.
         if (broadcast(srcTr, destTr.shape(), &srcBroadcasted)) {
             srcTr = srcBroadcasted;
         } else {
             DIOPI_CHECK(false,
-                        "can't broadcast because of the mismatched shape, src's shape: " + vec2str(src.shape()) +
-                            ", the dest's shape: " + vec2str(dest.shape()));  // return
+                        "can't broadcast because of the mismatched shape, src's shape: (%s), the dest's shape: (%s)",
+                        vec2str(srcTr.shape()).c_str(),
+                        vec2str(destTr.shape()).c_str());  // return
             return diopiErrorOccurred;
         }
     }
