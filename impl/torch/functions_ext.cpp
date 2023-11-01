@@ -32,17 +32,6 @@ c10::optional<at::Generator> buildGeneratorForMha(diopiContextHandle_t ctx, diop
     return impl::aten::buildGenerator(ctx, gen);
 }
 
-void updateGeneratorStateForMha(diopiContextHandle_t ctx, diopiGeneratorHandle_t gen, const at::Tensor& atRngState) {
-    if (gen == nullptr) {
-        return;
-    }
-    auto cudaGen = at::cuda::detail::createCUDAGenerator();
-    auto cudaGenImpl = at::check_generator<at::CUDAGeneratorImpl>(cudaGen);
-    cudaGenImpl->set_current_seed(atRngState[0].item<std::int64_t>());
-    cudaGenImpl->set_philox_offset_per_thread(atRngState[1].item<std::int64_t>());
-    impl::aten::updateGeneratorHandleState(ctx, cudaGen, gen);
-}
-
 }  // namespace
 
 extern "C" {
@@ -102,22 +91,23 @@ diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiConstTensorH
                                      double dropout_p, bool is_causal, bool return_debug_mask, double scale, diopiTensorHandle_t out,
                                      diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask) {
     impl::aten::setCurCtx(ctx);
+
     auto atQ = impl::aten::buildATen(q).contiguous();
     auto atK = impl::aten::buildATen(k).contiguous();
     auto atV = impl::aten::buildATen(v).contiguous();
     auto atGen = buildGeneratorForMha(ctx, gen, dropout_p);
+
     c10::optional<at::Tensor> nullOpt;  // Workaround: flash_attn uses non-const optional& as args (which is a really bad idea)
     std::vector<at::Tensor> result = mha_fwd(atQ, atK, atV, nullOpt, dropout_p, scale, is_causal, -1, -1, return_debug_mask, atGen);
     const auto& atOutput = result[0];
     const auto& atLogSumexp = result[5];
     const auto& atDebugAttnMask = result[6];
-    const auto& atRngState = result[7];
+
     impl::aten::updateATen2Tensor(ctx, atOutput, out);
     impl::aten::updateATen2Tensor(ctx, atLogSumexp, softmax_lse);
     if (return_debug_mask) {
         impl::aten::updateATen2Tensor(ctx, atDebugAttnMask, debug_attn_mask);
     }
-    updateGeneratorStateForMha(ctx, gen, atRngState);
 
     impl::aten::unsetCurCtx();
     return diopiSuccess;
@@ -128,6 +118,7 @@ diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiCons
                                              diopiConstTensorHandle_t softmax_lse, double dropout_p, bool is_causal, diopiGeneratorHandle_t gen, double scale,
                                              diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v) {
     impl::aten::setCurCtx(ctx);
+
     auto atQ = impl::aten::buildATen(q).contiguous();
     auto atK = impl::aten::buildATen(k).contiguous();
     auto atV = impl::aten::buildATen(v).contiguous();
@@ -136,14 +127,9 @@ diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiCons
     auto atOut = impl::aten::buildATen(out).contiguous();
     auto atLogsumexp = impl::aten::buildATen(softmax_lse);
 
-    diopiTensorHandle_t statePtr = nullptr;
-    diopiGeneratorGetState(ctx, gen, &statePtr);
-    auto atState = impl::aten::buildATen(statePtr);
-
     c10::optional<at::Tensor> nullOpt;  // Workaround: flash_attn uses non-const optional& as args (which is a really bad idea)
-    auto atStateOpt = c10::optional<at::Tensor>(atState);
     std::vector<at::Tensor> result =
-        mha_bwd(atGradOut, atQ, atK, atV, atOut, atLogsumexp, nullOpt, nullOpt, nullOpt, dropout_p, scale, is_causal, -1, -1, atGen, atStateOpt);
+        mha_bwd(atGradOut, atQ, atK, atV, atOut, atLogsumexp, nullOpt, nullOpt, nullOpt, dropout_p, scale, is_causal, -1, -1, atGen, nullOpt);
     const auto& atGradQ = result[0];
     const auto& atGradK = result[1];
     const auto& atGradV = result[2];
@@ -151,6 +137,8 @@ diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiCons
     impl::aten::updateATen2Tensor(ctx, atGradQ, grad_q);
     impl::aten::updateATen2Tensor(ctx, atGradK, grad_k);
     impl::aten::updateATen2Tensor(ctx, atGradV, grad_v);
+
+    impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
 
