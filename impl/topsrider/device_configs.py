@@ -8,7 +8,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((2, 8, 32, 56, 56)),Skip((2, 64, 32, 32)),Skip((2, 96, 28)),Skip((2, 16)),],
+                    "shape": [Skip((2, 64, 32, 32)),],
                 },
             ]
         ),
