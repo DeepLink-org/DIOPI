@@ -55,7 +55,7 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
 
             DiopiTensor bcastTempTensor;
             DIOPI_CALL(dataTypeCast(ctx, tempTensor, outputTensorTemp.dtype()));
-            broadcastHelper(ctx, tempTensor, outputTensorTemp, &bcastTempTensor);
+            DIOPI_CALL(broadcastContiguous(ctx, tempTensor, outputTensorTemp.shape(), outputTensorTemp.dtype(), &bcastTempTensor));
             CnnlTensorDesc bcastTempDesc(bcastTempTensor, CNNL_LAYOUT_ARRAY);
 
             cnnlTensorDescriptor_t inputDescs[] = {inputDesc.get(), bcastTempDesc.get()};

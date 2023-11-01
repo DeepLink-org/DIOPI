@@ -55,8 +55,9 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
 
     // memory format convert if memory format is matched.
     diopiMemoryFormat_t destMemoryFormat;
-    if (srcTr.shape() == destTr.shape() && probableMemoryFormat(destTr, &destMemoryFormat) && probableMemoryFormat(srcTr, nullptr) &&
-        (srcTr.isContiguous() || destTr.isContiguous())) {
+    // cnnTranspose doesn't support float64, and contiguousOut only support convertion between the contiguous tensor and the no-contiguous tensor.
+    if (srcTr.shape() == destTr.shape() && srcTr.dtype() != diopi_dtype_float64 && probableMemoryFormat(destTr, &destMemoryFormat) &&
+        probableMemoryFormat(srcTr, nullptr) && (srcTr.isContiguous() || destTr.isContiguous())) {
         DiopiTensor destTmpTr = destTr;
         if (destTmpTr.dtype() != srcTr.dtype()) {
             destTmpTr = requiresTensor(ctx, destTr.shape(), srcTr.dtype());
@@ -72,7 +73,7 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     if (srcTr.shape() != destTr.shape()) {
         std::vector<int64_t> destStrides;
         DiopiTensor srcBroadcasted;
-        if (broadcast1(srcTr, destTr.shape(), &srcBroadcasted)) {
+        if (broadcast(srcTr, destTr.shape(), &srcBroadcasted)) {
             srcTr = srcBroadcasted;
         }
     }

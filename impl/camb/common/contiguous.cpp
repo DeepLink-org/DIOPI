@@ -230,6 +230,7 @@ diopiError_t contiguousOut(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTens
     } else {
         DIOPI_CALL(permuteTensor(src, reverseOrder));
     }
+    std::cout << "src dtype:" << DiopiDataType::dataTypeStr(src.dtype()) << " ,dest dtype:" << DiopiDataType::dataTypeStr(dest.dtype()) << std::endl;
     DIOPI_CALL(transpose(ctx, src, dest, srcLayout, destLayout, order));
     // recovery the shape and strides
     if (destMemoryFormat != diopiMemoryFormat_t::Contiguous) {
