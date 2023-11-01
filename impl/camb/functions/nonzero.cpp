@@ -29,7 +29,7 @@ diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
     } else if (inputTensor.dtype() == diopi_dtype_bool) {
         DIOPI_CALL(dataTypeCast(ctx, inputTensor, diopi_dtype_int32));
     } else {
-        DIOPI_CHECK(false,"input type of Nonzero Check failed");
+        DIOPI_CHECK(false, "input type of Nonzero Check failed");
     }
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
 
