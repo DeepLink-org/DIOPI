@@ -48,18 +48,20 @@ bool checkBroadCast(const DiopiTensor& src, const std::vector<int64_t>& targetSh
     std::vector<int64_t> srcStride = src.stride();
     int64_t srcNDims = src.dim();
     int64_t targetNDims = targetShape.size();
+    std::vector<int64_t> srcStridesAfterBroadCast(targetNDims, 0);
     if (srcNDims > targetNDims) {
         return false;
     }
     for (int64_t iSrcDim = srcNDims - 1, iTargetDim = targetNDims - 1; iSrcDim >= 0; iSrcDim--, iTargetDim--) {
         if (srcShape[iSrcDim] == targetShape[iTargetDim]) {
-            outStrides[iTargetDim] = srcStride[iSrcDim];
+            srcStridesAfterBroadCast[iTargetDim] = srcStride[iSrcDim];
         } else if (srcShape[iSrcDim] == 1) {
-            outStrides[iSrcDim] = 0;
+            srcStridesAfterBroadCast[iTargetDim] = 0;
         } else {
             return false;
         }
     }
+    outStrides = std::move(srcStridesAfterBroadCast);
     return true;
 }
 

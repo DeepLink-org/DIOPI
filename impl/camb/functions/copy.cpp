@@ -4,21 +4,11 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <iostream>
-
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
 
 namespace impl {
 namespace camb {
-
-template <typename T>
-std::ostream& operator<<(std::ostream& out, std::vector<T> vec) {
-    for (auto i : vec) {
-        out << i << " ";
-    }
-    return out;
-}
 
 static bool probableMemoryFormat(const DiopiTensor& src, diopiMemoryFormat_t* outMemoryFormat) {
     if (!outMemoryFormat) {
@@ -52,11 +42,14 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
         return diopiSuccess;
     }
     DIOPI_CHECK(destTr.defined(), "dest is not defined but src is defined.")
+    if (destTr.numel() == 0) {
+        return diopiSuccess;
+    }
 
     // memory format convert if memory format is matched.
     diopiMemoryFormat_t destMemoryFormat;
-    // cnnTranspose doesn't support float64, and contiguousOut only support convertion between the contiguous tensor and the no-contiguous tensor.
-    if (srcTr.shape() == destTr.shape() && srcTr.dtype() != diopi_dtype_float64 && probableMemoryFormat(destTr, &destMemoryFormat) &&
+    // cnnTranspose doesn't support float64 and scalar and contiguousOut only support convertion between the contiguous tensor and the no-contiguous tensor.
+    if (srcTr.shape() == destTr.shape() && srcTr.dim() != 0 && srcTr.dtype() != diopi_dtype_float64 && probableMemoryFormat(destTr, &destMemoryFormat) &&
         probableMemoryFormat(srcTr, nullptr) && (srcTr.isContiguous() || destTr.isContiguous())) {
         DiopiTensor destTmpTr = destTr;
         if (destTmpTr.dtype() != srcTr.dtype()) {
@@ -68,6 +61,7 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
         }
         return diopiSuccess;
     }
+
     // Ordinary copy
     // broadcast
     if (srcTr.shape() != destTr.shape()) {
@@ -75,6 +69,11 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
         DiopiTensor srcBroadcasted;
         if (broadcast(srcTr, destTr.shape(), &srcBroadcasted)) {
             srcTr = srcBroadcasted;
+        } else {
+            DIOPI_CHECK(false,
+                        "can't broadcast because of the mismatched shape, src's shape: " + vec2str(src.shape()) +
+                            ", the dest's shape: " + vec2str(dest.shape()));  // return
+            return diopiErrorOccurred;
         }
     }
 
