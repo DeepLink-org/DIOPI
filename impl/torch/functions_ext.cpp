@@ -98,7 +98,7 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     return diopiSuccess;
 }
 
-diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
+diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiTensorHandle_t q, diopiTensorHandle_t k, diopiTensorHandle_t v,
                                      double dropout_p, bool is_causal, bool return_debug_mask, double scale, diopiTensorHandle_t out,
                                      diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask) {
     impl::aten::setCurCtx(ctx);
@@ -111,10 +111,23 @@ diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiConstTensorH
     c10::optional<at::Tensor> nullOpt;  // Workaround: flash_attn uses non-const optional& as args (which is a really bad idea)
     std::vector<at::Tensor> result = mha_fwd(atQ, atK, atV, nullOpt, dropout_p, scale, is_causal, -1, -1, return_debug_mask, atGen);
     const auto& atOutput = result[0];
+    const auto& atQpaded = result[1];
+    const auto& atKpaded = result[2];
+    const auto& atVpaded = result[3];
+    const auto& atOutpaded = result[4];
     const auto& atLogSumexp = result[5];
     const auto& atDebugAttnMask = result[6];
+    const auto& atRngState = result[7];
+    
+    // const auto& atOutput = result[0];
+    // const auto& atLogSumexp = result[5];
+    // const auto& atDebugAttnMask = result[6];
 
-    impl::aten::updateATen2Tensor(ctx, atOutput, out);
+    impl::aten::updateATen2Tensor(ctx, atQpaded, q);
+    impl::aten::updateATen2Tensor(ctx, atKpaded, k);
+    impl::aten::updateATen2Tensor(ctx, atVpaded, v);
+    impl::aten::updateATen2Tensor(ctx, atOutpaded, out);
+    // impl::aten::updateATen2Tensor(ctx, atOutput, out);
     impl::aten::updateATen2Tensor(ctx, atLogSumexp, softmax_lse);
     if (return_debug_mask) {
         impl::aten::updateATen2Tensor(ctx, atDebugAttnMask, debug_attn_mask);
