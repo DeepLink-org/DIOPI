@@ -14,7 +14,8 @@
 
 #include <cstdint>
 
-#include "context.h"
+// TODO(lljbash): the dependency on context.h makes no sense, check and refactor
+#include "context.h"  // IWYU pragma: keep
 #include "ext_kernel.h"
 #include "functions_ext/flash-attention/include/flash_attn/flash_api.h"
 #include "helper.hpp"
@@ -53,13 +54,13 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto atCos = impl::aten::buildATen(cos);
     auto atSin = impl::aten::buildATen(sin);
     auto atOut = impl::aten::buildATen(out);
-    int last_dim = atX.dim() - 1;          // 确定最后一个维度的索引
-    auto chunks = atX.chunk(2, last_dim);  // 将 atX 切分为两个部分
+    int lastDim = atX.dim() - 1;          // 确定最后一个维度的索引
+    auto chunks = atX.chunk(2, lastDim);  // 将 atX 切分为两个部分
     auto x1 = chunks[0];
     auto x2 = chunks[1];
-    auto chunks_out = atOut.chunk(2, last_dim);
-    auto out1 = chunks_out[0];
-    auto out2 = chunks_out[1];
+    auto chunksOut = atOut.chunk(2, lastDim);
+    auto out1 = chunksOut[0];
+    auto out2 = chunksOut[1];
     ext::ops::apply_rotary_cuda(x1, x2, atCos, atSin, out1, out2, conj);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
@@ -71,10 +72,10 @@ diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     auto atOut = impl::aten::buildATen(out);
     auto atInvRMS = impl::aten::buildATen(invRMS);
     auto atInput = impl::aten::buildATen(input);
-    auto atNormalized_shape = impl::aten::buildAtIntArray(normalized_shape);
+    auto atNormalizedShape = impl::aten::buildAtIntArray(normalized_shape);
     auto atWeight = impl::aten::buildATen(weight);
     auto atBias = impl::aten::buildATen(bias);  // bias在这里实际上没有使用
-    ext::ops::rms_norm_forward(atInput, atNormalized_shape, atWeight, eps, atOut, atInvRMS);
+    ext::ops::rms_norm_forward(atInput, atNormalizedShape, atWeight, eps, atOut, atInvRMS);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -89,10 +90,10 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto atGradOutput = impl::aten::buildATen(gradOutput);
     auto atInvRMS = impl::aten::buildATen(invRMS);
     auto atInput = impl::aten::buildATen(input);
-    auto atNormalized_shape = impl::aten::buildAtIntArray(normalized_shape);
+    auto atNormalizedShape = impl::aten::buildAtIntArray(normalized_shape);
     auto atWeight = impl::aten::buildATen(weight);
     auto atBias = impl::aten::buildATen(bias);  // bias在这里实际上没有使用
-    ext::ops::rms_norm_backward(atGradOutput, atInvRMS, atInput, atNormalized_shape, atWeight, eps, atGradInput, atGradWeight);
+    ext::ops::rms_norm_backward(atGradOutput, atInvRMS, atInput, atNormalizedShape, atWeight, eps, atGradInput, atGradWeight);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -101,39 +102,16 @@ diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiConstTensorH
                                      double dropout_p, bool is_causal, bool return_debug_mask, double scale, diopiTensorHandle_t out,
                                      diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask) {
     impl::aten::setCurCtx(ctx);
-    auto atQ = impl::aten::buildATen(q);
-    auto atK = impl::aten::buildATen(k);
-    auto atV = impl::aten::buildATen(v);
+    auto atQ = impl::aten::buildATen(q).contiguous();
+    auto atK = impl::aten::buildATen(k).contiguous();
+    auto atV = impl::aten::buildATen(v).contiguous();
     auto atGen = buildGeneratorForMha(ctx, gen, dropout_p);
-    // TORCH_CHECK(false, "There are currently cuda memory errors being returned from this path.")
-    // Query -> Query (Batch x {Q_seq_len}  x Num_heads x Dim_per_head)
-    // Key   -> Key   (Batch x {KV_seq_len} x Num_heads x Dim_per_head)
-    // Value -> Value (Batch x {KV_seq_len} x Num_heads x Dim_per_head)
-    // const int64_t batch_size = atQ.size(0);
-    // const int64_t q_seq_len = atQ.size(1);
-    // const int64_t num_heads = atQ.size(2);
-    // const int64_t head_dim = atQ.size(3);
-    atQ = atQ.contiguous();
-    atK = atK.contiguous();
-    atV = atV.contiguous();
-    // std::vector<at::Tensor> mha_fwd(at::Tensor &q,                    // batch_size x seqlen_q x num_heads x head_size
-    //                                 const at::Tensor &k,              // batch_size x seqlen_k x num_heads_k x head_size
-    //                                 const at::Tensor &v,              // batch_size x seqlen_k x num_heads_k x head_size
-    //                                 c10::optional<at::Tensor> &out_,  // batch_size x seqlen_q x num_heads x head_size
-    //                                 const float p_dropout, const float softmax_scale, bool is_causal, const int window_size_left, int window_size_right,
-    //                                 const bool return_softmax, c10::optional<at::Generator> gen_);
-    // {out, q_padded, k_padded, v_padded, out_padded, softmax_lse, p, rng_state};
-    c10::optional<at::Tensor> outputNull;
-    std::vector<at::Tensor> result = mha_fwd(atQ, atK, atV, outputNull, dropout_p, scale, is_causal, -1, -1, return_debug_mask, atGen);
-    //(atOutput, atQpaded, atKpaded, atVpaded, atOutpaded, atLog_sumexp, atDebug_attn_mask, atRng_state)
-    auto atOutput = result[0];
-    auto atQpaded = result[1];
-    auto atKpaded = result[2];
-    auto atVpaded = result[3];
-    auto atOutpaded = result[4];
-    auto atLogSumexp = result[5];
-    auto atDebugAttnMask = result[6];
-    auto atRngState = result[7];
+    c10::optional<at::Tensor> nullOpt;  // Workaround: flash_attn uses non-const optional& as args (which is a really bad idea)
+    std::vector<at::Tensor> result = mha_fwd(atQ, atK, atV, nullOpt, dropout_p, scale, is_causal, -1, -1, return_debug_mask, atGen);
+    const auto& atOutput = result[0];
+    const auto& atLogSumexp = result[5];
+    const auto& atDebugAttnMask = result[6];
+    const auto& atRngState = result[7];
     impl::aten::updateATen2Tensor(ctx, atOutput, out);
     impl::aten::updateATen2Tensor(ctx, atLogSumexp, softmax_lse);
     if (return_debug_mask) {
@@ -150,85 +128,29 @@ diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiCons
                                              diopiConstTensorHandle_t softmax_lse, double dropout_p, bool is_causal, diopiGeneratorHandle_t gen, double scale,
                                              diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v) {
     impl::aten::setCurCtx(ctx);
-    // at::Tensor atGrad_q, atGrad_k, atGrad_v;
-    auto atGrad_q = impl::aten::buildATen(grad_q);
-    auto atGrad_k = impl::aten::buildATen(grad_k);
-    auto atGrad_v = impl::aten::buildATen(grad_v);
-    // at::Tensor atGrad_softmax;
-    auto atQ = impl::aten::buildATen(q);
-    auto atK = impl::aten::buildATen(k);
-    auto atV = impl::aten::buildATen(v);
+    auto atQ = impl::aten::buildATen(q).contiguous();
+    auto atK = impl::aten::buildATen(k).contiguous();
+    auto atV = impl::aten::buildATen(v).contiguous();
     auto atGen = buildGeneratorForMha(ctx, gen, dropout_p);
-    auto atGrad_out = impl::aten::buildATen(grad_out);
-    auto atOut = impl::aten::buildATen(out);
+    auto atGradOut = impl::aten::buildATen(grad_out).contiguous();
+    auto atOut = impl::aten::buildATen(out).contiguous();
     auto atLogsumexp = impl::aten::buildATen(softmax_lse);
 
-    diopiTensorHandle_t state_ptr = nullptr;
-    diopiGeneratorGetState(ctx, gen, &state_ptr);
-    auto atState = impl::aten::buildATen(state_ptr);
-    int64_t atPhilox_seed = atState[0].item<int64_t>();
-    int64_t atPhilox_offset = atState[1].item<int64_t>();
-    // c10::optional<at::tensor>
-    // c10::optional<at::Tensor> atState =
-    // TORCH_CHECK(false, "There are currently cuda memory errors being returned from this path.")
-    // Query -> Query (Batch x {Q_seq_len}  x Num_heads x Dim_per_head)
-    // Key   -> Key   (Batch x {KV_seq_len} x Num_heads x Dim_per_head)
-    // Value -> Value (Batch x {KV_seq_len} x Num_heads x Dim_per_head)
-    const int64_t batch_size = atQ.size(0);
-    const int64_t q_seq_len = atQ.size(1);
-    const int64_t num_heads = atQ.size(2);
-    const int64_t head_dim = atQ.size(3);
+    diopiTensorHandle_t statePtr = nullptr;
+    diopiGeneratorGetState(ctx, gen, &statePtr);
+    auto atState = impl::aten::buildATen(statePtr);
 
-    atQ = atQ.contiguous();
-    atK = atK.contiguous();
-    atV = atV.contiguous();
-    atGrad_out = atGrad_out.contiguous();
-    atOut = atOut.contiguous();
-
-    // K and V have to have the same Nnz, should probably torch_check
-    // assume in order to not iterate over v
-
-    //(Tensor grad_out, Tensor query, Tensor key, Tensor value, Tensor out, Tensor softmax_lse, Tensor cum_seq_q, Tensor cum_seq_k, int max_q, int max_k,
-    // float dropout_p, bool is_causal, int philox_seed, int philox_offset) -> (Tensor, Tensor, Tensor)
-
-    // std::vector<at::Tensor>
-    // mha_bwd(const at::Tensor &dout,  // batch_size x seqlen_q x num_heads, x head_size_og
-    //         const at::Tensor &q,   // batch_size x seqlen_q x num_heads x head_size
-    //         const at::Tensor &k,   // batch_size x seqlen_k x num_heads_k x head_size
-    //         const at::Tensor &v,   // batch_size x seqlen_k x num_heads_k x head_size
-    //         const at::Tensor &out,   // batch_size x seqlen_q x num_heads x head_size
-    //         const at::Tensor &softmax_lse,     // b x h x seqlen_q
-    //         c10::optional<at::Tensor> &dq_,   // batch_size x seqlen_q x num_heads x head_size
-    //         c10::optional<at::Tensor> &dk_,   // batch_size x seqlen_k x num_heads_k x head_size
-    //         c10::optional<at::Tensor> &dv_,   // batch_size x seqlen_k x num_heads_k x head_size
-    //         const float p_dropout,         // probability to drop
-    //         const float softmax_scale,
-    //         const bool is_causal,
-    //         const int window_size_left,
-    //         int window_size_right,
-    //         c10::optional<at::Generator> gen_,
-    //         c10::optional<at::Tensor> &rng_state)
-
-    //     return { dq, dk, dv, softmax_d };
-    auto atGrad_qOpt = c10::optional<at::Tensor>(atGrad_q);
-    auto atGrad_kOpt = c10::optional<at::Tensor>(atGrad_k);
-    auto atGrad_vOpt = c10::optional<at::Tensor>(atGrad_v);
+    c10::optional<at::Tensor> nullOpt;  // Workaround: flash_attn uses non-const optional& as args (which is a really bad idea)
     auto atStateOpt = c10::optional<at::Tensor>(atState);
     std::vector<at::Tensor> result =
-        mha_bwd(atGrad_out, atQ, atK, atV, atOut, atLogsumexp, atGrad_qOpt, atGrad_kOpt, atGrad_vOpt, dropout_p, scale, is_causal, -1, -1, atGen, atStateOpt);
-    //(atGrad_q, atGrad_k, atGrad_v, atGrad_softmax)
-    atGrad_q = result[0];
-    atGrad_k = result[1];
-    atGrad_v = result[2];
-    // at::Tensor atGrad_softmax = result[3];
+        mha_bwd(atGradOut, atQ, atK, atV, atOut, atLogsumexp, nullOpt, nullOpt, nullOpt, dropout_p, scale, is_causal, -1, -1, atGen, atStateOpt);
+    const auto& atGradQ = result[0];
+    const auto& atGradK = result[1];
+    const auto& atGradV = result[2];
 
-    // atGrad_q = atGrad_q.view({batch_size, q_seq_len, num_heads, head_dim});
-    // atGrad_k = atGrad_k.view({batch_size, q_seq_len, num_heads, head_dim});
-    // atGrad_v = atGrad_v.view({batch_size, q_seq_len, num_heads, head_dim});
-
-    impl::aten::updateATen2Tensor(ctx, atGrad_q, grad_q);
-    impl::aten::updateATen2Tensor(ctx, atGrad_k, grad_k);
-    impl::aten::updateATen2Tensor(ctx, atGrad_v, grad_v);
+    impl::aten::updateATen2Tensor(ctx, atGradQ, grad_q);
+    impl::aten::updateATen2Tensor(ctx, atGradK, grad_k);
+    impl::aten::updateATen2Tensor(ctx, atGradV, grad_v);
     return diopiSuccess;
 }
 
