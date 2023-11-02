@@ -41,6 +41,8 @@ def get_run_result(pr_number):
                     run_result['TOPSRIDER'] = True
                 elif "impl/supa" in filenames:
                     run_result['SUPA'] = True
+                elif "impl/droplet" in filenames:
+                    run_result['droplet'] = True
                 elif any(subpath in filenames for subpath in norunpaths):
                     continue
                 else:
@@ -49,12 +51,17 @@ def get_run_result(pr_number):
                     run_result['ASCEND'] = True
                     run_result['TOPSRIDER'] = True
                     run_result['SUPA'] = True
+                    run_result['droplet'] = True
+                    break
+
             else:
                 run_result['CAMB'] = True
                 run_result['NV'] = True
                 run_result['ASCEND'] = True
                 run_result['TOPSRIDER'] = True
                 run_result['SUPA'] = True
+                run_result['droplet'] = True
+                break
     else:
         print("Failed to fetch API")
         exit(1)
@@ -67,7 +74,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     pr_number = args.prnumber
     if pr_number == 0:
-        RUN_RESULT="NV_CAMB_ASCEND_TOPSRIDER_SUPA"
+        RUN_RESULT="NV_CAMB_ASCEND_TOPSRIDER_SUPA_DROPLET"
     else:
         RUN_RESULT=get_run_result(pr_number)
     print(RUN_RESULT)
