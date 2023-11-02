@@ -144,11 +144,11 @@ def gen_functions(options, functions_fm):
                             attrs.append(attr_types[index] + ' ' + call_args[index])
                     for vector in ins_vector:
                         convert += OT.vector_template.substitute(env=dict(param=call_args[vector], param_num=ins_vector[vector],
-                                                                param_type=attr_types[vector], handle_type='diopiConstTensorHandle_t'))
+                                                                 param_type=attr_types[vector], handle_type='diopiConstTensorHandle_t'))
                         call_args[vector] = call_args[vector] + 'DIOPI'
                     for vector in outs_vector:
                         convert += OT.vector_template.substitute(env=dict(param=call_args[vector], param_num=outs_vector[vector],
-                                                                param_type=attr_types[vector], handle_type='diopiTensorHandle_t'))
+                                                                 param_type=attr_types[vector], handle_type='diopiTensorHandle_t'))
                         call_args[vector] = call_args[vector] + 'DIOPI'
                     for out in out_ptr:
                         convert += "diopiTensorHandle_t {param}Handle = nullptr;\n".format(param=call_args[out])
@@ -157,7 +157,7 @@ def gen_functions(options, functions_fm):
                         call_args[out] = '&' + call_args[out] + 'Handle'
                     call_func = func_name + '(' + ', '.join(call_args) + ')'
                     exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(attrs), convert=convert,
-                                                        out_copy=out_copy, call_func=call_func)))
+                                                          out_copy=out_copy, call_func=call_func)))
                 else:
                     exports.append('m.def("{func_name}", {func_name});'.format(func_name=func_name))
                 if len(paras_none):
@@ -168,10 +168,10 @@ def gen_functions(options, functions_fm):
                     call_func = func_name + '(' + ', '.join(keep_args) + ')'
                     if type_change:
                         exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert=convert,
-                                                            out_copy=out_copy, call_func=call_func)))
+                                                              out_copy=out_copy, call_func=call_func)))
                     else:
                         exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert='',
-                                                            out_copy='', call_func=call_func)))
+                                                              out_copy='', call_func=call_func)))
 
     functions_fm.write("export_functions.cpp", OT.operators_template, env=dict(export_functions=exports))
 

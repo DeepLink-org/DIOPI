@@ -19,6 +19,7 @@ from . import triton_kernels
 
 _cur_dir = os.path.dirname(os.path.abspath(__file__))
 
+
 def expand_para(para_dict: dict, paras_list: list):
     r'''
     dict(a = [1,2], b = [11,22])

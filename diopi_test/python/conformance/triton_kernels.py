@@ -4,6 +4,7 @@ import triton.language as tl
 import math
 import torch.nn.functional as F
 
+
 @triton.jit
 def _fwd_kernel_apply_penalty(
     Logits, presence_penalty, frequency_penalty,
