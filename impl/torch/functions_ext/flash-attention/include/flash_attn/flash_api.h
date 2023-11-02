@@ -4,6 +4,8 @@
 
 #include <torch/extension.h>
 
+#include <vector>
+
 __attribute__((weak)) std::vector<at::Tensor> mha_fwd(at::Tensor &q,                    // batch_size x seqlen_q x num_heads x head_size
                                                       const at::Tensor &k,              // batch_size x seqlen_k x num_heads_k x head_size
                                                       const at::Tensor &v,              // batch_size x seqlen_k x num_heads_k x head_size
