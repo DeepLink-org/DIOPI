@@ -5,7 +5,7 @@ import re
 
 from conformance.global_settings import glob_vars
 from conformance.db_operation import db_conn, TestSummary, FuncList, ExcelOperation
-from conformance.diopi_runtime import diopi_rt_init
+from conformance.diopi_runtime import diopi_rt_init, default_context
 
 init_counter = 0
 
@@ -16,6 +16,11 @@ def init_dev():
     init_counter += 1
     print(f'[Device Init Times] {init_counter} .........')
     diopi_rt_init()
+
+
+@pytest.fixture(scope='function', autouse=True)
+def clear_tensors():
+    default_context.clear_tensors()
 
 
 def pytest_addoption(parser):
