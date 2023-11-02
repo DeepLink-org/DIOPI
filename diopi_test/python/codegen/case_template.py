@@ -10,7 +10,7 @@ import os
 import pickle
 import pytest
 import numpy as np
-from conformance.diopi_runtime import Tensor, from_numpy_dtype
+from conformance.diopi_runtime import Tensor, from_numpy_dtype, default_context
 from conformance.diopi_functions import ones_like
 from conformance.check_result import CheckResult
 ${test_diopi_head_import}
@@ -62,6 +62,7 @@ def test_${func_case_name}(self):
     ${forward}
     ${backward}
     ${forward_inp}
+    default_context.clear_tensors()
 """
     )
 
