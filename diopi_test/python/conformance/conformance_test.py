@@ -80,7 +80,7 @@ def allclose(cfg: dict, tensor1: np.ndarray, tensor2: np.ndarray, sum_to_compare
     atol = cfg.get('atol_half', 1e-8) if tensor1.dtype == np.float16 else cfg.get('atol', 1e-8)
     tensor1 = np.sum(tensor1) if sum_to_compare else tensor1
     tensor2 = np.sum(tensor2) if sum_to_compare else tensor2
-    matched = np.isclose(tensor1, tensor2, rtol, atol, equal_nan=True)
+    matched = np.isclose(tensor1, tensor2, rtol, atol, True)
     mismatched_num = matched.size - np.sum(matched)
     passed = mismatched_num <= default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
     if record:
@@ -385,7 +385,7 @@ class ConformanceTest(object):
     Run all functions by using input, then compare_with_gen_output with saved output
     '''
     @staticmethod
-    def run(func_name, model_name, filter_dtype_str_list, debug_level, impl_folder):
+    def run(func_name_list, model_name, filter_dtype_str_list, debug_level, impl_folder):
 
         diopi_rt_init()
         _cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -416,186 +416,189 @@ class ConformanceTest(object):
                 from .device_configs import device_configs
                 from .device_config_helper import DeviceConfig
                 device_configs = DeviceConfig.process_configs(device_configs)
-                for cfg_name in configs:
-                    cfg_func_name = configs[cfg_name]["name"]
-                    if not need_process_func(cfg_func_name, func_name, model_name):
-                        continue
-                    if cfg_name in device_configs:
-                        check_device_para_and_tensor_para(configs, device_configs, cfg_name)
+                for func_name in func_name_list:
+                    for cfg_name in configs:
+                        cfg_func_name = configs[cfg_name]["name"]
+                        if not need_process_func(cfg_func_name, func_name, model_name):
+                            continue
+                        if cfg_name in device_configs:
+                            check_device_para_and_tensor_para(configs, device_configs, cfg_name)
             else:
                 logger.error(f"device_configs.py not found in directory: {impl_folder} !")
                 import sys
                 sys.exit(0)
 
         for saved_pth in saved_pth_list:
-            cfg_name = saved_pth.rsplit("_", 1)[0]
-            cfg_func_name = saved_pth.split("::")[1].rsplit("_", 1)[0]
-            if not need_process_func(cfg_func_name, func_name, model_name):
-                continue
-
-            input_abs_path = os.path.join(inputs_dir_path, saved_pth)
-            output_abs_path = os.path.join(outputs_dir_path, saved_pth)
-            data = get_data_from_file(input_abs_path, saved_pth, "input")
-            if data is None:
-                continue
-
-            skipped = False
-            if use_device_configs:
-                if cfg_name in device_configs:
-                    device_cfg = device_configs[cfg_name]
-
-                    paras = data['cfg']['para']
-                    device_paras = device_cfg['para']
-                    for para_k, para_v in paras.items():
-                        if para_k in device_paras and para_v in device_paras[para_k]:
-                            skipped = True
-                            break
-
-                    tensor_paras = data['cfg']['tensor_para']['args']
-                    device_tensor_paras = device_cfg['tensor_para']['args']
-                    for tensor_para in tensor_paras:
-                        if skipped:
-                            break
-                        if 'dtype' in device_cfg and tensor_para['dtype'] in device_cfg['dtype']:
-                            skipped = True
-                        if tensor_para['ins'] in device_tensor_paras:
-                            device_tensor_para = device_tensor_paras[tensor_para['ins']]
-                            need_checking_keys = ['dtype', 'value', 'shape']
-                            for ck in need_checking_keys:
-                                if ck in tensor_para and ck in device_tensor_para:
-                                    if tensor_para[ck] in device_tensor_para[ck]:
-                                        skipped = True
-
-                    tol_keys_list = ['atol', 'rtol', 'atol_half', 'rtol_half']
-                    for key in tol_keys_list:
-                        if key in device_cfg:
-                            data['cfg'][key] = device_cfg[key]
-
-            if skipped:
-                logger.warning(f"Run diopi_functions.{cfg_func_name} skipped")
-                continue
-
-            need_output = False if "no_output_ref" in data['cfg'] else True
-            module = "F" if need_output else "ManualTest"
-            test_func_name = cfg_func_name if need_output else "test_" + cfg_func_name
-            if need_output:
-                output_reference = get_data_from_file(output_abs_path, saved_pth, "output")
-                if output_reference is None:
-                    continue
-            for index in range(len(data['cfg']['tensor_para']['args'])):
-                para = data['cfg']['tensor_para']['args'][index]['ins']
-                if str(para) + "stride" in data['cfg']['tensor_para']['args'][0].keys():
-                    data['function_paras'][str(para) + "stride"] = data['cfg']['tensor_para']['args'][0][str(para) + "stride"]
-            function_paras = data["function_paras"]
-            test_tag = data["cfg"]["tag"]
-            tensor_info = []
-            nhwc_list = nhwc_op[cfg_func_name] if glob_vars.nhwc and (cfg_func_name in nhwc_op) else []
-            dtype_list = dtype_op[cfg_func_name] if glob_vars.four_bytes and (cfg_func_name in dtype_op) else []
-            kwargs = function_paras['kwargs']
-            func_call_list = []
-            func_call_list.append(f"{module}.{test_func_name}(**kwargs)")
-            is_inplaces = []
-            if "inplace" in kwargs.keys():
-                is_inplaces.append(kwargs["inplace"])
-            else:
-                is_inplaces.append(False)
-                if data["cfg"].get("is_inplace", False):
-                    is_inplaces.append(True)
-                    func_call_list.append(f"{module}.{test_func_name}(**kwargs, inplace=True)")
-
-            ignore_paras_for_input_check = ops_with_states.get(test_func_name, set())
-            for func_call, is_inplace in zip(func_call_list, is_inplaces):
-                if is_inplace:
-                    if test_tag and test_tag[-1] == 'backward':
-                        test_tag.pop()
-                    test_tag.append("inplace")
-                try:
-                    if is_inplace:
-                        ignore_paras_for_input_check.add("input")
-                    np_inputs_orign = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
-                    info = convert_input_tensors(function_paras, test_tag, nhwc_list, dtype_list, filter_dtype_str_list)
-                    tensor_info = info if info else tensor_info
-                    glob_vars.cur_test_func = func_call.split('(')[0].split('.')[1]
-                    output = eval(func_call)
-                    np_inputs_after_forward = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
-                    passed, not_passed_name = np_allclose(np_inputs_orign, np_inputs_after_forward)
-                    sum_to_compare = True if 'sorted' in kwargs and ~kwargs['sorted'] else False
-                    passed = passed and compare_with_gen_output(
-                        output, data['cfg'], output_reference, sum_to_compare) if need_output else True
-                    if passed:
-                        logger.info(f"Run diopi_functions.{cfg_func_name} succeed")
-                    else:
-                        logger.info(output_abs_path)
-                        logger.info(data['cfg'])
-                        input_compare_str = "" if not_passed_name == "" else f", because of inputs: {not_passed_name} changed"
-                        logger.error(
-                            f"Run diopi_functions.{cfg_func_name} failed{input_compare_str}", tag=test_tag, info=tensor_info)
-                        if debug_level > 0:
-                            logger.error("failed config:\n%s", config_to_format_string(data['cfg']))
-                            if debug_level > 1:
-                                logger.error("failed arguments:")
-                                for key, arg in kwargs.items():
-                                    logger.error(f"{key}: {arg}")
-                                logger.error(f"output_reference:\n{output_reference}")
-                                logger.error(f"output:\n{output}")
-                except FunctionNotImplementedError as e:
-                    logger.error(f"NotImplemented: {e}")
-                    continue
-                except AttributeError as e:
-                    logger.error(f"AttributeError: {e}")
-                    continue
-                except Exception as e:
-                    logger.error(f"{e}")
+            for func_name in func_name_list:
+                cfg_name = saved_pth.rsplit("_", 1)[0]
+                cfg_func_name = saved_pth.split("::")[1].rsplit("_", 1)[0]
+                if not need_process_func(cfg_func_name, func_name, model_name):
                     continue
 
-                write_precision(data["cfg"], cfg_func_name, passed)
+                input_abs_path = os.path.join(inputs_dir_path, saved_pth)
+                output_abs_path = os.path.join(outputs_dir_path, saved_pth)
+                data = get_data_from_file(input_abs_path, saved_pth, "input")
+                if data is None:
+                    continue
 
-                if function_paras["requires_grad"] and not is_inplace:
-                    test_tag.append("backward")
-                    saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
-                    saved_backward_pth = os.path.join(outputs_dir_path, saved_backward_pth)
-                    backward_out_reference = get_data_from_file(saved_backward_pth, saved_pth, "backward output")
-                    if backward_out_reference is None:
+                skipped = False
+                if use_device_configs:
+                    if cfg_name in device_configs:
+                        device_cfg = device_configs[cfg_name]
+
+                        paras = data['cfg']['para']
+                        device_paras = device_cfg['para']
+                        for para_k, para_v in paras.items():
+                            if para_k in device_paras and para_v in device_paras[para_k]:
+                                skipped = True
+                                break
+
+                        tensor_paras = data['cfg']['tensor_para']['args']
+                        device_tensor_paras = device_cfg['tensor_para']['args']
+                        for tensor_para in tensor_paras:
+                            if skipped:
+                                break
+                            if 'dtype' in device_cfg and tensor_para['dtype'] in device_cfg['dtype']:
+                                skipped = True
+                            if tensor_para['ins'] in device_tensor_paras:
+                                device_tensor_para = device_tensor_paras[tensor_para['ins']]
+                                need_checking_keys = ['dtype', 'value', 'shape']
+                                for ck in need_checking_keys:
+                                    if ck in tensor_para and ck in device_tensor_para:
+                                        if tensor_para[ck] in device_tensor_para[ck]:
+                                            skipped = True
+
+                        tol_keys_list = ['atol', 'rtol', 'atol_half', 'rtol_half']
+                        for key in tol_keys_list:
+                            if key in device_cfg:
+                                data['cfg'][key] = device_cfg[key]
+
+                if skipped:
+                    logger.warning(f"Run diopi_functions.{cfg_func_name} skipped")
+                    continue
+
+                need_output = False if "no_output_ref" in data['cfg'] else True
+                module = "F" if need_output else "ManualTest"
+                test_func_name = cfg_func_name if need_output else "test_" + cfg_func_name
+                if need_output:
+                    output_reference = get_data_from_file(output_abs_path, saved_pth, "output")
+                    if output_reference is None:
                         continue
-                    if not isinstance(output, (list, tuple)):
-                        output = [output]
+                for index in range(len(data['cfg']['tensor_para']['args'])):
+                    para = data['cfg']['tensor_para']['args'][index]['ins']
+                    if str(para) + "stride" in data['cfg']['tensor_para']['args'][0].keys():
+                        data['function_paras'][str(para) + "stride"] = data['cfg']['tensor_para']['args'][0][str(para) + "stride"]
+                function_paras = data["function_paras"]
+                test_tag = data["cfg"]["tag"]
+                tensor_info = []
+                nhwc_list = nhwc_op[cfg_func_name] if glob_vars.nhwc and (cfg_func_name in nhwc_op) else []
+                dtype_list = dtype_op[cfg_func_name] if glob_vars.four_bytes and (cfg_func_name in dtype_op) else []
+                kwargs = function_paras['kwargs']
+                func_call_list = []
+                func_call_list.append(f"{module}.{test_func_name}(**kwargs)")
+                is_inplaces = []
+                if "inplace" in kwargs.keys():
+                    is_inplaces.append(kwargs["inplace"])
+                else:
+                    is_inplaces.append(False)
+                    if data["cfg"].get("is_inplace", False):
+                        is_inplaces.append(True)
+                        func_call_list.append(f"{module}.{test_func_name}(**kwargs, inplace=True)")
 
-                    requires_backward = data["cfg"]["requires_backward"]
-                    outputs_for_backward = output if len(requires_backward) == 0 \
-                        else [output[i] for i in requires_backward]
-
-                    backward_para = {}
-                    grad_outputs = [F.ones_like(i) for i in outputs_for_backward]
-                    backward_para["grad_outputs"] = grad_outputs
-                    for k, v in data["cfg"]['saved_args'].items():
-                        backward_para[k] = output[v]
-
+                ignore_paras_for_input_check = ops_with_states.get(test_func_name, set())
+                for func_call, is_inplace in zip(func_call_list, is_inplaces):
+                    if is_inplace:
+                        if test_tag and test_tag[-1] == 'backward':
+                            test_tag.pop()
+                        test_tag.append("inplace")
                     try:
-                        grad_input = eval(f"F.{cfg_func_name}_backward(**kwargs, **backward_para)")
-                        np_inputs_after_backward = get_np_inputs(kwargs, ignore_paras_for_input_check)
-                        passed, not_passed_name = np_allclose(np_inputs_orign, np_inputs_after_backward)
-                        passed = passed and compare_with_gen_output(grad_input, data['cfg'], backward_out_reference)
+                        if is_inplace:
+                            ignore_paras_for_input_check.add("input")
+                        ignore_paras_for_input_check.add("out")
+                        np_inputs_orign = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
+                        info = convert_input_tensors(function_paras, test_tag, nhwc_list, dtype_list, filter_dtype_str_list)
+                        tensor_info = info if info else tensor_info
+                        glob_vars.cur_test_func = func_call.split('(')[0].split('.')[1]
+                        output = eval(func_call)
+                        np_inputs_after_forward = get_np_inputs(function_paras['kwargs'], ignore_paras_for_input_check)
+                        passed, not_passed_name = np_allclose(np_inputs_orign, np_inputs_after_forward)
+                        sum_to_compare = True if 'sorted' in kwargs and ~kwargs['sorted'] else False
+                        passed = passed and compare_with_gen_output(
+                            output, data['cfg'], output_reference, sum_to_compare) if need_output else True
                         if passed:
-                            logger.info(f"Run diopi_functions.{cfg_func_name}_backward succeed")
+                            logger.info(f"Run diopi_functions.{cfg_func_name} succeed")
                         else:
+                            logger.info(output_abs_path)
+                            logger.info(data['cfg'])
                             input_compare_str = "" if not_passed_name == "" else f", because of inputs: {not_passed_name} changed"
                             logger.error(
-                                f"Run diopi_functions.{cfg_func_name}_backward failed{input_compare_str}", tag=test_tag, info=tensor_info)
+                                f"Run diopi_functions.{cfg_func_name} failed{input_compare_str}", tag=test_tag, info=tensor_info)
                             if debug_level > 0:
                                 logger.error("failed config:\n%s", config_to_format_string(data['cfg']))
                                 if debug_level > 1:
                                     logger.error("failed arguments:")
                                     for key, arg in kwargs.items():
                                         logger.error(f"{key}: {arg}")
-                                    for key, arg in backward_para.items():
-                                        logger.error(f"{key}: {arg}")
-                                    logger.error(f"grad_reference:\n{backward_out_reference}")
-                                    logger.error(f"grad:\n{grad_input}")
-                        write_precision(data["cfg"], cfg_func_name + '_bp', passed)
+                                    logger.error(f"output_reference:\n{output_reference}")
+                                    logger.error(f"output:\n{output}")
                     except FunctionNotImplementedError as e:
                         logger.error(f"NotImplemented: {e}")
+                        continue
                     except AttributeError as e:
                         logger.error(f"AttributeError: {e}")
+                        continue
                     except Exception as e:
-                        logger.error(f"Failed: {e}")
-            default_context.clear_tensors()
+                        logger.error(f"{e}")
+                        continue
+
+                    write_precision(data["cfg"], cfg_func_name, passed)
+
+                    if function_paras["requires_grad"] and not is_inplace:
+                        test_tag.append("backward")
+                        saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
+                        saved_backward_pth = os.path.join(outputs_dir_path, saved_backward_pth)
+                        backward_out_reference = get_data_from_file(saved_backward_pth, saved_pth, "backward output")
+                        if backward_out_reference is None:
+                            continue
+                        if not isinstance(output, (list, tuple)):
+                            output = [output]
+
+                        requires_backward = data["cfg"]["requires_backward"]
+                        outputs_for_backward = output if len(requires_backward) == 0 \
+                            else [output[i] for i in requires_backward]
+
+                        backward_para = {}
+                        grad_outputs = [F.ones_like(i) for i in outputs_for_backward]
+                        backward_para["grad_outputs"] = grad_outputs
+                        for k, v in data["cfg"]['saved_args'].items():
+                            backward_para[k] = output[v]
+
+                        try:
+                            grad_input = eval(f"F.{cfg_func_name}_backward(**kwargs, **backward_para)")
+                            np_inputs_after_backward = get_np_inputs(kwargs, ignore_paras_for_input_check)
+                            passed, not_passed_name = np_allclose(np_inputs_orign, np_inputs_after_backward)
+                            passed = passed and compare_with_gen_output(grad_input, data['cfg'], backward_out_reference)
+                            if passed:
+                                logger.info(f"Run diopi_functions.{cfg_func_name}_backward succeed")
+                            else:
+                                input_compare_str = "" if not_passed_name == "" else f", because of inputs: {not_passed_name} changed"
+                                logger.error(
+                                    f"Run diopi_functions.{cfg_func_name}_backward failed{input_compare_str}", tag=test_tag, info=tensor_info)
+                                if debug_level > 0:
+                                    logger.error("failed config:\n%s", config_to_format_string(data['cfg']))
+                                    if debug_level > 1:
+                                        logger.error("failed arguments:")
+                                        for key, arg in kwargs.items():
+                                            logger.error(f"{key}: {arg}")
+                                        for key, arg in backward_para.items():
+                                            logger.error(f"{key}: {arg}")
+                                        logger.error(f"grad_reference:\n{backward_out_reference}")
+                                        logger.error(f"grad:\n{grad_input}")
+                            write_precision(data["cfg"], cfg_func_name + '_bp', passed)
+                        except FunctionNotImplementedError as e:
+                            logger.error(f"NotImplemented: {e}")
+                        except AttributeError as e:
+                            logger.error(f"AttributeError: {e}")
+                        except Exception as e:
+                            logger.error(f"Failed: {e}")
+                default_context.clear_tensors()

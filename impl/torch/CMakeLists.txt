@@ -33,7 +33,11 @@ set(REAL_IMPL_SRC ${REAL_IMPL_SRC}
                   roi_align_kernel.cu
                   functions.cpp
                   functions_mmcv.cpp
+                  functions_lightllm.cpp
                   error.cpp)
+execute_process(
+    COMMAND sh -c "rm ~/.triton/diopi/ -rv; mkdir -p ~/.triton/diopi/ ; cp ${CMAKE_CURRENT_SOURCE_DIR}/fatbin/* ~/.triton/diopi/ -v"
+)
 
 if(HIP)
     include(../cmake/LoadHIP.cmake)
