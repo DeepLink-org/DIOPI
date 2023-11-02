@@ -29,6 +29,8 @@ diopiError_t diopiSqrt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     return diopiSuccess;
 }
 
+diopiError_t diopiSqrtInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiSqrt(ctx, input, input); }
+
 diopiError_t diopiErf(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     AclOpRunner<1, 1>("Erfinv", ctx).addInput(input).addOutput(out).run();
     return diopiSuccess;

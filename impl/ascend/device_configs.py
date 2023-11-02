@@ -305,7 +305,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erf', 'erfinv', 'exp', 'asin', 'sqrt', 'rsqrt', 'ceil', 'atan'],
+        name=['erf', 'erfinv', 'exp', 'asin', 'rsqrt', 'ceil', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -317,7 +317,7 @@ device_configs = {
     ),
 
     'pointwise_op_int_without_inplace': dict(
-        name=['erf', 'exp', 'asin', 'sqrt', 'rsqrt', 'atan'],
+        name=['erf', 'exp', 'asin', 'rsqrt', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -329,7 +329,7 @@ device_configs = {
     ),
 
     'pointwise_op_uint8': dict(
-        name=['erf', 'exp', 'asin', 'sqrt', 'rsqrt', 'atan'],
+        name=['erf', 'exp', 'asin', 'rsqrt', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -353,7 +353,7 @@ device_configs = {
     ),
 
     'pointwise_op_bool': dict(
-        name=['erf', 'exp', 'asin', 'sqrt', 'rsqrt', 'atan'],
+        name=['erf', 'exp', 'asin', 'rsqrt', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -365,7 +365,7 @@ device_configs = {
     ),
 
     'pointwise_op_abs_input': dict(
-        name=['sqrt', 'rsqrt'],
+        name=['rsqrt'],
         tensor_para=dict(
             args=[
                 {
@@ -449,7 +449,7 @@ device_configs = {
     ),
 
     'pointwise_op_zero': dict(
-        name=['exp', 'sqrt', 'rsqrt', 'ceil'],
+        name=['exp', 'rsqrt', 'ceil'],
         tensor_para=dict(
             args=[
                 {
@@ -461,7 +461,7 @@ device_configs = {
     ),
 
     'pointwise_op_without_inplace_zero': dict(
-        name=['sign', 'exp', 'sqrt', 'rsqrt'],
+        name=['sign', 'exp', 'rsqrt'],
         tensor_para=dict(
             args=[
                 {
@@ -2188,25 +2188,10 @@ device_configs = {
 
     'layer_norm': dict(
         name=['layer_norm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 5, 3, 5)),Skip((2, 3136, 128)),Skip((2, 64)),Skip((32,)),Skip((2, 5, 3, 5)),Skip((2, 16, 128)),],
-                },
-            ]
-        ),
-    ),
-
-    'layer_norm_empty_tensor': dict(
-        name=['layer_norm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((0,)),Skip((0, 12)),Skip((6, 0, 9)),],
-                },
-            ]
+        atol=1e-4,
+        rtol=1e-4,
+        para=dict(
+            eps=[Skip(2),],
         ),
     ),
 

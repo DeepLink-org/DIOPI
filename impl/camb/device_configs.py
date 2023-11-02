@@ -1720,46 +1720,6 @@ device_configs = {
         )
     ),
 
-    'copy': dict(
-        name=["copy_"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16),
-                              Skip(np.int64), Skip(np.int32), Skip(np.int16),
-                              Skip(np.int8), Skip(np.uint8), Skip(np.bool_)],
-                },
-            ]
-        )
-    ),
-
-    'copy_different_dtype': dict(
-        name=["copy_"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16),
-                              Skip(np.int64), Skip(np.int32), Skip(np.int16),
-                              Skip(np.int8), Skip(np.uint8), Skip(np.bool_)],
-                },
-            ]
-        )
-    ),
-
-    'copy_broadcast': dict(
-        name=["copy_"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(np.float64), Skip(np.float32)],
-                },
-            ]
-        )
-    ),
-
     'interpolate': dict(
         name=["interpolate"],
         atol=1e-4,
