@@ -20,6 +20,7 @@ def init_dev():
 
 @pytest.fixture(scope='function', autouse=True)
 def clear_tensors():
+    yield
     default_context.clear_tensors()
 
 
