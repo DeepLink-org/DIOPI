@@ -22,8 +22,8 @@ bool isComplexDtype(diopiDtype_t dtype) { return (dtype == diopi_dtype_complex32
 
 inline bool canCastByInt32(uint64_t castType) {
     // special convert (cnnl doesn't support)
-    constexpr uint64_t boolInt64 = MAKE_KEY(diopi_dtype_bool, diopi_dtype_int64);
     constexpr uint64_t boolInt8 = MAKE_KEY(diopi_dtype_bool, diopi_dtype_int8);
+    constexpr uint64_t boolInt64 = MAKE_KEY(diopi_dtype_bool, diopi_dtype_int64);
     constexpr uint64_t int16Int64 = MAKE_KEY(diopi_dtype_int16, diopi_dtype_int64);
     constexpr uint64_t uint8Bool = MAKE_KEY(diopi_dtype_uint8, diopi_dtype_bool);
     constexpr uint64_t int16Bool = MAKE_KEY(diopi_dtype_int16, diopi_dtype_bool);
