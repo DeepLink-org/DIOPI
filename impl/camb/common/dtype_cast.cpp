@@ -33,7 +33,7 @@ inline bool canCastByInt32(uint64_t castType) {
     constexpr uint64_t int64Int8 = MAKE_KEY(diopi_dtype_int64, diopi_dtype_int8);
 
     return boolInt64 == castType || int16Int64 == castType || uint8Bool == castType || int16Bool == castType || int64Bool == castType || int8Bool == castType ||
-           int8Int64 == castType || int64Int8 == castType || boolInt8;
+           int8Int64 == castType || int64Int8 == castType || boolInt8 == castType;
 }
 
 inline bool canCastByFloat32(uint64_t castType) {
