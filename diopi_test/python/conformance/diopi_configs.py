@@ -13,7 +13,11 @@ ops_with_states = {"batch_norm": {"running_mean", "running_var"},
                    "copy_": {"input"},
                    "cast_dtype": {"out"},
                    "batch_norm_gather_stats_with_counts": {"running_mean", "running_var"},
-                   "apply_penalty": {"logits"}
+                   "apply_penalty": {"logits"},
+                   "context_attention": {"out"},
+                   "destindex_copy_kv": {"out"},
+                   "token_attention": {"out"},
+                   "token_softmax_reducev": {"out"}
                    }
 
 
