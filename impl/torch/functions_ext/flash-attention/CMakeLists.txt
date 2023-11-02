@@ -1,6 +1,6 @@
 add_library(flash_attn_2_cuda.cpython-38-x86_64-linux-gnu SHARED IMPORTED)
 set_target_properties(flash_attn_2_cuda.cpython-38-x86_64-linux-gnu PROPERTIES
-  IMPORTED_LOCATION /mnt/cachenew/lilingjie/workspace/flash-attention/build/lib.linux-x86_64-cpython-38/flash_attn_2_cuda.cpython-38-x86_64-linux-gnu.so
+  IMPORTED_LOCATION /mnt/cache/share/platform/download/workspace/flash_attn_2_cuda.cpython-38-x86_64-linux-gnu.so
   PREFIX "")
   
 add_library(diopi_torch_ext_flash_attn INTERFACE)
