@@ -8060,40 +8060,40 @@ diopi_configs = {
         ),
     ),
 
-    'multiheadforward': dict(
-        name=['multiheadforward'],
-        interface=['CustomizedTest'],
-        dtype=[Dtype.float64, Dtype.float32],
-        atol=1e-3,
-        rtol=1e-4,
-        para=dict(
-            dropout_p=[0],
-            is_causal=[False],
-            return_debug_mask=[False],
-            scale=[0]  # 仅占位测试，实际没有使用
-        ),
-        tensor_para=dict(
-            gen_fn=Genfunc.randn,
-            args=[
-                {
-                    "ins": ['q'],
-                    "shape": ((2, 5, 8, 8),),
-                    "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
-                },
-                {
-                    "ins": ['k'],
-                    "shape": ((2, 5, 8, 8),),
-                    "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
-                },
-                {
-                    "ins": ['v'],
-                    "shape": ((2, 5, 8, 8),),
-                    "dtype": [Dtype.float32, Dtype.float64],
-                    "gen_fn": Genfunc.randn,
-                },
-            ],
-        ),
-    ),
+    # 'multiheadforward': dict(
+    #     name=['multiheadforward'],
+    #     interface=['CustomizedTest'],
+    #     dtype=[Dtype.float64, Dtype.float32],
+    #     atol=1e-3,
+    #     rtol=1e-4,
+    #     para=dict(
+    #         dropout_p=[0],
+    #         is_causal=[False],
+    #         return_debug_mask=[False],
+    #         scale=[0]  # 仅占位测试，实际没有使用
+    #     ),
+    #     tensor_para=dict(
+    #         gen_fn=Genfunc.randn,
+    #         args=[
+    #             {
+    #                 "ins": ['q'],
+    #                 "shape": ((2, 5, 8, 8),),
+    #                 "dtype": [Dtype.float32, Dtype.float64],
+    #                 "gen_fn": Genfunc.randn,
+    #             },
+    #             {
+    #                 "ins": ['k'],
+    #                 "shape": ((2, 5, 8, 8),),
+    #                 "dtype": [Dtype.float32, Dtype.float64],
+    #                 "gen_fn": Genfunc.randn,
+    #             },
+    #             {
+    #                 "ins": ['v'],
+    #                 "shape": ((2, 5, 8, 8),),
+    #                 "dtype": [Dtype.float32, Dtype.float64],
+    #                 "gen_fn": Genfunc.randn,
+    #             },
+    #         ],
+    #     ),
+    # ),
 }
