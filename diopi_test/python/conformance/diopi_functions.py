@@ -3943,7 +3943,7 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
     return out
 
 
-def multiheadforward(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
+def multihead_attention_forward(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
     call = "diopiMultiHeadAttention"
     func = check_function(call)
     q_size = list(q.size().data)

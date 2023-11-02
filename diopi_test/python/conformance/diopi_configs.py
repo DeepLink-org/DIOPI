@@ -8038,8 +8038,8 @@ diopi_configs = {
         ),
     ),
 
-    # 'multiheadforward': dict(
-    #     name=['multiheadforward'],
+    # 'multihead_attention_forward': dict(
+    #     name=['multihead_attention_forward'],
     #     interface=['CustomizedTest'],
     #     dtype=[Dtype.float64, Dtype.float32],
     #     atol=1e-3,
