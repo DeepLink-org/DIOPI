@@ -10,7 +10,7 @@
 
 namespace impl {
 namespace camb {
-diopiError_t broadcast(diopiContextHandle_t ctx, DiopiTensor& out, const DiopiTensor& input) {
+diopiError_t broadcastContiguous(diopiContextHandle_t ctx, DiopiTensor& out, const DiopiTensor& input) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     // check whether input.shape() match the targetShape
     std::vector<int64_t> targetShape = out.shape();
@@ -30,11 +30,12 @@ diopiError_t broadcast(diopiContextHandle_t ctx, DiopiTensor& out, const DiopiTe
     return diopiSuccess;
 }
 
-diopiError_t broadcastHelper(diopiContextHandle_t ctx, DiopiTensor inputTensor, DiopiTensor targetTensor, DiopiTensor* outTensor) {
+diopiError_t broadcastContiguous(diopiContextHandle_t ctx, DiopiTensor inputTensor, const std::vector<int64_t>& targetShape, diopiDtype_t targetDtype,
+                                 DiopiTensor* outTensor) {
     DiopiTensor bcastInputTensor;
-    if (inputTensor.shape() != targetTensor.shape()) {
-        bcastInputTensor = requiresTensor(ctx, vec2diopiSizeT(targetTensor.shape()), targetTensor.dtype());
-        DIOPI_CALL(broadcast(ctx, bcastInputTensor, inputTensor));
+    if (inputTensor.shape() != targetShape) {
+        bcastInputTensor = requiresTensor(ctx, vec2diopiSizeT(targetShape), targetDtype);
+        DIOPI_CALL(broadcastContiguous(ctx, bcastInputTensor, inputTensor));
     } else {
         bcastInputTensor = inputTensor;
     }
@@ -42,5 +43,35 @@ diopiError_t broadcastHelper(diopiContextHandle_t ctx, DiopiTensor inputTensor, 
     return diopiSuccess;
 }
 
+bool checkBroadCast(const DiopiTensor& src, const std::vector<int64_t>& targetShape, std::vector<int64_t>& outStrides) {
+    std::vector<int64_t> srcShape = src.shape();
+    std::vector<int64_t> srcStride = src.stride();
+    int64_t srcNDims = src.dim();
+    int64_t targetNDims = targetShape.size();
+    std::vector<int64_t> srcStridesAfterBroadCast(targetNDims, 0);
+    if (srcNDims > targetNDims) {
+        return false;
+    }
+    for (int64_t iSrcDim = srcNDims - 1, iTargetDim = targetNDims - 1; iSrcDim >= 0; iSrcDim--, iTargetDim--) {
+        if (srcShape[iSrcDim] == targetShape[iTargetDim]) {
+            srcStridesAfterBroadCast[iTargetDim] = srcStride[iSrcDim];
+        } else if (srcShape[iSrcDim] == 1) {
+            srcStridesAfterBroadCast[iTargetDim] = 0;
+        } else {
+            return false;
+        }
+    }
+    outStrides = std::move(srcStridesAfterBroadCast);
+    return true;
+}
+
+bool broadcast(DiopiTensor inputTensor, const std::vector<int64_t>& targetShape, DiopiTensor* outTensor) {
+    std::vector<int64_t> strides;
+    if (checkBroadCast(inputTensor, targetShape, strides)) {
+        *outTensor = inputTensor.asStrided(targetShape, strides);
+        return true;
+    }
+    return false;
+}
 }  // namespace camb
 }  // namespace impl

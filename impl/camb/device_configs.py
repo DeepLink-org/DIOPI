@@ -191,13 +191,11 @@ device_configs = {
         name=["nll_loss"],
         atol=1e-3,
         rtol=1e-3,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": (Skip((5, 16, 0)), Skip((0, 16,)), Skip((4, 82, 0, 3))),
-                },
-            ],
+        para=dict(
+            # Now, there is a problem calculating for total weight,
+            # which will be fixed in later cnnl kernel update.
+            # See loss.cpp for more details
+            reduction=[Skip('mean')],
         ),
     ),
 
@@ -1705,46 +1703,6 @@ device_configs = {
                 {
                     "ins": ["input"],
                     "shape": (Skip((0,)), Skip((0, 12))),
-                },
-            ]
-        )
-    ),
-
-    'copy': dict(
-        name=["copy_"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ]
-        )
-    ),
-
-    'copy_different_dtype': dict(
-        name=["copy_"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32), Skip(Dtype.float16),
-                              Skip(Dtype.int64), Skip(Dtype.int32), Skip(Dtype.int16),
-                              Skip(Dtype.int8), Skip(Dtype.uint8), Skip(Dtype.bool)],
-                },
-            ]
-        )
-    ),
-
-    'copy_broadcast': dict(
-        name=["copy_"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(Dtype.float64), Skip(Dtype.float32)],
                 },
             ]
         )
