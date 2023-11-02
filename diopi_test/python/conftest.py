@@ -7,13 +7,16 @@ from conformance.global_settings import glob_vars
 from conformance.db_operation import db_conn, TestSummary, FuncList, ExcelOperation
 from conformance.diopi_runtime import diopi_rt_init
 
+@pytest.fixture(scope='session', autouse=True)
+def init_dev():
+    diopi_rt_init()
+
 
 def pytest_addoption(parser):
     parser.addoption('--impl_folder', type=str, default='', help='folder to find device configs')
 
 
 def pytest_sessionstart(session):
-    diopi_rt_init()
     db_conn.init_test_flag()
     db_conn.drop_case_table(TestSummary)
     db_conn.drop_case_table(FuncList)
