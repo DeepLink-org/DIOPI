@@ -10,6 +10,7 @@
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
+#include "../common/debug.hpp"
 
 namespace impl {
 namespace camb {

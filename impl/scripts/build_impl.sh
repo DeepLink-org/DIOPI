@@ -34,8 +34,6 @@ case $1 in
     (cd third_party/mmcv_diopi && rm -rf build && mkdir build \
         && MMCV_WITH_DIOPI=1 MMCV_WITH_OPS=1 python setup.py build_ext -i) \
     || exit -1;;
-  droplet)
-    mkdir build && cd build && cmake .. -DIMPL_OPT=droplet  -DTEST=ON && make -j8 || exit -1;;
   supa)
     mkdir -p build && cd build && cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=supa -DTEST=ON && make -j8 || exit -1;;
   *)

@@ -58,13 +58,13 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
                             diopiTensorHandle_t runningVar, bool training, double momentum, double eps) {
     if (runningMean == nullptr) {
         makeTensorLike(ctx, &runningMean, weight, diopi_dtype_float32);
-        diopiScalar_t zero = constructDiopiScalarT(diopi_dtype_float64, 0);
+        diopiScalar_t zero = constructDiopiScalarT(diopi_dtype_float32, 0);
         diopiFill(ctx, runningMean, &zero);
     }
     if (runningVar == nullptr) {
         makeTensorLike(ctx, &runningVar, weight, diopi_dtype_float32);
-        diopiScalar_t one = constructDiopiScalarT(diopi_dtype_float64, 1);
-        diopiFill(ctx, runningVar, &one);
+        diopiScalar_t one = constructDiopiScalarT(diopi_dtype_float32, 1);
+        diopiFill(ctx, runningMean, &one);
     }
 
     AscendTensor inputAt(input), outputAt(out);
@@ -97,7 +97,7 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
         diopiGetTensorStride(runningMean, &stride);
         diopiRequireTensor(ctx, &sum, &shape, &stride, diopiDtype_t::diopi_dtype_float32, diopi_device);
         diopiRequireTensor(ctx, &squareSum, &shape, &stride, diopiDtype_t::diopi_dtype_float32, diopi_device);
-        AclOpRunner<1, 2>("BNTrainingReduce", ctx).addInput(inputAt).addOutput(sum).addOutput(squareSum).run();
+        AclOpRunner<1, 2>("BNTrainingReduce", ctx).addInput(inputAt).setAttr("epsilon", static_cast<float>(eps)).addOutput(sum).addOutput(squareSum).run();
         AclOpRunner<7, 5>("BNTrainingUpdate", ctx)
             .addInput(inputAt)
             .addInput(sum)

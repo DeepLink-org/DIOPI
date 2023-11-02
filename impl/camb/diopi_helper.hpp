@@ -15,7 +15,6 @@
 #include <cstdio>
 #include <cstring>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -27,24 +26,7 @@
 namespace impl {
 namespace camb {
 
-/********************************* utils begin ****************************/
 void getFuncName(const char* expr, char* name);
-
-template <typename T>
-std::string vec2str(std::vector<T> vec) {
-    std::string str;
-    std::string strTmp;
-    std::stringstream ss;
-    for (auto i : vec) {
-        ss << i << ", ";
-    }
-    while (ss) {
-        ss >> strTmp;
-        str += strTmp;
-    }
-    return str;
-}
-/********************************* utils end ****************************/
 
 }  // namespace camb
 }  // namespace impl

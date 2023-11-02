@@ -353,8 +353,8 @@ static diopiError_t tensorMatmulTensor(diopiContextHandle_t ctx, DiopiTensor out
 
         DiopiTensor inputExpand = requiresTensor(ctx, tensor1ExpandSize, inputTensor.dtype());
         DiopiTensor otherExpand = requiresTensor(ctx, tensor2ExpandSize, otherTensor.dtype());
-        DIOPI_CALL(broadcastContiguous(ctx, inputExpand, inputTensor));
-        DIOPI_CALL(broadcastContiguous(ctx, otherExpand, otherTensor));
+        broadcast(ctx, inputExpand, inputTensor);
+        broadcast(ctx, otherExpand, otherTensor);
         inputExpand.view(tensor1BmmView);
         otherExpand.view(tensor2BmmView);
 

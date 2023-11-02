@@ -218,14 +218,9 @@ diopiError_t diopiMaximum(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
 }
 
 diopiError_t diopiMinimum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    AscendTensor inputAt(input), otherAt(other), outAt(out);
-    if (0 == inputAt.numel() || 0 == otherAt.numel()) {
-        diopiScalar_t zero = constructDiopiScalarT(inputAt.dtype(), 0);
-        diopiFill(ctx, out, &zero);
-        return diopiSuccess;
-    }
-    AclOpRunner<2, 1>("Minimum", ctx).addInput(input, outAt.dtype()).addInput(other, outAt.dtype()).addOutput(out).run();
-
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(out, &dtype);
+    AclOpRunner<2, 1>("Minimum", ctx).addInput(input, dtype).addInput(other, dtype).addOutput(out).run();
     return diopiSuccess;
 }
 

@@ -34,12 +34,6 @@
 - diopiConvTranspose2dBackward:
     layout: NHWC
 
-- diopiBatchNorm:
-    layout: NLC, NHWC, NDHWC
-
-- diopiBatchNormBackward:
-    layout: NLC, NHWC, NDHWC
-
 - diopiBatchNormBackwardReduce:
     layout: NLC, NHWC, NDHWC
 

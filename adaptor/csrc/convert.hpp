@@ -254,6 +254,7 @@ public:
         }
         diopiTensorHandle_t memoryFormatedTensor = tmp_;
         if (convertType_.isMemoryFormatConverted()) {
+            diopiContiguous(ctx_, &memoryFormatedTensor, tmp_, diopiMemoryFormat_t::Contiguous);
             diopiCopyInp(ctx_, memoryFormatedTensor, payload_);
         }
         if (convertType_.isDtypeConverted()) {

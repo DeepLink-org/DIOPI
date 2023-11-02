@@ -10,46 +10,12 @@
 #include <algorithm>
 #include <sstream>
 #include <string>
-#include <vector>
 
 #include "../ascend_tensor.hpp"
 #include "impl_functions.hpp"
 
 namespace impl {
 namespace ascend {
-
-template <typename T>
-void printVectorWithShape(const std::vector<T>& data, const std::vector<int64_t>& shape, size_t depth, size_t& index) {
-    if (depth >= shape.size()) {
-        return;
-    }
-    int64_t elements = shape[depth];
-
-    if (depth == shape.size() - 1) {
-        // deepest, cout data
-        std::cout << "[";
-        for (int64_t i = 0; i < elements; ++i) {
-            // std::cout << "  " << std::fixed << std::setprecision(5);
-            std::cout << data[index++];
-            if (i < elements - 1) {
-                std::cout << ", ";
-            }
-        }
-        std::cout << "]";
-        if (depth != 0) {
-            std::cout << ",";
-        }
-        std::cout << std::endl;
-    } else {
-        // not deepest, dfs
-        std::cout << "[";
-        for (int64_t i = 0; i < elements; ++i) {
-            printVectorWithShape(data, shape, depth + 1, index);
-        }
-        std::cout << "]";
-        std::cout << std::endl;
-    }
-}
 
 inline std::string dumpTensor(diopiConstTensorHandle_t th, const std::string& message = "") {
     std::stringstream stream;

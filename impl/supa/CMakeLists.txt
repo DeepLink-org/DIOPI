@@ -40,16 +40,9 @@ endif()
 
 find_library(DIOPI_BR_LIB NAMES ${DEVICEIMPL} HINTS ${DIOPI_SUPA_DIR}/lib ${DIOPI_SUPA_DIR}/lib64)
 message(STATUS "DIOPI-IMPL lib: ${DIOPI_BR_LIB}")
-
 if(NOT DIOPI_BR_LIB)
     message(FATAL_ERROR "${DEVICEIMPL} library not found !")
 endif()
-
-# ln -sf /*/libdiopi_impl.so impl/lib/libdiopi_impl.so
-execute_process(
-    COMMAND mkdir -p ${LIBRARY_OUTPUT_PATH}
-    COMMAND ln -fs ${DIOPI_BR_LIB} ${LIBRARY_OUTPUT_PATH}/lib${DEVICEIMPL}.so
-)
 
 if (TEST)
   add_subdirectory(test)

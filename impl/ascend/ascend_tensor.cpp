@@ -194,7 +194,7 @@ aclFormat AscendTensor::getAclDataFormat() const {
             return ACL_FORMAT_NDHWC;
         }
 
-        warning("getAclDataFormat warning. Acl only support NCDHW or NDHWC format! but get %s", dumpTensor(tensor_).c_str());
+        warning("getAclDataFormat error. Acl only support NCDHW or NDHWC format! but get %s", dumpTensor(tensor_).c_str());
     } else if (dim() == 4) {
         std::array<int64_t, 4> thStride{stride(0), stride(1), stride(2), stride(3)};
         {
@@ -221,7 +221,7 @@ aclFormat AscendTensor::getAclDataFormat() const {
         if (thStride == nhwcStride) {
             return ACL_FORMAT_NHWC;
         }
-        warning("getAclDataFormat warning. Acl only support NCHW or NHWC format! but get %s", dumpTensor(tensor_).c_str());
+        warning("getAclDataFormat error. Acl only support NCHW or NHWC format! but get %s", dumpTensor(tensor_).c_str());
     }
     return ACL_FORMAT_ND;
 }

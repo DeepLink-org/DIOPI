@@ -87,7 +87,7 @@ def obtain_impl_func(dir):
     pattern = re.compile(pattern)
     files = findAllFile(dir)
     for file_path in files:
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(file_path, 'r') as file:
             c_code = file.read()
 
         matches = re.findall(pattern, c_code)
@@ -104,7 +104,7 @@ def obtain_impl_func(dir):
             if func_name not in impl_functions.keys():
                 impl_functions[func_name] = {"func_name":func_name, "args":args_after_fmt, "return_type":"diopiError_t"}
 
-    return impl_functions
+    return  impl_functions
 
 
 # get the func declararion in the file_path

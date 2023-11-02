@@ -9,7 +9,6 @@
 namespace impl {
 namespace camb {
 
-/********************************* utils begin ****************************/
 void getFuncName(const char* expr, char* name) {
     for (int i = 0; i < strlen(expr); ++i) {
         if (expr[i] == '(') {
@@ -20,8 +19,6 @@ void getFuncName(const char* expr, char* name) {
     }
     return;
 }
-
-/********************************* utils end****************************/
 
 // DiopiDataType
 
