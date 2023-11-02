@@ -4,14 +4,14 @@
 
 #include <torch/extension.h>
 
-std::vector<at::Tensor> mha_fwd(at::Tensor &q,                    // batch_size x seqlen_q x num_heads x head_size
+__attribute__((weak)) std::vector<at::Tensor> mha_fwd(at::Tensor &q,                    // batch_size x seqlen_q x num_heads x head_size
                                 const at::Tensor &k,              // batch_size x seqlen_k x num_heads_k x head_size
                                 const at::Tensor &v,              // batch_size x seqlen_k x num_heads_k x head_size
                                 c10::optional<at::Tensor> &out_,  // batch_size x seqlen_q x num_heads x head_size
                                 const float p_dropout, const float softmax_scale, bool is_causal, const int window_size_left, int window_size_right,
                                 const bool return_softmax, c10::optional<at::Generator> gen_);
 
-std::vector<at::Tensor> mha_varlen_fwd(const at::Tensor &q,              // total_q x num_heads x head_size, total_q := \sum_{i=0}^{b} s_i
+__attribute__((weak)) std::vector<at::Tensor> mha_varlen_fwd(const at::Tensor &q,              // total_q x num_heads x head_size, total_q := \sum_{i=0}^{b} s_i
                                        const at::Tensor &k,              // total_k x num_heads_k x head_size, total_k := \sum_{i=0}^{b} s_i
                                        const at::Tensor &v,              // total_k x num_heads_k x head_size, total_k := \sum_{i=0}^{b} s_i
                                        c10::optional<at::Tensor> &out_,  // total_q x num_heads x head_size, total_k := \sum_{i=0}^{b} s_i
@@ -21,7 +21,7 @@ std::vector<at::Tensor> mha_varlen_fwd(const at::Tensor &q,              // tota
                                        const bool zero_tensors, const bool is_causal, const int window_size_left, int window_size_right,
                                        const bool return_softmax, c10::optional<at::Generator> gen_);
 
-std::vector<at::Tensor> mha_bwd(const at::Tensor &dout,          // batch_size x seqlen_q x num_heads, x head_size_og
+__attribute__((weak)) std::vector<at::Tensor> mha_bwd(const at::Tensor &dout,          // batch_size x seqlen_q x num_heads, x head_size_og
                                 const at::Tensor &q,             // batch_size x seqlen_q x num_heads x head_size
                                 const at::Tensor &k,             // batch_size x seqlen_k x num_heads_k x head_size
                                 const at::Tensor &v,             // batch_size x seqlen_k x num_heads_k x head_size
@@ -34,7 +34,7 @@ std::vector<at::Tensor> mha_bwd(const at::Tensor &dout,          // batch_size x
                                 const float softmax_scale, const bool is_causal, const int window_size_left, int window_size_right,
                                 c10::optional<at::Generator> gen_, c10::optional<at::Tensor> &rng_state);
 
-std::vector<at::Tensor> mha_varlen_bwd(const at::Tensor &dout,          // total_q x num_heads, x head_size
+__attribute__((weak)) std::vector<at::Tensor> mha_varlen_bwd(const at::Tensor &dout,          // total_q x num_heads, x head_size
                                        const at::Tensor &q,             // total_q x num_heads x head_size, total_q := \sum_{i=0}^{b} s_i
                                        const at::Tensor &k,             // total_k x num_heads_k x head_size, total_k := \sum_{i=0}^{b} s_i
                                        const at::Tensor &v,             // total_k x num_heads_k x head_size, total_k := \sum_{i=0}^{b} s_i
@@ -51,7 +51,7 @@ std::vector<at::Tensor> mha_varlen_bwd(const at::Tensor &dout,          // total
                                        const float softmax_scale, const bool zero_tensors, const bool is_causal, const int window_size_left,
                                        int window_size_right, c10::optional<at::Generator> gen_, c10::optional<at::Tensor> &rng_state);
 
-std::vector<at::Tensor> mha_fwd_kvcache(at::Tensor &q, const at::Tensor &kcache, const at::Tensor &vcache, const at::Tensor &k, const at::Tensor &v,
+__attribute__((weak)) std::vector<at::Tensor> mha_fwd_kvcache(at::Tensor &q, const at::Tensor &kcache, const at::Tensor &vcache, const at::Tensor &k, const at::Tensor &v,
                                         const at::Tensor &seqlens_k, const at::Tensor &rotary_cos, const at::Tensor &rotary_sin,
                                         const at::Tensor &cache_batch_idx, float softmax_scale, bool is_causal, int window_size_left, int window_size_right,
                                         bool is_rotary_interleaved, int num_splits);

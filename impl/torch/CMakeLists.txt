@@ -52,6 +52,29 @@ if(USE_HIP)
     )
 endif()
 
+execute_process(
+  COMMAND python ${CMAKE_SOURCE_DIR}/get_cuda_arch.py
+  OUTPUT_VARIABLE CUDA_ARCH_OUTPUT
+  ERROR_VARIABLE CUDA_ERROR_OUTPUT
+  RESULT_VARIABLE CUDA_RESULT
+)
+
+if (CUDA_RESULT EQUAL 0)
+  string(STRIP ${CUDA_ARCH_OUTPUT} CUDA_ARCH_OUTPUT)  
+  message("CUDA Architecture of the current device: ${CUDA_ARCH_OUTPUT}")
+    if (CUDA_ARCH_OUTPUT GREATER_EQUAL 7.5)
+      message("CUDA architecture is greater than or equal to 7.5, compile link flash")
+      set(FLASH_MODULE "True")
+  else()
+      message("CUDA architecture is less than 7.5, skip")
+      set(FLASH_MODULE "False")
+  endif()
+else()
+  message("Error executing get_cuda_arch.py: ${CUDA_ERROR_OUTPUT}")
+endif()
+
+
+
 if (DYLOAD)
     set(REALIMPL diopi_real_impl)
     if(USE_HIP)
@@ -77,7 +100,9 @@ else ()
         cuda_add_library(${DEVICEIMPL} SHARED ${REAL_IMPL_SRC})
         target_link_libraries(${DEVICEIMPL} ${CUDA_LIBRARIES} ${TORCH_LIBRARIES})
         add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/functions_ext/flash-attention)
-        target_link_libraries(${DEVICEIMPL} diopi_torch_ext_flash_attn)
+        if (FLASH_MODULE STREQUAL "True")
+            target_link_libraries(${DEVICEIMPL} diopi_torch_ext_flash_attn)
+        endif()
     endif()
 endif()
 
