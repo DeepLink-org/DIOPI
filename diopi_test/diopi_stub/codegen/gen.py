@@ -105,7 +105,7 @@ def gen_functions(options, functions_fm):
     head_files = ['functions.h', 'functions_ext.h']
     exports = []
     for head_file in head_files:
-        with open(os.path.join(_cur_dir, options.get('source_dir'), head_file), 'r', encoding='utf8')as f:
+        with open(os.path.join(_cur_dir, options.get('source_dir'), head_file), 'r', encoding='utf8') as f:
             content = f.readlines()
         device = options.get('device')
         if device == 'ascend':
@@ -143,12 +143,12 @@ def gen_functions(options, functions_fm):
                         else:
                             attrs.append(attr_types[index] + ' ' + call_args[index])
                     for vector in ins_vector:
-                        convert += OT.vector_template.substitute(env=dict(param=call_args[vector], param_num=ins_vector[vector], 
-                        param_type=attr_types[vector], handle_type='diopiConstTensorHandle_t'))
+                        convert += OT.vector_template.substitute(env=dict(param=call_args[vector], param_num=ins_vector[vector],
+                                                                param_type=attr_types[vector], handle_type='diopiConstTensorHandle_t'))
                         call_args[vector] = call_args[vector] + 'DIOPI'
                     for vector in outs_vector:
                         convert += OT.vector_template.substitute(env=dict(param=call_args[vector], param_num=outs_vector[vector],
-                                param_type=attr_types[vector], handle_type='diopiTensorHandle_t'))
+                                                                param_type=attr_types[vector], handle_type='diopiTensorHandle_t'))
                         call_args[vector] = call_args[vector] + 'DIOPI'
                     for out in out_ptr:
                         convert += "diopiTensorHandle_t {param}Handle = nullptr;\n".format(param=call_args[out])

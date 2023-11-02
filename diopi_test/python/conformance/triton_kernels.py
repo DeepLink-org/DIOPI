@@ -1,6 +1,8 @@
 import torch
 import triton
 import triton.language as tl
+import math
+import torch.nn.functional as F
 
 @triton.jit
 def _fwd_kernel_apply_penalty(
@@ -16,16 +18,16 @@ def _fwd_kernel_apply_penalty(
     cur_batch_end_index = tl.load(p_cumsum_seq_len + cur_batch + 1)
 
     cur_batch_id_offset = cur_batch_start_index + tl.arange(0, BLOCK_P)
-    batch_ids = tl.load(p_token_ids + cur_batch_id_offset, mask=cur_batch_id_offset<cur_batch_end_index, other=0)
-    batch_ids_count = tl.load(p_token_counts + cur_batch_id_offset, mask=cur_batch_id_offset<cur_batch_end_index, other=0)
+    batch_ids = tl.load(p_token_ids + cur_batch_id_offset, mask=cur_batch_id_offset < cur_batch_end_index, other=0)
+    batch_ids_count = tl.load(p_token_counts + cur_batch_id_offset, mask=cur_batch_id_offset < cur_batch_end_index, other=0)
 
     row_start_ptr = Logits + cur_batch * stride_logit_b
     cur_offset = row_start_ptr + batch_ids
-    cur_logits = tl.load(cur_offset, mask=cur_batch_id_offset<cur_batch_end_index, other=0.0)
+    cur_logits = tl.load(cur_offset, mask=cur_batch_id_offset < cur_batch_end_index, other=0.0)
     freq_logits = cur_logits - batch_ids_count * cur_frequency
     pre_logits = freq_logits - cur_presence
     output_ptr = Logits + cur_batch * stride_logit_b + batch_ids
-    tl.store(output_ptr, pre_logits, mask=cur_batch_id_offset<cur_batch_end_index)
+    tl.store(output_ptr, pre_logits, mask=cur_batch_id_offset < cur_batch_end_index)
 
     return
 
@@ -177,7 +179,7 @@ def _fwd_kernel_token_softmax_reducev(
     stride_vbs, stride_vh, stride_vd,
     stride_obs, stride_oh, stride_od,
     stride_b_loc_b, stride_b_loc_s,
-    other_kv_index, # 避免读取到nan的数据
+    other_kv_index,  # 避免读取到nan的数据
     BLOCK_DMODEL: tl.constexpr,
     BLOCK_N: tl.constexpr,
 ):
@@ -336,9 +338,9 @@ if triton.__version__ >= "2.1.0":
             print(f"b_seq_len:{b_seq_len}")
             print(f"max_input_len:{max_input_len}")
 
-        #BLOCK = 128
+        # BLOCK = 128
         BLOCK = 64
-        #print(f'reduce block size to {BLOCK}')
+        # print(f'reduce block size to {BLOCK}')
         # shape constraints
         Lq, Lk, Lv = q.shape[-1], k.shape[-1], v.shape[-1]
         assert Lq == Lk and Lk == Lv
@@ -525,9 +527,9 @@ def context_attention_fwd_torch(q, k, v, o, b_start_loc, b_seq_len, max_input_le
     torch_out = torch.cat(torch_out, dim=0)
     print(f'torch_out:{torch_out}')
     o = torch_out
-    #o.copy_(torch_out)
+    # o.copy_(torch_out)
 
 
-#context_attention_fwd = context_attention_fwd_torch
+# context_attention_fwd = context_attention_fwd_torch
 
 context_attention = context_attention_fwd
