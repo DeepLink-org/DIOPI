@@ -2014,7 +2014,7 @@ DIOPI_API diopiError_t diopiNms(diopiContextHandle_t ctx, diopiTensorHandle_t* o
 /**
  * @brief Returns a tensor containing the indices of all non-zero elements of input.
  * @param[in] ctx Context environment.
- * @param[in] input the input tensor, type=[float32, float16, float64, int16, int32, int64, uint8, int8]
+ * @param[in] input the input tensor, type=[float32, float16, float64, int16, int32, int64, uint8, int8, bool]
  * @param[out] out the output tensor. type = [int32, int64].
  */
 DIOPI_API diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input);
