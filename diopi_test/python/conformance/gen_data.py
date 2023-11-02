@@ -584,7 +584,7 @@ class CustomizedTest(object):
         from einops import rearrange
         import math
 
-        batch_size, seqlen = q.shape[0], q.shape[1]
+        _, seqlen = q.shape[0], q.shape[1]
         # scale 默认是 1.0 / math.sqrt(q.shape[-1])
         # softmax_scale = scale or 1.0 / math.sqrt(q.shape[-1])
         softmax_scale = 1.0 / math.sqrt(q.shape[-1])
