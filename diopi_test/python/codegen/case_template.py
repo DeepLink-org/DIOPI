@@ -18,6 +18,16 @@ ${test_diopi_head_import}
 data_path = './cache/data'
 
 class ${test_class_name}(object):
+    # if run test seprately, this setup and teardown function should be uncommented.
+    # from conformance.diopi_runtime import diopi_rt_init
+    # @classmethod
+    # def setup_dev(cls):
+    #     diopi_rt_init()
+    #
+    # @classmethod
+    # def teardown_rt(cls):
+    #    pass
+
     ${test_case_items}
 """
     )

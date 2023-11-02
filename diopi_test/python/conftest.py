@@ -5,6 +5,7 @@ import re
 
 from conformance.global_settings import glob_vars
 from conformance.db_operation import db_conn, TestSummary, FuncList, ExcelOperation
+from conformance.diopi_runtime import diopi_rt_init
 
 
 def pytest_addoption(parser):
@@ -12,6 +13,7 @@ def pytest_addoption(parser):
 
 
 def pytest_sessionstart(session):
+    diopi_rt_init()
     db_conn.init_test_flag()
     db_conn.drop_case_table(TestSummary)
     db_conn.drop_case_table(FuncList)
