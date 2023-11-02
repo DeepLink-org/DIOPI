@@ -77,6 +77,7 @@ diopiError_t initLibrary() {
 }
 
 diopiError_t finalizeLibrary() {
+    CALL_ACLRT(aclrtResetDevice(0));
     CALL_ACLRT(aclFinalize());
     return diopiSuccess;
 }
