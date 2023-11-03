@@ -17,13 +17,10 @@ extern "C" {
 
 diopiError_t diopiDestIndexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t k, diopiConstTensorHandle_t destLoc) {
     impl::aten::setCurCtx(ctx);
-    auto atOut = impl::aten::buildATen(out);
-    auto atValues = impl::aten::buildATen(k);
-    auto atIndex = impl::aten::buildATen(destLoc);
-    torch::List<c10::optional<at::Tensor>> atIndicesList;
-    atIndicesList.emplace_back(atIndex);
-
-    impl::aten::invokeATenFuncInp(ctx, at::index_put_, atOut, atIndicesList, atValues, false);
+    at::Tensor atOut = impl::aten::buildATen(out);
+    at::Tensor atK = impl::aten::buildATen(k);
+    at::Tensor atDestLoc = impl::aten::buildATen(destLoc);
+    atOut.index_put_({atDestLoc}, atK);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -32,26 +29,22 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
                                diopiConstTensorHandle_t frequencyPenalty, diopiConstTensorHandle_t pTokenIds, diopiConstTensorHandle_t pTokenCounts,
                                diopiConstTensorHandle_t pCumsumSeqLen, int pMaxLenInBatch) {
     impl::aten::setCurCtx(ctx);
-    auto atLogits = impl::aten::buildATen(logits);
-    auto atPresencePenalty = impl::aten::buildATen(presencePenalty);
-    auto atFrequencyPenalty = impl::aten::buildATen(frequencyPenalty);
-    auto atPTokenIds = impl::aten::buildATen(pTokenIds);
-    auto atPTokenCounts = impl::aten::buildATen(pTokenCounts);
-    auto atPCumsumSeqLen = impl::aten::buildATen(pCumsumSeqLen);
+    at::Tensor atLogits = impl::aten::buildATen(logits);
+    at::Tensor atPresencePenalty = impl::aten::buildATen(presencePenalty);
+    at::Tensor atFrequencyPenalty = impl::aten::buildATen(frequencyPenalty);
+    at::Tensor atPTokenIds = impl::aten::buildATen(pTokenIds);
+    at::Tensor atPTokenCounts = impl::aten::buildATen(pTokenCounts);
+    at::Tensor atPCumsumSeqLen = impl::aten::buildATen(pCumsumSeqLen);
 
     int batch = atLogits.size(0);
     for (int i = 0; i < batch; ++i) {
         int curBatchStartIndex = atPCumsumSeqLen[i].item<int>();
         int curBatchEndIndex = atPCumsumSeqLen[i + 1].item<int>();
-        auto curTokenIds = at::slice(atPTokenIds, 0, curBatchStartIndex, curBatchEndIndex, 1);
-        auto curTokenCounts = at::slice(atPTokenCounts, 0, curBatchStartIndex, curBatchEndIndex, 1);
-        auto curLogits = at::index_select(atLogits[i], 0, curTokenIds);
+        at::Tensor curTokenIds = atPTokenIds.slice(0, curBatchStartIndex, curBatchEndIndex);
+        at::Tensor curTokenCounts = atPTokenCounts.slice(0, curBatchStartIndex, curBatchEndIndex);
+        at::Tensor curLogits = atLogits[i].index_select(0, curTokenIds);
         curLogits = curLogits - curTokenCounts * atFrequencyPenalty[i] - atPresencePenalty[i];
-
-        torch::List<c10::optional<at::Tensor>> atIndicesList;
-        atIndicesList.emplace_back(at::tensor(i));
-        atIndicesList.emplace_back(curTokenIds);
-        impl::aten::invokeATenFuncInp(ctx, at::index_put_, atLogits, atIndicesList, curLogits, false);
+        atLogits.index_put_({at::tensor(i), curTokenIds}, curLogits);
     }
     impl::aten::unsetCurCtx();
     return diopiSuccess;
@@ -60,43 +53,26 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
 diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
                                           diopiConstTensorHandle_t bLoc, diopiConstTensorHandle_t bStartLoc, diopiConstTensorHandle_t bSeqLen,
                                           int maxInputLen) {
-    // def token_attention1(q, k, att_out, B_Loc, B_Start_Loc, B_Seqlen, max_input_len):
-    // batch, head, dim = B_Loc.shape[0], q.shape[1], q.shape[2]
-    // xq = q.view(batch, 1, head, dim).transpose(1, 2)
-    // for i in range(batch):
-    //     for j in range(B_Seqlen[i]):
-    //         k_loc = B_Loc[i][max_input_len-B_Seqlen[i]+j]
-    //         out_loc = B_Start_Loc[i] + j
-    //         key = k[k_loc, :].view(1, 1, head, dim).transpose(1, 2)
-    //         att_out[:, out_loc] = (torch.matmul(xq[i, :], key.transpose(2, 3)) / math.sqrt(dim)).squeeze().reshape(head)
-    // return
-
     impl::aten::setCurCtx(ctx);
-    auto atQ = impl::aten::buildATen(q);
-    auto atK = impl::aten::buildATen(k);
-    auto atBLoc = impl::aten::buildATen(bLoc);
-    auto atBStartLoc = impl::aten::buildATen(bStartLoc);
-    auto atBSeqLen = impl::aten::buildATen(bSeqLen);
-    auto atAttentionOut = impl::aten::buildATen(attentionOut);
+    at::Tensor atQ = impl::aten::buildATen(q);
+    at::Tensor atK = impl::aten::buildATen(k);
+    at::Tensor atBLoc = impl::aten::buildATen(bLoc);
+    at::Tensor atBStartLoc = impl::aten::buildATen(bStartLoc);
+    at::Tensor atBSeqLen = impl::aten::buildATen(bSeqLen);
+    at::Tensor atAttentionOut = impl::aten::buildATen(attentionOut);
 
     int batch = atBLoc.size(0);
     int head = atQ.size(1);
     int dim = atQ.size(2);
 
-    std::vector<int64_t> atQShape = {batch, 1, head, dim};
-    atQ = atQ.reshape(atQShape).transpose(1, 2);
+    atQ = atQ.reshape({batch, 1, head, dim}).transpose(1, 2);
     for (int i = 0; i < batch; ++i) {
         for (int j = 0; j < atBSeqLen[i].item<int>(); ++j) {
-            auto kLoc = atBLoc[i][maxInputLen - atBSeqLen[i].item<int>() + j];
-            auto outLoc = atBStartLoc[i].item<int>() + j;
-            auto key = atK.index({kLoc}).reshape({1, 1, head, dim}).transpose(1, 2);
-            // auto values = (at::matmul(atQ.index({i}), key.transpose(2, 3)) / std::sqrt(dim)).squeeze().reshape(head);
-            auto values = (at::matmul(atQ.index({i}), key.transpose(2, 3)) / std::sqrt(dim)).squeeze();
-            std::cout << "values.shape: " << values.sizes() << std::endl;
-            auto test = atAttentionOut.index({torch::indexing::Slice(), outLoc});
-            std::cout << "test.shape: " << test.sizes() << std::endl;
-            // atAttentionOut.index_put_({torch::indexing::Slice(), outLoc}, values);
-            // atAttentionOut.index_put_({torch::indexing::Slice(), outLoc}, values);
+            at::Tensor kLoc = atBLoc[i][maxInputLen - atBSeqLen[i].item<int>() + j];
+            int outLoc = atBStartLoc[i].item<int>() + j;
+            at::Tensor key = atK.index({kLoc}).reshape({1, 1, head, dim}).transpose(1, 2);
+            at::Tensor values = (at::matmul(atQ.index({i}), key.transpose(2, 3)) / std::sqrt(dim)).squeeze().reshape(head);
+            atAttentionOut.index_put_({torch::indexing::Slice(), outLoc}, values);
         }
     }
     impl::aten::unsetCurCtx();
@@ -104,13 +80,83 @@ diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorH
 }
 
 diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t logics, diopiConstTensorHandle_t v,
-                                               diopiConstTensorHandle_t bLoc, diopiConstTensorHandle_t bStartLoc, diopiConstTensorHandle_t bSeqlen,
+                                               diopiConstTensorHandle_t bLoc, diopiConstTensorHandle_t bStartLoc, diopiConstTensorHandle_t bSeqLen,
                                                int maxInputLen, int otherKVIndex) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atOut = impl::aten::buildATen(out);
+    at::Tensor atV = impl::aten::buildATen(v);
+    at::Tensor atLogics = impl::aten::buildATen(logics);
+    at::Tensor atBLoc = impl::aten::buildATen(bLoc);
+    at::Tensor atBStartLoc = impl::aten::buildATen(bStartLoc);
+    at::Tensor atBSeqLen = impl::aten::buildATen(bSeqLen);
+
+    int batch = atBLoc.size(0);
+    int head = atV.size(1);
+    int dim = atV.size(2);
+
+    // softmax
+    at::Tensor prob = at::empty_like(atLogics);
+    for (int i = 0; i < batch; ++i) {
+        int start = atBStartLoc[i].item<int>();
+        int end = start + atBSeqLen[i].item<int>();
+        prob.slice(1, start, end) = atLogics.slice(1, start, end).reshape({head, -1}).softmax(-1);
+    }
+
+    // reduce_V
+    for (int i = 0; i < batch; ++i) {
+        std::vector<at::Tensor> vOut;
+        for (int j = 0; j < atBSeqLen[i].item<int>(); ++j) {
+            int vLoc = atBLoc[i][maxInputLen - atBSeqLen[i].item<int>() + j].item<int>();
+            vOut.emplace_back(atV[vLoc]);
+        }
+
+        at::Tensor V = at::cat(vOut, 0).view({1, atBSeqLen[i].item<int>(), head, dim}).transpose(1, 2);
+        at::Tensor P = prob.slice(1, atBStartLoc[i].item<int>(), atBStartLoc[i].item<int>() + atBSeqLen[i].item<int>())
+                           .reshape({head, 1, 1, atBSeqLen[i].item<int>()})
+                           .transpose(0, 1);
+        atOut[i] = at::matmul(P, V).view({head, dim});
+    }
+    impl::aten::unsetCurCtx();
     return diopiSuccess;
+}
+
+at::Tensor torchContextAttention(at::Tensor xq, at::Tensor xk, at::Tensor xv, int batchSize, int seqLen, int head, int dim) {
+    xq = xq.view({batchSize, seqLen, head, dim});
+    xk = xk.view({batchSize, seqLen, head, dim});
+    xv = xv.view({batchSize, seqLen, head, dim});
+    at::Tensor mask = at::tril(at::ones({seqLen, seqLen})).unsqueeze(0).unsqueeze(0).to(at::kCUDA);
+    mask.masked_fill_(mask == 0., -100000000.0);
+    mask = mask.repeat({batchSize, head, 1, 1});
+    at::Tensor keys = xk;
+    at::Tensor values = xv;
+    xq = xq.transpose(1, 2);
+    keys = keys.transpose(1, 2);
+    values = values.transpose(1, 2);
+    at::Tensor scores = at::matmul(xq, keys.transpose(2, 3)) / std::sqrt(dim);
+    scores = at::softmax((scores.to(at::kFloat) + mask), -1).to(xq.scalar_type());
+    at::Tensor output = at::matmul(scores, values).transpose(1, 2).contiguous().view({-1, head, dim});
+    return output;
 }
 
 diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
                                             diopiConstTensorHandle_t v, diopiConstTensorHandle_t bStartLoc, diopiConstTensorHandle_t bSeqLen, int maxInputLen) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atOut = impl::aten::buildATen(out);
+    at::Tensor atQ = impl::aten::buildATen(q);
+    at::Tensor atK = impl::aten::buildATen(k);
+    at::Tensor atV = impl::aten::buildATen(v);
+    at::Tensor atBStartLoc = impl::aten::buildATen(bStartLoc);
+    at::Tensor atBSeqLen = impl::aten::buildATen(bSeqLen);
+
+    int batch = atBStartLoc.size(0);
+    int head = atQ.size(1);
+    int dim = atQ.size(2);
+    for (int i = 0; i < batch; ++i) {
+        int start = atBStartLoc[i].item<int>();
+        int end = start + atBSeqLen[i].item<int>();
+        atOut.slice(0, start, end) =
+            torchContextAttention(atQ.slice(0, start, end), atK.slice(0, start, end), atV.slice(0, start, end), 1, atBSeqLen[i].item<int>(), head, dim);
+    }
     return diopiSuccess;
 }
 
