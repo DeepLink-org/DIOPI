@@ -3919,3 +3919,60 @@ def linalgqr(input, mode):
     out = [q, r]
     check_returncode(ret)
     return out
+
+
+def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch):
+    call = "diopiApplyPenalty"
+    func = check_function(call)
+    # some checks
+    logits_shape = list(logits.size().data)
+    presence_penalty_shape = list(presence_penalty.size().data)
+    frequency_penalty_shape = list(frequency_penalty.size().data)
+    p_cumsum_seq_len_shape = list(p_cumsum_seq_len.size().data)
+    p_token_ids_shape = list(p_token_ids.size().data)
+    p_token_counts_shape = list(p_token_counts.size().data)
+
+    assert logits_shape[0] == presence_penalty_shape[0] and logits_shape[0] == frequency_penalty_shape[0], "The first dimensions of logits, presence penalty, and frequency penalty must be equal."
+    assert logits_shape[0] + 1 == p_cumsum_seq_len_shape[0], "The first dimension of logits_shape plus one must equal the first dimension of p_cumsum_seq_len_shape."
+    assert p_token_ids_shape == p_token_counts_shape, "The shape of p_token_ids must be equal to the shape of p_token_counts."
+
+    ret = func(logits.context(), logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch)
+    out = logits
+    check_returncode(ret)
+    return out
+
+
+def destindex_copy_kv(k, dest_loc, out):
+    call = "diopiDestIndexCopyKV"
+    func = check_function(call)
+
+    ret = func(k.context(), out, k, dest_loc)
+    check_returncode(ret)
+    return out
+
+
+def token_attention(q, k, out, b_loc, b_start_loc, b_seq_len, max_input_len):
+    call = "diopiTokenAttentionInference"
+    func = check_function(call)
+
+    ret = func(q.context(), out, q, k, b_loc, b_start_loc, b_seq_len, max_input_len)
+    check_returncode(ret)
+    return out
+
+
+def token_softmax_reducev(logics, v, out, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index):
+    call = "diopiTokenSoftmaxReduceVInference"
+    func = check_function(call)
+
+    ret = func(logics.context(), out, logics, v, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index)
+    check_returncode(ret)
+    return out
+
+
+def context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len):
+    call = "diopiContextAttentionInference"
+    func = check_function(call)
+
+    ret = func(q.context(), out, q, k, v, b_start_loc, b_seq_len, max_input_len)
+    check_returncode(ret)
+    return out

@@ -13,6 +13,11 @@ ops_with_states = {"batch_norm": {"running_mean", "running_var"},
                    "copy_": {"input"},
                    "cast_dtype": {"out"},
                    "batch_norm_gather_stats_with_counts": {"running_mean", "running_var"},
+                   "apply_penalty": {"logits"},
+                   "context_attention": {"out"},
+                   "destindex_copy_kv": {"out"},
+                   "token_attention": {"out"},
+                   "token_softmax_reducev": {"out"}
                    }
 
 
@@ -7983,5 +7988,204 @@ diopi_configs = {
                 },
             ],
         ),
+    ),
+
+    'apply_penalty': dict(
+        name=['apply_penalty'],
+        interface=['CustomizedTest'],
+        para=dict(
+            p_max_len_in_batch=(8,)),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['logits'],
+                    "value": ([[0.1, 0.5, 0.4, 0.3, 0.5],
+                              [0.2, 0.4, 0.0, 0.0, 0.0],
+                              [0.3, 0.4, 0.5, 0.3, 0.0]],),
+                    "dtype": [Dtype.float32],
+
+                },
+                {
+                    "ins": ["presence_penalty"],
+                    "value": ([0.1, 0.8, 1.0],),
+                    "dtype": [Dtype.float32],
+                },
+                {
+                    "ins": ["frequency_penalty"],
+                    "value": ([0.3, 0.5, 0.4],),
+                    "dtype": [Dtype.float32],
+                },
+                {
+                    "ins": ["p_token_ids"],
+                    "value": ([0, 1, 2, 3, 4, 0, 1, 0, 1, 2, 3],),
+                    "dtype": [Dtype.int32],
+                },
+                {
+                    "ins": ["p_token_counts"],
+                    "value": ([3, 3, 2, 2, 1, 3, 3, 3, 3, 2, 2],),
+                    "dtype": [Dtype.int32],
+                },
+                {
+                    "ins": ["p_cumsum_seq_len"],
+                    "value": ([0, 5, 7, 11],),
+                    "dtype": [Dtype.int32],
+                },
+            ]
+        )
+    ),
+
+    'destindex_copy_kv':dict(
+        name=['destindex_copy_kv'],
+        interface=['CustomizedTest'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins":['k'],
+                    "shape": ((5, 32, 128), (4, 32, 128)),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins":['dest_loc'],
+                    "dtype":[Dtype.int32],
+                    "value": ((0, 1, 2, 3, 4), (14, 15, 16, 17)),
+                },
+                {
+                    "ins":['out'],
+                    "shape": ((120, 32, 128), (120, 32, 128)),
+                    "dtype": [Dtype.float16],
+                }
+            ]
+        )
+    ),
+
+    'context_attention': dict(
+        name=['context_attention'],
+        interface=['CustomizedTest'],
+        para=dict(
+            max_input_len=(32, 256, 128),
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((64, 32, 128), (512, 32, 128), (256, 64, 256)),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["k"],
+                    "shape": ((64, 32, 128), (512, 32, 128), (256, 64, 256)),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["v"],
+                    "shape": ((64, 32, 128), (512, 32, 128), (256, 64, 256)),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["out"],
+                    "shape": ((64, 32, 128), (512, 32, 128), (256, 64, 256)),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["b_start_loc"],
+                    "value": ((0, 16, 48), (0, 64, 256), (0, 64, 128)),
+                    "dtype": [Dtype.int32],
+                },
+                {
+                    "ins": ["b_seq_len"],
+                    "value": ((16, 32, 16), (64, 192, 256), (64, 64, 128)),
+                    "dtype": [Dtype.int32],
+                },
+            ]
+        ),
+    ),
+
+    'token_attention': dict(
+        name=['token_attention'],
+        interface=['CustomizedTest'],
+        para=dict(
+            max_input_len=[5, ],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((3, 32, 128), ),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["k"],
+                    "shape": ((100, 32, 128), ),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["out"],
+                    "shape": ((32, 13), ),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["b_loc"],
+                    "value": ([[0, 0, 1, 2, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                               [3, 4, 5, 6, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                               [0, 7, 8, 9, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], ],),
+                    "dtype": [Dtype.int32],
+                },
+                {
+                    "ins": ["b_start_loc"],
+                    "value": ([0, 4, 9], ),
+                    "dtype": [Dtype.int32],
+                },
+                {
+                    "ins": ["b_seq_len"],
+                    "value": ([4, 5, 4], ),
+                    "dtype": [Dtype.int32],
+                },
+            ]
+        )
+    ),
+
+    'token_softmax_reducev': dict(
+        name=['token_softmax_reducev'],
+        interface=['CustomizedTest'],
+        para=dict(
+            max_input_len=[5, ],
+            other_kv_index=[10, ],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['logics'],
+                    "shape": ((32, 13), ),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["v"],
+                    "shape": ((100, 32, 128), ),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["out"],
+                    "shape": ((3, 32, 128),),
+                    "dtype": [Dtype.float16],
+                },
+                {
+                    "ins": ["b_loc"],
+                    "value": ([[0, 0, 1, 2, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                               [3, 4, 5, 6, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                               [0, 7, 8, 9, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], ],),
+                    "dtype": [Dtype.int32],
+                },
+                {
+                    "ins": ["b_start_loc"],
+                    "value": ([0, 4, 9],),
+                    "dtype": [Dtype.int32],
+                },
+                {
+                    "ins": ["b_seq_len"],
+                    "value": ([4, 5, 4],),
+                    "dtype": [Dtype.int32],
+                },
+            ]
+        )
     ),
 }

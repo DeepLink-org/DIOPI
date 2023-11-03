@@ -14,6 +14,7 @@ from .diopi_runtime import from_dtype_str, int_types, float_types
 from .utils import get_saved_pth_list, get_data_from_file, cfg_file_name
 import torch
 import torchvision
+from . import triton_kernels
 
 
 _cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -553,6 +554,27 @@ class CustomizedTest(object):
 
     def batch_norm_elemt(input, weight, bias, mean, invstd, eps):
         out = torch.batch_norm_elemt(input, weight, bias, mean, invstd, eps)
+        return out
+
+    def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch):
+        triton_kernels.apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch)
+        return logits
+
+    def destindex_copy_kv(k, dest_loc, out):
+        triton_kernels.destindex_copy_kv(k, dest_loc, out)
+        return out
+
+    def token_attention(q, k, out, b_loc, b_start_loc, b_seq_len, max_input_len):
+        triton_kernels.token_attention_fwd(q, k, out, b_loc, b_start_loc, b_seq_len, max_input_len)
+        return out
+
+    def token_softmax_reducev(logics, v, out, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index):
+        triton_kernels.token_softmax_reducev_fwd(logics, v, out, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index)
+        return out
+
+    def context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len):
+        # triton_kernels.context_attention_fwd(q, k, v, out, b_start_loc, b_seq_len, max_input_len)
+        triton_kernels.context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len)
         return out
 
 
