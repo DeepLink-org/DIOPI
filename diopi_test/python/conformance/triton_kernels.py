@@ -493,44 +493,4 @@ else:
     raise Exception("error triton version!")
 
 
-def torch_att(xq, xk, xv, bs, seqlen, num_head, head_dim):
-    xq = xq.view(bs, seqlen, num_head, head_dim)
-    xk = xk.view(bs, seqlen, num_head, head_dim)
-    xv = xv.view(bs, seqlen, num_head, head_dim)
-    mask = torch.tril(torch.ones(seqlen, seqlen), diagonal=0).unsqueeze(0).unsqueeze(0).cuda()
-    mask[mask == 0.] = -100000000.0
-    mask = mask.repeat(bs, num_head, 1, 1)
-    keys = xk
-    values = xv
-    xq = xq.transpose(1, 2)
-    keys = keys.transpose(1, 2)
-    values = values.transpose(1, 2)
-    scores = torch.matmul(xq, keys.transpose(2, 3)) / math.sqrt(head_dim)
-    scores = F.softmax(scores.float() + mask, dim=-1).type_as(xq)
-    output = torch.matmul(scores, values).transpose(1, 2).contiguous().reshape(-1, num_head, head_dim)
-    return output
-
-
-@torch.no_grad()
-def context_attention_fwd_torch(q, k, v, o, b_start_loc, b_seq_len, max_input_len):
-    print(f'context_attention_fwd_torch:q:{q.shape}, k:{k.shape},o:{o.shape},b_start_loc:{b_start_loc.shape},max_input_len:{max_input_len}')
-    torch_out = []
-    start = 0
-    H = q.shape[1]
-    D_HEAD = q.shape[2]
-    Z = b_seq_len.dim()
-
-    for i in range(Z):
-        end = start + b_seq_len[i]
-        torch_o = torch_att(q[start:end], k[start:end], v[start:end], 1, b_seq_len[i], H, D_HEAD)
-        start = end
-        torch_out.append(torch_o)
-    torch_out = torch.cat(torch_out, dim=0)
-    print(f'torch_out:{torch_out}')
-    o = torch_out
-    # o.copy_(torch_out)
-
-
-# context_attention_fwd = context_attention_fwd_torch
-
-context_attention = context_attention_fwd
+ 

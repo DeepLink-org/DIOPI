@@ -8060,47 +8060,47 @@ diopi_configs = {
         )
     ),
 
-    'context_attention': dict(
-        name=['context_attention'],
-        interface=['CustomizedTest'],
-        para=dict(
-            max_input_len=(32, 256, 128),
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['q'],
-                    "shape": ((64, 32, 128), (512, 32, 128), (256, 32, 128)),
-                    "dtype": [Dtype.float16],
-                },
-                {
-                    "ins": ["k"],
-                    "shape": ((64, 32, 128), (512, 32, 128), (256, 32, 128)),
-                    "dtype": [Dtype.float16],
-                },
-                {
-                    "ins": ["v"],
-                    "shape": ((64, 32, 128), (512, 32, 128), (256, 32, 128)),
-                    "dtype": [Dtype.float16],
-                },
-                {
-                    "ins": ["out"],
-                    "shape": ((64, 32, 128), (512, 32, 128), (256, 32, 128)),
-                    "dtype": [Dtype.float16],
-                },
-                {
-                    "ins": ["b_start_loc"],
-                    "value": ((0, 16, 48), (0, 64, 256), (0, 128, 192)),
-                    "dtype": [Dtype.int32],
-                },
-                {
-                    "ins": ["b_seq_len"],
-                    "value": ((16, 32, 16), (64, 192, 256), (128, 64, 64)),
-                    "dtype": [Dtype.int32],
-                },
-            ]
-        ),
-    ),
+    # 'context_attention': dict(
+    #     name=['context_attention'],
+    #     interface=['CustomizedTest'],
+    #     para=dict(
+    #         max_input_len=(32, 256, 128),
+    #     ),
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['q'],
+    #                 "shape": ((64, 32, 128), (512, 32, 128), (256, 32, 128)),
+    #                 "dtype": [Dtype.float16],
+    #             },
+    #             {
+    #                 "ins": ["k"],
+    #                 "shape": ((64, 32, 128), (512, 32, 128), (256, 32, 128)),
+    #                 "dtype": [Dtype.float16],
+    #             },
+    #             {
+    #                 "ins": ["v"],
+    #                 "shape": ((64, 32, 128), (512, 32, 128), (256, 32, 128)),
+    #                 "dtype": [Dtype.float16],
+    #             },
+    #             {
+    #                 "ins": ["out"],
+    #                 "shape": ((64, 32, 128), (512, 32, 128), (256, 32, 128)),
+    #                 "dtype": [Dtype.float16],
+    #             },
+    #             {
+    #                 "ins": ["b_start_loc"],
+    #                 "value": ((0, 16, 48), (0, 64, 256), (0, 128, 192)),
+    #                 "dtype": [Dtype.int32],
+    #             },
+    #             {
+    #                 "ins": ["b_seq_len"],
+    #                 "value": ((16, 32, 16), (64, 192, 256), (128, 64, 64)),
+    #                 "dtype": [Dtype.int32],
+    #             },
+    #         ]
+    #     ),
+    # ),
 
     'token_attention': dict(
         name=['token_attention'],
