@@ -156,8 +156,8 @@ diopiError_t aclAsStridedCore(diopiContextHandle_t ctx, const AscendTensor& src,
     diopiTensorHandle_t targetObj = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(dst));
     AclOpRunner<4, 1>("AsStrided", ctx)
         .addInput(src.data(), src.getAclMemBufferSize(), src.getAclMemShape(), src.getAclDataFormat(), src.dtype())
-        .addConstInput(src.shape())
-        .addConstInput(src.stride())
+        .addConstInput(dst.shape())
+        .addConstInput(dst.stride())
         .addConstInput(0, diopi_dtype_int64)
         .addOutput(targetObj)
         .run();
@@ -173,6 +173,14 @@ diopiError_t contiguous(diopiContextHandle_t ctx, const AscendTensor& src, Ascen
         return diopiSuccess;
     }
 
+    if (dst.defined() && dst.isContiguous(format)) {
+        return aclAsStrided(ctx, src, dst);
+    }
+
+    // if dst is not contiguous, construct a contiguous tensor.
+    AscendTensor contiguousTensor;
+    makeTensor(ctx, contiguousTensor, src.shape(), std::vector<int64_t>{}, src.dtype(), src.device());
+    dst = contiguousTensor;
     return aclAsStrided(ctx, src, dst);
 }
 

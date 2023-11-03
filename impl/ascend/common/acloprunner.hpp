@@ -386,7 +386,7 @@ public:
             return addInput(at, at.getAclDataFormat());
         } else {
             AscendTensor atCopy;
-            makeTensorLike(context_, atCopy, at);
+            makeTensor(context_, atCopy, at.shape(), std::vector<int64_t>{}, at.dtype(), at.device());
             contiguous(context_, at, atCopy);
             return addInput(atCopy, atCopy.getAclDataFormat());
         }
