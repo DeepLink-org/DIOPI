@@ -14,7 +14,6 @@ from .diopi_runtime import from_dtype_str, int_types, float_types
 from .utils import get_saved_pth_list, get_data_from_file, cfg_file_name
 import torch
 import torchvision
-from . import triton_kernels
 
 
 _cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -345,7 +344,7 @@ class GenInputData(object):
     '''
 
     @staticmethod
-    def run(func_name_list, model_name, filter_dtype_str_list):
+    def run(func_name, model_name, filter_dtype_str_list):
         if model_name != "":
             diopi_config = "model_config." + model_name + "_config"
             configs = Config.process_configs(eval(diopi_config))
@@ -356,28 +355,27 @@ class GenInputData(object):
         if not os.path.exists(inputs_dir_path):
             os.makedirs(inputs_dir_path)
 
+        cfg_counter = 0
         cfg_save_dict = {}
-        for func_name in func_name_list:
-            cfg_counter = 0
-            for cfg_name in configs:
-                cfg_func_name = configs[cfg_name]["name"]
-                if not need_process_func(cfg_func_name, func_name, model_name):
-                    continue
-                logger.info(f"Generate benchmark input data for diopi_functions.{cfg_func_name}")
-                filter_dtype_list = get_filter_dtype_list(filter_dtype_str_list)
-                cfg_expand_list = expand_cfg_by_all_options(configs[cfg_name], filter_dtype_list)
-                cfg_counter += len(cfg_expand_list)
-                gen_and_dump_data(inputs_dir_path, cfg_name, cfg_expand_list, cfg_save_dict)
-
-            logger.info(f"Generate test cases number for input data: {cfg_counter}")
-            if cfg_counter == 0:
-                logger.warn(f"No benchmark input data is generated, \"--fname {func_name}\" may not be in the diopi-config, "
-                            f"check the arguments --fname")
-            else:
-                logger.info("Generate benchmark input data done!")
+        for cfg_name in configs:
+            cfg_func_name = configs[cfg_name]["name"]
+            if not need_process_func(cfg_func_name, func_name, model_name):
+                continue
+            logger.info(f"Generate benchmark input data for diopi_functions.{cfg_func_name}")
+            filter_dtype_list = get_filter_dtype_list(filter_dtype_str_list)
+            cfg_expand_list = expand_cfg_by_all_options(configs[cfg_name], filter_dtype_list)
+            cfg_counter += len(cfg_expand_list)
+            gen_and_dump_data(inputs_dir_path, cfg_name, cfg_expand_list, cfg_save_dict)
 
         with open(os.path.join(inputs_dir_path, cfg_file_name), "wb") as f:
             pickle.dump(cfg_save_dict, f)
+
+        logger.info(f"Generate test cases number for input data: {cfg_counter}")
+        if cfg_counter == 0:
+            logger.warn(f"No benchmark input data is generated, \"--fname {func_name}\" may not be in the diopi-config, "
+                        f"check the arguments --fname")
+        else:
+            logger.info("Generate benchmark input data done!")
 
 
 class CustomizedTest(object):
@@ -557,22 +555,6 @@ class CustomizedTest(object):
         out = torch.batch_norm_elemt(input, weight, bias, mean, invstd, eps)
         return out
 
-    # def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch):
-    #     batch_token_counts = torch.zeros_like(logits)  # logits的形状为[batch_size, voc_len]
-    #     batch_left_delimiter = 0  # 使用batch_left_delimiter和batch_right_delimiter来根据p_cumsum_seq_len来确定每个seq的长度
-    #     batch_right_delimiter = 0
-    #     for i in range(1, len(p_cumsum_seq_len)):
-    #         batch_left_delimiter = batch_right_delimiter
-    #         batch_right_delimiter = p_cumsum_seq_len[i]
-    #         for j in range(int(batch_left_delimiter), int(batch_right_delimiter)):
-    #             p_token_id = p_token_ids[j]  # 获取每个token在词汇表中的索引
-    #             p_token_count = p_token_counts[j]    # 获取每个token的计数，用于后续计算频率惩罚
-    #             batch_token_counts[i - 1][int(p_token_id)] = p_token_count
-    #     frequency_penalty = torch.unsqueeze(frequency_penalty, 1)
-    #     presence_penalty = torch.unsqueeze(presence_penalty, 1)
-    #     out = logits - batch_token_counts * frequency_penalty - presence_penalty
-    #     return out
-
     def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch):
         triton_kernels.apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch)
         return logits
@@ -654,7 +636,7 @@ class GenOutputData(object):
     '''
 
     @staticmethod
-    def run(func_name_list, model_name, filter_dtype_str_list):
+    def run(func_name, model_name, filter_dtype_str_list):
         inputs_dir_path = os.path.join(_cur_dir, "../data/" + model_name + "/inputs")
         outputs_dir_path = os.path.join(_cur_dir, "../data/" + model_name + "/outputs")
         if not os.path.exists(inputs_dir_path):
@@ -664,76 +646,75 @@ class GenOutputData(object):
         if not os.path.exists(outputs_dir_path):
             os.makedirs(outputs_dir_path)
 
-        for func_name in func_name_list:
-            gen_counter = 0
-            func_name_list_log = []  # make the info log once
-            saved_pth_list = get_saved_pth_list(inputs_dir_path, cfg_file_name)
-            for saved_pth in saved_pth_list:
-                cfg_func_name = saved_pth.split("::")[1].rsplit("_", 1)[0]
-                if not need_process_func(cfg_func_name, func_name, model_name):
-                    continue
+        gen_counter = 0
+        func_name_list = []  # make the info log once
+        saved_pth_list = get_saved_pth_list(inputs_dir_path, cfg_file_name)
+        for saved_pth in saved_pth_list:
+            cfg_func_name = saved_pth.split("::")[1].rsplit("_", 1)[0]
+            if not need_process_func(cfg_func_name, func_name, model_name):
+                continue
 
-                input_abs_path = os.path.join(inputs_dir_path, saved_pth)
-                data = get_data_from_file(input_abs_path, saved_pth, "input")
-                if data is None or "no_output_ref" in data['cfg']:
-                    continue
+            input_abs_path = os.path.join(inputs_dir_path, saved_pth)
+            data = get_data_from_file(input_abs_path, saved_pth, "input")
+            if data is None or "no_output_ref" in data['cfg']:
+                continue
 
-                logger_str = "output"
-                module = data["cfg"]["interface"][0] if data["cfg"]['interface'] else "torch.nn.functional"
-                function_paras = data["function_paras"]
-                transfer_tensor_to_device(function_paras)
-                kwargs = function_paras['kwargs']
-                if module == "torch.Tensor":
-                    input = kwargs['input']
-                    module = "input"
-                    del kwargs['input']
-                if 'dtype' in kwargs.keys():
-                    kwargs['dtype'] = eval(str(kwargs['dtype']).replace("Dtype.", "torch."))
-                func_call = f"{module}.{cfg_func_name}(**kwargs)"
+            logger_str = "output"
+            module = data["cfg"]["interface"][0] if data["cfg"]['interface'] else "torch.nn.functional"
+            function_paras = data["function_paras"]
+            transfer_tensor_to_device(function_paras)
+            kwargs = function_paras['kwargs']
+            if module == "torch.Tensor":
+                input = kwargs['input']
+                module = "input"
+                del kwargs['input']
+            if 'dtype' in kwargs.keys():
+                kwargs['dtype'] = eval(str(kwargs['dtype']).replace("Dtype.", "torch."))
+            func_call = f"{module}.{cfg_func_name}(**kwargs)"
 
-                try:
-                    outputs = eval(func_call)
-                except Exception as e:
-                    logger.error(f"Failed to execute function {func_call}, caused by {e}")
-                    continue
+            try:
+                outputs = eval(func_call)
+            except Exception as e:
+                logger.error(f"Failed to execute function {func_call}, caused by {e}")
+                continue
 
-                if outputs is not None:
-                    with open(os.path.join(outputs_dir_path, saved_pth), "wb") as f:
-                        pickle.dump(to_numpy(outputs), f, protocol=4)
-                        gen_counter += 1
+            if outputs is not None:
+                with open(os.path.join(outputs_dir_path, saved_pth), "wb") as f:
+                    pickle.dump(to_numpy(outputs), f, protocol=4)
+                    gen_counter += 1
 
-                if function_paras["requires_grad"]:
-                    if module == "input":
-                        kwargs['input'] = input
-                    saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
-                    if not isinstance(outputs, (list, tuple)):
-                        outputs = [outputs]
+            if function_paras["requires_grad"]:
+                if module == "input":
+                    kwargs['input'] = input
+                saved_backward_pth = saved_pth.split(".pth")[0] + "_backward.pth"
+                if not isinstance(outputs, (list, tuple)):
+                    outputs = [outputs]
 
-                    requires_backward = data["cfg"]["requires_backward"]
-                    outputs_for_backward = outputs if len(requires_backward) == 0 \
-                        else [outputs[i] for i in requires_backward]
+                requires_backward = data["cfg"]["requires_backward"]
+                outputs_for_backward = outputs if len(requires_backward) == 0 \
+                    else [outputs[i] for i in requires_backward]
 
-                    inputs_name_for_grad, inputs_for_grad = get_name_and_data_for_grad(function_paras)
-                    saved_grads = None
-                    if len(inputs_for_grad) != 0:
-                        grad_outputs = [torch.ones_like(i) for i in outputs_for_backward]
-                        grads = torch.autograd.grad(
-                            outputs_for_backward, inputs_for_grad, grad_outputs, allow_unused=True)
-                        saved_grads = {k: v for k, v in zip(inputs_name_for_grad, grads)}
+                inputs_name_for_grad, inputs_for_grad = get_name_and_data_for_grad(function_paras)
+                saved_grads = None
+                if len(inputs_for_grad) != 0:
+                    grad_outputs = [torch.ones_like(i) for i in outputs_for_backward]
+                    grads = torch.autograd.grad(
+                        outputs_for_backward, inputs_for_grad, grad_outputs, allow_unused=True)
+                    saved_grads = {k: v for k, v in zip(inputs_name_for_grad, grads)}
 
-                    with open(os.path.join(outputs_dir_path, saved_backward_pth), "wb") as f:
-                        pickle.dump(to_numpy(saved_grads), f, protocol=4)
+                with open(os.path.join(outputs_dir_path, saved_backward_pth), "wb") as f:
+                    pickle.dump(to_numpy(saved_grads), f, protocol=4)
 
-                    logger_str = f"{logger_str} and backward"
+                logger_str = f"{logger_str} and backward"
 
-                if cfg_func_name not in func_name_list_log:
-                    func_signature = f"diopi_functions.{cfg_func_name}"
-                    logger.info(f"Generate benchmark {logger_str} data for {func_signature}")
-                    func_name_list_log.append(cfg_func_name)
+            if cfg_func_name not in func_name_list:
+                func_signature = f"diopi_functions.{cfg_func_name}"
+                logger.info(f"Generate benchmark {logger_str} data for {func_signature}")
+                func_name_list.append(cfg_func_name)
 
-            logger.info(f"Generate test cases number for output data: {gen_counter}")
-            if gen_counter == 0:
-                logger.info(f"No benchmark output data is generated, \"--fname {func_name}\" may not be in the diopi-config, "
-                            f"or \"{func_name}\" doesn't need output data")
-            else:
-                logger.info("Generate benchmark output and backward data done!")
+        logger.info(f"Generate test cases number for output data: {gen_counter}")
+        if gen_counter == 0:
+            logger.info(f"No benchmark output data is generated, \"--fname {func_name}\" may not be in the diopi-config, "
+                        f"or \"{func_name}\" doesn't need output data")
+        else:
+            logger.info("Generate benchmark output and backward data done!")
