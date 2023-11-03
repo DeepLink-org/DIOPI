@@ -594,8 +594,8 @@ class CustomizedTest(object):
         for i in range(batch):
             start = b_start_loc[i]
             end = start + b_seq_len[i]
-            o[start:end, :] = torch_att(q[start:end], k[start:end], v[start:end], 1, int(b_seq_len[i]), head, dim)
-        return o
+            out[start:end, :] = torch_att(q[start:end], k[start:end], v[start:end], 1, int(b_seq_len[i]), head, dim)
+        return out
 
 
 def transfer_tensor_to_device(function_paras: dict):
