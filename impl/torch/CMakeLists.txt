@@ -52,14 +52,6 @@ if(USE_HIP)
     )
 endif()
 
-execute_process(
-  COMMAND python ${CMAKE_SOURCE_DIR}/get_cuda_arch.py
-  OUTPUT_VARIABLE CUDA_ARCH_OUTPUT
-  ERROR_VARIABLE CUDA_ERROR_OUTPUT
-  RESULT_VARIABLE CUDA_RESULT
-)
-
-
 if (DYLOAD)
     set(REALIMPL diopi_real_impl)
     if(USE_HIP)
