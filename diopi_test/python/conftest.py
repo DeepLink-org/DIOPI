@@ -18,12 +18,6 @@ def init_dev():
     diopi_rt_init()
 
 
-@pytest.fixture(scope='function', autouse=True)
-def clear_tensors():
-    yield
-    default_context.clear_tensors()
-
-
 def pytest_addoption(parser):
     parser.addoption('--impl_folder', type=str, default='', help='folder to find device configs')
 

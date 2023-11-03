@@ -9,13 +9,22 @@ class CaseTemplate:
 import os
 import pickle
 import pytest
+import psutil
 import numpy as np
 from conformance.diopi_runtime import Tensor, from_numpy_dtype, default_context
-from conformance.diopi_functions import ones_like
+from conformance.diopi_functions import ones_like, FunctionNotImplementedError
 from conformance.check_result import CheckResult
 ${test_diopi_head_import}
 
 data_path = './cache/data'
+
+@pytest.fixture(scope='class', autouse=True)
+def process_cls():
+    pid = os.getpid()
+    prs = psutil.Process(pid)
+    memory_info = prs.memory_info()
+    print(f'[TestClass] host memory used: {pid} : {memory_info.rss / 1024 / 1024 / 1024} G.')
+
 
 class ${test_class_name}(object):
     # if run test seprately, this setup and teardown function should be uncommented.
@@ -62,7 +71,6 @@ def test_${func_case_name}(self):
     ${forward}
     ${backward}
     ${forward_inp}
-    # default_context.clear_tensors()
 """
     )
 
@@ -216,7 +224,11 @@ tol = ${test_caompare_tol}
 # sum_to_compare
 sum_to_compare = True if 'sorted' in function_kwargs and ~function_kwargs['sorted'] else False
 tol['sum_to_compare'] = sum_to_compare
-dev_out = ${test_diopi_func_name}(**function_kwargs)
+try:
+    dev_out = ${test_diopi_func_name}(**function_kwargs)
+except FunctionNotImplementedError as e:
+    pytest.skip(str(e))
+    return
 
 # read ref_out
 with open(f_out, 'rb') as f:
@@ -277,7 +289,12 @@ backward_para["grad_outputs"] = grad_outputs
 for k, v in function_config['saved_args'].items():
     backward_para[k] = dev_out[v]
 function_kwargs.update(backward_para)
-dev_bp_out = ${test_diopi_bp_func_name}(**function_kwargs)
+
+try:
+    dev_bp_out = ${test_diopi_bp_func_name}(**function_kwargs)
+except FunctionNotImplementedError as e:
+    pytest.skip(str(e))
+    return
 
 with open(f_bp_out, 'rb') as f:
     ref_bp_out = pickle.load(f)

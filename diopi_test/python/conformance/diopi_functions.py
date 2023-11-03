@@ -5,7 +5,6 @@ import ctypes
 import itertools
 import numpy as np
 import diopilib
-import pytest
 
 from collections import namedtuple
 from ctypes import c_double, byref
@@ -43,8 +42,7 @@ def check_returncode(returncode, throw_exception=True):
     if 0 != returncode:
         if returncode == diopiError.diopi_no_implement:
             glob_vars.func_status[glob_vars.cur_test_func] = 'skipped'
-            pytest.skip(f"FunctionNotImplementedError: {glob_vars.cur_test_func} not implement")
-            # raise FunctionNotImplementedError(glob_vars.cur_test_func + ' not implement')
+            raise FunctionNotImplementedError(glob_vars.cur_test_func + ' not implement')
         glob_vars.func_status[glob_vars.cur_test_func] = 'failed'
         error_info = f"Returncode: {returncode}"
         error_detail = get_last_error()
@@ -58,13 +56,12 @@ def check_returncode(returncode, throw_exception=True):
 def check_function(fn_name):
     glob_vars.cur_test_func = fn_name
     if hasattr(diopilib, f"{fn_name}"):
-        func = eval(f"diopilib.{fn_name}")
         glob_vars.func_status[glob_vars.cur_test_func] = 'passed'
-        return func
+        func = eval(f"diopilib.{fn_name}")
+        return  func
     else:
         glob_vars.func_status[glob_vars.cur_test_func] = 'skipped'
-        pytest.skip(f"FunctionNotImplementedError: diopilib dose not have attribute {fn_name}")
-        return None
+        raise FunctionNotImplementedError(f'[diopilib] {fn_name} not implemented.')
 
 
 def broadcast_out_size(size1, size2):
