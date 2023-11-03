@@ -33,6 +33,7 @@ set(REAL_IMPL_SRC ${REAL_IMPL_SRC}
                   roi_align_kernel.cu
                   functions.cpp
                   functions_mmcv.cpp
+                  functions_lightllm.cpp
                   error.cpp)
 
 if(HIP)
