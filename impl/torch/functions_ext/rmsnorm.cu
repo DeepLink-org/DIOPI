@@ -1,24 +1,18 @@
-#include <cuda.h>
-#include <cuda_runtime.h>
+#include <ATen/core/ATen_fwd.h>
+#include <ATen/core/TensorBody.h>
+#include <c10/util/Exception.h>
 
-#include <ATen/ATen.h>
-#include <ATen/AccumulateType.h>
-#include <ATen/native/TensorIterator.h>
-
-#include <ATen/native/cuda/Loops.cuh>
-
-#include "ATen/cuda/CUDAContext.h"
-#include "ATen/cuda/DeviceUtils.cuh"
-
-#include "../cuda_helpers.h"
-#include "ext_common.h"
-
-
-using namespace cuda::helper;
 namespace ext {
 namespace ops {
+namespace {
 
-using namespace at;
+#define DIOPI_TORCH_EXT_CHECK_CUDA(x) TORCH_CHECK(x.device().is_cuda(), #x " must be a CUDA tensor")
+
+#define DIOPI_TORCH_EXT_CHECK_CONTIGUOUS(x) TORCH_CHECK(x.is_contiguous(), #x " must be contiguous")
+
+#define DIOPI_TORCH_EXT_CHECK_INPUT(x) \
+    DIOPI_TORCH_EXT_CHECK_CUDA(x);     \
+    DIOPI_TORCH_EXT_CHECK_CONTIGUOUS(x)
 
 void compute_n1_n2(at::Tensor input, at::IntArrayRef normalized_shape, int& n1, int& n2) {
     int idiff = input.ndimension() - normalized_shape.size();
@@ -76,18 +70,23 @@ void check_args(at::Tensor input, at::IntArrayRef normalized_shape, at::Tensor g
     check_args(normalized_shape, gamma);
 }
 
+}  // namespace
+
+// implemented in layer_norm_cuda_kernel.cu
 void cuda_rms_norm(at::Tensor* output, at::Tensor* invvar, at::Tensor* input, int n1, int n2, at::IntArrayRef normalized_shape, at::Tensor* gamma,
                    double epsilon);
 
+// implemented in layer_norm_cuda_kernel.cu
 void cuda_rms_norm_gradient(at::Tensor* dout, at::Tensor* invvar, at::Tensor* input, int n1, int n2, at::IntArrayRef normalized_shape, at::Tensor* gamma,
                             double epsilon, at::Tensor* grad_input, at::Tensor* grad_gamma);
 
 // 供cpp层调用函数，向外暴露的函数
 
 void rms_norm_forward(at::Tensor input, at::IntArrayRef normalized_shape, at::Tensor gamma, double epsilon, at::Tensor output, at::Tensor invvar) {
-    CHECK_INPUT(input);
-    CHECK_INPUT(gamma);
-    int n1, n2;
+    DIOPI_TORCH_EXT_CHECK_INPUT(input);
+    DIOPI_TORCH_EXT_CHECK_INPUT(gamma);
+    int n1;
+    int n2;
     check_args(input, normalized_shape, gamma, n1, n2);
     const auto stats_dtype =
         (input.scalar_type() == at::ScalarType::Half || input.scalar_type() == at::ScalarType::BFloat16) ? at::ScalarType::Float : input.scalar_type();
@@ -97,11 +96,12 @@ void rms_norm_forward(at::Tensor input, at::IntArrayRef normalized_shape, at::Te
 
 void rms_norm_backward(at::Tensor dout, at::Tensor invvar, at::Tensor input, at::IntArrayRef normalized_shape, at::Tensor gamma, double epsilon,
                        at::Tensor grad_input, at::Tensor grad_gamma) {
-    CHECK_INPUT(dout);
-    CHECK_INPUT(invvar);
-    CHECK_INPUT(input);
-    CHECK_INPUT(gamma);
-    int n1, n2;
+    DIOPI_TORCH_EXT_CHECK_INPUT(dout);
+    DIOPI_TORCH_EXT_CHECK_INPUT(invvar);
+    DIOPI_TORCH_EXT_CHECK_INPUT(input);
+    DIOPI_TORCH_EXT_CHECK_INPUT(gamma);
+    int n1;
+    int n2;
     check_args(input, normalized_shape, gamma, n1, n2);
     cuda_rms_norm_gradient(&dout, &invvar, &input, n1, n2, normalized_shape, &gamma, epsilon, &grad_input, &grad_gamma);
     return;

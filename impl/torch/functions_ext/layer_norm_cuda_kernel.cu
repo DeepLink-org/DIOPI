@@ -1,11 +1,14 @@
-#include <cuda.h>
+#include <ATen/AccumulateType.h>
+#include <ATen/core/TensorBody.h>
+#include <ATen/cuda/CUDAContext.h>
+#include <ATen/ops/empty.h>
+#include <ATen/ops/empty_like.h>
+#include <c10/cuda/CUDAStream.h>
 #include <cuda_runtime.h>
 
-#include "ATen/ATen.h"
-#include "ATen/AccumulateType.h"
-#include "ATen/cuda/CUDAContext.h"
-#include "ATen/cuda/DeviceUtils.cuh"
-#include "ext_common.h"
+#include <ATen/cuda/DeviceUtils.cuh>
+
+namespace {
 
 template <typename U>
 __device__ void cuWelfordOnlineSum(const U curr, U& mu, U& sigma2, U& count) {
@@ -263,8 +266,10 @@ __device__ void cuWelfordMuSigma2(const at::Half* __restrict__ vals, const int n
     }
 }
 
+}  // namespace
+
 template <typename U>
-U rsqrt(U v) {
+static U rsqrt(U v) {
     return U(1) / sqrt(v);
 }
 template <>
@@ -310,6 +315,8 @@ struct SharedMemory<double> {
     }
 };
 }  // namespace
+
+namespace {
 
 template <typename T, typename U, typename V>
 __device__ void cuApplyLayerNorm_(V* __restrict__ output_vals, U* __restrict__ mean, U* __restrict__ invvar, const T* __restrict__ vals, const int n1,
@@ -709,8 +716,11 @@ __global__ void cuComputeGradInput(const V* __restrict__ dout, const T* __restri
     }
 }
 
+}  // namespace
+
 namespace ext {
 namespace ops {
+namespace {
 
 template <typename T, typename U, typename V = T>
 void HostApplyLayerNorm(V* output, U* mean, U* invvar, const T* input, int n1, int n2, double epsilon, const V* gamma, const V* beta) {
@@ -730,36 +740,6 @@ void HostApplyRMSNorm(V* output, U* invvar, const T* input, int n1, int n2, doub
     const dim3 blocks(1, std::min((uint64_t)n1, maxGridY), 1);
     int nshared = threads.y > 1 ? threads.y * sizeof(U) + (threads.y / 2) * sizeof(U) : 0;
     cuApplyRMSNorm<<<blocks, threads, nshared, stream>>>(output, invvar, input, n1, n2, U(epsilon), gamma);
-}
-
-void cuda_layer_norm(at::Tensor* output, at::Tensor* mean, at::Tensor* invvar, at::Tensor* input, int n1, int n2, at::IntArrayRef normalized_shape,
-                     at::Tensor* gamma, at::Tensor* beta, double epsilon) {
-    using namespace at;
-    DISPATCH_DOUBLE_FLOAT_HALF_AND_BFLOAT_INOUT_TYPES(
-        input->scalar_type(), output->scalar_type(), "layer_norm_cuda_kernel", using accscalar_t = at::acc_type<scalar_t_in, true>;
-        HostApplyLayerNorm<scalar_t_in, accscalar_t, scalar_t_out>(output->DATA_PTR<scalar_t_out>(),
-                                                                   mean->DATA_PTR<accscalar_t>(),
-                                                                   invvar->DATA_PTR<accscalar_t>(),
-                                                                   input->DATA_PTR<scalar_t_in>(),
-                                                                   n1,
-                                                                   n2,
-                                                                   epsilon,
-                                                                   gamma != NULL ? gamma->DATA_PTR<scalar_t_out>() : NULL,
-                                                                   beta != NULL ? beta->DATA_PTR<scalar_t_out>() : NULL);)
-}
-
-void cuda_rms_norm(at::Tensor* output, at::Tensor* invvar, at::Tensor* input, int n1, int n2, at::IntArrayRef normalized_shape, at::Tensor* gamma,
-                   double epsilon) {
-    using namespace at;
-    DISPATCH_DOUBLE_FLOAT_HALF_AND_BFLOAT_INOUT_TYPES(
-        input->scalar_type(), output->scalar_type(), "rms_norm_cuda_kernel", using accscalar_t = at::acc_type<scalar_t_in, true>;
-        HostApplyRMSNorm<scalar_t_in, accscalar_t, scalar_t_out>(output->DATA_PTR<scalar_t_out>(),
-                                                                 invvar->DATA_PTR<accscalar_t>(),
-                                                                 input->DATA_PTR<scalar_t_in>(),
-                                                                 n1,
-                                                                 n2,
-                                                                 epsilon,
-                                                                 gamma != NULL ? gamma->DATA_PTR<scalar_t_out>() : NULL);)
 }
 
 template <typename T, typename U = float, typename V = T>
@@ -782,13 +762,13 @@ void HostLayerNormGradient(const V* dout, const U* mean, const U* invvar, at::Te
         at::Tensor part_grad_gamma = at::empty({part_size, n2}, input->options().dtype(part_grad_dtype));
         at::Tensor part_grad_beta = at::empty_like(part_grad_gamma);
         cuComputePartGradGammaBeta<<<blocks2, threads2, nshared2, stream>>>(
-            dout, input->DATA_PTR<T>(), n1, n2, mean, invvar, U(epsilon), part_grad_gamma.DATA_PTR<U>(), part_grad_beta.DATA_PTR<U>(), false);
+            dout, input->data_ptr<T>(), n1, n2, mean, invvar, U(epsilon), part_grad_gamma.data_ptr<U>(), part_grad_beta.data_ptr<U>(), false);
 
         const dim3 threads3(32, 8, 1);
         const dim3 blocks3((n2 + threads2.x - 1) / threads2.x, 1, 1);
         const int nshared3 = threads3.x * threads3.y * sizeof(U);
         cuComputeGradGammaBeta<<<blocks3, threads3, nshared3, stream>>>(
-            part_grad_gamma.DATA_PTR<U>(), part_grad_beta.DATA_PTR<U>(), part_size, n1, n2, grad_gamma, grad_beta, false);
+            part_grad_gamma.data_ptr<U>(), part_grad_beta.data_ptr<U>(), part_size, n1, n2, grad_gamma, grad_beta, false);
     }
 
     // compute grad_input
@@ -796,7 +776,7 @@ void HostLayerNormGradient(const V* dout, const U* mean, const U* invvar, at::Te
     const dim3 blocks1(1, std::min((uint64_t)n1, maxGridY), 1);
     const dim3 threads1(32, 4, 1);
     int nshared = threads1.y > 1 ? threads1.y * threads1.x * sizeof(U) : 0;
-    cuComputeGradInput<<<blocks1, threads1, nshared, stream>>>(dout, input->DATA_PTR<T>(), n1, n2, mean, invvar, U(epsilon), gamma, grad_input, false);
+    cuComputeGradInput<<<blocks1, threads1, nshared, stream>>>(dout, input->data_ptr<T>(), n1, n2, mean, invvar, U(epsilon), gamma, grad_input, false);
 }
 
 template <typename T, typename U = float, typename V = T>
@@ -816,21 +796,21 @@ void HostRMSNormGradient(const V* dout, const U* invvar, at::Tensor* input, int 
             (input->scalar_type() == at::ScalarType::Half || input->scalar_type() == at::ScalarType::BFloat16) ? at::ScalarType::Float : input->scalar_type();
         at::Tensor part_grad_gamma = at::empty({part_size, n2}, input->options().dtype(part_grad_dtype));
         cuComputePartGradGammaBeta<<<blocks2, threads2, nshared2, stream>>>(dout,
-                                                                            input->DATA_PTR<T>(),
+                                                                            input->data_ptr<T>(),
                                                                             n1,
                                                                             n2,
                                                                             invvar,  // unused
                                                                             invvar,
                                                                             U(epsilon),
-                                                                            part_grad_gamma.DATA_PTR<U>(),
-                                                                            part_grad_gamma.DATA_PTR<U>(), /* unused */
+                                                                            part_grad_gamma.data_ptr<U>(),
+                                                                            part_grad_gamma.data_ptr<U>(), /* unused */
                                                                             true);
 
         const dim3 threads3(32, 8, 1);
         const dim3 blocks3((n2 + threads2.x - 1) / threads2.x, 1, 1);
         const int nshared3 = threads3.x * threads3.y * sizeof(U);
-        cuComputeGradGammaBeta<<<blocks3, threads3, nshared3, stream>>>(part_grad_gamma.DATA_PTR<U>(),
-                                                                        part_grad_gamma.DATA_PTR<U>(), /* unused */
+        cuComputeGradGammaBeta<<<blocks3, threads3, nshared3, stream>>>(part_grad_gamma.data_ptr<U>(),
+                                                                        part_grad_gamma.data_ptr<U>(), /* unused */
                                                                         part_size,
                                                                         n1,
                                                                         n2,
@@ -845,7 +825,7 @@ void HostRMSNormGradient(const V* dout, const U* invvar, at::Tensor* input, int 
     const dim3 threads1(32, 4, 1);
     int nshared = threads1.y > 1 ? threads1.y * threads1.x * sizeof(U) : 0;
     cuComputeGradInput<<<blocks1, threads1, nshared, stream>>>(dout,
-                                                               input->DATA_PTR<T>(),
+                                                               input->data_ptr<T>(),
                                                                n1,
                                                                n2,
                                                                invvar, /* unused */
@@ -856,6 +836,148 @@ void HostRMSNormGradient(const V* dout, const U* invvar, at::Tensor* input, int 
                                                                true);
 }
 
+}  // namespace
+
+#define DISPATCH_DOUBLE_FLOAT_HALF_AND_BFLOAT_INOUT_TYPES(TYPEIN, TYPEOUT, NAME, ...)  \
+    switch (TYPEIN) {                                                                  \
+        case at::ScalarType::Double: {                                                 \
+            using scalar_t_in = double;                                                \
+            switch (TYPEOUT) {                                                         \
+                case at::ScalarType::Double: {                                         \
+                    using scalar_t_out = double;                                       \
+                    __VA_ARGS__;                                                       \
+                    break;                                                             \
+                }                                                                      \
+                case at::ScalarType::Float: {                                          \
+                    using scalar_t_out = float;                                        \
+                    __VA_ARGS__;                                                       \
+                    break;                                                             \
+                }                                                                      \
+                case at::ScalarType::Half: {                                           \
+                    using scalar_t_out = at::Half;                                     \
+                    __VA_ARGS__;                                                       \
+                    break;                                                             \
+                }                                                                      \
+                case at::ScalarType::BFloat16: {                                       \
+                    using scalar_t_out = at::BFloat16;                                 \
+                    __VA_ARGS__;                                                       \
+                    break;                                                             \
+                }                                                                      \
+                default:                                                               \
+                    AT_ERROR(#NAME, " not implemented for '", toString(TYPEOUT), "'"); \
+            }                                                                          \
+            break;                                                                     \
+        }                                                                              \
+        case at::ScalarType::Float: {                                                  \
+            using scalar_t_in = float;                                                 \
+            switch (TYPEOUT) {                                                         \
+                case at::ScalarType::Float: {                                          \
+                    using scalar_t_out = float;                                        \
+                    __VA_ARGS__;                                                       \
+                    break;                                                             \
+                }                                                                      \
+                case at::ScalarType::Half: {                                           \
+                    using scalar_t_out = at::Half;                                     \
+                    __VA_ARGS__;                                                       \
+                    break;                                                             \
+                }                                                                      \
+                case at::ScalarType::BFloat16: {                                       \
+                    using scalar_t_out = at::BFloat16;                                 \
+                    __VA_ARGS__;                                                       \
+                    break;                                                             \
+                }                                                                      \
+                default:                                                               \
+                    AT_ERROR(#NAME, " not implemented for '", toString(TYPEOUT), "'"); \
+            }                                                                          \
+            break;                                                                     \
+        }                                                                              \
+        case at::ScalarType::Half: {                                                   \
+            using scalar_t_in = at::Half;                                              \
+            using scalar_t_out = at::Half;                                             \
+            __VA_ARGS__;                                                               \
+            break;                                                                     \
+        }                                                                              \
+        case at::ScalarType::BFloat16: {                                               \
+            using scalar_t_in = at::BFloat16;                                          \
+            using scalar_t_out = at::BFloat16;                                         \
+            __VA_ARGS__;                                                               \
+            break;                                                                     \
+        }                                                                              \
+        default:                                                                       \
+            AT_ERROR(#NAME, " not implemented for '", toString(TYPEIN), "'");          \
+    }
+
+#define DISPATCH_FLOAT_HALF_AND_BFLOAT_INOUT_TYPES(TYPEIN, TYPEOUT, NAME, ...)         \
+    switch (TYPEIN) {                                                                  \
+        case at::ScalarType::Float: {                                                  \
+            using scalar_t_in = float;                                                 \
+            switch (TYPEOUT) {                                                         \
+                case at::ScalarType::Float: {                                          \
+                    using scalar_t_out = float;                                        \
+                    __VA_ARGS__;                                                       \
+                    break;                                                             \
+                }                                                                      \
+                case at::ScalarType::Half: {                                           \
+                    using scalar_t_out = at::Half;                                     \
+                    __VA_ARGS__;                                                       \
+                    break;                                                             \
+                }                                                                      \
+                case at::ScalarType::BFloat16: {                                       \
+                    using scalar_t_out = at::BFloat16;                                 \
+                    __VA_ARGS__;                                                       \
+                    break;                                                             \
+                }                                                                      \
+                default:                                                               \
+                    AT_ERROR(#NAME, " not implemented for '", toString(TYPEOUT), "'"); \
+            }                                                                          \
+            break;                                                                     \
+        }                                                                              \
+        case at::ScalarType::Half: {                                                   \
+            using scalar_t_in = at::Half;                                              \
+            using scalar_t_out = at::Half;                                             \
+            __VA_ARGS__;                                                               \
+            break;                                                                     \
+        }                                                                              \
+        case at::ScalarType::BFloat16: {                                               \
+            using scalar_t_in = at::BFloat16;                                          \
+            using scalar_t_out = at::BFloat16;                                         \
+            __VA_ARGS__;                                                               \
+            break;                                                                     \
+        }                                                                              \
+        default:                                                                       \
+            AT_ERROR(#NAME, " not implemented for '", toString(TYPEIN), "'");          \
+    }
+
+void cuda_layer_norm(at::Tensor* output, at::Tensor* mean, at::Tensor* invvar, at::Tensor* input, int n1, int n2, at::IntArrayRef normalized_shape,
+                     at::Tensor* gamma, at::Tensor* beta, double epsilon) {
+    using namespace at;
+    DISPATCH_DOUBLE_FLOAT_HALF_AND_BFLOAT_INOUT_TYPES(
+        input->scalar_type(), output->scalar_type(), "layer_norm_cuda_kernel", using accscalar_t = at::acc_type<scalar_t_in, true>;
+        HostApplyLayerNorm<scalar_t_in, accscalar_t, scalar_t_out>(output->data_ptr<scalar_t_out>(),
+                                                                   mean->data_ptr<accscalar_t>(),
+                                                                   invvar->data_ptr<accscalar_t>(),
+                                                                   input->data_ptr<scalar_t_in>(),
+                                                                   n1,
+                                                                   n2,
+                                                                   epsilon,
+                                                                   gamma != NULL ? gamma->data_ptr<scalar_t_out>() : NULL,
+                                                                   beta != NULL ? beta->data_ptr<scalar_t_out>() : NULL);)
+}
+
+void cuda_rms_norm(at::Tensor* output, at::Tensor* invvar, at::Tensor* input, int n1, int n2, at::IntArrayRef normalized_shape, at::Tensor* gamma,
+                   double epsilon) {
+    using namespace at;
+    DISPATCH_DOUBLE_FLOAT_HALF_AND_BFLOAT_INOUT_TYPES(
+        input->scalar_type(), output->scalar_type(), "rms_norm_cuda_kernel", using accscalar_t = at::acc_type<scalar_t_in, true>;
+        HostApplyRMSNorm<scalar_t_in, accscalar_t, scalar_t_out>(output->data_ptr<scalar_t_out>(),
+                                                                 invvar->data_ptr<accscalar_t>(),
+                                                                 input->data_ptr<scalar_t_in>(),
+                                                                 n1,
+                                                                 n2,
+                                                                 epsilon,
+                                                                 gamma != NULL ? gamma->data_ptr<scalar_t_out>() : NULL);)
+}
+
 void cuda_layer_norm_gradient(at::Tensor* dout, at::Tensor* mean, at::Tensor* invvar, at::Tensor* input, int n1, int n2, at::IntArrayRef normalized_shape,
                               at::Tensor* gamma, at::Tensor* beta, double epsilon, at::Tensor* grad_input, at::Tensor* grad_gamma, at::Tensor* grad_beta) {
     using namespace at;
@@ -864,20 +986,20 @@ void cuda_layer_norm_gradient(at::Tensor* dout, at::Tensor* mean, at::Tensor* in
                                                gamma == NULL ? input->scalar_type() : gamma->scalar_type(),
                                                "cuComputeGradInput",
                                                using accscalar_t = at::acc_type<scalar_t_in, true>;
-                                               HostLayerNormGradient(dout->DATA_PTR<scalar_t_out>(),
-                                                                     mean->DATA_PTR<accscalar_t>(),
-                                                                     invvar->DATA_PTR<accscalar_t>(),
+                                               HostLayerNormGradient(dout->data_ptr<scalar_t_out>(),
+                                                                     mean->data_ptr<accscalar_t>(),
+                                                                     invvar->data_ptr<accscalar_t>(),
                                                                      input,
                                                                      n1,
                                                                      n2,
                                                                      // TMJ pass NULL argument for gamma, beta, grad_gamma and grad_beta
                                                                      // if gamma Tensor is NULL on input.
-                                                                     gamma != NULL ? gamma->DATA_PTR<scalar_t_out>() : NULL,
-                                                                     gamma != NULL ? beta->DATA_PTR<scalar_t_out>() : NULL,
+                                                                     gamma != NULL ? gamma->data_ptr<scalar_t_out>() : NULL,
+                                                                     gamma != NULL ? beta->data_ptr<scalar_t_out>() : NULL,
                                                                      epsilon,
-                                                                     grad_input->DATA_PTR<scalar_t_in>(),
-                                                                     gamma != NULL ? grad_gamma->DATA_PTR<scalar_t_out>() : NULL,
-                                                                     gamma != NULL ? grad_beta->DATA_PTR<scalar_t_out>() : NULL);)
+                                                                     grad_input->data_ptr<scalar_t_in>(),
+                                                                     gamma != NULL ? grad_gamma->data_ptr<scalar_t_out>() : NULL,
+                                                                     gamma != NULL ? grad_beta->data_ptr<scalar_t_out>() : NULL);)
 }
 
 void cuda_rms_norm_gradient(at::Tensor* dout, at::Tensor* invvar, at::Tensor* input, int n1, int n2, at::IntArrayRef normalized_shape, at::Tensor* gamma,
@@ -889,17 +1011,17 @@ void cuda_rms_norm_gradient(at::Tensor* dout, at::Tensor* invvar, at::Tensor* in
                                                       gamma == NULL ? input->scalar_type() : gamma->scalar_type(),
                                                       "cuComputeGradInputRMS",
                                                       using accscalar_t = at::acc_type<scalar_t_in, true>;
-                                                      HostRMSNormGradient(dout->DATA_PTR<scalar_t_out>(),
-                                                                          invvar->DATA_PTR<accscalar_t>(),
+                                                      HostRMSNormGradient(dout->data_ptr<scalar_t_out>(),
+                                                                          invvar->data_ptr<accscalar_t>(),
                                                                           input,
                                                                           n1,
                                                                           n2,
                                                                           // TMJ pass NULL argument for gamma, beta, grad_gamma and grad_beta
                                                                           // if gamma Tensor is NULL on input.
-                                                                          gamma != NULL ? gamma->DATA_PTR<scalar_t_out>() : NULL,
+                                                                          gamma != NULL ? gamma->data_ptr<scalar_t_out>() : NULL,
                                                                           epsilon,
-                                                                          grad_input->DATA_PTR<scalar_t_in>(),
-                                                                          gamma != NULL ? grad_gamma->DATA_PTR<scalar_t_out>() : NULL);)
+                                                                          grad_input->data_ptr<scalar_t_in>(),
+                                                                          gamma != NULL ? grad_gamma->data_ptr<scalar_t_out>() : NULL);)
 }
 
 }  // namespace ops

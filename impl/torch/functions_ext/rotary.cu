@@ -2,19 +2,17 @@
  * Copyright (c) 2023, Tri Dao.
  ******************************************************************************/
 
-// #include <torch/python.h>
+#include <ATen/Dispatch.h>
+#include <ATen/core/TensorBody.h>
 #include <ATen/native/TensorIterator.h>
 
 #include <ATen/native/cuda/Loops.cuh>
 
-#include "../cuda_helpers.h"
-using namespace cuda::helper;
 namespace ext {
 namespace ops {
 
-using namespace at;
-
-void apply_rotary_cuda(const Tensor x1, const Tensor x2, const Tensor cos, const Tensor sin, Tensor out1, Tensor out2, const bool conj) {
+void apply_rotary_cuda(const at::Tensor& x1, const at::Tensor& x2, const at::Tensor& cos, const at::Tensor& sin, at::Tensor out1, at::Tensor out2,
+                       const bool conj) {
     auto iter = at::TensorIteratorConfig()
                     .add_output(out1)
                     .add_output(out2)
