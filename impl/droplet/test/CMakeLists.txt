@@ -1,6 +1,9 @@
 set(DIOPI_EXPORT_RT export_runtime)
 set(DIOPI_EXPORT_FUNCTIONS export_functions)
 
+find_package(Python COMPONENTS Interpreter Development)
+set(PYBIND11_PYTHON_VERSION ${Python_VERSION})
+
 add_compile_options(-fno-elide-constructors)
 add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 build)
 
@@ -31,9 +34,6 @@ set(EXPORT_SRC
 )
 
 message("CXX_LITERT_SRC:" ${CXX_LITERT_SRC})
-
-find_package(Python COMPONENTS Interpreter Development)
-set(PYBIND11_PYTHON_VERSION ${Python_VERSION})
 
 pybind11_add_module(${DIOPI_EXPORT_RT} SHARED ${EXPORT_SRC})
 add_library(diopiruntime SHARED ${RUNTIME_SRC})
