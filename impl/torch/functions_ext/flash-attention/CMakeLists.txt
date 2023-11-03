@@ -1,9 +1,26 @@
-add_library(flash_attn_2_cuda.cpython-38-x86_64-linux-gnu SHARED IMPORTED)
-set_target_properties(flash_attn_2_cuda.cpython-38-x86_64-linux-gnu PROPERTIES
-IMPORTED_LOCATION /mnt/cache/share/platform/dep/DIOPI_pytorch/flash-attention/flash_attn_2_cuda.cpython-38-x86_64-linux-gnu.so
-PREFIX "")
-  
-add_library(diopi_torch_ext_flash_attn INTERFACE)
-target_link_libraries(diopi_torch_ext_flash_attn INTERFACE  -Wl,--no-as-needed flash_attn_2_cuda.cpython-38-x86_64-linux-gnu -Wl,--as-needed)
-target_include_directories(diopi_torch_ext_flash_attn SYSTEM
-  INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include )
+find_library(
+  DIOPI_TORCH_EXT_FLASH_ATTN_LIB
+  NAMES # Set env FLASH_ATTN_LIB_NAME if your lib has a different name
+        ENV FLASH_ATTN_LIB_NAME
+        # this is the default name of the flash-attention library
+        flash_attn_2_cuda.cpython-38-x86_64-linux-gnu.so
+  HINTS
+    # Set environment variable FLASH_ATTN_LIB_DIR to the path of the library
+    ENV FLASH_ATTN_LIB_DIR
+    # This is the path on cluster 1424 A100
+    /mnt/cache/shenliancheng/workspace/flash-attention/build/lib.linux-x86_64-cpython-38
+)
+
+if(NOT DIOPI_TORCH_EXT_FLASH_ATTN_LIB)
+  message(WARNING "flash-attention NOT FOUND, will build without mha support")
+  add_library(diopi_torch_ext_flash_attn INTERFACE)
+else()
+  message(STATUS "FOUND flash-attention: ${DIOPI_TORCH_EXT_FLASH_ATTN_LIB}")
+  add_library(diopi_torch_ext_flash_attn SHARED IMPORTED GLOBAL)
+  set_target_properties(
+    diopi_torch_ext_flash_attn PROPERTIES IMPORTED_LOCATION
+                                          ${DIOPI_TORCH_EXT_FLASH_ATTN_LIB})
+  target_link_options(diopi_torch_ext_flash_attn INTERFACE "LINKER:-no-as-needed")
+endif()
+
+target_include_directories(diopi_torch_ext_flash_attn INTERFACE include)

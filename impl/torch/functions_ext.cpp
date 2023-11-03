@@ -11,13 +11,13 @@
 #include <c10/util/Optional.h>
 #include <diopi/functions.h>
 #include <diopi/functions_ext.h>
+#include <flash_attn/flash_api.h>
 
 #include <cstdint>
 
 // TODO(lljbash): the dependency on context.h makes no sense, check and refactor
 #include "context.h"  // IWYU pragma: keep
 #include "ext_kernel.h"
-#include "functions_ext/flash-attention/include/flash_attn/flash_api.h"
 #include "helper.hpp"
 
 namespace {
@@ -98,7 +98,7 @@ diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiTensorHandle
     auto atGen = buildGeneratorForMha(ctx, gen, dropout_p);
 
     c10::optional<at::Tensor> nullOpt;  // Workaround: flash_attn uses non-const optional& as args (which is a really bad idea)
-    std::vector<at::Tensor> result = mha_fwd(atQ, atK, atV, nullOpt, dropout_p, scale, is_causal, -1, -1, return_debug_mask, atGen);
+    std::vector<at::Tensor> result = DIOPI_EXT_CALL_FLASH(mha_fwd, atQ, atK, atV, nullOpt, dropout_p, scale, is_causal, -1, -1, return_debug_mask, atGen);
     // const auto& atOutput = result[0];
     const auto& atQPaded = result[1];
     const auto& atKPaded = result[2];
@@ -141,8 +141,8 @@ diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiCons
     auto atLogsumexp = impl::aten::buildATen(softmax_lse);
 
     c10::optional<at::Tensor> nullOpt;  // Workaround: flash_attn uses non-const optional& as args (which is a really bad idea)
-    std::vector<at::Tensor> result =
-        mha_bwd(atGradOut, atQ, atK, atV, atOut, atLogsumexp, nullOpt, nullOpt, nullOpt, dropout_p, scale, is_causal, -1, -1, atGen, nullOpt);
+    std::vector<at::Tensor> result = DIOPI_EXT_CALL_FLASH(
+        mha_bwd, atGradOut, atQ, atK, atV, atOut, atLogsumexp, nullOpt, nullOpt, nullOpt, dropout_p, scale, is_causal, -1, -1, atGen, nullOpt);
     const auto& atGradQ = result[0];
     const auto& atGradK = result[1];
     const auto& atGradV = result[2];
@@ -169,8 +169,8 @@ diopiError_t diopiMultiHeadAttentionVarLen(diopiContextHandle_t ctx, diopiTensor
     auto atGen = buildGeneratorForMha(ctx, gen, dropout_p);
 
     c10::optional<at::Tensor> outputNull;
-    std::vector<at::Tensor> result =
-        mha_varlen_fwd(atQ, atK, atV, outputNull, atCumSeqQ, atCumSeqK, max_q, max_k, dropout_p, scale, false, is_causal, -1, -1, return_debug_mask, atGen);
+    std::vector<at::Tensor> result = DIOPI_EXT_CALL_FLASH(
+        mha_varlen_fwd, atQ, atK, atV, outputNull, atCumSeqQ, atCumSeqK, max_q, max_k, dropout_p, scale, false, is_causal, -1, -1, return_debug_mask, atGen);
     // auto atOutput = result[0];
     auto atQPadded = result[1];
     auto atKPadded = result[2];
@@ -216,27 +216,28 @@ diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_t ctx, dio
     auto atCumSeqK = impl::aten::buildATen(cum_seq_k);
 
     auto nullOpt = c10::optional<at::Tensor>();  // Workaround: flash_attn uses non-const optional& as args (which is a really bad idea)
-    std::vector<at::Tensor> result = mha_varlen_bwd(atGradOut,
-                                                    atQ,
-                                                    atK,
-                                                    atV,
-                                                    atOut,
-                                                    atLogsumexp,
-                                                    nullOpt,
-                                                    nullOpt,
-                                                    nullOpt,
-                                                    atCumSeqQ,
-                                                    atCumSeqK,
-                                                    max_q,
-                                                    max_k,
-                                                    dropout_p,
-                                                    scale,
-                                                    false,
-                                                    is_causal,
-                                                    -1,
-                                                    -1,
-                                                    atGen,
-                                                    nullOpt);
+    std::vector<at::Tensor> result = DIOPI_EXT_CALL_FLASH(mha_varlen_bwd,
+                                                          atGradOut,
+                                                          atQ,
+                                                          atK,
+                                                          atV,
+                                                          atOut,
+                                                          atLogsumexp,
+                                                          nullOpt,
+                                                          nullOpt,
+                                                          nullOpt,
+                                                          atCumSeqQ,
+                                                          atCumSeqK,
+                                                          max_q,
+                                                          max_k,
+                                                          dropout_p,
+                                                          scale,
+                                                          false,
+                                                          is_causal,
+                                                          -1,
+                                                          -1,
+                                                          atGen,
+                                                          nullOpt);
     const auto& atGradQ = result[0];
     const auto& atGradK = result[1];
     const auto& atGradV = result[2];
