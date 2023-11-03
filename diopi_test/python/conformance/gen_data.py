@@ -590,8 +590,12 @@ class CustomizedTest(object):
         return out
 
     def context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len):
-        triton_kernels.context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len)
-        return out
+        batch, head, dim = b_start_loc.shape[0], q.shape[1], q.shape[2]
+        for i in range(batch):
+            start = b_start_loc[i]
+            end = start + b_seq_len[i]
+            o[start:end, :] = torch_att(q[start:end], k[start:end], v[start:end], 1, int(b_seq_len[i]), head, dim)
+        return o
 
 
 def transfer_tensor_to_device(function_paras: dict):
