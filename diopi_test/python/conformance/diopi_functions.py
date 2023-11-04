@@ -37,6 +37,9 @@ class FunctionNotImplementedError(DiopiException):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
 
+class FunctionNotDefinedError(DiopiException):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
 
 def check_returncode(returncode, throw_exception=True):
     if 0 != returncode:
@@ -61,7 +64,7 @@ def check_function(fn_name):
         return  func
     else:
         glob_vars.func_status[glob_vars.cur_test_func] = 'skipped'
-        raise FunctionNotImplementedError(f'[diopilib] {fn_name} not implemented.')
+        raise FunctionNotDefinedError(f'[diopilib] {fn_name} not defined.')
 
 
 def broadcast_out_size(size1, size2):

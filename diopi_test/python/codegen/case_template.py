@@ -9,7 +9,7 @@ class CaseTemplate:
 import os
 import pickle
 import pytest
-import psutil
+#import psutil
 import numpy as np
 from conformance.diopi_runtime import Tensor, from_numpy_dtype, default_context
 from conformance.diopi_functions import ones_like, FunctionNotImplementedError
@@ -18,13 +18,12 @@ ${test_diopi_head_import}
 
 data_path = './cache/data'
 
-@pytest.fixture(scope='class', autouse=True)
-def process_cls():
-    pid = os.getpid()
-    prs = psutil.Process(pid)
-    memory_info = prs.memory_info()
-    print(f'[TestClass] host memory used: {pid} : {memory_info.rss / 1024 / 1024 / 1024} G.')
-
+# @pytest.fixture(scope='class', autouse=True)
+# def process_cls():
+#     pid = os.getpid()
+#     prs = psutil.Process(pid)
+#     memory_info = prs.memory_info()
+#     print(f'[TestClass] host memory used: {pid} : {memory_info.rss / 1024 / 1024 / 1024} G.')
 
 class ${test_class_name}(object):
     # if run test seprately, this setup and teardown function should be uncommented.
@@ -159,7 +158,8 @@ for para_key, para_val in function_kwargs.items():
     if isinstance(para_val, np.ndarray) and para_key in ${nhwc_list}:
         ndim = para_val.ndim
         if ndim < ${nhwc_min_dim} or ndim > 5:
-            pytest.skip(f"Skipped: {ndim}-dim Tensor skipped for nhwc test")
+            default_context.clear_tensors()
+            pytest.xfail(f"Skipped: {ndim}-dim Tensor skipped for nhwc test")
         para_val_nchw = para_val
         ndim = para_val_nchw.ndim
         if ndim == 3:
@@ -227,8 +227,8 @@ tol['sum_to_compare'] = sum_to_compare
 try:
     dev_out = ${test_diopi_func_name}(**function_kwargs)
 except FunctionNotImplementedError as e:
-    pytest.skip(str(e))
-    return
+    default_context.clear_tensors()
+    pytest.xfail(str(e))
 
 # read ref_out
 with open(f_out, 'rb') as f:
@@ -246,7 +246,12 @@ except Exception as e:
 # inplace call for the function
 ${test_diopi_func_inp_remove_grad_args}
 function_kwargs.update({'inplace': True})
-dev_inp_out = ${test_diopi_func_name}(**function_kwargs)
+try:
+    dev_inp_out = ${test_diopi_func_name}(**function_kwargs)
+except FunctionNotImplementedError as e:
+    default_context.clear_tensors()
+    pytest.xfail(str(e))
+
 try:
     CheckResult.compare_output(dev_inp_out, ref_out, **tol)
 except Exception as e:
@@ -293,8 +298,8 @@ function_kwargs.update(backward_para)
 try:
     dev_bp_out = ${test_diopi_bp_func_name}(**function_kwargs)
 except FunctionNotImplementedError as e:
-    pytest.skip(str(e))
-    return
+    default_context.clear_tensors()
+    pytest.xfail(str(e))
 
 with open(f_bp_out, 'rb') as f:
     ref_bp_out = pickle.load(f)
