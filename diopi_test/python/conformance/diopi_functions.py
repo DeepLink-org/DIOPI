@@ -37,9 +37,11 @@ class FunctionNotImplementedError(DiopiException):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
 
+
 class FunctionNotDefinedError(DiopiException):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
+
 
 def check_returncode(returncode, throw_exception=True):
     if 0 != returncode:
@@ -61,7 +63,7 @@ def check_function(fn_name):
     if hasattr(diopilib, f"{fn_name}"):
         glob_vars.func_status[glob_vars.cur_test_func] = 'passed'
         func = eval(f"diopilib.{fn_name}")
-        return  func
+        return func
     else:
         glob_vars.func_status[glob_vars.cur_test_func] = 'skipped'
         raise FunctionNotDefinedError(f'[diopilib] {fn_name} not defined.')
