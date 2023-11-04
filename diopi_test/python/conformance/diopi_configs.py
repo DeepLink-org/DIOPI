@@ -8034,23 +8034,23 @@ diopi_configs = {
         )
     ),
 
-    'destindex_copy_kv':dict(
+    'destindex_copy_kv': dict(
         name=['destindex_copy_kv'],
         interface=['CustomizedTest'],
         tensor_para=dict(
             args=[
                 {
-                    "ins":['k'],
+                    "ins": ['k'],
                     "shape": ((5, 32, 128), (4, 32, 128)),
                     "dtype": [Dtype.float16],
                 },
                 {
-                    "ins":['dest_loc'],
-                    "dtype":[Dtype.int32],
+                    "ins": ['dest_loc'],
+                    "dtype": [Dtype.int32],
                     "value": ((0, 1, 2, 3, 4), (14, 15, 16, 17)),
                 },
                 {
-                    "ins":['out'],
+                    "ins": ['out'],
                     "shape": ((120, 32, 128), (120, 32, 128)),
                     "dtype": [Dtype.float16],
                 }
