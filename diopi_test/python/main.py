@@ -252,6 +252,7 @@ if __name__ == "__main__":
             )
         if args.pytest_args is not None:
             pytest_args.extend(args.pytest_args.split())
+        pytest_args = ['-v', '--cache-clear', '--disable-warnings'] + pytest_args
         exit_code = pytest.main(pytest_args)
         if exit_code != 0:
             raise SystemExit(exit_code)
