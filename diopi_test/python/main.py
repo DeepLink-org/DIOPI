@@ -188,6 +188,8 @@ if __name__ == "__main__":
     elif args.mode == "gen_case":
         diopi_case_item_file = "diopi_case_items.cfg"
         device_case_item_file = "%s_case_items.cfg"
+        model_name = args.model_name.lower()
+
         if args.model_name != "":
             logger.info(
                 f"the op list of {args.model_name}: {model_op_list[model_name]}"
