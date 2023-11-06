@@ -8041,34 +8041,34 @@ diopi_configs = {
     # 'multihead_attention_forward': dict(
     #     name=['multihead_attention_forward'],
     #     interface=['CustomizedTest'],
-    #     dtype=[Dtype.float64, Dtype.float32],
+    #     dtype=[Dtype.float16],
     #     atol=1e-3,
     #     rtol=1e-4,
     #     para=dict(
-    #         dropout_p=[0],
-    #         is_causal=[False],
-    #         return_debug_mask=[False],
-    #         scale=[0]  # 仅占位测试，实际没有使用
+    #         dropout_p=[0, 0],
+    #         is_causal=[False, False],
+    #         return_debug_mask=[False, False],
+    #         scale=[None, None]
     #     ),
     #     tensor_para=dict(
     #         gen_fn=Genfunc.randn,
     #         args=[
     #             {
     #                 "ins": ['q'],
-    #                 "shape": ((2, 5, 8, 8),),
-    #                 "dtype": [Dtype.float32, Dtype.float64],
+    #                 "shape": ((2, 2, 2, 8), (2, 5, 7, 8)),
+    #                 "dtype": [Dtype.float16],
     #                 "gen_fn": Genfunc.randn,
     #             },
     #             {
     #                 "ins": ['k'],
-    #                 "shape": ((2, 5, 8, 8),),
-    #                 "dtype": [Dtype.float32, Dtype.float64],
+    #                 "shape": ((2, 2, 2, 8), (2, 5, 7, 8)),
+    #                 "dtype": [Dtype.float16],
     #                 "gen_fn": Genfunc.randn,
     #             },
     #             {
     #                 "ins": ['v'],
-    #                 "shape": ((2, 5, 8, 8),),
-    #                 "dtype": [Dtype.float32, Dtype.float64],
+    #                 "shape": ((2, 2, 2, 8), (2, 5, 7, 8)),
+    #                 "dtype": [Dtype.float16],
     #                 "gen_fn": Genfunc.randn,
     #             },
     #         ],

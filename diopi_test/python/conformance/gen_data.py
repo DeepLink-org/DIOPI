@@ -585,9 +585,7 @@ class CustomizedTest(object):
         import math
 
         _, seqlen = q.shape[0], q.shape[1]
-        # scale 默认是 1.0 / math.sqrt(q.shape[-1])
-        # softmax_scale = scale or 1.0 / math.sqrt(q.shape[-1])
-        softmax_scale = 1.0 / math.sqrt(q.shape[-1])
+        softmax_scale = 1.0 / math.sqrt(q.shape[-1]) if not scale else scale
         scores = torch.einsum("bthd,bshd->bhts", q, k * softmax_scale)
 
         if is_causal:
@@ -597,7 +595,6 @@ class CustomizedTest(object):
             scores = scores + causal_mask.to(dtype=scores.dtype)
         attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
         output = torch.einsum("bhts,bshd->bthd", attention, v)
-        print(output)
         return output
 
 
