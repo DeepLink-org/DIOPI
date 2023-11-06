@@ -18,11 +18,24 @@ diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 
     AscendTensor inputAt(input), outAt(out);
     if (inputAt.stride() == outAt.stride()) {
-        AclOpRunner<1, 1>("Cast", ctx)
-            .addInput(inputAt.data(), inputAt.getAclMemBufferSize(), inputAt.getAclMemShape(), inputAt.getAclDataFormat(), inputAt.dtype())
-            .addOutput(const_cast<void *>(outAt.data()), outAt.getAclMemBufferSize(), outAt.getAclMemShape(), outAt.getAclDataFormat(), outAt.dtype())
-            .setAttr<int32_t>("dst_type", outAt.getAclDataType())
-            .run();
+        if (diopi_dtype_uint8 == outAt.dtype()) {
+            AclOpRunner<1, 1>("Cast", ctx)
+                .addInput(inputAt.data(), inputAt.getAclMemBufferSize(), inputAt.getAclMemShape(), inputAt.getAclDataFormat(), inputAt.dtype())
+                .addOutput(const_cast<void *>(outAt.data()), outAt.getAclMemBufferSize(), outAt.getAclMemShape(), outAt.getAclDataFormat(), diopi_dtype_int8)
+                .setAttr<int32_t>("dst_type", ACL_INT8)
+                .run();
+            AclOpRunner<1, 1>("Cast", ctx)
+                .addInput(outAt.data(), outAt.getAclMemBufferSize(), outAt.getAclMemShape(), outAt.getAclDataFormat(), diopi_dtype_int8)
+                .addOutput(const_cast<void *>(outAt.data()), outAt.getAclMemBufferSize(), outAt.getAclMemShape(), outAt.getAclDataFormat(), diopi_dtype_int8)
+                .setAttr<int32_t>("dst_type", ACL_UINT8)
+                .run();
+        } else {
+            AclOpRunner<1, 1>("Cast", ctx)
+                .addInput(inputAt.data(), inputAt.getAclMemBufferSize(), inputAt.getAclMemShape(), inputAt.getAclDataFormat(), inputAt.dtype())
+                .addOutput(const_cast<void *>(outAt.data()), outAt.getAclMemBufferSize(), outAt.getAclMemShape(), outAt.getAclDataFormat(), outAt.dtype())
+                .setAttr<int32_t>("dst_type", outAt.getAclDataType())
+                .run();
+        }
     } else {
         diopiTensorHandle_t inputCopy;
         makeTensorLike(ctx, &inputCopy, input, outAt.dtype());
