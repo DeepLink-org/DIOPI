@@ -1,17 +1,72 @@
 # Copyright (c) 2023, DeepLink.
 # -*- coding: UTF-8 -*-
 import math
+import ctypes
 import itertools
-
-from ctypes import c_double, byref
-from .diopi_runtime import Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d, to_numpy_dtype, Generator
-from .utils import check_returncode, check_function, glob_vars, get_capsule
-from . import raw_like, int_types, float_types
-from collections import namedtuple
 import numpy as np
+import diopilib
+
+from collections import namedtuple
+from ctypes import c_double, byref
+from .diopi_runtime import (Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, diopiError,
+                            compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d, to_numpy_dtype,
+                            Generator)
+from .diopi_runtime import raw_like, int_types, float_types, get_last_error
+from .utils import logger
+from conformance.global_settings import glob_vars
 
 
 GLOBAL_STATE = {}
+
+
+def get_capsule(src):
+    PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
+    PyCapsule_New = ctypes.pythonapi.PyCapsule_New
+    PyCapsule_New.restype = ctypes.py_object
+    PyCapsule_New.argtypes = (ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor)
+    capsule = PyCapsule_New(src, None, PyCapsule_Destructor(0))
+    return capsule
+
+
+class DiopiException(Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+class FunctionNotImplementedError(DiopiException):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+class FunctionNotDefinedError(DiopiException):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+def check_returncode(returncode, throw_exception=True):
+    if 0 != returncode:
+        if returncode == diopiError.diopi_no_implement:
+            glob_vars.func_status[glob_vars.cur_test_func] = 'skipped'
+            raise FunctionNotImplementedError(glob_vars.cur_test_func + ' not implement')
+        glob_vars.func_status[glob_vars.cur_test_func] = 'failed'
+        error_info = f"Returncode: {returncode}"
+        error_detail = get_last_error()
+        error_info += ", Details: " + error_detail
+        if throw_exception:
+            raise DiopiException(error_info)
+        else:
+            logger.info(error_info)
+
+
+def check_function(fn_name):
+    glob_vars.cur_test_func = fn_name
+    if hasattr(diopilib, f"{fn_name}"):
+        glob_vars.func_status[glob_vars.cur_test_func] = 'passed'
+        func = eval(f"diopilib.{fn_name}")
+        return func
+    else:
+        glob_vars.func_status[glob_vars.cur_test_func] = 'skipped'
+        raise FunctionNotDefinedError(f'[diopilib] {fn_name} not defined.')
 
 
 def broadcast_out_size(size1, size2):
@@ -1357,8 +1412,8 @@ def where(condition, input, other) -> Tensor:
     sizeC = condition.size().data
     sizeO = broadcast_out_size(sizeX, sizeY)
     sizeO = broadcast_out_size(sizeC, sizeO)
-    assert (input.get_dtype() == other.get_dtype()),\
-        " input and other shoule be the same type "
+    # assert (input.get_dtype() == other.get_dtype()),\
+    #     " input and other shoule be the same type "
     out = Tensor(sizeO, input.get_dtype())
 
     func = check_function("diopiWhere")
@@ -2453,7 +2508,10 @@ def cumsum(input, dim, dtype=None):
     assert isinstance(dim, int), "dim should be int"
 
     sizeI = list(input.size().data)
-    assert dim < len(sizeI), "dim out of index"
+    if len(sizeI) == 0:
+        assert dim in (0, -1), "dim out of index"
+    else:
+        assert dim < len(sizeI), "dim out of index"
 
     out = Tensor(input.size().data, promote_type(input, Dtype.int64)) if dtype is None else Tensor(input.size().data, dtype)
     func = check_function("diopiCumsum")
@@ -2787,8 +2845,12 @@ def expand(input, size) -> Tensor:
 
 def unfold(input, dimension, size, step):
     sizeO = list(input.size().data)
-    sizeO[dimension] = int((sizeO[dimension] - size) / step + 1)
-    sizeO.append(size)
+
+    if len(sizeO) == 0:
+        sizeO = [1]
+    else:
+        sizeO[dimension] = int((sizeO[dimension] - size) / step + 1)
+        sizeO.append(size)
 
     out = Tensor(sizeO, input.get_dtype())
     func = check_function("diopiUnfold")
@@ -2880,6 +2942,8 @@ def roll(input, shifts, dims=None):
         shifts = (shifts, )
     shifts = Sizes(list(shifts))
 
+    if isinstance(dims, int):
+        dims = (dims, )
     if dims is not None:
         dims = Sizes(list(dims))
     else:

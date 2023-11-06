@@ -550,29 +550,66 @@ DIOPI_API diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, d
                                                      diopiReduction_t reduction, int64_t ignore_index, double label_smoothing);
 
 /**
- * @brief Measures thee nll loss between the target and input probabilities.
+ * @brief Measures the NLL loss between the target and input probabilities.
  * @param[in] ctx Context environment.
- * @param[in] input Input tensor, usually representing log probabilities. type = [float32, float64]
- * @param[in] target Target tensor representing class indices, with values in the range of [0, C). type = [int64]
- * @param[in] weight weights manually assigned to each class. type = [float32, float64]
+ * @param[in] input Input tensor, usually representing log probabilities.
+ *        Shape:
+ *        - (N,C) where N is the batch size and C is the number of classes.
+ *        - Or for K-dimensional loss: (N,C,d1,d2,...,dK) with K≥1.
+ *        Type = [float32, float64]
+ * @param[in] target Target tensor representing class indices, with values in the range of [0, C-1].
+ *        Shape:
+ *        - (N) for single dimensional target.
+ *        - Or for K-dimensional loss: (N,d1,d2,...,dK) with K≥1.
+ *        Type = [int64]
+ * @param[in] weight Optional tensor representing weights manually assigned to each class.
+ *        Shape:
+ *        - (C) where C is the number of classes.
+ *        Type = [float32, float64]
  * @param[in] reduction  Loss reduction mode, which can be none, sum, or mean.
- * @param[in] ignore_index  Specifies a target value to be ignored and does not contribute to the input gradient.
- * This parameter can only be used when the target contains class indices. type = [int64].
- * @param[out] out the output tensor. type = [float32, float64].
+ * @param[in] ignore_index  Specifies a target value that should be ignored and does not contribute to the input gradient.
+ * This parameter can be used only when the target contains class indices. Type = [int64].
+ * @param[out] out Output tensor.
+ *        Shape:
+ *        - (N) if reduction is 'none' for single dimensional target.
+ *        - (N,d1,d2,...,dK) with K≥1 if reduction is 'none' for K-dimensional loss.
+ *        - Scalar if reduction is 'sum' or 'mean'.
+ *        Type = [float32, float64].
  */
 DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                                     diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignore_index);
+
 /**
  * @brief Compute the backward pass of diopiNLLLoss().
  * @param[in] ctx Context environment.
- * @param[in] grad_output the grad of output. type = [float32, float64].
- * @param[in] input Input tensor, usually representing log probabilities. type = [float32, float64]
- * @param[in] target Target tensor representing class indices, with values in the range of [0, C). type = [int64]
- * @param[in] weight weights manually assigned to each class. type = [float32, float64]
+ * @param[in] grad_output The gradient tensor with respect to the output of the forward pass.
+ *        Shape:
+ *        - (N) if reduction was 'none' for single dimensional target.
+ *        - (N,d1,d2,...,dK) with K≥1 if reduction was 'none' for K-dimensional loss.
+ *        - Scalar if reduction was 'sum' or 'mean'.
+ *        Type = [float32, float64]
+ * @param[in] input Input tensor, usually representing log probabilities.
+ *        Shape:
+ *        - (N,C) where N is the batch size and C is the number of classes.
+ *        - Or for K-dimensional loss: (N,C,d1,d2,...,dK) with K≥1.
+ *        Type = [float32, float64]
+ * @param[in] target Target tensor representing class indices, with values in the range of [0, C-1].
+ *        Shape:
+ *        - (N) for single dimensional target.
+ *        - Or for K-dimensional loss: (N,d1,d2,...,dK) with K≥1.
+ *        Type = [int64]
+ *
+ * @param[in] weight Optional tensor representing weights manually assigned to each class.
+ *        Shape:
+ *        - (C) where C is the number of classes.
+ *        Type = [float32, float64]
  * @param[in] reduction  Loss reduction mode, which can be none, sum, or mean.
- * @param[in] ignore_index  Specifies a target value to be ignored and does not contribute to the input gradient.
- * This parameter can only be used when the target contains class indices. type = [int64].
- * @param[out] grad_input the grad of input. type = [float32, float64].
+ * @param[in] ignore_index  Specifies a target value that should be ignored and does not contribute to the input gradient.
+ * This parameter can be used only when the target contains class indices. Type = [int64].
+ * @param[out] grad_input Gradient tensor with respect to the input of the forward pass.
+ *        Shape:
+ *        - Matches the shape of 'input' tensor.
+ *        Type = [float32, float64].
  */
 DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
@@ -1977,7 +2014,7 @@ DIOPI_API diopiError_t diopiNms(diopiContextHandle_t ctx, diopiTensorHandle_t* o
 /**
  * @brief Returns a tensor containing the indices of all non-zero elements of input.
  * @param[in] ctx Context environment.
- * @param[in] input the input tensor, type=[float32, float16, float64, int16, int32, int64, uint8, int8]
+ * @param[in] input the input tensor, type=[float32, float16, float64, int16, int32, int64, uint8, int8, bool]
  * @param[out] out the output tensor. type = [int32, int64].
  */
 DIOPI_API diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input);
@@ -2983,7 +3020,10 @@ DIOPI_API diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle
                                      diopiConstTensorHandle_t* indices, int64_t indices_counts, bool accumulate);
 
 /**
- * @brief Distribution and random numbers.
+ * @brief Gnereate random numbers from discrete uniform distribution.
+ *
+ * Fills inout tensor with numbers sampled from the discrete uniform distribution over [from, to - 1]. If not specified, the values are usually only bounded by
+ * self tensor’s data type. However, for floating point types, if unspecified, range will be [0, 2^mantissa] to ensure that every value is representable.
  * @param[in] ctx Context environment.
  * @param[in] inout the input and output tensor, type = [float32, float64, float16, int64, int32, int16, int8]
  * @param[in] from the lower bound of the random function. type = [int64].
@@ -3346,6 +3386,51 @@ DIOPI_API diopiError_t diopiAmax(diopiContextHandle_t ctx, diopiTensorHandle_t o
 
 // this contiguous func is temporary, please do not use.
 DIOPI_API diopiError_t diopiContiguous(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, diopiMemoryFormat_t memoryFormat);
+
+/**
+ * @brief          Check inf/NaN and unscale gradients for AMP GradScaler.
+ * @details        Multiplies each tensor in scaled_grads by inv_scale in-place.
+ *                 If any element of any tensor in scaled_grads is inf or NaN,
+ *                 sets found_inf to 1.0.
+ * @param[in,out]  scaled_grads      Array of scaled gradient tensors. May
+ *                                   contain infs or NaNs.
+ * @param[in]      num_scaled_grads  Size of the tensor array @p scaled_grads.
+ * @param[out]     found_inf         A single-element float32 tensor to which
+ *                                   1.0 will be written if any gradient contain
+ *                                   infs/nans. Pre-zeroing found_inf, if
+ *                                   appropriate, is the responsibility of the
+ *                                   caller.
+ * @param[in]      inv_scale         A single-element float32 tensor, storing
+ *                                   the inverse of the scale factor by which @p
+ *                                   scaled_grads are currently multiplied.
+ */
+DIOPI_API diopiError_t diopiAmpForeachNonFiniteCheckAndUnscaleInp(diopiContextHandle_t ctx, diopiTensorHandle_t* scaled_grads, int64_t num_scaled_grads,
+                                                                  diopiTensorHandle_t found_inf, diopiConstTensorHandle_t inv_scale);
+
+/**
+ * @brief          Updates the scale tensor in place for AMP GradScaler.
+ * @param[in,out]  current_scale    A one-element float32 tensor containing the
+ *                                  scale value.
+ * @param[in,out]  growth_tracker   A one-element int32 tensor containing the
+ *                                  number of recent consecutive unskipped
+ *                                  steps.
+ * @param[in]      found_inf        A one-element float32 tensor. If > 0,
+ *                                  indicates that infs/NaNs were found by the
+ *                                  relevant prior
+ *                                  #diopiAmpForeachNonFiniteCheckAndUnscaleInp
+ *                                  call, and 0 if no infs/NaNs were found.
+ * @param[in]      growth_factor    Multiplier if no infs/NaNs were found
+ *                                  (typically slightly > 1).
+ * @param[in]      backoff_factor   Multiplier if infs/NaNs were found
+ *                                  (typically 0.5).
+ * @param[in]      growth_interval  Number of consecutive unskipped steps that
+ *                                  must occur for current_scale to be
+ *                                  multiplied by growth_factor.
+ * @see https://github.com/DeepLink-org/pytorch/blob/main/aten/src/ATen/native/cuda/AmpKernels.cu#L181
+ */
+DIOPI_API diopiError_t diopiAmpUpdateScaleInp(diopiContextHandle_t ctx, diopiTensorHandle_t current_scale, diopiTensorHandle_t growth_tracker,
+                                              diopiConstTensorHandle_t found_inf, double scale_growth_factor, double scale_backoff_factor,
+                                              int32_t growth_interval);
 
 #if defined(__cplusplus)
 }

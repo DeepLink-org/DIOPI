@@ -4,14 +4,10 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <diopi/functions.h>
-
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
-
-extern "C" {
 
 diopiError_t logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other, const char* logicOp) {
     diopiDtype_t inputDtype, otherDtype;
@@ -166,8 +162,6 @@ diopiError_t diopiLogicalNot(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
 }
 
 diopiError_t diopiLogicalNotInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiLogicalNot(ctx, input, input); }
-
-}  // extern "C"
 
 }  // namespace ascend
 }  // namespace impl

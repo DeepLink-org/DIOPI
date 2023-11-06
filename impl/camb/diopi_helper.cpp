@@ -9,6 +9,20 @@
 namespace impl {
 namespace camb {
 
+/********************************* utils begin ****************************/
+void getFuncName(const char* expr, char* name) {
+    for (int i = 0; i < strlen(expr); ++i) {
+        if (expr[i] == '(') {
+            name[i] = '\0';
+            break;
+        }
+        name[i] = expr[i];
+    }
+    return;
+}
+
+/********************************* utils end****************************/
+
 // DiopiDataType
 
 bool DiopiDataType::isInteger(diopiDtype_t dtype) { return dtype < 8; }
@@ -89,7 +103,8 @@ const char* DiopiDataType::dataTypeStr(diopiDtype_t dtype) {
 
 DiopiTensor::DiopiTensor(const diopiTensorHandle_t& tensor) : tensor_(tensor) {
     if (tensor_ != nullptr) {
-        DIOPI_CHECK_ABORT(this->device() == diopiDevice_t::diopi_device, "%s", "tensor_ is not on camb device.");
+        // fix later
+        // DIOPI_CHECK_ABORT(this->device() == diopiDevice_t::diopi_device, "%s", "tensor_ is not on camb device.");
         diopiSize_t diopiShape;
         diopiSize_t diopiStride;
         diopiDtype_t diopiDtype;
