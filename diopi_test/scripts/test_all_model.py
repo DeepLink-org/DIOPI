@@ -47,10 +47,10 @@ def gen_case(partition, use_db):
     execute_commands(commands)
 
 
-def run_test(partition, device_type, device_num, use_db):
+def run_test(partition, device_type, device_num, use_db, pytest_args):
     commands = []
     for model in model_list[:2]:
-        cmd = f'srun --job-name {model}_run_test -p {partition} --gres={device_type}:{device_num} python main.py --mode run_test --model_name {model} --file_or_dir ./gencases/{model}_case'
+        cmd = f'srun --job-name {model}_run_test -p {partition} --gres={device_type}:{device_num} python main.py --mode run_test --model_name {model} --file_or_dir ./gencases/{model}_case --pytest_args {pytest_args}'
         if use_db:
             db_path = f'sqlite:///./cache/{model}_testrecord.db'
             cmd += f' --use_db --db_path {db_path}'
@@ -82,6 +82,8 @@ if __name__ == '__main__':
         help="running mode, available options: gen_data, run_test and utest",
     )
 
+    parser.add_argument("--pytest_args", type=str, help="pytest args", default='')
+
     args = parser.parse_args()
 
     if args.mode == 'gen_data':
@@ -89,4 +91,4 @@ if __name__ == '__main__':
     elif args.mode == 'gen_case':
         gen_case(args.partition, args.use_db)
     elif args.mode == 'run_test':
-        run_test(args.partition, args.device_type, args.device_num, args.use_db)
+        run_test(args.partition, args.device_type, args.device_num, args.use_db, args.pytest_args)
