@@ -1,8 +1,11 @@
 import numpy as np
 import time
+
 from threading import Thread
-from conformance.diopi_runtime import Tensor, Sizes, Context
-from conformance.utils import check_function, logger
+from diopilib import Context
+from conformance.diopi_functions import check_function
+from conformance.diopi_runtime import Tensor, Sizes
+from conformance.utils import logger
 from ctypes import c_int32
 
 

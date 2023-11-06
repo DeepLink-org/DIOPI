@@ -2,7 +2,8 @@ import numpy as np
 import os
 import conformance as cf
 import pytest
-from conformance.utils import error_counter, DiopiException, logger, write_report
+from conformance.diopi_functions import DiopiException
+from conformance.utils import error_counter, logger, write_report
 
 
 @pytest.mark.skip("precision rules are not ready")
