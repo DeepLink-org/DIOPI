@@ -8036,33 +8036,33 @@ diopi_configs = {
                     "value": ([[0.1, 0.5, 0.4, 0.3, 0.5],
                               [0.2, 0.4, 0.0, 0.0, 0.0],
                               [0.3, 0.4, 0.5, 0.3, 0.0]],),
-                    "dtype": [Dtype.float32],
+                    "dtype": [np.float32],
 
                 },
                 {
                     "ins": ["presence_penalty"],
                     "value": ([0.1, 0.8, 1.0],),
-                    "dtype": [Dtype.float32],
+                    "dtype": [np.float32],
                 },
                 {
                     "ins": ["frequency_penalty"],
                     "value": ([0.3, 0.5, 0.4],),
-                    "dtype": [Dtype.float32],
+                    "dtype": [np.float32],
                 },
                 {
                     "ins": ["p_token_ids"],
                     "value": ([0, 1, 2, 3, 4, 0, 1, 0, 1, 2, 3],),
-                    "dtype": [Dtype.int32],
+                    "dtype": [np.int32],
                 },
                 {
                     "ins": ["p_token_counts"],
                     "value": ([3, 3, 2, 2, 1, 3, 3, 3, 3, 2, 2],),
-                    "dtype": [Dtype.int32],
+                    "dtype": [np.int32],
                 },
                 {
                     "ins": ["p_cumsum_seq_len"],
                     "value": ([0, 5, 7, 11],),
-                    "dtype": [Dtype.int32],
+                    "dtype": [np.int32],
                 },
             ]
         )
@@ -8076,19 +8076,19 @@ diopi_configs = {
                 {
                     "ins": ['k'],
                     "shape": ((7, 32, 128), (16, 32, 128)),
-                    "dtype": [Dtype.float16],
-                    "gen_fn": Genfunc.randint,
+                    "dtype": [np.float16],
+                    "gen_fn": 'Genfunc.randint',
                 },
                 {
                     "ins": ['dest_loc'],
-                    "dtype": [Dtype.int32],
+                    "dtype": [np.int32],
                     "value": ((0, 1, 2), (2, 4, 5)),
                 },
                 {
                     "ins": ['out'],
                     "shape": ((10, 32, 128), (16, 32, 128)),
-                    "dtype": [Dtype.float16],
-                    "gen_fn": Genfunc.zeros,
+                    "dtype": [np.float16],
+                    "gen_fn": 'Genfunc.zeros',
                 }
             ]
         )
@@ -8105,32 +8105,32 @@ diopi_configs = {
     #             {
     #                 "ins": ['q'],
     #                 "shape": ((64, 32, 128), (512, 32, 128), (256, 32, 128)),
-    #                 "dtype": [Dtype.float16],
+    #                 "dtype": [np.float16],
     #             },
     #             {
     #                 "ins": ["k"],
     #                 "shape": ((64, 32, 128), (512, 32, 128), (256, 32, 128)),
-    #                 "dtype": [Dtype.float16],
+    #                 "dtype": [np.float16],
     #             },
     #             {
     #                 "ins": ["v"],
     #                 "shape": ((64, 32, 128), (512, 32, 128), (256, 32, 128)),
-    #                 "dtype": [Dtype.float16],
+    #                 "dtype": [np.float16],
     #             },
     #             {
     #                 "ins": ["out"],
     #                 "shape": ((64, 32, 128), (512, 32, 128), (256, 32, 128)),
-    #                 "dtype": [Dtype.float16],
+    #                 "dtype": [np.float16],
     #             },
     #             {
     #                 "ins": ["b_start_loc"],
     #                 "value": ((0, 16, 48), (0, 64, 256), (0, 128, 192)),
-    #                 "dtype": [Dtype.int32],
+    #                 "dtype": [np.int32],
     #             },
     #             {
     #                 "ins": ["b_seq_len"],
     #                 "value": ((16, 32, 16), (64, 192, 256), (128, 64, 64)),
-    #                 "dtype": [Dtype.int32],
+    #                 "dtype": [np.int32],
     #             },
     #         ]
     #     ),
@@ -8147,34 +8147,34 @@ diopi_configs = {
                 {
                     "ins": ['q'],
                     "shape": ((3, 32, 128), ),
-                    "dtype": [Dtype.float16],
+                    "dtype": [np.float16],
                 },
                 {
                     "ins": ["k"],
                     "shape": ((100, 32, 128), ),
-                    "dtype": [Dtype.float16],
+                    "dtype": [np.float16],
                 },
                 {
                     "ins": ["out"],
                     "shape": ((32, 13), ),
-                    "dtype": [Dtype.float16],
+                    "dtype": [np.float16],
                 },
                 {
                     "ins": ["b_loc"],
                     "value": ([[0, 0, 1, 2, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                [3, 4, 5, 6, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                [0, 7, 8, 9, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], ],),
-                    "dtype": [Dtype.int32],
+                    "dtype": [np.int32],
                 },
                 {
                     "ins": ["b_start_loc"],
                     "value": ([0, 4, 9], ),
-                    "dtype": [Dtype.int32],
+                    "dtype": [np.int32],
                 },
                 {
                     "ins": ["b_seq_len"],
                     "value": ([4, 5, 4], ),
-                    "dtype": [Dtype.int32],
+                    "dtype": [np.int32],
                 },
             ]
         )
@@ -8192,34 +8192,34 @@ diopi_configs = {
                 {
                     "ins": ['logics'],
                     "shape": ((32, 13), ),
-                    "dtype": [Dtype.float16],
+                    "dtype": [np.float16],
                 },
                 {
                     "ins": ["v"],
                     "shape": ((100, 32, 128), ),
-                    "dtype": [Dtype.float16],
+                    "dtype": [np.float16],
                 },
                 {
                     "ins": ["out"],
                     "shape": ((3, 32, 128),),
-                    "dtype": [Dtype.float16],
+                    "dtype": [np.float16],
                 },
                 {
                     "ins": ["b_loc"],
                     "value": ([[0, 0, 1, 2, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                [3, 4, 5, 6, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                [0, 7, 8, 9, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], ],),
-                    "dtype": [Dtype.int32],
+                    "dtype": [np.int32],
                 },
                 {
                     "ins": ["b_start_loc"],
                     "value": ([0, 4, 9],),
-                    "dtype": [Dtype.int32],
+                    "dtype": [np.int32],
                 },
                 {
                     "ins": ["b_seq_len"],
                     "value": ([4, 5, 4],),
-                    "dtype": [Dtype.int32],
+                    "dtype": [np.int32],
                 },
             ]
         )
