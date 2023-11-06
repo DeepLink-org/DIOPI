@@ -21,7 +21,7 @@ env:
   ENV_NAME_MMCV: 'pt1.11v1'
   GPU_REQUESTS: 1
   SLURM_PAR_SH1988: ${{ vars.SLURM_PAR_SH1984 != '' && vars.SLURM_PAR_SH1984 || 'pat_rd -x SH-IDC1-10-198-8-58,SH-IDC1-10-198-8-87' }}
-  SLURM_PAR_SH1424: ${{ vars.SLURM_PAR_SH1424 != '' && vars.SLURM_PAR_SH1984 || 'pat_rd' }}
+  SLURM_PAR_SH1424: ${{ vars.SLURM_PAR_SH1424 != '' && vars.SLURM_PAR_SH1424 || 'pat_rd' }}
   SLURM_PAR_CAMB: ${{ vars.SLURM_PAR_CAMB != '' && vars.SLURM_PAR_CAMB || 'camb_mlu370_m8 --exclude HOST-10-142-11-120,HOST-10-142-11-126' }}
   CLUSTER_1988: SH1988
   CLUSTER_1424: SH1424
@@ -122,15 +122,23 @@ jobs:
           export CI=true
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh torch' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
           """
-      - name: build-dyload
+
+  Build-Nvidia-A100:
+    name: Build-Nvidia-A100
+    runs-on:  tps-diopi-ci
+    needs: [Rsync]
+    steps:
+      - name: build
         run: |
-          ssh ${CLUSTER_1988} """
-          set -e
-          source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
-          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST2} && cp -R source ${BUILD_TEST2} && cd ${BUILD_TEST2}
+          ssh ${CLUSTER_1424} """
+          set -ex
+          export USE_COVERAGE=ON
+          source /mnt/cache/share/platform/env/${ENV_NAME}
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export CI=true
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh torch_dyload' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST2} && exit 1 )
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1424} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh torch' || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
           """
+
 
   Build-Camb:
     name: Build-Camb
@@ -208,6 +216,32 @@ jobs:
           || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           """
 
+  Gen-Data-Op-Test-A100:
+    name: Gen-Data-Op-Test-A100
+    runs-on: tps-diopi-ci
+    needs: [Build-Nvidia-A100]
+    steps:
+      - name: gen-test-data
+        run: |
+          ssh ${CLUSTER_1424} """
+          set -e
+          export CI=true
+          source /mnt/cache/share/platform/env/${ENV_NAME}
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cp -f scripts/ci/diopi_config_A100.py  diopi_test/python/configs/diopi_configs.py && cd diopi_test/python && ls &&
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1424} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'python main.py --mode gen_data' \
+          || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+          """
+      - name: test-op
+        run: |
+          ssh ${CLUSTER_1424} """
+          set -e
+          export CI=true
+          source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+          export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/lib
+          echo \$LD_LIBRARY_PATH
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1424} --time=20 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode gen_case && python main.py --mode run_test'
+          """
+
   Op-Test-Nvidia:
     name: Op-Test-Nvidia
     runs-on: tps-diopi-ci
@@ -229,14 +263,13 @@ jobs:
           bash /mnt/cache/share/platform/dep/sonar/coverage_DIOPI_nv.sh ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} ${GITHUB_RUN_NUMBER} || echo "get coverage fail"
           fi
           """
-      - name: dyload-test
+      - name: test
         run: |
           ssh ${CLUSTER_1988} """
           set -e
           export CI=true
-          source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST2}
-          rm -rf ${GEN_DATA} && ln -s ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${GEN_DATA}
-          export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST2}/impl/lib
+          source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+          export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/lib
           echo \$LD_LIBRARY_PATH
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=20 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode gen_case &&
           python main.py --mode run_test'
@@ -452,25 +485,3 @@ jobs:
           echo "test and clean, you can refer to the CAMB"
           """
 
-  Build-A100:
-    name: Build-A100
-    runs-on:  tps-diopi-ci
-    needs: [Rsync]
-    steps:
-      - name: build
-        run: |
-          ssh ${CLUSTER_1424} """
-          set -e
-          export USE_COVERAGE=ON
-          source /mnt/cache/share/platform/env/${ENV_NAME}
-          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
-          export CI=true
-          """
-      - name: build-dyload
-        run: |
-          ssh ${CLUSTER_1424} """
-          set -e
-          source /mnt/cache/share/platform/env/${ENV_NAME}
-          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST2} && cp -R source ${BUILD_TEST2} && cd ${BUILD_TEST2}
-          export CI=true
-          """

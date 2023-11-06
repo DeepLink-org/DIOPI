@@ -8022,12 +8022,12 @@ diopi_configs = {
     'rotary_emb': dict(
         name=['rotary_emb'],
         interface=['CustomizedTest'],
-        dtype=[Dtype.float64, Dtype.float32, Dtype.float16],
+        dtype=[np.float64, np.float32, np.float16],
         para=dict(
             conj=[False, True, False, True],
         ),
         tensor_para=dict(
-            gen_fn=Genfunc.randn,
+            gen_fn='Genfunc.randn',
             args=[
                 {
                     "ins": ['input'],
@@ -8048,13 +8048,13 @@ diopi_configs = {
     'rms_norm': dict(
         name=['rms_norm'],
         interface=['CustomizedTest'],
-        dtype=[Dtype.float32],
+        dtype=[np.float32],
         para=dict(
             eps=[1e-6, 1e-6, 1e-6, 1e-6],
             normalized_shape=[(5, ), (32, ), (64, ), (8, )],
         ),
         tensor_para=dict(
-            gen_fn=Genfunc.randn,
+            gen_fn='Genfunc.randn',
             args=[
                 {
                     "ins": ['input'],
@@ -8075,7 +8075,7 @@ diopi_configs = {
     # 'multihead_attention_forward': dict(
     #     name=['multihead_attention_forward'],
     #     interface=['CustomizedTest'],
-    #     dtype=[Dtype.float16],
+    #     dtype=[np.float16],
     #     atol=1e-3,
     #     rtol=1e-4,
     #     para=dict(
@@ -8085,24 +8085,24 @@ diopi_configs = {
     #         scale=[None, None]
     #     ),
     #     tensor_para=dict(
-    #         gen_fn=Genfunc.randn,
+    #         gen_fn='Genfunc.randn',
     #         args=[
     #             {
     #                 "ins": ['q'],
     #                 "shape": ((2, 2, 2, 8), (2, 5, 7, 8)),
-    #                 "dtype": [Dtype.float16],
+    #                 "dtype": [np..float16],
     #                 "gen_fn": Genfunc.randn,
     #             },
     #             {
     #                 "ins": ['k'],
     #                 "shape": ((2, 2, 2, 8), (2, 5, 7, 8)),
-    #                 "dtype": [Dtype.float16],
+    #                 "dtype": [np.float16],
     #                 "gen_fn": Genfunc.randn,
     #             },
     #             {
     #                 "ins": ['v'],
     #                 "shape": ((2, 2, 2, 8), (2, 5, 7, 8)),
-    #                 "dtype": [Dtype.float16],
+    #                 "dtype": [np.float16],
     #                 "gen_fn": Genfunc.randn,
     #             },
     #         ],

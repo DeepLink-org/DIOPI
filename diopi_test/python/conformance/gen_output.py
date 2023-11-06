@@ -185,7 +185,7 @@ class CustomizedTest(object):
     def batch_norm_elemt(input, weight, bias, mean, invstd, eps):
         out = torch.batch_norm_elemt(input, weight, bias, mean, invstd, eps)
         return out
-    
+
     def rotary_emb(input, cos, sin, conj):
         x1, x2 = input.chunk(2, dim=-1)
         data_type = input.dtype
@@ -227,7 +227,6 @@ class CustomizedTest(object):
         attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
         output = torch.einsum("bhts,bshd->bthd", attention, v)
         return output
-
 
 
 class GenOutputData(object):
