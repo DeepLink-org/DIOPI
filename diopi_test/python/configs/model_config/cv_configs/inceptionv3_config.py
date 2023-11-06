@@ -1,6 +1,6 @@
 import numpy as np
 
-inception_v3_config = {
+inceptionv3_config = {
     'adaptive_avg_pool2d': dict(
         name=["adaptive_avg_pool2d"],
         interface=["torch.nn.functional"],

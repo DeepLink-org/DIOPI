@@ -365,7 +365,7 @@ deeppose_config = {
                     "requires_grad": [False],
                     "shape": [(105,)],
                     "dtype": [np.int64],
-                    "gen_fn": dict(fn="Genfunc.randin"t, low=-3, high=3),
+                    "gen_fn": dict(fn="Genfunc.randin", low=-3, high=3),
                 },
             ],
         ),

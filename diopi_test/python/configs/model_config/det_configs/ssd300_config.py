@@ -1,6 +1,6 @@
 import numpy as np
 
-ssd_config = {
+ssd300_config = {
     'abs': dict(
         name=["abs"],
         interface=["torch"],

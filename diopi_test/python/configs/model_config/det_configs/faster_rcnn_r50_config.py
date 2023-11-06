@@ -1,6 +1,6 @@
 import numpy as np
 
-faster_rcnn_config = {
+faster_rcnn_r50_config = {
     'abs': dict(
         name=["abs"],
         interface=["torch"],

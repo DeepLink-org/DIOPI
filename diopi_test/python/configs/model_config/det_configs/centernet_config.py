@@ -724,7 +724,6 @@ centernet_config = {
         name=["pow"],
         interface=["torch"],
         para=dict(
-            =[None, None, None, None, None, None, None, None],
             exponent=[4, 2, 1, 2, 4, 2, 1, 1],
         ),
         tensor_para=dict(
