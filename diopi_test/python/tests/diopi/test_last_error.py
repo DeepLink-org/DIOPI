@@ -1,6 +1,6 @@
-from conformance.utils import check_function, check_returncode, get_last_error, logger
+from conformance.diopi_functions import check_function
 from ctypes import c_char_p, c_void_p, c_char, c_int64, cast, POINTER
-from conformance.diopi_runtime import default_context
+from conformance.diopi_runtime import default_context, get_last_error
 from conformance.diopi_runtime import diopiTensor
 
 

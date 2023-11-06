@@ -1,6 +1,9 @@
 set(DIOPI_EXPORT_RT export_runtime)
 set(DIOPI_EXPORT_FUNCTIONS export_functions)
 
+find_package(Python COMPONENTS Interpreter Development)
+set(PYBIND11_PYTHON_VERSION ${Python_VERSION})
+
 add_compile_options(-fno-elide-constructors)
 add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 build)
 
@@ -76,6 +79,6 @@ endif()
 
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/../diopi_test/python)
 add_custom_target(python_copy ALL
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPI_EXPORT_FUNCTIONS}> ${CMAKE_SOURCE_DIR}/../diopi_test/python
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPI_EXPORT_RT}> ${CMAKE_SOURCE_DIR}/../diopi_test/python
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPI_EXPORT_FUNCTIONS}> ${CMAKE_SOURCE_DIR}/../diopi_test/python/diopilib
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPI_EXPORT_RT}> ${CMAKE_SOURCE_DIR}/../diopi_test/python/diopilib
     DEPENDS ${DIOPI_EXPORT_FUNCTIONS} ${DIOPI_EXPORT_RT})
