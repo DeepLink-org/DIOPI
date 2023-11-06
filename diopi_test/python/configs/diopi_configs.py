@@ -8037,32 +8037,37 @@ diopi_configs = {
                               [0.2, 0.4, 0.0, 0.0, 0.0],
                               [0.3, 0.4, 0.5, 0.3, 0.0]],),
                     "dtype": [np.float32],
-
+                    "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ["presence_penalty"],
                     "value": ([0.1, 0.8, 1.0],),
                     "dtype": [np.float32],
+                    "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ["frequency_penalty"],
                     "value": ([0.3, 0.5, 0.4],),
                     "dtype": [np.float32],
+                    "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ["p_token_ids"],
                     "value": ([0, 1, 2, 3, 4, 0, 1, 0, 1, 2, 3],),
                     "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ["p_token_counts"],
                     "value": ([3, 3, 2, 2, 1, 3, 3, 3, 3, 2, 2],),
                     "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ["p_cumsum_seq_len"],
                     "value": ([0, 5, 7, 11],),
                     "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
                 },
             ]
         )
@@ -8082,6 +8087,7 @@ diopi_configs = {
                     "ins": ['dest_loc'],
                     "dtype": [np.int32],
                     "value": ((0, 1, 2, 3, 4), (14, 15, 16, 17)),
+                    "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ['out'],
@@ -8124,11 +8130,13 @@ diopi_configs = {
                     "ins": ["b_start_loc"],
                     "value": ((0, 16, 48), (0, 64, 256), (0, 64, 128)),
                     "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ["b_seq_len"],
                     "value": ((16, 32, 16), (64, 192, 256), (64, 64, 128)),
                     "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
                 },
             ]
         ),
@@ -8163,16 +8171,19 @@ diopi_configs = {
                                [3, 4, 5, 6, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                [0, 7, 8, 9, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], ],),
                     "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ["b_start_loc"],
                     "value": ([0, 4, 9], ),
                     "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ["b_seq_len"],
                     "value": ([4, 5, 4], ),
                     "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
                 },
             ]
         )
@@ -8208,16 +8219,19 @@ diopi_configs = {
                                [3, 4, 5, 6, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                [0, 7, 8, 9, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], ],),
                     "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ["b_start_loc"],
                     "value": ([0, 4, 9],),
                     "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ["b_seq_len"],
                     "value": ([4, 5, 4],),
                     "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
                 },
             ]
         )
