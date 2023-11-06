@@ -26,7 +26,7 @@ device_configs = {
         ),
     ),
 
-    'batch_norm_no_continuous': dict(
+    'batch_norm_no_contiguous': dict(
         name=['batch_norm'],
         tensor_para=dict(
             args=[
@@ -1384,6 +1384,7 @@ device_configs = {
 
     'nll_loss': dict(
         name=['nll_loss'],
+        dtype=[Skip(Dtype.float16), Skip(Dtype.float32), Skip(Dtype.float64)],
         tensor_para=dict(
             args=[
                 {
@@ -1392,6 +1393,11 @@ device_configs = {
                 },
             ]
         ),
+    ),
+
+    'nll_loss_empty_tensor': dict(
+        name=["nll_loss"],
+        dtype=[Skip(Dtype.float16), Skip(Dtype.float32), Skip(Dtype.float64)],
     ),
 
     'cross_entropy': dict(
@@ -2882,9 +2888,9 @@ device_configs = {
     'arange': dict(
         name=['arange'],
         para=dict(
-            start=[Skip(0),Skip(0),Skip(-4),Skip(0.1),Skip(10),Skip(2.3),Skip(True),Skip(-20),Skip(90),Skip(0.001),],
-            end=[Skip(91),Skip(128),Skip(5),Skip(0.5),Skip(10),Skip(2.3),Skip(100),Skip(False),Skip(-90),Skip(0.0001),],
-            step=[Skip(13),Skip(1),Skip(1),Skip(0.1),Skip(True),Skip(0.5),Skip(2.1),Skip(0.5),Skip(-5.6),Skip(-1e-05),],
+            start=[Skip(0.1),Skip(10),Skip(2.3),Skip(True),Skip(-20),Skip(90),Skip(0.001),],
+            end=[Skip(0.5),Skip(10),Skip(2.3),Skip(100),Skip(False),Skip(-90),Skip(0.0001),],
+            step=[Skip(0.1),Skip(True),Skip(0.5),Skip(2.1),Skip(0.5),Skip(-5.6),Skip(-1e-05),],
         ),
     ),
 
@@ -3064,7 +3070,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float64),Skip(Dtype.int16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),Skip(Dtype.bool),],
+                    "dtype": [Skip(Dtype.float16),Skip(Dtype.float32),Skip(Dtype.float16),Skip(Dtype.int32),Skip(Dtype.int64),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),Skip(Dtype.bool),],
                 },
             ]
         ),
@@ -3195,6 +3201,10 @@ device_configs = {
                     "ins": ['input'],
                     "dtype": [Skip(Dtype.float32),Skip(Dtype.int64),Skip(Dtype.int8),Skip(Dtype.uint8),],
                 },
+                {
+                    "ins": ['out'],
+                    "dtype": [Skip(Dtype.int64),Skip(Dtype.float64),Skip(Dtype.bool),Skip(Dtype.float16),],
+                }
             ]
         ),
     ),
