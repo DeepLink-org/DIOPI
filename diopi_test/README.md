@@ -18,11 +18,11 @@ DIOPI_TEST是构建于设备无关算子接口（Device-Independent Operator Int
     * 校验适配算子：算子适配完成后使用基准输入数据得到的结果与基准输出数据进行比较验证。
 * 模型算子测试：
     * 采用算子测试相同的测例配置规则, 使用同一个测试框架生成基准数据并进行测试验证。
-    * 从30多个模型训练过程中抓取张量形状，数据类型及其他非张量参数值生成测例。
+    * 从40多个模型训练过程中抓取张量形状，数据类型及其他非张量参数值生成测例。
 
 
 DIOPI_TEST 测试范围：
-* 每一个 DIOPI 标准算子均有相应的测试，并且会从不同的数据类型、张量维度、非张量参数等角度对每个算子设计多个测例。保证 DIOPI 标准算子接口中每个参数功能均被测试。针对常见训练算子目前已有约 2500个测例， 其中涵盖了如 conv2d， batch_norm, adaptive_max_pool2d, relu 等经典训练算子。
+* 每一个 DIOPI 标准算子均有相应的测试，并且会从不同的数据类型、张量维度、非张量参数等角度对每个算子设计多个测例。保证 DIOPI 标准算子接口中每个参数功能均被测试。针对常见训练算子目前已有约 11000+个测例， 其中涵盖了如 conv2d， batch_norm, adaptive_max_pool2d, relu 等经典训练算子。
 * DIOPI_TEST 提供的模型算子测试，涵盖了经典分类模型如 resnet50, vgg16, seresnet50, densenet, mobilenet_v2, efficientnet, shufflenet_v2, repvgg, swin_transformer, vit, inceptionv3 及经典检测模型如 retinanet, faster_rcnn_r50, ssd300, yolov3, atss, fcos, mask_rcnn, solo, centernet, cascade_rcnn, detr 及经典分割模型如 unet, upernet, pspnet, fcn, deeplabv3, deeplabv3plus 及其他领域深度学习模型 sar, dbnet, stgcn, crnn, hrnet, deeppose, tsn, slowfast。
 
 
@@ -33,17 +33,16 @@ DIOPI_TEST 测试范围：
 ### 结果分析
 
 测例通过的输出形式如下：
-  ```
-  2022-09-29 16:40:40,550 - DIOPI-Test - INFO - Run diopi_functions.relu succeed
-  ```
-  调整diopi_test/python/conformance/utils.py中的log_level为DEBUG，如果测例失败，会打印对应测例的输入参数的张量信息在error_report.csv中用于调试。
+```
+collecting ... collected 1 items
 
-    DIOPI-Test Error Report
-    ---------------------------------
-    1 Tests failed:
-    1--Run diopi_functions.batch_norm_backward failed.   TestTag: [float32, backward]  TensorInfo : [(input, float32, (32, 16, 112, 112)), (running_mean, float32, (16,)), (running_var, float32, (16,)), (weight, float32, (16,)), (bias, float32, (16,))]
-    ---------------------------------
-    Test skipped or op not implemented:
+gencases/diopi_case/test_diopi_add_add.py::TestMdiopiSaddFadd::test_add_0 PASSED [100%]
+```
+如需输出HTML格式报告：
+```
+pip install pytest-testreport
+python main.py --mode run_test --html_report
+```
 
 ### 可选测试模式
 DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其他测试模式
@@ -53,6 +52,10 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
     mode 为 gen_data 时产生基准输入输出数据：
     ```
     python main.py --mode gen_data
+    ```
+    mode 为 gen_case 时产生测例文件：
+    ```
+    python main.py --mode gen_case
     ```
     mode 为 run_test 时运行测试：
     ```
@@ -70,15 +73,18 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
     ```
         # 只测试 relu
         python main.py --mode gen_data --fname relu
-        python main.py --mode run_test --fname relu
+        python main.py --mode gen_case --fname relu
+        python main.py --mode run_test --file_or_dir /path/to/relu/case
 
         # 测试所有算子
         python main.py --mode gen_data
+        python main.py --mode gen_case
         python main.py --mode run_test
 
         # 测试所有算子
         python main.py --mode gen_data --fname all_ops
-        python main.py --mode run_test --fname all_ops
+        python main.py --mode gen_case --fname all_ops
+        python main.py --mode run_test
     ```
 
 * filter_dtype: 过滤指定数据类型的测试
@@ -88,9 +94,9 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
     比如不支持 float64, 那么可以通过设置 filter_dtype 为 float64 来过滤掉对于 float64 的测试。
 
     ```
-        python main.py --mode run_test --fname relu --filter_dtype float64
+        python main.py --mode run_test --file_or_dir /path/to/case --filter_dtype float64
         # 可叠加不支持的数据类型
-        python main.py --mode run_test --fname relu --filter_dtype float64 int64
+        python main.py --mode run_test --file_or_dir /path/to/case --filter_dtype float64 int64
     ```
 
 * nhwc : 使用 channel_last 格式的张量测试
@@ -109,7 +115,8 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
 
     ```
         # --nhwc 仅对在 nhwc_op 字典中的算子有效
-        python main.py --mode run_test --fname relu --nhwc
+        python main.py --mode gen_case --fname relu --nhwc
+        python main.py --mode run_test --file_or_dir /path/to/relu/case
     ```
 
 
@@ -128,7 +135,8 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
 
     ```
         # --four_bytes 仅对在 dtype_op/dtype_out_op 字典中的算子有效
-        python main.py --mode run_test --fname relu --four_bytes
+        python main.py --mode gen_case --fname relu --four_bytes
+        python main.py --mode run_test --file_or_dir /path/to/relu/case
     ```
 
 * model_name: 指定模型相关算子测试
@@ -137,7 +145,8 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
 
     ```
         python main.py --mode gen_data --model_name resnet50
-        python main.py --mode run_test --model_name resnet50
+        python main.py --mode gen_case --model_name resnet50
+        python main.py --mode run_test --file_or_dir /path/to/resnet50/case
     ```
 ### 测例配置说明
 
@@ -209,12 +218,13 @@ DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子
 
     args 中：
 
-        - ins (*list*): 张量参数的名字, 默认为 ["input"]。
-        - shape (*tuple*): 张量参数的形状。
-        - gen_fn (*builtin_function*): 数据生成器, 默认为 numpy.random.randn。
-          若在 args 外部制定, 则应用于 args 内所有张量参数。
-        - requires_grad (*list*): 是否反向计算梯度, 默认为 [Fasle]。
-        - dtype (*list*): 张量的数据类型, 若在 args 外部制定, 则应用于 args 内所有张量参数。
+    - ins (*list*): 张量参数的名字, 默认为 ["input"]。
+    - shape (*tuple*): 张量参数的形状。
+    - gen_fn (*builtin_function*): 数据生成器, 默认为 numpy.random.randn。
+        若在 args 外部制定, 则应用于 args 内所有张量参数。
+    - requires_grad (*list*): 是否反向计算梯度, 默认为 [Fasle]。
+    - dtype (*list*): 张量的数据类型, 若在 args 外部制定, 则应用于 args 内所有张量参数。
+    - gen_policy (*str*): 生成张量的策略, 默认为'default'
 
     args 中包含 **多组** 测试用例张量, shape 元素个数代表张量组数, 每个 ins 的 shape 都是 **一一对应** 的。
     该数量于 **para** 每个非张量参数的数量也 **一一对应**。
@@ -240,9 +250,6 @@ DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子
         常见于随机数算子测试中，用以表明该算子测试无基准输出数据。
     * saved_args: *dict*
         指定输出结果作为反向计算的输入参数。
-    * seq_name: *str* 和 gen_num_range : *list*
-        见于cat、stack算子的测例配置, 组合使用。gen_num_range 表示在指定的范围内产生随机数个 args 中的张量。
-        seq_name 指示将这些放入列表中的张量列表名字。
 
 ### 厂商自定义测例配置
 我们提供了厂商自定义测例配置的能力，可以对python/conformance/diopi_configs.py里的测例按条件进行跳过，以及修改误差参数。
@@ -330,6 +337,7 @@ DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子
 
 
 ```
-    python main.py --mode run_test --impl_folder /path/to/folder --fname cdist
+    python main.py --mode gen_case --impl_folder /path/to/folder --fname cdist
+    python main.py --mode run_test --path_or_dir /path/to/cdist/case
 ```
 
