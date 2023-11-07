@@ -40,7 +40,7 @@ def execute_commands(commands):
 
 def gen_data(partition, device_type, device_num, use_db):
     commands = []
-    for model in model_list[:2]:
+    for model in model_list:
         cmd = f'srun --job-name {model}_gen_data -p {partition} --gres={device_type}:{device_num} python main.py --mode gen_data --model_name {model}'
         if use_db:
             db_path = f'sqlite:///./cache/{model}_testrecord.db'
@@ -52,7 +52,7 @@ def gen_data(partition, device_type, device_num, use_db):
 
 def gen_case(partition, use_db):
     commands = []
-    for model in model_list[:2]:
+    for model in model_list:
         cmd = f'srun --job-name {model}_gen_case -p {partition} python main.py --mode gen_case --model_name {model} --case_output_dir ./gencases/{model}_case'
         if use_db:
             db_path = f'sqlite:///./cache/{model}_testrecord.db'
@@ -64,11 +64,14 @@ def gen_case(partition, use_db):
 
 def run_test(partition, device_type, device_num, use_db, pytest_args):
     commands = []
-    for model in model_list[:2]:
-        cmd = f'srun --job-name {model}_run_test -p {partition} --gres={device_type}:{device_num} python main.py --mode run_test --file_or_dir ./gencases/{model}_case --pytest_args "{pytest_args}"'
+    for model in model_list:
+        cmd = f'srun --job-name {model}_run_test -p {partition} --gres={device_type}:{device_num} python main.py --mode run_test --file_or_dir ./gencases/{model}_case'
+        if pytest_args:
+            cmd += ' --pytest_args "{pytest_args}"'
         if use_db:
             db_path = f'sqlite:///./cache/{model}_testrecord.db'
             cmd += f' --use_db --db_path {db_path}'
+        cmd += f' 2>&1 | tee logs/{model}.log'
         commands.append(cmd)
 
     execute_commands(commands)
