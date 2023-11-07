@@ -14,27 +14,27 @@ diopi_configs = {
         atol=1e-3,
         rtol=1e-4,
         para=dict(
-            dropout_p=[0, 0],
-            is_causal=[False, False],
-            return_debug_mask=[False, False],
-            scale=[None, None]
+            dropout_p=[0, 0, 0, 0],
+            is_causal=[False, False, True, False],
+            return_debug_mask=[False, False, False, False],
+            scale=[None, None, None, 0.1334]
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',
             args=[
                 {
                     "ins": ['q'],
-                    "shape": ((2, 2, 2, 8), (2, 5, 7, 8)),
+                    "shape": ((2, 2, 2, 8), (2, 5, 7, 8), (4, 103, 8, 32), (8, 256, 16, 256)),
                     "dtype": [np.float16],
                 },
                 {
                     "ins": ['k'],
-                    "shape": ((2, 2, 2, 8), (2, 5, 7, 8)),
+                    "shape": ((2, 2, 2, 8), (2, 5, 7, 8), (4, 103, 8, 32), (8, 256, 16, 256)),
                     "dtype": [np.float16],
                 },
                 {
                     "ins": ['v'],
-                    "shape": ((2, 2, 2, 8), (2, 5, 7, 8)),
+                    "shape": ((2, 2, 2, 8), (2, 5, 7, 8), (4, 103, 8, 32), (8, 256, 16, 256)),
                     "dtype": [np.float16],
                 },
             ],

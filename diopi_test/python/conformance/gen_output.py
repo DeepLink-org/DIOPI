@@ -218,7 +218,6 @@ class CustomizedTest(object):
         _, seqlen = q.shape[0], q.shape[1]
         softmax_scale = 1.0 / math.sqrt(q.shape[-1]) if not scale else scale
         scores = torch.einsum("bthd,bshd->bhts", q, k * softmax_scale)
-
         if is_causal:
             causal_mask = torch.triu(
                 torch.full((seqlen, seqlen), -10000.0, device=scores.device), 1
