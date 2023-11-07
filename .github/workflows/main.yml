@@ -386,8 +386,9 @@ jobs:
           set -e
           export CI=true
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          cd diopi_test/python && ln -sf /mnt/cache/share/deeplinkci/data data 
+          cd diopi_test/python
           python main.py --mode gen_case --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/topsrider/
+          ln -sf /mnt/cache/share/deeplinkci/data gencases/diopi_case/cache/data
           python main.py --mode run_test
 
   Rt-Test-Topsrider:
