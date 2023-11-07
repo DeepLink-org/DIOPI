@@ -55,7 +55,7 @@ DIOPI_API diopiError_t diopiFusedAddRootMeanSquareNorm(diopiContextHandle_t ctx,
 /**
  * @brief FusedContextAttention.
  * 1.If pre_work like attention_mask and padding_offset and cu_seqlens is needed, get prepared result.Or only do the pre work.Or get size only.
- * attention_mask : Attention mask.shape = [batch_size, 1, max_query_len, max_key_len].type = [float32]
+ * attention_mask : Attention mask.shape = [batch_size, 1, max_query_len, max_key_len].type = [float32, float16]
  * padding_offset : Padding offset.shape = [token_num].type = [int64, int32]
  * cu_seqlens : Cuseqlens.shape = [batch_size + 1].type = [int64, int32]
  * 2.get QKV.
@@ -310,7 +310,7 @@ DIOPI_API diopiError_t diopiPlusScalar(diopiContextHandle_t ctx, diopiTensorHand
  * @brief Total_padding_count.Padding_count = maxinputlen - inputlen for each batch.
  * @param[in] ctx The diopi context.
  * @param[out] total_padding_count : Total padding_count.shape=[batch_size].type = [int64, int32]
- * @param[in] input_lengths : Input length.shape=[batch_size].type = [int64]
+ * @param[in] input_lengths : Input length.shape=[batch_size].type = [int64, int32]
  * @param[in] max_input_length : Max input length.type = [int64, int32]
  * @param[in] batch_size : Batch size.type = [int64, int32]
  */
@@ -337,7 +337,7 @@ DIOPI_API diopiError_t diopiTransposeAxis01(diopiContextHandle_t ctx, diopiTenso
  * @param[in] all_ids : Input ids.shape=[batch_size, sessionlen].type = [int64, int32]
  * @param[in] batch_size : Batch size.type = [int64, int32]
  * @param[in] hidden_units : Hidden units.type = [int64, int32]
- * @param[in] step : Step.type = [int64]
+ * @param[in] step : Step.type = [int64, int32]
  */
 DIOPI_API diopiError_t diopiEmbeddingLookupPosEncoding(diopiContextHandle_t ctx, diopiTensorHandle_t from_tensor, diopiConstTensorHandle_t embedding_table,
                                                        diopiConstTensorHandle_t all_ids, const int batch_size, const int hidden_units,
@@ -369,7 +369,7 @@ DIOPI_API diopiError_t diopiInputIdsEmbeddingLookupPosEncoding(diopiContextHandl
  * @param[in] output_ids : Output ids.shape = [batch_size, step].type = [int64, int32]
  * @param[in] bad_words : Stop words list.shape = [batch_size, 2, stop_words_len] or [2, stop_words_len] for share.type = [int64, int32]
  * @param[in] id_offset : Offset of output_ids.type = [int64, int32]
- * @param[in] bad_words_len : Stop words len.type = [int64]
+ * @param[in] bad_words_len : Stop words len.type = [int64, int32]
  * @param[in] share_words : Stop words is shared or not.type = [bool]
  * @param[in] batch_size : Batch size.type = [int64, int32]
  * @param[in] vocab_size : Vocab size.type = [int64, int32]
@@ -405,7 +405,7 @@ DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiCo
  * @param[inout] finished : Finished.shape = [batch_size].type = [bool]
  * @param[out] should_stop : If all fin then should_stop.shape = [1].type = [bool]
  * @param[out] finished_sum : Total finished.shape = [1].type = [int64, int32]
- * @param[in] sequence_limit_length : Sequence limit length tensor.shape = [batch_size].type = [uint64, uint32]
+ * @param[in] sequence_limit_length : Sequence limit length tensor.shape = [batch_size].type = [int64, int32]
  * @param[in] batch_size : Input tensor.type = [int64, int32]
  * @param[in] step : Step.type = [int64, int32]
  */
