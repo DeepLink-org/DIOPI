@@ -12,6 +12,7 @@ diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
                        int64_t dim, bool largest, bool sorted) {
     std::vector<int64_t> kVec({k});
     diopiSize_t kSize = vectorToDiopiSize(kVec);
+
     AclOpRunner<2, 2>("TopKV2", ctx)
         .addInput(input)
         .addConstInput(kSize)
@@ -21,6 +22,7 @@ diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
         .addOutput(values)
         .addOutput(indices)
         .run();
+
     return diopiSuccess;
 }
 

@@ -2014,8 +2014,7 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     auto atTarget = impl::aten::buildATen(target);
     auto atWeight = impl::aten::buildATen(weight);
     auto dim = atInput.dim();
-    DIOPI_CHECK(dim > 1, "dim <=1 is not supported");
-    if (dim != 2 && dim != 4) {
+    if (dim >= 3 && dim != 4) {
         auto n = atInput.size(0);
         auto c = atInput.size(1);
         int64_t inputLastSize = 1;
@@ -2032,10 +2031,10 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
         atTarget = atTarget.reshape(targetShape);
     }
 
-    if (dim == 2) {
-        at::nll_loss_out(atOut, atInput, atTarget, atWeight, reduction, ignore_index);
-    } else {
+    if (dim >= 3) {
         at::nll_loss2d_out(atOut, atInput, atTarget, atWeight, reduction, ignore_index);
+    } else {
+        at::nll_loss_out(atOut, atInput, atTarget, atWeight, reduction, ignore_index);
     }
     impl::aten::unsetCurCtx();
     return diopiSuccess;

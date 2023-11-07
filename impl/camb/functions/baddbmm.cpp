@@ -116,7 +116,7 @@ DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_
     DiopiTensor inputTensor(input);
     DiopiTensor outTensor(out);
 
-    DIOPI_CALL(broadcast(ctx, outTensor, inputTensor));
+    DIOPI_CALL(broadcastContiguous(ctx, outTensor, inputTensor));
 
     std::vector<DiopiTensor *> tensorsVecPtr{&batch1Tensor, &batch2Tensor, &outTensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64};

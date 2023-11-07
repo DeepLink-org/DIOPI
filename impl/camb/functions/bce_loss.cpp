@@ -55,7 +55,7 @@ DIOPI_API diopiError_t diopiBCELoss(diopiContextHandle_t ctx, diopiTensorHandle_
     if (!weightTensor.defined()) {
         weightTensor = ones(ctx, inputTensor.shape(), inputTensor.dtype());
     }
-    DIOPI_CALL(broadcastHelper(ctx, weightTensor, inputTensor, &weightTensor));
+    DIOPI_CALL(broadcastContiguous(ctx, weightTensor, inputTensor.shape(), inputTensor.dtype(), &weightTensor));
 
     std::vector<DiopiTensor *> tensorsVecPtr{&inputTensor, &targetTensor, &weightTensor, &outTensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32, diopi_dtype_float32};
@@ -110,7 +110,7 @@ DIOPI_API diopiError_t diopiBCELossBackward(diopiContextHandle_t ctx, diopiTenso
     if (!weightTensor.defined()) {
         weightTensor = ones(ctx, targetTensor.shape(), targetTensor.dtype());
     }
-    DIOPI_CALL(broadcastHelper(ctx, weightTensor, inputTensor, &weightTensor));
+    DIOPI_CALL(broadcastContiguous(ctx, weightTensor, inputTensor.shape(), inputTensor.dtype(), &weightTensor));
 
     std::vector<DiopiTensor *> tensorsVecPtr{&inputTensor, &targetTensor, &weightTensor, &gradInputTensor, &gradOutputTensor};
     std::set<diopiDtype_t> supportedDtype{diopi_dtype_float32, diopi_dtype_float64};
