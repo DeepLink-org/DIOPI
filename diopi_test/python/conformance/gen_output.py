@@ -4,6 +4,7 @@ import os
 import sys
 import torch
 import torchvision
+from . import triton_kernels
 
 from gen_input import GenPolicy
 from conformance.utils import logger, get_data_from_file
@@ -226,6 +227,27 @@ class CustomizedTest(object):
         attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
         output = torch.einsum("bhts,bshd->bthd", attention, v)
         return output
+
+    def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch):
+        triton_kernels.apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch)
+        return logits
+
+    def destindex_copy_kv(k, dest_loc, out):
+        triton_kernels.destindex_copy_kv(k, dest_loc, out)
+        return out
+
+    def token_attention(q, k, out, b_loc, b_start_loc, b_seq_len, max_input_len):
+        triton_kernels.token_attention_fwd(q, k, out, b_loc, b_start_loc, b_seq_len, max_input_len)
+        return out
+
+    def token_softmax_reducev(logics, v, out, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index):
+        triton_kernels.token_softmax_reducev_fwd(logics, v, out, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index)
+        return out
+
+    def context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len):
+        # triton_kernels.context_attention_fwd(q, k, v, out, b_start_loc, b_seq_len, max_input_len)
+        triton_kernels.context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len)
+        return out
 
 
 class GenOutputData(object):
