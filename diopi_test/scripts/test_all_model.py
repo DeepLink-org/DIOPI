@@ -3,6 +3,7 @@ import subprocess
 import os
 import logging
 import multiprocessing
+import time
 
 from python.conformance.model_list import model_list
 
