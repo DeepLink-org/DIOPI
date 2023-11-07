@@ -3352,4 +3352,28 @@ device_configs = {
         ),
     ),
 
+    'rotary_emb': dict(
+        name=['rotary_emb'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((1, 125, 16, 32)), Skip((1, 125, 16, 32)), Skip((2, 64, 16, 32)), Skip((3, 100, 8, 64))),
+                },
+            ],
+        ),
+    ),
+
+    'rms_norm': dict(
+        name=['rms_norm'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((5, 5)), Skip((35, 125, 32)), (Skip(16, 64, 64)), Skip((1, 32, 32, 8))),
+                },
+            ],
+        ),
+    ),
+
 }
