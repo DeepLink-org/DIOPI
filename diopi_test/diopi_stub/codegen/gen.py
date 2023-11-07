@@ -100,75 +100,81 @@ def get_func_info(content):
     return type_change, args, attr_types, paras_can_be_none, ins_vector, outs_vector, out_ptr
 
 
-def gen_functions(options, functions_fm):
-    _cur_dir = os.path.dirname(os.path.abspath(__file__))
-    head_files = ['functions.h', 'functions_ext.h']
-    exports = []
-    for head_file in head_files:
-        with open(os.path.join(_cur_dir, options.get('source_dir'), head_file), 'r', encoding='utf8') as f:
-            content = f.readlines()
-        device = options.get('device')
-        if device == 'ascend':
-            ft = OT.function_ascend_template
-        else:
-            ft = OT.function_template
-        for idx, row in enumerate(content):
-            if row.startswith("DIOPI_API"):
-                row = row[10:]
-                temp_content = ''
-                idx1 = row.find("(")
-                idx0 = row.rfind(" ", 0, idx1)
-                func_name = row[idx0 + 1: idx1]
-                temp_content += row.replace(';', '')
-                idx2 = row.find(")")
-                while idx2 == -1:
-                    row1 = content[idx + 1]
-                    idx2 = row1.find(")")
-                    temp_content += row1.replace(';', '')
-                    idx += 1
-                type_change, args, attr_types, paras_none, ins_vector, outs_vector, out_ptr = get_func_info(temp_content)
-                call_args = copy.deepcopy(args)
-                type_change = True
+def get_export(content, ft, exports):
+    for idx, row in enumerate(content):
+        if row.startswith("DIOPI_API"):
+            row = row[10:]
+            temp_content = ''
+            idx1 = row.find("(")
+            idx0 = row.rfind(" ", 0, idx1)
+            func_name = row[idx0 + 1: idx1]
+            temp_content += row.replace(';', '')
+            idx2 = row.find(")")
+            while idx2 == -1:
+                row1 = content[idx + 1]
+                idx2 = row1.find(")")
+                temp_content += row1.replace(';', '')
+                idx += 1
+            type_change, args, attr_types, paras_none, ins_vector, outs_vector, out_ptr = get_func_info(temp_content)
+            call_args = copy.deepcopy(args)
+            type_change = True
+            if type_change:
+                convert, out_copy = '', ''
+                for param_type in type_convert_dict:
+                    temp_content = temp_content.replace(param_type, type_convert_dict[param_type])
+                attrs = []
+                for index in range(len(attr_types)):
+                    if 'reinterpret_cast' in call_args[index]:
+                        attrs.append(attr_types[index] + ' ' + call_args[index].split('(')[1].rstrip(')'))
+                    else:
+                        attrs.append(attr_types[index] + ' ' + call_args[index])
+                for vector in ins_vector:
+                    convert += OT.vector_template.substitute(env=dict(param=call_args[vector], param_num=ins_vector[vector],
+                                                             param_type=attr_types[vector], handle_type='diopiConstTensorHandle_t'))
+                    call_args[vector] = call_args[vector] + 'DIOPI'
+                for vector in outs_vector:
+                    convert += OT.vector_template.substitute(env=dict(param=call_args[vector], param_num=outs_vector[vector],
+                                                             param_type=attr_types[vector], handle_type='diopiTensorHandle_t'))
+                    call_args[vector] = call_args[vector] + 'DIOPI'
+                for out in out_ptr:
+                    convert += "diopiTensorHandle_t {param}Handle = nullptr;\n".format(param=call_args[out])
+                    out_copy += "if ({param}.get() != nullptr)\n \
+    *{param} = *{param}Handle;\n".format(param=call_args[out])
+                    call_args[out] = '&' + call_args[out] + 'Handle'
+                call_func = func_name + '(' + ', '.join(call_args) + ')'
+                exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(attrs), convert=convert,
+                                                      out_copy=out_copy, call_func=call_func)))
+            else:
+                exports.append('m.def("{func_name}", {func_name});'.format(func_name=func_name))
+            if len(paras_none):
+                arg_def = [attr_types[index] + ' ' + args[index] for index in range(len(args)) if index not in paras_none]
+                keep_args = []
+                for index, arg in enumerate(call_args):
+                    keep_args.append(arg if index not in paras_none else 'nullptr')
+                call_func = func_name + '(' + ', '.join(keep_args) + ')'
                 if type_change:
-                    convert, out_copy = '', ''
-                    for param_type in type_convert_dict:
-                        temp_content = temp_content.replace(param_type, type_convert_dict[param_type])
-                    attrs = []
-                    for index in range(len(attr_types)):
-                        if 'reinterpret_cast' in call_args[index]:
-                            attrs.append(attr_types[index] + ' ' + call_args[index].split('(')[1].rstrip(')'))
-                        else:
-                            attrs.append(attr_types[index] + ' ' + call_args[index])
-                    for vector in ins_vector:
-                        convert += OT.vector_template.substitute(env=dict(param=call_args[vector], param_num=ins_vector[vector],
-                                                                 param_type=attr_types[vector], handle_type='diopiConstTensorHandle_t'))
-                        call_args[vector] = call_args[vector] + 'DIOPI'
-                    for vector in outs_vector:
-                        convert += OT.vector_template.substitute(env=dict(param=call_args[vector], param_num=outs_vector[vector],
-                                                                 param_type=attr_types[vector], handle_type='diopiTensorHandle_t'))
-                        call_args[vector] = call_args[vector] + 'DIOPI'
-                    for out in out_ptr:
-                        convert += "diopiTensorHandle_t {param}Handle = nullptr;\n".format(param=call_args[out])
-                        out_copy += "if ({param}.get() != nullptr)\n \
-        *{param} = *{param}Handle;\n".format(param=call_args[out])
-                        call_args[out] = '&' + call_args[out] + 'Handle'
-                    call_func = func_name + '(' + ', '.join(call_args) + ')'
-                    exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(attrs), convert=convert,
+                    exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert=convert,
                                                           out_copy=out_copy, call_func=call_func)))
                 else:
-                    exports.append('m.def("{func_name}", {func_name});'.format(func_name=func_name))
-                if len(paras_none):
-                    arg_def = [attr_types[index] + ' ' + args[index] for index in range(len(args)) if index not in paras_none]
-                    keep_args = []
-                    for index, arg in enumerate(call_args):
-                        keep_args.append(arg if index not in paras_none else 'nullptr')
-                    call_func = func_name + '(' + ', '.join(keep_args) + ')'
-                    if type_change:
-                        exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert=convert,
-                                                              out_copy=out_copy, call_func=call_func)))
-                    else:
-                        exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert='',
-                                                              out_copy='', call_func=call_func)))
+                    exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert='',
+                                                          out_copy='', call_func=call_func)))
+    return exports
+
+
+def gen_functions(options, functions_fm):
+    _cur_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(_cur_dir, options.get('source_dir'), 'functions.h'), 'r', encoding='utf8')as f:
+        content = f.readlines()
+    exports = []
+    device = options.get('device')
+    if device == 'ascend':
+        ft = OT.function_ascend_template
+    else:
+        ft = OT.function_template
+    exports = get_export(content, ft, exports)
+    with open(os.path.join(_cur_dir, options.get('source_dir'), 'functions_ext.h'), 'r', encoding='utf8')as f:
+        content_ext = f.readlines()
+    exports = get_export(content_ext, ft, exports)
 
     functions_fm.write("export_functions.cpp", OT.operators_template, env=dict(export_functions=exports))
 
