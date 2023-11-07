@@ -119,9 +119,6 @@ def gen_functions(options, functions_fm):
                 idx1 = row.find("(")
                 idx0 = row.rfind(" ", 0, idx1)
                 func_name = row[idx0 + 1: idx1]
-                if func_name == 'diopiCastDtype' or func_name == 'diopiCopyInp':
-                    exports.append('m.def("{func_name}", {func_name});'.format(func_name=func_name))
-                    continue
                 temp_content += row.replace(';', '')
                 idx2 = row.find(")")
                 while idx2 == -1:
