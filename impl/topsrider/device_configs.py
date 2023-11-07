@@ -2906,16 +2906,16 @@ device_configs = {
     'arange': dict(
         name=['arange'],
         para=dict(
-            start=[Skip(0),Skip(0),Skip(-4),Skip(0.1),Skip(10),Skip(2.3),Skip(True),Skip(-20),Skip(90),Skip(0.001),],
-            end=[Skip(91),Skip(128),Skip(5),Skip(0.5),Skip(10),Skip(2.3),Skip(100),Skip(False),Skip(-90),Skip(0.0001),],
-            step=[Skip(13),Skip(1),Skip(1),Skip(0.1),Skip(True),Skip(0.5),Skip(2.1),Skip(0.5),Skip(-5.6),Skip(-1e-05),],
+            start=[Skip(0.1),Skip(10),Skip(2.3),Skip(True),Skip(-20),Skip(90),Skip(0.001),],
+            end=[Skip(0.5),Skip(10),Skip(2.3),Skip(100),Skip(False),Skip(-90),Skip(0.0001),],
+            step=[Skip(0.1),Skip(True),Skip(0.5),Skip(2.1),Skip(0.5),Skip(-5.6),Skip(-1e-05),],
         ),
     ),
 
     'arange_default': dict(
         name=['arange'],
         para=dict(
-            end=[Skip(5),Skip(10),Skip(4.0),Skip(9.0),],
+            end=[Skip(4.0),Skip(9.0),],
         ),
     ),
 
@@ -3217,8 +3217,17 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float64),Skip(np.float32),Skip(np.float16),Skip(np.int64),Skip(np.int32),Skip(np.int16),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),Skip(np.uint8),Skip(np.int8),Skip(np.int8),],
+                    "shape": [Skip(()), Skip((0,)), Skip((4, 0)), Skip((5, 0, 7))],
+                    "dtype": [Skip(np.float64),Skip(np.float16),Skip(np.int64),Skip(np.int32),Skip(np.int16),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),Skip(np.uint8),Skip(np.int8),Skip(np.int8),],
                 },
+                {
+                     "ins": ['out'],
+                     "shape": [Skip(()), Skip((0,)), Skip((4, 0)), Skip((5, 0, 7))],
+                     "dtype": [Skip(np.uint8), Skip(np.bool_),
+                              Skip(np.float64), Skip(np.int8),
+                              Skip(np.int8), Skip(np.uint8), Skip(np.bool_)],
+                },
+
             ]
         ),
     ),
