@@ -1,26 +1,40 @@
 import argparse
 import subprocess
 import os
-import time
-import concurrent.futures
+import logging
+import subprocess
+import multiprocessing
 
 from python.conformance.model_list import model_list
 
 os.chdir(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'python'))
 
-def execute_commands(commands):
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = [executor.submit(subprocess.run, cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) for cmd in commands]
 
-    # 获取每个子进程的结果
-    for future, cmd in zip(futures, commands):
-        result = future.result()
-        if result.returncode == 0:
-            print(f"excute '{cmd}' success")
-        else:
-            print(f"excute '{cmd}' failed, return code: {result.returncode}")
-            print("stdout:\n", result.stdout.decode())
-            print("stderr:\n", result.stderr.decode())
+logger = logging.getLogger('Conformance')
+logger.setLevel(logging.DEBUG)
+console_handler = logging.StreamHandler()
+formatter = logging.Formatter('[PID:%(process)d] %(message)s')
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
+
+
+def execute_commands(commands):
+    def execute_command(command):
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        for line in process.stdout:
+            logger.info(line.strip())
+        process.wait()
+        return process.returncode
+
+    processes = []
+
+    for cmd in commands:
+        process = multiprocessing.Process(target=execute_command, args=(cmd,))
+        processes.append(process)
+        process.start()
+
+    for process in processes:
+        process.join()
 
 
 def gen_data(partition, device_type, device_num, use_db):
