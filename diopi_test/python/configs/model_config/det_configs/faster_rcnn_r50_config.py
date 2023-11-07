@@ -566,7 +566,7 @@ faster_rcnn_r50_config = {
                     "ins": ["indices"],
                     "requires_grad":[False],
                     "shape": [(3,), (3,)],
-                    "dtype": [np.bool],
+                    "dtype": [np.bool_],
                     "gen_fn": "Genfunc.mask",
                 },
             ],

@@ -540,7 +540,7 @@ sar_config = {
                 {
                     "ins": ["mask"],
                     "shape": [(384, 31, 6, 40, 1), (1, 31, 6, 40, 1)],
-                    "dtype": [np.bool],
+                    "dtype": [np.bool_],
                     "gen_fn": "Genfunc.mask",
                 },
             ],

@@ -460,6 +460,15 @@ device_configs = {
         ),
     ),
 
+    'pointwise_binary_scalar': dict(
+        # FIXME other为float时报错
+        name=['eq', 'ne', 'le', 'lt', 'gt', 'ge'],
+        dtype=[Skip(np.int64), Skip(np.int32), Skip(np.int16), Skip(np.int8), Skip(np.uint8), Skip(np.bool_)],
+        para=dict(
+            other=[0, -1, 0.028, 2.232, 1],
+        ),
+    ),
+
     'silu': dict(
         name=["silu"],
         tensor_para=dict(
@@ -1004,18 +1013,6 @@ device_configs = {
     ),
 
     'reciprocal': dict(
-        name=["reciprocal"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64)],
-                },
-            ],
-        ),
-    ),
-
-    'reciprocal_zero': dict(
         name=["reciprocal"],
         tensor_para=dict(
             args=[

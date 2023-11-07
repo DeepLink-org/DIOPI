@@ -1,4 +1,4 @@
-model_list = ['resnet50', 'resnet101', 'mobilenet_v2', 'mobilenet_v3', 'seresnet50', 'shufflenet_v2', 'vgg16', 'efficientnet', 'vit', 'convnext', 'swin_transformer', 'densenet', 'repvgg', 'inceptionv3', 'faster_rcnn_r50', 'pointpillars', 'yolov3', 'atss', 'fcos', 'mask_rcnn', 'retinanet', 'dyhead', 'ssd300', 'detr', 'solo', 'cascade_rcnn', 'centernet', 'unet', 'pspnet', 'deeplabv3', 'deeplabv3plus', 'upernet', 'fcn', 'tsn', 'crnn', 'hrnet', 'dbnet', 'yolov5', 'stgcn', 'deeppose']
+model_list = ['resnet50', 'resnet101', 'mobilenet_v2', 'mobilenet_v3', 'seresnet50', 'shufflenet_v2', 'vgg16', 'efficientnet', 'vit', 'convnext', 'swin_transformer', 'densenet', 'repvgg', 'inceptionv3', 'faster_rcnn_r50', 'pointpillars', 'yolov3', 'atss', 'fcos', 'mask_rcnn', 'retinanet', 'dyhead', 'ssd300', 'detr', 'solo', 'cascade_rcnn', 'centernet', 'unet', 'pspnet', 'deeplabv3', 'deeplabv3plus', 'upernet', 'fcn', 'tsn', 'crnn', 'hrnet', 'dbnet', 'yolov5', 'stgcn', 'deeppose', 'sar', 'slowfast', 'llama']
 model_op_list = {
     'resnet50': ['adaptive_avg_pool2d', 'add', 'argmax', 'batch_norm', 'cat', 'conv2d', 'div', 'fill_', 'flip', 'linear', 'log_softmax', 'max_pool2d', 'mean', 'mul', 'nll_loss', 'normal_', 'relu', 'softmax', 'sub', 'sum'],
     'resnet101': ['adaptive_avg_pool2d', 'add', 'argmax', 'batch_norm', 'cat', 'conv2d', 'div', 'fill_', 'flip', 'linear', 'log_softmax', 'max_pool2d', 'mean', 'mul', 'nll_loss', 'normal_', 'relu', 'softmax', 'sub', 'sum'],
@@ -40,4 +40,10 @@ model_op_list = {
     'yolov5': ['add', 'atan', 'batch_norm', 'bitwise_and', 'cat', 'clamp_min', 'clamp', 'conv2d', 'div', 'eq', 'exp', 'fill_', 'ge', 'gt', 'index', 'index_put', 'le', 'lerp', 'log', 'logical_and', 'lt', 'masked_fill', 'max', 'max_pool2d', 'maximum', 'mean', 'minimum', 'mul', 'ne', 'neg', 'nonzero', 'pow', 'reciprocal', 'remainder', 'repeat', 'sigmoid', 'silu', 'stack', 'sub', 'sum', 'uniform', 'interpolate', 'where'],
     'stgcn': ['adaptive_avg_pool2d', 'add', 'argmax', 'batch_norm', 'bmm', 'cat', 'conv2d', 'div', 'fill_', 'linear', 'log_softmax', 'mean', 'mul', 'nll_loss', 'normal_', 'relu', 'softmax', 'stack'],
     'deeppose': ['add', 'addcdiv', 'addcmul', 'batch_norm', 'cat', 'conv_transpose2d', 'conv2d', 'div', 'fill_', 'index', 'mse_loss', 'max_pool2d', 'mean', 'mul', 'normal_', 'relu', 'sqrt', 'stack', 'sub'],
+    'slowfast': ['randperm', 'interpolate', 'add', 'batch_norm', 'relu', 'cat', 'dropout', 'linear', 'cross_entropy', 'mul', 'mean', 'norm', 'stack', 'div', 'reciprocal', 'clamp', 'sgd',
+                 'conv3d', 'max_pool3d', 'adaptive_avg_pool3d'],
+    'sar': ['mean', 'fill_', 'uniform', 'randperm', 'sub', 'div', 'stack', 'conv2d', 'add', 'batch_norm', 'relu', 'max_pool2d', 'permute', 'linear', 'embedding', 'cat', 'tanh', 'masked_fill', 'softmax', 'mul',
+            'sum', 'expand', 'dropout', 'cross_entropy', 'adam', 'addcmul', 'sqrt', 'addcdiv', 'arange', 'max'],
+    'llama': ['ne', 'embedding', 'triu', 'pow', 'mean', 'add', 'rsqrt', 'mul', 'linear', 'view_as_complex', 'view_as_real', 'transpose', 'matmul', 'div', 'softmax', 'silu', 'sort', 'cumsum', 'sub', 'gt', 'sum',
+              'multinomial', 'gather', 'where']
 }

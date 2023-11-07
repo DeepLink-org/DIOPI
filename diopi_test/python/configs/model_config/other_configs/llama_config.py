@@ -598,7 +598,7 @@ llama_config = {
                 {
                     "ins": ["condition"],
                     "shape": [(5,)],
-                    "dtype": [np.bool],
+                    "dtype": [np.bool_],
                     "gen_fn": "Genfunc.mask",
                 },
                 {
