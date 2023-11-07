@@ -289,7 +289,6 @@ tsn_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
                     "shape": [(4, 2048, 1, 1)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

@@ -404,10 +404,7 @@ solo_config = {
         name=["group_norm"],
         interface=["torch"],
         para=dict(
-            N=[1, 1],
-            C=[256, 256],
-            HxW=[16400, 2856],
-            group=[32, 32],
+            num_groups=[32, 32],
             eps=[1e-05, 1e-05],
         ),
         tensor_para=dict(
@@ -491,7 +488,7 @@ solo_config = {
                 {
                     "ins": ["indices"],
                     "requires_grad": [False],
-                    "shape": [(154,), (12,), (26,), (4,), (184,), (271,)],
+                    "shape": [(154,), (), (), (), (184,), (271,)],
                     "dtype": [np.bool_],
                     "gen_fn": "Genfunc.mask",
                 },
@@ -517,14 +514,14 @@ solo_config = {
                 {
                     "ins": ["indices1"],
                     "requires_grad": [False],
-                    "shape": [(1296,), (256,)],
+                    "shape": [(1296, 304, 200), (256, 64, 50)],
                     "dtype": [np.bool_],
                     "gen_fn": "Genfunc.mask",
                 },
                 {
                     "ins": ["values"],
                     "requires_grad": [False],
-                    "shape": [(90, 304, 200), (15, 64, 50)],
+                    "shape": [(), ()],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
                 },
@@ -681,7 +678,7 @@ solo_config = {
                 },
                 {
                     "ins": ["other"],
-                    "shape": [(6, 46400), (44, 13600), (70, 4200), (35, 49600), (14, 46400), (550, 272, 200), (62, 3700), (472, 472)],
+                    "shape": [(6, 46400), (44, 13600), (221,), (451,), (576, 184, 336), (47, 208, 200), (1, 80, 40, 40), (1, 80, 12, 12)],
                     "dtype": [np.bool_],
                     "gen_fn": "Genfunc.mask",
                 },
@@ -994,9 +991,9 @@ solo_config = {
         name=["interpolate"],
         interface=["torch.nn.functional"],
         para=dict(
-            mode=['linear', 'linear'],
-            size=[(425, 640), (16, 16)],
-            align_corners=[0, 0],
+            mode=['bilinear', 'bilinear'],
+            size=[(332, 500), (66, 50)],
+            align_corners=[False, False],
         ),
         tensor_para=dict(
             args=[

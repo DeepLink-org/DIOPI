@@ -197,7 +197,6 @@ vgg16_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
                     "shape": [(15, 4096), (32, 4096)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

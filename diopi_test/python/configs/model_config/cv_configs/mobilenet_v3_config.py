@@ -378,7 +378,6 @@ mobilenet_v3_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
                     "shape": [(15, 1280), (128, 1280)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

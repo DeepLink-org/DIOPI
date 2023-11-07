@@ -483,7 +483,7 @@ retinanet_config = {
                 {
                     "ins": ["values"],
                     "requires_grad": [False],
-                    "shape": [(33,), (47,), (167, 4), ()],
+                    "shape": [(), (), (), ()],
                     "dtype": [np.int64],
                     "gen_fn": "Genfunc.randint",
                 },

@@ -572,29 +572,5 @@ densenet_config = {
                 },
             ],
         ),
-    ),
-
-    'avg_pool2d': dict(
-        name=["avg_pool2d"],
-        interface=["torch.nn.functional"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "requires_grad": [True],
-                    "shape": [(128, 512, 14, 14), (128, 128, 56, 56), (128, 256, 28, 28), (64, 128, 56, 56), (64, 256, 28, 28), (64, 512, 14, 14), (16, 512, 14, 14), (16, 256, 28, 28), (16, 128, 56, 56)],
-                    "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
-                },
-                {
-                    "ins": ["grad_output"],
-                    "requires_grad": [False],
-                    "shape": [(128, 128, 28, 28), (128, 256, 14, 14), (128, 512, 7, 7), (128, 512, 7, 7), (128, 512, 7, 7), (128, 512, 7, 7), (128, 512, 7, 7), (128, 512, 7, 7), (128, 512, 7, 7)],
-                    "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
-                },
-            ],
-        ),
-    ),
-
+    )
 }

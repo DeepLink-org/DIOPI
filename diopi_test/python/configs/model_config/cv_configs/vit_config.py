@@ -372,7 +372,6 @@ vit_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
                     "shape": [(32, 577, 768), (32, 577, 3072), (15, 577, 768), (15, 577, 3072)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -482,21 +481,7 @@ vit_config = {
                     "shape": [(768,), (768,), (768,), (768,)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
-                },
-                {
-                    "ins": ["save_mean"],
-                    "requires_grad": [False],
-                    "shape": [(16, 577, 1), (15, 577, 1), (32, 577, 1), (64, 577, 1)],
-                    "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
-                },
-                {
-                    "ins": ["save_invstd"],
-                    "requires_grad": [False],
-                    "shape": [(16, 577, 1), (15, 577, 1), (32, 577, 1), (64, 577, 1)],
-                    "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
-                },
+                }
             ],
         ),
     ),

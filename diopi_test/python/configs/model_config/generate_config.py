@@ -29,6 +29,7 @@ param_type_translation = {
     "sorted": bool,
     "return_inverse": bool,
     "return_counts": bool,
+    "align_corners": bool
 }
 func_interface = {
     'torch': ['gather', 'unique', 'transpose', 'tanh', 'pow', 'cumsum',

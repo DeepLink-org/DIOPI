@@ -128,29 +128,6 @@ inceptionv3_config = {
         ),
     ),
 
-    'avg_pool2d': dict(
-        name=["avg_pool2d"],
-        interface=["torch.nn.functional"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "requires_grad": [True],
-                    "shape": [(32, 256, 35, 35), (32, 288, 35, 35), (32, 2048, 8, 8), (32, 768, 17, 17), (32, 1280, 8, 8), (32, 192, 35, 35)],
-                    "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
-                },
-                {
-                    "ins": ["grad_output"],
-                    "requires_grad": [False],
-                    "shape": [(32, 288, 35, 35), (32, 1280, 8, 8), (32, 2048, 8, 8), (32, 256, 35, 35), (32, 768, 17, 17), (32, 192, 35, 35)],
-                    "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
-                },
-            ],
-        ),
-    ),
-
     'batch_norm': dict(
         name=["batch_norm"],
         atol=1e-01,
@@ -333,7 +310,6 @@ inceptionv3_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
                     "shape": [(32, 2048, 1, 1)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

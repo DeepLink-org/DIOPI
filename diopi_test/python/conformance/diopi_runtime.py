@@ -240,9 +240,8 @@ class Tensor(diopiTensor):
             diopiTensor.__init__(self, size, stride, dtype, device, context, data_ptr)
 
     def __str__(self):
-        # array = self.numpy()
-        # string = f"{array.__str__()}\n"
-        string = ''
+        array = self.numpy()
+        string = f"{array.__str__()}\n"
         string += f"{self.get_dtype()}, shape:{self.size().data},\
                      stride:{self.get_stride().data}, numel:{self.numel()}\n"
         return string

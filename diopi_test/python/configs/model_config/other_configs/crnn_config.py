@@ -200,21 +200,7 @@ crnn_config = {
                     "shape": [(531,), (524,)],
                     "dtype": [np.int64],
                     "gen_fn": "Genfunc.randint",
-                },
-                {
-                    "ins": ["neg_log_likelihood"],
-                    "requires_grad": [False],
-                    "shape": [(64,), (64,)],
-                    "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
-                },
-                {
-                    "ins": ["log_alpha"],
-                    "requires_grad": [False],
-                    "shape": [(64, 26, 29), (64, 26, 31)],
-                    "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
-                },
+                }
             ],
         ),
     ),

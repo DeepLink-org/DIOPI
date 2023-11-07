@@ -482,10 +482,7 @@ fcos_config = {
         name=["group_norm"],
         interface=["torch"],
         para=dict(
-            N=[1, 2],
-            C=[256, 256],
-            HxW=[15456, 975],
-            group=[32, 32],
+            num_groups=[32, 32],
             eps=[1e-05, 1e-05],
         ),
         tensor_para=dict(
@@ -561,7 +558,6 @@ fcos_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
                     "shape": [(38394, 2), (70, 4), (8,), (29862,), (17609, 27, 4), (20805, 26, 4)],
                     "dtype": [np.int64],
                     "gen_fn": "Genfunc.randint",
@@ -595,14 +591,14 @@ fcos_config = {
                 {
                     "ins": ["indices1"],
                     "requires_grad": [False],
-                    "shape": [(18134,), (147,), (197,), (21330, 16)],
+                    "shape": [(18134,), (34128,), (27736, 4), (21330, 16)],
                     "dtype": [np.bool_],
                     "gen_fn": "Genfunc.mask",
                 },
                 {
                     "ins": ["values"],
                     "requires_grad": [False],
-                    "shape": [(), (147,), (197, 4), ()],
+                    "shape": [(), (), (), ()],
                     "dtype": [np.int64],
                     "gen_fn": "Genfunc.randint",
                 },

@@ -5,7 +5,7 @@ yolov3_config = {
         name=["add"],
         interface=["torch"],
         para=dict(
-            alpha=[1, 1, 1, 0.0005, 1, 1, 1, 1, 1],
+            alpha=[1, 1, 1, 1, 1, 1, 1, 1, 1],
         ),
         tensor_para=dict(
             args=[
@@ -494,14 +494,14 @@ yolov3_config = {
                 {
                     "ins": ["indices1"],
                     "requires_grad": [False],
-                    "shape": [(31,), (33,), (6300,), (37,)],
+                    "shape": [(400,), (1600,), (52, 6300), (5040, 80)],
                     "dtype": [np.bool_],
                     "gen_fn": "Genfunc.mask",
                 },
                 {
                     "ins": ["values"],
                     "requires_grad": [False],
-                    "shape": [(), (), (), (37, 80)],
+                    "shape": [(), (), (), ()],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
                 },

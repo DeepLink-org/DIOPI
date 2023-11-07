@@ -34,6 +34,9 @@ op_skip_param = {
     'diopiUpsampleNearest': ['scales_h', 'scales_w'],
     'diopiUpsampleLinear': ['scales_h', 'scales_w'],
     'diopiCumsum': ['dtype'],
+    'diopiLayerNorm': ['save_mean', 'save_invstd'],
+    'diopiCTCLoss': ['neg_log_likelihood', 'save_invstd'],
+    'diopiGroupNorm': ['N', 'C', 'HxW'],
 }
 # param name translation(all of the ops)
 param_name_translation = {
@@ -49,6 +52,9 @@ op_param_name_translation = {
     },
     'diopiMaxPool2dWithIndices': {
         "indices": "return_indices",
+    },
+    'diopiGroupNorm': {
+        "groups": "num_groups",
     },
 }
 

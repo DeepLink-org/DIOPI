@@ -20,7 +20,7 @@ centernet_config = {
         name=["add"],
         interface=["torch"],
         para=dict(
-            alpha=[1, 1, 0.0001, 0.0001, 1, 1, 0.0001, 0.0001],
+            alpha=[1, 1, 1, 1, 1, 1, 1, 1],
         ),
         tensor_para=dict(
             args=[
