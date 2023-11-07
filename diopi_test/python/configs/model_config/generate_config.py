@@ -229,6 +229,7 @@ def gen_config_code(contents: dict, file_name: str) -> None:
                 f.write(row)
         f.write("}\n")
 
+
 def generate_model_list(model_name, contents):
     op_names = []
     for name in contents.keys():
@@ -238,6 +239,7 @@ def generate_model_list(model_name, contents):
         if name not in op_names:
             op_names.append(name)
     return model_name, op_names
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Generate configuration code.")

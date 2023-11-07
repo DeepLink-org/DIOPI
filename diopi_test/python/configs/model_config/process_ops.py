@@ -200,7 +200,7 @@ def drop_numerous_args_all_ops(func_name, params_dict, num=10):
     for k in params_dict:
         if isinstance(params_dict[k], dict) and params_dict[k].get('shape'):
             expect_func_args_map = {func_name: k}
-            if func_name not in  ['diopiCat', 'diopiStack']:
+            if func_name not in ['diopiCat', 'diopiStack']:
                 args_length = drop_numerous_args(func_name, params_dict, expect_func_args_map, num)
                 if args_length > 10:
                     args_length = drop_numerous_args(func_name, params_dict, expect_func_args_map, 10, distinct='dim')
@@ -209,6 +209,7 @@ def drop_numerous_args_all_ops(func_name, params_dict, num=10):
             else:
                 drop_numerous_args(func_name, params_dict, expect_func_args_map, 2, distinct='dim')
             break
+
 
 def drop_numerous_args(func_name, params_dict, expect_func_args_map, k=10, distinct='shape'):
     # expect_func_args_map：指定需要去重的算子与参数。e.g. {'diopiAdd': 'input'}

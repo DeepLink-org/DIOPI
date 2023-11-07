@@ -2,7 +2,6 @@ import argparse
 import subprocess
 import os
 import logging
-import subprocess
 import multiprocessing
 
 from python.conformance.model_list import model_list
