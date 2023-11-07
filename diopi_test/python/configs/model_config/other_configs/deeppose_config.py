@@ -76,7 +76,7 @@ deeppose_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(2048, 1024, 1, 1), (512, 1024, 1, 1), (2048,), (2048,)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

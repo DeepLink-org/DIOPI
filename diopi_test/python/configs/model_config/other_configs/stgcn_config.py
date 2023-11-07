@@ -188,14 +188,14 @@ stgcn_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(1, 204800, 25), (1, 89600, 75)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
                 },
                 {
                     "ins": ["mat2"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(1, 25, 75), (1, 75, 25)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

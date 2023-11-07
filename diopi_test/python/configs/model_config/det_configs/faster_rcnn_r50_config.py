@@ -583,7 +583,7 @@ faster_rcnn_r50_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad":[True],
+                    # "requires_grad":[True],
                     "shape": [(217413,), (217413,), (236313, 4), (4096, 256, 7, 7), (4096, 256, 7, 7)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randint",

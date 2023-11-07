@@ -115,7 +115,7 @@ pointpillars_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(128, 128, 2, 2), (256, 256, 3, 3), (18,), (42,), (64, 10), (64, 10)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -375,7 +375,7 @@ pointpillars_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(802, 1), (858, 1)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

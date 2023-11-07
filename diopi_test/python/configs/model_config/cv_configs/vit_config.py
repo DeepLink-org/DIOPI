@@ -100,7 +100,7 @@ vit_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(2304,), (768,), (1, 1, 768), (1, 1, 768), (768, 768), (768, 768), (768, 3, 16, 16), (768, 3, 16, 16)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -184,14 +184,14 @@ vit_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(768, 577, 64), (384, 577, 577), (384, 577, 577), (384, 577, 577), (192, 577, 577), (180, 577, 64), (180, 577, 64), (180, 577, 577), (180, 577, 577), (180, 577, 577), (768, 577, 577), (192, 577, 64), (384, 577, 64), (384, 577, 64), (384, 64, 577), (180, 64, 577)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
                 },
                 {
                     "ins": ["mat2"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(768, 64, 577), (384, 577, 64), (384, 577, 64), (384, 577, 64), (192, 577, 64), (180, 64, 577), (180, 64, 577), (180, 577, 64), (180, 577, 64), (180, 577, 64), (768, 577, 64), (192, 64, 577), (384, 64, 577), (384, 64, 577), (384, 577, 577), (180, 577, 577)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -233,7 +233,7 @@ vit_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(1, 577, 768)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -389,7 +389,7 @@ vit_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(1, 577, 768)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

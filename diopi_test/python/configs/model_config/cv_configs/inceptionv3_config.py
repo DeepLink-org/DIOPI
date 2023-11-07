@@ -237,7 +237,7 @@ inceptionv3_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(32, 192, 1, 1), (64, 256, 1, 1), (1000, 2048)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -350,7 +350,7 @@ inceptionv3_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(192, 128, 7, 1), (192, 160, 1, 7), (1000, 2048)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

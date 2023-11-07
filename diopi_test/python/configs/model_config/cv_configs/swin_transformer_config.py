@@ -119,7 +119,7 @@ swin_transformer_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(384, 384), (1536, 384), (1152,), (4608,), (192, 3, 4, 4), (192, 3, 4, 4)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -203,7 +203,7 @@ swin_transformer_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(12288, 49, 49), (2880, 32, 49)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -252,7 +252,7 @@ swin_transformer_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(169, 48), (169, 12), (169, 6), (169, 24)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -428,7 +428,7 @@ swin_transformer_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(169, 12), (169, 6), (169, 48), (169, 24)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

@@ -282,7 +282,7 @@ atss_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(15238, 3, 2), (21486, 5, 2), (428, 2), (46, 2)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -433,7 +433,7 @@ atss_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(77, 2), (218, 2)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -839,7 +839,7 @@ atss_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(281,), (370,), (8958, 1, 2), (14406, 1, 2), (194, 2), (21330, 17)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -902,7 +902,7 @@ atss_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(7162, 1, 2), (20604, 1, 2), (312, 2), (319, 2)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

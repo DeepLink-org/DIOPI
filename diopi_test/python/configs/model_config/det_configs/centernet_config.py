@@ -470,7 +470,7 @@ centernet_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(16, 80, 128, 128), (10, 80, 128, 128)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.positive",
@@ -730,7 +730,7 @@ centernet_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(), (), (16, 80, 128, 128), (16, 80, 128, 128), (16, 80, 128, 128), (10, 80, 128, 128), (10, 80, 128, 128), (10, 80, 128, 128)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

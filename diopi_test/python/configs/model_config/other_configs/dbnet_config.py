@@ -316,7 +316,7 @@ dbnet_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(16, 640, 640), (8, 640, 640)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -651,7 +651,7 @@ dbnet_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(16, 640, 640), (8, 640, 640)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

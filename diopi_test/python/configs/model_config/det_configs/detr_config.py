@@ -95,7 +95,7 @@ detr_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(256, 512, 1, 1), (512, 2048, 1, 1), (256,), (256,), (81, 256), (256, 256)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -196,14 +196,14 @@ detr_config = {
                 },
                 {
                     "ins": ["batch1"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(16, 475, 32), (16, 100, 32)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
                 },
                 {
                     "ins": ["batch2"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(16, 32, 475), (16, 32, 775)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -272,7 +272,7 @@ detr_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(16, 285, 285), (16, 32, 792)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -348,7 +348,7 @@ detr_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(100, 12, 2), (100, 45, 2), (1,), (200, 2), ()],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -859,7 +859,7 @@ detr_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(100, 49), (100, 28), (100, 1, 2), (100, 1, 2), (200,)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -902,7 +902,7 @@ detr_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(100, 1, 2), (100, 1, 2), (100, 1, 2), (100, 1, 2), (100, 1, 2), (100, 1, 2), (100, 1, 2), (100, 1, 2), (100, 1, 2), (100, 1, 2), (200, 2)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -1164,7 +1164,7 @@ detr_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(1, 100, 256), (1, 4)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

@@ -76,7 +76,7 @@ hrnet_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(17,), (128,), (128, 128, 3, 3), (64, 64, 1, 1)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

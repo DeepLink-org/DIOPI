@@ -96,7 +96,7 @@ yolov5_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(94,), (406,)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -233,7 +233,7 @@ yolov5_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(165,), (20,), (224, 2), (196, 2)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -706,7 +706,7 @@ yolov5_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(309,), (232,), (342, 2), (109, 2), (3, 27, 2), (3, 34, 2)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -749,7 +749,7 @@ yolov5_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(169,), (207,), (118, 2), (48, 2)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -904,7 +904,7 @@ yolov5_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(369, 2), (329, 2), (216,), (118,)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

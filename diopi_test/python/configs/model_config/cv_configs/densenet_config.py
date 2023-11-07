@@ -574,8 +574,8 @@ densenet_config = {
         ),
     ),
 
-    'dipu_fallback': dict(
-        name=["dipu_fallback"],
+    'avg_pool2d': dict(
+        name=["avg_pool2d"],
         interface=["torch.nn.functional"],
         tensor_para=dict(
             args=[

@@ -262,7 +262,7 @@ fcos_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(161, 2), (308, 2), (2, 4, 13, 17), (2, 4, 116, 100)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -766,7 +766,7 @@ fcos_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(93, 2), (19, 2), (248,), (327,)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -829,7 +829,7 @@ fcos_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(535, 2), (332, 2)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

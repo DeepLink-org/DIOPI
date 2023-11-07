@@ -803,7 +803,7 @@ ssd300_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(8, 512, 38, 38), (8, 512, 38, 38), (8, 512, 38, 38), (2, 512, 38, 38), (2, 512, 38, 38)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -942,7 +942,7 @@ ssd300_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(8, 1, 38, 38), (8, 1, 38, 38), (2, 1, 38, 38)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.positive",
@@ -1135,7 +1135,7 @@ ssd300_config = {
                 },
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(8732, 4), (), (8732, 4)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

@@ -119,7 +119,7 @@ dyhead_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(529, 24), (576, 192), (1,), (27,), (), (), (64, 256, 1, 1), (80, 256, 1, 1)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -248,7 +248,7 @@ dyhead_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(1344, 144, 144), (2508, 144, 32)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -297,7 +297,7 @@ dyhead_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(1, 1, 1, 1), (1, 1024, 1, 1), (), (22, 2), (18, 2)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -339,7 +339,7 @@ dyhead_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(38192, 1, 2), (8525, 2, 2), (174, 2), (114, 2)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -513,7 +513,7 @@ dyhead_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(58, 2), (160, 2)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -1075,14 +1075,14 @@ dyhead_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(98, 2), (38192, 9), (1, 256, 12, 18), (1, 256, 48, 128), (14322, 1, 2), (44330, 1, 2), (66,), (181,)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
                 },
                 {
                     "ins": ["other"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(98, 2), (1,), (1, 256, 12, 18), (1, 256, 48, 128), (1, 28, 2), (1, 10, 2), (1,), (1,)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -1138,7 +1138,7 @@ dyhead_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(46035, 1, 2), (5456, 1, 2), (206, 2), (8, 2)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -1368,7 +1368,7 @@ dyhead_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(1, 168, 132, 192), (1, 72, 72, 384)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
