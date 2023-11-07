@@ -13,7 +13,7 @@ if("${TOPS_HOME}" STREQUAL "")
 endif()
 
 if("${DEVICEIMPL}" STREQUAL "")
-    set(DEVICEIMPL libtopsimpl)
+    set(DEVICEIMPL libdiopi_impl)
 endif()
 
 if("${TOPS_HOME}" STREQUAL "")
