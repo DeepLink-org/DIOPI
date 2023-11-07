@@ -8018,4 +8018,94 @@ diopi_configs = {
             ],
         ),
     ),
+
+    'rotary_emb': dict(
+        name=['rotary_emb'],
+        interface=['CustomizedTest'],
+        dtype=[np.float64, np.float32, np.float16],
+        para=dict(
+            conj=[False, True, False, True],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1, 125, 16, 32), (1, 125, 16, 32), (2, 64, 16, 32), (3, 100, 8, 64)),
+                },
+                {
+                    "ins": ['cos'],
+                    "shape": ((125, 1, 16), (125, 1, 16), (64, 1, 16), (100, 1, 32)),
+                },
+                {
+                    "ins": ['sin'],
+                    "shape": ((125, 1, 16), (125, 1, 16), (64, 1, 16), (100, 1, 32)),
+                },
+            ],
+        ),
+    ),
+
+    'rms_norm': dict(
+        name=['rms_norm'],
+        interface=['CustomizedTest'],
+        dtype=[np.float32],
+        para=dict(
+            eps=[1e-6, 1e-6, 1e-6, 1e-6],
+            normalized_shape=[(5, ), (32, ), (64, ), (8, )],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((5, 5), (35, 125, 32), (16, 64, 64), (1, 32, 32, 8)),
+                },
+                {
+                    "ins": ['weight'],
+                    "shape": ((5, ), (32, ), (64, ), (8, )),
+                },
+                {
+                    "ins": ['bias'],
+                    "shape": ((5, ), (32, ), (64, ), (8, )),
+                },
+            ],
+        ),
+    ),
+
+    # 'multihead_attention_forward': dict(
+    #     name=['multihead_attention_forward'],
+    #     interface=['CustomizedTest'],
+    #     dtype=[np.float16],
+    #     atol=1e-3,
+    #     rtol=1e-4,
+    #     para=dict(
+    #         dropout_p=[0, 0],
+    #         is_causal=[False, False],
+    #         return_debug_mask=[False, False],
+    #         scale=[None, None]
+    #     ),
+    #     tensor_para=dict(
+    #         gen_fn='Genfunc.randn',
+    #         args=[
+    #             {
+    #                 "ins": ['q'],
+    #                 "shape": ((2, 2, 2, 8), (2, 5, 7, 8)),
+    #                 "dtype": [np..float16],
+    #                 "gen_fn": Genfunc.randn,
+    #             },
+    #             {
+    #                 "ins": ['k'],
+    #                 "shape": ((2, 2, 2, 8), (2, 5, 7, 8)),
+    #                 "dtype": [np.float16],
+    #                 "gen_fn": Genfunc.randn,
+    #             },
+    #             {
+    #                 "ins": ['v'],
+    #                 "shape": ((2, 2, 2, 8), (2, 5, 7, 8)),
+    #                 "dtype": [np.float16],
+    #                 "gen_fn": Genfunc.randn,
+    #             },
+    #         ],
+    #     ),
+    # ),
 }

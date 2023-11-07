@@ -3974,3 +3974,40 @@ def linalgqr(input, mode):
     out = [q, r]
     check_returncode(ret)
     return out
+
+
+def rotary_emb(input, cos, sin, conj):
+    call = "diopiRotaryEmbedding"
+    func = check_function(call)
+    size = list(input.size().data)
+    out = Tensor(size, input.get_dtype())
+    ret = func(input.context(), out, input, cos, sin, conj, False)
+    check_returncode(ret)
+    return out
+
+
+def rms_norm(input, normalized_shape, weight, bias, eps):
+    call = "diopiRMSNorm"
+    func = check_function(call)
+    size = list(input.size().data)
+    out = Tensor(size, input.get_dtype())
+    inv_rms = Tensor(size, input.get_dtype())
+    normalized_shape = Sizes(list(normalized_shape))
+    ret = func(input.context(), out, inv_rms, input, normalized_shape, weight, bias, eps)
+    check_returncode(ret)
+    return out
+
+
+def multihead_attention_forward(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
+    call = "diopiMultiHeadAttention"
+    func = check_function(call)
+    q_size = list(q.size().data)
+    k_size = list(k.size().data)
+    out = Tensor(q_size, q.get_dtype())
+    softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], q.get_dtype())
+    gen = None
+    debug_attn_mask = Tensor([0], q.get_dtype())
+    softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
+    ret = func(q.context(), q, k, v, dropout_p, is_causal, return_debug_mask, softmax_scale, out, softmax_lse, gen, debug_attn_mask)
+    check_returncode(ret)
+    return out
