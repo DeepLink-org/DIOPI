@@ -20,6 +20,7 @@ logger.addHandler(console_handler)
 
 def execute_commands(commands):
     def execute_command(command):
+        logger.info(command)
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         for line in process.stdout:
             logger.info(line.strip())
@@ -64,7 +65,7 @@ def gen_case(partition, use_db):
 def run_test(partition, device_type, device_num, use_db, pytest_args):
     commands = []
     for model in model_list[:2]:
-        cmd = f'srun --job-name {model}_run_test -p {partition} --gres={device_type}:{device_num} python main.py --mode run_test --model_name {model} --file_or_dir ./gencases/{model}_case --pytest_args {pytest_args}'
+        cmd = f'srun --job-name {model}_run_test -p {partition} --gres={device_type}:{device_num} python main.py --mode run_test --file_or_dir ./gencases/{model}_case --pytest_args "{pytest_args}"'
         if use_db:
             db_path = f'sqlite:///./cache/{model}_testrecord.db'
             cmd += f' --use_db --db_path {db_path}'
