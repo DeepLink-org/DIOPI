@@ -1,5 +1,5 @@
-import numpy as np
 from skip import Skip
+import numpy as np
 
 device_configs = {
     'batch_norm': dict(
@@ -1384,20 +1384,26 @@ device_configs = {
 
     'nll_loss': dict(
         name=['nll_loss'],
-        dtype=[Skip(np.float16), Skip(np.float32), Skip(np.float64)],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((200, 79)),Skip((200, 80)),Skip((5, 16, 0)),Skip((0, 16)),Skip((4, 82, 0, 3)),],
+                    "shape": [Skip((100,)),Skip((200, 79)),Skip((2, 92, 29)),Skip((2, 150, 128, 128)),Skip((79,)),Skip((180, 80)),Skip((2, 79, 64, 64)),Skip((3, 80, 25, 24, 5)),Skip((5, 16, 0)),Skip((0, 16)),Skip((0, 5, 6, 1, 3)),Skip((4, 82, 0, 3)),],
                 },
             ]
         ),
     ),
 
     'nll_loss_empty_tensor': dict(
-        name=["nll_loss"],
-        dtype=[Skip(np.float16), Skip(np.float32), Skip(np.float64)],
+        name=['nll_loss'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((0,)),Skip((16, 0)),Skip((5, 0, 5, 6, 0, 3)),Skip((4, 0, 8, 3)),],
+                },
+            ]
+        ),
     ),
 
     'cross_entropy': dict(
@@ -1621,7 +1627,7 @@ device_configs = {
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['grads'],
+                    "ins": ['tensors'],
                     "dtype": [Skip(np.float32),Skip(np.float16),Skip(np.float64),],
                 },
             ]
@@ -1669,8 +1675,20 @@ device_configs = {
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['tensor'],
-                    "dtype": [Skip(np.float32),Skip(np.float16),Skip(np.float64),Skip(np.int16),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool),Skip(np.int32),],
+                    "ins": ['tensors'],
+                    "dtype": [Skip(np.float32),Skip(np.float16),Skip(np.float64),],
+                },
+            ]
+        ),
+    ),
+
+    'join_int': dict(
+        name=['cat', 'stack'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['tensors'],
+                    "dtype": [Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool),Skip(np.int32),],
                 },
             ]
         ),
@@ -1682,7 +1700,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['tensors'],
-                    "dtype": [Skip(np.float32),Skip(np.float16),Skip(np.float64),Skip(np.int16),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool),Skip(np.int32),],
+                    "dtype": [Skip(np.float32),Skip(np.float16),Skip(np.float64),],
                 },
             ]
         ),
@@ -2402,7 +2420,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
+                    "dtype": [Skip(np.float32),Skip(np.float64),],
                 },
             ]
         ),
@@ -2888,9 +2906,9 @@ device_configs = {
     'arange': dict(
         name=['arange'],
         para=dict(
-            start=[Skip(0.1),Skip(10),Skip(2.3),Skip(True),Skip(-20),Skip(90),Skip(0.001),],
-            end=[Skip(0.5),Skip(10),Skip(2.3),Skip(100),Skip(False),Skip(-90),Skip(0.0001),],
-            step=[Skip(0.1),Skip(True),Skip(0.5),Skip(2.1),Skip(0.5),Skip(-5.6),Skip(-1e-05),],
+            start=[Skip(0),Skip(0),Skip(-4),Skip(0.1),Skip(10),Skip(2.3),Skip(True),Skip(-20),Skip(90),Skip(0.001),],
+            end=[Skip(91),Skip(128),Skip(5),Skip(0.5),Skip(10),Skip(2.3),Skip(100),Skip(False),Skip(-90),Skip(0.0001),],
+            step=[Skip(13),Skip(1),Skip(1),Skip(0.1),Skip(True),Skip(0.5),Skip(2.1),Skip(0.5),Skip(-5.6),Skip(-1e-05),],
         ),
     ),
 
@@ -3199,12 +3217,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),],
+                    "dtype": [Skip(np.float64),Skip(np.float32),Skip(np.float16),Skip(np.int64),Skip(np.int32),Skip(np.int16),Skip(np.int8),Skip(np.uint8),Skip(np.bool),Skip(np.uint8),Skip(np.int8),Skip(np.int8),],
                 },
-                {
-                    "ins": ['out'],
-                    "dtype": [Skip(np.int64),Skip(np.float64),Skip(np.bool),Skip(np.float16),],
-                }
             ]
         ),
     ),

@@ -388,7 +388,7 @@ jobs:
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
           cd diopi_test/python && ln -sf /mnt/cache/share/deeplinkci/data data 
           python main.py --mode gen_case --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/topsrider/
-          python main.py --mode run_test --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/topsrider/
+          python main.py --mode run_test
 
   Rt-Test-Topsrider:
     name: Rt-Test-Topsrider
@@ -452,4 +452,3 @@ jobs:
           source /mnt/cache/share/platform/env/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           echo "test and clean, you can refer to the CAMB"
           """
-
