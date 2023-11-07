@@ -24,9 +24,9 @@ extern "C" {
  * @param[inout] workspace_size : Workspace size, if workspace_size < 0 then only cal workspace_size.type = [int64*, int32*]
  * @param[in] fusion_level : Fusion level, 0 represents no fusion, and the higher the numerical value, the higher the degree of fusion.type = [int64, int32]
  */
-DIOPI_API diopiError_t diopiFusedSiluFfn(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t weight1,
-                                         diopiConstTensorHandle_t weight2, diopiConstTensorHandle_t weight3, diopiTensorHandle_t workspace, int* workspace_size,
-                                         int fusion_level);
+DIOPI_API diopiError_t diopiFusedSiluFfnInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t weight1,
+                                            diopiConstTensorHandle_t weight2, diopiConstTensorHandle_t weight3, diopiTensorHandle_t workspace,
+                                            int64_t* workspace_size, int64_t fusion_level);
 
 /**
  * @brief Root Mean Square (RMS) Normalization to the input tensor. without bias in interlm.
@@ -35,7 +35,7 @@ DIOPI_API diopiError_t diopiFusedSiluFfn(diopiContextHandle_t ctx, diopiTensorHa
  * @param[in] scale : The gain parameter used to re-scale the standardized summed inputs.shape = [hidden_units].type = [float32, float16]
  * @param[in] eps : A small value to avoid division by zero.type = [float32]
  */
-DIOPI_API diopiError_t diopiRootMeanSquareNorm(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t scale, float eps);
+DIOPI_API diopiError_t diopiRootMeanSquareNormInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t scale, float eps);
 
 /**
  * @brief Fused res and bias and RMSNorm. 1.(res + inout + bias) = new_res 2. RMSNorm(new_res) = inout.
@@ -46,8 +46,8 @@ DIOPI_API diopiError_t diopiRootMeanSquareNorm(diopiContextHandle_t ctx, diopiTe
  * @param[in] scale : The gain parameter used to re-scale the standardized summed inputs.shape = [hidden_units].type = [float32, float16]
  * @param[in] eps : A small value to avoid division by zero.type = [float32]
  */
-DIOPI_API diopiError_t diopiFusedAddRootMeanSquareNorm(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiTensorHandle_t residual,
-                                                       diopiConstTensorHandle_t bias, diopiConstTensorHandle_t scale, float eps);
+DIOPI_API diopiError_t diopiFusedAddRootMeanSquareNormInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiTensorHandle_t residual,
+                                                          diopiConstTensorHandle_t bias, diopiConstTensorHandle_t scale, float eps);
 
 /**
  * @brief FusedContextAttention.
@@ -93,11 +93,12 @@ DIOPI_API diopiError_t diopiFusedAddRootMeanSquareNorm(diopiContextHandle_t ctx,
  * @param[in] rotary_embedding : Rotary_embedding.type = [int64, int32]
  * @param[in] rope_theta : Rotary_base.type = [float32]
  */
-DIOPI_API diopiError_t diopiFusedContextAttention(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t qkv_weight,
-                                                  diopiConstTensorHandle_t qkv_bias, diopiTensorHandle_t pre_work, int* pre_work_size, bool is_prepared,
-                                                  diopiTensorHandle_t workspace, int* workspace_size, int fusion_level, diopiTensorHandle_t key_cache,
-                                                  diopiTensorHandle_t value_cache, int layer_id, int local_head_num, int local_kv_head_num, int size_per_head,
-                                                  int max_seq_len, int max_q_len, int max_kv_len, int rotary_embedding, float rope_theta);
+DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t qkv_weight,
+                                                     diopiConstTensorHandle_t qkv_bias, diopiTensorHandle_t pre_work, int64_t* pre_work_size, bool is_prepared,
+                                                     diopiTensorHandle_t workspace, int64_t* workspace_size, int64_t fusion_level,
+                                                     diopiTensorHandle_t key_cache, diopiTensorHandle_t value_cache, int64_t layer_id, int64_t local_head_num,
+                                                     int64_t local_kv_head_num, int64_t size_per_head, int64_t max_seq_len, int64_t max_q_len,
+                                                     int64_t max_kv_len, int64_t rotary_embedding, float rope_theta);
 
 /**
  * @brief FusedDecoderAttention.
@@ -126,12 +127,13 @@ DIOPI_API diopiError_t diopiFusedContextAttention(diopiContextHandle_t ctx, diop
  * @param[in] rotary_embedding : Rotary_embedding.type = [int64, int32]
  * @param[in] rope_theta : Rotary_base.type = [float32]
  */
-DIOPI_API diopiError_t diopiFusedDecoderAttention(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t qkv_weight,
-                                                  diopiConstTensorHandle_t qkv_bias, diopiTensorHandle_t workspace, int* workspace_size, int fusion_level,
-                                                  diopiTensorHandle_t key_cache, diopiTensorHandle_t value_cache, diopiConstTensorHandle_t finished,
-                                                  diopiConstTensorHandle_t total_padding_tokens, diopiConstTensorHandle_t sequence_lengths, int step,
-                                                  int layer_id, int local_head_num, int local_kv_head_num, int size_per_head, int max_seq_len,
-                                                  int rotary_embedding, float rope_theta);
+DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t qkv_weight,
+                                                     diopiConstTensorHandle_t qkv_bias, diopiTensorHandle_t workspace, int64_t* workspace_size,
+                                                     int64_t fusion_level, diopiTensorHandle_t key_cache, diopiTensorHandle_t value_cache,
+                                                     diopiConstTensorHandle_t finished, diopiConstTensorHandle_t total_padding_tokens,
+                                                     diopiConstTensorHandle_t sequence_lengths, int64_t step, int64_t layer_id, int64_t local_head_num,
+                                                     int64_t local_kv_head_num, int64_t size_per_head, int64_t max_seq_len, int64_t rotary_embedding,
+                                                     float rope_theta);
 
 /**
  * @brief SetupTopkRuntimeArgs. Fix topk and topp for each batch.
@@ -150,8 +152,9 @@ DIOPI_API diopiError_t diopiFusedDecoderAttention(diopiContextHandle_t ctx, diop
  * @param[in] top_p : Topp.type = [float32]
  * @param[in] top_ps_size : Topps size.type = [int64, int32]
  */
-DIOPI_API diopiError_t diopiSetupTopkRuntimeArgs(diopiContextHandle_t ctx, diopiTensorHandle_t top_ks, diopiTensorHandle_t top_ps,
-                                                 diopiTensorHandle_t skip_decode, int batch_size, int top_k, int top_ks_size, float top_p, int top_ps_size);
+DIOPI_API diopiError_t diopiSetupTopkRuntimeArgsInp(diopiContextHandle_t ctx, diopiTensorHandle_t top_ks, diopiTensorHandle_t top_ps,
+                                                    diopiTensorHandle_t skip_decode, int64_t batch_size, int64_t top_k, int64_t top_ks_size, float top_p,
+                                                    int64_t top_ps_size);
 
 /**
  * @brief TopKSampling. Get the new id by topk sampling.
@@ -190,8 +193,8 @@ DIOPI_API diopiError_t diopiSetupTopkRuntimeArgs(diopiContextHandle_t ctx, diopi
  * @param[in] generators : pseudorandom number generators for sampling.shape = [batch_size]
  */
 DIOPI_API diopiError_t diopiTopKSampling(diopiContextHandle_t ctx, diopiTensorHandle_t output_ids, diopiTensorHandle_t logits, diopiTensorHandle_t workspace,
-                                         int* workspace_size, int fusion_level, diopiConstTensorHandle_t end_ids, diopiTensorHandle_t finished,
-                                         diopiTensorHandle_t sequence_lengths, int step, int batch_size, int vocab_size_padded,
+                                         int64_t* workspace_size, int64_t fusion_level, diopiConstTensorHandle_t end_ids, diopiTensorHandle_t finished,
+                                         diopiTensorHandle_t sequence_lengths, int64_t step, int64_t batch_size, int64_t vocab_size_padded,
                                          diopiConstTensorHandle_t runtime_top_k, diopiConstTensorHandle_t runtime_top_p, diopiConstTensorHandle_t skip_decode,
                                          diopiTensorHandle_t cum_log_probs, diopiTensorHandle_t output_log_probs, diopiGeneratorHandle_t* generators);
 
@@ -222,11 +225,11 @@ DIOPI_API diopiError_t diopiTopKSampling(diopiContextHandle_t ctx, diopiTensorHa
  * @param[out] top_p_reset_ids_buf : Topp reset buf.shape = [batch_size].type = [int64, int32]
  * @param[in] top_p_reset_ids : Topp reset.shape = [batch_size].type = [int64, int32]
  */
-DIOPI_API diopiError_t diopiSetupToppRuntimeArgs(diopiContextHandle_t ctx, diopiTensorHandle_t top_ks, diopiTensorHandle_t top_ps,
-                                                 diopiTensorHandle_t skip_decode, int batch_size, int top_k, int top_ks_size, float top_p, int top_ps_size,
-                                                 diopiTensorHandle_t initial_top_p_buf, diopiTensorHandle_t top_p_decay_buf, float top_p_decay,
-                                                 diopiTensorHandle_t top_p_min_buf, float top_p_min, diopiTensorHandle_t top_p_reset_ids_buf,
-                                                 int top_p_reset_ids);
+DIOPI_API diopiError_t diopiSetupToppRuntimeArgsInp(diopiContextHandle_t ctx, diopiTensorHandle_t top_ks, diopiTensorHandle_t top_ps,
+                                                    diopiTensorHandle_t skip_decode, int64_t batch_size, int64_t top_k, int64_t top_ks_size, float top_p,
+                                                    int64_t top_ps_size, diopiTensorHandle_t initial_top_p_buf, diopiTensorHandle_t top_p_decay_buf,
+                                                    float top_p_decay, diopiTensorHandle_t top_p_min_buf, float top_p_min,
+                                                    diopiTensorHandle_t top_p_reset_ids_buf, int64_t top_p_reset_ids);
 
 /**
  * @brief TopPSampling. Get the new id by topp sampling.
@@ -268,9 +271,9 @@ DIOPI_API diopiError_t diopiSetupToppRuntimeArgs(diopiContextHandle_t ctx, diopi
  * @param[in] generators : pseudorandom number generators for sampling.shape = [batch_size]
  */
 DIOPI_API diopiError_t diopiTopPSampling(diopiContextHandle_t ctx, diopiTensorHandle_t output_ids, diopiTensorHandle_t logits,
-                                         diopiTensorHandle_t persistent_workspace, int* persistent_workspace_size, diopiTensorHandle_t workspace,
-                                         int64_t* workspace_size, int fusion_level, diopiConstTensorHandle_t end_ids, diopiTensorHandle_t finished,
-                                         diopiTensorHandle_t sequence_lengths, int step, int batch_size, int vocab_size_padded,
+                                         diopiTensorHandle_t persistent_workspace, int64_t* persistent_workspace_size, diopiTensorHandle_t workspace,
+                                         int64_t* workspace_size, int64_t fusion_level, diopiConstTensorHandle_t end_ids, diopiTensorHandle_t finished,
+                                         diopiTensorHandle_t sequence_lengths, int64_t step, int64_t batch_size, int64_t vocab_size_padded,
                                          diopiTensorHandle_t runtime_top_p, diopiConstTensorHandle_t skip_decode, diopiTensorHandle_t cum_log_probs,
                                          diopiTensorHandle_t output_log_probs, diopiGeneratorHandle_t* generators);
 
@@ -288,7 +291,8 @@ DIOPI_API diopiError_t diopiTopPSampling(diopiContextHandle_t ctx, diopiTensorHa
  * @param[in] batch_size : Batch size.type = [int64, int32]
  */
 DIOPI_API diopiError_t diopiGatherOutput(diopiContextHandle_t ctx, diopiTensorHandle_t output_ids, diopiConstTensorHandle_t ids,
-                                         diopiConstTensorHandle_t context_length, int max_context_len, int max_gen_step, int max_output_len, int batch_size);
+                                         diopiConstTensorHandle_t context_length, int64_t max_context_len, int64_t max_gen_step, int64_t max_output_len,
+                                         int64_t batch_size);
 
 /**
  * @brief PlusScalar. if 0 < index < size, add val.
@@ -297,7 +301,7 @@ DIOPI_API diopiError_t diopiGatherOutput(diopiContextHandle_t ctx, diopiTensorHa
  * @param[in] val : Val for add.type = [int64, int32]
  * @param[in] size : Size or maxindex.type = [int64, int32]
  */
-DIOPI_API diopiError_t diopiPlusScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, const int val, const int size);
+DIOPI_API diopiError_t diopiPlusScalarInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, const int64_t val, const int64_t size);
 
 /**
  * @brief Total_padding_count.Padding_count = maxinputlen - inputlen for each batch.
@@ -308,7 +312,7 @@ DIOPI_API diopiError_t diopiPlusScalar(diopiContextHandle_t ctx, diopiTensorHand
  * @param[in] batch_size : Batch size.type = [int64, int32]
  */
 DIOPI_API diopiError_t diopiUpdatePaddingCount(diopiContextHandle_t ctx, diopiTensorHandle_t total_padding_count, diopiConstTensorHandle_t input_lengths,
-                                               int max_input_length, int batch_size);
+                                               int64_t max_input_length, int64_t batch_size);
 
 /**
  * @brief TransposeAxis01. [dim0, dim1, dim2] -> [dim1, dim0, dim2]
@@ -319,8 +323,8 @@ DIOPI_API diopiError_t diopiUpdatePaddingCount(diopiContextHandle_t ctx, diopiTe
  * @param[in] dim1 : Size of 1 dim.type = [int64, int32]
  * @param[in] dim2 : Size of 2 dim.type = [int64, int32]
  */
-DIOPI_API diopiError_t diopiTransposeAxis01(diopiContextHandle_t ctx, diopiTensorHandle_t output, diopiConstTensorHandle_t input, const int dim0,
-                                            const int dim1, const int dim2);
+DIOPI_API diopiError_t diopiTransposeAxis01(diopiContextHandle_t ctx, diopiTensorHandle_t output, diopiConstTensorHandle_t input, const int64_t dim0,
+                                            const int64_t dim1, const int64_t dim2);
 
 /**
  * @brief EmbeddingLookupPosEncoding. Find id in embedding_table and get [hidden], only this step
@@ -333,7 +337,8 @@ DIOPI_API diopiError_t diopiTransposeAxis01(diopiContextHandle_t ctx, diopiTenso
  * @param[in] step : Step.type = [int64, int32]
  */
 DIOPI_API diopiError_t diopiEmbeddingLookupPosEncoding(diopiContextHandle_t ctx, diopiTensorHandle_t from_tensor, diopiConstTensorHandle_t embedding_table,
-                                                       diopiConstTensorHandle_t all_ids, const int batch_size, const int hidden_units, const int step);
+                                                       diopiConstTensorHandle_t all_ids, const int64_t batch_size, const int64_t hidden_units,
+                                                       const int64_t step);
 
 /**
  * @brief InputIdsEmbeddingLookupPosEncoding. Find id in embedding_table and get [hidden].
@@ -345,7 +350,8 @@ DIOPI_API diopiError_t diopiEmbeddingLookupPosEncoding(diopiContextHandle_t ctx,
  * @param[in] hidden_units : Hidden units.type = [int64, int32]
  */
 DIOPI_API diopiError_t diopiInputIdsEmbeddingLookupPosEncoding(diopiContextHandle_t ctx, diopiTensorHandle_t from_tensor, diopiConstTensorHandle_t input_ids,
-                                                               diopiConstTensorHandle_t embedding_table, const int input_lengths, const int hidden_units);
+                                                               diopiConstTensorHandle_t embedding_table, const int64_t input_lengths,
+                                                               const int64_t hidden_units);
 
 /**
  * @brief BanBadWords.
@@ -356,7 +362,7 @@ DIOPI_API diopiError_t diopiInputIdsEmbeddingLookupPosEncoding(diopiContextHandl
  * id_offset + batch_idx];if (previous_token != base_stop_words[item_start + token_idx]) {should_ban = false; break;}} if this tiem should_ban, then get banid =
  * base_bad_words[item-end - 1]. if 0 < banid < vocab_size then logits ban id in this batch is set to -INFINITY
  * @param[in] ctx The diopi context.
- * @param[out] logits : Output logits.shape = [batch_size, vocab_size].type = [float32, float16]
+ * @param[inout] logits : Output logits.shape = [batch_size, vocab_size].type = [float32, float16]
  * @param[in] output_ids : Output ids.shape = [batch_size, step].type = [int64, int32]
  * @param[in] bad_words : Stop words list.shape = [batch_size, 2, stop_words_len] or [2, stop_words_len] for share.type = [int64, int32]
  * @param[in] id_offset : Offset of output_ids.type = [int64, int32]
@@ -366,9 +372,9 @@ DIOPI_API diopiError_t diopiInputIdsEmbeddingLookupPosEncoding(diopiContextHandl
  * @param[in] vocab_size : Vocab size.type = [int64, int32]
  * @param[in] step : Step.type = [int64, int32]
  */
-DIOPI_API diopiError_t diopiBanBadWords(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t output_ids,
-                                        diopiConstTensorHandle_t bad_words, int id_offset, int bad_words_len, bool share_words, int batch_size, int vocab_size,
-                                        int step);
+DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t output_ids,
+                                           diopiConstTensorHandle_t bad_words, int64_t id_offset, int64_t bad_words_len, bool share_words, int64_t batch_size,
+                                           int64_t vocab_size, int64_t step);
 
 /**
  * @brief StopWordsCriterion. Judging the end situation based on stopword.
@@ -388,7 +394,7 @@ DIOPI_API diopiError_t diopiBanBadWords(diopiContextHandle_t ctx, diopiTensorHan
  * @param[in] step : Step.type = [int64, int32]
  */
 DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiConstTensorHandle_t output_ids, diopiConstTensorHandle_t stop_words,
-                                               diopiTensorHandle_t finished, int id_offset, int stop_words_len, int batch_size, int step);
+                                               diopiTensorHandle_t finished, int64_t id_offset, int64_t stop_words_len, int64_t batch_size, int64_t step);
 
 /**
  * @brief LengthCriterion. Judging and counting the end situation based on length.If all fin then should_stop.
@@ -401,7 +407,7 @@ DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiCo
  * @param[in] step : Step.type = [int64, int32]
  */
 DIOPI_API diopiError_t diopiLengthCriterion(diopiContextHandle_t ctx, diopiTensorHandle_t finished, diopiTensorHandle_t should_stop,
-                                            diopiTensorHandle_t finished_sum, diopiTensorHandle_t sequence_limit_length, int batch_size, int step);
+                                            diopiTensorHandle_t finished_sum, diopiConstTensorHandle_t sequence_limit_length, int64_t batch_size, int64_t step);
 
 /**
  * @brief Apply repetitionPenalty.If 0 <= index < step with (if index >= input_length && index < max_input_length then continue), save every index and fixed
@@ -418,9 +424,10 @@ DIOPI_API diopiError_t diopiLengthCriterion(diopiContextHandle_t ctx, diopiTenso
  * @param[in] penalty_type : Penalty type.0 == None;1 == Additive means logit - penalty;2 == Multiplicative means logit < 0.0f ? logit * penalty : logit /
  * penalty.type = [int64, int32]
  */
-DIOPI_API diopiError_t diopiBatchApplyRepetitionPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t penalties,
-                                                        diopiConstTensorHandle_t output_ids, const int batch_size, const int vocab_size,
-                                                        diopiTensorHandle_t input_lengths, const int max_input_length, const int step, const int penalty_type);
+DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t penalties,
+                                                           diopiConstTensorHandle_t output_ids, const int64_t batch_size, const int64_t vocab_size,
+                                                           diopiConstTensorHandle_t input_lengths, const int64_t max_input_length, const int64_t step,
+                                                           const int64_t penalty_type);
 
 /**
  * @brief Apply temperaturePenalty with bias. bias_val = bias[index in vocab_size_padd] and if index in vocab_size then logits = (logits +
@@ -433,9 +440,9 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenalty(diopiContextHandle_t ctx
  * @param[in] vocab_size : Vocab size.type = [int64, int32].
  * @param[in] vocab_size_padd : Vocab padd size.type = [int64, int32].
  */
-DIOPI_API diopiError_t diopiBatchApplyTemperaturePenalty(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t bias,
-                                                         diopiConstTensorHandle_t temperatures, const int batch_size, const int vocab_size,
-                                                         const int vocab_size_padd);
+DIOPI_API diopiError_t diopiBatchApplyTemperaturePenaltyInp(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t bias,
+                                                            diopiConstTensorHandle_t temperatures, const int64_t batch_size, const int64_t vocab_size,
+                                                            const int64_t vocab_size_padd);
 
 #if defined(__cplusplus)
 }
