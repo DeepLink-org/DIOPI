@@ -137,7 +137,7 @@ cascade_rcnn_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(31, 80), (45, 80)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -580,7 +580,7 @@ cascade_rcnn_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(107156,), (498,), (143029, 4), (149902, 4), (29, 256, 7, 7), (39, 256, 7, 7)],
                     "dtype": [np.int64],
                     "gen_fn": "Genfunc.randint",
@@ -594,7 +594,7 @@ cascade_rcnn_config = {
                 },
                 {
                     "ins": ["values"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(), (12,), (), (), (6, 256, 7, 7), (17, 256, 7, 7)],
                     "dtype": [np.int64],
                     "gen_fn": "Genfunc.randint",

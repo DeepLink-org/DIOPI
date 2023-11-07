@@ -16,6 +16,8 @@ name_translation = {
     "diopiMinAll": "min",
     "diopiUpsampleNearest": "interpolate",
     "diopiUpsampleLinear": "interpolate",
+    "diopiIm2Col": "im2col",
+    "diopiCol2Im": "col2im"
 }
 param_type_translation = {
     "training": bool,

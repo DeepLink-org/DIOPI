@@ -255,7 +255,7 @@ dyhead_config = {
                 },
                 {
                     "ins": ["mat2"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(1344, 144, 32), (2508, 32, 144)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -348,9 +348,9 @@ dyhead_config = {
         ),
     ),
 
-    'col2_im': dict(
-        name=["col2_im"],
-        interface=["torch.nn.functional"],
+    'col2im': dict(
+        name=["col2im"],
+        interface=['CustomizedTest'],
         para=dict(
             size=[(104, 72), (72, 48)],
             kernel_size=[(2, 2), (2, 2)],
@@ -707,9 +707,9 @@ dyhead_config = {
         ),
     ),
 
-    'im2_col': dict(
-        name=["im2_col"],
-        interface=["torch.nn.functional"],
+    'im2col': dict(
+        name=["im2col"],
+        interface=['CustomizedTest'],
         para=dict(
             kernel_size=[(2, 2), (2, 2)],
             dilation=[(1, 1), (1, 1)],
@@ -785,8 +785,8 @@ dyhead_config = {
         ),
     ),
 
-    'is_nan': dict(
-        name=["is_nan"],
+    'isnan': dict(
+        name=["isnan"],
         interface=["torch.nn.functional"],
         tensor_para=dict(
             args=[

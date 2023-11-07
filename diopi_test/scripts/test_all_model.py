@@ -29,10 +29,12 @@ def execute_commands(commands):
 
     processes = []
 
-    for cmd in commands:
+    for i, cmd in enumerate(commands):
         process = multiprocessing.Process(target=execute_command, args=(cmd,))
         processes.append(process)
         process.start()
+        if i % 5 == 0:
+            time.sleep(30)
 
     for process in processes:
         process.join()

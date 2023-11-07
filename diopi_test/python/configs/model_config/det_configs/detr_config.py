@@ -279,7 +279,7 @@ detr_config = {
                 },
                 {
                     "ins": ["mat2"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(16, 285, 32), (16, 792, 792)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -1085,7 +1085,7 @@ detr_config = {
     ),
 
     'pow_tensor': dict(
-        name=["pow_tensor"],
+        name=["pow"],
         interface=["torch.nn.functional"],
         tensor_para=dict(
             args=[

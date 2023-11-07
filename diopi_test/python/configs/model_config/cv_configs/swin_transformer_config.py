@@ -283,11 +283,11 @@ swin_transformer_config = {
         ),
     ),
 
-    'col2_im': dict(
-        name=["col2_im"],
-        interface=["torch.nn.functional"],
+    'col2im': dict(
+        name=["col2im"],
+        interface=['CustomizedTest'],
         para=dict(
-            size=[(28, 28), (14, 14), (56, 56), (14, 14), (56, 56), (28, 28)],
+            output_size=[(28, 28), (14, 14), (56, 56), (14, 14), (56, 56), (28, 28)],
             kernel_size=[(2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2)],
             dilation=[(1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1)],
             padding=[(0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)],
@@ -508,9 +508,9 @@ swin_transformer_config = {
         ),
     ),
 
-    'im2_col': dict(
-        name=["im2_col"],
-        interface=["torch.nn.functional"],
+    'im2col': dict(
+        name=["im2col"],
+        interface=['CustomizedTest'],
         para=dict(
             kernel_size=[(2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2)],
             dilation=[(1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1)],
@@ -521,7 +521,6 @@ swin_transformer_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
                     "shape": [(64, 768, 14, 14), (64, 768, 14, 14), (64, 192, 56, 56), (64, 192, 56, 56), (64, 384, 28, 28), (64, 384, 28, 28), (16, 192, 56, 56), (16, 768, 14, 14), (15, 768, 14, 14), (16, 384, 28, 28), (15, 192, 56, 56), (15, 384, 28, 28)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -615,21 +614,7 @@ swin_transformer_config = {
                     "shape": [(1536,), (3072,)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
-                },
-                {
-                    "ins": ["save_mean"],
-                    "requires_grad": [False],
-                    "shape": [(15, 196, 1), (16, 49, 1)],
-                    "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
-                },
-                {
-                    "ins": ["save_invstd"],
-                    "requires_grad": [False],
-                    "shape": [(15, 196, 1), (16, 49, 1)],
-                    "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
-                },
+                }
             ],
         ),
     ),

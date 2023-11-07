@@ -648,8 +648,8 @@ atss_config = {
         ),
     ),
 
-    'is_nan': dict(
-        name=["is_nan"],
+    'isnan': dict(
+        name=["isnan"],
         interface=["torch.nn.functional"],
         tensor_para=dict(
             args=[

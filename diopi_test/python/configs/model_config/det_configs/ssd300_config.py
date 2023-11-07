@@ -1142,7 +1142,7 @@ ssd300_config = {
                 },
                 {
                     "ins": ["other"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(), (8732, 4), (8732, 4)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",

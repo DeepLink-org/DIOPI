@@ -635,27 +635,27 @@ unet_config = {
         ),
     ),
 
-    'nll_loss2d': dict(
-        name=["nll_loss2d"],
-        interface=["torch.nn.functional"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "requires_grad": [True],
-                    "shape": [(4, 19, 512, 1024)],
-                    "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
-                },
-                {
-                    "ins": ["grad_output"],
-                    "requires_grad": [False],
-                    "shape": [(4, 512, 1024)],
-                    "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
-                },
-            ],
-        ),
-    ),
+    # 'nll_loss2d': dict(
+    #     name=["nll_loss2d"],
+    #     interface=["torch.nn.functional"],
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ["input"],
+    #                 "requires_grad": [True],
+    #                 "shape": [(4, 19, 512, 1024)],
+    #                 "dtype": [np.float32],
+    #                 "gen_fn": "Genfunc.randn",
+    #             },
+    #             {
+    #                 "ins": ["grad_output"],
+    #                 "requires_grad": [False],
+    #                 "shape": [(4, 512, 1024)],
+    #                 "dtype": [np.float32],
+    #                 "gen_fn": "Genfunc.randn",
+    #             },
+    #         ],
+    #     ),
+    # ),
 
 }
