@@ -67,7 +67,7 @@ def run_test(partition, device_type, device_num, use_db, pytest_args):
     for model in model_list:
         cmd = f'srun --job-name {model}_run_test -p {partition} --gres={device_type}:{device_num} python main.py --mode run_test --file_or_dir ./gencases/{model}_case'
         if pytest_args:
-            cmd += ' --pytest_args "{pytest_args}"'
+            cmd += f' --pytest_args "{pytest_args}"'
         if use_db:
             db_path = f'sqlite:///./cache/{model}_testrecord.db'
             cmd += f' --use_db --db_path {db_path}'
