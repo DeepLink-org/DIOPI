@@ -16,8 +16,7 @@ extern "C" {
 /**
  * @brief Fused Silu FFN layer.(Silu(x * W1) dot (x * W3)) * W2.
  * @param[in] ctx diopi context.
- * @param[out] output : Output tensor.shape = [token_num, hidden_units].type = [float32, float16]
- * @param[in] input : Input tensor.shape = [token_num, hidden_units].type = [float32, float16]
+ * @param[inout] inoutput : Output tensor.shape = [token_num, hidden_units].type = [float32, float16]
  * @param[in] weight1 : Weight1.shape = [hidden_units, inter_size].type = [float32, float16]
  * @param[in] weight2 : Weight2.shape = [hidden_units, inter_size].type = [float32, float16]
  * @param[in] weight3 : Weight3.shape = [inter_size, hidden_units].type = [float32, float16]
@@ -25,19 +24,18 @@ extern "C" {
  * @param[inout] workspace_size : Workspace size, if workspace_size < 0 then only cal workspace_size.type = [int64*, int32*]
  * @param[in] fusion_level : Fusion level, 0 represents no fusion, and the higher the numerical value, the higher the degree of fusion.type = [int64, int32]
  */
-DIOPI_API diopiError_t diopiFusedSiluFfn(diopiContextHandle_t ctx, diopiTensorHandle_t output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight1,
+DIOPI_API diopiError_t diopiFusedSiluFfn(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t weight1,
                                          diopiConstTensorHandle_t weight2, diopiConstTensorHandle_t weight3, diopiTensorHandle_t workspace,
                                          int* workspace_size, int fusion_level);
 
 /**
  * @brief Root Mean Square (RMS) Normalization to the input tensor. without bias in interlm.
  * @param[in] ctx The diopi context.
- * @param[out] output : Output tensor.shape = [num_token, hidden_units].type = [float32, float16]
- * @param[in] input : Input tensor.shape = [num_token, hidden_units].type = [float32, float16]
+ * @param[inout] inoutput : Inoutput tensor.shape = [num_token, hidden_units].type = [float32, float16]
  * @param[in] scale : The gain parameter used to re-scale the standardized summed inputs.shape = [hidden_units].type = [float32, float16]
  * @param[in] eps : A small value to avoid division by zero.type = [float32]
  */
-DIOPI_API diopiError_t diopiRootMeanSquareNorm(diopiContextHandle_t ctx, diopiTensorHandle_t output, diopiConstTensorHandle_t input,
+DIOPI_API diopiError_t diopiRootMeanSquareNorm(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput,
                                                diopiConstTensorHandle_t scale, float eps);
 
 /**
