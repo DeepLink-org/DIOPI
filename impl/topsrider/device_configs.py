@@ -3370,7 +3370,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": (Skip((5, 5)), Skip((35, 125, 32)), Skipi((16, 64, 64)), Skip((1, 32, 32, 8))),
+                    "shape": (Skip((5, 5)), Skip((35, 125, 32)), Skip((16, 64, 64)), Skip((1, 32, 32, 8))),
                 },
             ],
         ),
