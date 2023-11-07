@@ -33,7 +33,7 @@ def execute_commands(commands):
         process = multiprocessing.Process(target=execute_command, args=(cmd,))
         processes.append(process)
         process.start()
-        if i % 5 == 0:
+        if i + 1 % 5 == 0:
             time.sleep(30)
 
     for process in processes:
