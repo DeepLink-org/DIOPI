@@ -246,7 +246,7 @@ DIOPI_RT_API diopiError_t diopiGetTensorElemSize(diopiConstTensorHandle_t th, in
 }
 
 DIOPI_RT_API diopiError_t diopiGetTensorStoragePtr(diopiConstTensorHandle_t th, void** pStoragePtr) {
-    *pStoragePtr = const_cast<void*>th->data();
+    *pStoragePtr = const_cast<void*>(th->data());
     return diopiSuccess;
 }
 
