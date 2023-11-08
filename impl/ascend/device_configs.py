@@ -21,7 +21,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float16), Skip(np.float64),],
+                    "dtype": [Skip(np.float16),],
                 },
             ]
         ),
@@ -1437,30 +1437,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(np.bool_),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),],
-                },
-            ]
-        ),
-    ),
-
-    'argmax': dict(
-        name=['argmax'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64),Skip(np.float16),Skip(np.float32),Skip(np.int32),Skip(np.int16),Skip(np.int64),Skip(np.uint8),Skip(np.int8),],
-                },
-            ]
-        ),
-    ),
-
-    'argmax_same_value': dict(
-        name=['argmax'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),],
                 },
             ]
         ),
