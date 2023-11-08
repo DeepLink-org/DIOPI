@@ -9,29 +9,6 @@
 namespace impl {
 namespace ascend {
 
-diopiSize_t computeStrideFromShape(diopiSize_t &shape, std::vector<int64_t> &strideVec) {
-    strideVec.resize(shape.len, 1);
-    for (int64_t i = shape.len - 2; i >= 0; --i) {
-        strideVec[i] = strideVec[i + 1] * shape.data[i + 1];
-    }
-    return vectorToDiopiSize(strideVec);
-}
-
-diopiTensorHandle_t createTensorIfNullptr(diopiContextHandle_t ctx, diopiConstTensorHandle_t in, diopiSize_t &shape, diopiSize_t &stride, diopiDtype_t dtype,
-                                          bool isFillingRequired, double value) {
-    diopiTensorHandle_t out;
-    if (nullptr == in) {
-        diopiRequireTensor(ctx, &out, &shape, &stride, dtype, diopi_device);
-        if (isFillingRequired) {
-            diopiScalar_t valueScalar = constructDiopiScalarT(diopi_dtype_float64, value);
-            diopiFill(ctx, out, &valueScalar);
-        }
-    } else {
-        out = const_cast<diopiTensorHandle_t>(in);
-    }
-    return out;
-}
-
 diopiError_t diopiLayerNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t saveMean, diopiTensorHandle_t saveInvstd,
                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiSize_t normalizedShape,
                             double eps) {
@@ -41,10 +18,8 @@ diopiError_t diopiLayerNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
         return diopiSuccess;
     }
 
-    std::vector<int64_t> normalizedStrideVec;
-    diopiSize_t normalizedStride = computeStrideFromShape(normalizedShape, normalizedStrideVec);
-    diopiTensorHandle_t weightTemp = createTensorIfNullptr(ctx, weight, normalizedShape, normalizedStride, inputAt.dtype(), true, 1);
-    diopiTensorHandle_t biasTemp = createTensorIfNullptr(ctx, bias, normalizedShape, normalizedStride, inputAt.dtype(), true, 0);
+    diopiTensorHandle_t weightTemp = createTensorIfNullptr(ctx, weight, normalizedShape, inputAt.dtype(), true, 1);
+    diopiTensorHandle_t biasTemp = createTensorIfNullptr(ctx, bias, normalizedShape, inputAt.dtype(), true, 0);
 
     // gen begin normalized dim
     diopiSize_t inShape;
@@ -70,12 +45,10 @@ diopiError_t diopiLayerNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight, diopiTensorHandle_t gradBias,
                                     diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                     diopiConstTensorHandle_t bias, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t rstd, diopiSize_t normalizedShape) {
-    std::vector<int64_t> normalizedStrideVec;
-    diopiSize_t normalizedStride = computeStrideFromShape(normalizedShape, normalizedStrideVec);
     AscendTensor inputAt(input);
-    diopiTensorHandle_t weightTemp = createTensorIfNullptr(ctx, weight, normalizedShape, normalizedStride, inputAt.dtype(), true, 1);
-    diopiTensorHandle_t gradWeightTemp = createTensorIfNullptr(ctx, gradWeight, normalizedShape, normalizedStride, inputAt.dtype(), false, 0);
-    diopiTensorHandle_t gradBiasTemp = createTensorIfNullptr(ctx, gradBias, normalizedShape, normalizedStride, inputAt.dtype(), false, 0);
+    diopiTensorHandle_t weightTemp = createTensorIfNullptr(ctx, weight, normalizedShape, inputAt.dtype(), true, 1);
+    diopiTensorHandle_t gradWeightTemp = createTensorIfNullptr(ctx, gradWeight, normalizedShape, inputAt.dtype(), false, 0);
+    diopiTensorHandle_t gradBiasTemp = createTensorIfNullptr(ctx, gradBias, normalizedShape, inputAt.dtype(), false, 0);
 
     // Align the shape of mean and rstd with input
     AscendTensor meanAt(mean), rstdAt(rstd);
