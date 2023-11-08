@@ -926,7 +926,7 @@ pointpillars_config = {
                     "requires_grad": [False],
                     "shape": [(817,), (794,)],
                     "dtype": [np.int64],
-                    "gen_fn": "Genfunc.randint",
+                    "gen_fn": dict(fn="Genfunc.randint", low=0, high=2),
                 },
             ],
         ),

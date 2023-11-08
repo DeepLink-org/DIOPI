@@ -95,8 +95,8 @@ dtype_mappings = {
     'char': ('[Dtype.int8]', 'Genfunc.randn'),
     'half': ('[Dtype.float16]', 'Genfunc.randn'),
     'short': ('[Dtype.int16]', 'Genfunc.randn'),
-    'complex<float>': ('[Dtype.complex64]', 'Genfunc.randn_cmplx'),
-    'complex<double>': ('[Dtype.complex128]', 'Genfunc.randn_cmplx')
+    'complex<float>': ('[Dtype.complex64]', 'Genfunc.randn_complx'),
+    'complex<double>': ('[Dtype.complex128]', 'Genfunc.randn_complx')
 }
 
 gen_func = {
