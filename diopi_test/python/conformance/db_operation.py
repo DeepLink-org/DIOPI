@@ -334,8 +334,8 @@ db_conn = DB_Operation()
 
 
 class ExcelOperation(object):
-    def __init__(self) -> None:
-        self.excel_writer = pd.ExcelWriter("report.xlsx", engine="xlsxwriter")
+    def __init__(self, file_path) -> None:
+        self.excel_writer = pd.ExcelWriter(file_path, engine="xlsxwriter")
 
     def add_benchmark_case_sheet(self):
         sheet_name = "Benchmark Test Result"

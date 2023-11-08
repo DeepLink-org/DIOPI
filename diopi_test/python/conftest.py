@@ -19,7 +19,7 @@ def init_dev():
 
 
 def pytest_addoption(parser):
-    parser.addoption('--excel_path', type=str, default='', help='folder to find device configs')
+    parser.addoption('--excel_path', type=str, default='report.xlsx', help='folder to find device configs')
 
 
 def pytest_sessionstart(session):
