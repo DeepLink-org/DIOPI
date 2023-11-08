@@ -96,7 +96,7 @@ def parse_args():
 
     run_test_args = parser.add_argument_group("run_test")
     run_test_args.add_argument(
-        "--file_or_dir",
+        "--test_cases_path",
         type=str,
         default="./gencases/diopi_case",
         help="pytest case file or dir",
