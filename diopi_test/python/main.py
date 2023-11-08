@@ -240,7 +240,7 @@ if __name__ == "__main__":
         gctc.gen_test_cases(args.fname)
         db_conn.insert_device_case(gctc.db_case_items)
     elif args.mode == "run_test":
-        pytest_args = [args.file_or_dir]
+        pytest_args = [args.test_cases_path]
         if args.filter_dtype:
             filter_dtype_str = " and ".join(
                 [f"not {dtype}" for dtype in args.filter_dtype]

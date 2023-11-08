@@ -338,6 +338,6 @@ DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子
 
 ```
     python main.py --mode gen_case --impl_folder /path/to/folder --fname cdist
-    python main.py --mode run_test --path_or_dir /path/to/cdist/case
+    python main.py --mode run_test --test_cases_path /path/to/cdist/case
 ```
 
