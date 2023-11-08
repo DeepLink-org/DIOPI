@@ -78,4 +78,4 @@ endif()
 
 # install
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/../proto/include/ TYPE INCLUDE)
-install(DIRECTORY lib/ TYPE LIB)
+install(FILES lib/lib${DEVICEIMPL}.so TYPE LIB)
