@@ -2642,8 +2642,8 @@ diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
     auto atInput = impl::aten::buildATen(input);
     auto atMask = impl::aten::buildATen(mask);
     auto atValue = impl::aten::buildATen(value);
-    auto atOut = at::masked_fill(atInput, atMask, atValue);
-    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    auto atOut = impl::aten::buildATen(out);
+    at::masked_fill_out(atOut, atInput, atMask, atValue);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -2664,8 +2664,8 @@ diopiError_t diopiMaskedFillScalar(diopiContextHandle_t ctx, diopiTensorHandle_t
     auto atInput = impl::aten::buildATen(input);
     auto atMask = impl::aten::buildATen(mask);
     auto atValue = impl::aten::buildAtScalar(value);
-    auto atOut = at::masked_fill(atInput, atMask, atValue);
-    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    auto atOut = impl::aten::buildATen(out);
+    at::masked_fill_out(atOut, atInput, atMask, atValue);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -3173,8 +3173,8 @@ diopiError_t diopiRoll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     auto atInput = impl::aten::buildATen(input);
     at::IntArrayRef atShifts = impl::aten::buildAtIntArray(shifts);
     at::IntArrayRef atDims = impl::aten::buildAtIntArray(dims);
-    auto atOut = at::roll(atInput, atShifts, atDims);
-    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    auto atOut = impl::aten::buildATen(out);
+    at::roll_out(atOut, atInput, atShifts, atDims);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -3586,8 +3586,7 @@ diopiError_t diopiIndexPutInp(diopiContextHandle_t ctx, diopiTensorHandle_t inpu
         auto atIndices = c10::optional<at::Tensor>(impl::aten::buildATen(indices[i]));
         atIndicesList.emplace_back(atIndices);
     }
-    at::Tensor atOut = at::index_put(atInput, atIndicesList, atValues, accumulate);
-    impl::aten::updateATen2Tensor(ctx, atOut, input);
+    atInput.index_put_(atIndicesList, atValues, accumulate);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -3598,14 +3597,14 @@ DIOPI_API diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle
     DIOPI_CHECK_PTR(indices);
     auto atInput = impl::aten::buildATen(input);
     auto atValues = impl::aten::buildATen(values);
+    auto atOut = impl::aten::buildATen(out);
     torch::List<c10::optional<at::Tensor>> atIndicesList;
     assert(indices_counts >= 1);
     for (int i = 0; i < indices_counts; ++i) {
         auto atIndices = c10::optional<at::Tensor>(impl::aten::buildATen(indices[i]));
         atIndicesList.emplace_back(atIndices);
     }
-    at::Tensor atOut = at::index_put(atInput, atIndicesList, atValues, accumulate);
-    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    at::index_put_out(atOut, atInput, atIndicesList, atValues, accumulate);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -3619,11 +3618,10 @@ diopiError_t diopiScatterInp(diopiContextHandle_t ctx, diopiTensorHandle_t input
     at::Tensor atOut;
     if (0 == strcmp(reduce, "add") || 0 == strcmp(reduce, "multiply")) {
         c10::string_view atReduce(reduce, strlen(reduce));
-        atOut = at::scatter(atInput, dim, atIndex, atSrc, atReduce);
+        atInput.scatter_(dim, atIndex, atSrc, atReduce);
     } else {
-        atOut = at::scatter(atInput, dim, atIndex, atSrc);
+        atInput.scatter_(dim, atIndex, atSrc);
     }
-    impl::aten::updateATen2Tensor(ctx, atOut, input);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -3637,11 +3635,10 @@ diopiError_t diopiScatterInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t
     at::Tensor atOut;
     if (0 == strcmp(reduce, "add") || 0 == strcmp(reduce, "multiply")) {
         c10::string_view atReduce(reduce, strlen(reduce));
-        atOut = at::scatter(atInput, dim, atIndex, atValue, atReduce);
+        atInput.scatter_(dim, atIndex, atValue, atReduce);
     } else {
-        atOut = at::scatter(atInput, dim, atIndex, atValue);
+        atInput.scatter_(dim, atIndex, atValue);
     }
-    impl::aten::updateATen2Tensor(ctx, atOut, input);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -3652,14 +3649,13 @@ diopiError_t diopiScatter(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     auto atInput = impl::aten::buildATen(input);
     auto atSrc = impl::aten::buildATen(src);
     auto atIndex = impl::aten::buildATen(index);
-    at::Tensor atOut;
+    auto atOut = impl::aten::buildATen(out);
     if (0 == strcmp(reduce, "add") || 0 == strcmp(reduce, "multiply")) {
         c10::string_view atReduce(reduce, strlen(reduce));
-        atOut = at::scatter(atInput, dim, atIndex, atSrc, atReduce);
+        at::scatter_out(atOut, atInput, dim, atIndex, atSrc, atReduce);
     } else {
-        atOut = at::scatter(atInput, dim, atIndex, atSrc);
+        at::scatter_out(atOut, atInput, dim, atIndex, atSrc);
     }
-    impl::aten::updateATen2Tensor(ctx, atOut, out);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -3670,14 +3666,13 @@ diopiError_t diopiScatterScalar(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     auto atInput = impl::aten::buildATen(input);
     auto atValue = impl::aten::buildAtScalar(value);
     auto atIndex = impl::aten::buildATen(index);
-    at::Tensor atOut;
+    auto atOut = impl::aten::buildATen(out);
     if (0 == strcmp(reduce, "add") || 0 == strcmp(reduce, "multiply")) {
         c10::string_view atReduce(reduce, strlen(reduce));
-        atOut = at::scatter(atInput, dim, atIndex, atValue, atReduce);
+        at::scatter_out(atOut, atInput, dim, atIndex, atValue, atReduce);
     } else {
-        atOut = at::scatter(atInput, dim, atIndex, atValue);
+        at::scatter_out(atOut, atInput, dim, atIndex, atValue);
     }
-    impl::aten::updateATen2Tensor(ctx, atOut, out);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
