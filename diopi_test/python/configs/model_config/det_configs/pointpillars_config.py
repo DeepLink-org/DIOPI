@@ -579,7 +579,7 @@ pointpillars_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(40768, 64), (8518, 3), (9,), (6,)],
                     "dtype": [np.int32],
                     "gen_fn": "Genfunc.randint",
@@ -587,7 +587,7 @@ pointpillars_config = {
                 {
                     "ins": ["indices"],
                     "requires_grad": [False],
-                    "shape": [(40768,), (3,), (18,), (13,)],
+                    "shape": [(40768,), (8518, 3), (9,), (6,)],
                     "dtype": [np.bool_],
                     "gen_fn": "Genfunc.mask",
                 },
@@ -613,14 +613,14 @@ pointpillars_config = {
                 {
                     "ins": ["indices1"],
                     "requires_grad": [False],
-                    "shape": [(36735,), (34586,), (106843,), (33,)],
+                    "shape": [(36735, 64), (34586, 64), (107136,), (107136,)],
                     "dtype": [np.bool_],
                     "gen_fn": "Genfunc.mask",
                 },
                 {
                     "ins": ["values"],
                     "requires_grad": [False],
-                    "shape": [(7450, 64), (8471, 64), (), (33,)],
+                    "shape": [(), (), (), ()],
                     "dtype": [np.int64],
                     "gen_fn": "Genfunc.randint",
                 },

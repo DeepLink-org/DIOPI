@@ -144,10 +144,9 @@ unet_config = {
 
     'bernoulli': dict(
         name=["bernoulli"],
-        interface=["torch.nn.functional"],
+        no_output_ref=True,
         para=dict(
             p=[0.9],
-            generator=[None],
         ),
         tensor_para=dict(
             args=[
@@ -156,7 +155,7 @@ unet_config = {
                     "requires_grad": [False],
                     "shape": [(4, 64, 1, 1)],
                     "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
+                    "gen_fn": "Genfunc.rand",
                 },
             ],
         ),
@@ -329,7 +328,7 @@ unet_config = {
                 {
                     "ins": ["indices"],
                     "requires_grad": [False],
-                    "shape": [(4, 512, 1024), (4, 512, 1024), (4, 512, 1024), (4, 512, 1024)],
+                    "shape": [(4, 512, 1024), (4, 512, 1024), (1, 4, 512, 1024), (1, 4, 512)],
                     "dtype": [np.bool_],
                     "gen_fn": "Genfunc.mask",
                 },
@@ -618,9 +617,9 @@ unet_config = {
         name=["interpolate"],
         interface=["torch.nn.functional"],
         para=dict(
-            mode=['linear', 'linear', 'linear', 'linear', 'linear', 'linear'],
+            mode=['bilinear', 'bilinear', 'bilinear', 'bilinear', 'bilinear', 'bilinear'],
             size=[(512, 1024), (512, 1024), (256, 512), (64, 128), (128, 256), (512, 1024)],
-            align_corners=[0, 0, 0, 0, 0, 0],
+            align_corners=[False, False, False, False, False, False],
         ),
         tensor_para=dict(
             args=[

@@ -153,7 +153,7 @@ ssd300_config = {
         name=["cat"],
         interface=["torch"],
         para=dict(
-            dim=[0, 1, 0, 0, 1, 0],
+            dim=[0, 0, 0, 0, 1, 1],
         ),
         tensor_para=dict(
             args=[
@@ -748,7 +748,7 @@ ssd300_config = {
         name=["ne"],
         interface=["torch"],
         para=dict(
-            other=['inf'],
+            other=[float('inf')],
         ),
         tensor_para=dict(
             args=[

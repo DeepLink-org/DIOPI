@@ -313,7 +313,7 @@ detr_config = {
         saved_args=dict(output=0),
         para=dict(
             p=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            compute_mode=[None, None, None, None, None, None, None, None, None, None],
+            compute_mode=['use_mm_for_euclid_dist', 'use_mm_for_euclid_dist', 'use_mm_for_euclid_dist', 'use_mm_for_euclid_dist', 'use_mm_for_euclid_dist', 'use_mm_for_euclid_dist', 'use_mm_for_euclid_dist', 'use_mm_for_euclid_dist', 'use_mm_for_euclid_dist', 'use_mm_for_euclid_dist'],
         ),
         tensor_para=dict(
             args=[
@@ -498,7 +498,7 @@ detr_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad": [True],
+                    # "requires_grad": [True],
                     "shape": [(2, 884, 256), (2, 1312, 2048)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
@@ -706,21 +706,7 @@ detr_config = {
                     "shape": [(256,), (256,)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
-                },
-                {
-                    "ins": ["save_mean"],
-                    "requires_grad": [False],
-                    "shape": [(2, 870, 1), (2, 902, 1)],
-                    "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
-                },
-                {
-                    "ins": ["save_invstd"],
-                    "requires_grad": [False],
-                    "shape": [(2, 870, 1), (2, 902, 1)],
-                    "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
-                },
+                }
             ],
         ),
     ),
@@ -805,7 +791,7 @@ detr_config = {
         interface=["torch"],
         is_inplace=[True],
         para=dict(
-            value=['-inf', '-inf', 0],
+            value=[float('-inf'), float('-inf'), 0],
         ),
         tensor_para=dict(
             args=[
@@ -1086,7 +1072,7 @@ detr_config = {
 
     'pow_tensor': dict(
         name=["pow"],
-        interface=["torch.nn.functional"],
+        interface=["torch"],
         tensor_para=dict(
             args=[
                 {

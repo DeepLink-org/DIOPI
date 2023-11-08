@@ -595,7 +595,7 @@ cascade_rcnn_config = {
                 {
                     "ins": ["values"],
                     # "requires_grad": [True],
-                    "shape": [(), (12,), (), (), (6, 256, 7, 7), (17, 256, 7, 7)],
+                    "shape": [(), (), (), (), (6, 256, 7, 7), (17, 256, 7, 7)],
                     "dtype": [np.int64],
                     "gen_fn": "Genfunc.randint",
                 },

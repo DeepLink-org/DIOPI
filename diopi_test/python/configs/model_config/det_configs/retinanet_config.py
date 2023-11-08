@@ -476,7 +476,7 @@ retinanet_config = {
                 {
                     "ins": ["indices1"],
                     "requires_grad": [False],
-                    "shape": [(196875,), (177678,), (167,), (16,)],
+                    "shape": [(196875,), (177678,), (169371, 4), (128916,)],
                     "dtype": [np.bool_],
                     "gen_fn": "Genfunc.mask",
                 },

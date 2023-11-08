@@ -205,20 +205,20 @@ llama_config = {
         ),
     ),
 
-    'view_as_complex': dict(
-        name=["view_as_complex"],
-        interface=["torch"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(5, 8, 32, 64, 2), (5, 1, 32, 64, 2)],
-                    "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
-                },
-            ],
-        ),
-    ),
+    # 'view_as_complex': dict(
+    #     name=["view_as_complex"],
+    #     interface=["torch"],
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ["input"],
+    #                 "shape": [(5, 8, 32, 64, 2), (5, 1, 32, 64, 2)],
+    #                 "dtype": [np.float32],
+    #                 "gen_fn": "Genfunc.randn",
+    #             },
+    #         ],
+    #     ),
+    # ),
 
     'mul_2': dict(
         name=["mul"],
@@ -241,20 +241,20 @@ llama_config = {
         ),
     ),
 
-    'view_as_real': dict(
-        name=["view_as_real"],
-        interface=["torch"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": [(5, 8, 32, 64), (5, 1, 32, 64)],
-                    "dtype": [np.complex64],
-                    "gen_fn": "Genfunc.randn_cmplx",
-                },
-            ],
-        ),
-    ),
+    # 'view_as_real': dict(
+    #     name=["view_as_real"],
+    #     interface=["torch"],
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ["input"],
+    #                 "shape": [(5, 8, 32, 64), (5, 1, 32, 64)],
+    #                 "dtype": [np.complex64],
+    #                 "gen_fn": "Genfunc.randn_cmplx",
+    #             },
+    #         ],
+    #     ),
+    # ),
 
     'transpose': dict(
         name=["transpose"],

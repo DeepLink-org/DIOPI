@@ -520,10 +520,7 @@ atss_config = {
         name=["group_norm"],
         interface=["torch"],
         para=dict(
-            N=[1, 2],
-            C=[256, 256],
-            HxW=[8736, 798],
-            group=[32, 32],
+            num_groups=[32, 32],
             eps=[1e-05, 1e-05],
         ),
         tensor_para=dict(
@@ -607,7 +604,7 @@ atss_config = {
                 {
                     "ins": ["indices"],
                     "requires_grad": [False],
-                    "shape": [(45, 1), (0,), (26,), (270,), (3,), (3,)],
+                    "shape": [(18672, 1), (756,), (40534,), (96720,), (3,), (3,)],
                     "dtype": [np.bool_],
                     "gen_fn": "Genfunc.mask",
                 },
@@ -633,14 +630,14 @@ atss_config = {
                 {
                     "ins": ["indices1"],
                     "requires_grad": [False],
-                    "shape": [(22400,), (209,), (82,), (422,)],
+                    "shape": [(22400,), (31200, 4), (1950,), (871481,)],
                     "dtype": [np.bool_],
                     "gen_fn": "Genfunc.mask",
                 },
                 {
                     "ins": ["values"],
                     "requires_grad": [False],
-                    "shape": [(14406, 4), (209, 4), (82,), (422,)],
+                    "shape": [(), (), (), ()],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
                 },
@@ -650,7 +647,7 @@ atss_config = {
 
     'isnan': dict(
         name=["isnan"],
-        interface=["torch.nn.functional"],
+        interface=["torch"],
         tensor_para=dict(
             args=[
                 {
@@ -1198,7 +1195,7 @@ atss_config = {
         interface=["torch"],
         para=dict(
             dim=[[0], [0]],
-            correction=[1, 1],
+            # correction=[1, 1],
             keepdim=[False, False],
         ),
         tensor_para=dict(

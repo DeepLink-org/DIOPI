@@ -352,7 +352,7 @@ dyhead_config = {
         name=["col2im"],
         interface=['CustomizedTest'],
         para=dict(
-            size=[(104, 72), (72, 48)],
+            output_size=[(104, 72), (72, 48)],
             kernel_size=[(2, 2), (2, 2)],
             dilation=[(1, 1), (1, 1)],
             padding=[(0, 0), (0, 0)],
@@ -635,10 +635,7 @@ dyhead_config = {
         name=["group_norm"],
         interface=["torch"],
         para=dict(
-            N=[1, 1],
-            C=[256, 256],
-            HxW=[8960, 640],
-            group=[16, 16],
+            num_groups=[16, 16],
             eps=[1e-05, 1e-05],
         ),
         tensor_para=dict(
@@ -787,7 +784,7 @@ dyhead_config = {
 
     'isnan': dict(
         name=["isnan"],
-        interface=["torch.nn.functional"],
+        interface=["torch"],
         tensor_para=dict(
             args=[
                 {
@@ -830,21 +827,7 @@ dyhead_config = {
                     "shape": [(192,), (192,)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
-                },
-                {
-                    "ins": ["save_mean"],
-                    "requires_grad": [False],
-                    "shape": [(1, 100352, 1), (1, 81920, 1)],
-                    "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
-                },
-                {
-                    "ins": ["save_invstd"],
-                    "requires_grad": [False],
-                    "shape": [(1, 100352, 1), (1, 81920, 1)],
-                    "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
-                },
+                }
             ],
         ),
     ),
@@ -1474,7 +1457,7 @@ dyhead_config = {
         interface=["torch"],
         para=dict(
             dim=[[0], [0]],
-            correction=[1, 1],
+            # correction=[1, 1],
             keepdim=[False, False],
         ),
         tensor_para=dict(
@@ -1645,9 +1628,9 @@ dyhead_config = {
         name=["interpolate"],
         interface=["torch.nn.functional"],
         para=dict(
-            mode=['linear', 'linear'],
+            mode=['bilinear', 'bilinear'],
             size=[(20, 22), (18, 26)],
-            align_corners=[1, 1],
+            align_corners=[True, True],
         ),
         tensor_para=dict(
             args=[

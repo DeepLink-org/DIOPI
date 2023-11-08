@@ -163,10 +163,9 @@ deeplabv3_config = {
 
     'bernoulli': dict(
         name=["bernoulli"],
-        interface=["torch.nn.functional"],
+        no_output_ref=True,
         para=dict(
             p=[0.9, 0.9],
-            generator=[None, None],
         ),
         tensor_para=dict(
             args=[
@@ -175,7 +174,7 @@ deeplabv3_config = {
                     "requires_grad": [False],
                     "shape": [(2, 512, 1, 1), (2, 256, 1, 1)],
                     "dtype": [np.float32],
-                    "gen_fn": "Genfunc.randn",
+                    "gen_fn": "Genfunc.rand",
                 },
             ],
         ),
@@ -348,7 +347,7 @@ deeplabv3_config = {
                 {
                     "ins": ["indices"],
                     "requires_grad": [False],
-                    "shape": [(2, 512, 1024), (2, 512, 1024), (2, 512, 1024), (2, 512, 1024)],
+                    "shape": [(2, 512, 1024), (2, 512, 1024), (1, 2), (1, 2, 512, 1024)],
                     "dtype": [np.bool_],
                     "gen_fn": "Genfunc.mask",
                 },
@@ -637,9 +636,9 @@ deeplabv3_config = {
         name=["interpolate"],
         interface=["torch.nn.functional"],
         para=dict(
-            mode=['linear', 'linear'],
+            mode=['bilinear', 'bilinear'],
             size=[(512, 1024), (64, 128)],
-            align_corners=[0, 0],
+            align_corners=[False, False],
         ),
         tensor_para=dict(
             args=[

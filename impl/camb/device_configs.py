@@ -464,9 +464,6 @@ device_configs = {
         # FIXME other为float时报错
         name=['eq', 'ne', 'le', 'lt', 'gt', 'ge'],
         dtype=[Skip(np.int64), Skip(np.int32), Skip(np.int16), Skip(np.int8), Skip(np.uint8), Skip(np.bool_)],
-        para=dict(
-            other=[0, -1, 0.028, 2.232, 1],
-        ),
     ),
 
     'silu': dict(

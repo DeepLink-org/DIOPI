@@ -488,7 +488,7 @@ solo_config = {
                 {
                     "ins": ["indices"],
                     "requires_grad": [False],
-                    "shape": [(154,), (), (), (), (184,), (271,)],
+                    "shape": [(154,), (20, 800), (35, 4), (9,), (184,), (271,)],
                     "dtype": [np.bool_],
                     "gen_fn": "Genfunc.mask",
                 },

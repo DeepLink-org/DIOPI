@@ -33,7 +33,7 @@ def execute_commands(commands):
         process = multiprocessing.Process(target=execute_command, args=(cmd,))
         processes.append(process)
         process.start()
-        if i + 1 % 5 == 0:
+        if i % 5 == 0:
             time.sleep(30)
 
     for process in processes:
@@ -72,7 +72,7 @@ def run_test(partition, device_type, device_num, use_db, pytest_args):
             cmd += f' --pytest_args "{pytest_args}"'
         if use_db:
             db_path = f'sqlite:///./cache/{model}_testrecord.db'
-            cmd += f' --use_db --db_path {db_path}'
+            cmd += f' --use_db --db_path {db_path} --excel_path logs/{model}.xlsx'
         cmd += f' 2>&1 | tee logs/{model}.log'
         commands.append(cmd)
 

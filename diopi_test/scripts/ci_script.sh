@@ -5,7 +5,7 @@ case $1 in
   py-lint)
     (echo "py-lint" && flake8 --ignore=E501,F841 python/conformance/diopi_functions.py \
        && flake8 --ignore=E501,F401 --exclude=python/conformance/diopi_functions.py,scripts/cpplint.py,impl/,third_party/,python/conformance/model_config/ \
-       && flake8 --ignore=E501,F401 python/conformance/model_config/process_ops.py python/conformance/model_config/generate_config.py ) \
+       && flake8 --ignore=E501,F401 python/configs/model_config/process_ops.py python/configs/model_config/generate_config.py ) \
     || exit -1;;
   cpp-lint)
     # for other cpplint version, maybe  -whitespace/indent is needed to check impl

@@ -31,7 +31,8 @@ param_type_translation = {
     "sorted": bool,
     "return_inverse": bool,
     "return_counts": bool,
-    "align_corners": bool
+    "align_corners": bool,
+    "zero_infinity": bool
 }
 func_interface = {
     'torch': ['gather', 'unique', 'transpose', 'tanh', 'pow', 'cumsum',
@@ -60,7 +61,7 @@ func_interface = {
     'torch.linalg': ['cholesky_ex'],
     'torchvision.ops': ['sigmoid_focal_loss', 'nms', 'roi_align']
 }
-no_output_ref = ['randperm', 'uniform', 'dropout', 'dropout2d', 'normal', 'multinomial', 'normal_']
+no_output_ref = ['randperm', 'uniform', 'dropout', 'dropout2d', 'normal', 'multinomial', 'normal_', 'bernoulli']
 saved_args = {"sigmoid": "0", 'softmax': '0', 'log_softmax': '0', 'tanh': '0', 'cholesky_ex': '0', 'cdist': '0',
               'triangular_solve': '0'}
 # For some ops, only some of the params that need to requires_grad

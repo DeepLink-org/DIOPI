@@ -464,7 +464,7 @@ yolov5_config = {
                 {
                     "ins": ["indices"],
                     "requires_grad": [False],
-                    "shape": [(261,), (189,), (5, 36), (3, 12), (172,), (375,), (2,)],
+                    "shape": [(2, 3, 80), (2, 3, 4, 40, 40), (5, 36), (3, 12), (3,), (3, 2), (7,)],
                     "dtype": [np.bool_],
                     "gen_fn": "Genfunc.mask",
                 },
@@ -497,7 +497,7 @@ yolov5_config = {
                 {
                     "ins": ["values"],
                     "requires_grad": [False],
-                    "shape": [(94,), (136,), (30, 80), (136, 80), (), ()],
+                    "shape": [(94, 3, 40, 40), (136, 3, 40, 40), (30, 3, 80, 20, 20), (136, 3, 80, 40, 40), (), ()],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randn",
                 },

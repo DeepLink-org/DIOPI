@@ -54,8 +54,11 @@ op_param_name_translation = {
         "indices": "return_indices",
     },
     'diopiGroupNorm': {
-        "groups": "num_groups",
+        "group": "num_groups",
     },
+    'diopiCol2Im': {
+        "size": "output_size"
+    }
 }
 
 

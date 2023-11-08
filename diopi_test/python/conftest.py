@@ -19,7 +19,7 @@ def init_dev():
 
 
 def pytest_addoption(parser):
-    parser.addoption('--impl_folder', type=str, default='', help='folder to find device configs')
+    parser.addoption('--excel_path', type=str, default='', help='folder to find device configs')
 
 
 def pytest_sessionstart(session):
@@ -58,5 +58,6 @@ def pytest_sessionfinish(session, exitstatus):
     db_conn.insert_test_summary()
 
 
-def pytest_terminal_summary(terminalreporter):
-    ExcelOperation().gen_excel()
+def pytest_terminal_summary(terminalreporter, exitstatus, config):
+    excel_path = config.getoption("--excel_path")
+    ExcelOperation(excel_path).gen_excel()
