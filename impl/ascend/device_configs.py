@@ -616,18 +616,6 @@ device_configs = {
         ),
     ),
 
-    'pointwise_binary': dict(
-        name=['add'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 16, 128)),Skip((2, 32, 130, 130)),Skip((0,)),],
-                },
-            ]
-        ),
-    ),
-
    'pointwise_binary_diff_dtype_without_bool': dict(
         name=['div'],
         tensor_para=dict(
