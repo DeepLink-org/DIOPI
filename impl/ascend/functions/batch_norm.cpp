@@ -62,10 +62,10 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 
     std::vector<int64_t> batchShapeV{inputAt.shape(1)};
     diopiSize_t batchShapeSizeT{batchShapeV.data(), static_cast<int64_t>(batchShapeV.size())};
-    diopiTensorHandle_t weightTemp = createTensorIfNullptr(ctx, weight, batchShapeSizeT, inputAt.dtype(), true, 1);
-    diopiTensorHandle_t biasTemp = createTensorIfNullptr(ctx, bias, batchShapeSizeT, inputAt.dtype(), true, 0);
-    diopiTensorHandle_t runningMeanTemp = createTensorIfNullptr(ctx, runningMean, batchShapeSizeT, inputAt.dtype(), true, 0);
-    diopiTensorHandle_t runningVarTemp = createTensorIfNullptr(ctx, runningVar, batchShapeSizeT, inputAt.dtype(), true, 1);
+    diopiTensorHandle_t weightTemp = createTensorIfNullptrOrConstCast(ctx, weight, batchShapeSizeT, inputAt.dtype(), true, 1);
+    diopiTensorHandle_t biasTemp = createTensorIfNullptrOrConstCast(ctx, bias, batchShapeSizeT, inputAt.dtype(), true, 0);
+    diopiTensorHandle_t runningMeanTemp = createTensorIfNullptrOrConstCast(ctx, runningMean, batchShapeSizeT, inputAt.dtype(), true, 0);
+    diopiTensorHandle_t runningVarTemp = createTensorIfNullptrOrConstCast(ctx, runningVar, batchShapeSizeT, inputAt.dtype(), true, 1);
 
     if (!training) {
         AclOpRunner<5, 1>("BNInfer", ctx)

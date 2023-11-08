@@ -18,8 +18,8 @@ diopiError_t diopiLayerNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
         return diopiSuccess;
     }
 
-    diopiTensorHandle_t weightTemp = createTensorIfNullptr(ctx, weight, normalizedShape, inputAt.dtype(), true, 1);
-    diopiTensorHandle_t biasTemp = createTensorIfNullptr(ctx, bias, normalizedShape, inputAt.dtype(), true, 0);
+    diopiTensorHandle_t weightTemp = createTensorIfNullptrOrConstCast(ctx, weight, normalizedShape, inputAt.dtype(), true, 1);
+    diopiTensorHandle_t biasTemp = createTensorIfNullptrOrConstCast(ctx, bias, normalizedShape, inputAt.dtype(), true, 0);
 
     // gen begin normalized dim
     diopiSize_t inShape;
@@ -46,9 +46,9 @@ diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                                     diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                     diopiConstTensorHandle_t bias, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t rstd, diopiSize_t normalizedShape) {
     AscendTensor inputAt(input);
-    diopiTensorHandle_t weightTemp = createTensorIfNullptr(ctx, weight, normalizedShape, inputAt.dtype(), true, 1);
-    diopiTensorHandle_t gradWeightTemp = createTensorIfNullptr(ctx, gradWeight, normalizedShape, inputAt.dtype(), false, 0);
-    diopiTensorHandle_t gradBiasTemp = createTensorIfNullptr(ctx, gradBias, normalizedShape, inputAt.dtype(), false, 0);
+    diopiTensorHandle_t weightTemp = createTensorIfNullptrOrConstCast(ctx, weight, normalizedShape, inputAt.dtype(), true, 1);
+    diopiTensorHandle_t gradWeightTemp = createTensorIfNullptrOrConstCast(ctx, gradWeight, normalizedShape, inputAt.dtype(), false, 0);
+    diopiTensorHandle_t gradBiasTemp = createTensorIfNullptrOrConstCast(ctx, gradBias, normalizedShape, inputAt.dtype(), false, 0);
 
     // Align the shape of mean and rstd with input
     AscendTensor meanAt(mean), rstdAt(rstd);
