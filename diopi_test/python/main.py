@@ -96,7 +96,7 @@ def parse_args():
 
     run_test_args = parser.add_argument_group("run_test")
     run_test_args.add_argument(
-        "--file_or_dir",
+        "--test_cases_path",
         type=str,
         default="./gencases/diopi_case",
         help="pytest case file or dir",
@@ -240,7 +240,7 @@ if __name__ == "__main__":
         gctc.gen_test_cases(args.fname)
         db_conn.insert_device_case(gctc.db_case_items)
     elif args.mode == "run_test":
-        pytest_args = [args.file_or_dir]
+        pytest_args = [args.test_cases_path]
         if args.filter_dtype:
             filter_dtype_str = " and ".join(
                 [f"not {dtype}" for dtype in args.filter_dtype]
