@@ -45,21 +45,6 @@ class TestBatchNrom(unittest.TestCase):
                                            atol=1e-5,
                                            equal_nan=False)
 
-
-
-class TestBatchNrom1(TestBatchNrom):
-    def setUp(self):
-        self.C = 1
-        self.x = np.ones((1,self.C,1,1)).astype(np.float32)
-        self.running_mean = np.random.rand(self.C).astype(np.float32)
-        self.running_var = np.random.rand(self.C).astype(np.float32)
-        self.weight = np.random.rand(self.C).astype(np.float32)
-        self.bias = np.random.rand(self.C).astype(np.float32)
-        self.momentum = 1.0
-        self.eps = 1e-5
-        self.bn_training = False
-
-
 if __name__ == "__main__":
     a = TestBatchNrom()
     a.setUp()

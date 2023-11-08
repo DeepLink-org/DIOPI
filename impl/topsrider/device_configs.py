@@ -3376,4 +3376,64 @@ device_configs = {
         ),
     ),
 
+    'apply_penalty': dict(
+        name=['apply_penalty'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['logits'],
+                    "dtype": [Skip(np.float32),],
+                },
+            ]
+        ),
+    ),
+
+    'destindex_copy_kv': dict(
+        name=['destindex_copy_kv'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['k'],
+                    "dtype": [Skip(np.float16),],
+                },
+            ]
+        ),
+    ),
+
+    'context_attention': dict(
+        name=['context_attention'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "dtype": [Skip(np.float16),],
+                },
+            ]
+        ),
+    ),
+
+    'token_attention': dict(
+        name=['token_attention'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "dtype": [Skip(np.float16),],
+                },
+            ]
+        ),
+    ),
+
+    'token_softmax_reducev': dict(
+        name=['token_softmax_reducev'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['logics'],
+                    "dtype": [Skip(np.float16),],
+                },
+            ]
+        ),
+    ),
+
 }
