@@ -30,10 +30,12 @@ if (DEBUG)
 else()
     set(CMAKE_BUILD_TYPE "Release")
 endif()
+
 if (ENABLE_COVERAGE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
 endif()
+
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 set(COMMON_FLAG "-Wall -Wno-sign-compare")
@@ -76,4 +78,4 @@ endif()
 
 # install
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/../proto/include/ TYPE INCLUDE)
-install(DIRECTORY lib/ TYPE INCLUDE)
+install(DIRECTORY lib/ TYPE LIB)
