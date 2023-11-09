@@ -57,7 +57,7 @@ def gen_data(partition, device_type, device_num, use_db, use_slurm):
     execute_commands(commands)
 
 
-def gen_case(partition, use_db, use_slurm impl_folder):
+def gen_case(partition, use_db, use_slurm, impl_folder):
     commands = []
     for model in model_list:
         cmd = ''
