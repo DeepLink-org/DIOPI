@@ -4,12 +4,33 @@ import os
 import sys
 import torch
 import torchvision
-from . import triton_kernels
 
 from gen_input import GenPolicy
 from conformance.utils import logger, get_data_from_file
 from conformance.db_operation import db_conn
 
+
+def multihead_attention_inside(q, k, v, softmax_scale, causal=None, key_padding_mask=None):
+    from einops import rearrange
+    import math
+    batch_size, seqlen = q.shape[0], q.shape[1]
+    causal = causal if causal is None else causal
+    softmax_scale = softmax_scale or 1.0 / math.sqrt(q.shape[-1])
+    scores = torch.einsum("bthd,bshd->bhts", q, k * softmax_scale)
+    if key_padding_mask is not None:
+        padding_mask = torch.full(
+            (batch_size, seqlen), -10000.0, dtype=scores.dtype, device=scores.device
+        )
+        padding_mask.masked_fill_(key_padding_mask, 0.0)
+        scores = scores + rearrange(padding_mask, "b s -> b 1 1 s")
+    if causal:
+        causal_mask = torch.triu(
+            torch.full((seqlen, seqlen), -10000.0, device=scores.device), 1
+        )
+        scores = scores + causal_mask.to(dtype=scores.dtype)
+    attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
+    output = torch.einsum("bhts,bshd->bthd", attention, v)
+    return output
 
 class CustomizedTest(object):
     def cast_dtype(input, out):
@@ -213,41 +234,39 @@ class CustomizedTest(object):
 
     def multihead_attention_forward(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
         # 为了保证精度，因此在test的时候不使用dropout
-        from einops import rearrange
-        import math
-
-        _, seqlen = q.shape[0], q.shape[1]
-        softmax_scale = 1.0 / math.sqrt(q.shape[-1]) if not scale else scale
-        scores = torch.einsum("bthd,bshd->bhts", q, k * softmax_scale)
-        if is_causal:
-            causal_mask = torch.triu(
-                torch.full((seqlen, seqlen), -10000.0, device=scores.device), 1
-            )
-            scores = scores + causal_mask.to(dtype=scores.dtype)
-        attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
-        output = torch.einsum("bhts,bshd->bthd", attention, v)
+        output = multihead_attention_inside(q, k, v, scale, is_causal)
         return output
 
-    def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch):
-        triton_kernels.apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch)
-        return logits
+    def varlen_multihead_attention_forward(q, k, v, cu_seqlens, max_seqlen, dropout_p, is_causal, return_debug_mask, scale):
+        # 为了保证精度，因此在test的时候不使用dropout
+        from einops import rearrange
+        import math
+        batch_size = len(cu_seqlens)-1
+        seq_len = max_seqlen
+        _, num_heads, feature_size = q.size()
+        # Initialize the key_padding_mask as a Boolean mask with False values
+        key_padding_mask = torch.zeros((batch_size, max_seqlen), dtype=torch.bool, device="cuda")
 
-    def destindex_copy_kv(k, dest_loc, out):
-        triton_kernels.destindex_copy_kv(k, dest_loc, out)
-        return out
-
-    def token_attention(q, k, out, b_loc, b_start_loc, b_seq_len, max_input_len):
-        triton_kernels.token_attention_fwd(q, k, out, b_loc, b_start_loc, b_seq_len, max_input_len)
-        return out
-
-    def token_softmax_reducev(logics, v, out, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index):
-        triton_kernels.token_softmax_reducev_fwd(logics, v, out, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index)
-        return out
-
-    def context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len):
-        # triton_kernels.context_attention_fwd(q, k, v, out, b_start_loc, b_seq_len, max_input_len)
-        triton_kernels.context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len)
-        return out
+        # Fill the key_padding_mask with True values at positions with actual data (cu_seqlens)
+        for i in range(batch_size):
+            seq_len_in = cu_seqlens[i+1]-cu_seqlens[i]
+            key_padding_mask[i, :seq_len_in] = True
+        padded_q_shape = (batch_size, seq_len, num_heads, feature_size)
+        q_padded = torch.zeros(padded_q_shape, dtype=torch.float16, device="cuda")
+        k_padded = torch.zeros(padded_q_shape, dtype=torch.float16, device="cuda")
+        v_padded = torch.zeros(padded_q_shape, dtype=torch.float16, device="cuda")
+        for i in range(batch_size):
+            seq_len = cu_seqlens[i+1] - cu_seqlens[i]
+            q_padded[i, :seq_len, :, :] = q[cu_seqlens[i]:cu_seqlens[i + 1], :, :]
+            k_padded[i, :seq_len, :, :] = k[cu_seqlens[i]:cu_seqlens[i + 1], :, :]
+            v_padded[i, :seq_len, :, :] = v[cu_seqlens[i]:cu_seqlens[i + 1], :, :]
+        qkv_result = multihead_attention_inside(q_padded, k_padded, v_padded, scale, is_causal, key_padding_mask)
+        output = torch.zeros(q.shape, dtype=torch.float16).cuda()
+        for i in range(1, len(cu_seqlens)):
+            start_idx = cu_seqlens[i - 1]
+            end_idx = cu_seqlens[i]
+            output[start_idx:end_idx, :, :] = qkv_result[i - 1, :end_idx - start_idx, :, :]
+        return output
 
 
 class GenOutputData(object):
