@@ -23,7 +23,7 @@ DIOPI_API diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandl
         .addInput(bias)
         .setAttr("num_groups", static_cast<int32_t>(numGroups))
         .setAttr("epsilon", static_cast<float>(eps))
-        .setAttr("data_format", std::string{getAclDataFormat(input) > 2 ? "NCHW" : "ND"})
+        .setAttr("data_format", std::string{getAclDataFormat(input) == ACL_FORMAT_ND ? "ND" : "NCHW"})
         .setAttr("is_training", true)
         .addOutput(out)
         .addOutput(saveMean)

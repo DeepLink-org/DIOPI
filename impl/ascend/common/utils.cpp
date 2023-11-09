@@ -230,6 +230,26 @@ diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, int v
     return diopiSuccess;
 }
 
+diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, double val) {
+    auto valScalar = constructDiopiScalarT(diopi_dtype_float64, val);
+    diopiFill(ctx, out, &valScalar);
+    return diopiSuccess;
+}
+
+diopiTensorHandle_t createTensorIfNullptrOrConstCast(diopiContextHandle_t ctx, diopiConstTensorHandle_t in, diopiSize_t& shape, diopiDtype_t dtype,
+                                                     bool isFillingRequired, double value) {
+    diopiTensorHandle_t out;
+    if (nullptr == in) {
+        diopiRequireTensor(ctx, &out, &shape, nullptr, dtype, diopi_device);
+        if (isFillingRequired) {
+            fillTensor(ctx, out, value);
+        }
+    } else {
+        out = const_cast<diopiTensorHandle_t>(in);
+    }
+    return out;
+}
+
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out, diopiDtype_t dtype, diopiDevice_t device) {
     int64_t sizeTmp[1] = {1};
     diopiSize_t sSize = arrayToDiopiSize(sizeTmp, 1);
@@ -645,6 +665,51 @@ diopiError_t transTensorTo2D(diopiContextHandle_t ctx, AscendTensor& th) {
     dims = {dim1, thShape.back()};
     th.view(dims);
     return diopiSuccess;
+}
+
+diopiError_t broadcast(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const std::vector<int64_t>& size) {
+    AscendTensor atout(out);
+    const AscendTensor atinp(input);
+    return broadcast(ctx, atout, atinp, size);
+}
+
+diopiError_t broadcast(diopiContextHandle_t ctx, AscendTensor& out, const AscendTensor& input, const std::vector<int64_t>& size) {
+    if (size.empty()) {
+        diopiCastDtype(ctx, const_cast<diopiTensorHandle_t>(out.tensorHandle()), const_cast<diopiTensorHandle_t>(input.tensorHandle()));
+        return diopiSuccess;
+    }
+    // Avoid modifying the input tensor (when input == out).
+    AscendTensor tmp = out;
+    if (!out.defined() || input.isSame(out)) {
+        AscendTensor tmp1;
+        makeTensor(ctx, tmp1, size, input.dtype());
+        tmp = tmp1;
+    }
+    auto ptr = const_cast<diopiTensorHandle_t>(tmp.tensorHandle());
+    AclOpRunner<2, 1>("BroadcastTo", ctx).addInput(input).addConstInput(size).addOutput(ptr).run();
+    out = AscendTensor(ptr);
+    return diopiSuccess;
+}
+
+std::vector<int64_t> inferSize(const std::vector<int64_t>& shape1, const std::vector<int64_t>& shape2) {
+    size_t dimsA = shape1.size();
+    size_t dimsB = shape2.size();
+    size_t ndim = dimsA > dimsB ? dimsA : dimsB;
+    std::vector<int64_t> expandedSizes(ndim);
+
+    // Use ptrdiff_t to ensure signed comparison.
+    for (ptrdiff_t i = (ptrdiff_t)ndim - 1; i >= 0; --i) {
+        ptrdiff_t offset = ndim - 1 - i;
+        ptrdiff_t dimA = dimsA - 1 - offset;
+        ptrdiff_t dimB = dimsB - 1 - offset;
+        auto sizeA = (dimA >= 0) ? shape1[dimA] : 1;
+        auto sizeB = (dimB >= 0) ? shape2[dimB] : 1;
+
+        // 1s map to the other size (even 0).
+        expandedSizes[i] = sizeA == 1 ? sizeB : sizeA;
+    }
+
+    return expandedSizes;
 }
 
 diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, diopiConstTensorHandle_t src) {

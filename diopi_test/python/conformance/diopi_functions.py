@@ -1,17 +1,72 @@
 # Copyright (c) 2023, DeepLink.
 # -*- coding: UTF-8 -*-
 import math
+import ctypes
 import itertools
-
-from ctypes import c_double, byref
-from .diopi_runtime import Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d, to_numpy_dtype, Generator
-from .utils import check_returncode, check_function, glob_vars, get_capsule
-from . import raw_like, int_types, float_types
-from collections import namedtuple
 import numpy as np
+import diopilib
+
+from collections import namedtuple
+from ctypes import c_double, byref
+from .diopi_runtime import (Sizes, Scalar, Tensor, TensorP, Dtype, diopiReduction, diopiRoundMode, diopiError,
+                            compute_nhwc_stride, compute_nhwc_stride_2d, compute_nhwc_stride_3d, to_numpy_dtype,
+                            Generator)
+from .diopi_runtime import raw_like, int_types, float_types, get_last_error
+from .utils import logger
+from conformance.global_settings import glob_vars
 
 
 GLOBAL_STATE = {}
+
+
+def get_capsule(src):
+    PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
+    PyCapsule_New = ctypes.pythonapi.PyCapsule_New
+    PyCapsule_New.restype = ctypes.py_object
+    PyCapsule_New.argtypes = (ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor)
+    capsule = PyCapsule_New(src, None, PyCapsule_Destructor(0))
+    return capsule
+
+
+class DiopiException(Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+class FunctionNotImplementedError(DiopiException):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+class FunctionNotDefinedError(DiopiException):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+def check_returncode(returncode, throw_exception=True):
+    if 0 != returncode:
+        if returncode == diopiError.diopi_no_implement:
+            glob_vars.func_status[glob_vars.cur_test_func] = 'skipped'
+            raise FunctionNotImplementedError(glob_vars.cur_test_func + ' not implement')
+        glob_vars.func_status[glob_vars.cur_test_func] = 'failed'
+        error_info = f"Returncode: {returncode}"
+        error_detail = get_last_error()
+        error_info += ", Details: " + error_detail
+        if throw_exception:
+            raise DiopiException(error_info)
+        else:
+            logger.info(error_info)
+
+
+def check_function(fn_name):
+    glob_vars.cur_test_func = fn_name
+    if hasattr(diopilib, f"{fn_name}"):
+        glob_vars.func_status[glob_vars.cur_test_func] = 'passed'
+        func = eval(f"diopilib.{fn_name}")
+        return func
+    else:
+        glob_vars.func_status[glob_vars.cur_test_func] = 'skipped'
+        raise FunctionNotDefinedError(f'[diopilib] {fn_name} not defined.')
 
 
 def broadcast_out_size(size1, size2):
@@ -3917,5 +3972,99 @@ def linalgqr(input, mode):
     r = Tensor(sizer, input.get_dtype())
     ret = func(input.context(), input, mode, q, r)
     out = [q, r]
+    check_returncode(ret)
+    return out
+
+
+def rotary_emb(input, cos, sin, conj):
+    call = "diopiRotaryEmbedding"
+    func = check_function(call)
+    size = list(input.size().data)
+    out = Tensor(size, input.get_dtype())
+    ret = func(input.context(), out, input, cos, sin, conj, False)
+    check_returncode(ret)
+    return out
+
+
+def rms_norm(input, normalized_shape, weight, bias, eps):
+    call = "diopiRMSNorm"
+    func = check_function(call)
+    size = list(input.size().data)
+    out = Tensor(size, input.get_dtype())
+    inv_rms = Tensor(size, input.get_dtype())
+    normalized_shape = Sizes(list(normalized_shape))
+    ret = func(input.context(), out, inv_rms, input, normalized_shape, weight, bias, eps)
+    check_returncode(ret)
+    return out
+
+
+def multihead_attention_forward(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
+    call = "diopiMultiHeadAttention"
+    func = check_function(call)
+    q_size = list(q.size().data)
+    k_size = list(k.size().data)
+    out = Tensor(q_size, q.get_dtype())
+    softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], q.get_dtype())
+    gen = None
+    debug_attn_mask = Tensor([0], q.get_dtype())
+    softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
+    ret = func(q.context(), q, k, v, dropout_p, is_causal, return_debug_mask, softmax_scale, out, softmax_lse, gen, debug_attn_mask)
+    check_returncode(ret)
+    return out
+
+
+def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch):
+    call = "diopiApplyPenalty"
+    func = check_function(call)
+    # some checks
+    logits_shape = list(logits.size().data)
+    presence_penalty_shape = list(presence_penalty.size().data)
+    frequency_penalty_shape = list(frequency_penalty.size().data)
+    p_cumsum_seq_len_shape = list(p_cumsum_seq_len.size().data)
+    p_token_ids_shape = list(p_token_ids.size().data)
+    p_token_counts_shape = list(p_token_counts.size().data)
+
+    assert logits_shape[0] == presence_penalty_shape[0] and logits_shape[0] == frequency_penalty_shape[0], "The first dimensions of logits, presence penalty, and frequency penalty must be equal."
+    assert logits_shape[0] + 1 == p_cumsum_seq_len_shape[0], "The first dimension of logits_shape plus one must equal the first dimension of p_cumsum_seq_len_shape."
+    assert p_token_ids_shape == p_token_counts_shape, "The shape of p_token_ids must be equal to the shape of p_token_counts."
+
+    ret = func(logits.context(), logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch)
+    out = logits
+    check_returncode(ret)
+    return out
+
+
+def destindex_copy_kv(k, dest_loc, out):
+    call = "diopiDestIndexCopyKV"
+    func = check_function(call)
+
+    ret = func(k.context(), out, k, dest_loc)
+    check_returncode(ret)
+    return out
+
+
+def token_attention(q, k, out, b_loc, b_start_loc, b_seq_len, max_input_len):
+    call = "diopiTokenAttentionInference"
+    func = check_function(call)
+
+    ret = func(q.context(), out, q, k, b_loc, b_start_loc, b_seq_len, max_input_len)
+    check_returncode(ret)
+    return out
+
+
+def token_softmax_reducev(logics, v, out, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index):
+    call = "diopiTokenSoftmaxReduceVInference"
+    func = check_function(call)
+
+    ret = func(logics.context(), out, logics, v, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index)
+    check_returncode(ret)
+    return out
+
+
+def context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len):
+    call = "diopiContextAttentionInference"
+    func = check_function(call)
+
+    ret = func(q.context(), out, q, k, v, b_start_loc, b_seq_len, max_input_len)
     check_returncode(ret)
     return out

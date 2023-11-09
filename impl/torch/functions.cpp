@@ -164,7 +164,7 @@ diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     auto atOther = impl::aten::buildAtScalar(other);
     auto roundingMode = impl::aten::getRoundingMode(rounding_mode);
     auto atOut = impl::aten::buildATen(out);
-    at::div_out(atOut, atInput, atOther, roundingMode);
+    at::div_out(atOut, atInput, c10::scalar_to_tensor(atOther), roundingMode);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -1126,7 +1126,7 @@ diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     at::Scalar atOther = impl::aten::buildAtScalar(other);
     at::Scalar atAlpha = impl::aten::buildAtScalar(alpha);
     at::Tensor atOut = impl::aten::buildATen(out);
-    at::add_out(atOut, atInput, atOther, atAlpha);
+    at::add_out(atOut, atInput, c10::scalar_to_tensor(atOther), atAlpha);
 
     impl::aten::unsetCurCtx();
     return diopiSuccess;
@@ -1171,7 +1171,7 @@ diopiError_t diopiSubScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     at::Scalar atOther = impl::aten::buildAtScalar(other);
     at::Scalar atAlpha = impl::aten::buildAtScalar(alpha);
     at::Tensor atOut = impl::aten::buildATen(out);
-    at::sub_out(atOut, atInput, atOther, atAlpha);
+    at::sub_out(atOut, atInput, c10::scalar_to_tensor(atOther), atAlpha);
 
     impl::aten::unsetCurCtx();
     return diopiSuccess;
@@ -1211,7 +1211,7 @@ diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     at::Tensor atInput = impl::aten::buildATen(input);
     at::Scalar atOther = impl::aten::buildAtScalar(other);
     at::Tensor atOut = impl::aten::buildATen(out);
-    at::mul_out(atOut, atInput, atOther);
+    at::mul_out(atOut, atInput, c10::scalar_to_tensor(atOther));
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
