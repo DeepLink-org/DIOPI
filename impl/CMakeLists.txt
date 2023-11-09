@@ -11,6 +11,8 @@ include_directories("${PROJECT_SOURCE_DIR}/../adaptor/csrc")
 set (ADAPTOR_DIR "${CMAKE_SOURCE_DIR}/../adaptor")
 set (DIOPI_TEST_DIR "${CMAKE_SOURCE_DIR}/../diopi_test")
 
+file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/../diopi_test/python/diopilib)
+
 if (TEST)
     # find the file Python.h and add it in the include path.
     execute_process(COMMAND  sh -c "dirname $(find  $(dirname $(which python))/../ -name Python.h)" OUTPUT_VARIABLE PYTHON_INCLUDE_DIR)
