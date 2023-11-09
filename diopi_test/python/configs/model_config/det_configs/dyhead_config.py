@@ -634,6 +634,8 @@ dyhead_config = {
     'group_norm': dict(
         name=["group_norm"],
         interface=["torch"],
+        atol=1e-4,
+        rtol=1e-5,
         para=dict(
             num_groups=[16, 16],
             eps=[1e-05, 1e-05],

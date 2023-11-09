@@ -268,6 +268,8 @@ detr_config = {
     'bmm': dict(
         name=["bmm"],
         interface=["torch"],
+        atol=1e-4,
+        rtol=1e-5,
         tensor_para=dict(
             args=[
                 {

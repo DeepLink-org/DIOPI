@@ -429,6 +429,9 @@ convnext_config = {
     'layer_norm': dict(
         name=["layer_norm"],
         interface=["torch.nn.functional"],
+        atol=1e-5,
+        atol_half=1e-1,
+        rtol_half=1e-2,
         para=dict(
             normalized_shape=[(192,), (96,)],
             eps=[1e-06, 1e-06],

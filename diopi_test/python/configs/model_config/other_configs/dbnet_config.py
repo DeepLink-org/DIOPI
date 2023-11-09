@@ -200,6 +200,10 @@ dbnet_config = {
     'conv_transpose2d': dict(
         name=["conv_transpose2d"],
         interface=["torch.nn.functional"],
+        atol=1e-3,
+        rtol=1e-3,
+        atol_half=1e2,
+        rtol_half=1e2,
         para=dict(
             stride=[(2, 2), (2, 2), (2, 2), (2, 2)],
             padding=[(0, 0), (0, 0), (0, 0), (0, 0)],

@@ -57,13 +57,15 @@ def gen_data(partition, device_type, device_num, use_db, use_slurm):
     execute_commands(commands)
 
 
-def gen_case(partition, use_db, use_slurm):
+def gen_case(partition, use_db, use_slurm impl_folder):
     commands = []
     for model in model_list:
         cmd = ''
         if use_slurm:
             cmd += f'srun --job-name {model}_gen_case -p {partition} '
         cmd += f'python main.py --mode gen_case --model_name {model} --case_output_dir ./gencases/{model}_case'
+        if impl_folder:
+            cmd += f' --impl_folder {impl_folder}'
         if use_db:
             db_path = f'sqlite:///./cache/{model}_testrecord.db'
             cmd += f' --use_db --db_path {db_path}'
@@ -116,6 +118,10 @@ if __name__ == '__main__':
         default="test",
         help="running mode, available options: gen_data, run_test and utest",
     )
+    
+    parser.add_argument(
+        "--impl_folder", type=str, default="", help="impl_folder"
+    )
 
     parser.add_argument("--pytest_args", type=str, help="pytest args", default='')
 
@@ -124,6 +130,6 @@ if __name__ == '__main__':
     if args.mode == 'gen_data':
         gen_data(args.partition, args.device_type, args.device_num, args.use_db, args.use_slurm)
     elif args.mode == 'gen_case':
-        gen_case(args.partition, args.use_db, args.use_slurm)
+        gen_case(args.partition, args.use_db, args.use_slurm, args.impl_folder)
     elif args.mode == 'run_test':
         run_test(args.partition, args.device_type, args.device_num, args.use_db, args.pytest_args, args.use_slurm)

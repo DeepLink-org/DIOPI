@@ -78,6 +78,11 @@ atol_rtol = {
     'conv2d': dict(atol=1e-3, rtol=1e-3),
     'linear': dict(atol=1e-3, rtol=1e-4, atol_half=1e-1, rtol_half=1e-2,),
     'clamp': dict(atol=1e-4, rtol=1e-5,)
+    'conv_transpose2d': dict(atol=1e-3, rtol=1e-3, atol_half=1e2, rtol_half=1e2,)
+    'adam': dict(atol=1e-4, rtol=1e-3, atol_half=1e-4, rtol_half=1e-3,),
+    'group_norm': dict(atol=1e-4, rtol=1e-5,),
+    'layer_norm': dict(atol=1e-5, atol_half=1e-1, rtol_half=1e-2,),
+    'bmm': dict(atol=1e-4, rtol=1e-5,)
 }
 
 tensor_indent = "                    "

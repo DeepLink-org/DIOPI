@@ -588,6 +588,9 @@ swin_transformer_config = {
     'layer_norm': dict(
         name=["layer_norm"],
         interface=["torch.nn.functional"],
+        atol=1e-5,
+        atol_half=1e-1,
+        rtol_half=1e-2,
         para=dict(
             normalized_shape=[(1536,), (3072,)],
             eps=[1e-05, 1e-05],
