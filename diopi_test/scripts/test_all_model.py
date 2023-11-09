@@ -23,7 +23,7 @@ logger.addHandler(console_handler)
 def execute_commands(commands):
     def execute_command(command):
         logger.info(command)
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in process.stdout:
             logger.info(line.strip())
         process.wait()
