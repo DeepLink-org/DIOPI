@@ -65,8 +65,8 @@ diopiError_t castTensor(diopiContextHandle_t ctx, const AscendTensor& src, Ascen
 
 diopiError_t castTensor(diopiContextHandle_t ctx, const std::vector<AscendTensor>& src, std::vector<AscendTensor>& dst, diopiDtype_t supportDtype);
 
-diopiTensorHandle_t createTensorIfNullptr(diopiContextHandle_t ctx, diopiConstTensorHandle_t in, diopiSize_t& shape, diopiDtype_t dtype, bool isFillingRequired,
-                                          double value);
+diopiTensorHandle_t createTensorIfNullptrOrConstCast(diopiContextHandle_t ctx, diopiConstTensorHandle_t in, diopiSize_t& shape, diopiDtype_t dtype,
+                                                     bool isFillingRequired, double value);
 
 /**
  * @brief Convert the data type of an AscendTensor src to the specified supported data type dtype.

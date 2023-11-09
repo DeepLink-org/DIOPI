@@ -236,8 +236,8 @@ diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, doubl
     return diopiSuccess;
 }
 
-diopiTensorHandle_t createTensorIfNullptr(diopiContextHandle_t ctx, diopiConstTensorHandle_t in, diopiSize_t& shape, diopiDtype_t dtype, bool isFillingRequired,
-                                          double value) {
+diopiTensorHandle_t createTensorIfNullptrOrConstCast(diopiContextHandle_t ctx, diopiConstTensorHandle_t in, diopiSize_t& shape, diopiDtype_t dtype,
+                                                     bool isFillingRequired, double value) {
     diopiTensorHandle_t out;
     if (nullptr == in) {
         diopiRequireTensor(ctx, &out, &shape, nullptr, dtype, diopi_device);
