@@ -56,28 +56,24 @@ void batchNormBackwardTrainingReduceNocheck(diopiContextHandle_t ctx, AscendTens
 diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t saveMean, diopiTensorHandle_t saveInvstd,
                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiTensorHandle_t runningMean,
                             diopiTensorHandle_t runningVar, bool training, double momentum, double eps) {
-    if (runningMean == nullptr) {
-        makeTensorLike(ctx, &runningMean, weight, diopi_dtype_float32);
-        diopiScalar_t zero = constructDiopiScalarT(diopi_dtype_float64, 0);
-        diopiFill(ctx, runningMean, &zero);
-    }
-    if (runningVar == nullptr) {
-        makeTensorLike(ctx, &runningVar, weight, diopi_dtype_float32);
-        diopiScalar_t one = constructDiopiScalarT(diopi_dtype_float64, 1);
-        diopiFill(ctx, runningVar, &one);
-    }
-
     AscendTensor inputAt(input), outputAt(out);
     updateInputAscendTensorDim(inputAt, training);
     outputAt.view(inputAt.getAclMemShape());
 
+    std::vector<int64_t> batchShapeV{inputAt.shape(1)};
+    diopiSize_t batchShapeSizeT{batchShapeV.data(), static_cast<int64_t>(batchShapeV.size())};
+    diopiTensorHandle_t weightTemp = createTensorIfNullptrOrConstCast(ctx, weight, batchShapeSizeT, inputAt.dtype(), true, 1);
+    diopiTensorHandle_t biasTemp = createTensorIfNullptrOrConstCast(ctx, bias, batchShapeSizeT, inputAt.dtype(), true, 0);
+    diopiTensorHandle_t runningMeanTemp = createTensorIfNullptrOrConstCast(ctx, runningMean, batchShapeSizeT, inputAt.dtype(), true, 0);
+    diopiTensorHandle_t runningVarTemp = createTensorIfNullptrOrConstCast(ctx, runningVar, batchShapeSizeT, inputAt.dtype(), true, 1);
+
     if (!training) {
         AclOpRunner<5, 1>("BNInfer", ctx)
             .addInput(inputAt)
-            .addInput(weight)
-            .addInput(bias)
-            .addInput(runningMean)
-            .addInput(runningVar)
+            .addInput(weightTemp)
+            .addInput(biasTemp)
+            .addInput(runningMeanTemp)
+            .addInput(runningVarTemp)
             .addOutput(outputAt)
             .setAttr("epsilon", static_cast<float>(eps))
             .run();
@@ -93,8 +89,8 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     } else {
         diopiTensorHandle_t sum = nullptr, squareSum = nullptr;
         diopiSize_t shape, stride;
-        diopiGetTensorShape(runningMean, &shape);
-        diopiGetTensorStride(runningMean, &stride);
+        diopiGetTensorShape(runningMeanTemp, &shape);
+        diopiGetTensorStride(runningMeanTemp, &stride);
         diopiRequireTensor(ctx, &sum, &shape, &stride, diopiDtype_t::diopi_dtype_float32, diopi_device);
         diopiRequireTensor(ctx, &squareSum, &shape, &stride, diopiDtype_t::diopi_dtype_float32, diopi_device);
         AclOpRunner<1, 2>("BNTrainingReduce", ctx).addInput(inputAt).addOutput(sum).addOutput(squareSum).run();
@@ -102,15 +98,15 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
             .addInput(inputAt)
             .addInput(sum)
             .addInput(squareSum)
-            .addInput(weight)
-            .addInput(bias)
-            .addInput(runningMean)
-            .addInput(runningVar)
+            .addInput(weightTemp)
+            .addInput(biasTemp)
+            .addInput(runningMeanTemp)
+            .addInput(runningVarTemp)
             .setAttr("epsilon", static_cast<float>(eps))
             .setAttr("factor", static_cast<float>(momentum))
             .addOutput(outputAt)
-            .addOutput(runningMean)
-            .addOutput(runningVar)
+            .addOutput(runningMeanTemp)
+            .addOutput(runningVarTemp)
             .addOutput(saveMean)
             .addOutput(saveInvstd)
             .run();

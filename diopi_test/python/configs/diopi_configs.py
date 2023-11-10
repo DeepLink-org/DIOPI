@@ -12,6 +12,11 @@ ops_with_states = {"batch_norm": {"running_mean", "running_var"},
                    "copy_": {"input"},
                    "cast_dtype": {"out"},
                    "batch_norm_gather_stats_with_counts": {"running_mean", "running_var"},
+                   "apply_penalty": {"logits"},
+                   "context_attention": {"out"},
+                   "destindex_copy_kv": {"out"},
+                   "token_attention": {"out"},
+                   "token_softmax_reducev": {"out"}
                    }
 
 
@@ -8129,5 +8134,308 @@ diopi_configs = {
                 },
             ],
         ),
+    ),
+
+    'rotary_emb': dict(
+        name=['rotary_emb'],
+        interface=['CustomizedTest'],
+        dtype=[np.float64, np.float32, np.float16],
+        para=dict(
+            conj=[False, True, False, True],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1, 125, 16, 32), (1, 125, 16, 32), (2, 64, 16, 32), (3, 100, 8, 64)),
+                },
+                {
+                    "ins": ['cos'],
+                    "shape": ((125, 1, 16), (125, 1, 16), (64, 1, 16), (100, 1, 32)),
+                },
+                {
+                    "ins": ['sin'],
+                    "shape": ((125, 1, 16), (125, 1, 16), (64, 1, 16), (100, 1, 32)),
+                },
+            ],
+        ),
+    ),
+
+    'rms_norm': dict(
+        name=['rms_norm'],
+        interface=['CustomizedTest'],
+        dtype=[np.float32],
+        para=dict(
+            eps=[1e-6, 1e-6, 1e-6, 1e-6],
+            normalized_shape=[(5, ), (32, ), (64, ), (8, )],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((5, 5), (35, 125, 32), (16, 64, 64), (1, 32, 32, 8)),
+                },
+                {
+                    "ins": ['weight'],
+                    "shape": ((5, ), (32, ), (64, ), (8, )),
+                },
+                {
+                    "ins": ['bias'],
+                    "shape": ((5, ), (32, ), (64, ), (8, )),
+                },
+            ],
+        ),
+    ),
+
+    # 'multihead_attention_forward': dict(
+    #     name=['multihead_attention_forward'],
+    #     interface=['CustomizedTest'],
+    #     dtype=[np.float16],
+    #     atol=1e-3,
+    #     rtol=1e-4,
+    #     para=dict(
+    #         dropout_p=[0, 0],
+    #         is_causal=[False, False],
+    #         return_debug_mask=[False, False],
+    #         scale=[None, None]
+    #     ),
+    #     tensor_para=dict(
+    #         gen_fn='Genfunc.randn',
+    #         args=[
+    #             {
+    #                 "ins": ['q'],
+    #                 "shape": ((2, 2, 2, 8), (2, 5, 7, 8)),
+    #                 "dtype": [np..float16],
+    #                 "gen_fn": Genfunc.randn,
+    #             },
+    #             {
+    #                 "ins": ['k'],
+    #                 "shape": ((2, 2, 2, 8), (2, 5, 7, 8)),
+    #                 "dtype": [np.float16],
+    #                 "gen_fn": Genfunc.randn,
+    #             },
+    #             {
+    #                 "ins": ['v'],
+    #                 "shape": ((2, 2, 2, 8), (2, 5, 7, 8)),
+    #                 "dtype": [np.float16],
+    #                 "gen_fn": Genfunc.randn,
+    #             },
+    #         ],
+    #     ),
+    # ),
+
+    'apply_penalty': dict(
+        name=['apply_penalty'],
+        interface=['CustomizedTest'],
+        para=dict(
+            p_max_len_in_batch=(8,)),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['logits'],
+                    "value": ([[0.1, 0.5, 0.4, 0.3, 0.5],
+                              [0.2, 0.4, 0.0, 0.0, 0.0],
+                              [0.3, 0.4, 0.5, 0.3, 0.0]],),
+                    "dtype": [np.float32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+                {
+                    "ins": ["presence_penalty"],
+                    "value": ([0.1, 0.8, 1.0],),
+                    "dtype": [np.float32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+                {
+                    "ins": ["frequency_penalty"],
+                    "value": ([0.3, 0.5, 0.4],),
+                    "dtype": [np.float32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+                {
+                    "ins": ["p_token_ids"],
+                    "value": ([0, 1, 2, 3, 4, 0, 1, 0, 1, 2, 3],),
+                    "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+                {
+                    "ins": ["p_token_counts"],
+                    "value": ([3, 3, 2, 2, 1, 3, 3, 3, 3, 2, 2],),
+                    "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+                {
+                    "ins": ["p_cumsum_seq_len"],
+                    "value": ([0, 5, 7, 11],),
+                    "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+            ]
+        )
+    ),
+
+    'destindex_copy_kv': dict(
+        name=['destindex_copy_kv'],
+        interface=['CustomizedTest'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['k'],
+                    "shape": ((5, 32, 128), (4, 32, 128)),
+                    "dtype": [np.float16],
+                },
+                {
+                    "ins": ['dest_loc'],
+                    "dtype": [np.int32],
+                    "value": ((0, 1, 2, 3, 4), (14, 15, 16, 17)),
+                    "gen_policy": "gen_tensor_by_value"
+                },
+                {
+                    "ins": ['out'],
+                    "shape": ((120, 32, 128), (120, 32, 128)),
+                    "dtype": [np.float16],
+                }
+            ]
+        )
+    ),
+
+    'context_attention': dict(
+        name=['context_attention'],
+        interface=['CustomizedTest'],
+        para=dict(
+            max_input_len=(32, 256, 128),
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((64, 32, 128), (512, 32, 128), (256, 64, 256)),
+                    "dtype": [np.float16],
+                },
+                {
+                    "ins": ["k"],
+                    "shape": ((64, 32, 128), (512, 32, 128), (256, 64, 256)),
+                    "dtype": [np.float16],
+                },
+                {
+                    "ins": ["v"],
+                    "shape": ((64, 32, 128), (512, 32, 128), (256, 64, 256)),
+                    "dtype": [np.float16],
+                },
+                {
+                    "ins": ["out"],
+                    "shape": ((64, 32, 128), (512, 32, 128), (256, 64, 256)),
+                    "dtype": [np.float16],
+                },
+                {
+                    "ins": ["b_start_loc"],
+                    "value": ((0, 16, 48), (0, 64, 256), (0, 64, 128)),
+                    "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+                {
+                    "ins": ["b_seq_len"],
+                    "value": ((16, 32, 16), (64, 192, 256), (64, 64, 128)),
+                    "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+            ]
+        ),
+    ),
+
+    'token_attention': dict(
+        name=['token_attention'],
+        interface=['CustomizedTest'],
+        para=dict(
+            max_input_len=[5, ],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((3, 32, 128), ),
+                    "dtype": [np.float16],
+                },
+                {
+                    "ins": ["k"],
+                    "shape": ((100, 32, 128), ),
+                    "dtype": [np.float16],
+                },
+                {
+                    "ins": ["out"],
+                    "shape": ((32, 13), ),
+                    "dtype": [np.float16],
+                },
+                {
+                    "ins": ["b_loc"],
+                    "value": ([[0, 0, 1, 2, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                               [3, 4, 5, 6, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                               [0, 7, 8, 9, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], ],),
+                    "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+                {
+                    "ins": ["b_start_loc"],
+                    "value": ([0, 4, 9], ),
+                    "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+                {
+                    "ins": ["b_seq_len"],
+                    "value": ([4, 5, 4], ),
+                    "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+            ]
+        )
+    ),
+
+    'token_softmax_reducev': dict(
+        name=['token_softmax_reducev'],
+        interface=['CustomizedTest'],
+        para=dict(
+            max_input_len=[5, ],
+            other_kv_index=[10, ],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['logics'],
+                    "shape": ((32, 13), ),
+                    "dtype": [np.float16],
+                },
+                {
+                    "ins": ["v"],
+                    "shape": ((100, 32, 128), ),
+                    "dtype": [np.float16],
+                },
+                {
+                    "ins": ["out"],
+                    "shape": ((3, 32, 128),),
+                    "dtype": [np.float16],
+                },
+                {
+                    "ins": ["b_loc"],
+                    "value": ([[0, 0, 1, 2, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                               [3, 4, 5, 6, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                               [0, 7, 8, 9, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], ],),
+                    "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+                {
+                    "ins": ["b_start_loc"],
+                    "value": ([0, 4, 9],),
+                    "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+                {
+                    "ins": ["b_seq_len"],
+                    "value": ([4, 5, 4],),
+                    "dtype": [np.int32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+            ]
+        )
     ),
 }

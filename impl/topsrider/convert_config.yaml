@@ -1,6 +1,6 @@
-#- common_config:
-    #dtype: (int64)->int32, (float64)->float32
-    #layout: NHWC
+- common_config:
+    dtype: (int64)->int32, (float64)->float32
+    layout: NCHW
     #contiguous: False
 
 - diopiMaxAll:
@@ -19,6 +19,12 @@
     dtype: (int64)->int32, (float64)->float32
 
 - diopiAddInpScalar:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiOneHot:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiMulScalar:
     dtype: (int64)->int32, (float64)->float32
 
 - diopiCat:
@@ -44,6 +50,51 @@
 
 - diopiArgmax:
     dtype: (int64)->int32, (float64)->float32
+
+- diopiSubScalar:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiGeScalar:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiEqScalar:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiDivScalar:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiStack:
+    dtype: (int64)->int32, (float64)->float32, (uint8)->int32
+
+- diopiMax:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiFill:
+    dtype: (int64)->int32, (float64)->float32, (uint8)->int32
+
+- diopiExpand:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiRepeat:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiAdd:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiMinAll:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiTopk:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiScatterScalar:
+    dtype: (int64)->int32, (float64)->float32
+
+- diopiProd:
+    dtype: (bool)->int32, (int64)->int32, (float64)->float32
+
+# - diopiIndex:
+#     dtype: (int64)->int32, (float64)->float32
 
 #- diopiAdd:
     #dtype: (int64)->int32, (float64)->float32

@@ -100,16 +100,7 @@ def get_func_info(content):
     return type_change, args, attr_types, paras_can_be_none, ins_vector, outs_vector, out_ptr
 
 
-def gen_functions(options, functions_fm):
-    _cur_dir = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(_cur_dir, options.get('source_dir'), 'functions.h'), 'r', encoding='utf8')as f:
-        content = f.readlines()
-    exports = []
-    device = options.get('device')
-    if device == 'ascend':
-        ft = OT.function_ascend_template
-    else:
-        ft = OT.function_template
+def get_export(content, ft, exports):
     for idx, row in enumerate(content):
         if row.startswith("DIOPI_API"):
             row = row[10:]
@@ -117,9 +108,6 @@ def gen_functions(options, functions_fm):
             idx1 = row.find("(")
             idx0 = row.rfind(" ", 0, idx1)
             func_name = row[idx0 + 1: idx1]
-            if func_name == 'diopiCastDtype' or func_name == 'diopiCopyInp':
-                exports.append('m.def("{func_name}", {func_name});'.format(func_name=func_name))
-                continue
             temp_content += row.replace(';', '')
             idx2 = row.find(")")
             while idx2 == -1:
@@ -170,6 +158,23 @@ def gen_functions(options, functions_fm):
                 else:
                     exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(arg_def), convert='',
                                                           out_copy='', call_func=call_func)))
+    return exports
+
+
+def gen_functions(options, functions_fm):
+    _cur_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(_cur_dir, options.get('source_dir'), 'functions.h'), 'r', encoding='utf8')as f:
+        content = f.readlines()
+    exports = []
+    device = options.get('device')
+    if device == 'ascend':
+        ft = OT.function_ascend_template
+    else:
+        ft = OT.function_template
+    exports = get_export(content, ft, exports)
+    with open(os.path.join(_cur_dir, options.get('source_dir'), 'functions_ext.h'), 'r', encoding='utf8')as f:
+        content_ext = f.readlines()
+    exports = get_export(content_ext, ft, exports)
 
     functions_fm.write("export_functions.cpp", OT.operators_template, env=dict(export_functions=exports))
 

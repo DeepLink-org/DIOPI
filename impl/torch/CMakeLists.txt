@@ -27,12 +27,14 @@ if (DYLOAD)
     set(IMPL_SRC error.cpp wrap_func.cpp)
 endif()
 
-file(GLOB_RECURSE REAL_IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions_mmcv/*.cu)
+file(GLOB REAL_IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions_mmcv/*.cu functions_ext/*.cu)
 set(REAL_IMPL_SRC ${REAL_IMPL_SRC}
                   nms_kernel.cu
                   roi_align_kernel.cu
                   functions.cpp
                   functions_mmcv.cpp
+                  functions_ext.cpp
+                  functions_lightllm.cpp
                   error.cpp)
 
 if(HIP)
@@ -74,7 +76,10 @@ else ()
         target_link_libraries(${DEVICEIMPL} ${HIP_LIBRARIES} ${TORCH_LIBRARIES})
     else()
         cuda_add_library(${DEVICEIMPL} SHARED ${REAL_IMPL_SRC})
+        # target_compile_definitions(${DEVICEIMPL} PRIVATE __CUDA_NO_HALF_OPERATORS__)
         target_link_libraries(${DEVICEIMPL} ${CUDA_LIBRARIES} ${TORCH_LIBRARIES})
+        add_subdirectory(functions_ext/flash-attention)
+        target_link_libraries(${DEVICEIMPL} diopi_torch_ext_flash_attn)
     endif()
 endif()
 

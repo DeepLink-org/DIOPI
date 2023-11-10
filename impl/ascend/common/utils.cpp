@@ -236,6 +236,20 @@ diopiError_t fillTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, doubl
     return diopiSuccess;
 }
 
+diopiTensorHandle_t createTensorIfNullptrOrConstCast(diopiContextHandle_t ctx, diopiConstTensorHandle_t in, diopiSize_t& shape, diopiDtype_t dtype,
+                                                     bool isFillingRequired, double value) {
+    diopiTensorHandle_t out;
+    if (nullptr == in) {
+        diopiRequireTensor(ctx, &out, &shape, nullptr, dtype, diopi_device);
+        if (isFillingRequired) {
+            fillTensor(ctx, out, value);
+        }
+    } else {
+        out = const_cast<diopiTensorHandle_t>(in);
+    }
+    return out;
+}
+
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out, diopiDtype_t dtype, diopiDevice_t device) {
     int64_t sizeTmp[1] = {1};
     diopiSize_t sSize = arrayToDiopiSize(sizeTmp, 1);

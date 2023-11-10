@@ -70,6 +70,7 @@ def test_${func_case_name}(self):
     ${forward}
     ${backward}
     ${forward_inp}
+    default_context.clear_tensors()
 """
     )
 
