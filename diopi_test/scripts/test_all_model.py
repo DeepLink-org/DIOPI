@@ -118,7 +118,7 @@ if __name__ == '__main__':
         default="test",
         help="running mode, available options: gen_data, run_test and utest",
     )
-    
+
     parser.add_argument(
         "--impl_folder", type=str, default="", help="impl_folder"
     )
