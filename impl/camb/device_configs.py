@@ -644,6 +644,12 @@ device_configs = {
         ),
     ),
 
+    'sum': dict(
+        name=["sum"],
+        atol = 0.001,
+        rtol = 0.0001,
+    ),
+
     'reduce_partial_op_1': dict(
         name=['std'],
         tensor_para=dict(
