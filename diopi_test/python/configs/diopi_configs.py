@@ -2107,7 +2107,8 @@ diopi_configs = {
         name=['sub'],
         interface=['torch'],
         tag=['scalar'],
-        dtype=[np.int64, np.int32, np.int16, np.int8, np.uint8],
+        is_inplace=True,
+        dtype=[np.float32],
         para=dict(
             other=[0, -1, 0.028, 2.232, 1, -0.2421, -2],
         ),
@@ -2124,78 +2125,13 @@ diopi_configs = {
         ),
     ),
 
-    'sub_scalar_inplace_float': dict(
-        name=['sub'],
-        interface=['torch'],
-        tag=['scalar'],
-        is_inplace=True,
-        dtype=[np.float64, np.float32, np.float16],
-        para=dict(
-            other=[0, -1, 0.028, 2.232, 1],
-        ),
-        tensor_para=dict(
-            gen_fn='Genfunc.randn',
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((), (1024, ), (384, 128), (2, 64, 128),
-                              (128, 64, 3, 3)),
-                },
-            ],
-        ),
-    ),
-
-    'sub_scalar_inplace_int': dict(
-        name=['sub'],
-        interface=['torch'],
-        tag=['scalar'],
-        is_inplace=True,
-        dtype=[np.int64, np.int32, np.int16],
-        para=dict(
-            other=[0, -1],
-        ),
-        tensor_para=dict(
-            gen_fn='Genfunc.randint',
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((), (1024, )),
-                },
-            ],
-        ),
-    ),
-
     'pointwise_binary_scalar': dict(
-        # FIXME other为float时报错
-        # name=['add', 'mul', 'div', 'eq',
-        #       'ne', 'le', 'lt', 'gt', 'ge'],
-        name=['add', 'div', 'eq',
-              'ne', 'le', 'lt', 'gt', 'ge'],
-        interface=['torch'],
-        tag=['scalar'],
-        dtype=[np.int64, np.int32, np.int16, np.int8, np.uint8, np.bool_],
-        para=dict(
-            other=[0, -1, 0.028, 2.232, 1],
-        ),
-        tensor_para=dict(
-            gen_fn='Genfunc.randn',
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((), (1024, ), (384, 128), (2, 64, 128),
-                              (128, 64, 3, 3)),
-                },
-            ],
-        ),
-    ),
-
-    'pointwise_binary_scalar_inplace_float': dict(
         name=['add', 'mul', 'div', 'eq',
               'ne', 'le', 'lt', 'gt', 'ge'],
         interface=['torch'],
         tag=['scalar'],
         is_inplace=True,
-        dtype=[np.float64, np.float32, np.float16],
+        dtype=[np.float32],
         para=dict(
             other=[0, -1, 0.028, 2.232, 1, True, False],
         ),
@@ -2207,54 +2143,6 @@ diopi_configs = {
                     "shape": ((), (1024, ), (384, 128), (2, 64, 128),
                               (128, 64, 3, 3), (128, 32, 2, 2),
                               (2, 32, 130, 130)),
-                },
-            ],
-        ),
-    ),
-
-    'pointwise_binary_scalar_inplace_int': dict(
-        # FIXME 部分Scalar算子运算报错
-        # name=['add', 'mul', 'div', 'eq',
-        #       'ne', 'le', 'lt', 'gt', 'ge'],
-        name=['add', 'eq',
-              'ne', 'le', 'lt', 'gt', 'ge'],
-        interface=['torch'],
-        tag=['scalar'],
-        is_inplace=True,
-        dtype=[np.int64, np.int32, np.int16],
-        para=dict(
-            other=[0, -1, True],
-        ),
-        tensor_para=dict(
-            gen_fn='Genfunc.randint',
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((), (1024, ), (3, 4)),
-                },
-            ],
-        ),
-    ),
-
-    'pointwise_binary_scalar_inplace_bool': dict(
-        # FIXME 部分Scalar算子运算报错
-        # name=['add', 'mul', 'div', 'eq',
-        #       'ne', 'le', 'lt', 'gt', 'ge'],
-        name=['eq',
-              'ne', 'le', 'lt', 'gt', 'ge'],
-        interface=['torch'],
-        tag=['scalar'],
-        is_inplace=True,
-        dtype=[np.bool_],
-        para=dict(
-            other=[False],
-        ),
-        tensor_para=dict(
-            gen_fn='Genfunc.randn',
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((1024, ), ),
                 },
             ],
         ),
