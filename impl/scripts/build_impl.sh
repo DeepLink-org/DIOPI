@@ -25,6 +25,9 @@ case $1 in
     && make -j8;;
   camb)
     mkdir -p build && cd build && cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=camb -DTEST=ON -DENABLE_COVERAGE=${USE_COVERAGE} && make -j8;;
+  ascend_npu)
+    
+    mkdir -p build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=ascend_npu -DTEST=ON && make -j8;;
   ascend)
     mkdir -p build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=ascend -DTEST=ON && make -j8;;
   hip_pytorch)
