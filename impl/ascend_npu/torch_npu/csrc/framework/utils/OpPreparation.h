@@ -7,7 +7,7 @@
 namespace at_npu {
 namespace native {
 
-
+#if 1
 class OpPreparation {
 public:
   static UnifiedResult binary_op_check(at::Tensor &out, const at::Tensor &a, const at::Tensor &b,
@@ -92,5 +92,6 @@ public:
                           const std::initializer_list<at::Tensor> &outputs);
   static bool IsCPUScalar(const at::Tensor &tensor);
 };  // namespace OpPreparation
+#endif
 }  // namespace native
 }  // namespace at_npu

@@ -11,10 +11,11 @@
 #include "acl/acl_base.h"
 #include "acl/acl_op.h"
 
+#if 1
 #include "torch_npu/csrc/core/npu/NPUMacros.h"
 //#include "torch_npu/csrc/core/npu/NPUCachingAllocator.h"
-#include "torch_npu/csrc/framework/interface/AclOpCompileInterface.h"
-#include "torch_npu/csrc/core/npu/interface/AsyncTaskQueueInterface.h"
+//#include "torch_npu/csrc/framework/interface/AclOpCompileInterface.h"
+//#include "torch_npu/csrc/core/npu/interface/AsyncTaskQueueInterface.h"
 
 using std::string;
 using std::vector;
@@ -59,13 +60,19 @@ namespace at_npu
       static void ProfReportMarkDataToNpuProfiler(uint32_t category, void *data, size_t offset);
 #endif
     private:
+    #if 0
       using DqueueCall = void (*)(c10_npu::queue::QueueParas *para, uint32_t category);
       static void DqueueCompileExcute(c10_npu::queue::QueueParas *para, uint32_t category);
       static void DqueueAnyncMemcpy(c10_npu::queue::QueueParas *para, uint32_t category);
       static void DqueueEvent(c10_npu::queue::QueueParas *para, uint32_t category);
       static void DqueueCompileExcuteBs(c10_npu::queue::QueueParas *para, uint32_t category);
+    #endif
     };
+    
     const std::string AclDateTypeToString(aclDataType descDType);
     const std::string AclFormatToString(aclFormat descFormat);
+
   } // namespace native
 } // namespace at_npu
+
+#endif

@@ -1,8 +1,8 @@
 #pragma once
 
-
+#include "torch_npu/csrc/core/npu/NPUException.h"
 //#include "torch_npu/csrc/core/npu/NPUStream.h"
-
+#if 0
 #include "acl/acl_base.h"
 #include "torch_npu/csrc/framework/interface/AclOpCompileInterface.h"
 #include "torch_npu/csrc/framework/NPUDefine.h"
@@ -409,3 +409,4 @@ namespace at_npu
     static bool deterministicaclnn_oldstatus = false;
   } // namespace native
 } // namespace at_npu
+#endif

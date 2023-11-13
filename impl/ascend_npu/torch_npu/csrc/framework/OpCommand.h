@@ -1,15 +1,16 @@
 #pragma once
 
 #include "torch_npu/csrc/core/npu/NPUMacros.h"
+#include "torch_npu/csrc/core/npu/DeviceUtils.h"
 #include "torch_npu/csrc/framework/OpParamMaker.h"
-//#include "torch_npu/csrc/framework/FormatHelper.h"
+#include "torch_npu/csrc/framework/FormatHelper.h"
 //#include "torch_npu/csrc/aten/NPUNativeFunctions.h"
 //#include "torch_npu/csrc/aten/mirror/NPUTensorIterator.h"
-//#include "torch_npu/csrc/framework/utils/CalcuOpUtil.h"
-//#include "torch_npu/csrc/framework/utils/NpuUtils.h"
+#include "torch_npu/csrc/framework/utils/CalcuOpUtil.h"
+#include "torch_npu/csrc/framework/utils/NpuUtils.h"
 //#include "torch_npu/csrc/framework/utils/NPUDefinition.h"
 
-
+#if 0
 namespace at_npu {
 namespace native {
 
@@ -171,6 +172,135 @@ private:
   c10::SmallVector<int64_t, N> sync_index;
   c10::SmallVector<at::Tensor, N> outputTensor;
   c10::SmallVector<at::Tensor, N> inputTensor;
+}; // class OpCommand
+} // namespace native
+} // namespace at_npu
+#endif
+
+namespace at_npu {
+namespace native {
+
+using std::string;
+
+// get common dtype and shape from op adapter layer
+struct UnifiedResult {
+  c10::optional<at::ScalarType> common_type = c10::nullopt;
+  c10::optional<c10::IntArrayRef> common_shape = c10::nullopt;
+  // judge result tensor's dtype is defined or not.
+  // if result's dtype is defined, result_type_defined is true and result's dtype remains unchanged.
+  bool result_type_defined = false;
+};
+
+class OpCommand {
+public:
+  TORCH_NPU_API OpCommand() {
+    //aclCmds = OpCommandImpls::GetInstanceByTid(std::this_thread::get_id());
+    //aclCmds->Push(aclCmd);
+    //aclCmd->SetCustomHandler(nullptr);
+  }
+  TORCH_NPU_API ~OpCommand() {}
+
+  OpCommand(const OpCommand &other) = delete;
+  OpCommand(OpCommand &&other) = delete;
+  OpCommand &operator=(const OpCommand &) = delete;
+  OpCommand &operator=(OpCommand &&) = delete;
+
+  TORCH_NPU_API OpCommand& Name(const string &name) {
+    return *this;
+  }
+
+  OpCommand& Expect(UnifiedResult unified_result) {
+    return *this;
+  }
+
+    // None Input
+  TORCH_NPU_API OpCommand& Input() {
+    return *this;
+  }
+
+  // Tensor Input which need contiguous
+  TORCH_NPU_API OpCommand& Input(
+      const at::Tensor &input,
+      const string &descName = "",
+      const c10::optional<aclFormat> &sensitive_format = c10::nullopt,
+      const string &realData = "") {
+        return *this;
+  }
+
+    // IntArrayRef/SmallVector Input, usually hostmemory input, we will do h2d in launch kernel
+  TORCH_NPU_API OpCommand& Input(const c10::IntArrayRef &dimListRef,
+                   at::ScalarType toType = at::kLong,
+                   CompileType compileType = CompileType::MEMORY_HOST_COMPILE_DEPENDENT,
+                   const string& realDtype = "",
+                   const string& descName = "") {
+    return *this;
+  }
+
+  // Scalar Input, we will do h2d in launch kernel
+  TORCH_NPU_API OpCommand& Input(const c10::Scalar &input, const at::ScalarType type,
+                 CompileType compileType = CompileType::MEMORY_HOST_COMPILE_INDEPENDENT) {
+    return *this;
+  }
+
+  // ArrayRef Input, usually hostmemory input, we will do h2d in launch kernel
+  template <typename T>
+  TORCH_NPU_API OpCommand& Input(const c10::ArrayRef<T> &dimListRef, at::IntArrayRef realShape,
+                   at::ScalarType toType,
+                   CompileType compileType = CompileType::MEMORY_HOST_COMPILE_DEPENDENT,
+                   const string& realDtype = "",
+                   const string& descName = "") {
+
+    return *this;
+  }
+
+  // Tensor Input which no need contiguous
+  OpCommand& InputWithoutContiguous(const at::Tensor &input,
+                                    const string &descName = "",
+                                    const string &realData = "") {
+    return *this;
+  }
+
+
+    // Output Tensor
+  TORCH_NPU_API OpCommand& Output(
+      at::Tensor &output,
+      const string &descName = "",
+      const c10::optional<aclFormat> &sensitive_format = c10::nullopt,
+      const string &realType = "") {
+        return *this;
+  }
+
+  // Attr
+  template<typename dataType>
+  TORCH_NPU_API OpCommand& Attr(const string &name, dataType value) {
+    //aclCmd->AddAttr(name, value);
+    return *this;
+  }
+
+  // Attr depend on condition
+  template<typename dataType>
+  TORCH_NPU_API OpCommand& Attr(const string &name, dataType value, bool cond) {
+    if (!cond) {
+      return *this;
+    }
+    return Attr(name, value);
+  }
+
+  // Run a single op
+  TORCH_NPU_API void Run() {
+
+  }
+
+  OpCommand& Sync(c10::SmallVector<int64_t, N> &index) {
+    return *this;
+  }
+
+OpCommand& Sync() {
+  //c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
+  //NPU_CHECK_ERROR(c10_npu::acl::AclrtSynchronizeStreamWithTimeout(stream));
+  return *this;
+}
+
 }; // class OpCommand
 } // namespace native
 } // namespace at_npu
