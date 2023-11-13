@@ -58,9 +58,9 @@ class CheckResult(object):
     @staticmethod
     def compare_dict(output, output_reference, **kwargs):
         assert isinstance(output_reference, dict)
-        # assert len(output) == len(output_reference)
+        assert len(output) == len(output_reference)
         for k, v in output.items():
-            if k in output_reference and isinstance(v, Tensor):
+            if isinstance(v, Tensor):
                 kwargs['name'] = k
                 CheckResult.allclose(v.numpy(), output_reference[k], **kwargs)
 
