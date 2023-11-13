@@ -704,18 +704,6 @@ device_configs = {
         ),
     ),
 
-    'sub_constant_with_alpha_and_no_contiguous': dict(
-        name=['sub'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 64, 128)),Skip((128, 64, 3, 3)),Skip((128, 32, 2, 2)),Skip((2, 32, 130, 130)),],
-                },
-            ]
-        ),
-    ),
-
     'bmm': dict(
         name=['bmm'],
         atol=3e-2,
