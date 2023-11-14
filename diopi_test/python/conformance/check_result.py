@@ -98,7 +98,7 @@ class CheckResult(object):
             else:
                 assert tensor1.size == tensor2.size, "tensor1 element num does not equal tensor2's."
                 diff = np.abs(tensor1 - tensor2) * ~matched
-                max_diff = np.abs(tensor1 - tensor2).max()
+                max_diff = diff.max()
                 max_diff_index = np.unravel_index(np.argmax(diff), diff.shape)
                 max_diff_elem = tensor1[max_diff_index]
                 max_diff_elem_ref = tensor2[max_diff_index]
