@@ -101,26 +101,14 @@ device_configs = {
 
     'conv_2d': dict(
         name=['conv2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32), Skip(np.float64)],
-                },
-            ]
-        ),
+        atol=1e-1,
+        rtol=1e-2,
     ),
 
     'conv_2d_no_contiguous': dict(
         name=['conv2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32), Skip(np.float64)],
-                },
-            ]
-        ),
+        atol=1e-1,
+        rtol=1e-2,
     ),
 
     'hardswish': dict(
