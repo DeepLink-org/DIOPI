@@ -35,6 +35,7 @@ set(REAL_IMPL_SRC ${REAL_IMPL_SRC}
                   functions_mmcv.cpp
                   functions_ext.cpp
                   functions_lightllm.cpp
+                  functions_lmdeploy.cpp
                   error.cpp)
 
 if(HIP)
