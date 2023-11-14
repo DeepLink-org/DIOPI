@@ -154,14 +154,7 @@ diopiError_t convBackwardFilter(diopiContextHandle_t ctx, DiopiTensor gradOutput
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&computeType, gradOutput.dtype()));
     DIOPI_CALLCNNL(cnnlSetConvolutionDescriptor(convDesc.get(), dimNb, paddingTmp, strideTmp, dilationTmp, groups, computeType));
 
-    // To fix: There is currently a problem with the cnnlGetConvolutionBackwardFilterAlgorithm interface. Currently, CNNL_CONVOLUTION_BWD_FILTER_ALGO_DIRECT is
-    // used directly to bypass the bug.
-    // prepare conv desc
-    // cnnlConvolutionBwdFilterPreference_t preference = CNNL_CONVOLUTION_BWD_FILTER_FASTEST;
-    // cnnlConvolutionBwdFilterAlgo_t algo;
-    // DIOPI_CALLCNNL(
-    //     cnnlGetConvolutionBackwardFilterAlgorithm(handle, convDesc.get(), inputDesc.get(), gradOutputDesc.get(), gradWeightDesc.get(), preference, &algo));
-
+    // To fix: There is currently a problem with the cnnlGetConvolutionBackwardFilterAlgorithm interface.
     // prepare workspace
     size_t workspaceSize = 0;
     DIOPI_CALLCNNL(cnnlGetConvolutionBackwardFilterWorkspaceSize(
