@@ -12,8 +12,8 @@ namespace camb {
 
 class CnnlRandGenerator final {
 public:
-    CnnlRandGenerator() { DIOPI_CHECKCNNL(cnnlRandCreateGenerator(&resource_, CNNL_RAND_RNG_MTGP32)); }
-    ~CnnlRandGenerator() { DIOPI_CHECKCNNL(cnnlRandDestroyGenerator(resource_)); }
+    CnnlRandGenerator() { DIOPI_CHECK_CNNL(cnnlRandCreateGenerator(&resource_, CNNL_RAND_RNG_MTGP32)); }
+    ~CnnlRandGenerator() { DIOPI_CHECK_CNNL(cnnlRandDestroyGenerator(resource_)); }
     cnnlRandGenerator_t& get() { return resource_; }
 
 private:

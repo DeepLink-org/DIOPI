@@ -35,7 +35,7 @@
         }                                                                                                                                       \
     } while (false);
 
-#define DIOPI_CHECKCNNL(Expr)                                                                            \
+#define DIOPI_CHECK_CNNL(Expr)                                                                           \
     do {                                                                                                 \
         ::cnnlStatus_t ret = Expr;                                                                       \
         if (ret != ::CNNL_STATUS_SUCCESS) {                                                              \
@@ -55,9 +55,9 @@ public:
 template <typename T, ::cnnlStatus_t (*fnCreate)(T*), ::cnnlStatus_t (*fnDestroy)(T)>
 class CnnlResourceGuard {
 public:
-    CnnlResourceGuard() { DIOPI_CHECKCNNL(fnCreate(&resource_)); }
+    CnnlResourceGuard() { DIOPI_CHECK_CNNL(fnCreate(&resource_)); }
 
-    ~CnnlResourceGuard() { DIOPI_CHECKCNNL(fnDestroy(resource_)); }
+    ~CnnlResourceGuard() { DIOPI_CHECK_CNNL(fnDestroy(resource_)); }
 
     T& get() { return resource_; }
 
