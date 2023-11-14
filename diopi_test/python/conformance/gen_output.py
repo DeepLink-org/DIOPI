@@ -12,6 +12,7 @@ from conformance.db_operation import db_conn
 
 
 def multihead_attention_inside(q, k, v, softmax_scale, causal=None, key_padding_mask=None):
+    # using for multiheadattention & varlen multiheadattention test
     from einops import rearrange
     import math
     batch_size, seqlen = q.shape[0], q.shape[1]
