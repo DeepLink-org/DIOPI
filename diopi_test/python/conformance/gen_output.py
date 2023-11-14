@@ -34,6 +34,7 @@ def multihead_attention_inside(q, k, v, softmax_scale, causal=None, key_padding_
     output = torch.einsum("bhts,bshd->bthd", attention, v)
     return output
 
+
 class CustomizedTest(object):
     def cast_dtype(input, out):
         out = input.to(out.dtype, copy=True)
@@ -243,7 +244,7 @@ class CustomizedTest(object):
         # 为了保证精度，因此在test的时候不使用dropout
         from einops import rearrange
         import math
-        batch_size = len(cu_seqlens)-1
+        batch_size = len(cu_seqlens) - 1
         seq_len = max_seqlen
         _, num_heads, feature_size = q.size()
         # Initialize the key_padding_mask as a Boolean mask with False values
@@ -251,14 +252,14 @@ class CustomizedTest(object):
 
         # Fill the key_padding_mask with True values at positions with actual data (cu_seqlens)
         for i in range(batch_size):
-            seq_len_in = cu_seqlens[i+1]-cu_seqlens[i]
+            seq_len_in = cu_seqlens[i + 1] - cu_seqlens[i]
             key_padding_mask[i, :seq_len_in] = True
         padded_q_shape = (batch_size, seq_len, num_heads, feature_size)
         q_padded = torch.zeros(padded_q_shape, dtype=torch.float16, device="cuda")
         k_padded = torch.zeros(padded_q_shape, dtype=torch.float16, device="cuda")
         v_padded = torch.zeros(padded_q_shape, dtype=torch.float16, device="cuda")
         for i in range(batch_size):
-            seq_len = cu_seqlens[i+1] - cu_seqlens[i]
+            seq_len = cu_seqlens[i + 1] - cu_seqlens[i]
             q_padded[i, :seq_len, :, :] = q[cu_seqlens[i]:cu_seqlens[i + 1], :, :]
             k_padded[i, :seq_len, :, :] = k[cu_seqlens[i]:cu_seqlens[i + 1], :, :]
             v_padded[i, :seq_len, :, :] = v[cu_seqlens[i]:cu_seqlens[i + 1], :, :]

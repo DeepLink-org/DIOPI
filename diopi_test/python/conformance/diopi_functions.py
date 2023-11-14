@@ -4012,12 +4012,13 @@ def multihead_attention_forward(q, k, v, dropout_p, is_causal, return_debug_mask
     check_returncode(ret)
     return out
 
+
 def varlen_multihead_attention_forward(q, k, v, cu_seqlens, max_seqlen, dropout_p, is_causal, return_debug_mask, scale):
     call = "diopiMultiHeadAttentionVarLen"
     func = check_function(call)
     q_size = list(q.size().data)
     out = Tensor(q_size, q.get_dtype())
-    softmax_lse = Tensor([len(cu_seqlens)-1, q_size[1], max_seqlen], q.get_dtype())
+    softmax_lse = Tensor([len(cu_seqlens) - 1, q_size[1], max_seqlen], q.get_dtype())
     cu_seqlens = Tensor.from_numpy(np.array(cu_seqlens, dtype=np.int32))
     gen = None
     debug_attn_mask = Tensor([0], q.get_dtype())
