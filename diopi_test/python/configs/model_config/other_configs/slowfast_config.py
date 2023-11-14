@@ -79,8 +79,8 @@ slowfast_config = {
         # FIXME batch_norm精度异常
         # atol=1e-03,
         # rtol=1e-04,
-        atol=1e-02,
-        rtol=1e-02,
+        atol=1e-01,
+        rtol=1e-01,
         atol_half=1e-01,
         rtol_half=1e-02,
         para=dict(

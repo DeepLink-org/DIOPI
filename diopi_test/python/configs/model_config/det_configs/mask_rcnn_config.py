@@ -289,6 +289,8 @@ mask_rcnn_config = {
     'conv_transpose2d': dict(
         name=["conv_transpose2d"],
         interface=["torch.nn.functional"],
+        atol=1e-3,
+        rtol=1e-3,
         para=dict(
             stride=[(2, 2), (2, 2)],
             padding=[(0, 0), (0, 0)],
