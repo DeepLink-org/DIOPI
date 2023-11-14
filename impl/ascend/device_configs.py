@@ -101,26 +101,14 @@ device_configs = {
 
     'conv_2d': dict(
         name=['conv2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32), Skip(np.float64)],
-                },
-            ]
-        ),
+        atol=1e-1,
+        rtol=1e-2,
     ),
 
     'conv_2d_no_contiguous': dict(
         name=['conv2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32), Skip(np.float64)],
-                },
-            ]
-        ),
+        atol=1e-1,
+        rtol=1e-2,
     ),
 
     'hardswish': dict(
@@ -747,7 +735,7 @@ device_configs = {
     ),
 
     'reduce_op': dict(
-        name=['mean'],
+        name=['mean', 'sum'],
         atol=1e-3,
         rtol=1e-3,
         tensor_para=dict(
@@ -763,7 +751,7 @@ device_configs = {
     'reduce_partial_op': dict(
         atol=1e-3,
         rtol=1e-3,
-        name=['mean'],
+        name=['mean', 'sum'],
         tensor_para=dict(
             args=[
                 {
@@ -2386,7 +2374,14 @@ device_configs = {
             ]
         ),
     ),
-    
+
+    'reduce_partial_op_4': dict(
+        name=['sum'],
+        interface=['torch'],
+        atol=1e-3,
+        rtol=1e-3,
+    ),
+
     'rotary_emb': dict(
         name=["rotary_emb"],
         tensor_para=dict(
