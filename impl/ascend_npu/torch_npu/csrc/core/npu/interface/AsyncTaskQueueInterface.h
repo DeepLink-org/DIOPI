@@ -1,7 +1,7 @@
 #pragma once
 
 #include "c10/core/Storage.h"
-//#include "torch_npu/csrc/core/npu/NPUStream.h"
+#include "torch_npu/csrc/core/npu/NPUStream.h"
 #include "acl/acl_rt.h"
 
 namespace c10_npu {

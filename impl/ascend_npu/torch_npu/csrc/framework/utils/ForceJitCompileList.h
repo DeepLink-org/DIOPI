@@ -1,8 +1,8 @@
 #pragma once
-#if 0
 
 #include <string>
 #include <set>
+#include <vector>
 
 using std::string;
 using std::vector;
@@ -24,4 +24,3 @@ private:
 
 }
 }
-#endif

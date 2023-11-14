@@ -1,11 +1,16 @@
-#pragma once
-
+#ifndef __PLUGIN_NATIVE_NPU_INTERFACE_ACLOPCOMPILE__
+#define __PLUGIN_NATIVE_NPU_INTERFACE_ACLOPCOMPILE__
 #include <c10/util/Optional.h>
 #include "acl/acl_op_compiler.h"
+#include "acl/acl_base.h"
+
+typedef enum {
+    ACL_OPT_DETERMINISTIC = 0,
+} aclSysParamOpt; // zgc todo: only defined in new version
 
 namespace at_npu {
 namespace native {
-#if 0
+
 /**
  * @ingroup AscendCL
  * @brief an interface set compile flag
@@ -130,7 +135,8 @@ aclError AclopCompileAndExecuteV2(const char *opType,
  */
 ACL_FUNC_VISIBILITY aclError AclrtCtxSetSysParamOpt(aclSysParamOpt opt, int64_t value);
 
-#endif
 
 } // namespace native
 } // namespace at_npu
+
+#endif // __NATIVE_NPU_INTERFACE_ACLOPCOMPILE__

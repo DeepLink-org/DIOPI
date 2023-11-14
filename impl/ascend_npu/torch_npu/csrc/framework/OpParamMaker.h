@@ -1,15 +1,14 @@
 #pragma once
 
 #include "torch_npu/csrc/core/npu/NPUException.h"
-//#include "torch_npu/csrc/core/npu/NPUStream.h"
-#if 0
+#include "torch_npu/csrc/core/npu/NPUStream.h"
 #include "acl/acl_base.h"
 #include "torch_npu/csrc/framework/interface/AclOpCompileInterface.h"
 #include "torch_npu/csrc/framework/NPUDefine.h"
 #include "torch_npu/csrc/framework/utils/ForceJitCompileList.h"
-//#include "torch_npu/csrc/framework/interface/EnvVariables.h"
+#include "torch_npu/csrc/framework/interface/EnvVariables.h"
 #include "torch_npu/csrc/core/npu/NPUMacros.h"
-//#include "torch_npu/csrc/core/NPUStorageImpl.h"
+#include "torch_npu/csrc/core/NPUStorageImpl.h"
 //#include "torch_npu/csrc/core/npu/register/OptionsManager.h"
 #include "torch_npu/csrc/framework/NPUDefine.h"
 #include "torch_npu/csrc/core/npu/interface/AsyncTaskQueueInterface.h"
@@ -46,7 +45,7 @@ namespace at_npu
     public:
       AclTensorDescMaker() {}
       ~AclTensorDescMaker() = default;
-
+    #if 1
       AclTensorDescMaker &Create(aclDataType dataType, torch_npu::NPUStorageDesc storageDesc)
       {
         c10::SmallVector<int64_t, 5> dims;
@@ -58,7 +57,7 @@ namespace at_npu
         desc = aclCreateTensorDesc(dataType, dims.size(), dims.data(), format);
         return *this;
       }
-
+    #endif
       inline AclTensorDescMaker &Create(
           aclDataType dataType,
           c10::IntArrayRef dims,
@@ -409,4 +408,3 @@ namespace at_npu
     static bool deterministicaclnn_oldstatus = false;
   } // namespace native
 } // namespace at_npu
-#endif

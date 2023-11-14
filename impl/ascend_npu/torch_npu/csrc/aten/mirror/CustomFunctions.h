@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma once
-
 #include <ATen/ATen.h>
 
 namespace at_npu {

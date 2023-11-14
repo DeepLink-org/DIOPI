@@ -20,13 +20,18 @@ else()
 endif()
 
 execute_process(
-    COMMAND sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/; git clone  https://gitee.com/ascend/op-plugin/ op-plugin || cd op-plugin && git checkout 186f4b87e2db4791a6ed697cea78d58a0ae92db1 "
+    COMMAND sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/;
+    git clone  https://gitee.com/ascend/op-plugin/ op-plugin ||
+    cd op-plugin && git checkout 186f4b87e2db4791a6ed697cea78d58a0ae92db1 &&
+    bash  ./gencode.sh 2.1 python "
     OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 
 set(OP_PLUGIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/base_ops/aclops/)
 set(OP_PLUGIN_UTILS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/utils/)
 #file(GLOB_RECURSE OP_PLUGIN_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${OP_PLUGIN_DIR}/*.cpp)
 #file(GLOB_RECURSE OP_PLUGIN_UTILS_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${OP_PLUGIN_UTILS_DIR}/*.cpp)
+#file(GLOB_RECURSE OP_PLUGIN_API_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/base_ops/opapi/*.cpp)
 set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/BatchNormElemtKernelNpu.cpp
     ${OP_PLUGIN_DIR}/TransposeKernelNpu.cpp
@@ -49,7 +54,7 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/GluKernelNpu.cpp
     ${OP_PLUGIN_DIR}/MishBackwardV2KernelNpu.cpp
     ${OP_PLUGIN_DIR}/AffineGridGeneratorBackwardKernelNpu.cpp
-    #${OP_PLUGIN_DIR}/SlowConvTranspose2dBackwardKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/SlowConvTranspose2dBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/NLLLoss2dBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/MvKernelNpu.cpp
     ${OP_PLUGIN_DIR}/OnehotNpu.cpp
@@ -62,7 +67,7 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/RoundKernelNpu.cpp
     ${OP_PLUGIN_DIR}/FloorKernelNpu.cpp
     ${OP_PLUGIN_DIR}/MinKernelNpu.cpp
-    #${OP_PLUGIN_DIR}/TrilKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/TrilKernelNpu.cpp
     ${OP_PLUGIN_DIR}/LstmCellKernelNpu.cpp
     ${OP_PLUGIN_DIR}/ConvTranspose2dKernelNpu.cpp
     ${OP_PLUGIN_DIR}/ReflectionPad1dBackwardKernelNpu.cpp
@@ -132,7 +137,7 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/RsubKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SortWithoutIndicesKernelNpu.cpp
     ${OP_PLUGIN_DIR}/AsinKernelNpu.cpp
-    #${OP_PLUGIN_DIR}/Conv3dBackwardKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/Conv3dBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/CiouKernelNpu.cpp
     ${OP_PLUGIN_DIR}/ScatterV1KernelNpu.cpp
     ${OP_PLUGIN_DIR}/ArgminKernelNpu.cpp
@@ -152,7 +157,7 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/BatchNMSKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SinhKernelNpu.cpp
     ${OP_PLUGIN_DIR}/GtKernelNpu.cpp
-    #${OP_PLUGIN_DIR}/AddKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/AddKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SlowConvDilated2dBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/IfmrKernelNpu.cpp
     ${OP_PLUGIN_DIR}/CoshKernelNpu.cpp
@@ -421,10 +426,304 @@ set(OP_PLUGIN_UTILS_SRC
   #${OP_PLUGIN_UTILS_DIR}/OpUtils.cpp
 )
 
+set(ASCEND_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/torch_npu/csrc/impl/)
+set(ASCEND_IMPL_SRC
+    ${ASCEND_IMPL_DIR}/EnvVariables.cpp
+    ${ASCEND_IMPL_DIR}/ForceJitCompileList.cpp
+    ${ASCEND_IMPL_DIR}/OpParamMaker.cpp
+    ${ASCEND_IMPL_DIR}/OpCmdHelper.cpp
+    ${ASCEND_IMPL_DIR}/NPUEventManager.cpp
+    ${ASCEND_IMPL_DIR}/FormatHelper.cpp
+    ${ASCEND_IMPL_DIR}/OpPreparation.cpp
+    ${ASCEND_IMPL_DIR}/OpCommand.cpp
+    ${ASCEND_IMPL_DIR}/AoeUtils.cpp
+    ${ASCEND_IMPL_DIR}/NPUTensorIterator.cpp
+    ${ASCEND_IMPL_DIR}/NPUTypeProperties.cpp
+    ${ASCEND_IMPL_DIR}/CalcuOpUtil.cpp
+    ${ASCEND_IMPL_DIR}/NPUMemoryOverlap.cpp
+)
+
+set(OP_PLUGIN_API_DIR ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/base_ops/opapi/)
+set(OP_PLUGIN_API_SRC
+    ${OP_PLUGIN_API_DIR}/CosKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ReflectionPad1dKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/Log2KernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SoftmaxBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ConvtbcKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AddrKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LeakyReluKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/NeKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SoftmaxKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/EyeKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/IsNegInfKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SqrtKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/CummaxKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/MulKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/CatKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/FloorDivideKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SigmoidBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/GerKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ErfcKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ErfinvKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ForeachSubScalarInplaceKernelOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/RsqrtKernelNpuOpApi.cpp
+    #${OP_PLUGIN_API_DIR}/NormalKernelNpuOpApi.cpp
+    #${OP_PLUGIN_API_DIR}/RandomKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/MaxKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/DivKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/MishKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LeKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/IndexFillKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AvgPool2dKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/EmbeddingRenormKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/CeluKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LogicalNotKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ConvDepthwise2dKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SoftplusBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/Col2imKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AddcdivKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/RollKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/Log1pKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/MmKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/NLLLoss2dKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/IsPosInfKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/IsFiniteKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ConvolutionKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ConstantPadNdKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/MaskedScatterKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/EmbeddingDenseBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AcoshKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/IndexAddKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/BinaryCrossEntropyKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/FlipKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AmaxKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AsinKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/FillDiagonalKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/NLLLossKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/CumsumKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/__Ior__KernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/IsInKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/UpsampleLinear1dBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AddKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/TakeKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/IsInTensorScalarKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LogSoftmaxBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AminKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SiluBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/InverseKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SoftShrinkKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/Exp2KernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/EluKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/BitwiseAndKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/UpsampleNearest1dBackwardKernelNpuOpApi.cpp
+    #${OP_PLUGIN_API_DIR}/DropoutKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/BatchNormGatherStatsWithCountsKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LogicalAndKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ReplicationPad1dBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ConvolutionBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/MishBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/MvKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/UpsampleTrilinear3dKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ComplexKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AddmvKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ScatterAddKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AllKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/BitwiseXorKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ErfKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/HardSigmoidKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SigmoidKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/XlogyKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AddcmulKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/HardSwishBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LerpKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/RangeKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/NLLLossBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/GatherKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AdaptiveMaxPool2dKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/StackKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AffineGridGeneratorKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LinalgQrKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ReflectionPad1dBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/BinaryCrossEntropyBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/CoshKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/CtcLossKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/FracKernelNpuOpApi.cpp
+    #${OP_PLUGIN_API_DIR}/RReluWithNoiseKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/EqualKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LayerNormKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LogSumExpKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/DotKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/RealKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/HardsigmoidBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/BatchNormBackwardReduceKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SeluKernelOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/CtcLossBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/CeilKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LayerNormBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/HardSwishKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/NegKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ForeachMulScalarInplaceKernelOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/HardtanhKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/IsCloseKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AsinhKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/MultilabelMarginLossKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/EqKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/UpsampleNearest1dKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/MatmulBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LogicalOrKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/BatchNormElemtKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/HardtanhBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/UpsampleNearest2dKernelOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LogSigmoidBackwardKernelNpuOpApi.cpp
+    #${OP_PLUGIN_API_DIR}/RandpermKernelNpuOpApi.cpp
+    #${OP_PLUGIN_API_DIR}/BernoulliKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AnyKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/RsubKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AtanhKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SiluKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LeakyReluBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/GluKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/BatchNormKernelOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/Expm1KernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/UpsampleTrilinear3dBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/PdistKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SmoothL1LossKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/OnesLikeKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/UpsampleNearest2dBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ZerosKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/UpsampleLinear1dKernelNpuOpApi.cpp
+    #${OP_PLUGIN_API_DIR}/AmpForeachNonFiniteCheckAndUnscaleKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AddbmmKernelNpuOpApi.cpp
+    #${OP_PLUGIN_API_DIR}/UniformKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/TrilKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ProdKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LogSigmoidNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AdaptiveAvgPool2dBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/CountNonZeroKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/MedianKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SincKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/TanhKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LogicalXorKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/UpsampleNearest3dBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/MinKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/Log10KernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/MseLossBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/NLLLoss2dBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/GeKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/FloorKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SearchsortedKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/MaskedFillKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/TopkKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/HardShrinkKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/OneHotKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/PutKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SortKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/KlDivKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/MatmulKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SmoothL1LossBackwrdKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ReluKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AcosKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SoftMarginLossKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SoftMarginLossBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LogSoftmaxKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/GcdKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/CumminKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SoftshrinkBackwardNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ReciprocalKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/Atan2KernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/PowKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AdaptiveAvgPool2dKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/MaxUnpool3dKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ThresholdBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LogAddExpKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ReflectionPad2dBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/GridSampler2dKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/TriuKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/TanKernelOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/UniqueConsecutiveKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/RepeatKernelOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/TruncKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/TanhBackwardNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/BmmKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ClampKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/TrueDivideKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ArgSortKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/BincountKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SlogdetKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ArgmaxKernelNpuOpApi.cpp
+    #${OP_PLUGIN_API_DIR}/NativeDropoutKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/FillKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/GtKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SoftplusKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/VDotKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ExpKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SignbitKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AdaptiveAvgPool3dBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/RenormKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/EluBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/CastKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LogAddExp2KernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/GridSampler2dBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LinalgCrossKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/IndexSelectKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/MaskedSelectKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/MaxUnpool2dKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ChannelShuffleKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/BatchNormBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ArgminKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ThresholdKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/UpsampleBilinear2dBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/BatchNormBackwardElemtKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SubKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/HardshrinkBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/RemainderKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/RoundKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/FmodKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SumKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LogKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/BaddbmmKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/LtKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SinKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/UpsampleBilinear2dKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SinhKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/RoundDecimalsKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/GluGradKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AbsKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/DiagKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ReplicationPad2dKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AtanKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ReplicationPad2dBackwardKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/UpsampleNearest3dKernelOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/NormKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/KthvalueKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/IndexPutKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SignKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/OnesKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AminmaxKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/BatchNormStatsKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ReplicationPad1dKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ReflectionPad2dKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/BitwiseNotKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/NonzeroKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/BitwiseOrKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ArangeKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/HistcKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ZerosLikeKernelNpuOpApi.cpp
+    #${OP_PLUGIN_API_DIR}/MultinomialKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/AddmmKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/ScatterKernelNpuOpApi.cpp
+)
+
+set(DIOPI_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/diopi_impl/)
+set(DIOPI_IMPL_SRC
+    ${DIOPI_IMPL_DIR}/error.cpp
+    ${DIOPI_IMPL_DIR}/binary.cpp
+)
+
 include_directories(op-plugin torch_npu ${CMAKE_CURRENT_SOURCE_DIR})
 set(IMPL_SRC )
 
-list(APPEND IMPL_SRC ${OP_PLUGIN_UTILS_SRC} ${OP_PLUGIN_SRC})
+list(APPEND IMPL_SRC ${OP_PLUGIN_UTILS_SRC} ${OP_PLUGIN_SRC} ${OP_PLUGIN_API_SRC} ${ASCEND_IMPL_SRC} ${DIOPI_IMPL_SRC})
 message("OP_PLUGIN_UTILS_SRC:" ${OP_PLUGIN_UTILS_SRC})
 
 if(NOT DEFINED PYTORCH_DIR)

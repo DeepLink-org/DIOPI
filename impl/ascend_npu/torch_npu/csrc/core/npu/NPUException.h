@@ -4,8 +4,8 @@
 #include <c10/macros/Macros.h>
 #include <c10/util/Exception.h>
 #include <acl/acl_base.h>
-//#include "torch_npu/csrc/core/npu/interface/AclInterface.h"
-//#include "torch_npu/csrc/core/npu/NPUErrorCodes.h"
+#include "torch_npu/csrc/core/npu/interface/AclInterface.h"
+#include "torch_npu/csrc/core/npu/NPUErrorCodes.h"
 
 #define C10_NPU_SHOW_ERR_MSG()                            \
 do {                                                      \

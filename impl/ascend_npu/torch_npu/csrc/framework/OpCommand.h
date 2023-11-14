@@ -8,9 +8,9 @@
 //#include "torch_npu/csrc/aten/mirror/NPUTensorIterator.h"
 #include "torch_npu/csrc/framework/utils/CalcuOpUtil.h"
 #include "torch_npu/csrc/framework/utils/NpuUtils.h"
-//#include "torch_npu/csrc/framework/utils/NPUDefinition.h"
+#include "torch_npu/csrc/framework/utils/NPUDefinition.h"
 
-#if 0
+#if 1
 namespace at_npu {
 namespace native {
 
@@ -175,7 +175,8 @@ private:
 }; // class OpCommand
 } // namespace native
 } // namespace at_npu
-#endif
+
+#else
 
 namespace at_npu {
 namespace native {
@@ -304,3 +305,5 @@ OpCommand& Sync() {
 }; // class OpCommand
 } // namespace native
 } // namespace at_npu
+
+#endif
