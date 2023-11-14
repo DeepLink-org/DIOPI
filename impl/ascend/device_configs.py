@@ -747,7 +747,7 @@ device_configs = {
     ),
 
     'reduce_op': dict(
-        name=['mean', 'sum'],
+        name=['mean'],
         atol=1e-3,
         rtol=1e-3,
         tensor_para=dict(
@@ -763,7 +763,7 @@ device_configs = {
     'reduce_partial_op': dict(
         atol=1e-3,
         rtol=1e-3,
-        name=['mean', 'sum'],
+        name=['mean'],
         tensor_para=dict(
             args=[
                 {
@@ -2386,14 +2386,7 @@ device_configs = {
             ]
         ),
     ),
-
-    'reduce_partial_op_4': dict(
-        name=['sum'],
-        interface=['torch'],
-        atol=1e-4,
-        rtol=1e-4,
-    ),
-
+    
     'rotary_emb': dict(
         name=["rotary_emb"],
         tensor_para=dict(
