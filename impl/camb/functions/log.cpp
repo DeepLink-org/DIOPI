@@ -24,7 +24,7 @@ diopiError_t logInternal(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     CnnlTensorDesc inputDesc(inputTensorTmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outTensorTmp, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlLog(handle, logBase, inputDesc.get(), inputTensorTmp.data(), outDesc.get(), outTensorTmp.data()));
+    DIOPI_CALL_CNNL(cnnlLog(handle, logBase, inputDesc.get(), inputTensorTmp.data(), outDesc.get(), outTensorTmp.data()));
     DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
     return diopiSuccess;
 }

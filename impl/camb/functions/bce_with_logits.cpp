@@ -79,7 +79,7 @@ DIOPI_API diopiError_t diopiBCEWithLogits(diopiContextHandle_t ctx, diopiTensorH
     }
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetBceWithLogitsWorkspaceSize(
+    DIOPI_CALL_CNNL(cnnlGetBceWithLogitsWorkspaceSize(
         handle, inputDesc.get(), weightFlag ? weightDesc.get() : nullptr, posWeightFlag ? posWeightDesc.get() : nullptr, &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
@@ -87,21 +87,21 @@ DIOPI_API diopiError_t diopiBCEWithLogits(diopiContextHandle_t ctx, diopiTensorH
     }
 
     cnnlComputationPreference_t mode = CNNL_COMPUTATION_FAST;
-    DIOPI_CALLCNNL(cnnlBceWithLogits_v2(handle,
-                                        mode,
-                                        inputDesc.get(),
-                                        inputTensorTmp.data(),
-                                        targetDesc.get(),
-                                        targetTensorTmp.data(),
-                                        weightFlag ? weightDesc.get() : nullptr,
-                                        weightFlag ? weightTensorTmp.data() : nullptr,
-                                        posWeightFlag ? posWeightDesc.get() : nullptr,
-                                        posWeightFlag ? posWeightTensorTmp.data() : nullptr,
-                                        reductionMode,
-                                        workspace,
-                                        workspaceSize,
-                                        outDesc.get(),
-                                        outTensorTmp.data()));
+    DIOPI_CALL_CNNL(cnnlBceWithLogits_v2(handle,
+                                         mode,
+                                         inputDesc.get(),
+                                         inputTensorTmp.data(),
+                                         targetDesc.get(),
+                                         targetTensorTmp.data(),
+                                         weightFlag ? weightDesc.get() : nullptr,
+                                         weightFlag ? weightTensorTmp.data() : nullptr,
+                                         posWeightFlag ? posWeightDesc.get() : nullptr,
+                                         posWeightFlag ? posWeightTensorTmp.data() : nullptr,
+                                         reductionMode,
+                                         workspace,
+                                         workspaceSize,
+                                         outDesc.get(),
+                                         outTensorTmp.data()));
     DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
 
     return diopiSuccess;
@@ -177,29 +177,29 @@ DIOPI_API diopiError_t diopiBCEWithLogitsBackward(diopiContextHandle_t ctx, diop
     }
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetBceWithLogitsBackwardWorkspaceSize(
+    DIOPI_CALL_CNNL(cnnlGetBceWithLogitsBackwardWorkspaceSize(
         handle, targetDesc.get(), weightFlag ? weightDesc.get() : nullptr, posWeightFlag ? posWeightDesc.get() : nullptr, &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlBceWithLogitsBackward(handle,
-                                             gradOutputDesc.get(),
-                                             gradOutputTensorTmp.data(),
-                                             inputDesc.get(),
-                                             inputTensorTmp.data(),
-                                             targetDesc.get(),
-                                             targetTensorTmp.data(),
-                                             weightFlag ? weightDesc.get() : nullptr,
-                                             weightFlag ? weightTensorTmp.data() : nullptr,
-                                             posWeightFlag ? posWeightDesc.get() : nullptr,
-                                             posWeightFlag ? posWeightTensorTmp.data() : nullptr,
-                                             reductionMode,
-                                             workspace,
-                                             workspaceSize,
-                                             gradInputDesc.get(),
-                                             gradInputTensorTmp.data()));
+    DIOPI_CALL_CNNL(cnnlBceWithLogitsBackward(handle,
+                                              gradOutputDesc.get(),
+                                              gradOutputTensorTmp.data(),
+                                              inputDesc.get(),
+                                              inputTensorTmp.data(),
+                                              targetDesc.get(),
+                                              targetTensorTmp.data(),
+                                              weightFlag ? weightDesc.get() : nullptr,
+                                              weightFlag ? weightTensorTmp.data() : nullptr,
+                                              posWeightFlag ? posWeightDesc.get() : nullptr,
+                                              posWeightFlag ? posWeightTensorTmp.data() : nullptr,
+                                              reductionMode,
+                                              workspace,
+                                              workspaceSize,
+                                              gradInputDesc.get(),
+                                              gradInputTensorTmp.data()));
     DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensorTmp));
 
     return diopiSuccess;

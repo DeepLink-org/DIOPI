@@ -35,21 +35,21 @@ diopiError_t diopiPermute(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
 
     const std::vector<int64_t> srcInputShape = inputTensor.shape();
     int dimNum = srcInputShape.size();
-    DIOPI_CALLCNNL(cnnlSetTransposeDescriptor(transDesc.get(), dimNum, permData.data()));
+    DIOPI_CALL_CNNL(cnnlSetTransposeDescriptor(transDesc.get(), dimNum, permData.data()));
     size_t workspaceSize;
-    DIOPI_CALLCNNL(cnnlGetTransposeWorkspaceSize(handle, inputDesc.get(), transDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetTransposeWorkspaceSize(handle, inputDesc.get(), transDesc.get(), &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
     if (inputTensor.dtype() == outputTensor.dtype()) {
-        DIOPI_CALLCNNL(
+        DIOPI_CALL_CNNL(
             cnnlTranspose_v2(handle, transDesc.get(), inputDesc.get(), inputTensor.data(), outputDesc.get(), outputTensor.data(), workspace, workspaceSize));
     } else {
         DiopiTensor outTemp = requiresTensor(ctx, outputTensor.shape(), inputTensor.dtype());
         CnnlTensorDesc outTempDesc(outTemp, CNNL_LAYOUT_ARRAY);
-        DIOPI_CALLCNNL(
+        DIOPI_CALL_CNNL(
             cnnlTranspose_v2(handle, transDesc.get(), inputDesc.get(), inputTensor.data(), outTempDesc.get(), outTemp.data(), workspace, workspaceSize));
         DIOPI_CALL(dataTypeCast(ctx, outputTensor, outTemp));
     }

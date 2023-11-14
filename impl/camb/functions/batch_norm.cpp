@@ -96,54 +96,54 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 
     if (training) {
         size_t workspaceSize = 0;
-        DIOPI_CALLCNNL(cnnlGetBatchNormForwardWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
+        DIOPI_CALL_CNNL(cnnlGetBatchNormForwardWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
 
         void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
         // set activition part to default
         cnnlActivationMode_t activeMode = CNNL_ACTIVATION_IDENTITY;
         cnnlActivationDescriptor_t activationDesc = nullptr;
-        DIOPI_CALLCNNL(cnnlCreateActivationDescriptor(&activationDesc));
+        DIOPI_CALL_CNNL(cnnlCreateActivationDescriptor(&activationDesc));
         cnnlSetActivationDescriptor_v5(activationDesc, activeMode, CNNL_ACTIVATION_HIGH_PRECISION, CNNL_NOT_PROPAGATE_NAN, 1.0, -1, 1.0, 1.0, false);
-        DIOPI_CALLCNNL(cnnlBatchNormForwardTraining_v2(handle,
-                                                       activationDesc,
-                                                       CNNL_BATCHNORM_SPATIAL,
-                                                       CNNL_BATCHNORM_OPS_BN,
-                                                       nullptr,
-                                                       nullptr,
-                                                       inputDesc.get(),
-                                                       inputTr.data(),
-                                                       nullptr,
-                                                       nullptr,
-                                                       weightBiasMeanVarDesc.get(),
-                                                       weightTr.data(),
-                                                       biasTr.data(),
-                                                       runningMeanTmpTr.defined() ? runningMeanTr.data() : nullptr,
-                                                       runningVarTmpTr.defined() ? runningVarTr.data() : nullptr,
-                                                       static_cast<float>(eps),
-                                                       static_cast<float>(momentum),
-                                                       outDesc.get(),
-                                                       outTmpTr.data(),
-                                                       saveMeanTmpTr.data(),
-                                                       saveInvstdTmpTr.data(),
-                                                       workspacePtr,
-                                                       workspaceSize,
-                                                       nullptr,
-                                                       0));
+        DIOPI_CALL_CNNL(cnnlBatchNormForwardTraining_v2(handle,
+                                                        activationDesc,
+                                                        CNNL_BATCHNORM_SPATIAL,
+                                                        CNNL_BATCHNORM_OPS_BN,
+                                                        nullptr,
+                                                        nullptr,
+                                                        inputDesc.get(),
+                                                        inputTr.data(),
+                                                        nullptr,
+                                                        nullptr,
+                                                        weightBiasMeanVarDesc.get(),
+                                                        weightTr.data(),
+                                                        biasTr.data(),
+                                                        runningMeanTmpTr.defined() ? runningMeanTr.data() : nullptr,
+                                                        runningVarTmpTr.defined() ? runningVarTr.data() : nullptr,
+                                                        static_cast<float>(eps),
+                                                        static_cast<float>(momentum),
+                                                        outDesc.get(),
+                                                        outTmpTr.data(),
+                                                        saveMeanTmpTr.data(),
+                                                        saveInvstdTmpTr.data(),
+                                                        workspacePtr,
+                                                        workspaceSize,
+                                                        nullptr,
+                                                        0));
     } else {
-        DIOPI_CALLCNNL(cnnlBatchNormForwardInference(handle,
-                                                     nullptr,
-                                                     nullptr,
-                                                     inputDesc.get(),
-                                                     inputTr.data(),
-                                                     weightBiasMeanVarDesc.get(),
-                                                     weightTr.data(),
-                                                     biasTr.data(),
-                                                     runningMeanTmpTr.defined() ? runningMeanTr.data() : nullptr,
-                                                     runningVarTmpTr.defined() ? runningVarTr.data() : nullptr,
-                                                     static_cast<float>(eps),
-                                                     outDesc.get(),
-                                                     outTmpTr.data()));
+        DIOPI_CALL_CNNL(cnnlBatchNormForwardInference(handle,
+                                                      nullptr,
+                                                      nullptr,
+                                                      inputDesc.get(),
+                                                      inputTr.data(),
+                                                      weightBiasMeanVarDesc.get(),
+                                                      weightTr.data(),
+                                                      biasTr.data(),
+                                                      runningMeanTmpTr.defined() ? runningMeanTr.data() : nullptr,
+                                                      runningVarTmpTr.defined() ? runningVarTr.data() : nullptr,
+                                                      static_cast<float>(eps),
+                                                      outDesc.get(),
+                                                      outTmpTr.data()));
     }
     if (runningMeanTr.defined() && runningMeanTmpTr.dtype() != runningMeanTr.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, runningMeanTr, runningMeanTmpTr));
@@ -246,76 +246,76 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     cnnlActivationMode_t activeMode = CNNL_ACTIVATION_IDENTITY;
 
     cnnlActivationDescriptor_t activationDesc = nullptr;
-    DIOPI_CALLCNNL(cnnlCreateActivationDescriptor(&activationDesc));
+    DIOPI_CALL_CNNL(cnnlCreateActivationDescriptor(&activationDesc));
     cnnlSetActivationDescriptor_v5(activationDesc, activeMode, CNNL_ACTIVATION_HIGH_PRECISION, CNNL_NOT_PROPAGATE_NAN, 1.0, -1, 1.0, 1.0, false);
 
     if (training) {
         // get workspace
         size_t workspaceSize = 0;
-        DIOPI_CALLCNNL(cnnlGetBatchNormBackwardWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
+        DIOPI_CALL_CNNL(cnnlGetBatchNormBackwardWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
 
         void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
-        DIOPI_CALLCNNL(cnnlBatchNormBackward_v2(handle,
-                                                activationDesc,
-                                                mode,
-                                                bnOps,
-                                                nullptr,
-                                                nullptr,
-                                                nullptr,
-                                                nullptr,
-                                                inputDesc.get(),
-                                                inputTr.data(),
-                                                nullptr,
-                                                nullptr,
-                                                gradOutputDesc.get(),
-                                                gradOutputTr.data(),
-                                                weightBiasMeanVarDesc.get(),
-                                                weightTr.data(),
-                                                nullptr,
-                                                saveMeanTr.defined() ? saveMeanTr.data() : nullptr,
-                                                saveInvstdTr.defined() ? saveInvstdTr.data() : nullptr,
-                                                static_cast<float>(eps),
-                                                nullptr,
-                                                nullptr,
-                                                gradInputDesc.get(),
-                                                gradInputTr.data(),
-                                                gradWeightTmpTr.data(),
-                                                gradBiasTmpTr.data(),
-                                                workspacePtr,
-                                                workspaceSize,
-                                                nullptr,
-                                                0));
+        DIOPI_CALL_CNNL(cnnlBatchNormBackward_v2(handle,
+                                                 activationDesc,
+                                                 mode,
+                                                 bnOps,
+                                                 nullptr,
+                                                 nullptr,
+                                                 nullptr,
+                                                 nullptr,
+                                                 inputDesc.get(),
+                                                 inputTr.data(),
+                                                 nullptr,
+                                                 nullptr,
+                                                 gradOutputDesc.get(),
+                                                 gradOutputTr.data(),
+                                                 weightBiasMeanVarDesc.get(),
+                                                 weightTr.data(),
+                                                 nullptr,
+                                                 saveMeanTr.defined() ? saveMeanTr.data() : nullptr,
+                                                 saveInvstdTr.defined() ? saveInvstdTr.data() : nullptr,
+                                                 static_cast<float>(eps),
+                                                 nullptr,
+                                                 nullptr,
+                                                 gradInputDesc.get(),
+                                                 gradInputTr.data(),
+                                                 gradWeightTmpTr.data(),
+                                                 gradBiasTmpTr.data(),
+                                                 workspacePtr,
+                                                 workspaceSize,
+                                                 nullptr,
+                                                 0));
     } else {
         size_t workspaceSize = 0;
-        DIOPI_CALLCNNL(cnnlGetFrozenBatchNormBackwardWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
+        DIOPI_CALL_CNNL(cnnlGetFrozenBatchNormBackwardWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
 
         void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
-        DIOPI_CALLCNNL(cnnlFrozenBatchNormBackward_v2(handle,
-                                                      activationDesc,
-                                                      mode,
-                                                      bnOps,
-                                                      inputDesc.get(),
-                                                      inputTr.data(),
-                                                      nullptr,
-                                                      nullptr,
-                                                      gradOutputDesc.get(),
-                                                      gradOutputTr.data(),
-                                                      weightBiasMeanVarDesc.get(),
-                                                      weightTr.data(),
-                                                      nullptr,
-                                                      runningMeanTr.defined() ? runningMeanTr.data() : nullptr,
-                                                      runningVarTr.defined() ? runningVarTr.data() : nullptr,
-                                                      static_cast<float>(eps),
-                                                      workspacePtr,
-                                                      workspaceSize,
-                                                      nullptr,
-                                                      nullptr,
-                                                      gradInputDesc.get(),
-                                                      gradInputTr.data(),
-                                                      gradWeightTmpTr.data(),
-                                                      gradBiasTmpTr.data()));
+        DIOPI_CALL_CNNL(cnnlFrozenBatchNormBackward_v2(handle,
+                                                       activationDesc,
+                                                       mode,
+                                                       bnOps,
+                                                       inputDesc.get(),
+                                                       inputTr.data(),
+                                                       nullptr,
+                                                       nullptr,
+                                                       gradOutputDesc.get(),
+                                                       gradOutputTr.data(),
+                                                       weightBiasMeanVarDesc.get(),
+                                                       weightTr.data(),
+                                                       nullptr,
+                                                       runningMeanTr.defined() ? runningMeanTr.data() : nullptr,
+                                                       runningVarTr.defined() ? runningVarTr.data() : nullptr,
+                                                       static_cast<float>(eps),
+                                                       workspacePtr,
+                                                       workspaceSize,
+                                                       nullptr,
+                                                       nullptr,
+                                                       gradInputDesc.get(),
+                                                       gradInputTr.data(),
+                                                       gradWeightTmpTr.data(),
+                                                       gradBiasTmpTr.data()));
     }
     if (gradInputTmpTr.dtype() != gradInputTr.dtype()) {
         dataTypeCast(ctx, gradInputTr, gradInputTmpTr);

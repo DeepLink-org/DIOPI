@@ -24,7 +24,7 @@ static diopiError_t cos(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor
     }
     CnnlTensorDesc inputDesc(input, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outputTmpDesc(outputTmp, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlCos_v2(handle, CNNL_COMPUTATION_HIGH_PRECISION, inputDesc.get(), input.data(), outputTmpDesc.get(), outputTmp.data()));
+    DIOPI_CALL_CNNL(cnnlCos_v2(handle, CNNL_COMPUTATION_HIGH_PRECISION, inputDesc.get(), input.data(), outputTmpDesc.get(), outputTmp.data()));
     if (outputTmp.dtype() != output.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, output, outputTmp));
     }

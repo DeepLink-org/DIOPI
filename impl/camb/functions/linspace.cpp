@@ -9,28 +9,26 @@ diopiError_t diopiLinspace(diopiContextHandle_t ctx, diopiTensorHandle_t out, co
 
     float startValue, endValue;
 
-    cnnlDataType_t startType, endType;
-    DIOPI_CALL(CnnlDataType::convertToCnnlType(&startType, start->stype));
-    DIOPI_CALL(CnnlDataType::convertToCnnlType(&endType, end->stype));
-
-    if (CnnlDataType::isFloatPoint(startType)) {
+    diopiDtype_t startType = start->stype;
+    diopiDtype_t endType = end->stype;
+    if (DiopiDataType::isFloatPoint(startType)) {
         startValue = start->fval;
-    } else if (CnnlDataType::isInteger(startType)) {
+    } else if (DiopiDataType::isInteger(startType)) {
         startValue = start->ival;
     } else {
         return diopiDtypeNotSupported;
     }
 
-    if (CnnlDataType::isFloatPoint(endType)) {
+    if (DiopiDataType::isFloatPoint(endType)) {
         endValue = end->fval;
-    } else if (CnnlDataType::isInteger(startType)) {
+    } else if (DiopiDataType::isInteger(startType)) {
         endValue = end->ival;
     } else {
         return diopiDtypeNotSupported;
     }
 
     CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlLinspace(handle, startValue, endValue, outDesc.get(), outTensor.data()));
+    DIOPI_CALL_CNNL(cnnlLinspace(handle, startValue, endValue, outDesc.get(), outTensor.data()));
     return diopiSuccess;
 }
 }  // namespace camb

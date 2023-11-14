@@ -26,13 +26,13 @@ DIOPI_API diopiError_t diopiRemainderTensor(diopiContextHandle_t ctx, diopiTenso
     CnnlTensorDesc outDesc(outTensorTemp, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetFloorModWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetFloorModWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outDesc.get(), &workspaceSize));
     void *workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlFloorMod(
+    DIOPI_CALL_CNNL(cnnlFloorMod(
         handle, inputDesc.get(), inputTensor.data(), otherDesc.get(), otherTensor.data(), outDesc.get(), outTensorTemp.data(), workspace, workspaceSize));
 
     if (outTensor.dtype() != outTensorTemp.dtype()) {
