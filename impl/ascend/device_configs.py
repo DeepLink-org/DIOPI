@@ -2255,42 +2255,6 @@ device_configs = {
         ),
     ),
 
-    'normal_std_tensor': dict(
-        name=['normal'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['std'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'normal_mean_tensor': dict(
-        name=['normal'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['mean'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'normal_tensor': dict(
-        name=['normal'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['mean'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
     'meshgrid': dict(
         name=['meshgrid'],
         tensor_para=dict(
