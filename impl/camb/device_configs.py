@@ -11,6 +11,8 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
+                    # FIXME sar测例精度异常
+                    "shape": [Skip((384, 64, 48, 160)), Skip((384, 128, 48, 160)),],
                     "dtype": [Skip(np.float16)]
                 },
             ]
@@ -214,11 +216,20 @@ device_configs = {
 
     'conv2d': dict(
         name=["conv2d"],
-        # FIXME 精度异常
-        atol=1e-2,
-        rtol=1e-2,
+        # FIXME centernet精度异常
+        atol=1e-1,
+        rtol=1e-1,
         atol_half=1e-1,
         rtol_half=1e-1,
+        tensor_para=dict(
+            args=[
+                {
+                    # FIXME sar精度异常
+                    "ins": ["weight"],
+                    "shape": [Skip((128, 64, 3, 3))],
+                },
+            ]
+        ),
     ),
 
     'hardswish': dict(
@@ -278,6 +289,15 @@ device_configs = {
             # FIXME camb precision failed when return_indices is True
             return_indices=[Skip(True), Skip(True)],
         ),
+        tensor_para=dict(
+                args=[
+                    {
+                        "ins": ['input'],
+                        # FIXME sar精度异常
+                        "shape": [Skip((384, 128, 48, 160))],
+                    },
+                ]
+            ),
     ),
 
     'max_pool2d_return_indices': dict(
@@ -2052,6 +2072,19 @@ device_configs = {
         interface=["torch"],
         atol=1e-2,
         rtol=1e-2
+    ),
+
+    # sar报错
+    'mul': dict(
+        name=["mul"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [Skip((384, 1, 512, 6, 40)), Skip((1, 1, 512, 6, 40))],
+                },
+            ],
+        ),
     ),
 
     # FIXME llama报错

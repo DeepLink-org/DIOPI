@@ -160,7 +160,7 @@ for para_key, para_val in function_kwargs.items():
         ndim = para_val.ndim
         if ndim < ${nhwc_min_dim} or ndim > 5:
             default_context.clear_tensors()
-            pytest.xfail(f"Skipped: {ndim}-dim Tensor skipped for nhwc test")
+            pytest.skip(f"Skipped: {ndim}-dim Tensor skipped for nhwc test")
         para_val_nchw = para_val
         ndim = para_val_nchw.ndim
         if ndim == 3:
@@ -229,7 +229,7 @@ try:
     dev_out = ${test_diopi_func_name}(**function_kwargs)
 except FunctionNotImplementedError as e:
     default_context.clear_tensors()
-    pytest.xfail(str(e))
+    pytest.skip(str(e))
 
 # read ref_out
 with open(f_out, 'rb') as f:
@@ -251,7 +251,7 @@ try:
     dev_inp_out = ${test_diopi_func_name}(**function_kwargs)
 except FunctionNotImplementedError as e:
     default_context.clear_tensors()
-    pytest.xfail(str(e))
+    pytest.skip(str(e))
 
 try:
     CheckResult.compare_output(dev_inp_out, ref_out, **tol)
@@ -300,7 +300,7 @@ try:
     dev_bp_out = ${test_diopi_bp_func_name}(**function_kwargs)
 except FunctionNotImplementedError as e:
     default_context.clear_tensors()
-    pytest.xfail(str(e))
+    pytest.skip(str(e))
 
 with open(f_bp_out, 'rb') as f:
     ref_bp_out = pickle.load(f)
