@@ -20,11 +20,40 @@ else()
 endif()
 
 execute_process(
-    COMMAND sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/;
-    git clone  https://gitee.com/ascend/op-plugin/ op-plugin ||
-    cd op-plugin && git checkout 186f4b87e2db4791a6ed697cea78d58a0ae92db1 &&
-    bash  ./gencode.sh 2.1 python "
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    COMMAND sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/; git clone  https://gitee.com/ascend/op-plugin/ op-plugin || cd op-plugin && git checkout 186f4b87e2db4791a6ed697cea78d58a0ae92db1 && bash  ./gencode.sh 2.0 python "
+)
+
+if(NOT DEFINED DIPU_ABI_V)
+  execute_process(
+    COMMAND
+      sh -x -c
+      "python -c 'import torch, builtins; print(next(item[-4:-2] for item in dir(builtins)      \
+          if \"__pybind11_internals_v4_gcc_libstdcpp_cxxabi10\" in item))'"
+    OUTPUT_VARIABLE DIPU_ABI_V)
+endif()
+
+if(NOT DEFINED DIPU_COMPILED_WITH_CXX11_ABI)
+  execute_process(
+    COMMAND
+      sh -x -c
+      "python -c 'import torch;print(1 if torch.compiled_with_cxx11_abi() else 0)'"
+    OUTPUT_VARIABLE DIPU_COMPILED_WITH_CXX11_ABI)
+endif()
+
+if(DIPU_COMPILED_WITH_CXX11_ABI GREATER 0)
+  set(DIPU_COMPILED_WITH_CXX11_ABI 1)
+else()
+  set(DIPU_COMPILED_WITH_CXX11_ABI 0)
+endif()
+
+add_definitions(-fabi-version=${DIPU_ABI_V})
+message(STATUS "DIPU_ABI_V: ${DIPU_ABI_V}")
+
+set(CMAKE_CXX_FLAGS
+    "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=${DIPU_COMPILED_WITH_CXX11_ABI}"
+)
+add_compile_options(-D_GLIBCXX_USE_CXX11_ABI=${DIPU_COMPILED_WITH_CXX11_ABI})
+message(STATUS "DIPU_COMPILED_WITH_CXX11_ABI:" ${DIPU_COMPILED_WITH_CXX11_ABI})
 
 
 set(OP_PLUGIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/base_ops/aclops/)
@@ -32,7 +61,16 @@ set(OP_PLUGIN_UTILS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/utils/)
 #file(GLOB_RECURSE OP_PLUGIN_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${OP_PLUGIN_DIR}/*.cpp)
 #file(GLOB_RECURSE OP_PLUGIN_UTILS_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${OP_PLUGIN_UTILS_DIR}/*.cpp)
 #file(GLOB_RECURSE OP_PLUGIN_API_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/base_ops/opapi/*.cpp)
+
 set(OP_PLUGIN_SRC
+    ${OP_PLUGIN_DIR}/BatchNormElemtKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/TransposeKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/MaxPool3dWithIndicesKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/SubSampleKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/BatchNormKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/SubKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/IsInKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/OnesKernelNpu.cpp
     ${OP_PLUGIN_DIR}/BatchNormElemtKernelNpu.cpp
     ${OP_PLUGIN_DIR}/TransposeKernelNpu.cpp
     ${OP_PLUGIN_DIR}/MaxPool3dWithIndicesKernelNpu.cpp
@@ -195,7 +233,7 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/QuantizePerChannelKernelNpu.cpp
     ${OP_PLUGIN_DIR}/RepeatKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SignBitsUnpackKernelNpu.cpp
-    #${OP_PLUGIN_DIR}/MatmulBackwardKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/MatmulBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/NegKernelNpu.cpp
     ${OP_PLUGIN_DIR}/RoundDecimalsKernelNpu.cpp
     ${OP_PLUGIN_DIR}/EluKernelNpu.cpp
@@ -330,7 +368,7 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/AdaptiveMaxPool2dKernelNpu.cpp
     ${OP_PLUGIN_DIR}/ConvDepthWise2dKernelNpu.cpp
     ${OP_PLUGIN_DIR}/__Lshift__KernelNpu.cpp
-    #${OP_PLUGIN_DIR}/MatmulKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/MatmulKernelNpu.cpp
     ${OP_PLUGIN_DIR}/FastGeluKernelNpu.cpp
     ${OP_PLUGIN_DIR}/CtcLossKernelNpu.cpp
     ${OP_PLUGIN_DIR}/LogicalOrKernelNpu.cpp
@@ -369,7 +407,7 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/SeluKernelNpu.cpp
     ${OP_PLUGIN_DIR}/CumminKernelNpu.cpp
     ${OP_PLUGIN_DIR}/NLLLoss2dKernelNpu.cpp
-    #${OP_PLUGIN_DIR}/LogSumExpKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/LogSumExpKernelNpu.cpp
     ${OP_PLUGIN_DIR}/LeKernelNpu.cpp
     ${OP_PLUGIN_DIR}/NormKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SoftShrinkBackwardKernelNpu.cpp
@@ -400,7 +438,7 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/_Unique2KernelNpu.cpp
     ${OP_PLUGIN_DIR}/AllKernelNpu.cpp
     ${OP_PLUGIN_DIR}/BatchNormGatherStatsUpdateKernelNpu.cpp
-    #${OP_PLUGIN_DIR}/SumKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/SumKernelNpu.cpp
     ${OP_PLUGIN_DIR}/RoiAlignBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/NLLLossKernelNpu.cpp
     #${OP_PLUGIN_DIR}/NativeDropoutKernelNpu.cpp
@@ -421,26 +459,49 @@ set(OP_PLUGIN_SRC
     #${OP_PLUGIN_DIR}/GruKernelNpu.cpp
 )
 
-set(OP_PLUGIN_UTILS_SRC
-  ${OP_PLUGIN_UTILS_DIR}/KernelNpuOutputSize.cpp
-  #${OP_PLUGIN_UTILS_DIR}/OpUtils.cpp
-)
-
-set(ASCEND_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/torch_npu/csrc/impl/)
-set(ASCEND_IMPL_SRC
-    ${ASCEND_IMPL_DIR}/EnvVariables.cpp
-    ${ASCEND_IMPL_DIR}/ForceJitCompileList.cpp
-    ${ASCEND_IMPL_DIR}/OpParamMaker.cpp
-    ${ASCEND_IMPL_DIR}/OpCmdHelper.cpp
-    ${ASCEND_IMPL_DIR}/NPUEventManager.cpp
-    ${ASCEND_IMPL_DIR}/FormatHelper.cpp
-    ${ASCEND_IMPL_DIR}/OpPreparation.cpp
-    ${ASCEND_IMPL_DIR}/OpCommand.cpp
-    ${ASCEND_IMPL_DIR}/AoeUtils.cpp
-    ${ASCEND_IMPL_DIR}/NPUTensorIterator.cpp
-    ${ASCEND_IMPL_DIR}/NPUTypeProperties.cpp
-    ${ASCEND_IMPL_DIR}/CalcuOpUtil.cpp
-    ${ASCEND_IMPL_DIR}/NPUMemoryOverlap.cpp
+set(OP_PLUGIN_SRC_V_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/v2r0/aclops/)
+set(OP_PLUGIN_SRC
+    ${OP_PLUGIN_SRC}
+    ${OP_PLUGIN_SRC_V_DIR}/BatchNormKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/IndexKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/CumsumKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/PreluBackwardKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/EmbeddingBagBackwardKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/StdKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/LinalgSvdKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/ConfusionTransposeKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/BmmV2KernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/WeightNormKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/ConvolutionKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/ScatterKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/MaxV1KernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/PsRoiPoolingKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/EmbeddingKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/PreluKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/TriangularSolveKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/CatKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/GeluBackwardKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/ZerosKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/MaxUnpool2dBackwardKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/KlDivKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/VarKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/IndexAddKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/L1LossKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/MeanKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/Im2colKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/SymeigKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/MaxUnpool3dBackwardKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/GridSampler3dBackwardKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/GeluKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/RreluWithNoiseKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/CumprodKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/EmbeddingBackwardKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/RepeatInterLeaveKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/SoftplusBackwardKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/MinV1KernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/SumKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/WhereKernelNpu.cpp
+    ${OP_PLUGIN_SRC_V_DIR}/IndexCopyKernelNpu.cpp
 )
 
 set(OP_PLUGIN_API_DIR ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/base_ops/opapi/)
@@ -618,7 +679,7 @@ set(OP_PLUGIN_API_SRC
     ${OP_PLUGIN_API_DIR}/OneHotKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/PutKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/SortKernelNpuOpApi.cpp
-    ${OP_PLUGIN_API_DIR}/KlDivKernelNpuOpApi.cpp
+    #${OP_PLUGIN_API_DIR}/KlDivKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/MatmulKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/SmoothL1LossBackwrdKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/ReluKernelNpuOpApi.cpp
@@ -714,11 +775,51 @@ set(OP_PLUGIN_API_SRC
     ${OP_PLUGIN_API_DIR}/ScatterKernelNpuOpApi.cpp
 )
 
+set(OP_PLUGIN_UTILS_SRC
+  ${OP_PLUGIN_UTILS_DIR}/KernelNpuOutputSize.cpp
+  ${OP_PLUGIN_UTILS_DIR}/OpUtils.cpp
+  ${OP_PLUGIN_UTILS_DIR}/op_api_common.cpp
+)
+
+set(ASCEND_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/torch_npu/csrc/impl/)
+set(ASCEND_IMPL_SRC
+    ${ASCEND_IMPL_DIR}/EnvVariables.cpp
+    ${ASCEND_IMPL_DIR}/ForceJitCompileList.cpp
+    ${ASCEND_IMPL_DIR}/OpParamMaker.cpp
+    ${ASCEND_IMPL_DIR}/OpCmdHelper.cpp
+    ${ASCEND_IMPL_DIR}/NPUEventManager.cpp
+    ${ASCEND_IMPL_DIR}/FormatHelper.cpp
+    ${ASCEND_IMPL_DIR}/OpPreparation.cpp
+    ${ASCEND_IMPL_DIR}/OpCommand.cpp
+    ${ASCEND_IMPL_DIR}/NPUBridge.cpp
+    ${ASCEND_IMPL_DIR}/AoeUtils.cpp
+    ${ASCEND_IMPL_DIR}/NPUTensorIterator.cpp
+    ${ASCEND_IMPL_DIR}/NPUTypeProperties.cpp
+    ${ASCEND_IMPL_DIR}/CalcuOpUtil.cpp
+    ${ASCEND_IMPL_DIR}/NPUMemoryOverlap.cpp
+    ${ASCEND_IMPL_DIR}/NPUDefine.cpp
+    ${ASCEND_IMPL_DIR}/StorageSizeNpu.cpp
+    ${ASCEND_IMPL_DIR}/ForceAclnnList.cpp
+    ${ASCEND_IMPL_DIR}/OptionRegister.cpp
+    ${ASCEND_IMPL_DIR}/OptionsManager.cpp
+    ${ASCEND_IMPL_DIR}/FunctionLoader.cpp
+    ${ASCEND_IMPL_DIR}/NpuUtils.cpp
+    ${ASCEND_IMPL_DIR}/AclOpCompileInterface.cpp
+    ${ASCEND_IMPL_DIR}/FormatCastKernelNpu.cpp
+)
+
+set(OP_PLUGIN_API_DIR ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/v2r0/opapi/)
+set(OP_PLUGIN_API_SRC
+    ${OP_PLUGIN_API_SRC}
+)
+
 set(DIOPI_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/diopi_impl/)
 set(DIOPI_IMPL_SRC
     ${DIOPI_IMPL_DIR}/error.cpp
     ${DIOPI_IMPL_DIR}/binary.cpp
 )
+
+add_definitions(-DBUILD_LIBTORCH)
 
 include_directories(op-plugin torch_npu ${CMAKE_CURRENT_SOURCE_DIR})
 set(IMPL_SRC )

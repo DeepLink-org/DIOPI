@@ -5,10 +5,11 @@
 
 namespace torch_npu {
 
+using NPUTensorImpl = c10::TensorImpl;
 
 class NPUBridge {
 public:
-  using NPUTensorImpl = c10::TensorImpl;
+
   // at::tensor to NPUStorageImpl
   static NPUStorageImpl* GetNpuStorageImpl(const at::Tensor &tensor);
 

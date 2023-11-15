@@ -18,6 +18,13 @@ at::Tensor npu_format_cast(const at::Tensor& self, int acl_format);
 
 at::Tensor& npu_format_cast_(at::Tensor& self, int acl_format);
 
+int64_t get_npu_format(const at::Tensor& src);
+
+at::Tensor _npu_format_cast(const at::Tensor& self, int64_t acl_format);
+
+at::Tensor& copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking);
+
+
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_cell(
     const at::Tensor& input, const at::Tensor& w_ih, const at::Tensor& w_hh, const at::Tensor& h, const at::Tensor& c,
     const c10::optional<at::Tensor>& bias_opt);
