@@ -34,7 +34,7 @@ def pytest_runtest_makereport(item, call):
     if report.when == 'call':
         if report.failed:
             db_data['error_msg'] = f'{report.longrepr.reprcrash.message}'
-        elif report.wasxfail:
+        elif hasattr(report, 'wasxfail'):
             match = re.search(r'reason: (.+)', report.wasxfail)
             if match:
                 skip_message = match.group(1)
