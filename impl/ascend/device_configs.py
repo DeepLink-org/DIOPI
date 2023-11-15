@@ -147,42 +147,6 @@ device_configs = {
         ),
     ),
 
-    'threshold': dict(
-        name=['threshold'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()), Skip((64, 28, 28)), Skip((2, 144, 28, 28)), Skip((64, 3, 7, 28, 28))],
-                },
-            ]
-        ),
-    ),
-
-    'threshold_int': dict(
-        name=['threshold'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 96, 56, 56)),],
-                },
-            ]
-        ),
-    ),
-
-    'threshold_uint': dict(
-        name=['threshold'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.uint8),],
-                },
-            ]
-        ),
-    ),
-
     'gelu': dict(
         name=['gelu'],
         atol=1e-3,
