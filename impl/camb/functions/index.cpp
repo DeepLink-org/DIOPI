@@ -180,27 +180,27 @@ static diopiError_t indexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
     CnnlTensorDesc outputDesc(outputTensor, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(
+    DIOPI_CALL_CNNL(
         cnnlGetIndexPutWorkspaceSize(handle, inputDesc.get(), indicesDescT.data(), indicesDescT.size(), valuesDesc.get(), accumulate, &workspaceSize));
     void* workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlIndexPut(handle,
-                                inputDesc.get(),
-                                inputTensor.data(),
-                                indicesDescT.data(),
-                                indicesPtrList.data(),
-                                indicesDescT.size(),
-                                valuesDesc.get(),
-                                valuesTensor.data(),
-                                workspace,
-                                workspaceSize,
-                                accumulate,
-                                true,
-                                outputDesc.get(),
-                                outputTensor.data()));
+    DIOPI_CALL_CNNL(cnnlIndexPut(handle,
+                                 inputDesc.get(),
+                                 inputTensor.data(),
+                                 indicesDescT.data(),
+                                 indicesPtrList.data(),
+                                 indicesDescT.size(),
+                                 valuesDesc.get(),
+                                 valuesTensor.data(),
+                                 workspace,
+                                 workspaceSize,
+                                 accumulate,
+                                 true,
+                                 outputDesc.get(),
+                                 outputTensor.data()));
     return diopiSuccess;
 }
 
@@ -243,7 +243,7 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diop
 
     int32_t outputDescDim = 0;
     std::vector<int32_t> outputDescDims(arraySize);
-    DIOPI_CALLCNNL(cnnlGetAdvancedIndexOutputDim(handle, inputDesc.get(), indicesDescT.data(), &outputDescDim, outputDescDims.data()));
+    DIOPI_CALL_CNNL(cnnlGetAdvancedIndexOutputDim(handle, inputDesc.get(), indicesDescT.data(), &outputDescDim, outputDescDims.data()));
     outputDescDims.resize(outputDescDim);
 
     std::vector<int64_t> outTensorShape(outputDescDims.begin(), outputDescDims.end());
@@ -255,23 +255,23 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diop
     cnrtMemcpy(outputDim.data(), &outputDescDim, sizeof(int32_t), cnrtMemcpyHostToDev);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetAdvancedIndexWorkspaceSize(handle, inputDesc.get(), indicesDescT.data(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetAdvancedIndexWorkspaceSize(handle, inputDesc.get(), indicesDescT.data(), &workspaceSize));
     void* workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlAdvancedIndex(handle,
-                                     inputDesc.get(),
-                                     inputTensorTmp.data(),
-                                     indicesDescT.data(),
-                                     indicesPtrList.data(),
-                                     workspace,
-                                     workspaceSize,
-                                     outDesc.get(),
-                                     outTensor.data(),
-                                     outputDims.data(),
-                                     outputDim.data()));
+    DIOPI_CALL_CNNL(cnnlAdvancedIndex(handle,
+                                      inputDesc.get(),
+                                      inputTensorTmp.data(),
+                                      indicesDescT.data(),
+                                      indicesPtrList.data(),
+                                      workspace,
+                                      workspaceSize,
+                                      outDesc.get(),
+                                      outTensor.data(),
+                                      outputDims.data(),
+                                      outputDim.data()));
     DIOPI_CALL(dataTypeCast(ctx, outTensor, inputTensor.dtype()));
     *out = diopiTensorHandle_t(outTensor);
     return diopiSuccess;

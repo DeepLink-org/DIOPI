@@ -32,12 +32,22 @@ bool isScalarOne(const diopiScalar_t* alpha) {
 
 diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                       const diopiScalar_t* alpha) {
-    if (isScalarOne(alpha)) {
-        AclOpRunner<2, 1, dtypeConvertor>("Add", ctx).addInput(input).addInput(other).addOutput(out).run();
+    diopiDtype_t outDtype, inputDtype, otherDtype;
+    diopiGetTensorDtype(out, &outDtype);
+    diopiGetTensorDtype(input, &inputDtype);
+    diopiGetTensorDtype(other, &otherDtype);
+    diopiDtype_t highType = promoteTypes(inputDtype, otherDtype);
+    diopiTensorHandle_t outTemp;
+    if (outDtype != highType) {
+        makeTensorLike(ctx, &outTemp, out, highType);
     } else {
-        diopiDtype_t outDtype, castType;
-        diopiGetTensorDtype(out, &outDtype);
+        outTemp = out;
+    }
 
+    if (isScalarOne(alpha)) {
+        AclOpRunner<2, 1, dtypeConvertor>("Add", ctx).addInput(input, highType).addInput(other, highType).addOutput(outTemp).run();
+    } else {
+        diopiDtype_t castType;
         if (isFloatingType(outDtype)) {
             castType = diopi_dtype_float32;
         } else {
@@ -46,6 +56,8 @@ diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
         AclOpRunner<3, 1>("AxpyV2", ctx).addInput(input, castType).addInput(other, castType).addConstInput(*alpha, diopi_dtype_float32).addOutput(out).run();
     }
+
+    if (outDtype != highType) diopiCastDtype(ctx, out, outTemp);
     return diopiSuccess;
 }
 

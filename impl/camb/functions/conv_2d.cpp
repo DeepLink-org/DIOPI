@@ -44,16 +44,16 @@ diopiError_t convForward(diopiContextHandle_t ctx, DiopiTensor input, DiopiTenso
 
     cnnlDataType_t computeType;
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&computeType, input.dtype()));
-    DIOPI_CALLCNNL(cnnlSetConvolutionDescriptor(convDesc.get(), dimNb, paddingTmp, strideTmp, dilationTmp, groups, computeType));
+    DIOPI_CALL_CNNL(cnnlSetConvolutionDescriptor(convDesc.get(), dimNb, paddingTmp, strideTmp, dilationTmp, groups, computeType));
 
     // prepare conv desc
     cnnlConvolutionFwdPreference_t preference = CNNL_CONVOLUTION_FWD_FASTEST;
     cnnlConvolutionForwardAlgo_t algo;
-    DIOPI_CALLCNNL(cnnlGetConvolutionForwardAlgorithm(handle, convDesc.get(), inputDesc.get(), weightDesc.get(), outputDesc.get(), preference, &algo));
+    DIOPI_CALL_CNNL(cnnlGetConvolutionForwardAlgorithm(handle, convDesc.get(), inputDesc.get(), weightDesc.get(), outputDesc.get(), preference, &algo));
 
     // prepare workspace
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetConvolutionForwardWorkspaceSize(
+    DIOPI_CALL_CNNL(cnnlGetConvolutionForwardWorkspaceSize(
         handle, inputDesc.get(), weightDesc.get(), outputDesc.get(), bias.defined() ? biasDesc.get() : nullptr, convDesc.get(), algo, &workspaceSize));
 
     void *workspace = nullptr;
@@ -61,21 +61,21 @@ diopiError_t convForward(diopiContextHandle_t ctx, DiopiTensor input, DiopiTenso
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlConvolutionForward(handle,
-                                          convDesc.get(),
-                                          algo,
-                                          nullptr,
-                                          inputDesc.get(),
-                                          input.data(),
-                                          weightDesc.get(),
-                                          weight.data(),
-                                          bias.defined() ? biasDesc.get() : nullptr,
-                                          bias.defined() ? bias.data() : nullptr,
-                                          workspace,
-                                          workspaceSize,
-                                          nullptr,
-                                          outputDesc.get(),
-                                          output.data()));
+    DIOPI_CALL_CNNL(cnnlConvolutionForward(handle,
+                                           convDesc.get(),
+                                           algo,
+                                           nullptr,
+                                           inputDesc.get(),
+                                           input.data(),
+                                           weightDesc.get(),
+                                           weight.data(),
+                                           bias.defined() ? biasDesc.get() : nullptr,
+                                           bias.defined() ? bias.data() : nullptr,
+                                           workspace,
+                                           workspaceSize,
+                                           nullptr,
+                                           outputDesc.get(),
+                                           output.data()));
     return diopiSuccess;
 }
 
@@ -99,36 +99,36 @@ diopiError_t convBackwardData(diopiContextHandle_t ctx, DiopiTensor gradOutput, 
 
     cnnlDataType_t computeType;
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&computeType, gradInput.dtype()));
-    DIOPI_CALLCNNL(cnnlSetConvolutionDescriptor(convDesc.get(), dimNb, paddingTmp, strideTmp, dilationTmp, groups, computeType));
+    DIOPI_CALL_CNNL(cnnlSetConvolutionDescriptor(convDesc.get(), dimNb, paddingTmp, strideTmp, dilationTmp, groups, computeType));
 
     // prepare conv desc
     cnnlConvolutionBwdDataPreference_t preference = CNNL_CONVOLUTION_BWD_DATA_FASTEST;
     cnnlConvolutionBwdDataAlgo_t algo;
-    DIOPI_CALLCNNL(
+    DIOPI_CALL_CNNL(
         cnnlGetConvolutionBackwardDataAlgorithm(handle, weightDesc.get(), gradOutputDesc.get(), convDesc.get(), gradInputDesc.get(), preference, &algo));
 
     // prepare workspace
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(
+    DIOPI_CALL_CNNL(
         cnnlGetConvolutionBackwardDataWorkspaceSize(handle, weightDesc.get(), gradOutputDesc.get(), convDesc.get(), gradInputDesc.get(), algo, &workspaceSize));
 
     void *workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
-    DIOPI_CALLCNNL(cnnlConvolutionBackwardData(handle,
-                                               nullptr,
-                                               weightDesc.get(),
-                                               weight.data(),
-                                               gradOutputDesc.get(),
-                                               gradOutput.data(),
-                                               convDesc.get(),
-                                               algo,
-                                               workspace,
-                                               workspaceSize,
-                                               nullptr,
-                                               gradInputDesc.get(),
-                                               gradInput.data()));
+    DIOPI_CALL_CNNL(cnnlConvolutionBackwardData(handle,
+                                                nullptr,
+                                                weightDesc.get(),
+                                                weight.data(),
+                                                gradOutputDesc.get(),
+                                                gradOutput.data(),
+                                                convDesc.get(),
+                                                algo,
+                                                workspace,
+                                                workspaceSize,
+                                                nullptr,
+                                                gradInputDesc.get(),
+                                                gradInput.data()));
 
     return diopiSuccess;
 }
@@ -152,12 +152,12 @@ diopiError_t convBackwardFilter(diopiContextHandle_t ctx, DiopiTensor gradOutput
 
     cnnlDataType_t computeType;
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&computeType, gradOutput.dtype()));
-    DIOPI_CALLCNNL(cnnlSetConvolutionDescriptor(convDesc.get(), dimNb, paddingTmp, strideTmp, dilationTmp, groups, computeType));
+    DIOPI_CALL_CNNL(cnnlSetConvolutionDescriptor(convDesc.get(), dimNb, paddingTmp, strideTmp, dilationTmp, groups, computeType));
 
     // To fix: There is currently a problem with the cnnlGetConvolutionBackwardFilterAlgorithm interface.
     // prepare workspace
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetConvolutionBackwardFilterWorkspaceSize(
+    DIOPI_CALL_CNNL(cnnlGetConvolutionBackwardFilterWorkspaceSize(
         handle, inputDesc.get(), gradOutputDesc.get(), gradWeightDesc.get(), convDesc.get(), CNNL_CONVOLUTION_BWD_FILTER_ALGO_DIRECT, &workspaceSize));
 
     void *workspace = nullptr;
@@ -165,19 +165,19 @@ diopiError_t convBackwardFilter(diopiContextHandle_t ctx, DiopiTensor gradOutput
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlConvolutionBackwardFilter(handle,
-                                                 nullptr,
-                                                 inputDesc.get(),
-                                                 input.data(),
-                                                 gradOutputDesc.get(),
-                                                 gradOutput.data(),
-                                                 convDesc.get(),
-                                                 CNNL_CONVOLUTION_BWD_FILTER_ALGO_DIRECT,
-                                                 workspace,
-                                                 workspaceSize,
-                                                 nullptr,
-                                                 gradWeightDesc.get(),
-                                                 gradWeight.data()));
+    DIOPI_CALL_CNNL(cnnlConvolutionBackwardFilter(handle,
+                                                  nullptr,
+                                                  inputDesc.get(),
+                                                  input.data(),
+                                                  gradOutputDesc.get(),
+                                                  gradOutput.data(),
+                                                  convDesc.get(),
+                                                  CNNL_CONVOLUTION_BWD_FILTER_ALGO_DIRECT,
+                                                  workspace,
+                                                  workspaceSize,
+                                                  nullptr,
+                                                  gradWeightDesc.get(),
+                                                  gradWeight.data()));
     return diopiSuccess;
 }
 
@@ -189,12 +189,12 @@ diopiError_t convBackwardBias(diopiContextHandle_t ctx, DiopiTensor gradOutput, 
     size_t workspaceSizeBias;
     int channelAxis = 3;
 
-    DIOPI_CALLCNNL(cnnlGetBiasAddBackwardWorkspaceSize(handle, gradOutputDesc.get(), biasGradDesc.get(), channelAxis, &workspaceSizeBias))
+    DIOPI_CALL_CNNL(cnnlGetBiasAddBackwardWorkspaceSize(handle, gradOutputDesc.get(), biasGradDesc.get(), channelAxis, &workspaceSizeBias))
     void *workspaceBias = nullptr;
     if (0 != workspaceSizeBias) {
         workspaceBias = requiresBuffer(ctx, workspaceSizeBias).data();
     }
-    DIOPI_CALLCNNL(cnnlBiasAddBackward_v2(
+    DIOPI_CALL_CNNL(cnnlBiasAddBackward_v2(
         handle, gradOutputDesc.get(), gradOutput.data(), channelAxis, biasGradDesc.get(), gradBias.data(), workspaceBias, workspaceSizeBias));
     return diopiSuccess;
 }
@@ -285,7 +285,7 @@ diopiError_t diopiConvTranspose2d(diopiContextHandle_t ctx, diopiTensorHandle_t 
         CnnlTensorDesc biasDesc(biasTensor, CNNL_LAYOUT_NHWC);
         CnnlTensorDesc outputDesc(outputTensorTmp, CNNL_LAYOUT_NHWC);
         size_t workspaceSizeBias;
-        DIOPI_CALLCNNL(cnnlGetBiasAddWorkspaceSize(handle, biasDesc.get(), outputDesc.get(), &workspaceSizeBias));
+        DIOPI_CALL_CNNL(cnnlGetBiasAddWorkspaceSize(handle, biasDesc.get(), outputDesc.get(), &workspaceSizeBias));
 
         void *workspaceBias = nullptr;
         if (workspaceSizeBias != 0) {
@@ -293,7 +293,7 @@ diopiError_t diopiConvTranspose2d(diopiContextHandle_t ctx, diopiTensorHandle_t 
         }
         float alpha = 1.0;
         float beta = 1.0;
-        DIOPI_CALLCNNL(
+        DIOPI_CALL_CNNL(
             cnnlBiasAdd(handle, &alpha, biasDesc.get(), biasTensor.data(), workspaceBias, workspaceSizeBias, &beta, outputDesc.get(), outputTensorTmp.data()));
     }
 

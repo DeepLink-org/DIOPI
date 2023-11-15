@@ -47,22 +47,22 @@ diopiError_t diopiLinalgQR(diopiContextHandle_t ctx, diopiConstTensorHandle_t a,
     CnnlTensorDesc output2Desc(output2TensorTmp, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetQRWorkspaceSize(handle, inputDesc.get(), reduced, &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetQRWorkspaceSize(handle, inputDesc.get(), reduced, &workspaceSize));
     void *workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlQR(handle,
-                          inputDesc.get(),
-                          inputTensor.data(),
-                          output1Desc.get(),
-                          output1TensorTmp.data(),
-                          output2Desc.get(),
-                          output2TensorTmp.data(),
-                          workspace,
-                          workspaceSize,
-                          reduced));
+    DIOPI_CALL_CNNL(cnnlQR(handle,
+                           inputDesc.get(),
+                           inputTensor.data(),
+                           output1Desc.get(),
+                           output1TensorTmp.data(),
+                           output2Desc.get(),
+                           output2TensorTmp.data(),
+                           workspace,
+                           workspaceSize,
+                           reduced));
     if (output1TensorTmp.dtype() != output1Tensor.dtype() || output2TensorTmp.dtype() != output2Tensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, output1Tensor, output1TensorTmp));
         DIOPI_CALL(dataTypeCast(ctx, output2Tensor, output2TensorTmp));

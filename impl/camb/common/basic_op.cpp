@@ -20,7 +20,7 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTens
 
     CnnlResourceGuard<cnnlOpTensorDescriptor_t, cnnlCreateOpTensorDescriptor, cnnlDestroyOpTensorDescriptor> opDesc;
 
-    DIOPI_CALLCNNL(cnnlSetOpTensorDescriptor(opDesc.get(), opType, compType, CNNL_NOT_PROPAGATE_NAN));
+    DIOPI_CALL_CNNL(cnnlSetOpTensorDescriptor(opDesc.get(), opType, compType, CNNL_NOT_PROPAGATE_NAN));
 
     std::shared_ptr<void> alpha1Value = nullptr;
     std::shared_ptr<void> alpha2Value = nullptr;
@@ -43,26 +43,26 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTens
     CnnlTensorDesc outputDesc(outputCasted, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetOpTensorWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outputDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetOpTensorWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outputDesc.get(), &workspaceSize));
 
     void* workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlOpTensor(handle,
-                                opDesc.get(),
-                                alpha1Value.get(),
-                                inputDesc.get(),
-                                inputCasted.data(),
-                                alpha2Value.get(),
-                                otherDesc.get(),
-                                otherCasted.data(),
-                                workspace,
-                                workspaceSize,
-                                betaValue.get(),
-                                outputDesc.get(),
-                                outputCasted.data()));
+    DIOPI_CALL_CNNL(cnnlOpTensor(handle,
+                                 opDesc.get(),
+                                 alpha1Value.get(),
+                                 inputDesc.get(),
+                                 inputCasted.data(),
+                                 alpha2Value.get(),
+                                 otherDesc.get(),
+                                 otherCasted.data(),
+                                 workspace,
+                                 workspaceSize,
+                                 betaValue.get(),
+                                 outputDesc.get(),
+                                 outputCasted.data()));
 
     DIOPI_CALL(dataTypeCast(ctx, out, outputCasted));
     return diopiSuccess;

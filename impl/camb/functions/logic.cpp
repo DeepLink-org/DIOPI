@@ -33,21 +33,21 @@ diopiError_t logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConst
     CnnlTensorDesc outDesc(outTensorTemp, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetLogicOpWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetLogicOpWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outDesc.get(), &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
-    DIOPI_CALLCNNL(cnnlLogicOp(handle,
-                               logicOp,
-                               inputDesc.get(),
-                               inputTensor.data(),
-                               otherDesc.get(),
-                               otherTensor.data(),
-                               workspace,
-                               workspaceSize,
-                               outDesc.get(),
-                               outTensorTemp.data()));
+    DIOPI_CALL_CNNL(cnnlLogicOp(handle,
+                                logicOp,
+                                inputDesc.get(),
+                                inputTensor.data(),
+                                otherDesc.get(),
+                                otherTensor.data(),
+                                workspace,
+                                workspaceSize,
+                                outDesc.get(),
+                                outTensorTemp.data()));
     if (outTensorTemp.dtype() != outTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTemp));
     }
@@ -85,22 +85,22 @@ diopiError_t logicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     CnnlTensorDesc outDesc(outTensorTemp, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetLogicOpWorkspaceSize(handle, inputDesc.get(), otherTDesc.get(), outDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetLogicOpWorkspaceSize(handle, inputDesc.get(), otherTDesc.get(), outDesc.get(), &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlLogicOp(handle,
-                               logicOp,
-                               inputDesc.get(),
-                               inputTensor.data(),
-                               otherTDesc.get(),
-                               otherTTensor.data(),
-                               workspace,
-                               workspaceSize,
-                               outDesc.get(),
-                               outTensorTemp.data()));
+    DIOPI_CALL_CNNL(cnnlLogicOp(handle,
+                                logicOp,
+                                inputDesc.get(),
+                                inputTensor.data(),
+                                otherTDesc.get(),
+                                otherTTensor.data(),
+                                workspace,
+                                workspaceSize,
+                                outDesc.get(),
+                                outTensorTemp.data()));
     if (outTensorTemp.dtype() != outTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTemp));
     }

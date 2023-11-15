@@ -16,7 +16,7 @@ static diopiError_t slice(cnnlHandle_t handle, DiopiTensor outTensor, DiopiTenso
                           std::vector<int32_t> step) {
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlStridedSlice(handle, inputDesc.get(), inputTensor.data(), start.data(), end.data(), step.data(), outDesc.get(), outTensor.data()));
+    DIOPI_CALL_CNNL(cnnlStridedSlice(handle, inputDesc.get(), inputTensor.data(), start.data(), end.data(), step.data(), outDesc.get(), outTensor.data()));
     return diopiSuccess;
 }
 
@@ -65,17 +65,17 @@ static diopiError_t scatter(diopiContextHandle_t ctx, DiopiTensor outTensor, Dio
     CnnlTensorDesc srcDesc(actualSrcTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc indexDesc(indexTensor, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlScatter(handle,
-                               dim,
-                               inputDesc.get(),
-                               inputTensorTmp.data(),
-                               indexDesc.get(),
-                               indexTensor.data(),
-                               srcDesc.get(),
-                               actualSrcTensor.data(),
-                               outDesc.get(),
-                               outTensorTmp.data(),
-                               mode));
+    DIOPI_CALL_CNNL(cnnlScatter(handle,
+                                dim,
+                                inputDesc.get(),
+                                inputTensorTmp.data(),
+                                indexDesc.get(),
+                                indexTensor.data(),
+                                srcDesc.get(),
+                                actualSrcTensor.data(),
+                                outDesc.get(),
+                                outTensorTmp.data(),
+                                mode));
     if (outTensor.dtype() != outTensorTmp.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
     }

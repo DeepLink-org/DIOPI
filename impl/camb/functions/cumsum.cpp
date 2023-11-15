@@ -30,11 +30,11 @@ diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     int axis = getDim(inputTensor, dim);
 
     if (inputTensor.dtype() == outTensor.dtype()) {
-        DIOPI_CALLCNNL(cnnlCumsum(handle, inputDesc.get(), inputTensor.data(), axis, false, false, CNNL_PROPAGATE_NAN, outDesc.get(), outTensor.data()));
+        DIOPI_CALL_CNNL(cnnlCumsum(handle, inputDesc.get(), inputTensor.data(), axis, false, false, CNNL_PROPAGATE_NAN, outDesc.get(), outTensor.data()));
     } else {
         DiopiTensor outTemp = requiresTensor(ctx, outTensor.shape(), inputTensor.dtype());
         CnnlTensorDesc outTempDesc(outTemp, CNNL_LAYOUT_ARRAY);
-        DIOPI_CALLCNNL(cnnlCumsum(handle, inputDesc.get(), inputTensor.data(), axis, false, false, CNNL_PROPAGATE_NAN, outTempDesc.get(), outTemp.data()));
+        DIOPI_CALL_CNNL(cnnlCumsum(handle, inputDesc.get(), inputTensor.data(), axis, false, false, CNNL_PROPAGATE_NAN, outTempDesc.get(), outTemp.data()));
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTemp));
     }
 
