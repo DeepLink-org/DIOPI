@@ -39,7 +39,7 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
         // create and set the rand_generator
         cnnlRandGenerator_t generator;
         // MTGP32 algorithm performs better on MLU300 series than MLU200 series
-        DIOPI_CALLCNNL(cnnlRandCreateGenerator(&generator, CNNL_RAND_RNG_MTGP32));
+        DIOPI_CALL_CNNL(cnnlRandCreateGenerator(&generator, CNNL_RAND_RNG_MTGP32));
         diopiTensorHandle_t stateHandle = nullptr;
         DIOPI_CALL(diopiGeneratorGetState(ctx, gen, &stateHandle));
         void* statePtr = nullptr;
@@ -50,7 +50,7 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
             DiopiTensor tempTensor = ones(ctx, maskTensor.shape(), diopi_dtype_float32);
             CnnlTensorDesc tempDesc(tempTensor, CNNL_LAYOUT_ARRAY);
 
-            DIOPI_CALLCNNL(cnnlFusedDropout_v2(
+            DIOPI_CALL_CNNL(cnnlFusedDropout_v2(
                 handle, generator, tempDesc.get(), tempTensor.data(), p, statePtr, maskDesc.get(), maskTensor.data(), tempDesc.get(), tempTensor.data()));
 
             DiopiTensor bcastTempTensor;
@@ -60,25 +60,25 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
 
             cnnlTensorDescriptor_t inputDescs[] = {inputDesc.get(), bcastTempDesc.get()};
             const void* inputs[] = {inputTensor.data(), bcastTempTensor.data()};
-            DIOPI_CALLCNNL(cnnlMulN(handle, inputDescs, inputs, 2, outputDesc.get(), outputTensorTemp.data()))
+            DIOPI_CALL_CNNL(cnnlMulN(handle, inputDescs, inputs, 2, outputDesc.get(), outputTensorTemp.data()))
         } else {
             // cases for dropout
-            DIOPI_CALLCNNL(cnnlFusedDropout_v2(handle,
-                                               generator,
-                                               inputDesc.get(),
-                                               inputTensor.data(),
-                                               p,
-                                               statePtr,
-                                               maskDesc.get(),
-                                               maskTensor.data(),
-                                               outputDesc.get(),
-                                               outputTensorTemp.data()));
+            DIOPI_CALL_CNNL(cnnlFusedDropout_v2(handle,
+                                                generator,
+                                                inputDesc.get(),
+                                                inputTensor.data(),
+                                                p,
+                                                statePtr,
+                                                maskDesc.get(),
+                                                maskTensor.data(),
+                                                outputDesc.get(),
+                                                outputTensorTemp.data()));
         }
         if (outputTensorTemp.dtype() != outputTensor.dtype()) {
             DIOPI_CALL(dataTypeCast(ctx, outputTensor, outputTensorTemp));
         }
         DIOPI_CALL(diopiGeneratorSetState(gen, stateHandle));
-        DIOPI_CALLCNNL(cnnlRandDestroyGenerator(generator));
+        DIOPI_CALL_CNNL(cnnlRandDestroyGenerator(generator));
 
     } else {  // if in test_mode
         DIOPI_CALL(diopiCopyInp(ctx, input, out));

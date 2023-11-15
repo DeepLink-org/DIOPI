@@ -23,7 +23,7 @@ diopiError_t diopiIsNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
 
     CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc inputDesc(inputTensorTmp, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlIsNan(handle, inputDesc.get(), inputTensorTmp.data(), outDesc.get(), outTensor.data()));
+    DIOPI_CALL_CNNL(cnnlIsNan(handle, inputDesc.get(), inputTensorTmp.data(), outDesc.get(), outTensor.data()));
     return diopiSuccess;
 }
 

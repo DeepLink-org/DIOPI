@@ -12,8 +12,8 @@ namespace camb {
 
 class CnnlRandGenerator final {
 public:
-    CnnlRandGenerator() { DIOPI_CHECKCNNL(cnnlRandCreateGenerator(&resource_, CNNL_RAND_RNG_MTGP32)); }
-    ~CnnlRandGenerator() { DIOPI_CHECKCNNL(cnnlRandDestroyGenerator(resource_)); }
+    CnnlRandGenerator() { DIOPI_CHECK_CNNL(cnnlRandCreateGenerator(&resource_, CNNL_RAND_RNG_MTGP32)); }
+    ~CnnlRandGenerator() { DIOPI_CHECK_CNNL(cnnlRandDestroyGenerator(resource_)); }
     cnnlRandGenerator_t& get() { return resource_; }
 
 private:
@@ -36,7 +36,7 @@ diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     CnnlTensorDesc outDesc(outTemp, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize;
-    DIOPI_CALLCNNL(cnnlGetRandGenerateMultinomialWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetRandGenerateMultinomialWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
     void* workspace = nullptr;
     if (workspaceSize > 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
@@ -46,7 +46,7 @@ diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     DIOPI_CALL(diopiGeneratorGetState(ctx, gen, &stateHandle));
     void* statePtr = nullptr;
     DIOPI_CALL(diopiGetTensorData(stateHandle, &statePtr));
-    DIOPI_CALLCNNL(cnnlRandGenerateMultinomial_v2(
+    DIOPI_CALL_CNNL(cnnlRandGenerateMultinomial_v2(
         handle, generator, inputDesc.get(), inputTensor.data(), replacement, false, statePtr, workspace, workspaceSize, outDesc.get(), outTemp.data()));
     DIOPI_CALL(diopiGeneratorSetState(gen, stateHandle));
     if (outTensor.dtype() != outTemp.dtype()) {

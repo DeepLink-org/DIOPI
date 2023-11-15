@@ -23,7 +23,7 @@ static diopiError_t exp(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor
         outputTmp = requiresTensor(ctx, output.shape(), input.dtype());
     }
     CnnlTensorDesc desc(input, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlExp_v2(handle, CNNL_COMPUTATION_HIGH_PRECISION, desc.get(), input.data(), desc.get(), outputTmp.data()));
+    DIOPI_CALL_CNNL(cnnlExp_v2(handle, CNNL_COMPUTATION_HIGH_PRECISION, desc.get(), input.data(), desc.get(), outputTmp.data()));
     if (output.dtype() != outputTmp.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, output, outputTmp));
     }

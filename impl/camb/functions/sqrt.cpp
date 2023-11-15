@@ -22,7 +22,7 @@ static diopiError_t sqrt(diopiContextHandle_t ctx, DiopiTensor& output, DiopiTen
         outputTmp = requiresTensor(ctx, output.shape(), input.dtype());
     }
     CnnlTensorDesc desc(input, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlSqrt_v2(handle, CNNL_COMPUTATION_HIGH_PRECISION, desc.get(), input.data(), desc.get(), outputTmp.data()));
+    DIOPI_CALL_CNNL(cnnlSqrt_v2(handle, CNNL_COMPUTATION_HIGH_PRECISION, desc.get(), input.data(), desc.get(), outputTmp.data()));
     if (outputTmp.dtype() != output.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, output, outputTmp));
     }

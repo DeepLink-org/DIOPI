@@ -22,7 +22,7 @@ diopiError_t diopiReciprocal(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
 
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlReciprocal(handle, inputDesc.get(), inputTensor.data(), outDesc.get(), outTensor.data()));
+    DIOPI_CALL_CNNL(cnnlReciprocal(handle, inputDesc.get(), inputTensor.data(), outDesc.get(), outTensor.data()));
 
     if (originDtype == diopi_dtype_float64) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, originDtype));

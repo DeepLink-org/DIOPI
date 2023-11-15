@@ -84,7 +84,7 @@ diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
             break;
     }
 
-    DIOPI_CALLCNNL(cnnlThreshold(handle, inputTensorDesc.get(), inputTensor.data(), thresholdVal, valueVal, outTensorDesc.get(), outTensorTemp.data()));
+    DIOPI_CALL_CNNL(cnnlThreshold(handle, inputTensorDesc.get(), inputTensor.data(), thresholdVal, valueVal, outTensorDesc.get(), outTensorTemp.data()));
 
     if (outTensorTemp.dtype() != outTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTemp));
@@ -137,14 +137,14 @@ diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTensorHandle_
             break;
     }
 
-    DIOPI_CALLCNNL(cnnlThresholdBackward(handle,
-                                         inputDesc.get(),
-                                         inputTensor.data(),
-                                         gradOutputDesc.get(),
-                                         gradOutputTensor.data(),
-                                         thresholdVal,
-                                         gradInputDesc.get(),
-                                         gradInputTensorTemp.data()))
+    DIOPI_CALL_CNNL(cnnlThresholdBackward(handle,
+                                          inputDesc.get(),
+                                          inputTensor.data(),
+                                          gradOutputDesc.get(),
+                                          gradOutputTensor.data(),
+                                          thresholdVal,
+                                          gradInputDesc.get(),
+                                          gradInputTensorTemp.data()))
 
     if (gradInputTensorTemp.dtype() != gradInputTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensorTemp));
