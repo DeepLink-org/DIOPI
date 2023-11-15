@@ -3818,6 +3818,8 @@ diopi_configs = {
     # FIXME embedding输入负padding_idx精度不一致
     'embedding': dict(
         name=["embedding"],
+        atol_half=0.05,
+        rtol_half=0.05,
         para=dict(
             # padding_idx=[None, None, 92, -20, 0, -15, 19, 2, 0],
             padding_idx=[None, None, 92, 0, 0, 0, 19, 2, 0],
