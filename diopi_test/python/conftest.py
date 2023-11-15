@@ -34,12 +34,12 @@ def pytest_runtest_makereport(item, call):
     if report.when == 'call':
         if report.failed:
             db_data['error_msg'] = f'{report.longrepr.reprcrash.message}'
-        elif report.skipped:
-            match = re.search(r'Skipped: (.+)\'\)', report.longreprtext)
+        elif report.wasxfail:
+            match = re.search(r'reason: (.+)', report.wasxfail)
             if match:
                 skip_message = match.group(1)
                 db_data['error_msg'] = skip_message
-                if 'FunctionNotImplementedError' in skip_message:
+                if 'not defined' in skip_message or 'not implement' in skip_message:
                     db_data['not_implemented_flag'] = 1
         db_data['result'] = report.outcome
         db_conn.will_update_device_case(db_data)
