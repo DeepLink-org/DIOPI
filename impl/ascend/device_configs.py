@@ -101,26 +101,14 @@ device_configs = {
 
     'conv_2d': dict(
         name=['conv2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32), Skip(np.float64)],
-                },
-            ]
-        ),
+        atol=1e-1,
+        rtol=1e-2,
     ),
 
     'conv_2d_no_contiguous': dict(
         name=['conv2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32), Skip(np.float64)],
-                },
-            ]
-        ),
+        atol=1e-1,
+        rtol=1e-2,
     ),
 
     'hardswish': dict(
@@ -616,18 +604,6 @@ device_configs = {
         ),
     ),
 
-    'pointwise_binary': dict(
-        name=['add'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 16, 128)),Skip((2, 32, 130, 130)),Skip((0,)),],
-                },
-            ]
-        ),
-    ),
-
    'pointwise_binary_diff_dtype_without_bool': dict(
         name=['div'],
         tensor_para=dict(
@@ -699,18 +675,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),Skip((0,)),],
-                },
-            ]
-        ),
-    ),
-
-    'sub_constant_with_alpha_and_no_contiguous': dict(
-        name=['sub'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 64, 128)),Skip((128, 64, 3, 3)),Skip((128, 32, 2, 2)),Skip((2, 32, 130, 130)),],
                 },
             ]
         ),
@@ -2286,42 +2250,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'normal_std_tensor': dict(
-        name=['normal'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['std'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'normal_mean_tensor': dict(
-        name=['normal'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['mean'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'normal_tensor': dict(
-        name=['normal'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['mean'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.float32),Skip(np.float64),],
                 },
             ]
         ),

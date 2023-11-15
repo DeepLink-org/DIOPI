@@ -31,7 +31,7 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t *ou
     cnnlMaskedOp_t maskMode = CNNL_MASKED_SELECT;
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetMaskedWorkspaceSize(handle, maskMode, inputDesc.get(), maskDesc.get(), nullptr, outDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetMaskedWorkspaceSize(handle, maskMode, inputDesc.get(), maskDesc.get(), nullptr, outDesc.get(), &workspaceSize));
     void *workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
@@ -42,34 +42,34 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t *ou
 
 // version should be greater than 1.15.2
 #if (CNNL_MAJOR * 10000 + CNNL_MINOR * 100 + CNNL_PATCHLEVEL >= 11502)
-    DIOPI_CALLCNNL(cnnlMasked_v4(handle,
-                                 maskMode,
-                                 inputDesc.get(),
-                                 inputTensor.data(),
-                                 maskDesc.get(),
-                                 maskTensor.data(),
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,
-                                 workspace,
-                                 workspaceSize,
-                                 outDesc.get(),
-                                 tempOutputTensor.data(),
-                                 reinterpret_cast<uint32_t *>(numTrue.data())));
+    DIOPI_CALL_CNNL(cnnlMasked_v4(handle,
+                                  maskMode,
+                                  inputDesc.get(),
+                                  inputTensor.data(),
+                                  maskDesc.get(),
+                                  maskTensor.data(),
+                                  nullptr,
+                                  nullptr,
+                                  nullptr,
+                                  workspace,
+                                  workspaceSize,
+                                  outDesc.get(),
+                                  tempOutputTensor.data(),
+                                  reinterpret_cast<uint32_t *>(numTrue.data())));
 #else
-    DIOPI_CALLCNNL(cnnlMasked_v3(handle,
-                                 maskMode,
-                                 inputDesc.get(),
-                                 inputTensor.data(),
-                                 maskDesc.get(),
-                                 maskTensor.data(),
-                                 nullptr,
-                                 nullptr,
-                                 workspace,
-                                 workspaceSize,
-                                 outDesc.get(),
-                                 tempOutputTensor.data(),
-                                 reinterpret_cast<uint32_t *>(numTrue.data())));
+    DIOPI_CALL_CNNL(cnnlMasked_v3(handle,
+                                  maskMode,
+                                  inputDesc.get(),
+                                  inputTensor.data(),
+                                  maskDesc.get(),
+                                  maskTensor.data(),
+                                  nullptr,
+                                  nullptr,
+                                  workspace,
+                                  workspaceSize,
+                                  outDesc.get(),
+                                  tempOutputTensor.data(),
+                                  reinterpret_cast<uint32_t *>(numTrue.data())));
 #endif
     syncStreamInCtx(ctx);
     uint32_t numTrueHost = 0;
@@ -110,7 +110,7 @@ DIOPI_API diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopi
     cnnlMaskedOp_t maskMode = CNNL_MASKED_SCATTER;
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetMaskedWorkspaceSize(handle, maskMode, gradInputDesc.get(), maskDesc.get(), gradOutDesc.get(), gradInputDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetMaskedWorkspaceSize(handle, maskMode, gradInputDesc.get(), maskDesc.get(), gradOutDesc.get(), gradInputDesc.get(), &workspaceSize));
     void *workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
@@ -118,34 +118,34 @@ DIOPI_API diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopi
 
 // version should be greater than 1.15.2
 #if (CNNL_MAJOR * 10000 + CNNL_MINOR * 100 + CNNL_PATCHLEVEL >= 11502)
-    DIOPI_CALLCNNL(cnnlMasked_v4(handle,
-                                 maskMode,
-                                 gradInputDesc.get(),
-                                 tempGradInputTensor.data(),
-                                 maskDesc.get(),
-                                 maskTensor.data(),
-                                 gradOutDesc.get(),
-                                 gradOutputTensor.data(),
-                                 nullptr,
-                                 workspace,
-                                 workspaceSize,
-                                 gradInputDesc.get(),
-                                 gradInputTensor.data(),
-                                 nullptr));
+    DIOPI_CALL_CNNL(cnnlMasked_v4(handle,
+                                  maskMode,
+                                  gradInputDesc.get(),
+                                  tempGradInputTensor.data(),
+                                  maskDesc.get(),
+                                  maskTensor.data(),
+                                  gradOutDesc.get(),
+                                  gradOutputTensor.data(),
+                                  nullptr,
+                                  workspace,
+                                  workspaceSize,
+                                  gradInputDesc.get(),
+                                  gradInputTensor.data(),
+                                  nullptr));
 #else
-    DIOPI_CALLCNNL(cnnlMasked_v3(handle,
-                                 maskMode,
-                                 gradInputDesc.get(),
-                                 tempGradInputTensor.data(),
-                                 maskDesc.get(),
-                                 maskTensor.data(),
-                                 gradOutDesc.get(),
-                                 gradOutputTensor.data(),
-                                 workspace,
-                                 workspaceSize,
-                                 gradInputDesc.get(),
-                                 gradInputTensor.data(),
-                                 nullptr));
+    DIOPI_CALL_CNNL(cnnlMasked_v3(handle,
+                                  maskMode,
+                                  gradInputDesc.get(),
+                                  tempGradInputTensor.data(),
+                                  maskDesc.get(),
+                                  maskTensor.data(),
+                                  gradOutDesc.get(),
+                                  gradOutputTensor.data(),
+                                  workspace,
+                                  workspaceSize,
+                                  gradInputDesc.get(),
+                                  gradInputTensor.data(),
+                                  nullptr));
 #endif
     DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, tempGradInputTensor));
     DIOPI_CALL(diopiMul(ctx, gradInput, mask, gradInput));

@@ -18,23 +18,23 @@ diopiError_t diopiRoll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     std::vector<int> shiftsTmp{shifts.data, shifts.data + shifts.len};
     std::vector<int> dimsTmp{dims.data, dims.data + dims.len};
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetRollWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetRollWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlRoll(handle,
-                            inputDesc.get(),
-                            inputTensor.data(),
-                            shiftsTmp.data(),
-                            shiftsTmp.size(),
-                            !dimsTmp.empty() ? dimsTmp.data() : nullptr,
-                            dimsTmp.size(),
-                            workspace,
-                            workspaceSize,
-                            outDesc.get(),
-                            outTensor.data()));
+    DIOPI_CALL_CNNL(cnnlRoll(handle,
+                             inputDesc.get(),
+                             inputTensor.data(),
+                             shiftsTmp.data(),
+                             shiftsTmp.size(),
+                             !dimsTmp.empty() ? dimsTmp.data() : nullptr,
+                             dimsTmp.size(),
+                             workspace,
+                             workspaceSize,
+                             outDesc.get(),
+                             outTensor.data()));
     return diopiSuccess;
 }
 

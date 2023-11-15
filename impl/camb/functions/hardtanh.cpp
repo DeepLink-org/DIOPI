@@ -29,7 +29,7 @@ diopiError_t diopiHardtanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     min = min > max ? max : min;
     // DIOPI_CHECK(max > min, "assert max.val > min.val");
 
-    DIOPI_CALLCNNL(cnnlHardtanh(handle, inputDesc.get(), inputTensor.data(), max, min, outDesc.get(), outTensorTmp.data()));
+    DIOPI_CALL_CNNL(cnnlHardtanh(handle, inputDesc.get(), inputTensor.data(), max, min, outDesc.get(), outTensorTmp.data()));
     DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
 
     return diopiSuccess;
@@ -61,7 +61,7 @@ diopiError_t diopiHardtanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t
     min = min > max ? max : min;
     // DIOPI_CHECK(max > min, "assert max.val > min.val");
 
-    DIOPI_CALLCNNL(cnnlHardtanhBackward(
+    DIOPI_CALL_CNNL(cnnlHardtanhBackward(
         handle, inputDesc.get(), inputTensor.data(), gradOutDesc.get(), gradOutTensor.data(), max, min, gradInDesc.get(), gradInputTensorTmp.data()));
     DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensorTmp));
     return diopiSuccess;

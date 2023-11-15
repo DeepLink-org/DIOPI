@@ -72,14 +72,14 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 
     CnnlResourceGuard<cnnlPoolingDescriptor_t, cnnlCreatePoolingDescriptor, cnnlDestroyPoolingDescriptor> cnnlPoolDesc;
     cnnlPoolingDescriptor_t poolDesc = cnnlPoolDesc.get();
-    DIOPI_CALLCNNL(cnnlSetPooling2dDescriptor_v2(
+    DIOPI_CALL_CNNL(cnnlSetPooling2dDescriptor_v2(
         poolDesc, CNNL_POOLING_MAX, CNNL_PROPAGATE_NAN, kernelH, kernelW, padUp, padDown, padLeft, padRight, strideH, strideW, dilation0, dilation1, ceilMode));
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetPoolingWorkspaceSize(handle, CNNL_POOLING_MAX, outTr.shape()[3], inputTr.shape()[2], &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetPoolingWorkspaceSize(handle, CNNL_POOLING_MAX, outTr.shape()[3], inputTr.shape()[2], &workspaceSize));
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
-    DIOPI_CALLCNNL(cnnlPoolingForward_v2(
+    DIOPI_CALL_CNNL(cnnlPoolingForward_v2(
         handle, poolDesc, nullptr, inputDesc.get(), inputTr.data(), nullptr, nullptr, outDesc.get(), outTmpTr.data(), workspacePtr, workspaceSize));
 
     if (outTmpTr.dtype() != outTr.dtype()) {
@@ -162,41 +162,41 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
         std::vector<int> paddingTmp{padding.data, padding.data + padding.len};
         std::vector<int> strideTmp{stride.data, stride.data + stride.len};
         std::vector<int> dilationTmp{dilation.data, dilation.data + dilation.len};
-        DIOPI_CALLCNNL(cnnlSetPoolingNdDescriptor_v2(
+        DIOPI_CALL_CNNL(cnnlSetPoolingNdDescriptor_v2(
             poolDesc, CNNL_POOLING_MAX, CNNL_PROPAGATE_NAN, poolRank + 2, window.data(), paddingTmp.data(), strideTmp.data(), dilationTmp.data(), ceilMode));
     } else {
-        DIOPI_CALLCNNL(cnnlSetPooling2dDescriptor_v2(poolDesc,
-                                                     CNNL_POOLING_MAX,
-                                                     CNNL_PROPAGATE_NAN,
-                                                     kernelH,
-                                                     kernelW,
-                                                     padUp,
-                                                     padDown,
-                                                     padLeft,
-                                                     padRight,
-                                                     strideH,
-                                                     strideW,
-                                                     dilation0,
-                                                     dilation1,
-                                                     ceilMode));
+        DIOPI_CALL_CNNL(cnnlSetPooling2dDescriptor_v2(poolDesc,
+                                                      CNNL_POOLING_MAX,
+                                                      CNNL_PROPAGATE_NAN,
+                                                      kernelH,
+                                                      kernelW,
+                                                      padUp,
+                                                      padDown,
+                                                      padLeft,
+                                                      padRight,
+                                                      strideH,
+                                                      strideW,
+                                                      dilation0,
+                                                      dilation1,
+                                                      ceilMode));
     }
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetPoolingWithIndexWorkspaceSize(handle, inputDesc.get(), outDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetPoolingWithIndexWorkspaceSize(handle, inputDesc.get(), outDesc.get(), &workspaceSize));
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
-    DIOPI_CALLCNNL(cnnlPoolingForwardWithIndex(handle,
-                                               poolDesc,
-                                               nullptr,
-                                               inputDesc.get(),
-                                               inputTr.data(),
-                                               nullptr,
-                                               outDesc.get(),
-                                               outTmpTr.data(),
-                                               indicesDesc.get(),
-                                               indicesTmpTr.data(),
-                                               workspacePtr,
-                                               workspaceSize));
+    DIOPI_CALL_CNNL(cnnlPoolingForwardWithIndex(handle,
+                                                poolDesc,
+                                                nullptr,
+                                                inputDesc.get(),
+                                                inputTr.data(),
+                                                nullptr,
+                                                outDesc.get(),
+                                                outTmpTr.data(),
+                                                indicesDesc.get(),
+                                                indicesTmpTr.data(),
+                                                workspacePtr,
+                                                workspaceSize));
 
     if (outTmpTr.dtype() != outTr.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTr, outTmpTr));
@@ -283,21 +283,21 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 
     CnnlResourceGuard<cnnlPoolingDescriptor_t, cnnlCreatePoolingDescriptor, cnnlDestroyPoolingDescriptor> cnnlPoolDesc;
     cnnlPoolingDescriptor_t poolDesc = cnnlPoolDesc.get();
-    DIOPI_CALLCNNL(cnnlSetPooling2dDescriptor_v2(
+    DIOPI_CALL_CNNL(cnnlSetPooling2dDescriptor_v2(
         poolDesc, CNNL_POOLING_MAX, CNNL_PROPAGATE_NAN, kernelH, kernelW, padUp, padDown, padLeft, padRight, strideH, strideW, dilation0, dilation1, ceilMode));
 
-    DIOPI_CALLCNNL(cnnlPoolingBackward(handle,
-                                       poolDesc,
-                                       nullptr,
-                                       indicesDesc.get(),
-                                       indicesTr.data(),
-                                       gradOutputDesc.get(),
-                                       gradOutputTr.data(),
-                                       inputDesc.get(),
-                                       inputTr.data(),
-                                       nullptr,
-                                       gradInputDesc.get(),
-                                       gradInputTmpTr.data()));
+    DIOPI_CALL_CNNL(cnnlPoolingBackward(handle,
+                                        poolDesc,
+                                        nullptr,
+                                        indicesDesc.get(),
+                                        indicesTr.data(),
+                                        gradOutputDesc.get(),
+                                        gradOutputTr.data(),
+                                        inputDesc.get(),
+                                        inputTr.data(),
+                                        nullptr,
+                                        gradInputDesc.get(),
+                                        gradInputTmpTr.data()));
 
     // Channels last -> contiguous
     DIOPI_CALL(contiguous(ctx, gradInputTmpTr, diopiMemoryFormat_t::Contiguous));

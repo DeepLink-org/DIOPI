@@ -49,22 +49,22 @@ diopiError_t matmul(diopiContextHandle_t ctx, DiopiTensor inputA, DiopiTensor in
         setLastErrorString("%s", "matmul on support float or half.");
         return diopiDtypeNotSupported;
     }
-    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmulDesc.get(), CNNL_MATMUL_DESC_COMPUTE_TYPE, &(compType), sizeof(cnnlDataType_t)));
+    DIOPI_CALL_CNNL(cnnlSetMatMulDescAttr(matmulDesc.get(), CNNL_MATMUL_DESC_COMPUTE_TYPE, &(compType), sizeof(cnnlDataType_t)));
 
     int32_t isTransa = 0;
     if (transA) {
         isTransa = 1;
     }
-    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmulDesc.get(), CNNL_MATMUL_DESC_TRANSA, &(isTransa), sizeof(int32_t)));
+    DIOPI_CALL_CNNL(cnnlSetMatMulDescAttr(matmulDesc.get(), CNNL_MATMUL_DESC_TRANSA, &(isTransa), sizeof(int32_t)));
 
     int32_t isTransb = 0;
     if (transB) {
         isTransb = 1;
     }
-    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmulDesc.get(), CNNL_MATMUL_DESC_TRANSB, &(isTransb), sizeof(int32_t)));
+    DIOPI_CALL_CNNL(cnnlSetMatMulDescAttr(matmulDesc.get(), CNNL_MATMUL_DESC_TRANSB, &(isTransb), sizeof(int32_t)));
 
     int32_t allowTf32I32 = 0;
-    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmulDesc.get(), CNNL_MATMUL_ALLOW_TF32, &(allowTf32I32), sizeof(int32_t)));
+    DIOPI_CALL_CNNL(cnnlSetMatMulDescAttr(matmulDesc.get(), CNNL_MATMUL_ALLOW_TF32, &(allowTf32I32), sizeof(int32_t)));
 
     int32_t useBeta = 0;
     float beta = 0.0;
@@ -72,26 +72,26 @@ diopiError_t matmul(diopiContextHandle_t ctx, DiopiTensor inputA, DiopiTensor in
         useBeta = 1;
         beta = 1.0;
         DIOPI_CALL(biasDesc.set(inputBias, CNNL_LAYOUT_ARRAY));
-        DIOPI_CALLCNNL(cnnlExpand(handle, biasDesc.get(), inputBias.data(), outputDesc.get(), output.data()));
+        DIOPI_CALL_CNNL(cnnlExpand(handle, biasDesc.get(), inputBias.data(), outputDesc.get(), output.data()));
     }
-    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmulDesc.get(), CNNL_MATMUL_USE_BETA, &(useBeta), sizeof(int32_t)));
+    DIOPI_CALL_CNNL(cnnlSetMatMulDescAttr(matmulDesc.get(), CNNL_MATMUL_USE_BETA, &(useBeta), sizeof(int32_t)));
 
     size_t workspaceSize = 0;
     int requestedAlgoCount = 1;
     int returnAlgoCount = 0;
     CnnlResourceGuard<cnnlMatMulHeuristicResult_t, cnnlCreateMatMulHeuristicResult, cnnlDestroyMatMulHeuristicResult> heuristicResult;
     CnnlResourceGuard<cnnlMatMulAlgo_t, cnnlMatMulAlgoCreate, cnnlMatMulAlgoDestroy> algo;
-    DIOPI_CALLCNNL(cnnlGetMatMulAlgoHeuristic(handle,
-                                              matmulDesc.get(),
-                                              aDesc.get(),
-                                              bDesc.get(),
-                                              outputDesc.get(),
-                                              outputDesc.get(),
-                                              nullptr,
-                                              requestedAlgoCount,
-                                              &heuristicResult.get(),
-                                              &returnAlgoCount));
-    DIOPI_CALLCNNL(cnnlGetMatMulHeuristicResult(heuristicResult.get(), algo.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetMatMulAlgoHeuristic(handle,
+                                               matmulDesc.get(),
+                                               aDesc.get(),
+                                               bDesc.get(),
+                                               outputDesc.get(),
+                                               outputDesc.get(),
+                                               nullptr,
+                                               requestedAlgoCount,
+                                               &heuristicResult.get(),
+                                               &returnAlgoCount));
+    DIOPI_CALL_CNNL(cnnlGetMatMulHeuristicResult(heuristicResult.get(), algo.get(), &workspaceSize));
 
     void* workspace = nullptr;
     if (0 != workspaceSize) {
@@ -100,21 +100,21 @@ diopiError_t matmul(diopiContextHandle_t ctx, DiopiTensor inputA, DiopiTensor in
 
     float alphaDefault = 1.0;
 
-    DIOPI_CALLCNNL(cnnlMatMul_v2(handle,
-                                 matmulDesc.get(),
-                                 algo.get(),
-                                 &alphaDefault,
-                                 aDesc.get(),
-                                 inputA.data(),
-                                 bDesc.get(),
-                                 inputB.data(),
-                                 &beta,
-                                 outputDesc.get(),
-                                 output.data(),
-                                 workspace,
-                                 workspaceSize,
-                                 outputDesc.get(),
-                                 output.data()));
+    DIOPI_CALL_CNNL(cnnlMatMul_v2(handle,
+                                  matmulDesc.get(),
+                                  algo.get(),
+                                  &alphaDefault,
+                                  aDesc.get(),
+                                  inputA.data(),
+                                  bDesc.get(),
+                                  inputB.data(),
+                                  &beta,
+                                  outputDesc.get(),
+                                  output.data(),
+                                  workspace,
+                                  workspaceSize,
+                                  outputDesc.get(),
+                                  output.data()));
 
     return diopiSuccess;
 }
@@ -192,13 +192,13 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
 
         int channelAxis = 1;
         size_t workspaceSizeBias;
-        DIOPI_CALLCNNL(cnnlGetBiasAddBackwardWorkspaceSize(handle, gradOutputDesc.get(), biasGradDesc.get(), channelAxis, &workspaceSizeBias))
+        DIOPI_CALL_CNNL(cnnlGetBiasAddBackwardWorkspaceSize(handle, gradOutputDesc.get(), biasGradDesc.get(), channelAxis, &workspaceSizeBias))
 
         void* workspaceBias = nullptr;
         if (0 != workspaceSizeBias) {
             workspaceBias = requiresBuffer(ctx, workspaceSizeBias).data();
         }
-        DIOPI_CALLCNNL(cnnlBiasAddBackward_v2(
+        DIOPI_CALL_CNNL(cnnlBiasAddBackward_v2(
             handle, gradOutputDesc.get(), gradOutputTensor.data(), channelAxis, biasGradDesc.get(), biasGradTemp.data(), workspaceBias, workspaceSizeBias));
         if (biasGradTensor.dtype() != biasGradTemp.dtype()) {
             DIOPI_CALL(dataTypeCast(ctx, biasGradTensor, biasGradTemp));

@@ -81,11 +81,11 @@ diopiError_t diopiAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     CnnlResourceGuard<cnnlPoolingDescriptor_t, cnnlCreatePoolingDescriptor, cnnlDestroyPoolingDescriptor> cnnlPoolDesc;
     cnnlPoolingDescriptor_t poolDesc = cnnlPoolDesc.get();
     cnnlPoolingMode_t mode = countIncludePad ? CNNL_POOLING_AVERAGE_COUNT_INCLUDE_PADDING : CNNL_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING;
-    DIOPI_CALLCNNL(
+    DIOPI_CALL_CNNL(
         cnnlSetPooling2dDescriptor_v2(poolDesc, mode, CNNL_PROPAGATE_NAN, kernelH, kernelW, pu, pd, pl, pr, strideH, strideW, dilation0, dilation1, ceilMode));
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetPoolingWorkspaceSize(handle, mode, outTensor.shape()[3], inputTensor.shape()[2], &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetPoolingWorkspaceSize(handle, mode, outTensor.shape()[3], inputTensor.shape()[2], &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
@@ -93,7 +93,7 @@ diopiError_t diopiAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 
     const void* alpha = nullptr;
     const void* beta = nullptr;
-    DIOPI_CALLCNNL(cnnlPoolingForward(
+    DIOPI_CALL_CNNL(cnnlPoolingForward(
         handle, poolDesc, alpha, inputDesc.get(), inputTensorTmp.data(), beta, outDesc.get(), outTensorTmp.data(), workspace, workspaceSize));
 
     if (divisorOverride != nullptr) {
@@ -210,24 +210,24 @@ diopiError_t diopiAvgPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     CnnlResourceGuard<cnnlPoolingDescriptor_t, cnnlCreatePoolingDescriptor, cnnlDestroyPoolingDescriptor> cnnlPoolDesc;
     cnnlPoolingDescriptor_t poolDesc = cnnlPoolDesc.get();
     cnnlPoolingMode_t mode = countIncludePad ? CNNL_POOLING_AVERAGE_COUNT_INCLUDE_PADDING : CNNL_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING;
-    DIOPI_CALLCNNL(
+    DIOPI_CALL_CNNL(
         cnnlSetPooling2dDescriptor_v2(poolDesc, mode, CNNL_PROPAGATE_NAN, kernelH, kernelW, pu, pd, pl, pr, strideH, strideW, dilation0, dilation1, ceilMode));
 
     const void* alpha = nullptr;
     const void* beta = nullptr;
 
-    DIOPI_CALLCNNL(cnnlPoolingBackward(handle,
-                                       poolDesc,
-                                       alpha,
-                                       nullptr,
-                                       nullptr,
-                                       gradOutputDesc.get(),
-                                       gradOutputTensorT.data(),
-                                       inputDesc.get(),
-                                       inputTensorT.data(),
-                                       beta,
-                                       gradInputDesc.get(),
-                                       gradInputTensorT.data()));
+    DIOPI_CALL_CNNL(cnnlPoolingBackward(handle,
+                                        poolDesc,
+                                        alpha,
+                                        nullptr,
+                                        nullptr,
+                                        gradOutputDesc.get(),
+                                        gradOutputTensorT.data(),
+                                        inputDesc.get(),
+                                        inputTensorT.data(),
+                                        beta,
+                                        gradInputDesc.get(),
+                                        gradInputTensorT.data()));
 
     if (gradInputTensorT.shape().size() == 4) {
         std::vector<int64_t> permNhwc2nchw{0, 3, 1, 2};

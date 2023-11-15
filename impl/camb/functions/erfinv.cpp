@@ -35,7 +35,7 @@ DIOPI_API diopiError_t diopiErfinv(diopiContextHandle_t ctx, diopiTensorHandle_t
     CnnlTensorDesc outDesc(outCastedTensor, CNNL_LAYOUT_ARRAY);
 
     cnnlComputationPreference_t computePrefer = CNNL_COMPUTATION_HIGH_PRECISION;
-    DIOPI_CALLCNNL(cnnlErfinv(handle, computePrefer, inputDesc.get(), inputCastedTensor.data(), outDesc.get(), outCastedTensor.data()));
+    DIOPI_CALL_CNNL(cnnlErfinv(handle, computePrefer, inputDesc.get(), inputCastedTensor.data(), outDesc.get(), outCastedTensor.data()));
     if (outCastedTensor.dtype() != outTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outCastedTensor));
     }

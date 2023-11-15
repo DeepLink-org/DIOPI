@@ -81,31 +81,31 @@ diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, diopiTensorH
 
     /* Get Workspace */
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetSyncBatchnormBackwardReduceWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetSyncBatchnormBackwardReduceWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
-    DIOPI_CALLCNNL(cnnlSyncBatchnormBackwardReduce_v2(handle,
-                                                      gradOutDesc.get(),
-                                                      gradOutTr.data(),
-                                                      inputDesc.get(),
-                                                      inputTr.data(),
-                                                      meanDesc.get(),
-                                                      meanTr.data(),
-                                                      invstdDesc.get(),
-                                                      invstdTr.data(),
-                                                      workspacePtr,
-                                                      workspaceSize,
-                                                      weightG ? gradWeightDesc.get() : nullptr,
-                                                      weightG ? gradWeightTmpTr.data() : nullptr,
-                                                      biasG ? gradBiasDesc.get() : nullptr,
-                                                      biasG ? gradBiasTmpTr.data() : nullptr,
-                                                      inputG ? sumDyDesc.get() : nullptr,
-                                                      inputG ? sumDyTmpTr.data() : nullptr,
-                                                      inputG ? sumDyXmuDesc.get() : nullptr,
-                                                      inputG ? sumDyXmuTmpTr.data() : nullptr,
-                                                      inputG,
-                                                      weightG,
-                                                      biasG))
+    DIOPI_CALL_CNNL(cnnlSyncBatchnormBackwardReduce_v2(handle,
+                                                       gradOutDesc.get(),
+                                                       gradOutTr.data(),
+                                                       inputDesc.get(),
+                                                       inputTr.data(),
+                                                       meanDesc.get(),
+                                                       meanTr.data(),
+                                                       invstdDesc.get(),
+                                                       invstdTr.data(),
+                                                       workspacePtr,
+                                                       workspaceSize,
+                                                       weightG ? gradWeightDesc.get() : nullptr,
+                                                       weightG ? gradWeightTmpTr.data() : nullptr,
+                                                       biasG ? gradBiasDesc.get() : nullptr,
+                                                       biasG ? gradBiasTmpTr.data() : nullptr,
+                                                       inputG ? sumDyDesc.get() : nullptr,
+                                                       inputG ? sumDyTmpTr.data() : nullptr,
+                                                       inputG ? sumDyXmuDesc.get() : nullptr,
+                                                       inputG ? sumDyXmuTmpTr.data() : nullptr,
+                                                       inputG,
+                                                       weightG,
+                                                       biasG))
 
     if (inputG) {
         DIOPI_CALL(dataTypeCast(ctx, sumDyTr, sumDyTmpTr));
@@ -178,19 +178,19 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
     CnnlTensorDesc meanDesc(meanTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc invstdDesc(invstdTr, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlSyncBatchNormElemt(handle,
-                                          inputDesc.get(),
-                                          inputTr.data(),
-                                          meanDesc.get(),
-                                          meanTr.data(),
-                                          invstdDesc.get(),
-                                          invstdTr.data(),
-                                          weightDesc.get(),
-                                          weightTr.data(),
-                                          biasDesc.get(),
-                                          biasTr.data(),
-                                          outputDesc.get(),
-                                          outTmpTr.data()))
+    DIOPI_CALL_CNNL(cnnlSyncBatchNormElemt(handle,
+                                           inputDesc.get(),
+                                           inputTr.data(),
+                                           meanDesc.get(),
+                                           meanTr.data(),
+                                           invstdDesc.get(),
+                                           invstdTr.data(),
+                                           weightDesc.get(),
+                                           weightTr.data(),
+                                           biasDesc.get(),
+                                           biasTr.data(),
+                                           outputDesc.get(),
+                                           outTmpTr.data()))
 
     // Copy back to origin, if required
     DIOPI_CALL(dataTypeCast(ctx, outTr, outTmpTr));
@@ -270,25 +270,25 @@ DIOPI_API diopiError_t diopiBatchNormBackwardElemt(diopiContextHandle_t ctx, dio
     CnnlTensorDesc countDesc(countTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc gradInputDesc(gradInputTmpTr, layout);
 
-    DIOPI_CALLCNNL(cnnlSyncBatchNormBackwardElemtV2(handle,
-                                                    gradOutDesc.get(),
-                                                    gradOutTr.data(),
-                                                    inputDesc.get(),
-                                                    inputTr.data(),
-                                                    meanDesc.get(),
-                                                    meanTr.data(),
-                                                    invstdDesc.get(),
-                                                    invstdTr.data(),
-                                                    weightDesc.get(),
-                                                    weightTr.data(),
-                                                    sumDyDesc.get(),
-                                                    sumDyTr.data(),
-                                                    sumDyXmuDesc.get(),
-                                                    sumDyXmuTr.data(),
-                                                    countDesc.get(),
-                                                    countTr.data(),
-                                                    gradInputDesc.get(),
-                                                    gradInputTmpTr.data()))
+    DIOPI_CALL_CNNL(cnnlSyncBatchNormBackwardElemtV2(handle,
+                                                     gradOutDesc.get(),
+                                                     gradOutTr.data(),
+                                                     inputDesc.get(),
+                                                     inputTr.data(),
+                                                     meanDesc.get(),
+                                                     meanTr.data(),
+                                                     invstdDesc.get(),
+                                                     invstdTr.data(),
+                                                     weightDesc.get(),
+                                                     weightTr.data(),
+                                                     sumDyDesc.get(),
+                                                     sumDyTr.data(),
+                                                     sumDyXmuDesc.get(),
+                                                     sumDyXmuTr.data(),
+                                                     countDesc.get(),
+                                                     countTr.data(),
+                                                     gradInputDesc.get(),
+                                                     gradInputTmpTr.data()))
 
     // Copy back to origin, if required
     DIOPI_CALL(dataTypeCast(ctx, gradInputTr, gradInputTmpTr));
@@ -341,10 +341,10 @@ DIOPI_API diopiError_t diopiBatchNormStats(diopiContextHandle_t ctx, diopiTensor
 
     /* Get Workspace */
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetSyncBatchNormStatsWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetSyncBatchNormStatsWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
-    DIOPI_CALLCNNL(cnnlSyncBatchNormStats_v2(
+    DIOPI_CALL_CNNL(cnnlSyncBatchNormStats_v2(
         handle, inputDesc.get(), inputTr.data(), workspacePtr, workspaceSize, epsValue, meanDesc.get(), meanTmpTr.data(), invstdDesc.get(), invstdTmpTr.data()))
 
     // Copy back to origin, if required
@@ -403,7 +403,7 @@ DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t 
     CnnlTensorDesc runningMeanDesc(runningMeanTr, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc runningVarDesc(runningVarTr, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlTrunc(handle, countsDesc.get(), countsTr.data(), countsIntDesc.get(), countIntTr.data()))
+    DIOPI_CALL_CNNL(cnnlTrunc(handle, countsDesc.get(), countsTr.data(), countsIntDesc.get(), countIntTr.data()))
 
     // check whether the counts are all positive
     DiopiTensor min = requiresTensor(ctx, {1}, countsTr.dtype(), diopiMemoryFormat_t::Contiguous);
@@ -414,23 +414,23 @@ DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t 
     int minCount = static_cast<float>(reinterpret_cast<float*>(ptr.get())[0]);
     DIOPI_CHECK(minCount >= 0.0, "counts should be positive");
 
-    DIOPI_CALLCNNL(cnnlSyncBatchNormGatherStatsWithCounts(handle,
-                                                          meanAllDesc.get(),
-                                                          meanAllTr.data(),
-                                                          invstdAllDesc.get(),
-                                                          invstdAllTr.data(),
-                                                          runningMeanDesc.get(),
-                                                          runningMeanTr.defined() ? runningMeanTr.data() : nullptr,
-                                                          runningVarDesc.get(),
-                                                          runningVarTr.defined() ? runningVarTr.data() : nullptr,
-                                                          momentum,
-                                                          eps,
-                                                          countsIntDesc.get(),
-                                                          countIntTr.data(),
-                                                          meanDesc.get(),
-                                                          meanTmpTr.data(),
-                                                          invstdDesc.get(),
-                                                          invstdTmpTr.data()))
+    DIOPI_CALL_CNNL(cnnlSyncBatchNormGatherStatsWithCounts(handle,
+                                                           meanAllDesc.get(),
+                                                           meanAllTr.data(),
+                                                           invstdAllDesc.get(),
+                                                           invstdAllTr.data(),
+                                                           runningMeanDesc.get(),
+                                                           runningMeanTr.defined() ? runningMeanTr.data() : nullptr,
+                                                           runningVarDesc.get(),
+                                                           runningVarTr.defined() ? runningVarTr.data() : nullptr,
+                                                           momentum,
+                                                           eps,
+                                                           countsIntDesc.get(),
+                                                           countIntTr.data(),
+                                                           meanDesc.get(),
+                                                           meanTmpTr.data(),
+                                                           invstdDesc.get(),
+                                                           invstdTmpTr.data()))
     // Copy back to origin, if required
     DIOPI_CALL(diopiCopyInp(ctx, runningMeanTr.tensorHandle(), runningMeanTrOrigin.tensorHandle()));
     DIOPI_CALL(diopiCopyInp(ctx, runningVarTr.tensorHandle(), runningVarTrOrigin.tensorHandle()));

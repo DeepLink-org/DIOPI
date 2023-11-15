@@ -40,7 +40,7 @@ static diopiError_t expand(diopiContextHandle_t ctx, DiopiTensor inputTensor, Di
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outTensorTmp, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlExpand(handle, inputDesc.get(), inputTensor.data(), outDesc.get(), outTensorTmp.data()));
+    DIOPI_CALL_CNNL(cnnlExpand(handle, inputDesc.get(), inputTensor.data(), outDesc.get(), outTensorTmp.data()));
     if (outTensor.dtype() != outTensorTmp.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
     }
@@ -107,7 +107,7 @@ diopiError_t diopiCdist(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     CnnlTensorDesc input1Desc(input1TensorExpand, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc input2Desc(input2TensorExpand, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlCdistForward(
+    DIOPI_CALL_CNNL(cnnlCdistForward(
         handle, input1Desc.get(), input1TensorExpand.data(), input2Desc.get(), input2TensorExpand.data(), p, outDesc.get(), outTensorTmp.data()));
     outTensorTmp.view(outputShape);
     if (outTensor.dtype() != outTensorTmp.dtype()) {
@@ -185,18 +185,18 @@ diopiError_t diopiCdistBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gr
     CnnlTensorDesc input2Desc(input2TensorExpand, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc cdistDesc(cdistTensor, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlCdistBackward(handle,
-                                     input1Desc.get(),
-                                     input1TensorExpand.data(),
-                                     input2Desc.get(),
-                                     input2TensorExpand.data(),
-                                     cdistDesc.get(),
-                                     cdistTensor.data(),
-                                     gradOutputDesc.get(),
-                                     gradOutputTensor.data(),
-                                     p,
-                                     gradInputDesc.get(),
-                                     gradInputTensorTmp.data()));
+    DIOPI_CALL_CNNL(cnnlCdistBackward(handle,
+                                      input1Desc.get(),
+                                      input1TensorExpand.data(),
+                                      input2Desc.get(),
+                                      input2TensorExpand.data(),
+                                      cdistDesc.get(),
+                                      cdistTensor.data(),
+                                      gradOutputDesc.get(),
+                                      gradOutputTensor.data(),
+                                      p,
+                                      gradInputDesc.get(),
+                                      gradInputTensorTmp.data()));
     if (gradInputTensor.dtype() != gradInputTensorTmp.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensorTmp));
     }

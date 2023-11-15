@@ -67,13 +67,13 @@ diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorH
 
     atQ = atQ.reshape({batch, 1, head, dim}).transpose(1, 2);
     for (int i = 0; i < batch; ++i) {
-        for (int j = 0; j < atBSeqLen[i].item<int>(); ++j) {
-            at::Tensor kLoc = atBLoc[i][maxInputLen - atBSeqLen[i].item<int>() + j];
-            int outLoc = atBStartLoc[i].item<int>() + j;
-            at::Tensor key = atK.index({kLoc}).reshape({1, 1, head, dim}).transpose(1, 2);
-            at::Tensor values = (at::matmul(atQ.index({i}), key.transpose(2, 3)) / std::sqrt(dim)).squeeze().reshape(head);
-            atAttentionOut.index_put_({torch::indexing::Slice(), outLoc}, values);
-        }
+        int curSeqLen = atBSeqLen[i].item<int>();
+        int curSeqStartLoc = atBStartLoc[i].item<int>();
+        at::Tensor kLoc = atBLoc[i].index_select(0, at::arange(maxInputLen - curSeqLen, maxInputLen, atQ.device()));
+        at::Tensor key = atK.index({kLoc}).view({1, curSeqLen, head, dim}).transpose(1, 2);
+        at::Tensor outLoc = at::arange(curSeqStartLoc, curSeqStartLoc + curSeqLen);
+        at::Tensor values = (at::matmul(atQ.index({i}), key.transpose(2, 3)) / std::sqrt(dim)).view({head, curSeqLen});
+        atAttentionOut.index_put_({torch::indexing::Slice(), outLoc}, values);
     }
     impl::aten::unsetCurCtx();
     return diopiSuccess;
@@ -94,26 +94,12 @@ diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ctx, diopiTe
     int head = atV.size(1);
     int dim = atV.size(2);
 
-    // softmax
-    at::Tensor prob = at::empty_like(atLogics);
     for (int i = 0; i < batch; ++i) {
-        int start = atBStartLoc[i].item<int>();
-        int end = start + atBSeqLen[i].item<int>();
-        prob.slice(1, start, end) = atLogics.slice(1, start, end).reshape({head, -1}).softmax(-1);
-    }
-
-    // reduce_V
-    for (int i = 0; i < batch; ++i) {
-        std::vector<at::Tensor> vOut;
-        for (int j = 0; j < atBSeqLen[i].item<int>(); ++j) {
-            int vLoc = atBLoc[i][maxInputLen - atBSeqLen[i].item<int>() + j].item<int>();
-            vOut.emplace_back(atV[vLoc]);
-        }
-
-        at::Tensor V = at::cat(vOut, 0).view({1, atBSeqLen[i].item<int>(), head, dim}).transpose(1, 2);
-        at::Tensor P = prob.slice(1, atBStartLoc[i].item<int>(), atBStartLoc[i].item<int>() + atBSeqLen[i].item<int>())
-                           .reshape({head, 1, 1, atBSeqLen[i].item<int>()})
-                           .transpose(0, 1);
+        int curSeqLen = atBSeqLen[i].item<int>();
+        int curSeqStartLoc = atBStartLoc[i].item<int>();
+        at::Tensor P = atLogics.slice(1, curSeqStartLoc, curSeqStartLoc + curSeqLen).softmax(-1).reshape({head, 1, 1, curSeqLen}).transpose(0, 1);
+        at::Tensor vLoc = atBLoc[i].index_select(0, at::arange(maxInputLen - curSeqLen, maxInputLen, atLogics.device()));
+        at::Tensor V = atV.index({vLoc}).view({1, curSeqLen, head, dim}).transpose(1, 2);
         atOut[i] = at::matmul(P, V).view({head, dim});
     }
     impl::aten::unsetCurCtx();
