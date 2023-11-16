@@ -55,3 +55,21 @@ dtype_out_op = {'max_pool2d': ['indices'],  # out using int32/float32 type
                 'arange': ['out'],
                 'randperm': ['out'],
                 'argmax': ['out']}
+
+ops_with_states = {"batch_norm": {"running_mean", "running_var"},
+                   "sgd": {"buf", "param"},
+                   "fill_": {"input"},
+                   "embedding": {"weight"},
+                   "adam": {"param", "exp_avg", "exp_avg_sq", "max_exp_avg_sq"},
+                   "adamw": {"param", "exp_avg", "exp_avg_sq", "max_exp_avg_sq"},
+                   "adadelta": {"param", "square_avg", "acc_delta"},
+                   "rmsprop": {"param", "square_avg", "grad_avg", "momentum_buffer"},
+                   "copy_": {"input"},
+                   "cast_dtype": {"out"},
+                   "batch_norm_gather_stats_with_counts": {"running_mean", "running_var"},
+                   "apply_penalty": {"logits"},
+                   "context_attention": {"out"},
+                   "destindex_copy_kv": {"out"},
+                   "token_attention": {"out"},
+                   "token_softmax_reducev": {"out"}
+                   }

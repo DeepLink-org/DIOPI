@@ -11,6 +11,8 @@ import pickle
 import pytest
 #import psutil
 import numpy as np
+from copy import deepcopy
+
 from conformance.diopi_runtime import Tensor, from_numpy_dtype, default_context
 from conformance.diopi_functions import ones_like, FunctionNotImplementedError
 from conformance.check_result import CheckResult
@@ -86,6 +88,9 @@ with open(f_in, 'rb') as f:
 function_paras = data_in['function_paras']
 function_kwargs = function_paras['kwargs']
 function_config = data_in['cfg']
+ignore_paras_for_input_check = ${ignore_paras_for_input_check}
+np_inputs_orign = deepcopy(function_kwargs)
+
 ${preprocess_parameters}
 
 # output of device: dev_out
@@ -240,6 +245,7 @@ with open(f_out, 'rb') as f:
     ref_out = pickle.load(f)
 
 try:
+    CheckResult.compare_input(np_inputs_orign, function_kwargs, ignore_paras_for_input_check)
     CheckResult.compare_output(dev_out, ref_out, **tol)
 except Exception as e:
     assert False, f'Test {function_config["name"]}: {function_config} traceback: {e}'
@@ -250,14 +256,15 @@ except Exception as e:
         r"""
 # inplace call for the function
 ${test_diopi_func_inp_remove_grad_args}
-function_kwargs.update({'inplace': True})
 try:
-    dev_inp_out = ${test_diopi_func_name}(**function_kwargs)
+    dev_inp_out = ${test_diopi_func_name}(inplace=True, **function_kwargs)
 except FunctionNotImplementedError as e:
     default_context.clear_tensors()
     pytest.xfail(str(e))
 
 try:
+    ignore_paras_for_input_check.add('input')
+    CheckResult.compare_input(np_inputs_orign, function_kwargs, ignore_paras_for_input_check)
     CheckResult.compare_output(dev_inp_out, ref_out, **tol)
 except Exception as e:
     assert False, f'Test {function_config["name"]}  inplace: {function_config} traceback: {e}'
@@ -298,10 +305,9 @@ grad_outputs = [ones_like(i) for i in outputs_for_backward]
 backward_para["grad_outputs"] = grad_outputs
 for k, v in function_config['saved_args'].items():
     backward_para[k] = dev_out[v]
-function_kwargs.update(backward_para)
 
 try:
-    dev_bp_out = ${test_diopi_bp_func_name}(**function_kwargs)
+    dev_bp_out = ${test_diopi_bp_func_name}(**function_kwargs, **backward_para)
 except FunctionNotImplementedError as e:
     default_context.clear_tensors()
     pytest.xfail(str(e))
@@ -311,6 +317,7 @@ with open(f_bp_out, 'rb') as f:
 
 # checkout
 try:
+    CheckResult.compare_input(np_inputs_orign, function_kwargs, ignore_paras_for_input_check)
     CheckResult.compare_output(dev_bp_out, ref_bp_out, **tol)
 except Exception as e:
     assert False, f'Test {function_config["name"]} backward: {function_config} traceback: {e}'

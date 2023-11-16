@@ -15,17 +15,18 @@ class CheckResult(object):
             raise InputChangedException(f"input1's keys {list(input1.keys())} is not equal to input2's keys {list(input2.keys())}.")
 
         passed = True
-        for name, value in input1.items():
-            matched = np.isclose(value, input2[name], equal_nan=True)
+        for name, value in input2.items():
+            if isinstance(value, Tensor):
+                value = value.numpy()
+            matched = np.isclose(input1[name], value, equal_nan=True)
             mismatched_num = matched.size - np.sum(matched)
             passed = mismatched_num <= default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
-            glob_vars.func_status[glob_vars.cur_test_func] = 'passed'
             if not passed:
                 glob_vars.func_status[glob_vars.cur_test_func] = 'failed'
                 debug_level = glob_vars.debug_level
-                error_info = f'Run {glob_vars.cur_test_func} failed, because of inputs: {name} changed'
+                error_info = f'Run {glob_vars.cur_test_func} failed, because of input\'s args: {name} changed'
                 if debug_level > 1:
-                    error_info += (f"\n\texpect input: \n\t\t{value}\n\tbut got\n\t\t{input2[name]}")
+                    error_info += (f"\n\texpect input: \n\t\t{input1[name]}\n\tbut got\n\t\t{value}")
                 raise InputChangedException(error_info)
 
     @staticmethod
