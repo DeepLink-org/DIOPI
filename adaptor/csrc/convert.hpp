@@ -94,7 +94,6 @@ public:
     static bool getDstDtype(diopiDtype_t srcDtype, diopiDtype_t &targetDtype) {
         bool convert = false;
         switch (srcDtype) {
-
             default:
                 targetDtype = srcDtype;
         }
@@ -102,7 +101,7 @@ public:
     }
 };
 
-template <class T, class strategy=NoCast>
+template <class T, class strategy = NoCast>
 ConvertType castImpl(diopiContextHandle_t ctx, T src, T *dst, std::vector<diopiMemoryFormat_t> supportMemoryFormats = {}) {
     ConvertType convertType;
     if (!src) {
@@ -231,7 +230,7 @@ inline bool isEqualDiopiSize(diopiSize_t val1, diopiSize_t val2) {
     return false;
 }
 
-template <class strategy=NoCast>
+template <class strategy = NoCast>
 class DiopiTensorWrapper {
 public:
     // forbid copy/move constructor/assignment
@@ -247,7 +246,7 @@ private:
     ConvertType convertType_;
 
 public:
-    DiopiTensorWrapper(diopiContextHandle_t ctx, diopiTensorHandle_t payload, std::vector<diopiMemoryFormat_t> supportMemoryFormat={}, bool inp = false)
+    DiopiTensorWrapper(diopiContextHandle_t ctx, diopiTensorHandle_t payload, std::vector<diopiMemoryFormat_t> supportMemoryFormat = {}, bool inp = false)
         : ctx_(ctx), payload_(payload) {
         TimeElapsed castOutConstructTimeElapsed("out_construct");
         if (inp) {

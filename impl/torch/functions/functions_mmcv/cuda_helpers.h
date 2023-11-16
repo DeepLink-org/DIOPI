@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef IMPL_TORCH_CUDA_HELPERS_H_
-#define IMPL_TORCH_CUDA_HELPERS_H_
+#ifndef TORCH_CUDA_HELPERS_H
+#define TORCH_CUDA_HELPERS_H
 
 #include <ATen/core/TensorBody.h>  // IWYU pragma: export
 #include <cuda_runtime.h>
@@ -136,4 +136,4 @@ __device__ void bilinear_interpolate_gradient(const int height, const int width,
 }  // namespace helper
 }  // namespace cuda
 
-#endif  // IMPL_TORCH_CUDA_HELPERS_H_
+#endif  // TORCH_CUDA_HELPERS_H
