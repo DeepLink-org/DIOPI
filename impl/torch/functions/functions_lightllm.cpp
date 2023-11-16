@@ -10,10 +10,11 @@
 #include <torch/nn.h>
 #include <torch/optim.h>
 
-#include "context.h"
-#include "helper.hpp"
+#include "../context.h"
+#include "../helper.hpp"
 
-extern "C" {
+namespace impl {
+namespace cuda {
 
 diopiError_t diopiDestIndexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t k, diopiConstTensorHandle_t destLoc) {
     impl::aten::setCurCtx(ctx);
@@ -146,4 +147,5 @@ diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTenso
     return diopiSuccess;
 }
 
-}  // extern "C"
+}  // namespace cuda
+}  // namespace impl
