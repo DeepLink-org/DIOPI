@@ -85,7 +85,7 @@ def run_test(partition, device_type, device_num, use_db, pytest_args, use_slurm)
             cmd += f' --pytest_args "{pytest_args}"'
         if use_db:
             db_path = f'sqlite:///./cache/{model}_testrecord.db'
-            cmd += f' --use_db --db_path {db_path} --excel_path logs/{model}.xlsx'
+            cmd += f' --use_db --db_path {db_path} --test_result_path logs/{model}.xlsx'
         cmd += f' 2>&1 | tee logs/{model}.log'
         commands.append(cmd)
 
