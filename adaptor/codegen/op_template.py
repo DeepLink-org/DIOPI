@@ -75,6 +75,12 @@ namespace ${device} {
 ${impl_declaration}
 
 }  // namespace ${device}
+
+namespace composite {
+    
+${composite_funcs_decl}
+
+}  // namespace composite
 }  // namespace impl
 
 // NOLINTEND
