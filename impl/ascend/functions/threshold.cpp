@@ -15,18 +15,15 @@ diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     diopiGetTensorDtype(input, &dtype);
     float inputThreshold = getValue<float>(threshold);
     float inputValue = getValue<float>(value);
-    std::cout << "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" << std::endl;
 
     if (dtype == diopi_dtype_uint8) {
-        std::cout << "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii" << std::endl;
-        inputThreshold = static_cast<float>(static_cast<uint8_t>(inputThreshold));
-        inputValue = static_cast<float>(static_cast<uint8_t>(inputValue));
+        inputThreshold = static_cast<float>(static_cast<uint8_t>(static_cast<int>(inputThreshold)));
+        inputValue = static_cast<float>(static_cast<uint8_t>(static_cast<int>(inputValue)));
     }
     if (dtype == diopi_dtype_int32) {
         inputThreshold = static_cast<float>(getValue<int>(threshold));
         inputValue = static_cast<float>(getValue<int>(value));
     }
-    std::cout << inputThreshold << "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" << inputValue << std::endl;
     AclOpRunner<1, 1>("ThresholdV2D", ctx).addInput(input).setAttr("threshold", inputThreshold).setAttr("value", inputValue).addOutput(out).run();
     return diopiSuccess;
 }
