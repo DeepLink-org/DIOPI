@@ -245,6 +245,26 @@ DIOPI_RT_API diopiError_t diopiGetTensorElemSize(diopiConstTensorHandle_t th, in
     return diopiSuccess;
 }
 
+DIOPI_RT_API diopiError_t diopiGetTensorStoragePtr(diopiConstTensorHandle_t th, void** pStoragePtr) {
+    *pStoragePtr = const_cast<void*>(th->data());
+    return diopiSuccess;
+}
+
+DIOPI_RT_API diopiError_t diopiGetTensorStorageOffset(diopiConstTensorHandle_t th, int64_t* pOffset) {
+    *pOffset = 0;
+    return diopiSuccess;
+}
+
+DIOPI_RT_API diopiError_t diopiGetTensorStorageNbytes(diopiConstTensorHandle_t th, size_t* pNbytes) {
+    *pNbytes = th->nbytes();
+    return diopiSuccess;
+}
+
+DIOPI_RT_API diopiError_t diopiGetTensorDeviceIndex(diopiConstTensorHandle_t th, diopiDeviceIndex_t* pDevIndex) {
+    *pDevIndex = 0;
+    return diopiSuccess;
+}
+
 diopiError_t diopiGetStream(diopiContextHandle_t ctx, diopiStreamHandle_t* stream) {
     *stream = ctx->getStreamHandle();
     return diopiSuccess;
