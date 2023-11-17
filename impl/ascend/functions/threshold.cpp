@@ -4,8 +4,14 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <bitset>
+
 #include "../common/acloprunner.hpp"
 
+union FloatIntUnion {
+    float float_num;
+    uint8_t int_num;
+};
 namespace impl {
 namespace ascend {
 
@@ -17,8 +23,15 @@ diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     float inputValue = getValue<float>(value);
 
     if (dtype == diopi_dtype_uint8) {
+        FloatIntUnion union_obj;
+        union_obj.float_num = -20;
+
+        std::bitset<sizeof(float) * 8> binary_bits(union_obj.int_num);
+        std::cout <<binary_bits << std::endl;
+        std::cout<<(int)static_cast<uint8_t>(inputThreshold)<<std::endl;
         inputThreshold = static_cast<float>(static_cast<uint8_t>(static_cast<int>(inputThreshold)));
         inputValue = static_cast<float>(static_cast<uint8_t>(static_cast<int>(inputValue)));
+        inputThreshold = 0.0;
     }
     if (dtype == diopi_dtype_int32) {
         inputThreshold = static_cast<float>(getValue<int>(threshold));
@@ -40,3 +53,4 @@ diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 
 }  // namespace ascend
 }  // namespace impl
+
