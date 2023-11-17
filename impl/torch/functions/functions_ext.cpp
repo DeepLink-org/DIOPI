@@ -16,9 +16,9 @@
 #include <cstdint>
 
 // TODO(lljbash): the dependency on context.h makes no sense, check and refactor
-#include "context.h"  // IWYU pragma: keep
-#include "ext_kernel.h"
-#include "helper.hpp"
+#include "../context.h"  // IWYU pragma: keep
+#include "../ext_kernel.h"
+#include "../helper.hpp"
 
 namespace {
 
@@ -34,7 +34,8 @@ c10::optional<at::Generator> buildGeneratorForMha(diopiContextHandle_t ctx, diop
 
 }  // namespace
 
-extern "C" {
+namespace impl {
+namespace cuda {
 
 diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t x, diopiConstTensorHandle_t cos,
                                   diopiConstTensorHandle_t sin, const bool conj, const bool interleaved) {
@@ -250,4 +251,5 @@ diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_t ctx, dio
     return diopiSuccess;
 }
 
-}  // extern "C"
+}  // namespace cuda
+}  // namespace impl

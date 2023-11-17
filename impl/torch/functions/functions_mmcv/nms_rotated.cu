@@ -11,7 +11,7 @@
 #include <float.h>
 #include <torch/library.h>
 
-#include "../cuda_helpers.h"
+#include "cuda_helpers.h"
 #include "box_iou_rotated_uils.hpp"
 using namespace cuda::helper;
 namespace mmcv {

@@ -11,7 +11,7 @@
 #include <float.h>
 #include <torch/library.h>
 
-#include "../cuda_helpers.h"
+#include "cuda_helpers.h"
 using namespace cuda::helper;
 namespace mmcv {
 namespace ops {
