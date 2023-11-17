@@ -1,8 +1,9 @@
 set -e
 export LANG=en_US.UTF-8
 ROOT_DIR=$(dirname "$(cd "$(dirname ${BASH_SOURCE[0]})" && pwd)")
+repo_name='deeplink.framework'
 include='impl'
-if [[ $ROOT_DIR == *DIPU* ]]; then
+if [[ $ROOT_DIR == *$repo_name* ]]; then
     include='dipu/torch_dipu/csrc_dipu'
 fi
 cd $ROOT_DIR && rm -rf coverage && mkdir coverage
