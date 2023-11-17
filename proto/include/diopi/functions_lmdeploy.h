@@ -53,25 +53,25 @@ DIOPI_API diopiError_t diopiFusedAddRootMeanSquareNormInp(diopiContextHandle_t c
  * @brief FusedContextAttention.
  * 1.If pre_work like attention_mask and padding_offset and cu_seqlens is needed, get prepared result.Or only do the pre work.Or get size only.
  * attention_mask : Attention mask.shape = [batch_size, 1, max_query_len, max_key_len].type = [float32, float16]
- * padding_offset : Padding offset.shape = [token_num].type = [int64, int32]
+ * padding_offset : Padding offset.shape = [batch_size * max_query_len] but infact [token_num].type = [int64, int32]
  * cu_seqlens : Cuseqlens.shape = [batch_size + 1].type = [int64, int32]
  * 2.get QKV.
  * 3.qkv add bias & apply rotary embedding with his & rebuild padding & transpose.qkv [B, max_q_len, H + 2kvH, D] -> (q [B, H, max_q_len, D], k [B, kvH,
  * max_q_len, D], v [B, kvH, max_q_len, D])
  * 4.insert the k/v computed from inputs into k/v cache, k/v [B, kvH, s, D] -> k/v_cache [B, kvH, S[t:t+s], D].For
  * faster, [B, kvH, S[t:t+s], D/x, x] like is also ok, but shape mast same in decoder attn.
- * 5.copy kv from k/v cache back with extend for GQA/MQA.[B, kvH, S[:t+s], D/x, x] -> [B, qH, t+s, D]
- * 6.softmax(QK)*V batch gemm -> [B, H, S, D]. In softmax eps = 1e-6f and qk_val = qk_scale * qk_val - qk_bias with qu_bias
+ * 5.copy kv from k/v cache back with extend for GQA/MQA.[B, kvH, S[:t+s], D/x, x] -> [B, qH, t+s, D].t+s dim length = max_kv_len
+ * 6.softmax(QK)*V batch gemm -> [B, H, S, D]. In softmax eps = 1e-6f and qk_val = qk_scale * qk_val - qk_bias.Now without qk_bias.
  * if masked  -10000.0f else 0, and with qk_scale = static_cast<T>(1.f / sqrtf(size_per_head_ * 1.f).
- * 7.transpose back and move padding -> [token_num,
- * hidden_units] 8.use_logn_attn use_dynamic_ntk will append future attention_mask: create a [batch_size, 1, max_query_len, max_key_len] tensor, while is_valid
+ * 7.transpose back and move padding -> [token_num,hidden_units]
+ * 8.use_logn_attn use_dynamic_ntk will append future attention_mask: create a [batch_size, 1, max_query_len, max_key_len] tensor, while is_valid
  * = q < input_length && k < context_lengths && k <= q + (context_lengths - input_length) cu_seqlens: accumulated input_lengths, from 0 to all, with batch_size
  * + 1 numbers. padding_offset: cal padding offset, which means the total pad number before the token, when every seq is padded to same length with filling in
  * spaces after input.
  * @param[in] ctx diopi context.
  * @param[inout] inoutput : Inoutput tensor.shape = [token_num, hidden_units].type = [float32, float16]
  * @param[in] qkv_weight : QKV_weight tensor.shape = [hidden_units, (local_head_num+local_kv_head_num*2)*size_per_head].type = [float32, float16]
- * @param[in] qkv_bias : QKV_bias tensor.shape = [1, (local_head_num+local_kv_head_num*2)*size_per_head].type = [float32, float16]
+ * @param[in] qkv_bias : QKV_bias tensor.shape = [1, (local_head_num+local_kv_head_num*2)*size_per_head] or none.type = [float32, float16]
  * @param[inout] pre_work : Pre work like attention_mask and padding_offset and cu_seqlens for lmdeploy.shape = [pre_work_size].type = [float32, float16]
  * @param[inout] pre_work_size : Pre workspace size, if pre_work_size < 0 then only cal pre_work_size.type = [int64*, int32*]
  * @param[in] is_prepared : All pre work is prepared or not.type = [bool]
@@ -96,9 +96,10 @@ DIOPI_API diopiError_t diopiFusedAddRootMeanSquareNormInp(diopiContextHandle_t c
 DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t qkv_weight,
                                                      diopiConstTensorHandle_t qkv_bias, diopiTensorHandle_t pre_work, int64_t* pre_work_size, bool is_prepared,
                                                      diopiTensorHandle_t workspace, int64_t* workspace_size, int64_t fusion_level,
-                                                     diopiTensorHandle_t key_cache, diopiTensorHandle_t value_cache, int64_t layer_id, int64_t local_head_num,
-                                                     int64_t local_kv_head_num, int64_t size_per_head, int64_t max_seq_len, int64_t max_q_len,
-                                                     int64_t max_kv_len, int64_t rotary_embedding, float rope_theta);
+                                                     diopiTensorHandle_t key_cache, diopiTensorHandle_t value_cache, diopiTensorHandle_t input_lengths,
+                                                     diopiTensorHandle_t history_lengths, diopiTensorHandle_t context_lengths, int64_t layer_id,
+                                                     int64_t local_head_num, int64_t local_kv_head_num, int64_t size_per_head, int64_t max_seq_len,
+                                                     int64_t max_q_len, int64_t max_kv_len, int64_t rotary_embedding, float rope_theta);
 
 /**
  * @brief FusedDecoderAttention.
