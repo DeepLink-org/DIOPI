@@ -33,7 +33,6 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
 
     int64_t batch = 1;
     if (inputShape.len > 2) {
-        int64_t calShape0 = inputShape.data[0];
         std::vector<int64_t> inputCopyShapeVec;
         std::vector<int64_t> permuteDimVec;
         inputCopyShapeVec.push_back(inputShape.data[0]);
@@ -41,7 +40,6 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
         for (int i = 1; i < inputShape.len - 1; i++) {
             inputCopyShapeVec.push_back(inputShape.data[i + 1]);
             permuteDimVec.push_back(i + 1);
-            calShape0 *= inputShape.data[i + 1];
         }
         inputCopyShapeVec.push_back(inputShape.data[1]);
         permuteDimVec.push_back(1);
