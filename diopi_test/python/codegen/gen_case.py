@@ -5,6 +5,8 @@ import pickle
 
 import numpy as np
 from collections import defaultdict
+
+from torch import is_floating_point
 from codegen.filemanager import FileManager
 from codegen.case_template import CaseTemplate
 from conformance.db_operation import db_conn
@@ -83,6 +85,18 @@ class GenTestCase(object):
     def _set_fm_write(self):
         mt_name = f"test_{self._module}_{self._suite_name}_{self._func_name}.py"
         self._fm.will_write(mt_name)
+
+    def _gen_test_priority(self, case_cfg):
+        priority = 'P0'
+        if len(case_cfg["tensor_para"]["args"]) > 0:
+                for t in case_cfg["tensor_para"]["args"]:
+                    if t['ins'] == 'input':
+                        if not np.issubdtype(t['dtype'], np.floating):
+                            priority = 'P1'
+                        if  t.get('shape') and (len(t['shape']) == 0 or 0 in t['shape']):
+                            priority = 'P2'
+                        break
+        return priority
 
     def gen_test_module(self, fname):
         test_diopi_head_import = ""
@@ -273,14 +287,19 @@ class GenTestCase(object):
             test_dtype_marks = []
             if len(cv["tensor_para"]["args"]) > 0:
                 for t in cv["tensor_para"]["args"]:
-                    mark = CaseTemplate.test_function_case_dtype_marks.substitute(
-                        env=dict(dtype=t["dtype"].__name__)
+                    mark = CaseTemplate.test_function_case_marks.substitute(
+                        env=dict(mark=t["dtype"].__name__)
                     ).strip()
                     if mark not in test_dtype_marks:
                         test_dtype_marks.append(mark)
 
+            test_priority_mark = CaseTemplate.test_function_case_marks.substitute(
+                        env=dict(mark=self._gen_test_priority(cv))
+                    ).strip()
+
             test_function_templ = CaseTemplate.test_function_templ.substitute(
                 env=dict(
+                    test_priority_mark=test_priority_mark,
                     test_dtype_marks=test_dtype_marks,
                     func_case_name=func_case_name,
                     forward=forward,

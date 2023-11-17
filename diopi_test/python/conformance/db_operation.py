@@ -65,6 +65,7 @@ class DeviceCase(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     pytest_nodeid = Column(String(100))
+    mark = Column(String(1000))
     case_name = Column(String(100))
     model_name = Column(String(100))
     func_name = Column(String(100))
@@ -209,6 +210,8 @@ class DB_Operation(object):
         case_model = self.all_case_items[case_item["pytest_nodeid"]]
         if case_item.get("case_config"):
             case_item["case_config"] = pickle.dumps(case_item["case_config"])
+        if case_item.get("mark"):
+            case_item["mark"] = ','.join(case_item["mark"])
         diopi_func_name_list = list(glob_vars.func_status.keys())
         if case_model["func_name"] in pytorch_diopi_func_map:
             diopi_func_name_list = pytorch_diopi_func_map[case_model["func_name"]]
@@ -367,6 +370,7 @@ class ExcelOperation(object):
         df["case_config"] = df["case_config"].apply(lambda x: pickle.loads(x))
         columns = [
             "pytest_nodeid",
+            "mark",
             "case_name",
             "model_name",
             "func_name",

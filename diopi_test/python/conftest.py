@@ -27,11 +27,12 @@ def pytest_sessionstart(session):
 
 
 @pytest.hookimpl(hookwrapper=True, tryfirst=True)
-def pytest_runtest_makereport(item, call):
+def pytest_runtest_makereport(item: pytest.Item, call):
     out = yield
     report = out.get_result()
-    db_data = {'pytest_nodeid': item.nodeid, 'diopi_func_name': glob_vars.cur_test_func}
+    db_data = {'pytest_nodeid': item.nodeid, 'diopi_func_name': glob_vars.cur_test_func, 'mark': []}
     if report.when == 'call':
+        db_data['mark'] = [m.name for m in item.iter_markers()]
         if report.failed:
             db_data['error_msg'] = f'{report.longrepr.reprcrash.message}'
         elif hasattr(report, 'wasxfail'):
