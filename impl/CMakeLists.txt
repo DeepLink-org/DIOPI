@@ -13,12 +13,12 @@ set (DIOPI_TEST_DIR "${CMAKE_SOURCE_DIR}/../diopi_test")
 
 if (TEST)
     # find the file Python.h and add it in the include path.
-    execute_process(COMMAND  sh -c "dirname $(find  $(dirname $(which python))/../ -name Python.h)" OUTPUT_VARIABLE PYTHON_INCLUDE_DIR)
-    if ("${PYTHON_INCLUDE_DIR}" STREQUAL "")
-        message(FATAL_ERROR "no Python.h is found")
+    find_package(Python3 COMPONENTS Interpreter Development)
+    if (NOT Python3_FOUND)
+        message(FATAL_ERROR "No sutiable python library found.")
     endif()
-    message(STATUS "PYTHON_INCLUDE_DIR: " ${PYTHON_INCLUDE_DIR})
-    include_directories(${PYTHON_INCLUDE_DIR})
+    message(STATUS "Python include: ${Python3_INCLUDE_DIRS}")
+    include_directories(${Python3_INCLUDE_DIRS})
 endif(TEST)
 
 # use gcover
