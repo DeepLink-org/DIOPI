@@ -264,7 +264,7 @@ def get_functions_support(source_dir: str) -> Tuple[dict, dict]:
             if func_name not in funcs_info.keys():
                 funcs_info[func_name] = {}
             funcs_info[func_name]['call_args'] = args
-            if ins == None:
+            if ins is None:
                 continue
             if ins_v:
                 funcs_info[func_name]['ins_vector'] = ins_v
@@ -321,8 +321,7 @@ def deal_dtype(op_name: str, dtype_config: str, func_infos: dict, tensor_name: s
             config += ',' + dtype_configs[idx]
         r = re.match(r'\((.*)\)->(.*)', config)
         if len(r.groups()) != 2:
-            from_dtypes = [d]
-            to_dtype = default_cast_dtype[d]
+            raise ValueError(f"Invalid dtype configuration: {config}")
         else:
             from_dtypes = r.group(1).replace(' ', '').split(',')
             to_dtype = r.group(2)
@@ -458,8 +457,6 @@ def autogen_op_adaptor(op_configs: dict, device: str, func_infos: dict,
                        impl_funcs: dict) -> list:
     adaptors_code = []
     cast = op_configs['Common']['cast'] if 'Common' in op_configs.keys() else ''
-    contiguous = op_configs['Common']['contiguous'] if 'Common' in op_configs.keys() else [
-    ]
     layout = op_configs['Common']['layout'] if 'Common' in op_configs.keys() else [
     ]
     for func in func_infos:
@@ -484,8 +481,6 @@ def autogen_op_adaptor(op_configs: dict, device: str, func_infos: dict,
             new_input = []
             for tensor in list(func_infos[func]['ins'].keys()) + list(func_infos[func]['outs'].keys()):
                 tensor_info = op_config['tensor'][tensor] if op_config else None
-                contiguous_str = ', true' if (tensor_info and 'contiguous' in tensor_info.keys()
-                                              and tensor_info['contiguous']) or contiguous else ''
                 cast_method = tensor_info['cast'] if tensor_info else cast
                 memory_format = tensor_info['layout'] if tensor_info else layout
                 format_str = memory_format_to_str(memory_format)
@@ -499,17 +494,17 @@ for (int i = 0; i < ${num}; ++i) {
 }
 """)
                         new_input.append(new_ins_vector_template.substitute(env=dict(input=tensor, newinput='new' + tensor.capitalize(), num=func_infos[func]['ins_vector'][tensor],
-                                                                                     cast=', ' + cast_method if cast_method else '', memory_format=format_str, contiguous=contiguous_str)))
+                                                                                     cast=', ' + cast_method if cast_method else '', memory_format=format_str)))
                     else:
                         new_in = 'new' + tensor.capitalize()
                         new_ins.append(new_in)
                         cast_impl = 'castImpl<diopiConstTensorHandle_t{cast}>(ctx, {tensor}, &{new_tensor}{memory_format});'.format(
-                                    cast=', ' + cast_method if cast_method else '', memory_format=format_str, tensor=tensor, new_tensor=new_in, contiguous=contiguous_str)
+                                    cast=', ' + cast_method if cast_method else '', memory_format=format_str, tensor=tensor, new_tensor=new_in)
                         cast_ins.append(cast_impl)
                 outs = func_infos[func]['outs']
                 if tensor in outs:
                     cast_impl = 'DiopiTensorWrapper<{cast}> {tensor}Wrapper(ctx, {tensor}{memory_format}, {inp});'.format(
-                                cast=cast_method, memory_format=format_str, tensor=tensor, contiguous=contiguous_str, inp='true' if ('Inp' in op_name or tensor in inp_config.get(op_name, [])) else 'false')
+                                cast=cast_method, memory_format=format_str, tensor=tensor, inp='true' if ('Inp' in op_name or tensor in inp_config.get(op_name, [])) else 'false')
                     cast_outs.append(cast_impl)
             new_input.append('diopiConstTensorHandle_t ' +
                              ', '.join(new_ins) + ';') if len(new_ins) else ''
