@@ -1,0 +1,9 @@
+einops==0.7.0
+numpy==1.23.1
+pandas==2.0.3
+pytest==7.3.1
+scipy==1.11.3 
+SQLAlchemy==2.0.2
+torch==2.0.0
+torchvision==0.15.1
+triton==2.1.0
