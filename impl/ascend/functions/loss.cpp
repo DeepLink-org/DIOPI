@@ -26,10 +26,11 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
             } else {
                 fillNan(ctx, outAt0);
             }
-        } else if (diopiReduction_t::ReductionSum == reduction)
+        } else if (diopiReduction_t::ReductionSum == reduction) {
             fillTensor(ctx, out, 0.0f);  // none
-        else if (diopiReduction_t::ReductionNone == reduction)
+        } else if (diopiReduction_t::ReductionNone == reduction) {
             return diopiSuccess;  // array([])
+        }
         return diopiSuccess;
     }
 
