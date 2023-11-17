@@ -108,6 +108,40 @@ def obtain_impl_func(dir: str) -> dict:
     return impl_functions
 
 
+# get the func declararion in the file_path
+def obtain_func_declaration(file_path):
+
+    decl_functions = {}
+    with open(file_path, 'r') as file:
+        c_code = file.read()
+
+    pattern = r'(?:^|\n)\s*DIOPI_API\s+(\w+)\s+(\w+)\(([^)]*)\);'
+    pattern = re.compile(pattern)
+    matches = re.findall(pattern, c_code)
+
+    for match in matches:
+        comment, return_type, func_name, arguments = match
+        # skip the comment
+        if comment and (comment.strip().startswith('/*') or comment.strip().startswith('//') ):
+            continue
+
+        arguments = arguments.strip().split(',')
+
+        print("comment:", comment)
+        print("Function Name:", func_name)
+        print("Return Type:", return_type)
+        print("Arguments:")
+        args_after_fmt = []
+        for arg in arguments:
+            arg = arg.strip()
+            if(arg.startswith('//')):
+                continue
+            args_after_fmt.append(arg.strip())
+        if func_name not in decl_functions.keys():
+            decl_functions[func_name] = {"func_name":func_name, "args": args_after_fmt, "return_type":return_type}
+    return decl_functions
+
+
 def prepare() -> Tuple[dict, str]:
     parser = argparse.ArgumentParser(
         description='Generate DIOPI adaptor source files')
