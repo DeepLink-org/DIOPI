@@ -103,7 +103,10 @@ def obtain_impl_func(dir: str) -> dict:
                 args_after_fmt.append(arg)
             if func_name not in impl_functions.keys():
                 impl_functions[func_name] = {
-                    "func_name": func_name, "args": args_after_fmt, "return_type": "diopiError_t"}
+                    "func_name": func_name,
+                    "args": args_after_fmt,
+                    "return_type": "diopiError_t"
+                }
 
     return impl_functions
 
@@ -122,7 +125,7 @@ def obtain_func_declaration(file_path):
     for match in matches:
         comment, return_type, func_name, arguments = match
         # skip the comment
-        if comment and (comment.strip().startswith('/*') or comment.strip().startswith('//') ):
+        if comment and (comment.strip().startswith('/*') or comment.strip().startswith('//')):
             continue
 
         arguments = arguments.strip().split(',')
@@ -134,11 +137,12 @@ def obtain_func_declaration(file_path):
         args_after_fmt = []
         for arg in arguments:
             arg = arg.strip()
-            if(arg.startswith('//')):
+            if (arg.startswith('//')):
                 continue
             args_after_fmt.append(arg.strip())
         if func_name not in decl_functions.keys():
-            decl_functions[func_name] = {"func_name":func_name, "args": args_after_fmt, "return_type":return_type}
+            decl_functions[func_name] = {
+                "func_name": func_name, "args": args_after_fmt, "return_type": return_type}
     return decl_functions
 
 
@@ -408,8 +412,8 @@ def analysis_configs(config: List[dict], funcs_info: dict) -> dict:
                     if tensor_name not in op_tensor.keys():
                         op_tensor[tensor_name] = {}
                     op_tensor[tensor_name]['contiguous'] = True
-            if 'composite' in op_cfg.keys():
-                op_dict[op_name]['composite'] = True
+            if 'supportComposite' in op_cfg.keys():
+                op_dict[op_name]['supportComposite'] = True
             for tensor in list(funcs_info[op_name]['ins'].keys()) + list(funcs_info[op_name]['outs'].keys()):
                 if tensor not in op_tensor.keys():
                     op_tensor[tensor] = {}
@@ -462,15 +466,16 @@ def autogen_op_adaptor(op_configs: dict, device: str, func_infos: dict,
         device_mapping = ''
         op_name = func.lstrip('diopi')
         if func not in impl_funcs:
-            if op_configs.get(func, {}).get('composite'):
+            if op_configs.get(func, {}).get('supportComposite'):
                 device_mapping = 'composite'
             else:
                 continue
         if (func not in op_configs.keys() and 'Common' not in op_configs.keys()) or len(list(func_infos[func].keys())) == 1 or op_name in exclude_ops:
             call_args = [arg.split(' ')[-1]
                          for arg in func_infos[func]['call_args']]
-            adaptors_code.append(OT.adaptor_template.substitute(env=dict(op_name=op_name, attrs=func_infos[func]['call_args'], device=device if not device_mapping else device_mapping,
-                                                                         new_input='', cast_input='', cast_output='', func_name=func, call_func=func + '(' + ', '.join(call_args) + ')')))
+            adaptors_code.append(
+                OT.adaptor_template.substitute(env=dict(op_name=op_name, attrs=func_infos[func]['call_args'], device=device if not device_mapping else device_mapping,
+                                                        new_input='', cast_input='', cast_output='', func_name=func, call_func=func + '(' + ', '.join(call_args) + ')')))
         else:
             op_config = op_configs[func] if func in op_configs.keys() else None
             new_ins = []
@@ -520,12 +525,25 @@ for (int i = 0; i < ${num}; ++i) {
                 else:
                     new_name = name
                 call_args.append(new_name)
-            adaptors_code.append(OT.adaptor_template.substitute(env=dict(op_name=op_name, attrs=', '.join(func_infos[func]['call_args']), device=device if not device_mapping else device_mapping,
-                                                                         new_input=new_input, cast_input=cast_ins, cast_output=cast_outs, func_name=func, call_func=func + '(' + ', '.join(call_args) + ')')))
+            adaptors_code.append(
+                OT.adaptor_template.substitute(
+                    env=dict(
+                        op_name=op_name,
+                        attrs=', '.join(func_infos[func]['call_args']),
+                        device=device_mapping if device_mapping else device,
+                        new_input=new_input,
+                        cast_input=cast_ins,
+                        cast_output=cast_outs,
+                        func_name=func,
+                        call_func=func + '(' + ', '.join(call_args) + ')'
+                    )
+                )
+            )
     return adaptors_code
 
 
-def get_impl_funcs_declaration(funcs_decl_raw: dict, funcs_info: dict, impl_funcs: dict, op_configs: dict) -> dict:
+def get_impl_funcs_declaration(funcs_decl_raw: dict, funcs_info: dict,
+                               impl_funcs: dict) -> dict:
     funcs_decl: dict = {}
     for func in funcs_info.keys():
         if func in impl_funcs:
@@ -533,15 +551,18 @@ def get_impl_funcs_declaration(funcs_decl_raw: dict, funcs_info: dict, impl_func
     return funcs_decl
 
 
-def get_composite_funcs_declaration(funcs_decl_raw: dict, funcs_info: dict, impl_funcs: dict, op_configs: dict) -> dict:
+def get_composite_funcs_declaration(funcs_decl_raw: dict,
+                                    funcs_info: dict, impl_funcs: dict,
+                                    op_configs: dict) -> dict:
     composite_funcs_decl: dict = {}
     for func in funcs_info.keys():
-        if op_configs.get(func, {}).get('composite'):
+        if func not in impl_funcs and op_configs.get(func, {}).get('supportComposite'):
             composite_funcs_decl[func] = funcs_decl_raw[func]
     return composite_funcs_decl
 
 
-def gen_autogen_operators(dirs: dict, device: str, adaptor_fm: FileManager) -> None:
+def gen_autogen_operators(dirs: dict, device: str,
+                          adaptor_fm: FileManager) -> None:
     config_file_path = os.path.join(
         dirs.get('config_path'), 'convert_config.yaml')
     try:
@@ -568,13 +589,14 @@ def gen_autogen_operators(dirs: dict, device: str, adaptor_fm: FileManager) -> N
 
     # get the function declarations
     funcs_decl = get_impl_funcs_declaration(
-        funcs_decl_raw, funcs_info, impl_funcs, op_configs)
+        funcs_decl_raw, funcs_info, impl_funcs)
     composite_funcs_decl = get_composite_funcs_declaration(
         funcs_decl_raw, funcs_info, impl_funcs, op_configs)
 
     adaptor_fm.write('diopi_adaptor.cpp',
                      OT.operators_template,
-                     dict(adaptors=adaptors_code, cast_strategy=autogen_cast_strategy()))
+                     dict(adaptors=adaptors_code,
+                          cast_strategy=autogen_cast_strategy()))
     adaptor_fm.write('impl_functions.hpp',
                      OT.impl_declaration_template,
                      dict(device=device, impl_declaration=list(funcs_decl.values()), composite_funcs_decl=list(composite_funcs_decl.values())))
