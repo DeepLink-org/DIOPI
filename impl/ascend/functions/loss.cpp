@@ -15,12 +15,12 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
 
     if (0 == inputAt0.numel()) {
         // align with pytorch
-        if (diopiReduction_t::ReductionMean == reduction) 
-            fillNan(ctx, outAt0);           // nan
-        else if (diopiReduction_t::ReductionSum == reduction) 
-            fillTensor(ctx, out, 0.0f);     // none
+        if (diopiReduction_t::ReductionMean == reduction)
+            fillNan(ctx, outAt0);  // nan
+        else if (diopiReduction_t::ReductionSum == reduction)
+            fillTensor(ctx, out, 0.0f);  // none
         else if (diopiReduction_t::ReductionNone == reduction)
-            return diopiSuccess;            // array([])
+            return diopiSuccess;  // array([])
         return diopiSuccess;
     }
 
@@ -51,16 +51,15 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
         diopiRequireTensor(ctx, &inputCopy, &inputCopyShape, nullptr, dtype, diopi_device);
         diopiPermute(ctx, inputCopy, input, permuteDim);
 
-        for(int i = 0;i<inputCopyShapeVec.size()-1;++i) 
-            if (inputCopyShapeVec[i] != 0)
-                batch *= inputCopyShapeVec[i];
+        for (int i = 0; i < inputCopyShapeVec.size() - 1; ++i)
+            if (inputCopyShapeVec[i] != 0) batch *= inputCopyShapeVec[i];
     } else {
         inputCopy = contiguous(ctx, input);
     }
 
     targetCopy = contiguous(ctx, target, diopi_dtype_int32);
     AscendTensor inputAt(inputCopy), outAt(out), targetAt(targetCopy);
- 
+
     AclOpRunner<3, 2> runner("NLLLoss", ctx);
     if (inputAt.dtype() != diopi_dtype_float32) {
         castTensor(ctx, inputAt, diopi_dtype_float32);
@@ -78,11 +77,10 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
     }
 
     // ascend only support inpu tensor with 2D dimension
-    if (inputShape.len == 1){
+    if (inputShape.len == 1) {
         reshape(ctx, inputAt, inputAt, {1, inputShape.data[0]});
         reshape(ctx, targetAt, targetAt, {targetAt.numel()});
-    }
-    else if (inputShape.len > 2){
+    } else if (inputShape.len > 2) {
         reshape(ctx, inputAt, inputAt, {batch, inputShape.data[1]});
         reshape(ctx, targetAt, targetAt, {targetAt.numel()});
     }
@@ -162,7 +160,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     diopiSize_t inputShape;
     diopiGetTensorShape(input, &inputShape);
 
-     if (weight) {
+    if (weight) {
         weightCopy = contiguous(ctx, weight, diopi_dtype_float32);
     } else {
         int64_t weightDim[1];
@@ -206,12 +204,12 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         diopiRequireTensor(ctx, &inputCopy, &inputCopyShape, nullptr, dtype, diopi_device);
         diopiPermute(ctx, inputCopy, input, permuteDim);
         diopiRequireTensor(ctx, &gradInputCopy, &inputCopyShape, nullptr, dtype, diopi_device);
-    } else if (inputShape.len == 2){
+    } else if (inputShape.len == 2) {
         inputCopy = contiguous(ctx, input);
         calShapeVec.push_back(inputShape.data[0]);
         calShapeVec.push_back(inputShape.data[1]);
         calTargetShapeVec.push_back(inputShape.data[0]);
-    } else {    // inpusShape.len == 1
+    } else {  // inpusShape.len == 1
         inputCopy = contiguous(ctx, input);
         calShapeVec.push_back(1);
         calShapeVec.push_back(inputShape.data[0]);
