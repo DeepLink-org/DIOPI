@@ -42,6 +42,7 @@ DIOPI_API diopiError_t diopiFusedSiluFfnInp(diopiContextHandle_t ctx, diopiTenso
         diopiTensorHandle_t matmulW3;
         diopiRequireTensor(ctx, &matmulW1, &newshape, &strideW1, dtype, device);
         diopiRequireTensor(ctx, &matmulW3, &newshape, &strideW3, dtype, device);
+
         diopiMatmul(ctx, matmulW1, inoutput, weight1);
         diopiMatmul(ctx, matmulW3, inoutput, weight3);
         diopiSiluInp(ctx, matmulW1);
