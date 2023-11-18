@@ -23,6 +23,7 @@
 extern "C" {
 DIOPI_API void* br_device_malloc(uint64_t bytes);
 DIOPI_API void br_device_free(void* ptr);
+DIOPI_API void* get_phy_ptr(const void* ptr);
 }
 
 void* device_malloc(uint64_t bytes) {
@@ -63,19 +64,23 @@ diopiError_t device_synchronize_stream(diopiStreamHandle_t streamHandle) {
 
 diopiError_t device_memcpy_h2d_async(diopiStreamHandle_t streamHandle, void* dst, const void* src, uint64_t bytes) {
     suStream_t stream = (suStream_t)streamHandle;
-    SUPA_CALL(suMemcpyAsync(dst, const_cast<void*>(src), bytes, stream, suMemcpyHostToDevice));
+    auto phy_gpu_addr = get_phy_ptr(dst); // the gpu address may be a virtual address. so translate it.
+    SUPA_CALL(suMemcpyAsync(phy_gpu_addr, const_cast<void*>(src), bytes, stream, suMemcpyHostToDevice));
     return diopiSuccess;
 }
 
 diopiError_t device_memcpy_d2h_async(diopiStreamHandle_t streamHandle, void* dst, const void* src, uint64_t bytes) {
     suStream_t stream = (suStream_t)streamHandle;
-    SUPA_CALL(suMemcpyAsync(dst, const_cast<void*>(src), bytes, stream, suMemcpyDeviceToHost));
+    auto phy_gpu_addr = get_phy_ptr(src);
+    SUPA_CALL(suMemcpyAsync(dst, const_cast<void*>(phy_gpu_addr), bytes, stream, suMemcpyDeviceToHost));
     return diopiSuccess;
 }
 
 diopiError_t device_memcpy_d2d_async(diopiStreamHandle_t streamHandle, void* dst, const void* src, uint64_t bytes) {
     suStream_t stream = (suStream_t)streamHandle;
-    SUPA_CALL(suMemcpyAsync(dst, const_cast<void*>(src), bytes, stream, suMemcpyDeviceToDevice));
+    auto phy_src_gpu_addr = get_phy_ptr(src);
+    auto phy_dst_gpu_addr = get_phy_ptr(dst);
+    SUPA_CALL(suMemcpyAsync(phy_dst_gpu_addr, const_cast<void*>(phy_src_gpu_addr), bytes, stream, suMemcpyDeviceToDevice));
     return diopiSuccess;
 }
 
