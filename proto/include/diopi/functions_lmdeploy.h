@@ -52,7 +52,7 @@ DIOPI_API diopiError_t diopiFusedAddRootMeanSquareNormInp(diopiContextHandle_t c
 /**
  * @brief FusedContextAttention.
  * 1.If pre_work like attention_mask and padding_offset and cu_seqlens is needed, get prepared result.Or only do the pre work.Or get size only.
- * attention_mask : Attention mask.shape = [batch_size, 1, max_query_len, max_key_len].type = [float32, float16]
+ * attention_mask : Attention mask, k<=q + context - input.shape = [batch_size, 1, max_query_len, max_key_len].type = [float32, float16]
  * padding_offset : Padding offset.shape = [batch_size * max_query_len] but infact [token_num].type = [int64, int32]
  * cu_seqlens : Cuseqlens.shape = [batch_size + 1].type = [int64, int32]
  * 2.get QKV.
@@ -78,8 +78,8 @@ DIOPI_API diopiError_t diopiFusedAddRootMeanSquareNormInp(diopiContextHandle_t c
  * @param[inout] workspace : Workspace or buffer.shape = [workspace_size].type = [float32, float16]
  * @param[inout] workspace_size : Workspace size, if workspace_size < 0 then only cal workspace_size.type = [int64*, int32*]
  * @param[in] fusion_level : Fusion level, 0 represents no fusion, and the higher the numerical value, the higher the degree of fusion.type = [int64, int32]
- * @param[inout] key_cache : Key cache.shape = [num_layer, batch, local_head_num, max_seq_len, size_per_head].type = [float32, float16]
- * @param[inout] value_cache : Value cache.shape = [num_layer, batch, local_head_num, max_seq_len, size_per_head].type = [float32, float16]
+ * @param[inout] key_cache : Key cache.shape = [batch], membershape = [num_layer, local_head_num, max_seq_len, size_per_head]].type = [float32, float16]
+ * @param[inout] value_cache : Value cache.shape = [batch], membershape = [num_layer, local_head_num, max_seq_len, size_per_head].type = [float32, float16]
  * @param[in] input_lengths : Input lengths.shape = [batch_size].type = [int64, int32]
  * @param[in] history_lengths : History lengths.shape = [batch_size].type = [int64, int32]
  * @param[in] context_lengths : Contextlengths.shape = [batch_size].type = [int64, int32]
@@ -96,7 +96,7 @@ DIOPI_API diopiError_t diopiFusedAddRootMeanSquareNormInp(diopiContextHandle_t c
 DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t qkv_weight,
                                                      diopiConstTensorHandle_t qkv_bias, diopiTensorHandle_t pre_work, int64_t* pre_work_size, bool is_prepared,
                                                      diopiTensorHandle_t workspace, int64_t* workspace_size, int64_t fusion_level,
-                                                     diopiTensorHandle_t key_cache, diopiTensorHandle_t value_cache, diopiTensorHandle_t input_lengths,
+                                                     diopiTensorHandle_t* key_cache, diopiTensorHandle_t* value_cache, diopiTensorHandle_t input_lengths,
                                                      diopiTensorHandle_t history_lengths, diopiTensorHandle_t context_lengths, int64_t layer_id,
                                                      int64_t local_head_num, int64_t local_kv_head_num, int64_t size_per_head, int64_t max_seq_len,
                                                      int64_t max_q_len, int64_t max_kv_len, int64_t rotary_embedding, float rope_theta);
@@ -110,12 +110,12 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
  * @param[in] ctx diopi context.
  * @param[inout] inoutput : Inoutput tensor.shape = [batch_size, hidden_units].type = [float32, float16]
  * @param[in] qkv_weight : QKV_weight tensor.shape = [hidden_units, (local_head_num+local_kv_head_num*2)*size_per_head].type = [float32, float16]
- * @param[in] qkv_bias : QKV_bias tensor.shape = [1, (local_head_num+local_kv_head_num*2)*size_per_head].type = [float32, float16]
+ * @param[in] qkv_bias : QKV_bias tensor.shape = [1, (local_head_num+local_kv_head_num*2)*size_per_head] or none.type = [float32, float16]
  * @param[inout] workspace : Workspace or buffer.shape = [workspace_size].type = [float32, float16]
  * @param[inout] workspace_size : Workspace size, if workspace_size < 0 then only cal workspace_size.type = [int64*, int32*]
  * @param[in] fusion_level : Fusion level, 0 represents no fusion, and the higher the numerical value, the higher the degree of fusion.type = [int64, int32]
- * @param[inout] key_cache : Key cache.shape = [num_layer, batch, local_head_num, max_seq_len, size_per_head].type = [float32, float16]
- * @param[inout] value_cache : Value cache.shape = [num_layer, batch, local_head_num, max_seq_len, size_per_head].type = [float32, float16]
+ * @param[inout] key_cache : Key cache.shape = [batch], membershape = [num_layer, local_head_num, max_seq_len, size_per_head]].type = [float32, float16]
+ * @param[inout] value_cache : Value cache.shape = [batch], membershape = [num_layer, local_head_num, max_seq_len, size_per_head].type = [float32, float16]
  * @param[in] finished : Finished batch.shape = [batch_size].type = [bool]
  * @param[in] total_padding_tokens : Total padding tokens.shape = [batch_size].type = [int64, int32]
  * @param[in] sequence_lengths : Sequence lengths.shape = [batch_size].type = [int64, int32]
@@ -130,7 +130,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
  */
 DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t qkv_weight,
                                                      diopiConstTensorHandle_t qkv_bias, diopiTensorHandle_t workspace, int64_t* workspace_size,
-                                                     int64_t fusion_level, diopiTensorHandle_t key_cache, diopiTensorHandle_t value_cache,
+                                                     int64_t fusion_level, diopiTensorHandle_t* key_cache, diopiTensorHandle_t* value_cache,
                                                      diopiConstTensorHandle_t finished, diopiConstTensorHandle_t total_padding_tokens,
                                                      diopiConstTensorHandle_t sequence_lengths, int64_t step, int64_t layer_id, int64_t local_head_num,
                                                      int64_t local_kv_head_num, int64_t size_per_head, int64_t max_seq_len, int64_t rotary_embedding,
