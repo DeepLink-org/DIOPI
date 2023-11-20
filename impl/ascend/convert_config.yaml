@@ -167,15 +167,15 @@
     layout: NCHW
 
 - diopiThreshold:
-    dtype: (float64)->float32, (int16, int64,int8)->int32
+    dtype: (float64)->float32, (int16, int64)->int32
     layout: NCHW
 
 - diopiThresholdInp:
-    dtype: (float64)->float32, (int16, int64,int8)->int32
+    dtype: (float64)->float32, (int16, int64)->int32
     layout: NCHW
 
 - diopiThresholdBackward:
-    dtype: (float64)->float32, (int16, int64,int8)->int32
+    dtype: (float64)->float32, (int16, int64)->int32
     layout: NCHW
 
 - diopiMinimum:
