@@ -23,6 +23,7 @@ at::Tensor _npu_format_cast(const at::Tensor& self, int64_t acl_format);
 at::Tensor npu_format_cast(const at::Tensor& self, int64_t acl_format);
 
 at::Tensor& copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking);
+at::Tensor & copy_memory_(at::Tensor & self, const at::Tensor & src, bool non_blocking);
 
 };  // namespace NPUNativeFunctions
 
