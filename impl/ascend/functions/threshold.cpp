@@ -16,6 +16,7 @@ diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     float inputValue = getValue<float>(value);
 
     if (dtype == diopi_dtype_uint8) {
+        // Converting a float type directly to uint is undefined behavior, so it is necessary to first convert it to an int type.
         inputThreshold = static_cast<float>(static_cast<uint8_t>(static_cast<int>(inputThreshold)));
         inputValue = static_cast<float>(static_cast<uint8_t>(static_cast<int>(inputValue)));
     } else if (isIntegralType(dtype)) {
@@ -34,6 +35,8 @@ diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                                     diopiConstTensorHandle_t input, const diopiScalar_t* threshold) {
     AclOpRunner<2, 1>("ThresholdGradV2D", ctx).addInput(gradOutput).addInput(input).setAttr("threshold", getValue<float>(threshold)).addOutput(gradInput).run();
     return diopiSuccess;
+
+    1. 保持不变如何描述 2. 百分比的只能用proportion 和 percentage吗 3. 什么caught up 了什么 in terms of 4. reach pariety后面可以加of 吗
 }
 
 }  // namespace ascend
