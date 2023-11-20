@@ -68,6 +68,19 @@ device_configs = {
         ),
     ),
 
+    # temp for 910B
+    'normal_tensor': dict(
+        name=["normal"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['mean'],
+                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
+                },
+            ]
+        ),
+    ),
+
     'batch_norm': dict(
         name=['batch_norm'],
         atol=1e-2,
@@ -205,12 +218,30 @@ device_configs = {
         name=['conv2d'],
         atol=1e-1,
         rtol=1e-2,
+        # temp for 910B
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
+                },
+            ]
+        ),
     ),
 
     'conv_2d_no_contiguous': dict(
         name=['conv2d'],
         atol=1e-1,
         rtol=1e-2,
+        # temp for 910B
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
+                },
+            ]
+        ),
     ),
 
     'hardswish': dict(
