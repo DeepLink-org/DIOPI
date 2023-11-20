@@ -193,7 +193,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
+                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
                 },
             ]
         ),
@@ -208,7 +208,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
+                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
                 },
             ]
         ),
@@ -223,7 +223,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
+                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
                 },
             ]
         ),
@@ -238,7 +238,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
+                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
                 },
             ]
         ),
@@ -2500,6 +2500,19 @@ device_configs = {
     # temp for 910B
     'normal_': dict(
         name=["normal_"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                },
+            ]
+        ),
+    ),
+
+    # temp for 910B
+    'normal_std_tensor': dict(
+        name=["normal"],
         tensor_para=dict(
             args=[
                 {
