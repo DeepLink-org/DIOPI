@@ -271,14 +271,22 @@ function_kwargs = {key: value for key, value in function_kwargs.items() if key n
 
     test_manual_function_forward_call = CodeTemplate(
         r"""
-ManualTest.test_${test_diopi_func_name}(**function_kwargs)
+try:
+    ManualTest.test_${test_diopi_func_name}(**function_kwargs)
+except FunctionNotImplementedError as e:
+    default_context.clear_tensors()
+    pytest.xfail(str(e))
 """
     )
     test_manual_function_inp_forward_call = CodeTemplate(
         r"""
 ${test_diopi_func_inp_remove_grad_args}
 function_kwargs.update({'inplace': True})
-ManualTest.test_${test_diopi_func_name}(**function_kwargs)
+try:
+    ManualTest.test_${test_diopi_func_name}(**function_kwargs)
+except FunctionNotImplementedError as e:
+    default_context.clear_tensors()
+    pytest.xfail(str(e))
 """
     )
 
