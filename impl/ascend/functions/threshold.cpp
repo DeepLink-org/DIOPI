@@ -18,8 +18,7 @@ diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     if (dtype == diopi_dtype_uint8) {
         inputThreshold = static_cast<float>(static_cast<uint8_t>(static_cast<int>(inputThreshold)));
         inputValue = static_cast<float>(static_cast<uint8_t>(static_cast<int>(inputValue)));
-    }
-    else if (isIntegralType(dtype)) {
+    } else if (isIntegralType(dtype)) {
         inputThreshold = static_cast<float>(getValue<int>(threshold));
         inputValue = static_cast<float>(getValue<int>(value));
     }
