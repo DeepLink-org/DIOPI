@@ -35,8 +35,6 @@ diopiError_t diopiThresholdBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                                     diopiConstTensorHandle_t input, const diopiScalar_t* threshold) {
     AclOpRunner<2, 1>("ThresholdGradV2D", ctx).addInput(gradOutput).addInput(input).setAttr("threshold", getValue<float>(threshold)).addOutput(gradInput).run();
     return diopiSuccess;
-
-    1. 保持不变如何描述 2. 百分比的只能用proportion 和 percentage吗 3. 什么caught up 了什么 in terms of 4. reach pariety后面可以加of 吗
 }
 
 }  // namespace ascend
