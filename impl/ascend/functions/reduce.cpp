@@ -111,6 +111,15 @@ diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     return diopiSuccess;
 }
 
+inline std::vector<int64_t> getDimVectorForTensor(diopiConstTensorHandle_t th) {
+    AscendTensor at(th);
+    std::vector<int64_t> dimVector;
+    for (int64_t i = 0; i < at.dim(); ++i) {
+        dimVector.emplace_back(i);
+    }
+    return dimVector;
+}
+
 diopiError_t diopiAll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim) {
     int64_t numel = 0;
     diopiGetTensorNumel(input, &numel);
@@ -118,7 +127,8 @@ diopiError_t diopiAll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         AclOpRunner<1, 1>("Fills", ctx).addInput(out).setAttr<float>("value", 1).addOutput(out).run();
         return diopiSuccess;
     }
-    AclOpRunner<2, 1>("ReduceAll", ctx).addInput(input).addConstInput({*dim}).setAttr("keep_dims", false).addOutput(out).run();
+    std::vector<int64_t> dimVector = nullptr == dim ? getDimVectorForTensor(input) : std::vector<int64_t>{*dim};
+    AclOpRunner<2, 1>("ReduceAll", ctx).addInput(input).addConstInput(dimVector).setAttr("keep_dims", false).addOutput(out).run();
     return diopiSuccess;
 }
 
@@ -129,7 +139,8 @@ diopiError_t diopiAny(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         AclOpRunner<1, 1>("Fills", ctx).addInput(out).setAttr<float>("value", 0).addOutput(out).run();
         return diopiSuccess;
     }
-    AclOpRunner<2, 1>("ReduceAny", ctx).addInput(input).addConstInput({*dim}).setAttr("keep_dims", false).addOutput(out).run();
+    std::vector<int64_t> dimVector = nullptr == dim ? getDimVectorForTensor(input) : std::vector<int64_t>{*dim};
+    AclOpRunner<2, 1>("ReduceAny", ctx).addInput(input).addConstInput(dimVector).setAttr("keep_dims", false).addOutput(out).run();
     return diopiSuccess;
 }
 
