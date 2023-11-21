@@ -65,7 +65,6 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
     if (weightCopy.shape().size() > 2) transTensorTo2D(ctx, weightCopy);
     if (gradOutputCopy.shape().size() > 2) transTensorTo2D(ctx, gradOutputCopy);
 
-
     if (nullptr != gradInput) {
         AscendTensor gradInputCopy(gradInput);
         if (inputCopy.shape().size() > 2) {
