@@ -160,59 +160,10 @@ if __name__ == "__main__":
                                          args.fname)
         db_conn.insert_benchmark_case(inp_items, outp_items)
     elif args.mode == "gen_case":
-        diopi_case_item_file = "diopi_case_items.cfg"
-        device_case_item_file = "%s_case_items.cfg"
-        if args.model_name != "":
-            logger.info(
-                f"the op list of {args.model_name}: {model_op_list[model_name]}"
-            )
-            diopi_configs = eval(f"model_config.{model_name}_config")
-            diopi_case_item_file = model_name + "_" + diopi_case_item_file
-            device_case_item_file = model_name + "_" + device_case_item_file
-        else:
-            # set a prefix for dat save path like: data/diopi/inputs
-            model_name = "diopi"
-            from diopi_configs import diopi_configs
-        diopi_case_item_path = os.path.join(cache_path, diopi_case_item_file)
-        device_case_item_path = os.path.join(cache_path, device_case_item_file)
-
-        cfg_parse = ConfigParser(diopi_case_item_path)
-        cfg_parse.parser(diopi_configs, args.fname)
-        cfg_path = diopi_case_item_path
-
-        if args.impl_folder != "":
-            cfg_path = device_case_item_path % os.path.basename(args.impl_folder)
-            device_config_path = os.path.join(args.impl_folder, "device_configs.py")
-            dst_path = os.path.join(cur_dir, "device_configs.py")
-
-            def unlink_device():
-                if os.path.islink(dst_path):
-                    os.unlink(dst_path)
-
-            unlink_device()
-            os.symlink(device_config_path, dst_path)
-            import atexit
-
-            atexit.register(unlink_device)
-
-            from device_configs import device_configs
-
-            opt = DeviceConfig(device_configs)
-            opt.run()
-            coll = CollectCase(cfg_parse.get_config_cases(), opt.rules())
-            coll.collect()
-            coll.save(cfg_path)
-
-        from codegen.gen_case import GenConfigTestCase
-
-        if not os.path.exists(args.case_output_dir):
-            os.makedirs(args.case_output_dir)
+        from conformance.gen_case import gen_case
         db_conn.drop_case_table(DeviceCase)
-        gctc = GenConfigTestCase(
-            module=model_name, config_path=cfg_path, tests_path=args.case_output_dir
-        )
-        gctc.gen_test_cases(args.fname)
-        db_conn.insert_device_case(gctc.db_case_items)
+        db_case_items = gen_case(cache_path, cur_dir, args.model_name, args.fname, args.impl_folder, args.case_output_dir)
+        db_conn.insert_device_case(db_case_items)
     elif args.mode == "run_test":
         pytest_args = [args.test_cases_path]
         if args.filter_dtype:
