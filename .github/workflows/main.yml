@@ -27,6 +27,7 @@ env:
   CLUSTER_1424: SH1424
   CLUSTER_CAMB: CAMB
   CLUSTER_ASCEND: ASCEND
+  CLUSTER_ASCEND_910B: ASCEND-910B
   CLUSTER_TOPSRIDER: TOPSRIDER
   CLUSTER_SUPA: SUPA
   BUILD_TEST1: build_test
@@ -85,8 +86,9 @@ jobs:
           ssh ${CLUSTER_SUPA} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
           && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_SUPA}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to supa"
           ssh ${CLUSTER_1424} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
-          && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_1424}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to sh1424"
-
+          && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_1424}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to sh1424" \
+          ssh ${CLUSTER_ASCEND_910B} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
+          && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_ASCEND_910B}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to ascend 910b"
 
   lint:
     name: lint
@@ -387,6 +389,54 @@ jobs:
     name: Rt-Test-Ascend
     runs-on: tps-ascend-ci
     needs: Build-Ascend
+    if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
+    steps:
+      - name: test
+        run: |
+          set -e
+          export CI=true
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+          cd diopi_test/python && python main.py --mode utest
+
+  Build-Ascend-910b:
+    name: Build-Ascend-910b
+    runs-on: tps-ascend-ci-910b
+    needs: [Rsync]
+    if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
+    steps:
+      - name: build
+        run: |
+          set -e
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
+          export CI=true
+          cd impl && sh scripts/build_impl.sh ascend
+      - name: clang-tidy
+        run: |
+          set -e
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+          cd impl && bash scripts/ci_script.sh clang-tidy || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
+
+  Op-Test-Ascend-910b:
+    name: Op-Test-Ascend-910b
+    runs-on: tps-ascend-ci-910b
+    needs: [Gen-Data, Build-Ascend-910b]
+    if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
+    env:
+      run_test: "python"
+    steps:
+      - name: test
+        run: |
+          set -e
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+          export CI=true
+          rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
+          cd diopi_test/python && python main.py --mode gen_case --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/ascend/ && ${run_test} main.py --mode run_test \
+          && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+
+  Rt-Test-Ascend-910b:
+    name: Rt-Test-Ascend-910b
+    runs-on: tps-ascend-ci-910b
+    needs: Build-Ascend-910b
     if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
     steps:
       - name: test
