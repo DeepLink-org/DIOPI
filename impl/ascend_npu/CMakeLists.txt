@@ -67,7 +67,7 @@ add_definitions(-fabi-version=${DIPU_ABI_V})
 message(STATUS "DIPU_ABI_V: ${DIPU_ABI_V}")
 
 set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=${DIPU_COMPILED_WITH_CXX11_ABI} -fvisibility=hidden "
+    "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=${DIPU_COMPILED_WITH_CXX11_ABI} "
 )
 add_compile_options(-D_GLIBCXX_USE_CXX11_ABI=${DIPU_COMPILED_WITH_CXX11_ABI})
 message(STATUS "DIPU_COMPILED_WITH_CXX11_ABI:" ${DIPU_COMPILED_WITH_CXX11_ABI})
@@ -82,6 +82,7 @@ set(OP_PLUGIN_UTILS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/utils/)
 set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/AddKernelNpu.cpp
     ${OP_PLUGIN_DIR}/StrideAddKernelNpu.cpp
+    #${OP_PLUGIN_UTILS_DIR}/../OpInterface.cpp
 )
 set(OP_PLUGIN_SRC1
     ${OP_PLUGIN_DIR}/BatchNormElemtKernelNpu.cpp
@@ -525,6 +526,9 @@ set(OP_PLUGIN_SRC1
 
 set(OP_PLUGIN_API_DIR ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/base_ops/opapi/)
 set(OP_PLUGIN_API_SRC
+    ${OP_PLUGIN_API_DIR}/AddKernelNpuOpApi.cpp
+)
+set(OP_PLUGIN_API_SRC1
     ${OP_PLUGIN_API_DIR}/CosKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/ReflectionPad1dKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/Log2KernelNpuOpApi.cpp
@@ -823,7 +827,6 @@ set(OP_PLUGIN_UTILS_SRC1
     ${OP_PLUGIN_UTILS_DIR}/custom_functions/aclops/SumKernelNpu.cpp
     ${OP_PLUGIN_UTILS_DIR}/custom_functions/aclops/WhereKernelNpu.cpp
     ${OP_PLUGIN_UTILS_DIR}/custom_functions/aclops/IndexCopyKernelNpu.cpp
-    #${OP_PLUGIN_UTILS_DIR}/../OpInterface.cpp
 )
 
 set(ASCEND_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/torch_npu/csrc/impl/)
@@ -846,10 +849,11 @@ add_definitions(-DBUILD_LIBTORCH)
 
 include_directories(op-plugin torch_npu ${CMAKE_CURRENT_SOURCE_DIR})
 set(IMPL_SRC
-  )
+  torch_npu/csrc/DIOPIAdapter.cpp
+)
 
 #list(APPEND IMPL_SRC ${OP_PLUGIN_UTILS_SRC} ${OP_PLUGIN_SRC} ${OP_PLUGIN_API_SRC} ${ASCEND_IMPL_SRC} ${DIOPI_IMPL_SRC})
-list(APPEND IMPL_SRC ${OP_PLUGIN_UTILS_SRC} ${OP_PLUGIN_SRC} ${ASCEND_IMPL_SRC} ${DIOPI_IMPL_SRC})
+list(APPEND IMPL_SRC ${OP_PLUGIN_UTILS_SRC} ${OP_PLUGIN_SRC} ${OP_PLUGIN_API_SRC} ${ASCEND_IMPL_SRC} ${DIOPI_IMPL_SRC})
 
 # adaptor
 set(USE_ADAPTOR OFF)

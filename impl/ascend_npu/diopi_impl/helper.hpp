@@ -180,12 +180,13 @@ inline c10::DeviceType getATenDevice(diopiDevice_t device) {
     if (device == diopi_host) {
         return c10::DeviceType::CPU;
     }
-    return c10::DeviceType::PrivateUse1;
+    return c10::DeviceType::XPU;
 }
 
 inline at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef strides, const std::function<void(void*)>& deleter,
                                    at::Allocator* allocator, const at::TensorOptions& options) {
-    auto device = at::globalContext().getDeviceFromPtr(data, options.device().type());
+    //auto device = at::globalContext().getDeviceFromPtr(data, options.device().type());
+    auto device = options.device();
     if (options.device().has_index()) {
         assert(options.device() == device);
     }
@@ -195,41 +196,19 @@ inline at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArr
                                c10::InefficientStdFunctionContext::makeDataPtr(data, deleter, device),
                                allocator,
                                false);
+
     at::TensorOptions new_options = options.device(device);
     return at::empty({0}, new_options).set_(storage, 0, sizes, strides);
 }
 
-template <typename T>
-inline at::Tensor buildATen(T tensor) {
+inline at::Tensor buildATen(diopiTensorHandle_t tensor) {
     if (tensor == nullptr) return at::Tensor();
+    return *reinterpret_cast<at::Tensor*>(tensor);
+}
 
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(tensor, &dtype);
-    caffe2::TypeMeta atType = getATenType(dtype);
-    diopiDevice_t device;
-    diopiGetTensorDevice(tensor, &device);
-    c10::DeviceType atDevice = getATenDevice(device);
-    void* data = nullptr;
-    diopiGetTensorData(const_cast<diopiTensorHandle_t>(tensor), &data);
-
-    diopiSize_t shape;
-    diopiGetTensorShape(tensor, &shape);
-    at::IntArrayRef atDims(shape.data, shape.len);
-
-    diopiSize_t stride;
-    diopiGetTensorStride(tensor, &stride);
-    at::IntArrayRef atStrides(stride.data, stride.len);
-
-    auto options = at::TensorOptions(atDevice).dtype(atType);
-    int64_t numel = 0;
-    diopiGetTensorNumel(tensor, &numel);
-    if (0 == numel) {
-        return at::empty(atDims, options);
-    } else {
-        at::Allocator* allocator = nullptr;
-        return fromPreAllocated(
-            data, atDims, atStrides, [](void*) {}, allocator, options);
-    }
+inline const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
+    if (tensor == nullptr) return at::Tensor();
+    return *reinterpret_cast<const at::Tensor*>(tensor);
 }
 
 inline bool isInt(const diopiScalar_t* scalar) { return scalar->stype <= 7; }
