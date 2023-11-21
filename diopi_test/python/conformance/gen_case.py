@@ -4,8 +4,6 @@ import os
 import sys
 from .utils import logger
 from .model_list import model_op_list
-from .gen_input import GenInputData
-from .gen_output import GenOutputData
 from .config_parser import ConfigParser
 from .collect_case import DeviceConfig, CollectCase
 
