@@ -850,6 +850,7 @@ add_definitions(-DBUILD_LIBTORCH)
 include_directories(op-plugin torch_npu ${CMAKE_CURRENT_SOURCE_DIR})
 set(IMPL_SRC
   torch_npu/csrc/DIOPIAdapter.cpp
+  torch_npu/csrc/AclOpCompileInterface.cpp
 )
 
 #list(APPEND IMPL_SRC ${OP_PLUGIN_UTILS_SRC} ${OP_PLUGIN_SRC} ${OP_PLUGIN_API_SRC} ${ASCEND_IMPL_SRC} ${DIOPI_IMPL_SRC})

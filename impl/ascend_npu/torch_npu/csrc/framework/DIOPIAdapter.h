@@ -1,13 +1,14 @@
 #pragma once
 
+#include <ATen/ATen.h>
 #include <stdio.h>
 
 #include <iostream>
 #include <string>
-#include <ATen/ATen.h>
 
 #include "op-plugin/op_plugin/utils/OpConstants.h"
 #include "torch_npu/csrc/core/npu/NPUErrorCodes.h"
+#include "torch_npu/csrc/framework/interface/AclOpCompileInterface.h"
 #include "torch_npu/third_party/acl/inc/acl/acl.h"
 #include "torch_npu/third_party/acl/inc/acl/acl_base.h"
 #include "torch_npu/third_party/acl/inc/acl/acl_op_compiler.h"
@@ -138,9 +139,7 @@ const int SHAPE_SIZE = 8;
 
 #define INTERFACE_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
 
-static void warn_(const ::c10::Warning &warning) {
-  INTERFACE_NOT_IMPL
-}
+static void warn_(const ::c10::Warning &warning) { INTERFACE_NOT_IMPL }
 
 #define TORCH_NPU_WARN(...) warn_(::c10::Warning(::c10::UserWarning(), {__func__, __FILE__, static_cast<uint32_t>(__LINE__)}, ::c10::str(__VA_ARGS__), false));
 
@@ -159,14 +158,10 @@ static constexpr c10::Backend NativeBackend = c10::Backend::XLA;
 static const std::string npu_device_str = "npu";
 static const std::string default_device_str = "xla";
 
-static bool isDeviceTensor(const at::Tensor &tensor) {
-  return !tensor.is_cpu();
-}
+static bool isDeviceTensor(const at::Tensor &tensor) { return !tensor.is_cpu(); }
 
-} // namespace key
-} // namespace at_npu
-
-
+}  // namespace key
+}  // namespace at_npu
 
 namespace c10_npu {
 
@@ -174,94 +169,74 @@ namespace acl {
 
 const char *AclGetErrMsg();
 
-} // namespace acl
+}  // namespace acl
 
 class NPUStream {
 public:
-  enum Unchecked { UNCHECKED };
+    enum Unchecked { UNCHECKED };
 
-  explicit NPUStream(c10::Stream stream) : stream_(stream) {
-    //TORCH_CHECK(stream_.device_type() == at_npu::key::NativeDeviceType);
-  }
+    explicit NPUStream(c10::Stream stream) : stream_(stream) {
+        // TORCH_CHECK(stream_.device_type() == at_npu::key::NativeDeviceType);
+    }
 
-  explicit NPUStream(Unchecked, c10::Stream stream) : stream_(stream) {}
+    explicit NPUStream(Unchecked, c10::Stream stream) : stream_(stream) {}
 
-  ~NPUStream() {}
+    explicit NPUStream(Unchecked, c10::Stream stream, aclrtStream aclStream) : stream_(stream), aclStream_(aclStream) {}
 
-  bool operator==(const NPUStream& other) const noexcept {
-    return unwrap() == other.unwrap();
-  }
+    ~NPUStream() {}
 
-  bool operator!=(const NPUStream& other) const noexcept {
-    return unwrap() != other.unwrap();
-  }
+    bool operator==(const NPUStream &other) const noexcept { return unwrap() == other.unwrap(); }
 
-  /// Implicit conversion to rtStream_t.
-  operator aclrtStream() const {
-    return stream();
-  }
+    bool operator!=(const NPUStream &other) const noexcept { return unwrap() != other.unwrap(); }
 
-  /// Implicit conversion to pytorch Stream.
-  operator c10::Stream() const {
-    return unwrap();
-  }
+    /// Implicit conversion to rtStream_t.
+    operator aclrtStream() const { return stream(); }
 
-  /// Used to avoid baking in device type explicitly to Python-side API.
-  c10::DeviceType device_type() const {
-    INTERFACE_NOT_IMPL
-  }
+    /// Implicit conversion to pytorch Stream.
+    operator c10::Stream() const { return unwrap(); }
 
-  /// Get the NPU device index that this stream is associated with.
-  c10::DeviceIndex device_index() const {
-    return stream_.device_index();
-  }
+    /// Used to avoid baking in device type explicitly to Python-side API.
+    c10::DeviceType device_type() const {INTERFACE_NOT_IMPL}
 
-  /// Get the full Device that this stream is associated with.  The Device
-  /// is guaranteed to be a NPU device.
-  c10::Device device() const {
-    INTERFACE_NOT_IMPL
-  }
+    /// Get the NPU device index that this stream is associated with.
+    c10::DeviceIndex device_index() const {
+        return stream_.device_index();
+    }
 
-  c10::StreamId id() const {
-    INTERFACE_NOT_IMPL
-  }
+    /// Get the full Device that this stream is associated with.  The Device
+    /// is guaranteed to be a NPU device.
+    c10::Device device() const {INTERFACE_NOT_IMPL}
 
-  bool query() const {
-    INTERFACE_NOT_IMPL
-  }
+    c10::StreamId id() const {
+        INTERFACE_NOT_IMPL
+    }
 
-  void synchronize() const {
-    INTERFACE_NOT_IMPL
-  }
+    bool query() const { INTERFACE_NOT_IMPL }
 
-  /// Explicit conversion to rtStream_t.
-  C10_NPU_API aclrtStream stream() const { INTERFACE_NOT_IMPL}
+    void synchronize() const {INTERFACE_NOT_IMPL}
 
-  /// Explicit conversion to Stream.
-  c10::Stream unwrap() const {
-    return stream_;
-  }
+    /// Explicit conversion to rtStream_t.
+    C10_NPU_API aclrtStream stream() const {return aclStream_;}
 
-   /// The NPUStream can be unpacked using unpack().
-  struct c10::StreamData3 pack3() const {
-    return stream_.pack3();
-  }
+    /// Explicit conversion to Stream.
+    c10::Stream unwrap() const {
+        return stream_;
+    }
 
-  // Unpack a NPUStream from the 3 fields generated by pack().
-  static NPUStream unpack3(
-      c10::StreamId stream_id,
-      c10::DeviceIndex device_index,
-      c10::DeviceType device_type) {
-    return NPUStream(c10::Stream::unpack3(stream_id, device_index, device_type));
-  }
+    /// The NPUStream can be unpacked using unpack().
+    struct c10::StreamData3 pack3() const { return stream_.pack3(); }
 
-  /// Explicit conversion to rtStream_t， with out empty taskQ.
-  aclrtStream stream(const bool need_empty) const {
-    INTERFACE_NOT_IMPL
-  }
+    // Unpack a NPUStream from the 3 fields generated by pack().
+    static NPUStream unpack3(c10::StreamId stream_id, c10::DeviceIndex device_index, c10::DeviceType device_type) {
+        return NPUStream(c10::Stream::unpack3(stream_id, device_index, device_type));
+    }
+
+    /// Explicit conversion to rtStream_t， with out empty taskQ.
+    aclrtStream stream(const bool need_empty) const { INTERFACE_NOT_IMPL }
 
 private:
-  c10::Stream stream_;
+    c10::Stream stream_;
+    aclrtStream aclStream_ = nullptr;
 };
 #if 0
 NPUStream getNPUStreamFromPool(c10::DeviceIndex device = -1);
@@ -284,9 +259,9 @@ void setCurrentNPUStream(NPUStream stream);
 std::ostream& operator<<(std::ostream& stream, const NPUStream& s);
 #endif
 
-inline C10_NPU_API NPUStream getCurrentNPUStream(c10::DeviceIndex device_index = -1) {INTERFACE_NOT_IMPL}
+C10_NPU_API NPUStream getCurrentNPUStream(c10::DeviceIndex device_index = -1);
 
-} // namespace c10_npu
+}  // namespace c10_npu
 
 using std::string;
 
@@ -400,7 +375,6 @@ inline void maybe_initialize_npu(const c10::optional<at::Device> &device) {}
 
 }  // namespace torch_npu
 
-
 namespace at_npu {
 namespace native {
 
@@ -499,11 +473,11 @@ public:
 
 class CalcuOpUtil {
 public:
-    static aclDataType ConvertToAclDataType(const at::ScalarType &data_type) { INTERFACE_NOT_IMPL }
-    static aclDataType ConvertToAclDataType(const at::ScalarType &data_type, const string &realDataType) { INTERFACE_NOT_IMPL }
-    static c10::Scalar ConvertTensorToScalar(const at::Tensor &tensor) { INTERFACE_NOT_IMPL }
-    static at::Tensor CopyScalarToDevice(const c10::Scalar &cpu_scalar, at::ScalarType scalar_data_type) { INTERFACE_NOT_IMPL }
-    static at::Tensor CopyTensorHostToDevice(const at::Tensor &cpu_tensor) { INTERFACE_NOT_IMPL }
+    static aclDataType ConvertToAclDataType(const at::ScalarType &data_type);
+    static aclDataType ConvertToAclDataType(const at::ScalarType &data_type, const string &realDataType);
+    static c10::Scalar ConvertTensorToScalar(const at::Tensor &tensor);
+    static at::Tensor CopyScalarToDevice(const c10::Scalar &cpu_scalar, at::ScalarType scalar_data_type);
+    static at::Tensor CopyTensorHostToDevice(const at::Tensor &cpu_tensor);
     static NPUStatus AclrtMemcpyAsync(const std::pair<at::Tensor, int64_t> &dst, size_t dst_size, const std::pair<at::Tensor, int64_t> &src, size_t src_size,
                                       aclrtMemcpyKind kind) {
         INTERFACE_NOT_IMPL
@@ -535,7 +509,7 @@ public:
                                                     aclrtMemcpyKind kind);
 #endif
     static void CheckMemoryOverLaps(c10::ArrayRef<at::Tensor> inputs, c10::ArrayRef<at::Tensor> outputs) { INTERFACE_NOT_IMPL }
-    static bool IsScalarWrappedToTensor(const at::Tensor &tensor) { return tensor.is_cpu() && tensor.numel() == 1;}
+    static bool IsScalarWrappedToTensor(const at::Tensor &tensor) { return tensor.is_cpu() && tensor.numel() == 1; }
     static float GetScalarFloatValue(const c10::Scalar &scalar);
     static int64_t GetTensorNpuFormat(const at::Tensor &tensor);
     static c10::SmallVector<int64_t, SHAPE_SIZE> ConvertIntArrayRefToSmallVector(c10::IntArrayRef intArray) { INTERFACE_NOT_IMPL }
@@ -561,6 +535,16 @@ inline const std::string AclFormatToString(aclFormat descFormat) { INTERFACE_NOT
 using PROC_FUNC = std::function<int()>;
 
 class OpCommand {
+    class OpCommandImpls *aclCmds = nullptr;
+    class OpCommandImpl *aclCmd = nullptr;
+    c10::optional<at::ScalarType> commonType = c10::nullopt;
+    c10::optional<c10::IntArrayRef> commonShape = c10::nullopt;
+    bool resultTypeDefined = false;
+    bool sync = false;
+    c10::SmallVector<int64_t, N> sync_index;
+    c10::SmallVector<at::Tensor, N> outputTensor;
+    c10::SmallVector<at::Tensor, N> inputTensor;
+
 public:
     TORCH_NPU_API OpCommand();
     TORCH_NPU_API ~OpCommand();
@@ -570,24 +554,23 @@ public:
     OpCommand &operator=(const OpCommand &) = delete;
     OpCommand &operator=(OpCommand &&) = delete;
 
-    TORCH_NPU_API OpCommand &Name(const string &name) ;
+    TORCH_NPU_API OpCommand &Name(const string &name);
     void SetCustomHandler(PROC_FUNC func);
-    OpCommand &Expect(UnifiedResult unified_result) ;
+    OpCommand &Expect(UnifiedResult unified_result);
     // None Input
-    TORCH_NPU_API OpCommand &Input() ;
+    TORCH_NPU_API OpCommand &Input();
 
     // Tensor Input which need contiguous
     TORCH_NPU_API OpCommand &Input(const at::Tensor &input, const string &descName = "", const c10::optional<aclFormat> &sensitive_format = c10::nullopt,
-                                   const string &realData = "") ;
+                                   const string &realData = "");
 
     // IntArrayRef/SmallVector Input, usually hostmemory input, we will do h2d in launch kernel
     TORCH_NPU_API OpCommand &Input(const c10::IntArrayRef &dimListRef, at::ScalarType toType = at::kLong,
                                    CompileType compileType = CompileType::MEMORY_HOST_COMPILE_DEPENDENT, const string &realDtype = "",
-                                   const string &descName = "") ;
+                                   const string &descName = "");
 
     // Scalar Input, we will do h2d in launch kernel
-    TORCH_NPU_API OpCommand &Input(const c10::Scalar &input, const at::ScalarType type,
-                                   CompileType compileType = CompileType::MEMORY_HOST_COMPILE_INDEPENDENT) ;
+    TORCH_NPU_API OpCommand &Input(const c10::Scalar &input, const at::ScalarType type, CompileType compileType = CompileType::MEMORY_HOST_COMPILE_INDEPENDENT);
 
     // ArrayRef Input, usually hostmemory input, we will do h2d in launch kernel
     template <typename T>
@@ -598,7 +581,7 @@ public:
         return *this;
     }
     // Tensor Input which no need contiguous
-    OpCommand &InputWithoutContiguous(const at::Tensor &input, const string &descName = "", const string &realData = "") ;
+    OpCommand &InputWithoutContiguous(const at::Tensor &input, const string &descName = "", const string &realData = "");
     // Output Tensor
     TORCH_NPU_API OpCommand &Output(at::Tensor &output, const string &descName = "", const c10::optional<aclFormat> &sensitive_format = c10::nullopt,
                                     const string &realType = "");
@@ -646,7 +629,7 @@ constexpr int MAX_FORMAT_SHAPE_SIZE = 8;
 using FormatShape = c10::SmallVector<int64_t, MAX_FORMAT_SHAPE_SIZE>;
 
 using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;
-//using DynamicInputRegFunc = std::function<ge::OperatorPtr(DyNumAndIndex, std::string)>;
+// using DynamicInputRegFunc = std::function<ge::OperatorPtr(DyNumAndIndex, std::string)>;
 
 using baseFormatConverter = std::function<FormatShape(c10::IntArrayRef storage_dims, c10::IntArrayRef base_dims)>;
 // helper function of storage format

@@ -55,7 +55,7 @@ void set_last_error_string(const char* szFmt, Types&&... args) {
     }
 
 using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
-thread_local diopiContextHandle_t context;
+extern thread_local diopiContextHandle_t context;
 
 #if 0
 namespace c10 {
