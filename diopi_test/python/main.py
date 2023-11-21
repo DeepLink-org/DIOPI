@@ -160,37 +160,11 @@ if __name__ == "__main__":
         glob_vars.set_four_bytes()
 
     if args.mode == "gen_data":
-        from conformance.gen_input import GenInputData
-        from conformance.gen_output import GenOutputData
-
-        diopi_case_item_file = "diopi_case_items.cfg"
-
-        model_name = args.model_name.lower()
-        if args.model_name != "":
-            logger.info(
-                f"the op list of {args.model_name}: {model_op_list[model_name]}"
-            )
-            diopi_configs = eval(f"model_config.{model_name}_config")
-            diopi_case_item_file = model_name + "_" + diopi_case_item_file
-        else:
-            # set a prefix for dat save path like: data/diopi/inputs
-            model_name = "diopi"
-            from diopi_configs import diopi_configs
-        diopi_case_item_path = os.path.join(cache_path, diopi_case_item_file)
-        cfg_parse = ConfigParser(diopi_case_item_path)
-        cfg_parse.parser(diopi_configs, args.fname)
-        cfg_parse.save()
-        inputs_dir = os.path.join(cache_path, "data/" + model_name + "/inputs")
-        outputs_dir = os.path.join(cache_path, "data/" + model_name + "/outputs")
-
+        from conformance.gen_data import gen_data
         db_conn.drop_case_table(BenchMarkCase)
-        GenInputData.run(diopi_case_item_path, inputs_dir, args.fname, model_name)
-        GenOutputData.run(
-            diopi_case_item_path, inputs_dir, outputs_dir, args.fname, model_name
-        )
-        db_conn.insert_benchmark_case(
-            GenInputData.db_case_items, GenOutputData.db_case_items
-        )
+        inp_items, outp_items = gen_data(args.model_name.lower(), cache_path,
+                                         args.fname)
+        db_conn.insert_benchmark_case(inp_items, outp_items)
     elif args.mode == "gen_case":
         diopi_case_item_file = "diopi_case_items.cfg"
         device_case_item_file = "%s_case_items.cfg"
@@ -262,7 +236,7 @@ if __name__ == "__main__":
             pytest_args.append(f"--test_result_path={args.test_result_path}")
         if args.pytest_args is not None:
             pytest_args.extend(args.pytest_args.split())
-        pytest_args = ['-v', '--cache-clear', '--disable-warnings'] + pytest_args
+        pytest_args = ['--cache-clear', '--disable-warnings'] + pytest_args
         exit_code = pytest.main(pytest_args)
         if exit_code != 0:
             raise SystemExit(exit_code)

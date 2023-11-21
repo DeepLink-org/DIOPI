@@ -24,18 +24,30 @@ if (DYLOAD)
     execute_process(COMMAND touch ${CMAKE_CURRENT_SOURCE_DIR}/wrap_func.cpp)
     add_custom_target(code_gen COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/code_gen.py
                       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    set(IMPL_SRC error.cpp wrap_func.cpp)
+    set(IMPL_SRC wrap_func.cpp)
 endif()
 
-file(GLOB REAL_IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions_mmcv/*.cu functions_ext/*.cu)
-set(REAL_IMPL_SRC ${REAL_IMPL_SRC}
-                  nms_kernel.cu
-                  roi_align_kernel.cu
-                  functions.cpp
-                  functions_mmcv.cpp
-                  functions_ext.cpp
-                  functions_lightllm.cpp
-                  error.cpp)
+file(GLOB REAL_IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions/functions_mmcv/*.cu functions/functions_ext/*.cu functions/*.cpp)
+
+# adaptor
+set(USE_ADAPTOR ON)
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
+    message(FATAL_ERROR "convert_config.yaml doesn't exist.")
+endif()
+
+if(USE_ADAPTOR)
+    # dependency
+    file(GLOB ADAPTOR_TEMPLATE_CODE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${ADAPTOR_DIR}/codegen/*.py)
+    add_custom_target(adaptor_gen_dependency DEPENDS ${ADAPTOR_TEMPLATE_CODE})
+
+    set(ADAPTOR_CSRC_PATH "${ADAPTOR_DIR}/csrc")
+    set(GEN_FILES ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp ${ADAPTOR_CSRC_PATH}/impl_functions.hpp)
+    add_custom_target(adaptor_code_gen
+        COMMAND python3 ${ADAPTOR_DIR}/codegen/gen.py --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH} --config_device=torch
+        BYPRODUCTS ${GEN_FILES}
+        DEPENDS adaptor_gen_dependency)
+    list(APPEND REAL_IMPL_SRC ${ADAPTOR_CSRC_PATH}/convert.cpp ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp ${ADAPTOR_CSRC_PATH}/composite_ops.cpp)
+endif()
 
 if(HIP)
     include(../cmake/LoadHIP.cmake)
@@ -78,9 +90,13 @@ else ()
         cuda_add_library(${DEVICEIMPL} SHARED ${REAL_IMPL_SRC})
         # target_compile_definitions(${DEVICEIMPL} PRIVATE __CUDA_NO_HALF_OPERATORS__)
         target_link_libraries(${DEVICEIMPL} ${CUDA_LIBRARIES} ${TORCH_LIBRARIES})
-        add_subdirectory(functions_ext/flash-attention)
+        add_subdirectory(functions/functions_ext/flash-attention)
         target_link_libraries(${DEVICEIMPL} diopi_torch_ext_flash_attn)
     endif()
+endif()
+
+if(USE_ADAPTOR)
+    add_dependencies(${DEVICEIMPL} adaptor_code_gen)
 endif()
 
 if (TEST)

@@ -395,7 +395,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['floor', 'asin', 'ceil', 'atan', 'erfinv'],
+        name=['floor', 'asin', 'atan', 'erfinv'],
         tensor_para=dict(
             args=[
                 {

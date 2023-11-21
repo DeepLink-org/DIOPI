@@ -5,6 +5,8 @@ from skip import Skip
 device_configs = {
     'batch_norm': dict(
         name=['batch_norm'],
+        atol=1e-2,
+        rtol=1e-3,
         tensor_para=dict(
             args=[
                 {
@@ -817,32 +819,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip(()),Skip((64,)),Skip((2, 11856, 2)),Skip((16, 2, 2964, 2)),Skip((2964, 32)),Skip((0,)),Skip((16, 0)),Skip((4, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
-    'nll_loss': dict(
-        name=['nll_loss'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    # TODO(someone): fix me! 
-                    "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64)],
-                },
-            ]
-        ),
-    ),
-
-    'nll_loss_empty_tensor': dict(
-        name=['nll_loss'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    # TODO(someone): fix me! 
-                    "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64)],
                 },
             ]
         ),

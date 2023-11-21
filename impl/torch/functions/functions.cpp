@@ -18,11 +18,12 @@
 
 #define FLT_MIN __FLT_MIN__
 
-#include "context.h"
-#include "helper.hpp"
-#include "vision_kernel.h"
+#include "../context.h"
+#include "../helper.hpp"
+#include "../vision_kernel.h"
 
-extern "C" {
+namespace impl {
+namespace cuda {
 
 static const char* name = "CudaDevice";
 static char version[1024] = {0};
@@ -4316,4 +4317,5 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
     return diopiSuccess;
 }
 
-}  // extern "C"
+}  // namespace cuda
+}  // namespace impl

@@ -1,5 +1,5 @@
-#ifndef IMPL_TORCH_FUNCTIONS_EXT_FLASH_ATTENTION_INCLUDE_FLASH_ATTN_FLASH_API_H_
-#define IMPL_TORCH_FUNCTIONS_EXT_FLASH_ATTENTION_INCLUDE_FLASH_ATTN_FLASH_API_H_
+#ifndef IMPL_TORCH_FUNCTIONS_FUNCTIONS_EXT_FLASH_ATTENTION_INCLUDE_FLASH_ATTN_FLASH_API_H_
+#define IMPL_TORCH_FUNCTIONS_FUNCTIONS_EXT_FLASH_ATTENTION_INCLUDE_FLASH_ATTN_FLASH_API_H_
 
 #include <ATen/core/Generator.h>
 #include <ATen/core/TensorBody.h>
@@ -69,4 +69,4 @@ mha_fwd_kvcache(at::Tensor &q, const at::Tensor &kcache, const at::Tensor &vcach
                 const at::Tensor &rotary_cos, const at::Tensor &rotary_sin, const at::Tensor &cache_batch_idx, float softmax_scale, bool is_causal,
                 int window_size_left, int window_size_right, bool is_rotary_interleaved, int num_splits);
 
-#endif  // IMPL_TORCH_FUNCTIONS_EXT_FLASH_ATTENTION_INCLUDE_FLASH_ATTN_FLASH_API_H_
+#endif  // IMPL_TORCH_FUNCTIONS_FUNCTIONS_EXT_FLASH_ATTENTION_INCLUDE_FLASH_ATTN_FLASH_API_H_

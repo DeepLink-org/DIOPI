@@ -4,7 +4,7 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "error.hpp"
+#include "../error.hpp"
 
 #include <cuda_runtime.h>
 

@@ -126,7 +126,11 @@ class GenTestCase(object):
                 test_function_forward_call = (
                     CaseTemplate.test_diopi_function_forward_call.substitute(
                         env=dict(
-                            test_caompare_tol=test_compare_tol,
+                            test_atol=cv["atol"],
+                            test_rtol=cv["rtol"],
+                            test_atol_half=cv["atol_half"],
+                            test_rtol_half=cv["atol_half"],
+                            test_compare_tol=test_compare_tol,
                             test_diopi_func_name=test_diopi_func_name,
                         )
                     )

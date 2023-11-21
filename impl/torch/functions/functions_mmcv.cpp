@@ -9,11 +9,12 @@
 
 #include <iostream>
 
-#include "context.h"
-#include "helper.hpp"
-#include "mmcv_kernel.h"
+#include "../context.h"
+#include "../helper.hpp"
+#include "../mmcv_kernel.h"
 
-extern "C" {
+namespace impl {
+namespace cuda {
 
 diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t dets, diopiConstTensorHandle_t scores,
                           double iouThreshold, int64_t offset) {
@@ -368,4 +369,5 @@ diopiError_t diopiModulatedDeformConvBackwardMmcv(diopiContextHandle_t ctx, diop
     return diopiSuccess;
 }
 
-}  // extern "C"
+}  // namespace cuda
+}  // namespace impl
