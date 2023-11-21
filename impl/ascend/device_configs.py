@@ -4,6 +4,32 @@ from skip import Skip
 
 device_configs = {
     # temp for 910B
+    'nonzero': dict(
+        name=["nonzero"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.uint8),],
+                },
+            ],
+        ),
+    ),
+
+    # temp for 910B
+    'nonzero_uint': dict(
+        name=["nonzero"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.uint8),],
+                },
+            ],
+        ),
+    ),
+
+    # temp for 910B
     'join': dict(
         name=['stack'],
         tensor_para=dict(
@@ -1663,7 +1689,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((128, 128)),Skip((256, 8, 8)),],
+                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
                 },
             ]
         ),
@@ -2295,7 +2321,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((8,)), Skip((6, 5, 384)), Skip((2, 12, 38, 45, 3)), Skip((12, 0, 9, 2))],
+                    "dtype": [Skip(np.float32),Skip(np.float64)],
                 },
             ]
         ),
@@ -2516,7 +2542,20 @@ device_configs = {
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['input'],
+                    "ins": ['std'],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                },
+            ]
+        ),
+    ),
+
+    # temp for 910B
+    'normal_mean_tensor': dict(
+        name=["normal"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['mean'],
                     "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ]
