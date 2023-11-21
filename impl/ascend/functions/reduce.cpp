@@ -113,9 +113,9 @@ diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
 
 inline std::vector<int64_t> getDimVectorForTensor(diopiConstTensorHandle_t th) {
     AscendTensor at(th);
-    std::vector<int64_t> dimVector;
-    for (int64_t i = 0; i < at.dim(); ++i) {
-        dimVector.emplace_back(i);
+    std::vector<int64_t> dimVector(at.dim());
+    for (int64_t i = 0; i < dimVector.size(); ++i) {
+        dimVector[i] = i;
     }
     return dimVector;
 }
