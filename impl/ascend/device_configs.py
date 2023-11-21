@@ -4,6 +4,19 @@ from skip import Skip
 
 device_configs = {
     # temp for 910B
+    'nonzero': dict(
+        name=["nonzero"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.uint8),],
+                },
+            ],
+        ),
+    ),
+
+    # temp for 910B
     'nonzero_uint': dict(
         name=["nonzero"],
         tensor_para=dict(
