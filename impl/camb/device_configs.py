@@ -610,46 +610,6 @@ device_configs = {
         ),
     ),
 
-    'reduce_op': dict(
-        name=['mean', 'sum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": (Skip((16, 0, 9)),),
-                    "dtype": [Skip(np.float16)],
-                },
-            ],
-        ),
-    ),
-
-    'reduce_partial_op': dict(
-        atol = 0.001,
-        rtol = 0.0001,
-        name=['mean', 'sum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": (Skip((16, 0, 9)),),
-                    "dtype": [Skip(np.float16)],
-                },
-            ],
-        ),
-    ),
-
-    'reduce_partial_op_1': dict(
-        name=['std'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": (Skip((0,)), Skip((12, 0)), Skip((9, 0, 7))),
-                },
-            ],
-        ),
-    ),
-
     'cross_entropy': dict(
         name=["cross_entropy"],
         para=dict(
@@ -1551,32 +1511,6 @@ device_configs = {
                     "dtype": [Skip(np.bool_)],
                 },
             ]
-        ),
-    ),
-
-    'reduce_partial_op_2': dict(
-        name=['min', 'max'],
-        interface=['torch'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": (Skip((12, 0)), Skip((2, 0, 12))),
-                },
-            ],
-        ),
-    ),
-
-    'reduce_partial_op_3': dict(
-        name=['any', 'all'],
-        interface=['torch'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": (Skip((0,)), Skip((12, 0)), Skip((2, 0, 12))),
-                },
-            ],
         ),
     ),
 
