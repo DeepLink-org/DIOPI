@@ -1,5 +1,66 @@
 #include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
+#include <diopi/diopirt.h>
+
+namespace {
+constexpr float EPSILON = 1e-6;
+
+// check all at::ScalarType is not negative
+#define ENUM_PAIR_FUNC(_1, n) static_assert(static_cast<int64_t>(at::ScalarType::n) >= 0, #n " is negative");
+AT_FORALL_SCALAR_TYPES_WITH_COMPLEX_AND_QINTS(ENUM_PAIR_FUNC)
+#undef ENUM_PAIR_FUNC
+
+#define AT_ALL_SCALAR_TYPE_AND_ACL_DATATYPE_PAIR(_)  \
+    _(at::ScalarType::Byte, ACL_UINT8)               \
+    _(at::ScalarType::Char, ACL_INT8)                \
+    _(at::ScalarType::Short, ACL_INT16)              \
+    _(at::ScalarType::Int, ACL_INT32)                \
+    _(at::ScalarType::Long, ACL_INT64)               \
+    _(at::ScalarType::Half, ACL_FLOAT16)             \
+    _(at::ScalarType::Float, ACL_FLOAT)              \
+    _(at::ScalarType::Double, ACL_DOUBLE)            \
+    _(at::ScalarType::ComplexHalf, ACL_COMPLEX32)    \
+    _(at::ScalarType::ComplexFloat, ACL_COMPLEX64)   \
+    _(at::ScalarType::ComplexDouble, ACL_COMPLEX128) \
+    _(at::ScalarType::Bool, ACL_BOOL)                \
+    _(at::ScalarType::QInt8, ACL_DT_UNDEFINED)       \
+    _(at::ScalarType::QUInt8, ACL_DT_UNDEFINED)      \
+    _(at::ScalarType::QInt32, ACL_DT_UNDEFINED)      \
+    _(at::ScalarType::BFloat16, ACL_BF16)            \
+    _(at::ScalarType::QUInt4x2, ACL_DT_UNDEFINED)    \
+    _(at::ScalarType::QUInt2x4, ACL_DT_UNDEFINED)    \
+    _(at::ScalarType::Undefined, ACL_DT_UNDEFINED)   \
+    _(at::ScalarType::NumOptions, ACL_DT_UNDEFINED)
+
+constexpr aclDataType kATenScalarTypeToAclDataTypeTable[static_cast<int64_t>(at::ScalarType::NumOptions) + 1] = {
+#define DEFINE_ENUM(_1, n) n,
+    AT_ALL_SCALAR_TYPE_AND_ACL_DATATYPE_PAIR(DEFINE_ENUM)
+#undef DEFINE_ENUM
+};
+
+// check at::ScalarType has been changed or not
+#define ENUM_PAIR_FUNC(at_dtype, acl_dtype)                                                         \
+    static_assert(kATenScalarTypeToAclDataTypeTable[static_cast<int64_t>(at_dtype)] == (acl_dtype), \
+                  #at_dtype " and " #acl_dtype                                                      \
+                            " is not match any more, please check "                                 \
+                            "AT_ALL_SCALAR_TYPE_AND_ACL_DATATYPE_PAIR and modify it");
+AT_ALL_SCALAR_TYPE_AND_ACL_DATATYPE_PAIR(ENUM_PAIR_FUNC)
+#undef DEFINE_ENUM
+
+static std::map<const string, const aclDataType> STRING_SCALAR_TYPE_TO_ACL_TYPE_MAP = {
+    {"uint16", ACL_UINT16}, {"uint8", ACL_UINT8}, {"uint64", ACL_UINT64}, {"string", ACL_STRING}};
+
+aclError AclrtMemcpyAsyncParamCheck(void *dst, size_t destMax, const void *src, size_t count, aclrtMemcpyKind kind, aclrtStream stream) {
+    auto ret = aclrtMemcpyAsync(dst, destMax, src, count, kind, stream);
+    return ret;
+}
+
+aclError AclrtMemcpyParamCheck(void *dst, size_t destMax, const void *src, size_t count, aclrtMemcpyKind kind) {
+    auto ret = aclrtMemcpy(dst, destMax, src, count, kind);
+    return ret;
+}
+}  // namespace
+
 namespace at_npu {
 namespace native {
 
@@ -98,6 +159,32 @@ int64_t CalcuOpUtil::GetTensorNpuFormat(const at::Tensor &tensor) {
         return ACL_FORMAT_NCHW;
     }
     return ACL_FORMAT_ND;
+}
+
+aclDataType CalcuOpUtil::ConvertToAclDataType(const at::ScalarType &data_type) {
+    auto acl_dtype = kATenScalarTypeToAclDataTypeTable[static_cast<int64_t>(data_type)];
+    TORCH_CHECK(acl_dtype != ACL_DT_UNDEFINED, std::string(c10::toString(data_type)) + " has not been supported")
+    return acl_dtype;
+}
+
+aclDataType CalcuOpUtil::ConvertToAclDataType(const at::ScalarType &data_type, const string &realDataType) {
+    auto acl_dtype = kATenScalarTypeToAclDataTypeTable[static_cast<int64_t>(data_type)];
+    TORCH_CHECK(acl_dtype != ACL_DT_UNDEFINED, std::string(c10::toString(data_type)) + " has not been supported")
+    if (!realDataType.empty()) {
+        return STRING_SCALAR_TYPE_TO_ACL_TYPE_MAP[realDataType];
+    }
+    return acl_dtype;
+}
+
+at::Tensor CalcuOpUtil::CopyScalarToDevice(const c10::Scalar &cpu_scalar, at::ScalarType scalar_data_type) {
+    return CalcuOpUtil::CopyTensorHostToDevice(scalar_to_tensor(cpu_scalar).to(scalar_data_type));
+}
+
+at::Tensor CalcuOpUtil::CopyTensorHostToDevice(const at::Tensor &cpu_tensor) {
+    at::Tensor cpuPinMemTensor = cpu_tensor.pin_memory();
+    int deviceIndex = 0;
+    NPU_CHECK_ERROR(aclrtGetDevice(&deviceIndex));
+    return cpuPinMemTensor.to(c10::Device(at_npu::key::NativeDeviceType, deviceIndex), cpuPinMemTensor.scalar_type(), true, true);
 }
 
 // OpPreparation part
@@ -380,41 +467,7 @@ struct ExecuteParas {
     PROCESS_FUNC customHandler;
 };
 
-NPUStatus DestroyAclParams(ACL_PARAMS &params);
-void DestroyConstParams(CONST_PARAMS &params);
-
 std::atomic<uint64_t> ExecuteParas::g_pta_correlation_id{0};
-void ExecuteParas::Release() {
-    // if useDynamicCompile, this attr will be freed in dynamic compile.
-    if (attr != nullptr) {
-        aclopDestroyAttr(attr);
-    }
-    DestroyConstParams(constParams);
-    NPUStatus ret = DestroyAclParams(paras);
-    if (ret != SUCCESS) {
-        NPU_LOGE("DestroyAclParams fail, ret: %s", ret.c_str());
-    }
-    hostMemory.clear();
-    customHandler = nullptr;
-    return;
-}
-
-void ExecuteParas::Copy(ExecuteParas &other) {
-    strncpy(this->opType, other.opType, sizeof(ExecuteParas::opType) - 1);
-    this->paras = other.paras;
-    this->attr = other.attr;
-    this->constParams = other.constParams;
-    this->hostMemory = other.hostMemory;
-    this->isJitDisable = other.isJitDisable;
-    this->customHandler = other.customHandler;
-    this->pta_correlation_id = other.pta_correlation_id;
-}
-
-void ExecuteParas::CopyEx(ExecuteParas &other) {
-    this->paras = other.paras;
-    this->attr = other.attr;
-    this->constParams = other.constParams;
-}
 
 NPUStatus DestroyAclParams(ACL_PARAMS &params) {
     if (params.input_num != 0) {
@@ -461,6 +514,38 @@ void DestroyConstParams(CONST_PARAMS &params) {
     }
     params.constList = nullptr;
     params.constIdx = nullptr;
+}
+
+void ExecuteParas::Release() {
+    // if useDynamicCompile, this attr will be freed in dynamic compile.
+    if (attr != nullptr) {
+        aclopDestroyAttr(attr);
+    }
+    DestroyConstParams(constParams);
+    NPUStatus ret = DestroyAclParams(paras);
+    if (ret != SUCCESS) {
+        NPU_LOGE("DestroyAclParams fail, ret: %s", ret.c_str());
+    }
+    hostMemory.clear();
+    customHandler = nullptr;
+    return;
+}
+
+void ExecuteParas::Copy(ExecuteParas &other) {
+    strncpy(this->opType, other.opType, sizeof(ExecuteParas::opType) - 1);
+    this->paras = other.paras;
+    this->attr = other.attr;
+    this->constParams = other.constParams;
+    this->hostMemory = other.hostMemory;
+    this->isJitDisable = other.isJitDisable;
+    this->customHandler = other.customHandler;
+    this->pta_correlation_id = other.pta_correlation_id;
+}
+
+void ExecuteParas::CopyEx(ExecuteParas &other) {
+    this->paras = other.paras;
+    this->attr = other.attr;
+    this->constParams = other.constParams;
 }
 
 // the member in AclExecParam is create by :
@@ -555,7 +640,14 @@ public:
     }
 
     // Set engine priority for op on data preprocessing stream
-    void SetEnginePriority();
+    void SetEnginePriority() {
+        auto stream = c10_npu::getCurrentNPUStream();
+        // if (stream.isDataPreprocessStream()) {
+        if (0) {
+            AddAttr("_performance_prior", true);
+            AddAttr<std::string>("_exclude_engines", "AiCore");
+        }
+    }
 
     void Run(bool sync, c10::SmallVector<int64_t, N> &sync_index, c10::SmallVector<at::Tensor, N> &outputTensor);
 
@@ -605,36 +697,255 @@ private:
     aclError InnerRun(const string &name, AclExecParam &params, bool sync, c10::SmallVector<int64_t, N> &sync_index,
                       c10::SmallVector<at::Tensor, N> &outputTensor);
 
+    void SetDeterministic() { OP_NOT_IMPL }
+
 private:
     string opName;
     AclExecParam execParam;
 };  // class OpCommandImpl
 
-OpCommand::OpCommand(){INTERFACE_NOT_IMPL}
+#if defined(__GNUC__) || defined(__ICL) || defined(__clang__)
+#define ASCEND_LIKELY(expr) (__builtin_expect(static_cast<bool>(expr), 1))
+#define ASCEND_UNLIKELY(expr) (__builtin_expect(static_cast<bool>(expr), 0))
+#else
+#define ASCEND_LIKELY(expr) (expr)
+#define ASCEND_UNLIKELY(expr) (expr)
+#endif
 
-OpCommand::~OpCommand(){INTERFACE_NOT_IMPL}
+#if __has_attribute(always_inline) || defined(__GNUC__)
+#define ASCEND_ALWAYS_INLINE __attribute__((__always_inline__)) inline
+#elif defined(_MSC_VER)
+#define ASCEND_ALWAYS_INLINE __forceinline
+#else
+#define ASCEND_ALWAYS_INLINE inline
+#endif
+
+#define ACL_REQUIRE_OK_OP(expr, opstr)                                                                                                                   \
+    do {                                                                                                                                                 \
+        if (ASCEND_UNLIKELY((expr) != 0)) {                                                                                                              \
+            printf("%s\n", opstr);                                                                                                                       \
+            TORCH_CHECK((expr) == 0, __func__, ":", __FILE__, ":", __LINE__, " NPU error,NPU error code is:", expr, "\n", c10_npu::acl::AclGetErrMsg()); \
+        }                                                                                                                                                \
+    } while (0)
+
+void OpCommandImpl::Run(bool sync, c10::SmallVector<int64_t, N> &sync_index, c10::SmallVector<at::Tensor, N> &outputTensor) {
+    NPU_LOGD("Op %s Run.", opName.c_str());
+// RECORD_FUNCTION(opName, std::vector<c10::IValue>({}));
+#if 0
+      if (PyGILState_Check()) {
+        // we need to release GIL for NPU to compile op.
+        Py_BEGIN_ALLOW_THREADS
+        ACL_REQUIRE_OK_OP(InnerRun(opName, execParam, sync, sync_index, outputTensor), opName.c_str());
+        Py_END_ALLOW_THREADS
+      } else {
+        ACL_REQUIRE_OK_OP(InnerRun(opName, execParam, sync, sync_index, outputTensor), opName.c_str());
+      }
+#else
+    ACL_REQUIRE_OK_OP(InnerRun(opName, execParam, sync, sync_index, outputTensor), opName.c_str());
+#endif
+}
+
+aclError OpCommandImpl::InnerRun(const string &name, AclExecParam &params, bool sync, c10::SmallVector<int64_t, N> &sync_index,
+                                 c10::SmallVector<at::Tensor, N> &outputTensor) {
+    aclError ret;
+    // at_npu::native::NpuUtils::ProfReportMarkData(name);
+    auto stream = c10_npu::getCurrentNPUStream();
+    auto inputSize = params.inBuffer.size();
+    auto outputSize = params.outBuffer.size();
+    // open the deterministicAlgorithms config
+    SetDeterministic();
+    bool reset_flag = false;
+#if 0
+    if (ForceJitCompileList::GetInstance().Inlist(name) && env::CheckJitDisable()) {
+        AclSetCompileopt(aclCompileOpt::ACL_OP_JIT_COMPILE, "enable");
+        reset_flag = true;
+    }
+#endif
+    int index = 0;
+    do {
+        if (params.customHandler) {
+            ret = params.customHandler();
+            if (ret != ACL_ERROR_NONE) {
+                C10_NPU_SHOW_ERR_MSG();
+                TORCH_CHECK(false, "Custom hand fail!");
+            }
+            index++;
+            continue;
+        }
+#if 0
+        if (at_npu::native::aoe::aoe_manager().IsAoeEnabled() &&
+            at_npu::native::aoe::aoe_manager().IsInWhitelist(name)) {
+          ret = at_npu::native::AclGenGraphAndDumpForOp(
+              name.c_str(),
+              inputSize,
+              params.inDesc.data(),
+              params.inBuffer.data(),
+              outputSize,
+              params.outDesc.data(),
+              params.outBuffer.data(),
+              params.attr,
+              ACL_ENGINE_SYS,
+              at_npu::native::aoe::aoe_manager().GetDumpGraphPath().c_str(),
+              nullptr);
+          if (ret != ACL_ERROR_NONE) {
+            C10_NPU_SHOW_ERR_MSG();
+            TORCH_CHECK(false, "In aoe mode, AclGenGraphAndDumpForOp failed!");
+          }
+        }
+#endif
+        if (!sync) {
+            ret = aclopCompileAndExecute(name.c_str(),
+                                         inputSize,
+                                         params.inDesc.data(),
+                                         params.inBuffer.data(),
+                                         outputSize,
+                                         params.outDesc.data(),
+                                         params.outBuffer.data(),
+                                         params.attr,
+                                         ACL_ENGINE_SYS,
+                                         ACL_COMPILE_SYS,
+                                         NULL,
+                                         stream);
+            NPU_CHECK_ERROR(ret);
+        } else {
+            int64_t dimSize;
+            ret = AclopCompileAndExecuteV2(name.c_str(),
+                                           inputSize,
+                                           const_cast<aclTensorDesc **>(params.inDesc.data()),
+                                           const_cast<aclDataBuffer **>(params.inBuffer.data()),
+                                           outputSize,
+                                           const_cast<aclTensorDesc **>(params.outDesc.data()),
+                                           params.outBuffer.data(),
+                                           params.attr,
+                                           ACL_ENGINE_SYS,
+                                           ACL_COMPILE_SYS,
+                                           NULL,
+                                           stream);
+            NPU_CHECK_ERROR(ret);
+            for (size_t i = 0; i < sync_index.size(); i++) {
+                c10::SmallVector<int64_t, N> real_shape;
+                for (int64_t j = 0; j < outputTensor[sync_index[i]].dim(); j++) {
+                    NPU_CHECK_ERROR(aclGetTensorDescDimV2(params.outDesc[sync_index[i]], j, &dimSize));
+                    real_shape.emplace_back(dimSize);
+                }
+                outputTensor[sync_index[i]].resize_(real_shape);
+            }
+        }
+        ++index;
+    } while (NpuUtils::IsOomError(ret, index) && (index < NPU_MAX_OP_EXEC_TRY_NUM));
+    if (reset_flag) {
+        AclSetCompileopt(aclCompileOpt::ACL_OP_JIT_COMPILE, "disable");
+    }
+    return ret;
+}
+
+std::tuple<aclTensorDesc *, aclDataBuffer *> CovertTensorToAclInput(const at::Tensor &tensor, const string &descName, const string &forceDataType) {
+    at::ScalarType scalarDataType = tensor.scalar_type();
+    aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(scalarDataType, forceDataType);
+    auto format = CalcuOpUtil::GetTensorNpuFormat(tensor);
+    // const auto &npuDesc = torch_npu::NPUBridge::GetNpuStorageImplDesc(tensor);
+
+    AclTensorDescMaker desc;
+    auto aclDesc = desc.Create(aclDataType, tensor.sizes(), static_cast<aclFormat>(format)).SetName(descName).Get();
+
+    // if aclDataType != ACL_STRING, we use storageDims to calculate nums and use nums * tensor element size to
+    // calculate buffer size. But if aclDataType = ACL_STRING, STRING tensor size = 1 and storageDims = 0, we can not
+    // use it to calculate size, we need from storage_sizes_ to calculate STRING element real size.
+    AclTensorBufferMaker buffer(tensor, tensor.numel());
+    auto aclBuff = buffer.Get();
+    return std::tie(aclDesc, aclBuff);
+}
+
+std::tuple<aclTensorDesc *, aclDataBuffer *> CovertToAclOutput(const at::Tensor &tensor, const string &forceDataType) {
+    aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(tensor.scalar_type(), forceDataType);
+    auto format = CalcuOpUtil::GetTensorNpuFormat(tensor);
+    AclTensorDescMaker desc;
+    auto aclDesc = desc.Create(aclDataType, tensor.sizes(), static_cast<aclFormat>(format)).Get();
+    AclTensorBufferMaker aclBuffer(tensor, tensor.numel());
+    auto aclBuff = aclBuffer.Get();
+    return std::tie(aclDesc, aclBuff);
+}
+
+// This class maintain the position of the current
+// OpCommandImpl object in vector, the resources in
+// the object is
+class OpCommandImpls {
+public:
+    TORCH_NPU_API static OpCommandImpls *GetInstanceByTid(std::thread::id tid);
+    TORCH_NPU_API void Push(OpCommandImpl *&ptr);
+    TORCH_NPU_API void Pop();
+
+private:
+    int32_t offset = -1;
+    c10::SmallVector<OpCommandImpl, N> objs;
+};  // class OpCommandImpls
+
+static std::unordered_map<std::thread::id, OpCommandImpls> opcommand_impls_map;
+static std::mutex map_mutex;
+static bool deterministicaclnn_oldstatus = false;
+
+OpCommandImpls *OpCommandImpls::GetInstanceByTid(std::thread::id tid) {
+    if (opcommand_impls_map.find(tid) == opcommand_impls_map.end()) {
+        OpCommandImpls impl;
+        std::lock_guard<std::mutex> lock(map_mutex);
+        opcommand_impls_map[tid] = std::move(impl);
+    }
+    return &opcommand_impls_map[tid];
+}
+
+void OpCommandImpls::Push(OpCommandImpl *&ptr) {
+    ++offset;
+    if (static_cast<int32_t>(objs.size()) <= offset) {
+        OpCommandImpl impl;
+        objs.emplace_back(std::move(impl));
+    }
+    TORCH_CHECK(objs.size() > offset, "OpCommand size (", objs.size(), ") is smaller than offset (", offset, ")");
+    ptr = &objs[offset];
+}
+
+void OpCommandImpls::Pop() {
+    TORCH_CHECK(offset >= 0, "OpCommand current offset should not be less than ", offset);
+    offset -= 1;
+}
+
+OpCommand::OpCommand() {
+    aclCmds = OpCommandImpls::GetInstanceByTid(std::this_thread::get_id());
+
+    aclCmds->Push(aclCmd);
+    aclCmd->SetCustomHandler(nullptr);
+}
+
+OpCommand::~OpCommand() {}
 
 OpCommand &OpCommand::Name(const string &name) {
-    INTERFACE_NOT_IMPL
+    aclCmd->SetName(name);
     return *this;
 }
 
 void OpCommand::SetCustomHandler(PROC_FUNC func){INTERFACE_NOT_IMPL}
 
 OpCommand &OpCommand::Expect(UnifiedResult unified_result) {
-    INTERFACE_NOT_IMPL
+    commonType = unified_result.common_type;
+    resultTypeDefined = unified_result.result_type_defined;
+    commonShape = unified_result.common_shape;
     return *this;
 }
 
 // None Input
 OpCommand &OpCommand::Input() {
-    INTERFACE_NOT_IMPL
+    AclTensorDescMaker desc;
+    auto aclDesc = desc.Create(ACL_DT_UNDEFINED, ACL_FORMAT_UNDEFINED).Get();
+    AclTensorBufferMaker buffer(nullptr, 0);
+    aclCmd->AddInput(aclDesc, buffer.Get());
     return *this;
 }
 
 // Tensor Input which need contiguous
 OpCommand &OpCommand::Input(const at::Tensor &input, const string &descName, const c10::optional<aclFormat> &sensitive_format, const string &realData) {
-    INTERFACE_NOT_IMPL
+    // AddTensorInput(Contiguous(input), c10::ScalarType::Undefined, descName, realData);
+    //
+    std::tuple<aclTensorDesc *, aclDataBuffer *> res = CovertTensorToAclInput(input, descName, realData);
+    aclCmd->AddInput(std::get<0>(res), std::get<1>(res));
     return *this;
 }
 
@@ -659,27 +970,42 @@ OpCommand &OpCommand::InputWithoutContiguous(const at::Tensor &input, const stri
 
 // Output Tensor
 OpCommand &OpCommand::Output(at::Tensor &output, const string &descName, const c10::optional<aclFormat> &sensitive_format, const string &realType) {
-    INTERFACE_NOT_IMPL
+    auto res = CovertToAclOutput(output, realType);
+    aclCmd->AddOutput(std::get<0>(res), std::get<1>(res));
+    outputTensor.emplace_back(output);
     return *this;
 }
 
 // Run a single op
-void OpCommand::Run(){INTERFACE_NOT_IMPL}
+void OpCommand::Run() {
+    aclCmd->SetEnginePriority();
+    const string &op_name = aclCmd->GetName();
+    bool sync = true;
+    c10::SmallVector<int64_t, N> sync_index;
+    aclCmd->Run(sync, sync_index, outputTensor);
+    if (sync) {
+        Sync();
+    }
+    aclCmd->releaseSource();
+    aclCmds->Pop();
+}
 
 OpCommand &OpCommand::Sync(c10::SmallVector<int64_t, N> &index) {
     INTERFACE_NOT_IMPL
+    Sync();
     return *this;
 }
 
 OpCommand &OpCommand::Sync() {
-    INTERFACE_NOT_IMPL
-    // c10_npu::NPUStream stream();
-    // NPU_CHECK_ERROR(c10_npu::acl::AclrtSynchronizeStreamWithTimeout(stream));
+    auto stream = c10_npu::getCurrentNPUStream();
+    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
     return *this;
 }
 
 }  // namespace native
 }  // namespace at_npu
+
+thread_local diopiContextHandle_t context = nullptr;
 
 namespace c10_npu {
 namespace acl {
@@ -693,5 +1019,27 @@ const char *AclGetErrMsg() {
     }
     return "";
 }
+
 }  // namespace acl
+
+int current_device() {
+    int devId_ = 0;
+    ::aclrtGetDevice(&devId_);
+    return devId_;
+}
+
+C10_NPU_API NPUStream getCurrentNPUStream(c10::DeviceIndex device_index) {
+    if (device_index == -1) {
+        device_index = current_device();
+    }
+    TORCH_CHECK(context);
+    diopiStreamHandle_t stream_handle;
+    diopiGetStream(context, &stream_handle);
+    c10::Device device(c10::DeviceType::XPU, device_index);
+    c10::Stream atStream(c10::Stream::Default::DEFAULT, device);
+    aclrtStream aclStream = reinterpret_cast<aclrtStream>(stream_handle);
+    TORCH_CHECK(aclStream);
+    return NPUStream(NPUStream::Unchecked::UNCHECKED, atStream, aclStream);
+}
+
 }  // namespace c10_npu
