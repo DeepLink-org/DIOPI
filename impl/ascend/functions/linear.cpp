@@ -46,17 +46,16 @@ diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
 
 diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight, diopiTensorHandle_t gradBias,
                                  diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight) {
-    AscendTensor gradInputCopy(gradInput);
     AscendTensor gradWeightCopy(gradWeight);
     AscendTensor gradOutputCopy(gradOutput);
     AscendTensor inputCopy(input);
     AscendTensor weightCopy(weight);
 
-    const std::vector<int64_t> gradInputPrimaryShape = gradInputCopy.shape();
+    const std::vector<int64_t> gradInputPrimaryShape = inputCopy.shape();
     bool transTensorTo2DFalg = false;
 
     if (gradOutputCopy.numel() == 0 || weightCopy.numel() == 0 || inputCopy.numel() == 0) {
-        diopiScalar_t zero = constructDiopiScalarT(gradInputCopy.dtype(), 0.0);
+        diopiScalar_t zero = constructDiopiScalarT(inputCopy.dtype(), 0.0);
         diopiFill(ctx, gradInput, &zero);
         diopiFill(ctx, gradWeight, &zero);
         diopiFill(ctx, gradBias, &zero);
@@ -65,18 +64,27 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
 
     if (weightCopy.shape().size() > 2) transTensorTo2D(ctx, weightCopy);
     if (gradOutputCopy.shape().size() > 2) transTensorTo2D(ctx, gradOutputCopy);
-    if (gradInputCopy.shape().size() > 2) {
-        transTensorTo2DFalg = true;
-        transTensorTo2D(ctx, gradInputCopy);
-    }
 
-    AclOpRunner<2, 1>("MatMul", ctx)
-        .addInput(gradOutputCopy)
-        .addInput(weightCopy)
-        .setAttr<uint8_t>("transpose_x1", false)
-        .setAttr<uint8_t>("transpose_x2", false)
-        .addOutput(gradInputCopy)
-        .run();
+
+    if (nullptr != gradInput) {
+        AscendTensor gradInputCopy(gradInput);
+        if (inputCopy.shape().size() > 2) {
+            transTensorTo2DFalg = true;
+            transTensorTo2D(ctx, gradInputCopy);
+        }
+
+        AclOpRunner<2, 1>("MatMul", ctx)
+            .addInput(gradOutputCopy)
+            .addInput(weightCopy)
+            .setAttr<uint8_t>("transpose_x1", false)
+            .setAttr<uint8_t>("transpose_x2", false)
+            .addOutput(gradInputCopy)
+            .run();
+
+        if (transTensorTo2DFalg) {
+            gradInputCopy.view(gradInputPrimaryShape);
+        }
+    }
 
     if (inputCopy.shape().size() > 2) transTensorTo2D(ctx, inputCopy);
     if (gradWeightCopy.shape().size() > 2) transTensorTo2D(ctx, gradWeightCopy);
@@ -88,10 +96,6 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
         .setAttr<uint8_t>("transpose_x2", false)
         .addOutput(gradWeightCopy)
         .run();
-
-    if (transTensorTo2DFalg) {
-        gradInputCopy.view(gradInputPrimaryShape);
-    }
 
     AscendTensor reshapedGradOutputCopy;
     makeTensorLike(ctx, reshapedGradOutputCopy, gradOutputCopy, gradOutputCopy.dtype());
