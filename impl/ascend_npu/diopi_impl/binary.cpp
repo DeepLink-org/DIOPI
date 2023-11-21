@@ -6,7 +6,8 @@
 
 #include <cmath>
 #include "helper.hpp"
-//#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 
 
 extern "C" {
@@ -18,7 +19,10 @@ diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     at::Tensor atOther = impl::aten::buildATen(other);
     at::Scalar atAlpha = impl::aten::buildAtScalar(alpha);
     at::Tensor atOut = impl::aten::buildATen(out);
-    at::add_out(atOut, atInput, atOther, atAlpha);
+    //at::add_out(atOut, atInput, atOther, atAlpha);
+    //op_api::add_out(atInput, atOther, atAlpha, atOut);
+
+    acl_op::add_out(atInput, atOther, atAlpha, atOut);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -31,4 +35,4 @@ diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
     return diopiAddScalar(ctx, input, input, other, alpha);
 }
 
-}
+}  // extern "C"
