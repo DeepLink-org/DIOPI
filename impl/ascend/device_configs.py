@@ -1659,7 +1659,7 @@ device_configs = {
     ),
 
     'imum_input_nan': dict(
-        name=['minimum'],
+        name=['minimum', 'maximum'],
         tensor_para=dict(
             args=[
                 {
@@ -1671,7 +1671,7 @@ device_configs = {
     ),
 
     'imum_other_nan': dict(
-        name=['minimum'],
+        name=['minimum', 'maximum'],
         tensor_para=dict(
             args=[
                 {
