@@ -3029,6 +3029,26 @@ diopi_configs = {
         ),
     ),
 
+    'reduce_op_1': dict(
+        name=['any', 'all'],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-5,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (64, ), (169, 4), (17100, 2), (1, 1, 384),
+                              (4, 133, 128, 128), (2, 64, 3, 3, 3),
+                              (0,), (12, 0), (2, 0, 12)),
+                    "dtype": [np.bool_, np.float16, np.float32, np.float64,
+                              np.int16, np.int32, np.int64, np.uint8, np.int8],
+                    "gen_fn": 'Genfunc.randn',
+                },
+            ],
+        ),
+    ),
+
     'reduce_partial_op': dict(
         name=['mean', 'sum'],
         interface=['torch'],
@@ -3142,7 +3162,7 @@ diopi_configs = {
         name=['any', 'all'],
         interface=['torch'],
         para=dict(
-            dim=[-1, 0, 1, 0, -2, -1, 3, None, 0, -1, 2],
+            dim=[-1, 0, 1, 0, -2, -1, 3, 0, -1, 2],
         ),
         atol=1e-4,
         rtol=1e-5,
@@ -3151,7 +3171,7 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((), (64, ), (169, 4), (17100, 2), (1, 1, 384),
-                              (4, 133, 128, 128), (2, 64, 3, 3, 3), (2, 64, 3, 3, 3),
+                              (4, 133, 128, 128), (2, 64, 3, 3, 3),
                               (0,), (12, 0), (2, 0, 12)),
                     "dtype": [np.bool_, np.float16, np.float32, np.float64,
                               np.int16, np.int32, np.int64, np.uint8, np.int8],
