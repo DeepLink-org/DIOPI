@@ -9,15 +9,13 @@ from conformance.global_settings import glob_vars
 class CheckResult(object):
     @staticmethod
     def compare_input(input1: dict, input2: dict, ignore_paras_for_input_check: list):
-        input1 = {key: value for key, value in input1.items() if key not in ignore_paras_for_input_check}
-        input2 = {key: value for key, value in input2.items() if key not in ignore_paras_for_input_check}
+        input1 = {key: value for key, value in input1.items() if key not in ignore_paras_for_input_check and isinstance(value, np.ndarray)}
+        input2 = {key: value.numpy() for key, value in input2.items() if key not in ignore_paras_for_input_check and isinstance(value, Tensor)}
         if input1.keys() != input2.keys():
             raise InputChangedException(f"input1's keys {list(input1.keys())} is not equal to input2's keys {list(input2.keys())}.")
 
         passed = True
         for name, value in input2.items():
-            if isinstance(value, Tensor):
-                value = value.numpy()
             matched = np.isclose(input1[name], value, equal_nan=True)
             mismatched_num = matched.size - np.sum(matched)
             passed = mismatched_num <= default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
