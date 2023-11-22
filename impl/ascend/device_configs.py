@@ -2345,4 +2345,19 @@ device_configs = {
             ],
         ),
     )
+
+    'topk_nonzero': dict(
+        name=['topk'],
+        para=dict(
+            k=[Skip(1)],
+        ),
+    ),
+
+    'topk_zero': dict(
+        name=['topk'],
+        interface=['torch'],
+        para=dict(
+            k=[Skip(1)],
+        ),
+    ),
 }
