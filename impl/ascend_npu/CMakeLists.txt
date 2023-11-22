@@ -50,7 +50,7 @@ if(NOT DEFINED DIPU_ABI_V)
 endif()
 
 if(NOT DEFINED DIPU_COMPILED_WITH_CXX11_ABI)
-  execute_process(
+execute_process(
     COMMAND
       sh -x -c
       "python -c 'import torch;print(1 if torch.compiled_with_cxx11_abi() else 0)'"
@@ -66,8 +66,9 @@ endif()
 add_definitions(-fabi-version=${DIPU_ABI_V})
 message(STATUS "DIPU_ABI_V: ${DIPU_ABI_V}")
 
+# Because many interfaces have not yet been implemented, -Wreturn-type=0 option is temporarily added.
 set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=${DIPU_COMPILED_WITH_CXX11_ABI} "
+    "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=${DIPU_COMPILED_WITH_CXX11_ABI} -Wno-return-type "
 )
 add_compile_options(-D_GLIBCXX_USE_CXX11_ABI=${DIPU_COMPILED_WITH_CXX11_ABI})
 message(STATUS "DIPU_COMPILED_WITH_CXX11_ABI:" ${DIPU_COMPILED_WITH_CXX11_ABI})
@@ -80,24 +81,15 @@ set(OP_PLUGIN_UTILS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/utils/)
 #file(GLOB_RECURSE OP_PLUGIN_API_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/base_ops/opapi/*.cpp)
 
 set(OP_PLUGIN_SRC
+    #${OP_PLUGIN_UTILS_DIR}/../OpInterface.cpp
     ${OP_PLUGIN_DIR}/AddKernelNpu.cpp
     ${OP_PLUGIN_DIR}/StrideAddKernelNpu.cpp
-    #${OP_PLUGIN_UTILS_DIR}/../OpInterface.cpp
-)
-set(OP_PLUGIN_SRC1
+    ${OP_PLUGIN_DIR}/BatchNormElemtKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/BatchNormKernelNpu.cpp
     ${OP_PLUGIN_DIR}/BatchNormElemtKernelNpu.cpp
     ${OP_PLUGIN_DIR}/TransposeKernelNpu.cpp
     ${OP_PLUGIN_DIR}/MaxPool3dWithIndicesKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SubSampleKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/BatchNormKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/SubKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/IsInKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/OnesKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/BatchNormElemtKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/TransposeKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/MaxPool3dWithIndicesKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/SubSampleKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/BatchNormKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SubKernelNpu.cpp
     ${OP_PLUGIN_DIR}/IsInKernelNpu.cpp
     ${OP_PLUGIN_DIR}/OnesKernelNpu.cpp
@@ -152,7 +144,7 @@ set(OP_PLUGIN_SRC1
     ${OP_PLUGIN_DIR}/LogicalAndKernelNpu.cpp
     ${OP_PLUGIN_DIR}/_AminmaxKernelNpu.cpp
     ${OP_PLUGIN_DIR}/HardShrinkKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/ReshapeKernelNpu.cpp
+    #${OP_PLUGIN_DIR}/ReshapeKernelNpu.cpp
     ${OP_PLUGIN_DIR}/IouKernelNpu.cpp
     #${OP_PLUGIN_DIR}/UniformKernelNpu.cpp
     ${OP_PLUGIN_DIR}/GroupNormBackwardKernelNpu.cpp
@@ -254,7 +246,7 @@ set(OP_PLUGIN_SRC1
     ${OP_PLUGIN_DIR}/QuantizePerChannelKernelNpu.cpp
     ${OP_PLUGIN_DIR}/RepeatKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SignBitsUnpackKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/MatmulBackwardKernelNpu.cpp
+    #${OP_PLUGIN_DIR}/MatmulBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/NegKernelNpu.cpp
     ${OP_PLUGIN_DIR}/RoundDecimalsKernelNpu.cpp
     ${OP_PLUGIN_DIR}/EluKernelNpu.cpp
@@ -388,7 +380,7 @@ set(OP_PLUGIN_SRC1
     ${OP_PLUGIN_DIR}/AdaptiveMaxPool2dKernelNpu.cpp
     ${OP_PLUGIN_DIR}/ConvDepthWise2dKernelNpu.cpp
     ${OP_PLUGIN_DIR}/__Lshift__KernelNpu.cpp
-    ${OP_PLUGIN_DIR}/MatmulKernelNpu.cpp
+    #${OP_PLUGIN_DIR}/MatmulKernelNpu.cpp
     ${OP_PLUGIN_DIR}/FastGeluKernelNpu.cpp
     ${OP_PLUGIN_DIR}/CtcLossKernelNpu.cpp
     ${OP_PLUGIN_DIR}/LogicalOrKernelNpu.cpp
@@ -480,7 +472,7 @@ set(OP_PLUGIN_SRC1
 )
 
 set(OP_PLUGIN_SRC_V_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/v2r0/aclops/)
-set(OP_PLUGIN_SRC1
+set(OP_PLUGIN_SRC
     ${OP_PLUGIN_SRC}
     ${OP_PLUGIN_SRC_V_DIR}/BatchNormKernelNpu.cpp
     ${OP_PLUGIN_SRC_V_DIR}/IndexKernelNpu.cpp
@@ -543,7 +535,7 @@ set(OP_PLUGIN_API_SRC1
     ${OP_PLUGIN_API_DIR}/SqrtKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/CummaxKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/MulKernelNpuOpApi.cpp
-    ${OP_PLUGIN_API_DIR}/CatKernelNpuOpApi.cpp
+    #${OP_PLUGIN_API_DIR}/CatKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/FloorDivideKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/SigmoidBackwardKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/GerKernelNpuOpApi.cpp
@@ -804,9 +796,8 @@ set(OP_PLUGIN_UTILS_SRC
     ${OP_PLUGIN_UTILS_DIR}/op_api_common.cpp
     #${OP_PLUGIN_UTILS_DIR}/AdvancedIndex.cpp
 )
-set(OP_PLUGIN_UTILS_SRC1
+set(OP_PLUGIN_UTILS_SRC
     ${OP_PLUGIN_UTILS_SRC}
-    ${OP_PLUGIN_UTILS_DIR}/custom_functions/opapi/SumKernelNpuOpApi.cpp
     ${OP_PLUGIN_UTILS_DIR}/custom_functions/aclops/IndexKernelNpu.cpp
     ${OP_PLUGIN_UTILS_DIR}/custom_functions/aclops/PreluBackwardKernelNpu.cpp
     ${OP_PLUGIN_UTILS_DIR}/custom_functions/aclops/LinalgSvdKernelNpu.cpp

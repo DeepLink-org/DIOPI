@@ -1002,6 +1002,37 @@ OpCommand &OpCommand::Sync() {
     return *this;
 }
 
+void npu_fast_reshape_(at::Tensor &tensor) {
+    /**
+      [NOTE] For some reshape cases such as view, unsqueeze, squeeze, flatten,
+      storages of them remain unchanged. So we can refresh reshape tensor's metadata
+      to obtain matched tensor.
+      */
+
+    // restriction 1
+    if (!tensor.is_contiguous()) {
+        return;
+    }
+    // restriction 2
+    if (!FormatHelper::IsBaseFormatType(tensor)) {
+        return;
+    }
+#if 0
+  // restriction 3: reshape case without any numels change
+  if ((tensor.numel() != StorageDescHelper::GetMemorySize(tensor)) ||
+      StorageDescHelper::MetaDataAreMatch(&tensor)) {
+    return;
+  }
+
+  // refresh matadata to input tensor
+  StorageDescHelper::ReflushDescBySelf(tensor);
+  auto base_format = InferFormat::GuessBaseFormat(tensor.sizes());
+  NPUNativeFunctions::npu_format_cast_(tensor, base_format);
+#else
+    INTERFACE_NOT_IMPL
+#endif
+}
+
 }  // namespace native
 }  // namespace at_npu
 

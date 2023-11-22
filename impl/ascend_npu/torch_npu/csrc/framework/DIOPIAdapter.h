@@ -1,10 +1,13 @@
 #pragma once
 
 #include <ATen/ATen.h>
+#include <ATen/NamedTensorUtils.h>
+
 #include <stdio.h>
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "op-plugin/op_plugin/utils/OpConstants.h"
 #include "torch_npu/csrc/core/npu/NPUErrorCodes.h"
@@ -13,6 +16,7 @@
 #include "torch_npu/third_party/acl/inc/acl/acl_base.h"
 #include "torch_npu/third_party/acl/inc/acl/acl_op_compiler.h"
 #include "torch_npu/third_party/acl/inc/acl/acl_rt.h"
+#include "torch_npu/third_party/acl/inc/ge/ge_api.h"
 
 #define NPUStatus std::string
 #define SUCCESS "SUCCESS"
@@ -264,6 +268,7 @@ C10_NPU_API NPUStream getCurrentNPUStream(c10::DeviceIndex device_index = -1);
 }  // namespace c10_npu
 
 using std::string;
+using std::vector;
 
 namespace torch_npu {
 
@@ -386,6 +391,15 @@ struct UnifiedResult {
     // if result's dtype is defined, result_type_defined is true and result's dtype remains unchanged.
     bool result_type_defined = false;
 };
+
+// smallvector max size
+const int N = 32;
+// npu tensor max size
+const int SHAPE_SIZE = 8;
+// HALF_MAX and HALF_MIN of NPU support
+const int NPU_HALF_MAX = 65504;
+const int NPU_HALF_MIN = -65504;
+const int NPU_MAX_OP_EXEC_TRY_NUM = 2;
 
 typedef enum CompileType {
     MEMORY_HOST_COMPILE_DEPENDENT = 1,
@@ -533,6 +547,14 @@ inline const std::string AclDateTypeToString(aclDataType descDType) { INTERFACE_
 inline const std::string AclFormatToString(aclFormat descFormat) { INTERFACE_NOT_IMPL }
 
 using PROC_FUNC = std::function<int()>;
+// in npu device, the max shape size is 8
+constexpr int MAX_FORMAT_SHAPE_SIZE = 8;
+using FormatShape = c10::SmallVector<int64_t, MAX_FORMAT_SHAPE_SIZE>;
+
+using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;
+using DynamicInputRegFunc = std::function<ge::OperatorPtr(DyNumAndIndex, std::string)>;
+
+using baseFormatConverter = std::function<FormatShape(c10::IntArrayRef storage_dims, c10::IntArrayRef base_dims)>;
 
 class OpCommand {
     class OpCommandImpls *aclCmds = nullptr;
@@ -556,6 +578,9 @@ public:
 
     TORCH_NPU_API OpCommand &Name(const string &name);
     void SetCustomHandler(PROC_FUNC func);
+
+    OpCommand& DynamicInputReg(DynamicInputRegFunc func, DyNumAndIndex num_and_index) {return *this;}
+
     OpCommand &Expect(UnifiedResult unified_result);
     // None Input
     TORCH_NPU_API OpCommand &Input();
@@ -624,26 +649,18 @@ inline bool IsAllowMatmulHF32() { INTERFACE_NOT_IMPL }
 
 }  // namespace env
 
-// in npu device, the max shape size is 8
-constexpr int MAX_FORMAT_SHAPE_SIZE = 8;
-using FormatShape = c10::SmallVector<int64_t, MAX_FORMAT_SHAPE_SIZE>;
-
-using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;
-// using DynamicInputRegFunc = std::function<ge::OperatorPtr(DyNumAndIndex, std::string)>;
-
-using baseFormatConverter = std::function<FormatShape(c10::IntArrayRef storage_dims, c10::IntArrayRef base_dims)>;
 // helper function of storage format
 class FormatHelper {
 public:
     // helper function of copy, because of padding will change the physical size.
-    static bool IsPadded(const at::Tensor *tensor);
-    static char *GetFormatName(const at::Tensor &tensor);
-    static aclFormat GetBaseFormat(const at::Tensor &tensor);
-    static aclFormat GetBaseFormat(aclFormat format);
-    static aclFormat GetFormat(const at::Tensor &tensor);
+    static bool IsPadded(const at::Tensor *tensor) { INTERFACE_NOT_IMPL }
+    static char *GetFormatName(const at::Tensor &tensor) { INTERFACE_NOT_IMPL }
+    static aclFormat GetBaseFormat(const at::Tensor &tensor) { INTERFACE_NOT_IMPL }
+    static aclFormat GetBaseFormat(aclFormat format) { INTERFACE_NOT_IMPL }
+    static aclFormat GetFormat(const at::Tensor &tensor) { INTERFACE_NOT_IMPL }
 
-    static bool IsBaseFormatType(aclFormat format);
-    static bool IsBaseFormatType(const at::Tensor &tensor);
+    static bool IsBaseFormatType(aclFormat format) { INTERFACE_NOT_IMPL }
+    static bool IsBaseFormatType(const at::Tensor &tensor) { INTERFACE_NOT_IMPL }
 
     // Default assumption: the original format are ND, NCHW or NDHWC.
     // So, if original size are 4D, it maybe NCHW or ND and so on.
@@ -654,18 +671,18 @@ public:
     template <typename sizeType>
     static FormatShape GetStorageSizes(aclFormat format, sizeType ori_size);
     // GetStorageSizes used to calculate the storage sizes of op at npu device at different format.
-    static FormatShape GetStorageSizes(const torch_npu::NPUStorageDesc &desc);
-    static at::Tensor &unsafe_format_cast(at::Tensor &self, int64_t self_format, int64_t result_format);
+    static FormatShape GetStorageSizes(const torch_npu::NPUStorageDesc &desc) { INTERFACE_NOT_IMPL }
+    static at::Tensor &unsafe_format_cast(at::Tensor &self, int64_t self_format, int64_t result_format) { INTERFACE_NOT_IMPL }
 
-    static bool IsOpInputBaseFormat(const at::Tensor &tensor);
-    static bool IsOpInputBaseFormat(const c10::optional<at::Tensor> &tensor);
-    static bool IsOpInputBaseFormat(const c10::List<c10::optional<at::Tensor>> &tensors);
-    static bool IsOpInputBaseFormat(const at::TensorList &tensors);
-    static bool IsOpInputBaseFormat(const at::ITensorListRef &tensors);
+    static bool IsOpInputBaseFormat(const at::Tensor &tensor) { INTERFACE_NOT_IMPL }
+    static bool IsOpInputBaseFormat(const c10::optional<at::Tensor> &tensor) { INTERFACE_NOT_IMPL }
+    static bool IsOpInputBaseFormat(const c10::List<c10::optional<at::Tensor>> &tensors) { INTERFACE_NOT_IMPL }
+    static bool IsOpInputBaseFormat(const at::TensorList &tensors) { INTERFACE_NOT_IMPL }
+    static bool IsOpInputBaseFormat(const at::ITensorListRef &tensors) { INTERFACE_NOT_IMPL }
 
 private:
-    static bool IsPadded(aclFormat format);
-    static char *GetFormatName(aclFormat format);
+    static bool IsPadded(aclFormat format) { INTERFACE_NOT_IMPL }
+    static char *GetFormatName(aclFormat format) { INTERFACE_NOT_IMPL }
 
 private:
     using shapeInfer = std::function<FormatShape(c10::IntArrayRef dims)>;
@@ -691,6 +708,8 @@ FormatShape FormatHelper::GetStorageSizes(aclFormat format, sizeType ori_size) {
     AT_ERROR("unsupport InferShape with format ", GetFormatName(format), "with shape", ori_size);
     return {};
 }
+
+void npu_fast_reshape_(at::Tensor& tensor);
 
 }  // namespace native
 }  // namespace at_npu
