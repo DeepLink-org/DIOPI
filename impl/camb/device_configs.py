@@ -610,6 +610,18 @@ device_configs = {
         ),
     ),
 
+    'reduce_partial_op_1': dict(
+        name=['std'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((0,)), Skip((12, 0)), Skip((9, 0, 7))),
+                },
+            ],
+        ),
+    ),
+
     'cross_entropy': dict(
         name=["cross_entropy"],
         para=dict(
