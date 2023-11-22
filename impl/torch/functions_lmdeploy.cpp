@@ -43,11 +43,11 @@ DIOPI_API diopiError_t diopiFusedSiluFfnInp(diopiContextHandle_t ctx, diopiTenso
         diopiRequireTensor(ctx, &matmulW1, &newshape, &strideW1, dtype, device);
         diopiRequireTensor(ctx, &matmulW3, &newshape, &strideW3, dtype, device);
 
-        diopiMatmul(ctx, matmulW1, inoutput, weight1);
-        diopiMatmul(ctx, matmulW3, inoutput, weight3);
+        diopiMm(ctx, matmulW1, inoutput, weight1);
+        diopiMm(ctx, matmulW3, inoutput, weight3);
         diopiSiluInp(ctx, matmulW1);
-        diopiMul(ctx, matmulW1, matmulW1, matmulW3);
-        diopiMatmul(ctx, inoutput, matmulW1, weight2);
+        diopiMulInp(ctx, matmulW1, matmulW3);
+        diopiMm(ctx, inoutput, matmulW1, weight2);
         return diopiSuccess;
     }
     return diopiErrorOccurred;
