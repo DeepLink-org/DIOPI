@@ -245,7 +245,7 @@ with open(f_out, 'rb') as f:
     ref_out = pickle.load(f)
 
 try:
-    CheckResult.compare_input(np_inputs_orign, function_kwargs, ignore_paras_for_input_check)
+    CheckResult.compare_input(function_kwargs, np_inputs_orign, ignore_paras_for_input_check)
     CheckResult.compare_output(dev_out, ref_out, **tol)
 except Exception as e:
     assert False, f'Test {function_config["name"]}: {function_config} traceback: {e}'
@@ -264,7 +264,7 @@ except FunctionNotImplementedError as e:
 
 try:
     ignore_paras_for_input_check.add('input')
-    CheckResult.compare_input(np_inputs_orign, function_kwargs, ignore_paras_for_input_check)
+    CheckResult.compare_input(function_kwargs, np_inputs_orign, ignore_paras_for_input_check)
     CheckResult.compare_output(dev_inp_out, ref_out, **tol)
 except Exception as e:
     assert False, f'Test {function_config["name"]}  inplace: {function_config} traceback: {e}'
@@ -317,7 +317,7 @@ with open(f_bp_out, 'rb') as f:
 
 # checkout
 try:
-    CheckResult.compare_input(np_inputs_orign, function_kwargs, ignore_paras_for_input_check)
+    CheckResult.compare_input(function_kwargs, np_inputs_orign, ignore_paras_for_input_check)
     CheckResult.compare_output(dev_bp_out, ref_bp_out, **tol)
 except Exception as e:
     assert False, f'Test {function_config["name"]} backward: {function_config} traceback: {e}'

@@ -15,17 +15,17 @@ glob_vars.cur_test_func = "diopiTestOp"
 
 case_input = {
     "test check input": [
-        {"input": np.array([1, 2, 3])},
+        {"input": Tensor.from_numpy(np.array([1, 2, 3]))},
         {"input": np.array([1, 2, 3])},
         [],
     ],
     "test check input multi args": [
-        {"input": np.array([1, 2, 3]), "other": np.array([[1, 2, 3], [4, 5, 6]])},
+        {"input": Tensor.from_numpy(np.array([1, 2, 3])), "other": Tensor.from_numpy(np.array([[1, 2, 3], [4, 5, 6]]))},
         {"input": np.array([1, 2, 3]), "other": np.array([[1, 2, 3], [4, 5, 6]])},
         [],
     ],
     "test ignore_paras_for_input_check": [
-        {"input": np.array([1, 2, 3]), "other": np.array([[1, 2, 3], [4, 5, 6]])},
+        {"input": Tensor.from_numpy(np.array([1, 2, 3])), "other": Tensor.from_numpy(np.array([[1, 2, 3], [4, 5, 6]]))},
         {
             "input": np.array([4, 5, 6]),
             "other": np.array([[1, 2, 3 + 1e-5], [4, 5, 6]]),
@@ -36,17 +36,17 @@ case_input = {
 
 case_input_xfail = {
     "test input key": [
-        {"input": np.array([1, 2, 3])},
+        {"input": Tensor.from_numpy(np.array([1, 2, 3]))},
         {"other": np.array([1, 2, 3])},
         [],
     ],
     "test input value": [
-        {"input": np.array([1, 2, 3])},
+        {"input": Tensor.from_numpy(np.array([1, 2, 3]))},
         {"input": np.array([4, 5, 6])},
         [],
     ],
     "test input shape": [
-        {"input": np.array([1, 2, 3])},
+        {"input": Tensor.from_numpy(np.array([1, 2, 3]))},
         {"input": np.array([[4, 5, 6]])},
         [],
     ],
