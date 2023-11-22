@@ -12,7 +12,7 @@ import pytest
 #import psutil
 import numpy as np
 from conformance.diopi_runtime import Tensor, from_numpy_dtype, default_context
-from conformance.diopi_functions import ones_like, FunctionNotImplementedError
+from conformance.diopi_functions import ones_like, FunctionNotImplementedError, FunctionNotDefinedError
 from conformance.check_result import CheckResult
 ${test_diopi_head_import}
 
@@ -231,7 +231,7 @@ sum_to_compare = True if 'sorted' in function_kwargs and ~function_kwargs['sorte
 tol['sum_to_compare'] = sum_to_compare
 try:
     dev_out = ${test_diopi_func_name}(**function_kwargs)
-except FunctionNotImplementedError as e:
+except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
     default_context.clear_tensors()
     pytest.xfail(str(e))
 
@@ -253,7 +253,7 @@ ${test_diopi_func_inp_remove_grad_args}
 function_kwargs.update({'inplace': True})
 try:
     dev_inp_out = ${test_diopi_func_name}(**function_kwargs)
-except FunctionNotImplementedError as e:
+except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
     default_context.clear_tensors()
     pytest.xfail(str(e))
 
@@ -273,7 +273,7 @@ function_kwargs = {key: value for key, value in function_kwargs.items() if key n
         r"""
 try:
     ManualTest.test_${test_diopi_func_name}(**function_kwargs)
-except FunctionNotImplementedError as e:
+except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
     default_context.clear_tensors()
     pytest.xfail(str(e))
 """
@@ -284,7 +284,7 @@ ${test_diopi_func_inp_remove_grad_args}
 function_kwargs.update({'inplace': True})
 try:
     ManualTest.test_${test_diopi_func_name}(**function_kwargs)
-except FunctionNotImplementedError as e:
+except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
     default_context.clear_tensors()
     pytest.xfail(str(e))
 """
@@ -310,7 +310,7 @@ function_kwargs.update(backward_para)
 
 try:
     dev_bp_out = ${test_diopi_bp_func_name}(**function_kwargs)
-except FunctionNotImplementedError as e:
+except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
     default_context.clear_tensors()
     pytest.xfail(str(e))
 
