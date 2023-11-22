@@ -2344,7 +2344,7 @@ device_configs = {
                 },
             ],
         ),
-    )
+    ),
 
     'topk_nonzero': dict(
         name=['topk'],
