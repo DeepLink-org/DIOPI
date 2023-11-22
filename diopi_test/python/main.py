@@ -5,9 +5,7 @@ import os
 import sys
 import pytest
 
-from conformance.global_op_list import nhwc_op
-from conformance.global_op_list import dtype_op, dtype_out_op
-from conformance.utils import is_ci, error_counter, write_report
+from conformance.global_op_list import nhwc_op, dtype_op, dtype_out_op
 from conformance.utils import logger
 from conformance.global_settings import glob_vars
 from conformance.model_list import model_list, model_op_list
@@ -181,19 +179,7 @@ if __name__ == "__main__":
         cfg_path = diopi_case_item_path
 
         if args.impl_folder != "":
-            cfg_path = device_case_item_path % os.path.basename(args.impl_folder)
-            device_config_path = os.path.join(args.impl_folder, "device_configs.py")
-            dst_path = os.path.join(cur_dir, "device_configs.py")
-
-            def unlink_device():
-                if os.path.islink(dst_path):
-                    os.unlink(dst_path)
-
-            unlink_device()
-            os.symlink(device_config_path, dst_path)
-            import atexit
-
-            atexit.register(unlink_device)
+            sys.path.append(args.impl_folder)
 
             from device_configs import device_configs
 
