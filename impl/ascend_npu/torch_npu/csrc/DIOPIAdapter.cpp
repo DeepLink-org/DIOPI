@@ -2,6 +2,7 @@
 
 #include <diopi/diopirt.h>
 
+
 namespace {
 constexpr float EPSILON = 1e-6;
 
@@ -113,6 +114,21 @@ bool NpuUtils::check_match(const at::Tensor *tensor) {
     return true;
 }
 
+bool NpuUtils::IsOomError(aclError ret, int index) {
+    if (ret == ACL_ERROR_GE_DEVICE_MEMORY_ALLOCATION_FAILED) {
+        int deviceId = 0;
+        // free devcie cached memory when return value of the first op execution is
+        // oom
+        if (index == -1) {
+            NPU_CHECK_ERROR(aclrtGetDevice(&deviceId));
+        }
+        AT_ERROR("NPU out of memory. device id: ", deviceId);
+    }
+    return false;
+}
+
+at::Tensor NpuUtils::format_contiguous(const at::Tensor &src){INTERFACE_NOT_IMPL}
+
 at::Tensor NpuUtils::format_contiguous_add_copy_optimize(const at::Tensor &src) {
     // case1:tensor src is not contiguous
     if (!src.is_contiguous()) {
@@ -188,6 +204,40 @@ at::Tensor CalcuOpUtil::CopyTensorHostToDevice(const at::Tensor &cpu_tensor) {
 }
 
 // OpPreparation part
+
+// used to apply output tensor
+at::Tensor OpPreparation::apply_tensor(const at::Tensor &src) {
+    return at::empty(src.sizes(), src.options());
+}
+
+at::Tensor OpPreparation::apply_tensor(const at::Tensor &src, c10::IntArrayRef sizes) {
+    return at::empty(sizes, src.options());
+}
+
+at::Tensor OpPreparation::apply_tensor(const at::Tensor &src, const c10::TensorOptions &options) {
+    return at::empty(src.sizes(), options);
+}
+
+at::Tensor OpPreparation::apply_tensor(c10::IntArrayRef sizes, const c10::TensorOptions &options, const at::Tensor &src) {
+    return at::empty(sizes, src.options());
+}
+
+at::Tensor OpPreparation::apply_tensor_with_format(const at::Tensor &src, int64_t format, bool keep_format) {
+    INTERFACE_NOT_IMPL
+    return src;
+}
+
+at::Tensor OpPreparation::apply_tensor_with_format(const at::Tensor &src, c10::IntArrayRef sizes, int64_t format, bool keep_format) {
+    INTERFACE_NOT_IMPL;
+    return src;
+}
+
+at::Tensor OpPreparation::apply_tensor_with_format(c10::IntArrayRef sizes, const c10::TensorOptions &options, int64_t format, bool keep_format) {
+    INTERFACE_NOT_IMPL;
+}
+
+at::Tensor OpPreparation::apply_tensor_with_sizes(c10::IntArrayRef sizes, const c10::TensorOptions &options) { INTERFACE_NOT_IMPL; }
+
 void OpPreparation::CheckOut(const std::initializer_list<at::Tensor> &inputs, at::Tensor &output, at::Tensor dst) {
     CheckOut(inputs, output, CalcuOpUtil::GetTensorNpuFormat(dst), dst.scalar_type(), dst.sizes());
 }
@@ -856,6 +906,18 @@ std::tuple<aclTensorDesc *, aclDataBuffer *> CovertTensorToAclInput(const at::Te
     return std::tie(aclDesc, aclBuff);
 }
 
+std::tuple<aclTensorDesc *, aclDataBuffer *> CovertHostTensorToAclInput(const at::Tensor &tensor, at::ScalarType type, CompileType compileType,
+                                                                        const string &forceDataType, const string &descName) {
+    aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(type, forceDataType);
+    const auto &dims = tensor.sizes();
+    AclTensorDescMaker desc;
+    aclFormat format = ACL_FORMAT_ND;
+    auto aclDesc = desc.Create(aclDataType, dims, format).SetPlacement(static_cast<aclMemType>(compileType)).SetName(descName).Get();
+    AclTensorBufferMaker buffer(tensor, tensor.numel());
+    auto aclBuff = buffer.Get();
+    return std::tie(aclDesc, aclBuff);
+}
+
 std::tuple<aclTensorDesc *, aclDataBuffer *> CovertToAclOutput(const at::Tensor &tensor, const string &forceDataType) {
     aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(tensor.scalar_type(), forceDataType);
     auto format = CalcuOpUtil::GetTensorNpuFormat(tensor);
@@ -956,9 +1018,46 @@ OpCommand &OpCommand::Input(const c10::IntArrayRef &dimListRef, at::ScalarType t
     return *this;
 }
 
+namespace {
+const uint64_t kStringOffset = 16UL;
+const std::string kStringDType = "string";
+static std::unordered_map<at::ScalarType, std::vector<double>> floating_limits_map {
+  {at::ScalarType::Double, {std::numeric_limits<double>::max(), std::numeric_limits<double>::min()}},
+  {at::ScalarType::Float, {std::numeric_limits<float>::max(), std::numeric_limits<float>::min()}},
+  {at::ScalarType::BFloat16, {std::numeric_limits<float>::max(), std::numeric_limits<float>::min()}},
+  {at::ScalarType::Half, {65504, -65504}}
+};
+static std::unordered_map<at::ScalarType, std::vector<long>> integral_limits_map {
+  {at::ScalarType::Long, {std::numeric_limits<long>::max(), std::numeric_limits<long>::min()}},
+  {at::ScalarType::Int, {std::numeric_limits<int>::max(), std::numeric_limits<int>::min()}},
+  {at::ScalarType::Byte, {std::numeric_limits<uint8_t>::max(), std::numeric_limits<uint8_t>::min()}},
+  {at::ScalarType::Char, {std::numeric_limits<int8_t>::max(), std::numeric_limits<int8_t>::min()}},
+  {at::ScalarType::Short, {std::numeric_limits<int16_t>::max(), std::numeric_limits<int16_t>::min()}}
+};
+}  // namespace
+
+bool ScalarIsInLimits(const c10::Scalar &scalar, at::ScalarType type) {
+  bool scalar_flag = false;
+  if (at::isFloatingType(type)) {
+    auto value = scalar.to<double>();
+    scalar_flag = value <= floating_limits_map[type][0] && value >= floating_limits_map[type][1];
+  } else if (at::isIntegralType(type)) {
+    auto value = scalar.to<long>();
+    scalar_flag = value <= integral_limits_map[type][0] && value >= integral_limits_map[type][1];
+  }
+  return scalar_flag;
+}
+
 // Scalar Input, we will do h2d in launch kernel
 OpCommand &OpCommand::Input(const c10::Scalar &input, const at::ScalarType type, CompileType compileType) {
-    INTERFACE_NOT_IMPL
+    at::ScalarType scalar_type = type;
+    if (commonType.has_value()) {
+        scalar_type = commonType.value();
+    }
+
+    at::Tensor tensor = ScalarIsInLimits(input, scalar_type) ? at::detail::scalar_tensor_static(input, scalar_type, at::kCPU) : at::scalar_to_tensor(input).to(scalar_type);
+    std::tuple<aclTensorDesc *, aclDataBuffer *> res = CovertHostTensorToAclInput(tensor, tensor.scalar_type(), compileType, "", "");
+    aclCmd->AddInput(std::get<0>(res), std::get<1>(res), tensor);
     return *this;
 }
 

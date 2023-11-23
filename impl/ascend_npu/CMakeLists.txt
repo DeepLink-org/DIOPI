@@ -68,7 +68,7 @@ message(STATUS "DIPU_ABI_V: ${DIPU_ABI_V}")
 
 # Because many interfaces have not yet been implemented, -Wreturn-type=0 option is temporarily added.
 set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=${DIPU_COMPILED_WITH_CXX11_ABI} -Wno-return-type "
+    "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=${DIPU_COMPILED_WITH_CXX11_ABI} -Wno-return-type -g -O0 "
 )
 add_compile_options(-D_GLIBCXX_USE_CXX11_ABI=${DIPU_COMPILED_WITH_CXX11_ABI})
 message(STATUS "DIPU_COMPILED_WITH_CXX11_ABI:" ${DIPU_COMPILED_WITH_CXX11_ABI})
@@ -86,7 +86,14 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/StrideAddKernelNpu.cpp
     ${OP_PLUGIN_DIR}/BatchNormElemtKernelNpu.cpp
     ${OP_PLUGIN_DIR}/BatchNormKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/BatchNormElemtKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/ConvDepthwise2dBackwardKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/SlowConvTranspose2dBackwardKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/SlowConvTranspose2dKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/Conv2dBackwardKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/SumKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/CastKernelNpu.cpp
+)
+set(debug
     ${OP_PLUGIN_DIR}/TransposeKernelNpu.cpp
     ${OP_PLUGIN_DIR}/MaxPool3dWithIndicesKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SubSampleKernelNpu.cpp
@@ -100,13 +107,11 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/GridAssignPositiveKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SinKernelNpu.cpp
     ${OP_PLUGIN_DIR}/LogAddExpKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/ConvDepthwise2dBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/__Ior__KernelNpu.cpp
     ${OP_PLUGIN_DIR}/AcosKernelNpu.cpp
     ${OP_PLUGIN_DIR}/GluKernelNpu.cpp
     ${OP_PLUGIN_DIR}/MishBackwardV2KernelNpu.cpp
     ${OP_PLUGIN_DIR}/AffineGridGeneratorBackwardKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/SlowConvTranspose2dBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/NLLLoss2dBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/MvKernelNpu.cpp
     ${OP_PLUGIN_DIR}/OnehotNpu.cpp
@@ -166,7 +171,6 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/MaxPool3dWithIndicesBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/BatchNormBackwardElemtKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SoftmaxKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/SlowConvTranspose2dKernelNpu.cpp
     #${OP_PLUGIN_DIR}/DropoutWithByteMaskKernelNpu.cpp
     ${OP_PLUGIN_DIR}/GerKernelNpu.cpp
     ${OP_PLUGIN_DIR}/GridSampler2dKernelNpu.cpp
@@ -259,7 +263,7 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/LtKernelNpu.cpp
     ${OP_PLUGIN_DIR}/RotatedBoxEncodeKernelNpu.cpp
     ${OP_PLUGIN_DIR}/HardSwishBackwardKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/Conv2dKernelNpu.cpp
+
     ${OP_PLUGIN_DIR}/AvgPool2dKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SincKernelNpu.cpp
     ${OP_PLUGIN_DIR}/LayerNormEvalKernelNpu.cpp
@@ -267,7 +271,6 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/IsPosInfKernelNpu.cpp
     ${OP_PLUGIN_DIR}/BroadcastKernelNpu.cpp
     ${OP_PLUGIN_DIR}/EmbeddingBagKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/ConvTranspose2dBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/LogSigmoidBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/HardShrinkBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/DecodeJpegKernelNpu.cpp
@@ -336,7 +339,6 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/EyeKernelNpu.cpp
     ${OP_PLUGIN_DIR}/ReplicationPad2dBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/ScaledMaskedSoftmaxKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/CastKernelNpu.cpp
     #${OP_PLUGIN_DIR}/BmmKernelNpu.cpp
     ${OP_PLUGIN_DIR}/AddReluKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SortKernelNpu.cpp
@@ -450,7 +452,6 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/_Unique2KernelNpu.cpp
     ${OP_PLUGIN_DIR}/AllKernelNpu.cpp
     ${OP_PLUGIN_DIR}/BatchNormGatherStatsUpdateKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/SumKernelNpu.cpp
     ${OP_PLUGIN_DIR}/RoiAlignBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/NLLLossKernelNpu.cpp
     #${OP_PLUGIN_DIR}/NativeDropoutKernelNpu.cpp
@@ -466,7 +467,6 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/IsInTensorScalarKernelNpu.cpp
     ${OP_PLUGIN_DIR}/Log1pKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SoftmaxCrossEntropyWithLogitsKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/Conv2dBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/NnpackSpatialConvolutionKernelNpu.cpp
     #${OP_PLUGIN_DIR}/GruKernelNpu.cpp
 )
@@ -474,6 +474,9 @@ set(OP_PLUGIN_SRC
 set(OP_PLUGIN_SRC_V_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/v2r0/aclops/)
 set(OP_PLUGIN_SRC
     ${OP_PLUGIN_SRC}
+    ${OP_PLUGIN_SRC_V_DIR}/SumKernelNpu.cpp
+)
+set(debug
     ${OP_PLUGIN_SRC_V_DIR}/BatchNormKernelNpu.cpp
     ${OP_PLUGIN_SRC_V_DIR}/IndexKernelNpu.cpp
     ${OP_PLUGIN_SRC_V_DIR}/CumsumKernelNpu.cpp
@@ -511,7 +514,6 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_SRC_V_DIR}/RepeatInterLeaveKernelNpu.cpp
     ${OP_PLUGIN_SRC_V_DIR}/SoftplusBackwardKernelNpu.cpp
     ${OP_PLUGIN_SRC_V_DIR}/MinV1KernelNpu.cpp
-    ${OP_PLUGIN_SRC_V_DIR}/SumKernelNpu.cpp
     ${OP_PLUGIN_SRC_V_DIR}/WhereKernelNpu.cpp
     ${OP_PLUGIN_SRC_V_DIR}/IndexCopyKernelNpu.cpp
 )
@@ -795,8 +797,9 @@ set(OP_PLUGIN_UTILS_SRC
     ${OP_PLUGIN_UTILS_DIR}/OpUtils.cpp
     ${OP_PLUGIN_UTILS_DIR}/op_api_common.cpp
     #${OP_PLUGIN_UTILS_DIR}/AdvancedIndex.cpp
+    ${OP_PLUGIN_UTILS_DIR}/custom_functions/aclops/SumKernelNpu.cpp
 )
-set(OP_PLUGIN_UTILS_SRC
+set(OP_PLUGIN_UTILS_SRC1
     ${OP_PLUGIN_UTILS_SRC}
     ${OP_PLUGIN_UTILS_DIR}/custom_functions/aclops/IndexKernelNpu.cpp
     ${OP_PLUGIN_UTILS_DIR}/custom_functions/aclops/PreluBackwardKernelNpu.cpp
@@ -815,7 +818,6 @@ set(OP_PLUGIN_UTILS_SRC
     ${OP_PLUGIN_UTILS_DIR}/custom_functions/aclops/GeluKernelNpu.cpp
     ${OP_PLUGIN_UTILS_DIR}/custom_functions/aclops/RepeatInterLeaveKernelNpu.cpp
     ${OP_PLUGIN_UTILS_DIR}/custom_functions/aclops/SoftplusBackwardKernelNpu.cpp
-    ${OP_PLUGIN_UTILS_DIR}/custom_functions/aclops/SumKernelNpu.cpp
     ${OP_PLUGIN_UTILS_DIR}/custom_functions/aclops/WhereKernelNpu.cpp
     ${OP_PLUGIN_UTILS_DIR}/custom_functions/aclops/IndexCopyKernelNpu.cpp
 )

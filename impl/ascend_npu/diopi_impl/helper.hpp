@@ -20,6 +20,10 @@
 
 #define LOG_LINE_INFO() std::cerr << __FILE__ << ":" << __LINE__ << ": ";
 
+
+#define BEGIN_CALL_ACL_OP()   \
+    std::cout<<__FILE__<<":"<<__LINE__<<" :"<<__FUNCTION__<<std::endl;
+
 inline void logError() { std::cerr << std::endl; }
 
 template <typename First, typename... Rest>
