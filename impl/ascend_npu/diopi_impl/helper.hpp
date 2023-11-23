@@ -20,9 +20,51 @@
 
 #define LOG_LINE_INFO() std::cerr << __FILE__ << ":" << __LINE__ << ": ";
 
+#define GET_ARGS_NUM
 
-#define BEGIN_CALL_ACL_OP()   \
-    std::cout<<__FILE__<<":"<<__LINE__<<" :"<<__FUNCTION__<<std::endl;
+#define BUILD_ATEN_ARG0() ;
+
+#define BUILD_ATEN_ARG1(x) \
+    auto at_##x = impl::aten::buildATen(x);
+
+#define BUILD_ATEN_ARG2(x, y) \
+    auto at_##x = impl::aten::buildATen(x); \
+    auto at_##y = impl::aten::buildATen(y);
+
+#define BUILD_ATEN_ARG3(x, y, z) \
+    auto at_##x = impl::aten::buildATen(x); \
+    auto at_##y = impl::aten::buildATen(y); \
+    auto at_##z = impl::aten::buildATen(z);
+
+#define BUILD_ATEN_ARG4(x1, x2, x3, x4) \
+    auto at_##x1 = impl::aten::buildATen(x1); \
+    auto at_##x2 = impl::aten::buildATen(x2); \
+    auto at_##x3 = impl::aten::buildATen(x3); \
+    auto at_##x4 = impl::aten::buildATen(x4);
+
+
+#define PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT(_1,_2,_3,_4,_5,_6,_7,_8,_9,N,...) N
+#define PRIVATE_MACRO_VAR_ARGS_IMPL(args) PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT args
+
+#define COUNT_MACRO_VARR(...) PRIVATE_MACRO_VAR_ARGS_IMPL((__VA_ARGS__,9,8,7,6,5,4,3,2,1))
+
+#define PRIVATE_CONCAT_STR2(x, y) x##y
+#define PRIVATE_CONCAT_STR1(x, y) PRIVATE_CONCAT_STR2(x, y)
+#define PRIVATE_CONCAT_STR(x, y) PRIVATE_CONCAT_STR1(x, y)
+
+#define BUILD_ATEN_ARGS(...) \
+    PRIVATE_CONCAT_STR(BUILD_ATEN_ARG, COUNT_MACRO_VARR(__VA_ARGS__))(__VA_ARGS__)
+
+
+
+#define BEGIN_CALL_ACL_OP(...)                                          \
+    std::cout<<__FILE__<<":"<<__LINE__<<" :"<<__FUNCTION__<<std::endl;  \
+    impl::aten::setCurCtx(ctx);                                         \
+    BUILD_ATEN_ARGS(__VA_ARGS__)
+
+#define END_CALL_ACL_OP()                                             \
+    impl::aten::unsetCurCtx();                                        \
+    return diopiSuccess;
 
 inline void logError() { std::cerr << std::endl; }
 
@@ -219,7 +261,7 @@ inline bool isInt(const diopiScalar_t* scalar) { return scalar->stype <= 7; }
 
 inline bool isFloat(const diopiScalar_t* scalar) { return scalar->stype > 7; }
 
-inline at::Scalar buildAtScalar(const diopiScalar_t* scalar) {
+inline at::Scalar buildATen(const diopiScalar_t* scalar) {
     if (scalar == nullptr) {
         NOT_SUPPORTED("scalar is null ptr, we use temporarily zero");
         return at::Scalar();
