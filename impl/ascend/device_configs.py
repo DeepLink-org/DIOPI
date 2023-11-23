@@ -727,22 +727,6 @@ device_configs = {
         ),
     ),
 
-   'pointwise_binary_diff_dtype_without_bool': dict(
-        name=['div'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16)],
-                },
-                {
-                    "ins": ['other'],
-                    "dtype": [Skip(np.float16)],
-                },
-            ]
-        ),
-    ),
-
     'bitwise_op': dict(
         name=['bitwise_and', 'bitwise_or'],
         tensor_para=dict(
