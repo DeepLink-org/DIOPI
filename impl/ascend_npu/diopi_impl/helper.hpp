@@ -42,6 +42,63 @@
     auto at_##x3 = impl::aten::buildATen(x3); \
     auto at_##x4 = impl::aten::buildATen(x4);
 
+#define BUILD_ATEN_ARG5(x1, x2, x3, x4, x5) \
+    auto at_##x1 = impl::aten::buildATen(x1); \
+    auto at_##x2 = impl::aten::buildATen(x2); \
+    auto at_##x3 = impl::aten::buildATen(x3); \
+    auto at_##x4 = impl::aten::buildATen(x4); \
+    auto at_##x5 = impl::aten::buildATen(x5);
+
+#define BUILD_ATEN_ARG6(x1, x2, x3, x4, x5, x6) \
+    auto at_##x1 = impl::aten::buildATen(x1); \
+    auto at_##x2 = impl::aten::buildATen(x2); \
+    auto at_##x3 = impl::aten::buildATen(x3); \
+    auto at_##x4 = impl::aten::buildATen(x4); \
+    auto at_##x5 = impl::aten::buildATen(x5); \
+    auto at_##x6 = impl::aten::buildATen(x6);
+
+#define BUILD_ATEN_ARG7(x1, x2, x3, x4, x5, x6, x7) \
+    auto at_##x1 = impl::aten::buildATen(x1); \
+    auto at_##x2 = impl::aten::buildATen(x2); \
+    auto at_##x3 = impl::aten::buildATen(x3); \
+    auto at_##x4 = impl::aten::buildATen(x4); \
+    auto at_##x5 = impl::aten::buildATen(x5); \
+    auto at_##x6 = impl::aten::buildATen(x6); \
+    auto at_##x7 = impl::aten::buildATen(x7);
+
+#define BUILD_ATEN_ARG8(x1, x2, x3, x4, x5, x6, x7, x8) \
+    auto at_##x1 = impl::aten::buildATen(x1); \
+    auto at_##x2 = impl::aten::buildATen(x2); \
+    auto at_##x3 = impl::aten::buildATen(x3); \
+    auto at_##x4 = impl::aten::buildATen(x4); \
+    auto at_##x5 = impl::aten::buildATen(x5); \
+    auto at_##x6 = impl::aten::buildATen(x6); \
+    auto at_##x7 = impl::aten::buildATen(x7); \
+    auto at_##x8 = impl::aten::buildATen(x8);
+
+#define BUILD_ATEN_ARG9(x1, x2, x3, x4, x5, x6, x7, x8, x9) \
+    auto at_##x1 = impl::aten::buildATen(x1); \
+    auto at_##x2 = impl::aten::buildATen(x2); \
+    auto at_##x3 = impl::aten::buildATen(x3); \
+    auto at_##x4 = impl::aten::buildATen(x4); \
+    auto at_##x5 = impl::aten::buildATen(x5); \
+    auto at_##x6 = impl::aten::buildATen(x6); \
+    auto at_##x7 = impl::aten::buildATen(x7); \
+    auto at_##x8 = impl::aten::buildATen(x8); \
+    auto at_##x9 = impl::aten::buildATen(x9);
+
+#define BUILD_ATEN_ARG10(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10) \
+    auto at_##x1 = impl::aten::buildATen(x1); \
+    auto at_##x2 = impl::aten::buildATen(x2); \
+    auto at_##x3 = impl::aten::buildATen(x3); \
+    auto at_##x4 = impl::aten::buildATen(x4); \
+    auto at_##x5 = impl::aten::buildATen(x5); \
+    auto at_##x6 = impl::aten::buildATen(x6); \
+    auto at_##x7 = impl::aten::buildATen(x7); \
+    auto at_##x8 = impl::aten::buildATen(x8); \
+    auto at_##x9 = impl::aten::buildATen(x9); \
+    auto at_##x10 = impl::aten::buildATen(x10);
+
 
 #define PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT(_1,_2,_3,_4,_5,_6,_7,_8,_9,N,...) N
 #define PRIVATE_MACRO_VAR_ARGS_IMPL(args) PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT args
@@ -275,9 +332,17 @@ inline at::Scalar buildATen(const diopiScalar_t* scalar) {
     }
 }
 
-inline at::IntArrayRef buildAtIntArray(const diopiSize_t* size) { return at::IntArrayRef(size->data, size->len); }
+inline at::IntArrayRef buildATen(const diopiSize_t* size) { return at::IntArrayRef(size->data, size->len); }
 
-inline at::IntArrayRef buildAtIntArray(diopiSize_t size) { return at::IntArrayRef(size.data, size.len); }
+inline at::IntArrayRef buildATen(diopiSize_t size) { return at::IntArrayRef(size.data, size.len); }
+
+inline c10::OptionalIntArrayRef buildATen(diopiSize_t* size_ptr) {
+    if (size_ptr) {
+        return buildATen(*size_ptr);
+    }
+    return c10::nullopt;
+}
+
 
 template <typename T>
 inline decltype(auto) buildATenList(T* tensors, int64_t numTensors) {
