@@ -4,11 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <cmath>
-
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
-#include "op_plugin/OpApiInterface.h"
 
 extern "C" {
 
@@ -21,7 +18,7 @@ diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
 diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha) {
     BEGIN_CALL_ACL_OP(input, other, alpha);
-    diopiAdd(ctx, input, input, other, alpha);
+    acl_op::add_out(at_input, at_other, at_alpha, at_input);
     END_CALL_ACL_OP();
 }
 
