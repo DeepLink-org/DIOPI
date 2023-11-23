@@ -26,7 +26,7 @@ class glob_var(object):
     def set_four_bytes(self):
         self.four_bytes = True
         self.int_type = np.int32
-        self.float_type =np.float32
+        self.float_type = np.float32
 
     def get_four_bytes(self):
         return self.four_bytes
