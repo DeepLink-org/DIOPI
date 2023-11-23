@@ -180,7 +180,8 @@ diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         return diopiSuccess;
     } else {
         // default
-        AclOpRunner<2, 1, dtypeConvertor>("RealDiv", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
+        // when other is 0 and highType is f16, only using f64 can we generate nan or inf and copy it to f16
+        AclOpRunner<2, 1, dtypeConvertor>("RealDiv", ctx).addInput(input, diopi_dtype_float64).addInput(other, diopi_dtype_float64).addOutput(outCopy).run();
         if (RoundModeTrunc == roundingMode) {
             // trunc
             // trunc only support float16, float32, int8, uint8, int32.
