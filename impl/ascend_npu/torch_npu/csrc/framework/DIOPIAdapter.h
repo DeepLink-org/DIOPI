@@ -37,6 +37,8 @@ const int SHAPE_SIZE = 8;
 #define NPU_LOGW(fmt, ...) printf("[WARN]%s,%s:%u:" #fmt "\n", __FUNCTION__, __FILENAME__, __LINE__, ##__VA_ARGS__)
 #define NPU_LOGI(fmt, ...) printf("[INFO]:" #fmt "\n", ##__VA_ARGS__)
 
+#define USE_NPU_LOG
+
 #ifdef USE_NPU_LOG
 #define NPU_LOGD(fmt, ...) printf("[INFO]%s,%s:%u:" #fmt "\n", __FUNCTION__, __FILENAME__, __LINE__, ##__VA_ARGS__)
 #else
@@ -443,16 +445,14 @@ public:
     static int8_t get_cube_math_type(bool allowHf32) { INTERFACE_NOT_IMPL }
 
     // used to apply output tensor
-    static at::Tensor apply_tensor(const at::Tensor &src) { INTERFACE_NOT_IMPL }
-    static at::Tensor apply_tensor(const at::Tensor &src, c10::IntArrayRef sizes) { INTERFACE_NOT_IMPL }
-    static at::Tensor apply_tensor(const at::Tensor &src, const c10::TensorOptions &options) { INTERFACE_NOT_IMPL }
-    static at::Tensor apply_tensor(c10::IntArrayRef sizes, const c10::TensorOptions &options, const at::Tensor &src) { INTERFACE_NOT_IMPL }
-    static at::Tensor apply_tensor_with_format(const at::Tensor &src, int64_t format, bool keep_format = false) { INTERFACE_NOT_IMPL }
-    static at::Tensor apply_tensor_with_format(const at::Tensor &src, c10::IntArrayRef sizes, int64_t format, bool keep_format = false) { INTERFACE_NOT_IMPL }
-    static at::Tensor apply_tensor_with_format(c10::IntArrayRef sizes, const c10::TensorOptions &options, int64_t format, bool keep_format = false) {
-        INTERFACE_NOT_IMPL
-    }
-    static at::Tensor apply_tensor_with_sizes(c10::IntArrayRef sizes, const c10::TensorOptions &options) { INTERFACE_NOT_IMPL }
+    static at::Tensor apply_tensor(const at::Tensor &src);
+    static at::Tensor apply_tensor(const at::Tensor &src, c10::IntArrayRef sizes);
+    static at::Tensor apply_tensor(const at::Tensor &src, const c10::TensorOptions &options);
+    static at::Tensor apply_tensor(c10::IntArrayRef sizes, const c10::TensorOptions &options, const at::Tensor &src);
+    static at::Tensor apply_tensor_with_format(const at::Tensor &src, int64_t format, bool keep_format = false);
+    static at::Tensor apply_tensor_with_format(const at::Tensor &src, c10::IntArrayRef sizes, int64_t format, bool keep_format = false);
+    static at::Tensor apply_tensor_with_format(c10::IntArrayRef sizes, const c10::TensorOptions &options, int64_t format, bool keep_format = false);
+    static at::Tensor apply_tensor_with_sizes(c10::IntArrayRef sizes, const c10::TensorOptions &options);
 
     // DEPRECATED: CheckOut will be deprecated, please use check_tensor to check output tensor instead.
     static void CheckOut(const std::initializer_list<at::Tensor> &inputs, at::Tensor &output, at::Tensor dst);
@@ -539,7 +539,7 @@ public:
     static void format_fresh_view(at::Tensor &x, const at::Tensor &y) { INTERFACE_NOT_IMPL }
 
     static bool check_5d_5d_match(const at::Tensor &tensor) { INTERFACE_NOT_IMPL }
-    static bool IsOomError(aclError ret, int index) { INTERFACE_NOT_IMPL }
+    static bool IsOomError(aclError ret, int index);
     static void check_1d(const at::Tensor &t, const char *arg, const char *fn) { INTERFACE_NOT_IMPL }
 };  // class NpuUtils
 
