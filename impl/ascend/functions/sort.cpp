@@ -11,7 +11,14 @@ namespace ascend {
 diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, diopiTensorHandle_t indices, diopiConstTensorHandle_t input, int64_t dim,
                        bool descending, const bool* stable) {
     bool tem = &stable;
-    AclOpRunner<1, 2>("Sort", ctx).addInput(input).setAttr("axis", dim).setAttr("descending", descending).setAttr("stable", tem).addOutput(values).addOutput(indices).run();
+    AclOpRunner<1, 2>("Sort", ctx)
+        .addInput(input)
+        .setAttr("axis", dim)
+        .setAttr("descending", descending)
+        .setAttr("stable", tem)
+        .addOutput(values)
+        .addOutput(indices)
+        .run();
 
     // AscendTensor tem(input);
     // AclOpRunner<2, 2>("TopKV2", ctx)
