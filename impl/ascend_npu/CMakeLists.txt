@@ -90,6 +90,7 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/SlowConvTranspose2dBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SlowConvTranspose2dKernelNpu.cpp
     ${OP_PLUGIN_DIR}/Conv2dBackwardKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/Conv2dKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SumKernelNpu.cpp
     ${OP_PLUGIN_DIR}/CastKernelNpu.cpp
 )

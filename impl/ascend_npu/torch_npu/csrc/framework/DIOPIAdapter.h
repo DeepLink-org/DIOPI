@@ -443,7 +443,7 @@ public:
     static at::Tensor &cast_to_ori_format(at::Tensor &tensor) { INTERFACE_NOT_IMPL }
 
     static int8_t get_cube_math_type(bool allowHf32) { INTERFACE_NOT_IMPL }
-
+    static void markAsOutputForApplyTensor(at::Tensor& src);
     // used to apply output tensor
     static at::Tensor apply_tensor(const at::Tensor &src);
     static at::Tensor apply_tensor(const at::Tensor &src, c10::IntArrayRef sizes);
@@ -612,15 +612,15 @@ public:
                                     const string &realType = "");
     // Attr
     template <typename dataType>
-    TORCH_NPU_API OpCommand &Attr(const string &name, dataType value) {
-        INTERFACE_NOT_IMPL
-        return *this;
-    }
+    TORCH_NPU_API OpCommand &Attr(const string &name, dataType value);
+
     // Attr depend on condition
     template <typename dataType>
     TORCH_NPU_API OpCommand &Attr(const string &name, dataType value, bool cond) {
-        INTERFACE_NOT_IMPL
-        return *this;
+        if (!cond) {
+            return *this;
+        }
+        return Attr(name, value);
     }
 
     // Run a single op
