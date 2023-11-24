@@ -11,7 +11,7 @@ namespace ascend {
 diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, diopiTensorHandle_t indices, diopiConstTensorHandle_t input, int64_t dim,
                        bool descending, const bool* stable) {
     bool tem = *stable;
-    if (dim < 0) dim = -(dim - 1);
+    if (dim < 0) dim = -(dim + 1);
     AclOpRunner<1, 2>("Sort", ctx)
         .addInput(input)
         .setAttr("axis", dim)
