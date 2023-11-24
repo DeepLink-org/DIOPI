@@ -17,6 +17,8 @@
 #include <vector>
 #include "error.hpp"
 
+#include "torch_npu/csrc/framework/DIOPIAdapter.h"
+
 
 #define LOG_LINE_INFO() std::cerr << __FILE__ << ":" << __LINE__ << ": ";
 
@@ -100,10 +102,10 @@
     auto at_##x10 = impl::aten::buildATen(x10);
 
 
-#define PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT(_1,_2,_3,_4,_5,_6,_7,_8,_9,N,...) N
+#define PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,N,...) N
 #define PRIVATE_MACRO_VAR_ARGS_IMPL(args) PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT args
 
-#define COUNT_MACRO_VARR(...) PRIVATE_MACRO_VAR_ARGS_IMPL((__VA_ARGS__,9,8,7,6,5,4,3,2,1))
+#define COUNT_MACRO_VARR(...) PRIVATE_MACRO_VAR_ARGS_IMPL((__VA_ARGS__,14,13,12,11,10,9,8,7,6,5,4,3,2,1))
 
 #define PRIVATE_CONCAT_STR2(x, y) x##y
 #define PRIVATE_CONCAT_STR1(x, y) PRIVATE_CONCAT_STR2(x, y)
