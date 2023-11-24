@@ -10,8 +10,8 @@ from .collect_case import DeviceConfig, CollectCase
 sys.path.append("../python/configs")
 
 
-def gen_case(cache_path=".", cur_dir="", model_name="", fname="", impl_folder="", case_output_dir="",  
-             diopi_case_item_file="diopi_case_items.cfg", device_case_item_file = "%s_case_items.cfg"):
+def gen_case(cache_path=".", cur_dir="", model_name="", fname="", impl_folder="", case_output_dir="",
+             diopi_case_item_file="diopi_case_items.cfg", device_case_item_file="%s_case_items.cfg"):
 
     if model_name != "":
         logger.info(
@@ -58,7 +58,7 @@ def gen_case(cache_path=".", cur_dir="", model_name="", fname="", impl_folder=""
 
     if not os.path.exists(case_output_dir):
         os.makedirs(case_output_dir)
-        
+
     gctc = GenConfigTestCase(
         module=model_name, config_path=cfg_path, tests_path=case_output_dir
     )
