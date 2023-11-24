@@ -86,6 +86,10 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/StrideAddKernelNpu.cpp
     ${OP_PLUGIN_DIR}/BatchNormElemtKernelNpu.cpp
     ${OP_PLUGIN_DIR}/BatchNormKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/BatchNormBackwardElemtKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/BatchNormBackwardKernelNpu.cpp
+    #${OP_PLUGIN_DIR}/BatchNormReduceKernelNpu.cpp
+    #${OP_PLUGIN_DIR}/BatchNormBackwardReduceKernelNpu.cpp
     ${OP_PLUGIN_DIR}/ConvDepthwise2dBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SlowConvTranspose2dBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SlowConvTranspose2dKernelNpu.cpp
@@ -93,6 +97,7 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/Conv2dKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SumKernelNpu.cpp
     ${OP_PLUGIN_DIR}/CastKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/BroadcastKernelNpu.cpp
 )
 set(debug
     ${OP_PLUGIN_DIR}/TransposeKernelNpu.cpp
@@ -170,7 +175,7 @@ set(debug
     ${OP_PLUGIN_DIR}/AnchorResponseFlagsKernelNpu.cpp
     ${OP_PLUGIN_DIR}/DivKernelNpu.cpp
     ${OP_PLUGIN_DIR}/MaxPool3dWithIndicesBackwardKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/BatchNormBackwardElemtKernelNpu.cpp
+
     ${OP_PLUGIN_DIR}/SoftmaxKernelNpu.cpp
     #${OP_PLUGIN_DIR}/DropoutWithByteMaskKernelNpu.cpp
     ${OP_PLUGIN_DIR}/GerKernelNpu.cpp
@@ -178,7 +183,6 @@ set(debug
     ${OP_PLUGIN_DIR}/PackPaddedSequenceKernelNpu.cpp
     ${OP_PLUGIN_DIR}/IndexingKernelNpu.cpp
     ${OP_PLUGIN_DIR}/ReflectionPad1dKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/BatchNormBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/ImageNormalizeKernelNpu.cpp
     ${OP_PLUGIN_DIR}/CdistBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/KthvalueKernelNpu.cpp
@@ -189,7 +193,6 @@ set(debug
     #${OP_PLUGIN_DIR}/BmmV2KernelNpu.cpp
     ${OP_PLUGIN_DIR}/ProdKernelNpu.cpp
     ${OP_PLUGIN_DIR}/__Rshift__KernelNpu.cpp
-    ${OP_PLUGIN_DIR}/BatchNormReduceKernelNpu.cpp
     ${OP_PLUGIN_DIR}/GridSampler3dKernelNpu.cpp
     ${OP_PLUGIN_DIR}/RsubKernelNpu.cpp
     ${OP_PLUGIN_DIR}/SortWithoutIndicesKernelNpu.cpp
@@ -270,7 +273,6 @@ set(debug
     ${OP_PLUGIN_DIR}/LayerNormEvalKernelNpu.cpp
     ${OP_PLUGIN_DIR}/ErfcKernelNpu.cpp
     ${OP_PLUGIN_DIR}/IsPosInfKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/BroadcastKernelNpu.cpp
     ${OP_PLUGIN_DIR}/EmbeddingBagKernelNpu.cpp
     ${OP_PLUGIN_DIR}/LogSigmoidBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/HardShrinkBackwardKernelNpu.cpp
@@ -290,7 +292,6 @@ set(debug
     ${OP_PLUGIN_DIR}/CatKernelNpu.cpp
     ${OP_PLUGIN_DIR}/UpSampleNearest3dKernelNpu.cpp
     ${OP_PLUGIN_DIR}/ReluKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/BatchNormBackwardReduceKernelNpu.cpp
     ${OP_PLUGIN_DIR}/HardSwishKernelNpu.cpp
     ${OP_PLUGIN_DIR}/Atan2KernelNpu.cpp
     #${OP_PLUGIN_DIR}/RandomKernelNpu.cpp
@@ -838,6 +839,7 @@ set(DIOPI_IMPL_SRC
     ${DIOPI_IMPL_DIR}/error.cpp
     ${DIOPI_IMPL_DIR}/binary.cpp
     ${DIOPI_IMPL_DIR}/conv2d.cpp
+    ${DIOPI_IMPL_DIR}/batch_norm.cpp
 )
 
 add_definitions(-DBUILD_LIBTORCH)

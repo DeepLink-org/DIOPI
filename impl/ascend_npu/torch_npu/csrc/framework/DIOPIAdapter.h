@@ -155,6 +155,9 @@ static void warn_(const ::c10::Warning &warning) { INTERFACE_NOT_IMPL }
         return true;                                                                  \
     }()
 
+
+#define RECORD_FUNCTION(...) ;
+
 namespace at_npu {
 namespace key {
 static constexpr c10::DeviceType NativeDeviceType = c10::DeviceType::XLA;
