@@ -64,7 +64,7 @@ diopiError_t device_synchronize_stream(diopiStreamHandle_t streamHandle) {
 
 diopiError_t device_memcpy_h2d_async(diopiStreamHandle_t streamHandle, void* dst, const void* src, uint64_t bytes) {
     suStream_t stream = (suStream_t)streamHandle;
-    auto phy_gpu_addr = get_phy_ptr(dst); // the gpu address may be a virtual address. so translate it.
+    auto phy_gpu_addr = get_phy_ptr(dst);  // the gpu address may be a virtual address. so translate it.
     SUPA_CALL(suMemcpyAsync(phy_gpu_addr, const_cast<void*>(src), bytes, stream, suMemcpyHostToDevice));
     return diopiSuccess;
 }
