@@ -72,13 +72,9 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTens
 template diopiError_t cnnlOpTensor<double, double, double>(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor other, DiopiTensor out,
                                                            cnnlOpTensorDesc_t op_type, double alpha1, double alpha2, double beta);
 
-template <typename T = double>
+template <typename T>
 diopiError_t cnnlTransformAdaptor(diopiContextHandle_t ctx, DiopiTensor out, DiopiTensor input, T other, T alpha) {
     auto handle = cnnlHandlePool.get(ctx);
-
-    // std::vector<DiopiTensor *> inTensors{&input};
-    // std::set<diopiDtype_t> supDtypes{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_int32};
-    // DIOPI_CALL(autoCastTensorType(ctx, inTensors, supDtypes));
 
     DiopiTensor outTmp = out;
     if (outTmp.dtype() != input.dtype()) {
@@ -105,9 +101,6 @@ diopiError_t cnnlTransformAdaptor(diopiContextHandle_t ctx, DiopiTensor out, Dio
 }
 
 template diopiError_t cnnlTransformAdaptor<double>(diopiContextHandle_t ctx, DiopiTensor out, DiopiTensor input, double alpha, double beta);
-
-// template
-// diopiError_t cnnlTransformAdaptor<void>(diopiContextHandle_t ctx, DiopiTensor out, DiopiTensor input, void* alpha, void* beta);
 
 }  // namespace camb
 }  // namespace impl
