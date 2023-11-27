@@ -26,48 +26,33 @@ DIOPI_API diopiError_t diopiPlusScalarInp(diopiContextHandle_t ctx, diopiTensorH
     if (in_shape.len != 1) {
         return diopiErrorOccurred;
     }
-    int64_t input_len = in_shape.data[0];
     
     diopiDtype_t in_type;
-    diopiSize_t in_stride;
     diopiDevice_t in_device;
     diopiGetTensorDtype(inoutput, &in_type);
-    diopiGetTensorStride(inoutput, &in_stride);
     diopiGetTensorDevice(inoutput, &in_device);
-
-    diopiSize_t front_shape;
-    front_shape.data = &size;
-    front_shape.len = 1;
-    diopiTensorHandle_t tmp[2];
-    diopiRequireTensor(ctx, tmp, &front_shape, &in_stride, in_type, in_device);
     
-    diopiScalar_t front_scalar;
-    front_scalar.stype = diopi_dtype_int64;
-    front_scalar.ival = val;
-    diopiFill(ctx, tmp[0], &front_scalar);
+    int64_t front_len = (size <= in_shape.data[0]) ? size : in_shape.data[0]; 
+    diopiSize_t front_shape; 
+    front_shape.data = &front_len;
+    front_shape.len = 1;
+    diopiSize_t front_stride;
 
-    diopiTensorHandle_t added = tmp[0];
-
-    if (size < input_len) {
-        int64_t latter_len = input_len - size;
-        diopiSize_t latter_shape;
-        latter_shape.data = &latter_len;
-        latter_shape.len = 1;
-        diopiRequireTensor(ctx, &tmp[1], &latter_shape, &in_stride, in_type, in_device);
-
-        diopiScalar_t latter_scalar;
-        latter_scalar.stype = diopi_dtype_int64;
-        latter_scalar.ival = 0;
-        diopiFill(ctx, tmp[1], &latter_scalar);
-        
-        diopiRequireTensor(ctx, &added, &in_shape, &in_stride, in_type, in_device);
-        diopiCat(ctx, added, const_cast<diopiConstTensorHandle_t*>(&tmp[0]), 2, 0);
-    }
+    void *input_data;
+    diopiGetTensorData(inoutput, &input_data);
+    front_stride.data = reinterpret_cast<const int64_t*>(input_data);
+    front_stride.len = -1;
+    diopiTensorHandle_t front;
+    diopiRequireTensor(ctx, &front, &front_shape, &front_stride, in_type, in_device);
+    
+    diopiScalar_t val_scalar;
+    val_scalar.stype = diopi_dtype_int64;
+    val_scalar.ival = val;
 
     diopiScalar_t one;
     one.stype = diopi_dtype_int64;
     one.ival = 1;
-    diopiAddInp(ctx, inoutput, added, &one);
+    diopiAddInpScalar(ctx, front, &val_scalar, &one);
     return diopiSuccess;
 }
 
@@ -154,15 +139,15 @@ DIOPI_API diopiError_t diopiLengthCriterion(diopiContextHandle_t ctx, diopiTenso
     // if step >= sequence_limit_length, then finished = true
     // diopiSubInpScalar(ctx, sequence_limit_length, &step_scalar);
 
-    
     diopiLeScalar(ctx, finished, sequence_limit_length, &step_scalar);
     diopiSize_t dim_zero;
-    dim_zero.data = reinterpret_cast<const int64_t*>(new int64_t {0});
+    int64_t tmp_zero = 0;
+    dim_zero.data = &tmp_zero;
     dim_zero.len = 1;
+    
     diopiSum(ctx, finished_sum, finished, dim_zero);
-
-    delete dim_zero.data;
     diopiEqScalar(ctx, should_stop, finished_sum, &batch_size_scalar);
+    
     return diopiSuccess;
 } 
 
