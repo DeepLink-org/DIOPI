@@ -10,12 +10,12 @@ else()
 endif()
 
 execute_process(
-    COMMAND sh -c "bash  ${CMAKE_CURRENT_SOURCE_DIR}/torch_npu/third_party/acl/libs/build_stub.sh"
+    COMMAND sh -c "bash  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/libs/build_stub.sh"
     COMMAND sh -c "echo 'download op-plugin ...'; cd ${CMAKE_CURRENT_SOURCE_DIR}/; git clone  https://gitee.com/ascend/op-plugin/ op-plugin || cd op-plugin && git checkout 186f4b87e2db4791a6ed697cea78d58a0ae92db1 && bash  ./gencode.sh 2.0 python "
 )
-add_subdirectory(torch_npu/third_party/acl)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/torch_npu/third_party/acl/inc)
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/torch_npu/third_party/acl/libs/)
+add_subdirectory(third_party/acl)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/libs/)
 
 #if(EXISTS ${ASCEND_DIR}/ascend-toolkit/latest/)
 #  message(STATUS "ascend-toolkit exists:" ${ASCEND_DIR}/ascend-toolkit/latest/)
