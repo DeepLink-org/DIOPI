@@ -18,6 +18,8 @@ aclError aclmdlSetDump(const char *configPath){return 0;}
 aclError aclmdlInitDump(){return 0;}
 aclError aclmdlFinalizeDump(){return 0;}
 
+const char *aclGetRecentErrMsg() {return 0;}
+
 // Stream
 aclError aclrtCreateStream(aclrtStream *stream) { return 0; }
 aclError aclrtSetStreamFailureMode(aclrtStream stream, uint64_t mode) { return 0; }
