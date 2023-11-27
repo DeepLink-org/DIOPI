@@ -40,6 +40,7 @@ include_directories(SYSTEM ${TORCH_INCLUDE_DIRS})
 message(STATUS "Torch TORCH_INCLUDE_DIRS: ${TORCH_INCLUDE_DIRS}")
 
 
+
 if(NOT DEFINED DIPU_ABI_V)
   execute_process(
     COMMAND
@@ -876,7 +877,7 @@ endif()
 
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
-target_link_libraries(${DEVICEIMPL} ascendcl acl_op_compiler)
+target_link_libraries(${DEVICEIMPL} ascendcl acl_op_compiler c10 torch_cpu)
 
 if(USE_ADAPTOR)
     add_dependencies(${DEVICEIMPL} adaptor_code_gen)

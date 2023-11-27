@@ -76,7 +76,7 @@ aclError AclGenGraphAndDumpForOp(const char *opType, int numInputs, const aclTen
                                                     aclGraphDumpOption *);
     static AclGenGraphAndDumpForOpFunc func = nullptr;
     if (func == nullptr) {
-        func = (AclGenGraphAndDumpForOpFunc)GET_FUNC(aclGenGraphAndDumpForOp);
+        //func = (AclGenGraphAndDumpForOpFunc)GET_FUNC(aclGenGraphAndDumpForOp);
     }
     TORCH_CHECK(func, "Failed to find function ", "aclGenGraphAndDumpForOp");
     auto ret = func(opType, numInputs, inputDesc, inputs, numOutputs, outputDesc, outputs, attr, engineType, graphDumpPath, graphdumpOpt);
