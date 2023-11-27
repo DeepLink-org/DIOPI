@@ -8,7 +8,7 @@ find_library(
     # Set environment variable FLASH_ATTN_LIB_DIR to the path of the library
     ENV FLASH_ATTN_LIB_DIR
     # This is the path on cluster 1424 A100
-    /mnt/cache/shenliancheng/workspace/flash-attention/build/lib.linux-x86_64-cpython-38
+    /mnt/cache/share/platform/dep/DIOPI_pytorch/flash-attention/build/lib.linux-x86_64-3.10
 )
 
 if(NOT DIOPI_TORCH_EXT_FLASH_ATTN_LIB)
