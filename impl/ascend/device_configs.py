@@ -1067,12 +1067,6 @@ device_configs = {
         ),
     ),
 
-    'linear': dict(
-        name=['linear'],
-        atol = 1e-1,
-        rtol = 1e-1,
-    ),
-
     'embedding': dict(
         name=['embedding'],
         tensor_para=dict(
