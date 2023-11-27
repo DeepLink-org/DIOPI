@@ -44,7 +44,7 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTens
                           T2 alpha2 = 1.0, T3 beta = 0.0);
 
 template <typename T = double>
-diopiError_t cnnlTransformAdaptor(diopiContextHandle_t ctx, DiopiTensor out, DiopiTensor input, T other, T alpha);
+diopiError_t cnnlTransformAdaptor(diopiContextHandle_t ctx, DiopiTensor out, DiopiTensor input, T other, T alpha, T beta);
 
 diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiTensor& outTensor,
                    diopiMemoryFormat_t memoryFormat = diopiMemoryFormat_t::Preserve);

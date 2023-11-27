@@ -73,7 +73,7 @@ template diopiError_t cnnlOpTensor<double, double, double>(diopiContextHandle_t 
                                                            cnnlOpTensorDesc_t op_type, double alpha1, double alpha2, double beta);
 
 template <typename T>
-diopiError_t cnnlTransformAdaptor(diopiContextHandle_t ctx, DiopiTensor out, DiopiTensor input, T other, T alpha) {
+diopiError_t cnnlTransformAdaptor(diopiContextHandle_t ctx, DiopiTensor out, DiopiTensor input, T other, T alpha, T beta) {
     auto handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor outTmp = out;
@@ -84,10 +84,10 @@ diopiError_t cnnlTransformAdaptor(diopiContextHandle_t ctx, DiopiTensor out, Dio
     std::shared_ptr<void> alp = nullptr;
     std::shared_ptr<void> bet = nullptr;
     if (DiopiDataType::isInteger(input.dtype())) {
-        alp = std::make_shared<int32_t>(1);
+        alp = std::make_shared<int32_t>(beta);
         bet = std::make_shared<int32_t>(other * alpha);
     } else {
-        alp = std::make_shared<float>(1);
+        alp = std::make_shared<float>(beta);
         bet = std::make_shared<float>(other * alpha);
     }
 
@@ -100,7 +100,7 @@ diopiError_t cnnlTransformAdaptor(diopiContextHandle_t ctx, DiopiTensor out, Dio
     return diopiSuccess;
 }
 
-template diopiError_t cnnlTransformAdaptor<double>(diopiContextHandle_t ctx, DiopiTensor out, DiopiTensor input, double alpha, double beta);
+template diopiError_t cnnlTransformAdaptor<double>(diopiContextHandle_t ctx, DiopiTensor out, DiopiTensor input, double other, double alpha, double beta);
 
 }  // namespace camb
 }  // namespace impl

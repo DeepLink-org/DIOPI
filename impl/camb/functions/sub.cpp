@@ -41,7 +41,8 @@ diopiError_t diopiSubScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
                                         outputTensor,
                                         inputTensor,
                                         DiopiDataType::isFloatPoint(other->stype) ? -other->fval : -other->ival,
-                                        DiopiDataType::isFloatPoint(alpha->stype) ? alpha->fval : alpha->ival));
+                                        DiopiDataType::isFloatPoint(alpha->stype) ? alpha->fval : alpha->ival,
+                                        DiopiDataType::isFloatPoint(inputTensor.dtype()) ? 1.0 : 1));
     } else {
         DiopiTensor otherTensor;
         DIOPI_CALL(makeTensorFromScalar(ctx, other, otherTensor));
@@ -60,7 +61,8 @@ diopiError_t diopiSubInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
                                         outputTensor,
                                         inputTensor,
                                         DiopiDataType::isFloatPoint(other->stype) ? -other->fval : -other->ival,
-                                        DiopiDataType::isFloatPoint(alpha->stype) ? alpha->fval : alpha->ival));
+                                        DiopiDataType::isFloatPoint(alpha->stype) ? alpha->fval : alpha->ival,
+                                        DiopiDataType::isFloatPoint(inputTensor.dtype()) ? 1.0 : 1));
     } else {
         DiopiTensor otherTensor;
         DIOPI_CALL(makeTensorFromScalar(ctx, other, otherTensor));
