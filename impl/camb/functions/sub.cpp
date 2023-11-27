@@ -35,20 +35,38 @@ diopiError_t diopiSubScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
                             const diopiScalar_t* alpha) {
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
-    DiopiTensor otherTensor;
-    DIOPI_CALL(makeTensorFromScalar(ctx, other, otherTensor));
-    DIOPI_CALL(cnnlOpTensor(
-        ctx, inputTensor, otherTensor, outputTensor, CNNL_OP_TENSOR_SUB, 1.0, DiopiDataType::isFloatPoint(alpha->stype) ? alpha->fval : alpha->ival));
+    if (inputTensor.dtype() == diopi_dtype_float16 || inputTensor.dtype() == diopi_dtype_float32 ||
+        (inputTensor.dtype() == diopi_dtype_int32 && DiopiDataType::isInteger(other->stype) && DiopiDataType::isInteger(alpha->stype))) {
+        DIOPI_CALL(cnnlTransformAdaptor(ctx,
+                                        outputTensor,
+                                        inputTensor,
+                                        DiopiDataType::isFloatPoint(other->stype) ? -other->fval : -other->ival,
+                                        DiopiDataType::isFloatPoint(alpha->stype) ? alpha->fval : alpha->ival));
+    } else {
+        DiopiTensor otherTensor;
+        DIOPI_CALL(makeTensorFromScalar(ctx, other, otherTensor));
+        DIOPI_CALL(cnnlOpTensor(
+            ctx, inputTensor, otherTensor, outputTensor, CNNL_OP_TENSOR_SUB, 1.0, DiopiDataType::isFloatPoint(alpha->stype) ? alpha->fval : alpha->ival));
+    }
     return diopiSuccess;
 }
 
 diopiError_t diopiSubInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(input);
-    DiopiTensor otherTensor;
-    DIOPI_CALL(makeTensorFromScalar(ctx, other, otherTensor));
-    DIOPI_CALL(cnnlOpTensor(
-        ctx, inputTensor, otherTensor, outputTensor, CNNL_OP_TENSOR_SUB, 1.0, DiopiDataType::isFloatPoint(alpha->stype) ? alpha->fval : alpha->ival));
+    if (inputTensor.dtype() == diopi_dtype_float16 || inputTensor.dtype() == diopi_dtype_float32 ||
+        (inputTensor.dtype() == diopi_dtype_int32 && DiopiDataType::isInteger(other->stype) && DiopiDataType::isInteger(alpha->stype))) {
+        DIOPI_CALL(cnnlTransformAdaptor(ctx,
+                                        outputTensor,
+                                        inputTensor,
+                                        DiopiDataType::isFloatPoint(other->stype) ? -other->fval : -other->ival,
+                                        DiopiDataType::isFloatPoint(alpha->stype) ? alpha->fval : alpha->ival));
+    } else {
+        DiopiTensor otherTensor;
+        DIOPI_CALL(makeTensorFromScalar(ctx, other, otherTensor));
+        DIOPI_CALL(cnnlOpTensor(
+            ctx, inputTensor, otherTensor, outputTensor, CNNL_OP_TENSOR_SUB, 1.0, DiopiDataType::isFloatPoint(alpha->stype) ? alpha->fval : alpha->ival));
+    }
     return diopiSuccess;
 }
 

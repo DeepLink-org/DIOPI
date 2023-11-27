@@ -72,5 +72,43 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTens
 template diopiError_t cnnlOpTensor<double, double, double>(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor other, DiopiTensor out,
                                                            cnnlOpTensorDesc_t op_type, double alpha1, double alpha2, double beta);
 
+template <typename T = double>
+diopiError_t cnnlTransformAdaptor(diopiContextHandle_t ctx, DiopiTensor out, DiopiTensor input, T other, T alpha) {
+    auto handle = cnnlHandlePool.get(ctx);
+
+    std::vector<DiopiTensor *> inTensors{&input};
+    std::set<diopiDtype_t> supDtypes{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_int32};
+    DIOPI_CALL(autoCastTensorType(ctx, inTensors, supDtypes));
+
+    DiopiTensor outTmp = out;
+    if (outTmp.dtype() != input.dtype()) {
+        outTmp = requiresTensor(ctx, out.shape(), input.dtype());
+    }
+
+    std::shared_ptr<void> alp = nullptr;
+    std::shared_ptr<void> bet = nullptr;
+    if (DiopiDataType::isInteger(input.dtype())) {
+        alp = std::make_shared<int32_t>(1);
+        bet = std::make_shared<int32_t>( other * alpha);
+    } else {
+        alp = std::make_shared<float>(1);
+        bet = std::make_shared<float>( other * alpha);
+    }
+
+    CnnlTensorDesc inputDesc(input, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outTmpDesc(outTmp, CNNL_LAYOUT_ARRAY);
+
+    DIOPI_CALL_CNNL(cnnlTransform_v2(handle, CNNL_POINTER_MODE_HOST, alp.get(), inputDesc.get(), input.data(), bet.get(), outTmpDesc.get(), outTmp.data()));
+    DIOPI_CALL(dataTypeCast(ctx, out, outTmp));
+
+    return diopiSuccess;
+}
+
+template 
+diopiError_t cnnlTransformAdaptor<double>(diopiContextHandle_t ctx, DiopiTensor out, DiopiTensor input, double alpha, double beta);
+
+// template 
+// diopiError_t cnnlTransformAdaptor<void>(diopiContextHandle_t ctx, DiopiTensor out, DiopiTensor input, void* alpha, void* beta);
+
 }  // namespace camb
 }  // namespace impl
