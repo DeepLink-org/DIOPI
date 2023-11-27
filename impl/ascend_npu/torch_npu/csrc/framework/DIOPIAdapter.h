@@ -12,11 +12,11 @@
 #include "op-plugin/op_plugin/utils/OpConstants.h"
 #include "torch_npu/csrc/core/npu/NPUErrorCodes.h"
 #include "torch_npu/csrc/framework/interface/AclOpCompileInterface.h"
-#include "torch_npu/third_party/acl/inc/acl/acl.h"
-#include "torch_npu/third_party/acl/inc/acl/acl_base.h"
-#include "torch_npu/third_party/acl/inc/acl/acl_op_compiler.h"
-#include "torch_npu/third_party/acl/inc/acl/acl_rt.h"
-#include "torch_npu/third_party/acl/inc/ge/ge_api.h"
+#include "acl/acl.h"
+#include "acl/acl_base.h"
+#include "acl/acl_op_compiler.h"
+#include "acl/acl_rt.h"
+#include "ge/ge_api.h"
 
 #define NPUStatus std::string
 #define SUCCESS "SUCCESS"

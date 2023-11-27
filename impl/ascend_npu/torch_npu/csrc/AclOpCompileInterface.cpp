@@ -16,8 +16,8 @@
 #include <c10/util/Exception.h>
 #include <c10/util/Optional.h>
 
-#include "torch_npu/third_party/acl/inc/acl/acl_base.h"
-#include "torch_npu/third_party/acl/inc/acl/acl_op_compiler.h"
+#include "acl/acl_base.h"
+#include "acl/acl_op_compiler.h"
 
 namespace at_npu {
 namespace native {
@@ -131,7 +131,7 @@ aclError AclrtCtxSetSysParamOpt(aclSysParamOpt opt, int64_t value) {
     typedef aclError (*AclrtCtxSetSysParamOptFunc)(aclSysParamOpt opt, int64_t value);
     static AclrtCtxSetSysParamOptFunc func = nullptr;
     if (func == nullptr) {
-        //func = (AclrtCtxSetSysParamOptFunc)GET_FUNC(aclrtCtxSetSysParamOpt);
+        func = (AclrtCtxSetSysParamOptFunc)GET_FUNC(aclrtCtxSetSysParamOpt);
     }
     if (func == nullptr) {
         TORCH_WARN("Failed to find this aclrtCtxSetSysParamOpt function!");
