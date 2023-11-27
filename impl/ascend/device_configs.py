@@ -858,7 +858,7 @@ device_configs = {
     ),
 
     'reduce_op': dict(
-        name=['mean', 'sum'],
+        name=['sum'],
         atol=1e-3,
         rtol=1e-3,
         tensor_para=dict(
@@ -874,7 +874,7 @@ device_configs = {
     'reduce_partial_op': dict(
         atol=1e-3,
         rtol=1e-3,
-        name=['mean', 'sum'],
+        name=['sum'],
         tensor_para=dict(
             args=[
                 {
