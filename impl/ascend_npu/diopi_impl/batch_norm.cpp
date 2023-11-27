@@ -13,16 +13,13 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiTensorHandle_t runningMean,
                             diopiTensorHandle_t runningVar, bool training, double momentum, double eps) {
     BEGIN_CALL_ACL_OP(out, saveMean, saveInvstd, input, weight, bias, runningMean, runningVar);
-    if (at_input.dim() > 5) {
-        at_npu::native::OpPreparation::markAsOutputForApplyTensor(at_out);
+    if (inputAt.dim() > 5) {
+        at_npu::native::OpPreparation::markAsOutputForApplyTensor(outAt);
     }
-    at_npu::native::OpPreparation::markAsOutputForApplyTensor(at_out);
-    at_npu::native::OpPreparation::markAsOutputForApplyTensor(at_runningMean);
-    at_npu::native::OpPreparation::markAsOutputForApplyTensor(at_runningVar);
-    //::std::tuple<at::Tensor &,at::Tensor &,at::Tensor &> native_batch_norm_out(const at::Tensor & input, const c10::optional<at::Tensor> & weight,
-    // const c10::optional<at::Tensor> & bias, const c10::optional<at::Tensor> & running_mean, const c10::optional<at::Tensor> & running_var, bool training,
-    // double momentum, double eps, at::Tensor & out, at::Tensor & save_mean, at::Tensor & save_invstd);
-    acl_op::native_batch_norm_out(at_input, at_weight, at_bias, at_runningMean, at_runningVar, training, momentum, eps, at_out, at_saveMean, at_saveInvstd);
+    at_npu::native::OpPreparation::markAsOutputForApplyTensor(outAt);
+    at_npu::native::OpPreparation::markAsOutputForApplyTensor(runningMeanAt);
+    at_npu::native::OpPreparation::markAsOutputForApplyTensor(runningVarAt);
+    acl_op::native_batch_norm_out(inputAt, weightAt, biasAt, runningMeanAt, runningVarAt, training, momentum, eps, outAt, saveMeanAt, saveInvstdAt);
     END_CALL_ACL_OP();
 }
 

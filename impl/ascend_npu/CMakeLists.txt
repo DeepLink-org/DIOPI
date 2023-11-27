@@ -40,6 +40,7 @@ include_directories(SYSTEM ${TORCH_INCLUDE_DIRS})
 message(STATUS "Torch TORCH_INCLUDE_DIRS: ${TORCH_INCLUDE_DIRS}")
 
 
+
 if(NOT DEFINED DIPU_ABI_V)
   execute_process(
     COMMAND
@@ -98,6 +99,8 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/SumKernelNpu.cpp
     ${OP_PLUGIN_DIR}/CastKernelNpu.cpp
     ${OP_PLUGIN_DIR}/BroadcastKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/MaxPool2dWithIndicesBackwardKernelNpu.cpp
+    ${OP_PLUGIN_DIR}/MaxPool2dWithIndicesKernelNpu.cpp
 )
 set(debug
     ${OP_PLUGIN_DIR}/TransposeKernelNpu.cpp
@@ -326,7 +329,7 @@ set(debug
     ${OP_PLUGIN_DIR}/PadPackedSequenceKernelNpu.cpp
     ${OP_PLUGIN_DIR}/TrueDivideKernelNpu.cpp
     ${OP_PLUGIN_DIR}/RemainderKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/MaxPool2dWithIndicesBackwardKernelNpu.cpp
+
     ${OP_PLUGIN_DIR}/IsNegInfKernelNpu.cpp
     ${OP_PLUGIN_DIR}/TakeKernelNpu.cpp
     ${OP_PLUGIN_DIR}/IsfiniteKernelNpu.cpp
@@ -335,7 +338,6 @@ set(debug
     ${OP_PLUGIN_DIR}/EmbeddingBagDenseBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/IndexAddKernelNpu.cpp
     ${OP_PLUGIN_DIR}/MaxUnpool2dKernelNpu.cpp
-    ${OP_PLUGIN_DIR}/MaxPool2dWithIndicesKernelNpu.cpp
     ${OP_PLUGIN_DIR}/LeakyReluBackwardKernelNpu.cpp
     ${OP_PLUGIN_DIR}/AdaptiveAvgPool1dKernelNpu.cpp
     ${OP_PLUGIN_DIR}/EyeKernelNpu.cpp
@@ -876,7 +878,7 @@ endif()
 
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
-target_link_libraries(${DEVICEIMPL} ascendcl acl_op_compiler)
+target_link_libraries(${DEVICEIMPL} ascendcl acl_op_compiler c10 torch_cpu)
 
 if(USE_ADAPTOR)
     add_dependencies(${DEVICEIMPL} adaptor_code_gen)

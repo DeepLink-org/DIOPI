@@ -106,3 +106,11 @@ aclGraphDumpOption* aclCreateGraphDumpOpt() {
 aclError aclDestroyGraphDumpOpt(aclGraphDumpOption* aclGraphDumpOpt) {
   return 0;
 }
+
+size_t aclGetCompileoptSize(aclCompileOpt opt) {
+  return 0;
+}
+
+aclError aclGetCompileopt(aclCompileOpt opt, char *value, size_t length) {
+  return 0;
+}
