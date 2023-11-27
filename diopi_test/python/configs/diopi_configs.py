@@ -1059,7 +1059,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'pointwise_op_asin': dict(
         name=['asin'],
         interface=['torch'],
