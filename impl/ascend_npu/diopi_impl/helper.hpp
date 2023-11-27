@@ -205,7 +205,6 @@ inline void unsetCurCtx() { context = nullptr; }
 inline void sync(diopiContextHandle_t ctx) {
     diopiStreamHandle_t stream_handle;
     diopiGetStream(ctx, &stream_handle);
-    //cudaStreamSynchronize(static_cast<cudaStream_t>(stream_handle));
 }
 
 inline caffe2::TypeMeta getATenType(diopiDtype_t dt) {
@@ -288,9 +287,15 @@ inline c10::DeviceType getATenDevice(diopiDevice_t device) {
     return c10::DeviceType::XPU;
 }
 
+// We can use reinterpret_cast directly in the dipu,
+// but we cannot use this method directly in the consistency test,
+// although the performance will be worse.
+#define DIOPI_ADAPTER_BUILD_TENSOR_NOR_USE_CAST 1
+
+#if DIOPI_ADAPTER_BUILD_TENSOR_NOR_USE_CAST
+
 inline at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef strides, const std::function<void(void*)>& deleter,
                                    at::Allocator* allocator, const at::TensorOptions& options) {
-    //auto device = at::globalContext().getDeviceFromPtr(data, options.device().type());
     auto device = options.device();
     if (options.device().has_index()) {
         assert(options.device() == device);
@@ -306,6 +311,50 @@ inline at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArr
     return at::empty({0}, new_options).set_(storage, 0, sizes, strides);
 }
 
+inline const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
+     if (tensor == nullptr) return at::Tensor();
+
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(tensor, &dtype);
+    caffe2::TypeMeta atType = getATenType(dtype);
+    diopiDevice_t device;
+    diopiGetTensorDevice(tensor, &device);
+    c10::DeviceType atDevice = getATenDevice(device);
+    int devId_ = 0;
+    ::aclrtGetDevice(&devId_);
+    void* data = nullptr;
+    diopiGetTensorData(const_cast<diopiTensorHandle_t>(tensor), &data);
+
+    diopiSize_t shape;
+    diopiGetTensorShape(tensor, &shape);
+    at::IntArrayRef atDims(shape.data, shape.len);
+
+    diopiSize_t stride;
+    diopiGetTensorStride(tensor, &stride);
+    at::IntArrayRef atStrides(stride.data, stride.len);
+
+    auto options = at::TensorOptions(c10::Device(atDevice, devId_)).dtype(atType);
+    int64_t numel = 0;
+    auto deleter = [](void* ptr) {
+        std::cout << "deleter: ptr" << ptr << std::endl;
+    };
+
+    diopiGetTensorNumel(tensor, &numel);
+    if (0 == numel) {
+        return at::empty(atDims, options);
+    } else {
+        at::Allocator* allocator = nullptr;
+        return fromPreAllocated(
+            data, atDims, atStrides, deleter, allocator, options);
+    }
+}
+
+inline at::Tensor buildATen(diopiTensorHandle_t tensor) {
+    return buildATen(static_cast<diopiConstTensorHandle_t>(tensor));
+}
+
+#else
+
 inline at::Tensor buildATen(diopiTensorHandle_t tensor) {
     if (tensor == nullptr) return at::Tensor();
     return *reinterpret_cast<at::Tensor*>(tensor);
@@ -315,6 +364,7 @@ inline const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     if (tensor == nullptr) return at::Tensor();
     return *reinterpret_cast<const at::Tensor*>(tensor);
 }
+#endif
 
 inline bool isInt(const diopiScalar_t* scalar) { return scalar->stype <= 7; }
 
