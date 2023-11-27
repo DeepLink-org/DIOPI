@@ -14,7 +14,7 @@ diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
 
     if (dim < 0) {
         AscendTensor tem(input);
-        dim = tem.dim() + dim ;
+        dim = tem.dim() + dim;
     }
     AclOpRunner<1, 2>("Sort", ctx)
         .addInput(input)
