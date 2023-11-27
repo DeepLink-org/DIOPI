@@ -2,7 +2,6 @@
 
 #include <diopi/diopirt.h>
 
-
 namespace {
 constexpr float EPSILON = 1e-6;
 
@@ -127,13 +126,13 @@ bool NpuUtils::IsOomError(aclError ret, int index) {
     return false;
 }
 
-at::Tensor NpuUtils::format_contiguous(const at::Tensor &src){
+at::Tensor NpuUtils::format_contiguous(const at::Tensor &src) {
     // case1:tensor src is not contiguous
-  if (!src.is_contiguous()) {
-    RECORD_FUNCTION("format_contiguous", vector<c10::IValue>({src}));
-    return src.contiguous();
-  }
-  #if 0
+    if (!src.is_contiguous()) {
+        RECORD_FUNCTION("format_contiguous", vector<c10::IValue>({src}));
+        return src.contiguous();
+    }
+#if 0
   // case2:meta data not match, sizes or strides of presentation
   // layer is different from that of storage layer
   if (!StorageDescHelper::MetaDataAreMatch(&src)) {
@@ -151,8 +150,8 @@ at::Tensor NpuUtils::format_contiguous(const at::Tensor &src){
     RECORD_FUNCTION("format_contiguous", vector<c10::IValue>({src}));
     return metadata_with_offset_padding_convert_match(src);
   }
- #endif
-  return src;
+#endif
+    return src;
 }
 
 at::Tensor NpuUtils::format_contiguous_add_copy_optimize(const at::Tensor &src) {
@@ -231,9 +230,7 @@ at::Tensor CalcuOpUtil::CopyTensorHostToDevice(const at::Tensor &cpu_tensor) {
 
 // OpPreparation part
 std::deque<at::Tensor> markedOutputs;
-void OpPreparation::markAsOutputForApplyTensor(at::Tensor& src) {
-    markedOutputs.push_back(src);
-}
+void OpPreparation::markAsOutputForApplyTensor(at::Tensor &src) { markedOutputs.push_back(src); }
 
 // used to apply output tensor
 at::Tensor OpPreparation::apply_tensor(const at::Tensor &src) {
@@ -985,9 +982,11 @@ std::tuple<aclTensorDesc *, aclDataBuffer *> CovertTensorToAclInput(const at::Te
     AclTensorDescMaker desc;
     auto aclDesc = desc.Create(aclDataType, tensor.sizes(), static_cast<aclFormat>(format)).SetName(descName).Get();
 
-    // if aclDataType != ACL_STRING, we use storageDims to calculate nums and use nums * tensor element size to
-    // calculate buffer size. But if aclDataType = ACL_STRING, STRING tensor size = 1 and storageDims = 0, we can not
-    // use it to calculate size, we need from storage_sizes_ to calculate STRING element real size.
+    // if aclDataType != ACL_STRING, we use storageDims to calculate nums and use
+    // nums * tensor element size to calculate buffer size. But if aclDataType =
+    // ACL_STRING, STRING tensor size = 1 and storageDims = 0, we can not use it
+    // to calculate size, we need from storage_sizes_ to calculate STRING element
+    // real size.
     AclTensorBufferMaker buffer(tensor, tensor.numel());
     auto aclBuff = buffer.Get();
     return std::tie(aclDesc, aclBuff);
@@ -1091,14 +1090,16 @@ OpCommand &OpCommand::Input() {
 
 // Tensor Input which need contiguous
 OpCommand &OpCommand::Input(const at::Tensor &input, const string &descName, const c10::optional<aclFormat> &sensitive_format, const string &realData) {
-    // AddTensorInput(Contiguous(input), c10::ScalarType::Undefined, descName, realData);
+    // AddTensorInput(Contiguous(input), c10::ScalarType::Undefined, descName,
+    // realData);
     //
     std::tuple<aclTensorDesc *, aclDataBuffer *> res = CovertTensorToAclInput(input, descName, realData);
     aclCmd->AddInput(std::get<0>(res), std::get<1>(res));
     return *this;
 }
 
-// IntArrayRef/SmallVector Input, usually hostmemory input, we will do h2d in launch kernel
+// IntArrayRef/SmallVector Input, usually hostmemory input, we will do h2d in
+// launch kernel
 OpCommand &OpCommand::Input(const c10::IntArrayRef &dimListRef, at::ScalarType toType, CompileType compileType, const string &realDtype,
                             const string &descName) {
     INTERFACE_NOT_IMPL
@@ -1108,31 +1109,29 @@ OpCommand &OpCommand::Input(const c10::IntArrayRef &dimListRef, at::ScalarType t
 namespace {
 const uint64_t kStringOffset = 16UL;
 const std::string kStringDType = "string";
-static std::unordered_map<at::ScalarType, std::vector<double>> floating_limits_map {
-  {at::ScalarType::Double, {std::numeric_limits<double>::max(), std::numeric_limits<double>::min()}},
-  {at::ScalarType::Float, {std::numeric_limits<float>::max(), std::numeric_limits<float>::min()}},
-  {at::ScalarType::BFloat16, {std::numeric_limits<float>::max(), std::numeric_limits<float>::min()}},
-  {at::ScalarType::Half, {65504, -65504}}
-};
-static std::unordered_map<at::ScalarType, std::vector<long>> integral_limits_map {
-  {at::ScalarType::Long, {std::numeric_limits<long>::max(), std::numeric_limits<long>::min()}},
-  {at::ScalarType::Int, {std::numeric_limits<int>::max(), std::numeric_limits<int>::min()}},
-  {at::ScalarType::Byte, {std::numeric_limits<uint8_t>::max(), std::numeric_limits<uint8_t>::min()}},
-  {at::ScalarType::Char, {std::numeric_limits<int8_t>::max(), std::numeric_limits<int8_t>::min()}},
-  {at::ScalarType::Short, {std::numeric_limits<int16_t>::max(), std::numeric_limits<int16_t>::min()}}
-};
+static std::unordered_map<at::ScalarType, std::vector<double>> floating_limits_map{
+    {at::ScalarType::Double, {std::numeric_limits<double>::max(), std::numeric_limits<double>::min()}},
+    {at::ScalarType::Float, {std::numeric_limits<float>::max(), std::numeric_limits<float>::min()}},
+    {at::ScalarType::BFloat16, {std::numeric_limits<float>::max(), std::numeric_limits<float>::min()}},
+    {at::ScalarType::Half, {65504, -65504}}};
+static std::unordered_map<at::ScalarType, std::vector<long>> integral_limits_map{
+    {at::ScalarType::Long, {std::numeric_limits<long>::max(), std::numeric_limits<long>::min()}},
+    {at::ScalarType::Int, {std::numeric_limits<int>::max(), std::numeric_limits<int>::min()}},
+    {at::ScalarType::Byte, {std::numeric_limits<uint8_t>::max(), std::numeric_limits<uint8_t>::min()}},
+    {at::ScalarType::Char, {std::numeric_limits<int8_t>::max(), std::numeric_limits<int8_t>::min()}},
+    {at::ScalarType::Short, {std::numeric_limits<int16_t>::max(), std::numeric_limits<int16_t>::min()}}};
 }  // namespace
 
 bool ScalarIsInLimits(const c10::Scalar &scalar, at::ScalarType type) {
-  bool scalar_flag = false;
-  if (at::isFloatingType(type)) {
-    auto value = scalar.to<double>();
-    scalar_flag = value <= floating_limits_map[type][0] && value >= floating_limits_map[type][1];
-  } else if (at::isIntegralType(type)) {
-    auto value = scalar.to<long>();
-    scalar_flag = value <= integral_limits_map[type][0] && value >= integral_limits_map[type][1];
-  }
-  return scalar_flag;
+    bool scalar_flag = false;
+    if (at::isFloatingType(type)) {
+        auto value = scalar.to<double>();
+        scalar_flag = value <= floating_limits_map[type][0] && value >= floating_limits_map[type][1];
+    } else if (at::isIntegralType(type)) {
+        auto value = scalar.to<long>();
+        scalar_flag = value <= integral_limits_map[type][0] && value >= integral_limits_map[type][1];
+    }
+    return scalar_flag;
 }
 
 // Scalar Input, we will do h2d in launch kernel
@@ -1142,7 +1141,8 @@ OpCommand &OpCommand::Input(const c10::Scalar &input, const at::ScalarType type,
         scalar_type = commonType.value();
     }
 
-    at::Tensor tensor = ScalarIsInLimits(input, scalar_type) ? at::detail::scalar_tensor_static(input, scalar_type, at::kCPU) : at::scalar_to_tensor(input).to(scalar_type);
+    at::Tensor tensor =
+        ScalarIsInLimits(input, scalar_type) ? at::detail::scalar_tensor_static(input, scalar_type, at::kCPU) : at::scalar_to_tensor(input).to(scalar_type);
     std::tuple<aclTensorDesc *, aclDataBuffer *> res = CovertHostTensorToAclInput(tensor, tensor.scalar_type(), compileType, "", "");
     aclCmd->AddInput(std::get<0>(res), std::get<1>(res), tensor);
     return *this;
@@ -1203,8 +1203,8 @@ OpCommand &OpCommand::Sync() {
 void npu_fast_reshape_(at::Tensor &tensor) {
     /**
       [NOTE] For some reshape cases such as view, unsqueeze, squeeze, flatten,
-      storages of them remain unchanged. So we can refresh reshape tensor's metadata
-      to obtain matched tensor.
+      storages of them remain unchanged. So we can refresh reshape tensor's
+      metadata to obtain matched tensor.
       */
 
     // restriction 1
