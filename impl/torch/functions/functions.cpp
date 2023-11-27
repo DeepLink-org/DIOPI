@@ -186,9 +186,9 @@ diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 }
 
 static inline at::Tensor reshape_bias(int64_t dim, const at::Tensor& bias) {
-  std::vector<int64_t> shape(dim, 1);
-  shape[1] = -1;
-  return bias.reshape(shape);
+    std::vector<int64_t> shape(dim, 1);
+    shape[1] = -1;
+    return bias.reshape(shape);
 }
 
 diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
@@ -201,9 +201,8 @@ diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     auto atPadding = impl::aten::buildAtIntArray(padding);
     auto atDilation = impl::aten::buildAtIntArray(dilation);
     auto atOut = impl::aten::buildATen(out);
-    if (torch::cuda::cudnn_is_available()){
-        impl::aten::invokeATenFuncInp(
-            ctx, at::cudnn_convolution_out, atOut, atInput, atWeight, atPadding, atStride, atDilation, groups, false, false, true);
+    if (torch::cuda::cudnn_is_available()) {
+        impl::aten::invokeATenFuncInp(ctx, at::cudnn_convolution_out, atOut, atInput, atWeight, atPadding, atStride, atDilation, groups, false, false, true);
         if (atBias.defined()) {
             atOut.add_(reshape_bias(atInput.dim(), atBias));
         }
