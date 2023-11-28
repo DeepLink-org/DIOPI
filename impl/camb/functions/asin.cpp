@@ -23,11 +23,11 @@ static diopiError_t asin(diopiContextHandle_t ctx, DiopiTensor input, DiopiTenso
     CnnlTensorDesc outputTmpDesc(outputTmp, CNNL_LAYOUT_ARRAY);
 
     CnnlResourceGuard<cnnlTrigonDescriptor_t, cnnlCreateTrigonDescriptor, cnnlDestroyTrigonDescriptor> trigonDesc;
-    cnnlComputationPreference_t mode = CNNL_COMPUTATION_ULTRAHIGH_PRECISION; //Implementation with the high-precision algorithm regardless of the performance.
+    cnnlComputationPreference_t mode = CNNL_COMPUTATION_ULTRAHIGH_PRECISION;  // Implementation with the high-precision algorithm regardless of the performance.
 
-    DIOPI_CALL_CNNL(cnnlSetTrigonDescriptor_v2(trigonDesc.get(),CNNL_TRIGON_ASIN,mode));
+    DIOPI_CALL_CNNL(cnnlSetTrigonDescriptor_v2(trigonDesc.get(), CNNL_TRIGON_ASIN, mode));
 
-    DIOPI_CALL_CNNL(cnnlTrigonForward(handle,trigonDesc.get(),inputDesc.get(), input.data(), outputTmpDesc.get(), outputTmp.data()));
+    DIOPI_CALL_CNNL(cnnlTrigonForward(handle, trigonDesc.get(), inputDesc.get(), input.data(), outputTmpDesc.get(), outputTmp.data()));
     if (outputTmp.dtype() != output.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, output, outputTmp));
     }
