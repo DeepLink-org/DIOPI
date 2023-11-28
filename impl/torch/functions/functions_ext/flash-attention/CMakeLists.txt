@@ -3,7 +3,7 @@ find_library(
   NAMES # Set env FLASH_ATTN_LIB_NAME if your lib has a different name
         ENV FLASH_ATTN_LIB_NAME
         # this is the default name of the flash-attention library
-        flash_attn_2_cuda.cpython-38-x86_64-linux-gnu.so
+        flash_attn_2_cuda.cpython-310-x86_64-linux-gnu.so
   HINTS
     # Set environment variable FLASH_ATTN_LIB_DIR to the path of the library
     ENV FLASH_ATTN_LIB_DIR
