@@ -15,7 +15,7 @@ diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
     if (dim < 0) {
         dim = put.dim() + dim;
     }
-    dim = put.dim() - dim;
+    dim = put.dim() - dim -1;
 
     std::cout << "------------------------------------------" << dim << tem << std::endl;
     AclOpRunner<1, 2>("Sort", ctx)
