@@ -27,6 +27,11 @@ message(STATUS ENABLE_COVERAGE=${ENABLE_COVERAGE})
 
 if (DEBUG)
     set(CMAKE_BUILD_TYPE "Debug")
+else()
+    if(CMAKE_BUILD_TYPE STREQUAL "")
+        set(CMAKE_BUILD_TYPE "Release")
+    endif()
+endif()
 
 if (ENABLE_COVERAGE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
