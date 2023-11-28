@@ -185,12 +185,6 @@ diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
     return diopiSuccess;
 }
 
-static inline at::Tensor reshape_bias(int64_t dim, const at::Tensor& bias) {
-    std::vector<int64_t> shape(dim, 1);
-    shape[1] = -1;
-    return bias.reshape(shape);
-}
-
 diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                 diopiConstTensorHandle_t bias, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, int64_t groups) {
     impl::aten::setCurCtx(ctx);
@@ -202,9 +196,13 @@ diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     auto atDilation = impl::aten::buildAtIntArray(dilation);
     auto atOut = impl::aten::buildATen(out);
     if (torch::cuda::cudnn_is_available()) {
+        DIOPI_CHECK(atInput.options().type_equal(atWeight.options()), "Input type and weight type should be the same");
+        DIOPI_CHECK(!atBias.defined() || (atInput.options().type_equal(atBias.options())), "Input type and bias type should be the same");
         impl::aten::invokeATenFuncInp(ctx, at::cudnn_convolution_out, atOut, atInput, atWeight, atPadding, atStride, atDilation, groups, false, false, true);
         if (atBias.defined()) {
-            atOut.add_(reshape_bias(atInput.dim(), atBias));
+            std::vector<int64_t> shape(atInput.dim(), 1);
+            shape[1] = -1;
+            atOut.add_(atBias.reshape(shape));
         }
     } else {
         impl::aten::invokeATenFuncInp(
