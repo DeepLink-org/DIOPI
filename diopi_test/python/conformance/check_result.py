@@ -97,18 +97,30 @@ class CheckResult(object):
                     f"Max of diff is {max_diff}.\n"
             else:
                 assert tensor1.size == tensor2.size, "tensor1 element num does not equal tensor2's."
-                diff = np.abs(tensor1 - tensor2) * ~matched
-                max_diff = diff.max()
-                max_diff_index = np.unravel_index(np.argmax(diff), diff.shape)
-                max_diff_elem = tensor1[max_diff_index]
-                max_diff_elem_ref = tensor2[max_diff_index]
                 error_info = f"The count of elements that do not meet the accuracy requirement is {count}.\n" + \
                     f"The dtype of {var_name} is {tensor1.dtype}.\n" + \
                     f"The shape of {var_name} is {tensor1.shape}.\n" + \
-                    f"The stride of {var_name} is {np.divide(tensor1.strides, tensor1.itemsize).astype(np.int32)}.\n" + \
-                    f"The max of diff is {max_diff}. Specifically, the actual val is {max_diff_elem} and the expected is {max_diff_elem_ref}.\n"
+                    f"The stride of {var_name} is {np.divide(tensor1.strides, tensor1.itemsize).astype(np.int32)}.\n"
+                nan_index = np.isnan(tensor1) | np.isnan(tensor2)
+                nan_index[matched] = False          #mismatched nan number index
+                if (len(np.argwhere(nan_index))>0): 
+                    # nan number exists
+                    error_info += f"Exists mismatched nan number. Specifically, the actual val is {tensor1[nan_index].ravel()[0]} and the expected is {tensor2[nan_index].ravel()[0]}.\n"
+                if (not np.array_equal(nan_index, ~matched)):   
+                    # not all mimatched numbers are nan,exists different numbers
+                    diff = np.abs(tensor1 - tensor2)
+                    diff[matched]=0
+                    diff[nan_index]=0
+                    max_diff = diff.max()
+                    max_diff_index = np.unravel_index(np.argmax(diff), diff.shape)
+                    max_diff_elem = tensor1[max_diff_index]
+                    max_diff_elem_ref = tensor2[max_diff_index]
+                    error_info += f"The max of diff is {max_diff}. Specifically, the actual val is {max_diff_elem} and the expected is {max_diff_elem_ref}.\n"
             if debug_level > 0:
-                error_info += f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}, Max of diff is {max_diff}.\n"
+                if np.isnan(sum1) or np.isnan(sum2):
+                    error_info += f"Exists nan.\n"
+                else:
+                    error_info += f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}, Max of diff is {max_diff}.\n"
                 if debug_level > 1:
                     error_info += f"{var_name} is {tensor1},\n{var_name}_ref is {tensor2},\nMask is {mask}\n"
             raise OutputCheckFailedException(error_info)
