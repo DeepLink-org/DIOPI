@@ -1286,8 +1286,9 @@ NPUStream getCurrentNPUStream(c10::DeviceIndex device_index) {
         device_index = current_device();
     }
     TORCH_CHECK(context);
-    diopiStreamHandle_t stream_handle;
+    diopiStreamHandle_t stream_handle = nullptr;
     diopiGetStream(context, &stream_handle);
+    TORCH_CHECK(stream_handle);
     c10::Device device(c10::DeviceType::XPU, device_index);
     c10::Stream atStream(c10::Stream::Default::DEFAULT, device);
     aclrtStream aclStream = reinterpret_cast<aclrtStream>(stream_handle);

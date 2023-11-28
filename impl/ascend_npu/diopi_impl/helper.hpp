@@ -7,6 +7,8 @@
 #ifndef IMPL_TORCH_HELPER_HPP_
 #define IMPL_TORCH_HELPER_HPP_
 #include <ATen/ATen.h>
+#include <c10/core/Allocator.h>
+#include <ATen/EmptyTensor.h>
 
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
@@ -194,12 +196,6 @@ namespace aten {
 
 inline void setCurCtx(diopiContextHandle_t ctx) {
     context = ctx;
-    diopiStreamHandle_t stream_handle;
-    diopiGetStream(ctx, &stream_handle);
-    //c10::cuda::CUDAStream cur_stream = c10::cuda::getStreamFromExternal(static_cast<cudaStream_t>(stream_handle), c10::cuda::current_device());
-    //c10::cuda::setCurrentCUDAStream(cur_stream);
-    // Here, we set the current stream of cuda to the stream of diopi, but when the context is unloaded, it is not restored.
-    // The main reason is that the current stream of cuda is not used. However, there may be hidden bugs, which will be optimized later.
 }
 
 inline void unsetCurCtx() { context = nullptr; }
@@ -296,6 +292,57 @@ inline c10::DeviceType getATenDevice(diopiDevice_t device) {
 
 #if DIOPI_ADAPTER_BUILD_TENSOR_NOR_USE_CAST
 
+/*
+at::Tensor DIPUATenFunctions::empty(
+    at::IntArrayRef size, c10::optional<at::ScalarType> dtype_opt,
+    c10::optional<at::Layout> layout_opt, c10::optional<at::Device> device_opt,
+    c10::optional<bool> pin_memory_opt,
+    c10::optional<at::MemoryFormat> memory_format_opt) {
+  dipu::profile::RecordBlockCreator dipu_recorder(__FUNCTION__);
+  TORCH_INTERNAL_ASSERT_DEBUG_ONLY(c10::device_or_default(device_opt).type() ==
+                                   dipu::DIPU_DEVICE_TYPE);
+  TORCH_INTERNAL_ASSERT_DEBUG_ONLY(c10::layout_or_default(layout_opt) ==
+                                   c10::Layout::Strided);
+
+  c10::Allocator *allocator = dipu::getAllocator(dipu::DIPU_DEVICE_TYPE);
+  constexpr c10::DispatchKeySet dipu_ks({dipu::DIPU_DISPATCH_KEY});
+  return at::detail::empty_generic(size, allocator, dipu_ks,
+                                   c10::dtype_or_default(dtype_opt),
+                                   memory_format_opt);
+}
+*/
+
+class FakeAllocator : public c10::Allocator {
+    void* ptr_ = nullptr;
+    size_t size_ = 0;
+    c10::Device device_;
+public:
+    FakeAllocator(void* ptr, size_t size, c10::Device device): ptr_(ptr), size_(size), device_(device) {
+
+    }
+
+    FakeAllocator():device_(c10::DeviceType::CPU) {}
+
+    void set(void* ptr, size_t size, c10::Device device) {
+        ptr_ = ptr;
+        size_ = size,
+        device_ = device;
+    }
+
+    c10::DataPtr allocate(size_t n) const {
+        if (n == 0) {
+            return c10::InefficientStdFunctionContext::makeDataPtr(nullptr, c10::detail::deleteNothing, device_);
+        } else {
+            return c10::InefficientStdFunctionContext::makeDataPtr(ptr_, c10::detail::deleteNothing, device_);
+        }
+    }
+
+    c10::DeleterFnPtr raw_deleter() const {
+        return c10::detail::deleteNothing;
+    }
+};
+
+
 inline at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef strides, const std::function<void(void*)>& deleter,
                                    at::Allocator* allocator, const at::TensorOptions& options) {
     auto device = options.device();
@@ -304,13 +351,21 @@ inline at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArr
     }
 
     auto storage = at::Storage(at::Storage::use_byte_size_t(),
-                               at::detail::computeStorageNbytes(sizes, strides, options.dtype().itemsize()),
+                               at::detail::computeStorageNbytes(sizes, strides,  options.dtype().itemsize()),
                                c10::InefficientStdFunctionContext::makeDataPtr(data, deleter, device),
                                allocator,
                                false);
-
     at::TensorOptions new_options = options.device(device);
-    return at::empty({0}, new_options).set_(storage, 0, sizes, strides);
+
+    c10::DispatchKeySet ks{c10::DispatchKey::XPU};
+
+    //at::Tensor tensor = at::empty({0}, new_options);
+    size_t nbytes = at::detail::computeStorageNbytes(sizes, strides,  options.dtype().itemsize());
+    static FakeAllocator fakeAllocator;
+    fakeAllocator.set(data, nbytes, device);
+    at::Tensor tensor = at::detail::empty_generic(sizes, &fakeAllocator, ks, c10::typeMetaToScalarType(new_options.dtype()), c10::MemoryFormat::Contiguous);
+    //tensor.set_(storage, 0, sizes, strides);
+    return tensor;
 }
 
 inline const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {

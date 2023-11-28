@@ -3,11 +3,6 @@ project(ascend_impl)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 
-if(DEFINED ENV{ASCEND_CUSTOM_PATH})
-  set(ASCEND_DIR $ENV{ASCEND_CUSTOM_PATH})
-else()
-  set(ASCEND_DIR /usr/local/Ascend)
-endif()
 
 execute_process(
     COMMAND sh -c "bash  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/libs/build_stub.sh"
@@ -15,16 +10,7 @@ execute_process(
 )
 add_subdirectory(third_party/acl)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/libs/)
-
-#if(EXISTS ${ASCEND_DIR}/ascend-toolkit/latest/)
-#  message(STATUS "ascend-toolkit exists:" ${ASCEND_DIR}/ascend-toolkit/latest/)
-#  message(STATUS "ASCEND_DIR:" ${ASCEND_DIR})
-#  #include_directories(${ASCEND_DIR}/ascend-toolkit/latest/include/)
-#  link_directories(${ASCEND_DIR}/ascend-toolkit/latest/lib64)
-#else()
-#    message(FATAL_ERROR "No ascend-toolkit found.")
-#endif()
+#link_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/libs/)
 
 if(NOT DEFINED PYTORCH_DIR)
   execute_process(
@@ -935,6 +921,21 @@ if(USE_ADAPTOR)
         DEPENDS adaptor_gen_dependency)
     list(APPEND IMPL_SRC ${GEN_FILES} ${ADAPTOR_CSRC_PATH}/convert.cpp ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp)
     add_definitions(-DTEST_USE_ADAPTOR)
+endif()
+
+if(DEFINED ENV{ASCEND_CUSTOM_PATH})
+  set(ASCEND_DIR $ENV{ASCEND_CUSTOM_PATH})
+else()
+  set(ASCEND_DIR /usr/local/Ascend)
+endif()
+
+if(EXISTS ${ASCEND_DIR}/ascend-toolkit/latest/)
+  message(STATUS "ascend-toolkit exists:" ${ASCEND_DIR}/ascend-toolkit/latest/)
+  message(STATUS "ASCEND_DIR:" ${ASCEND_DIR})
+  #include_directories(${ASCEND_DIR}/ascend-toolkit/latest/include/)
+  link_directories(${ASCEND_DIR}/ascend-toolkit/latest/lib64)
+else()
+    message(FATAL_ERROR "No ascend-toolkit found.")
 endif()
 
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})

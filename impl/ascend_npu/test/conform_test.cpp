@@ -33,6 +33,7 @@ void device_free(void* ptr) {
 
 diopiError_t device_make_stream(diopiStreamHandle_t* streamHandlePtr) {
     CALL_ACLRT(aclrtCreateStream(reinterpret_cast<aclrtStream*>(streamHandlePtr)));
+    ASCEND_CHECK_NULLPTR_ABORT(*streamHandlePtr);
     return diopiSuccess;
 }
 
