@@ -12,13 +12,6 @@
 
 extern "C" {
 
-/**
- * @brief PlusScalar. if 0 < index < size, add val.
- * @param[in] ctx The diopi context.
- * @param[inout] inoutput : Output tensor.shape=[len].type = [int64, int32]
- * @param[in] val : Val for add.type = [int64, int32]
- * @param[in] size : Size or maxindex.type = [int64, int32]
- */
 DIOPI_API diopiError_t diopiPlusScalarInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, const int64_t val, const int64_t size) {
     diopiSize_t in_shape;
     diopiGetTensorShape(inoutput, &in_shape);
