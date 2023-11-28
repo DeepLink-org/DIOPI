@@ -105,7 +105,7 @@ class CheckResult(object):
                 nan_index[matched] = False          # mismatched nan number index
                 if (len(np.argwhere(nan_index)) > 0):
                     # nan number exists
-                    error_info += f"Exists mismatched nan number. Specifically, the actual val is {tensor1[nan_index].ravel()[0]} and the expected is {tensor2[nan_index].ravel()[0]}.\n"
+                    error_info += f"Exist mismatched nan number. E.g., the actual val is {tensor1[nan_index].ravel()[0]} and the expected is {tensor2[nan_index].ravel()[0]}.\n"
                 if (not np.array_equal(nan_index, ~matched)):
                     # not all mimatched numbers are nan,exists different numbers
                     diff = np.abs(tensor1 - tensor2)
