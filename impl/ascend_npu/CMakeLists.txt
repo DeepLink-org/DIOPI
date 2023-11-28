@@ -846,8 +846,76 @@ set(IMPL_SRC
   torch_npu/csrc/AdvancedIndex.cpp
 )
 
-#list(APPEND IMPL_SRC ${OP_PLUGIN_UTILS_SRC} ${OP_PLUGIN_SRC} ${OP_PLUGIN_API_SRC} ${ASCEND_IMPL_SRC} ${DIOPI_IMPL_SRC})
-list(APPEND IMPL_SRC ${OP_PLUGIN_UTILS_SRC} ${OP_PLUGIN_SRC} ${OP_PLUGIN_API_SRC} ${ASCEND_IMPL_SRC} ${DIOPI_IMPL_SRC})
+set(OLD_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ascend/)
+set(OLD_IMPL_SRC
+    ${OLD_IMPL_DIR}/ascend_tensor.cpp
+    ${OLD_IMPL_DIR}/functions_mmcv/roi_align_npu.cpp
+    ${OLD_IMPL_DIR}/functions/bmm.cpp
+    ${OLD_IMPL_DIR}/functions/embedding.cpp
+    ${OLD_IMPL_DIR}/functions/cumsum.cpp
+    ${OLD_IMPL_DIR}/functions/fill.cpp
+    ${OLD_IMPL_DIR}/functions/cat.cpp
+    ${OLD_IMPL_DIR}/functions/pow.cpp
+    ${OLD_IMPL_DIR}/functions/masked_fill.cpp
+    ${OLD_IMPL_DIR}/functions/topk.cpp
+    ${OLD_IMPL_DIR}/functions/baddbmm.cpp
+    ${OLD_IMPL_DIR}/functions/conv2d.cpp
+    ${OLD_IMPL_DIR}/functions/transpose.cpp
+    ${OLD_IMPL_DIR}/functions/copy.cpp
+    ${OLD_IMPL_DIR}/functions/normal.cpp
+    ${OLD_IMPL_DIR}/functions/sort.cpp
+    ${OLD_IMPL_DIR}/functions/isnan.cpp
+    ${OLD_IMPL_DIR}/functions/activation.cpp
+    ${OLD_IMPL_DIR}/functions/loss.cpp
+    ${OLD_IMPL_DIR}/functions/contiguous.cpp
+    ${OLD_IMPL_DIR}/functions/bitwise.cpp
+    ${OLD_IMPL_DIR}/functions/upsample.cpp
+    ${OLD_IMPL_DIR}/functions/tril.cpp
+    ${OLD_IMPL_DIR}/functions/floor.cpp
+    ${OLD_IMPL_DIR}/functions/mm.cpp
+    ${OLD_IMPL_DIR}/functions/addcdiv.cpp
+    ${OLD_IMPL_DIR}/functions/logic.cpp
+    ${OLD_IMPL_DIR}/functions/linear.cpp
+    ${OLD_IMPL_DIR}/functions/error.cpp
+    ${OLD_IMPL_DIR}/functions/sgn.cpp
+    ${OLD_IMPL_DIR}/functions/cast.cpp
+    ${OLD_IMPL_DIR}/functions/sin.cpp
+    ${OLD_IMPL_DIR}/functions/one_hot.cpp
+    ${OLD_IMPL_DIR}/functions/triu.cpp
+    ${OLD_IMPL_DIR}/functions/binary.cpp
+    ${OLD_IMPL_DIR}/functions/cos.cpp
+    ${OLD_IMPL_DIR}/functions/addcmul.cpp
+    ${OLD_IMPL_DIR}/functions/interpolate.cpp
+    ${OLD_IMPL_DIR}/functions/threshold.cpp
+    ${OLD_IMPL_DIR}/functions/nonzero.cpp
+    ${OLD_IMPL_DIR}/functions/stack.cpp
+    ${OLD_IMPL_DIR}/functions/unary.cpp
+    ${OLD_IMPL_DIR}/functions/argmax.cpp
+    ${OLD_IMPL_DIR}/functions/clamp.cpp
+    ${OLD_IMPL_DIR}/functions/dropout.cpp
+    ${OLD_IMPL_DIR}/functions/arange.cpp
+    ${OLD_IMPL_DIR}/functions/gather.cpp
+    ${OLD_IMPL_DIR}/functions/layer_norm.cpp
+    ${OLD_IMPL_DIR}/functions/index.cpp
+    ${OLD_IMPL_DIR}/functions/repeat.cpp
+    ${OLD_IMPL_DIR}/functions/group_norm.cpp
+    ${OLD_IMPL_DIR}/functions/flip.cpp
+    ${OLD_IMPL_DIR}/functions/pool.cpp
+    ${OLD_IMPL_DIR}/functions/uniform.cpp
+    ${OLD_IMPL_DIR}/functions/batch_norm.cpp
+    ${OLD_IMPL_DIR}/functions/minmax.cpp
+    ${OLD_IMPL_DIR}/functions/norm.cpp
+    ${OLD_IMPL_DIR}/functions/reduce.cpp
+    ${OLD_IMPL_DIR}/functions/where.cpp
+    ${OLD_IMPL_DIR}/functions/multinomial.cpp
+    #${OLD_IMPL_DIR}/test/export_functions.cpp
+    #${OLD_IMPL_DIR}/test/conform_test.cpp
+    ${OLD_IMPL_DIR}/common/utils.cpp
+    ${OLD_IMPL_DIR}/common/debug.cpp
+    ${OLD_IMPL_DIR}/common/generator_helper.cpp
+)
+
+list(APPEND IMPL_SRC ${OP_PLUGIN_UTILS_SRC} ${OP_PLUGIN_SRC} ${OP_PLUGIN_API_SRC} ${ASCEND_IMPL_SRC} ${DIOPI_IMPL_SRC} ${OLD_IMPL_SRC})
 
 # adaptor
 set(USE_ADAPTOR OFF)
@@ -856,8 +924,7 @@ if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
 endif()
 
 if(USE_ADAPTOR)
-
-    file(GLOB ADAPTOR_TEMPLATE_CODE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${ADAPTOR_DIR}/codegen/*.py)
+    file(GLOB ADAPTOR_TEMPLATE_CODE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/../ascend/ ${ADAPTOR_DIR}/codegen/*.py)
     add_custom_target(adaptor_gen_dependency DEPENDS ${ADAPTOR_TEMPLATE_CODE})
 
     set(ADAPTOR_CSRC_PATH "${ADAPTOR_DIR}/csrc")
