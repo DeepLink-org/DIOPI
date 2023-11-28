@@ -102,6 +102,7 @@ DIOPI_API diopiError_t diopiUpdatePaddingCount(diopiContextHandle_t ctx, diopiTe
     return diopiSuccess;
 }
 
+
 /**
  * @brief LengthCriterion. Judging and counting the end situation based on length.If all fin then should_stop.
  * @param[in] ctx The diopi context.
@@ -117,38 +118,109 @@ DIOPI_API diopiError_t diopiLengthCriterion(diopiContextHandle_t ctx, diopiTenso
     if (finished == nullptr || sequence_limit_length == nullptr) {
         return diopiErrorOccurred;                                                  
     }
-    diopiDtype_t in_type;
-    diopiSize_t in_shape, in_stride;
-    diopiDevice_t in_device;
-    diopiGetTensorDtype(finished, &in_type);
-    diopiGetTensorShape(finished, &in_shape);
-    diopiGetTensorStride(finished, &in_stride);
-    diopiGetTensorDevice(finished, &in_device);
-
+    std::cout << "LXZ: 1" << std::endl;
+    
+    std::cout << "LXZ: 2" << std::endl;
     diopiScalar_t batch_size_scalar;
     batch_size_scalar.stype = diopi_dtype_int64;
     batch_size_scalar.ival = batch_size;
-    
+    std::cout << "LXZ: 3" << std::endl;
     // diopiTensorHandle_t tmp;
     // diopiRequireTensor(ctx, &tmp, &in_shape, &in_stride, in_type, in_device);
 
     diopiScalar_t step_scalar;
     step_scalar.stype = diopi_dtype_int64;
-    step_scalar.ival = step + 1;
+    step_scalar.ival = step;
+    std::cout << "LXZ: 4" << std::endl;
     
-    // if step >= sequence_limit_length, then finished = true
-    // diopiSubInpScalar(ctx, sequence_limit_length, &step_scalar);
+    diopiDtype_t in_type;
+    diopiSize_t in_shape, in_stride;
+    diopiDevice_t in_device;
+   
+
+    // std::cout << "finished: " << in_shape.len << " " << in_shape.data[0] << " " << in_stride.len << " " << in_stride.data[0] << " " << in_type << " " << in_device << std::endl;
+
+    // diopiGetTensorDtype(sequence_limit_length, &in_type);
+    // diopiGetTensorShape(sequence_limit_length, &in_shape);
+    // diopiGetTensorStride(sequence_limit_length, &in_stride);
+    // diopiGetTensorDevice(sequence_limit_length, &in_device);
+
+    // std::cout << "sequence_limit_length: " << in_shape.len << " " << in_shape.data[0] << " " << in_stride.len << " " << in_stride.data[0] << " " << in_type << " " << in_device << std::endl;
 
     diopiLeScalar(ctx, finished, sequence_limit_length, &step_scalar);
+    std::cout << "LXZ: 5" << std::endl;
+
     diopiSize_t dim_zero;
     int64_t tmp_zero = 0;
     dim_zero.data = &tmp_zero;
     dim_zero.len = 1;
+    std::cout << "LXZ: 6" << std::endl;
     
-    diopiSum(ctx, finished_sum, finished, dim_zero);
-    diopiEqScalar(ctx, should_stop, finished_sum, &batch_size_scalar);
+
+    // diopiScalar_t scalar_one;
+    // scalar_one.stype = diopi_dtype_int64;
+    // scalar_one.ival = 1;
+    diopiGetTensorDtype(finished, &in_type);
+    diopiGetTensorShape(finished, &in_shape);
+    diopiGetTensorStride(finished, &in_stride);
+    diopiGetTensorDevice(finished, &in_device);
+    diopiTensorHandle_t finished_fp64;
+    diopiRequireTensor(ctx, &finished_fp64, &in_shape, &in_stride, diopi_dtype_float64, in_device);
+    diopiCastDtype(ctx, finished_fp64, finished);
+        
+    diopiGetTensorShape(finished_sum, &in_shape);
+    diopiGetTensorStride(finished_sum, &in_stride);
+    diopiGetTensorDevice(finished_sum, &in_device);
+    diopiTensorHandle_t finished_sum_device;
+    diopiTensorHandle_t finished_sum_fp64_device;
+    diopiRequireTensor(ctx, &finished_sum_device, &in_shape, &in_stride, in_type, diopi_device);
+    diopiRequireTensor(ctx, &finished_sum_fp64_device, &in_shape, &in_stride, diopi_dtype_float64, diopi_device);
+    diopiCopyH2D(ctx, finished_sum_device, finished_sum, false);
+    diopiCastDtype(ctx, finished_sum_fp64_device, finished_sum_device);
     
+    diopiSum(ctx, finished_sum_fp64_device, finished_fp64, dim_zero);
+
+    diopiCastDtype(ctx, finished_sum_device, finished_sum_fp64_device);
+    diopiCopyD2H(ctx, finished_sum, finished_sum_device, false);
+    
+
+    diopiGetTensorDtype(finished, &in_type);
+    diopiGetTensorShape(finished, &in_shape);
+    diopiGetTensorStride(finished, &in_stride);
+    diopiGetTensorDevice(finished, &in_device);
+    diopiTensorHandle_t h_finished;
+    diopiRequireTensor(ctx, &h_finished, &in_shape, &in_stride, in_type, diopi_host);
+    diopiCopyD2H(ctx, h_finished, finished, false);
+    std::cout << "LXZ: 7.5" << std::endl;
+    diopiAll(ctx, should_stop, h_finished, &tmp_zero);
+    std::cout << "LXZ: 8" << std::endl;
     return diopiSuccess;
 } 
+
+
+/**
+ * @brief StopWordsCriterion. Judging the end situation based on stopword.
+ * get base_stop_words and base_offsets from stop_words for each batch.
+ * every item in base_offsets means item-end, and they also the item-start of the next item, for the first item item-start is 0.
+ * If time-size = end - start < step+1, then check item.
+ * for (int token_idx = item_size - 1; token_idx >= 0; token_idx--) {const int previous_token = output_ids[(step - (item_size - 1) + token_idx) * batch_size +
+ * id_offset + batch_idx];if (previous_token != base_stop_words[item_start + token_idx]) {should_stop = false; break;}} if one batch is should_stop, then it is
+ * finished.
+ * @param[in] ctx The diopi context.
+ * @param[in] output_ids : Output ids.shape = [batch_size, step].type = [int64, int32]
+ * @param[in] stop_words : Stop words list.shape = [batch_size, 2, stop_words_len].type = [int64, int32]
+ * @param[inout] finished : Finished.shape = [batch_size].type = [bool]
+ * @param[in] id_offset : Offset of output_ids.type = [int64, int32]
+ * @param[in] stop_words_len : Stop words len tensor.type = [int64, int32]
+ * @param[in] batch_size : batch_size.type = [int64, int32]
+ * @param[in] step : Step.type = [int64, int32]
+ */
+DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiConstTensorHandle_t output_ids, diopiConstTensorHandle_t stop_words,
+                                               diopiTensorHandle_t finished, int64_t id_offset, int64_t stop_words_len, int64_t batch_size, int64_t step) {
+    if (output_ids == nullptr || stop_words == nullptr || finished == nullptr) {
+        return diopiErrorOccurred;
+    }
+}
+
 
 } // extern "C"

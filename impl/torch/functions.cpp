@@ -1321,12 +1321,19 @@ diopiError_t diopiLeInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, dio
 }
 
 diopiError_t diopiLeScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
+    std::cout << "LXZ: in diopiLeScalar 1" << std::endl;
     impl::aten::setCurCtx(ctx);
+    std::cout << "LXZ: in diopiLeScalar 2" << std::endl;
     at::Tensor atInput = impl::aten::buildATen(input);
+    std::cout << "LXZ: in diopiLeScalar 3" << std::endl;
     at::Scalar atOther = impl::aten::buildAtScalar(other);
+    std::cout << "LXZ: in diopiLeScalar 4" << std::endl;
     at::Tensor atOut = impl::aten::buildATen(out);
+    std::cout << "LXZ: in diopiLeScalar 5" << std::endl;
     at::le_out(atOut, atInput, atOther);
+    std::cout << "LXZ: in diopiLeScalar 6" << std::endl;
     impl::aten::unsetCurCtx();
+    std::cout << "LXZ: in diopiLeScalar 7" << std::endl;
     return diopiSuccess;
 }
 
@@ -4317,6 +4324,30 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
     auto atBias = impl::aten::buildATen(bias);
     auto atOuts = at::batch_norm_elemt(atInput, atWeight, atBias, atMean, atInvstd, eps);
     impl::aten::updateATen2Tensor(ctx, atOuts, out);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiCopyH2D(diopiContextHandle_t ctx, diopiTensorHandle_t dst, diopiConstTensorHandle_t src, bool async) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atDest = impl::aten::buildATen(dst);
+    at::Tensor atSrc = impl::aten::buildATen(src);
+    // Set non_blocking true to avoid stream sync thus improving performance.
+    // The data is not ready when diopiCopyInp returns.
+    // If you need to use it immediately, please call cudaStreamSynchronize first.
+    at::native::copy_(atDest, atSrc, async);
+    impl::aten::unsetCurCtx();
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiCopyD2H(diopiContextHandle_t ctx, diopiTensorHandle_t dst, diopiConstTensorHandle_t src, bool async) {
+    impl::aten::setCurCtx(ctx);
+    at::Tensor atDest = impl::aten::buildATen(dst);
+    at::Tensor atSrc = impl::aten::buildATen(src);
+    // Set non_blocking true to avoid stream sync thus improving performance.
+    // The data is not ready when diopiCopyInp returns.
+    // If you need to use it immediately, please call cudaStreamSynchronize first.
+    at::native::copy_(atDest, atSrc, async);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }

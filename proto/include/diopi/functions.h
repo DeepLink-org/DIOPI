@@ -3432,6 +3432,13 @@ DIOPI_API diopiError_t diopiAmpUpdateScaleInp(diopiContextHandle_t ctx, diopiTen
                                               diopiConstTensorHandle_t found_inf, double scale_growth_factor, double scale_backoff_factor,
                                               int32_t growth_interval);
 
+
+
+DIOPI_API diopiError_t diopiCopyH2D(diopiContextHandle_t ctx, diopiTensorHandle_t dst, diopiConstTensorHandle_t src, bool async);
+
+DIOPI_API diopiError_t diopiCopyD2H(diopiContextHandle_t ctx, diopiTensorHandle_t dst, diopiConstTensorHandle_t src, bool async);
+
+
 #if defined(__cplusplus)
 }
 #endif  // __cplusplus
