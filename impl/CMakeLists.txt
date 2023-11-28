@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 project(diopi_impl)
 
 option(TEST "Whether to compile DIOPI with runtime" OFF)
-option(DEBUG "whether to use debug" ON)
+option(DEBUG "whether to use debug" OFF)
 option(DYLOAD "Whether to load so in runtime by dlopen" OFF)
 
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/proto/include")
