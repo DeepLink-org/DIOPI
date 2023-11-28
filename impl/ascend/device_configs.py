@@ -240,6 +240,18 @@ device_configs = {
         ),
     ),
 
+    'conv_2d': dict(
+        name=['conv2d'],
+        atol=1e-2,
+        rtol=1e-2,
+    ),
+
+    'conv_2d_no_contiguous': dict(
+        name=['conv2d'],
+        atol=1e-2,
+        rtol=1e-2,
+    ),
+
     'hardswish': dict(
         name=['hardswish'],
         tensor_para=dict(
