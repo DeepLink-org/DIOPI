@@ -1047,7 +1047,6 @@ diopi_configs = {
         interface=['torch'],
         is_inplace=True,
         dtype=[np.float16, np.float32, np.float64],
-        equal_nan=True,
         tensor_para=dict(
             gen_fn='Genfunc.randn',
             args=[
