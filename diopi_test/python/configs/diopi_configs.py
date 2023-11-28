@@ -1043,10 +1043,11 @@ diopi_configs = {
 
     'pointwise_op': dict(
         name=['abs', 'cos', 'erf', 'erfinv', 'exp', 'floor',
-              'neg', 'sin', 'sqrt', 'logical_not', 'rsqrt', 'ceil', 'atan'],
+              'neg', 'sin', 'asin', 'sqrt', 'logical_not', 'rsqrt', 'ceil', 'atan'],
         interface=['torch'],
         is_inplace=True,
         dtype=[np.float16, np.float32, np.float64],
+        equal_nan=True,
         tensor_para=dict(
             gen_fn='Genfunc.randn',
             args=[
@@ -1055,25 +1056,6 @@ diopi_configs = {
                     "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
                               (256, 128, 3, 3),
                               (2, 31, 512, 6, 40), (0,), (16, 0)),
-                },
-            ],
-        ),
-    ),
-
-    'pointwise_op_asin': dict(
-        name=['asin'],
-        interface=['torch'],
-        is_inplace=True,
-        dtype=[np.float16, np.float32, np.float64],
-        tensor_para=dict(
-            gen_fn='Genfunc.randn',
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
-                              (256, 128, 3, 3),
-                              (2, 31, 512, 6, 40), (0,), (16, 0)),
-                    "gen_fn": dict(fn='Genfunc.uniform', low=-1, high=1),
                 },
             ],
         ),
