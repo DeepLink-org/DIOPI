@@ -229,51 +229,53 @@ at::Tensor CalcuOpUtil::CopyTensorHostToDevice(const at::Tensor &cpu_tensor) {
 }
 
 // OpPreparation part
+
+const char* markedOutputsErrorInfo = "Parameters that allocate memory inside the operator need to be marked as output in advance through markAsOutputForApplyTensor";
 std::deque<at::Tensor> markedOutputs;
 void OpPreparation::markAsOutputForApplyTensor(at::Tensor &src) { markedOutputs.push_back(src); }
 
 // used to apply output tensor
 at::Tensor OpPreparation::apply_tensor(const at::Tensor &src) {
-    for (auto i = markedOutputs.begin(); i != markedOutputs.end(); i++) {
-        auto out = *i;
-        if (out.sizes() == src.sizes() && out.dtype() == src.dtype()) {
-            markedOutputs.erase(i);
-            return out;
-        }
+    TORCH_CHECK(markedOutputs.size() > 0, markedOutputsErrorInfo);
+    auto out = *markedOutputs.begin();
+    if (out.sizes() == src.sizes() && out.dtype() == src.dtype()) {
+        markedOutputs.pop_front();
+        return out;
     }
+    TORCH_CHECK(false, markedOutputsErrorInfo);
     return at::empty(src.sizes(), src.options());
 }
 
 at::Tensor OpPreparation::apply_tensor(const at::Tensor &src, c10::IntArrayRef sizes) {
-    for (auto i = markedOutputs.begin(); i != markedOutputs.end(); i++) {
-        auto out = *i;
-        if (out.sizes() == sizes && out.dtype() == src.dtype()) {
-            markedOutputs.erase(i);
-            return out;
-        }
+   TORCH_CHECK(markedOutputs.size() > 0, markedOutputsErrorInfo);
+    auto out = *markedOutputs.begin();
+    if (out.numel() <= c10::multiply_integers(sizes)) {
+        markedOutputs.pop_front();
+        return out.view(sizes);
     }
+    TORCH_CHECK(false, markedOutputsErrorInfo);
     return at::empty(sizes, src.options());
 }
 
 at::Tensor OpPreparation::apply_tensor(const at::Tensor &src, const c10::TensorOptions &options) {
-    for (auto i = markedOutputs.begin(); i != markedOutputs.end(); i++) {
-        auto out = *i;
-        if (out.sizes() == src.sizes() && out.dtype() == options.dtype()) {
-            markedOutputs.erase(i);
-            return out;
-        }
+    TORCH_CHECK(markedOutputs.size() > 0, markedOutputsErrorInfo);
+    auto out = *markedOutputs.begin();
+    if (out.sizes() == src.sizes()) {
+        markedOutputs.pop_front();
+        return out.view(c10::typeMetaToScalarType(options.dtype()));
     }
+    TORCH_CHECK(false, markedOutputsErrorInfo);
     return at::empty(src.sizes(), options);
 }
 
 at::Tensor OpPreparation::apply_tensor(c10::IntArrayRef sizes, const c10::TensorOptions &options, const at::Tensor &src) {
-    for (auto i = markedOutputs.begin(); i != markedOutputs.end(); i++) {
-        auto out = *i;
-        if (out.sizes() == sizes && out.dtype() == options.dtype()) {
-            markedOutputs.erase(i);
-            return out;
-        }
+    TORCH_CHECK(markedOutputs.size() > 0, markedOutputsErrorInfo);
+    auto out = *markedOutputs.begin();
+    if (out.numel() <= c10::multiply_integers(sizes)) {
+        markedOutputs.pop_front();
+        return out.view(sizes);
     }
+    TORCH_CHECK(false, markedOutputsErrorInfo);
     return at::empty(sizes, src.options());
 }
 
@@ -300,25 +302,24 @@ at::Tensor OpPreparation::apply_tensor_with_format(const at::Tensor &src, c10::I
 }
 
 at::Tensor OpPreparation::apply_tensor_with_format(c10::IntArrayRef sizes, const c10::TensorOptions &options, int64_t format, bool keep_format) {
-    INTERFACE_NOT_IMPL;
-    for (auto i = markedOutputs.begin(); i != markedOutputs.end(); i++) {
-        auto out = *i;
-        if (out.sizes() == sizes && out.dtype() == options.dtype()) {
-            markedOutputs.erase(i);
-            return out;
-        }
+    TORCH_CHECK(markedOutputs.size() > 0, markedOutputsErrorInfo);
+    auto out = *markedOutputs.begin();
+    if (out.numel() <= c10::multiply_integers(sizes) && out.dtype() == options.dtype()) {
+        markedOutputs.pop_front();
+        return out.view(sizes);
     }
+    TORCH_CHECK(false, markedOutputsErrorInfo);
     return at::empty(sizes, options);
 }
 
 at::Tensor OpPreparation::apply_tensor_with_sizes(c10::IntArrayRef sizes, const c10::TensorOptions &options) {
-    for (auto i = markedOutputs.begin(); i != markedOutputs.end(); i++) {
-        auto out = *i;
-        if (out.sizes() == sizes && out.dtype() == options.dtype()) {
-            markedOutputs.erase(i);
-            return out;
-        }
+    TORCH_CHECK(markedOutputs.size() > 0, markedOutputsErrorInfo);
+    auto out = *markedOutputs.begin();
+    if (out.numel() <= c10::multiply_integers(sizes) && out.dtype() == options.dtype()) {
+        markedOutputs.pop_front();
+        return out.view(sizes);
     }
+    TORCH_CHECK(false, markedOutputsErrorInfo);
     return at::empty(sizes, options);
 }
 
