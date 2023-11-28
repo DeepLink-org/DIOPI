@@ -1169,10 +1169,19 @@ OpCommand &OpCommand::Attr(const string &name, dataType value) {
 }
 
 template OpCommand &OpCommand::OpCommand::Attr<string>(const string &name, string value);
+template OpCommand &OpCommand::OpCommand::Attr<char const*>(const string &name, char const* value);
 template OpCommand &OpCommand::OpCommand::Attr<bool>(const string &name, bool value);
 template OpCommand &OpCommand::OpCommand::Attr<float>(const string &name, float value);
 template OpCommand &OpCommand::OpCommand::Attr<int64_t>(const string &name, int64_t value);
 template OpCommand &OpCommand::OpCommand::Attr<c10::SmallVector<int64_t, N>>(const string &name, c10::SmallVector<int64_t, N> value);
+template OpCommand &OpCommand::OpCommand::Attr<c10::SmallVector<int64_t, 8>>(const string &name, c10::SmallVector<int64_t, 8> value);
+template OpCommand &OpCommand::OpCommand::Attr<c10::SmallVector<float, 8>>(const string &name, c10::SmallVector<float, 8> value);
+template OpCommand &OpCommand::OpCommand::Attr<c10::SmallVector<float, 32>>(const string &name, c10::SmallVector<float, 32> value);
+template OpCommand &OpCommand::OpCommand::Attr<c10::ArrayRef<long>>(const string &name, c10::ArrayRef<long> value);
+template OpCommand &OpCommand::OpCommand::Attr<c10::ArrayRef<float>>(const string &name, c10::ArrayRef<float> value);
+template OpCommand &OpCommand::OpCommand::Attr<c10::ArrayRef<unsigned char>>(const string &name, c10::ArrayRef<unsigned char> value);
+template OpCommand &OpCommand::OpCommand::Attr<c10::ScalarType>(const string &name, c10::ScalarType value);
+template OpCommand &OpCommand::OpCommand::Attr<c10::Scalar>(const string &name, c10::Scalar value);
 
 // Run a single op
 void OpCommand::Run() {
@@ -1232,6 +1241,21 @@ void npu_fast_reshape_(at::Tensor &tensor) {
 }
 
 }  // namespace native
+
+namespace detail {
+
+const at::Generator &getDefaultNPUGenerator(c10::DeviceIndex device_index) {
+    INTERFACE_NOT_IMPL
+}
+
+}  // namespace detail
+
+NPUGeneratorImpl::NPUGeneratorImpl(c10::DeviceIndex device_index)
+    : c10::GeneratorImpl{c10::Device(at_npu::key::NativeDeviceType, device_index),
+      c10::DispatchKeySet(at_npu::key::NativeDispatchKey)} {
+    // at::npu::assertNotCapturing("Cannot construct a new NPUGeneratorImpl");
+}
+
 }  // namespace at_npu
 
 thread_local diopiContextHandle_t context = nullptr;
@@ -1257,7 +1281,7 @@ int current_device() {
     return devId_;
 }
 
-C10_NPU_API NPUStream getCurrentNPUStream(c10::DeviceIndex device_index) {
+NPUStream getCurrentNPUStream(c10::DeviceIndex device_index) {
     if (device_index == -1) {
         device_index = current_device();
     }
@@ -1269,6 +1293,10 @@ C10_NPU_API NPUStream getCurrentNPUStream(c10::DeviceIndex device_index) {
     aclrtStream aclStream = reinterpret_cast<aclrtStream>(stream_handle);
     TORCH_CHECK(aclStream);
     return NPUStream(NPUStream::Unchecked::UNCHECKED, atStream, aclStream);
+}
+
+NPUStream getCurrentSecondaryStream(c10::DeviceIndex device_index ) {
+    return getCurrentNPUStream(device_index);
 }
 
 }  // namespace c10_npu
