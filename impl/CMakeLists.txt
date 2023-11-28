@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.14)
 project(diopi_impl)
 
 option(TEST "Whether to compile DIOPI with runtime" OFF)
-option(DEBUG "whether to use debug" OFF)
 option(DYLOAD "Whether to load so in runtime by dlopen" OFF)
 
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/proto/include")
@@ -25,12 +24,9 @@ endif(TEST)
 option(ENABLE_COVERAGE "Use gcov" OFF)
 message(STATUS ENABLE_COVERAGE=${ENABLE_COVERAGE})
 
-if (DEBUG)
-    set(CMAKE_BUILD_TYPE "Debug")
-else()
-    if(CMAKE_BUILD_TYPE STREQUAL "")
-        set(CMAKE_BUILD_TYPE "Release")
-    endif()
+# the default is Release
+if(CMAKE_BUILD_TYPE STREQUAL "")
+    set(CMAKE_BUILD_TYPE "Release")
 endif()
 
 if (ENABLE_COVERAGE)
