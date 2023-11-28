@@ -118,7 +118,7 @@ class CheckResult(object):
                     error_info += f"The max of diff is {max_diff}. Specifically, the actual val is {max_diff_elem} and the expected is {max_diff_elem_ref}.\n"
             if debug_level > 0:
                 if np.isnan(sum1) or np.isnan(sum2):
-                    error_info += "Exists nan.\n"
+                    error_info += f"Exists nan, {var_name} is {sum1} and {var_name}_ref is {sum2}.\n"
                 else:
                     error_info += f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}, Max of diff is {max_diff}.\n"
                 if debug_level > 1:
