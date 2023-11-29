@@ -12,6 +12,7 @@
 #include <diopi/diopirt.h>
 
 #include <cstdio>
+#include <cstdlib>
 
 #include "../ascend_tensor.hpp"
 #include "../error.hpp"
@@ -68,7 +69,13 @@ diopiError_t device_memcpy_d2d_async(diopiStreamHandle_t streamHandle, void* dst
     return diopiSuccess;
 }
 
+static void setInfNanMode() {
+    // INF_NAN_MODE_ENABLE=1
+    setenv("INF_NAN_MODE_ENABLE", "1", 1);  // the last argument 1 means overwrite the env.
+}
+
 diopiError_t initLibrary() {
+    setInfNanMode();
     CALL_ACLRT(aclInit(nullptr));
     CALL_ACLRT(aclrtSetDevice(0));
     aclrtContext context;

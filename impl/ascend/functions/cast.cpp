@@ -17,8 +17,13 @@ diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     }
 
     AscendTensor inputAt(input), outAt(out);
+
+    // printContiguousTensor(ctx, inputAt, "inputAt");
+
     if (inputAt.stride() == outAt.stride()) {
+        // std::cout << "000000000000000000" << std::endl;
         if (diopi_dtype_uint8 == outAt.dtype()) {
+            // std::cout << "111111111111111" << std::endl;
             AclOpRunner<1, 1>("Cast", ctx)
                 .addInput(inputAt.data(), inputAt.getAclMemBufferSize(), inputAt.getAclMemShape(), inputAt.getAclDataFormat(), inputAt.dtype())
                 .addOutput(const_cast<void *>(outAt.data()), outAt.getAclMemBufferSize(), outAt.getAclMemShape(), outAt.getAclDataFormat(), diopi_dtype_int8)
@@ -30,6 +35,7 @@ diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
                 .setAttr<int32_t>("dst_type", ACL_UINT8)
                 .run();
         } else {
+            // std::cout << "2222222222222222" << std::endl;
             AclOpRunner<1, 1>("Cast", ctx)
                 .addInput(inputAt.data(), inputAt.getAclMemBufferSize(), inputAt.getAclMemShape(), inputAt.getAclDataFormat(), inputAt.dtype())
                 .addOutput(const_cast<void *>(outAt.data()), outAt.getAclMemBufferSize(), outAt.getAclMemShape(), outAt.getAclDataFormat(), outAt.dtype())
@@ -37,6 +43,7 @@ diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
                 .run();
         }
     } else {
+        // std::cout << "333333333333333333" << std::endl;
         diopiTensorHandle_t inputCopy;
         makeTensorLike(ctx, &inputCopy, input, outAt.dtype());
         diopiCastDtype(ctx, inputCopy, input);
@@ -55,6 +62,7 @@ diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
             .run();
     }
 
+    // printContiguousTensor(ctx, outAt, "outAt");
     return diopiSuccess;
 }
 

@@ -18,22 +18,13 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
     if (0 == inputAt0.numel()) {
         // align with pytorch
         if (diopiReduction_t::ReductionMean == reduction) {
-            // nan
-            if (outAt0.dtype() == diopi_dtype_float16) {
-                diopiTensorHandle_t outTemp;
-                makeTensorLike(ctx, &outTemp, out, diopi_dtype_float64);
-                diopiScalar_t nanScalar = {diopi_dtype_float64, NAN};
-                diopiFill(ctx, outTemp, &nanScalar);
-                diopiCastDtype(ctx, out, outTemp);
-            } else {
-                fillNan(ctx, outAt0);
-            }
+            fillNan(ctx, outAt0);
+            // printContiguousTensor(ctx, outAt0, "outAt)");
         } else if (diopiReduction_t::ReductionSum == reduction || diopiReduction_t::ReductionNone == reduction) {
             fillTensor(ctx, out, 0.0f);
         }
         return diopiSuccess;
     }
-
     diopiSize_t inputShape;
     diopiTensorHandle_t inputCopy, targetCopy;
     diopiGetTensorShape(input, &inputShape);
