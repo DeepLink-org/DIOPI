@@ -24,7 +24,8 @@ def get_capsule(src):
     PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
     PyCapsule_New = ctypes.pythonapi.PyCapsule_New
     PyCapsule_New.restype = ctypes.py_object
-    PyCapsule_New.argtypes = (ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor)
+    PyCapsule_New.argtypes = (
+        ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor)
     capsule = PyCapsule_New(src, None, PyCapsule_Destructor(0))
     return capsule
 
@@ -48,7 +49,8 @@ def check_returncode(returncode, throw_exception=True):
     if 0 != returncode:
         if returncode == diopiError.diopi_no_implement:
             glob_vars.func_status[glob_vars.cur_test_func] = 'skipped'
-            raise FunctionNotImplementedError(glob_vars.cur_test_func + ' not implement')
+            raise FunctionNotImplementedError(
+                glob_vars.cur_test_func + ' not implement')
         glob_vars.func_status[glob_vars.cur_test_func] = 'failed'
         error_info = f"Returncode: {returncode}"
         error_detail = get_last_error()
@@ -281,7 +283,8 @@ def softmax(input, dim, dtype=None):
         dim = 0
     if input.numel() == 0:
         return input
-    out = raw_like(input) if dtype is None else Tensor(input.size().data, dtype)
+    out = raw_like(input) if dtype is None else Tensor(
+        input.size().data, dtype)
 
     func = check_function('diopiSoftmax')
     ret = func(input.context(), out, input, dim)
@@ -497,10 +500,13 @@ def baddbmm(input, batch1, batch2, beta, alpha, inplace=False) -> Tensor:
     input_len = input.size().len
     out_shape = size1
     if input_len == 3:
-        assert (size2[2] == size3[1] and size1[0] == size2[0] and size1[0] == size3[0] or size1[0] == 1), 'invalid args'
-        assert (size1[2] == size3[2] or size1[2] == 1 or size3[2] == 1), 'invalid args'
+        assert (size2[2] == size3[1] and size1[0] == size2[0]
+                and size1[0] == size3[0] or size1[0] == 1), 'invalid args'
+        assert (size1[2] == size3[2] or size1[2] ==
+                1 or size3[2] == 1), 'invalid args'
     elif input_len == 2:
-        assert (((size1[1] == size3[2] or size1[1] == 1) and (size1[0] == size2[1] or size1[0] == 1))), 'invalid args'
+        assert (((size1[1] == size3[2] or size1[1] == 1) and (
+            size1[0] == size2[1] or size1[0] == 1))), 'invalid args'
         out_shape = (size2[0], size1[0], size1[1])
     elif input_len == 1:
         assert (size1[0] == size3[2] or size1[0] == 1), 'invalid args'
@@ -562,12 +568,14 @@ def matmul(input, other) -> Tensor:
         out = Tensor(sizeO[:-2] + [sizeO[-1]], input.get_dtype())
     # (batched) matrix x (batched)matrix
     else:
-        assert len(sizeI) > 1 and len(sizeO) > 1, "Inputs must be at least 2-dimensional for matrix multiplication"
+        assert len(sizeI) > 1 and len(
+            sizeO) > 1, "Inputs must be at least 2-dimensional for matrix multiplication"
         assert sizeI[-1] == sizeO[-2], "Last dimension of the first input must match second to last dimension of the second input"
         max_dim = len(sizeI) if len(sizeI) > len(sizeO) else len(sizeO)
         sizeI = [1] * (max_dim - len(sizeI)) + sizeI
         sizeO = [1] * (max_dim - len(sizeO)) + sizeO
-        out_size = [sizeI[i] if sizeI[i] > sizeO[i] else sizeO[i] for i in range(max_dim - 2)] + [sizeI[-2], sizeO[-1]]
+        out_size = [sizeI[i] if sizeI[i] > sizeO[i] else sizeO[i]
+                    for i in range(max_dim - 2)] + [sizeI[-2], sizeO[-1]]
         out = Tensor(out_size, input.get_dtype())
     func = check_function("diopiMatmul")
     ret = func(input.context(), out,
@@ -591,8 +599,10 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
             assert (isinstance(max, Tensor)), 'min and max must have same type'
             args += "input, min, max"
         else:
-            assert (isinstance(min, (int, float))), 'min must be Tensor or Value'
-            assert (isinstance(max, (int, float))), 'min and max must have same type'
+            assert (isinstance(min, (int, float))
+                    ), 'min must be Tensor or Value'
+            assert (isinstance(max, (int, float))
+                    ), 'min and max must have same type'
             if isinstance(min, float) and input.get_dtype() in int_types:
                 convert_float = True
             call = call + 'Scalar'
@@ -603,7 +613,8 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
         if isinstance(max, Tensor):
             args += "input, None, max"
         else:
-            assert (isinstance(max, (int, float))), 'max must be Tensor or Value'
+            assert (isinstance(max, (int, float))
+                    ), 'max must be Tensor or Value'
             if isinstance(max, float) and input.get_dtype() in int_types:
                 convert_float = True
             call = call + 'Scalar'
@@ -613,7 +624,8 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
         if isinstance(min, Tensor):
             args += "input, min, None"
         else:
-            assert (isinstance(min, (int, float))), 'min must be Tensor or Value'
+            assert (isinstance(min, (int, float))
+                    ), 'min must be Tensor or Value'
             if isinstance(min, float) and input.get_dtype() in int_types:
                 convert_float = True
             call = call + 'Scalar'
@@ -623,7 +635,8 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
     if inplace:
         if convert_float:
             input_np = input.numpy()
-            input = Tensor.from_numpy(input_np.astype(to_numpy_dtype(Dtype.float32)))
+            input = Tensor.from_numpy(
+                input_np.astype(to_numpy_dtype(Dtype.float32)))
         out = input
     else:
         if convert_float:
@@ -643,7 +656,8 @@ def clamp_min(input, min, inplace=False) -> Tensor:
     if inplace:
         if isinstance(min, float) and input.get_dtype() in int_types:
             input_np = input.numpy()
-            input = Tensor.from_numpy(input_np.astype(to_numpy_dtype(Dtype.float32)))
+            input = Tensor.from_numpy(
+                input_np.astype(to_numpy_dtype(Dtype.float32)))
         out = input
         call = call + "Inp"
     else:
@@ -673,7 +687,8 @@ def clamp_max(input, max, inplace=False) -> Tensor:
     if inplace:
         if isinstance(max, float) and input.get_dtype() in int_types:
             input_np = input.numpy()
-            input = Tensor.from_numpy(input_np.astype(to_numpy_dtype(Dtype.float32)))
+            input = Tensor.from_numpy(
+                input_np.astype(to_numpy_dtype(Dtype.float32)))
         out = input
         call = call + "Inp"
     else:
@@ -896,7 +911,8 @@ def conv2d(input, weight, bias=None, stride=1,
     for i in range(-2, 0):
         # equivalent kernel size
         sizeW[i] += (sizeW[i] - 1) * (dilation[i] - 1)
-        sizeO.append(int((sizeI[i] - sizeW[i] + 2 * padding[i]) / stride[i]) + 1)
+        sizeO.append(
+            int((sizeI[i] - sizeW[i] + 2 * padding[i]) / stride[i]) + 1)
 
     stride = Sizes(list(stride))
     padding = Sizes(list(padding))
@@ -933,9 +949,11 @@ def avg_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False,
 
     for i in range(-2, 0):
         if ceil_mode:
-            sizeO.append(math.ceil((sizeI[i] - kernel_size[i] + 2 * padding[i]) / stride[i]) + 1)
+            sizeO.append(
+                math.ceil((sizeI[i] - kernel_size[i] + 2 * padding[i]) / stride[i]) + 1)
         else:
-            sizeO.append(math.floor((sizeI[i] - kernel_size[i] + 2 * padding[i]) / stride[i]) + 1)
+            sizeO.append(math.floor(
+                (sizeI[i] - kernel_size[i] + 2 * padding[i]) / stride[i]) + 1)
 
     stride = Sizes(list(stride))
     padding = Sizes(list(padding))
@@ -977,7 +995,8 @@ def max_pool2d(input, kernel_size, stride=None, padding=0, dilation=1,
         dilation = (dilation, dilation)
 
     for i in range(-2, 0):
-        tmp_ker_size = kernel_size[i] + (kernel_size[i] - 1) * (dilation[i] - 1)
+        tmp_ker_size = kernel_size[i] + \
+            (kernel_size[i] - 1) * (dilation[i] - 1)
         tmp_size = (sizeI[i] - tmp_ker_size + 2 * padding[i]) / stride[i] + 1
         tmp_size = tmp_size if tmp_size > 1 else 1
         if ceil_mode:
@@ -1002,7 +1021,8 @@ def max_pool2d(input, kernel_size, stride=None, padding=0, dilation=1,
     else:
         func = check_function("diopiMaxPool2dWithIndices")
         nhwc_stride = compute_nhwc_stride_2d(sizeO) if glob_vars.nhwc else None
-        indices = Tensor(sizeO, from_numpy_dtype(glob_vars.int_type), stride=nhwc_stride)
+        indices = Tensor(sizeO, from_numpy_dtype(
+            glob_vars.int_type), stride=nhwc_stride)
         ret = func(input.context(), out,
                    indices, input,
                    kernel_size, stride, padding, dilation, ceil_mode)
@@ -1066,7 +1086,8 @@ def adaptive_max_pool2d(input, output_size, return_indices=False):
     if return_indices:
         func = check_function("diopiAdaptiveMaxPool2dWithIndices")
         nhwc_stride = compute_nhwc_stride_2d(sizeO) if glob_vars.nhwc else None
-        indices = Tensor(sizeO, from_numpy_dtype(glob_vars.int_type), stride=nhwc_stride)
+        indices = Tensor(sizeO, from_numpy_dtype(
+            glob_vars.int_type), stride=nhwc_stride)
         ret = func(input.context(), out, indices,
                    input, output_size)
         check_returncode(ret)
@@ -1180,7 +1201,8 @@ def embedding(input: Tensor, weight: Tensor, padding_idx: Optional[int] = None,
         if padding_idx > 0:
             assert padding_idx < sizeW[0], "Padding_idx must be within num_embeddings"
         elif padding_idx < 0:
-            assert padding_idx >= -sizeW[0], "Padding_idx must be within num_embeddings"
+            assert padding_idx >= - \
+                sizeW[0], "Padding_idx must be within num_embeddings"
             padding_idx = sizeW[0] + padding_idx
     else:
         padding_idx = -1
@@ -1495,7 +1517,8 @@ def batch_norm_gather_stats_with_counts(input, mean_all, invstd_all, running_mea
     func = check_function('diopiBatchNormGatherStatsWithCounts')
     mean = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
     invstd = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
-    ret = func(input.context(), mean, invstd, input, mean_all, invstd_all, running_mean, running_var, momentum, eps, count_all)
+    ret = func(input.context(), mean, invstd, input, mean_all,
+               invstd_all, running_mean, running_var, momentum, eps, count_all)
     check_returncode(ret)
     out = (mean, invstd)
     return out
@@ -1505,19 +1528,23 @@ def batch_norm_backward_reduce(grad_output, input, mean, invstd, weight, input_g
     func = check_function('diopiBatchNormBackwardReduce')
     if input_g:
         sum_dy = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
-        sum_dy_xmu = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+        sum_dy_xmu = Tensor(
+            Sizes(list([input.size().data[1]])), input.get_dtype())
     else:
         sum_dy = None
         sum_dy_xmu = None
     if weight_g:
-        grad_weight = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+        grad_weight = Tensor(
+            Sizes(list([input.size().data[1]])), input.get_dtype())
     else:
         grad_weight = None
     if weight_g:
-        grad_bias = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+        grad_bias = Tensor(
+            Sizes(list([input.size().data[1]])), input.get_dtype())
     else:
         grad_bias = None
-    ret = func(input.context(), sum_dy, sum_dy_xmu, grad_weight, grad_bias, grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g)
+    ret = func(input.context(), sum_dy, sum_dy_xmu, grad_weight, grad_bias,
+               grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g)
     check_returncode(ret)
     out = (sum_dy, sum_dy_xmu, grad_weight, grad_bias)
     return out
@@ -1526,7 +1553,8 @@ def batch_norm_backward_reduce(grad_output, input, mean, invstd, weight, input_g
 def batch_norm_backward_elemt(grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count):
     func = check_function('diopiBatchNormBackwardElemt')
     grad_input = Tensor(Sizes(list(grad_out.size().data)), input.get_dtype())
-    ret = func(input.context(), grad_input, grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count)
+    ret = func(input.context(), grad_input, grad_out, input,
+               mean, invstd, weight, sum_dy, sum_dy_xmu, count)
     check_returncode(ret)
     out = (grad_input)
     return out
@@ -1545,7 +1573,8 @@ def log_softmax(input, dim=None, dtype=None):
         dim = 0
     if input.numel() == 0:
         return input
-    out = raw_like(input) if dtype is None else Tensor(input.size().data, dtype)
+    out = raw_like(input) if dtype is None else Tensor(
+        input.size().data, dtype)
 
     func = check_function('diopiLogSoftmax')
     ret = func(input.context(), out,
@@ -1653,7 +1682,8 @@ def sum(input, dim=None, keepdim=False, dtype=None) -> Tensor:
     assert isinstance(dim, (int, list, tuple)) or dim is None,\
         "dim should be int or list"
     func = check_function("diopiSum")
-    out_dtype = dtype if dtype is not None else promote_type(input, Dtype.int64)
+    out_dtype = dtype if dtype is not None else promote_type(
+        input, Dtype.int64)
     dim, out = reduce_op_process(input, dim, keepdim, out_dtype)
     dim1 = Sizes(list(dim))
     ret = func(input.context(), out, input, dim1)
@@ -1696,7 +1726,8 @@ def any(input, dim=None, keepdim=False) -> Tensor:
         _, out = reduce_op_process(input, dim, keepdim, dtype=Dtype.bool)
     func = check_function("diopiAny")
 
-    ret = func(input.context(), out, input) if dim is None else func(input.context(), out, input, dim)
+    ret = func(input.context(), out, input) if dim is None else func(
+        input.context(), out, input, dim)
     check_returncode(ret)
     return out
 
@@ -1709,7 +1740,8 @@ def all(input, dim=None, keepdim=False) -> Tensor:
         _, out = reduce_op_process(input, dim, keepdim, dtype=Dtype.bool)
 
     func = check_function("diopiAll")
-    ret = func(input.context(), out, input) if dim is None else func(input.context(), out, input, dim)
+    ret = func(input.context(), out, input) if dim is None else func(
+        input.context(), out, input, dim)
     check_returncode(ret)
     return out
 
@@ -2301,7 +2333,8 @@ def max_pool2d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
     if isinstance(dilation, int):
         dilation = (dilation, dilation)
 
-    _, indices = max_pool2d(input, kernel_size, stride, padding, dilation, ceil_mode, True)
+    _, indices = max_pool2d(input, kernel_size, stride,
+                            padding, dilation, ceil_mode, True)
     stride = Sizes(list(stride))
     padding = Sizes(list(padding))
     kernel_size = Sizes(list(kernel_size))
@@ -2346,7 +2379,8 @@ def arange(end, start=0, step=1, dtype=None) -> Tensor:
         else:
             dtype = from_numpy_dtype(glob_vars.int_type)
 
-    numel = int((end - start) / step + (((end - start) / step) > int((end - start) / step)))
+    numel = int((end - start) / step +
+                (((end - start) / step) > int((end - start) / step)))
     out = Tensor((numel,), dtype)
 
     func = check_function("diopiArange")
@@ -2498,7 +2532,8 @@ def conv_transpose2d(input, weight, bias=None, stride=1,
     for i in range(-2, 0):
         # equivalent kernel size
         sizeW[i] = (sizeW[i] - 1) * dilation[i]
-        sizeO.append(int((sizeI[i] - 1) * stride[i] - 2 * padding[i] + sizeW[i] + output_padding[i]) + 1)
+        sizeO.append(int((sizeI[i] - 1) * stride[i] - 2 *
+                     padding[i] + sizeW[i] + output_padding[i]) + 1)
     stride = Sizes(list(stride))
     padding = Sizes(list(padding))
     output_padding = Sizes(list(output_padding))
@@ -2521,7 +2556,8 @@ def cumsum(input, dim, dtype=None):
     else:
         assert dim < len(sizeI), "dim out of index"
 
-    out = Tensor(input.size().data, promote_type(input, Dtype.int64)) if dtype is None else Tensor(input.size().data, dtype)
+    out = Tensor(input.size().data, promote_type(input, Dtype.int64)
+                 ) if dtype is None else Tensor(input.size().data, dtype)
     func = check_function("diopiCumsum")
     ret = func(input.context(), out, input, dim)
     check_returncode(ret)
@@ -2775,7 +2811,8 @@ def conv3d(input, weight, bias=None, stride=1,
     for i in range(-3, 0):
         # equivalent kernel size
         sizeW[i] += (sizeW[i] - 1) * (dilation[i] - 1)
-        sizeO.append(int((sizeI[i] - sizeW[i] + 2 * padding[i]) / stride[i]) + 1)
+        sizeO.append(
+            int((sizeI[i] - sizeW[i] + 2 * padding[i]) / stride[i]) + 1)
 
     stride = Sizes(list(stride))
     padding = Sizes(list(padding))
@@ -3131,7 +3168,8 @@ def adaptive_max_pool3d(input, output_size, return_indices=False):
     if return_indices:
         func = check_function("diopiAdaptiveMaxPool3dWithIndices")
         nhwc_stride = compute_nhwc_stride_3d(sizeO) if glob_vars.nhwc else None
-        indices = Tensor(sizeO, from_numpy_dtype(glob_vars.int_type), stride=nhwc_stride)
+        indices = Tensor(sizeO, from_numpy_dtype(
+            glob_vars.int_type), stride=nhwc_stride)
         ret = func(input.context(), out, indices,
                    input, output_size)
         check_returncode(ret)
@@ -3179,7 +3217,8 @@ def max_pool3d(input, kernel_size, stride=None, padding=0, dilation=1,
         dilation = (dilation, dilation, dilation)
 
     for i in range(-3, 0):
-        tmp_ker_size = kernel_size[i] + (kernel_size[i] - 1) * (dilation[i] - 1)
+        tmp_ker_size = kernel_size[i] + \
+            (kernel_size[i] - 1) * (dilation[i] - 1)
         tmp_size = (sizeI[i] - tmp_ker_size + 2 * padding[i]) / stride[i] + 1
         tmp_size = tmp_size if tmp_size > 1 else 1
         if ceil_mode:
@@ -3228,7 +3267,8 @@ def max_pool3d_backward(input, grad_outputs, kernel_size, stride=None, padding=0
     if isinstance(dilation, int):
         dilation = (dilation, dilation, dilation)
 
-    _, indices = max_pool3d(input, kernel_size, stride, padding, dilation, ceil_mode, True)
+    _, indices = max_pool3d(input, kernel_size, stride,
+                            padding, dilation, ceil_mode, True)
     stride = Sizes(list(stride))
     padding = Sizes(list(padding))
     kernel_size = Sizes(list(kernel_size))
@@ -3267,7 +3307,8 @@ def copy_(input, other) -> Tensor:
 def gather(input, dim, index):
     assert isinstance(dim, int), "dim must be int"
     if len(input.size().data) > 1 and len(index.size().data) > 1:
-        assert len(input.size().data) == len(index.size().data), "input and index must have the same number of dimensions"
+        assert len(input.size().data) == len(
+            index.size().data), "input and index must have the same number of dimensions"
     out = Tensor(index.size().data, input.get_dtype())
     func = check_function("diopiGather")
     ret = func(input.context(), out, input, dim, index)
@@ -3333,7 +3374,8 @@ def ctc_loss(log_probs, targets, input_lengths, target_lengths, blank=0, reducti
     if reduction == 'none':
         sizeO = (sizeI[1], )
     neg_log_likelihood = Tensor((sizeI[1], ), log_probs.get_dtype())
-    log_alpha = Tensor((sizeI[1], sizeI[0], max_target_length), log_probs.get_dtype())
+    log_alpha = Tensor(
+        (sizeI[1], sizeI[0], max_target_length), log_probs.get_dtype())
     out = Tensor(sizeO, log_probs.get_dtype())
 
     func = check_function("diopiCTCLoss")
@@ -3469,7 +3511,8 @@ def interpolate_backward(input, grad_outputs, size, mode="nearest", align_corner
 
     if mode == "nearest":
         func = check_function("diopiUpsampleNearestBackward")
-        ret = func(input.context(), grad_input, grad_outputs[0], out_size, in_size)
+        ret = func(input.context(), grad_input,
+                   grad_outputs[0], out_size, in_size)
     else:
         func = check_function("diopiUpsampleLinearBackward")
         ret = func(input.context(), grad_input, grad_outputs[0], out_size, in_size,
@@ -3546,7 +3589,8 @@ def unique(input, sorted=True, return_inverse=False, return_counts=False, dim=No
 def prod(input, dim=None, keepdim=False, dtype=None) -> Tensor:
     assert isinstance(dim, (int)) or dim is None,\
         "dim should be int"
-    out_dtype = dtype if dtype is not None else promote_type(input, Dtype.int64)
+    out_dtype = dtype if dtype is not None else promote_type(
+        input, Dtype.int64)
 
     _, out = reduce_op_process(input, dim, keepdim, out_dtype)
 
@@ -3619,7 +3663,8 @@ def im2col(input, kernel_size, dilation=1, padding=0, stride=1) -> Tensor:
         dilation = (dilation, dilation)
     num_blocks = 1
     for i in range(2):
-        num_blocks *= int((sizeI[i + 2] + 2 * padding[i] - dilation[i] * (kernel_size[i] - 1) - 1) / stride[i]) + 1
+        num_blocks *= int((sizeI[i + 2] + 2 * padding[i] -
+                          dilation[i] * (kernel_size[i] - 1) - 1) / stride[i]) + 1
     channels = sizeI[1]
     for i in range(len(kernel_size)):
         channels *= kernel_size[i]
@@ -3825,10 +3870,12 @@ def multinomial(input, num_samples, replacement, generator=None) -> Tensor:
     call = "diopiMultinomial"
     func = check_function(call)
     if len(input.size().data) == 2:
-        out = Tensor(size=(input.size().data[0], num_samples), dtype=Dtype.int64)
+        out = Tensor(
+            size=(input.size().data[0], num_samples), dtype=Dtype.int64)
     if len(input.size().data) == 1:
         out = Tensor(size=(num_samples,), dtype=Dtype.int64)
-    ret = func(input.context(), out, input, num_samples, replacement, generator)
+    ret = func(input.context(), out, input,
+               num_samples, replacement, generator)
     check_returncode(ret)
     return out
 
@@ -4003,7 +4050,8 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
     out = Tensor(size, input.get_dtype())
     inv_rms = Tensor(size, input.get_dtype())
     normalized_shape = Sizes(list(normalized_shape))
-    ret = func(input.context(), out, inv_rms, input, normalized_shape, weight, bias, eps)
+    ret = func(input.context(), out, inv_rms, input,
+               normalized_shape, weight, bias, eps)
     check_returncode(ret)
     return out
 
@@ -4018,7 +4066,8 @@ def multihead_attention_forward(q, k, v, dropout_p, is_causal, return_debug_mask
     gen = None
     debug_attn_mask = Tensor([0], q.get_dtype())
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
-    ret = func(q.context(), q, k, v, dropout_p, is_causal, return_debug_mask, softmax_scale, out, softmax_lse, gen, debug_attn_mask)
+    ret = func(q.context(), q, k, v, dropout_p, is_causal, return_debug_mask,
+               softmax_scale, out, softmax_lse, gen, debug_attn_mask)
     check_returncode(ret)
     return out
 
@@ -4034,11 +4083,13 @@ def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_to
     p_token_ids_shape = list(p_token_ids.size().data)
     p_token_counts_shape = list(p_token_counts.size().data)
 
-    assert logits_shape[0] == presence_penalty_shape[0] and logits_shape[0] == frequency_penalty_shape[0], "The first dimensions of logits, presence penalty, and frequency penalty must be equal."
+    assert logits_shape[0] == presence_penalty_shape[0] and logits_shape[0] == frequency_penalty_shape[
+        0], "The first dimensions of logits, presence penalty, and frequency penalty must be equal."
     assert logits_shape[0] + 1 == p_cumsum_seq_len_shape[0], "The first dimension of logits_shape plus one must equal the first dimension of p_cumsum_seq_len_shape."
     assert p_token_ids_shape == p_token_counts_shape, "The shape of p_token_ids must be equal to the shape of p_token_counts."
 
-    ret = func(logits.context(), logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch)
+    ret = func(logits.context(), logits, presence_penalty, frequency_penalty,
+               p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch)
     out = logits
     check_returncode(ret)
     return out
@@ -4057,7 +4108,8 @@ def token_attention(q, k, out, b_loc, b_start_loc, b_seq_len, max_input_len):
     call = "diopiTokenAttentionInference"
     func = check_function(call)
 
-    ret = func(q.context(), out, q, k, b_loc, b_start_loc, b_seq_len, max_input_len)
+    ret = func(q.context(), out, q, k, b_loc,
+               b_start_loc, b_seq_len, max_input_len)
     check_returncode(ret)
     return out
 
@@ -4066,7 +4118,8 @@ def token_softmax_reducev(logics, v, out, b_loc, b_start_loc, b_seq_len, max_inp
     call = "diopiTokenSoftmaxReduceVInference"
     func = check_function(call)
 
-    ret = func(logics.context(), out, logics, v, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index)
+    ret = func(logics.context(), out, logics, v, b_loc, b_start_loc,
+               b_seq_len, max_input_len, other_kv_index)
     check_returncode(ret)
     return out
 
@@ -4075,6 +4128,7 @@ def context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len):
     call = "diopiContextAttentionInference"
     func = check_function(call)
 
-    ret = func(q.context(), out, q, k, v, b_start_loc, b_seq_len, max_input_len)
+    ret = func(q.context(), out, q, k, v,
+               b_start_loc, b_seq_len, max_input_len)
     check_returncode(ret)
     return out
