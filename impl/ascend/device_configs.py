@@ -1325,30 +1325,6 @@ device_configs = {
         ),
     ),
 
-    'slice': dict(
-        name=['slice_op'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((7,)),Skip((128, 3, 3)),Skip((2, 3, 224, 224)),Skip((3, 2, 6, 197, 64)),],
-                },
-            ]
-        ),
-    ),
-
-    'slice_int': dict(
-        name=['slice_op'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((7,)),Skip((128, 3, 3)),Skip((2, 3, 224, 224)),Skip((3, 2, 6, 197, 64)),],
-                },
-            ]
-        ),
-    ),
-
     'index': dict(
         name=['index'],
         tensor_para=dict(
