@@ -178,3 +178,9 @@
 
 - diopiLayerNormBackward:
     dtype: (float64)->float32
+
+- diopiNLLLoss:
+    dtype: (float16)->float32
+
+- diopiNLLLossBackward:
+    dtype: (float16)->float32
