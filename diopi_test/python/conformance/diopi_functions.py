@@ -14,6 +14,7 @@ from .diopi_runtime import (Sizes, Scalar, Tensor, TensorP, Dtype, diopiReductio
 from .diopi_runtime import raw_like, int_types, float_types, get_last_error
 from .utils import logger
 from conformance.global_settings import glob_vars
+from typing import Optional
 
 
 GLOBAL_STATE = {}
@@ -1170,25 +1171,34 @@ def linear(input, weight, bias=None) -> Tensor:
     return out
 
 
-def embedding(input, weight, padding_idx=None, max_norm=None, norm_type=2.0,
-              scale_grad_by_freq=False, sparse=False):
-    sizeI = input.size().data
+def embedding(input: Tensor, weight: Tensor, padding_idx: Optional[int] = None,
+              max_norm: Optional[float] = None, norm_type: float = 2.0,
+              scale_grad_by_freq: bool = False, sparse: bool = False) -> Tensor:
     sizeW = weight.size().data
-    sizeI.append(sizeW[-1])
-    out = Tensor(sizeI, weight.get_dtype())
-    padding_idx = -1 if padding_idx is None else padding_idx
+    assert len(sizeW) == 2, "Shape of Weight should be 2"
+    if padding_idx is not None:
+        if padding_idx > 0:
+            assert padding_idx < sizeW[0], "Padding_idx must be within num_embeddings"
+        elif padding_idx < 0:
+            assert padding_idx >= -sizeW[0], "Padding_idx must be within num_embeddings"
+            padding_idx = sizeW[0] + padding_idx
+    else:
+        padding_idx = -1
 
     if max_norm is not None:
         func2 = check_function("diopiEmbeddingRenorm_")
         ret2 = func2(input.context(), weight, input, max_norm, norm_type)
         check_returncode(ret2)
 
+    sizeI = input.size().data
+    sizeI.append(sizeW[1])
+    # shape: [input_shape, ..., embedding_dim]
+    out = Tensor(sizeI, weight.get_dtype())
     # note: scale_grad_by_freq and sparse are useless during forward phase
     func = check_function("diopiEmbedding")
     ret = func(input.context(), out, weight,
                input, padding_idx, scale_grad_by_freq, sparse)
     check_returncode(ret)
-
     return out
 
 
