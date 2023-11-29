@@ -3428,7 +3428,7 @@ def argmax(input, dim=None, keepdim=False):
         if keepdim:
             sizeO[dim] = 1
         else:
-            sizeO = sizeO[:dim] + sizeO[dim + 1 :]
+            sizeO = sizeO[:dim] + sizeO[dim + 1:]
     else:
         sizeO = [1]
 
