@@ -107,49 +107,6 @@ device_configs = {
         ),
     ),
 
-    'batch_norm': dict(
-        name=['batch_norm'],
-        atol=1e-2,
-        rtol=1e-3,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    # "dtype": [Skip(np.float16),],
-                    # temp for 910B
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    # temp for 910B
-    'batch_norm_nan': dict(
-        name=['batch_norm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'batch_norm_no_contiguous': dict(
-        name=['batch_norm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    # "dtype": [Skip(np.float16),],
-                    # temp for 910B
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
     'batch_norm_stats': dict(
         name=['batch_norm_stats'],
         tensor_para=dict(
