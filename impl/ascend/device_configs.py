@@ -951,8 +951,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    # TODO(someone): fix me! 
-                    "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64)],
+                    # TODO(someone): dtype float16 is not supported
+                    "dtype": [Skip(np.float16)],
                 },
             ]
         ),
@@ -964,8 +964,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    # TODO(someone): fix me! 
-                    "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64)],
+                    # TODO(someone): dtype float16 is not supported
+                    "dtype": [Skip(np.float16)],
                 },
             ]
         ),

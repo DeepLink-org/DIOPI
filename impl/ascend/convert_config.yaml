@@ -234,3 +234,11 @@
 - diopiLayerNormBackward:
     dtype: (float64)->float32
     layout: NCHW
+
+- diopiNLLLoss:
+    dtype: (float16)->float64
+    layout: NCHW
+
+- diopiNLLLossBackward:
+    dtype: (float16)->float64
+    layout: NCHW
