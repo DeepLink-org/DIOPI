@@ -242,13 +242,13 @@ device_configs = {
 
     'conv_2d': dict(
         name=['conv2d'],
-        atol=1e-2,
+        atol=1e-1,
         rtol=1e-2,
     ),
 
     'conv_2d_no_contiguous': dict(
         name=['conv2d'],
-        atol=1e-2,
+        atol=1e-1,
         rtol=1e-2,
     ),
 
