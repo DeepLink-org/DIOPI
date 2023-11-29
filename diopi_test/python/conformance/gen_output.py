@@ -253,7 +253,7 @@ class CustomizedTest(object):
             cur_batch_start_index = p_cumsum_seq_len[i]
             cur_batch_end_index = p_cumsum_seq_len[i + 1]
             cur_logits = logits[i, p_token_ids[cur_batch_start_index:cur_batch_end_index]]
-            cur_logits = cur_logits - p_token_counts[cur_batch_start_index:cur_batch_end_index]*frequency_penalty[i] - presence_penalty[i]
+            cur_logits = cur_logits - p_token_counts[cur_batch_start_index:cur_batch_end_index] * frequency_penalty[i] - presence_penalty[i]
             logits[i, p_token_ids[cur_batch_start_index:cur_batch_end_index]] = cur_logits
         return logits
 
