@@ -31,7 +31,6 @@ diopiError_t diopiSliceBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gr
     if (dim < 0) {
         dim += inputSizes.len;
     }
- 
     std::vector<int64_t> start64(inputSizes.len, 0);
     std::vector<int64_t> step64(inputSizes.len, 1);
     std::vector<int64_t> end64(inputSizes.data, inputSizes.data + inputSizes.len);
