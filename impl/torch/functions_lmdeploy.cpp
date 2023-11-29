@@ -114,52 +114,21 @@ DIOPI_API diopiError_t diopiUpdatePaddingCount(diopiContextHandle_t ctx, diopiTe
  * @param[in] step : Step.type = [int64, int32]
  */
 DIOPI_API diopiError_t diopiLengthCriterion(diopiContextHandle_t ctx, diopiTensorHandle_t finished, diopiTensorHandle_t should_stop,
-                                            diopiTensorHandle_t finished_sum, diopiConstTensorHandle_t sequence_limit_length, int64_t batch_size, int64_t step) {
+                                            diopiTensorHandle_t finished_sum, diopiConstTensorHandle_t sequence_limit_length, int64_t batch_size,
+                                            int64_t step) {
     if (finished == nullptr || sequence_limit_length == nullptr) {
-        return diopiErrorOccurred;                                                  
+        return diopiErrorOccurred;
     }
-    std::cout << "LXZ: 1" << std::endl;
-    
-    std::cout << "LXZ: 2" << std::endl;
-    diopiScalar_t batch_size_scalar;
-    batch_size_scalar.stype = diopi_dtype_int64;
-    batch_size_scalar.ival = batch_size;
-    std::cout << "LXZ: 3" << std::endl;
-    // diopiTensorHandle_t tmp;
-    // diopiRequireTensor(ctx, &tmp, &in_shape, &in_stride, in_type, in_device);
 
     diopiScalar_t step_scalar;
     step_scalar.stype = diopi_dtype_int64;
     step_scalar.ival = step;
-    std::cout << "LXZ: 4" << std::endl;
-    
+
+    diopiLeScalar(ctx, finished, sequence_limit_length, &step_scalar);
+
     diopiDtype_t in_type;
     diopiSize_t in_shape, in_stride;
     diopiDevice_t in_device;
-   
-
-    // std::cout << "finished: " << in_shape.len << " " << in_shape.data[0] << " " << in_stride.len << " " << in_stride.data[0] << " " << in_type << " " << in_device << std::endl;
-
-    // diopiGetTensorDtype(sequence_limit_length, &in_type);
-    // diopiGetTensorShape(sequence_limit_length, &in_shape);
-    // diopiGetTensorStride(sequence_limit_length, &in_stride);
-    // diopiGetTensorDevice(sequence_limit_length, &in_device);
-
-    // std::cout << "sequence_limit_length: " << in_shape.len << " " << in_shape.data[0] << " " << in_stride.len << " " << in_stride.data[0] << " " << in_type << " " << in_device << std::endl;
-
-    diopiLeScalar(ctx, finished, sequence_limit_length, &step_scalar);
-    std::cout << "LXZ: 5" << std::endl;
-
-    diopiSize_t dim_zero;
-    int64_t tmp_zero = 0;
-    dim_zero.data = &tmp_zero;
-    dim_zero.len = 1;
-    std::cout << "LXZ: 6" << std::endl;
-    
-
-    // diopiScalar_t scalar_one;
-    // scalar_one.stype = diopi_dtype_int64;
-    // scalar_one.ival = 1;
     diopiGetTensorDtype(finished, &in_type);
     diopiGetTensorShape(finished, &in_shape);
     diopiGetTensorStride(finished, &in_stride);
@@ -167,7 +136,7 @@ DIOPI_API diopiError_t diopiLengthCriterion(diopiContextHandle_t ctx, diopiTenso
     diopiTensorHandle_t finished_fp64;
     diopiRequireTensor(ctx, &finished_fp64, &in_shape, &in_stride, diopi_dtype_float64, in_device);
     diopiCastDtype(ctx, finished_fp64, finished);
-        
+
     diopiGetTensorShape(finished_sum, &in_shape);
     diopiGetTensorStride(finished_sum, &in_stride);
     diopiGetTensorDevice(finished_sum, &in_device);
@@ -177,12 +146,15 @@ DIOPI_API diopiError_t diopiLengthCriterion(diopiContextHandle_t ctx, diopiTenso
     diopiRequireTensor(ctx, &finished_sum_fp64_device, &in_shape, &in_stride, diopi_dtype_float64, diopi_device);
     diopiCopyH2D(ctx, finished_sum_device, finished_sum, false);
     diopiCastDtype(ctx, finished_sum_fp64_device, finished_sum_device);
-    
+
+    diopiSize_t dim_zero;
+    int64_t tmp_zero = 0;
+    dim_zero.data = &tmp_zero;
+    dim_zero.len = 1;
     diopiSum(ctx, finished_sum_fp64_device, finished_fp64, dim_zero);
 
     diopiCastDtype(ctx, finished_sum_device, finished_sum_fp64_device);
     diopiCopyD2H(ctx, finished_sum, finished_sum_device, false);
-    
 
     diopiGetTensorDtype(finished, &in_type);
     diopiGetTensorShape(finished, &in_shape);
@@ -191,12 +163,50 @@ DIOPI_API diopiError_t diopiLengthCriterion(diopiContextHandle_t ctx, diopiTenso
     diopiTensorHandle_t h_finished;
     diopiRequireTensor(ctx, &h_finished, &in_shape, &in_stride, in_type, diopi_host);
     diopiCopyD2H(ctx, h_finished, finished, false);
-    std::cout << "LXZ: 7.5" << std::endl;
     diopiAll(ctx, should_stop, h_finished, &tmp_zero);
-    std::cout << "LXZ: 8" << std::endl;
     return diopiSuccess;
-} 
+}
 
+
+/**
+ * @brief EmbeddingLookupPosEncoding. Find id in embedding_table and get [hidden], only this step
+ * @param[in] ctx The diopi context.
+ * @param[out] from_tensor : Output ids.shape = [batch_size, hidden].type = [float32, float16]
+ * @param[in] embedding_table : Embedding table.shape=[vocab, hidden].type = [float32, float16]
+ * @param[in] all_ids : Input ids.shape=[batch_size, sessionlen].type = [int64, int32]
+ * @param[in] batch_size : Batch size.type = [int64, int32]
+ * @param[in] hidden_units : Hidden units.type = [int64, int32]
+ * @param[in] step : Step.type = [int64, int32]
+ */
+DIOPI_API diopiError_t diopiEmbeddingLookupPosEncoding(diopiContextHandle_t ctx, diopiTensorHandle_t from_tensor, diopiConstTensorHandle_t embedding_table,
+                                                       diopiConstTensorHandle_t all_ids, const int64_t batch_size, const int64_t hidden_units,
+                                                       const int64_t step) {
+    if (from_tensor == nullptr || embedding_table == nullptr || all_ids == nullptr) {
+        return diopiErrorOccurred;
+    }
+
+    diopiDtype_t in_type;
+    diopiSize_t in_shape, in_stride;
+    diopiDevice_t in_device;
+
+    diopiGetTensorDtype(all_ids, &in_type);
+    diopiGetTensorShape(all_ids, &in_shape);
+    diopiGetTensorStride(all_ids, &in_stride);
+    diopiGetTensorDevice(all_ids, &in_device);
+
+    diopiTensorHandle_t this_step_ids;
+    diopiSize_t this_step_shape;
+    this_step_shape.len = 1;
+    this_step_shape.data = &batch_size;
+    diopiSize_t this_step_stride;
+    this_step_stride.len = 1;
+    this_step_stride.data = in_stride.data + 1;
+    diopiRequireTensor(ctx, &this_step_ids, &this_step_shape, &this_step_stride, in_type, in_device);
+
+    diopiSelect(ctx, this_step_ids, all_ids, 0, step);
+    diopiIndexSelect(ctx, from_tensor, embedding_table, 0, this_step_ids);
+    return diopiSuccess;
+}
 
 /**
  * @brief StopWordsCriterion. Judging the end situation based on stopword.

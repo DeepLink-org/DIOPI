@@ -331,7 +331,7 @@ DIOPI_API diopiError_t diopiTransposeAxis01(diopiContextHandle_t ctx, diopiTenso
  * @param[in] ctx The diopi context.
  * @param[out] from_tensor : Output ids.shape = [batch_size, hidden].type = [float32, float16]
  * @param[in] embedding_table : Embedding table.shape=[vocab, hidden].type = [float32, float16]
- * @param[in] all_ids : Input ids.shape=[batch_size, sessionlen].type = [int64, int32]
+ * @param[in] all_ids : Input ids.shape=[sessionlen, batch_size].type = [int64, int32]
  * @param[in] batch_size : Batch size.type = [int64, int32]
  * @param[in] hidden_units : Hidden units.type = [int64, int32]
  * @param[in] step : Step.type = [int64, int32]
