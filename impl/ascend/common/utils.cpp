@@ -118,7 +118,6 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, AscendTensor& dst, c
 
 diopiError_t fillNan(diopiContextHandle_t ctx, AscendTensor& src) {
     // get nan value tensor
-    diopiDtype_t dtype = src.dtype();
     diopiScalar_t nan = constructDiopiScalarT(diopi_dtype_float32, NAN);
     diopiFill(ctx, const_cast<diopiTensorHandle_t>(src.tensorHandle()), &nan);
     return diopiSuccess;
