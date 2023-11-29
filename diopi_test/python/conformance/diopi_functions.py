@@ -1601,7 +1601,6 @@ def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
             ret = func(input.context(), input, temp_exponent)
         else:
             func = check_function("diopiPow")
-            input_dtype = input.get_dtype()
             out = Tensor(input.size().data, out_dtype)
             ret = func(input.context(), out, input, temp_exponent)
     elif inplace:
@@ -5144,7 +5143,6 @@ def multihead_attention_forward(
     call = "diopiMultiHeadAttention"
     func = check_function(call)
     q_size = list(q.size().data)
-    k_size = list(k.size().data)
     out = Tensor(q_size, q.get_dtype())
     softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], q.get_dtype())
     gen = None
