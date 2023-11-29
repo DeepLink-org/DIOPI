@@ -243,8 +243,8 @@ inline caffe2::TypeMeta getATenType(diopiDtype_t dt) {
     }
 }
 
-inline diopiDtype_t getDIOPITensorType(at::Tensor& input) {
-    switch (input.scalar_type()) {
+inline diopiDtype_t getDIOPITensorType(at::ScalarType scalarType) {
+    switch (scalarType) {
         case at::ScalarType::Bool:
             return diopi_dtype_bool;
         case at::ScalarType::Char:
@@ -271,6 +271,10 @@ inline diopiDtype_t getDIOPITensorType(at::Tensor& input) {
     }
 }
 
+inline diopiDtype_t getDIOPITensorType(const at::Tensor& tensor) {
+    return getDIOPITensorType(tensor.scalar_type());
+}
+
 inline diopiDevice_t getDIOPIDevice(c10::DeviceType device) {
     if (device == c10::DeviceType::CPU) {
         return diopi_host;
@@ -285,143 +289,7 @@ inline c10::DeviceType getATenDevice(diopiDevice_t device) {
     return c10::DeviceType::XPU;
 }
 
-// We can use reinterpret_cast directly in the dipu,
-// but we cannot use this method directly in the consistency test,
-// although the performance will be worse.
-#define DIOPI_ADAPTER_BUILD_TENSOR_NOR_USE_CAST 1
 
-#if DIOPI_ADAPTER_BUILD_TENSOR_NOR_USE_CAST
-
-/*
-at::Tensor DIPUATenFunctions::empty(
-    at::IntArrayRef size, c10::optional<at::ScalarType> dtype_opt,
-    c10::optional<at::Layout> layout_opt, c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt,
-    c10::optional<at::MemoryFormat> memory_format_opt) {
-  dipu::profile::RecordBlockCreator dipu_recorder(__FUNCTION__);
-  TORCH_INTERNAL_ASSERT_DEBUG_ONLY(c10::device_or_default(device_opt).type() ==
-                                   dipu::DIPU_DEVICE_TYPE);
-  TORCH_INTERNAL_ASSERT_DEBUG_ONLY(c10::layout_or_default(layout_opt) ==
-                                   c10::Layout::Strided);
-
-  c10::Allocator *allocator = dipu::getAllocator(dipu::DIPU_DEVICE_TYPE);
-  constexpr c10::DispatchKeySet dipu_ks({dipu::DIPU_DISPATCH_KEY});
-  return at::detail::empty_generic(size, allocator, dipu_ks,
-                                   c10::dtype_or_default(dtype_opt),
-                                   memory_format_opt);
-}
-*/
-
-class FakeAllocator : public c10::Allocator {
-    void* ptr_ = nullptr;
-    size_t size_ = 0;
-    c10::Device device_;
-public:
-    FakeAllocator(void* ptr, size_t size, c10::Device device): ptr_(ptr), size_(size), device_(device) {
-
-    }
-
-    FakeAllocator():device_(c10::DeviceType::CPU) {}
-
-    void set(void* ptr, size_t size, c10::Device device) {
-        ptr_ = ptr;
-        size_ = size,
-        device_ = device;
-    }
-
-    c10::DataPtr allocate(size_t n) const {
-        if (n == 0) {
-            return c10::InefficientStdFunctionContext::makeDataPtr(nullptr, c10::detail::deleteNothing, device_);
-        } else {
-            return c10::InefficientStdFunctionContext::makeDataPtr(ptr_, c10::detail::deleteNothing, device_);
-        }
-    }
-
-    c10::DeleterFnPtr raw_deleter() const {
-        return c10::detail::deleteNothing;
-    }
-};
-
-
-inline at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef strides, const std::function<void(void*)>& deleter,
-                                   at::Allocator* allocator, const at::TensorOptions& options) {
-    auto device = options.device();
-    if (options.device().has_index()) {
-        assert(options.device() == device);
-    }
-
-    auto storage = at::Storage(at::Storage::use_byte_size_t(),
-                               at::detail::computeStorageNbytes(sizes, strides,  options.dtype().itemsize()),
-                               c10::InefficientStdFunctionContext::makeDataPtr(data, deleter, device),
-                               allocator,
-                               false);
-    at::TensorOptions new_options = options.device(device);
-
-    c10::DispatchKeySet ks{c10::DispatchKey::XPU};
-
-    //at::Tensor tensor = at::empty({0}, new_options);
-    size_t nbytes = at::detail::computeStorageNbytes(sizes, strides,  options.dtype().itemsize());
-    static FakeAllocator fakeAllocator;
-    fakeAllocator.set(data, nbytes, device);
-    at::Tensor tensor = at::detail::empty_generic(sizes, &fakeAllocator, ks, c10::typeMetaToScalarType(new_options.dtype()), c10::MemoryFormat::Contiguous);
-    //tensor.set_(storage, 0, sizes, strides);
-    return tensor;
-}
-
-inline const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
-     if (tensor == nullptr) return at::Tensor();
-
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(tensor, &dtype);
-    caffe2::TypeMeta atType = getATenType(dtype);
-    diopiDevice_t device;
-    diopiGetTensorDevice(tensor, &device);
-    c10::DeviceType atDevice = getATenDevice(device);
-    int devId_ = 0;
-    ::aclrtGetDevice(&devId_);
-    void* data = nullptr;
-    diopiGetTensorData(const_cast<diopiTensorHandle_t>(tensor), &data);
-
-    diopiSize_t shape;
-    diopiGetTensorShape(tensor, &shape);
-    at::IntArrayRef atDims(shape.data, shape.len);
-
-    diopiSize_t stride;
-    diopiGetTensorStride(tensor, &stride);
-    at::IntArrayRef atStrides(stride.data, stride.len);
-
-    auto options = at::TensorOptions(c10::Device(atDevice, devId_)).dtype(atType);
-    int64_t numel = 0;
-    auto deleter = [](void* ptr) {
-        std::cout << "deleter: ptr" << ptr << std::endl;
-    };
-
-    diopiGetTensorNumel(tensor, &numel);
-    if (0 == numel) {
-        return at::empty(atDims, options);
-    } else {
-        at::Allocator* allocator = nullptr;
-        return fromPreAllocated(
-            data, atDims, atStrides, deleter, allocator, options);
-    }
-}
-
-inline at::Tensor buildATen(diopiTensorHandle_t tensor) {
-    return buildATen(static_cast<diopiConstTensorHandle_t>(tensor));
-}
-
-#else
-
-inline at::Tensor buildATen(diopiTensorHandle_t tensor) {
-    if (tensor == nullptr) return at::Tensor();
-    return *reinterpret_cast<at::Tensor*>(tensor);
-}
-
-inline const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
-    if (tensor == nullptr) return at::Tensor();
-    return *reinterpret_cast<const at::Tensor*>(tensor);
-}
-#endif
 
 inline bool isInt(const diopiScalar_t* scalar) { return scalar->stype <= 7; }
 
@@ -440,6 +308,10 @@ inline at::Scalar buildATen(const diopiScalar_t* scalar) {
         return fval;
     }
 }
+
+const at::Tensor buildATen(diopiConstTensorHandle_t tensor);
+
+at::Tensor buildATen(diopiTensorHandle_t tensor);
 
 inline at::IntArrayRef buildATen(const diopiSize_t* size) { return at::IntArrayRef(size->data, size->len); }
 
@@ -513,6 +385,8 @@ template <typename Func, typename... Args>
 inline void invokeATenFuncInp(diopiContextHandle_t ctx, Func func, Args&&... args) {
     func(std::forward<Args>(args)...);
 }
+
+
 
 inline void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
     at::IntArrayRef atSize = input.sizes();

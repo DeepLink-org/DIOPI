@@ -20,6 +20,7 @@
 #include <ATen/Tensor.h>
 #include <ATen/ATen.h>
 #include <c10/core/Device.h>
+#include <iostream>
 
 #define OP_NOT_IMPL std::cout<<__FILE__<<":"<<__LINE__<<":"<<__FUNCTION__<<": not impled yet"<<std::endl;
 
@@ -30,33 +31,17 @@ struct NPUNativeFunctions {
 
 static at::Tensor argmax(const at::Tensor & self, c10::optional<int64_t> dim, bool keepdim) { OP_NOT_IMPL }
 static at::Tensor argmin(const at::Tensor & self, c10::optional<int64_t> dim, bool keepdim) { OP_NOT_IMPL }
-static at::Tensor _embedding_bag_dense_backward(
-    const at::Tensor& grad,
-    const at::Tensor& indices,
-    const at::Tensor& offset2bag,
-    const at::Tensor& bag_size,
-    const at::Tensor & maximum_indices,
-    int64_t num_weights,
-    bool scale_grad_by_freq,
-    int64_t mode,
-    const c10::optional<at::Tensor> & per_sample_weights,
-    int64_t padding_idx) { OP_NOT_IMPL }
-static at::Tensor nan_to_num(
-    const at::Tensor& self,
-    c10::optional<double> nan,
-    c10::optional<double> posinf,
-    c10::optional<double> neginf) { OP_NOT_IMPL }
-static at::Tensor& nan_to_num_(
-    at::Tensor& self,
-    c10::optional<double> nan,
-    c10::optional<double> posinf,
-    c10::optional<double> neginf) { OP_NOT_IMPL }
-static at::Tensor& nan_to_num_out(
-    const at::Tensor& self,
-    c10::optional<double> nan,
-    c10::optional<double> posinf,
-    c10::optional<double> neginf,
-    at::Tensor& out) { OP_NOT_IMPL }
+static at::Tensor _embedding_bag_dense_backward(const at::Tensor &grad, const at::Tensor &indices, const at::Tensor &offset2bag, const at::Tensor &bag_size,
+                                                const at::Tensor &maximum_indices, int64_t num_weights, bool scale_grad_by_freq, int64_t mode,
+                                                const c10::optional<at::Tensor> &per_sample_weights, int64_t padding_idx) {
+    OP_NOT_IMPL
+}
+static at::Tensor nan_to_num(const at::Tensor &self, c10::optional<double> nan, c10::optional<double> posinf, c10::optional<double> neginf) { OP_NOT_IMPL }
+static at::Tensor &nan_to_num_(at::Tensor &self, c10::optional<double> nan, c10::optional<double> posinf, c10::optional<double> neginf) { OP_NOT_IMPL }
+static at::Tensor &nan_to_num_out(const at::Tensor &self, c10::optional<double> nan, c10::optional<double> posinf, c10::optional<double> neginf,
+                                  at::Tensor &out) {
+    OP_NOT_IMPL
+}
 
 static ::std::tuple<at::Tensor,at::Tensor,at::Tensor> slow_conv_dilated2d_backward(const at::Tensor & grad_output, const at::Tensor & self, const at::Tensor & weight, at::IntArrayRef kernel_size, at::IntArrayRef stride, at::IntArrayRef padding, at::IntArrayRef dilation, ::std::array<bool,3> output_mask) { OP_NOT_IMPL }
 static at::Tensor & npu_dtype_cast_(at::Tensor & self, const at::Tensor & src) { OP_NOT_IMPL }
@@ -1136,7 +1121,7 @@ static at::Tensor lerp(const at::Tensor & self, const at::Tensor & end, const at
 static ::std::tuple<at::Tensor,at::Tensor,at::Tensor,at::Tensor,at::Tensor,at::Tensor> npu_gru_backward(const c10::optional<at::Tensor> & grady, const c10::optional<at::Tensor> & gradh, const at::Tensor & input, const at::Tensor & weight_input, const at::Tensor & weight_hidden, const at::Tensor & bias_input, const at::Tensor & bias_hidden, const at::Tensor & seq_length, const at::Tensor & hx, const at::Tensor & y_output, const at::Tensor & h_output, const at::Tensor & output_updata, const at::Tensor & output_reset, const at::Tensor & output_new, const at::Tensor & hidden_new) { OP_NOT_IMPL }
 static at::Tensor & index_add_(at::Tensor & self, int64_t dim, const at::Tensor & index, const at::Tensor & source, const at::Scalar & alpha) { OP_NOT_IMPL }
 static ::std::tuple<at::Tensor &,at::Tensor &> log_sigmoid_forward_out(const at::Tensor & self, at::Tensor & output, at::Tensor & buffer) { OP_NOT_IMPL }
-static at::Tensor & npu_format_cast_(at::Tensor & self, const at::Tensor & src) { OP_NOT_IMPL }
+static at::Tensor & npu_format_cast_(at::Tensor & self, const at::Tensor & src);
 static ::std::tuple<at::Tensor,at::Tensor,at::Tensor,at::Tensor,int64_t> _batch_norm_impl_index(const at::Tensor & input, const c10::optional<at::Tensor> & weight, const c10::optional<at::Tensor> & bias, const c10::optional<at::Tensor> & running_mean, const c10::optional<at::Tensor> & running_var, bool training, double momentum, double eps, bool cudnn_enabled) { OP_NOT_IMPL }
 static at::Tensor & smooth_l1_loss_backward_out(const at::Tensor & grad_output, const at::Tensor & self, const at::Tensor & target, int64_t reduction, double beta, at::Tensor & grad_input) { OP_NOT_IMPL }
 static at::Tensor fmod(const at::Tensor & self, const at::Scalar & other) { OP_NOT_IMPL }

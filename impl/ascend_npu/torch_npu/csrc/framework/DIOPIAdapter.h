@@ -690,10 +690,8 @@ public:
     template <typename T>
     TORCH_NPU_API OpCommand &Input(const c10::ArrayRef<T> &dimListRef, at::IntArrayRef realShape, at::ScalarType toType,
                                    CompileType compileType = CompileType::MEMORY_HOST_COMPILE_DEPENDENT, const string &realDtype = "",
-                                   const string &descName = "") {
-        INTERFACE_NOT_IMPL
-        return *this;
-    }
+                                   const string &descName = "");
+                                   
     // Tensor Input which no need contiguous
     OpCommand &InputWithoutContiguous(const at::Tensor &input, const string &descName = "", const string &realData = "");
     // Output Tensor
@@ -742,14 +740,14 @@ inline bool IsAllowMatmulHF32() { INTERFACE_NOT_IMPL }
 class FormatHelper {
 public:
     // helper function of copy, because of padding will change the physical size.
-    static bool IsPadded(const at::Tensor *tensor) { INTERFACE_NOT_IMPL }
-    static char *GetFormatName(const at::Tensor &tensor) { INTERFACE_NOT_IMPL }
-    static aclFormat GetBaseFormat(const at::Tensor &tensor) { INTERFACE_NOT_IMPL }
-    static aclFormat GetBaseFormat(aclFormat format) { INTERFACE_NOT_IMPL }
-    static aclFormat GetFormat(const at::Tensor &tensor) { INTERFACE_NOT_IMPL }
+    static bool IsPadded(const at::Tensor *tensor);
+    static char *GetFormatName(const at::Tensor &tensor);
+    static aclFormat GetBaseFormat(const at::Tensor &tensor);
+    static aclFormat GetBaseFormat(aclFormat format);
+    static aclFormat GetFormat(const at::Tensor &tensor);
 
-    static bool IsBaseFormatType(aclFormat format) { INTERFACE_NOT_IMPL }
-    static bool IsBaseFormatType(const at::Tensor &tensor) { INTERFACE_NOT_IMPL }
+    static bool IsBaseFormatType(aclFormat format);
+    static bool IsBaseFormatType(const at::Tensor &tensor);
 
     // Default assumption: the original format are ND, NCHW or NDHWC.
     // So, if original size are 4D, it maybe NCHW or ND and so on.
@@ -760,18 +758,18 @@ public:
     template <typename sizeType>
     static FormatShape GetStorageSizes(aclFormat format, sizeType ori_size);
     // GetStorageSizes used to calculate the storage sizes of op at npu device at different format.
-    static FormatShape GetStorageSizes(const torch_npu::NPUStorageDesc &desc) { INTERFACE_NOT_IMPL }
-    static at::Tensor &unsafe_format_cast(at::Tensor &self, int64_t self_format, int64_t result_format) { INTERFACE_NOT_IMPL }
+    static FormatShape GetStorageSizes(const torch_npu::NPUStorageDesc &desc);
+    static at::Tensor &unsafe_format_cast(at::Tensor &self, int64_t self_format, int64_t result_format);
 
-    static bool IsOpInputBaseFormat(const at::Tensor &tensor) { INTERFACE_NOT_IMPL }
-    static bool IsOpInputBaseFormat(const c10::optional<at::Tensor> &tensor) { INTERFACE_NOT_IMPL }
-    static bool IsOpInputBaseFormat(const c10::List<c10::optional<at::Tensor>> &tensors) { INTERFACE_NOT_IMPL }
-    static bool IsOpInputBaseFormat(const at::TensorList &tensors) { INTERFACE_NOT_IMPL }
-    static bool IsOpInputBaseFormat(const at::ITensorListRef &tensors) { INTERFACE_NOT_IMPL }
+    static bool IsOpInputBaseFormat(const at::Tensor &tensor);
+    static bool IsOpInputBaseFormat(const c10::optional<at::Tensor> &tensor);
+    static bool IsOpInputBaseFormat(const c10::List<c10::optional<at::Tensor>> &tensors);
+    static bool IsOpInputBaseFormat(const at::TensorList &tensors);
+    static bool IsOpInputBaseFormat(const at::ITensorListRef &tensors);
 
 private:
-    static bool IsPadded(aclFormat format) { INTERFACE_NOT_IMPL }
-    static char *GetFormatName(aclFormat format) { INTERFACE_NOT_IMPL }
+    static bool IsPadded(aclFormat format);
+    static char *GetFormatName(aclFormat format);
 
 private:
     using shapeInfer = std::function<FormatShape(c10::IntArrayRef dims)>;

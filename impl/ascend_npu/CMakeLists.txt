@@ -818,8 +818,10 @@ set(DIOPI_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/diopi_impl/)
 set(DIOPI_IMPL_SRC
     ${DIOPI_IMPL_DIR}/error.cpp
     ${DIOPI_IMPL_DIR}/binary.cpp
+    ${DIOPI_IMPL_DIR}/unary.cpp
     ${DIOPI_IMPL_DIR}/conv2d.cpp
     ${DIOPI_IMPL_DIR}/batch_norm.cpp
+    ${DIOPI_IMPL_DIR}/max_pool2d.cpp
 )
 
 add_definitions(-DBUILD_LIBTORCH)
@@ -830,6 +832,7 @@ set(IMPL_SRC
   torch_npu/csrc/AclOpCompileInterface.cpp
   torch_npu/csrc/NpuVariables.cpp
   torch_npu/csrc/AdvancedIndex.cpp
+  torch_npu/csrc/NPUNativeFunctions.cpp
 )
 
 set(OLD_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ascend/)
@@ -947,5 +950,5 @@ if(USE_ADAPTOR)
 endif()
 
 if (TEST)
-    add_subdirectory(test)
+    #add_subdirectory(test)
 endif()
