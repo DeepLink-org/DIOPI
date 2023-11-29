@@ -9,6 +9,7 @@
 #include <math.h>
 #include <torch/nn.h>
 #include <torch/optim.h>
+#include <torch/torch.h>
 
 #include <cstring>
 
@@ -187,15 +188,26 @@ diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                 diopiConstTensorHandle_t bias, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, int64_t groups) {
     impl::aten::setCurCtx(ctx);
-    auto atOut = impl::aten::buildATen(out);
     auto atInput = impl::aten::buildATen(input);
     auto atWeight = impl::aten::buildATen(weight);
     auto atBias = impl::aten::buildATen(bias);
     auto atStride = impl::aten::buildAtIntArray(stride);
     auto atPadding = impl::aten::buildAtIntArray(padding);
     auto atDilation = impl::aten::buildAtIntArray(dilation);
-    impl::aten::invokeATenFuncInp(
-        ctx, at::convolution_out, atOut, atInput, atWeight, atBias, atStride, atPadding, atDilation, false, at::IntArrayRef(0), groups);
+    auto atOut = impl::aten::buildATen(out);
+    if (torch::cuda::cudnn_is_available()) {
+        DIOPI_CHECK(atInput.options().type_equal(atWeight.options()), "Input type and weight type should be the same");
+        DIOPI_CHECK(!atBias.defined() || (atInput.options().type_equal(atBias.options())), "Input type and bias type should be the same");
+        impl::aten::invokeATenFuncInp(ctx, at::cudnn_convolution_out, atOut, atInput, atWeight, atPadding, atStride, atDilation, groups, false, false, true);
+        if (atBias.defined()) {
+            std::vector<int64_t> shape(atInput.dim(), 1);
+            shape[1] = -1;
+            atOut.add_(atBias.reshape(shape));
+        }
+    } else {
+        impl::aten::invokeATenFuncInp(
+            ctx, at::convolution_out, atOut, atInput, atWeight, atBias, atStride, atPadding, atDilation, false, at::IntArrayRef(0), groups);
+    }
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
@@ -2123,21 +2135,14 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
                                         diopiConstTensorHandle_t weight, diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation,
                                         int64_t groups) {
     impl::aten::setCurCtx(ctx);
-    auto atGradInput = impl::aten::buildATen(grad_input);
-    auto atGradWeight = impl::aten::buildATen(grad_weight);
-    auto atGradBias = impl::aten::buildATen(grad_bias);
-    c10::OptionalIntArrayRef bias_sizes_opt = bias_sizes ? c10::make_optional<c10::ArrayRef<int64_t>>(impl::aten::buildAtIntArray(*bias_sizes)) : c10::nullopt;
-
     auto atInput = impl::aten::buildATen(input);
     auto atGrad = impl::aten::buildATen(grad_output);
     auto atWeight = impl::aten::buildATen(weight);
     auto atStride = impl::aten::buildAtIntArray(stride);
     auto atPadding = impl::aten::buildAtIntArray(padding);
     auto atDilation = impl::aten::buildAtIntArray(dilation);
-    std::vector<int64_t> outputPadding(padding.len, 0);
-    at::IntArrayRef atOutputPadding(outputPadding.data(), outputPadding.size());
-    diopi_tensor_list vecOut = {grad_input, grad_weight};
 #ifdef USE_HIP
+    diopi_tensor_list vecOut = {grad_input, grad_weight};
     auto grad_input_mask = std::array<bool, 3>{true, true, false};
     impl::aten::invokeATenFuncRet(
         ctx, at::miopen_convolution_backward, vecOut, atInput, atGrad, atWeight, atPadding, atStride, atDilation, groups, false, false, grad_input_mask);
@@ -2155,6 +2160,9 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
 #else
     {
         if (grad_input || grad_weight) {
+            // empty output padding, used for param placeholder
+            std::vector<int64_t> outputPadding(padding.len, 0);
+            at::IntArrayRef atOutputPadding(outputPadding.data(), outputPadding.size());
             auto grad_inputs = at::convolution_backward(
                 atGrad, atInput, atWeight, c10::nullopt, atStride, atPadding, atDilation, false, atOutputPadding, groups, {true, true, false});
             if (grad_input) {

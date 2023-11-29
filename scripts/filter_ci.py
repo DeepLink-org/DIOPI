@@ -27,8 +27,8 @@ def get_run_result(pr_number):
         for file in pr_files:
             filenames = file["filename"]
             filename = filenames.split("/")[-1]
-            if filename.endswith('.md') or '.github/ISSUE_TEMPLATE/' in filenames or filenames.startswith('.img') or filename.startswith('.git') \
-                    or filename == 'CODEOWNERS' or filename == 'LICENSE' or filename == '.pre-commit-config.yaml':
+            if filename.endswith('.md') or '.github/ISSUE_TEMPLATE/' in filenames or filenames.endswith('.img') or filename.endswith('.git') \
+                    or filename.endswith('.txt') or filename == 'CODEOWNERS' or filename == 'LICENSE' or filename == '.pre-commit-config.yaml':
                 continue
             elif filenames.startswith('impl'):
                 if "impl/camb" in filenames:

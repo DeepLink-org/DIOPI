@@ -1262,6 +1262,19 @@ device_configs = {
         ),
     ),
 
+    'reduce_op_1': dict(
+        name=['any', 'all'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.bool_), Skip(np.float16), Skip(np.float32), Skip(np.float64),
+                              Skip(np.int16), Skip(np.int32), Skip(np.int64), Skip(np.uint8), Skip(np.int8),],
+                },
+            ],
+        ),
+    ),
+
     'reduce_partial_op': dict(
         name=['mean', 'sum'],
         tensor_para=dict(
