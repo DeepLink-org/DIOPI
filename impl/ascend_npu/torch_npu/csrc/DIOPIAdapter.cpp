@@ -3,6 +3,7 @@
 #include <diopi/diopirt.h>
 
 #include "diopi_impl/helper.hpp"
+#include "op_plugin/AclOpsInterface.h"
 
 namespace {
 constexpr float EPSILON = 1e-6;
@@ -1257,6 +1258,9 @@ OpCommand &OpCommand::InputWithoutContiguous(const at::Tensor &input, const stri
 OpCommand &OpCommand::Output(at::Tensor &output, const string &descName, const c10::optional<aclFormat> &sensitive_format, const string &realType) {
     if (enableDumpArgs()) {
         std::cout << aclCmd->GetName() << ":descName:" << descName << ",output:" << output.sizes() << "," << output.options() << std::endl;
+    }
+    if (resultTypeDefined == false && commonType.has_value() && commonType.value() != output.scalar_type()) {
+        output = acl_op::npu_dtype_cast(output, commonType.value());
     }
     auto res = CovertToAclOutput(output, realType);
     aclCmd->AddOutput(std::get<0>(res), std::get<1>(res));
