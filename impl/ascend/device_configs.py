@@ -244,30 +244,12 @@ device_configs = {
         name=['conv2d'],
         atol=1e-1,
         rtol=1e-2,
-        # temp for 910B
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
     ),
 
     'conv_2d_no_contiguous': dict(
         name=['conv2d'],
         atol=1e-1,
         rtol=1e-2,
-        # temp for 910B
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
     ),
 
     'hardswish': dict(
