@@ -802,44 +802,16 @@ device_configs = {
         ),
     ),
 
-    'fill': dict(
-        name=['fill_'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16)],
-                },
-            ]
-        ),
-    ),
-
     'reduce_op': dict(
         name=['mean', 'sum'],
         atol=1e-3,
         rtol=1e-3,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16)],
-                },
-            ],
-        ),
     ),
 
     'reduce_partial_op': dict(
         atol=1e-3,
         rtol=1e-3,
         name=['mean', 'sum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16)],
-                },
-            ],
-        ),
     ),
 
     'reduce_partial_op_1': dict(
