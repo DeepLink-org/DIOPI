@@ -27,7 +27,7 @@ from .diopi_runtime import (
 from .diopi_runtime import raw_like, int_types, float_types, get_last_error
 from .utils import logger
 from conformance.global_settings import glob_vars
-from typing import Optional
+from typing import List, Optional
 
 
 GLOBAL_STATE = {}
@@ -2612,25 +2612,37 @@ def avg_pool2d_backward(
 
 
 def embedding_backward(
-    input,
-    grad_outputs,
-    weight,
-    padding_idx=None,
-    scale_grad_by_freq=False,
-    sparse=False,
+    input: Tensor,
+    grad_outputs: List[Tensor],
+    weight: Tensor,
+    padding_idx: Optional[int] = None,
+    scale_grad_by_freq: bool = False,
+    sparse: bool = False,
     **kwargs,
-):
+) -> dict:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
-    grad_weight = raw_like(weight)
+    grad_output = grad_outputs[0]
     num_weight = weight.size().data[0]
-    padding_idx = -100 if padding_idx is None else padding_idx
+    grad_weight_shape = [num_weight, grad_output.size().data[-1]]
+    grad_weight = Tensor(grad_weight_shape, grad_output.get_dtype())
+    if padding_idx is not None:
+        if padding_idx > 0:
+            assert (
+                padding_idx < num_weight
+            ), "Padding_idx must be within num_embeddings"
+        elif padding_idx < 0:
+            assert (
+                padding_idx >= -num_weight
+            ), "Padding_idx must be within num_embeddings"
+            padding_idx = num_weight + padding_idx
+    else:
+        padding_idx = -1
 
-    # note: scale_grad_by_freq and sparse are useless during forward phase
     func = check_function("diopiEmbeddingBackward")
     ret = func(
         input.context(),
         grad_weight,
-        grad_outputs[0],
+        grad_output,
         input,
         num_weight,
         padding_idx,
