@@ -3,7 +3,7 @@ set -e
 
 case $1 in
   py-lint)
-    (echo "py-lint" && flake8 --ignore=E501,F841 python/conformance/diopi_functions.py \
+    (echo "py-lint" && flake8 --ignore=E501,F841,W503 python/conformance/diopi_functions.py \
        && flake8 --ignore=E501,F401 --exclude=python/conformance/diopi_functions.py,scripts/cpplint.py,impl/,third_party/,python/conformance/model_config/ \
        && flake8 --ignore=E501,F401 python/conformance/model_config/process_ops.py python/conformance/model_config/generate_config.py ) \
     || exit -1;;
