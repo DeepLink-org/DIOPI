@@ -824,32 +824,6 @@ device_configs = {
         ),
     ),
 
-    'nll_loss': dict(
-        name=['nll_loss'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    # TODO(someone): fix me! 
-                    "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64)],
-                },
-            ]
-        ),
-    ),
-
-    'nll_loss_empty_tensor': dict(
-        name=['nll_loss'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    # TODO(someone): fix me! 
-                    "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64)],
-                },
-            ]
-        ),
-    ),
-
     'cross_entropy': dict(
         name=['cross_entropy'],
         tensor_para=dict(
