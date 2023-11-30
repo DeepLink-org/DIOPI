@@ -129,8 +129,8 @@ inline c10::DeviceType getATenDevice(diopiDevice_t device) {
     return c10::DeviceType::CUDA;
 }
 
-at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef strides, const std::function<void(void*)>& deleter,
-                                   at::Allocator* allocator, const at::TensorOptions& options);
+at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef strides, const std::function<void(void*)>& deleter, at::Allocator* allocator,
+                            const at::TensorOptions& options);
 
 template <typename T>
 at::Tensor buildATen(T tensor);
@@ -225,13 +225,13 @@ inline c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding
 }
 
 at::Tensor nllLossNdBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, diopiConstTensorHandle_t weight, int64_t reduction,
-                                    int64_t ignore_index);
+                             int64_t ignore_index);
 
 at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, diopiConstTensorHandle_t weight,
-                                                     int64_t reduction, double label_smoothing);
+                                              int64_t reduction, double label_smoothing);
 
 at::Tensor crossEntropyLossLabelSmoothingBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, diopiConstTensorHandle_t weight,
-                                                         int64_t reduction, int64_t ignore_index, double label_smoothing);
+                                                  int64_t reduction, int64_t ignore_index, double label_smoothing);
 
 }  // namespace aten
 

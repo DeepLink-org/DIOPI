@@ -75,8 +75,8 @@ diopiDtype_t getDIOPITensorType(at::Tensor& input) {
     }
 }
 
-at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef strides, const std::function<void(void*)>& deleter,
-                                   at::Allocator* allocator, const at::TensorOptions& options) {
+at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef strides, const std::function<void(void*)>& deleter, at::Allocator* allocator,
+                            const at::TensorOptions& options) {
     auto device = at::globalContext().getDeviceFromPtr(data, options.device().type());
     if (options.device().has_index()) {
         assert(options.device() == device);
@@ -174,7 +174,7 @@ void updateGeneratorHandleState(diopiContextHandle_t ctx, at::Generator& cuda_ge
 }
 
 at::Tensor nllLossNdBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, diopiConstTensorHandle_t weight, int64_t reduction,
-                                    int64_t ignore_index) {
+                             int64_t ignore_index) {
     auto atWeight = buildATen(weight);
 
     /*
@@ -227,7 +227,7 @@ at::Tensor nllLossNdBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::
 }
 
 at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, diopiConstTensorHandle_t weight,
-                                                     int64_t reduction, double label_smoothing) {
+                                              int64_t reduction, double label_smoothing) {
     auto atLogSoftmaxOutput = at::log_softmax(atInput, 1, atInput.scalar_type());
     at::Tensor atGradInput;
     const auto n_classes = atInput.size(1);
@@ -284,7 +284,7 @@ at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& a
 }
 
 at::Tensor crossEntropyLossLabelSmoothingBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, diopiConstTensorHandle_t weight,
-                                                         int64_t reduction, int64_t ignore_index, double label_smoothing) {
+                                                  int64_t reduction, int64_t ignore_index, double label_smoothing) {
     auto atLogSoftmaxOutput = at::log_softmax(atInput, 1, atInput.scalar_type());
     const auto n_classes = atInput.size(1);
     auto atNlllossGrad = atGradOutput * (1 - label_smoothing);
