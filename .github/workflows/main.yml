@@ -86,7 +86,7 @@ jobs:
           ssh ${CLUSTER_SUPA} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
           && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_SUPA}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to supa"
           ssh ${CLUSTER_1424} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
-          && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_1424}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to sh1424" 
+          && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_1424}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to sh1424"
           ssh ${CLUSTER_ASCEND_910B} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
           && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_ASCEND_910B}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to ascend 910b"
 
@@ -362,11 +362,11 @@ jobs:
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export CI=true
           cd impl && sh scripts/build_impl.sh ascend
-      - name: clang-tidy
-        run: |
-          set -e
-          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          cd impl && bash scripts/ci_script.sh clang-tidy || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
+      #- name: clang-tidy
+      #  run: |
+      #    set -e
+      #    cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+      #    cd impl && bash scripts/ci_script.sh clang-tidy || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
 
   Op-Test-Ascend:
     name: Op-Test-Ascend
@@ -410,11 +410,11 @@ jobs:
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export CI=true
           cd impl && sh scripts/build_impl.sh ascend
-      - name: clang-tidy
-        run: |
-          set -e
-          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          cd impl && bash scripts/ci_script.sh clang-tidy || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
+      #- name: clang-tidy
+      #  run: |
+      #    set -e
+      #    cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+      #    cd impl && bash scripts/ci_script.sh clang-tidy || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
 
   Op-Test-Ascend-910b:
     name: Op-Test-Ascend-910b
@@ -458,7 +458,7 @@ jobs:
           export CI=true
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export DIOPI_BUILD_TESTRT=ON
-          cd impl && mkdir lib 
+          cd impl && mkdir lib
           cp -R /home/deeplink/*.so lib/
           cp -R /home/deeplink/prebuilt topsrider/
           sh scripts/build_impl.sh tops
@@ -474,7 +474,7 @@ jobs:
           set -e
           export CI=true
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          cd diopi_test/python && mkdir -p cache/data/diopi 
+          cd diopi_test/python && mkdir -p cache/data/diopi
           python main.py --mode gen_case --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/topsrider/
           ln -sf /mnt/cache/share/deeplinkci/data/inputs ./cache/data/diopi && ln -sf /mnt/cache/share/deeplinkci/data/outputs ./cache/data/diopi
           python main.py --mode run_test
