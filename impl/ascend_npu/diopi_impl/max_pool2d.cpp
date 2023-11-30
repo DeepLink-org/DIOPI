@@ -19,7 +19,8 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     acl_op::max_pool2d_with_indices(inputAt, kernel_sizeAt, strideAt, paddingAt, dilationAt, ceil_mode);
     END_CALL_ACL_OP();
 }
-#endif
+
+#else
 
 diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t indices, diopiConstTensorHandle_t input,
                                        diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceil_mode) {
@@ -36,7 +37,6 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
       .Attr("data_format", "NHWC")
       .Attr("ceil_mode", ceil_mode)
       .Run();
-    #endif
     cmd.Name("MaxPoolWithArgmaxV1")
         .Input(inputAt, "x")
         .Output(outAt, "y")
@@ -47,8 +47,21 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
         .Attr("dilation", dilationAt)
         .Attr("ceil_mode", ceil_mode)
         .Run();
+    #endif
+    auto indice_ = indicesAt.to(at::ScalarType::Short);
+    cmd.Name("MaxPoolWithArgmaxV2")
+        .Input(inputAt, "x")
+        .Output(outAt, "y")
+        .Output(indice_, "argmax", c10::nullopt, "uint16")
+        .Attr("ksize", kernel_sizeAt)
+        .Attr("strides", strideAt)
+        .Attr("pads", paddingAt)
+        .Attr("dilation", dilationAt)
+        .Attr("ceil_mode", ceil_mode)
+        .Run();
     END_CALL_ACL_OP();
 }
+#endif
 
 
 diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,

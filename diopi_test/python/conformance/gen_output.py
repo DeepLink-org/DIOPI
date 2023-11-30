@@ -4,7 +4,10 @@ import os
 import sys
 import torch
 import torchvision
-from . import triton_kernels
+try:
+    from . import triton_kernels
+except:
+    pass
 
 from gen_input import GenPolicy
 from conformance.utils import logger, get_data_from_file
