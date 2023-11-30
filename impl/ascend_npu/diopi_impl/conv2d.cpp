@@ -7,7 +7,8 @@
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
-namespace OP_IMPL_NS {
+//namespace OP_IMPL_NS {
+extern "C" {
 
 diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                 diopiConstTensorHandle_t bias, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, int64_t groups) {
