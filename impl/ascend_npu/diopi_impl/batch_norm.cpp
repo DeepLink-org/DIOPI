@@ -7,7 +7,7 @@
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
-extern "C" {
+namespace OP_IMPL_NS {
 
 diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t saveMean, diopiTensorHandle_t saveInvstd,
                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiTensorHandle_t runningMean,
@@ -35,4 +35,4 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     END_CALL_ACL_OP();
 }
 
-}  // extern "C"
+}  // OP_IMPL_NS

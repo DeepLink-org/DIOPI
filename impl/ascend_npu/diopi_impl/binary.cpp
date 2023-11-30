@@ -7,7 +7,7 @@
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
-extern "C" {
+namespace OP_IMPL_NS {
 
 diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                       const diopiScalar_t* alpha) {
@@ -35,4 +35,4 @@ diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
     END_CALL_ACL_OP();
 }
 
-}  // extern "C"
+}  // OP_IMPL_NS

@@ -7,7 +7,7 @@
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
-extern "C" {
+namespace OP_IMPL_NS {
 #if 0
 diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t indices, diopiConstTensorHandle_t input,
                                        diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceil_mode) {
@@ -73,4 +73,4 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     END_CALL_ACL_OP();
 }
 
-}  // extern "C"
+}  // OP_IMPL_NS
