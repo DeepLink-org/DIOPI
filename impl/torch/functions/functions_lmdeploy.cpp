@@ -24,4 +24,3 @@ DIOPI_API diopiError_t diopiInputIdsEmbeddingLookupPosEncoding(diopiContextHandl
 }
 
 }  // extern "C"
-
