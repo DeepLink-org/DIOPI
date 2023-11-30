@@ -6623,7 +6623,6 @@ diopi_configs = {
         ),
     ),
 
-    # FIXME scatter输入指定shape，结果不一致
     'scatter': dict(
         name=['scatter'],
         interface=['torch'],
@@ -6642,14 +6641,14 @@ diopi_configs = {
                 },
                 {
                     "ins": ['index'],
-                    # "shape": ((), (6,), (2, 7), (4, 8, 10), (16, 4, 4), (2, 8, 1, 1), (2, 8, 1, 1)),
-                    "shape": ((), (6,), (2, 7), (4, 8, 5), (16, 4, 4), (2, 8, 1, 1), (2, 8, 1, 1)),
+                    "shape": ((), (6,), (2, 7), (4, 8, 10), (16, 4, 4), (2, 8, 1, 1), (2, 8, 1, 1)),
                     "dtype": [np.int64],
                     "gen_fn": dict(fn='Genfunc.randint', low=0, high=4),
                 },
                 {
                     "ins": ['src'],
                     "shape": ((), (7,), (4, 9), (8, 12, 20), (16, 4, 4), (2, 8, 4, 4), (2, 8, 4, 4)),
+                    "gen_fn": 'Genfunc.ones',
                     "dtype": [np.float32, np.float64, np.float16, np.int16,
                               np.int32, np.int64, np.uint8, np.int8, np.bool_],
                 },
