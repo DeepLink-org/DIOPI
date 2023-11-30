@@ -1512,7 +1512,7 @@ const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     }
 }
 
-inline at::Tensor buildATen(diopiTensorHandle_t tensor) { return buildATen(static_cast<diopiConstTensorHandle_t>(tensor)); }
+at::Tensor buildATen(diopiTensorHandle_t tensor) { return buildATen(static_cast<diopiConstTensorHandle_t>(tensor)); }
 
 #else
 

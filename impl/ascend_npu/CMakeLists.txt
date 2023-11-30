@@ -878,6 +878,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/threshold.cpp
     ${OLD_IMPL_DIR}/functions/nonzero.cpp
     ${OLD_IMPL_DIR}/functions/stack.cpp
+    ${OLD_IMPL_DIR}/functions/slice.cpp
     ${OLD_IMPL_DIR}/functions/unary.cpp
     ${OLD_IMPL_DIR}/functions/argmax.cpp
     ${OLD_IMPL_DIR}/functions/clamp.cpp
