@@ -26,25 +26,25 @@ DIOPI_API diopiError_t diopiPlusScalarInp(diopiContextHandle_t ctx, diopiTensorH
     if (in_shape.len != 1) {
         return diopiErrorOccurred;
     }
-    
+
     diopiDtype_t in_type;
     diopiDevice_t in_device;
     diopiGetTensorDtype(inoutput, &in_type);
     diopiGetTensorDevice(inoutput, &in_device);
-    
-    int64_t front_len = (size <= in_shape.data[0]) ? size : in_shape.data[0]; 
-    diopiSize_t front_shape; 
+
+    int64_t front_len = (size <= in_shape.data[0]) ? size : in_shape.data[0];
+    diopiSize_t front_shape;
     front_shape.data = &front_len;
     front_shape.len = 1;
     diopiSize_t front_stride;
 
     void *input_data;
     diopiGetTensorData(inoutput, &input_data);
-    front_stride.data = reinterpret_cast<const int64_t*>(input_data);
+    front_stride.data = reinterpret_cast<const int64_t *>(input_data);
     front_stride.len = -1;
     diopiTensorHandle_t front;
     diopiRequireTensor(ctx, &front, &front_shape, &front_stride, in_type, in_device);
-    
+
     diopiScalar_t val_scalar;
     val_scalar.stype = diopi_dtype_int64;
     val_scalar.ival = val;
@@ -56,7 +56,6 @@ DIOPI_API diopiError_t diopiPlusScalarInp(diopiContextHandle_t ctx, diopiTensorH
     return diopiSuccess;
 }
 
-
 /**
  * @brief Total_padding_count.Padding_count = maxinputlen - inputlen for each batch.
  * @param[in] ctx The diopi context.
@@ -67,7 +66,7 @@ DIOPI_API diopiError_t diopiPlusScalarInp(diopiContextHandle_t ctx, diopiTensorH
  */
 DIOPI_API diopiError_t diopiUpdatePaddingCount(diopiContextHandle_t ctx, diopiTensorHandle_t total_padding_count, diopiConstTensorHandle_t input_lengths,
                                                int64_t max_input_length, int64_t batch_size) {
-    
+
     if (input_lengths == nullptr) {
         return diopiErrorOccurred;
     }
@@ -83,15 +82,15 @@ DIOPI_API diopiError_t diopiUpdatePaddingCount(diopiContextHandle_t ctx, diopiTe
     diopiScalar_t max_input_length_scalar;
     max_input_length_scalar.stype = diopi_dtype_int64;
     max_input_length_scalar.ival = max_input_length;
-    
-    std::cout << "LXZ: max_input_length "<< max_input_length << std::endl;
+
+    std::cout << "LXZ: max_input_length " << max_input_length << std::endl;
     if (total_padding_count == nullptr) {
         std::cout << "LXZ: nullptr " << std::endl;
         diopiRequireTensor(ctx, &total_padding_count, &in_shape, &in_stride, in_type, in_device);
     }
-    
+
     diopiFill(ctx, total_padding_count, &max_input_length_scalar);
-    
+
     std::cout << "LXZ: start diopiSubInp " << std::endl;
 
     diopiScalar_t one;
@@ -101,7 +100,6 @@ DIOPI_API diopiError_t diopiUpdatePaddingCount(diopiContextHandle_t ctx, diopiTe
     std::cout << "LXZ: end diopiSubInp" << std::endl;
     return diopiSuccess;
 }
-
 
 /**
  * @brief LengthCriterion. Judging and counting the end situation based on length.If all fin then should_stop.
@@ -167,7 +165,6 @@ DIOPI_API diopiError_t diopiLengthCriterion(diopiContextHandle_t ctx, diopiTenso
     return diopiSuccess;
 }
 
-
 /**
  * @brief EmbeddingLookupPosEncoding. Find id in embedding_table and get [hidden], only this step
  * @param[in] ctx The diopi context.
@@ -209,6 +206,25 @@ DIOPI_API diopiError_t diopiEmbeddingLookupPosEncoding(diopiContextHandle_t ctx,
 }
 
 /**
+ * @brief InputIdsEmbeddingLookupPosEncoding. Find id in embedding_table and get [hidden].
+ * @param[in] ctx The diopi context.
+ * @param[out] from_tensor : Output ids.shape = [input_lengths, hidden].type = [float32, float16]
+ * @param[in] input_ids : Input ids.shape=[input_lengths].type = [int64, int32]
+ * @param[in] embedding_table : Embedding table.shape=[vocab, hidden].type = [float32, float16]
+ * @param[in] input_lengths : Input lengths.type = [int64, int32]
+ * @param[in] hidden_units : Hidden units.type = [int64, int32]
+ */
+DIOPI_API diopiError_t diopiInputIdsEmbeddingLookupPosEncoding(diopiContextHandle_t ctx, diopiTensorHandle_t from_tensor, diopiConstTensorHandle_t input_ids,
+                                                               diopiConstTensorHandle_t embedding_table, const int64_t input_lengths,
+                                                               const int64_t hidden_units) {
+    if (from_tensor == nullptr || input_ids == nullptr || embedding_table == nullptr) {
+        return diopiErrorOccurred;
+    }
+
+    diopiIndexSelect(ctx, from_tensor, embedding_table, 0, input_ids);
+    return diopiSuccess;
+}
+/**
  * @brief StopWordsCriterion. Judging the end situation based on stopword.
  * get base_stop_words and base_offsets from stop_words for each batch.
  * every item in base_offsets means item-end, and they also the item-start of the next item, for the first item item-start is 0.
@@ -232,5 +248,4 @@ DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiCo
     }
 }
 
-
-} // extern "C"
+}  // extern "C"
