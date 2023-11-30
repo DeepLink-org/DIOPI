@@ -3,11 +3,20 @@ project(ascend_impl)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 
+# 暂时没想到好办法，能下载下来源代码，并且第一次构建时不出错, 暂时先写在shell脚本里了
+#execute_process(
+#    COMMAND sh -c "bash  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/libs/build_stub.sh"
+#    COMMAND sh -c "echo 'download op-plugin ...'; cd ${CMAKE_CURRENT_SOURCE_DIR}/; git clone  https://gitee.com/ascend/op-plugin/ op-plugin || cd op-plugin && git checkout 186f4b87e2db4791a6ed697cea78d58a0ae92db1 && bash  ./gencode.sh 2.0 python "
+#)
 
-execute_process(
-    COMMAND sh -c "bash  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/libs/build_stub.sh"
-    COMMAND sh -c "echo 'download op-plugin ...'; cd ${CMAKE_CURRENT_SOURCE_DIR}/; git clone  https://gitee.com/ascend/op-plugin/ op-plugin || cd op-plugin && git checkout 186f4b87e2db4791a6ed697cea78d58a0ae92db1 && bash  ./gencode.sh 2.0 python "
-)
+#add_custom_target(download_opplugin_coode
+#  ALL
+#  COMMAND echo "下载源码"
+  #COMMAND sh -c "bash  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/libs/build_stub.sh"
+  #COMMAND sh -c "echo 'download op-plugin ...'; cd ${CMAKE_CURRENT_SOURCE_DIR}/; git clone  https://gitee.com/ascend/op-plugin/ op-plugin || cd op-plugin && git checkout 186f4b87e2db4791a6ed697cea78d58a0ae92db1 && bash  ./gencode.sh 2.0 python "
+#  BYPRODUCTS op-plugin1
+#)
+
 add_subdirectory(third_party/acl)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
 #link_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/libs/)
@@ -24,8 +33,6 @@ list(APPEND TORCH_INCLUDE_DIRS ${PYTORCH_DIR}/torch/include/
      ${PYTORCH_DIR}/torch/include/torch/csrc/api/include/)
 include_directories(SYSTEM ${TORCH_INCLUDE_DIRS})
 message(STATUS "Torch TORCH_INCLUDE_DIRS: ${TORCH_INCLUDE_DIRS}")
-
-
 
 if(NOT DEFINED DIPU_ABI_V)
   execute_process(
@@ -803,6 +810,9 @@ set(OP_PLUGIN_UTILS_SRC
     ${OP_PLUGIN_UTILS_DIR}/custom_functions/aclops/WhereKernelNpu.cpp
     ${OP_PLUGIN_UTILS_DIR}/custom_functions/aclops/ZerosKernelNpu.cpp
 )
+
+
+
 
 set(ASCEND_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/torch_npu/csrc/impl/)
 set(ASCEND_IMPL_SRC

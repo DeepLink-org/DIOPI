@@ -26,6 +26,7 @@ case $1 in
   camb)
     mkdir -p build && cd build && cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=camb -DCMAKE_BUILD_TYPE=Release -DTEST=ON -DENABLE_COVERAGE=${USE_COVERAGE} && make -j8;;
   ascend)
+    sh -c "cd ${PWD}/ascend_npu/; echo 'download op-plugin ...'; git clone  https://gitee.com/ascend/op-plugin/ op-plugin ; cd op-plugin && git checkout 186f4b87e2db4791a6ed697cea78d58a0ae92db1 && bash  ./gencode.sh 2.0 python"
     mkdir -p build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=ascend -DCMAKE_BUILD_TYPE=Release -DTEST=ON && make -j;;
   hip_pytorch)
     mkdir build && cd build && cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=TORCH -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DHIP=ON \
