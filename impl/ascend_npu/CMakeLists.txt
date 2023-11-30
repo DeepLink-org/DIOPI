@@ -961,5 +961,5 @@ if(USE_ADAPTOR)
 endif()
 
 if (TEST)
-    #add_subdirectory(test)
+    add_subdirectory(test)
 endif()
