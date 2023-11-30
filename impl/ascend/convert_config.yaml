@@ -184,3 +184,15 @@
 
 - diopiNLLLossBackward:
     dtype: (float16)->float64
+
+- diopiMax:
+    dtype: (float64)->float32, (int16, int32, uint8, int8, bool)->int64
+
+- diopiMin:
+    dtype: (float64)->float32, (int16, int32, uint8, int8, bool)->int64
+
+- diopiMinAll:
+    dtype: (float64)->float32, (int16, int8)->int32, (bool)->uint8
+
+- diopiMaxAll:
+    dtype: (float64)->float32, (int16, int8)->int32, (bool)->uint8

@@ -879,42 +879,6 @@ device_configs = {
         ),
     ),
 
-    'reduce_partial_op_2': dict(
-        name=['min', 'max'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'max_min_equal_input': dict(
-        name=['min', 'max'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),],
-                },
-            ]
-        ),
-    ),
-
-    'max_min_all': dict(
-        name=['min', 'max'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
     'mse_loss': dict(
         name=['mse_loss'],
         tensor_para=dict(
