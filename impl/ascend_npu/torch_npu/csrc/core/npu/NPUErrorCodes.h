@@ -7,164 +7,88 @@ namespace c10_npu::acl {
 class AclErrorCode {
 public:
     std::unordered_map<int, std::string> error_code_map = {
-        {100000,
-         "Parameter verification failed.\n\
-        Check whether the input parameter value of the interface is correct."},
+        {100000, "Parameter verification failed.\nCheck whether the input parameter value of the interface is correct."},
         {100001,
-         "ACL uninitialized.\n\
-        (1)Check whether the acl.init interface has been invoked for initialization. Ensure that the acl.init \
-interface has been invoked before other pyACL interfaces.\n\
-        (2)Check whether the initialization interface of the corresponding function has been invoked, for example, \
-the acl.mdl.init_dump interface for initializing Dump and the acl.prof.init interface for initializing Profiling."},
+         "ACL uninitialized.\n(1)Check whether the acl.init interface has been invoked for initialization. Ensure that the acl.init interface has been invoked "
+         "before other pyACL interfaces.\n(2)Check whether the initialization interface of the corresponding function has been invoked, for example, the "
+         "acl.mdl.init_dump interface for initializing Dump and the acl.prof.init interface for initializing Profiling."},
         {100002,
-         "Repeated initialization or repeated loading.\n\
-        Check whether the corresponding interface is repeatedly invoked for initialization or loading."},
-        {100003,
-         "Invalid file.\n\
-        Check whether the file exists and can be accessed."},
-        {100004,
-         "Failed to write the file.\n\
-        Check whether the file path exists and whether the file has the write permission."},
-        {100005,
-         "Invalid file size.\n\
-        Check whether the file size meets the interface requirements."},
-        {100006,
-         "Failed to parse the file.\n\
-        Check whether the file content is valid."},
-        {100007,
-         "The file is missing parameters.\n\
-        Check whether the file content is complete."},
-        {100008,
-         "Invalid file parameter.\n\
-        Check whether the parameter values in the file are correct."},
+         "Repeated initialization or repeated loading.\nCheck whether the corresponding interface is repeatedly invoked for initialization or loading."},
+        {100003, "Invalid file.\nCheck whether the file exists and can be accessed."},
+        {100004, "Failed to write the file.\nCheck whether the file path exists and whether the file has the write permission."},
+        {100005, "Invalid file size.\nCheck whether the file size meets the interface requirements."},
+        {100006, "Failed to parse the file.\nCheck whether the file content is valid."},
+        {100007, "The file is missing parameters.\nCheck whether the file content is complete."},
+        {100008, "Invalid file parameter.\nCheck whether the parameter values in the file are correct."},
         {100009,
-         "Invalid dump configuration.\n\
-        Check whether the dump configuration in the acl.init interface configuration file is correct. For details, \
-see 'Preparing Comparison Data > Preparing Offline Model Dump Data Files' in the <Precision Comparison Tool \
-User Guide>."},
-        {100010,
-         "Invalid Profiling configuration.\n\
-        Check whether the profiling configuration is correct."},
-        {100011,
-         "Invalid model ID.\n\
-        Check whether the model ID is correct and whether the model is correctly loaded."},
+         "Invalid dump configuration.\nCheck whether the dump configuration in the acl.init interface configuration file is correct. For details, see "
+         "'Preparing Comparison Data > Preparing Offline Model Dump Data Files' in the <Precision Comparison Tool User Guide>."},
+        {100010, "Invalid Profiling configuration.\nCheck whether the profiling configuration is correct."},
+        {100011, "Invalid model ID.\nCheck whether the model ID is correct and whether the model is correctly loaded."},
         {100012,
-         "Failed to deserialize the model.\n\
-        The model may not match the current version. Convert the model again by referring to the <ATC Tool User \
-Guide>."},
-        {100013,
-         "Failed to parse the model.\n\
-        The model may not match the current version. Convert the model again by referring to the <ATC Tool User \
-Guide>."},
-        {100014,
-         "Failed to read the model.\n\
-        Check whether the model file exists and can be accessed."},
-        {100015,
-         "Invalid model size.\n\
-        The model file is invalid, Convert the model again by referring to the <ATC Tool User Guide>."},
+         "Failed to deserialize the model.\nThe model may not match the current version. Convert the model again by referring to the <ATC Tool User Guide>."},
+        {100013, "Failed to parse the model.\nThe model may not match the current version. Convert the model again by referring to the <ATC Tool User Guide>."},
+        {100014, "Failed to read the model.\nCheck whether the model file exists and can be accessed."},
+        {100015, "Invalid model size.\nThe model file is invalid, Convert the model again by referring to the <ATC Tool User Guide>."},
         {100016,
-         "The model is missing parameters.\n\
-        The model may not match the current version. Convert the model again by referring to the <ATC Tool User \
-Guide>."},
-        {100017,
-         "The input for the model does not match.\n\
-        Check whether the model input is correct."},
-        {100018,
-         "The output of the model does not match.\n\
-        Check whether the output of the model is correct."},
+         "The model is missing parameters.\nThe model may not match the current version. Convert the model again by referring to the <ATC Tool User Guide>."},
+        {100017, "The input for the model does not match.\nCheck whether the model input is correct."},
+        {100018, "The output of the model does not match.\nCheck whether the output of the model is correct."},
         {100019,
-         "Model is not-dynamic.\n\
-        Check whether the current model supports dynamic scenarios. If not, convert the model again by referring \
-to the <ATC Tool User Guide>."},
-        {100020,
-         "The type of a single operator does not match.\n\
-        Check whether the operator type is correct."},
-        {100021,
-         "The input of a single operator does not match.\n\
-        Check whether the operator input is correct."},
-        {100022,
-         "The output of a single operator does not match.\n\
-        Check whether the operator output is correct."},
-        {100023,
-         "The attributes of a single operator do not match.\n\
-        Check whether the operator attributes are correct."},
-        {100024,
-         "Single operator not found.\n\
-        Check whether the operator type is supported."},
+         "Model is not-dynamic.\nCheck whether the current model supports dynamic scenarios. If not, convert the model again by referring to the <ATC Tool "
+         "User Guide>."},
+        {100020, "The type of a single operator does not match.\nCheck whether the operator type is correct."},
+        {100021, "The input of a single operator does not match.\nCheck whether the operator input is correct."},
+        {100022, "The output of a single operator does not match.\nCheck whether the operator output is correct."},
+        {100023, "The attributes of a single operator do not match.\nCheck whether the operator attributes are correct."},
+        {100024, "Single operator not found.\nCheck whether the operator type is supported."},
         {100025,
-         "Failed to load a single operator.\n\
-        The model may not match the current version. Convert the model again by referring to the <ATC Tool User \
-Guide>."},
-        {100026,
-         "Unsupported data type.\n\
-        Check whether the data type exists or is currently supported."},
-        {100027,
-         "The format does not match.\n\
-        Check whether the format is correct."},
+         "Failed to load a single operator.\nThe model may not match the current version. Convert the model again by referring to the <ATC Tool User Guide>."},
+        {100026, "Unsupported data type.\nCheck whether the data type exists or is currently supported."},
+        {100027, "The format does not match.\nCheck whether the format is correct."},
         {100028,
-         "When the operator interface is compiled in binary selection mode, the operator haven't registered a \
-selector.\n\
-        Check whether the acl.op.register_compile_func interface is invoked to register the operator selector."},
+         "When the operator interface is compiled in binary selection mode, the operator haven't registered a selector.\nCheck whether the "
+         "acl.op.register_compile_func interface is invoked to register the operator selector."},
         {100029,
-         "During operator compilation, the operator kernel haven't registered.\n\
-        Check whether the acl.op.create_kernel interface is invoked to register the operator kernel."},
+         "During operator compilation, the operator kernel haven't registered.\nCheck whether the acl.op.create_kernel interface is invoked to register the "
+         "operator kernel."},
         {100030,
-         "When the operator interface is compiled in binary selection mode, the operator is registered \
-repeatedly.\n\
-        Check whether the acl.op.register_compile_func interface is repeatedly invoked to register the operator \
-selector."},
+         "When the operator interface is compiled in binary selection mode, the operator is registered repeatedly.\nCheck whether the "
+         "acl.op.register_compile_func interface is repeatedly invoked to register the operator selector."},
         {100031,
-         "During operator compilation, the operator kernel is registered repeatedly.\n\
-        Check whether the acl.op.create_kernel interface is repeatedly invoked to register the operator kernel."},
-        {100032,
-         "Invalid queue ID.\n\
-        Check whether the queue ID is correct."},
-        {100033,
-         "Duplicate subscription.\n\
-        Check whether the acl.rt.subscribe_report interface is invoked repeatedly for the same stream."},
+         "During operator compilation, the operator kernel is registered repeatedly.\nCheck whether the acl.op.create_kernel interface is repeatedly invoked "
+         "to register the operator kernel."},
+        {100032, "Invalid queue ID.\nCheck whether the queue ID is correct."},
+        {100033, "Duplicate subscription.\nCheck whether the acl.rt.subscribe_report interface is invoked repeatedly for the same stream."},
         {100034,
-         "The stream is not subscribed.\n\
-        Check whether the acl.rt.subscribe_report interface has been invoked.\n\
-        [notice] This return code will be discarded in later versions. Use the 'ACL_ERROR_RT_STREAM_NO_CB_REG' \
-return code."},
+         "The stream is not subscribed.\nCheck whether the acl.rt.subscribe_report interface has been invoked.\n[notice] This return code will be discarded in "
+         "later versions. Use the 'ACL_ERROR_RT_STREAM_NO_CB_REG' return code."},
         {100035,
-         "The thread is not subscribed.\n\
-        Check whether the acl.rt.subscribe_report interface has been invoked.\n\
-        [notice] This return code will be discarded in later versions. Use the 'ACL_ERROR_RT_THREAD_SUBSCRIBE' \
-return code."},
+         "The thread is not subscribed.\nCheck whether the acl.rt.subscribe_report interface has been invoked.\n[notice] This return code will be discarded in "
+         "later versions. Use the 'ACL_ERROR_RT_THREAD_SUBSCRIBE' return code."},
         {100036,
-         "Waiting for callback time out.\n\
-         (1)Check whether the acl.rt.launch_callback interface has been invoked to deliver the callback task.\n\
-         (2)Check whether the timeout interval in the acl.rt.process_report interface is proper.\n\
-         (3)Check whether the callback task has been processed. If the callback task has been processed but the \
-acl.rt.process_report interface is still invoked, optimize the code logic.\n\
-        [notice] This return code will be discarded in later versions. Use the 'ACL_ERROR_RT_REPORT_TIMEOUT' \
-return code."},
-        {100037,
-         "Repeated deinitialization.\n\
-        Check whether the acl.finalize interface is repeatedly invoked for deinitialization."},
+         "Waiting for callback time out.\n(1)Check whether the acl.rt.launch_callback interface has been invoked to deliver the callback task.\n(2)Check "
+         "whether the timeout interval in the acl.rt.process_report interface is proper.\n(3)Check whether the callback task has been processed. If the "
+         "callback task has been processed but the acl.rt.process_report interface is still invoked, optimize the code logic.\n[notice] This return code will "
+         "be discarded in later versions.Use the 'ACL_ERROR_RT_REPORT_TIMEOUT' return code."},
+        {100037, "Repeated deinitialization.\nCheck whether the acl.finalize interface is repeatedly invoked for deinitialization."},
         {100038,
-         "The static AIPP configuration information does not exist.\n\
-        When invoking the 'acl.mdl.get_first_aipp_info' interface, ensure that the index value is correct.\n\
-        [notice] This return code will be discarded in later versions. Use the 'ACL_ERROR_GE_AIPP_NOT_EXIST' \
-return code."},
+         "The static AIPP configuration information does not exist.\nWhen invoking the 'acl.mdl.get_first_aipp_info' interface, ensure that the index "
+         "value is "
+         "correct.\n[notice] This return code will be discarded in later versions. Use the 'ACL_ERROR_GE_AIPP_NOT_EXIST' return code."},
         {100039,
-         "The dynamic library path configured before running the application is the path of the \
-compilation stub, not the correct dynamic library path.\n\
-        Check the configuration of the dynamic library path and ensure that the dynamic library in running mode \
-is used."},
+         "The dynamic library path configured before running the application is the path of the compilation stub, not the correct dynamic library "
+         "path.\nCheck "
+         "the configuration of the dynamic library path and ensure that the dynamic library in running mode is used."},
         {100040,
          "Group is not set.\n\
         Check if the aclrtSetGroup interface has been called."},
         {100041,
          "No corresponding Group is created.\n\
-        Check whether the Group ID set during the interface invocation is within the supported range. \
-The value range of the Group ID is [0, (number of groups -1)]. You can invoke the aclrtGetGroupCount interface to \
-obtain the number of groups."},
+        Check whether the Group ID set during the interface invocation is within the supported range. The value range of the Group ID is [0, (number of groups -1)]. You can invoke the aclrtGetGroupCount interface to obtain the number of groups."},
         {100042,
          "A profiling data collection task exists.\n\
-        Check whether multiple profiling configurations are delivered to the same device.\n\
-        For details, see the Profiling pyACL API. (Performance data is collected and flushed to disks through \
+        Check whether multiple profiling configurations are delivered to the same device.\nFor details, see the Profiling pyACL API. (Performance data is collected and flushed to disks through \
 the Profiling pyACL API.) The code logic is adjusted based on the interface invoking requirements and interface \
 invoking sequence in."},
         {100043,
@@ -295,12 +219,9 @@ details about logs, see the Log Reference."},
          "Invert the event timestamp.\n\
         Check whether the event is created."},
         {107008,
-         "The memory address is not aligned.\n\
-        Check whether the applied memory addresses are aligned. For details about the restrictions on the memory \
-application interface, see Memory Management."},
-        {107009,
-         "Failed to open the file.\n\
-        Check whether the file exists."},
+         "The memory address is not aligned.\nCheck whether the applied memory addresses are aligned. For details about the restrictions on the memory "
+         "application interface, see Memory Management."},
+        {107009, "Failed to open the file.\nCheck whether the file exists."},
         {107010,
          "Failed to write the file.\n\
         Check whether the file exists or has the write permission."},
