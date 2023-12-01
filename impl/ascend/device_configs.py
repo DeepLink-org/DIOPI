@@ -760,18 +760,6 @@ device_configs = {
         ),
     ),
 
-    'addcdiv_specific': dict(
-        name=['addcdiv'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((128,)),Skip((576, 192)),Skip((64, 3, 3, 3)),Skip((10, 3, 5)),Skip((0,)),Skip((0, 5)),Skip((2, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
     'matmul': dict(
         name=['matmul'],
         tensor_para=dict(
@@ -1267,30 +1255,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(np.uint8)],
-                },
-            ]
-        ),
-    ),
-
-    'reciprocal': dict(
-        name=['reciprocal'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16)],
-                },
-            ]
-        ),
-    ),
-    
-    'reciprocal_zero': dict(
-        name=['reciprocal'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16)],
                 },
             ]
         ),
