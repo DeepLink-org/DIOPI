@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef IMPL_TORCH_HELPER_HPP_
-#define IMPL_TORCH_HELPER_HPP_
+#ifndef IMPL_ASCEND_NPU_DIOPI_IMPL_HELPER_HPP_
+#define IMPL_ASCEND_NPU_DIOPI_IMPL_HELPER_HPP_
 #include <ATen/ATen.h>
 #include <ATen/EmptyTensor.h>
 #include <c10/core/Allocator.h>
@@ -26,7 +26,7 @@
 
 #define GET_ARGS_NUM
 
-#define BUILD_ATEN_ARG0() ;
+#define BUILD_ATEN_ARG0()
 
 #define CREATE_VAR_NAME(x) x##At
 
@@ -413,4 +413,4 @@ inline void updateGeneratorHandleState(diopiContextHandle_t ctx, at::Generator& 
 
 }  // namespace impl
 
-#endif  // IMPL_TORCH_HELPER_HPP_
+#endif  // IMPL_ASCEND_NPU_DIOPI_IMPL_HELPER_HPP_

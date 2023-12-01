@@ -26,6 +26,7 @@ BinPackParameters: true
 BinPackArguments: false
 ColumnLimit: 160
 InsertNewlineAtEOF: true
+SpacesBeforeTrailingComments: 2
 IncludeIsMainSourceRegex: (\.cu)$
 IncludeCategories:
   - Regex:           '^<.*\.h(pp)?>'

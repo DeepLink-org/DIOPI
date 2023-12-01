@@ -4,6 +4,7 @@
 #include <ATen/ATen.h>
 
 #include <iostream>
+#include <tuple>
 #include <vector>
 
 namespace at_npu {

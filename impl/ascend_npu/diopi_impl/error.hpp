@@ -4,8 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#ifndef IMPL_TORCH_ERROR_HPP_
-#define IMPL_TORCH_ERROR_HPP_
+#ifndef IMPL_ASCEND_NPU_DIOPI_IMPL_ERROR_HPP_
+#define IMPL_ASCEND_NPU_DIOPI_IMPL_ERROR_HPP_
 
 extern "C" {
 
@@ -14,4 +14,4 @@ const char* cuda_get_last_error_string();
 
 }  // extern "C"
 
-#endif  // IMPL_TORCH_ERROR_HPP_
+#endif  // IMPL_ASCEND_NPU_DIOPI_IMPL_ERROR_HPP_

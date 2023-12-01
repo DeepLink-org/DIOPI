@@ -1,5 +1,6 @@
 #include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
+#include <ATen/record_function.h>
 #include <diopi/diopirt.h>
 
 #include "diopi_impl/helper.hpp"
