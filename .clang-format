@@ -25,6 +25,7 @@ AllowAllParametersOfDeclarationOnNextLine: true
 BinPackParameters: true
 BinPackArguments: false
 ColumnLimit: 160
+InsertNewlineAtEOF: true
 IncludeIsMainSourceRegex: (\.cu)$
 IncludeCategories:
   - Regex:           '^<.*\.h(pp)?>'

@@ -1,9 +1,11 @@
-#ifndef TORCH_NPU_CSRC_ATEN_CUSTOM_FUNCTIONS
-#define TORCH_NPU_CSRC_ATEN_CUSTOM_FUNCTIONS
+#ifndef IMPL_ASCEND_NPU_TORCH_NPU_CSRC_ATEN_CUSTOMFUNCTIONS_H_
+#define IMPL_ASCEND_NPU_TORCH_NPU_CSRC_ATEN_CUSTOMFUNCTIONS_H_
 
 #include <ATen/ATen.h>
 
 #include <iostream>
+#include <vector>
+
 namespace at_npu {
 namespace native {
 namespace custom_ops {
@@ -783,4 +785,4 @@ inline ::std::tuple<at::Tensor, at::Tensor> _npu_ciou(const at::Tensor &self, co
 }  // namespace native
 }  // namespace at_npu
 
-#endif
+#endif  // IMPL_ASCEND_NPU_TORCH_NPU_CSRC_ATEN_CUSTOMFUNCTIONS_H_
