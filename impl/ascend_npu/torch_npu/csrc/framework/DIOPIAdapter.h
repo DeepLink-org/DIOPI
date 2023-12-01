@@ -611,7 +611,7 @@ public:
                                                     size_t count,
                                                     aclrtMemcpyKind kind);
 #endif
-    static void CheckMemoryOverLaps(c10::ArrayRef<at::Tensor> inputs, c10::ArrayRef<at::Tensor> outputs) { INTERFACE_NOT_IMPL }
+    static void CheckMemoryOverLaps(c10::ArrayRef<at::Tensor> inputs, c10::ArrayRef<at::Tensor> outputs);
     static bool IsScalarWrappedToTensor(const at::Tensor &tensor) { return tensor.is_cpu() && tensor.numel() == 1; }
     static float GetScalarFloatValue(const c10::Scalar &scalar);
     static int64_t GetTensorNpuFormat(const at::Tensor &tensor);
@@ -648,6 +648,7 @@ using baseFormatConverter = std::function<FormatShape(c10::IntArrayRef storage_d
 class OpCommand {
     class OpCommandImpls *aclCmds = nullptr;
     class OpCommandImpl *aclCmd = nullptr;
+    c10::SmallVector<at::Tensor, N> storage;
     c10::optional<at::ScalarType> commonType = c10::nullopt;
     c10::optional<c10::IntArrayRef> commonShape = c10::nullopt;
     bool resultTypeDefined = false;
@@ -691,7 +692,7 @@ public:
     TORCH_NPU_API OpCommand &Input(const c10::ArrayRef<T> &dimListRef, at::IntArrayRef realShape, at::ScalarType toType,
                                    CompileType compileType = CompileType::MEMORY_HOST_COMPILE_DEPENDENT, const string &realDtype = "",
                                    const string &descName = "");
-                                   
+
     // Tensor Input which no need contiguous
     OpCommand &InputWithoutContiguous(const at::Tensor &input, const string &descName = "", const string &realData = "");
     // Output Tensor
@@ -717,6 +718,10 @@ public:
 
     OpCommand &Sync();
 
+private:
+    OpCommand &AddTensorInput(at::Tensor &tensor, at::ScalarType forceScaleType = at::ScalarType::Undefined, const string &descName = "",
+                              const string &realData = "");
+    at::Tensor& Contiguous(const at::Tensor &input);
 };  // class OpCommand
 
 namespace env {
