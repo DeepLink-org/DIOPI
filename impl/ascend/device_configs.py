@@ -3,6 +3,19 @@ import numpy as np
 from skip import Skip
 
 device_configs = {
+    'apply_penalty': dict(
+        name=['apply_penalty'],
+        interface=['CustomizedTest'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['logits'],
+                    "dtype": [Skip(np.float32)],
+                },
+            ]
+        )
+    ),
+
     # temp for 910B
     'nonzero': dict(
         name=["nonzero"],

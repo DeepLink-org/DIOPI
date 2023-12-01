@@ -461,6 +461,7 @@ public:
         ASCEND_CHECK_ABORT(desc != nullptr, "aclTensorDesc should not be nullptr.");
         buffer = aclCreateDataBuffer(ptr, buffersize);
         outputIndex_++;
+        printf("===== addOutput =====\n");
         return *this;
     }
 

@@ -124,8 +124,11 @@ ConvertType castImpl(diopiContextHandle_t ctx, T src, T *dst, std::vector<diopiM
     diopiTensorHandle_t tmp0 = nullptr;
     bool needConvertDtype = srcDtype != dstDtype;
     if (needConvertDtype) {
+    printf("===== castImpl ### =====\n");
         diopiRequireTensor(ctx, &tmp0, &srcSize, &srcStride, dstDtype, device);
+    printf("===== castImpl 000 =====\n");
         diopiCastDtype(ctx, tmp0, src);
+    printf("===== castImpl 111 =====\n");
         convertType.setDtypeConverted();
     } else {
         tmp0 = const_cast<typename RemoveConst<T>::type>(src);
@@ -148,13 +151,16 @@ ConvertType castImpl(diopiContextHandle_t ctx, T src, T *dst, std::vector<diopiM
     diopiSize_t dstStride = srcStride;
     diopiSize_t dstSize = srcSize;
     if (needConvertMemoryFormat) {
+    printf("===== castImpl 222 =====\n");
         diopiContiguous(ctx, &memoryFormatedTensor, tmp0, targetMemoryFormats[0]);
+    printf("===== castImpl 333 =====\n");
         convertType.setMemoryFormatConverted();
         diopiGetTensorStride(memoryFormatedTensor, &dstStride);
         diopiGetTensorShape(memoryFormatedTensor, &dstSize);
     } else {
         memoryFormatedTensor = tmp0;
     }
+    printf("===== castImpl 444 =====\n");
 
     *dst = memoryFormatedTensor;
     return convertType;

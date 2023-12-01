@@ -25,7 +25,7 @@
 
 extern "C" {
 
-static int32_t DIOPIRT_LOG_LEVEL = 0;
+static int32_t DIOPIRT_LOG_LEVEL = 1;
 
 #define PRINT_COLOR_NONE "\033[0m"
 #define PRINT_RED "\033[1;31;40m"

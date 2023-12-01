@@ -18,6 +18,7 @@ diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 
     AscendTensor inputAt(input), outAt(out);
     if (inputAt.stride() == outAt.stride()) {
+        printf("===== aaa =====\n");
         if (diopi_dtype_uint8 == outAt.dtype()) {
             AclOpRunner<1, 1>("Cast", ctx)
                 .addInput(inputAt.data(), inputAt.getAclMemBufferSize(), inputAt.getAclMemShape(), inputAt.getAclDataFormat(), inputAt.dtype())
@@ -30,11 +31,13 @@ diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
                 .setAttr<int32_t>("dst_type", ACL_UINT8)
                 .run();
         } else {
-            AclOpRunner<1, 1>("Cast", ctx)
+        printf("===== bbb =====\n");
+            auto runner = AclOpRunner<1, 1>("Cast", ctx)
                 .addInput(inputAt.data(), inputAt.getAclMemBufferSize(), inputAt.getAclMemShape(), inputAt.getAclDataFormat(), inputAt.dtype())
                 .addOutput(const_cast<void *>(outAt.data()), outAt.getAclMemBufferSize(), outAt.getAclMemShape(), outAt.getAclDataFormat(), outAt.dtype())
-                .setAttr<int32_t>("dst_type", outAt.getAclDataType())
-                .run();
+                .setAttr<int32_t>("dst_type", outAt.getAclDataType());
+            runner.run();
+        printf("===== ccc =====\n");
         }
     } else {
         diopiTensorHandle_t inputCopy;
