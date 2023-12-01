@@ -115,6 +115,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
+                    # Skip due to low precision
                     "dtype": [Skip(np.float16),],
                 },
             ]
