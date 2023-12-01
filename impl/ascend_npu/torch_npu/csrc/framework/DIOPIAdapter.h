@@ -513,6 +513,7 @@ public:
     }
     // check memory overlaps
     static void check_memory(const std::initializer_list<at::Tensor> &inputs, const std::initializer_list<at::Tensor> &outputs) { INTERFACE_NOT_IMPL }
+
     // cast format
     static at::Tensor cast_to_ori_format(const at::Tensor &tensor) { INTERFACE_NOT_IMPL }
     static at::Tensor &cast_to_ori_format(at::Tensor &tensor) { INTERFACE_NOT_IMPL }
