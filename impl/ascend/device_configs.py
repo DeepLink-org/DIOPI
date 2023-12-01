@@ -107,6 +107,20 @@ device_configs = {
         ),
     ),
 
+    'batch_norm': dict(
+        name=['batch_norm'],
+        atol=1e-2,
+        rtol=1e-3,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float16),],
+                },
+            ]
+        ),
+    ),
+
     'batch_norm_stats': dict(
         name=['batch_norm_stats'],
         tensor_para=dict(
