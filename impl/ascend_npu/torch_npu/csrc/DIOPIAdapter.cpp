@@ -176,16 +176,14 @@ bool FormatHelper::IsBaseFormatType(const at::Tensor &tensor) { INTERFACE_NOT_IM
 // The storage size can not be infered between different groups.
 
 // GetStorageSizes used to calculate the storage sizes of op at npu device at different format.
-FormatShape FormatHelper::GetStorageSizes(const torch_npu::NPUStorageDesc &desc){
-    INTERFACE_NOT_IMPL} at::Tensor &FormatHelper::unsafe_format_cast(at::Tensor &self, int64_t self_format, int64_t result_format) {
-    INTERFACE_NOT_IMPL
-}
+FormatShape FormatHelper::GetStorageSizes(const torch_npu::NPUStorageDesc &desc) { INTERFACE_NOT_IMPL; }
+at::Tensor &FormatHelper::unsafe_format_cast(at::Tensor &self, int64_t self_format, int64_t result_format) { INTERFACE_NOT_IMPL; }
 
-bool FormatHelper::IsOpInputBaseFormat(const at::Tensor &tensor) { INTERFACE_NOT_IMPL }
-bool FormatHelper::IsOpInputBaseFormat(const c10::optional<at::Tensor> &tensor) { INTERFACE_NOT_IMPL }
-bool FormatHelper::IsOpInputBaseFormat(const c10::List<c10::optional<at::Tensor>> &tensors) { INTERFACE_NOT_IMPL }
-bool FormatHelper::IsOpInputBaseFormat(const at::TensorList &tensors) { INTERFACE_NOT_IMPL }
-bool FormatHelper::IsOpInputBaseFormat(const at::ITensorListRef &tensors){INTERFACE_NOT_IMPL}
+bool FormatHelper::IsOpInputBaseFormat(const at::Tensor &tensor) { INTERFACE_NOT_IMPL; }
+bool FormatHelper::IsOpInputBaseFormat(const c10::optional<at::Tensor> &tensor) { INTERFACE_NOT_IMPL; }
+bool FormatHelper::IsOpInputBaseFormat(const c10::List<c10::optional<at::Tensor>> &tensors) { INTERFACE_NOT_IMPL; }
+bool FormatHelper::IsOpInputBaseFormat(const at::TensorList &tensors) { INTERFACE_NOT_IMPL; }
+bool FormatHelper::IsOpInputBaseFormat(const at::ITensorListRef &tensors) { INTERFACE_NOT_IMPL; }
 
 at::Tensor NpuUtils::format_contiguous_add_copy_optimize(const at::Tensor &src) {
     // case1:tensor src is not contiguous
@@ -219,7 +217,7 @@ float CalcuOpUtil::GetScalarFloatValue(const c10::Scalar &scalar) {
     if (scalar.isFloatingPoint()) {
         value = scalar.toFloat();
     } else {
-        value = (float)scalar.toInt();
+        value = static_cast<float>(scalar.toInt());
     }
 
     return value;
@@ -584,7 +582,7 @@ public:
         if (tensor == nullptr || n == 0) {
             ptr = aclCreateDataBuffer(nullptr, 0);
         } else {
-            ptr = aclCreateDataBuffer((void *)(tensor->data_ptr()), tensor->itemsize() * n);
+            ptr = aclCreateDataBuffer(reinterpret_cast<void *>(tensor->data_ptr()), tensor->itemsize() * n);
         }
     }
 
@@ -1143,7 +1141,7 @@ OpCommand &OpCommand::Name(const string &name) {
     return *this;
 }
 
-void OpCommand::SetCustomHandler(PROC_FUNC func){INTERFACE_NOT_IMPL}
+void OpCommand::SetCustomHandler(PROC_FUNC func) { INTERFACE_NOT_IMPL; }
 
 OpCommand &OpCommand::Expect(UnifiedResult unified_result) {
     commonType = unified_result.common_type;
@@ -1178,7 +1176,7 @@ OpCommand &OpCommand::Input(const c10::ArrayRef<T> &dimListRef, at::IntArrayRef 
     // c10::TensorOptions(at::kCPU).dtype(c10::CppTypeToScalarType<T>::value),toType);
     //  AddHostTensorInput(tensor, compileType, realDtype, descName);
     auto cpuTensor = at::empty(realShape, c10::TensorOptions(at::kCPU).dtype(c10::CppTypeToScalarType<T>::value));
-    std::memcpy(cpuTensor.data_ptr(), (void *)dimListRef.data(), cpuTensor.itemsize() * cpuTensor.numel());
+    std::memcpy(cpuTensor.data_ptr(), reinterpret_cast<void *>(dimListRef.data()), cpuTensor.itemsize() * cpuTensor.numel());
     if (toType != cpuTensor.dtype()) {
         cpuTensor = cpuTensor.to(toType);
     }

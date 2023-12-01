@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef __PLUGIN_NATIVE_NPU_INTERFACE_ACLOPCOMPILE__
-#define __PLUGIN_NATIVE_NPU_INTERFACE_ACLOPCOMPILE__
+#ifndef IMPL_ASCEND_NPU_TORCH_NPU_CSRC_FRAMEWORK_INTERFACE_ACLOPCOMPILEINTERFACE_H_
+#define IMPL_ASCEND_NPU_TORCH_NPU_CSRC_FRAMEWORK_INTERFACE_ACLOPCOMPILEINTERFACE_H_
 #include <c10/util/Optional.h>
 
 #include "third_party/acl/inc/acl/acl_op_compiler.h"
@@ -145,4 +145,4 @@ ACL_FUNC_VISIBILITY aclError AclrtCtxSetSysParamOpt(aclSysParamOpt opt, int64_t 
 }  // namespace native
 }  // namespace at_npu
 
-#endif  // __NATIVE_NPU_INTERFACE_ACLOPCOMPILE__
+#endif  // IMPL_ASCEND_NPU_TORCH_NPU_CSRC_FRAMEWORK_INTERFACE_ACLOPCOMPILEINTERFACE_H_
