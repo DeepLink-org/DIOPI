@@ -310,6 +310,8 @@ inline at::Scalar buildATen(const diopiScalar_t* scalar) {
     }
 }
 
+at::Tensor view(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides = {});
+
 const at::Tensor buildATen(diopiConstTensorHandle_t tensor);
 
 at::Tensor buildATen(diopiTensorHandle_t tensor);

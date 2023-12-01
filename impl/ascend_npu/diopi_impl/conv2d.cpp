@@ -7,6 +7,28 @@
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
+namespace {
+
+at::Tensor& conv2d_backward_bias_out_nocheck(
+    at::Tensor& grad_bias,
+    const at::Tensor& grad) {
+  std::cout << "grad_bias:" << grad_bias.sizes() << grad_bias.options() << std::endl;
+  if (grad.numel() == grad.size(0) * grad.size(1)) {
+    std::cout << "grad_bias:" << grad_bias.sizes() << grad_bias.options() << std::endl;
+    //at::Tensor grad_view = grad.contiguous().view({grad.size(0), grad.size(1)});
+    at::Tensor grad_view = impl::aten::view(grad.contiguous(), {grad.size(0), grad.size(1)});
+    acl_op::sum_out(grad_view, c10::SmallVector<int64_t, N>{0}, false, grad_view.scalar_type(), grad_bias);
+  } else {
+    //at::Tensor grad_view = grad.contiguous().view({grad.size(0), grad.size(1), -1});
+    at::Tensor grad_view = impl::aten::view(grad.contiguous(), {grad.size(0), grad.size(1), grad.numel() / grad.size(0) / grad.size(1)});
+    acl_op::sum_out(grad_view, c10::SmallVector<int64_t, N>{0, 2}, false, grad_view.scalar_type(), grad_bias);
+  }
+
+  return grad_bias;
+}
+
+} // namespace
+
 //namespace OP_IMPL_NS {
 extern "C" {
 
@@ -31,7 +53,10 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
     if (gradBias) {
         at_npu::native::OpPreparation::markAsOutputForApplyTensor(gradBiasAt);
     }
-    std::tie(gradInputAt, gradWeightAt, gradBiasAt) =  acl_op::npu_conv2d_backward(inputAt, gradOutputAt, weightAt, strideAt, paddingAt, dilationAt, groups, {gradInput==nullptr, gradWeight==nullptr, gradBias==nullptr});
+    std::tie(gradInputAt, gradWeightAt, gradBiasAt) =  acl_op::npu_conv2d_backward(inputAt, gradOutputAt, weightAt, strideAt, paddingAt, dilationAt, groups, {gradInput != nullptr, gradWeight != nullptr, false});
+    if (gradBias != nullptr) {
+        conv2d_backward_bias_out_nocheck(gradBiasAt, gradOutputAt);
+    }
     END_CALL_ACL_OP();
 }
 

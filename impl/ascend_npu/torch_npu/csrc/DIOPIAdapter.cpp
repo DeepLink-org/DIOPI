@@ -190,7 +190,8 @@ bool FormatHelper::IsOpInputBaseFormat(const at::ITensorListRef &tensors){INTERF
 at::Tensor NpuUtils::format_contiguous_add_copy_optimize(const at::Tensor &src) {
     // case1:tensor src is not contiguous
     if (!src.is_contiguous()) {
-        return src.contiguous();
+        INTERFACE_NOT_IMPL
+        return src;
     }
 #if 0
   // case2:meta data not match, sizes or strides of presentation
@@ -1574,7 +1575,6 @@ inline at::Tensor fromPreAllocated1(void *data, at::IntArrayRef sizes, at::IntAr
 
     c10::DispatchKeySet ks{c10::DispatchKey::XPU};
 
-    // at::Tensor tensor = at::empty({0}, new_options);
     size_t nbytes = at::detail::computeStorageNbytes(sizes, strides, options.dtype().itemsize());
     static FakeAllocator fakeAllocator;
     fakeAllocator.set(data, nbytes, device);
@@ -1584,15 +1584,11 @@ inline at::Tensor fromPreAllocated1(void *data, at::IntArrayRef sizes, at::IntAr
     return tensor;
 }
 
-at::Tensor fromPreAllocated(void *data, at::IntArrayRef sizes, at::IntArrayRef strides, const std::function<void(void *)> &deleter,
-                                   at::Allocator *allocator, const at::TensorOptions &options) {
+at::Tensor fromPreAllocated(void *data, at::IntArrayRef sizes, at::IntArrayRef strides, const at::TensorOptions &options) {
     auto device = options.device();
-    if (options.device().has_index()) {
-        assert(options.device() == device);
-    }
+    TORCH_CHECK(options.device().has_index());
+
     size_t nbytes = at::detail::computeStorageNbytes(sizes, strides, options.dtype().itemsize());
-    static thread_local FakeAllocator fakeAllocator;
-    fakeAllocator.set(data, nbytes, device);
 
     c10::intrusive_ptr<c10::StorageImpl> storage_impl = c10::make_intrusive<c10::StorageImpl>(
         at::StorageImpl::use_byte_size_t(),
@@ -1600,17 +1596,15 @@ at::Tensor fromPreAllocated(void *data, at::IntArrayRef sizes, at::IntArrayRef s
         c10::InefficientStdFunctionContext::makeDataPtr(data, c10::detail::deleteNothing, device),
         nullptr,
         false);
-    //auto dtype = c10::typeMetaToScalarType(options.dtype());
     auto dtype = options.dtype();
-    //auto dtype = c10::scalarTypeToTypeMeta(dtype_or_default(dtype_opt));
     c10::DispatchKeySet ks{c10::DispatchKey::XPU};
     auto tensor = at::detail::make_tensor<at::TensorImpl>(std::move(storage_impl), ks, dtype);
-    if (sizes.size() != 1 || sizes[0] != 0) {
-      tensor.unsafeGetTensorImpl()->set_sizes_contiguous(sizes);
-    }
     if (strides.size() > 0) {
-    //tensor.unsafeGetTensorImpl()->empty_tensor_restride(*memory_format_opt);
+        tensor.unsafeGetTensorImpl()->set_sizes_and_strides(sizes, strides);
+    } else {
+        tensor.unsafeGetTensorImpl()->set_sizes_contiguous(sizes);
     }
+
     return tensor;
 }
 
@@ -1638,11 +1632,9 @@ const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
 
     auto options = at::TensorOptions(c10::Device(atDevice, devId_)).dtype(atType);
     int64_t numel = 0;
-    auto deleter = [](void *ptr) { std::cout << "deleter: ptr" << ptr << std::endl; };
-
     diopiGetTensorNumel(tensor, &numel);
-    at::Allocator *allocator = nullptr;
-    return fromPreAllocated(data, atDims, atStrides, deleter, allocator, options);
+
+    return fromPreAllocated(data, atDims, atStrides, options);
 }
 
 at::Tensor buildATen(diopiTensorHandle_t tensor) { return buildATen(static_cast<diopiConstTensorHandle_t>(tensor)); }
@@ -1659,6 +1651,25 @@ inline const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     return *reinterpret_cast<const at::Tensor *>(tensor);
 }
 #endif
+
+at::Tensor view(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides) {
+   TORCH_CHECK(c10::multiply_integers(sizes) == input.numel());
+   std::vector<int64_t> stridesVec(sizes.size(), 1);
+   if (strides.size() > 0) {
+        std::copy(strides.begin(), strides.end(), stridesVec.begin());
+   } else {
+    int st = 1;
+    for (int64_t i = sizes.size(); i > 0; --i) {
+        stridesVec[i - 1] = st;
+        if (sizes[i - 1] == 0) continue;
+        if (sizes[i - 1] == -1) st = -1;
+        if (st != -1) st *= sizes[i - 1];
+    }
+
+   }
+   return fromPreAllocated(input.data_ptr(), sizes, stridesVec, input.options());
+}
+
 
 }  // namespace aten
 
