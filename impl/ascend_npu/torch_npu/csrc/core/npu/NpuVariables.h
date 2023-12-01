@@ -1,5 +1,5 @@
-#ifndef NPUVARIABLES_H
-#define NPUVARIABLES_H
+#ifndef IMPL_ASCEND_NPU_TORCH_NPU_CSRC_CORE_NPU_NPUVARIABLES_H_
+#define IMPL_ASCEND_NPU_TORCH_NPU_CSRC_CORE_NPU_NPUVARIABLES_H_
 
 namespace c10_npu {
 enum class SocVersion {
@@ -33,4 +33,4 @@ const SocVersion& GetSocVersion();
 
 bool IsSupportInfNan();
 }  // namespace c10_npu
-#endif
+#endif  // IMPL_ASCEND_NPU_TORCH_NPU_CSRC_CORE_NPU_NPUVARIABLES_H_

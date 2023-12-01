@@ -158,15 +158,14 @@ at::Tensor NpuUtils::format_contiguous(const at::Tensor &src) {
 }
 
 // helper function of copy, because of padding will change the physical size.
-bool FormatHelper::IsPadded(const at::Tensor *tensor) { INTERFACE_NOT_IMPL }
-char *FormatHelper::GetFormatName(const at::Tensor &tensor){INTERFACE_NOT_IMPL} aclFormat FormatHelper::GetBaseFormat(const at::Tensor &tensor){
-    INTERFACE_NOT_IMPL} aclFormat FormatHelper::GetBaseFormat(aclFormat format){
-    INTERFACE_NOT_IMPL} aclFormat FormatHelper::GetFormat(const at::Tensor &tensor) {
-    INTERFACE_NOT_IMPL
-}
+bool FormatHelper::IsPadded(const at::Tensor *tensor) { INTERFACE_NOT_IMPL; }
+char *FormatHelper::GetFormatName(const at::Tensor &tensor) { INTERFACE_NOT_IMPL; }
+aclFormat FormatHelper::GetBaseFormat(const at::Tensor &tensor) { INTERFACE_NOT_IMPL; }
+aclFormat FormatHelper::GetBaseFormat(aclFormat format) { INTERFACE_NOT_IMPL; }
+aclFormat FormatHelper::GetFormat(const at::Tensor &tensor) { INTERFACE_NOT_IMPL; }
 
-bool FormatHelper::IsBaseFormatType(aclFormat format) { INTERFACE_NOT_IMPL }
-bool FormatHelper::IsBaseFormatType(const at::Tensor &tensor){INTERFACE_NOT_IMPL}
+bool FormatHelper::IsBaseFormatType(aclFormat format) { INTERFACE_NOT_IMPL; }
+bool FormatHelper::IsBaseFormatType(const at::Tensor &tensor) { INTERFACE_NOT_IMPL; }
 
 // Default assumption: the original format are ND, NCHW or NDHWC.
 // So, if original size are 4D, it maybe NCHW or ND and so on.
