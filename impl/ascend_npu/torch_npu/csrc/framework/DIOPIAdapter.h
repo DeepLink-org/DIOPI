@@ -2,22 +2,21 @@
 
 #include <ATen/ATen.h>
 #include <ATen/NamedTensorUtils.h>
-
 #include <stdio.h>
 
 #include <iostream>
 #include <string>
 #include <vector>
 
-#include "op-plugin/op_plugin/utils/OpConstants.h"
-#include "torch_npu/csrc/core/npu/NPUErrorCodes.h"
-#include "torch_npu/csrc/framework/interface/AclOpCompileInterface.h"
-#include "torch_npu/csrc/core/npu/NpuVariables.h"
 #include "acl/acl.h"
 #include "acl/acl_base.h"
 #include "acl/acl_op_compiler.h"
 #include "acl/acl_rt.h"
 #include "ge/ge_api.h"
+#include "op-plugin/op_plugin/utils/OpConstants.h"
+#include "torch_npu/csrc/core/npu/NPUErrorCodes.h"
+#include "torch_npu/csrc/core/npu/NpuVariables.h"
+#include "torch_npu/csrc/framework/interface/AclOpCompileInterface.h"
 
 #define NPUStatus std::string
 #define SUCCESS "SUCCESS"
@@ -155,7 +154,6 @@ static void warn_(const ::c10::Warning &warning) { INTERFACE_NOT_IMPL }
         return true;                                                                  \
     }()
 
-
 #define RECORD_FUNCTION(...) ;
 
 namespace at_npu {
@@ -171,62 +169,55 @@ static bool isDeviceTensor(const at::Tensor &tensor) { return !tensor.is_cpu(); 
 
 }  // namespace key
 
-
 // Stores state values. Passed as a kernel argument. See "Usage:" above.
 struct PhiloxNpuState {
-  PhiloxNpuState() = default;
-  PhiloxNpuState(const PhiloxNpuState&) = default;
-  // Called if graph capture is not underway
-  PhiloxNpuState(uint64_t seed,
-                  uint64_t offset) {
-    seed_ = seed;
-    offset_.val = offset;
-  }
-  // Called if graph capture is underway
-  PhiloxNpuState(uint64_t seed,
-                  int64_t* offset_extragraph,
-                  uint32_t offset_intragraph) {
-    seed_ = seed;
-    offset_.ptr = offset_extragraph;
-    offset_intragraph_ = offset_intragraph;
-    captured_ = true;
-  }
-  // Public members, directly accessible by at::Npu::philox::unpack.
-  // If we made them private with getters/setters, the getters/setters
-  // would have to be __device__, and we can't declare __device__ in ATen.
-  union Payload {
-    uint64_t val;
-    int64_t* ptr;
-  };
+    PhiloxNpuState() = default;
+    PhiloxNpuState(const PhiloxNpuState &) = default;
+    // Called if graph capture is not underway
+    PhiloxNpuState(uint64_t seed, uint64_t offset) {
+        seed_ = seed;
+        offset_.val = offset;
+    }
+    // Called if graph capture is underway
+    PhiloxNpuState(uint64_t seed, int64_t *offset_extragraph, uint32_t offset_intragraph) {
+        seed_ = seed;
+        offset_.ptr = offset_extragraph;
+        offset_intragraph_ = offset_intragraph;
+        captured_ = true;
+    }
+    // Public members, directly accessible by at::Npu::philox::unpack.
+    // If we made them private with getters/setters, the getters/setters
+    // would have to be __device__, and we can't declare __device__ in ATen.
+    union Payload {
+        uint64_t val;
+        int64_t *ptr;
+    };
 
-  uint64_t seed_;
-  Payload offset_;
-  uint32_t offset_intragraph_{0};
-  bool captured_ = false;
+    uint64_t seed_;
+    Payload offset_;
+    uint32_t offset_intragraph_{0};
+    bool captured_ = false;
 };
 
 struct NPUGeneratorImpl : public c10::GeneratorImpl {
-  // Constructors
-  NPUGeneratorImpl(c10::DeviceIndex device_index = -1);
-  ~NPUGeneratorImpl() = default;
+    // Constructors
+    NPUGeneratorImpl(c10::DeviceIndex device_index = -1);
+    ~NPUGeneratorImpl() = default;
 
-  // NPUGeneratorImpl methods
-  std::shared_ptr<NPUGeneratorImpl> clone() const { INTERFACE_NOT_IMPL }
-  void set_current_seed(uint64_t seed) { INTERFACE_NOT_IMPL }
-  uint64_t current_seed() const { INTERFACE_NOT_IMPL }
-  uint64_t seed() { INTERFACE_NOT_IMPL }
-  void set_state(const c10::TensorImpl& new_state) { INTERFACE_NOT_IMPL }
-  c10::intrusive_ptr<c10::TensorImpl> get_state() const { INTERFACE_NOT_IMPL }
-  void set_philox_offset_per_thread(uint64_t offset) { INTERFACE_NOT_IMPL }
-  uint64_t philox_offset_per_thread() const { INTERFACE_NOT_IMPL }
-  void capture_prologue(int64_t* offset_extragraph) { INTERFACE_NOT_IMPL }
-  uint64_t capture_epilogue() { INTERFACE_NOT_IMPL }
-  PhiloxNpuState philox_npu_state(uint64_t increment) { INTERFACE_NOT_IMPL }
+    // NPUGeneratorImpl methods
+    std::shared_ptr<NPUGeneratorImpl> clone() const { INTERFACE_NOT_IMPL }
+    void set_current_seed(uint64_t seed){INTERFACE_NOT_IMPL} uint64_t current_seed() const {INTERFACE_NOT_IMPL} uint64_t seed() { INTERFACE_NOT_IMPL }
+    void set_state(const c10::TensorImpl &new_state){INTERFACE_NOT_IMPL} c10::intrusive_ptr<c10::TensorImpl> get_state() const { INTERFACE_NOT_IMPL }
+    void set_philox_offset_per_thread(uint64_t offset){INTERFACE_NOT_IMPL} uint64_t philox_offset_per_thread() const { INTERFACE_NOT_IMPL }
+    void capture_prologue(int64_t *offset_extragraph){INTERFACE_NOT_IMPL} uint64_t capture_epilogue(){INTERFACE_NOT_IMPL} PhiloxNpuState
+        philox_npu_state(uint64_t increment){INTERFACE_NOT_IMPL}
 
-  // Temporarily accommodates call sites that use philox_engine_inputs.
-  // Allows incremental refactor of call sites to use philox_npu_state.
-  std::pair<uint64_t, uint64_t> philox_engine_inputs(uint64_t increment) { INTERFACE_NOT_IMPL }
-  static c10::DeviceType device_type() { INTERFACE_NOT_IMPL }
+    // Temporarily accommodates call sites that use philox_engine_inputs.
+    // Allows incremental refactor of call sites to use philox_npu_state.
+    std::pair<uint64_t, uint64_t> philox_engine_inputs(uint64_t increment) {
+        INTERFACE_NOT_IMPL
+    }
+    static c10::DeviceType device_type() { INTERFACE_NOT_IMPL }
 };
 
 namespace detail {
@@ -290,12 +281,12 @@ public:
     void synchronize() const {INTERFACE_NOT_IMPL}
 
     /// Explicit conversion to rtStream_t.
-    C10_NPU_API aclrtStream stream() const {return aclStream_;}
+    C10_NPU_API aclrtStream stream() const {
+        return aclStream_;
+    }
 
     /// Explicit conversion to Stream.
-    c10::Stream unwrap() const {
-        return stream_;
-    }
+    c10::Stream unwrap() const { return stream_; }
 
     /// The NPUStream can be unpacked using unpack().
     struct c10::StreamData3 pack3() const { return stream_.pack3(); }
@@ -338,17 +329,15 @@ C10_NPU_API NPUStream getCurrentNPUStream(c10::DeviceIndex device_index = -1);
 C10_NPU_API NPUStream getCurrentSecondaryStream(c10::DeviceIndex device_index = -1);
 
 struct SecondaryStreamGuard {
-  explicit SecondaryStreamGuard() = delete;
-  explicit SecondaryStreamGuard(c10::Stream stream) {};
+    explicit SecondaryStreamGuard() = delete;
+    explicit SecondaryStreamGuard(c10::Stream stream){};
 
-  ~SecondaryStreamGuard() {
-
-  }
+    ~SecondaryStreamGuard() {}
 };
 
 namespace NPUCachingAllocator {
 
-static void recordStream(const c10::DataPtr& ptr, c10_npu::NPUStream stream) { INTERFACE_NOT_IMPL }
+static void recordStream(const c10::DataPtr &ptr, c10_npu::NPUStream stream) { INTERFACE_NOT_IMPL }
 
 }  // namespace NPUCachingAllocator
 
@@ -390,31 +379,28 @@ struct NPUStorageImpl : public c10::StorageImpl {
 // Its scope is just to handle an NPUTensor.
 class NPUTensorImpl : public c10::TensorImpl {
 public:
-  explicit NPUTensorImpl(c10::Storage&& storage, const caffe2::TypeMeta& data_type);
+    explicit NPUTensorImpl(c10::Storage &&storage, const caffe2::TypeMeta &data_type);
 
-  void shallow_copy_from(const c10::intrusive_ptr<TensorImpl>& impl) final {INTERFACE_NOT_IMPL}
+    void shallow_copy_from(const c10::intrusive_ptr<TensorImpl> &impl) final{INTERFACE_NOT_IMPL}
 
-  c10::intrusive_ptr<c10::TensorImpl> shallow_copy_and_detach(
-      const c10::VariableVersion& version_counter,
-      bool allow_tensor_metadata_change) const final {INTERFACE_NOT_IMPL}
-  /**
-   * Return a TensorImpl that is a shallow-copy of this TensorImpl.
-   *
-   * For usage of `version_counter` and `allow_tensor_metadata_change`,
-   * see NOTE [ TensorImpl Shallow-Copying ].
-   */
-  c10::intrusive_ptr<c10::TensorImpl> shallow_copy_and_detach(
-      c10::VariableVersion&& version_counter,
-      bool allow_tensor_metadata_change) const final {INTERFACE_NOT_IMPL}
+    c10::intrusive_ptr<c10::TensorImpl> shallow_copy_and_detach(const c10::VariableVersion &version_counter, bool allow_tensor_metadata_change) const final{
+        INTERFACE_NOT_IMPL} /**
+                             * Return a TensorImpl that is a shallow-copy of this TensorImpl.
+                             *
+                             * For usage of `version_counter` and `allow_tensor_metadata_change`,
+                             * see NOTE [ TensorImpl Shallow-Copying ].
+                             */
+    c10::intrusive_ptr<c10::TensorImpl> shallow_copy_and_detach(c10::VariableVersion &&version_counter, bool allow_tensor_metadata_change) const final {
+        INTERFACE_NOT_IMPL
+    }
 
 public:
-  NPUTensorImpl(const NPUTensorImpl&) = delete;
-  NPUTensorImpl& operator=(const NPUTensorImpl&) = delete;
-  NPUTensorImpl(NPUTensorImpl&&) = default;
-  NPUTensorImpl& operator=(NPUTensorImpl&&) = default;
-  ~NPUTensorImpl() {INTERFACE_NOT_IMPL}
+    NPUTensorImpl(const NPUTensorImpl &) = delete;
+    NPUTensorImpl &operator=(const NPUTensorImpl &) = delete;
+    NPUTensorImpl(NPUTensorImpl &&) = default;
+    NPUTensorImpl &operator=(NPUTensorImpl &&) = default;
+    ~NPUTensorImpl() { INTERFACE_NOT_IMPL }
 };
-
 
 class NPUBridge {
 public:
@@ -532,7 +518,7 @@ public:
     static at::Tensor &cast_to_ori_format(at::Tensor &tensor) { INTERFACE_NOT_IMPL }
 
     static int8_t get_cube_math_type(bool allowHf32) { INTERFACE_NOT_IMPL }
-    static void markAsOutputForApplyTensor(at::Tensor& src);
+    static void markAsOutputForApplyTensor(at::Tensor &src);
     // used to apply output tensor
     static at::Tensor apply_tensor(const at::Tensor &src);
     static at::Tensor apply_tensor(const at::Tensor &src, c10::IntArrayRef sizes);
@@ -668,7 +654,7 @@ public:
     TORCH_NPU_API OpCommand &Name(const string &name);
     void SetCustomHandler(PROC_FUNC func);
 
-    OpCommand& DynamicInputReg(DynamicInputRegFunc func, DyNumAndIndex num_and_index) {return *this;}
+    OpCommand &DynamicInputReg(DynamicInputRegFunc func, DyNumAndIndex num_and_index) { return *this; }
 
     OpCommand &Expect(UnifiedResult unified_result);
     // None Input
@@ -691,7 +677,7 @@ public:
     TORCH_NPU_API OpCommand &Input(const c10::ArrayRef<T> &dimListRef, at::IntArrayRef realShape, at::ScalarType toType,
                                    CompileType compileType = CompileType::MEMORY_HOST_COMPILE_DEPENDENT, const string &realDtype = "",
                                    const string &descName = "");
-                                   
+
     // Tensor Input which no need contiguous
     OpCommand &InputWithoutContiguous(const at::Tensor &input, const string &descName = "", const string &realData = "");
     // Output Tensor
@@ -796,69 +782,69 @@ FormatShape FormatHelper::GetStorageSizes(aclFormat format, sizeType ori_size) {
     return {};
 }
 
+class StorageDescHelper {
+public:
+    // Get Part
+    // sizes, strides in StorageDesc are same as those in MetaData
+    static bool MetaDataAreMatch(const at::Tensor *tensor) { INTERFACE_NOT_IMPL }
+    // storage offset are match, the npu only support offset == 0
+    static inline bool OffsetAreMatch(const at::Tensor *tensor) { return tensor->storage_offset() == 0; };
 
-class StorageDescHelper
-    {
-    public:
-      // Get Part
-      // sizes, strides in StorageDesc are same as those in MetaData
-      static bool MetaDataAreMatch(const at::Tensor *tensor) { INTERFACE_NOT_IMPL }
-      // storage offset are match, the npu only support offset == 0
-      static inline bool OffsetAreMatch(const at::Tensor *tensor) {return tensor->storage_offset() == 0;};
+    // helper function of transdata op.
+    static bool IsSameDesc(const torch_npu::NPUStorageDesc &a, const torch_npu::NPUStorageDesc &b) { INTERFACE_NOT_IMPL }
+    static bool IsSameDesc(const at::Tensor &a, const at::Tensor &b) { INTERFACE_NOT_IMPL }
 
-      // helper function of transdata op.
-      static bool IsSameDesc(const torch_npu::NPUStorageDesc &a, const torch_npu::NPUStorageDesc &b) { INTERFACE_NOT_IMPL }
-      static bool IsSameDesc(const at::Tensor &a, const at::Tensor &b) { INTERFACE_NOT_IMPL }
+    // calculate storage size need by npu memory
+    static int64_t GetMemorySize(const at::Tensor &dst) { INTERFACE_NOT_IMPL }
+    static int64_t GetMemorySize(const c10::IntArrayRef &size, aclFormat format) { INTERFACE_NOT_IMPL }
+    // Calculate the valid memory size of the tensor, because of view operator and so on.
+    static int64_t GetValidMemorySize(const at::Tensor &tensor) { INTERFACE_NOT_IMPL }
 
-      // calculate storage size need by npu memory
-      static int64_t GetMemorySize(const at::Tensor &dst) { INTERFACE_NOT_IMPL }
-      static int64_t GetMemorySize(const c10::IntArrayRef& size, aclFormat format) { INTERFACE_NOT_IMPL }
-      // Calculate the valid memory size of the tensor, because of view operator and so on.
-      static int64_t GetValidMemorySize(const at::Tensor &tensor) { INTERFACE_NOT_IMPL }
+    // Set Part
+    // StorageDesc Init/Set
+    static void SetDesc(at::Tensor &dst) { INTERFACE_NOT_IMPL }
+    static void SetDesc(at::Tensor &dst, const c10::IntArrayRef &size, const c10::IntArrayRef &strides) { INTERFACE_NOT_IMPL }
+    static void SetDesc(at::Tensor &dst, const c10::IntArrayRef &size, const c10::IntArrayRef &strides, aclFormat format) { INTERFACE_NOT_IMPL }
+    static bool CheckDescInit(const c10::Storage &storage) { INTERFACE_NOT_IMPL }
 
-      // Set Part
-      // StorageDesc Init/Set
-      static void SetDesc(at::Tensor &dst) { INTERFACE_NOT_IMPL }
-      static void SetDesc(at::Tensor &dst, const c10::IntArrayRef& size, const c10::IntArrayRef& strides) { INTERFACE_NOT_IMPL }
-      static void SetDesc(at::Tensor &dst, const c10::IntArrayRef& size, const c10::IntArrayRef& strides, aclFormat format) { INTERFACE_NOT_IMPL }
-      static bool CheckDescInit(const c10::Storage &storage) { INTERFACE_NOT_IMPL }
+    // For Serialization to Get and Set NpuStorageDesc
+    static void GetDescForSerialization(const at::Tensor &dst, std::unordered_map<std::string, bool> &desc_map) { INTERFACE_NOT_IMPL }
+    static void SetDescForSerialization(const at::Tensor &dst, std::unordered_map<std::string, bool> &desc_map) { INTERFACE_NOT_IMPL }
 
-      // For Serialization to Get and Set NpuStorageDesc
-      static void GetDescForSerialization(const at::Tensor &dst, std::unordered_map<std::string, bool> &desc_map) { INTERFACE_NOT_IMPL }
-      static void SetDescForSerialization(const at::Tensor &dst, std::unordered_map<std::string, bool> &desc_map) { INTERFACE_NOT_IMPL }
+    static void CopyDesc(at::Tensor &dst, const at::Tensor &src) { INTERFACE_NOT_IMPL }
+    static void CopyDesc(at::Tensor &dst, const c10::Storage &src) { INTERFACE_NOT_IMPL }
+    static void CopyDesc(const at::Tensor &dst, const torch_npu::NPUStorageDesc &src_desc) { INTERFACE_NOT_IMPL }
 
-      static void CopyDesc(at::Tensor &dst, const at::Tensor &src) { INTERFACE_NOT_IMPL }
-      static void CopyDesc(at::Tensor &dst, const c10::Storage &src) { INTERFACE_NOT_IMPL }
-      static void CopyDesc(const at::Tensor &dst, const torch_npu::NPUStorageDesc &src_desc) { INTERFACE_NOT_IMPL }
+    static void UpdateDesc(torch_npu::NPUStorageDesc &npuDesc, const c10::IntArrayRef &new_data_sizes, const c10::IntArrayRef &new_shape_sizes) {
+        INTERFACE_NOT_IMPL
+    }
 
-      static void UpdateDesc(torch_npu::NPUStorageDesc &npuDesc, const c10::IntArrayRef &new_data_sizes,
-                             const c10::IntArrayRef &new_shape_sizes) { INTERFACE_NOT_IMPL }
+    static FormatShape ComputeStrideFromShape(const FormatShape &shape) { INTERFACE_NOT_IMPL }
 
-      static FormatShape ComputeStrideFromShape(const FormatShape &shape) { INTERFACE_NOT_IMPL }
+    // need to remove later
+    static void ReflushDescBySelf(const at::Tensor &src) { INTERFACE_NOT_IMPL }
 
-      // need to remove later
-      static void ReflushDescBySelf(const at::Tensor &src) { INTERFACE_NOT_IMPL }
+private:
+    // Get Part
+    static bool IsSameSize(const c10::SmallVector<int64_t, 5> &a, const c10::IntArrayRef &b) { INTERFACE_NOT_IMPL }
+    static int64_t GetMemorySize(const torch_npu::NPUStorageDesc &dst) { INTERFACE_NOT_IMPL }
+    // Set Part
+    static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta &dtype) { INTERFACE_NOT_IMPL }
+    static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta &dtype, const c10::IntArrayRef &size, const c10::IntArrayRef &strides) {
+        INTERFACE_NOT_IMPL
+    }
+    static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta &dtype, const c10::IntArrayRef &size, const c10::IntArrayRef &strides, aclFormat format) {
+        INTERFACE_NOT_IMPL
+    }
+};  // class StorageDescHelper
 
-    private:
-      // Get Part
-      static bool IsSameSize(const c10::SmallVector<int64_t, 5> &a, const c10::IntArrayRef &b) { INTERFACE_NOT_IMPL }
-      static int64_t GetMemorySize(const torch_npu::NPUStorageDesc &dst) { INTERFACE_NOT_IMPL }
-      // Set Part
-      static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta &dtype) { INTERFACE_NOT_IMPL }
-      static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta &dtype, const c10::IntArrayRef& size,
-                                               const c10::IntArrayRef& strides) { INTERFACE_NOT_IMPL }
-      static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta &dtype, const c10::IntArrayRef& size,
-                                               const c10::IntArrayRef& strides, aclFormat format) { INTERFACE_NOT_IMPL }
-    };  // class StorageDescHelper
-
-
-static bool can_use_memcpy(at::Tensor& dst, const at::Tensor& src) { INTERFACE_NOT_IMPL }
-static void copy_d2d_by_memcpy(at::Tensor& dst, const at::Tensor& src, int64_t exceptSize = 0) { INTERFACE_NOT_IMPL }
-static void copy_d2d_dtype(at::Tensor& self, const at::Tensor& src, bool non_blocking) { INTERFACE_NOT_IMPL }
-static void copy_d2d_dtype_baseformat(at::Tensor& self, const at::Tensor& src, bool non_blocking) { INTERFACE_NOT_IMPL }
-static bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Tensor& src) { INTERFACE_NOT_IMPL }
-static at::Tensor matmul_by_bmmV2(const at::Tensor& tensor1, const at::Tensor& tensor2) { INTERFACE_NOT_IMPL }
-void npu_fast_reshape_(at::Tensor& tensor);
+static bool can_use_memcpy(at::Tensor &dst, const at::Tensor &src) { INTERFACE_NOT_IMPL }
+static void copy_d2d_by_memcpy(at::Tensor &dst, const at::Tensor &src, int64_t exceptSize = 0) { INTERFACE_NOT_IMPL }
+static void copy_d2d_dtype(at::Tensor &self, const at::Tensor &src, bool non_blocking) { INTERFACE_NOT_IMPL }
+static void copy_d2d_dtype_baseformat(at::Tensor &self, const at::Tensor &src, bool non_blocking) { INTERFACE_NOT_IMPL }
+static bool try_to_optimize_copy_with_any_format(at::Tensor &self, const at::Tensor &src) { INTERFACE_NOT_IMPL }
+static at::Tensor matmul_by_bmmV2(const at::Tensor &tensor1, const at::Tensor &tensor2) { INTERFACE_NOT_IMPL }
+void npu_fast_reshape_(at::Tensor &tensor);
 
 }  // namespace native
 }  // namespace at_npu

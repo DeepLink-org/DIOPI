@@ -1044,9 +1044,7 @@ aclError OpCommandImpl::InnerRun(const string &name, AclExecParam &params, bool 
     return ret;
 }
 
-inline bool enableDumpArgs() {
-    return std::getenv("DIOPI_DEBUG_OP") != nullptr;
-}
+inline bool enableDumpArgs() { return std::getenv("DIOPI_DEBUG_OP") != nullptr; }
 
 std::tuple<aclTensorDesc *, aclDataBuffer *> CovertTensorToAclInput(const at::Tensor &tensor, const string &descName, const string &forceDataType) {
     at::ScalarType scalarDataType = tensor.scalar_type();
@@ -1176,7 +1174,8 @@ OpCommand &OpCommand::Input(const at::Tensor &input, const string &descName, con
 template <typename T>
 OpCommand &OpCommand::Input(const c10::ArrayRef<T> &dimListRef, at::IntArrayRef realShape, at::ScalarType toType, CompileType compileType,
                             const string &realDtype, const string &descName) {
-    // at::Tensor &tensor = CreateHostTensor((void *)dimListRef.data(), realShape, c10::TensorOptions(at::kCPU).dtype(c10::CppTypeToScalarType<T>::value),toType);
+    // at::Tensor &tensor = CreateHostTensor((void *)dimListRef.data(), realShape,
+    // c10::TensorOptions(at::kCPU).dtype(c10::CppTypeToScalarType<T>::value),toType);
     //  AddHostTensorInput(tensor, compileType, realDtype, descName);
     auto cpuTensor = at::empty(realShape, c10::TensorOptions(at::kCPU).dtype(c10::CppTypeToScalarType<T>::value));
     std::memcpy(cpuTensor.data_ptr(), (void *)dimListRef.data(), cpuTensor.itemsize() * cpuTensor.numel());
@@ -1190,7 +1189,7 @@ OpCommand &OpCommand::Input(const c10::ArrayRef<T> &dimListRef, at::IntArrayRef 
 }
 
 template OpCommand &OpCommand::Input(const c10::ArrayRef<double> &dimListRef, at::IntArrayRef realShape, at::ScalarType toType, CompileType compileType,
-                            const string &realDtype, const string &descName);
+                                     const string &realDtype, const string &descName);
 
 // IntArrayRef/SmallVector Input, usually hostmemory input, we will do h2d in
 // launch kernel
@@ -1198,7 +1197,8 @@ OpCommand &OpCommand::Input(const c10::IntArrayRef &dimListRef, at::ScalarType t
                             const string &descName) {
     Input<int64_t>(dimListRef, dimListRef.size(), toType, compileType, realDtype, descName);
     if (enableDumpArgs()) {
-        std::cout << aclCmd->GetName() << ":descName:" << descName << ",input:" << dimListRef << " " << toType << " " << compileType << " " << realDtype << std::endl;
+        std::cout << aclCmd->GetName() << ":descName:" << descName << ",input:" << dimListRef << " " << toType << " " << compileType << " " << realDtype
+                  << std::endl;
     }
     return *this;
 }

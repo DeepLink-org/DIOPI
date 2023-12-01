@@ -16,6 +16,7 @@
 #ifndef __PLUGIN_NATIVE_NPU_INTERFACE_ACLOPCOMPILE__
 #define __PLUGIN_NATIVE_NPU_INTERFACE_ACLOPCOMPILE__
 #include <c10/util/Optional.h>
+
 #include "third_party/acl/inc/acl/acl_op_compiler.h"
 
 namespace at_npu {
@@ -87,17 +88,15 @@ ACL_FUNC_VISIBILITY aclError AclGetCompileopt(aclCompileOpt opt, char *value, si
  * @retval ACL_ERROR_NONE The function is successfully executed.
  * @retval OtherValues Failure
  */
-aclError AclGenGraphAndDumpForOp(const char *opType,
-    int numInputs, const aclTensorDesc *const inputDesc[], const aclDataBuffer *const inputs[],
-    int numOutputs, const aclTensorDesc *const outputDesc[], aclDataBuffer *const outputs[],
-    const aclopAttr *attr, aclopEngineType engineType, const char *graphDumpPath,
-    aclGraphDumpOption* graphdumpOpt);
+aclError AclGenGraphAndDumpForOp(const char *opType, int numInputs, const aclTensorDesc *const inputDesc[], const aclDataBuffer *const inputs[], int numOutputs,
+                                 const aclTensorDesc *const outputDesc[], aclDataBuffer *const outputs[], const aclopAttr *attr, aclopEngineType engineType,
+                                 const char *graphDumpPath, aclGraphDumpOption *graphdumpOpt);
 
 /**
  * @brief create the dump option for AclGenGraphAndDumpForOp API, used for AOE
  * @retval created aclGraphDumpOption
  */
-aclGraphDumpOption* AclCreateGraphDumpOpt();
+aclGraphDumpOption *AclCreateGraphDumpOpt();
 
 /**
  * @brief destroy the dump option created by aclCreateGraphDumpOpt
@@ -105,7 +104,7 @@ aclGraphDumpOption* AclCreateGraphDumpOpt();
  * @retval ACL_ERROR_NONE The function is successfully executed.
  * @retval OtherValues Failure
  */
-aclError AclDestroyGraphDumpOpt(aclGraphDumpOption* aclGraphDumpOpt);
+aclError AclDestroyGraphDumpOpt(aclGraphDumpOption *aclGraphDumpOpt);
 
 /**
  * @ingroup AscendCL
@@ -127,11 +126,9 @@ aclError AclDestroyGraphDumpOpt(aclGraphDumpOption* aclGraphDumpOpt);
  * @retval ACL_ERROR_NONE The function is successfully executed.
  * @retval OtherValues Failure
  */
-aclError AclopCompileAndExecuteV2(const char *opType,
-    int numInputs, aclTensorDesc *inputDesc[], aclDataBuffer *inputs[],
-    int numOutputs, aclTensorDesc *outputDesc[], aclDataBuffer *outputs[],
-    aclopAttr *attr, aclopEngineType engineType, aclopCompileType compileFlag,
-    const char *opPath, aclrtStream stream);
+aclError AclopCompileAndExecuteV2(const char *opType, int numInputs, aclTensorDesc *inputDesc[], aclDataBuffer *inputs[], int numOutputs,
+                                  aclTensorDesc *outputDesc[], aclDataBuffer *outputs[], aclopAttr *attr, aclopEngineType engineType,
+                                  aclopCompileType compileFlag, const char *opPath, aclrtStream stream);
 
 /**
  * @ingroup AscendCL
@@ -145,8 +142,7 @@ aclError AclopCompileAndExecuteV2(const char *opType,
  */
 ACL_FUNC_VISIBILITY aclError AclrtCtxSetSysParamOpt(aclSysParamOpt opt, int64_t value);
 
+}  // namespace native
+}  // namespace at_npu
 
-} // namespace native
-} // namespace at_npu
-
-#endif // __NATIVE_NPU_INTERFACE_ACLOPCOMPILE__
+#endif  // __NATIVE_NPU_INTERFACE_ACLOPCOMPILE__
