@@ -12,6 +12,6 @@ extern "C" {
 void _set_last_error_string(const char* err);
 const char* cuda_get_last_error_string();
 
-} // extern "C"
+}  // extern "C"
 
 #endif  // IMPL_TORCH_ERROR_HPP_

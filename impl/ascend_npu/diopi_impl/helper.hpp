@@ -7,9 +7,8 @@
 #ifndef IMPL_TORCH_HELPER_HPP_
 #define IMPL_TORCH_HELPER_HPP_
 #include <ATen/ATen.h>
-#include <c10/core/Allocator.h>
 #include <ATen/EmptyTensor.h>
-
+#include <c10/core/Allocator.h>
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 
@@ -17,8 +16,8 @@
 #include <mutex>
 #include <utility>
 #include <vector>
-#include "error.hpp"
 
+#include "error.hpp"
 #include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
 #define OP_IMPL_NS impl::ascend_npu
@@ -31,32 +30,31 @@
 
 #define CREATE_VAR_NAME(x) x##At
 
-#define BUILD_ATEN_ARG1(x) \
-    auto CREATE_VAR_NAME(x) = impl::aten::buildATen(x);
+#define BUILD_ATEN_ARG1(x) auto CREATE_VAR_NAME(x) = impl::aten::buildATen(x);
 
-#define BUILD_ATEN_ARG2(x, y) \
+#define BUILD_ATEN_ARG2(x, y)                           \
     auto CREATE_VAR_NAME(x) = impl::aten::buildATen(x); \
     auto CREATE_VAR_NAME(y) = impl::aten::buildATen(y);
 
-#define BUILD_ATEN_ARG3(x, y, z) \
+#define BUILD_ATEN_ARG3(x, y, z)                        \
     auto CREATE_VAR_NAME(x) = impl::aten::buildATen(x); \
     auto CREATE_VAR_NAME(y) = impl::aten::buildATen(y); \
     auto CREATE_VAR_NAME(z) = impl::aten::buildATen(z);
 
-#define BUILD_ATEN_ARG4(x1, x2, x3, x4) \
+#define BUILD_ATEN_ARG4(x1, x2, x3, x4)                   \
     auto CREATE_VAR_NAME(x1) = impl::aten::buildATen(x1); \
     auto CREATE_VAR_NAME(x2) = impl::aten::buildATen(x2); \
     auto CREATE_VAR_NAME(x3) = impl::aten::buildATen(x3); \
     auto CREATE_VAR_NAME(x4) = impl::aten::buildATen(x4);
 
-#define BUILD_ATEN_ARG5(x1, x2, x3, x4, x5) \
+#define BUILD_ATEN_ARG5(x1, x2, x3, x4, x5)               \
     auto CREATE_VAR_NAME(x1) = impl::aten::buildATen(x1); \
     auto CREATE_VAR_NAME(x2) = impl::aten::buildATen(x2); \
     auto CREATE_VAR_NAME(x3) = impl::aten::buildATen(x3); \
     auto CREATE_VAR_NAME(x4) = impl::aten::buildATen(x4); \
     auto CREATE_VAR_NAME(x5) = impl::aten::buildATen(x5);
 
-#define BUILD_ATEN_ARG6(x1, x2, x3, x4, x5, x6) \
+#define BUILD_ATEN_ARG6(x1, x2, x3, x4, x5, x6)           \
     auto CREATE_VAR_NAME(x1) = impl::aten::buildATen(x1); \
     auto CREATE_VAR_NAME(x2) = impl::aten::buildATen(x2); \
     auto CREATE_VAR_NAME(x3) = impl::aten::buildATen(x3); \
@@ -64,7 +62,7 @@
     auto CREATE_VAR_NAME(x5) = impl::aten::buildATen(x5); \
     auto CREATE_VAR_NAME(x6) = impl::aten::buildATen(x6);
 
-#define BUILD_ATEN_ARG7(x1, x2, x3, x4, x5, x6, x7) \
+#define BUILD_ATEN_ARG7(x1, x2, x3, x4, x5, x6, x7)       \
     auto CREATE_VAR_NAME(x1) = impl::aten::buildATen(x1); \
     auto CREATE_VAR_NAME(x2) = impl::aten::buildATen(x2); \
     auto CREATE_VAR_NAME(x3) = impl::aten::buildATen(x3); \
@@ -73,7 +71,7 @@
     auto CREATE_VAR_NAME(x6) = impl::aten::buildATen(x6); \
     auto CREATE_VAR_NAME(x7) = impl::aten::buildATen(x7);
 
-#define BUILD_ATEN_ARG8(x1, x2, x3, x4, x5, x6, x7, x8) \
+#define BUILD_ATEN_ARG8(x1, x2, x3, x4, x5, x6, x7, x8)   \
     auto CREATE_VAR_NAME(x1) = impl::aten::buildATen(x1); \
     auto CREATE_VAR_NAME(x2) = impl::aten::buildATen(x2); \
     auto CREATE_VAR_NAME(x3) = impl::aten::buildATen(x3); \
@@ -84,50 +82,46 @@
     auto CREATE_VAR_NAME(x8) = impl::aten::buildATen(x8);
 
 #define BUILD_ATEN_ARG9(x1, x2, x3, x4, x5, x6, x7, x8, x9) \
-    auto CREATE_VAR_NAME(x1) = impl::aten::buildATen(x1); \
-    auto CREATE_VAR_NAME(x2) = impl::aten::buildATen(x2); \
-    auto CREATE_VAR_NAME(x3) = impl::aten::buildATen(x3); \
-    auto CREATE_VAR_NAME(x4) = impl::aten::buildATen(x4); \
-    auto CREATE_VAR_NAME(x5) = impl::aten::buildATen(x5); \
-    auto CREATE_VAR_NAME(x6) = impl::aten::buildATen(x6); \
-    auto CREATE_VAR_NAME(x7) = impl::aten::buildATen(x7); \
-    auto CREATE_VAR_NAME(x8) = impl::aten::buildATen(x8); \
+    auto CREATE_VAR_NAME(x1) = impl::aten::buildATen(x1);   \
+    auto CREATE_VAR_NAME(x2) = impl::aten::buildATen(x2);   \
+    auto CREATE_VAR_NAME(x3) = impl::aten::buildATen(x3);   \
+    auto CREATE_VAR_NAME(x4) = impl::aten::buildATen(x4);   \
+    auto CREATE_VAR_NAME(x5) = impl::aten::buildATen(x5);   \
+    auto CREATE_VAR_NAME(x6) = impl::aten::buildATen(x6);   \
+    auto CREATE_VAR_NAME(x7) = impl::aten::buildATen(x7);   \
+    auto CREATE_VAR_NAME(x8) = impl::aten::buildATen(x8);   \
     auto CREATE_VAR_NAME(x9) = impl::aten::buildATen(x9);
 
 #define BUILD_ATEN_ARG10(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10) \
-    auto CREATE_VAR_NAME(x1) = impl::aten::buildATen(x1); \
-    auto CREATE_VAR_NAME(x2) = impl::aten::buildATen(x2); \
-    auto CREATE_VAR_NAME(x3) = impl::aten::buildATen(x3); \
-    auto CREATE_VAR_NAME(x4) = impl::aten::buildATen(x4); \
-    auto CREATE_VAR_NAME(x5) = impl::aten::buildATen(x5); \
-    auto CREATE_VAR_NAME(x6) = impl::aten::buildATen(x6); \
-    auto CREATE_VAR_NAME(x7) = impl::aten::buildATen(x7); \
-    auto CREATE_VAR_NAME(x8) = impl::aten::buildATen(x8); \
-    auto CREATE_VAR_NAME(x9) = impl::aten::buildATen(x9); \
+    auto CREATE_VAR_NAME(x1) = impl::aten::buildATen(x1);         \
+    auto CREATE_VAR_NAME(x2) = impl::aten::buildATen(x2);         \
+    auto CREATE_VAR_NAME(x3) = impl::aten::buildATen(x3);         \
+    auto CREATE_VAR_NAME(x4) = impl::aten::buildATen(x4);         \
+    auto CREATE_VAR_NAME(x5) = impl::aten::buildATen(x5);         \
+    auto CREATE_VAR_NAME(x6) = impl::aten::buildATen(x6);         \
+    auto CREATE_VAR_NAME(x7) = impl::aten::buildATen(x7);         \
+    auto CREATE_VAR_NAME(x8) = impl::aten::buildATen(x8);         \
+    auto CREATE_VAR_NAME(x9) = impl::aten::buildATen(x9);         \
     auto CREATE_VAR_NAME(x10) = impl::aten::buildATen(x10);
 
-
-#define PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,N,...) N
+#define PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, N, ...) N
 #define PRIVATE_MACRO_VAR_ARGS_IMPL(args) PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT args
 
-#define COUNT_MACRO_VARR(...) PRIVATE_MACRO_VAR_ARGS_IMPL((__VA_ARGS__,14,13,12,11,10,9,8,7,6,5,4,3,2,1))
+#define COUNT_MACRO_VARR(...) PRIVATE_MACRO_VAR_ARGS_IMPL((__VA_ARGS__, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1))
 
 #define PRIVATE_CONCAT_STR2(x, y) x##y
 #define PRIVATE_CONCAT_STR1(x, y) PRIVATE_CONCAT_STR2(x, y)
 #define PRIVATE_CONCAT_STR(x, y) PRIVATE_CONCAT_STR1(x, y)
 
-#define BUILD_ATEN_ARGS(...) \
-    PRIVATE_CONCAT_STR(BUILD_ATEN_ARG, COUNT_MACRO_VARR(__VA_ARGS__))(__VA_ARGS__)
+#define BUILD_ATEN_ARGS(...) PRIVATE_CONCAT_STR(BUILD_ATEN_ARG, COUNT_MACRO_VARR(__VA_ARGS__))(__VA_ARGS__)
 
-
-
-#define BEGIN_CALL_ACL_OP(...)                                          \
-    std::cout<<__FILE__<<":"<<__LINE__<<" :"<<__FUNCTION__<<std::endl;  \
-    impl::aten::setCurCtx(ctx);                                         \
+#define BEGIN_CALL_ACL_OP(...)                                                     \
+    std::cout << __FILE__ << ":" << __LINE__ << " :" << __FUNCTION__ << std::endl; \
+    impl::aten::setCurCtx(ctx);                                                    \
     BUILD_ATEN_ARGS(__VA_ARGS__)
 
-#define END_CALL_ACL_OP()                                             \
-    impl::aten::unsetCurCtx();                                        \
+#define END_CALL_ACL_OP()      \
+    impl::aten::unsetCurCtx(); \
     return diopiSuccess;
 
 inline void logError() { std::cerr << std::endl; }
@@ -195,9 +189,7 @@ namespace impl {
 
 namespace aten {
 
-inline void setCurCtx(diopiContextHandle_t ctx) {
-    context = ctx;
-}
+inline void setCurCtx(diopiContextHandle_t ctx) { context = ctx; }
 
 inline void unsetCurCtx() { context = nullptr; }
 
@@ -272,9 +264,7 @@ inline diopiDtype_t getDIOPITensorType(at::ScalarType scalarType) {
     }
 }
 
-inline diopiDtype_t getDIOPITensorType(const at::Tensor& tensor) {
-    return getDIOPITensorType(tensor.scalar_type());
-}
+inline diopiDtype_t getDIOPITensorType(const at::Tensor& tensor) { return getDIOPITensorType(tensor.scalar_type()); }
 
 inline diopiDevice_t getDIOPIDevice(c10::DeviceType device) {
     if (device == c10::DeviceType::CPU) {
@@ -289,8 +279,6 @@ inline c10::DeviceType getATenDevice(diopiDevice_t device) {
     }
     return c10::DeviceType::XPU;
 }
-
-
 
 inline bool isInt(const diopiScalar_t* scalar) { return scalar->stype <= 7; }
 
@@ -324,7 +312,6 @@ inline c10::OptionalIntArrayRef buildATen(diopiSize_t* size_ptr) {
     }
     return c10::nullopt;
 }
-
 
 template <typename T>
 inline decltype(auto) buildATenList(T* tensors, int64_t numTensors) {
@@ -387,8 +374,6 @@ inline void invokeATenFuncInp(diopiContextHandle_t ctx, Func func, Args&&... arg
     func(std::forward<Args>(args)...);
 }
 
-
-
 inline void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
     at::IntArrayRef atSize = input.sizes();
     at::IntArrayRef atStride = input.strides();
@@ -423,7 +408,6 @@ inline void updateGeneratorHandleState(diopiContextHandle_t ctx, at::Generator& 
     buildDiopiTensor(ctx, new_state, &new_state_handle);
     diopiGeneratorSetState(generator, new_state_handle);
 }
-
 
 }  // namespace aten
 

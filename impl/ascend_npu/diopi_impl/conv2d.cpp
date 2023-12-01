@@ -30,8 +30,9 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
     if (gradBias) {
         at_npu::native::OpPreparation::markAsOutputForApplyTensor(gradBiasAt);
     }
-    std::tie(gradInputAt, gradWeightAt, gradBiasAt) =  acl_op::npu_conv2d_backward(inputAt, gradOutputAt, weightAt, strideAt, paddingAt, dilationAt, groups, {gradInput==nullptr, gradWeight==nullptr, gradBias==nullptr});
+    std::tie(gradInputAt, gradWeightAt, gradBiasAt) = acl_op::npu_conv2d_backward(
+        inputAt, gradOutputAt, weightAt, strideAt, paddingAt, dilationAt, groups, {gradInput == nullptr, gradWeight == nullptr, gradBias == nullptr});
     END_CALL_ACL_OP();
 }
 
-}  // OP_IMPL_NS
+}  // namespace OP_IMPL_NS
