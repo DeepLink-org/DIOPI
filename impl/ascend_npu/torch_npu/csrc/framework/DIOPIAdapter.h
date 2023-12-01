@@ -5,7 +5,10 @@
 #include <stdio.h>
 
 #include <iostream>
+#include <memory>
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "acl/acl.h"
@@ -142,7 +145,7 @@
         }                                                                                                                                              \
     } while (0)
 
-#defineINTERFACE_NOT_IMPL; std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
+#define INTERFACE_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
 
 static void warn_(const ::c10::Warning &warning) { INTERFACE_NOT_IMPL; }
 
@@ -264,20 +267,20 @@ public:
     operator c10::Stream() const { return unwrap(); }
 
     /// Used to avoid baking in device type explicitly to Python-side API.
-    c10::DeviceType device_type() const { IINTERFACE_NOT_IMPL; }
+    c10::DeviceType device_type() const { INTERFACE_NOT_IMPL; }
 
     /// Get the NPU device index that this stream is associated with.
     c10::DeviceIndex device_index() const { return stream_.device_index(); }
 
     /// Get the full Device that this stream is associated with.  The Device
     /// is guaranteed to be a NPU device.
-    c10::Device device() const { IINTERFACE_NOT_IMPL; }
+    c10::Device device() const { INTERFACE_NOT_IMPL; }
 
     c10::StreamId id() const { INTERFACE_NOT_IMPL }
 
     bool query() const { INTERFACE_NOT_IMPL; }
 
-    void synchronize() const { IINTERFACE_NOT_IMPL; }
+    void synchronize() const { INTERFACE_NOT_IMPL; }
 
     /// Explicit conversion to rtStream_t.
     C10_NPU_API aclrtStream stream() const { return aclStream_; }
@@ -534,11 +537,11 @@ public:
     static void CheckOut(const std::initializer_list<at::Tensor> &input, at::Tensor &output, int64_t format, at::ScalarType dtype, c10::IntArrayRef shape);
     // DEPRECATED: CastBackToOriFormat will be deprecated, please use cast_to_ori_format instead.
     static at::Tensor CastBackToOriFormat(const at::Tensor &tensor) { INTERFACE_NOT_IMPL; }
-    static at::Tensor &CastBackToOriFormat(at::Tensor &tensor) { IINTERFACE_NOT_IMPL; }
+    static at::Tensor &CastBackToOriFormat(at::Tensor &tensor) { INTERFACE_NOT_IMPL; }
     // DEPRECATED: ApplyTensor will be deprecated, please use apply_tensor instead.
-    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor &src) { IINTERFACE_NOT_IMPL; }
-    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor &src, c10::IntArrayRef sizes) { IINTERFACE_NOT_IMPL; }
-    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor &src, const c10::TensorOptions &options) { IINTERFACE_NOT_IMPL; }
+    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor &src) { INTERFACE_NOT_IMPL; }
+    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor &src, c10::IntArrayRef sizes) { INTERFACE_NOT_IMPL; }
+    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor &src, const c10::TensorOptions &options) { INTERFACE_NOT_IMPL; }
     TORCH_NPU_API static at::Tensor ApplyTensor(c10::IntArrayRef sizes, const c10::TensorOptions &options, const at::Tensor &src) { INTERFACE_NOT_IMPL }
     // DEPRECATED: ApplyTensorWithFormat will be deprecated, please use apply_tensor_with_format instead.
     static at::Tensor ApplyTensorWithFormat(const at::Tensor &src, int64_t format, bool keep_format = false) { INTERFACE_NOT_IMPL; }
@@ -699,7 +702,6 @@ public:
     OpCommand &Sync(c10::SmallVector<int64_t, N> &index);
 
     OpCommand &Sync();
-
 };  // class OpCommand
 
 namespace env {
@@ -785,7 +787,7 @@ public:
     // sizes, strides in StorageDesc are same as those in MetaData
     static bool MetaDataAreMatch(const at::Tensor *tensor) { INTERFACE_NOT_IMPL; }
     // storage offset are match, the npu only support offset == 0
-    static inline bool OffsetAreMatch(const at::Tensor *tensor) { return tensor->storage_offset() == 0; };
+    static inline bool OffsetAreMatch(const at::Tensor *tensor) { return tensor->storage_offset() == 0; }
 
     // helper function of transdata op.
     static bool IsSameDesc(const torch_npu::NPUStorageDesc &a, const torch_npu::NPUStorageDesc &b) { INTERFACE_NOT_IMPL; }

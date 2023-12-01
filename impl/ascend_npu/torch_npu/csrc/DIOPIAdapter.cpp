@@ -1178,7 +1178,7 @@ OpCommand &OpCommand::Input(const c10::ArrayRef<T> &dimListRef, at::IntArrayRef 
     // c10::TensorOptions(at::kCPU).dtype(c10::CppTypeToScalarType<T>::value),toType);
     //  AddHostTensorInput(tensor, compileType, realDtype, descName);
     auto cpuTensor = at::empty(realShape, c10::TensorOptions(at::kCPU).dtype(c10::CppTypeToScalarType<T>::value));
-    std::memcpy(cpuTensor.data_ptr(), reinterpret_cast<void *>(dimListRef.data()), cpuTensor.itemsize() * cpuTensor.numel());
+    std::memcpy(cpuTensor.data_ptr(), reinterpret_cast<const void *>(dimListRef.data()), cpuTensor.itemsize() * cpuTensor.numel());
     if (toType != cpuTensor.dtype()) {
         cpuTensor = cpuTensor.to(toType);
     }
