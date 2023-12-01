@@ -27,6 +27,45 @@ std::vector<diopiMemoryFormat_t> setIntersection(std::vector<diopiMemoryFormat_t
 
 std::vector<diopiMemoryFormat_t> obtainTargetMemoryFormats(size_t shapeLen, std::vector<diopiMemoryFormat_t> supportMemoryFormats);
 
+class TimeElapsedRecord {
+public:
+    TimeElapsedRecord(const char *fileName) : enableTiming_(false) {
+        const char *enableEnvVar = getenv("DIOPI_ENABLE_TIMING");
+        if (enableEnvVar && strcmp(enableEnvVar, "OFF") != 0 && strcmp(enableEnvVar, "0") != 0) {
+            enableTiming_ = true;
+            stream_ = std::ofstream(fileName, std::ios::out | std::ios::trunc);
+        }
+    }
+    bool isEnableTiming() { return enableTiming_; }
+    std::ofstream &getOStream() { return stream_; }
+
+private:
+    bool enableTiming_;
+    std::ofstream stream_;
+};
+
+class TimeElapsed {
+public:
+    TimeElapsed(const char *opName) : opName_(opName) {
+        if (timeElapsedRecord.isEnableTiming()) {
+            start_ = std::chrono::steady_clock::now();
+        }
+    }
+    ~TimeElapsed() {
+        if (timeElapsedRecord.isEnableTiming()) {
+            auto end = std::chrono::steady_clock::now();
+            std::chrono::duration<double, std::milli> elapsed = end - start_;  // ms
+            double elapsedTime = elapsed.count();
+            timeElapsedRecord.getOStream() << opName_ << ": " << elapsedTime << "ms" << std::endl;
+        }
+    }
+
+private:
+    const char *opName_;
+    std::chrono::time_point<std::chrono::steady_clock> start_;
+    static TimeElapsedRecord timeElapsedRecord;
+};
+
 class ConvertType {
 public:
     ConvertType() : val_(0){};
@@ -209,6 +248,7 @@ private:
 public:
     DiopiTensorWrapper(diopiContextHandle_t ctx, diopiTensorHandle_t payload, std::vector<diopiMemoryFormat_t> supportMemoryFormat = {}, bool inp = false)
         : ctx_(ctx), payload_(payload) {
+        TimeElapsed castOutConstructTimeElapsed("out_construct");
         if (inp) {
             convertType_ = castImpl<diopiTensorHandle_t, strategy>(ctx, payload_, &tmp_, supportMemoryFormat);
         } else {
@@ -217,6 +257,7 @@ public:
     }
 
     ~DiopiTensorWrapper() {
+        TimeElapsed castOutDeconstructTimeElapsed("out_deconstruct");
         if (!convertType_.isConverted()) {
             if (tmp_) {
                 payload_ = tmp_;

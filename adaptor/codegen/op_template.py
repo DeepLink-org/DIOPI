@@ -23,14 +23,17 @@ ${adaptors}
 
     adaptor_template = CodeTemplate("""\
 extern "C" diopiError_t diopi${op_name}(${attrs}) {
+    TimeElapsed adaptorTimeElapsed("${op_name}_adaptor");
     ${new_input}
     {
+        TimeElapsed castInputTimeElapsed("${op_name}_cast_input");
         ${cast_input}
     }
 
     ${cast_output}
     diopiError_t ret;
     {
+        TimeElapsed opTimeElapsed("${op_name}");
         ret = ::impl::${device}::${call_func};
     }
     return ret;
