@@ -587,7 +587,9 @@ public:
     }
 
     // offset = 0
-    explicit AclTensorBufferMaker(const at::Tensor &tensor, int64_t n = 1) { ptr = aclCreateDataBuffer((void *)(tensor.data_ptr()), tensor.itemsize() * n); }
+    explicit AclTensorBufferMaker(const at::Tensor &tensor, int64_t n = 1) {
+        ptr = aclCreateDataBuffer(reinterpret_cast<void *>(tensor.data_ptr()), tensor.itemsize() * n);
+    }
 
     ~AclTensorBufferMaker() = default;
 
@@ -1203,7 +1205,7 @@ OpCommand &OpCommand::Input(const c10::IntArrayRef &dimListRef, at::ScalarType t
 
 namespace {
 const uint64_t kStringOffset = 16UL;
-const std::string kStringDType = "string";
+const std::string kStringDType = "string";  // NOLINT
 static std::unordered_map<at::ScalarType, std::vector<double>> floating_limits_map{
     {at::ScalarType::Double, {std::numeric_limits<double>::max(), std::numeric_limits<double>::min()}},
     {at::ScalarType::Float, {std::numeric_limits<float>::max(), std::numeric_limits<float>::min()}},
