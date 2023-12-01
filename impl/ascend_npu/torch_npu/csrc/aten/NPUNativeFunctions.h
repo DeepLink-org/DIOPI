@@ -20,7 +20,10 @@
 #include <ATen/Tensor.h>
 #include <c10/core/Device.h>
 
+#include <algorithm>
 #include <iostream>
+#include <tuple>
+#include <vector>
 
 #define OP_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
 
