@@ -4,7 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
@@ -16,4 +15,4 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
     END_CALL_ACL_OP();
 }
 
-}  // OP_IMPL_NS
+}  // namespace OP_IMPL_NS

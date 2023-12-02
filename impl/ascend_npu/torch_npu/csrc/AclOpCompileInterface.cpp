@@ -76,7 +76,7 @@ aclError AclGenGraphAndDumpForOp(const char *opType, int numInputs, const aclTen
                                                     aclGraphDumpOption *);
     static AclGenGraphAndDumpForOpFunc func = nullptr;
     if (func == nullptr) {
-        //func = (AclGenGraphAndDumpForOpFunc)GET_FUNC(aclGenGraphAndDumpForOp);
+        // func = (AclGenGraphAndDumpForOpFunc)GET_FUNC(aclGenGraphAndDumpForOp);
     }
     TORCH_CHECK(func, "Failed to find function ", "aclGenGraphAndDumpForOp");
     auto ret = func(opType, numInputs, inputDesc, inputs, numOutputs, outputDesc, outputs, attr, engineType, graphDumpPath, graphdumpOpt);
@@ -97,7 +97,7 @@ aclError AclDestroyGraphDumpOpt(aclGraphDumpOption *aclGraphDumpOpt) {
     typedef aclError (*AclDestroyGraphDumpOptFunc)(aclGraphDumpOption *);
     static AclDestroyGraphDumpOptFunc func = nullptr;
     if (func == nullptr) {
-        //func = (AclDestroyGraphDumpOptFunc)GET_FUNC(aclDestroyGraphDumpOpt);
+        // func = (AclDestroyGraphDumpOptFunc)GET_FUNC(aclDestroyGraphDumpOpt);
     }
     TORCH_CHECK(func, "Failed to find function ", "aclDestroyGraphDumpOpt");
     return func(aclGraphDumpOpt);
@@ -131,7 +131,7 @@ aclError AclrtCtxSetSysParamOpt(aclSysParamOpt opt, int64_t value) {
     typedef aclError (*AclrtCtxSetSysParamOptFunc)(aclSysParamOpt opt, int64_t value);
     static AclrtCtxSetSysParamOptFunc func = nullptr;
     if (func == nullptr) {
-        //func = (AclrtCtxSetSysParamOptFunc)GET_FUNC(aclrtCtxSetSysParamOpt);
+        // func = (AclrtCtxSetSysParamOptFunc)GET_FUNC(aclrtCtxSetSysParamOpt);
     }
     if (func == nullptr) {
         TORCH_WARN("Failed to find this aclrtCtxSetSysParamOpt function!");
