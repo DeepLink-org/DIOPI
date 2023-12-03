@@ -16,7 +16,7 @@
 #include "acl/acl_op_compiler.h"
 #include "acl/acl_rt.h"
 #include "ge/ge_api.h"
-#include "op-plugin/op_plugin/utils/OpConstants.h"
+#include "op_plugin/utils/OpConstants.h"
 #include "torch_npu/csrc/core/npu/NPUErrorCodes.h"
 #include "torch_npu/csrc/core/npu/NpuVariables.h"
 #include "torch_npu/csrc/framework/interface/AclOpCompileInterface.h"
