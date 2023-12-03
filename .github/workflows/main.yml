@@ -348,23 +348,6 @@ jobs:
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} python main.py --mode utest
           """
 
-  Op-Test-Ascend:
-    name: Op-Test-Ascend
-    runs-on: tps-ascend-ci
-    needs: [Gen-Data, Build-Ascend]
-    if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
-    env:
-      run_test: "python"
-    steps:
-      - name: test
-        run: |
-          set -e
-          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          export CI=true
-          rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
-          cd diopi_test/python && python main.py --mode gen_case --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/ascend/ && ${run_test} main.py --mode run_test \
-          && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
-
   Build-Ascend-910b:
     name: Build-Ascend-910b
     runs-on: tps-ascend-ci-910b
