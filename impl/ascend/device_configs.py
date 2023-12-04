@@ -879,42 +879,6 @@ device_configs = {
         ),
     ),
 
-    'reduce_partial_op_2': dict(
-        name=['min', 'max'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'max_min_equal_input': dict(
-        name=['min', 'max'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),],
-                },
-            ]
-        ),
-    ),
-
-    'max_min_all': dict(
-        name=['min', 'max'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
     'mse_loss': dict(
         name=['mse_loss'],
         tensor_para=dict(
@@ -1302,30 +1266,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip((6, 3, 32, 32)),Skip((2, 3, 16, 16)),],
-                },
-            ]
-        ),
-    ),
-
-    'slice': dict(
-        name=['slice_op'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((7,)),Skip((128, 3, 3)),Skip((2, 3, 224, 224)),Skip((3, 2, 6, 197, 64)),],
-                },
-            ]
-        ),
-    ),
-
-    'slice_int': dict(
-        name=['slice_op'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((7,)),Skip((128, 3, 3)),Skip((2, 3, 224, 224)),Skip((3, 2, 6, 197, 64)),],
                 },
             ]
         ),
@@ -2157,22 +2097,6 @@ device_configs = {
                     "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
                 },
             ]
-        ),
-    ),
-
-    'arange': dict(
-        name=['arange'],
-        para=dict(
-            start=[Skip(0),Skip(0),Skip(-4),Skip(0.1),Skip(10),Skip(2.3),Skip(True),Skip(-20),Skip(90),Skip(0.001),],
-            end=[Skip(91),Skip(128),Skip(5),Skip(0.5),Skip(10),Skip(2.3),Skip(100),Skip(False),Skip(-90),Skip(0.0001),],
-            step=[Skip(13),Skip(1),Skip(1),Skip(0.1),Skip(True),Skip(0.5),Skip(2.1),Skip(0.5),Skip(-5.6),Skip(-1e-05),],
-        ),
-    ),
-
-    'arange_default': dict(
-        name=['arange'],
-        para=dict(
-            end=[Skip(5),Skip(10),Skip(4.0),Skip(9.0),],
         ),
     ),
 

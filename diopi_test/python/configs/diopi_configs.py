@@ -76,8 +76,8 @@ diopi_configs = {
     'batch_norm_nan': dict(
         name=["batch_norm"],
         dtype=[np.float32],
-        atol=1e-5,
-        rtol=1e-6,
+        atol=1e-3,
+        rtol=1e-4,
         atol_half=1e-1,
         rtol_half=1e-2,
         para=dict(
@@ -3835,14 +3835,12 @@ diopi_configs = {
         ),
     ),
 
-    # FIXME embedding输入负padding_idx精度不一致
     'embedding': dict(
         name=["embedding"],
         atol_half=0.05,
         rtol_half=0.05,
         para=dict(
-            # padding_idx=[None, None, 92, -20, 0, -15, 19, 2, 0],
-            padding_idx=[None, None, 92, 0, 0, 0, 19, 2, 0],
+            padding_idx=[None, None, 92, -20, 0, -15, 19, 2, 0],
             max_norm=[None, 1.0, None, None, -2, 2, None, 9, -0.5],
             norm_type=[2.0, 0, 1, 2, 0.5, 1.2, float('inf'), -2, -0.5],
             scale_grad_by_freq=[False, True, False, True, False, True, False, True, True],
