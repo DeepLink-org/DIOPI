@@ -75,22 +75,6 @@ diopiDtype_t getDIOPITensorType(at::Tensor& input) {
     }
 }
 
-at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef strides, const std::function<void(void*)>& deleter, at::Allocator* allocator,
-                            const at::TensorOptions& options) {
-    auto device = at::globalContext().getDeviceFromPtr(data, options.device().type());
-    if (options.device().has_index()) {
-        assert(options.device() == device);
-    }
-
-    auto storage = at::Storage(at::Storage::use_byte_size_t(),
-                               at::detail::computeStorageNbytes(sizes, strides, options.dtype().itemsize()),
-                               c10::InefficientStdFunctionContext::makeDataPtr(data, deleter, device),
-                               allocator,
-                               false);
-    at::TensorOptions new_options = options.device(device);
-    return at::empty({0}, new_options).set_(storage, 0, sizes, strides);
-}
-
 template <typename T>
 at::Tensor buildATen(T tensor) {
     if (tensor == nullptr) return at::Tensor();
@@ -113,14 +97,10 @@ at::Tensor buildATen(T tensor) {
     at::IntArrayRef atStrides(stride.data, stride.len);
 
     auto options = at::TensorOptions(atDevice).dtype(atType);
-    int64_t numel = 0;
-    diopiGetTensorNumel(tensor, &numel);
-    if (0 == numel) {
-        return at::empty(atDims, options);
+    if (data != nullptr) {
+        return at::from_blob(data, atDims, atStrides, options);
     } else {
-        at::Allocator* allocator = nullptr;
-        return fromPreAllocated(
-            data, atDims, atStrides, [](void*) {}, allocator, options);
+        return at::empty(atDims, options);
     }
 }
 

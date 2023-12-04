@@ -129,9 +129,6 @@ inline c10::DeviceType getATenDevice(diopiDevice_t device) {
     return c10::DeviceType::CUDA;
 }
 
-at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef strides, const std::function<void(void*)>& deleter, at::Allocator* allocator,
-                            const at::TensorOptions& options);
-
 template <typename T>
 at::Tensor buildATen(T tensor);
 
