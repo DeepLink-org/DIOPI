@@ -1277,18 +1277,6 @@ device_configs = {
         ),
     ),
 
-    'masked_fill_scalar_int': dict(
-        name=['masked_fill'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.uint8)],
-                },
-            ]
-        ),
-    ),
-
     'conv_transpose2d': dict(
         name=['conv_transpose2d'],
         tensor_para=dict(
