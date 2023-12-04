@@ -25,8 +25,8 @@ at::Tensor& conv2d_backward_bias_out_nocheck(at::Tensor& grad_bias, const at::Te
 
 }  // namespace
 
-// namespace OP_IMPL_NS {
-extern "C" {
+namespace OP_IMPL_NS {
+// extern "C" {
 
 diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                 diopiConstTensorHandle_t bias, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, int64_t groups) {
