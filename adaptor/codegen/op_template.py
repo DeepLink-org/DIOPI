@@ -54,10 +54,10 @@ extern "C" diopiError_t diopi${op_name}(${attrs}) {
     diopiError_t ret;
     {
         TimeElapsed opTimeElapsed("${op_name}");
-        if (::impl::${device}_npu::diopi${op_name}) {
-            ret = ::impl::${device}_npu::${call_func};
-        } else if (::impl::${device}::diopi${op_name}) {
+        if (::impl::${device}::diopi${op_name}) {
             ret = ::impl::${device}::${call_func};
+        } else if (::impl::${device}_npu::diopi${op_name}) {
+            ret = ::impl::${device}_npu::${call_func};
         } else {
             ret = diopiNoImplement;
         }
