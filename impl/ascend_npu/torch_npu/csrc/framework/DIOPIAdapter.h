@@ -17,10 +17,10 @@
 #include "acl/acl_rt.h"
 #include "ge/ge_api.h"
 #include "op_plugin/utils/OpConstants.h"
+#include "torch_npu/csrc/aten/NPUNativeFunctions.h"
 #include "torch_npu/csrc/core/npu/NPUErrorCodes.h"
 #include "torch_npu/csrc/core/npu/NpuVariables.h"
 #include "torch_npu/csrc/framework/interface/AclOpCompileInterface.h"
-#include "torch_npu/csrc/aten/NPUNativeFunctions.h"
 
 #define NPUStatus std::string
 #define SUCCESS "SUCCESS"
@@ -708,7 +708,7 @@ public:
 private:
     OpCommand &AddTensorInput(at::Tensor &tensor, at::ScalarType forceScaleType = at::ScalarType::Undefined, const string &descName = "",
                               const string &realData = "");
-    at::Tensor& Contiguous(const at::Tensor &input);
+    at::Tensor &Contiguous(const at::Tensor &input);
 };  // class OpCommand
 
 namespace env {
@@ -854,4 +854,3 @@ void npu_fast_reshape_(at::Tensor &tensor);
 
 }  // namespace native
 }  // namespace at_npu
-
