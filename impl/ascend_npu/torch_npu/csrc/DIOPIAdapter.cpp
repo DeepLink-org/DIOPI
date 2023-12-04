@@ -317,7 +317,7 @@ void CalcuOpUtil::CheckMemoryOverLaps(c10::ArrayRef<at::Tensor> inputs, c10::Arr
 
 const char *markedOutputsErrorInfo =
     "Parameters that allocate memory inside the operator need to be marked as output in advance through markAsOutputForApplyTensor";
-std::deque<at::Tensor> markedOutputs;
+thread_local std::deque<at::Tensor> markedOutputs;
 void OpPreparation::markAsOutputForApplyTensor(at::Tensor &src) { markedOutputs.push_back(src); }
 
 at::Tensor empty_npu(at::IntArrayRef size, c10::optional<at::ScalarType> dtype_opt, c10::optional<at::Layout> layout_opt = c10::nullopt,
@@ -1633,6 +1633,9 @@ const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     auto options = at::TensorOptions(c10::Device(atDevice, devId_)).dtype(atType);
     int64_t numel = 0;
     diopiGetTensorNumel(tensor, &numel);
+    if (numel <= 0) {
+        return at::Tensor();
+    }
 
     return fromPreAllocated(data, atDims, atStrides, options);
 }
@@ -1654,6 +1657,7 @@ inline const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
 
 at::Tensor view(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides) {
    TORCH_CHECK(c10::multiply_integers(sizes) == input.numel());
+   TORCH_CHECK(!input.is_cpu());
    std::vector<int64_t> stridesVec(sizes.size(), 1);
    if (strides.size() > 0) {
         std::copy(strides.begin(), strides.end(), stridesVec.begin());
@@ -1670,6 +1674,15 @@ at::Tensor view(const at::Tensor input, const c10::IntArrayRef sizes, const c10:
    return fromPreAllocated(input.data_ptr(), sizes, stridesVec, input.options());
 }
 
+void setCurCtx(diopiContextHandle_t ctx) {
+    context = ctx;
+    at_npu::native::markedOutputs.clear();
+}
+
+void unsetCurCtx() {
+    context = nullptr;
+    at_npu::native::markedOutputs.clear();
+}
 
 }  // namespace aten
 
