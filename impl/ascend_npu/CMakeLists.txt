@@ -16,7 +16,7 @@ add_custom_target(op_plugin_gen
 )
 
 add_subdirectory(third_party/acl)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
 
 if(NOT DEFINED PYTORCH_DIR)
   execute_process(
@@ -31,14 +31,14 @@ list(APPEND TORCH_INCLUDE_DIRS ${PYTORCH_DIR}/torch/include/
 include_directories(SYSTEM ${TORCH_INCLUDE_DIRS})
 message(STATUS "Torch TORCH_INCLUDE_DIRS: ${TORCH_INCLUDE_DIRS}")
 
-if(NOT DEFINED DIPU_ABI_V)
-  execute_process(
-    COMMAND
-      sh -x -c
-      "python -c 'import torch, builtins; print(next(item[-4:-2] for item in dir(builtins)      \
-          if \"__pybind11_internals_v4_gcc_libstdcpp_cxxabi10\" in item))'"
-    OUTPUT_VARIABLE DIPU_ABI_V)
-endif()
+# if(NOT DEFINED DIPU_ABI_V)
+#   execute_process(
+#     COMMAND
+#       sh -x -c
+#       "python -c 'import torch, builtins; print(next(item[-4:-2] for item in dir(builtins)      \
+#           if \"__pybind11_internals_v4_gcc_libstdcpp_cxxabi10\" in item))'"
+#     OUTPUT_VARIABLE DIPU_ABI_V)
+# endif()
 
 if(NOT DEFINED DIPU_COMPILED_WITH_CXX11_ABI)
 execute_process(
@@ -54,8 +54,8 @@ else()
   set(DIPU_COMPILED_WITH_CXX11_ABI 0)
 endif()
 
-add_definitions(-fabi-version=${DIPU_ABI_V})
-message(STATUS "DIPU_ABI_V: ${DIPU_ABI_V}")
+# add_definitions(-fabi-version=${DIPU_ABI_V})
+# message(STATUS "DIPU_ABI_V: ${DIPU_ABI_V}")
 
 # Because many interfaces have not yet been implemented, -Wreturn-type=0 option is temporarily added.
 set(CMAKE_CXX_FLAGS
@@ -836,7 +836,7 @@ set(DIOPI_IMPL_SRC
 
 add_definitions(-DBUILD_LIBTORCH)
 
-include_directories(${op_plugin_SOURCE_DIR}/ torch_npu ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(SYSTEM ${op_plugin_SOURCE_DIR}/ torch_npu ${CMAKE_CURRENT_SOURCE_DIR})
 set(IMPL_SRC
   torch_npu/csrc/DIOPIAdapter.cpp
   torch_npu/csrc/AclOpCompileInterface.cpp
