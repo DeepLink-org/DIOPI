@@ -1,5 +1,6 @@
 #include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
+#include <ATen/record_function.h>
 #include <diopi/diopirt.h>
 
 #include "diopi_impl/helper.hpp"
@@ -158,15 +159,14 @@ at::Tensor NpuUtils::format_contiguous(const at::Tensor &src) {
 }
 
 // helper function of copy, because of padding will change the physical size.
-bool FormatHelper::IsPadded(const at::Tensor *tensor) { INTERFACE_NOT_IMPL }
-char *FormatHelper::GetFormatName(const at::Tensor &tensor){INTERFACE_NOT_IMPL} aclFormat FormatHelper::GetBaseFormat(const at::Tensor &tensor){
-    INTERFACE_NOT_IMPL} aclFormat FormatHelper::GetBaseFormat(aclFormat format){
-    INTERFACE_NOT_IMPL} aclFormat FormatHelper::GetFormat(const at::Tensor &tensor) {
-    INTERFACE_NOT_IMPL
-}
+bool FormatHelper::IsPadded(const at::Tensor *tensor) { INTERFACE_NOT_IMPL; }
+char *FormatHelper::GetFormatName(const at::Tensor &tensor) { INTERFACE_NOT_IMPL; }
+aclFormat FormatHelper::GetBaseFormat(const at::Tensor &tensor) { INTERFACE_NOT_IMPL; }
+aclFormat FormatHelper::GetBaseFormat(aclFormat format) { INTERFACE_NOT_IMPL; }
+aclFormat FormatHelper::GetFormat(const at::Tensor &tensor) { INTERFACE_NOT_IMPL; }
 
-bool FormatHelper::IsBaseFormatType(aclFormat format) { INTERFACE_NOT_IMPL }
-bool FormatHelper::IsBaseFormatType(const at::Tensor &tensor){INTERFACE_NOT_IMPL}
+bool FormatHelper::IsBaseFormatType(aclFormat format) { INTERFACE_NOT_IMPL; }
+bool FormatHelper::IsBaseFormatType(const at::Tensor &tensor) { INTERFACE_NOT_IMPL; }
 
 // Default assumption: the original format are ND, NCHW or NDHWC.
 // So, if original size are 4D, it maybe NCHW or ND and so on.
@@ -176,16 +176,14 @@ bool FormatHelper::IsBaseFormatType(const at::Tensor &tensor){INTERFACE_NOT_IMPL
 // The storage size can not be infered between different groups.
 
 // GetStorageSizes used to calculate the storage sizes of op at npu device at different format.
-FormatShape FormatHelper::GetStorageSizes(const torch_npu::NPUStorageDesc &desc){
-    INTERFACE_NOT_IMPL} at::Tensor &FormatHelper::unsafe_format_cast(at::Tensor &self, int64_t self_format, int64_t result_format) {
-    INTERFACE_NOT_IMPL
-}
+FormatShape FormatHelper::GetStorageSizes(const torch_npu::NPUStorageDesc &desc) { INTERFACE_NOT_IMPL; }
+at::Tensor &FormatHelper::unsafe_format_cast(at::Tensor &self, int64_t self_format, int64_t result_format) { INTERFACE_NOT_IMPL; }
 
-bool FormatHelper::IsOpInputBaseFormat(const at::Tensor &tensor) { INTERFACE_NOT_IMPL }
-bool FormatHelper::IsOpInputBaseFormat(const c10::optional<at::Tensor> &tensor) { INTERFACE_NOT_IMPL }
-bool FormatHelper::IsOpInputBaseFormat(const c10::List<c10::optional<at::Tensor>> &tensors) { INTERFACE_NOT_IMPL }
-bool FormatHelper::IsOpInputBaseFormat(const at::TensorList &tensors) { INTERFACE_NOT_IMPL }
-bool FormatHelper::IsOpInputBaseFormat(const at::ITensorListRef &tensors){INTERFACE_NOT_IMPL}
+bool FormatHelper::IsOpInputBaseFormat(const at::Tensor &tensor) { INTERFACE_NOT_IMPL; }
+bool FormatHelper::IsOpInputBaseFormat(const c10::optional<at::Tensor> &tensor) { INTERFACE_NOT_IMPL; }
+bool FormatHelper::IsOpInputBaseFormat(const c10::List<c10::optional<at::Tensor>> &tensors) { INTERFACE_NOT_IMPL; }
+bool FormatHelper::IsOpInputBaseFormat(const at::TensorList &tensors) { INTERFACE_NOT_IMPL; }
+bool FormatHelper::IsOpInputBaseFormat(const at::ITensorListRef &tensors) { INTERFACE_NOT_IMPL; }
 
 at::Tensor NpuUtils::format_contiguous_add_copy_optimize(const at::Tensor &src) {
     // case1:tensor src is not contiguous
@@ -220,7 +218,7 @@ float CalcuOpUtil::GetScalarFloatValue(const c10::Scalar &scalar) {
     if (scalar.isFloatingPoint()) {
         value = scalar.toFloat();
     } else {
-        value = (float)scalar.toInt();
+        value = static_cast<float>(scalar.toInt());
     }
 
     return value;
@@ -638,12 +636,14 @@ public:
         if (tensor == nullptr || n == 0) {
             ptr = aclCreateDataBuffer(nullptr, 0);
         } else {
-            ptr = aclCreateDataBuffer((void *)(tensor->data_ptr()), tensor->itemsize() * n);
+            ptr = aclCreateDataBuffer(reinterpret_cast<void *>(tensor->data_ptr()), tensor->itemsize() * n);
         }
     }
 
     // offset = 0
-    explicit AclTensorBufferMaker(const at::Tensor &tensor, int64_t n = 1) { ptr = aclCreateDataBuffer((void *)(tensor.data_ptr()), tensor.itemsize() * n); }
+    explicit AclTensorBufferMaker(const at::Tensor &tensor, int64_t n = 1) {
+        ptr = aclCreateDataBuffer(reinterpret_cast<void *>(tensor.data_ptr()), tensor.itemsize() * n);
+    }
 
     ~AclTensorBufferMaker() = default;
 
@@ -1099,9 +1099,7 @@ aclError OpCommandImpl::InnerRun(const string &name, AclExecParam &params, bool 
     return ret;
 }
 
-inline bool enableDumpArgs() {
-    return std::getenv("DIOPI_DEBUG_OP") != nullptr;
-}
+inline bool enableDumpArgs() { return std::getenv("DIOPI_DEBUG_OP") != nullptr; }
 
 std::tuple<aclTensorDesc *, aclDataBuffer *> CovertNPUTensorWithZeroDimToAclInput(const at::Tensor &tensor, const string &descName) {
     aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(tensor.scalar_type());
@@ -1230,7 +1228,7 @@ OpCommand &OpCommand::Name(const string &name) {
     return *this;
 }
 
-void OpCommand::SetCustomHandler(PROC_FUNC func){INTERFACE_NOT_IMPL}
+void OpCommand::SetCustomHandler(PROC_FUNC func) { INTERFACE_NOT_IMPL; }
 
 OpCommand &OpCommand::Expect(UnifiedResult unified_result) {
     commonType = unified_result.common_type;
@@ -1283,10 +1281,11 @@ OpCommand &OpCommand::Input(const at::Tensor &input, const string &descName, con
 template <typename T>
 OpCommand &OpCommand::Input(const c10::ArrayRef<T> &dimListRef, at::IntArrayRef realShape, at::ScalarType toType, CompileType compileType,
                             const string &realDtype, const string &descName) {
-    // at::Tensor &tensor = CreateHostTensor((void *)dimListRef.data(), realShape, c10::TensorOptions(at::kCPU).dtype(c10::CppTypeToScalarType<T>::value),toType);
+    // at::Tensor &tensor = CreateHostTensor((void *)dimListRef.data(), realShape,
+    // c10::TensorOptions(at::kCPU).dtype(c10::CppTypeToScalarType<T>::value),toType);
     //  AddHostTensorInput(tensor, compileType, realDtype, descName);
     auto cpuTensor = at::empty(realShape, c10::TensorOptions(at::kCPU).dtype(c10::CppTypeToScalarType<T>::value));
-    std::memcpy(cpuTensor.data_ptr(), (void *)dimListRef.data(), cpuTensor.itemsize() * cpuTensor.numel());
+    std::memcpy(cpuTensor.data_ptr(), reinterpret_cast<const void *>(dimListRef.data()), cpuTensor.itemsize() * cpuTensor.numel());
     if (toType != cpuTensor.dtype()) {
         cpuTensor = cpuTensor.to(toType);
     }
@@ -1297,7 +1296,7 @@ OpCommand &OpCommand::Input(const c10::ArrayRef<T> &dimListRef, at::IntArrayRef 
 }
 
 template OpCommand &OpCommand::Input(const c10::ArrayRef<double> &dimListRef, at::IntArrayRef realShape, at::ScalarType toType, CompileType compileType,
-                            const string &realDtype, const string &descName);
+                                     const string &realDtype, const string &descName);
 
 // IntArrayRef/SmallVector Input, usually hostmemory input, we will do h2d in
 // launch kernel
@@ -1305,14 +1304,15 @@ OpCommand &OpCommand::Input(const c10::IntArrayRef &dimListRef, at::ScalarType t
                             const string &descName) {
     Input<int64_t>(dimListRef, dimListRef.size(), toType, compileType, realDtype, descName);
     if (enableDumpArgs()) {
-        std::cout << aclCmd->GetName() << ":descName:" << descName << ",input:" << dimListRef << " " << toType << " " << compileType << " " << realDtype << std::endl;
+        std::cout << aclCmd->GetName() << ":descName:" << descName << ",input:" << dimListRef << " " << toType << " " << compileType << " " << realDtype
+                  << std::endl;
     }
     return *this;
 }
 
 namespace {
 const uint64_t kStringOffset = 16UL;
-const std::string kStringDType = "string";
+const std::string kStringDType = "string";  // NOLINT
 static std::unordered_map<at::ScalarType, std::vector<double>> floating_limits_map{
     {at::ScalarType::Double, {std::numeric_limits<double>::max(), std::numeric_limits<double>::min()}},
     {at::ScalarType::Float, {std::numeric_limits<float>::max(), std::numeric_limits<float>::min()}},

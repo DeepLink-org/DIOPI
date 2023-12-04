@@ -1,7 +1,8 @@
-#ifndef TORCH_NPU_CSRC_ATEN_CUSTOM_FUNCTIONS
-#define TORCH_NPU_CSRC_ATEN_CUSTOM_FUNCTIONS
+#ifndef IMPL_ASCEND_NPU_TORCH_NPU_CSRC_ATEN_CUSTOMFUNCTIONS_H_
+#define IMPL_ASCEND_NPU_TORCH_NPU_CSRC_ATEN_CUSTOMFUNCTIONS_H_
 
 #include <ATen/ATen.h>
+
 #include <iostream>
 
 namespace at_npu {
@@ -20,21 +21,21 @@ at::Tensor & copy_memory_(at::Tensor & self, const at::Tensor & src, bool non_bl
 at::Tensor format_contiguous(const at::Tensor & self);
 bool check_match(const at::Tensor & self);
 void check_memory_overlaps(at::TensorList inputs, at::TensorList outputs);
-int64_t get_storage_size(const at::Tensor & self);
-__attribute__((__visibility__("default"))) at::Tensor npu_format_cast(const at::Tensor & self, int64_t acl_format);
-at::Tensor _npu_format_cast(const at::Tensor & self, int64_t acl_format);
-at::Tensor & npu_view_copy(at::Tensor & self, const at::Tensor & other, bool non_blocking);
-at::Tensor npu_transpose(const at::Tensor & self, at::IntArrayRef perm, bool require_contiguous);
-at::Tensor & npu_transpose_out(const at::Tensor & self, at::IntArrayRef perm, bool require_contiguous, at::Tensor & out);
-at::Tensor npu_broadcast(const at::Tensor & self, at::IntArrayRef size);
-at::Tensor & npu_broadcast_out(const at::Tensor & self, at::IntArrayRef size, at::Tensor & out);
-at::Tensor & npu_dtype_cast_(at::Tensor & self, const at::Tensor & src);
-at::Tensor npu_alloc_float_status(const at::Tensor & self);
-at::Tensor npu_get_float_status(const at::Tensor & self);
-at::Tensor npu_clear_float_status(const at::Tensor & self);
-at::Tensor & one_(at::Tensor & self);
-at::Tensor fast_gelu(const at::Tensor & self);
-at::Tensor npu_fast_gelu_backward(const at::Tensor & grad, const at::Tensor & self);
+int64_t get_storage_size(const at::Tensor &self);
+__attribute__((__visibility__("default"))) at::Tensor npu_format_cast(const at::Tensor &self, int64_t acl_format);
+at::Tensor _npu_format_cast(const at::Tensor &self, int64_t acl_format);
+at::Tensor &npu_view_copy(at::Tensor &self, const at::Tensor &other, bool non_blocking);
+at::Tensor npu_transpose(const at::Tensor &self, at::IntArrayRef perm, bool require_contiguous);
+at::Tensor &npu_transpose_out(const at::Tensor &self, at::IntArrayRef perm, bool require_contiguous, at::Tensor &out);
+at::Tensor npu_broadcast(const at::Tensor &self, at::IntArrayRef size);
+at::Tensor &npu_broadcast_out(const at::Tensor &self, at::IntArrayRef size, at::Tensor &out);
+at::Tensor &npu_dtype_cast_(at::Tensor &self, const at::Tensor &src);
+at::Tensor npu_alloc_float_status(const at::Tensor &self);
+at::Tensor npu_get_float_status(const at::Tensor &self);
+at::Tensor npu_clear_float_status(const at::Tensor &self);
+at::Tensor &one_(at::Tensor &self);
+at::Tensor fast_gelu(const at::Tensor &self);
+at::Tensor npu_fast_gelu_backward(const at::Tensor &grad, const at::Tensor &self);
 bool _amp_foreach_non_finite_check(at::TensorList scaled_grads);
 at::Tensor npu_sign_bits_pack(const at::Tensor & self, int64_t size);
 ::std::tuple<at::Tensor,at::Tensor,at::Tensor> npu_bert_apply_adam(const at::Scalar & lr, const at::Scalar & beta1, const at::Scalar & beta2, const at::Scalar & epsilon, const at::Tensor & grad, const at::Scalar & max_grad_norm, const at::Scalar & global_grad_norm, const at::Scalar & weight_decay, const c10::optional<at::Scalar> & step_size, int64_t adam_mode);
@@ -165,4 +166,4 @@ at::Tensor npu_fused_attention_score(const at::Tensor & query_layer, const at::T
 }  // namespace native
 }  // namespace at_npu
 
-#endif
+#endif  // IMPL_ASCEND_NPU_TORCH_NPU_CSRC_ATEN_CUSTOMFUNCTIONS_H_

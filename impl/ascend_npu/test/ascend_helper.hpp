@@ -67,4 +67,3 @@ namespace ascend {
 
 }  // namespace ascend
 }  // namespace impl
-

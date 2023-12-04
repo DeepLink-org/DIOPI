@@ -60,4 +60,4 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
     END_CALL_ACL_OP();
 }
 
-}  // OP_IMPL_NS
+}  // namespace OP_IMPL_NS
