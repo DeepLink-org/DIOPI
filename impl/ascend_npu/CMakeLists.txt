@@ -1,25 +1,22 @@
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.14)
 project(ascend_impl)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 
-# 暂时没想到好办法，能下载下来源代码，并且第一次构建时不出错, 暂时先写在shell脚本里了
-#execute_process(
-#    COMMAND sh -c "bash  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/libs/build_stub.sh"
-#    COMMAND sh -c "echo 'download op-plugin ...'; cd ${CMAKE_CURRENT_SOURCE_DIR}/; git clone  https://gitee.com/ascend/op-plugin/ op-plugin || cd op-plugin && git checkout 186f4b87e2db4791a6ed697cea78d58a0ae92db1 && bash  ./gencode.sh 2.0 python "
-#)
-
-#add_custom_target(download_opplugin_coode
-#  ALL
-#  COMMAND echo "下载源码"
-  #COMMAND sh -c "bash  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/libs/build_stub.sh"
-  #COMMAND sh -c "echo 'download op-plugin ...'; cd ${CMAKE_CURRENT_SOURCE_DIR}/; git clone  https://gitee.com/ascend/op-plugin/ op-plugin || cd op-plugin && git checkout 186f4b87e2db4791a6ed697cea78d58a0ae92db1 && bash  ./gencode.sh 2.0 python "
-#  BYPRODUCTS op-plugin1
-#)
+include(FetchContent)
+message(STATUS "downloading op-plugin")
+FetchContent_Declare(op_plugin
+  GIT_REPOSITORY https://gitee.com/ascend/op-plugin
+  GIT_TAG 186f4b87e2db4791a6ed697cea78d58a0ae92db1
+)
+FetchContent_MakeAvailable(op_plugin)
+message(STATUS "op-plugin download done")
+add_custom_target(op_plugin_gen
+  COMMAND cd ${op_plugin_SOURCE_DIR} && bash ./gencode.sh 2.0 python
+)
 
 add_subdirectory(third_party/acl)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
-#link_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/libs/)
 
 if(NOT DEFINED PYTORCH_DIR)
   execute_process(
@@ -68,8 +65,8 @@ add_compile_options(-D_GLIBCXX_USE_CXX11_ABI=${DIPU_COMPILED_WITH_CXX11_ABI})
 message(STATUS "DIPU_COMPILED_WITH_CXX11_ABI:" ${DIPU_COMPILED_WITH_CXX11_ABI})
 
 
-set(OP_PLUGIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/base_ops/aclops/)
-set(OP_PLUGIN_UTILS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/utils/)
+set(OP_PLUGIN_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/base_ops/aclops/)
+set(OP_PLUGIN_UTILS_DIR ${op_plugin_SOURCE_DIR}/op_plugin/utils/)
 #file(GLOB_RECURSE OP_PLUGIN_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${OP_PLUGIN_DIR}/*.cpp)
 file(GLOB_RECURSE OP_PLUGIN_UTILS_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${OP_PLUGIN_UTILS_DIR}/*.cpp)
 #file(GLOB_RECURSE OP_PLUGIN_API_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/base_ops/opapi/*.cpp)
@@ -464,7 +461,7 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/ZerosLikeKernelNpu.cpp
 )
 
-set(OP_PLUGIN_SRC_V_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/v2r0/aclops/)
+set(OP_PLUGIN_SRC_V_DIR  ${op_plugin_SOURCE_DIR}/op_plugin/ops/v2r0/aclops/)
 set(OP_PLUGIN_SRC
     ${OP_PLUGIN_SRC}
     ${OP_PLUGIN_SRC_V_DIR}/SumKernelNpu.cpp
@@ -510,7 +507,7 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_SRC_V_DIR}/ZerosKernelNpu.cpp
 )
 
-set(OP_PLUGIN_API_DIR ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/base_ops/opapi/)
+set(OP_PLUGIN_API_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/base_ops/opapi/)
 set(OP_PLUGIN_API_SRC1
     ${OP_PLUGIN_API_DIR}/AddKernelNpuOpApi.cpp
 )
@@ -819,7 +816,7 @@ set(ASCEND_IMPL_SRC
 
 )
 
-set(OP_PLUGIN_API_DIR ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/v2r0/opapi/)
+set(OP_PLUGIN_API_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/v2r0/opapi/)
 set(OP_PLUGIN_API_SRC
     ${OP_PLUGIN_API_SRC}
 )
@@ -836,7 +833,7 @@ set(DIOPI_IMPL_SRC
 
 add_definitions(-DBUILD_LIBTORCH)
 
-include_directories(op-plugin torch_npu ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${op_plugin_SOURCE_DIR}/ torch_npu ${CMAKE_CURRENT_SOURCE_DIR})
 set(IMPL_SRC
   torch_npu/csrc/DIOPIAdapter.cpp
   torch_npu/csrc/AclOpCompileInterface.cpp
@@ -953,6 +950,7 @@ else()
 endif()
 
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
+add_dependencies(${DEVICEIMPL} op_plugin_gen)
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
 target_link_libraries(${DEVICEIMPL} ascendcl acl_op_compiler graph c10 torch_cpu)
 
