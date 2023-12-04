@@ -230,7 +230,7 @@ class CustomizedTest(object):
         out = weight * input
         return out
 
-    def multihead_attention_forward(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
+    def multihead_attention(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
         # 为了保证精度，因此在test的时候不使用dropout
         from einops import rearrange
         import math
