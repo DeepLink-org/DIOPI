@@ -53,8 +53,7 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
         at_npu::native::OpPreparation::markAsOutputForApplyTensor(gradWeightAt);
     }
 
-    acl_op::npu_conv2d_backward(
-        inputAt, gradOutputAt, weightAt, strideAt, paddingAt, dilationAt, groups, {gradInput != nullptr, gradWeight != nullptr, false});
+    acl_op::npu_conv2d_backward(inputAt, gradOutputAt, weightAt, strideAt, paddingAt, dilationAt, groups, {gradInput != nullptr, gradWeight != nullptr, false});
     if (gradBias != nullptr) {
         conv2d_backward_bias_out_nocheck(gradBiasAt, gradOutputAt);
     }
