@@ -7,8 +7,7 @@
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
-// namespace OP_IMPL_NS {
-extern "C" {
+namespace OP_IMPL_NS {
 
 // at::Tensor & remainder_out(const at::Tensor & self, const at::Scalar & other, at::Tensor & out);
 diopiError_t diopiRemainderTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
