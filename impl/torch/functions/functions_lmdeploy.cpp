@@ -139,7 +139,10 @@ diopiError_t diopiBatchApplyTemperaturePenaltyInp(diopiContextHandle_t ctx, diop
     diopiScalar_t eps_scalar;
     eps_scalar.stype = temperatures_dtype;
     eps_scalar.fval = 1e-6;
-    DIOPI_CHECK(diopiAddInp(ctx, new_temperatures, temperatures, &eps_scalar));
+    diopiScalar_t one_scalar;
+    one_scalar.stype = temperatures_dtype;
+    one_scalar.fval = 1.0;
+    DIOPI_CHECK(diopiAddScalar(ctx, new_temperatures, temperatures, &eps_scalar, &one_scalar));
 
     if (bias != nullptr) {
         diopiScalar_t t;
