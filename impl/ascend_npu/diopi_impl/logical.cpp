@@ -21,4 +21,4 @@ diopiError_t diopiLogicalOr(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     END_CALL_ACL_OP();
 }
 
-}  // OP_IMPL_NS
+}  // namespace OP_IMPL_NS

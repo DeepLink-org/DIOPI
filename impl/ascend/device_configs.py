@@ -115,22 +115,8 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    # "dtype": [Skip(np.float16),],
-                    # temp for 910B
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    # temp for 910B
-    'batch_norm_nan': dict(
-        name=['batch_norm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
+                    # Skip due to low precision
+                    "dtype": [Skip(np.float16),],
                 },
             ]
         ),
@@ -803,18 +789,6 @@ device_configs = {
         ),
     ),
 
-    'addcdiv_specific': dict(
-        name=['addcdiv'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((128,)),Skip((576, 192)),Skip((64, 3, 3, 3)),Skip((10, 3, 5)),Skip((0,)),Skip((0, 5)),Skip((2, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
     'matmul': dict(
         name=['matmul'],
         tensor_para=dict(
@@ -827,44 +801,16 @@ device_configs = {
         ),
     ),
 
-    'fill': dict(
-        name=['fill_'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16)],
-                },
-            ]
-        ),
-    ),
-
     'reduce_op': dict(
         name=['mean', 'sum'],
         atol=1e-3,
         rtol=1e-3,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16)],
-                },
-            ],
-        ),
     ),
 
     'reduce_partial_op': dict(
         atol=1e-3,
         rtol=1e-3,
         name=['mean', 'sum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16)],
-                },
-            ],
-        ),
     ),
 
     'reduce_partial_op_1': dict(
@@ -1338,30 +1284,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(np.uint8)],
-                },
-            ]
-        ),
-    ),
-
-    'reciprocal': dict(
-        name=['reciprocal'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16)],
-                },
-            ]
-        ),
-    ),
-    
-    'reciprocal_zero': dict(
-        name=['reciprocal'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16)],
                 },
             ]
         ),

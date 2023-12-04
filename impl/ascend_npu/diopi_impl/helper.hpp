@@ -189,9 +189,9 @@ namespace impl {
 
 namespace aten {
 
-inline void setCurCtx(diopiContextHandle_t ctx) { context = ctx; }
+void setCurCtx(diopiContextHandle_t ctx);
 
-inline void unsetCurCtx() { context = nullptr; }
+void unsetCurCtx();
 
 inline void sync(diopiContextHandle_t ctx) {
     diopiStreamHandle_t stream_handle;

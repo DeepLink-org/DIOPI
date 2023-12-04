@@ -72,6 +72,7 @@ file(GLOB_RECURSE OP_PLUGIN_UTILS_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${OP_
 #file(GLOB_RECURSE OP_PLUGIN_API_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/base_ops/opapi/*.cpp)
 
 set(OP_PLUGIN_SRC
+    ${OP_PLUGIN_SRC}
     #${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/OpInterface.cpp
     ${OP_PLUGIN_DIR}/AbsKernelNpu.cpp
     ${OP_PLUGIN_DIR}/AcoshKernelNpu.cpp
@@ -830,6 +831,8 @@ set(DIOPI_IMPL_SRC
     ${DIOPI_IMPL_DIR}/batch_norm.cpp
     ${DIOPI_IMPL_DIR}/max_pool2d.cpp
     ${DIOPI_IMPL_DIR}/repeat.cpp
+    ${DIOPI_IMPL_DIR}/logical.cpp
+    ${DIOPI_IMPL_DIR}/remainder.cpp
 )
 
 add_definitions(-DBUILD_LIBTORCH)
@@ -928,7 +931,7 @@ if(USE_ADAPTOR)
     set(ADAPTOR_CSRC_PATH "${ADAPTOR_DIR}/csrc")
     set(GEN_FILES ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp ${ADAPTOR_CSRC_PATH}/impl_functions.hpp)
     add_custom_target(adaptor_code_gen
-        COMMAND python3 ${ADAPTOR_DIR}/codegen/gen.py --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH} --config_device=ascend
+        COMMAND python3 ${ADAPTOR_DIR}/codegen/gen.py --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH} --config_device=ascend --impl_plugin=True
         BYPRODUCTS ${GEN_FILES}
         DEPENDS adaptor_gen_dependency)
     list(APPEND IMPL_SRC ${GEN_FILES} ${ADAPTOR_CSRC_PATH}/convert.cpp ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp)

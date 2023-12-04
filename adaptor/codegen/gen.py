@@ -170,6 +170,11 @@ def prepare() -> Tuple[dict, str]:
         help="name of file which contains configs of device",
         default="torch",
     )
+    parser.add_argument(
+        '--impl_plugin',
+        help="if functinos are implemented with plugin mode once more, then compile both of them.",
+        default=False,
+    )
 
     options = parser.parse_args()
     source = os.path.join(options.diopi_dir, "proto/include/diopi")
@@ -179,6 +184,7 @@ def prepare() -> Tuple[dict, str]:
     device = (
         "cuda" if options.config_device == "torch" else options.config_device
     )
+    plugin = options.impl_plugin
 
     def create_if_not_exist(name):
         if not os.path.exists(name):
@@ -188,7 +194,7 @@ def prepare() -> Tuple[dict, str]:
     dirs = dict(
         source=source, output_dir=options.output_dir, config_path=config_path
     )
-    return dirs, device
+    return dirs, device, plugin
 
 
 def get_func_info(content: list) -> Tuple[list, list, list, dict]:
@@ -512,7 +518,7 @@ def memory_format_to_str(memory_format):
 
 
 def autogen_op_adaptor(
-    op_configs: dict, device: str, func_infos: dict, impl_funcs: dict
+    op_configs: dict, device: str, func_infos: dict, impl_funcs: dict, impl_plugin: bool
 ) -> list:
     adaptors_code = []
     cast = (
@@ -540,8 +546,12 @@ def autogen_op_adaptor(
             call_args = [
                 arg.split(" ")[-1] for arg in func_infos[func]["call_args"]
             ]
+            if impl_plugin:
+                template = OT.adaptor_with_plugin_template
+            else:
+                template = OT.adaptor_template
             adaptors_code.append(
-                OT.adaptor_template.substitute(
+                template.substitute(
                     env=dict(
                         op_name=op_name,
                         attrs=func_infos[func]["call_args"],
@@ -642,8 +652,12 @@ for (int i = 0; i < ${num}; ++i) {
                 else:
                     new_name = name
                 call_args.append(new_name)
+            if impl_plugin:
+                template = OT.adaptor_with_plugin_template
+            else:
+                template = OT.adaptor_template
             adaptors_code.append(
-                OT.adaptor_template.substitute(
+                template.substitute(
                     env=dict(
                         op_name=op_name,
                         attrs=", ".join(func_infos[func]["call_args"]),
@@ -660,12 +674,15 @@ for (int i = 0; i < ${num}; ++i) {
 
 
 def get_impl_funcs_declaration(
-    funcs_decl_raw: dict, funcs_info: dict, impl_funcs: dict
+    funcs_decl_raw: dict, funcs_info: dict, impl_funcs: dict, impl_plugin: bool
 ) -> dict:
     funcs_decl: dict = {}
     for func in funcs_info.keys():
         if func in impl_funcs:
-            funcs_decl[func] = funcs_decl_raw[func]
+            if impl_plugin:
+                funcs_decl[func] = funcs_decl_raw[func].replace(r'diopiError_t', r'diopiError_t __attribute__((weak))')
+            else:
+                funcs_decl[func] = funcs_decl_raw[func]
     return funcs_decl
 
 
@@ -682,7 +699,7 @@ def get_composite_funcs_declaration(
 
 
 def gen_autogen_operators(
-    dirs: dict, device: str, adaptor_fm: FileManager
+    dirs: dict, device: str, adaptor_fm: FileManager, impl_plugin: bool
 ) -> None:
     config_file_path = os.path.join(
         dirs.get("config_path"), "convert_config.yaml"
@@ -707,12 +724,12 @@ def gen_autogen_operators(
 
     # generate adaptor implementation codes
     adaptors_code = autogen_op_adaptor(
-        op_configs, device, funcs_info, impl_funcs
+        op_configs, device, funcs_info, impl_funcs, impl_plugin
     )
 
     # get the function declarations
     funcs_decl = get_impl_funcs_declaration(
-        funcs_decl_raw, funcs_info, impl_funcs
+        funcs_decl_raw, funcs_info, impl_funcs, impl_plugin
     )
     composite_funcs_decl = get_composite_funcs_declaration(
         funcs_decl_raw, funcs_info, impl_funcs, op_configs
@@ -723,13 +740,28 @@ def gen_autogen_operators(
         OT.operators_template,
         dict(adaptors=adaptors_code, cast_strategy=autogen_cast_strategy()),
     )
+
+    impl_functions_content = [OT.impl_declaration_content_template.substitute(dict(
+        device=device,
+        impl_declaration=list(funcs_decl.values()),
+    ))]
+
+    if impl_plugin:
+        impl_functions_content.append(OT.impl_declaration_content_template.substitute(dict(
+            device=device + '_npu',
+            impl_declaration=list(funcs_decl.values()),
+        )))
+
+    impl_functions_content.append(OT.impl_declaration_content_template.substitute(dict(
+        device='composite',
+        impl_declaration=list(composite_funcs_decl.values()),
+    )))
+
     adaptor_fm.write(
         "impl_functions.hpp",
-        OT.impl_declaration_template,
+        OT.impl_declaration_head_template,
         dict(
-            device=device,
-            impl_declaration=list(funcs_decl.values()),
-            composite_funcs_decl=list(composite_funcs_decl.values()),
+            impl_declaration_content=impl_functions_content,
         ),
     )
 
@@ -740,10 +772,10 @@ def declare_outputs(adaptor_fm: FileManager) -> None:
 
 
 def gen_all_codes() -> None:
-    dirs, device = prepare()
+    dirs, device, impl_plugin = prepare()
     adaptor_fm = FileManager(dirs.get("output_dir", "."))
     declare_outputs(adaptor_fm)
-    gen_autogen_operators(dirs, device, adaptor_fm)
+    gen_autogen_operators(dirs, device, adaptor_fm, impl_plugin)
     adaptor_fm.check_all_files_written()
 
 
