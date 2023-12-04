@@ -72,7 +72,6 @@ file(GLOB_RECURSE OP_PLUGIN_UTILS_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${OP_
 #file(GLOB_RECURSE OP_PLUGIN_API_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/base_ops/opapi/*.cpp)
 
 set(OP_PLUGIN_SRC
-    ${OP_PLUGIN_SRC}
     #${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/OpInterface.cpp
     ${OP_PLUGIN_DIR}/AbsKernelNpu.cpp
     ${OP_PLUGIN_DIR}/AcoshKernelNpu.cpp
@@ -830,8 +829,7 @@ set(DIOPI_IMPL_SRC
     ${DIOPI_IMPL_DIR}/conv2d.cpp
     ${DIOPI_IMPL_DIR}/batch_norm.cpp
     ${DIOPI_IMPL_DIR}/max_pool2d.cpp
-    ${DIOPI_IMPL_DIR}/logical.cpp
-    ${DIOPI_IMPL_DIR}/remainder.cpp
+    ${DIOPI_IMPL_DIR}/repeat.cpp
 )
 
 add_definitions(-DBUILD_LIBTORCH)
