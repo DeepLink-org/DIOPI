@@ -188,7 +188,8 @@ bool FormatHelper::IsOpInputBaseFormat(const at::ITensorListRef &tensors) { INTE
 at::Tensor NpuUtils::format_contiguous_add_copy_optimize(const at::Tensor &src) {
     // case1:tensor src is not contiguous
     if (!src.is_contiguous()) {
-        return src.contiguous();
+        INTERFACE_NOT_IMPL
+        return src;
     }
 #if 0
   // case2:meta data not match, sizes or strides of presentation
@@ -259,11 +260,64 @@ at::Tensor CalcuOpUtil::CopyTensorHostToDevice(const at::Tensor &cpu_tensor) {
     return cpuPinMemTensor.to(c10::Device(at_npu::key::NativeDeviceType, deviceIndex), cpuPinMemTensor.scalar_type(), true, true);
 }
 
+void assert_no_internal_overlap(const at::Tensor &tensor) {
+    auto t = tensor.unsafeGetTensorImpl();
+    AT_ASSERT(t->layout() == at::kStrided);
+    AT_ASSERT(tensor.is_contiguous());
+    auto strides = t->strides();
+    auto sizes = t->sizes();
+    for (size_t i = 0; i < strides.size(); ++i) {
+        if (strides[i] == 0 && sizes[i] > 1) {
+            AT_ASSERT(false);
+        }
+    }
+}
+
+void assert_no_partial_overlap(const at::Tensor &tensora, const at::Tensor &tensorb) {
+    auto a = tensora.unsafeGetTensorImpl();
+    auto b = tensorb.unsafeGetTensorImpl();
+    if (a == b) {
+        return;
+    }
+    if (a->numel() == 0 || b->numel() == 0) {
+        return;
+    }
+    if (!a->is_contiguous() || !b->is_contiguous()) {
+        return;
+    }
+    if (a->storage().data() == b->storage().data()) {
+        const auto a_begin = static_cast<char *>(a->data());
+        const auto a_end = a_begin + a->numel() * static_cast<int64_t>(a->itemsize());
+        const auto b_begin = static_cast<char *>(b->data());
+        const auto b_end = b_begin + b->numel() * static_cast<int64_t>(b->itemsize());
+        if (a_begin == b_begin && a_end == b_end) {
+            return;
+        }
+        if (a_begin < b_end && b_begin < a_end) {
+            AT_ASSERT(false);
+        }
+    }
+}
+
+void CalcuOpUtil::CheckMemoryOverLaps(c10::ArrayRef<at::Tensor> inputs, c10::ArrayRef<at::Tensor> outputs) {
+    for (const auto i : c10::irange(outputs.size())) {
+        if (!outputs[i].defined()) {
+            continue;
+        }
+
+        assert_no_internal_overlap(outputs[i]);
+
+        for (const auto j : c10::irange(inputs.size())) {
+            assert_no_partial_overlap(outputs[i], inputs[j]);
+        }
+    }
+}
+
 // OpPreparation part
 
 const char *markedOutputsErrorInfo =
     "Parameters that allocate memory inside the operator need to be marked as output in advance through markAsOutputForApplyTensor";
-std::deque<at::Tensor> markedOutputs;
+thread_local std::deque<at::Tensor> markedOutputs;
 void OpPreparation::markAsOutputForApplyTensor(at::Tensor &src) { markedOutputs.push_back(src); }
 
 at::Tensor empty_npu(at::IntArrayRef size, c10::optional<at::ScalarType> dtype_opt, c10::optional<at::Layout> layout_opt = c10::nullopt,
@@ -934,7 +988,7 @@ private:
     } while (0)
 
 void OpCommandImpl::Run(bool sync, c10::SmallVector<int64_t, N> &sync_index, c10::SmallVector<at::Tensor, N> &outputTensor) {
-    NPU_LOGD("Op %s Run.", opName.c_str());
+    NPU_LOGD("Op %s start run.", opName.c_str());
 // RECORD_FUNCTION(opName, std::vector<c10::IValue>({}));
 #if 0
       if (PyGILState_Check()) {
@@ -948,6 +1002,7 @@ void OpCommandImpl::Run(bool sync, c10::SmallVector<int64_t, N> &sync_index, c10
 #else
     ACL_REQUIRE_OK_OP(InnerRun(opName, execParam, sync, sync_index, outputTensor), opName.c_str());
 #endif
+    NPU_LOGD("Op %s run over.", opName.c_str());
 }
 
 aclError OpCommandImpl::InnerRun(const string &name, AclExecParam &params, bool sync, c10::SmallVector<int64_t, N> &sync_index,
@@ -1046,6 +1101,31 @@ aclError OpCommandImpl::InnerRun(const string &name, AclExecParam &params, bool 
 
 inline bool enableDumpArgs() { return std::getenv("DIOPI_DEBUG_OP") != nullptr; }
 
+std::tuple<aclTensorDesc *, aclDataBuffer *> CovertNPUTensorWithZeroDimToAclInput(const at::Tensor &tensor, const string &descName) {
+    aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(tensor.scalar_type());
+    AclTensorDescMaker desc;
+    auto aclDesc = desc.Create(aclDataType, ACL_FORMAT_ND).SetName(descName).Get();
+    AclTensorBufferMaker buffer(tensor);
+    auto aclBuff = buffer.Get();
+    return std::tie(aclDesc, aclBuff);
+}
+
+std::tuple<aclTensorDesc *, aclDataBuffer *> CovertTensorWithZeroDimToAclInput(const at::Tensor &tensor, at::ScalarType type) {
+    at::ScalarType scalarDataType = type;
+    if (!tensor.unsafeGetTensorImpl()->is_wrapped_number()) {
+        scalarDataType = tensor.scalar_type();
+    }
+    aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(scalarDataType);
+    c10::Scalar expScalar = tensor.item();
+    at::Tensor aclInput = CalcuOpUtil::CopyScalarToDevice(expScalar, scalarDataType);
+
+    AclTensorDescMaker desc;
+    auto aclDesc = desc.Create(aclDataType, ACL_FORMAT_ND).Get();
+    AclTensorBufferMaker buffer(aclInput);
+    auto aclBuff = buffer.Get();
+    return std::tie(aclDesc, aclBuff);
+}
+
 std::tuple<aclTensorDesc *, aclDataBuffer *> CovertTensorToAclInput(const at::Tensor &tensor, const string &descName, const string &forceDataType) {
     at::ScalarType scalarDataType = tensor.scalar_type();
     aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(scalarDataType, forceDataType);
@@ -1081,7 +1161,12 @@ std::tuple<aclTensorDesc *, aclDataBuffer *> CovertToAclOutput(const at::Tensor 
     aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(tensor.scalar_type(), forceDataType);
     auto format = CalcuOpUtil::GetTensorNpuFormat(tensor);
     AclTensorDescMaker desc;
-    auto aclDesc = desc.Create(aclDataType, tensor.sizes(), static_cast<aclFormat>(format)).Get();
+    aclTensorDesc *aclDesc = nullptr;
+    if (tensor.sizes().size() > 0 && tensor.numel() == 0) {
+        aclDesc = desc.Create(aclDataType, tensor.sizes(), static_cast<aclFormat>(format)).Get();
+    } else {
+        aclDesc = desc.Create(aclDataType, ACL_FORMAT_ND).Get();
+    }
     AclTensorBufferMaker aclBuffer(tensor, tensor.numel());
     auto aclBuff = aclBuffer.Get();
     return std::tie(aclDesc, aclBuff);
@@ -1161,14 +1246,36 @@ OpCommand &OpCommand::Input() {
     return *this;
 }
 
+OpCommand &OpCommand::AddTensorInput(at::Tensor &tensor, at::ScalarType forceScaleType, const string &descName, const string &realData) {
+    if (enableDumpArgs()) {
+        std::cout << aclCmd->GetName() << ":descName:" << descName << ",input:" << tensor.sizes() << ", " << tensor.options() << " " << realData << std::endl;
+    }
+    std::tuple<aclTensorDesc *, aclDataBuffer *> res;
+    if (commonType.has_value() && commonType.value() != tensor.scalar_type()) {
+        tensor = acl_op::npu_dtype_cast(tensor, commonType.value());
+    }
+
+    if (tensor.sizes().size() == 0) {
+        if (at_npu::key::isDeviceTensor(tensor)) {
+            res = CovertNPUTensorWithZeroDimToAclInput(tensor, descName);
+        } else {
+            res = CovertTensorWithZeroDimToAclInput(tensor, forceScaleType);
+        }
+    } else {
+        res = CovertTensorToAclInput(tensor, descName, realData);
+    }
+    aclCmd->AddInput(std::get<0>(res), std::get<1>(res));
+    return *this;
+}
+
+at::Tensor &OpCommand::Contiguous(const at::Tensor &input) {
+    storage.emplace_back(std::move(NpuUtils::format_contiguous_add_copy_optimize(input)));
+    return storage.back();
+}
+
 // Tensor Input which need contiguous
 OpCommand &OpCommand::Input(const at::Tensor &input, const string &descName, const c10::optional<aclFormat> &sensitive_format, const string &realData) {
-    std::tuple<aclTensorDesc *, aclDataBuffer *> res = CovertTensorToAclInput(input, descName, realData);
-    aclCmd->AddInput(std::get<0>(res), std::get<1>(res));
-    if (enableDumpArgs()) {
-        std::cout << aclCmd->GetName() << ":descName:" << descName << ",input:" << input.sizes() << ", " << input.options() << " " << realData << std::endl;
-    }
-    return *this;
+    return AddTensorInput(Contiguous(input), c10::ScalarType::Undefined, descName, realData);
 }
 
 template <typename T>
@@ -1452,8 +1559,8 @@ public:
     c10::DeleterFnPtr raw_deleter() const { return c10::detail::deleteNothing; }
 };
 
-inline at::Tensor fromPreAllocated(void *data, at::IntArrayRef sizes, at::IntArrayRef strides, const std::function<void(void *)> &deleter,
-                                   at::Allocator *allocator, const at::TensorOptions &options) {
+inline at::Tensor fromPreAllocated1(void *data, at::IntArrayRef sizes, at::IntArrayRef strides, const std::function<void(void *)> &deleter,
+                                    at::Allocator *allocator, const at::TensorOptions &options) {
     auto device = options.device();
     if (options.device().has_index()) {
         assert(options.device() == device);
@@ -1468,12 +1575,32 @@ inline at::Tensor fromPreAllocated(void *data, at::IntArrayRef sizes, at::IntArr
 
     c10::DispatchKeySet ks{c10::DispatchKey::XPU};
 
-    // at::Tensor tensor = at::empty({0}, new_options);
     size_t nbytes = at::detail::computeStorageNbytes(sizes, strides, options.dtype().itemsize());
     static FakeAllocator fakeAllocator;
     fakeAllocator.set(data, nbytes, device);
     at::Tensor tensor = at::detail::empty_generic(sizes, &fakeAllocator, ks, c10::typeMetaToScalarType(new_options.dtype()), c10::MemoryFormat::Contiguous);
-    // tensor.set_(storage, 0, sizes, strides);
+    // at::Tensor tensor = at::detail::empty_generic({0}, &fakeAllocator, ks, c10::typeMetaToScalarType(new_options.dtype()), c10::MemoryFormat::Contiguous);
+    tensor.set_(storage, 0, sizes, strides);
+    return tensor;
+}
+
+at::Tensor fromPreAllocated(void *data, at::IntArrayRef sizes, at::IntArrayRef strides, const at::TensorOptions &options) {
+    auto device = options.device();
+    TORCH_CHECK(options.device().has_index());
+
+    size_t nbytes = at::detail::computeStorageNbytes(sizes, strides, options.dtype().itemsize());
+
+    c10::intrusive_ptr<c10::StorageImpl> storage_impl = c10::make_intrusive<c10::StorageImpl>(
+        at::StorageImpl::use_byte_size_t(), nbytes, c10::InefficientStdFunctionContext::makeDataPtr(data, c10::detail::deleteNothing, device), nullptr, false);
+    auto dtype = options.dtype();
+    c10::DispatchKeySet ks{c10::DispatchKey::XPU};
+    auto tensor = at::detail::make_tensor<at::TensorImpl>(std::move(storage_impl), ks, dtype);
+    if (strides.size() > 0) {
+        tensor.unsafeGetTensorImpl()->set_sizes_and_strides(sizes, strides);
+    } else {
+        tensor.unsafeGetTensorImpl()->set_sizes_contiguous(sizes);
+    }
+
     return tensor;
 }
 
@@ -1501,15 +1628,12 @@ const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
 
     auto options = at::TensorOptions(c10::Device(atDevice, devId_)).dtype(atType);
     int64_t numel = 0;
-    auto deleter = [](void *ptr) { std::cout << "deleter: ptr" << ptr << std::endl; };
-
     diopiGetTensorNumel(tensor, &numel);
-    if (0 == numel) {
-        return at::empty(atDims, options);
-    } else {
-        at::Allocator *allocator = nullptr;
-        return fromPreAllocated(data, atDims, atStrides, deleter, allocator, options);
+    if (numel <= 0) {
+        return at::Tensor();
     }
+
+    return fromPreAllocated(data, atDims, atStrides, options);
 }
 
 at::Tensor buildATen(diopiTensorHandle_t tensor) { return buildATen(static_cast<diopiConstTensorHandle_t>(tensor)); }
@@ -1526,6 +1650,34 @@ inline const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     return *reinterpret_cast<const at::Tensor *>(tensor);
 }
 #endif
+
+at::Tensor view(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides) {
+    TORCH_CHECK(c10::multiply_integers(sizes) == input.numel());
+    TORCH_CHECK(!input.is_cpu());
+    std::vector<int64_t> stridesVec(sizes.size(), 1);
+    if (strides.size() > 0) {
+        std::copy(strides.begin(), strides.end(), stridesVec.begin());
+    } else {
+        int st = 1;
+        for (int64_t i = sizes.size(); i > 0; --i) {
+            stridesVec[i - 1] = st;
+            if (sizes[i - 1] == 0) continue;
+            if (sizes[i - 1] == -1) st = -1;
+            if (st != -1) st *= sizes[i - 1];
+        }
+    }
+    return fromPreAllocated(input.data_ptr(), sizes, stridesVec, input.options());
+}
+
+void setCurCtx(diopiContextHandle_t ctx) {
+    context = ctx;
+    at_npu::native::markedOutputs.clear();
+}
+
+void unsetCurCtx() {
+    context = nullptr;
+    at_npu::native::markedOutputs.clear();
+}
 
 }  // namespace aten
 

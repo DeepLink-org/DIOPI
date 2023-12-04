@@ -189,9 +189,9 @@ namespace impl {
 
 namespace aten {
 
-inline void setCurCtx(diopiContextHandle_t ctx) { context = ctx; }
+void setCurCtx(diopiContextHandle_t ctx);
 
-inline void unsetCurCtx() { context = nullptr; }
+void unsetCurCtx();
 
 inline void sync(diopiContextHandle_t ctx) {
     diopiStreamHandle_t stream_handle;
@@ -297,6 +297,8 @@ inline at::Scalar buildATen(const diopiScalar_t* scalar) {
         return fval;
     }
 }
+
+at::Tensor view(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides = {});
 
 const at::Tensor buildATen(diopiConstTensorHandle_t tensor);
 

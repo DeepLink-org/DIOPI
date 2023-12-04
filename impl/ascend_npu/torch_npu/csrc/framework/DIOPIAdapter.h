@@ -17,6 +17,7 @@
 #include "acl/acl_rt.h"
 #include "ge/ge_api.h"
 #include "op_plugin/utils/OpConstants.h"
+#include "torch_npu/csrc/aten/NPUNativeFunctions.h"
 #include "torch_npu/csrc/core/npu/NPUErrorCodes.h"
 #include "torch_npu/csrc/core/npu/NpuVariables.h"
 #include "torch_npu/csrc/framework/interface/AclOpCompileInterface.h"
@@ -597,7 +598,7 @@ public:
                                                     size_t count,
                                                     aclrtMemcpyKind kind);
 #endif
-    static void CheckMemoryOverLaps(c10::ArrayRef<at::Tensor> inputs, c10::ArrayRef<at::Tensor> outputs) { INTERFACE_NOT_IMPL; }
+    static void CheckMemoryOverLaps(c10::ArrayRef<at::Tensor> inputs, c10::ArrayRef<at::Tensor> outputs);
     static bool IsScalarWrappedToTensor(const at::Tensor &tensor) { return tensor.is_cpu() && tensor.numel() == 1; }
     static float GetScalarFloatValue(const c10::Scalar &scalar);
     static int64_t GetTensorNpuFormat(const at::Tensor &tensor);
@@ -634,6 +635,7 @@ using baseFormatConverter = std::function<FormatShape(c10::IntArrayRef storage_d
 class OpCommand {
     class OpCommandImpls *aclCmds = nullptr;
     class OpCommandImpl *aclCmd = nullptr;
+    c10::SmallVector<at::Tensor, N> storage;
     c10::optional<at::ScalarType> commonType = c10::nullopt;
     c10::optional<c10::IntArrayRef> commonShape = c10::nullopt;
     bool resultTypeDefined = false;
@@ -702,6 +704,11 @@ public:
     OpCommand &Sync(c10::SmallVector<int64_t, N> &index);
 
     OpCommand &Sync();
+
+private:
+    OpCommand &AddTensorInput(at::Tensor &tensor, at::ScalarType forceScaleType = at::ScalarType::Undefined, const string &descName = "",
+                              const string &realData = "");
+    at::Tensor &Contiguous(const at::Tensor &input);
 };  // class OpCommand
 
 namespace env {
@@ -847,5 +854,3 @@ void npu_fast_reshape_(at::Tensor &tensor);
 
 }  // namespace native
 }  // namespace at_npu
-
-#include "torch_npu/csrc/aten/NPUNativeFunctions.h"
