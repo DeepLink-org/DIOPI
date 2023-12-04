@@ -4,9 +4,8 @@
 #include <ATen/ATen.h>
 
 #include <iostream>
-#include <vector>
 #include <tuple>
-
+#include <vector>
 
 namespace at_npu {
 namespace native {
