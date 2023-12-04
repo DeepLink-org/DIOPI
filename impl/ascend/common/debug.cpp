@@ -29,7 +29,7 @@ void printTensorHelper0(const AscendTensor& at, void* ptrHost) {
             printf("item[0]: %d\n", reinterpret_cast<bool*>(ptrHost)[0]);
             break;
         default:
-            printf("unsupport dtype %s", diopiDtypeToStr(at.dtype()));
+            printf("unsupport dtype %s\n", diopiDtypeToStr(at.dtype()));
             break;
     }
 }

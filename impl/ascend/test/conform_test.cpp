@@ -71,6 +71,7 @@ diopiError_t device_memcpy_d2d_async(diopiStreamHandle_t streamHandle, void* dst
 diopiError_t initLibrary() {
     CALL_ACLRT(aclInit(nullptr));
     CALL_ACLRT(aclrtSetDevice(0));
+    CALL_ACLRT(aclrtSetDeviceSatMode(ACL_RT_OVERFLOW_MODE_INFNAN));
     aclrtContext context;
     CALL_ACLRT(aclrtCreateContext(&context, 0));
     return diopiSuccess;
