@@ -8,7 +8,7 @@ class glob_var(object):
         self.nhwc_min_dim = nhwc_min_dim
         self.four_bytes = four_bytes
         self.int_type = np.int64
-        self.float_type = np.float32
+        self.float_type = np.float64
         self._cur_test_func = ''
         self._func_status = {}
         self._debug_level = 0
