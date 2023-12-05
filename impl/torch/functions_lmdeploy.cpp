@@ -9,6 +9,8 @@
 
 #include <iostream>
 #include <vector>
+#include <cmath>
+#include <cuda_fp16.h>
 
 extern "C" {
 
@@ -261,11 +263,16 @@ DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiCo
     diopiGetTensorDataConst(stop_words, reinterpret_cast<const void **>(&stop_words_ptr));
     diopiGetTensorData(stop_words_host, reinterpret_cast<void **>(&stop_words_host_ptr));
 
+    diopiDtype_t ids_type;
+    diopiGetTensorDtype(output_ids, &ids_type);
+    if (ids_type != diopi_dtype_int32) {
+        return diopiErrorOccurred;
+    }
+    
     for(int64_t batch_idx = 0; batch_idx < batch_size; ++batch_idx) {
         const int32_t* base_stop_words_host = stop_words_host_ptr + batch_idx * 2 * stop_words_len;
         const int32_t* base_offsets_host    = base_stop_words_host + stop_words_len;
-        const int32_t* base_stop_word = stop_words_ptr + batch_idx * 2 * stop_words_len;
-        const int32_t* base_offsets   = base_stop_word + stop_words_len;        
+        const int32_t* base_stop_word = stop_words_ptr + batch_idx * 2 * stop_words_len;       
 
         for (int64_t stop_word_idx = 0; stop_word_idx < stop_words_len; ++stop_word_idx) {
             if (base_stop_words_host[stop_word_idx] < 0) {
@@ -287,123 +294,272 @@ DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiCo
             diopiGetTensorDevice(stop_words, &stop_word_device);
             diopiSize_t stride;
             stride.len = -1;
-            stride.data = reinterpret_cast<const int64_t *>(stop_words_ptr + stop_word_start_idx);
-            std::cout << "LXZ diopiStopWordsCriterion LOG:  3.3"<< std::endl;
-            diopiRequireTensor(ctx, &stop_word_tensor, &stop_word_shape, &stride, diopi_dtype_int32, stop_word_device);
+            stride.data = reinterpret_cast<const int64_t *>(base_stop_word + stop_word_start_idx);
+            diopiRequireTensor(ctx, &stop_word_tensor, &stop_word_shape, &stride, ids_type, stop_word_device);
 
-            // 转置一下
-            // diopiTensorHandle_t output_ids_transpose;
-            // diopiSize_t output_ids_transpose_shape;
-            // output_ids_transpose_shape.len = 2;
-            // output_ids_transpose_shape.data = new int64_t[2]{batch_size, step};
-            // diopiSize_t output_ids_transpose_stride;
-            // output_ids_transpose_stride.len = 2;
-            // output_ids_transpose_stride.data = new int64_t[2]{step * static_cast<int64_t>(sizeof(int)), sizeof(int)};
-            // diopiRequireTensor(ctx, &output_ids_transpose, &output_ids_transpose_shape, &output_ids_transpose_stride, diopi_dtype_int32, stop_word_device);
-            // diopiTranspose(ctx, output_ids_transpose, output_ids, 0, 1);
-
-            // 拿到那一列
             diopiTensorHandle_t output_ids_col;
             diopiGetTensorStride(stop_word_tensor, &stride);
             diopiSize_t output_ids_col_shape;
             output_ids_col_shape.len = 1;
             output_ids_col_shape.data = &step;
-            diopiRequireTensor(ctx, &output_ids_col, &output_ids_col_shape, nullptr, diopi_dtype_int32, diopi_device);
+            diopiRequireTensor(ctx, &output_ids_col, &output_ids_col_shape, nullptr, ids_type, diopi_device);
             diopiSelect(ctx, output_ids_col, output_ids, 1, batch_idx);
-            std::cout << "LXZ diopiStopWordsCriterion LOG:  3.4"<< std::endl;
 
-            
-
-            // 拿到那一列中需要比较的部分
             char *output_ids_col_data;
             diopiGetTensorData(output_ids_col, reinterpret_cast<void **>(&output_ids_col_data));
-            int64_t elesize;
-            diopiGetTensorElemSize(output_ids_col, &elesize);
-            std::cout << "step: " << step << "index: " << step - stop_word_len + 1 << " elesize: " << elesize << std::endl;
-
-            output_ids_col_data += (step - stop_word_len) * elesize;
-            diopiSize_t output_ids_to_compare_shape;
-            output_ids_to_compare_shape.len = 1;
-            output_ids_to_compare_shape.data = &stop_word_len;
-            // diopiGetTensorStride(stop_word_tensor, &stride);
+            int64_t elem_size;
+            diopiGetTensorElemSize(output_ids_col, &elem_size);
+            output_ids_col_data += (step - stop_word_len) * elem_size;
             stride.len = -1;
             stride.data = reinterpret_cast<const int64_t *>(reinterpret_cast<int64_t *>(output_ids_col_data));
             diopiTensorHandle_t output_ids_to_compare;
-            std::cout << "LXZ diopiStopWordsCriterion LOG:  4"<< std::endl;
-            diopiRequireTensor(ctx, &output_ids_to_compare, &output_ids_to_compare_shape, &stride, diopi_dtype_int32, diopi_device);
-            diopiGetTensorData(output_ids_to_compare, reinterpret_cast<void **>(&output_ids_col_data));
+            diopiRequireTensor(ctx, &output_ids_to_compare, &stop_word_shape, &stride, ids_type, diopi_device);
 
-
-            // for test
-            // diopiTensorHandle_t output_ids_to_compare_host;
-            // diopiGetTensorStride(stop_word_tensor, &stride);
-            // diopiRequireTensor(ctx, &output_ids_to_compare_host, &stop_word_shape, &stride, diopi_dtype_int32, diopi_host);
-            // std::cout << "LXZ diopiStopWordsCriterion LOG:  4.1"<< std::endl;
-            // diopiCopyD2H(ctx, output_ids_to_compare_host, output_ids_to_compare, false);
-            // int *output_ids_to_compare_host_data;
-            // diopiGetTensorData(output_ids_to_compare_host, reinterpret_cast<void **>(&output_ids_to_compare_host_data));
-            // std::cout << "LXZ diopiStopWordsCriterion LOG:  4.2 " << output_ids_to_compare_host_data[0] << std::endl;
-
-            // diopiTensorHandle_t stop_word_tensor_host;
-            // diopiGetTensorStride(stop_word_tensor, &stride);
-            // diopiRequireTensor(ctx, &stop_word_tensor_host, &stop_word_shape, &stride, diopi_dtype_int32, diopi_host);
-            // std::cout << "LXZ diopiStopWordsCriterion LOG:  4.1"<< std::endl;
-            // diopiCopyD2H(ctx, stop_word_tensor_host, stop_word_tensor, false);
-            // int *stop_word_tensor_host_data;
-            // diopiGetTensorData(stop_word_tensor_host, reinterpret_cast<void **>(&stop_word_tensor_host_data));
-            // std::cout << "LXZ diopiStopWordsCriterion LOG:  4.2 " << stop_word_tensor_host_data[0] << std::endl;
-            // test end
-
-
-            // std::cout << "start " << step - stop_word_len + 1 << " end " << step << std::endl;
-            // diopiSlice(ctx, output_ids_to_compare, output_ids_col, 0, step - stop_word_len + 1, step, 1);
-            // diopiSlice(ctx, output_ids_to_compare, output_ids_col, 0, 0, 1, 1);
-            
             diopiTensorHandle_t cmp_res;
-
-            diopiSize_t finished_stride;
-            diopiGetTensorStride(finished, &finished_stride);
-            
             diopiRequireTensor(ctx, &cmp_res, &stop_word_shape, nullptr, diopi_dtype_bool, stop_word_device);
-            std::cout << "LXZ diopiStopWordsCriterion LOG:  5"<< std::endl;
             diopiEq(ctx, cmp_res, output_ids_to_compare, stop_word_tensor);
-            std::cout << "LXZ diopiStopWordsCriterion LOG:  6"<< std::endl;
+            
             diopiTensorHandle_t cmp_res_sum;
             diopiSize_t cmp_res_sum_shape;
             cmp_res_sum_shape.len = 1;
             int64_t tmp_one = 1;
             cmp_res_sum_shape.data = &tmp_one;
-
             diopiRequireTensor(ctx, &cmp_res_sum, &cmp_res_sum_shape, nullptr, diopi_dtype_bool, stop_word_device);
-            std::cout << "LXZ diopiStopWordsCriterion LOG:  6.1"<< std::endl;
             int64_t tmp_zero = 0;
             diopiAll(ctx, cmp_res_sum, cmp_res, &tmp_zero);
-            std::cout << "LXZ diopiStopWordsCriterion LOG:  7"<< std::endl;
+            
             diopiTensorHandle_t cmp_res_sum_host;
-            diopiRequireTensor(ctx, &cmp_res_sum_host, &cmp_res_sum_shape, &finished_stride, diopi_dtype_bool, diopi_host);
+            diopiRequireTensor(ctx, &cmp_res_sum_host, &cmp_res_sum_shape, nullptr, diopi_dtype_bool, diopi_host);
             diopiCopyD2H(ctx, cmp_res_sum_host, cmp_res_sum, false);
-            std::cout << "LXZ diopiStopWordsCriterion LOG:  8"<< std::endl;
             bool* cmp_res_sum_host_data;
             diopiGetTensorData(cmp_res_sum_host, reinterpret_cast<void **>(&cmp_res_sum_host_data));
+            
             if (cmp_res_sum_host_data[0]) {
                 diopiTensorHandle_t batch_idx_tensor;
-                diopiSize_t batch_idx_shape, batch_idx_stride;
+                diopiSize_t batch_idx_shape;
                 batch_idx_shape.len = 1;
                 batch_idx_shape.data = &tmp_one;
-                int64_t batch_idx_stride_tmp = sizeof(int);
-                batch_idx_stride.len = 1;
-                batch_idx_stride.data = &batch_idx_stride_tmp;
-                diopiRequireTensor(ctx, &batch_idx_tensor, &batch_idx_shape, &batch_idx_stride, diopi_dtype_int32, stop_word_device);
+                diopiRequireTensor(ctx, &batch_idx_tensor, &batch_idx_shape, nullptr, diopi_dtype_int32, stop_word_device);
 
                 diopiScalar_t batch_idx_scalar;
                 batch_idx_scalar.stype = diopi_dtype_int64;
                 batch_idx_scalar.ival = batch_idx;
                 diopiFill(ctx, batch_idx_tensor, &batch_idx_scalar);
-
                 diopiIndexFillInp(ctx, finished, 0, batch_idx_tensor, cmp_res_sum);
                 break;
             }
-            std::cout << "LXZ diopiStopWordsCriterion LOG:  9"<< std::endl;
+        }   
+    }
+    return diopiSuccess;
+}
+
+
+/**
+ * @brief BanBadWords.
+ * get base_bad_words and base_offsets from stop_words for each batch.
+ * every item in base_offsets means item-end, and they also the item-start of the next item, for the first item item-start is 0.
+ * If time-size = end - start < step+1, then check item.
+ * for (int token_idx = item_size - 1; token_idx >= 0; token_idx--) {const int previous_token = output_ids[(step - (item_size - 1) + token_idx) * batch_size +
+ * id_offset + batch_idx];if (previous_token != base_stop_words[item_start + token_idx]) {should_ban = false; break;}} if this tiem should_ban, then get banid =
+ * base_bad_words[item-end - 1]. if 0 < banid < vocab_size then logits ban id in this batch is set to -INFINITY
+ * @param[in] ctx The diopi context.
+ * @param[inout] logits : Output logits.shape = [batch_size, vocab_size].type = [float32, float16]
+ * @param[in] output_ids : Output ids.shape = [step, batch].type = [int64, int32]
+ * @param[in] bad_words : Stop words list.shape = [batch_size, 2, stop_words_len] or [2, stop_words_len] for share.type = [int64, int32]
+ * @param[in] id_offset : Offset of output_ids.type = [int64, int32]
+ * @param[in] bad_words_len : Stop words len.type = [int64, int32]
+ * @param[in] share_words : Stop words is shared or not.type = [bool]
+ * @param[in] batch_size : Batch size.type = [int64, int32]
+ * @param[in] vocab_size : Vocab size.type = [int64, int32]
+ * @param[in] step : Step.type = [int64, int32]
+ */
+DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t output_ids,
+                                           diopiConstTensorHandle_t bad_words, int64_t id_offset, int64_t bad_words_len, bool share_words, int64_t batch_size,
+                                           int64_t vocab_size, int64_t step) {
+    // always id_offset = 0
+    if (logits == nullptr || output_ids == nullptr || bad_words == nullptr) {
+        return diopiErrorOccurred;
+    }
+
+    diopiTensorHandle_t bad_words_host;
+    diopiSize_t bad_words_shape, bad_words_stride;
+    diopiGetTensorShape(bad_words, &bad_words_shape);
+    diopiGetTensorStride(bad_words, &bad_words_stride);
+    diopiRequireTensor(ctx, &bad_words_host, &bad_words_shape, &bad_words_stride, diopi_dtype_int32, diopi_host);
+    diopiCopyD2H(ctx, bad_words_host, bad_words, false);
+
+    const int32_t *bad_words_ptr;
+    int32_t* bad_words_host_ptr;
+
+    diopiGetTensorDataConst(bad_words, reinterpret_cast<const void **>(&bad_words_ptr));
+    diopiGetTensorData(bad_words_host, reinterpret_cast<void **>(&bad_words_host_ptr));
+
+    diopiDtype_t ids_type;
+    diopiGetTensorDtype(output_ids, &ids_type);
+    if (ids_type != diopi_dtype_int32) {
+        return diopiErrorOccurred;
+    }
+    
+    for(int64_t batch_idx = 0; batch_idx < batch_size; ++batch_idx) {
+        const int32_t* base_bad_words_host = share_words ? bad_words_host_ptr : bad_words_host_ptr + batch_idx * 2 * bad_words_len;
+        const int32_t* base_offsets_host    = base_bad_words_host + bad_words_len;
+        const int32_t* base_bad_word = share_words ? bad_words_ptr : bad_words_ptr + batch_idx * 2 * bad_words_len;       
+
+        for (int64_t bad_word_idx = 0; bad_word_idx < bad_words_len; ++bad_word_idx) {
+            if (base_bad_words_host[bad_word_idx] < 0) {
+                continue;
+            }
+            const int32_t bad_word_start_idx = (bad_word_idx > 0) ? base_offsets_host[bad_word_idx - 1] : 0;
+            const int32_t bad_word_end_idx   = base_offsets_host[bad_word_idx] - 1;
+            const int64_t bad_word_len  = bad_word_end_idx - bad_word_start_idx + 1;
+
+            
+
+            if (step + 1 < bad_word_len) {
+                continue;
+            }
+
+            bool* cmp_res_sum_host_data = nullptr;
+            if (bad_word_len != 1) {
+                std::cout << "LXZ LOG banbadword 1" << std::endl;
+                diopiTensorHandle_t bad_word_tensor;
+                diopiSize_t bad_word_shape;
+                bad_word_shape.len = 1;
+                bad_word_shape.data = &bad_word_len;
+                diopiDevice_t bad_word_device;
+                diopiGetTensorDevice(bad_words, &bad_word_device);
+                diopiSize_t stride;
+                stride.len = -1;
+                stride.data = reinterpret_cast<const int64_t *>(base_bad_word + bad_word_start_idx);
+                diopiRequireTensor(ctx, &bad_word_tensor, &bad_word_shape, &stride, ids_type, bad_word_device);
+
+                std::cout << "LXZ LOG banbadword 2" << std::endl;
+                diopiTensorHandle_t output_ids_col;
+                diopiGetTensorStride(bad_word_tensor, &stride);
+                diopiSize_t output_ids_col_shape;
+                output_ids_col_shape.len = 1;
+                output_ids_col_shape.data = &step;
+                diopiRequireTensor(ctx, &output_ids_col, &output_ids_col_shape, nullptr, ids_type, diopi_device);
+                diopiSelect(ctx, output_ids_col, output_ids, 1, batch_idx);
+
+                std::cout << "LXZ LOG banbadword 3" << std::endl;
+                char *output_ids_col_data;
+                diopiGetTensorData(output_ids_col, reinterpret_cast<void **>(&output_ids_col_data));
+                int64_t elem_size;
+                diopiGetTensorElemSize(output_ids_col, &elem_size);
+                output_ids_col_data += (step - bad_word_len) * elem_size;
+
+                std::cout << "LXZ LOG banbadword 4" << std::endl;
+                stride.len = -1;
+                stride.data = reinterpret_cast<const int64_t *>(reinterpret_cast<int64_t *>(output_ids_col_data));
+                diopiTensorHandle_t output_ids_to_compare;
+                diopiRequireTensor(ctx, &output_ids_to_compare, &bad_word_shape, &stride, ids_type, diopi_device);
+
+                std::cout << "LXZ LOG banbadword 5" << std::endl;
+                diopiTensorHandle_t cmp_res;
+                diopiRequireTensor(ctx, &cmp_res, &bad_word_shape, nullptr, diopi_dtype_bool, bad_word_device);
+                diopiEq(ctx, cmp_res, output_ids_to_compare, bad_word_tensor);
+                
+                std::cout << "LXZ LOG banbadword 6" << std::endl;
+                diopiTensorHandle_t cmp_res_sum;
+                diopiSize_t cmp_res_sum_shape;
+                cmp_res_sum_shape.len = 1;
+                int64_t tmp_one = 1;
+                cmp_res_sum_shape.data = &tmp_one;
+                diopiRequireTensor(ctx, &cmp_res_sum, &cmp_res_sum_shape, nullptr, diopi_dtype_bool, bad_word_device);
+                int64_t tmp_zero = 0;
+                diopiAll(ctx, cmp_res_sum, cmp_res, &tmp_zero);
+                
+                std::cout << "LXZ LOG banbadword 7" << std::endl;
+                diopiTensorHandle_t cmp_res_sum_host;
+                diopiRequireTensor(ctx, &cmp_res_sum_host, &cmp_res_sum_shape, nullptr, diopi_dtype_bool, diopi_host);
+                diopiCopyD2H(ctx, cmp_res_sum_host, cmp_res_sum, false);
+                
+                diopiGetTensorData(cmp_res_sum_host, reinterpret_cast<void **>(&cmp_res_sum_host_data));
+            }
+
+            if (bad_word_len == 1 || (cmp_res_sum_host_data != nullptr && cmp_res_sum_host_data[0])) {
+                int32_t banned_token = base_bad_words_host[bad_word_end_idx];
+                std::cout << "LXZ LOG banbadword 8" << std::endl;
+                std::cout << "banned token: " << banned_token << " vocab size: " <<  vocab_size << std::endl;
+                if (0 < banned_token && banned_token < vocab_size) {
+                    diopiTensorHandle_t banned_token_tensor;
+                    diopiSize_t banned_token_shape;
+                    banned_token_shape.len = 1;
+                    int64_t tmp_one = 1;
+                    banned_token_shape.data = &tmp_one;
+                    diopiSize_t stride;
+                    stride.len = -1;
+                    stride.data = reinterpret_cast<const int64_t *>(base_bad_word + bad_word_end_idx);
+                    diopiRequireTensor(ctx, &banned_token_tensor, &banned_token_shape, &stride, ids_type, diopi_device);
+                    
+                    // for test
+                    // diopiTensorHandle_t banned_token_tensor_host;
+                    // diopiRequireTensor(ctx, &banned_token_tensor_host, &banned_token_shape, nullptr, ids_type, diopi_host);
+                    // diopiCopyD2H(ctx, banned_token_tensor_host, banned_token_tensor, false);
+                    // int32_t* banned_token_tensor_host_data;
+                    // diopiGetTensorData(banned_token_tensor_host, reinterpret_cast<void **>(&banned_token_tensor_host_data));
+                    // std::cout << "banned token tensor host: " << banned_token_tensor_host_data[0] << std::endl;
+                    // test end
+
+                    std::cout << "LXZ LOG banbadword 9" << std::endl;
+                    // diopiTensorHandle_t logits_batch_row;
+                    // diopiDtype_t logits_type;
+                    // diopiGetTensorDtype(logits, &logits_type);
+                    // diopiSize_t logits_batch_row_shape, logits_batch_row_stride;
+                    // logits_batch_row_shape.len = 1;
+                    // logits_batch_row_shape.data = &vocab_size;
+                    // logits_batch_row_stride.len = -1;
+                    // char* logits_batch_row_data;
+                    // diopiGetTensorData(logits, reinterpret_cast<void **>(&logits_batch_row_data));
+                    // int64_t elem_size;
+                    // diopiGetTensorElemSize(logits, &elem_size);
+                    // logits_batch_row_data += batch_idx * vocab_size * elem_size; 
+                    // logits_batch_row_stride.data = reinterpret_cast<const int64_t *>(logits_batch_row_data);
+                    // diopiRequireTensor(ctx, &logits_batch_row, &logits_batch_row_shape, &logits_batch_row_stride, logits_type, diopi_device);
+                    
+                    diopiTensorHandle_t logit_to_modify;
+                    diopiDtype_t logits_type;
+                    diopiGetTensorDtype(logits, &logits_type);
+                    diopiSize_t logit_to_modify_shape, logit_to_modify_stride;
+                    logit_to_modify_shape.len = 1;
+                    logit_to_modify_shape.data = &tmp_one;
+                    logit_to_modify_stride.len = -1;
+                    char* logit_to_modify_data;
+                    diopiGetTensorData(logits, reinterpret_cast<void **>(&logit_to_modify_data));
+                    int64_t elem_size;
+                    diopiGetTensorElemSize(logits, &elem_size);
+                    logit_to_modify_data += (batch_idx * vocab_size + banned_token) * elem_size; 
+                    logit_to_modify_stride.data = reinterpret_cast<const int64_t *>(logit_to_modify_data);
+                    diopiRequireTensor(ctx, &logit_to_modify, &logit_to_modify_shape, &logit_to_modify_stride, logits_type, diopi_device);
+                    
+                    diopiScalar_t minus_inf;
+                    minus_inf.stype = logits_type;
+                    minus_inf.fval = -INFINITY;
+                    diopiFill(ctx, logit_to_modify, &minus_inf);
+                    // for test
+                    // diopiTensorHandle_t logits_batch_row_host;
+                    // diopiRequireTensor(ctx, &logits_batch_row_host, &logits_batch_row_shape, nullptr, logits_type, diopi_host);
+                    // diopiCopyD2H(ctx, logits_batch_row_host, logits_batch_row, false);
+                    // half* logits_batch_row_host_data; 
+                    // diopiGetTensorData(logits_batch_row_host, reinterpret_cast<void **>(&logits_batch_row_host_data));
+                    // std::cout << "logits batch row host: " << std::endl;
+                    // for (int i = 0; i < vocab_size; ++i) {
+                    //     std::cout << logits_batch_row_host_data[i] << " ";
+                    // }
+                    // std::cout << std::endl;
+                    // test end
+
+
+                    // std::cout << "LXZ LOG banbadword 10" << std::endl;
+                    // diopiScalar_t minus_inf;
+                    // minus_inf.stype = logits_type;
+                    // minus_inf.fval = -INFINITY;
+                    // diopiIndexFillInpScalar(ctx, logits_batch_row, 0, banned_token_tensor, &minus_inf);
+                    // std::cout << "LXZ LOG banbadword 11" << std::endl;
+                }
+                continue;
+            }
         }   
     }
     return diopiSuccess;
