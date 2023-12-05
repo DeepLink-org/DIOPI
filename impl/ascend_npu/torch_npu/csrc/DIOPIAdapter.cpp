@@ -1559,31 +1559,6 @@ public:
     c10::DeleterFnPtr raw_deleter() const { return c10::detail::deleteNothing; }
 };
 
-inline at::Tensor fromPreAllocated1(void *data, at::IntArrayRef sizes, at::IntArrayRef strides, const std::function<void(void *)> &deleter,
-                                    at::Allocator *allocator, const at::TensorOptions &options) {
-    auto device = options.device();
-    if (options.device().has_index()) {
-        assert(options.device() == device);
-    }
-
-    auto storage = at::Storage(at::Storage::use_byte_size_t(),
-                               at::detail::computeStorageNbytes(sizes, strides, options.dtype().itemsize()),
-                               c10::InefficientStdFunctionContext::makeDataPtr(data, deleter, device),
-                               allocator,
-                               false);
-    at::TensorOptions new_options = options.device(device);
-
-    c10::DispatchKeySet ks{c10::DispatchKey::XPU};
-
-    size_t nbytes = at::detail::computeStorageNbytes(sizes, strides, options.dtype().itemsize());
-    static FakeAllocator fakeAllocator;
-    fakeAllocator.set(data, nbytes, device);
-    at::Tensor tensor = at::detail::empty_generic(sizes, &fakeAllocator, ks, c10::typeMetaToScalarType(new_options.dtype()), c10::MemoryFormat::Contiguous);
-    // at::Tensor tensor = at::detail::empty_generic({0}, &fakeAllocator, ks, c10::typeMetaToScalarType(new_options.dtype()), c10::MemoryFormat::Contiguous);
-    tensor.set_(storage, 0, sizes, strides);
-    return tensor;
-}
-
 at::Tensor fromPreAllocated(void *data, at::IntArrayRef sizes, at::IntArrayRef strides, const at::TensorOptions &options) {
     auto device = options.device();
     TORCH_CHECK(options.device().has_index());
