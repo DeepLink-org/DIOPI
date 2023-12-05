@@ -746,7 +746,7 @@ device_configs = {
     'bmm': dict(
         name=['bmm'],
         atol=3e-2,
-        rtol=3e-2,  
+        rtol=3e-2,
     ),
 
     'addmm': dict(
@@ -1504,13 +1504,13 @@ device_configs = {
     'mm': dict(
         name=['mm'],
         atol=2e-2,
-        rtol=2e-2, 
+        rtol=2e-2,
     ),
 
     'mm_diff_dtype': dict(
         name=['mm'],
         atol=2e-2,
-        rtol=2e-2, 
+        rtol=2e-2,
     ),
 
     'index_fill_scalar': dict(
@@ -1772,7 +1772,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
+                    "dtype": [Skip(np.int16),Skip(np.uint8),Skip(np.int8),],
                 },
             ]
         ),
@@ -1784,7 +1784,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
+                    "dtype": [Skip(np.int16),Skip(np.uint8),Skip(np.int8),],
                 },
             ]
         ),
@@ -1796,7 +1796,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
+                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
                 },
             ]
         ),
