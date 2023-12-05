@@ -1,9 +1,12 @@
+#include <conform_test.h>
 #include <diopi/diopirt.h>
 
 #include <cstdio>
 
 #include "../common/common.hpp"
 #include "../error.hpp"
+
+#include "litert.hpp"
 
 namespace impl {
 namespace kunlunxin {
@@ -56,6 +59,15 @@ int32_t device_memcpy_d2d_async(diopiStreamHandle_t stream_handle, void* dst, co
 int32_t initLibrary() { return diopiSuccess; }
 
 int32_t finalizeLibrary() { return diopiSuccess; }
+
+diopiError_t buildGeneratorState(diopiContextHandle_t ctx, diopiTensorHandle_t out) {
+    std::vector<int64_t> vec{808};
+    diopiSize_t size{vec.data(), static_cast<int64_t>(vec.size())};
+    diopiTensorHandle_t tensor = nullptr;
+    diopiRequireTensor(ctx, &tensor, &size, nullptr, diopi_dtype_uint8, diopi_host);
+    *out = *tensor;
+    return diopiSuccess;
+}
 
 }  // extern "C"
 
