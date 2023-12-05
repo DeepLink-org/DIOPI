@@ -51,7 +51,7 @@ jobs:
       - name: clone repo
         run: |
           cd ${GITHUB_WORKSPACE} && rm -rf DIOPI
-          if [ -n "${{ github.event.pull_request.head.repo.full_name }}" ] && [[ ! "${{ github.event.pull_request.head.repo.full_name }}" == *DeepLink-org* ]]; then
+          if [ -n "${{ github.event.pull_request.head.repo.full_name }}" ] && [[ ! "${{ github.event.pull_request.head.repo.full_name }}" == "*DeepLink-org/DIOPI" ]]; then
             git clone ${{ github.event.pull_request.head.repo.ssh_url }}
             cd ${GITHUB_WORKSPACE}/${{ github.event.repository.name }} && git checkout ${{ github.event.pull_request.head.sha }}
             git remote add mainrepo git@github.com:${GITHUB_REPOSITORY}.git
