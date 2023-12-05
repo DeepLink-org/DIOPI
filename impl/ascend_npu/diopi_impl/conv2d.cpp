@@ -9,7 +9,7 @@
 
 namespace {
 
-at::Tensor& conv2d_backward_bias_out_nocheck(at::Tensor& gradBias, const at::Tensor& grad) {
+at::Tensor& conv2dBackwardBiasOutNocheck(at::Tensor& gradBias, const at::Tensor& grad) {
     if (grad.numel() == grad.size(0) * grad.size(1)) {
         // at::Tensor grad_view = grad.contiguous().view({grad.size(0), grad.size(1)});
         at::Tensor gradView = impl::aten::view(grad, {grad.size(0), grad.size(1)});
@@ -54,7 +54,7 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
 
     acl_op::npu_conv2d_backward(inputAt, gradOutputAt, weightAt, strideAt, paddingAt, dilationAt, groups, {gradInput != nullptr, gradWeight != nullptr, false});
     if (gradBias != nullptr) {
-        conv2d_backward_bias_out_nocheck(gradBiasAt, gradOutputAt);
+        conv2dBackwardBiasOutNocheck(gradBiasAt, gradOutputAt);
     }
     END_CALL_ACL_OP();
 }
