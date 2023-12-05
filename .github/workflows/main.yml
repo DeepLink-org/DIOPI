@@ -50,7 +50,7 @@ jobs:
     steps:
       - name: clone repo
         run: |
-          cd ${GITHUB_WORKSPACE} && rm -rf DIOPI
+          cd ${GITHUB_WORKSPACE} && rm -rf DIOPI* source
           if [ -n "${{ github.event.pull_request.head.repo.full_name }}" ] && [[ ! "${{ github.event.pull_request.head.repo.full_name }}" == "${{ github.repository }}"  ]]; then
             git clone ${{ github.event.pull_request.head.repo.ssh_url }} source
             cd ${GITHUB_WORKSPACE}/source && git checkout ${{ github.event.pull_request.head.sha }}
