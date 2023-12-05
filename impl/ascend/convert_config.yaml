@@ -196,3 +196,9 @@
 
 - diopiMaxAll:
     dtype: (float64)->float32, (int16, int8)->int32, (bool)->uint8
+
+- diopiSilu:
+    dtype: (float64)->float32
+
+- diopiSiluBackward:
+    dtype: (float64)->float32
