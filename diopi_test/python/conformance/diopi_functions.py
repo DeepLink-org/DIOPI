@@ -5179,32 +5179,35 @@ def multihead_attention(
 
 
 def multihead_attention_backward(
-    q, k, v, dropout_p, is_causal, return_debug_mask, scale
+    q, k, v, out, grad_outputs, dropout_p, is_causal, scale, **kwargs
 ):
-    call = "diopiMultiHeadAttention"
+    call = "diopiMultiHeadAttentionBackward"
     func = check_function(call)
+    grad_q = raw_like(q)
+    grad_k = raw_like(k)
+    grad_v = raw_like(v)
     q_size = list(q.size().data)
-    out = Tensor(q_size, q.get_dtype())
     softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], q.get_dtype())
     gen = None
-    debug_attn_mask = Tensor([0], q.get_dtype())
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
     ret = func(
         q.context(),
+        grad_outputs[0],
         q,
         k,
         v,
-        dropout_p,
-        is_causal,
-        return_debug_mask,
-        softmax_scale,
         out,
         softmax_lse,
+        dropout_p,
+        is_causal,
         gen,
-        debug_attn_mask,
+        softmax_scale,
+        grad_q,
+        grad_k,
+        grad_v
     )
     check_returncode(ret)
-    return out
+    return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
 
 def apply_penalty(
