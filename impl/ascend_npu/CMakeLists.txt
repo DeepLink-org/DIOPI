@@ -832,6 +832,7 @@ set(DIOPI_IMPL_SRC
     ${DIOPI_IMPL_DIR}/conv2d.cpp
     ${DIOPI_IMPL_DIR}/batch_norm.cpp
     ${DIOPI_IMPL_DIR}/max_pool2d.cpp
+    ${DIOPI_IMPL_DIR}/rms_norm.cpp
 )
 
 add_definitions(-DBUILD_LIBTORCH)
