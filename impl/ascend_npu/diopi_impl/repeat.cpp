@@ -11,7 +11,6 @@ extern "C" {
 diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t repeatSize) {
     BEGIN_CALL_ACL_OP(out, input, repeatSize);
     std::vector<int64_t> inputShape(inputAt.sizes().cbegin(), inputAt.sizes().cend());
-    std::cout << std::endl;
 
     if (inputShape.size() < repeatSize.len) {
         while (inputShape.size() < repeatSize.len) {
