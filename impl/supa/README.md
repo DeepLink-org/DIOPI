@@ -32,8 +32,10 @@ BR Fullstask must be installed in order to support SUPA device.
     sh scripts/build_impl.sh clean
     sh scripts/build_impl.sh supa
 
-    sh template_build_sh builddl supa supa
-    sh template_build_sh builddp
+    # follow procedure of https://deeplink.readthedocs.io/zh-cn/latest/doc/DIPU/quick_start.html#dipu
+    cd dipu
+    export DIPU_DEVICE=supa
+    pip install .
     ```
 6. run DIOPI / DIPU
     ```
