@@ -361,7 +361,7 @@ jobs:
           export CI=true
           cd impl && sh scripts/build_impl.sh ascend
       - name: clang-tidy
-       run: |
+        run: |
          set -e
          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
          cd impl && bash scripts/ci_script.sh clang-tidy-ascend || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
