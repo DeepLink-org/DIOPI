@@ -38,6 +38,9 @@ case $1 in
     mkdir build && cd build && cmake .. -DIMPL_OPT=droplet  -DTEST=ON && make -j8 || exit -1;;
   supa)
     mkdir -p build && cd build && cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=supa -DTEST=ON && make -j8 || exit -1;;
+  kunlunxin)
+    mkdir -p build && cd build && XPURT_TOOLKIT_ROOT=${CURRENT_DIR}/../../xpu_toolchain/xpurt XDNN_TOOLKIT_ROOT=${CURRENT_DIR}/../../xpu_toolchain/xdnn XDNNTORCH_TOOLKIT_ROOT=${CURRENT_DIR}/../../xpu_toolchain/xdnn_pytorch cmake ..  \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=kunlunxin -DTEST=${DIOPI_BUILD_TESTRT} -DDEBUG=ON && make -j32 || exit -1;;
   *)
     echo -e "[ERROR] Incorrect compilation option:" $1;
 esac
