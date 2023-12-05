@@ -230,6 +230,12 @@ at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& a
 at::Tensor crossEntropyLossLabelSmoothingBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, diopiConstTensorHandle_t weight,
                                                   int64_t reduction, int64_t ignore_index, double label_smoothing);
 
+inline std::vector<int64_t> getSequence(int dim) {
+    std::vector<int64_t> seq(dim);
+    std::iota(seq.begin(), seq.end(), 0);
+    return seq;
+}
+
 }  // namespace aten
 
 }  // namespace impl

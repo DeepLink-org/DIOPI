@@ -3200,7 +3200,8 @@ diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     const int64_t HxW = c10::multiply_integers(input_shape.cbegin() + 2, input_shape.cend());
     auto grad_input_mask = std::array<bool, 3>{true, grad_weight != nullptr, grad_bias != nullptr};
 
-    at::native_group_norm_backward_out(atGradInput, atGradWeight, atGradBias, atGradOutput, atInput, atSaveMean, atSaveVar, atWeight, N, C, HxW, num_groups, grad_input_mask);
+    at::native_group_norm_backward_out(
+        atGradInput, atGradWeight, atGradBias, atGradOutput, atInput, atSaveMean, atSaveVar, atWeight, N, C, HxW, num_groups, grad_input_mask);
 
     impl::aten::unsetCurCtx();
     return diopiSuccess;
@@ -4245,7 +4246,8 @@ DIOPI_API diopiError_t diopiBatchNormBackwardReduce(diopiContextHandle_t ctx, di
     auto atSumDyXmu = impl::aten::buildATen(sum_dy_xmu);
     auto atGradWeight = impl::aten::buildATen(grad_weight);
     auto atGradBias = impl::aten::buildATen(grad_bias);
-    at::batch_norm_backward_reduce_out(atSumDy, atSumDyXmu, atGradWeight, atGradBias, atGradOut, atInput, atMean, atInvstd, atWeight, input_g, weight_g, bias_g);
+    at::batch_norm_backward_reduce_out(
+        atSumDy, atSumDyXmu, atGradWeight, atGradBias, atGradOut, atInput, atMean, atInvstd, atWeight, input_g, weight_g, bias_g);
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
