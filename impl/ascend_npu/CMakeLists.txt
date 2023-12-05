@@ -823,17 +823,7 @@ set(OP_PLUGIN_API_SRC
 )
 
 set(DIOPI_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/diopi_impl/)
-set(DIOPI_IMPL_SRC
-    ${DIOPI_IMPL_DIR}/error.cpp
-    ${DIOPI_IMPL_DIR}/binary.cpp
-    ${DIOPI_IMPL_DIR}/unary.cpp
-    ${DIOPI_IMPL_DIR}/conv2d.cpp
-    ${DIOPI_IMPL_DIR}/batch_norm.cpp
-    ${DIOPI_IMPL_DIR}/max_pool2d.cpp
-    ${DIOPI_IMPL_DIR}/logical.cpp
-    ${DIOPI_IMPL_DIR}/remainder.cpp
-    ${DIOPI_IMPL_DIR}/stack.cpp
-)
+file(GLOB DIOPI_IMPL_SRC "${DIOPI_IMPL_DIR}/*.cpp")
 
 add_definitions(-DBUILD_LIBTORCH)
 
