@@ -1,1 +1,1 @@
-../../../../diopi_test/include/litert.hpp
+../../../../diopi_test/diopi_stub/include/litert.hpp

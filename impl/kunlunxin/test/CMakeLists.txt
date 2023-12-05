@@ -1,7 +1,7 @@
 set(DIOPIRT export_runtime)
 set(DIOPIFUNCTIONS export_functions)
 
-add_compile_options(-fno-elide-constructors)
+#add_compile_options(-fno-elide-constructors)
 add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 build)
 
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/test/include")
@@ -39,11 +39,11 @@ target_link_libraries(${DIOPIRT} PRIVATE diopirt)
 #target_link_libraries(${DIOPIRT} -Wl,--no-as-needed ${DEVICEIMPL} -Wl,--as-needed)
 target_link_libraries(diopirt -Wl,--no-as-needed ${DEVICEIMPL} -Wl,--as-needed)
 
-set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/csrc")
+set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/diopi_stub/csrc")
 
-set(TEST_GEN_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/codegen")
+set(TEST_GEN_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/diopi_stub/codegen")
 add_custom_target(test_code_gen COMMAND python3 ${TEST_GEN_PATH}/gen.py
-    --device=kunlunxin --use_adaptor=${USE_ADAPTOR})
+    --device=kunlunxin)
 add_custom_target(functions_copy ALL
     COMMAND ln -f ${FUNCTION_SAVE_PATH}/export_functions.cpp ${PROJECT_SOURCE_DIR}/test
     DEPENDS test_code_gen)
