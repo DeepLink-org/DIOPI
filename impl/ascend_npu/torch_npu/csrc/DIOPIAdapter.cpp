@@ -1682,3 +1682,16 @@ void unsetCurCtx() {
 }  // namespace aten
 
 }  // namespace impl
+
+namespace at::ascend_npu {
+
+TensorWrapper TensorWrapper::contiguous(c10::MemoryFormat memory_format) const {
+    if (is_contiguous(memory_format)) {
+        return *this;
+    } else {
+        INTERFACE_NOT_IMPL
+        return *this;
+    }
+}
+
+}; //  namespace at::ascend_npu

@@ -16,7 +16,71 @@
 #include "acl/acl_op_compiler.h"
 #include "acl/acl_rt.h"
 #include "ge/ge_api.h"
+
+namespace at::ascend_npu {
+
+class TensorWrapper : public at::Tensor {
+public:
+    using at::Tensor::Tensor;
+
+    TensorWrapper(const at::Tensor& other) : at::Tensor(other) {}
+
+    TensorWrapper(at::Tensor&& other) : at::Tensor(std::move(other)) {}
+
+    TensorWrapper(const TensorWrapper& other) : at::Tensor(static_cast<const at::Tensor&>(other)) {}
+
+    TensorWrapper(TensorWrapper&& other) : at::Tensor(static_cast<at::Tensor&&>(std::move(other))) {}
+
+    TensorWrapper& operator=(const at::Tensor& other) {
+        at::Tensor::operator=(other);
+        return *this;
+    }
+
+    TensorWrapper& operator=(at::Tensor&& other) {
+        at::Tensor::operator=(std::move(other));
+        return *this;
+    }
+
+    TensorWrapper& operator=(const TensorWrapper& other) {
+        at::Tensor::operator=(static_cast<const at::Tensor&>(other));
+        return *this;
+    }
+
+    TensorWrapper& operator=(TensorWrapper&& other) {
+        at::Tensor::operator=(static_cast<at::Tensor&&>(std::move(other)));
+        return *this;
+    }
+
+    operator at::Tensor() const {
+        return static_cast<at::Tensor>(*this);
+    }
+
+    operator at::Tensor&() {
+        return static_cast<at::Tensor&>(*this);
+    }
+
+    operator const at::Tensor&() const {
+        return static_cast<const at::Tensor&>(*this);
+    }
+
+    operator at::Tensor&&() {
+        return static_cast<at::Tensor&&>(std::move(*this));
+    }
+
+
+    TensorWrapper contiguous(c10::MemoryFormat memory_format = c10::MemoryFormat::Contiguous) const {
+        at::Tensor contig_tensor = at::Tensor::contiguous(memory_format);
+        return TensorWrapper(contig_tensor);
+    }
+}; // class TensorWrapper
+
+}; //  namespace at::ascend_npu
+
+
+#define Tensor ascend_npu::TensorWrapper
+
 #include "op_plugin/utils/OpConstants.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "torch_npu/csrc/aten/NPUNativeFunctions.h"
 #include "torch_npu/csrc/core/npu/NPUErrorCodes.h"
 #include "torch_npu/csrc/core/npu/NpuVariables.h"
@@ -157,8 +221,6 @@ static void warn_(const ::c10::Warning &warning) { INTERFACE_NOT_IMPL; }
         TORCH_NPU_WARN(__VA_ARGS__);                                                  \
         return true;                                                                  \
     }()
-
-// #define RECORD_FUNCTION(...)
 
 namespace at_npu {
 namespace key {

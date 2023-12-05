@@ -20,6 +20,7 @@
 #include "error.hpp"
 #include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
+
 #define OP_IMPL_NS impl::ascend_npu
 
 #define LOG_LINE_INFO() std::cerr << __FILE__ << ":" << __LINE__ << ": ";

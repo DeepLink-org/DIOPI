@@ -19,6 +19,7 @@
 #include <ATen/ATen.h>
 #include <ATen/Tensor.h>
 #include <c10/core/Device.h>
+#include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
 #include <algorithm>
 #include <iostream>

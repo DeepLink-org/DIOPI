@@ -11,9 +11,17 @@ FetchContent_Declare(op_plugin
 )
 FetchContent_MakeAvailable(op_plugin)
 message(STATUS "op-plugin download done")
+
+set(INCLUDE_CUSTOM_HEADER_LINE "#include \"torch_npu/csrc/framework/DIOPIAdapter.h\"")
+set(GENED_FILE_PATH "${op_plugin_SOURCE_DIR}/op_plugin/AclOpsInterface.h")
+set(GENED_FILE2_PATH "${op_plugin_SOURCE_DIR}/op_plugin/utils/KernelNpuOutputSize.h")
 add_custom_target(op_plugin_gen
+  COMMAND rm ${op_plugin_SOURCE_DIR}/op_plugin/AclOpsInterface.h
   COMMAND cd ${op_plugin_SOURCE_DIR} && bash ./gencode.sh 2.0 python
+  COMMAND sed -i '22i ${INCLUDE_CUSTOM_HEADER_LINE}' ${GENED_FILE_PATH}
+  COMMAND sed -i '21i ${INCLUDE_CUSTOM_HEADER_LINE}' ${GENED_FILE2_PATH}
 )
+
 
 add_subdirectory(third_party/acl)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
@@ -838,10 +846,10 @@ add_definitions(-DBUILD_LIBTORCH)
 
 include_directories(${op_plugin_SOURCE_DIR}/ torch_npu ${CMAKE_CURRENT_SOURCE_DIR})
 set(IMPL_SRC
-  torch_npu/csrc/DIOPIAdapter.cpp
+  #torch_npu/csrc/DIOPIAdapter.cpp
   torch_npu/csrc/AclOpCompileInterface.cpp
   torch_npu/csrc/NpuVariables.cpp
-  torch_npu/csrc/AdvancedIndex.cpp
+  #torch_npu/csrc/AdvancedIndex.cpp
   torch_npu/csrc/NPUNativeFunctions.cpp
 )
 

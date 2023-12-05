@@ -2,6 +2,7 @@
 #define IMPL_ASCEND_NPU_TORCH_NPU_CSRC_ATEN_CUSTOMFUNCTIONS_H_
 
 #include <ATen/ATen.h>
+#include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
 #include <iostream>
 #include <tuple>
