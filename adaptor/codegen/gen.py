@@ -712,9 +712,15 @@ def gen_autogen_operators(
         return
 
     # get the implemented functions
-    impl_func_dir = os.path.dirname(config_file_path)
-    impl_func_dir = os.path.join(impl_func_dir, "functions")
-    impl_funcs = obtain_impl_func(impl_func_dir).keys()
+    impl_base_dir = os.path.dirname(config_file_path)
+    impl_func_dir = os.path.join(impl_base_dir, "functions")
+    impl_functions = obtain_impl_func(impl_func_dir)
+
+    if impl_plugin:
+        impl_plugin_dir = os.path.join(impl_base_dir, "../ascend_npu/diopi_impl")
+        impl_functions.update(obtain_impl_func(impl_plugin_dir))
+
+    impl_funcs = impl_functions.keys()
 
     # generate func information and declarations by scanning functions.h
     funcs_info, funcs_decl_raw = get_functions_support(dirs.get("source"))
