@@ -15,9 +15,9 @@ cpp-lint)
   # for other cpplint version, maybe  -whitespace/indent is needed to check impl
   # --repository=.. will be deleted when repository changed.
   (
-    echo "cpp-lint" && python3 scripts/cpplint.py --linelength=160 --repository=..
-    --filter=-build/c++11,-legal/copyright,-build/include_subdir,-runtime/references,-runtime/printf,-runtime/int,-build/namespace
-    --exclude=${IMPL_PATH}/third_party --exclude=${IMPL_PATH}/ascend_npu/third_party --exclude=${IMPL_PATH}/build
+    echo "cpp-lint" && python3 scripts/cpplint.py --linelength=160 --repository=.. \
+    --filter=-build/c++11,-legal/copyright,-build/include_subdir,-runtime/references,-runtime/printf,-runtime/int,-build/namespace \
+    --exclude=${IMPL_PATH}/third_party --exclude=${IMPL_PATH}/ascend_npu/third_party --exclude=${IMPL_PATH}/build \
     --recursive ./
   ) ||
     exit 1
