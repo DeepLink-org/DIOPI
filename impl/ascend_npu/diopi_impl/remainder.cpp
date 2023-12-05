@@ -19,9 +19,7 @@ diopiError_t diopiRemainderTensor(diopiContextHandle_t ctx, diopiTensorHandle_t 
 // at::Tensor & remainder_out(const at::Tensor & self, const at::Tensor & other, at::Tensor & out);
 diopiError_t diopiRemainderScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t *other) {
     BEGIN_CALL_ACL_OP(input, out, other);
-    if (inputAt.defined()) {
-        acl_op::remainder_out(inputAt, otherAt, outAt);
-    }
+    acl_op::remainder_out(inputAt, otherAt, outAt);
     END_CALL_ACL_OP();
 }
 
