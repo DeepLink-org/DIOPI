@@ -551,18 +551,6 @@ device_configs = {
         ),
     ),
 
-    'silu': dict(
-        name=['silu'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
     'pow': dict(
         name=['pow'],
         tensor_para=dict(
