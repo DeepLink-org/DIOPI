@@ -836,9 +836,7 @@ set(DIOPI_IMPL_SRC
 
 add_definitions(-DBUILD_LIBTORCH)
 
-include_directories(SYSTEM ${op_plugin_SOURCE_DIR})
-
-include_directories(torch_npu ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(SYSTEM ${op_plugin_SOURCE_DIR} torch_npu ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(IMPL_SRC
   torch_npu/csrc/DIOPIAdapter.cpp

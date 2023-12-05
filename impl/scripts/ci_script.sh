@@ -35,7 +35,7 @@ clang-tidy)
 clang-tidy-ascend)
   (
     if [ -e ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE} ]; then
-      python3 ${IMPL_PATH}/../run-clang-tidy.py ${IMPL_PATH}/ascend ${IMPL_PATH}/ascend_npu -p $(dirname ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE})
+      python3 ${IMPL_PATH}/../run-clang-tidy.py 'impl/ascend(?!_npu)' 'impl/ascend_npu/diopi_impl' -p $(dirname ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE})
     else
       echo "error: compile_commands.json not found."
       exit 1
