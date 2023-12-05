@@ -8049,22 +8049,50 @@ diopi_configs = {
         interface=['CustomizedTest'],
         dtype=[np.float64, np.float32, np.float16],
         para=dict(
-            conj=[False, True, False, True],
+            conj=[True, False, False, False, True, True, False, True, False, True],
+            interleaved=[True, False, True, False, True, False, False, True, True, False]
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',
             args=[
-                {
+                 {
                     "ins": ['input'],
-                    "shape": ((1, 125, 16, 32), (1, 125, 16, 32), (2, 64, 16, 32), (3, 100, 8, 64)),
+                    "shape": ((12,), (64,), (2, 128), (3, 8, 256), (1, 64), (3, 5, 12), (1, 125, 16, 512), (1, 125, 16, 512), (2, 64, 16, 32), (3, 100, 8, 64)),
                 },
                 {
                     "ins": ['cos'],
-                    "shape": ((125, 1, 16), (125, 1, 16), (64, 1, 16), (100, 1, 32)),
+                    "shape": ((6,), (32,), (2, 64), (3, 1, 128), (1, 32), (3, 5, 6), (125, 1, 256), (125, 1, 256), (64, 1, 16), (100, 1, 32)),
                 },
                 {
                     "ins": ['sin'],
-                    "shape": ((125, 1, 16), (125, 1, 16), (64, 1, 16), (100, 1, 32)),
+                    "shape": ((6,), (32,), (2, 64), (3, 1, 128), (1, 32), (3, 5, 6), (125, 1, 256), (125, 1, 256), (64, 1, 16), (100, 1, 32)),
+                },
+            ],
+        ),
+    ),
+
+    'rotary_emb_empty_tensor': dict(
+        name=['rotary_emb'],
+        interface=['CustomizedTest'],
+        dtype=[np.float64, np.float32, np.float16],
+        para=dict(
+            conj=[False, True, False, False, True, True, False, True],
+            interleaved=[True, False, True, False, True, False, False, True]
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                 {
+                    "ins": ['input'],
+                    "shape": ((0,), (0,), (0, 128), (3, 8, 0), (1, 0), (0, 5, 12), (1, 0, 16, 32), (1, 125, 16, 0)),
+                },
+                {
+                    "ins": ['cos'],
+                    "shape": ((0,), (0,), (0, 64), (3, 1, 0), (1, 0), (0, 5, 6), (0, 1, 16), (125, 1, 0)),
+                },
+                {
+                    "ins": ['sin'],
+                    "shape": ((0,), (0,), (0, 64), (3, 1, 0), (1, 0), (0, 5, 6), (0, 1, 16), (125, 1, 0)),
                 },
             ],
         ),

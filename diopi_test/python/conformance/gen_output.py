@@ -206,7 +206,7 @@ class CustomizedTest(object):
         out = torch.batch_norm_elemt(input, weight, bias, mean, invstd, eps)
         return out
 
-    def rotary_emb(input, cos, sin, conj):
+    def rotary_emb(input, cos, sin, conj, interleaved):
         x1, x2 = input.chunk(2, dim=-1)
         data_type = input.dtype
         x1 = x1.to(torch.float32)
