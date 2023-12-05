@@ -200,5 +200,8 @@
 - diopiSilu:
     dtype: (float64)->float32
 
+- diopiSiluInp:
+    dtype: (float64)->float32
+
 - diopiSiluBackward:
     dtype: (float64)->float32
