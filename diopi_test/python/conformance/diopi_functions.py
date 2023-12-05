@@ -179,22 +179,10 @@ def common_dtype(input, other) -> Dtype:
 
 
 def pow_dtype(input, other) -> Dtype:
-    dtype1, dtype2 = get_dtype(input), get_dtype(other)
-    if (
-        dtype1 not in int_types
-        and dtype2 not in int_types
-        and dtype1 != Dtype.bool
-        and dtype2 != Dtype.bool
-    ):
-        return dtype1
-    else:
-        if dtype1 in int_types and dtype2 == Dtype.uint8:
-            return dtype1 if dtype1 != Dtype.int8 else Dtype.int16
-        if dtype1 == Dtype.bool:
-            return Dtype.float32 if dtype2 in float_types else Dtype.int64
-        if dtype2 not in int_types:
-            return dtype1 if dtype1 == Dtype.float16 else Dtype.float32
-    return dtype1
+    dtype_order = [Dtype.float64, Dtype.float32, Dtype.float16,
+                   Dtype.int32, Dtype.int64, Dtype.uint8, Dtype.bool]
+    dtype1, dtype2 = input, other
+    return dtype_order[min(dtype_order.index(dtype1),dtype_order.index(dtype2))]
 
 
 def remainder_dtype(input, other) -> Dtype:
@@ -1572,9 +1560,12 @@ def split(tensor, split_size_or_sections, dim=0):
 
 def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
     if input is not None:
-        out_dtype = pow_dtype(input, exponent)
+        out_dtype = pow_dtype(get_dtype(input), get_dtype(exponent))
     else:
-        out_dtype = pow_dtype(self, exponent)
+        if Scalar(self).stype in float_types:
+            out_dtype = pow_dtype(Dtype.float32, get_dtype(exponent))   # default type of float scalar should be float32
+        else:
+            out_dtype = pow_dtype(get_dtype(self), get_dtype(exponent))
         if Scalar(self).stype == Dtype.int64:
             exponent_dtype = get_dtype(exponent)
             if exponent_dtype in int_types or exponent_dtype in float_types:
@@ -1615,7 +1606,7 @@ def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
         ret = func(input.context(), out, input, exponent)
     if inplace:
         out = input
-
+    print("exponent:",exponent.dtype(),"    input:",self.stype)
     check_returncode(ret)
     return out
 
