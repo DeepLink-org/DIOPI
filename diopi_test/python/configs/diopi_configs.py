@@ -8073,29 +8073,67 @@ diopi_configs = {
     'rms_norm': dict(
         name=['rms_norm'],
         interface=['CustomizedTest'],
-        dtype=[np.float32],
+        # FIXME fp16报错
+        # dtype=[np.float16, np.float32, np.float64],
+        dtype=[np.float32, np.float64],
         para=dict(
-            eps=[1e-6, 1e-6, 1e-6, 1e-6],
-            normalized_shape=[(5, ), (32, ), (64, ), (8, )],
+            eps=[1e-4, 1e-6, 1e-6, 1e-6, 1e-6, 1e-2],
+            normalized_shape=[(16,), (5, 5), (32,), (64, 64), (32, 32, 8,), (8,)],
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((5, 5), (35, 125, 32), (16, 64, 64), (1, 32, 32, 8)),
+                    "requires_grad": [True],
+                    "shape": ((16,), (5, 5), (35, 125, 32), (16, 64, 64), (1, 32, 32, 8), (3, 2, 16, 7, 8)),
                 },
                 {
                     "ins": ['weight'],
-                    "shape": ((5, ), (32, ), (64, ), (8, )),
+                    "requires_grad": [True],
+                    "shape": ((16,), (5, 5,), (32,), (64, 64), (32, 32, 8,), (8,)),
                 },
                 {
                     "ins": ['bias'],
-                    "shape": ((5, ), (32, ), (64, ), (8, )),
+                    "requires_grad": [False],
+                    "shape": ((16,), (5, 5), (32,), (64, 64), (32, 32, 8), (8,)),
                 },
             ],
         ),
     ),
+
+    # # FIXME 空张量报错
+    # 'rms_norm_empty_tensor': dict(
+    #     name=['rms_norm'],
+    #     interface=['CustomizedTest'],
+    #     # FIXME fp16报错
+    #     # dtype=[np.float16, np.float32, np.float64],
+    #     dtype=[np.float32, np.float64],
+    #     para=dict(
+    #         eps=[-1e-2, 0, 1e-6,],
+    #         normalized_shape=[(0,), (5, 0), (0, 32,),],
+    #     ),
+    #     tensor_para=dict(
+    #         gen_fn='Genfunc.randn',
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "requires_grad": [True],
+    #                 "shape": ((0,), (5, 0), (35, 0, 32),),
+    #             },
+    #             {
+    #                 "ins": ['weight'],
+    #                 "requires_grad": [True],
+    #                 "shape": ((0,), (5, 0,), (0, 32,),),
+    #             },
+    #             {
+    #                 "ins": ['bias'],
+    #                 "requires_grad": [False],
+    #                 "shape": ((0,), (5, 0), (0, 32,),),
+    #             },
+    #         ],
+    #     ),
+    # ),
 
     'multihead_attention': dict(
         name=['multihead_attention'],
