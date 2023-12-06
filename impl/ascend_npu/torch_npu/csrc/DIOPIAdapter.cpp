@@ -9,6 +9,12 @@
 namespace {
 constexpr float EPSILON = 1e-6;
 
+int current_device() {
+    int devId_ = 0;
+    ::aclrtGetDevice(&devId_);
+    return devId_;
+}
+
 // check all at::ScalarType is not negative
 #define ENUM_PAIR_FUNC(_1, n) static_assert(static_cast<int64_t>(at::ScalarType::n) >= 0, #n " is negative");
 AT_FORALL_SCALAR_TYPES_WITH_COMPLEX_AND_QINTS(ENUM_PAIR_FUNC)
@@ -1488,12 +1494,6 @@ const char *AclGetErrMsg() {
 
 }  // namespace acl
 
-int current_device() {
-    int devId_ = 0;
-    ::aclrtGetDevice(&devId_);
-    return devId_;
-}
-
 NPUStream getCurrentNPUStream(c10::DeviceIndex device_index) {
     if (device_index == -1) {
         device_index = current_device();
@@ -1649,7 +1649,20 @@ inline const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     if (tensor == nullptr) return at::Tensor();
     return *reinterpret_cast<const at::Tensor *>(tensor);
 }
+
 #endif
+
+at::Generator buildATen(diopiGeneratorHandle_t generator) {
+    auto gen = at::make_generator<at_npu::NPUGeneratorImpl>(current_device());
+    auto impl = static_cast<at_npu::NPUGeneratorImpl *>(gen.unsafeGetGeneratorImpl());
+    diopiTensorHandle_t stateHandle = nullptr;
+    diopiGeneratorGetState(context, generator, &stateHandle);
+    void *statePtr = nullptr;
+    diopiGetTensorData(stateHandle, &statePtr);
+    impl->state_ = statePtr;
+    impl->stateHandle_ = stateHandle;
+    return gen;
+}
 
 at::Tensor view(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides) {
     TORCH_CHECK(c10::multiply_integers(sizes) == input.numel());
@@ -1694,4 +1707,4 @@ TensorWrapper TensorWrapper::contiguous(c10::MemoryFormat memory_format) const {
     }
 }
 
-}; //  namespace at::ascend_npu
+};  //  namespace at::ascend_npu

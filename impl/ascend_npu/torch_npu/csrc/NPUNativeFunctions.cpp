@@ -6,11 +6,7 @@ namespace at_npu::native {
 
 #define CUSTOM_OP_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
 
-at::Tensor &NPUNativeFunctions::npu_format_cast_(at::Tensor &self, const at::Tensor &src) {
-    auto device = self.device();
-    auto x = self.cpu().copy_(src.cpu()).to(device);
-    return self.copy_(x);
-}
+at::Tensor &NPUNativeFunctions::npu_format_cast_(at::Tensor &self, const at::Tensor &src) { CUSTOM_OP_NOT_IMPL }
 
 namespace custom_ops {
 

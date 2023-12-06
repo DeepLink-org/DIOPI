@@ -20,7 +20,6 @@
 #include "error.hpp"
 #include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
-
 #define OP_IMPL_NS impl::ascend_npu
 
 #define LOG_LINE_INFO() std::cerr << __FILE__ << ":" << __LINE__ << ": ";
@@ -298,6 +297,8 @@ inline at::Scalar buildATen(const diopiScalar_t* scalar) {
         return fval;
     }
 }
+
+at::Generator buildATen(diopiGeneratorHandle_t generator);
 
 at::Tensor view(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides = {});
 

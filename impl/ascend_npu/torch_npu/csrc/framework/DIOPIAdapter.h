@@ -21,66 +21,35 @@ namespace at::ascend_npu {
 
 class TensorWrapper : public at::Tensor {
 public:
-    using at::Tensor::Tensor;
+    // fix:  no matching function for call to 'at::ascend_npu::TensorWrapper::TensorWrapper()
+    // using at::Tensor::Tensor;
+    TensorWrapper() : at::Tensor::Tensor() {}
 
-    TensorWrapper(const at::Tensor& other) : at::Tensor(other) {}
+    // fix: invalid initialization of reference of type 'const at::ascend_npu::TensorWrapper&' from expression of type 'const at::Tensor'
+    TensorWrapper(const at::Tensor &other) : at::Tensor::Tensor(other) {}
 
-    TensorWrapper(at::Tensor&& other) : at::Tensor(std::move(other)) {}
+    // fix: have different types 'const at::ascend_npu::TensorWrapper' and 'at::Tensor'
+    operator at::Tensor() const { return static_cast<at::Tensor>(*this); }
 
-    TensorWrapper(const TensorWrapper& other) : at::Tensor(static_cast<const at::Tensor&>(other)) {}
-
-    TensorWrapper(TensorWrapper&& other) : at::Tensor(static_cast<at::Tensor&&>(std::move(other))) {}
-
-    TensorWrapper& operator=(const at::Tensor& other) {
+    // fix: no match for 'operator=' (operand types are 'at::ascend_npu::TensorWrapper' and 'at::Tensor')
+    TensorWrapper operator=(at::Tensor other) {
         at::Tensor::operator=(other);
         return *this;
     }
 
-    TensorWrapper& operator=(at::Tensor&& other) {
-        at::Tensor::operator=(std::move(other));
-        return *this;
-    }
+    TensorWrapper contiguous(c10::MemoryFormat memory_format) const;
 
-    TensorWrapper& operator=(const TensorWrapper& other) {
-        at::Tensor::operator=(static_cast<const at::Tensor&>(other));
-        return *this;
-    }
+};  // class TensorWrapper
 
-    TensorWrapper& operator=(TensorWrapper&& other) {
-        at::Tensor::operator=(static_cast<at::Tensor&&>(std::move(other)));
-        return *this;
-    }
+using TensorWrapperList = c10::ArrayRef<TensorWrapper>;
 
-    operator at::Tensor() const {
-        return static_cast<at::Tensor>(*this);
-    }
+};  //  namespace at::ascend_npu
 
-    operator at::Tensor&() {
-        return static_cast<at::Tensor&>(*this);
-    }
+// #define Tensor ascend_npu::TensorWrapper
+// #define TensorList ascend_npu::TensorWrapperList
 
-    operator const at::Tensor&() const {
-        return static_cast<const at::Tensor&>(*this);
-    }
-
-    operator at::Tensor&&() {
-        return static_cast<at::Tensor&&>(std::move(*this));
-    }
-
-
-    TensorWrapper contiguous(c10::MemoryFormat memory_format = c10::MemoryFormat::Contiguous) const {
-        at::Tensor contig_tensor = at::Tensor::contiguous(memory_format);
-        return TensorWrapper(contig_tensor);
-    }
-}; // class TensorWrapper
-
-}; //  namespace at::ascend_npu
-
-
-#define Tensor ascend_npu::TensorWrapper
-
-#include "op_plugin/utils/OpConstants.h"
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/utils/OpConstants.h"
 #include "torch_npu/csrc/aten/NPUNativeFunctions.h"
 #include "torch_npu/csrc/core/npu/NPUErrorCodes.h"
 #include "torch_npu/csrc/core/npu/NpuVariables.h"
@@ -272,6 +241,8 @@ struct NPUGeneratorImpl : public c10::GeneratorImpl {
 
     // NPUGeneratorImpl methods
     std::shared_ptr<NPUGeneratorImpl> clone() const { INTERFACE_NOT_IMPL; }
+    virtual GeneratorImpl *clone_impl() const { INTERFACE_NOT_IMPL; }
+
     void set_current_seed(uint64_t seed) { INTERFACE_NOT_IMPL; }
     uint64_t current_seed() const { INTERFACE_NOT_IMPL; }
     uint64_t seed() { INTERFACE_NOT_IMPL; }
@@ -281,12 +252,20 @@ struct NPUGeneratorImpl : public c10::GeneratorImpl {
     uint64_t philox_offset_per_thread() const { INTERFACE_NOT_IMPL; }
     void capture_prologue(int64_t *offset_extragraph) { INTERFACE_NOT_IMPL; }
     uint64_t capture_epilogue() { INTERFACE_NOT_IMPL; }
-    PhiloxNpuState philox_npu_state(uint64_t increment) { INTERFACE_NOT_IMPL; }
+    PhiloxNpuState philox_npu_state(uint64_t increment) {
+        TORCH_CHECK(state_);
+        return *(static_cast<PhiloxNpuState *>(state_));
+    }
 
     // Temporarily accommodates call sites that use philox_engine_inputs.
     // Allows incremental refactor of call sites to use philox_npu_state.
-    std::pair<uint64_t, uint64_t> philox_engine_inputs(uint64_t increment) { INTERFACE_NOT_IMPL; }
+    std::pair<uint64_t, uint64_t> philox_engine_inputs(uint64_t increment) {
+        INTERFACE_NOT_IMPL;
+        return std::make_pair(0, 0);
+    }
     static c10::DeviceType device_type() { INTERFACE_NOT_IMPL; }
+    void *state_ = nullptr;
+    void *stateHandle_ = nullptr;
 };
 
 namespace detail {
