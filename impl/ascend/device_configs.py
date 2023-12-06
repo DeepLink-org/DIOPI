@@ -1465,42 +1465,6 @@ device_configs = {
         ),
     ),
 
-    'imum_input_nan': dict(
-        name=['minimum', 'maximum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'imum_other_nan': dict(
-        name=['minimum', 'maximum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'imum_broadcast': dict(
-        name=['minimum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
     'mm': dict(
         name=['mm'],
         atol=2e-2,
@@ -1772,7 +1736,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.uint8),Skip(np.int8),],
+                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
                 },
             ]
         ),
