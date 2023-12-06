@@ -67,9 +67,7 @@ jobs:
           git submodule update --init --recursive
       - name: Set output variables
         id: set-run-vars
-        env:
-          GITHUB_TOKEN: "${{ secrets.CI_TOKEN != '' && secrets.CI_TOKEN || 'NONE' }}"
-        run: |
+         run: |
           PR_NUMBER="${{ github.event.pull_request.number || 0 }}"
           cd ${GITHUB_WORKSPACE}/source && RUN_RESULT=$(python3 scripts/filter_ci.py ${PR_NUMBER})
           echo "RUN_RESULT=$RUN_RESULT" >> "$GITHUB_OUTPUT"
