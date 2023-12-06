@@ -26,7 +26,7 @@ public:
     TensorWrapper() : at::Tensor::Tensor() {}
 
     // fix: invalid initialization of reference of type 'const at::ascend_npu::TensorWrapper&' from expression of type 'const at::Tensor'
-    TensorWrapper(const at::Tensor& other) : at::Tensor::Tensor(other) {}
+    explicit TensorWrapper(const at::Tensor& other) : at::Tensor::Tensor(other) {}
 
     // fix: have different types 'const at::ascend_npu::TensorWrapper' and 'at::Tensor'
     operator at::Tensor() const { return static_cast<at::Tensor>(*this); }
@@ -38,7 +38,6 @@ public:
     }
 
     TensorWrapper contiguous(c10::MemoryFormat memory_format) const;
-
 };  // class TensorWrapper
 
 using TensorWrapperList = c10::ArrayRef<TensorWrapper>;
