@@ -12,8 +12,6 @@ def get_run_result(pr_number):
     }
 
     repository = os.environ.get("GITHUB_REPOSITORY")
-    if token == "NONE":
-        return "NV_CAMB_ASCEND_TOPSRIDER_SUPA"
     api_url = f"https://api.github.com/repos/{repository}/pulls/{pr_number}/files"
     headers = {
         "Accept": "application/vnd.github.v3+json"
