@@ -9,8 +9,8 @@
 
 extern "C" {
 
-void _set_last_error_string(const char* err);
-const char* cuda_get_last_error_string();
+void setLastErrorString(const char* err);
+const char* cudaGetLastErrorString();
 
 }  // extern "C"
 
