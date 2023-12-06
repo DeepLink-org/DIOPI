@@ -56,7 +56,7 @@ class GenConfigTestCase(object):
             for filename in os.listdir(self._tests_path):
                 file_path = os.path.join(self._tests_path, filename)
                 if os.path.isfile(file_path):
-                    os.remove(file_path)              
+                    os.remove(file_path)
 
     def get_function_set(self):
         return dict(self.__function_set)
