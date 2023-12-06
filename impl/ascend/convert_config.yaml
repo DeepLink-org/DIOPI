@@ -205,3 +205,6 @@
 
 - diopiSiluBackward:
     dtype: (float64)->float32
+
+- diopiUniformInp:
+    dtype: (float64)->float32
