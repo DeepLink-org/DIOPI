@@ -8264,19 +8264,25 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['k'],
-                    "shape": ((5, 32, 128), (4, 32, 128)),
-                    "dtype": [np.float16],
+                    "shape": ((5, 32, 128), (4, 32, 128), (0, 12, 12), (6, 0, 8), (5, 9, 0)),
+                    "dtype": [np.float16, np.float32, np.float64,
+                              np.int16, np.int32, np.int64,
+                              np.uint8, np.int8, np.bool_],
                 },
                 {
                     "ins": ['dest_loc'],
-                    "dtype": [np.int32],
-                    "value": ((0, 1, 2, 3, 4), (14, 15, 16, 17)),
+                    "dtype": [np.int32, np.int64, np.int32,
+                              np.int64, np.int32, np.int64,
+                              np.int32, np.int64, np.int32],
+                    "value": ((0, 1, 2, 3, 4), (14, 15, 16, 17), (), (0, 1, 2, 3, 4, 5), (0, 1, 2, 3, 4)),
                     "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ['out'],
-                    "shape": ((120, 32, 128), (120, 32, 128)),
-                    "dtype": [np.float16],
+                    "shape": ((120, 32, 128), (120, 32, 128), (3, 12, 12), (2, 0, 8), (5, 9, 0)),
+                    "dtype": [np.float16, np.float32, np.float64,
+                              np.int16, np.int32, np.int64,
+                              np.uint8, np.int8, np.bool_],
                 }
             ]
         )
