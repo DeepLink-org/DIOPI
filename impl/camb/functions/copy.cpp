@@ -27,7 +27,7 @@ static bool denseCheck(const DiopiTensor& src) {
         }
     }
 
-    //这种情况算order存在二义性
+    // 这种情况算order存在二义性
     for (int i = 0; i < dim - 1; i++) {
         for (int j = i + 1; j < dim; j++) {
             if (shape[i] == shape[j]) {
@@ -38,7 +38,7 @@ static bool denseCheck(const DiopiTensor& src) {
     std::sort(stride.begin(), stride.end());
 
     // e.g. shape = 2,3,4,5,stride = 1,3,12,60
-    //这种情况肯定是非dense
+    // 这种情况肯定是非dense
     if (stride[0] != 1) {
         return false;
     }
