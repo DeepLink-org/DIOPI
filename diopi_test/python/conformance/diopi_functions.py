@@ -200,7 +200,7 @@ def pow_dtype(input, other, scalar: bool = True) -> Dtype:
         dtype_order = [Dtype.float64, Dtype.float32, Dtype.float16,
                        Dtype.int64, Dtype.int32, Dtype.int16, Dtype.int8, Dtype.uint8, Dtype.bool]
         import builtins
-        return dtype_order[builtins.min(dtype_order.index(dtype1),dtype_order.index(dtype2))]
+        return dtype_order[builtins.min(dtype_order.index(dtype1), dtype_order.index(dtype2))]
 
 
 def remainder_dtype(input, other) -> Dtype:
@@ -1624,7 +1624,6 @@ def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
         ret = func(input.context(), out, input, exponent)
     if inplace:
         out = input
-    
     check_returncode(ret)
     return out
 
