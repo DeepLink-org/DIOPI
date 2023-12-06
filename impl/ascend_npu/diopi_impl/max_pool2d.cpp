@@ -11,13 +11,13 @@ namespace OP_IMPL_NS {
 
 #if 1
 diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t indices, diopiConstTensorHandle_t input,
-                                       diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceil_mode) {
-    BEGIN_CALL_ACL_OP(out, indices, input, kernel_size, stride, padding, dilation);
+                                       diopiSize_t kernelSize, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceilMode) {
+    BEGIN_CALL_ACL_OP(out, indices, input, kernelSize, stride, padding, dilation);
     at_npu::native::OpPreparation::markAsOutputForApplyTensor(outAt);
     at_npu::native::OpPreparation::markAsOutputForApplyTensor(indicesAt);
     // std::tie(outAt, indicesAt) =
     // acl_op::max_pool2d_with_indices_out(inputAt, kernel_sizeAt, strideAt, paddingAt, dilationAt, ceil_mode, outAt, indicesAt);
-    acl_op::max_pool2d_with_indices(inputAt, kernel_sizeAt, strideAt, paddingAt, dilationAt, ceil_mode);
+    acl_op::max_pool2d_with_indices(inputAt, kernelSizeAt, strideAt, paddingAt, dilationAt, ceilMode);
     END_CALL_ACL_OP();
 }
 
@@ -64,10 +64,10 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
 }
 #endif
 
-diopiError_t diopiMaxPool2dBackward1(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                     diopiConstTensorHandle_t input, diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation,
-                                     bool ceil_mode, diopiConstTensorHandle_t indices) {
-    BEGIN_CALL_ACL_OP(grad_input, grad_output, input, kernel_size, stride, padding, dilation, indices);
+diopiError_t diopiMaxPool2dBackward1(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                     diopiConstTensorHandle_t input, diopiSize_t kernelSize, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation,
+                                     bool ceilMode, diopiConstTensorHandle_t indices) {
+    BEGIN_CALL_ACL_OP(gradInput, gradOutput, input, kernelSize, stride, padding, dilation, indices);
     // at_npu::native::OpPreparation::markAsOutputForApplyTensor(grad_inputAt);
     // grad_inputAt = acl_op::max_pool2d_with_indices_backward(grad_outputAt, inputAt, kernel_sizeAt, strideAt, paddingAt, dilationAt, ceil_mode, indicesAt);
     END_CALL_ACL_OP();
