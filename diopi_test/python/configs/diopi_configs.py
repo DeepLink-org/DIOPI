@@ -8205,45 +8205,52 @@ diopi_configs = {
         name=['apply_penalty'],
         interface=['CustomizedTest'],
         para=dict(
-            p_max_len_in_batch=(8,)),
+            p_max_len_in_batch=(8, 16, 512, 1024, 2048)),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['logits'],
                     "value": ([[0.1, 0.5, 0.4, 0.3, 0.5],
                               [0.2, 0.4, 0.0, 0.0, 0.0],
-                              [0.3, 0.4, 0.5, 0.3, 0.0]],),
-                    "dtype": [np.float32],
+                              [0.3, 0.4, 0.5, 0.3, 0.0]],
+                              [[0.2, 0.0],
+                               [1.2, -2.5],
+                               [-99, 99],
+                               [4, 5]],
+                              [[0.0, 0.5, 0.0, -0.4, 0.0]],
+                              [],
+                              [[],[],[]]),
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ["presence_penalty"],
-                    "value": ([0.1, 0.8, 1.0],),
-                    "dtype": [np.float32],
+                    "value": ([0.1, 0.8, 1.0], [1.2, 0, -2.5, 0.4], [0.3], [], [0, 1.2, -2.3]),
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ["frequency_penalty"],
-                    "value": ([0.3, 0.5, 0.4],),
-                    "dtype": [np.float32],
+                    "value": ([0.3, 0.5, 0.4], [0, -10, 10, 5], [-1.2], [], [-0.5, 0, 1.2]),
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ["p_token_ids"],
-                    "value": ([0, 1, 2, 3, 4, 0, 1, 0, 1, 2, 3],),
-                    "dtype": [np.int32],
+                    "value": ([0, 1, 2, 3, 4, 0, 1, 0, 1, 2, 3], [0, 0, 1, 0, 1, 0, 1], [0, 1, 2, 3], [], []),
+                    "dtype": [np.int32, np.int64, np.int32],
                     "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ["p_token_counts"],
-                    "value": ([3, 3, 2, 2, 1, 3, 3, 3, 3, 2, 2],),
-                    "dtype": [np.int32],
+                    "value": ([3, 3, 2, 2, 1, 3, 3, 3, 3, 2, 2], [-2, 0, 2, -3, 4, 1, -1], [3, 2, -4, 1], [], []),
+                    "dtype": [np.int32, np.int64, np.int32],
                     "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ["p_cumsum_seq_len"],
-                    "value": ([0, 5, 7, 11],),
-                    "dtype": [np.int32],
+                    "value": ([0, 5, 7, 11], [0, 1, 3, 5, 7], [0, 4], [0], [0, 0, 0, 0]),
+                    "dtype": [np.int32, np.int64, np.int32],
                     "gen_policy": "gen_tensor_by_value"
                 },
             ]
