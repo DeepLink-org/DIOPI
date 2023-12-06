@@ -13,7 +13,8 @@ using npu_compile_type = at_npu::native::CompileType;
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& normal_out_npu_nocheck(at::Tensor& result, c10::optional<at::Generator> gen) {
-    auto gen_default = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen, at_npu::detail::getDefaultNPUGenerator());
+    auto gen_default = gen.value().get<at_npu::NPUGeneratorImpl>();
+
     auto pair = gen_default->philox_engine_inputs(10);
     const int64_t seed = pair.first;
     const int64_t offset = pair.second;
@@ -39,14 +40,16 @@ namespace OP_IMPL_NS {
 
 diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, double std, diopiGeneratorHandle_t generator) {
     BEGIN_CALL_ACL_OP(out, generator);
-    normal_out_npu_nocheck(outAt, c10::make_optional(std::move(generatorAt)));
+    if (outAt.numel() > 0) {
+        normal_out_npu_nocheck(outAt, c10::make_optional(std::move(generatorAt)));
+        acl_op::mul_(outAt, std);
+        acl_op::add_(outAt, mean);
+    }
     END_CALL_ACL_OP();
 }
 
 diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std, diopiGeneratorHandle_t generator) {
-    BEGIN_CALL_ACL_OP(inout, generator);
-
-    END_CALL_ACL_OP();
+    return OP_IMPL_NS::diopiNormal(ctx, inout, mean, std, generator);
 }
 
 }  // namespace OP_IMPL_NS

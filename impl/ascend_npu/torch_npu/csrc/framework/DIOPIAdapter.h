@@ -26,7 +26,7 @@ public:
     TensorWrapper() : at::Tensor::Tensor() {}
 
     // fix: invalid initialization of reference of type 'const at::ascend_npu::TensorWrapper&' from expression of type 'const at::Tensor'
-    TensorWrapper(const at::Tensor &other) : at::Tensor::Tensor(other) {}
+    TensorWrapper(const at::Tensor& other) : at::Tensor::Tensor(other) {}
 
     // fix: have different types 'const at::ascend_npu::TensorWrapper' and 'at::Tensor'
     operator at::Tensor() const { return static_cast<at::Tensor>(*this); }
@@ -241,7 +241,7 @@ struct NPUGeneratorImpl : public c10::GeneratorImpl {
 
     // NPUGeneratorImpl methods
     std::shared_ptr<NPUGeneratorImpl> clone() const { INTERFACE_NOT_IMPL; }
-    virtual GeneratorImpl *clone_impl() const { INTERFACE_NOT_IMPL; }
+    virtual GeneratorImpl* clone_impl() const { INTERFACE_NOT_IMPL; }
 
     void set_current_seed(uint64_t seed) { INTERFACE_NOT_IMPL; }
     uint64_t current_seed() const { INTERFACE_NOT_IMPL; }
@@ -254,18 +254,21 @@ struct NPUGeneratorImpl : public c10::GeneratorImpl {
     uint64_t capture_epilogue() { INTERFACE_NOT_IMPL; }
     PhiloxNpuState philox_npu_state(uint64_t increment) {
         TORCH_CHECK(state_);
-        return *(static_cast<PhiloxNpuState *>(state_));
+        return *(reinterpret_cast<PhiloxNpuState*>(state_));
     }
 
     // Temporarily accommodates call sites that use philox_engine_inputs.
     // Allows incremental refactor of call sites to use philox_npu_state.
     std::pair<uint64_t, uint64_t> philox_engine_inputs(uint64_t increment) {
         INTERFACE_NOT_IMPL;
-        return std::make_pair(0, 0);
+        PhiloxNpuState* state = reinterpret_cast<PhiloxNpuState*>(state_);
+        auto ret = std::make_pair(state->seed_, state->offset_.val);
+        state->offset_.val += increment;
+        return ret;
     }
-    static c10::DeviceType device_type() { INTERFACE_NOT_IMPL; }
-    void *state_ = nullptr;
-    void *stateHandle_ = nullptr;
+    static c10::DeviceType device_type() { return c10::DeviceType::XPU; }
+    void* state_ = nullptr;
+    void* stateHandle_ = nullptr;
 };
 
 namespace detail {

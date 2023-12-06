@@ -76,13 +76,15 @@ namespace native {
 
 UnifiedResult OpPreparation::binary_op_check(at::Tensor& out, const at::Tensor& a, const at::Tensor& b, bool check_mem_overlap) {
     UnifiedResult unified_result;
-    TORCH_CHECK(a.dtype() == b.dtype());
+    unified_result.common_type = out.scalar_type();
+    unified_result.common_shape = out.sizes();
     return unified_result;
 }
 
 UnifiedResult OpPreparation::binary_op_check(at::Tensor& out, const at::Tensor& a, const c10::Scalar b, bool check_mem_overlap) {
     UnifiedResult unified_result;
-    TORCH_CHECK(a.dtype() == b.type());
+    unified_result.common_type = out.scalar_type();
+    unified_result.common_shape = out.sizes();
     return unified_result;
 }
 
@@ -1629,10 +1631,10 @@ inline const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
 
 at::Generator buildATen(diopiGeneratorHandle_t generator) {
     auto gen = at::make_generator<at_npu::NPUGeneratorImpl>(current_device());
-    auto impl = static_cast<at_npu::NPUGeneratorImpl *>(gen.unsafeGetGeneratorImpl());
+    auto impl = static_cast<at_npu::NPUGeneratorImpl*>(gen.unsafeGetGeneratorImpl());
     diopiTensorHandle_t stateHandle = nullptr;
     diopiGeneratorGetState(context, generator, &stateHandle);
-    void *statePtr = nullptr;
+    void* statePtr = nullptr;
     diopiGetTensorData(stateHandle, &statePtr);
     impl->state_ = statePtr;
     impl->stateHandle_ = stateHandle;

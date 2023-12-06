@@ -201,4 +201,6 @@ ascend_npu:
 - diopiRemainderTensor
 - diopiRemainderScalar
 - diopiRemainder
+- diopiNormal
+- diopiNormalInp
 

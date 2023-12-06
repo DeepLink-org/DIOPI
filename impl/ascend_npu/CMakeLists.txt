@@ -573,7 +573,7 @@ set(IMPL_SRC
   torch_npu/csrc/DIOPIAdapter.cpp
   torch_npu/csrc/AclOpCompileInterface.cpp
   torch_npu/csrc/NpuVariables.cpp
-  #torch_npu/csrc/AdvancedIndex.cpp
+  torch_npu/csrc/AdvancedIndex.cpp
   torch_npu/csrc/NPUNativeFunctions.cpp
 )
 
