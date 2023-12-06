@@ -1,8 +1,12 @@
 # !/bin/bash
+
 set -e
 
 CURRENT_PATH=$(cd "$(dirname "$0")"; pwd)
-CMAKE_EXPORT_COMPILE_COMMANDS_FILE=${CURRENT_PATH}/../build/compile_commands.json
+IMPL_PATH=$(readlink -f ${CURRENT_PATH}/..)
+
+CMAKE_EXPORT_COMPILE_COMMANDS_FILE=${IMPL_PATH}/build/compile_commands.json
+
 case $1 in
   cpp-lint)
     # for other cpplint version, maybe  -whitespace/indent is needed to check impl
@@ -15,11 +19,20 @@ case $1 in
   clang-tidy)
     (
     if [ -e ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE} ]; then
-      python3 ${CURRENT_PATH}/../../run-clang-tidy.py -p `dirname "${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}"`
+      python3 ${IMPL_PATH}/../run-clang-tidy.py -p `dirname "${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}"`
     else
       echo "error: compile_commands.json not found."
       exit 1
     fi);;
+  clang-tidy-ascend)
+    (
+    if [ -e ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE} ]; then
+      python3 ${IMPL_PATH}/../run-clang-tidy.py 'impl/ascend(?!_npu)' 'impl/ascend_npu/diopi_impl' -p $(dirname ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE})
+    else
+      echo "error: compile_commands.json not found."
+      exit 1
+    fi
+    );;
   *)
     echo -e "[ERROR] Incorrect option:" $1 && exit 1;
 esac
