@@ -22,7 +22,6 @@ static diopiError_t transpose(diopiContextHandle_t& ctx, DiopiTensor& in, DiopiT
     size_t workspaceSize = 0;
     DIOPI_CALL_CNNL(cnnlGetTransposeWorkspaceSize(handle, inDesc.get(), transDesc.get(), &workspaceSize));
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
-
     DIOPI_CALL_CNNL(cnnlTranspose_v2(handle, transDesc.get(), inDesc.get(), in.data(), outDesc.get(), out.data(), workspacePtr, workspaceSize));
     return diopiSuccess;
 }
@@ -177,7 +176,7 @@ std::vector<int64_t> calContiguousStride(std::vector<int64_t> shape) {
 
 // change the shape and stride, the stride is incremental.
 // order: 0, 2, 3, 1
-// shape: 2,3,4,5 stride: 60, 1, 15, 3  --> (NHWC,0231)
+// shape: 2,3,4,5 stride: 60, 1, 15, 3
 // shape: 2,4,5,3 stride: 60, 15, 3, 1
 diopiError_t permuteTensor(DiopiTensor& t, const std::vector<int32_t>& order) {
     std::vector<int64_t> newShape = changeVecAccordingToOrder(t.shape(), order);
