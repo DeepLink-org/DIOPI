@@ -84,6 +84,5 @@ diopiError_t diopiBitwiseOrInpScalar(diopiContextHandle_t ctx, diopiTensorHandle
     return diopiBitwiseOrScalar(ctx, input, input, other);
 }
 
-
 }  // namespace ascend
 }  // namespace impl
