@@ -50,12 +50,16 @@ static diopiError_t calOrderAndSrcMemoryFormat(const DiopiTensor& src, diopiMemo
         reverseOrder = orderOut;
         return diopiSuccess;
     } else {
-        if (src.dim() == 4) {
-            orderOut = {0, 1, 3, 2};
-            reverseOrder = {0, 1, 3, 2};
-        } else if (src.dim() == 3) {
+        if (src.dim() == 2){
+            //e.g shape=(2,3),stride=(2,1)
+            orderOut = {0, 1};
+            reverseOrder = {0, 1};          
+        }else if (src.dim() == 3) {
             orderOut = {0, 2, 1};
             reverseOrder = {0, 2, 1};
+        } else if (src.dim() == 4) {
+            orderOut = {0, 1, 3, 2};
+            reverseOrder = {0, 1, 3, 2};
         } else if (src.dim() == 5) {
             orderOut = {0, 1, 2, 4, 3};
             reverseOrder = {0, 1, 2, 4, 3};
@@ -81,8 +85,7 @@ static diopiError_t calOrderAndSrcMemoryFormat(const DiopiTensor& src, diopiMemo
         for (int i = 1; i < dim; i++) {
             for (int j = 0; j < dim; j++) {
                 if (shape[j] * stride[i - 1] == stride[i]) {
-                    // reverseOrder[dim - i] = j;
-                    orderOut[dim - i] = j;
+                    reverseOrder[dim - i] = j;
                     continue;
                 }
             }
@@ -91,25 +94,20 @@ static diopiError_t calOrderAndSrcMemoryFormat(const DiopiTensor& src, diopiMemo
         for (int i = 0; i < dim; i++) {
             flag = true;
             for (int j = 1; j < dim; j++) {
-                // if(i == reverseOrder[j]){
-                if (i == orderOut[j]) {
+                if(i == reverseOrder[j]){
                     flag = false;
                     break;
                 }
             }
             if (flag) {
-                // reverseOrder[0] = i;
-                orderOut[0] = i;
+                reverseOrder[0] = i;
             }
         }
 
         for (int i = 0; i < dim; i++) {
             for (int j = 0; j < dim; j++) {
-                // if(reverseOrder[j] == i){
-                //     orderOut[i] = j;
-                // }
-                if (orderOut[j] == i) {
-                    reverseOrder[i] = j;
+                if(reverseOrder[j] == i){
+                    orderOut[i] = j;
                 }
             }
         }
@@ -231,10 +229,6 @@ diopiError_t contiguousOut(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTens
     std::vector<int32_t> order;
     std::vector<int32_t> reverseOrder;
 
-    // std::cout <<"before:"<<std::endl;
-    // printDevData(ctx,src);
-    // printDevData(ctx,dest);
-
     DIOPI_CALL(calOrderAndSrcMemoryFormat(src, destMemoryFormat, srcMemoryFormat, order, reverseOrder));
     // set CNNL_LAYOUT_ARRAY because NLC->NCL failed ( no layout NCL);
     cnnlTensorLayout_t srcLayout = CNNL_LAYOUT_ARRAY;
@@ -245,14 +239,11 @@ diopiError_t contiguousOut(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTens
     std::vector<int64_t> olderSrcStride = src.stride();
     std::vector<int64_t> olderSrcShape = src.shape();
     if (destMemoryFormat != diopiMemoryFormat_t::Contiguous) {
-        // DIOPI_CALL(permuteTensor(dest, order));
-        DIOPI_CALL(permuteTensor(dest, reverseOrder));
+        DIOPI_CALL(permuteTensor(dest, order));
     } else {
-        // DIOPI_CALL(permuteTensor(src, reverseOrder));
-        DIOPI_CALL(permuteTensor(src, order));
+        DIOPI_CALL(permuteTensor(src, reverseOrder));
     }
-    // DIOPI_CALL(transpose(ctx, src, dest, srcLayout, destLayout, order));
-    DIOPI_CALL(transpose(ctx, src, dest, srcLayout, destLayout, reverseOrder));
+    DIOPI_CALL(transpose(ctx, src, dest, srcLayout, destLayout, order));
     // recovery the shape and strides
     if (destMemoryFormat != diopiMemoryFormat_t::Contiguous) {
         dest.asStrided(olderDestShape, olderDestStride);
