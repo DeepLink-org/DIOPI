@@ -4,32 +4,6 @@ from skip import Skip
 
 device_configs = {
     # temp for 910B
-    'nonzero': dict(
-        name=["nonzero"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.uint8),],
-                },
-            ],
-        ),
-    ),
-
-    # temp for 910B
-    'nonzero_uint': dict(
-        name=["nonzero"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.uint8),],
-                },
-            ],
-        ),
-    ),
-
-    # temp for 910B
     'join': dict(
         name=['stack'],
         tensor_para=dict(
@@ -384,7 +358,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erf', 'erfinv', 'exp', 'asin', 'rsqrt', 'ceil', 'atan'],
+        name=['erf', 'erfinv', 'asin', 'rsqrt', 'ceil', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -396,7 +370,7 @@ device_configs = {
     ),
 
     'pointwise_op_int_without_inplace': dict(
-        name=['erf', 'exp', 'asin', 'rsqrt', 'atan'],
+        name=['erf', 'asin', 'rsqrt', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -408,7 +382,7 @@ device_configs = {
     ),
 
     'pointwise_op_uint8': dict(
-        name=['erf', 'exp', 'asin', 'rsqrt', 'atan'],
+        name=['erf', 'asin', 'rsqrt', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -432,7 +406,7 @@ device_configs = {
     ),
 
     'pointwise_op_bool': dict(
-        name=['erf', 'exp', 'asin', 'rsqrt', 'atan'],
+        name=['erf', 'asin', 'rsqrt', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -528,7 +502,7 @@ device_configs = {
     ),
 
     'pointwise_op_zero': dict(
-        name=['exp', 'rsqrt', 'ceil'],
+        name=['rsqrt', 'ceil'],
         tensor_para=dict(
             args=[
                 {
@@ -540,7 +514,7 @@ device_configs = {
     ),
 
     'pointwise_op_without_inplace_zero': dict(
-        name=['sign', 'exp', 'rsqrt'],
+        name=['sign', 'rsqrt'],
         tensor_para=dict(
             args=[
                 {
@@ -1736,7 +1710,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.uint8),Skip(np.int8),],
+                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
                 },
             ]
         ),

@@ -480,6 +480,12 @@ def analysis_configs(config: List[dict], funcs_info: dict) -> dict:
             op_dict[op_name]["tensor"] = op_tensor
     return op_dict
 
+def ascend_func_impl_config(config: dict) -> dict:
+    cfg = {}
+    for k in config.keys():
+        for op in config[k]:
+            cfg[op] = k
+    return cfg
 
 def autogen_cast_strategy():
     cast_code = []
@@ -518,7 +524,7 @@ def memory_format_to_str(memory_format):
 
 
 def autogen_op_adaptor(
-    op_configs: dict, device: str, func_infos: dict, impl_funcs: dict, impl_plugin: bool
+    op_configs: dict, device: str, func_infos: dict, impl_funcs: dict, impl_plugin: bool, plugin_config: dict
 ) -> list:
     adaptors_code = []
     cast = (
@@ -535,6 +541,7 @@ def autogen_op_adaptor(
                 device_mapping = "composite"
             else:
                 continue
+        device_mapping = plugin_config.get(func, device)
         if (
             (
                 func not in op_configs.keys()
@@ -546,18 +553,12 @@ def autogen_op_adaptor(
             call_args = [
                 arg.split(" ")[-1] for arg in func_infos[func]["call_args"]
             ]
-            if impl_plugin:
-                template = OT.adaptor_with_plugin_template
-            else:
-                template = OT.adaptor_template
             adaptors_code.append(
-                template.substitute(
+                 OT.adaptor_template.substitute(
                     env=dict(
                         op_name=op_name,
                         attrs=func_infos[func]["call_args"],
-                        device=device
-                        if not device_mapping
-                        else device_mapping,
+                        device=device_mapping,
                         new_input="",
                         cast_input="",
                         cast_output="",
@@ -652,16 +653,12 @@ for (int i = 0; i < ${num}; ++i) {
                 else:
                     new_name = name
                 call_args.append(new_name)
-            if impl_plugin:
-                template = OT.adaptor_with_plugin_template
-            else:
-                template = OT.adaptor_template
             adaptors_code.append(
-                template.substitute(
+                OT.adaptor_template.substitute(
                     env=dict(
                         op_name=op_name,
                         attrs=", ".join(func_infos[func]["call_args"]),
-                        device=device_mapping if device_mapping else device,
+                        device=device_mapping,
                         new_input=new_input,
                         cast_input=cast_ins,
                         cast_output=cast_outs,
@@ -711,6 +708,18 @@ def gen_autogen_operators(
         print(e)
         return
 
+    if impl_plugin:
+        ascend_config_path = os.path.join(dirs.get("config_path"), "../ascend_npu/ascend_config.yaml")
+        try:
+            with open(ascend_config_path, "r") as f:
+                ascend_configs = yaml.safe_load(f)
+        except Exception as e:
+            print(e)
+            return
+        ascend_impl_configs = ascend_func_impl_config(ascend_configs)
+    else:
+        ascend_impl_configs = {}
+
     # get the implemented functions
     impl_base_dir = os.path.dirname(config_file_path)
     impl_func_dir = os.path.join(impl_base_dir, "functions")
@@ -718,7 +727,24 @@ def gen_autogen_operators(
 
     if impl_plugin:
         impl_plugin_dir = os.path.join(impl_base_dir, "../ascend_npu/diopi_impl")
-        impl_functions.update(obtain_impl_func(impl_plugin_dir))
+        impl_npu_functions = obtain_impl_func(impl_plugin_dir)
+        impl_functions.update(impl_npu_functions)
+
+        #check config items all implemented
+        not_impled = []
+        for op in ascend_configs['ascend']:
+            if op not in impl_functions.keys():
+                not_impled.append(op)
+        if not_impled != []:
+            print(f"[GenAscendConfig] {not_impled} not implemented in ascend namespace")
+            return
+        not_impled.clear()
+        for op in ascend_configs['ascend_npu']:
+            if op not in impl_npu_functions.keys():
+                not_impled.append(op)
+        if not_impled != []:
+            print(f"[GenAscendConfig] {not_impled} not implemented in ascend_npu namespace.")
+            return
 
     impl_funcs = impl_functions.keys()
 
@@ -730,7 +756,7 @@ def gen_autogen_operators(
 
     # generate adaptor implementation codes
     adaptors_code = autogen_op_adaptor(
-        op_configs, device, funcs_info, impl_funcs, impl_plugin
+        op_configs, device, funcs_info, impl_funcs, impl_plugin, ascend_impl_configs
     )
 
     # get the function declarations
@@ -753,9 +779,12 @@ def gen_autogen_operators(
     ))]
 
     if impl_plugin:
+        funcs_npu_decl = get_impl_funcs_declaration(
+            funcs_decl_raw, funcs_info, impl_npu_functions.keys(), impl_plugin
+        )
         impl_functions_content.append(OT.impl_declaration_content_template.substitute(dict(
             device=device + '_npu',
-            impl_declaration=list(funcs_decl.values()),
+            impl_declaration=list(funcs_npu_decl.values()),
         )))
 
     impl_functions_content.append(OT.impl_declaration_content_template.substitute(dict(
