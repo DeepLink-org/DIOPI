@@ -2,11 +2,12 @@
 #define IMPL_ASCEND_NPU_TORCH_NPU_CSRC_ATEN_CUSTOMFUNCTIONS_H_
 
 #include <ATen/ATen.h>
-#include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
 #include <iostream>
 #include <tuple>
 #include <vector>
+
+#include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
 namespace at_npu {
 namespace native {
