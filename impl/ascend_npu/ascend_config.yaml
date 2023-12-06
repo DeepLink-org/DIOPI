@@ -163,7 +163,6 @@ ascend:
 - diopiSort
 - diopiSqrt
 - diopiSqrtInp
-- diopiStack
 - diopiSub
 - diopiSubInp
 - diopiSubInpScalar
@@ -201,4 +200,5 @@ ascend_npu:
 - diopiRemainderScalar
 - diopiRemainder
 - diopiRepeat
+- diopiStack
 
