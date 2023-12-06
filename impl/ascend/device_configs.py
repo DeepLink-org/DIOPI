@@ -551,18 +551,6 @@ device_configs = {
         ),
     ),
 
-    'pow': dict(
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
     'pow_int': dict(
         name=['pow'],
         tensor_para=dict(
@@ -606,30 +594,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip(()),Skip((1,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),Skip((0,)),Skip((0, 4)),Skip((9, 0, 3)),],
-                },
-            ]
-        ),
-    ),
-
-    'pow_broadcast': dict(
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((2, 1, 128)),Skip((2, 64, 1, 128)),Skip((2, 32, 130, 130)),Skip((0,)),Skip((8, 16, 1)),],
-                },
-            ]
-        ),
-    ),
-
-    'pow_broadcast_inplace': dict(
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((64,)),Skip((2, 1024)),Skip((2, 384, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 16, 128)),Skip((5, 2, 32, 130, 130)),Skip((16, 0)),Skip((8, 16, 0)),Skip((32, 0, 16)),],
                 },
             ]
         ),

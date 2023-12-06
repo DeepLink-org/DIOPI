@@ -10,7 +10,9 @@ namespace impl {
 namespace ascend {
 
 diopiError_t diopiPowTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t exponent) {
-    AclOpRunner<2, 1>("Pow", ctx).addInput(input).addInput(exponent).addOutput(out).run();
+    AscendTensor inputAt(input), expAt(exponent);
+    castTensor(ctx, expAt, inputAt.dtype());
+    AclOpRunner<2, 1>("Pow", ctx).addInput(input).addInput(expAt).addOutput(out).run();
     return diopiSuccess;
 }
 
