@@ -358,7 +358,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erf', 'erfinv', 'asin', 'rsqrt', 'ceil', 'atan'],
+        name=['erf', 'erfinv', 'asin', 'ceil', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -370,7 +370,7 @@ device_configs = {
     ),
 
     'pointwise_op_int_without_inplace': dict(
-        name=['erf', 'asin', 'rsqrt', 'atan'],
+        name=['erf', 'asin', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -382,7 +382,7 @@ device_configs = {
     ),
 
     'pointwise_op_uint8': dict(
-        name=['erf', 'asin', 'rsqrt', 'atan'],
+        name=['erf', 'asin', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -406,24 +406,12 @@ device_configs = {
     ),
 
     'pointwise_op_bool': dict(
-        name=['erf', 'asin', 'rsqrt', 'atan'],
+        name=['erf', 'asin', 'atan'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "shape": [Skip(()),Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
-                },
-            ]
-        ),
-    ),
-
-    'pointwise_op_abs_input': dict(
-        name=['rsqrt'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),Skip((0,)),Skip((0, 16)),Skip((8, 0, 4)),],
                 },
             ]
         ),
@@ -502,7 +490,7 @@ device_configs = {
     ),
 
     'pointwise_op_zero': dict(
-        name=['rsqrt', 'ceil'],
+        name=['ceil'],
         tensor_para=dict(
             args=[
                 {
@@ -514,7 +502,7 @@ device_configs = {
     ),
 
     'pointwise_op_without_inplace_zero': dict(
-        name=['sign', 'rsqrt'],
+        name=['sign'],
         tensor_para=dict(
             args=[
                 {
