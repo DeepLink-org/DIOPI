@@ -12,13 +12,10 @@ def get_run_result(pr_number):
     }
 
     repository = os.environ.get("GITHUB_REPOSITORY")
-    #This is a token for an arbitrary account, and any github account can generate a token to replace itgit
-    token = "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"
     if token == "NONE":
         return "NV_CAMB_ASCEND_TOPSRIDER_SUPA"
     api_url = f"https://api.github.com/repos/{repository}/pulls/{pr_number}/files"
     headers = {
-        "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github.v3+json"
     }
     response = requests.get(api_url, headers=headers)
