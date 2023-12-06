@@ -10,7 +10,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['tensors'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
+                    "shape": [Skip((0, 50, 76)), Skip((0,)), Skip((16, 0))],
                 },
             ],
         ),
@@ -23,7 +23,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['tensors'],
-                    "dtype": [Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),Skip(np.int32)],
+                    "shape": [Skip((0, 50, 76)), Skip((0,)), Skip((16, 0))],
                 },
             ],
         ),
