@@ -684,7 +684,7 @@ device_configs = {
     ),
 
     'bitwise_op': dict(
-        name=['bitwise_and', 'bitwise_or'],
+        name=['bitwise_and'],
         tensor_para=dict(
             args=[
                 {
@@ -696,7 +696,7 @@ device_configs = {
     ),
 
     'bitwise_op_diff_dtype': dict(
-        name=['bitwise_and', 'bitwise_or'],
+        name=['bitwise_and'],
         tensor_para=dict(
             args=[
                 {
@@ -708,7 +708,7 @@ device_configs = {
     ),
 
     'bitwise_op_broadcast': dict(
-        name=['bitwise_and', 'bitwise_or'],
+        name=['bitwise_and'],
         tensor_para=dict(
             args=[
                 {
@@ -720,7 +720,7 @@ device_configs = {
     ),
 
     'bitwise_op_scalar': dict(
-        name=['bitwise_and', 'bitwise_or'],
+        name=['bitwise_and'],
         tensor_para=dict(
             args=[
                 {
@@ -732,7 +732,7 @@ device_configs = {
     ),
 
     'bitwise_op_scalar_bool': dict(
-        name=['bitwise_and', 'bitwise_or'],
+        name=['bitwise_and'],
         tensor_para=dict(
             args=[
                 {
