@@ -23,8 +23,8 @@ namespace at_npu {
 namespace native {
 #define GET_FUNC(funcName) funcName
 
-aclError AclSetCompileopt(aclCompileOpt opt, const char *value) {
-    typedef aclError (*aclSetCompileoptFunc)(aclCompileOpt opt, const char *value);
+aclError AclSetCompileopt(aclCompileOpt opt, const char* value) {
+    typedef aclError (*aclSetCompileoptFunc)(aclCompileOpt opt, const char* value);
     static aclSetCompileoptFunc func = nullptr;
     if (func == nullptr) {
         func = (aclSetCompileoptFunc)GET_FUNC(aclSetCompileopt);
@@ -47,8 +47,8 @@ c10::optional<size_t> AclGetCompileoptSize(aclCompileOpt opt) {
     }
 }
 
-aclError AclGetCompileopt(aclCompileOpt opt, char *value, size_t length) {
-    typedef aclError (*aclGetCompileoptFunc)(aclCompileOpt opt, char *value, size_t length);
+aclError AclGetCompileopt(aclCompileOpt opt, char* value, size_t length) {
+    typedef aclError (*aclGetCompileoptFunc)(aclCompileOpt opt, char* value, size_t length);
     static aclGetCompileoptFunc func = nullptr;
     if (func == nullptr) {
         func = (aclGetCompileoptFunc)GET_FUNC(aclGetCompileopt);
@@ -60,20 +60,20 @@ aclError AclGetCompileopt(aclCompileOpt opt, char *value, size_t length) {
     }
 }
 
-aclError AclGenGraphAndDumpForOp(const char *opType, int numInputs, const aclTensorDesc *const inputDesc[], const aclDataBuffer *const inputs[], int numOutputs,
-                                 const aclTensorDesc *const outputDesc[], aclDataBuffer *const outputs[], const aclopAttr *attr, aclopEngineType engineType,
-                                 const char *graphDumpPath, aclGraphDumpOption *graphdumpOpt) {
-    typedef aclError (*AclGenGraphAndDumpForOpFunc)(const char *,
+aclError AclGenGraphAndDumpForOp(const char* opType, int numInputs, const aclTensorDesc* const inputDesc[], const aclDataBuffer* const inputs[], int numOutputs,
+                                 const aclTensorDesc* const outputDesc[], aclDataBuffer* const outputs[], const aclopAttr* attr, aclopEngineType engineType,
+                                 const char* graphDumpPath, aclGraphDumpOption* graphdumpOpt) {
+    typedef aclError (*AclGenGraphAndDumpForOpFunc)(const char*,
                                                     int,
-                                                    const aclTensorDesc *const[],
-                                                    const aclDataBuffer *const[],
+                                                    const aclTensorDesc* const[],
+                                                    const aclDataBuffer* const[],
                                                     int,
-                                                    const aclTensorDesc *const[],
-                                                    aclDataBuffer *const[],
-                                                    const aclopAttr *,
+                                                    const aclTensorDesc* const[],
+                                                    aclDataBuffer* const[],
+                                                    const aclopAttr*,
                                                     aclopEngineType,
-                                                    const char *,
-                                                    aclGraphDumpOption *);
+                                                    const char*,
+                                                    aclGraphDumpOption*);
     static AclGenGraphAndDumpForOpFunc func = nullptr;
     if (func == nullptr) {
         // func = (AclGenGraphAndDumpForOpFunc)GET_FUNC(aclGenGraphAndDumpForOp);
@@ -83,8 +83,8 @@ aclError AclGenGraphAndDumpForOp(const char *opType, int numInputs, const aclTen
     return ret;
 }
 
-aclGraphDumpOption *AclCreateGraphDumpOpt() {
-    typedef aclGraphDumpOption *(*AclCreateGraphDumpOptFunc)();
+aclGraphDumpOption* AclCreateGraphDumpOpt() {
+    typedef aclGraphDumpOption* (*AclCreateGraphDumpOptFunc)();
     static AclCreateGraphDumpOptFunc func = nullptr;
     if (func == nullptr) {
         func = (AclCreateGraphDumpOptFunc)GET_FUNC(aclCreateGraphDumpOpt);
@@ -93,8 +93,8 @@ aclGraphDumpOption *AclCreateGraphDumpOpt() {
     return func();
 }
 
-aclError AclDestroyGraphDumpOpt(aclGraphDumpOption *aclGraphDumpOpt) {
-    typedef aclError (*AclDestroyGraphDumpOptFunc)(aclGraphDumpOption *);
+aclError AclDestroyGraphDumpOpt(aclGraphDumpOption* aclGraphDumpOpt) {
+    typedef aclError (*AclDestroyGraphDumpOptFunc)(aclGraphDumpOption*);
     static AclDestroyGraphDumpOptFunc func = nullptr;
     if (func == nullptr) {
         // func = (AclDestroyGraphDumpOptFunc)GET_FUNC(aclDestroyGraphDumpOpt);
@@ -103,20 +103,20 @@ aclError AclDestroyGraphDumpOpt(aclGraphDumpOption *aclGraphDumpOpt) {
     return func(aclGraphDumpOpt);
 }
 
-aclError AclopCompileAndExecuteV2(const char *opType, int numInputs, aclTensorDesc *inputDesc[], aclDataBuffer *inputs[], int numOutputs,
-                                  aclTensorDesc *outputDesc[], aclDataBuffer *outputs[], aclopAttr *attr, aclopEngineType engineType,
-                                  aclopCompileType compileFlag, const char *opPath, aclrtStream stream) {
-    typedef aclError (*AclopCompileAndExecuteV2Func)(const char *,
+aclError AclopCompileAndExecuteV2(const char* opType, int numInputs, aclTensorDesc* inputDesc[], aclDataBuffer* inputs[], int numOutputs,
+                                  aclTensorDesc* outputDesc[], aclDataBuffer* outputs[], aclopAttr* attr, aclopEngineType engineType,
+                                  aclopCompileType compileFlag, const char* opPath, aclrtStream stream) {
+    typedef aclError (*AclopCompileAndExecuteV2Func)(const char*,
                                                      int,
-                                                     aclTensorDesc *[],
-                                                     aclDataBuffer *[],
+                                                     aclTensorDesc*[],
+                                                     aclDataBuffer*[],
                                                      int,
-                                                     aclTensorDesc *[],
-                                                     aclDataBuffer *[],
-                                                     aclopAttr *,
+                                                     aclTensorDesc*[],
+                                                     aclDataBuffer*[],
+                                                     aclopAttr*,
                                                      aclopEngineType,
                                                      aclopCompileType,
-                                                     const char *,
+                                                     const char*,
                                                      aclrtStream);
     static AclopCompileAndExecuteV2Func func = nullptr;
     if (func == nullptr) {
