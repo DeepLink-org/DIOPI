@@ -10,8 +10,16 @@ namespace impl {
 namespace ascend {
 diopiError_t diopiWhere(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t condition, diopiConstTensorHandle_t input,
                         diopiConstTensorHandle_t other) {
-    std::vector<int64_t> dimVec({0});
-    AclOpRunner<3, 1>("Select", ctx).addInput(condition).addInput(input).addInput(other).addOutput(out).run();
+    AscendTensor AsCondition(condition);
+    AscendTensor AsInput(input);
+    AscendTensor AsOther(other);
+    
+    if (AsCondition.dtype() != diopi_dtype_bool) {
+        castTensor(ctx, AsCondition, diopi_dtype_bool);
+    }
+
+
+    AclOpRunner<3, 1>("Select", ctx).addInput(AsCondition).addInput(input).addInput(other).addOutput(out).run();
     return diopiSuccess;
 }
 
