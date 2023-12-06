@@ -15,6 +15,7 @@
 #include <iostream>
 #include <mutex>
 #include <sstream>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -105,7 +106,7 @@ template <typename... Types>
 void set_last_error_string(const char* szFmt, Types&&... args) {
     char szBuf[4096] = {0};
     sprintf(szBuf, szFmt, std::forward<Types>(args)...);
-    _set_last_error_string(szBuf);
+    setLastErrorString(szBuf);
 }
 
 #define ATEN_NOT_IMPLEMENT()                                                                                         \
@@ -163,8 +164,8 @@ void setCurCtx(diopiContextHandle_t ctx);
 void unsetCurCtx();
 
 inline void sync(diopiContextHandle_t ctx) {
-    diopiStreamHandle_t stream_handle;
-    diopiGetStream(ctx, &stream_handle);
+    diopiStreamHandle_t streamHandle;
+    diopiGetStream(ctx, &streamHandle);
 }
 
 inline caffe2::TypeMeta getATenType(diopiDtype_t dt) {
@@ -301,9 +302,9 @@ inline at::IntArrayRef buildATen(const diopiSize_t* size) { return at::IntArrayR
 
 inline at::IntArrayRef buildATen(diopiSize_t size) { return at::IntArrayRef(size.data, size.len); }
 
-inline c10::OptionalIntArrayRef buildATen(diopiSize_t* size_ptr) {
-    if (size_ptr) {
-        return buildATen(*size_ptr);
+inline c10::OptionalIntArrayRef buildATen(diopiSize_t* sizePtr) {
+    if (sizePtr) {
+        return buildATen(*sizePtr);
     }
     return c10::nullopt;
 }
@@ -383,9 +384,9 @@ inline void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiT
 // new cuda generator and pass dipu generator state into cuda generator state
 inline at::Generator buildGenerator(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t generator) {
     at::Generator gen;
-    diopiTensorHandle_t state_handle = nullptr;
-    diopiGeneratorGetState(ctx, generator, &state_handle);
-    auto state = impl::aten::buildATen(state_handle);
+    diopiTensorHandle_t stateHandle = nullptr;
+    diopiGeneratorGetState(ctx, generator, &stateHandle);
+    auto state = impl::aten::buildATen(stateHandle);
     {
         std::lock_guard<std::mutex> lock(gen.mutex());
         gen.set_state(state);
@@ -393,15 +394,15 @@ inline at::Generator buildGenerator(diopiContextHandle_t ctx, diopiConstGenerato
     return gen;
 }
 
-inline void updateGeneratorHandleState(diopiContextHandle_t ctx, at::Generator& cuda_gen, diopiGeneratorHandle_t generator) {
-    at::Tensor new_state;
+inline void updateGeneratorHandleState(diopiContextHandle_t ctx, at::Generator& cudaGen, diopiGeneratorHandle_t generator) {
+    at::Tensor newState;
     {
-        std::lock_guard<std::mutex> lock(cuda_gen.mutex());
-        new_state = cuda_gen.get_state();
+        std::lock_guard<std::mutex> lock(cudaGen.mutex());
+        newState = cudaGen.get_state();
     }
-    diopiTensorHandle_t new_state_handle = nullptr;
-    buildDiopiTensor(ctx, new_state, &new_state_handle);
-    diopiGeneratorSetState(generator, new_state_handle);
+    diopiTensorHandle_t newStateHandle = nullptr;
+    buildDiopiTensor(ctx, newState, &newStateHandle);
+    diopiGeneratorSetState(generator, newStateHandle);
 }
 
 }  // namespace aten
