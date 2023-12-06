@@ -4,32 +4,6 @@ from skip import Skip
 
 device_configs = {
     # temp for 910B
-    'nonzero': dict(
-        name=["nonzero"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.uint8),],
-                },
-            ],
-        ),
-    ),
-
-    # temp for 910B
-    'nonzero_uint': dict(
-        name=["nonzero"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.uint8),],
-                },
-            ],
-        ),
-    ),
-
-    # temp for 910B
     'join': dict(
         name=['stack'],
         tensor_para=dict(
@@ -384,7 +358,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erf', 'erfinv', 'exp', 'asin', 'ceil', 'atan'],
+        name=['erf', 'erfinv', 'asin', 'ceil', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -396,7 +370,7 @@ device_configs = {
     ),
 
     'pointwise_op_int_without_inplace': dict(
-        name=['erf', 'exp', 'asin', 'atan'],
+        name=['erf', 'asin', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -408,7 +382,7 @@ device_configs = {
     ),
 
     'pointwise_op_uint8': dict(
-        name=['erf', 'exp', 'asin', 'atan'],
+        name=['erf', 'asin', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -432,7 +406,7 @@ device_configs = {
     ),
 
     'pointwise_op_bool': dict(
-        name=['erf', 'exp', 'asin', 'atan'],
+        name=['erf', 'asin', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -516,7 +490,7 @@ device_configs = {
     ),
 
     'pointwise_op_zero': dict(
-        name=['exp', 'ceil'],
+        name=['ceil'],
         tensor_para=dict(
             args=[
                 {
@@ -528,7 +502,7 @@ device_configs = {
     ),
 
     'pointwise_op_without_inplace_zero': dict(
-        name=['sign', 'exp'],
+        name=['sign'],
         tensor_para=dict(
             args=[
                 {
