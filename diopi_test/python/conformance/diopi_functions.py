@@ -195,7 +195,7 @@ def pow_dtype(input, other, scalar: bool = True) -> Dtype:
                 return Dtype.float32 if dtype2 in float_types else Dtype.int64
             if dtype2 not in int_types:
                 return dtype1 if dtype1 == Dtype.float16 else Dtype.float32
-        return dtype1
+            return dtype1
     else:
         dtype_order = [Dtype.float64, Dtype.float32, Dtype.float16,
                        Dtype.int64, Dtype.int32, Dtype.int16, Dtype.int8, Dtype.uint8, Dtype.bool]
