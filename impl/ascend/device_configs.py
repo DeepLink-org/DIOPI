@@ -1067,42 +1067,6 @@ device_configs = {
         ),
     ),
 
-    'dropout': dict(
-        name=['dropout'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'dropout_training': dict(
-        name=['dropout'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'dropout2d': dict(
-        name=['dropout2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
     'leaky_relu': dict(
         name=['leaky_relu'],
         tensor_para=dict(

@@ -68,7 +68,7 @@ void printTensorHelper1(const AscendTensor& at, void* ptrHost) {
             return;
         }
         default:
-            printf("unsupport dtype %s", diopiDtypeToStr(at.dtype()));
+            printf("unsupport dtype %s\n", diopiDtypeToStr(at.dtype()));
             return;
     }
 }
