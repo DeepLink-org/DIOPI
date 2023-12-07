@@ -7,6 +7,8 @@ option(DYLOAD "Whether to load so in runtime by dlopen" OFF)
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/proto/include")
 include_directories("${PROJECT_SOURCE_DIR}/../adaptor/csrc")
 
+set(CMAKE_CXX_STANDARD 14)
+
 set (ADAPTOR_DIR "${CMAKE_SOURCE_DIR}/../adaptor")
 set (DIOPI_TEST_DIR "${CMAKE_SOURCE_DIR}/../diopi_test")
 
@@ -51,8 +53,6 @@ list(APPEND IMPL_CAMB "CAMB" "camb")
 list(APPEND IMPL_ASCEND "ASCEND" "ascend")
 list(APPEND IMPL_SUPA "SUPA" "supa")
 list(APPEND IMPL_DROPLET "DROPLET" "droplet")
-
-add_definitions(-std=c++14)
 
 if (${IMPL_OPT} IN_LIST IMPL_CUDA)
     add_subdirectory(cuda)

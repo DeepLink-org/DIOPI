@@ -50,14 +50,14 @@ jobs:
     steps:
       - name: clone repo
         run: |
-          cd ${GITHUB_WORKSPACE} && rm -rf DIOPI
-          if [ -n "${{ github.event.pull_request.head.repo.full_name }}" ] && [[ ! "${{ github.event.pull_request.head.repo.full_name }}" == *DeepLink-org* ]]; then
-            git clone ${{ github.event.pull_request.head.repo.ssh_url }}
-            cd ${GITHUB_WORKSPACE}/${{ github.event.repository.name }} && git checkout ${{ github.event.pull_request.head.sha }}
+          cd ${GITHUB_WORKSPACE} && rm -rf DIOPI* source
+          if [ -n "${{ github.event.pull_request.head.repo.full_name }}" ] && [[ ! "${{ github.event.pull_request.head.repo.full_name }}" == "${{ github.repository }}"  ]]; then
+            git clone ${{ github.event.pull_request.head.repo.ssh_url }} source
+            cd ${GITHUB_WORKSPACE}/source && git checkout ${{ github.event.pull_request.head.sha }}
             git remote add mainrepo git@github.com:${GITHUB_REPOSITORY}.git
             git fetch  mainrepo && git merge --no-edit mainrepo/${{ github.base_ref }}
           else
-            git clone https://github.com/DeepLink-org/DIOPI.git && cd DIOPI
+            git clone https://github.com/DeepLink-org/DIOPI.git source && cd source
             if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
             git checkout ${{ github.event.pull_request.head.sha }} && git merge --no-edit ${{ github.base_ref }}
             else
@@ -71,22 +71,22 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.CI_TOKEN != '' && secrets.CI_TOKEN || 'NONE' }}"
         run: |
           PR_NUMBER="${{ github.event.pull_request.number || 0 }}"
-          cd ${GITHUB_WORKSPACE}/DIOPI && RUN_RESULT=$(python3 scripts/filter_ci.py ${PR_NUMBER})
+          cd ${GITHUB_WORKSPACE}/source && RUN_RESULT=$(python3 scripts/filter_ci.py ${PR_NUMBER})
           echo "RUN_RESULT=$RUN_RESULT" >> "$GITHUB_OUTPUT"
       - name: Rsync to Server
         run: |
           ssh ${CLUSTER_1988} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source" \
-          && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to sh1988"
+          && rsync -a --delete ${GITHUB_WORKSPACE}/source/ ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to sh1988"
           ssh ${CLUSTER_CAMB} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source" \
-          && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to camb"
+          && rsync -a --delete ${GITHUB_WORKSPACE}/source/ ${CLUSTER_CAMB}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to camb"
           ssh ${CLUSTER_TOPSRIDER} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
-          && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_TOPSRIDER}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to topsrider"
+          && rsync -a --delete ${GITHUB_WORKSPACE}/source/ ${CLUSTER_TOPSRIDER}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to topsrider"
           ssh ${CLUSTER_SUPA} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
-          && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_SUPA}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to supa"
+          && rsync -a --delete ${GITHUB_WORKSPACE}/source/ ${CLUSTER_SUPA}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to supa"
           ssh ${CLUSTER_1424} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
-          && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_1424}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to sh1424"
+          && rsync -a --delete ${GITHUB_WORKSPACE}/source/ ${CLUSTER_1424}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to sh1424"
           ssh ${CLUSTER_ASCEND_910B} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
-          && rsync -a --delete ${GITHUB_WORKSPACE}/DIOPI/ ${CLUSTER_ASCEND_910B}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to ascend 910b"
+          && rsync -a --delete ${GITHUB_WORKSPACE}/source/ ${CLUSTER_ASCEND_910B}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to ascend 910b"
 
   lint:
     name: lint
@@ -360,11 +360,11 @@ jobs:
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export CI=true
           cd impl && sh scripts/build_impl.sh ascend
-      #- name: clang-tidy
-      #  run: |
-      #    set -e
-      #    cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-      #    cd impl && bash scripts/ci_script.sh clang-tidy || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
+      - name: clang-tidy
+        run: |
+         set -e
+         cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+         cd impl && bash scripts/ci_script.sh clang-tidy-ascend || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
 
   Op-Test-Ascend-910b:
     name: Op-Test-Ascend-910b
