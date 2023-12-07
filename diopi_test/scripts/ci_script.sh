@@ -1,12 +1,13 @@
 # !/bin/bash
 set -e
 
+CURRENT_DIR=$(dirname $0)
+
+DIOPI_TEST_DIR=$(readlink -f $CURRENT_DIR/../)
+
 case $1 in
   py-lint)
-    (echo "py-lint" && flake8 --ignore=E501,F841,W503 python/conformance/diopi_functions.py \
-       && flake8 --ignore=E501,F401 --exclude=python/conformance/diopi_functions.py,scripts/cpplint.py,impl/,third_party/,python/conformance/model_config/ \
-       && flake8 --ignore=E501,F401 python/conformance/model_config/process_ops.py python/conformance/model_config/generate_config.py ) \
-    || exit -1;;
+    echo "py-lint" && flake8 $DIOPI_TEST_DIR || exit -1;;
   cpp-lint)
     # for other cpplint version, maybe  -whitespace/indent is needed to check impl
     (echo "cpp-lint" && python scripts/cpplint.py --exclude=impl/third_party/ --linelength=160 \
@@ -14,7 +15,7 @@ case $1 in
       --recursive impl/ \
       && python scripts/cpplint.py --linelength=240 --filter=-build/header_guard --recursive diopirt/ ) \
     || exit -1;;
-    *)
+  *)
     echo -e "[ERROR] Incorrect option:" $1;
 
 esac
