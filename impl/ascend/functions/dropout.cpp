@@ -79,10 +79,12 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
 
 diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t mask, double p, bool train,
                              diopiGeneratorHandle_t generator) {
-    diopiTensorHandle_t inputCopy;
-    makeTensorLike(ctx, &inputCopy, input);
-    diopiCopyInp(ctx, input, inputCopy);
-    diopiDropout(ctx, input, mask, inputCopy, p, train, generator);
+    if (train) {
+        diopiTensorHandle_t inputCopy;
+        makeTensorLike(ctx, &inputCopy, input);
+        diopiCopyInp(ctx, input, inputCopy);
+        diopiDropout(ctx, input, mask, inputCopy, p, train, generator);
+    }
     return diopiSuccess;
 }
 
