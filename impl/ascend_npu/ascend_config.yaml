@@ -7,6 +7,7 @@ ascend:
 - diopiAddcdivInp
 - diopiAddcmul
 - diopiAddcmulInp
+- diopiAddmm
 - diopiAll
 - diopiAny
 - diopiArange
@@ -200,9 +201,5 @@ ascend_npu:
 - diopiRemainderTensor
 - diopiRemainderScalar
 - diopiRemainder
-<<<<<<< HEAD
-- diopiAddmm
-=======
 - diopiStack
 
->>>>>>> fbe9eddbe98f31c1e5f002cd0cd289601bc4b67e
