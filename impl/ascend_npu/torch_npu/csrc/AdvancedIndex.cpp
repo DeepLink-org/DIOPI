@@ -14,12 +14,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "torch_npu/csrc/framework/DIOPIAdapter.h"
 #include "op_plugin/utils/AdvancedIndex.h"
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
 namespace op_plugin {
 
