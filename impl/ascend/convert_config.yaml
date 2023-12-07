@@ -217,3 +217,9 @@
 
 - diopiEmbeddingBackward:
     dtype: (float64)->float32
+
+- diopiDropout:
+    dtype: (float64)->float32
+
+- diopiDropoutInp:
+    dtype: (float64)->float32
