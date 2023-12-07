@@ -2277,17 +2277,4 @@ device_configs = {
             ],
         ),
     ),
-    
-    'addmm': dict(
-        name=["addmm"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(())],
-                },
-            ],
-        ),
-        
-    )
 }
