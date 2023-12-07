@@ -724,7 +724,7 @@ device_configs = {
     ),
 
     'reduce_op': dict(
-        name=['mean', 'sum'],
+        name=['sum'],
         atol=1e-3,
         rtol=1e-3,
     ),
@@ -732,7 +732,7 @@ device_configs = {
     'reduce_partial_op': dict(
         atol=1e-3,
         rtol=1e-3,
-        name=['mean', 'sum'],
+        name=['sum'],
     ),
 
     'reduce_partial_op_1': dict(
@@ -887,29 +887,6 @@ device_configs = {
         rtol = 1e-1,
     ),
 
-    'embedding': dict(
-        name=['embedding'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int64),Skip(np.int64),Skip(np.int32),],
-                },
-            ]
-        ),
-    ),
-
-    'embedding_forward': dict(
-        name=['embedding'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int64),Skip(np.int64),Skip(np.int32),],
-                },
-            ]
-        ),
-    ),
 
     'clip_grad_norm': dict(
         name=['clip_grad_norm_'],
