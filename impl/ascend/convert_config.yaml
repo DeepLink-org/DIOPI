@@ -215,6 +215,9 @@
 - diopiRsqrt:
     dtype: (int8, uint8, int16, int32, int64, bool)->float32
 
+- diopiEmbeddingBackward:
+    dtype: (float64)->float32
+
 - diopiDropout:
     dtype: (float64)->float32
 

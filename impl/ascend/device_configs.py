@@ -899,29 +899,6 @@ device_configs = {
         rtol = 1e-1,
     ),
 
-    'embedding': dict(
-        name=['embedding'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int64),Skip(np.int64),Skip(np.int32),],
-                },
-            ]
-        ),
-    ),
-
-    'embedding_forward': dict(
-        name=['embedding'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int64),Skip(np.int64),Skip(np.int32),],
-                },
-            ]
-        ),
-    ),
 
     'clip_grad_norm': dict(
         name=['clip_grad_norm_'],
