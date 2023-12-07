@@ -711,18 +711,6 @@ device_configs = {
         rtol=3e-2,
     ),
 
-    'addmm': dict(
-        name=['addmm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(())],
-                },
-            ]
-        ),
-    ),
-
     'matmul': dict(
         name=['matmul'],
         tensor_para=dict(
