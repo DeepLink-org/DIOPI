@@ -55,10 +55,6 @@ def gen_case(cache_path=".", cur_dir="", model_name="", fname="", impl_folder=""
         coll.save(cfg_path)
 
     from codegen.gen_case import GenConfigTestCase
-
-    if not os.path.exists(case_output_dir):
-        os.makedirs(case_output_dir)
-
     gctc = GenConfigTestCase(
         module=model_name, config_path=cfg_path, tests_path=case_output_dir
     )
