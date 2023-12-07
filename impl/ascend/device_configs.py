@@ -62,7 +62,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
+                    "shape": [Skip(()),],
                 },
             ],
         ),
@@ -358,7 +358,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erf', 'erfinv', 'asin', 'rsqrt', 'ceil', 'atan'],
+        name=['erf', 'erfinv', 'asin', 'ceil', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -370,7 +370,7 @@ device_configs = {
     ),
 
     'pointwise_op_int_without_inplace': dict(
-        name=['erf', 'asin', 'rsqrt', 'atan'],
+        name=['erf', 'asin', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -382,7 +382,7 @@ device_configs = {
     ),
 
     'pointwise_op_uint8': dict(
-        name=['erf', 'asin', 'rsqrt', 'atan'],
+        name=['erf', 'asin', 'atan'],
         tensor_para=dict(
             args=[
                 {
@@ -406,24 +406,12 @@ device_configs = {
     ),
 
     'pointwise_op_bool': dict(
-        name=['erf', 'asin', 'rsqrt', 'atan'],
+        name=['erf', 'asin', 'atan'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "shape": [Skip(()),Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
-                },
-            ]
-        ),
-    ),
-
-    'pointwise_op_abs_input': dict(
-        name=['rsqrt'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),Skip((0,)),Skip((0, 16)),Skip((8, 0, 4)),],
                 },
             ]
         ),
@@ -502,7 +490,7 @@ device_configs = {
     ),
 
     'pointwise_op_zero': dict(
-        name=['rsqrt', 'ceil'],
+        name=['ceil'],
         tensor_para=dict(
             args=[
                 {
@@ -514,7 +502,7 @@ device_configs = {
     ),
 
     'pointwise_op_without_inplace_zero': dict(
-        name=['sign', 'rsqrt'],
+        name=['sign'],
         tensor_para=dict(
             args=[
                 {
@@ -658,7 +646,7 @@ device_configs = {
     ),
 
     'bitwise_op': dict(
-        name=['bitwise_and', 'bitwise_or'],
+        name=['bitwise_and'],
         tensor_para=dict(
             args=[
                 {
@@ -670,7 +658,7 @@ device_configs = {
     ),
 
     'bitwise_op_diff_dtype': dict(
-        name=['bitwise_and', 'bitwise_or'],
+        name=['bitwise_and'],
         tensor_para=dict(
             args=[
                 {
@@ -682,7 +670,7 @@ device_configs = {
     ),
 
     'bitwise_op_broadcast': dict(
-        name=['bitwise_and', 'bitwise_or'],
+        name=['bitwise_and'],
         tensor_para=dict(
             args=[
                 {
@@ -694,7 +682,7 @@ device_configs = {
     ),
 
     'bitwise_op_scalar': dict(
-        name=['bitwise_and', 'bitwise_or'],
+        name=['bitwise_and'],
         tensor_para=dict(
             args=[
                 {
@@ -706,7 +694,7 @@ device_configs = {
     ),
 
     'bitwise_op_scalar_bool': dict(
-        name=['bitwise_and', 'bitwise_or'],
+        name=['bitwise_and'],
         tensor_para=dict(
             args=[
                 {
@@ -748,7 +736,7 @@ device_configs = {
     ),
 
     'reduce_op': dict(
-        name=['mean', 'sum'],
+        name=['sum'],
         atol=1e-3,
         rtol=1e-3,
     ),
@@ -756,7 +744,7 @@ device_configs = {
     'reduce_partial_op': dict(
         atol=1e-3,
         rtol=1e-3,
-        name=['mean', 'sum'],
+        name=['sum'],
     ),
 
     'reduce_partial_op_1': dict(
@@ -2121,7 +2109,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
+                    "shape": [Skip((4, 2, 3, 5)), Skip(()), Skip((0,)), Skip((12, 0)), Skip((4, 0, 9))],                
                 },
             ]
         ),

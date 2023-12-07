@@ -206,8 +206,14 @@
 - diopiSiluBackward:
     dtype: (float64)->float32
 
+- diopiUniformInp:
+    dtype: (float64)->float32
+
 - diopiExp:
     dtype: (bool, uint8, int8, int16, int32, int64)->float32
 
 - diopiNorm:
     dtype: (bool, uint8, int8, int16, int32, int64, float16, float64)->float32
+
+- diopiRsqrt:
+    dtype: (int8, uint8, int16, int32, int64, bool)->float32
