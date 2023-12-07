@@ -646,7 +646,7 @@ device_configs = {
     ),
 
     'bitwise_op': dict(
-        name=['bitwise_and', 'bitwise_or'],
+        name=['bitwise_and'],
         tensor_para=dict(
             args=[
                 {
@@ -658,7 +658,7 @@ device_configs = {
     ),
 
     'bitwise_op_diff_dtype': dict(
-        name=['bitwise_and', 'bitwise_or'],
+        name=['bitwise_and'],
         tensor_para=dict(
             args=[
                 {
@@ -670,7 +670,7 @@ device_configs = {
     ),
 
     'bitwise_op_broadcast': dict(
-        name=['bitwise_and', 'bitwise_or'],
+        name=['bitwise_and'],
         tensor_para=dict(
             args=[
                 {
@@ -682,7 +682,7 @@ device_configs = {
     ),
 
     'bitwise_op_scalar': dict(
-        name=['bitwise_and', 'bitwise_or'],
+        name=['bitwise_and'],
         tensor_para=dict(
             args=[
                 {
@@ -694,7 +694,7 @@ device_configs = {
     ),
 
     'bitwise_op_scalar_bool': dict(
-        name=['bitwise_and', 'bitwise_or'],
+        name=['bitwise_and'],
         tensor_para=dict(
             args=[
                 {
@@ -736,7 +736,7 @@ device_configs = {
     ),
 
     'reduce_op': dict(
-        name=['mean', 'sum'],
+        name=['sum'],
         atol=1e-3,
         rtol=1e-3,
     ),
@@ -744,7 +744,7 @@ device_configs = {
     'reduce_partial_op': dict(
         atol=1e-3,
         rtol=1e-3,
-        name=['mean', 'sum'],
+        name=['sum'],
     ),
 
     'reduce_partial_op_1': dict(
@@ -2073,7 +2073,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
+                    "shape": [Skip((4, 2, 3, 5)), Skip(()), Skip((0,)), Skip((12, 0)), Skip((4, 0, 9))],                
                 },
             ]
         ),
