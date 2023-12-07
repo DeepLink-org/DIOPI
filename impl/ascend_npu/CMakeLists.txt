@@ -14,16 +14,9 @@ FetchContent_Declare(op_plugin
 FetchContent_MakeAvailable(op_plugin)
 message(STATUS "op-plugin download done")
 
-set(INCLUDE_CUSTOM_HEADER_LINE "#include \"torch_npu/csrc/framework/DIOPIAdapter.h\"")
-set(GENED_FILE_PATH "${op_plugin_SOURCE_DIR}/op_plugin/AclOpsInterface.h")
-set(GENED_FILE2_PATH "${op_plugin_SOURCE_DIR}/op_plugin/utils/KernelNpuOutputSize.h")
 add_custom_target(op_plugin_gen
-  COMMAND echo "" > ${op_plugin_SOURCE_DIR}/op_plugin/AclOpsInterface.h
   COMMAND cd ${op_plugin_SOURCE_DIR} && bash ./gencode.sh 2.0 python
-  COMMAND sed -i '22i ${INCLUDE_CUSTOM_HEADER_LINE}' ${GENED_FILE_PATH}
-  COMMAND sed -i '21i ${INCLUDE_CUSTOM_HEADER_LINE}' ${GENED_FILE2_PATH}
 )
-
 
 add_subdirectory(third_party/acl)
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)

@@ -8,48 +8,53 @@
 #include "op_plugin/AclOpsInterface.h"
 
 namespace {
-using npu_utils = at_npu::native::NpuUtils;
-using npu_compile_type = at_npu::native::CompileType;
-using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& normalOutNpuNocheck(at::Tensor& result, c10::optional<at::Generator> gen) {
-    auto genDefault = gen.value().get<at_npu::NPUGeneratorImpl>();
-
-    auto pair = genDefault->philox_engine_inputs(10);
-    const int64_t seed = pair.first;
-    const int64_t offset = pair.second;
-
-    at::SmallVector<int64_t, N> key = {seed};
-    at::SmallVector<int64_t, N> counter = {0, offset};
-    const int32_t alg = 1;
-
-    at_npu::native::OpCommand cmd;
-    cmd.Name("StatelessRandomNormalV2")
-        .Input(result.sizes(), at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT)
-        .Input(key, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT, (string) "uint64")
-        .Input(counter, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT, (string) "uint64")
-        .Input(at::Scalar(alg), at::ScalarType::Int)
-        .Output(result)
-        .Attr("dtype", result.scalar_type())
-        .Run();
-    return result;
+float calculateP(c10::optional<at::Scalar> p) {
+    if (p.has_value()) {
+        float val = at_npu::native::CalcuOpUtil::GetScalarFloatValue(p.value());
+        if (val == INFINITY) {
+            return static_cast<float>(INT_MAX);  // p = inf
+        } else if (val == -INFINITY) {
+            return static_cast<float>(INT_MIN);  // p = -inf
+        } else {
+            return p.value().toFloat();
+        }
+    } else {
+        return static_cast<float>(2.0);  // default: p = 2.0
+    }
 }
+
 }  // namespace
 
 namespace OP_IMPL_NS {
 
-diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, double std, diopiGeneratorHandle_t generator) {
-    BEGIN_CALL_ACL_OP(out, generator);
-    if (outAt.numel() > 0) {
-        normalOutNpuNocheck(outAt, c10::make_optional(std::move(generatorAt)));
-        acl_op::mul_(outAt, std);
-        acl_op::add_(outAt, mean);
+diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* p, diopiSize_t dim) {
+    BEGIN_CALL_ACL_OP(input, out, p, dim);
+    if (!outAt.defined() || outAt.numel() <= 0) {
+        return diopiSuccess;
     }
-    END_CALL_ACL_OP();
-}
 
-diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std, diopiGeneratorHandle_t generator) {
-    return OP_IMPL_NS::diopiNormal(ctx, inout, mean, std, generator);
+    if (!inputAt.defined()) {
+        acl_op::fill_(outAt, 0);
+        return diopiSuccess;
+    }
+    TORCH_CHECK(inputAt.scalar_type() == at::ScalarType::Float);
+    TORCH_CHECK(outAt.scalar_type() == at::ScalarType::Float);
+    bool keepdim = outAt.dim() == inputAt.dim();
+    auto pvalue = calculateP(pAt);
+    at_npu::native::OpCommand cmd1;
+    cmd1.Name("LpNormReduceV2")
+        .Input(inputAt)
+        .Output(outAt)
+        .Attr("p", pvalue)
+        .Attr("axes", dimAt)
+        .Attr("keepdim", keepdim)
+        .Attr("epsilon", static_cast<float>(0))
+        .Run();
+
+    at_npu::native::OpCommand cmd2;
+    cmd2.Name("LpNormUpdateV2").Input(outAt).Output(outAt).Attr("p", pvalue).Attr("epsilon", static_cast<float>(0)).Run();
+    END_CALL_ACL_OP();
 }
 
 }  // namespace OP_IMPL_NS

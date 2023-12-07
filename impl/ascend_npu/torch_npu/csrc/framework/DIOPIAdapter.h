@@ -598,7 +598,7 @@ public:
     static at::Tensor apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) { INTERFACE_NOT_IMPL; }
     static at::Tensor unsafe_empty_workspace(uint64_t size) { INTERFACE_NOT_IMPL; }
     // DEPRECATED: ApplyTensorWithSizes will be deprecated, please use apply_tensor_with_sizes instead.
-    static at::Tensor ApplyTensorWithSizes(c10::IntArrayRef sizes, const c10::TensorOptions& options) { INTERFACE_NOT_IMPL; }
+    static at::Tensor ApplyTensorWithSizes(c10::IntArrayRef sizes, const c10::TensorOptions& options) { return apply_tensor_with_sizes(sizes, options); }
     // DEPRECATED: CheckMemory will be deprecated, please use check_memory instead.
     static void CheckMemory(const std::initializer_list<at::Tensor>& inputs, const std::initializer_list<at::Tensor>& outputs) { INTERFACE_NOT_IMPL; }
     static bool IsCPUScalar(const at::Tensor& tensor) { return tensor.is_cpu() && tensor.numel() == 1; }

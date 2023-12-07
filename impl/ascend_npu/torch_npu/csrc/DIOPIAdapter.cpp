@@ -568,7 +568,12 @@ public:
     }
 
     inline AclTensorDescMaker& Create(aclDataType dataType, c10::IntArrayRef dims, aclFormat format) {
-        desc = aclCreateTensorDesc(dataType, dims.size(), dims.data(), format);
+        if (dims.size() > 0) {
+            desc = aclCreateTensorDesc(dataType, dims.size(), dims.data(), format);
+        } else {
+            std::array<int64_t, 1> shape{1};
+            desc = aclCreateTensorDesc(dataType, shape.size(), shape.data(), format);
+        }
         return *this;
     }
 
@@ -1112,7 +1117,7 @@ inline bool enableDumpArgs() { return std::getenv("DIOPI_DEBUG_OP") != nullptr; 
 std::tuple<aclTensorDesc*, aclDataBuffer*> CovertNPUTensorWithZeroDimToAclInput(const at::Tensor& tensor, const string& descName) {
     aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(tensor.scalar_type());
     AclTensorDescMaker desc;
-    auto aclDesc = desc.Create(aclDataType, ACL_FORMAT_ND).SetName(descName).Get();
+    auto aclDesc = desc.Create(aclDataType, tensor.sizes(), ACL_FORMAT_ND).SetName(descName).Get();
     AclTensorBufferMaker buffer(tensor);
     auto aclBuff = buffer.Get();
     return std::tie(aclDesc, aclBuff);
@@ -1141,6 +1146,7 @@ std::tuple<aclTensorDesc*, aclDataBuffer*> CovertTensorToAclInput(const at::Tens
     // const auto &npuDesc = torch_npu::NPUBridge::GetNpuStorageImplDesc(tensor);
 
     AclTensorDescMaker desc;
+
     auto aclDesc = desc.Create(aclDataType, tensor.sizes(), static_cast<aclFormat>(format)).SetName(descName).Get();
 
     // if aclDataType != ACL_STRING, we use storageDims to calculate nums and use
