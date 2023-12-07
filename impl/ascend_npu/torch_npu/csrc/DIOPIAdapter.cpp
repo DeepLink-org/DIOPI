@@ -1467,6 +1467,19 @@ void npu_fast_reshape_(at::Tensor& tensor) {
 
 }  // namespace native
 
+std::pair<uint64_t, uint64_t> NPUGeneratorImpl::philox_engine_inputs(uint64_t increment) {
+    diopiTensorHandle_t stateHandle = nullptr;
+    auto gen = reinterpret_cast<diopiGeneratorHandle_t>(generator_);
+    diopiGeneratorGetState(context, gen, &stateHandle);
+    void* statePtr = nullptr;
+    diopiGetTensorData(stateHandle, &statePtr);
+    PhiloxNpuState* state = reinterpret_cast<PhiloxNpuState*>(statePtr);
+    auto ret = std::make_pair(state->seed_, state->offset_.val);
+    state->offset_.val += increment;
+    diopiGeneratorSetState(gen, stateHandle);
+    return ret;
+}
+
 namespace detail {
 
 const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) { INTERFACE_NOT_IMPL }
@@ -1633,12 +1646,7 @@ inline const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
 at::Generator buildATen(diopiGeneratorHandle_t generator) {
     auto gen = at::make_generator<at_npu::NPUGeneratorImpl>(current_device());
     auto impl = static_cast<at_npu::NPUGeneratorImpl*>(gen.unsafeGetGeneratorImpl());
-    diopiTensorHandle_t stateHandle = nullptr;
-    diopiGeneratorGetState(context, generator, &stateHandle);
-    void* statePtr = nullptr;
-    diopiGetTensorData(stateHandle, &statePtr);
-    impl->state_ = statePtr;
-    impl->stateHandle_ = stateHandle;
+    impl->generator_ = generator;
     return gen;
 }
 

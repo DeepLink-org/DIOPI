@@ -251,23 +251,13 @@ struct NPUGeneratorImpl : public c10::GeneratorImpl {
     uint64_t philox_offset_per_thread() const { INTERFACE_NOT_IMPL; }
     void capture_prologue(int64_t* offset_extragraph) { INTERFACE_NOT_IMPL; }
     uint64_t capture_epilogue() { INTERFACE_NOT_IMPL; }
-    PhiloxNpuState philox_npu_state(uint64_t increment) {
-        TORCH_CHECK(state_);
-        return *(reinterpret_cast<PhiloxNpuState*>(state_));
-    }
+    PhiloxNpuState philox_npu_state(uint64_t increment){INTERFACE_NOT_IMPL}
 
     // Temporarily accommodates call sites that use philox_engine_inputs.
     // Allows incremental refactor of call sites to use philox_npu_state.
-    std::pair<uint64_t, uint64_t> philox_engine_inputs(uint64_t increment) {
-        INTERFACE_NOT_IMPL;
-        PhiloxNpuState* state = reinterpret_cast<PhiloxNpuState*>(state_);
-        auto ret = std::make_pair(state->seed_, state->offset_.val);
-        state->offset_.val += increment;
-        return ret;
-    }
+    std::pair<uint64_t, uint64_t> philox_engine_inputs(uint64_t increment);
     static c10::DeviceType device_type() { return c10::DeviceType::XPU; }
-    void* state_ = nullptr;
-    void* stateHandle_ = nullptr;
+    void* generator_ = nullptr;
 };
 
 namespace detail {
