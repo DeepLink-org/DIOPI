@@ -251,7 +251,7 @@ struct NPUGeneratorImpl : public c10::GeneratorImpl {
     uint64_t philox_offset_per_thread() const { INTERFACE_NOT_IMPL; }
     void capture_prologue(int64_t* offset_extragraph) { INTERFACE_NOT_IMPL; }
     uint64_t capture_epilogue() { INTERFACE_NOT_IMPL; }
-    PhiloxNpuState philox_npu_state(uint64_t increment){INTERFACE_NOT_IMPL}
+    PhiloxNpuState philox_npu_state(uint64_t increment) { INTERFACE_NOT_IMPL; }
 
     // Temporarily accommodates call sites that use philox_engine_inputs.
     // Allows incremental refactor of call sites to use philox_npu_state.
