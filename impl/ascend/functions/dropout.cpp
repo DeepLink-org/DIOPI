@@ -20,7 +20,8 @@ aclDataType dtypeConvertor(diopiDtype_t type) {
 
 }  // namespace
 
-void dropoutTrainCore(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p, diopiGeneratorHandle_t generator) {
+void dropoutTrainCore(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p,
+                      diopiGeneratorHandle_t generator) {
     diopiTensorHandle_t maskTempTensor;
 
     int64_t numels;
