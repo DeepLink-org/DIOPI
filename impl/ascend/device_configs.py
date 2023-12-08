@@ -1675,7 +1675,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
+                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
                 },
             ]
         ),
@@ -2086,7 +2086,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((4, 2, 3, 5)), Skip(()), Skip((0,)), Skip((12, 0)), Skip((4, 0, 9))],                
+                    "shape": [Skip((4, 2, 3, 5)), Skip(()), Skip((0,)), Skip((12, 0)), Skip((4, 0, 9))],
                 },
             ]
         ),
