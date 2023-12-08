@@ -14,26 +14,22 @@ case $1 in
     (echo "cpp-lint" && python scripts/cpplint.py --linelength=160 --repository=.. \
       --filter=-build/c++11,-legal/copyright,-build/include_subdir,-runtime/references,-runtime/printf,-runtime/int,-build/namespace \
       --exclude=${CURRENT_PATH}/../third_party --exclude=${CURRENT_PATH}/../ascend_npu/third_party  --exclude=${CURRENT_PATH}/../build \
-      --recursive ./ )  \
-    || exit 1;;
+      --recursive ./ );;
   clang-tidy)
     (
     if [ -e ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE} ]; then
       python3 ${IMPL_PATH}/../run-clang-tidy.py -p `dirname "${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}"`
     else
-      echo "error: compile_commands.json not found."
-      exit 1
+      echo "error: compile_commands.json not found." && exit 1
     fi);;
   clang-tidy-ascend)
     (
     if [ -e ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE} ]; then
       python3 ${IMPL_PATH}/../run-clang-tidy.py 'impl/ascend(?!_npu)' 'impl/ascend_npu/diopi_impl' -p $(dirname ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE})
     else
-      echo "error: compile_commands.json not found."
-      exit 1
+      echo "error: compile_commands.json not found." && exit 1
     fi
     );;
   *)
     echo -e "[ERROR] Incorrect option:" $1 && exit 1;
 esac
-exit 0

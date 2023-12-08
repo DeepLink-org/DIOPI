@@ -19,8 +19,7 @@ function validate_required_env_variables() {
   fi
   for env in "${required_env_variables[@]}"; do
     if [ -z "${!env}" ]; then
-      echo "Must specify ${env}"
-      exit 1
+      echo "Must specify ${env}" && exit 1
     fi
   done
 }
