@@ -28,14 +28,14 @@ class ManualTest(object):
                 mask_numpy = mask_numpy * tmp
             remains = out_numpy[mask_numpy == 1]
             ref = input_numpy[mask_numpy == 1]
-            assert np.allclose(remains, ref / (1 - p), rtol=rtol, atol=atol),\
+            assert np.allclose(remains, ref / (1 - p), rtol=rtol, atol=atol), \
                 f"failed to execute {name}, dropout value doesn't matches."
             if mask.numel() > 100:
                 # 0.05 is from pytorch
-                assert np.abs(real_ratio - (1 - p)) < 0.05,\
+                assert np.abs(real_ratio - (1 - p)) < 0.05, \
                     f"failed to execute {name}, dropout proportion unexpected."
         else:
-            assert np.allclose(input_numpy, out_numpy, rtol=rtol, atol=atol),\
+            assert np.allclose(input_numpy, out_numpy, rtol=rtol, atol=atol), \
                 f"failed to execute {name}, dropout value should be the same."
 
     def test_dropout(input, p=0.5, training=True, inplace=False):
@@ -51,11 +51,11 @@ class ManualTest(object):
         out_numpy = out.numpy()
         out_ref = np.arange(0, n, 1)
         if out.numel() > 10:
-            assert not np.allclose(out_numpy, out_ref, 1e-3),\
+            assert not np.allclose(out_numpy, out_ref, 1e-3), \
                 "failed to execute randperm"
 
         out_numpy.sort()
-        assert np.allclose(out_numpy, out_ref, 1e-3),\
+        assert np.allclose(out_numpy, out_ref, 1e-3), \
             "failed to execute randperm"
 
     def test_uniform(input, start=0, end=1, inplace=True):
@@ -64,10 +64,10 @@ class ManualTest(object):
         out = F.uniform(input, start, end, generator, inplace)
         epsilon = 1e-5   # eliminate minor precision error
         out_numpy = out.numpy()
-        assert (out_numpy <= (end + epsilon)).all() and (out_numpy >= (start - epsilon)).all(),\
+        assert (out_numpy <= (end + epsilon)).all() and (out_numpy >= (start - epsilon)).all(), \
             "failed to execute uniform"
         if out.numel() > 100:
-            assert abs(out_numpy.mean() - (end + start) / 2) < 1e-1,\
+            assert abs(out_numpy.mean() - (end + start) / 2) < 1e-1, \
                 "failed to execute uniform"
 
     def test_bernoulli(input, inplace=False, p=None):
@@ -81,7 +81,7 @@ class ManualTest(object):
 
         assert np.all((out_numpy == 0) | (out_numpy == 1)), "bernoulli output must be 0 or 1"
         if out.numel() > 100:
-            assert abs(out_numpy.mean() - p) < 1e-1,\
+            assert abs(out_numpy.mean() - p) < 1e-1, \
                 "failed to execute bernoulli"
 
     def test_random(input, start, end):
@@ -90,10 +90,10 @@ class ManualTest(object):
         out = F.random(input, start, end, generator)
         out_numpy = out.numpy()
 
-        assert (out_numpy >= start).all(),\
+        assert (out_numpy >= start).all(), \
             "failed to execute random"
         if end is not None:
-            assert (out_numpy <= end - 1).all(),\
+            assert (out_numpy <= end - 1).all(), \
                 "failed to execute random"
 
     def test_randn(size):

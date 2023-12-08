@@ -213,8 +213,6 @@ if __name__ == "__main__":
 
         from codegen.gen_case import GenConfigTestCase
 
-        if not os.path.exists(args.case_output_dir):
-            os.makedirs(args.case_output_dir)
         db_conn.drop_case_table(DeviceCase)
         gctc = GenConfigTestCase(
             module=model_name, config_path=cfg_path, tests_path=args.case_output_dir

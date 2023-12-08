@@ -22,7 +22,7 @@ case $1 in
     *)
     echo -e "[ERROR] Incorrect option:" $1;;
   py-lint)
-    (echo "py-lint" && flake8 --ignore=E501,F841 diopi_test/python/conformance/diopi_functions.py \
+    (echo "py-lint" && flake8 --ignore=E501,F841,W503 diopi_test/python/conformance/diopi_functions.py \
        && flake8 --ignore=E501,F401 --exclude=diopi_test/python/conformance/diopi_functions.py,scripts/cpplint.py,diopi_test/third_party/,diopi_test/python/conformance/model_config/ \
        && flake8 --ignore=E501,F401 diopi_test/python/conformance/model_config/process_config.py diopi_test/python/conformance/model_config/__init__.py ) \
     || exit -1;;

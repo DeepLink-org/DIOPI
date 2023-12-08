@@ -12,12 +12,8 @@ def get_run_result(pr_number):
     }
 
     repository = os.environ.get("GITHUB_REPOSITORY")
-    token = os.environ.get("GITHUB_TOKEN")
-    if token == "NONE":
-        return "NV_CAMB_ASCEND_TOPSRIDER_SUPA"
     api_url = f"https://api.github.com/repos/{repository}/pulls/{pr_number}/files"
     headers = {
-        "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github.v3+json"
     }
     response = requests.get(api_url, headers=headers)
@@ -27,8 +23,8 @@ def get_run_result(pr_number):
         for file in pr_files:
             filenames = file["filename"]
             filename = filenames.split("/")[-1]
-            if filename.endswith('.md') or '.github/ISSUE_TEMPLATE/' in filenames or filenames.startswith('.img') or filename.startswith('.git') \
-                    or filename == 'CODEOWNERS' or filename == 'LICENSE' or filename == '.pre-commit-config.yaml':
+            if filename.endswith('.md') or '.github/ISSUE_TEMPLATE/' in filenames or filenames.endswith('.img') or filename.endswith('.git') \
+                    or filename.endswith('.txt') or filename == 'CODEOWNERS' or filename == 'LICENSE' or filename == '.pre-commit-config.yaml':
                 continue
             elif filenames.startswith('impl'):
                 if "impl/camb" in filenames:

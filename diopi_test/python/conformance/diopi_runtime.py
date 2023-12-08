@@ -213,7 +213,7 @@ class Scalar(diopiScalar):
 
         if dtype is None:
             dtype = (
-                glob_vars.int_type if isinstance(value, int) else glob_vars.float_type
+                from_numpy_dtype(glob_vars.int_type) if isinstance(value, int) else from_numpy_dtype(glob_vars.float_type)
             )
         diopiScalar.__init__(self, dtype, value)
 

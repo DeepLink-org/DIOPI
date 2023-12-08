@@ -13,9 +13,6 @@
 #include "../context.h"
 #include "../helper.hpp"
 
-namespace impl {
-namespace cuda {
-
 diopiError_t diopiDestIndexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t k, diopiConstTensorHandle_t destLoc) {
     impl::aten::setCurCtx(ctx);
     at::Tensor atOut = impl::aten::buildATen(out);
@@ -146,6 +143,3 @@ diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTenso
     }
     return diopiSuccess;
 }
-
-}  // namespace cuda
-}  // namespace impl

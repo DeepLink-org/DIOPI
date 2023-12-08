@@ -13,9 +13,6 @@
 #include "../helper.hpp"
 #include "../mmcv_kernel.h"
 
-namespace impl {
-namespace cuda {
-
 diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t dets, diopiConstTensorHandle_t scores,
                           double iouThreshold, int64_t offset) {
     impl::aten::setCurCtx(ctx);
@@ -368,6 +365,3 @@ diopiError_t diopiModulatedDeformConvBackwardMmcv(diopiContextHandle_t ctx, diop
     grad_output = grad_output.view({grad_output.size(0) * grad_output.size(1), grad_output.size(2), grad_output.size(3), grad_output.size(4)});
     return diopiSuccess;
 }
-
-}  // namespace cuda
-}  // namespace impl
