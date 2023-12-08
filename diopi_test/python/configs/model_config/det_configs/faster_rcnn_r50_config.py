@@ -534,14 +534,14 @@ faster_rcnn_r50_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad":[False],
+                    "requires_grad": [False],
                     "shape": [(159620,), (4096, 256, 7, 7), (8746, 4), (2, 4), (16,), (4096, 256, 7, 7)],
                     "dtype": [np.float32, np.int64, np.uint8],
                     "gen_fn": "Genfunc.randn",
                 },
                 {
                     "ins": ["indices"],
-                    "requires_grad":[False],
+                    "requires_grad": [False],
                     "shape": [(250,), (48,), (3645,), (10,), (3,), (85,)],
                     "dtype": [np.int64],
                     "gen_fn": dict(fn="Genfunc.randint", low=-2, high=2),
@@ -557,14 +557,14 @@ faster_rcnn_r50_config = {
             args=[
                 {
                     "ins": ["input"],
-                    "requires_grad":[False],
+                    "requires_grad": [False],
                     "shape": [(3, 800, 1188), (3, 1225, 800)],
                     "dtype": [np.float32, np.int64, np.uint8],
                     "gen_fn": "Genfunc.randn",
                 },
                 {
                     "ins": ["indices"],
-                    "requires_grad":[False],
+                    "requires_grad": [False],
                     "shape": [(3,), (3,)],
                     "dtype": [np.bool_],
                     "gen_fn": "Genfunc.mask",
@@ -583,21 +583,21 @@ faster_rcnn_r50_config = {
             args=[
                 {
                     "ins": ["input"],
-                    # "requires_grad":[True],
+                    # "requires_grad": [True],
                     "shape": [(217413,), (217413,), (236313, 4), (4096, 256, 7, 7), (4096, 256, 7, 7)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randint",
                 },
                 {
                     "ins": ["indices1"],
-                    "requires_grad":[False],
+                    "requires_grad": [False],
                     "shape": [(16,), (246,), (42,), (78,), (85,)],
                     "dtype": [np.int64],
                     "gen_fn": dict(fn="Genfunc.randint", low=-4096, high=4096),
                 },
                 {
                     "ins": ["values"],
-                    # "requires_grad":[True],
+                    # "requires_grad": [True],
                     "shape": [(16,), (), (42, 4), (78, 256, 7, 7), (85, 256, 7, 7)],
                     "dtype": [np.float32],
                     "gen_fn": "Genfunc.randint",
