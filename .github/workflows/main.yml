@@ -67,8 +67,6 @@ jobs:
           git submodule update --init --recursive
       - name: Set output variables
         id: set-run-vars
-        env:
-          GITHUB_TOKEN: "${{ secrets.CI_TOKEN != '' && secrets.CI_TOKEN || 'NONE' }}"
         run: |
           PR_NUMBER="${{ github.event.pull_request.number || 0 }}"
           cd ${GITHUB_WORKSPACE}/source && RUN_RESULT=$(python3 scripts/filter_ci.py ${PR_NUMBER})
@@ -152,7 +150,7 @@ jobs:
           set -e
           export USE_COVERAGE=ON
           cd ${NFS_PATH}/ && ls -al && find ${NFS_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
-          source /mnt/cache/share/platform/env/camb_ci_diopi_impl
+          source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export CI=true
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh camb' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
@@ -161,7 +159,7 @@ jobs:
         run: |
           ssh ${CLUSTER_CAMB} """
           set -e
-          source /mnt/cache/share/platform/env/camb_ci_diopi_impl
+          source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=20 bash -c 'cd impl && bash scripts/ci_script.sh clang-tidy' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
           """
@@ -316,7 +314,7 @@ jobs:
           export USE_COVERAGE=ON
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && ls
           rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
-          source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+          source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=20 --gres=mlu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode gen_case --impl_folder ${NFS_PATH_LUSTRE}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/camb/ && \
           ${run_test} main.py --mode run_test' && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           if [ "${ALL_COVERAGE}" = "ON" ]; then
@@ -328,7 +326,7 @@ jobs:
         run: |
           ssh ${CLUSTER_CAMB} """
           set -e
-          source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+          source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           bash scripts/increment_coverage.sh ${REQUIRE_COVERAGE}
           """
 
@@ -343,7 +341,7 @@ jobs:
           ssh ${CLUSTER_CAMB} """
           set -e
           export CI=true
-          source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+          source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           cd diopi_test/python
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} python main.py --mode utest
           """

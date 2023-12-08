@@ -2956,7 +2956,7 @@ def batch_norm_backward(
 
 def arange(end, start=0, step=1, dtype=None) -> Tensor:
     if dtype is None:
-        if type(start) == float or type(end) == float or type(step) == float:
+        if isinstance(start, float) or isinstance(end, float) or isinstance(step, float):
             dtype = Dtype.float32
         else:
             dtype = from_numpy_dtype(glob_vars.int_type)

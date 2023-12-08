@@ -9,6 +9,12 @@
 namespace {
 constexpr float EPSILON = 1e-6;
 
+int current_device() {
+    int devId_ = 0;
+    ::aclrtGetDevice(&devId_);
+    return devId_;
+}
+
 // check all at::ScalarType is not negative
 #define ENUM_PAIR_FUNC(_1, n) static_assert(static_cast<int64_t>(at::ScalarType::n) >= 0, #n " is negative");
 AT_FORALL_SCALAR_TYPES_WITH_COMPLEX_AND_QINTS(ENUM_PAIR_FUNC)
@@ -70,13 +76,15 @@ namespace native {
 
 UnifiedResult OpPreparation::binary_op_check(at::Tensor& out, const at::Tensor& a, const at::Tensor& b, bool check_mem_overlap) {
     UnifiedResult unified_result;
-    TORCH_CHECK(a.dtype() == b.dtype());
+    unified_result.common_type = out.scalar_type();
+    unified_result.common_shape = out.sizes();
     return unified_result;
 }
 
 UnifiedResult OpPreparation::binary_op_check(at::Tensor& out, const at::Tensor& a, const c10::Scalar b, bool check_mem_overlap) {
     UnifiedResult unified_result;
-    TORCH_CHECK(a.dtype() == b.type());
+    unified_result.common_type = out.scalar_type();
+    unified_result.common_shape = out.sizes();
     return unified_result;
 }
 
@@ -1133,6 +1141,7 @@ std::tuple<aclTensorDesc*, aclDataBuffer*> CovertTensorToAclInput(const at::Tens
     // const auto &npuDesc = torch_npu::NPUBridge::GetNpuStorageImplDesc(tensor);
 
     AclTensorDescMaker desc;
+
     auto aclDesc = desc.Create(aclDataType, tensor.sizes(), static_cast<aclFormat>(format)).SetName(descName).Get();
 
     // if aclDataType != ACL_STRING, we use storageDims to calculate nums and use
@@ -1458,6 +1467,19 @@ void npu_fast_reshape_(at::Tensor& tensor) {
 
 }  // namespace native
 
+std::pair<uint64_t, uint64_t> NPUGeneratorImpl::philox_engine_inputs(uint64_t increment) {
+    diopiTensorHandle_t stateHandle = nullptr;
+    auto gen = reinterpret_cast<diopiGeneratorHandle_t>(generator_);
+    diopiGeneratorGetState(context, gen, &stateHandle);
+    void* statePtr = nullptr;
+    diopiGetTensorData(stateHandle, &statePtr);
+    PhiloxNpuState* state = reinterpret_cast<PhiloxNpuState*>(statePtr);
+    auto ret = std::make_pair(state->seed_, state->offset_.val);
+    state->offset_.val += increment;
+    diopiGeneratorSetState(gen, stateHandle);
+    return ret;
+}
+
 namespace detail {
 
 const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) { INTERFACE_NOT_IMPL }
@@ -1487,12 +1509,6 @@ const char* AclGetErrMsg() {
 }
 
 }  // namespace acl
-
-int current_device() {
-    int devId_ = 0;
-    ::aclrtGetDevice(&devId_);
-    return devId_;
-}
 
 NPUStream getCurrentNPUStream(c10::DeviceIndex device_index) {
     if (device_index == -1) {
@@ -1624,7 +1640,15 @@ inline const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     if (tensor == nullptr) return at::Tensor();
     return *reinterpret_cast<const at::Tensor*>(tensor);
 }
+
 #endif
+
+at::Generator buildATen(diopiGeneratorHandle_t generator) {
+    auto gen = at::make_generator<at_npu::NPUGeneratorImpl>(current_device());
+    auto impl = static_cast<at_npu::NPUGeneratorImpl*>(gen.unsafeGetGeneratorImpl());
+    impl->generator_ = generator;
+    return gen;
+}
 
 at::Tensor view(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides) {
     TORCH_CHECK(c10::multiply_integers(sizes) == input.numel());
@@ -1657,3 +1681,16 @@ void unsetCurCtx() {
 }  // namespace aten
 
 }  // namespace impl
+
+namespace at::ascend_npu {
+
+TensorWrapper TensorWrapper::contiguous(c10::MemoryFormat memory_format) const {
+    if (is_contiguous(memory_format)) {
+        return *this;
+    } else {
+        INTERFACE_NOT_IMPL
+        return *this;
+    }
+}
+
+};  //  namespace at::ascend_npu
