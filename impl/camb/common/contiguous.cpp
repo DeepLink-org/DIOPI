@@ -291,7 +291,6 @@ diopiError_t contiguousOut(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTens
     DIOPI_CHECK(src.shape() == dest.shape(), "src's shape should be the same as dest's");
     int64_t dim = src.dim();
     DIOPI_CHECK(dim <= 8, "only support less than 8d tensor currently");
-    diopiMemoryFormat_t srcMemoryFormat;
     std::vector<int32_t> order;
     std::vector<int32_t> reverseOrder;
 

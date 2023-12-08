@@ -113,8 +113,9 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     // if (srcTr.shape() == destTr.shape() && srcTr.dim() != 0 && srcTr.dtype() != diopi_dtype_float64 && probableMemoryFormat(destTr, &destMemoryFormat) &&
     //     probableMemoryFormat(srcTr, nullptr) && (srcTr.isContiguous() || destTr.isContiguous())) {
     if (srcTr.shape() == destTr.shape() && srcTr.dim() != 0 && srcTr.dtype() != diopi_dtype_float64 && denseCheck(srcTr) && denseCheck(destTr) &&
-        (destTr.isContiguous() || srcTr.isContiguous())) {
+        (destTr.isContiguous() ^ srcTr.isContiguous())) {
         DiopiTensor destTmpTr = destTr;
+        probableMemoryFormat(destTr, &destMemoryFormat);
         if (destTmpTr.dtype() != srcTr.dtype()) {
             destTmpTr = requiresTensor(ctx, destTr.shape(), srcTr.dtype());
         }
