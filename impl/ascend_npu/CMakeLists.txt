@@ -1,25 +1,24 @@
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.14)
 project(ascend_impl)
+
+set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 
-# 暂时没想到好办法，能下载下来源代码，并且第一次构建时不出错, 暂时先写在shell脚本里了
-#execute_process(
-#    COMMAND sh -c "bash  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/libs/build_stub.sh"
-#    COMMAND sh -c "echo 'download op-plugin ...'; cd ${CMAKE_CURRENT_SOURCE_DIR}/; git clone  https://gitee.com/ascend/op-plugin/ op-plugin || cd op-plugin && git checkout 186f4b87e2db4791a6ed697cea78d58a0ae92db1 && bash  ./gencode.sh 2.0 python "
-#)
-
-#add_custom_target(download_opplugin_coode
-#  ALL
-#  COMMAND echo "下载源码"
-  #COMMAND sh -c "bash  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/libs/build_stub.sh"
-  #COMMAND sh -c "echo 'download op-plugin ...'; cd ${CMAKE_CURRENT_SOURCE_DIR}/; git clone  https://gitee.com/ascend/op-plugin/ op-plugin || cd op-plugin && git checkout 186f4b87e2db4791a6ed697cea78d58a0ae92db1 && bash  ./gencode.sh 2.0 python "
-#  BYPRODUCTS op-plugin1
-#)
+include(FetchContent)
+message(STATUS "downloading op-plugin")
+FetchContent_Declare(op_plugin
+  GIT_REPOSITORY https://gitee.com/ascend/op-plugin
+  GIT_TAG 186f4b87e2db4791a6ed697cea78d58a0ae92db1
+)
+FetchContent_MakeAvailable(op_plugin)
+message(STATUS "op-plugin download done")
+add_custom_target(op_plugin_gen
+  COMMAND cd ${op_plugin_SOURCE_DIR} && bash ./gencode.sh 2.0 python
+)
 
 add_subdirectory(third_party/acl)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
-#link_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/libs/)
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
 
 if(NOT DEFINED PYTORCH_DIR)
   execute_process(
@@ -34,14 +33,14 @@ list(APPEND TORCH_INCLUDE_DIRS ${PYTORCH_DIR}/torch/include/
 include_directories(SYSTEM ${TORCH_INCLUDE_DIRS})
 message(STATUS "Torch TORCH_INCLUDE_DIRS: ${TORCH_INCLUDE_DIRS}")
 
-if(NOT DEFINED DIPU_ABI_V)
-  execute_process(
-    COMMAND
-      sh -x -c
-      "python -c 'import torch, builtins; print(next(item[-4:-2] for item in dir(builtins)      \
-          if \"__pybind11_internals_v4_gcc_libstdcpp_cxxabi10\" in item))'"
-    OUTPUT_VARIABLE DIPU_ABI_V)
-endif()
+# if(NOT DEFINED DIPU_ABI_V)
+#   execute_process(
+#     COMMAND
+#       sh -x -c
+#       "python -c 'import torch, builtins; print(next(item[-4:-2] for item in dir(builtins)      \
+#           if \"__pybind11_internals_v4_gcc_libstdcpp_cxxabi10\" in item))'"
+#     OUTPUT_VARIABLE DIPU_ABI_V)
+# endif()
 
 if(NOT DEFINED DIPU_COMPILED_WITH_CXX11_ABI)
 execute_process(
@@ -57,8 +56,8 @@ else()
   set(DIPU_COMPILED_WITH_CXX11_ABI 0)
 endif()
 
-add_definitions(-fabi-version=${DIPU_ABI_V})
-message(STATUS "DIPU_ABI_V: ${DIPU_ABI_V}")
+# add_definitions(-fabi-version=${DIPU_ABI_V})
+# message(STATUS "DIPU_ABI_V: ${DIPU_ABI_V}")
 
 # Because many interfaces have not yet been implemented, -Wreturn-type=0 option is temporarily added.
 set(CMAKE_CXX_FLAGS
@@ -68,13 +67,14 @@ add_compile_options(-D_GLIBCXX_USE_CXX11_ABI=${DIPU_COMPILED_WITH_CXX11_ABI})
 message(STATUS "DIPU_COMPILED_WITH_CXX11_ABI:" ${DIPU_COMPILED_WITH_CXX11_ABI})
 
 
-set(OP_PLUGIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/base_ops/aclops/)
-set(OP_PLUGIN_UTILS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/utils/)
+set(OP_PLUGIN_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/base_ops/aclops/)
+set(OP_PLUGIN_UTILS_DIR ${op_plugin_SOURCE_DIR}/op_plugin/utils/)
 #file(GLOB_RECURSE OP_PLUGIN_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${OP_PLUGIN_DIR}/*.cpp)
 file(GLOB_RECURSE OP_PLUGIN_UTILS_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${OP_PLUGIN_UTILS_DIR}/*.cpp)
 #file(GLOB_RECURSE OP_PLUGIN_API_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/base_ops/opapi/*.cpp)
 
 set(OP_PLUGIN_SRC
+    ${OP_PLUGIN_SRC}
     #${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/OpInterface.cpp
     ${OP_PLUGIN_DIR}/AbsKernelNpu.cpp
     ${OP_PLUGIN_DIR}/AcoshKernelNpu.cpp
@@ -464,7 +464,7 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_DIR}/ZerosLikeKernelNpu.cpp
 )
 
-set(OP_PLUGIN_SRC_V_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/v2r0/aclops/)
+set(OP_PLUGIN_SRC_V_DIR  ${op_plugin_SOURCE_DIR}/op_plugin/ops/v2r0/aclops/)
 set(OP_PLUGIN_SRC
     ${OP_PLUGIN_SRC}
     ${OP_PLUGIN_SRC_V_DIR}/SumKernelNpu.cpp
@@ -510,7 +510,7 @@ set(OP_PLUGIN_SRC
     ${OP_PLUGIN_SRC_V_DIR}/ZerosKernelNpu.cpp
 )
 
-set(OP_PLUGIN_API_DIR ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/base_ops/opapi/)
+set(OP_PLUGIN_API_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/base_ops/opapi/)
 set(OP_PLUGIN_API_SRC1
     ${OP_PLUGIN_API_DIR}/AddKernelNpuOpApi.cpp
 )
@@ -819,25 +819,19 @@ set(ASCEND_IMPL_SRC
 
 )
 
-set(OP_PLUGIN_API_DIR ${CMAKE_CURRENT_SOURCE_DIR}/op-plugin/op_plugin/ops/v2r0/opapi/)
+set(OP_PLUGIN_API_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/v2r0/opapi/)
 set(OP_PLUGIN_API_SRC
     ${OP_PLUGIN_API_SRC}
 )
 
 set(DIOPI_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/diopi_impl/)
-set(DIOPI_IMPL_SRC
-    ${DIOPI_IMPL_DIR}/error.cpp
-    ${DIOPI_IMPL_DIR}/binary.cpp
-    ${DIOPI_IMPL_DIR}/unary.cpp
-    ${DIOPI_IMPL_DIR}/conv2d.cpp
-    ${DIOPI_IMPL_DIR}/batch_norm.cpp
-    ${DIOPI_IMPL_DIR}/max_pool2d.cpp
-    ${DIOPI_IMPL_DIR}/rms_norm.cpp
-)
+file(GLOB DIOPI_IMPL_SRC "${DIOPI_IMPL_DIR}/*.cpp")
 
 add_definitions(-DBUILD_LIBTORCH)
 
-include_directories(op-plugin torch_npu ${CMAKE_CURRENT_SOURCE_DIR})
+
+include_directories(SYSTEM ${op_plugin_SOURCE_DIR} torch_npu ${CMAKE_CURRENT_SOURCE_DIR})
+
 set(IMPL_SRC
   torch_npu/csrc/DIOPIAdapter.cpp
   torch_npu/csrc/AclOpCompileInterface.cpp
@@ -909,6 +903,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/reduce.cpp
     ${OLD_IMPL_DIR}/functions/where.cpp
     ${OLD_IMPL_DIR}/functions/multinomial.cpp
+    ${OLD_IMPL_DIR}/functions/addmm.cpp
     #${OLD_IMPL_DIR}/test/export_functions.cpp
     #${OLD_IMPL_DIR}/test/conform_test.cpp
     ${OLD_IMPL_DIR}/common/utils.cpp
@@ -931,7 +926,7 @@ if(USE_ADAPTOR)
     set(ADAPTOR_CSRC_PATH "${ADAPTOR_DIR}/csrc")
     set(GEN_FILES ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp ${ADAPTOR_CSRC_PATH}/impl_functions.hpp)
     add_custom_target(adaptor_code_gen
-        COMMAND python3 ${ADAPTOR_DIR}/codegen/gen.py --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH} --config_device=ascend
+        COMMAND python3 ${ADAPTOR_DIR}/codegen/gen.py --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH} --config_device=ascend --impl_plugin=True
         BYPRODUCTS ${GEN_FILES}
         DEPENDS adaptor_gen_dependency)
     list(APPEND IMPL_SRC ${GEN_FILES} ${ADAPTOR_CSRC_PATH}/convert.cpp ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp)
@@ -954,6 +949,7 @@ else()
 endif()
 
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
+add_dependencies(${DEVICEIMPL} op_plugin_gen)
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
 target_link_libraries(${DEVICEIMPL} ascendcl acl_op_compiler graph c10 torch_cpu)
 

@@ -93,7 +93,7 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
         diopiGetTensorStride(runningMeanTemp, &stride);
         diopiRequireTensor(ctx, &sum, &shape, &stride, diopiDtype_t::diopi_dtype_float32, diopi_device);
         diopiRequireTensor(ctx, &squareSum, &shape, &stride, diopiDtype_t::diopi_dtype_float32, diopi_device);
-        AclOpRunner<1, 2>("BNTrainingReduce", ctx).addInput(inputAt).addOutput(sum).addOutput(squareSum).run();
+        AclOpRunner<1, 2>("BNTrainingReduce", ctx).addInput(inputAt).addOutput(sum).setAttr("epsilon", static_cast<float>(eps)).addOutput(squareSum).run();
         AclOpRunner<7, 5>("BNTrainingUpdate", ctx)
             .addInput(inputAt)
             .addInput(sum)

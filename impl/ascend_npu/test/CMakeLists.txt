@@ -54,7 +54,6 @@ set(FUNCTIONS_SRC
 
 pybind11_add_module(${DIOPIFUNCTIONS} SHARED ${FUNCTIONS_SRC})
 target_link_libraries(${DIOPIFUNCTIONS} PRIVATE diopirt -Wl,--no-as-needed ${DEVICEIMPL} -Wl,--as-needed)
-# target_link_libraries(${DIOPIFUNCTIONS} PRIVATE diopirt ${DEVICEIMPL})
 add_dependencies(${DIOPIFUNCTIONS} functions_copy)
 if(${USE_ADAPTOR} STREQUAL "true")
     add_dependencies(${DIOPIFUNCTIONS} adaptor_code_gen)
