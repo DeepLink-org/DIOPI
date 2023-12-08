@@ -1518,7 +1518,7 @@ NPUStream getCurrentNPUStream(c10::DeviceIndex device_index) {
     diopiStreamHandle_t stream_handle = nullptr;
     diopiGetStream(context, &stream_handle);
     TORCH_CHECK(stream_handle);
-    c10::Device device(c10::DeviceType::XPU, device_index);
+    c10::Device device(c10::DeviceType::XLA, device_index);
     c10::Stream atStream(c10::Stream::Default::DEFAULT, device);
     aclrtStream aclStream = reinterpret_cast<aclrtStream>(stream_handle);
     TORCH_CHECK(aclStream);
@@ -1584,7 +1584,7 @@ at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef s
     c10::intrusive_ptr<c10::StorageImpl> storage_impl = c10::make_intrusive<c10::StorageImpl>(
         at::StorageImpl::use_byte_size_t(), nbytes, c10::InefficientStdFunctionContext::makeDataPtr(data, c10::detail::deleteNothing, device), nullptr, false);
     auto dtype = options.dtype();
-    c10::DispatchKeySet ks{c10::DispatchKey::XPU};
+    c10::DispatchKeySet ks{c10::DispatchKey::XLA};
     auto tensor = at::detail::make_tensor<at::TensorImpl>(std::move(storage_impl), ks, dtype);
     if (strides.size() > 0) {
         tensor.unsafeGetTensorImpl()->set_sizes_and_strides(sizes, strides);
