@@ -21,7 +21,7 @@ static diopiError_t transpose(diopiContextHandle_t& ctx, DiopiTensor& in, DiopiT
     CnnlTransposeDescriptor transDesc(order.size(), order.data());
     size_t workspaceSize = 0;
     DIOPI_CALL_CNNL(cnnlGetTransposeWorkspaceSize(handle, inDesc.get(), transDesc.get(), &workspaceSize));
-    void* workspacePtr = workspaceSize == 0 ? requiresBuffer(ctx, workspaceSize).data() : nullptr;
+    void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
     DIOPI_CALL_CNNL(cnnlTranspose_v2(handle, transDesc.get(), inDesc.get(), in.data(), outDesc.get(), out.data(), workspacePtr, workspaceSize));
     return diopiSuccess;
 }
@@ -38,6 +38,84 @@ static diopiError_t transpose(diopiContextHandle_t& ctx, DiopiTensor& in, DiopiT
 //     }
 //     return diopiSuccess;
 // }
+static diopiError_t getPermuteOrder(const DiopiTensor& src, std::vector<int32_t>& orderOut, std::vector<int32_t>& reverseOrder) {
+    if (src.isContiguous()) {
+        orderOut.resize(src.dim());
+        for (int i = 0; i < src.dim(); ++i) {
+            orderOut[i] = i;
+        }
+        reverseOrder = orderOut;
+        return diopiSuccess;
+    }
+
+    // just for initialization
+    if (src.dim() == 1) {
+        orderOut = {0};
+        reverseOrder = {0};
+    } else if (src.dim() == 2) {
+        orderOut = {0, 1};
+        reverseOrder = {0, 1};
+    } else if (src.dim() == 3) {
+        orderOut = {0, 2, 1};
+        reverseOrder = {0, 2, 1};
+    } else if (src.dim() == 4) {
+        orderOut = {0, 1, 3, 2};
+        reverseOrder = {0, 1, 3, 2};
+    } else if (src.dim() == 5) {
+        orderOut = {0, 1, 2, 4, 3};
+        reverseOrder = {0, 1, 2, 4, 3};
+    } else if (src.dim() == 6) {
+        orderOut = {0, 1, 2, 3, 5, 4};
+        reverseOrder = {0, 1, 2, 3, 5, 4};
+    } else {
+        setLastErrorString("the dim of the tensor should be 1-6, but now is %d.", src.dim());
+        return diopiNoImplement;
+    }
+    int dim = src.dim();
+    std::vector<int> stride(dim, 1);
+    std::vector<int> shape(dim, 1);
+
+    for (int i = 0; i < dim; i++) {
+        stride[i] = src.stride()[i];
+        shape[i] = src.shape()[i];
+    }
+
+    std::sort(stride.begin(), stride.end());
+
+    // shape: [128, 197, 3, 12, 64, ], stride: [151296, 64, 19365888, 12608, 1, ]
+    // 2,0,3,1,4,reverseOrder
+    // 1,3,0,2,4,orderOut
+    for (int i = 1; i < dim; i++) {
+        for (int j = 0; j < dim; j++) {
+            if (shape[j] * stride[i - 1] == stride[i]) {
+                reverseOrder[dim - i] = j;
+                continue;
+            }
+        }
+    }
+    bool flag = false;
+    for (int i = 0; i < dim; i++) {
+        flag = true;
+        for (int j = 1; j < dim; j++) {
+            if (i == reverseOrder[j]) {
+                flag = false;
+                break;
+            }
+        }
+        if (flag) {
+            reverseOrder[0] = i;
+        }
+    }
+
+    for (int i = 0; i < dim; i++) {
+        for (int j = 0; j < dim; j++) {
+            if (reverseOrder[j] == i) {
+                orderOut[i] = j;
+            }
+        }
+    }
+    return diopiSuccess;
+}
 
 static diopiError_t calOrderAndSrcMemoryFormat(const DiopiTensor& src, diopiMemoryFormat_t destMemoryFormat, diopiMemoryFormat_t& srcMemoryFormatOut,
                                                std::vector<int32_t>& orderOut, std::vector<int32_t>& reverseOrder) {
@@ -216,7 +294,12 @@ diopiError_t contiguousOut(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTens
     diopiMemoryFormat_t srcMemoryFormat;
     std::vector<int32_t> order;
     std::vector<int32_t> reverseOrder;
-    DIOPI_CALL(calOrderAndSrcMemoryFormat(src, destMemoryFormat, srcMemoryFormat, order, reverseOrder));
+
+    if (src.isContiguous()) {
+        getPermuteOrder(dest, reverseOrder, order);
+    } else {
+        getPermuteOrder(src, order, reverseOrder);
+    }
     // set CNNL_LAYOUT_ARRAY because NLC->NCL failed ( no layout NCL);
     cnnlTensorLayout_t srcLayout = CNNL_LAYOUT_ARRAY;
     cnnlTensorLayout_t destLayout = CNNL_LAYOUT_ARRAY;

@@ -10,6 +10,45 @@
 namespace impl {
 namespace camb {
 
+static bool denseCheck(const DiopiTensor& src) {
+    int dim = src.dim();
+    std::vector<int> stride(dim, 1);
+    std::vector<int> shape(dim, 1);
+
+    for (int i = 0; i < dim; i++) {
+        stride[i] = src.stride()[i];
+        shape[i] = src.shape()[i];
+
+        if (src.stride()[i] == 0 || src.shape()[i] == 0) {
+            return false;
+        }
+    }
+
+    for (int i = 0; i < dim - 1; i++) {
+        for (int j = i + 1; j < dim; j++) {
+            if (shape[i] == shape[j]) {
+                return false;
+            }
+        }
+    }
+    std::sort(stride.begin(), stride.end());
+
+    // e.g. shape = 2,3,4,5,stride = 1,3,12,60
+    if (stride[0] != 1) {
+        return false;
+    }
+    int cur = 1;
+    for (int i = 1; i < dim; i++) {
+        cur = stride[i] / stride[i - 1];
+        if (std::find(shape.begin(), shape.end(), cur) != shape.end()) {
+            continue;
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
 static bool probableMemoryFormat(const DiopiTensor& src, diopiMemoryFormat_t* outMemoryFormat) {
     if (!outMemoryFormat) {
         return src.isContiguous(diopiMemoryFormat_t::Contiguous) || src.isContiguous(diopiMemoryFormat_t::ChannelsLast1d) ||
@@ -71,8 +110,10 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     // memory format convert if memory format is matched.
     diopiMemoryFormat_t destMemoryFormat;
     // cnnTranspose doesn't support float64 and scalar and contiguousOut only support convertion between the contiguous tensor and the no-contiguous tensor.
-    if (srcTr.shape() == destTr.shape() && srcTr.dim() != 0 && srcTr.dtype() != diopi_dtype_float64 && probableMemoryFormat(destTr, &destMemoryFormat) &&
-        probableMemoryFormat(srcTr, nullptr) && (srcTr.isContiguous() || destTr.isContiguous())) {
+    // if (srcTr.shape() == destTr.shape() && srcTr.dim() != 0 && srcTr.dtype() != diopi_dtype_float64 && probableMemoryFormat(destTr, &destMemoryFormat) &&
+    //     probableMemoryFormat(srcTr, nullptr) && (srcTr.isContiguous() || destTr.isContiguous())) {
+    if (srcTr.shape() == destTr.shape() && srcTr.dim() != 0 && srcTr.dtype() != diopi_dtype_float64 && denseCheck(srcTr) && denseCheck(destTr) &&
+        (destTr.isContiguous() || srcTr.isContiguous())) {
         DiopiTensor destTmpTr = destTr;
         if (destTmpTr.dtype() != srcTr.dtype()) {
             destTmpTr = requiresTensor(ctx, destTr.shape(), srcTr.dtype());
