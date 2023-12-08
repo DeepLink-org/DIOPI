@@ -2,6 +2,7 @@
 
 #include <ATen/record_function.h>
 #include <diopi/diopirt.h>
+#include <torch/library.h>
 
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
@@ -1682,15 +1683,27 @@ void unsetCurCtx() {
 
 }  // namespace impl
 
-namespace at::ascend_npu {
+namespace {
 
-TensorWrapper TensorWrapper::contiguous(c10::MemoryFormat memory_format) const {
-    if (is_contiguous(memory_format)) {
-        return *this;
-    } else {
-        INTERFACE_NOT_IMPL
-        return *this;
-    }
+at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
+    return at_npu::native::NPUNativeFunctions::copy_memory_(self, src, non_blocking);
 }
 
-};  //  namespace at::ascend_npu
+at::Tensor wrapper__view(const at::Tensor& self, at::IntArrayRef size) { return impl::aten::view(self, size); }
+
+at::Tensor wrapper__as_strided(const at::Tensor& self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset) {
+    return at_npu::native::NPUNativeFunctions::as_strided(self, size, stride, storage_offset);
+}
+
+}  // namespace
+
+namespace at {
+
+TORCH_LIBRARY_IMPL(aten, XLA, m) {
+    m.impl("copy_", TORCH_FN(wrapper__copy_));
+    m.impl("reshape", TORCH_FN(wrapper__view));
+    m.impl("view", TORCH_FN(wrapper__view));
+    m.impl("as_strided", TORCH_FN(wrapper__as_strided));
+};
+
+}  // namespace at
