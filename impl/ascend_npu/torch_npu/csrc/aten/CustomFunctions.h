@@ -7,6 +7,8 @@
 #include <tuple>
 #include <vector>
 
+#include "torch_npu/csrc/framework/DIOPIAdapter.h"
+
 namespace at_npu {
 namespace native {
 namespace custom_ops {

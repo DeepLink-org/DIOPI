@@ -34,9 +34,22 @@
 
 #define BUILD_ATEN_ARG1(x) auto CREATE_VAR_NAME(x) = impl::aten::buildATen(x);
 
-#define BUILD_ATEN_ARGS_BODY(x)                         \
-    auto CREATE_VAR_NAME(x) = impl::aten::buildATen(x); \
-    std::cout << __FUNCTION__ << ": " << #x << ":" << impl::aten::dumpArgs(CREATE_VAR_NAME(x)) << std::endl;
+inline int debugLevel() {
+    static int level = []() {
+        const char* env = std::getenv("DIOPI_DEBUG_OP");
+        if (env != nullptr) {
+            return std::atoi(env);
+        }
+        return 0;
+    }();
+    return level;
+}
+
+#define BUILD_ATEN_ARGS_BODY(x)                                                                                  \
+    auto CREATE_VAR_NAME(x) = impl::aten::buildATen(x);                                                          \
+    if (debugLevel()) {                                                                                          \
+        std::cout << __FUNCTION__ << ": " << #x << ":" << impl::aten::dumpArgs(CREATE_VAR_NAME(x)) << std::endl; \
+    }
 
 #define BUILD_ATEN_ARG2(x, y) \
     BUILD_ATEN_ARGS_BODY(x);  \
@@ -268,6 +281,8 @@ inline at::Scalar buildATen(const diopiScalar_t* scalar) {
     }
 }
 
+at::Generator buildATen(diopiGeneratorHandle_t generator);
+
 at::Tensor view(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides = {});
 
 const at::Tensor buildATen(diopiConstTensorHandle_t tensor);
@@ -284,9 +299,9 @@ template <>
 inline std::string dumpArgs(const at::Tensor& t) {
     std::stringstream stream;
     if (t.defined()) {
-        stream << " shape:" << t.sizes() << ", t.strides:" << t.strides() << t.options() << ",ptr:" << t.data_ptr();
+        stream << " shape:" << t.sizes() << ", numel:" << t.numel() << ", t.strides:" << t.strides() << t.options() << ",ptr:" << t.data_ptr();
     } else {
-        stream << "undefined" << std::endl;
+        stream << " undefined" << std::endl;
     }
     return stream.str();
 }
