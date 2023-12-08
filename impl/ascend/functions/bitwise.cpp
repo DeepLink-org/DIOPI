@@ -20,9 +20,7 @@ diopiError_t diopiBitwiseNot(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
     return diopiSuccess;
 }
 
-diopiError_t diopiBitwiseNotInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    return diopiBitwiseNot(ctx, input, input);
-}
+diopiError_t diopiBitwiseNotInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiBitwiseNot(ctx, input, input); }
 
 diopiError_t diopiBitwiseAnd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
     AscendTensor inputTensor(input);
