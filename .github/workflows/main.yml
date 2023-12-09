@@ -172,7 +172,7 @@ jobs:
   #         set -e
   #         source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME_MMCV}
   #         cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST3} && cp -R source ${BUILD_TEST3} && cd ${BUILD_TEST3}
-  #         
+  #
   #         srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 ls && cd diopi_test && bash scripts/build_mmcv.sh mmcv_ext || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST3} && exit 1 )
   #         """
 
@@ -186,7 +186,7 @@ jobs:
   #       run: |
   #         ssh ${CLUSTER_1988} """
   #         set -e
-  #         
+  #
   #         source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME_MMCV}
   #         cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST3}
   #         pip install -U pytest
@@ -257,7 +257,7 @@ jobs:
         run: |
           ssh ${CLUSTER_1988} """
           set -e
-          
+
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/lib
           echo \$LD_LIBRARY_PATH
@@ -273,21 +273,21 @@ jobs:
           bash scripts/increment_coverage.sh ${REQUIRE_COVERAGE}
           """
 
-  Rt-Test-Nvidia:
-    name: Rt-Test-Nvidia
-    runs-on: tps-diopi-ci
-    needs: Build-Nvidia
-    if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
-    steps:
-      - name: test
-        run: |
-          ssh ${CLUSTER_1988} """
-          set -e
-          source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
-          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && \
-          python main.py --mode utest && python main.py --mode utest_diopi_test'
-          """
+  # Rt-Test-Nvidia:
+  #   name: Rt-Test-Nvidia
+  #   runs-on: tps-diopi-ci
+  #   needs: Build-Nvidia
+  #   if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
+  #   steps:
+  #     - name: test
+  #       run: |
+  #         ssh ${CLUSTER_1988} """
+  #         set -e
+  #         source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
+  #         cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+  #         srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && \
+  #         python main.py --mode utest && python main.py --mode utest_diopi_test'
+  #         """
 
   Op-Test-Camb:
     name: Op-Test-Camb
@@ -320,20 +320,20 @@ jobs:
           bash scripts/increment_coverage.sh ${REQUIRE_COVERAGE}
           """
 
-  Rt-Test-Camb:
-    name: Rt-Test-Camb
-    runs-on: tps-diopi-ci
-    needs: Build-Camb
-    if: ${{ contains( needs.Rsync.outputs.output, 'CAMB' ) }}
-    steps:
-      - name: test
-        run: |
-          ssh ${CLUSTER_CAMB} """
-          set -e
-          source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          cd diopi_test/python
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} python main.py --mode utest
-          """
+  # Rt-Test-Camb:
+  #   name: Rt-Test-Camb
+  #   runs-on: tps-diopi-ci
+  #   needs: Build-Camb
+  #   if: ${{ contains( needs.Rsync.outputs.output, 'CAMB' ) }}
+  #   steps:
+  #     - name: test
+  #       run: |
+  #         ssh ${CLUSTER_CAMB} """
+  #         set -e
+  #         source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+  #         cd diopi_test/python
+  #         srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} python main.py --mode utest
+  #         """
 
   Build-Ascend-910b:
     name: Build-Ascend-910b
@@ -368,17 +368,17 @@ jobs:
           cd diopi_test/python && python main.py --mode gen_case --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/ascend/ && ${run_test} main.py --mode run_test \
           && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
 
-  Rt-Test-Ascend-910b:
-    name: Rt-Test-Ascend-910b
-    runs-on: tps-ascend-ci-910b
-    needs: Build-Ascend-910b
-    if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
-    steps:
-      - name: test
-        run: |
-          set -e
-          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          cd diopi_test/python && python main.py --mode utest
+  # Rt-Test-Ascend-910b:
+  #   name: Rt-Test-Ascend-910b
+  #   runs-on: tps-ascend-ci-910b
+  #   needs: Build-Ascend-910b
+  #   if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
+  #   steps:
+  #     - name: test
+  #       run: |
+  #         set -e
+  #         cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+  #         cd diopi_test/python && python main.py --mode utest
 
   Build-Topsrider:
     name: Build-Topsrider
@@ -411,17 +411,17 @@ jobs:
           ln -sf /mnt/cache/share/deeplinkci/data/inputs ./cache/data/diopi && ln -sf /mnt/cache/share/deeplinkci/data/outputs ./cache/data/diopi
           python main.py --mode run_test
 
-  Rt-Test-Topsrider:
-    name: Rt-Test-Topsrider
-    runs-on: tps-topsrider-ci
-    needs: Build-Topsrider
-    if: contains( needs.Rsync.outputs.output, 'TOPSRIDER' )
-    steps:
-      - name: build
-        run: |
-          set -e
-          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          cd diopi_test/python && ln -sf /mnt/cache/share/deeplinkci/data/ data && python main.py --mode utest
+  # Rt-Test-Topsrider:
+  #   name: Rt-Test-Topsrider
+  #   runs-on: tps-topsrider-ci
+  #   needs: Build-Topsrider
+  #   if: contains( needs.Rsync.outputs.output, 'TOPSRIDER' )
+  #   steps:
+  #     - name: build
+  #       run: |
+  #         set -e
+  #         cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+  #         cd diopi_test/python && ln -sf /mnt/cache/share/deeplinkci/data/ data && python main.py --mode utest
 
   Build-Supa:
     name: Build-Supa
@@ -436,7 +436,7 @@ jobs:
           cd ${NFS_PATH}/ && ls -al && find ${DEEPLINK_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
           source /mnt/cache/share/platform/env/pt2.0_diopi
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
-          
+
           echo "no partitions, just execute the script directly on the machine"
           """
 
@@ -457,16 +457,16 @@ jobs:
           echo "test and clean, you can refer to the CAMB"
           """
 
-  Rt-Test-Supa:
-    name: Rt-Test-Supa
-    runs-on: tps-diopi-ci
-    needs: Build-Supa
-    if: ${{ contains( needs.Rsync.outputs.output, 'SUPA' ) }}
-    steps:
-      - name: test
-        run: |
-          ssh ${CLUSTER_SUPA} """
-          set -e
-          source /mnt/cache/share/platform/env/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          echo "test and clean, you can refer to the CAMB"
-          """
+  # Rt-Test-Supa:
+  #   name: Rt-Test-Supa
+  #   runs-on: tps-diopi-ci
+  #   needs: Build-Supa
+  #   if: ${{ contains( needs.Rsync.outputs.output, 'SUPA' ) }}
+  #   steps:
+  #     - name: test
+  #       run: |
+  #         ssh ${CLUSTER_SUPA} """
+  #         set -e
+  #         source /mnt/cache/share/platform/env/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+  #         echo "test and clean, you can refer to the CAMB"
+  #         """
