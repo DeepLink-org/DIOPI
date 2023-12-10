@@ -185,9 +185,9 @@ if __name__ == "__main__":
         call = "python3 -m pytest -vx tests/diopi"
         # FIXME fix ascend utest error
         subprocess.call(shlex.split(call))
-        # exit_code = subprocess.call(shlex.split(call))  # nosec
-        # if exit_code != 0:
-        #     raise SystemExit(exit_code)
+        exit_code = subprocess.call(shlex.split(call))  # nosec
+        if exit_code != 0:
+            raise SystemExit(exit_code)
     elif args.mode == "utest_diopi_test":
         call = "python3 -m pytest -vx tests/diopi_test"
         exit_code = subprocess.call(shlex.split(call))  # nosec
