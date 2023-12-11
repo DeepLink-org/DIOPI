@@ -229,3 +229,6 @@
 
 - diopiDropoutInp:
     dtype: (float64)->float32
+
+- diopiExpand:
+    dtype: (uint8, int16)->int32, (float64)->float32

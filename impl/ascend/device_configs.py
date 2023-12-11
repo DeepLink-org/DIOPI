@@ -1416,18 +1416,6 @@ device_configs = {
         ),
     ),
 
-    'expand': dict(
-        name=['expand'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.bool_),Skip(np.float16),Skip(np.float64),Skip(np.int64),Skip(np.int32),Skip(np.int16),Skip(np.int8),Skip(np.uint8),],
-                },
-            ]
-        ),
-    ),
-
     'linspace': dict(
         name=['linspace'],
         para=dict(
