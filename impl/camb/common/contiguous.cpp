@@ -49,26 +49,26 @@ static diopiError_t getPermuteOrder(const DiopiTensor& src, std::vector<int32_t>
     }
 
     int dim = src.dim();
-    std::vector<int> input_strides(dim, 1);
-    std::vector<int> input_sizes(dim, 1);
+    std::vector<int> inputStrides(dim, 1);
+    std::vector<int> inputSizes(dim, 1);
 
     for (int i = 0; i < dim; i++) {
-        input_strides[i] = src.stride()[i];
-        input_sizes[i] = src.shape()[i];
+        inputStrides[i] = src.stride()[i];
+        inputSizes[i] = src.shape()[i];
     }
     std::vector<std::pair<int, int>> strides_sizes(dim, std::pair<int, int>(1, 1));
     for (int64_t i = 0; i < dim; ++i) {
-        strides_sizes[i] = std::pair<int, int>(input_strides[i], input_sizes[i]);
+        strides_sizes[i] = std::pair<int, int>(inputStrides[i], inputSizes[i]);
     }
 
     sort(strides_sizes.begin(), strides_sizes.end(), [](std::pair<int, int> a, std::pair<int, int> b) { return a.first > b.first; });
     for (int i = 0; i < dim; ++i) {
         auto pair = strides_sizes[i];
         for (int j = 0; j < dim; ++j) {
-            if ((pair.first == input_strides[j]) && (pair.second == input_sizes[j])) {
+            if ((pair.first == inputStrides[j]) && (pair.second == inputSizes[j])) {
                 reverseOrder[i] = j;
-                input_strides[j] = -1;
-                input_sizes[j] = -1;
+                inputStrides[j] = -1;
+                inputSizes[j] = -1;
                 break;
             }
         }
