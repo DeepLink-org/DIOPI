@@ -8336,8 +8336,8 @@ diopi_configs = {
         name=['token_attention'],
         interface=['CustomizedTest'],
         para=dict(
-            # max_input_len=[5, 0, 7, 1, 8, 0],
             # FIXME max_input_len - b_seq_len为负数时失败
+            # max_input_len=[5, 0, 7, 1, 8, 0],
             max_input_len=[5, 7, 8, 0],
         ),
         tensor_para=dict(
@@ -8398,44 +8398,59 @@ diopi_configs = {
         name=['token_softmax_reducev'],
         interface=['CustomizedTest'],
         para=dict(
-            max_input_len=[5, ],
-            other_kv_index=[10, ],
+            # FIXME max_input_len - b_seq_len为负数时失败
+            # max_input_len=[5, 0, 7, 1, 8, 0],
+            max_input_len=[5, 7, 8, 0],
+            other_kv_index=[10, 10, 10, 10],
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['logics'],
-                    "shape": ((32, 13), ),
-                    "dtype": [np.float16],
+                    # "shape": ((32, 13), (16, 6), (15, 11), (7, 6), (5, 0), (15, 0)),
+                    "shape": ((32, 13), (15, 11), (5, 0), (15, 0)),
+                    "dtype": [np.float16, np.float32, np.float64],
                 },
                 {
                     "ins": ["v"],
-                    "shape": ((100, 32, 128), ),
-                    "dtype": [np.float16],
+                    # "shape": ((100, 32, 128), (6, 16, 16), (20, 15, 32), (35, 7, 64), (19, 5, 16), (0, 15, 32)),
+                    "shape": ((100, 32, 128), (20, 15, 32), (19, 5, 16), (0, 15, 32)),
+                    "dtype": [np.float16, np.float32, np.float64],
                 },
                 {
                     "ins": ["out"],
-                    "shape": ((3, 32, 128),),
-                    "dtype": [np.float16],
+                    # "shape": ((3, 32, 128), (1, 16, 16), (2, 15, 32), (3, 7, 64), (0, 5, 16), (2, 15, 32)),
+                    "shape": ((3, 32, 128), (2, 15, 32), (0, 5, 16), (2, 15, 32)),
+                    "dtype": [np.float16, np.float32, np.float64],
                 },
                 {
                     "ins": ["b_loc"],
                     "value": ([[0, 0, 1, 2, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                               [3, 4, 5, 6, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                               [0, 7, 8, 9, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], ],),
-                    "dtype": [np.int32],
+                               [3, 99, 5, 6, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                               [0, 7, 8, -100, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+                            #   [[99, -1, -6, 0, 5, 5, 5]],
+                              [[20, -99, 0, -20, 19, 5, 0, 99],
+                               [-21, 12, 4, 0, 0, 9, 19, 100]],
+                            #   [[34, 99, 35, 0, 3],
+                            #    [-35, 100, -99, 35, -36],
+                            #    [22, 1000, 1000, -1000, 10]],
+                              [],
+                              [[], []]),
+                    "dtype": [np.int32, np.int64, np.int32],
                     "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ["b_start_loc"],
-                    "value": ([0, 4, 9],),
-                    "dtype": [np.int32],
+                    # "value": ([0, 4, 9], [0], [0, 5], [0, 3, 4], [], [0, 0]),
+                    "value": ([0, 4, 9], [0, 5], [], [0, 0]),
+                    "dtype": [np.int32, np.int64, np.int32],
                     "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ["b_seq_len"],
-                    "value": ([4, 5, 4],),
-                    "dtype": [np.int32],
+                    # "value": ([4, 5, 4], [6], [5, 6], [3, 1, 2], [], [0, 0]),
+                    "value": ([4, 5, 4], [5, 6], [], [0, 0]),
+                    "dtype": [np.int32, np.int64, np.int32],
                     "gen_policy": "gen_tensor_by_value"
                 },
             ]
