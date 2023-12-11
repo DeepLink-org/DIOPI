@@ -144,5 +144,56 @@ diopiError_t diopiAny(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     return diopiSuccess;
 }
 
+diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim) {
+    AscendTensor inputAt(input);
+    if (inputAt.numel() <= 0) {
+        diopiTensorHandle_t outTemp;
+        makeTensorLike(ctx, &outTemp, out, diopi_dtype_float32);
+        diopiScalar_t scalar = {diopi_dtype_float32, 1};
+        diopiFill(ctx, outTemp, &scalar);
+        diopiCastDtype(ctx, out, outTemp);
+        return diopiSuccess;
+    }
+
+    bool keepdim = true;
+    diopiSize_t inputS, outS;
+    diopiGetTensorShape(input, &inputS);
+    diopiGetTensorShape(out, &outS);
+    if (inputS.len != outS.len) {
+        keepdim = false;
+    }
+
+    std::vector<int64_t> dimVector = nullptr == dim ? std::vector<int64_t>{0} : std::vector<int64_t>{*dim};
+    if (dimVector[0] < 0) dimVector[0] += inputS.len;
+
+    diopiDtype_t inputDtype, outDtype, highDtype;
+    diopiGetTensorDtype(input, &inputDtype);
+    diopiGetTensorDtype(out, &outDtype);
+    diopiTensorHandle_t inputTemp;
+    diopiTensorHandle_t outTemp;
+
+    if (inputDtype == diopi_dtype_bool) {
+        highDtype = diopi_dtype_int32;
+    } else {
+        highDtype = outDtype;
+    }
+
+    if (inputDtype != outDtype) {
+        makeTensorLike(ctx, &inputTemp, input, highDtype);
+        makeTensorLike(ctx, &outTemp, out, highDtype);
+        diopiCastDtype(ctx, inputTemp, input);
+    } else {
+        inputTemp = const_cast<diopiTensorHandle_t>(input);
+        outTemp = out;
+    }
+
+    AclOpRunner<2, 1>("ReduceProd", ctx).addInput(inputTemp).addConstInput(dimVector).setAttr("keep_dims", keepdim).addOutput(outTemp).run();
+
+    if (inputDtype != outDtype) {
+        diopiCastDtype(ctx, out, outTemp);
+    }
+    return diopiSuccess;
+}
+
 }  // namespace ascend
 }  // namespace impl
