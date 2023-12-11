@@ -393,18 +393,6 @@ device_configs = {
         ),
     ),
 
-    'pointwise_op_mask': dict(
-        name=['bitwise_not'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
-                },
-            ]
-        ),
-    ),
-
     'pointwise_op_bool': dict(
         name=['erf', 'asin', 'atan'],
         tensor_para=dict(
@@ -640,66 +628,6 @@ device_configs = {
                 {
                     "ins": ['exponent'],
                     "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_op': dict(
-        name=['bitwise_and'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input', 'other'],
-                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_op_diff_dtype': dict(
-        name=['bitwise_and'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_op_broadcast': dict(
-        name=['bitwise_and'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_op_scalar': dict(
-        name=['bitwise_and'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),Skip((0,)),Skip((0, 4)),Skip((4, 0, 5)),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_op_scalar_bool': dict(
-        name=['bitwise_and'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),Skip((0,)),],
                 },
             ]
         ),
@@ -1195,30 +1123,6 @@ device_configs = {
                 {
                     "ins": ['x1'],
                     "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_not_uint8': dict(
-        name=['bitwise_not'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.uint8),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_not_int': dict(
-        name=['bitwise_not'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.bool_),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),],
                 },
             ]
         ),
