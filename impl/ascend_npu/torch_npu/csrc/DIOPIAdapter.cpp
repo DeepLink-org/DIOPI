@@ -1,7 +1,9 @@
 #include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
+#include <ATen/native/CPUFallback.h>
 #include <ATen/record_function.h>
 #include <diopi/diopirt.h>
+#include <torch/library.h>
 
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
@@ -1518,7 +1520,7 @@ NPUStream getCurrentNPUStream(c10::DeviceIndex device_index) {
     diopiStreamHandle_t stream_handle = nullptr;
     diopiGetStream(context, &stream_handle);
     TORCH_CHECK(stream_handle);
-    c10::Device device(c10::DeviceType::XPU, device_index);
+    c10::Device device(c10::DeviceType::XLA, device_index);
     c10::Stream atStream(c10::Stream::Default::DEFAULT, device);
     aclrtStream aclStream = reinterpret_cast<aclrtStream>(stream_handle);
     TORCH_CHECK(aclStream);
@@ -1581,10 +1583,10 @@ at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef s
 
     size_t nbytes = at::detail::computeStorageNbytes(sizes, strides, options.dtype().itemsize());
 
-    c10::intrusive_ptr<c10::StorageImpl> storage_impl = c10::make_intrusive<c10::StorageImpl>(
+    c10::intrusive_ptr<c10::StorageImpl> storage_impl = c10::make_intrusive<torch_npu::NPUStorageImpl>(
         at::StorageImpl::use_byte_size_t(), nbytes, c10::InefficientStdFunctionContext::makeDataPtr(data, c10::detail::deleteNothing, device), nullptr, false);
     auto dtype = options.dtype();
-    c10::DispatchKeySet ks{c10::DispatchKey::XPU};
+    c10::DispatchKeySet ks{c10::DispatchKey::XLA};
     auto tensor = at::detail::make_tensor<at::TensorImpl>(std::move(storage_impl), ks, dtype);
     if (strides.size() > 0) {
         tensor.unsafeGetTensorImpl()->set_sizes_and_strides(sizes, strides);
@@ -1682,15 +1684,35 @@ void unsetCurCtx() {
 
 }  // namespace impl
 
-namespace at::ascend_npu {
+namespace {
 
-TensorWrapper TensorWrapper::contiguous(c10::MemoryFormat memory_format) const {
-    if (is_contiguous(memory_format)) {
-        return *this;
-    } else {
-        INTERFACE_NOT_IMPL
-        return *this;
-    }
+at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
+    return at_npu::native::NPUNativeFunctions::copy_memory_(self, src, non_blocking);
 }
 
-};  //  namespace at::ascend_npu
+at::Tensor wrapper__view(const at::Tensor& self, at::IntArrayRef size) { return impl::aten::view(self, size); }
+
+at::Tensor wrapper__as_strided(const at::Tensor& self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset) {
+    return at_npu::native::NPUNativeFunctions::as_strided(self, size, stride, storage_offset);
+}
+
+void ascend_diopi_fallback(const c10::OperatorHandle& op, at::DispatchKeySet dispatch_keys, torch::jit::Stack* stack) {
+    const auto name = c10::toString(op.operator_name());
+    std::cout << __FUNCTION__ << ": op " << name << " fallbacked, must be processed!!!" << std::endl;
+    at::native::cpu_fallback(op, stack);
+}
+
+}  // namespace
+
+namespace at {
+
+TORCH_LIBRARY_IMPL(aten, XLA, m) {
+    m.impl("copy_", TORCH_FN(wrapper__copy_));
+    m.impl("reshape", TORCH_FN(wrapper__view));
+    m.impl("view", TORCH_FN(wrapper__view));
+    m.impl("as_strided", TORCH_FN(wrapper__as_strided));
+};
+
+TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
+
+}  // namespace at
