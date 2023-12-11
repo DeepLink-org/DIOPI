@@ -8292,40 +8292,40 @@ diopi_configs = {
         name=['context_attention'],
         interface=['CustomizedTest'],
         para=dict(
-            max_input_len=(32, 256, 128),
+            max_input_len=(4, 17, 19, 32, 256, 128, 0),
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['q'],
-                    "shape": ((64, 32, 128), (512, 32, 128), (256, 64, 256)),
-                    "dtype": [np.float16],
+                    "shape": ((4, 7, 9), (17, 4, 15), (19, 2, 10), (64, 32, 128), (512, 32, 128), (256, 64, 256), (0, 16, 64)),
+                    "dtype": [np.float16, np.float32, np.float64],
                 },
                 {
                     "ins": ["k"],
-                    "shape": ((64, 32, 128), (512, 32, 128), (256, 64, 256)),
-                    "dtype": [np.float16],
+                    "shape": ((4, 7, 9), (17, 4, 15), (19, 2, 10), (64, 32, 128), (512, 32, 128), (256, 64, 256), (0, 16, 64)),
+                    "dtype": [np.float16, np.float32, np.float64],
                 },
                 {
                     "ins": ["v"],
-                    "shape": ((64, 32, 128), (512, 32, 128), (256, 64, 256)),
-                    "dtype": [np.float16],
+                    "shape": ((4, 7, 9), (17, 4, 15), (19, 2, 10), (64, 32, 128), (512, 32, 128), (256, 64, 256), (0, 16, 64)),
+                    "dtype": [np.float16, np.float32, np.float64],
                 },
                 {
                     "ins": ["out"],
-                    "shape": ((64, 32, 128), (512, 32, 128), (256, 64, 256)),
-                    "dtype": [np.float16],
+                    "shape": ((4, 7, 9), (17, 4, 15), (19, 2, 10), (64, 32, 128), (512, 32, 128), (256, 64, 256), (0, 16, 64)),
+                    "dtype": [np.float16, np.float32, np.float64],
                 },
                 {
                     "ins": ["b_start_loc"],
-                    "value": ((0, 16, 48), (0, 64, 256), (0, 64, 128)),
-                    "dtype": [np.int32],
+                    "value": ((0,), (0, 5), (2, 5, 10), (0, 16, 48), (0, 64, 256), (0, 64, 128), (0, 0, 0, 0)),
+                    "dtype": [np.int32, np.int64, np.int32],
                     "gen_policy": "gen_tensor_by_value"
                 },
                 {
                     "ins": ["b_seq_len"],
-                    "value": ((16, 32, 16), (64, 192, 256), (64, 64, 128)),
-                    "dtype": [np.int32],
+                    "value": ((4,), (5, 12), (3, 5, 7), (16, 32, 16), (64, 192, 256, 1), (64, 64, 128), (0, 0, 0, 0)),
+                    "dtype": [np.int32, np.int64, np.int32],
                     "gen_policy": "gen_tensor_by_value"
                 },
             ]
