@@ -888,29 +888,6 @@ device_configs = {
         ),
     ),
 
-    'sort': dict(
-        name=['sort'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((11400,)),Skip((12, 8)),Skip((8, 12, 9)),Skip((4, 4, 16, 20)),Skip((4, 4, 16, 2, 20)),Skip((24180,)),Skip((0,)),Skip((12, 0)),Skip((4, 0, 5)),],
-                },
-            ]
-        ),
-    ),
-
-    'sort_same_value': dict(
-        name=['sort'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((11400,)),Skip((4, 4, 16, 20)),Skip((4, 4, 16, 2, 20)),],
-                },
-            ]
-        ),
-    ),
 
     'transpose': dict(
         name=['transpose'],
