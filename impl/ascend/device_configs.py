@@ -1428,15 +1428,6 @@ device_configs = {
         ),
     ),
 
-    'linspace': dict(
-        name=['linspace'],
-        para=dict(
-            start=[Skip(0),Skip(1.4),Skip(-10),Skip(False),Skip(True),Skip(2),Skip(-2.5),Skip(-10),Skip(0.0001),Skip(0),Skip(5),],
-            end=[Skip(0.5),Skip(-2.4),Skip(True),Skip(100.232),Skip(False),Skip(2),Skip(-2.5),Skip(10),Skip(0.001),Skip(10),Skip(-2),],
-            steps=[Skip(24),Skip(23),Skip(152),Skip(100),Skip(76),Skip(50),Skip(38),Skip(25),Skip(5),Skip(0),Skip(1),],
-        ),
-    ),
-
     'permute': dict(
         name=['permute'],
         tensor_para=dict(
