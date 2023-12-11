@@ -56,14 +56,14 @@ static diopiError_t getPermuteOrder(const DiopiTensor& src, std::vector<int32_t>
         inputStrides[i] = src.stride()[i];
         inputSizes[i] = src.shape()[i];
     }
-    std::vector<std::pair<int, int>> strides_sizes(dim, std::pair<int, int>(1, 1));
-    for (int64_t i = 0; i < dim; ++i) {
-        strides_sizes[i] = std::pair<int, int>(inputStrides[i], inputSizes[i]);
+    std::vector<std::pair<int, int>> stridesSizes(dim, std::pair<int, int>(1, 1));
+    for (int i = 0; i < dim; ++i) {
+        stridesSizes[i] = std::pair<int, int>(inputStrides[i], inputSizes[i]);
     }
 
-    sort(strides_sizes.begin(), strides_sizes.end(), [](std::pair<int, int> a, std::pair<int, int> b) { return a.first > b.first; });
+    sort(stridesSizes.begin(), stridesSizes.end(), [](std::pair<int, int> a, std::pair<int, int> b) { return a.first > b.first; });
     for (int i = 0; i < dim; ++i) {
-        auto pair = strides_sizes[i];
+        auto pair = stridesSizes[i];
         for (int j = 0; j < dim; ++j) {
             if ((pair.first == inputStrides[j]) && (pair.second == inputSizes[j])) {
                 reverseOrder[i] = j;
