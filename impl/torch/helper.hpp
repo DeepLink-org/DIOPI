@@ -28,7 +28,7 @@
 #define TORCH_1_12_MM_VERSION 1120
 
 #define ATEN_NOT_IMPLEMENT()                                                                                         \
-    std::cerr << __FILE__ << ":" << __LINE__ << ": ";                                                                                                  \
+    std::cerr << __FILE__ << ":" << __LINE__ << ": ";                                                                \
     logError("NotImplementError: function ", __FUNCTION__, " is not implemented for torch version ", TORCH_VERSION); \
     set_last_error_string("NotImplementError: function %s is not implemented for torch version %d" __FUNCTION__, TORCH_VERSION);
 
