@@ -144,8 +144,9 @@ def get_dtype(input: Union[Tensor, int, float]) -> Dtype:
         assert 0, "not supported type of input"
 
 
-def infer_tensor_scalar_common_dtype(input: Tensor,
-                                     other: Union[float, int]) -> Dtype:
+def infer_tensor_scalar_common_dtype(
+    input: Tensor, other: Union[float, int]
+) -> Dtype:
     dtype1, dtype2 = get_dtype(input), get_dtype(other)
     if dtype1 in float_types:
         return dtype1
@@ -198,8 +199,9 @@ def pow_dtype(input, other) -> Dtype:
     return dtype1
 
 
-def remainder_dtype(input: Union[Tensor, float, int],
-                    other: Union[Tensor, float, int]) -> Dtype:
+def remainder_dtype(
+    input: Union[Tensor, float, int], other: Union[Tensor, float, int]
+) -> Dtype:
     dtype1, dtype2 = get_dtype(input), get_dtype(other)
     if dtype1 == Dtype.int8 and dtype2 == Dtype.uint8:
         return Dtype.int16
@@ -1725,7 +1727,11 @@ def batch_norm(
 def batch_norm_stats(input, eps):
     func = check_function("diopiBatchNormStats")
     # cuda accumulate dtype mapping
-    dtype = Dtype.float32 if input.get_dtype() == Dtype.float16 else input.get_dtype()
+    dtype = (
+        Dtype.float32
+        if input.get_dtype() == Dtype.float16
+        else input.get_dtype()
+    )
     mean = Tensor(Sizes(list([input.size().data[1]])), dtype)
     invstd = Tensor(Sizes(list([input.size().data[1]])), dtype)
     ret = func(input.context(), mean, invstd, input, eps)
@@ -2960,7 +2966,11 @@ def batch_norm_backward(
 
 def arange(end, start=0, step=1, dtype=None) -> Tensor:
     if dtype is None:
-        if type(start) == float or type(end) == float or type(step) == float:
+        if (
+            isinstance(start, float)
+            or isinstance(end, float)
+            or isinstance(step, float)
+        ):
             dtype = Dtype.float32
         else:
             dtype = from_numpy_dtype(glob_vars.int_type)
