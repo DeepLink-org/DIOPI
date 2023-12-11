@@ -11,8 +11,6 @@
 namespace impl {
 namespace kunlunxin {
 
-//extern "C" {
-
 static const char* name = "KLXDevice";
 static char version[1024] = {0};
 
@@ -65,21 +63,20 @@ DIOPI_API diopiError_t diopiRandperm(diopiContextHandle_t ctx, diopiTensorHandle
     return diopiSuccess;
 }
 
-
 DIOPI_API diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiTensorHandle_t dest) {
     xdnn::Context* ctx_xpu = impl::kunlunxin::set_cur_ctx(ctx);
     xdnn_pytorch::Tensor _src = impl::kunlunxin::build_xtorch_tensor(src);
     xdnn_pytorch::Tensor _dest = impl::kunlunxin::build_xtorch_tensor(dest);
 
-    DIOPI_CALL_XDNN(xdnn_pytorch::_to_copy(
-        ctx_xpu, _src, 
-        xdnn_pytorch::optional<int64_t>(), 
-        xdnn_pytorch::optional<int64_t>(), 
-        xdnn_pytorch::optional<xdnn_pytorch::Device>(),
-        xdnn_pytorch::optional<bool>(),
-        false, 
-        xdnn_pytorch::optional<int64_t>(), 
-        _dest));
+    DIOPI_CALL_XDNN(xdnn_pytorch::_to_copy(ctx_xpu,
+                                           _src,
+                                           xdnn_pytorch::optional<int64_t>(),
+                                           xdnn_pytorch::optional<int64_t>(),
+                                           xdnn_pytorch::optional<xdnn_pytorch::Device>(),
+                                           xdnn_pytorch::optional<bool>(),
+                                           false,
+                                           xdnn_pytorch::optional<int64_t>(),
+                                           _dest));
     return diopiSuccess;
 }
 
@@ -138,7 +135,7 @@ DIOPI_API diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diop
                                                        _stride,
                                                        _padding,
                                                        _dilation,
-                                                       false,//transposed,
+                                                       false,
                                                        _output_padding,
                                                        groups,
                                                        output_mask,
@@ -466,8 +463,6 @@ DIOPI_API diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     DIOPI_CALL_XDNN(xdnn_pytorch::cat(ctx_xpu, _inputs, dim, _out));
     return diopiSuccess;
 }
-
-//}  // extern "C"
 
 }  // namespace kunlunxin
 }  // namespace impl
