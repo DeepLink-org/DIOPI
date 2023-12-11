@@ -149,7 +149,7 @@ diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     if (inputAt.numel() <= 0) {
         diopiTensorHandle_t outTemp;
         makeTensorLike(ctx, &outTemp, out, diopi_dtype_float32);
-        diopiScalar_t scalar = {diopi_dtype_float32, 1};
+        diopiScalar_t scalar = constructDiopiScalarT(diopi_dtype_float32, 1.0);
         diopiFill(ctx, outTemp, &scalar);
         diopiCastDtype(ctx, out, outTemp);
         return diopiSuccess;
@@ -164,7 +164,6 @@ diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     }
 
     std::vector<int64_t> dimVector = nullptr == dim ? std::vector<int64_t>{0} : std::vector<int64_t>{*dim};
-    if (dimVector[0] < 0) dimVector[0] += inputS.len;
 
     diopiDtype_t inputDtype, outDtype, highDtype;
     diopiGetTensorDtype(input, &inputDtype);
