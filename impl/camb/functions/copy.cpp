@@ -24,13 +24,6 @@ static bool denseCheck(const DiopiTensor& src) {
         }
     }
 
-    for (int i = 0; i < dim - 1; i++) {
-        for (int j = i + 1; j < dim; j++) {
-            if (shape[i] == shape[j]) {
-                return false;
-            }
-        }
-    }
     std::sort(stride.begin(), stride.end());
 
     // e.g. shape = 2,3,4,5,stride = 1,3,12,60
@@ -110,10 +103,8 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     // memory format convert if memory format is matched.
     diopiMemoryFormat_t destMemoryFormat;
     // cnnTranspose doesn't support float64 and scalar and contiguousOut only support convertion between the contiguous tensor and the no-contiguous tensor.
-    if (srcTr.shape() == destTr.shape() && srcTr.dim() != 0 && srcTr.dtype() != diopi_dtype_float64 && probableMemoryFormat(destTr, &destMemoryFormat) &&
-        probableMemoryFormat(srcTr, nullptr) && (srcTr.isContiguous() || destTr.isContiguous())) {
-        // if (srcTr.shape() == destTr.shape() && srcTr.dim() != 0 && srcTr.dtype() != diopi_dtype_float64 && denseCheck(srcTr) && denseCheck(destTr) &&
-        //     (destTr.isContiguous() || srcTr.isContiguous())) {
+    if (srcTr.shape() == destTr.shape() && srcTr.dim() != 0 && srcTr.dtype() != diopi_dtype_float64 && denseCheck(srcTr) && denseCheck(destTr) &&
+        (destTr.isContiguous() || srcTr.isContiguous())) {
         DiopiTensor destTmpTr = destTr;
         probableMemoryFormat(destTr, &destMemoryFormat);
         if (destTmpTr.dtype() != srcTr.dtype()) {
