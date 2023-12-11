@@ -27,12 +27,12 @@ diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
         AscendTensor inputA(input);
         std::vector<int64_t> perms = inputA.shape();
         std::swap(perms[dim], perms[lastdim]);
-        const diopiSize_t TranShape = vectorToDiopiSize(perms);
+        const diopiSize_t tranShape = vectorToDiopiSize(perms);
 
         diopiTensorHandle_t inputT, indicesT, valuesT;
-        diopiRequireTensor(ctx, &inputT, &TranShape, nullptr, inputA.dtype(), inputA.device());
-        diopiRequireTensor(ctx, &indicesT, &TranShape, nullptr, inputA.dtype(), inputA.device());
-        diopiRequireTensor(ctx, &valuesT, &TranShape, nullptr, inputA.dtype(), inputA.device());
+        diopiRequireTensor(ctx, &inputT, &tranShape, nullptr, inputA.dtype(), inputA.device());
+        diopiRequireTensor(ctx, &indicesT, &tranShape, nullptr, inputA.dtype(), inputA.device());
+        diopiRequireTensor(ctx, &valuesT, &tranShape, nullptr, inputA.dtype(), inputA.device());
 
         diopiTranspose(ctx, inputT, input, dim, lastdim);
         AclOpRunner<1, 2>("Sort", ctx)
