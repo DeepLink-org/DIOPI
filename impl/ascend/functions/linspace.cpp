@@ -4,8 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <numeric>
-
 #include "../common/acloprunner.hpp"
 
 namespace impl {
