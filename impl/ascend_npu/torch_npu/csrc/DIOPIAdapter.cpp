@@ -1,5 +1,6 @@
 #include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
+#include <ATen/native/CPUFallback.h>
 #include <ATen/record_function.h>
 #include <diopi/diopirt.h>
 #include <torch/library.h>
@@ -1695,6 +1696,12 @@ at::Tensor wrapper__as_strided(const at::Tensor& self, at::IntArrayRef size, at:
     return at_npu::native::NPUNativeFunctions::as_strided(self, size, stride, storage_offset);
 }
 
+void ascend_diopi_fallback(const c10::OperatorHandle& op, at::DispatchKeySet dispatch_keys, torch::jit::Stack* stack) {
+    const auto name = c10::toString(op.operator_name());
+    std::cout << __FUNCTION__ << ": op " << name << " fallbacked, must be processed!!!" << std::endl;
+    at::native::cpu_fallback(op, stack);
+}
+
 }  // namespace
 
 namespace at {
@@ -1705,5 +1712,7 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("view", TORCH_FN(wrapper__view));
     m.impl("as_strided", TORCH_FN(wrapper__as_strided));
 };
+
+TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
 
 }  // namespace at
