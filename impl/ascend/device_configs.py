@@ -901,42 +901,6 @@ device_configs = {
         ),
     ),
 
-    'where': dict(
-        name=['where'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['condition'],
-                    "dtype": [Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'where_broadcast': dict(
-        name=['where'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['condition'],
-                    "dtype": [Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'where_same_value': dict(
-        name=['where'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['condition'],
-                    "dtype": [Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
     'leaky_relu': dict(
         name=['leaky_relu'],
         tensor_para=dict(
