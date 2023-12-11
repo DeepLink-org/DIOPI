@@ -207,16 +207,16 @@
     dtype: (float64)->float32
 
 - diopiPow:
-    dtype: (int16)->int32
+    dtype: (bool, int16)->int32
 
 - diopiPowInp:
-    dtype: (int16)->int32
+    dtype: (bool, int16)->int32
 
 - diopiPowTensor:
-    dtype: (int16)->int32
+    dtype: (bool, int16)->int32
 
 - diopiPowInpTensor:
-    dtype: (int16)->int32
+    dtype: (bool, int16)->int32
 
 - diopiUniformInp:
     dtype: (float64)->float32
