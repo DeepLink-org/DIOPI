@@ -1,5 +1,6 @@
 #ifndef IMPL_ASCEND_NPU_TORCH_NPU_CSRC_CORE_NPU_NPUVARIABLES_H_
 #define IMPL_ASCEND_NPU_TORCH_NPU_CSRC_CORE_NPU_NPUVARIABLES_H_
+#include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
 namespace c10_npu {
 enum class SocVersion {
