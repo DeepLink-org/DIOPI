@@ -14,8 +14,8 @@
 #include <diopi/functions.h>
 
 #include <mutex>
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include "error.hpp"
 #include "impl_functions.hpp"
