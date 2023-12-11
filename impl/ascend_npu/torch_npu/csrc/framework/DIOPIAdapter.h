@@ -16,6 +16,38 @@
 #include "acl/acl_op_compiler.h"
 #include "acl/acl_rt.h"
 #include "ge/ge_api.h"
+
+namespace at::ascend_npu {
+
+class TensorWrapper : public at::Tensor {
+public:
+    // fix:  no matching function for call to 'at::ascend_npu::TensorWrapper::TensorWrapper()
+    // using at::Tensor::Tensor;
+    TensorWrapper() : at::Tensor::Tensor() {}
+
+    // fix: invalid initialization of reference of type 'const at::ascend_npu::TensorWrapper&' from expression of type 'const at::Tensor'
+    explicit TensorWrapper(const at::Tensor& other) : at::Tensor::Tensor(other) {}
+
+    // fix: have different types 'const at::ascend_npu::TensorWrapper' and 'at::Tensor'
+    operator at::Tensor() const { return static_cast<at::Tensor>(*this); }
+
+    // fix: no match for 'operator=' (operand types are 'at::ascend_npu::TensorWrapper' and 'at::Tensor')
+    TensorWrapper operator=(at::Tensor other) {
+        at::Tensor::operator=(other);
+        return *this;
+    }
+
+    TensorWrapper contiguous(c10::MemoryFormat memory_format) const;
+};  // class TensorWrapper
+
+using TensorWrapperList = c10::ArrayRef<TensorWrapper>;
+
+};  //  namespace at::ascend_npu
+
+// #define Tensor ascend_npu::TensorWrapper
+// #define TensorList ascend_npu::TensorWrapperList
+
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpConstants.h"
 #include "torch_npu/csrc/aten/NPUNativeFunctions.h"
 #include "torch_npu/csrc/core/npu/NPUErrorCodes.h"
@@ -158,8 +190,6 @@ static void warn_(const ::c10::Warning& warning) { INTERFACE_NOT_IMPL; }
         return true;                                                                  \
     }()
 
-// #define RECORD_FUNCTION(...)
-
 namespace at_npu {
 namespace key {
 static constexpr c10::DeviceType NativeDeviceType = c10::DeviceType::XLA;
@@ -210,6 +240,8 @@ struct NPUGeneratorImpl : public c10::GeneratorImpl {
 
     // NPUGeneratorImpl methods
     std::shared_ptr<NPUGeneratorImpl> clone() const { INTERFACE_NOT_IMPL; }
+    virtual GeneratorImpl* clone_impl() const { INTERFACE_NOT_IMPL; }
+
     void set_current_seed(uint64_t seed) { INTERFACE_NOT_IMPL; }
     uint64_t current_seed() const { INTERFACE_NOT_IMPL; }
     uint64_t seed() { INTERFACE_NOT_IMPL; }
@@ -223,8 +255,9 @@ struct NPUGeneratorImpl : public c10::GeneratorImpl {
 
     // Temporarily accommodates call sites that use philox_engine_inputs.
     // Allows incremental refactor of call sites to use philox_npu_state.
-    std::pair<uint64_t, uint64_t> philox_engine_inputs(uint64_t increment) { INTERFACE_NOT_IMPL; }
-    static c10::DeviceType device_type() { INTERFACE_NOT_IMPL; }
+    std::pair<uint64_t, uint64_t> philox_engine_inputs(uint64_t increment);
+    static c10::DeviceType device_type() { return c10::DeviceType::XPU; }
+    void* generator_ = nullptr;
 };
 
 namespace detail {
@@ -555,7 +588,7 @@ public:
     static at::Tensor apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) { INTERFACE_NOT_IMPL; }
     static at::Tensor unsafe_empty_workspace(uint64_t size) { INTERFACE_NOT_IMPL; }
     // DEPRECATED: ApplyTensorWithSizes will be deprecated, please use apply_tensor_with_sizes instead.
-    static at::Tensor ApplyTensorWithSizes(c10::IntArrayRef sizes, const c10::TensorOptions& options) { INTERFACE_NOT_IMPL; }
+    static at::Tensor ApplyTensorWithSizes(c10::IntArrayRef sizes, const c10::TensorOptions& options) { return apply_tensor_with_sizes(sizes, options); }
     // DEPRECATED: CheckMemory will be deprecated, please use check_memory instead.
     static void CheckMemory(const std::initializer_list<at::Tensor>& inputs, const std::initializer_list<at::Tensor>& outputs) { INTERFACE_NOT_IMPL; }
     static bool IsCPUScalar(const at::Tensor& tensor) { return tensor.is_cpu() && tensor.numel() == 1; }

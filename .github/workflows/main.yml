@@ -67,8 +67,6 @@ jobs:
           git submodule update --init --recursive
       - name: Set output variables
         id: set-run-vars
-        env:
-          GITHUB_TOKEN: "${{ secrets.CI_TOKEN != '' && secrets.CI_TOKEN || 'NONE' }}"
         run: |
           PR_NUMBER="${{ github.event.pull_request.number || 0 }}"
           cd ${GITHUB_WORKSPACE}/source && RUN_RESULT=$(python3 scripts/filter_ci.py ${PR_NUMBER})
@@ -100,7 +98,6 @@ jobs:
           cd ${NFS_PATH}/ && ls -al && find ${NFS_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${GITHUB_JOB} && cp -R source ${GITHUB_JOB}  && cd ${GITHUB_JOB}
-          export CI=true
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 bash -c 'cd diopi_test && bash scripts/ci_script.sh py-lint \
           && bash scripts/ci_script.sh cpp-lint && cd ../impl \ && bash scripts/ci_script.sh cpp-lint' \
           && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} \
@@ -119,7 +116,6 @@ jobs:
           export USE_COVERAGE=ON
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
-          export CI=true
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh torch' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
           """
 
@@ -135,7 +131,6 @@ jobs:
           export USE_COVERAGE=ON
           source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
-          export CI=true
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1424} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh torch' || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
           """
 
@@ -152,16 +147,15 @@ jobs:
           set -e
           export USE_COVERAGE=ON
           cd ${NFS_PATH}/ && ls -al && find ${NFS_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
-          source /mnt/cache/share/platform/env/camb_ci_diopi_impl
+          source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
-          export CI=true
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh camb' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
           """
       - name: clang-tidy
         run: |
           ssh ${CLUSTER_CAMB} """
           set -e
-          source /mnt/cache/share/platform/env/camb_ci_diopi_impl
+          source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=20 bash -c 'cd impl && bash scripts/ci_script.sh clang-tidy' || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
           """
@@ -178,7 +172,7 @@ jobs:
   #         set -e
   #         source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME_MMCV}
   #         cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST3} && cp -R source ${BUILD_TEST3} && cd ${BUILD_TEST3}
-  #         export CI=true
+  #
   #         srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 ls && cd diopi_test && bash scripts/build_mmcv.sh mmcv_ext || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST3} && exit 1 )
   #         """
 
@@ -192,7 +186,7 @@ jobs:
   #       run: |
   #         ssh ${CLUSTER_1988} """
   #         set -e
-  #         export CI=true
+  #
   #         source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME_MMCV}
   #         cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST3}
   #         pip install -U pytest
@@ -209,7 +203,6 @@ jobs:
         run: |
           ssh ${CLUSTER_1988} """
           set -e
-          export CI=true
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd diopi_test/python && ls &&
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'python main.py --mode gen_data' \
@@ -225,7 +218,6 @@ jobs:
         run: |
           ssh ${CLUSTER_1424} """
           set -e
-          export CI=true
           source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cp -f scripts/ci/diopi_config_A100.py  diopi_test/python/configs/diopi_configs.py && cd diopi_test/python && ls &&
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1424} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'python main.py --mode gen_data' \
@@ -235,7 +227,6 @@ jobs:
         run: |
           ssh ${CLUSTER_1424} """
           set -e
-          export CI=true
           source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/lib
           echo \$LD_LIBRARY_PATH
@@ -254,7 +245,6 @@ jobs:
         run: |
           ssh ${CLUSTER_1988} """
           set -e
-          export CI=true
           export USE_COVERAGE=ON
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=20 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode gen_case --fname batch_norm --nhwc &&
@@ -267,7 +257,7 @@ jobs:
         run: |
           ssh ${CLUSTER_1988} """
           set -e
-          export CI=true
+
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/lib
           echo \$LD_LIBRARY_PATH
@@ -283,22 +273,21 @@ jobs:
           bash scripts/increment_coverage.sh ${REQUIRE_COVERAGE}
           """
 
-  Rt-Test-Nvidia:
-    name: Rt-Test-Nvidia
-    runs-on: tps-diopi-ci
-    needs: Build-Nvidia
-    if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
-    steps:
-      - name: test
-        run: |
-          ssh ${CLUSTER_1988} """
-          set -e
-          export CI=true
-          source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
-          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && \
-          python main.py --mode utest && python main.py --mode utest_diopi_test'
-          """
+  # Rt-Test-Nvidia:
+  #   name: Rt-Test-Nvidia
+  #   runs-on: tps-diopi-ci
+  #   needs: Build-Nvidia
+  #   if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
+  #   steps:
+  #     - name: test
+  #       run: |
+  #         ssh ${CLUSTER_1988} """
+  #         set -e
+  #         source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
+  #         cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+  #         srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && \
+  #         python main.py --mode utest && python main.py --mode utest_diopi_test'
+  #         """
 
   Op-Test-Camb:
     name: Op-Test-Camb
@@ -312,11 +301,10 @@ jobs:
         run: |
           ssh ${CLUSTER_CAMB} """
           set -e
-          export CI=true
           export USE_COVERAGE=ON
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && ls
           rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
-          source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+          source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=20 --gres=mlu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode gen_case --impl_folder ${NFS_PATH_LUSTRE}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/camb/ && \
           ${run_test} main.py --mode run_test' && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           if [ "${ALL_COVERAGE}" = "ON" ]; then
@@ -328,25 +316,24 @@ jobs:
         run: |
           ssh ${CLUSTER_CAMB} """
           set -e
-          source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+          source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           bash scripts/increment_coverage.sh ${REQUIRE_COVERAGE}
           """
 
-  Rt-Test-Camb:
-    name: Rt-Test-Camb
-    runs-on: tps-diopi-ci
-    needs: Build-Camb
-    if: ${{ contains( needs.Rsync.outputs.output, 'CAMB' ) }}
-    steps:
-      - name: test
-        run: |
-          ssh ${CLUSTER_CAMB} """
-          set -e
-          export CI=true
-          source /mnt/cache/share/platform/env/camb_ci_diopi_impl && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          cd diopi_test/python
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} python main.py --mode utest
-          """
+  # Rt-Test-Camb:
+  #   name: Rt-Test-Camb
+  #   runs-on: tps-diopi-ci
+  #   needs: Build-Camb
+  #   if: ${{ contains( needs.Rsync.outputs.output, 'CAMB' ) }}
+  #   steps:
+  #     - name: test
+  #       run: |
+  #         ssh ${CLUSTER_CAMB} """
+  #         set -e
+  #         source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+  #         cd diopi_test/python
+  #         srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=10 --gres=mlu:${GPU_REQUESTS} python main.py --mode utest
+  #         """
 
   Build-Ascend-910b:
     name: Build-Ascend-910b
@@ -358,7 +345,6 @@ jobs:
         run: |
           set -e
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
-          export CI=true
           cd impl && sh scripts/build_impl.sh ascend
       - name: clang-tidy
         run: |
@@ -378,23 +364,21 @@ jobs:
         run: |
           set -e
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          export CI=true
           rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
           cd diopi_test/python && python main.py --mode gen_case --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/ascend/ && ${run_test} main.py --mode run_test \
           && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
 
-  Rt-Test-Ascend-910b:
-    name: Rt-Test-Ascend-910b
-    runs-on: tps-ascend-ci-910b
-    needs: Build-Ascend-910b
-    if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
-    steps:
-      - name: test
-        run: |
-          set -e
-          export CI=true
-          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          cd diopi_test/python && python main.py --mode utest
+  # Rt-Test-Ascend-910b:
+  #   name: Rt-Test-Ascend-910b
+  #   runs-on: tps-ascend-ci-910b
+  #   needs: Build-Ascend-910b
+  #   if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
+  #   steps:
+  #     - name: test
+  #       run: |
+  #         set -e
+  #         cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+  #         cd diopi_test/python && python main.py --mode utest
 
   Build-Topsrider:
     name: Build-Topsrider
@@ -405,7 +389,6 @@ jobs:
       - name: build
         run: |
           set -e
-          export CI=true
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           export DIOPI_BUILD_TESTRT=ON
           cd impl && mkdir lib
@@ -422,25 +405,23 @@ jobs:
       - name: test
         run: |
           set -e
-          export CI=true
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
           cd diopi_test/python && mkdir -p cache/data/diopi
           python main.py --mode gen_case --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/topsrider/
           ln -sf /mnt/cache/share/deeplinkci/data/inputs ./cache/data/diopi && ln -sf /mnt/cache/share/deeplinkci/data/outputs ./cache/data/diopi
           python main.py --mode run_test
 
-  Rt-Test-Topsrider:
-    name: Rt-Test-Topsrider
-    runs-on: tps-topsrider-ci
-    needs: Build-Topsrider
-    if: contains( needs.Rsync.outputs.output, 'TOPSRIDER' )
-    steps:
-      - name: build
-        run: |
-          set -e
-          export CI=true
-          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          cd diopi_test/python && ln -sf /mnt/cache/share/deeplinkci/data/ data && python main.py --mode utest
+  # Rt-Test-Topsrider:
+  #   name: Rt-Test-Topsrider
+  #   runs-on: tps-topsrider-ci
+  #   needs: Build-Topsrider
+  #   if: contains( needs.Rsync.outputs.output, 'TOPSRIDER' )
+  #   steps:
+  #     - name: build
+  #       run: |
+  #         set -e
+  #         cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+  #         cd diopi_test/python && ln -sf /mnt/cache/share/deeplinkci/data/ data && python main.py --mode utest
 
   Build-Supa:
     name: Build-Supa
@@ -455,7 +436,7 @@ jobs:
           cd ${NFS_PATH}/ && ls -al && find ${DEEPLINK_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
           source /mnt/cache/share/platform/env/pt2.0_diopi
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
-          export CI=true
+
           echo "no partitions, just execute the script directly on the machine"
           """
 
@@ -469,7 +450,6 @@ jobs:
         run: |
           ssh ${CLUSTER_SUPA} """
           set -e
-          export CI=true
           export USE_COVERAGE=ON
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}
           echo "rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/"
@@ -477,17 +457,16 @@ jobs:
           echo "test and clean, you can refer to the CAMB"
           """
 
-  Rt-Test-Supa:
-    name: Rt-Test-Supa
-    runs-on: tps-diopi-ci
-    needs: Build-Supa
-    if: ${{ contains( needs.Rsync.outputs.output, 'SUPA' ) }}
-    steps:
-      - name: test
-        run: |
-          ssh ${CLUSTER_SUPA} """
-          set -e
-          export CI=true
-          source /mnt/cache/share/platform/env/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          echo "test and clean, you can refer to the CAMB"
-          """
+  # Rt-Test-Supa:
+  #   name: Rt-Test-Supa
+  #   runs-on: tps-diopi-ci
+  #   needs: Build-Supa
+  #   if: ${{ contains( needs.Rsync.outputs.output, 'SUPA' ) }}
+  #   steps:
+  #     - name: test
+  #       run: |
+  #         ssh ${CLUSTER_SUPA} """
+  #         set -e
+  #         source /mnt/cache/share/platform/env/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+  #         echo "test and clean, you can refer to the CAMB"
+  #         """

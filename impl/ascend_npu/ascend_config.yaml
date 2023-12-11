@@ -7,6 +7,7 @@ ascend:
 - diopiAddcdivInp
 - diopiAddcmul
 - diopiAddcmulInp
+- diopiAddmm
 - diopiAll
 - diopiAny
 - diopiArange
@@ -127,9 +128,6 @@ ascend:
 - diopiNeg
 - diopiNegInp
 - diopiNonzero
-- diopiNorm
-- diopiNormal
-- diopiNormalInp
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
@@ -144,7 +142,6 @@ ascend:
 - diopiReciprocalInp
 - diopiRelu
 - diopiReluInp
-- diopiRepeat
 - diopiRsqrt
 - diopiRsqrtInp
 - diopiSgn
@@ -200,5 +197,9 @@ ascend_npu:
 - diopiRemainderTensor
 - diopiRemainderScalar
 - diopiRemainder
+- diopiRepeat
 - diopiStack
+- diopiNormal
+- diopiNormalInp
+- diopiNorm
 
