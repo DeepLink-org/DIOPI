@@ -14,6 +14,7 @@
 
 #include "../error.hpp"
 #include "xdnn_pytorch/xdnn_pytorch.h"
+#include "xpu/runtime.h"
 
 namespace impl {
 namespace kunlunxin {
@@ -47,7 +48,7 @@ const char* XdnnGetErrorString(int error) {
         int ret = Expr;                                                                                                                             \
         if (static_cast<xdnn::Error_t>(ret) != xdnn::SUCCESS) {                                                                                     \
             set_last_error_string(                                                                                                                  \
-                "call a klxrt function failed: (%s), return code=%s, %s at %s:%d\n", #Expr, XdnnGetErrorString(ret), __func__, __FILE__, __LINE__); \
+                "call a klxrt function failed: (%s), return code=%d:%s, %s at %s:%d\n", #Expr, ret, XdnnGetErrorString(ret), __func__, __FILE__, __LINE__); \
             return diopiErrorOccurred;                                                                                                              \
         }                                                                                                                                           \
     } while (false);
@@ -110,19 +111,22 @@ xdnn_pytorch::Scalar build_xtorch_scalar(const diopiScalar_t* scalar) {
     xdnn_pytorch::Scalar temp;
     if (isInt(scalar)) {
         int64_t ival = scalar->ival;
-        temp.type = xdnn_pytorch::ScalarType::kint64;
-        *((int64_t*)(&temp.data)) = ival;
-        if (DEBUG) {
-            printf("scalar value is %ld\n", scalar->ival);
-        }
+        // temp.type = xdnn_pytorch::ScalarType::kint64;
+        // *((int64_t*)(&temp.data)) = ival;
+        // if (DEBUG) {
+        //     printf("scalar value is %ld\n", scalar->ival);
+        // }
+        temp = xdnn_pytorch::Scalar::create(ival);
     } else {
         float fval = scalar->fval;
-        temp.type = xdnn_pytorch::ScalarType::kfloat32;
-        *((float*)(&temp.data)) = fval;
-        if (DEBUG) {
-            printf("scalar value is %f\n", fval);
-        }
+        // temp.type = xdnn_pytorch::ScalarType::kfloat32;
+        // *((float*)(&temp.data)) = fval;
+        // if (DEBUG) {
+        //     printf("scalar value is %f\n", fval);
+        // }
+        temp = xdnn_pytorch::Scalar::create(fval);
     }
+
     return temp;
 }
 
@@ -159,9 +163,16 @@ xdnn_pytorch::ScalarType get_xtorch_type(diopiDtype_t dt) {
 }
 
 xtorch_vec build_xtorch_vec(diopiSize_t size) {
-    xdnn_pytorch::IntArrayRef tmp(size.data, size.len);
+    // xdnn_pytorch::IntArrayRef tmp(size.data, size.len);
     xtorch_vec res;
-    IntArrayRef2IntVector(tmp, res);
+
+    // IntArrayRef2IntVector(tmp, res);
+    int64_t length = size.len;
+    for (int i = 0; i < length; i++) {
+        if (i> 100) throw "bad size";
+        printf("size: %p, %d, data %ld, len: %ld\n", &size, i, size.data[i], size.len);
+        res.push_back(size.data[i]);
+    }
     return res;
 }
 
@@ -185,10 +196,23 @@ xdnn_pytorch::Tensor build_xtorch_tensor(T tensor) {
     if (DEBUG) {
         printf("tensor dsize len is %ld\n", dsize.len);
     }
-    if (dsize.len == 0) {
-        NOT_SUPPORTED("tensor is empty");
-        return {{0}, {0}, xdnn_pytorch::ScalarType::kfloat32, (void*)nullptr};
-    }
+
+    // NOTE: if dsize.len is 0, the tensor is actually a scalar.
+    // if (dsize.len == 0) {
+    //     NOT_SUPPORTED("tensor is empty");
+    //     return {{0}, {0}, xdnn_pytorch::ScalarType::kfloat32, (void*)nullptr};
+    // }
+
+    // NOTE: not tested for other datatypes
+    // if (dsize.len == 0) {
+    //     //NOT_SUPPORTED("tensor is empty");
+    //     void* xpu_scalar_data = nullptr;
+    //     int ret = xpu_malloc(&xpu_scalar_data, 1);
+    //     if (ret != 0) {
+    //         return {{0}, {0}, xdnn_pytorch::ScalarType::kfloat32, (void*)nullptr};
+    //     }
+    //     return {{0}, {0}, xdnn_pytorch::ScalarType::kfloat32, xpu_scalar_data};
+    // }
 
     void* data = nullptr;
     diopiGetTensorData(const_cast<diopiTensorHandle_t>(tensor), &data);
@@ -206,6 +230,9 @@ xdnn_pytorch::Tensor build_xtorch_tensor(T tensor) {
     diopiSize_t shape;
     diopiGetTensorShape(tensor, &shape);
     std::vector<int64_t> xtorch_tensor_sizes(shape.data, shape.data + shape.len);
+    if (dsize.len == 0) { // fill shape for scalar tensor
+        xtorch_tensor_sizes.push_back(1);
+    }
     if (DEBUG) {
         printf("tensor shape is ");
         for (auto i : xtorch_tensor_sizes) {
@@ -217,6 +244,9 @@ xdnn_pytorch::Tensor build_xtorch_tensor(T tensor) {
     diopiSize_t stride;
     diopiGetTensorStride(tensor, &stride);
     std::vector<int64_t> xtorch_tensor_strides(stride.data, stride.data + stride.len);
+    if (dsize.len == 0) { // fill stride for scalar tensor
+        xtorch_tensor_strides.push_back(1);
+    }
     if (DEBUG) {
         printf("tensor stride is ");
         for (auto i : xtorch_tensor_strides) {
