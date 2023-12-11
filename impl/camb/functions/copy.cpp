@@ -110,10 +110,10 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     // memory format convert if memory format is matched.
     diopiMemoryFormat_t destMemoryFormat;
     // cnnTranspose doesn't support float64 and scalar and contiguousOut only support convertion between the contiguous tensor and the no-contiguous tensor.
-    // if (srcTr.shape() == destTr.shape() && srcTr.dim() != 0 && srcTr.dtype() != diopi_dtype_float64 && probableMemoryFormat(destTr, &destMemoryFormat) &&
-    //     probableMemoryFormat(srcTr, nullptr) && (srcTr.isContiguous() || destTr.isContiguous())) {
-    if (srcTr.shape() == destTr.shape() && srcTr.dim() != 0 && srcTr.dtype() != diopi_dtype_float64 && denseCheck(srcTr) && denseCheck(destTr) &&
-        (destTr.isContiguous() ^ srcTr.isContiguous())) {
+    if (srcTr.shape() == destTr.shape() && srcTr.dim() != 0 && srcTr.dtype() != diopi_dtype_float64 && probableMemoryFormat(destTr, &destMemoryFormat) &&
+        probableMemoryFormat(srcTr, nullptr) && (srcTr.isContiguous() || destTr.isContiguous())) {
+        // if (srcTr.shape() == destTr.shape() && srcTr.dim() != 0 && srcTr.dtype() != diopi_dtype_float64 && denseCheck(srcTr) && denseCheck(destTr) &&
+        //     (destTr.isContiguous() || srcTr.isContiguous())) {
         DiopiTensor destTmpTr = destTr;
         probableMemoryFormat(destTr, &destMemoryFormat);
         if (destTmpTr.dtype() != srcTr.dtype()) {
