@@ -27,12 +27,11 @@ def gen_case(cache_path=".", cur_dir="", model_name="", fname="", impl_folder=""
         # set a prefix for dat save path like: data/diopi/inputs
         model_name = "diopi"
         from diopi_configs import diopi_configs
-        
+
     diopi_case_item_path = os.path.join(cache_path, model_name, diopi_case_item_file)
     case_output_dir = os.path.join(case_output_dir, model_name + '_case')
     device_case_item_path = os.path.join(case_output_dir, device_case_item_file)
-    
-    
+
     cfg_parse = ConfigParser(diopi_case_item_path)
     cfg_parse.parser(diopi_configs, fname)
     cfg_path = diopi_case_item_path
