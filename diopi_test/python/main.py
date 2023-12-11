@@ -90,7 +90,7 @@ def parse_args():
     gen_case_args.add_argument(
         "--case_output_dir",
         type=str,
-        default="./gencases/diopi_case",
+        default="./gencases",
         help="pytest case save dir",
     )
 
@@ -98,7 +98,6 @@ def parse_args():
     run_test_args.add_argument(
         "--test_cases_path",
         type=str,
-        default="./gencases/diopi_case",
         help="pytest case file or dir",
     )
     run_test_args.add_argument(
@@ -212,7 +211,12 @@ if __name__ == "__main__":
         gctc.gen_test_cases(args.fname)
         db_conn.insert_device_case(gctc.db_case_items)
     elif args.mode == "run_test":
-        pytest_args = [args.test_cases_path]
+        if args.test_cases_path == "":
+            model_name = args.model_name if args.model_name else "diopi"
+            test_cases_path = os.path.join(args.case_output_dir, model_name + "_case")
+        else:
+            test_cases_path = args.test_cases_path
+        pytest_args = [test_cases_path]
         if args.filter_dtype:
             filter_dtype_str = " and ".join(
                 [f"not {dtype}" for dtype in args.filter_dtype]
