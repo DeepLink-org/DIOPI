@@ -178,29 +178,23 @@ def common_dtype(input, other) -> Dtype:
     return dtype1 if dtype1.value >= dtype2.value else dtype2
 
 
-def pow_dtype(input, other, scalar: bool = True) -> Dtype:
-    dtype1, dtype2 = input, other
-    if scalar:
-        if (
-            dtype1 not in int_types
-            and dtype2 not in int_types
-            and dtype1 != Dtype.bool
-            and dtype2 != Dtype.bool
-        ):
-            return dtype1
-        else:
-            if dtype1 in int_types and dtype2 == Dtype.uint8:
-                return dtype1 if dtype1 != Dtype.int8 else Dtype.int16
-            if dtype1 == Dtype.bool:
-                return Dtype.float32 if dtype2 in float_types else Dtype.int64
-            if dtype2 not in int_types:
-                return dtype1 if dtype1 == Dtype.float16 else Dtype.float32
-            return dtype1
+def pow_dtype(input, other) -> Dtype:
+    dtype1, dtype2 = get_dtype(input), get_dtype(other)
+    if (
+        dtype1 not in int_types
+        and dtype2 not in int_types
+        and dtype1 != Dtype.bool
+        and dtype2 != Dtype.bool
+    ):
+        return dtype1
     else:
-        dtype_order = [Dtype.float64, Dtype.float32, Dtype.float16,
-                       Dtype.int64, Dtype.int32, Dtype.int16, Dtype.int8, Dtype.uint8, Dtype.bool]
-        import builtins
-        return dtype_order[builtins.min(dtype_order.index(dtype1), dtype_order.index(dtype2))]
+        if dtype1 in int_types and dtype2 == Dtype.uint8:
+            return dtype1 if dtype1 != Dtype.int8 else Dtype.int16
+        if dtype1 == Dtype.bool:
+            return Dtype.float32 if dtype2 in float_types else Dtype.int64
+        if dtype2 not in int_types:
+            return dtype1 if dtype1 == Dtype.float16 else Dtype.float32
+    return dtype1
 
 
 def remainder_dtype(input, other) -> Dtype:
@@ -1578,12 +1572,9 @@ def split(tensor, split_size_or_sections, dim=0):
 
 def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
     if input is not None:
-        out_dtype = pow_dtype(get_dtype(input), get_dtype(exponent))
+        out_dtype = pow_dtype(input, exponent)
     else:
-        if Scalar(self).stype in float_types:
-            out_dtype = pow_dtype(Dtype.float32, get_dtype(exponent), scalar=False)   # default type of float scalar should be float32
-        else:
-            out_dtype = pow_dtype(get_dtype(self), get_dtype(exponent), scalar=False)
+        out_dtype = pow_dtype(self, exponent)
         if Scalar(self).stype == Dtype.int64:
             exponent_dtype = get_dtype(exponent)
             if exponent_dtype in int_types or exponent_dtype in float_types:
@@ -1602,7 +1593,7 @@ def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
         ), "input must be tensor when exponent is scalar"
         temp_exponent = Scalar(exponent)
         if inplace:
-            out_dtype = pow_dtype(get_dtype(input), get_dtype(exponent))
+            out_dtype = pow_dtype(input, exponent)
             input_np = input.numpy()
             input_np = input_np.astype(to_numpy_dtype(out_dtype))
             input = Tensor.from_numpy(input_np)
@@ -1624,6 +1615,7 @@ def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
         ret = func(input.context(), out, input, exponent)
     if inplace:
         out = input
+
     check_returncode(ret)
     return out
 
