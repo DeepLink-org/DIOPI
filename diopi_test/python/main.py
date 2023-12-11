@@ -11,18 +11,11 @@ from conformance.utils import is_ci, error_counter, write_report
 from conformance.utils import logger
 from conformance.global_settings import glob_vars
 from conformance.model_list import model_list, model_op_list
-from configs import model_config
-from conformance.config_parser import ConfigParser
-from conformance.collect_case import DeviceConfig, CollectCase
 sys.path.append("../python/configs")
 
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 cache_path = os.path.join(cur_dir, "cache")
-
-
-if not os.path.exists(cache_path):
-    os.makedirs(cache_path)
 
 
 def parse_args():
@@ -98,6 +91,7 @@ def parse_args():
     run_test_args.add_argument(
         "--test_cases_path",
         type=str,
+        default="",
         help="pytest case file or dir",
     )
     run_test_args.add_argument(
