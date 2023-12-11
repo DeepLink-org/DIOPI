@@ -15,6 +15,7 @@
 
 #include <mutex>
 #include <vector>
+#include <utility>
 
 #include "error.hpp"
 #include "impl_functions.hpp"
