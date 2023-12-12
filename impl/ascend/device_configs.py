@@ -888,29 +888,6 @@ device_configs = {
         ),
     ),
 
-    'sort': dict(
-        name=['sort'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((11400,)),Skip((12, 8)),Skip((8, 12, 9)),Skip((4, 4, 16, 20)),Skip((4, 4, 16, 2, 20)),Skip((24180,)),Skip((0,)),Skip((12, 0)),Skip((4, 0, 5)),],
-                },
-            ]
-        ),
-    ),
-
-    'sort_same_value': dict(
-        name=['sort'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((11400,)),Skip((4, 4, 16, 20)),Skip((4, 4, 16, 2, 20)),],
-                },
-            ]
-        ),
-    ),
 
     'transpose': dict(
         name=['transpose'],
@@ -919,42 +896,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip(()),Skip((32,)),Skip((2, 1536, 950)),Skip((16, 8)),Skip((660, 6, 49, 32)),Skip((0,)),Skip((0, 8)),Skip((16, 0, 8)),],
-                },
-            ]
-        ),
-    ),
-
-    'where': dict(
-        name=['where'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['condition'],
-                    "dtype": [Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'where_broadcast': dict(
-        name=['where'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['condition'],
-                    "dtype": [Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'where_same_value': dict(
-        name=['where'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['condition'],
-                    "dtype": [Skip(np.bool_),],
                 },
             ]
         ),
@@ -1329,15 +1270,6 @@ device_configs = {
                     "dtype": [Skip(np.float32),Skip(np.bool_),Skip(np.float16),Skip(np.float64),Skip(np.int64),Skip(np.int32),Skip(np.int16),Skip(np.int8),Skip(np.uint8),],
                 },
             ]
-        ),
-    ),
-
-    'linspace': dict(
-        name=['linspace'],
-        para=dict(
-            start=[Skip(0),Skip(1.4),Skip(-10),Skip(False),Skip(True),Skip(2),Skip(-2.5),Skip(-10),Skip(0.0001),Skip(0),Skip(5),],
-            end=[Skip(0.5),Skip(-2.4),Skip(True),Skip(100.232),Skip(False),Skip(2),Skip(-2.5),Skip(10),Skip(0.001),Skip(10),Skip(-2),],
-            steps=[Skip(24),Skip(23),Skip(152),Skip(100),Skip(76),Skip(50),Skip(38),Skip(25),Skip(5),Skip(0),Skip(1),],
         ),
     ),
 
