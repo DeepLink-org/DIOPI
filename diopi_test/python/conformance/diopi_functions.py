@@ -5203,6 +5203,7 @@ def multihead_attention(
         debug_attn_mask,
     )
     check_returncode(ret)
+    GLOBAL_STATE["multihead_attention_softmax_lse"] = softmax_lse
     return out
 
 
@@ -5214,8 +5215,7 @@ def multihead_attention_backward(
     grad_q = raw_like(q)
     grad_k = raw_like(k)
     grad_v = raw_like(v)
-    q_size = list(q.size().data)
-    softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], q.get_dtype())
+    softmax_lse = GLOBAL_STATE.pop('multihead_attention_softmax_lse')
     gen = None
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
     ret = func(
