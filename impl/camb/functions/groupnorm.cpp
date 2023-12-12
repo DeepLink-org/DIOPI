@@ -47,7 +47,7 @@ DIOPI_API diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandl
     CnnlTensorDesc saveMeanDesc(saveMeanTensor, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetGroupNormForwardWorkspaceSize(handle, numGroups, inputDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetGroupNormForwardWorkspaceSize(handle, numGroups, inputDesc.get(), &workspaceSize));
     void* workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
@@ -56,21 +56,21 @@ DIOPI_API diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandl
     if (eps < 0) {
         eps = 1e-5;
     }
-    DIOPI_CALLCNNL(cnnlGroupNormForward_v3(handle,
-                                           eps,
-                                           numGroups,
-                                           inputDesc.get(),
-                                           inputTensor.data(),
-                                           weightDesc.get(),
-                                           weightTensor.data(),
-                                           biasTensor.data(),
-                                           workspace,
-                                           workspaceSize,
-                                           outDesc.get(),
-                                           outTensor.data(),
-                                           saveMeanDesc.get(),
-                                           saveMeanTensor.data(),
-                                           saveInvstdTensor.data()));
+    DIOPI_CALL_CNNL(cnnlGroupNormForward_v3(handle,
+                                            eps,
+                                            numGroups,
+                                            inputDesc.get(),
+                                            inputTensor.data(),
+                                            weightDesc.get(),
+                                            weightTensor.data(),
+                                            biasTensor.data(),
+                                            workspace,
+                                            workspaceSize,
+                                            outDesc.get(),
+                                            outTensor.data(),
+                                            saveMeanDesc.get(),
+                                            saveMeanTensor.data(),
+                                            saveInvstdTensor.data()));
     return diopiSuccess;
 }
 
@@ -135,32 +135,32 @@ DIOPI_API diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTen
     CnnlTensorDesc gradOutputDesc(gradOutputTensor, CNNL_LAYOUT_NCHW);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetGroupNormBackwardWorkspaceSize(handle, inputTensor.shape()[0] * inputTensor.shape()[1], &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetGroupNormBackwardWorkspaceSize(handle, inputTensor.shape()[0] * inputTensor.shape()[1], &workspaceSize));
     void* workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlGroupNormBackward(handle,
-                                         inputDesc.get(),
-                                         inputTensor.data(),
-                                         gradOutputDesc.get(),
-                                         gradOutputTensor.data(),
-                                         weightDesc.get(),
-                                         weightTensor.data(),
-                                         meanDesc.get(),
-                                         meanTensor.data(),
-                                         rstdDesc.get(),
-                                         rstdTensor.data(),
-                                         numGroups,
-                                         gradInputDesc.get(),
-                                         gradInputTensor.data(),
-                                         gradWeightDesc.get(),
-                                         gradWeightTensor.data(),
-                                         gradBiasDesc.get(),
-                                         gradBiasTensor.data(),
-                                         workspace,
-                                         workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGroupNormBackward(handle,
+                                          inputDesc.get(),
+                                          inputTensor.data(),
+                                          gradOutputDesc.get(),
+                                          gradOutputTensor.data(),
+                                          weightDesc.get(),
+                                          weightTensor.data(),
+                                          meanDesc.get(),
+                                          meanTensor.data(),
+                                          rstdDesc.get(),
+                                          rstdTensor.data(),
+                                          numGroups,
+                                          gradInputDesc.get(),
+                                          gradInputTensor.data(),
+                                          gradWeightDesc.get(),
+                                          gradWeightTensor.data(),
+                                          gradBiasDesc.get(),
+                                          gradBiasTensor.data(),
+                                          workspace,
+                                          workspaceSize));
 
     return diopiSuccess;
 }

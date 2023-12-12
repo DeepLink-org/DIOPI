@@ -37,23 +37,23 @@ diopiError_t diopiLerpTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
     CnnlTensorDesc weightDesc(weightTensorTmp, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetLerpWorkspaceSize(handle, inputDesc.get(), endDesc.get(), weightDesc.get(), outDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetLerpWorkspaceSize(handle, inputDesc.get(), endDesc.get(), weightDesc.get(), outDesc.get(), &workspaceSize));
     void *workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlLerp(handle,
-                            inputDesc.get(),
-                            inputTensorTmp.data(),
-                            endDesc.get(),
-                            endTensorTmp.data(),
-                            weightDesc.get(),
-                            weightTensorTmp.data(),
-                            workspace,
-                            workspaceSize,
-                            outDesc.get(),
-                            outTensorTmp.data()));
+    DIOPI_CALL_CNNL(cnnlLerp(handle,
+                             inputDesc.get(),
+                             inputTensorTmp.data(),
+                             endDesc.get(),
+                             endTensorTmp.data(),
+                             weightDesc.get(),
+                             weightTensorTmp.data(),
+                             workspace,
+                             workspaceSize,
+                             outDesc.get(),
+                             outTensorTmp.data()));
     if (outTensor.dtype() != outTensorTmp.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
     }

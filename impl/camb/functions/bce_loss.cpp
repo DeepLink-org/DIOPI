@@ -72,7 +72,7 @@ DIOPI_API diopiError_t diopiBCELoss(diopiContextHandle_t ctx, diopiTensorHandle_
 
     size_t workspaceSize = 0;
     void *workspace = nullptr;
-    DIOPI_CALLCNNL(cnnlGetBceLossWorkspaceSize(handle, inputDesc.get(), weightDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetBceLossWorkspaceSize(handle, inputDesc.get(), weightDesc.get(), &workspaceSize));
     if (workspaceSize > 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
@@ -80,18 +80,18 @@ DIOPI_API diopiError_t diopiBCELoss(diopiContextHandle_t ctx, diopiTensorHandle_
     cnnlBceLossReduction_t bceReduction;
     convertBCEReduction(&bceReduction, reduction);
 
-    DIOPI_CALLCNNL(cnnlBceLoss(handle,
-                               inputDesc.get(),
-                               inputTensor.data(),
-                               targetDesc.get(),
-                               targetTensor.data(),
-                               weightDesc.get(),
-                               weightTensor.data(),
-                               bceReduction,
-                               workspace,
-                               workspaceSize,
-                               outCastedDesc.get(),
-                               outCastedTensor.data()));
+    DIOPI_CALL_CNNL(cnnlBceLoss(handle,
+                                inputDesc.get(),
+                                inputTensor.data(),
+                                targetDesc.get(),
+                                targetTensor.data(),
+                                weightDesc.get(),
+                                weightTensor.data(),
+                                bceReduction,
+                                workspace,
+                                workspaceSize,
+                                outCastedDesc.get(),
+                                outCastedTensor.data()));
     DIOPI_CALL(dataTypeCast(ctx, outTensor, outCastedTensor));
     return diopiSuccess;
 }
@@ -129,7 +129,7 @@ DIOPI_API diopiError_t diopiBCELossBackward(diopiContextHandle_t ctx, diopiTenso
 
     size_t workspaceSize = 0;
     void *workspace = nullptr;
-    DIOPI_CALLCNNL(cnnlGetBceLossBackwardWorkspaceSize(handle, targetDesc.get(), weightDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetBceLossBackwardWorkspaceSize(handle, targetDesc.get(), weightDesc.get(), &workspaceSize));
     if (workspaceSize > 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
@@ -137,20 +137,20 @@ DIOPI_API diopiError_t diopiBCELossBackward(diopiContextHandle_t ctx, diopiTenso
     cnnlBceLossReduction_t bceReduction;
     convertBCEReduction(&bceReduction, reduction);
 
-    DIOPI_CALLCNNL(cnnlBceLossBackward(handle,
-                                       gradOutputDesc.get(),
-                                       gradOutputTensor.data(),
-                                       inputDesc.get(),
-                                       inputTensor.data(),
-                                       targetDesc.get(),
-                                       targetTensor.data(),
-                                       weightDesc.get(),
-                                       weightTensor.data(),
-                                       bceReduction,
-                                       workspace,
-                                       workspaceSize,
-                                       gradInputDesc.get(),
-                                       gradInputCastedTensor.data()));
+    DIOPI_CALL_CNNL(cnnlBceLossBackward(handle,
+                                        gradOutputDesc.get(),
+                                        gradOutputTensor.data(),
+                                        inputDesc.get(),
+                                        inputTensor.data(),
+                                        targetDesc.get(),
+                                        targetTensor.data(),
+                                        weightDesc.get(),
+                                        weightTensor.data(),
+                                        bceReduction,
+                                        workspace,
+                                        workspaceSize,
+                                        gradInputDesc.get(),
+                                        gradInputCastedTensor.data()));
     DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputCastedTensor));
     return diopiSuccess;
 }

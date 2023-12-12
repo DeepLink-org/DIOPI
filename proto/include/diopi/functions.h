@@ -3138,6 +3138,7 @@ DIOPI_API diopiError_t diopiNormalTensor(diopiContextHandle_t ctx, diopiTensorHa
  * @param[in] std the tensor of per-element standard deviations.
  * @param[in] inout the input and output tensor.
  * @param[in] generator a pseudorandom number generator for sampling
+ * todo: 和diopiNormal功能重复
  */
 DIOPI_API diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std, diopiGeneratorHandle_t generator);
 

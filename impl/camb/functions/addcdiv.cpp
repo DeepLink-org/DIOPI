@@ -27,7 +27,7 @@ diopiError_t diopiAddcdiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     CnnlTensorDesc outTensorDesc(outTensorTemp, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetAddcdivWorkspaceSize(handle, inputTensorDesc.get(), otherTensor1Desc.get(), otherTensor2Desc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetAddcdivWorkspaceSize(handle, inputTensorDesc.get(), otherTensor1Desc.get(), otherTensor2Desc.get(), &workspaceSize));
     void* workspace = nullptr;
     float scalarValue;
     if (DiopiDataType::isInteger(value->stype)) {
@@ -37,18 +37,18 @@ diopiError_t diopiAddcdiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     }
 
     workspace = requiresBuffer(ctx, workspaceSize).data();
-    DIOPI_CALLCNNL(cnnlAddcdiv(handle,
-                               inputTensorDesc.get(),
-                               inputTensor.data(),
-                               &(scalarValue),
-                               otherTensor1Desc.get(),
-                               otherTensor1.data(),
-                               otherTensor2Desc.get(),
-                               otherTensor2.data(),
-                               workspace,
-                               workspaceSize,
-                               outTensorDesc.get(),
-                               outTensorTemp.data()))
+    DIOPI_CALL_CNNL(cnnlAddcdiv(handle,
+                                inputTensorDesc.get(),
+                                inputTensor.data(),
+                                &(scalarValue),
+                                otherTensor1Desc.get(),
+                                otherTensor1.data(),
+                                otherTensor2Desc.get(),
+                                otherTensor2.data(),
+                                workspace,
+                                workspaceSize,
+                                outTensorDesc.get(),
+                                outTensorTemp.data()))
     if (outTensorTemp.dtype() != outTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTemp));
     }

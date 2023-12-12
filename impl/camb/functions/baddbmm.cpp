@@ -42,11 +42,11 @@ static diopiError_t batchAddBatchMatmul(diopiContextHandle_t ctx, DiopiTensor in
     int32_t isTransb = 0;
     int32_t isBetaUse = 1;
     int32_t isTF32Allow = 1;
-    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmulDesc, CNNL_MATMUL_DESC_COMPUTE_TYPE, &dataType, sizeof(int32_t)));
-    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmulDesc, CNNL_MATMUL_DESC_TRANSA, &isTransa, sizeof(int32_t)));
-    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmulDesc, CNNL_MATMUL_DESC_TRANSB, &isTransb, sizeof(int32_t)));
-    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmulDesc, CNNL_MATMUL_USE_BETA, &isBetaUse, sizeof(int32_t)));
-    DIOPI_CALLCNNL(cnnlSetMatMulDescAttr(matmulDesc, CNNL_MATMUL_ALLOW_TF32, &isTF32Allow, sizeof(int32_t)));
+    DIOPI_CALL_CNNL(cnnlSetMatMulDescAttr(matmulDesc, CNNL_MATMUL_DESC_COMPUTE_TYPE, &dataType, sizeof(int32_t)));
+    DIOPI_CALL_CNNL(cnnlSetMatMulDescAttr(matmulDesc, CNNL_MATMUL_DESC_TRANSA, &isTransa, sizeof(int32_t)));
+    DIOPI_CALL_CNNL(cnnlSetMatMulDescAttr(matmulDesc, CNNL_MATMUL_DESC_TRANSB, &isTransb, sizeof(int32_t)));
+    DIOPI_CALL_CNNL(cnnlSetMatMulDescAttr(matmulDesc, CNNL_MATMUL_USE_BETA, &isBetaUse, sizeof(int32_t)));
+    DIOPI_CALL_CNNL(cnnlSetMatMulDescAttr(matmulDesc, CNNL_MATMUL_ALLOW_TF32, &isTF32Allow, sizeof(int32_t)));
 
     CnnlResourceGuard<cnnlMatMulHeuristicResult_t, cnnlCreateMatMulHeuristicResult, cnnlDestroyMatMulHeuristicResult> matmulHrObj;
     cnnlMatMulHeuristicResult_t matmulHr = matmulHrObj.get();
@@ -57,16 +57,16 @@ static diopiError_t batchAddBatchMatmul(diopiContextHandle_t ctx, DiopiTensor in
     size_t workspaceSize = 0;
     int requestAlgoCount = 1;
     int returnAlgoCount = 0;
-    DIOPI_CALLCNNL(cnnlGetBatchMatMulAlgoHeuristic(handle,
-                                                   matmulDesc,
-                                                   batch1Desc.get(),
-                                                   batch2Desc.get(),
-                                                   inputDesc.get(),
-                                                   nullptr,  // preference not supported.
-                                                   requestAlgoCount,
-                                                   &matmulHr,
-                                                   &returnAlgoCount));
-    DIOPI_CALLCNNL(cnnlGetBatchMatMulHeuristicResult(matmulHr, matmulAlgo, &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetBatchMatMulAlgoHeuristic(handle,
+                                                    matmulDesc,
+                                                    batch1Desc.get(),
+                                                    batch2Desc.get(),
+                                                    inputDesc.get(),
+                                                    nullptr,  // preference not supported.
+                                                    requestAlgoCount,
+                                                    &matmulHr,
+                                                    &returnAlgoCount));
+    DIOPI_CALL_CNNL(cnnlGetBatchMatMulHeuristicResult(matmulHr, matmulAlgo, &workspaceSize));
 
     void *workspace = nullptr;
     if (workspaceSize != 0) {
@@ -74,19 +74,19 @@ static diopiError_t batchAddBatchMatmul(diopiContextHandle_t ctx, DiopiTensor in
         DIOPI_CHECK(workspace != nullptr, "[diopiBaddbmm] require buffers: size = %d, for workspace failed.", workspaceSize);
     }
 
-    DIOPI_CALLCNNL(cnnlBatchMatMulBCast_v2(handle,
-                                           matmulDesc,
-                                           matmulAlgo,
-                                           &alpha,
-                                           batch1Desc.get(),
-                                           batch1.data(),
-                                           batch2Desc.get(),
-                                           batch2.data(),
-                                           &beta,
-                                           inputDesc.get(),
-                                           input.data(),
-                                           workspace,
-                                           workspaceSize));
+    DIOPI_CALL_CNNL(cnnlBatchMatMulBCast_v2(handle,
+                                            matmulDesc,
+                                            matmulAlgo,
+                                            &alpha,
+                                            batch1Desc.get(),
+                                            batch1.data(),
+                                            batch2Desc.get(),
+                                            batch2.data(),
+                                            &beta,
+                                            inputDesc.get(),
+                                            input.data(),
+                                            workspace,
+                                            workspaceSize));
     return diopiSuccess;
 }
 

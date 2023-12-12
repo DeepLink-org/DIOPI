@@ -55,7 +55,7 @@ diopiError_t upsampleInternal(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     DIOPI_CALL(interpDesc.set(inputDesc.get(), interpMode, coordinateTransMode, nullptr));
 
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DIOPI_CALLCNNL(cnnlInterp_v3(handle, interpDesc.get(), inputDesc.get(), inputTensor.data(), outputDesc.get(), outputTensor.data()));
+    DIOPI_CALL_CNNL(cnnlInterp_v3(handle, interpDesc.get(), inputDesc.get(), inputTensor.data(), outputDesc.get(), outputTensor.data()));
 
     return diopiSuccess;
 }
@@ -91,7 +91,7 @@ diopiError_t upsampleBackwardInternal(diopiContextHandle_t ctx, diopiTensorHandl
     CnnlTensorDesc outputDesc(outputTensor, layout);
 
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DIOPI_CALLCNNL(cnnlInterpBackward_v2(
+    DIOPI_CALL_CNNL(cnnlInterpBackward_v2(
         handle, alignCorners, alignCenter, interpMode, nullptr, true, inputDesc.get(), inputTensor.data(), outputDesc.get(), outputTensor.data()));
 
     return diopiSuccess;

@@ -39,12 +39,12 @@ diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     auto stream = getStream(ctx);
     CnnlResourceGuard<cnnlHandle_t, cnnlCreate, cnnlDestroy> cnnlHandle;
     cnnlHandle_t handle = cnnlHandle.get();
-    DIOPI_CALLCNNL(cnnlSetQueue(handle, stream));
+    DIOPI_CALL_CNNL(cnnlSetQueue(handle, stream));
 
     CnnlResourceGuard<cnnlTransposeDescriptor_t, cnnlCreateTransposeDescriptor, cnnlDestroyTransposeDescriptor> cnnlTransposeDesc;
     cnnlTransposeDescriptor_t transposeDesc = cnnlTransposeDesc.get();
     std::vector<int> perms = getPerm(input, dim0, dim1);
-    DIOPI_CALLCNNL(cnnlSetTransposeDescriptor(transposeDesc, perms.size(), perms.data()));
+    DIOPI_CALL_CNNL(cnnlSetTransposeDescriptor(transposeDesc, perms.size(), perms.data()));
 
     DiopiTensor inputTensor(input);
     DiopiTensor outputTensor(out);
@@ -57,12 +57,12 @@ diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     void* outPtr = outputTensor.data();
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetTransposeWorkspaceSize(handle, inputDesc.get(), transposeDesc, &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetTransposeWorkspaceSize(handle, inputDesc.get(), transposeDesc, &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
-    DIOPI_CALLCNNL(cnnlTranspose_v2(handle, transposeDesc, inputDesc.get(), inputPtr, outputDesc.get(), outPtr, workspace, workspaceSize));
+    DIOPI_CALL_CNNL(cnnlTranspose_v2(handle, transposeDesc, inputDesc.get(), inputPtr, outputDesc.get(), outPtr, workspace, workspaceSize));
     return diopiSuccess;
 }
 

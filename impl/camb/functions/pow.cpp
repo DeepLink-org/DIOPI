@@ -35,22 +35,22 @@ diopiError_t diopiPowTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     CnnlTensorDesc exponentDesc(exponentTensorTmp, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetPowWorkspaceSize(handle, inputDesc.get(), exponentDesc.get(), outDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetPowWorkspaceSize(handle, inputDesc.get(), exponentDesc.get(), outDesc.get(), &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlPow(handle,
-                           CNNL_COMPUTATION_HIGH_PRECISION,
-                           inputDesc.get(),
-                           inputTensorTmp.data(),
-                           exponentDesc.get(),
-                           exponentTensorTmp.data(),
-                           workspace,
-                           workspaceSize,
-                           outDesc.get(),
-                           outTensorTmp.data()));
+    DIOPI_CALL_CNNL(cnnlPow(handle,
+                            CNNL_COMPUTATION_HIGH_PRECISION,
+                            inputDesc.get(),
+                            inputTensorTmp.data(),
+                            exponentDesc.get(),
+                            exponentTensorTmp.data(),
+                            workspace,
+                            workspaceSize,
+                            outDesc.get(),
+                            outTensorTmp.data()));
     DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
     return diopiSuccess;
 }

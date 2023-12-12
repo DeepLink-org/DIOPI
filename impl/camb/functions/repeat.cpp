@@ -18,7 +18,7 @@ diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlTile(handle, inputDesc.get(), inputTensor.data(), outDesc.get(), outTensor.data()));
+    DIOPI_CALL_CNNL(cnnlTile(handle, inputDesc.get(), inputTensor.data(), outDesc.get(), outTensor.data()));
     return diopiSuccess;
 }
 

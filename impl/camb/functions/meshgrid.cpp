@@ -44,7 +44,7 @@ diopiError_t diopiMeshGrid(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, 
         inputDesc.set(inputTensor, CNNL_LAYOUT_ARRAY, inDims);
         outDesc.set(outTensor, CNNL_LAYOUT_ARRAY, outDims);
 
-        DIOPI_CALLCNNL(cnnlTile(handle, inputDesc.get(), inputTensor.data(), outDesc.get(), outTensor.data()));
+        DIOPI_CALL_CNNL(cnnlTile(handle, inputDesc.get(), inputTensor.data(), outDesc.get(), outTensor.data()));
     }
 
     return diopiSuccess;

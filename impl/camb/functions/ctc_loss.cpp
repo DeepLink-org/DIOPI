@@ -58,29 +58,29 @@ static diopiError_t ctcLoss(diopiContextHandle_t ctx, DiopiTensor lossTensor, Di
     CnnlTensorDesc targetLengthsDesc(targetLengths, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetCTCLossWorkspaceSize(handle, ctcLossDesc, logProbsTensorDesc.get(), backward, &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetCTCLossWorkspaceSize(handle, ctcLossDesc, logProbsTensorDesc.get(), backward, &workspaceSize));
     void *workspace = nullptr;
     if (workspaceSize > 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
         DIOPI_CHECK(workspace != nullptr, "[diopiCTCLoss] require buffers: size = %d, for workspace failed.", workspaceSize);
     }
 
-    DIOPI_CALLCNNL(cnnlCTCLoss(handle,
-                               ctcLossDesc,
-                               logProbsTensorDesc.get(),
-                               logProbsTensor.data(),
-                               targetTensorDesc.get(),
-                               targetTensor.data(),
-                               inputLengthsDesc.get(),
-                               inputLengths.data(),
-                               targetLengthsDesc.get(),
-                               targetLengths.data(),
-                               workspace,
-                               workspaceSize,
-                               lossTensorDesc.get(),
-                               lossTensor.data(),
-                               backward ? gradTensorDesc.get() : nullptr,
-                               backward ? gradTensor.data() : nullptr));
+    DIOPI_CALL_CNNL(cnnlCTCLoss(handle,
+                                ctcLossDesc,
+                                logProbsTensorDesc.get(),
+                                logProbsTensor.data(),
+                                targetTensorDesc.get(),
+                                targetTensor.data(),
+                                inputLengthsDesc.get(),
+                                inputLengths.data(),
+                                targetLengthsDesc.get(),
+                                targetLengths.data(),
+                                workspace,
+                                workspaceSize,
+                                lossTensorDesc.get(),
+                                lossTensor.data(),
+                                backward ? gradTensorDesc.get() : nullptr,
+                                backward ? gradTensor.data() : nullptr));
     return diopiSuccess;
 }
 
@@ -123,7 +123,7 @@ diopiError_t diopiCTCLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     DIOPI_CALL(convertCTCLossReduction(&ctcLossReduceMode, reduction));
     cnnlCTCLossZeroInfinityMode_t ctcLossZeroInfMode = zeroInfinity ? CNNL_ZERO_INFINITY : CNNL_NONE_ZERO_INFINITY;
 
-    DIOPI_CALLCNNL(cnnlSetCTCLossDescriptor(ctcLossDesc, ctcLossNormMode, ctcLossReduceMode, ctcLossZeroInfMode, blank, maxInputLength, maxTargetLen));
+    DIOPI_CALL_CNNL(cnnlSetCTCLossDescriptor(ctcLossDesc, ctcLossNormMode, ctcLossReduceMode, ctcLossZeroInfMode, blank, maxInputLength, maxTargetLen));
 
     DiopiTensor gradTensor = requiresTensor(ctx, logProbsTensor.shape(), logProbsTensor.dtype());
     DIOPI_CALL(ctcLoss(ctx, outTensorTemp, gradTensor, logProbsTensor, targetTensor, inputLengthsTensor, targetLengthTensor, ctcLossDesc, false));
@@ -175,7 +175,7 @@ diopiError_t diopiCTCLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     DIOPI_CALL(convertCTCLossReduction(&ctcLossReduceMode, reduction));
     cnnlCTCLossZeroInfinityMode_t ctcLossZeroInfMode = zeroInfinity ? CNNL_ZERO_INFINITY : CNNL_NONE_ZERO_INFINITY;
 
-    DIOPI_CALLCNNL(cnnlSetCTCLossDescriptor(ctcLossDesc, ctcLossNormMode, ctcLossReduceMode, ctcLossZeroInfMode, blank, maxInputLength, maxTargetLen));
+    DIOPI_CALL_CNNL(cnnlSetCTCLossDescriptor(ctcLossDesc, ctcLossNormMode, ctcLossReduceMode, ctcLossZeroInfMode, blank, maxInputLength, maxTargetLen));
 
     DiopiTensor lossTensor;
     if (ctcLossReduceMode == CNNL_REDUCE_MODE_NONE) {

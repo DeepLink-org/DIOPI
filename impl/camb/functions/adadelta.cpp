@@ -44,18 +44,18 @@ diopiError_t diopiAdadelta(diopiContextHandle_t ctx, diopiTensorHandle_t input, 
     DIOPI_CALL(dataTypeCast(ctx, rhoTensor, inputCasted.dtype()));
     DIOPI_CALL(dataTypeCast(ctx, epsTensor, inputCasted.dtype()));
 
-    DIOPI_CALLCNNL(cnnlApplyAdadelta(handle,
-                                     inputDesc.get(),
-                                     inputCasted.data(),
-                                     squareAvgDesc.get(),
-                                     squareAvgCasted.data(),
-                                     accDeltaDesc.get(),
-                                     accDeltaCasted.data(),
-                                     gradDesc.get(),
-                                     gradCasted.data(),
-                                     lrTensor.data(),
-                                     rhoTensor.data(),
-                                     epsTensor.data()));
+    DIOPI_CALL_CNNL(cnnlApplyAdadelta(handle,
+                                      inputDesc.get(),
+                                      inputCasted.data(),
+                                      squareAvgDesc.get(),
+                                      squareAvgCasted.data(),
+                                      accDeltaDesc.get(),
+                                      accDeltaCasted.data(),
+                                      gradDesc.get(),
+                                      gradCasted.data(),
+                                      lrTensor.data(),
+                                      rhoTensor.data(),
+                                      epsTensor.data()));
 
     DIOPI_CALL(dataTypeCast(ctx, inputTensor, inputCasted));
     DIOPI_CALL(dataTypeCast(ctx, squareAvgTensor, squareAvgCasted));

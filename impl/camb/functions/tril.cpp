@@ -24,7 +24,7 @@ DIOPI_API diopiError_t diopiTril(diopiContextHandle_t ctx, diopiTensorHandle_t o
     CnnlTensorDesc inputDesc(inputTensorTmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outTensorTmp, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlTri(handle, static_cast<int>(diagonal), false, inputDesc.get(), inputTensorTmp.data(), outDesc.get(), outTensorTmp.data()));
+    DIOPI_CALL_CNNL(cnnlTri(handle, static_cast<int>(diagonal), false, inputDesc.get(), inputTensorTmp.data(), outDesc.get(), outTensorTmp.data()));
     DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
 
     return diopiSuccess;

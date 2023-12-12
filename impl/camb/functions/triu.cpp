@@ -29,7 +29,7 @@ diopiError_t diopiTriu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     CnnlTensorDesc outDesc(outTensorTmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc inputDesc(inputTensorTmp, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlTri(handle, static_cast<int32_t>(diagonal), true, inputDesc.get(), inputTensorTmp.data(), outDesc.get(), outTensorTmp.data()));
+    DIOPI_CALL_CNNL(cnnlTri(handle, static_cast<int32_t>(diagonal), true, inputDesc.get(), inputTensorTmp.data(), outDesc.get(), outTensorTmp.data()));
     if (outTensor.dtype() != outTensorTmp.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
     }

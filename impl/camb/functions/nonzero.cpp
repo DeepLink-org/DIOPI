@@ -14,7 +14,7 @@ diopiError_t nonzeroCount(diopiContextHandle_t ctx, DiopiTensor inputTensor, Dio
     *numTrue = requiresTensor(ctx, shape, diopi_dtype_int32);
     CnnlTensorDesc numTrueDesc(*numTrue, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlNumTrue_v2(handle, inputDesc.get(), inputTensor.data(), numTrueDesc.get(), numTrue->data()));
+    DIOPI_CALL_CNNL(cnnlNumTrue_v2(handle, inputDesc.get(), inputTensor.data(), numTrueDesc.get(), numTrue->data()));
     return diopiSuccess;
 }
 
@@ -34,7 +34,7 @@ diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
     CnnlTensorDesc numTrueDesc(numTrue, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize(0);
-    DIOPI_CALLCNNL(cnnlGetWhereWorkspaceSize(handle, numTrueDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetWhereWorkspaceSize(handle, numTrueDesc.get(), &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
@@ -50,7 +50,7 @@ diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
     auto outTensor = requiresTensor(ctx, shape, diopi_dtype_int32);
     CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlWhere_v2(
+    DIOPI_CALL_CNNL(cnnlWhere_v2(
         handle, inputDesc.get(), inputTensor.data(), numTrueDesc.get(), numTrue.data(), false, workspace, workspaceSize, outDesc.get(), outTensor.data()));
     DIOPI_CALL(dataTypeCast(ctx, outTensor, diopi_dtype_int64));
     *out = diopiTensorHandle_t(outTensor);

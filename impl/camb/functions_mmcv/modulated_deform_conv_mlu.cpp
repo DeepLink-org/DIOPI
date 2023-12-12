@@ -68,49 +68,49 @@ extern "C" DIOPI_API diopiError_t diopiModulatedDeformConvMmcv(diopiContextHandl
     int32_t dilation[2] = {static_cast<int32_t>(dilationH), static_cast<int32_t>(dilationW)};
 
     cnnlDCNDescriptor_t dcnDesc;
-    DIOPI_CALLCNNL(cnnlCreateDCNDescriptor(&dcnDesc));
-    DIOPI_CALLCNNL(cnnlSetDCNDescriptor(dcnDesc,
-                                        inputTensor.dim(),
-                                        padding,
-                                        stride,
-                                        dilation,
-                                        static_cast<int32_t>(deformableGroup),
-                                        static_cast<int32_t>(group),
-                                        im2colStep,
-                                        CNNL_DTYPE_FLOAT));
+    DIOPI_CALL_CNNL(cnnlCreateDCNDescriptor(&dcnDesc));
+    DIOPI_CALL_CNNL(cnnlSetDCNDescriptor(dcnDesc,
+                                         inputTensor.dim(),
+                                         padding,
+                                         stride,
+                                         dilation,
+                                         static_cast<int32_t>(deformableGroup),
+                                         static_cast<int32_t>(group),
+                                         im2colStep,
+                                         CNNL_DTYPE_FLOAT));
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetDCNForwardWorkspaceSize(handle,
-                                                  dcnDesc,
-                                                  inputDesc.get(),
-                                                  offsetDesc.get(),
-                                                  maskDesc.get(),
-                                                  weightDesc.get(),
-                                                  withBias ? biasDesc.get() : nullptr,
-                                                  outputDesc.get(),
-                                                  &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetDCNForwardWorkspaceSize(handle,
+                                                   dcnDesc,
+                                                   inputDesc.get(),
+                                                   offsetDesc.get(),
+                                                   maskDesc.get(),
+                                                   weightDesc.get(),
+                                                   withBias ? biasDesc.get() : nullptr,
+                                                   outputDesc.get(),
+                                                   &workspaceSize));
     void *workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = impl::camb::requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlDCNForward(handle,
-                                  dcnDesc,
-                                  inputDesc.get(),
-                                  inputTensor.data(),
-                                  offsetDesc.get(),
-                                  offsetTensor.data(),
-                                  maskDesc.get(),
-                                  maskTensor.data(),
-                                  weightDesc.get(),
-                                  weightTensor.data(),
-                                  withBias ? biasDesc.get() : nullptr,
-                                  withBias ? biasTensor.data() : nullptr,
-                                  workspace,
-                                  workspaceSize,
-                                  outputDesc.get(),
-                                  outputChannelLast.data()));
-    DIOPI_CALLCNNL(cnnlDestroyDCNDescriptor(dcnDesc));
+    DIOPI_CALL_CNNL(cnnlDCNForward(handle,
+                                   dcnDesc,
+                                   inputDesc.get(),
+                                   inputTensor.data(),
+                                   offsetDesc.get(),
+                                   offsetTensor.data(),
+                                   maskDesc.get(),
+                                   maskTensor.data(),
+                                   weightDesc.get(),
+                                   weightTensor.data(),
+                                   withBias ? biasDesc.get() : nullptr,
+                                   withBias ? biasTensor.data() : nullptr,
+                                   workspace,
+                                   workspaceSize,
+                                   outputDesc.get(),
+                                   outputChannelLast.data()));
+    DIOPI_CALL_CNNL(cnnlDestroyDCNDescriptor(dcnDesc));
 
     // NHWC -> NCHW
     DIOPI_CALL(impl::camb::diopiCopyInp(ctx, outputChannelLast.tensorHandle(), outputTensorTmp.tensorHandle()));
@@ -212,90 +212,90 @@ extern "C" DIOPI_API diopiError_t diopiModulatedDeformConvBackwardMmcv(
     int32_t dilation[2] = {static_cast<int32_t>(dilationH), static_cast<int32_t>(dilationW)};
 
     cnnlDCNDescriptor_t dcnDesc;
-    DIOPI_CALLCNNL(cnnlCreateDCNDescriptor(&dcnDesc));
-    DIOPI_CALLCNNL(cnnlSetDCNDescriptor(dcnDesc,
-                                        inputTensor.dim(),
-                                        padding,
-                                        stride,
-                                        dilation,
-                                        static_cast<int32_t>(deformableGroup),
-                                        static_cast<int32_t>(group),
-                                        im2colStep,
-                                        CNNL_DTYPE_FLOAT));
+    DIOPI_CALL_CNNL(cnnlCreateDCNDescriptor(&dcnDesc));
+    DIOPI_CALL_CNNL(cnnlSetDCNDescriptor(dcnDesc,
+                                         inputTensor.dim(),
+                                         padding,
+                                         stride,
+                                         dilation,
+                                         static_cast<int32_t>(deformableGroup),
+                                         static_cast<int32_t>(group),
+                                         im2colStep,
+                                         CNNL_DTYPE_FLOAT));
 
     size_t dataWorkspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetDCNBakcwardDataWorkspaceSize(handle,
-                                                       dcnDesc,
-                                                       inputDesc.get(),
-                                                       offsetDesc.get(),
-                                                       maskDesc.get(),
-                                                       weightDesc.get(),
-                                                       gradOutputDesc.get(),
-                                                       gradInputDesc.get(),
-                                                       gradOffsetDesc.get(),
-                                                       gradMaskDesc.get(),
-                                                       &dataWorkspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetDCNBakcwardDataWorkspaceSize(handle,
+                                                        dcnDesc,
+                                                        inputDesc.get(),
+                                                        offsetDesc.get(),
+                                                        maskDesc.get(),
+                                                        weightDesc.get(),
+                                                        gradOutputDesc.get(),
+                                                        gradInputDesc.get(),
+                                                        gradOffsetDesc.get(),
+                                                        gradMaskDesc.get(),
+                                                        &dataWorkspaceSize));
     void *dataWorkspace = nullptr;
     if (dataWorkspaceSize != 0) {
         dataWorkspace = impl::camb::requiresBuffer(ctx, dataWorkspaceSize).data();
     }
 
     // grad_input, grad_offset, grad_mask
-    DIOPI_CALLCNNL(cnnlDCNBackwardData(handle,
-                                       dcnDesc,
-                                       inputDesc.get(),
-                                       inputTensor.data(),
-                                       offsetDesc.get(),
-                                       offsetTensor.data(),
-                                       maskDesc.get(),
-                                       maskTensor.data(),
-                                       weightDesc.get(),
-                                       weightTensor.data(),
-                                       gradOutputDesc.get(),
-                                       gradOutputTensor.data(),
-                                       dataWorkspace,
-                                       dataWorkspaceSize,
-                                       gradInputDesc.get(),
-                                       gradInputChannelLast.data(),
-                                       gradOffsetDesc.get(),
-                                       gradOffsetChannelLast.data(),
-                                       gradMaskDesc.get(),
-                                       gradMaskChannelLast.data()));
+    DIOPI_CALL_CNNL(cnnlDCNBackwardData(handle,
+                                        dcnDesc,
+                                        inputDesc.get(),
+                                        inputTensor.data(),
+                                        offsetDesc.get(),
+                                        offsetTensor.data(),
+                                        maskDesc.get(),
+                                        maskTensor.data(),
+                                        weightDesc.get(),
+                                        weightTensor.data(),
+                                        gradOutputDesc.get(),
+                                        gradOutputTensor.data(),
+                                        dataWorkspace,
+                                        dataWorkspaceSize,
+                                        gradInputDesc.get(),
+                                        gradInputChannelLast.data(),
+                                        gradOffsetDesc.get(),
+                                        gradOffsetChannelLast.data(),
+                                        gradMaskDesc.get(),
+                                        gradMaskChannelLast.data()));
 
     size_t weightWorkspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetDCNBackwardWeightWorkspaceSize(handle,
-                                                         dcnDesc,
-                                                         inputDesc.get(),
-                                                         offsetDesc.get(),
-                                                         maskDesc.get(),
-                                                         gradOutputDesc.get(),
-                                                         gradWeightDesc.get(),
-                                                         withBias ? gradBiasDesc.get() : nullptr,
-                                                         &weightWorkspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetDCNBackwardWeightWorkspaceSize(handle,
+                                                          dcnDesc,
+                                                          inputDesc.get(),
+                                                          offsetDesc.get(),
+                                                          maskDesc.get(),
+                                                          gradOutputDesc.get(),
+                                                          gradWeightDesc.get(),
+                                                          withBias ? gradBiasDesc.get() : nullptr,
+                                                          &weightWorkspaceSize));
     void *weightWorkspace = nullptr;
     if (weightWorkspaceSize != 0) {
         weightWorkspace = impl::camb::requiresBuffer(ctx, weightWorkspaceSize).data();
     }
 
     // grad_bias, grad_weight
-    DIOPI_CALLCNNL(cnnlDCNBackwardWeight(handle,
-                                         dcnDesc,
-                                         inputDesc.get(),
-                                         inputTensor.data(),
-                                         offsetDesc.get(),
-                                         offsetTensor.data(),
-                                         maskDesc.get(),
-                                         maskTensor.data(),
-                                         gradOutputDesc.get(),
-                                         gradOutputTensor.data(),
-                                         weightWorkspace,
-                                         weightWorkspaceSize,
-                                         gradWeightDesc.get(),
-                                         gradWeightChannelLast.data(),
-                                         withBias ? gradBiasDesc.get() : nullptr,
-                                         withBias ? gradBiasTensorTmp.data() : nullptr));
+    DIOPI_CALL_CNNL(cnnlDCNBackwardWeight(handle,
+                                          dcnDesc,
+                                          inputDesc.get(),
+                                          inputTensor.data(),
+                                          offsetDesc.get(),
+                                          offsetTensor.data(),
+                                          maskDesc.get(),
+                                          maskTensor.data(),
+                                          gradOutputDesc.get(),
+                                          gradOutputTensor.data(),
+                                          weightWorkspace,
+                                          weightWorkspaceSize,
+                                          gradWeightDesc.get(),
+                                          gradWeightChannelLast.data(),
+                                          withBias ? gradBiasDesc.get() : nullptr,
+                                          withBias ? gradBiasTensorTmp.data() : nullptr));
 
-    DIOPI_CALLCNNL(cnnlDestroyDCNDescriptor(dcnDesc));
+    DIOPI_CALL_CNNL(cnnlDestroyDCNDescriptor(dcnDesc));
 
     // NHWC -> NCHW
     DIOPI_CALL(impl::camb::diopiCopyInp(ctx, gradInputChannelLast.tensorHandle(), gradInputTensorTmp.tensorHandle()));

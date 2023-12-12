@@ -28,7 +28,7 @@ diopiError_t maxAll(diopiContextHandle_t ctx, diopiTensorHandle_t max, diopiTens
     reduceDesc.set(inputTensor, dims, CNNL_REDUCE_MAX, CNNL_REDUCE_NO_INDICES, CNNL_32BIT_INDICES, dtype);
 
     size_t workspaceSize(0);
-    DIOPI_CALLCNNL(cnnlGetReduceOpWorkspaceSize(handle, inputDesc.get(), outputDesc.get(), reduceDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetReduceOpWorkspaceSize(handle, inputDesc.get(), outputDesc.get(), reduceDesc.get(), &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
@@ -38,18 +38,18 @@ diopiError_t maxAll(diopiContextHandle_t ctx, diopiTensorHandle_t max, diopiTens
     void* indices = nullptr;
     void* alpha = nullptr;
     void* beta = nullptr;
-    DIOPI_CALLCNNL(cnnlReduce(handle,
-                              reduceDesc.get(),
-                              workspace,
-                              workspaceSize,
-                              alpha,
-                              inputDesc.get(),
-                              inputTensor.data(),
-                              indicesSizeInbytes,
-                              indices,
-                              beta,
-                              outputDesc.get(),
-                              outputTensor.data()));
+    DIOPI_CALL_CNNL(cnnlReduce(handle,
+                               reduceDesc.get(),
+                               workspace,
+                               workspaceSize,
+                               alpha,
+                               inputDesc.get(),
+                               inputTensor.data(),
+                               indicesSizeInbytes,
+                               indices,
+                               beta,
+                               outputDesc.get(),
+                               outputTensor.data()));
     return diopiSuccess;
 }
 
@@ -96,18 +96,18 @@ diopiError_t diopiOneHot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     CnnlTensorDesc offTensorDesc(offValueTensor, CNNL_LAYOUT_ARRAY);
     int32_t one = 1;
     int32_t zero = 0;
-    DIOPI_CALLCNNL(cnnlFill_v3(handle, CNNL_POINTER_MODE_HOST, &one, onTensorDesc.get(), onValueTensor.data()));
-    DIOPI_CALLCNNL(cnnlFill_v3(handle, CNNL_POINTER_MODE_HOST, &zero, offTensorDesc.get(), offValueTensor.data()));
+    DIOPI_CALL_CNNL(cnnlFill_v3(handle, CNNL_POINTER_MODE_HOST, &one, onTensorDesc.get(), onValueTensor.data()));
+    DIOPI_CALL_CNNL(cnnlFill_v3(handle, CNNL_POINTER_MODE_HOST, &zero, offTensorDesc.get(), offValueTensor.data()));
     int axis = -1;
 
     // output must be int32, float16, float32
     if (diopi_dtype_int32 != outTensor.dtype()) {
         DiopiTensor out32Tensor = requiresTensor(ctx, outTensor.shape(), diopi_dtype_int32);
-        DIOPI_CALLCNNL(cnnlOneHot(
+        DIOPI_CALL_CNNL(cnnlOneHot(
             handle, inputDesc.get(), inputTensor.data(), clsNum, onValueTensor.data(), offValueTensor.data(), axis, CNNL_DTYPE_INT32, out32Tensor.data()));
         DIOPI_CALL(dataTypeCast(ctx, outTensor, out32Tensor));
     } else {
-        DIOPI_CALLCNNL(cnnlOneHot(
+        DIOPI_CALL_CNNL(cnnlOneHot(
             handle, inputDesc.get(), inputTensor.data(), clsNum, onValueTensor.data(), offValueTensor.data(), axis, CNNL_DTYPE_INT32, outTensor.data()));
     }
 

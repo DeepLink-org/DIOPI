@@ -102,21 +102,21 @@ diopiError_t reduceInternal(diopiContextHandle_t ctx, DiopiTensor& inputTr, Diop
     }
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetReduceOpWorkspaceSize(handle, inputDesc.get(), outputDesc.get(), reduceDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetReduceOpWorkspaceSize(handle, inputDesc.get(), outputDesc.get(), reduceDesc.get(), &workspaceSize));
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
-    DIOPI_CALLCNNL(cnnlReduce(handle,
-                              reduceDesc.get(),
-                              workspacePtr,
-                              workspaceSize,
-                              nullptr,
-                              inputDesc.get(),
-                              inputTr.data(),
-                              sizeof(int) * indexTr.numel(),
-                              reduceIndices != CNNL_REDUCE_NO_INDICES ? indexTr.data() : nullptr,
-                              nullptr,
-                              outputDesc.get(),
-                              outputTr.data()));
+    DIOPI_CALL_CNNL(cnnlReduce(handle,
+                               reduceDesc.get(),
+                               workspacePtr,
+                               workspaceSize,
+                               nullptr,
+                               inputDesc.get(),
+                               inputTr.data(),
+                               sizeof(int) * indexTr.numel(),
+                               reduceIndices != CNNL_REDUCE_NO_INDICES ? indexTr.data() : nullptr,
+                               nullptr,
+                               outputDesc.get(),
+                               outputTr.data()));
 
     return diopiSuccess;
 }

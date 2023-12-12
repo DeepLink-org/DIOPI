@@ -91,17 +91,17 @@ diopiError_t im2colOutInternal(diopiContextHandle_t ctx, DiopiTensor& output, co
     cnnlDataType_t computeType;
     std::vector<int32_t> paddingTmp{padding[0], padding[0], padding[1], padding[1]};
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&computeType, outputTr.dtype()));
-    DIOPI_CALLCNNL(cnnlSetConvolutionDescriptor(convDesc.get(), inputTr.dim(), paddingTmp.data(), stride.data(), dilation.data(), groups, computeType));
+    DIOPI_CALL_CNNL(cnnlSetConvolutionDescriptor(convDesc.get(), inputTr.dim(), paddingTmp.data(), stride.data(), dilation.data(), groups, computeType));
 
     auto inputPtr = inputTr.data();
     auto outputPtr = outputTr.data();
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetIm2ColWorkspaceSize(handle, descInput.get(), descWeight.get(), convDesc.get(), descOutput.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetIm2ColWorkspaceSize(handle, descInput.get(), descWeight.get(), convDesc.get(), descOutput.get(), &workspaceSize));
     void* workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
-    DIOPI_CALLCNNL(cnnlIm2Col(
+    DIOPI_CALL_CNNL(cnnlIm2Col(
         handle, descInput.get(), inputPtr, descWeight.get(), convDesc.get(), nullptr, nullptr, nullptr, workspace, workspaceSize, descOutput.get(), outputPtr));
     return diopiSuccess;
 }

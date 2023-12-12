@@ -90,25 +90,25 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     }
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(
+    DIOPI_CALL_CNNL(
         cnnlGetIndexPutWorkspaceSize(handle, inputDesc.get(), indicesDescs.data(), indicesDescs.size(), valuesDesc.get(), accumulate, &workspaceSize));
 
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
-    DIOPI_CALLCNNL(cnnlIndexPut(handle,
-                                inputDesc.get(),
-                                inputTensor.data(),
-                                indicesDescs.data(),
-                                indicesPtrList.data(),
-                                indicesDescs.size(),
-                                valuesDesc.get(),
-                                valuesTensor.data(),
-                                workspacePtr,
-                                workspaceSize,
-                                accumulate,
-                                true,
-                                outputDesc.get(),
-                                outputTensor.data()));
+    DIOPI_CALL_CNNL(cnnlIndexPut(handle,
+                                 inputDesc.get(),
+                                 inputTensor.data(),
+                                 indicesDescs.data(),
+                                 indicesPtrList.data(),
+                                 indicesDescs.size(),
+                                 valuesDesc.get(),
+                                 valuesTensor.data(),
+                                 workspacePtr,
+                                 workspaceSize,
+                                 accumulate,
+                                 true,
+                                 outputDesc.get(),
+                                 outputTensor.data()));
 
     return diopiSuccess;
 }

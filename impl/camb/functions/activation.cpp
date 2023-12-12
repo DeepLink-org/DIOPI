@@ -70,7 +70,7 @@ diopiError_t cnnlActivationInternal(diopiContextHandle_t ctx, DiopiTensor input,
     void* beta = attr.get("beta", nullptr);
 
     CnnlResourceGuard<cnnlActivationDescriptor_t, cnnlCreateActivationDescriptor, cnnlDestroyActivationDescriptor> activationDesc;
-    DIOPI_CALLCNNL(cnnlSetActivationDescriptor_v6(activationDesc.get(), mode, perf, nanProp, coef, slicedDim, gamma, scale, isResult, approximate));
+    DIOPI_CALL_CNNL(cnnlSetActivationDescriptor_v6(activationDesc.get(), mode, perf, nanProp, coef, slicedDim, gamma, scale, isResult, approximate));
 
     std::vector<DiopiTensor*> inputs{&input};
     DIOPI_CALL(autoCastTensorType(ctx, inputs, {diopi_dtype_float16, diopi_dtype_float32}));
@@ -80,7 +80,7 @@ diopiError_t cnnlActivationInternal(diopiContextHandle_t ctx, DiopiTensor input,
     CnnlTensorDesc inputDesc(input, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outputDesc(tempOutput, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlActivationForward(handle, activationDesc.get(), alpha, inputDesc.get(), input.data(), beta, outputDesc.get(), tempOutput.data()));
+    DIOPI_CALL_CNNL(cnnlActivationForward(handle, activationDesc.get(), alpha, inputDesc.get(), input.data(), beta, outputDesc.get(), tempOutput.data()));
     DIOPI_CALL(dataTypeCast(ctx, out, tempOutput));
 
     return diopiSuccess;
@@ -103,7 +103,7 @@ diopiError_t cnnlActivationBackwardInternal(diopiContextHandle_t ctx, DiopiTenso
     void* beta = attr.get("beta", nullptr);
 
     CnnlResourceGuard<cnnlActivationDescriptor_t, cnnlCreateActivationDescriptor, cnnlDestroyActivationDescriptor> activationDesc;
-    DIOPI_CALLCNNL(cnnlSetActivationDescriptor_v6(activationDesc.get(), mode, perf, nanProp, coef, slicedDim, gamma, scale, isResult, approximate));
+    DIOPI_CALL_CNNL(cnnlSetActivationDescriptor_v6(activationDesc.get(), mode, perf, nanProp, coef, slicedDim, gamma, scale, isResult, approximate));
     std::vector<DiopiTensor*> inputs{&gradOutput};
     if (input.defined()) {
         inputs.push_back(&input);
@@ -128,18 +128,18 @@ diopiError_t cnnlActivationBackwardInternal(diopiContextHandle_t ctx, DiopiTenso
         DIOPI_CALL(outputDesc.set(output, CNNL_LAYOUT_ARRAY));
     }
 
-    DIOPI_CALLCNNL(cnnlActivationBackward(handle,
-                                          activationDesc.get(),
-                                          alpha,
-                                          outputDesc.get(),
-                                          output.defined() ? output.data() : nullptr,
-                                          gradOutputDesc.get(),
-                                          gradOutput.data(),
-                                          inputDesc.get(),
-                                          input.defined() ? input.data() : nullptr,
-                                          beta,
-                                          gradInputDesc.get(),
-                                          tempGradInput.data()));
+    DIOPI_CALL_CNNL(cnnlActivationBackward(handle,
+                                           activationDesc.get(),
+                                           alpha,
+                                           outputDesc.get(),
+                                           output.defined() ? output.data() : nullptr,
+                                           gradOutputDesc.get(),
+                                           gradOutput.data(),
+                                           inputDesc.get(),
+                                           input.defined() ? input.data() : nullptr,
+                                           beta,
+                                           gradInputDesc.get(),
+                                           tempGradInput.data()));
     DIOPI_CALL(dataTypeCast(ctx, gradInput, tempGradInput));
     return diopiSuccess;
 }

@@ -29,7 +29,7 @@ extern "C" diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHand
     cnnlDataType_t dtype;
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, tensor.dtype()));
     cnnlRandGenerator_t cnnlGenerator;
-    DIOPI_CALLCNNL(cnnlRandCreateGenerator(&cnnlGenerator, CNNL_RAND_RNG_MTGP32));
+    DIOPI_CALL_CNNL(cnnlRandCreateGenerator(&cnnlGenerator, CNNL_RAND_RNG_MTGP32));
 
     if (dtype == CNNL_DTYPE_FLOAT || dtype == CNNL_DTYPE_HALF) {
         auto mantissa = dtype == CNNL_DTYPE_FLOAT ? std::numeric_limits<float>::digits : std::numeric_limits<half_float::half>::digits;
@@ -40,13 +40,13 @@ extern "C" diopiError_t diopiRandomInp(diopiContextHandle_t ctx, diopiTensorHand
         DIOPI_CALL(diopiGeneratorGetState(ctx, generator, &stateHandle));
         void* statePtr = nullptr;
         DIOPI_CALL(diopiGetTensorData(stateHandle, &statePtr));
-        DIOPI_CALLCNNL(cnnlRandGenerateDescreteUniform(handle, cnnlGenerator, dtype, statePtr, tensor.numel(), min, max + 1, tensor.data()));
+        DIOPI_CALL_CNNL(cnnlRandGenerateDescreteUniform(handle, cnnlGenerator, dtype, statePtr, tensor.numel(), min, max + 1, tensor.data()));
         DIOPI_CALL(diopiGeneratorSetState(generator, stateHandle));
     } else {
         setLastErrorString("%s%d", "cnnl random not support datatype: ", dtype);
         return diopiDtypeNotSupported;
     }
-    DIOPI_CALLCNNL(cnnlRandDestroyGenerator(cnnlGenerator));
+    DIOPI_CALL_CNNL(cnnlRandDestroyGenerator(cnnlGenerator));
     return diopiSuccess;
 }
 

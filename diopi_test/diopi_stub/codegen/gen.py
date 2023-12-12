@@ -185,6 +185,8 @@ def declare_outputs(adaptor_fm):
 
 def lib_init(diopilib_dir):
     from lib_init_template import diopilib_init_tmp
+    if not os.path.exists(diopilib_dir):
+        os.mkdir(diopilib_dir)
     with open(diopilib_dir + '__init__.py', 'w') as f:
         f.write(diopilib_init_tmp)
 

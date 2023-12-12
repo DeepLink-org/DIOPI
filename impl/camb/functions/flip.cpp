@@ -26,11 +26,11 @@ diopiError_t diopiFlip(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     }
 
     if (outTensor.dtype() == inputTensor.dtype()) {
-        DIOPI_CALLCNNL(cnnlFlip(handle, dimension.data(), dims.len, inputDesc.get(), inputTensor.data(), outDesc.get(), outTensor.data()));
+        DIOPI_CALL_CNNL(cnnlFlip(handle, dimension.data(), dims.len, inputDesc.get(), inputTensor.data(), outDesc.get(), outTensor.data()));
     } else {
         DiopiTensor outTemp = requiresTensor(ctx, outTensor.shape(), inputTensor.dtype());
         CnnlTensorDesc outTempDesc(outTemp, CNNL_LAYOUT_ARRAY);
-        DIOPI_CALLCNNL(cnnlFlip(handle, dimension.data(), dims.len, inputDesc.get(), inputTensor.data(), outTempDesc.get(), outTemp.data()));
+        DIOPI_CALL_CNNL(cnnlFlip(handle, dimension.data(), dims.len, inputDesc.get(), inputTensor.data(), outTempDesc.get(), outTemp.data()));
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTemp));
     }
     return diopiSuccess;

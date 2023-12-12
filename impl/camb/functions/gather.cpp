@@ -31,12 +31,12 @@ DIOPI_API diopiError_t diopiGather(diopiContextHandle_t ctx, diopiTensorHandle_t
     }
 
     if (outTensor.dtype() == inputTensor.dtype()) {
-        DIOPI_CALLCNNL(cnnlGather(handle, dim, inputDesc.get(), inputTensor.data(), indexDesc.get(), indexTensor.data(), outDesc.get(), outTensor.data()));
+        DIOPI_CALL_CNNL(cnnlGather(handle, dim, inputDesc.get(), inputTensor.data(), indexDesc.get(), indexTensor.data(), outDesc.get(), outTensor.data()));
     } else {
         DiopiTensor outTemp = outTensor;
         DIOPI_CALL(dataTypeCast(ctx, outTemp, inputTensor.dtype()));
         CnnlTensorDesc outTempDesc(outTemp, CNNL_LAYOUT_ARRAY);
-        DIOPI_CALLCNNL(cnnlGather(handle, dim, inputDesc.get(), inputTensor.data(), indexDesc.get(), indexTensor.data(), outTempDesc.get(), outTemp.data()));
+        DIOPI_CALL_CNNL(cnnlGather(handle, dim, inputDesc.get(), inputTensor.data(), indexDesc.get(), indexTensor.data(), outTempDesc.get(), outTemp.data()));
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTemp));
     }
 
@@ -70,17 +70,17 @@ DIOPI_API diopiError_t diopiGatherBackward(diopiContextHandle_t ctx, diopiTensor
     CnnlTensorDesc outTempDesc(outTemp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc gradOutputDesc(gradOutputTensor, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlScatter(handle,
-                               dim,
-                               outTempDesc.get(),
-                               outTemp.data(),
-                               indexDesc.get(),
-                               indexTensor.data(),
-                               gradOutputDesc.get(),
-                               gradOutputTensor.data(),
-                               outTempDesc.get(),
-                               outTemp.data(),
-                               CNNL_SCATTER_ADD));
+    DIOPI_CALL_CNNL(cnnlScatter(handle,
+                                dim,
+                                outTempDesc.get(),
+                                outTemp.data(),
+                                indexDesc.get(),
+                                indexTensor.data(),
+                                gradOutputDesc.get(),
+                                gradOutputTensor.data(),
+                                outTempDesc.get(),
+                                outTemp.data(),
+                                CNNL_SCATTER_ADD));
     DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, outTemp));
 
     return diopiSuccess;

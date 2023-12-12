@@ -42,31 +42,31 @@ diopiError_t diopiAmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     cnnlDataType_t tensorType;
     CnnlDataType::convertToCnnlType(&tensorType, inputTensorTmp.dtype());
     CnnlResourceGuard<cnnlReduceDescriptor_t, cnnlCreateReduceDescriptor, cnnlDestroyReduceDescriptor> reduceDesc;
-    DIOPI_CALLCNNL(cnnlSetReduceDescriptor_v2(
+    DIOPI_CALL_CNNL(cnnlSetReduceDescriptor_v2(
         reduceDesc.get(), axis.data(), axis.size(), CNNL_REDUCE_MAX, tensorType, CNNL_NOT_PROPAGATE_NAN, CNNL_REDUCE_NO_INDICES, CNNL_32BIT_INDICES, 0.0));
 
     CnnlTensorDesc inputDesc(inputTensorTmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outTensorTmp, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetReduceOpWorkspaceSize(handle, inputDesc.get(), outDesc.get(), reduceDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetReduceOpWorkspaceSize(handle, inputDesc.get(), outDesc.get(), reduceDesc.get(), &workspaceSize));
     void* workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlReduce(handle,
-                              reduceDesc.get(),
-                              workspace,
-                              workspaceSize,
-                              nullptr,
-                              inputDesc.get(),
-                              inputTensorTmp.data(),
-                              0,
-                              nullptr,
-                              nullptr,
-                              outDesc.get(),
-                              outTensorTmp.data()));
+    DIOPI_CALL_CNNL(cnnlReduce(handle,
+                               reduceDesc.get(),
+                               workspace,
+                               workspaceSize,
+                               nullptr,
+                               inputDesc.get(),
+                               inputTensorTmp.data(),
+                               0,
+                               nullptr,
+                               nullptr,
+                               outDesc.get(),
+                               outTensorTmp.data()));
     if (outTensorTmp.dtype() != outTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
     }

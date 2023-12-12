@@ -227,7 +227,7 @@ public:
      */
     int64_t inputSize() { return hasDynamicInput_ ? dynamcInputSize_ : InputSize; }
 
-    AclOpRunner& addConstInput(const AscendTensor& at, const aclFormat& format, bool isScalar = false) {
+    AclOpRunner& addConstInput(const AscendTensor& at, const aclFormat& format, bool isScalar = false, aclDataType aclDtype = ACL_DT_UNDEFINED) {
         ASCEND_CHECK_ABORT(at.defined(), "input should not be nullptr");
         std::vector<int64_t> dims = at.shape();
         if (dims.empty() && at.numel() == 1) {
@@ -244,11 +244,14 @@ public:
         auto& desc = inputDescs_[inputIndex_];
         auto& buffer = inputBuffers_[inputIndex_];
 
-        if (isScalar) {
-            desc = aclCreateTensorDesc(dtypeCastStrategy(at.dtype()), 0, nullptr, format);
+        if (ACL_DT_UNDEFINED == aclDtype) {
+            aclDtype = dtypeCastStrategy(at.dtype());
+        }
 
+        if (isScalar) {
+            desc = aclCreateTensorDesc(aclDtype, 0, nullptr, format);
         } else {
-            desc = aclCreateTensorDesc(dtypeCastStrategy(at.dtype()), dims.size(), dims.data(), format);
+            desc = aclCreateTensorDesc(aclDtype, dims.size(), dims.data(), format);
         }
 
         ASCEND_CHECK_ABORT(desc != nullptr, "aclTensorDesc should not be nullptr.");
@@ -290,15 +293,17 @@ public:
         return *this;
     }
 
-    AclOpRunner& addConstInput(diopiConstTensorHandle_t th, const aclFormat& format, bool isScalar = false) {
+    AclOpRunner& addConstInput(diopiConstTensorHandle_t th, const aclFormat& format, bool isScalar = false, aclDataType aclDtype = ACL_DT_UNDEFINED) {
         AscendTensor at = AscendTensor(th);
-        return addConstInput(at, format, isScalar);
+        return addConstInput(at, format, isScalar, aclDtype);
     }
 
-    AclOpRunner& addConstInput(diopiConstTensorHandle_t th, bool isScalar = false) { return addConstInput(th, getAclDataFormat(th), isScalar); }
+    AclOpRunner& addConstInput(diopiConstTensorHandle_t th, bool isScalar = false, aclDataType aclDtype = ACL_DT_UNDEFINED) {
+        return addConstInput(th, getAclDataFormat(th), isScalar, aclDtype);
+    }
 
-    AclOpRunner& addConstInput(diopiTensorHandle_t th, bool isScalar = false) {
-        return addConstInput(reinterpret_cast<diopiConstTensorHandle_t>(th), isScalar);
+    AclOpRunner& addConstInput(diopiTensorHandle_t th, bool isScalar = false, aclDataType aclDtype = ACL_DT_UNDEFINED) {
+        return addConstInput(reinterpret_cast<diopiConstTensorHandle_t>(th), isScalar, aclDtype);
     }
 
     AclOpRunner& addConstInput(const diopiSize_t& size, diopiDtype_t dtype) {

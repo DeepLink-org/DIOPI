@@ -23,14 +23,14 @@ static diopiError_t addMulFunc(diopiContextHandle_t ctx, DiopiTensor &a, float s
     DIOPI_CALL(aDesc.set(a, CNNL_LAYOUT_ARRAY, shape));
     DIOPI_CALL(bDesc.set(b, CNNL_LAYOUT_ARRAY, shape));
 
-    DIOPI_CALLCNNL(cnnlGetBiasAddWorkspaceSize(handle, bDesc.get(), aDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetBiasAddWorkspaceSize(handle, bDesc.get(), aDesc.get(), &workspaceSize));
 
     void *workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlBiasAdd(handle, &scaleB, bDesc.get(), b.data(), workspace, workspaceSize, &scaleA, aDesc.get(), a.data()));
+    DIOPI_CALL_CNNL(cnnlBiasAdd(handle, &scaleB, bDesc.get(), b.data(), workspace, workspaceSize, &scaleA, aDesc.get(), a.data()));
     return diopiSuccess;
 }
 
@@ -88,7 +88,7 @@ diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTens
     diopiScalar_t lrScalar = constructDiopiScalarT(diopi_dtype_float64, lr);
     DIOPI_CALL(makeTensorFromScalar(ctx, &lrScalar, lrTensor));
     DIOPI_CALL(dataTypeCast(ctx, lrTensor, dwTensorTmp.dtype()));
-    DIOPI_CALLCNNL(cnnlGradientDescent(handle, dwDesc.get(), dwTensorTmp.data(), lrTensor.data(), wDescTmp.get(), wTensorTmp.data()));
+    DIOPI_CALL_CNNL(cnnlGradientDescent(handle, dwDesc.get(), dwTensorTmp.data(), lrTensor.data(), wDescTmp.get(), wTensorTmp.data()));
     DIOPI_CALL(dataTypeCast(ctx, wTensor, wTensorTmp));
     if (buf != nullptr) {
         DIOPI_CALL(dataTypeCast(ctx, bufTensor, bufTensorTmp));

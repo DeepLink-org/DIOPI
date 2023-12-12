@@ -12,15 +12,14 @@ BRANCH_KEY="branch"
 REPO_KEY="repo"
 
 function validate_required_env_variables() {
-  local required_env_variables=( "GITHUB_REPOSITORY" "GITHUB_RUN_ID" )
+  local required_env_variables=("GITHUB_REPOSITORY" "GITHUB_RUN_ID")
   if [ "$GITHUB_TOKEN" = "" ]​​; then
     echo "can not find GITHUB_TOKEN and stop to interrupt"
     exit 0
   fi
   for env in "${required_env_variables[@]}"; do
     if [ -z "${!env}" ]; then
-      echo "Must specify ${env}"
-      exit 1
+      echo "Must specify ${env}" && exit 1
     fi
   done
 }
@@ -42,21 +41,20 @@ function getRunningWorkflowIds() {
   echo "$workflow_ids" | jq "select( . $condition $GITHUB_RUN_ID )"
 }
 
-
 validate_required_env_variables
 
 auth_header="Authorization: token ${GITHUB_TOKEN}"
 
-meta_data="$( curl -s "${GITHUB_API}/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" -H "${auth_header}" -H "${ACCEPT_HEADER}" | extractMetaInformation )"
-workflow_id="$( echo "$meta_data" | jq -r ".${WORKFLOW_ID_KEY}" )"
-branch="$( echo "$meta_data" | jq -r ".${BRANCH_KEY}" )"
-repo="$( echo "$meta_data" | jq -r ".${REPO_KEY}" )"
+meta_data="$(curl -s "${GITHUB_API}/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" -H "${auth_header}" -H "${ACCEPT_HEADER}" | extractMetaInformation)"
+workflow_id="$(echo "$meta_data" | jq -r ".${WORKFLOW_ID_KEY}")"
+branch="$(echo "$meta_data" | jq -r ".${BRANCH_KEY}")"
+repo="$(echo "$meta_data" | jq -r ".${REPO_KEY}")"
 
 echo "workflow id: ${workflow_id}"
 echo "branch: ${branch}"
 echo "repo: ${repo}"
 
-run_ids=$( curl -s "${GITHUB_API}/repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow_id}/runs" -H "${auth_header}" -H "${ACCEPT_HEADER}" | getRunningWorkflowIds )
+run_ids=$(curl -s "${GITHUB_API}/repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow_id}/runs" -H "${auth_header}" -H "${ACCEPT_HEADER}" | getRunningWorkflowIds)
 
 echo "run ids: ${run_ids}"
 
@@ -65,4 +63,3 @@ for run_id in $run_ids; do
   curl -s -X POST "${GITHUB_API}/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" -H "${auth_header}" -H "${ACCEPT_HEADER}"
   echo "Cancelled run $run_id"
 done
-

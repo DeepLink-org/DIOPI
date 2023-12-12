@@ -28,22 +28,22 @@ static diopiError_t atan(diopiContextHandle_t ctx, DiopiTensor output, DiopiTens
     CnnlTensorDesc outputDesc(outputTmp, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetAtan2WorkspaceSize(handle, input1Desc.get(), input2Desc.get(), outputDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetAtan2WorkspaceSize(handle, input1Desc.get(), input2Desc.get(), outputDesc.get(), &workspaceSize));
     void *workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlAtan2(handle,
-                             CNNL_COMPUTATION_HIGH_PRECISION,
-                             input1Desc.get(),
-                             input1.data(),
-                             input2Desc.get(),
-                             input2.data(),
-                             workspace,
-                             workspaceSize,
-                             outputDesc.get(),
-                             outputTmp.data()));
+    DIOPI_CALL_CNNL(cnnlAtan2(handle,
+                              CNNL_COMPUTATION_HIGH_PRECISION,
+                              input1Desc.get(),
+                              input1.data(),
+                              input2Desc.get(),
+                              input2.data(),
+                              workspace,
+                              workspaceSize,
+                              outputDesc.get(),
+                              outputTmp.data()));
     if (outputTmp.dtype() != output.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, output, outputTmp));
     }

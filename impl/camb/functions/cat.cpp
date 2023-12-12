@@ -23,7 +23,7 @@ diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     }
 
     size_t workspaceSize(0);
-    DIOPI_CALLCNNL(cnnlGetConcatWorkspaceSize(handle, numInputs, &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetConcatWorkspaceSize(handle, numInputs, &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
@@ -31,7 +31,7 @@ diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
     DiopiTensor outTensor(out);
     CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlConcat(handle, numInputs, dim, inputsDescTmp.data(), inputs.data(), workspace, workspaceSize, outDesc.get(), outTensor.data()));
+    DIOPI_CALL_CNNL(cnnlConcat(handle, numInputs, dim, inputsDescTmp.data(), inputs.data(), workspace, workspaceSize, outDesc.get(), outTensor.data()));
 
     return diopiSuccess;
 }

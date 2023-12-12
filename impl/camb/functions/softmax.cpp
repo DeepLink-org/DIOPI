@@ -64,16 +64,16 @@ diopiError_t softmaxForward(diopiContextHandle_t ctx, DiopiTensor input, DiopiTe
     CnnlTensorDesc xDesc, yDesc;
     DIOPI_CALL(xDesc.set(inputCasted, CNNL_LAYOUT_ARRAY, inputShape));
     DIOPI_CALL(yDesc.set(outputCasted, CNNL_LAYOUT_ARRAY, inputShape));
-    DIOPI_CALLCNNL(cnnlSoftmaxForward_v2(handle,
-                                         isLog ? CNNL_SOFTMAX_LOG : CNNL_SOFTMAX_ACCURATE,
-                                         modeTmp,
-                                         CNNL_COMPUTATION_FAST,
-                                         alpha,
-                                         xDesc.get(),
-                                         inputCasted.data(),
-                                         beta,
-                                         yDesc.get(),
-                                         outputCasted.data()));
+    DIOPI_CALL_CNNL(cnnlSoftmaxForward_v2(handle,
+                                          isLog ? CNNL_SOFTMAX_LOG : CNNL_SOFTMAX_ACCURATE,
+                                          modeTmp,
+                                          CNNL_COMPUTATION_FAST,
+                                          alpha,
+                                          xDesc.get(),
+                                          inputCasted.data(),
+                                          beta,
+                                          yDesc.get(),
+                                          outputCasted.data()));
 
     DIOPI_CALL(dataTypeCast(ctx, output, outputCasted));
     return diopiSuccess;
@@ -136,17 +136,17 @@ diopiError_t softmaxBackward(diopiContextHandle_t ctx, DiopiTensor gradInputTens
 
     const void *alpha = nullptr;
     const void *beta = nullptr;
-    DIOPI_CALLCNNL(cnnlSoftmaxBackward(handle,
-                                       isLog ? CNNL_SOFTMAX_LOG : CNNL_SOFTMAX_ACCURATE,
-                                       modeTmp,
-                                       alpha,
-                                       outputDesc.get(),
-                                       outputCasted.data(),
-                                       gradOutputDesc.get(),
-                                       gradOutputCasted.data(),
-                                       beta,
-                                       gradInputDesc.get(),
-                                       gradInputCasted.data()));
+    DIOPI_CALL_CNNL(cnnlSoftmaxBackward(handle,
+                                        isLog ? CNNL_SOFTMAX_LOG : CNNL_SOFTMAX_ACCURATE,
+                                        modeTmp,
+                                        alpha,
+                                        outputDesc.get(),
+                                        outputCasted.data(),
+                                        gradOutputDesc.get(),
+                                        gradOutputCasted.data(),
+                                        beta,
+                                        gradInputDesc.get(),
+                                        gradInputCasted.data()));
     DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputCasted));
     return diopiSuccess;
 }
