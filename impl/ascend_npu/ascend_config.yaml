@@ -193,6 +193,7 @@ ascend:
 - diopiLogicalAnd
 - diopiLogicalOr
 - diopiMaxPool2dWithIndices
+- diopiApplyPenalty
 ascend_npu:
 - diopiRemainderTensor
 - diopiRemainderScalar
