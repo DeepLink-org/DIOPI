@@ -444,6 +444,8 @@ jobs:
     runs-on: tps-diopi-ci
     needs: [Gen-Data, Build-Supa]
     if: ${{ contains( needs.Rsync.outputs.output, 'SUPA' ) }}
+    env:
+      run_test: "python"
     steps:
       - name: test
         run: |
@@ -454,7 +456,7 @@ jobs:
           rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
           source /mnt/cache/share/platform/env/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
           source scripts/pick_card.sh supa
-          bash -c 'cd diopi_test/python && ${run_test} main.py --mode run_test --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/supa/' \
+          bash -c 'cd diopi_test/python && python main.py --mode gen_case --impl_folder ../../impl/supa && ${run_test} main.py --mode run_test --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/supa/' \
           && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           """
 
