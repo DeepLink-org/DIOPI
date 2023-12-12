@@ -104,7 +104,7 @@ class GenTestCase(object):
             output_data_path = ck
 
             # get tol
-            test_compare_tol = dict(atol=cv["atol"], rtol=cv["rtol"])
+            test_compare_tol = dict(atol=cv["atol"], rtol=cv["rtol"], mismatch_ratio_threshold=cv["mismatch_ratio_threshold"])
             for tensor in cv["tensor_para"]["args"]:
                 if tensor["dtype"] in [
                     np.int16,

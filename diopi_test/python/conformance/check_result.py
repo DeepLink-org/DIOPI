@@ -78,11 +78,12 @@ class CheckResult(object):
         sum_to_compare = kwargs.get('sum_to_compare', False)
         rtol = kwargs.get('rtol', 1e-5)
         atol = kwargs.get('atol', 1e-8)
+        mismatch_ratio_threshold = kwargs.get('mismatch_ratio_threshold', default_cfg_dict['default_option']['mismatch_ratio_threshold'])
         tensor1 = np.sum(tensor1) if sum_to_compare else tensor1
         tensor2 = np.sum(tensor2) if sum_to_compare else tensor2
         matched = np.isclose(tensor1, tensor2, rtol, atol, equal_nan=True)
         mismatched_num = matched.size - np.sum(matched)
-        passed = mismatched_num <= default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
+        passed = mismatched_num <= mismatch_ratio_threshold * matched.size
         glob_vars.func_status[glob_vars.cur_test_func] = 'passed'
         if not passed:
             glob_vars.func_status[glob_vars.cur_test_func] = 'failed'
