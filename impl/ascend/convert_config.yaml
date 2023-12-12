@@ -232,3 +232,6 @@
 
 - diopiExpand:
     dtype: (uint8, int16)->int32, (float64)->float32
+    
+- diopiSort:
+    dtype: (float64)->float32
