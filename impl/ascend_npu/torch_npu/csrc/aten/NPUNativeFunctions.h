@@ -1876,7 +1876,7 @@ struct NPUNativeFunctions {
     }
     static at::Tensor& mean_out(const at::Tensor& self, at::DimnameList dim, bool keepdim, c10::optional<at::ScalarType> dtype, at::Tensor& out) { OP_NOT_IMPL }
     static at::Tensor& argmin_out(const at::Tensor& self, c10::optional<int64_t> dim, bool keepdim, at::Tensor& out) { OP_NOT_IMPL }
-    static at::Tensor& copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) { OP_NOT_IMPL }
+    static at::Tensor& copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking);
     static at::Tensor count_nonzero(const at::Tensor& self, at::IntArrayRef dim) { OP_NOT_IMPL }
     static at::Tensor& randperm_out(int64_t n, at::Tensor& out) { OP_NOT_IMPL }
     static at::Tensor randperm(int64_t n, c10::optional<at::Generator> generator, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,

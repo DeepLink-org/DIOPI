@@ -260,7 +260,7 @@ inline c10::DeviceType getATenDevice(diopiDevice_t device) {
     if (device == diopi_host) {
         return c10::DeviceType::CPU;
     }
-    return c10::DeviceType::XPU;
+    return c10::DeviceType::XLA;
 }
 
 inline bool isInt(const diopiScalar_t* scalar) { return scalar->stype <= 7; }

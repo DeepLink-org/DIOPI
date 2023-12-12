@@ -34,13 +34,22 @@ void check_memory_overlaps(at::TensorList inputs, at::TensorList outputs) { CUST
 int64_t get_storage_size(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
 __attribute__((__visibility__("default"))) at::Tensor npu_format_cast(const at::Tensor& self, int64_t acl_format) { CUSTOM_OP_NOT_IMPL; }
 at::Tensor _npu_format_cast(const at::Tensor& self, int64_t acl_format) { CUSTOM_OP_NOT_IMPL; }
-at::Tensor& npu_view_copy(at::Tensor& self, const at::Tensor& other, bool non_blocking) { CUSTOM_OP_NOT_IMPL; }
-at::Tensor npu_transpose(const at::Tensor& self, at::IntArrayRef perm, bool require_contiguous) { CUSTOM_OP_NOT_IMPL; }
-at::Tensor& npu_transpose_out(const at::Tensor& self, at::IntArrayRef perm, bool require_contiguous, at::Tensor& out) { CUSTOM_OP_NOT_IMPL; }
-at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size) { CUSTOM_OP_NOT_IMPL; }
-at::Tensor& npu_broadcast_out(const at::Tensor& self, at::IntArrayRef size, at::Tensor& out) { CUSTOM_OP_NOT_IMPL; }
 
-at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) { return acl_op::npu_dtype_cast_(self, src); }
+at::Tensor& npu_view_copy(at::Tensor& self, const at::Tensor& other, bool non_blocking) { acl_op::npu_view_copy(self, other, non_blocking); }
+at::Tensor npu_transpose(const at::Tensor& self, at::IntArrayRef perm, bool require_contiguous) { CUSTOM_OP_NOT_IMPL; }
+
+at::Tensor& npu_transpose_out(const at::Tensor& self, at::IntArrayRef perm, bool require_contiguous, at::Tensor& out) { CUSTOM_OP_NOT_IMPL; }
+at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size) { return acl_op::npu_broadcast(self, size); }
+
+at::Tensor& npu_broadcast_out(const at::Tensor& self, at::IntArrayRef size, at::Tensor& out) { return acl_op::npu_broadcast_out(self, size, out); }
+
+at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
+    at::Tensor source = src;
+    if (src.sizes() != self.sizes()) {
+        source = npu_broadcast(src, self.sizes());
+    }
+    return acl_op::npu_dtype_cast_(self, source);
+}
 
 at::Tensor npu_alloc_float_status(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
 at::Tensor npu_get_float_status(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }

@@ -111,19 +111,17 @@ bool NpuUtils::check_match(const at::Tensor* tensor) {
         return false;
     }
 
-#if 0
-  // case2:meta data not match, sizes or strides of presentation
-  // layer is different from that of storage layer
-  if (!StorageDescHelper::MetaDataAreMatch(tensor)) {
-    return false;
-  }
-  // case3:meta data not match, storage_offset of presentation layer
-  // is different from that of storage layer
-  bool isPadding = FormatHelper::IsPadded(tensor);
-  if (isPadding && (!StorageDescHelper::OffsetAreMatch(tensor))) {
-    return false;
-  }
-#endif
+    // case2:meta data not match, sizes or strides of presentation
+    // layer is different from that of storage layer
+    if (!StorageDescHelper::MetaDataAreMatch(tensor)) {
+        return false;
+    }
+    // case3:meta data not match, storage_offset of presentation layer
+    // is different from that of storage layer
+    bool isPadding = FormatHelper::IsPadded(tensor);
+    if (isPadding && (!StorageDescHelper::OffsetAreMatch(tensor))) {
+        return false;
+    }
     return true;
 }
 
@@ -168,32 +166,425 @@ at::Tensor NpuUtils::format_contiguous(const at::Tensor& src) {
     return src;
 }
 
-// helper function of copy, because of padding will change the physical size.
-bool FormatHelper::IsPadded(const at::Tensor* tensor) { INTERFACE_NOT_IMPL; }
-char* FormatHelper::GetFormatName(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
-aclFormat FormatHelper::GetBaseFormat(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
-aclFormat FormatHelper::GetBaseFormat(aclFormat format) { INTERFACE_NOT_IMPL; }
-aclFormat FormatHelper::GetFormat(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
+namespace {
 
-bool FormatHelper::IsBaseFormatType(aclFormat format) { INTERFACE_NOT_IMPL; }
-bool FormatHelper::IsBaseFormatType(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
+constexpr int BLOCKSIZE = 16;
 
-// Default assumption: the original format are ND, NCHW or NDHWC.
-// So, if original size are 4D, it maybe NCHW or ND and so on.
-// The format can be split into two parts:
-// 1. The storage size can be infered between NC1HWC0, NHWC, NC1HWC0_C04, NCHW.
-// 2. The storage size can be infered between NDC1HWC0 and NDHWC/NCDHW.
-// The storage size can not be infered between different groups.
+// base format is ND/NCHW
+FormatShape InferShapeLessTo4(c10::IntArrayRef dims);
+FormatShape InferShape4To5(c10::IntArrayRef dims);
+FormatShape InferShape5To4(c10::IntArrayRef dims);
+FormatShape InferShapeNDToNZ(c10::IntArrayRef dims);
+FormatShape InferShapeNDToZ(c10::IntArrayRef dims);
+FormatShape InferShapeofNCHW(c10::IntArrayRef dims);
+FormatShape InferShapeofND(c10::IntArrayRef dims);
 
-// GetStorageSizes used to calculate the storage sizes of op at npu device at different format.
-FormatShape FormatHelper::GetStorageSizes(const torch_npu::NPUStorageDesc& desc) { INTERFACE_NOT_IMPL; }
-at::Tensor& FormatHelper::unsafe_format_cast(at::Tensor& self, int64_t self_format, int64_t result_format) { INTERFACE_NOT_IMPL; }
+// converter between base format
+FormatShape InferShapeNCHWToND(c10::IntArrayRef storage_dims, c10::IntArrayRef base_dims);
+FormatShape InferShapeNCDHWToND(c10::IntArrayRef storage_dims, c10::IntArrayRef base_dims);
+FormatShape InferShapeNDToNCHW(c10::IntArrayRef storage_dims, c10::IntArrayRef base_dims);
+FormatShape InferShapeNDToNCDHW(c10::IntArrayRef storage_dims, c10::IntArrayRef base_dims);
 
-bool FormatHelper::IsOpInputBaseFormat(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
-bool FormatHelper::IsOpInputBaseFormat(const c10::optional<at::Tensor>& tensor) { INTERFACE_NOT_IMPL; }
-bool FormatHelper::IsOpInputBaseFormat(const c10::List<c10::optional<at::Tensor>>& tensors) { INTERFACE_NOT_IMPL; }
-bool FormatHelper::IsOpInputBaseFormat(const at::TensorList& tensors) { INTERFACE_NOT_IMPL; }
-bool FormatHelper::IsOpInputBaseFormat(const at::ITensorListRef& tensors) { INTERFACE_NOT_IMPL; }
+// base format is NCDHW
+FormatShape InferShapeOfNDHWC(c10::IntArrayRef dims);
+FormatShape InferShapeOfNCDHW(c10::IntArrayRef dims);
+FormatShape InferShapeOfNDC1HWC0(c10::IntArrayRef dims);
+FormatShape InferShapeOfFZ3D(c10::IntArrayRef dims);
+
+FormatShape InferShapeofNHWC(c10::IntArrayRef dims);
+}  // namespace
+
+std::unordered_map<aclFormat, FormatHelper::FormatInfo> FormatHelper::info = {
+    {ACL_FORMAT_NC1HWC0, (FormatInfo){ACL_FORMAT_NC1HWC0, ACL_FORMAT_NCHW, InferShape4To5, "NC1HWC0", true}},
+    {ACL_FORMAT_ND, (FormatInfo){ACL_FORMAT_ND, ACL_FORMAT_ND, InferShapeofND, "ND", false}},
+    {ACL_FORMAT_NCHW, (FormatInfo){ACL_FORMAT_NCHW, ACL_FORMAT_NCHW, InferShapeofNCHW, "NCHW", false}},
+    {ACL_FORMAT_NHWC, (FormatInfo){ACL_FORMAT_NHWC, ACL_FORMAT_NHWC, InferShapeofNHWC, "NHWC", false}},
+    {ACL_FORMAT_FRACTAL_NZ, (FormatInfo){ACL_FORMAT_FRACTAL_NZ, ACL_FORMAT_ND, InferShapeNDToNZ, "FRACTAL_NZ", true}},
+    {ACL_FORMAT_FRACTAL_Z, (FormatInfo){ACL_FORMAT_FRACTAL_Z, ACL_FORMAT_NCHW, InferShapeNDToZ, "FRACTAL_Z", true}},
+    {ACL_FORMAT_NDHWC, (FormatInfo){ACL_FORMAT_NDHWC, ACL_FORMAT_NCDHW, InferShapeOfNDHWC, "NDHWC", false}},
+    {ACL_FORMAT_NCDHW, (FormatInfo){ACL_FORMAT_NCDHW, ACL_FORMAT_NCDHW, InferShapeOfNCDHW, "NCDHW", false}},
+    {ACL_FORMAT_NDC1HWC0, (FormatInfo){ACL_FORMAT_NDC1HWC0, ACL_FORMAT_NCDHW, InferShapeOfNDC1HWC0, "NDC1HWC0", true}},
+    {ACL_FRACTAL_Z_3D, (FormatInfo){ACL_FRACTAL_Z_3D, ACL_FORMAT_NCDHW, InferShapeOfFZ3D, "FRACTAL_Z_3D", true}},
+};
+
+bool FormatHelper::IsPadded(const at::Tensor* tensor) {
+    auto format = torch_npu::NPUBridge::GetNpuStorageImplDesc(*tensor).npu_format_;
+    return IsPadded(format);
+}
+
+bool FormatHelper::IsPadded(aclFormat format) {
+    auto itr = info.find(format);
+    if (itr != info.end()) {
+        return itr->second.isPadded;
+    }
+    AT_ERROR("unknown format type:", format);
+    return true;
+}
+
+char* FormatHelper::GetFormatName(aclFormat format) {
+    const auto& itr = info.find(format);
+    if (itr == info.end()) {
+        AT_ERROR("unknown format type:", format);
+        return nullptr;
+    }
+    return itr->second.formatName;
+}
+
+char* FormatHelper::GetFormatName(const at::Tensor& tensor) {
+    auto format = torch_npu::NPUBridge::GetNpuStorageImplDesc(tensor).npu_format_;
+    return GetFormatName(format);
+}
+
+aclFormat FormatHelper::GetBaseFormat(const at::Tensor& tensor) {
+    auto format = GetFormat(tensor);
+    return GetBaseFormat(format);
+}
+
+aclFormat FormatHelper::GetBaseFormat(aclFormat format) {
+    const auto& itr = info.find(format);
+    if (itr == info.end()) {
+        AT_ERROR("unknown format type:", format);
+        return ACL_FORMAT_ND;
+    }
+    return itr->second.baseFormat;
+}
+
+aclFormat FormatHelper::GetFormat(const at::Tensor& tensor) { return torch_npu::NPUBridge::GetNpuStorageImplDesc(tensor).npu_format_; }
+
+bool FormatHelper::IsBaseFormatType(aclFormat format) { return GetBaseFormat(format) == format; }
+
+bool FormatHelper::IsBaseFormatType(const at::Tensor& tensor) {
+    auto format = torch_npu::NPUBridge::GetNpuStorageImplDesc(tensor).npu_format_;
+    return IsBaseFormatType(format);
+}
+
+FormatShape FormatHelper::GetStorageSizes(const torch_npu::NPUStorageDesc& desc) {
+    auto ori_size = desc.base_sizes_;
+    auto format = desc.npu_format_;
+    return GetStorageSizes(format, ori_size);
+}
+
+bool FormatHelper::IsOpInputBaseFormat(const at::Tensor& tensor) {
+    if (!torch_npu::utils::is_npu(tensor)) {
+        return true;
+    }
+    const auto format = torch_npu::NPUBridge::GetNpuStorageImplDesc(tensor).npu_format_;
+    return (format == ACL_FORMAT_ND) || (format == ACL_FORMAT_NCHW) || (format == ACL_FORMAT_NHWC) || (format == ACL_FORMAT_NCDHW);
+}
+
+bool FormatHelper::IsOpInputBaseFormat(const c10::optional<at::Tensor>& tensor) {
+    if (!tensor.has_value()) {
+        return true;
+    }
+    return IsOpInputBaseFormat(tensor.value());
+}
+
+bool FormatHelper::IsOpInputBaseFormat(const c10::List<c10::optional<at::Tensor>>& tensors) {
+    const auto& iter = std::find_if(tensors.begin(), tensors.end(), [](const auto& tensor) { return !IsOpInputBaseFormat(tensor); });
+    return iter == tensors.end();
+}
+
+bool FormatHelper::IsOpInputBaseFormat(const at::TensorList& tensors) {
+    const auto& iter = std::find_if(tensors.begin(), tensors.end(), [](const auto& tensor) { return !IsOpInputBaseFormat(tensor); });
+    return iter == tensors.end();
+}
+
+bool FormatHelper::IsOpInputBaseFormat(const at::ITensorListRef& tensors) {
+    auto materialized = tensors.materialize();
+    const auto& iter = std::find_if(materialized.begin(), materialized.end(), [](const auto& tensor) { return !IsOpInputBaseFormat(tensor.get()); });
+    return iter == materialized.end();
+}
+
+//
+namespace {
+FormatShape InferShapeLessTo4(c10::IntArrayRef dims) {
+    FormatShape res;
+    res.resize(4);
+    AT_ASSERT(dims.size() <= 4, "input dim > 4 when InferShapeLessTo4");
+    switch (dims.size()) {
+        case 0:
+            res[0] = 1;
+            res[1] = 1;
+            res[2] = 1;
+            res[3] = 1;
+            break;
+        case 1:  // RESHAPE_TYPE_C
+            res[0] = 1;
+            res[1] = dims[0];
+            res[2] = 1;
+            res[3] = 1;
+            break;
+        case 2:  // RESHAPE_TYPE_CH
+            res[0] = 1;
+            res[1] = dims[0];
+            res[2] = dims[1];
+            res[3] = 1;
+            break;
+        case 3:  // RESHAPE_TYPE_CHW
+            res[0] = 1;
+            res[1] = dims[0];
+            res[2] = dims[1];
+            res[3] = dims[2];
+            break;
+        case 4:
+            res[0] = dims[0];
+            res[1] = dims[1];
+            res[2] = dims[2];
+            res[3] = dims[3];
+            break;
+        default:
+            AT_ERROR("dims of NCHW shape should not be greater than 4, which is ", dims.size());
+    }
+    return res;
+}
+
+FormatShape InferShapeofNHWC(c10::IntArrayRef dims) {
+    AT_ASSERT(dims.size() == 4, "input dim should be equal to 4 when InferShapeofNHWC");
+    return FormatShape(dims.begin(), dims.end());
+}
+
+FormatShape InferShape4To5(c10::IntArrayRef dims) {
+    FormatShape res;
+    res.resize(5);
+    if (dims.size() < 4) {
+        NPU_LOGD("infershape4to5 but input dim < 4");
+        return InferShape4To5(InferShapeLessTo4(dims));
+    } else if (dims.size() > 4) {
+        NPU_LOGE("infershape4to5 but input dim > 4");
+    }
+    res[0] = dims[0];
+    res[1] = (dims[1] + 15) / 16;
+    res[2] = dims[2];
+    res[3] = dims[3];
+    res[4] = BLOCKSIZE;
+    return res;
+}
+
+FormatShape InferShape5To4(c10::IntArrayRef dims) {
+    FormatShape res;
+    res.emplace_back(dims[0]);
+    res.emplace_back(((dims[1] + 15) / 16) * 16);
+    res.emplace_back(dims[2]);
+    res.emplace_back(dims[3]);
+    return res;
+}
+
+FormatShape InferShapeNDToNZ(c10::IntArrayRef dims) {
+    FormatShape res;
+    // sum(keepdim = false) may make tensor dim = 0
+    FormatShape dim;
+    for (int i = 0; i < dims.size(); i++) {
+        dim.emplace_back(dims[i]);
+    }
+
+    // this action will move to GuessStorageSizeWhenConvertFormat
+    if (dim.size() == 0) {
+        dim.emplace_back(1);
+    }
+    if (dim.size() == 1) {
+        dim.emplace_back(1);
+    }
+
+    int i = 0;
+    for (; i < dim.size() - 2; i++) {
+        res.emplace_back(dim[i]);
+    }
+
+    res.emplace_back((dim[i + 1] + 15) / BLOCKSIZE);
+    res.emplace_back((dim[i] + 15) / BLOCKSIZE);
+    res.emplace_back(BLOCKSIZE);
+    res.emplace_back(BLOCKSIZE);
+
+    return res;
+}
+
+FormatShape InferShapeNDToZ(c10::IntArrayRef dims) {
+    FormatShape res;
+    if (dims.size() < 4) {
+        return InferShapeNDToZ(InferShapeLessTo4(dims));
+    }
+
+    res.emplace_back((dims[1] + 15) / BLOCKSIZE * dims[2] * dims[3]);
+    res.emplace_back((dims[0] + 15) / BLOCKSIZE);
+    res.emplace_back(BLOCKSIZE);
+    res.emplace_back(BLOCKSIZE);
+
+    return res;
+}
+
+FormatShape InferShapeNCHWToND(c10::IntArrayRef storage_dims, c10::IntArrayRef base_dims) {
+    FormatShape res;
+    res.resize(4);
+    auto cur_storage_dims = storage_dims;
+    if (storage_dims.size() != 4) {
+        cur_storage_dims = InferShapeLessTo4(storage_dims);
+    }
+    AT_ASSERT(cur_storage_dims.size() == 4, "input dim num not equal 4 when InferShapeNCHWToND");
+
+    if (base_dims.size() == 0) {
+        FormatShape temp_dims;
+        temp_dims.emplace_back(1);
+        return InferShapeLessTo4(temp_dims);
+    }
+    switch (base_dims.size()) {
+        case 1:
+            res.resize(1);
+            res[0] = cur_storage_dims[1];
+            AT_ASSERT(cur_storage_dims[0] == 1, "reshape type RESHAPE_TYPE_C erase dim N must be 1");
+            AT_ASSERT(cur_storage_dims[2] == 1, "reshape type RESHAPE_TYPE_C erase dim H must be 1");
+            AT_ASSERT(cur_storage_dims[3] == 1, "reshape type RESHAPE_TYPE_C erase dim W must be 1");
+            break;
+        case 2:
+            res.resize(2);
+            res[0] = cur_storage_dims[1];
+            res[1] = cur_storage_dims[2];
+            AT_ASSERT(cur_storage_dims[0] == 1, "reshape type RESHAPE_TYPE_CH erase dim N must be 1");
+            AT_ASSERT(cur_storage_dims[3] == 1, "reshape type RESHAPE_TYPE_CH erase dim W must be 1");
+            break;
+        case 3:
+            res.resize(3);
+            res[0] = cur_storage_dims[1];
+            res[1] = cur_storage_dims[2];
+            res[2] = cur_storage_dims[3];
+            AT_ASSERT(cur_storage_dims[0] == 1, "reshape type RESHAPE_TYPE_CHW erase dim N must be 1");
+            break;
+        case 4:
+            res = cur_storage_dims;
+            return res;
+        default:
+            AT_ERROR("unknown reshape type:");
+    }
+    return res;
+}
+
+FormatShape InferShapeNDToNCHW(c10::IntArrayRef storage_dims, c10::IntArrayRef base_dims) {
+    AT_ASSERT(storage_dims.size() <= 4, "input storage dim not less than 4");
+    AT_ASSERT(base_dims.size() <= 4, "input storage dim not less than 4");
+    return InferShapeLessTo4(base_dims);
+}
+
+FormatShape InferShapeNDToNCDHW(c10::IntArrayRef storage_dims, c10::IntArrayRef base_dims) {
+    AT_ASSERT(storage_dims.size() == 5, "ND [", storage_dims, "] failed to convert to NCDHW");
+    FormatShape res;
+    res.resize(5);
+    res = storage_dims;
+    return res;
+}
+
+FormatShape InferShapeNCDHWToND(c10::IntArrayRef storage_dims, c10::IntArrayRef base_dims) {
+    FormatShape res;
+    res.resize(5);
+    res = storage_dims;
+    AT_ASSERT(res.size() == 5, "input dim num not equal 5 when InferShapeNCDHWToND");
+    return res;
+}
+
+// NCDHW -> NDHWC
+FormatShape InferShapeOfNDHWC(c10::IntArrayRef dims) {
+    if (dims.size() < 5) {
+        AT_ERROR("dim (", dims, ") cannot convert to NDHWC");
+    }
+    FormatShape res;
+    res.resize(5);
+    res[0] = dims[0];
+    res[1] = dims[2];
+    res[2] = dims[3];
+    res[3] = dims[4];
+    res[4] = dims[1];
+    return res;
+}
+
+// NCDHW to NCDHW
+FormatShape InferShapeOfNCDHW(c10::IntArrayRef dims) {
+    if (dims.size() < 5) {
+        AT_ERROR("dim (", dims, ") cannot convert to NCDHW");
+    }
+    FormatShape res;
+    res.resize(5);
+    res[0] = dims[0];
+    res[1] = dims[1];
+    res[2] = dims[2];
+    res[3] = dims[3];
+    res[4] = dims[4];
+    return res;
+}
+
+// NCDHW to NDC1HWC0
+FormatShape InferShapeOfNDC1HWC0(c10::IntArrayRef dims) {
+    if (dims.size() < 5) {
+        AT_ERROR("dim (", dims, ") cannot convert to NDC1HWC0");
+    }
+    FormatShape res;
+    res.resize(6);
+    res[0] = dims[0];
+    res[1] = dims[2];
+    res[2] = (dims[1] + BLOCKSIZE - 1) / BLOCKSIZE;
+    res[3] = dims[3];
+    res[4] = dims[4];
+    res[5] = BLOCKSIZE;
+    return res;
+}
+
+// NCDHW to FZ_3D
+FormatShape InferShapeOfFZ3D(c10::IntArrayRef dims) {
+    if (dims.size() < 5) {
+        AT_ERROR("dim (", dims, ") cannot convert to FZ_3D");
+    }
+
+    int64_t d1 = dims[2];
+    int64_t d2 = (dims[1] + BLOCKSIZE - 1) / BLOCKSIZE;
+    int64_t d3 = dims[3];
+    int64_t d4 = dims[4];
+    int64_t d5 = (dims[0] + BLOCKSIZE - 1) / BLOCKSIZE;
+    int64_t d6 = BLOCKSIZE;
+    int64_t d7 = BLOCKSIZE;
+
+    // The shape of FZ3D is 7D, but the CANN only accept 4D
+    // so we should merge 1st, 2nd, 3rd, 4th dimension.
+    FormatShape res;
+    res.resize(4);
+    res[0] = d1 * d2 * d3 * d4;
+    res[1] = d5;
+    res[2] = d6;
+    res[3] = d7;
+    return res;
+}
+
+FormatShape InferShapeofNCHW(c10::IntArrayRef dims) {
+    if (dims.size() < 5) {
+        return InferShapeLessTo4(dims);
+    } else {
+        return InferShapeofND(dims);
+    }
+}
+
+FormatShape InferShapeofND(c10::IntArrayRef dims) {
+    FormatShape res;
+    res.resize(dims.size());
+    for (int j = 0; j < dims.size(); j++) {
+        res[j] = dims[j];
+    }
+    return res;
+}
+
+}  // namespace
+
+at::Tensor& FormatHelper::unsafe_format_cast(at::Tensor& self, int64_t self_format, int64_t result_format) {
+    torch_npu::NPUStorageDesc& self_desc = torch_npu::NPUBridge::GetNpuStorageImpl(self)->npu_desc_;
+    if (self_format == ACL_FORMAT_ND && result_format == ACL_FORMAT_NC1HWC0) {
+        self_desc.storage_sizes_ = InferShape4To5(self.sizes());
+        self_desc.npu_format_ = ACL_FORMAT_NC1HWC0;
+    } else if (self_format == ACL_FORMAT_NC1HWC0 && result_format == ACL_FORMAT_ND) {
+        self_desc.storage_sizes_ = self_desc.base_sizes_;
+        self_desc.npu_format_ = ACL_FORMAT_ND;
+    }
+    return self;
+}
+
+void copy_d2d_by_memcpy(at::Tensor& dst, const at::Tensor& src, int64_t exceptSize) {
+    c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
+    NPU_CHECK_ERROR(aclrtMemcpyAsync(dst.data_ptr(), dst.nbytes(), src.data_ptr(), src.nbytes(), ACL_MEMCPY_DEVICE_TO_DEVICE, stream));
+}
 
 at::Tensor NpuUtils::format_contiguous_add_copy_optimize(const at::Tensor& src) {
     // case1:tensor src is not contiguous
@@ -270,6 +661,35 @@ at::Tensor CalcuOpUtil::CopyTensorHostToDevice(const at::Tensor& cpu_tensor) {
     return cpuPinMemTensor.to(c10::Device(at_npu::key::NativeDeviceType, deviceIndex), cpuPinMemTensor.scalar_type(), true, true);
 }
 
+c10::SmallVector<int64_t, SHAPE_SIZE> CalcuOpUtil::ConvertIntArrayRefToSmallVector(c10::IntArrayRef intArray) {
+    c10::SmallVector<int64_t, SHAPE_SIZE> intVec;
+    for (const auto i : c10::irange(intArray.size())) {
+        intVec.emplace_back(intArray[i]);
+    }
+
+    return intVec;
+}
+
+using aclCubeMathType = enum : int8_t {
+    KEEP_DTYPE = 0,
+    ALLOW_FP32_DOWN_PRECISION = 1,
+    USE_FP16 = 2,
+    USE_HF32 = 3,
+};
+
+static std::unordered_map<uint8_t, aclCubeMathType> ACL_CUBE_MATH_TYPE_MAP = {
+    {0b00, KEEP_DTYPE}, {0b01, USE_FP16}, {0b10, USE_HF32}, {0b11, ALLOW_FP32_DOWN_PRECISION}};
+
+int8_t CalcuOpUtil::GetCubeMathType(bool allowHf32) {
+    bool allowFp32ToFp16 = native::env::IsAllowFP32ToFP16();
+    uint8_t CubeMathTypeCode = ((uint8_t)allowHf32 << 1) + (uint8_t)allowFp32ToFp16;
+    auto iter = ACL_CUBE_MATH_TYPE_MAP.find(CubeMathTypeCode);
+    if (iter == ACL_CUBE_MATH_TYPE_MAP.end()) {
+        return ALLOW_FP32_DOWN_PRECISION;
+    }
+    return iter->second;
+}
+
 void assert_no_internal_overlap(const at::Tensor& tensor) {
     auto t = tensor.unsafeGetTensorImpl();
     AT_ASSERT(t->layout() == at::kStrided);
@@ -321,6 +741,151 @@ void CalcuOpUtil::CheckMemoryOverLaps(c10::ArrayRef<at::Tensor> inputs, c10::Arr
             assert_no_partial_overlap(outputs[i], inputs[j]);
         }
     }
+}
+
+NPUStatus CalcuOpUtil::AclrtMemcpyAsync(const std::pair<at::Tensor, int64_t>& dst, size_t dst_size, const std::pair<at::Tensor, int64_t>& src, size_t src_size,
+                                        aclrtMemcpyKind kind) {
+    void* dst_ptr = reinterpret_cast<uint8_t*>(dst.first.data_ptr()) + dst.second * dst.first.itemsize();
+    void* src_ptr = reinterpret_cast<uint8_t*>(src.first.data_ptr()) + src.second * src.first.itemsize();
+    c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
+    NPU_CHECK_ERROR(aclrtMemcpyAsync(dst_ptr, dst_size, src_ptr, src_size, kind, stream));
+
+    return "SUCCESS";
+}
+
+aclError CalcuOpUtil::AclrtMemcpyWithModeSwitch(const StorageAndOffsetMemSizePair& dst, size_t dstMax, const StorageAndOffsetMemSizePair& src, size_t count,
+                                                aclrtMemcpyKind kind) {
+    void* dst_ptr = static_cast<void*>(static_cast<uint8_t*>(dst.first->data()) + dst.second);
+    void* src_ptr = static_cast<void*>(static_cast<uint8_t*>(src.first->data()) + src.second);
+    return AclrtMemcpyParamCheck(dst_ptr, dstMax, const_cast<void*>(src_ptr), count, kind);
+}
+
+aclError CalcuOpUtil::AclrtMemcpyWithModeSwitch(const StorageAndOffsetMemSizePair& dst, size_t dstMax, const void* src, size_t count, aclrtMemcpyKind kind) {
+    void* dst_ptr = static_cast<void*>(static_cast<uint8_t*>(dst.first->data()) + dst.second);
+    return AclrtMemcpyParamCheck(dst_ptr, dstMax, src, count, kind);
+}
+
+aclError CalcuOpUtil::AclrtMemcpyWithModeSwitch(void* dst, size_t dstMax, const StorageAndOffsetMemSizePair& src, size_t count, aclrtMemcpyKind kind) {
+    void* src_ptr = static_cast<void*>(static_cast<uint8_t*>(src.first->data()) + src.second);
+    return AclrtMemcpyParamCheck(dst, dstMax, const_cast<void*>(src_ptr), count, kind);
+}
+
+aclError CalcuOpUtil::LaunchAsyncCopyTaskWithModeSwitch(const at::Tensor& dst, size_t dstMax, const at::Tensor& src, size_t count, aclrtMemcpyKind kind) {
+    c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
+    NPU_CHECK_ERROR(aclrtMemcpyAsync(dst.data_ptr(), dst.nbytes(), src.data_ptr(), src.nbytes(), kind, stream));
+}
+
+OptimizationCases TransContiguous::optCasesDefault = {};
+OptimizationCases TransContiguous::optCasesAnyFormat = {"reshape", "slice"};
+
+ContiguousTensorDesc TransContiguous::GetTensorDescInfo(const at::Tensor& src, const OptimizationCases& opt_cases) {
+    auto src_base_info = torch_npu::NPUBridge::GetNpuStorageImpl(src)->get_npu_desc();
+    c10::SmallVector<int64_t, MAX_DIM> src_size_inferred;
+    c10::SmallVector<int64_t, MAX_DIM> src_stride_inferred;
+    c10::SmallVector<int64_t, MAX_DIM> src_storage_size_inferred = src_base_info.storage_sizes_;
+    if (src.dim() == 0) {
+        src_size_inferred = {1};
+        src_stride_inferred = {1};
+        if (src_storage_size_inferred.size() == 0) {
+            src_storage_size_inferred = {1};
+        }
+    } else {
+        src_size_inferred = CalcuOpUtil::ConvertIntArrayRefToSmallVector(src.sizes());
+        src_stride_inferred = CalcuOpUtil::ConvertIntArrayRefToSmallVector(src.strides());
+    }
+    ContiguousTensorDesc src_desc = {src.is_contiguous(),
+                                     src_size_inferred,
+                                     src_stride_inferred,
+                                     src.storage_offset(),
+                                     src_base_info.base_sizes_,
+                                     src_base_info.base_strides_,
+                                     src_storage_size_inferred,
+                                     src_base_info.base_offset_,
+                                     src_base_info.npu_format_,
+                                     opt_cases};
+    if (src_desc.opt_cases_.empty()) {
+        src_desc.find_match_optimization_cases();
+    }
+    return src_desc;
+}
+
+bool TransContiguous::CheckClone(const at::Tensor& src, at::Tensor& self) {
+    // self tensor may not be temporary constructed empty tensor from src, so:
+    // 1. contiguous storage is needed:storage_offset and numels eq
+    // 2. full memory copy: size match between src and self
+    if (StorageDescHelper::OffsetAreMatch(&self) && self.is_contiguous() && src.sizes().equals(self.sizes()) &&
+        self.sizes().equals(torch_npu::NPUBridge::GetNpuStorageImpl(self)->get_npu_desc().base_sizes_)) {
+        return true;
+    }
+    return false;
+}
+
+bool TransContiguous::can_optimize_(ContiguousTensorDesc& tensor_desc) {
+    for (auto opt_case : tensor_desc.opt_cases_) {
+        // bool res = register_opt::CopyOptRegister::GetInstance()->CanOptimize(
+        //    opt_case, tensor_desc);
+        bool res = false;
+        if (res) {
+            // refresh patterns to only keep optimized pattern
+            tensor_desc.opt_cases_.clear();
+            tensor_desc.opt_cases_.emplace_back(opt_case);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool TransContiguous::CanOptimize(ContiguousTensorDesc& tensor_desc) { return can_optimize_(tensor_desc); }
+
+bool TransContiguous::CanOptimize(const at::Tensor& tensor, const OptimizationCases& opt_cases) {
+    ContiguousTensorDesc tensor_desc = GetTensorDescInfo(tensor, opt_cases);
+    return can_optimize_(tensor_desc);
+}
+
+bool TransContiguous::contiguous_optimize_with_anyformat_(at::Tensor& self, const at::Tensor& src, ContiguousTensorDesc& src_desc) {
+    if (!CheckClone(src, self)) {
+        return false;
+    }
+    for (auto& opt_case : src_desc.opt_cases_) {
+        // bool res = register_opt::CopyOptRegister::GetInstance()->Run(opt_case, self,
+        //                                                             src, src_desc);
+        INTERFACE_NOT_IMPL;
+        bool res = false;
+        if (res) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool TransContiguous::ContiguousOptimizeWithAnyFormat(at::Tensor& self, const at::Tensor& src, const OptimizationCases& opt_cases) {
+    ContiguousTensorDesc src_desc = GetTensorDescInfo(src, opt_cases);
+    return contiguous_optimize_with_anyformat_(self, src, src_desc);
+}
+
+c10::optional<at::Tensor> TransContiguous::ContiguousOptimizeWithAnyFormat(const at::Tensor& src, const OptimizationCases& opt_cases) {
+    TORCH_CHECK(src.device().type() == at_npu::key::NativeDeviceType,
+                "Expected all tensors to be on the same device. "
+                "Expected NPU tensor, please check whether the input tensor device is correct.");
+    auto self = OpPreparation::ApplyTensorWithFormat(src.sizes(), src.options(), torch_npu::NPUBridge::GetNpuStorageImpl(src)->get_npu_desc().npu_format_);
+    ContiguousTensorDesc src_desc = GetTensorDescInfo(src, opt_cases);
+    if (contiguous_optimize_with_anyformat_(self, src, src_desc)) {
+        return self;
+    }
+    return c10::nullopt;
+}
+
+bool TransContiguous::ContiguousOptimizeWithBaseFormat(at::Tensor& self, const at::Tensor& src, const OptimizationCases& opt_cases, bool OpenCombined) {
+    TORCH_CHECK(FormatHelper::IsBaseFormatType(src),
+                "ContiguousOptimizeWithBaseFormat func requires Input Tensor "
+                "with base format!");
+    // In non-specific cases, classify the cases and simplify judgement.
+    ContiguousTensorDesc src_desc = GetTensorDescInfo(src, opt_cases);
+    // if (OpenCombined && c10_npu::option::OptionsManager::CheckCombinedOptimizerEnable()) {
+    if (OpenCombined) {
+        src_desc.add_optimization_case("combined");
+    }
+    return contiguous_optimize_with_anyformat_(self, src, src_desc);
 }
 
 // OpPreparation part
@@ -491,6 +1056,243 @@ void OpPreparation::CheckOut(const std::initializer_list<at::Tensor>& input, at:
         TORCH_CHECK(!is_read_write, "can not cast format when output is input");
         NPUNativeFunctions::npu_format_cast_(output, format);
     }
+}
+
+aclFormat InferFormat::GuessFormatWhenContiguous(const at::Tensor& tensor) {
+    auto desc = torch_npu::NPUBridge::GetNpuStorageImpl(tensor)->npu_desc_;
+    // fix: NCDHW -> default format
+    if ((desc.origin_format_ == ACL_FORMAT_NCDHW)) {
+        if ((tensor.sizes().size() != desc.base_sizes_.size()) && (tensor.sizes().size() <= 4)) {
+            return ACL_FORMAT_NCHW;
+        }
+    }
+    return desc.origin_format_;
+}
+
+// NOTE: this method should cooperate with shape infer.
+std::tuple<aclFormat, aclFormat> InferFormat::GuessFormatUnit(const c10::IntArrayRef& size, aclFormat format) {
+    aclFormat baseFormat = FormatHelper::GetBaseFormat(format);
+    if ((baseFormat == ACL_FORMAT_NCDHW) && (size.size() > 4)) {
+        return std::make_tuple(ACL_FORMAT_NCDHW, format);
+    } else if (format == ACL_FORMAT_ND && size.size() == 4) {
+        // 4 dim tensor must be NCHW, reflush base format
+        return std::make_tuple(ACL_FORMAT_NCHW, ACL_FORMAT_NCHW);
+    } else {
+        if (baseFormat == ACL_FORMAT_NCDHW) {
+            // scence: Dimensionality reduction: NCDHW->NCHW, for example: max/min
+            // NOTE(NPU Dimensionality reduction)
+            if (size.size() == 4) {
+                return std::make_tuple(ACL_FORMAT_NCHW, ACL_FORMAT_NCHW);
+            }
+        }
+    }
+    return std::make_tuple(baseFormat, format);
+}
+
+aclFormat InferFormat::GuessBaseFormat(const c10::IntArrayRef& size) {
+    if (size.size() == 5) {
+        return ACL_FORMAT_NCDHW;
+    } else if (size.size() == 4) {
+        return ACL_FORMAT_NCHW;
+    }
+    return ACL_FORMAT_ND;
+}
+
+aclFormat InferFormat::GuessStorageFormat(const c10::IntArrayRef& size, aclFormat format) {
+    if (format == ACL_FORMAT_FRACTAL_NZ && size.size() < 2) {
+        // scalar scene and rank=1 scene do not support NZ
+        return ACL_FORMAT_ND;
+    }
+
+    int64_t dim = static_cast<int64_t>(size.size());
+    aclFormat baseFormat = FormatHelper::GetBaseFormat(format);
+    bool isBaseFormat = (baseFormat == format);
+    // if base format and tensor size is not match, we should reflush them
+    if ((isBaseFormat) && (baseFormat == ACL_FORMAT_NCDHW)) {
+        // scence1: Dimensionality reduction: NCDHW->NCHW, for example: max/min
+        // scence2: view, as_strided
+        // NOTE(NPU Dimensionality reduction)
+        if (dim == 4) {
+            return ACL_FORMAT_NCHW;
+        } else if (dim == 5) {
+            return ACL_FORMAT_NCDHW;
+        } else {
+            return ACL_FORMAT_ND;
+        }
+    } else if (format == ACL_FORMAT_NCHW && dim != 4) {
+        return ACL_FORMAT_ND;
+    } else if ((dim == 0) || ((dim == 1) && (size[0] == 1) && (baseFormat == ACL_FORMAT_ND))) {
+        // operators treat tensor with dimensions of 0 or shape = [1] as scalar,
+        // so these tensor will stay ND format except NCHW tensor whose origin shape
+        // can be expand into four dimensions.
+        return ACL_FORMAT_ND;
+    }
+    return format;
+}
+
+FormatShape InferFormat::GuessStorageSizeWhenConvertFormat(const at::Tensor& tensor) {
+    auto format = FormatHelper::GetFormat(tensor);
+    auto size = torch_npu::NPUBridge::GetNpuStorageImpl(tensor)->npu_desc_.base_sizes_;
+    // TransData: ND->NZ, ND size < 2, we can expand dimension to 2, the storage have no effect.
+    // now, only ND->NZ and NZ->ND will call transdata， so we no need to check other format.
+    if ((size.size() < 2) && format == ACL_FORMAT_ND) {
+        do {
+            size.emplace_back(1);
+        } while (size.size() < 2);
+    }
+    return FormatHelper::GetStorageSizes(format, size);
+}
+
+bool InferFormat::IsDefiniteTensorWhenMetaDataChanges(const at::Tensor& tensor, const c10::IntArrayRef& size) {
+    auto baseformat = FormatHelper::GetBaseFormat(tensor);
+    if (baseformat == ACL_FORMAT_NCHW && size.size() >= 5) {
+        return true;
+    }
+    if (baseformat == ACL_FORMAT_NCDHW && size.size() != 5) {
+        return true;
+    }
+    return false;
+}
+
+bool StorageDescHelper::MetaDataAreMatch(const at::Tensor* tensor) {
+    auto& desc = torch_npu::NPUBridge::GetNpuStorageImplDesc(*tensor);
+    return IsSameSize(desc.base_sizes_, tensor->sizes()) && IsSameSize(desc.base_strides_, tensor->strides());
+}
+
+// copy related
+bool StorageDescHelper::IsSameDesc(const torch_npu::NPUStorageDesc& a, const torch_npu::NPUStorageDesc& b) {
+    if ((a.origin_format_ != b.origin_format_) || (a.npu_format_ != b.npu_format_)) {
+        if ((!FormatHelper::IsBaseFormatType(a.npu_format_)) || (!FormatHelper::IsBaseFormatType(b.npu_format_))) {
+            return false;
+        }
+    }
+    return (a.base_sizes_ == b.base_sizes_) && (a.base_strides_ == b.base_strides_) && (a.storage_sizes_ == b.storage_sizes_);
+}
+
+bool StorageDescHelper::IsSameDesc(const at::Tensor& a, const at::Tensor& b) {
+    const auto& descA = torch_npu::NPUBridge::GetNpuStorageImplDesc(a);
+    const auto& descB = torch_npu::NPUBridge::GetNpuStorageImplDesc(b);
+    return IsSameDesc(descA, descB);
+}
+
+bool StorageDescHelper::IsSameSize(const c10::SmallVector<int64_t, 5>& a, const c10::IntArrayRef& b) {
+    if (a.size() == b.size()) {
+        return std::equal(a.begin(), a.end(), b.begin());
+    }
+    return false;
+}
+
+void StorageDescHelper::UpdateDesc(torch_npu::NPUStorageDesc& npuDesc, const c10::IntArrayRef& new_data_sizes, const c10::IntArrayRef& new_shape_sizes) {
+    int64_t new_data_numel = c10::multiply_integers(new_data_sizes);
+    int64_t new_shape_numel = c10::multiply_integers(new_shape_sizes);
+    const c10::IntArrayRef& new_size = new_data_numel > new_shape_numel ? new_data_sizes : new_shape_sizes;
+
+    npuDesc.base_sizes_ = new_size;
+
+    // 计算连续场景下size对应的stride值
+    int64_t dim_ = static_cast<int64_t>(new_size.size());
+    c10::SmallVector<int64_t, 5> new_stride(dim_);
+    if (dim_ > 0) {
+        int64_t last_idx = dim_ - 1;
+        new_stride[last_idx] = 1;
+        for (auto i = last_idx - 1; i >= 0; --i) {
+            new_stride[i] = new_stride[i + 1] * std::max<int64_t>(new_size[i + 1], 1);
+        }
+    }
+    npuDesc.base_strides_ = new_stride;
+
+    // 更新物理内存信息
+    npuDesc.storage_sizes_ = FormatHelper::GetStorageSizes(npuDesc);
+    if (new_data_numel > new_shape_numel) {
+        // Refresh format to base format only when flattening storage data
+        npuDesc.storage_sizes_ = new_size;
+        npuDesc.npu_format_ = InferFormat::GuessStorageFormat(npuDesc.storage_sizes_, ACL_FORMAT_ND);
+    }
+}
+
+FormatShape StorageDescHelper::ComputeStrideFromShape(const FormatShape& shape) {
+    FormatShape compute_stride = shape;
+    compute_stride[shape.size() - 1] = 1;
+    for (auto i = shape.size() - 1; i > 0; i--) {
+        compute_stride[i - 1] = shape[i] * compute_stride[i];
+    }
+    return compute_stride;
+}
+
+int64_t StorageDescHelper::GetMemorySize(const torch_npu::NPUStorageDesc& desc) {
+    const auto& physical_size = FormatHelper::GetStorageSizes(desc);
+    return c10::multiply_integers(physical_size);
+}
+
+int64_t StorageDescHelper::GetMemorySize(const at::Tensor& dst) {
+    auto desc = torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_;
+    return GetMemorySize(desc);
+}
+
+int64_t StorageDescHelper::GetMemorySize(const c10::IntArrayRef& size, aclFormat format) {
+    const auto& physical_size = FormatHelper::GetStorageSizes(format, size);
+    return c10::multiply_integers(physical_size);
+}
+
+int64_t StorageDescHelper::GetValidMemorySize(const at::Tensor& tensor) {
+    int64_t real_bytes = 0;
+    for (int64_t i = tensor.dim() - 1; i >= 0; i--) {
+        real_bytes += (tensor.size(i) - 1) * tensor.stride(i);
+    }
+    return real_bytes + 1;
+}
+
+void StorageDescHelper::SetDesc(at::Tensor& dst) { torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_ = SetDesc(dst.dtype()); }
+
+void StorageDescHelper::SetDesc(at::Tensor& dst, const c10::IntArrayRef& size, const c10::IntArrayRef& strides) {
+    torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_ = SetDesc(dst.dtype(), size, strides);
+}
+
+void StorageDescHelper::SetDesc(at::Tensor& dst, const c10::IntArrayRef& size, const c10::IntArrayRef& strides, aclFormat format) {
+    torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_ = SetDesc(dst.dtype(), size, strides, format);
+}
+
+void StorageDescHelper::CopyDesc(at::Tensor& dst, const at::Tensor& src) { CopyDesc(dst, src.storage()); }
+
+void StorageDescHelper::CopyDesc(at::Tensor& dst, const c10::Storage& src) {
+    CopyDesc(dst, torch_npu::NPUBridge::GetNpuStorageImpl(src.unsafeGetStorageImpl())->npu_desc_);
+}
+
+void StorageDescHelper::CopyDesc(const at::Tensor& dst, const torch_npu::NPUStorageDesc& src_desc) {
+    auto& dstDesc = torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_;
+    dstDesc = src_desc;
+}
+
+void StorageDescHelper::ReflushDescBySelf(const at::Tensor& src) {
+    auto& desc = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_;
+    desc.base_sizes_ = src.sizes();
+    desc.storage_sizes_ = src.sizes();
+    desc.base_strides_ = src.strides();
+}
+
+torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dtype) { return SetDesc(dtype, {0}, {}); }
+
+torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides) {
+    return SetDesc(dtype, size, strides, InferFormat::GuessBaseFormat(size));
+}
+
+torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides,
+                                                     aclFormat format) {
+    struct torch_npu::NPUStorageDesc npu_desc;
+    npu_desc.data_type_ = dtype;
+    npu_desc.base_sizes_ = size;
+    npu_desc.base_strides_ = strides;
+    // guess ori format and npu format unit by size and dst format
+    // eg: size: [2,3,4,5] format: nd
+    // we will return [NCHW, NCHW] because 4 dim tensor must be nchw,
+    // then the tensor used to be the input of conv2d will not make mistake
+    aclFormat baseFormat;
+    aclFormat npuFormat;
+    std::tie(baseFormat, npuFormat) = InferFormat::GuessFormatUnit(size, format);
+    npu_desc.storage_sizes_ = FormatHelper::GetStorageSizes(npuFormat, size);
+    npu_desc.origin_format_ = baseFormat;
+    npu_desc.npu_format_ = npuFormat;
+    return npu_desc;
 }
 
 class OpAttrMaker {
@@ -1259,7 +2061,7 @@ OpCommand& OpCommand::Input() {
 
 OpCommand& OpCommand::AddTensorInput(at::Tensor& tensor, at::ScalarType forceScaleType, const string& descName, const string& realData) {
     if (enableDumpArgs()) {
-        std::cout << aclCmd->GetName() << ":descName:" << descName << ",input:" << tensor.sizes() << ", " << tensor.options() << " " << realData << std::endl;
+        std::cout << aclCmd->GetName() << ":descName:" << descName << ",input:" << impl::aten::dumpArgs(tensor) << " " << realData << std::endl;
     }
     std::tuple<aclTensorDesc*, aclDataBuffer*> res;
     if (commonType.has_value() && commonType.value() != tensor.scalar_type()) {
@@ -1352,7 +2154,7 @@ bool ScalarIsInLimits(const c10::Scalar& scalar, at::ScalarType type) {
 // Scalar Input, we will do h2d in launch kernel
 OpCommand& OpCommand::Input(const c10::Scalar& input, const at::ScalarType type, CompileType compileType) {
     if (enableDumpArgs()) {
-        std::cout << aclCmd->GetName() << ":input:" << input << " " << type << " " << compileType << std::endl;
+        std::cout << aclCmd->GetName() << ":input:" << impl::aten::dumpArgs(input) << " " << type << " " << compileType << std::endl;
     }
     at::ScalarType scalar_type = type;
     if (commonType.has_value()) {
@@ -1368,8 +2170,13 @@ OpCommand& OpCommand::Input(const c10::Scalar& input, const at::ScalarType type,
 
 // Tensor Input which no need contiguous
 OpCommand& OpCommand::InputWithoutContiguous(const at::Tensor& input, const string& descName, const string& realData) {
-    INTERFACE_NOT_IMPL
-    return *this;
+    if (enableDumpArgs()) {
+        std::cout << aclCmd->GetName() << ":InputWithoutContiguous input:" << impl::aten::dumpArgs(input) << descName << realData << std::endl;
+    }
+    if (input.storage_offset() != 0) {
+        TORCH_WARN_ONCE("[Check][offset] Check input storage_offset[%ld] = 0 failed, result is untrustworthy", input.storage_offset());
+    }
+    return AddTensorInput(const_cast<at::Tensor&>(input));
 }
 
 // Output Tensor
@@ -1538,6 +2345,18 @@ NPUStorageImpl::NPUStorageImpl(use_byte_size_t use_byte_size, size_t size_bytes,
 
 void NPUStorageImpl::release_resources() { StorageImpl::release_resources(); }
 
+NPUStorageImpl* NPUBridge::GetNpuStorageImpl(c10::StorageImpl* storageImpl) { return static_cast<NPUStorageImpl*>(storageImpl); }
+
+NPUStorageImpl* NPUBridge::GetNpuStorageImpl(c10::Storage&& storage) { return static_cast<NPUStorageImpl*>(storage.unsafeGetStorageImpl()); }
+
+NPUStorageImpl* NPUBridge::GetNpuStorageImpl(const at::Tensor& tensor) { return static_cast<NPUStorageImpl*>(tensor.storage().unsafeGetStorageImpl()); }
+
+NPUStorageDesc& NPUBridge::GetNpuStorageImplDesc(const at::Tensor& tensor) {
+    return static_cast<NPUStorageImpl*>(tensor.storage().unsafeGetStorageImpl())->npu_desc_;
+}
+
+NPUTensorImpl* NPUBridge::GetNpuTensorImpl(const at::Tensor& tensor) { return static_cast<NPUTensorImpl*>(tensor.unsafeGetTensorImpl()); }
+
 }  // namespace torch_npu
 
 namespace impl {
@@ -1594,6 +2413,7 @@ at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef s
         tensor.unsafeGetTensorImpl()->set_sizes_contiguous(sizes);
     }
 
+    at_npu::native::StorageDescHelper::SetDesc(tensor, sizes, tensor.strides());
     return tensor;
 }
 
@@ -1687,7 +2507,7 @@ void unsetCurCtx() {
 namespace {
 
 at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
-    return at_npu::native::NPUNativeFunctions::copy_memory_(self, src, non_blocking);
+    return at_npu::native::NPUNativeFunctions::copy_(self, src, non_blocking);
 }
 
 at::Tensor wrapper__view(const at::Tensor& self, at::IntArrayRef size) { return impl::aten::view(self, size); }
