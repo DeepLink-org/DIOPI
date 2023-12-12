@@ -3202,18 +3202,23 @@ diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     auto atWeight = impl::aten::buildATen(weight);
     auto atSaveMean = impl::aten::buildATen(mean);
     auto atSaveVar = impl::aten::buildATen(rstd);
-    auto atGradInput = impl::aten::buildATen(grad_input);
-    auto atGradWeight = impl::aten::buildATen(grad_weight);
-    auto atGradBias = impl::aten::buildATen(grad_bias);
     const int64_t N = atInput.size(0);
     const int64_t C = atInput.size(1);
     const auto input_shape = atInput.sizes();
     const int64_t HxW = c10::multiply_integers(input_shape.cbegin() + 2, input_shape.cend());
-    auto grad_input_mask = std::array<bool, 3>{true, grad_weight != nullptr, grad_bias != nullptr};
-
-    at::native_group_norm_backward_out(
-        atGradInput, atGradWeight, atGradBias, atGradOutput, atInput, atSaveMean, atSaveVar, atWeight, N, C, HxW, num_groups, grad_input_mask);
-
+    if (grad_weight && grad_bias) {
+        auto atGradInput = impl::aten::buildATen(grad_input);
+        auto atGradWeight = impl::aten::buildATen(grad_weight);
+        auto atGradBias = impl::aten::buildATen(grad_bias);
+        at::native_group_norm_backward_out(
+            atGradInput, atGradWeight, atGradBias, atGradOutput, atInput, atSaveMean, atSaveVar, atWeight, N, C, HxW, num_groups, {true, true, true});
+    } else {
+        auto atOuts = at::native_group_norm_backward(
+            atGradOutput, atInput, atSaveMean, atSaveVar, atWeight, N, C, HxW, num_groups, {true, grad_weight != nullptr, grad_bias != nullptr});
+        impl::aten::updateATen2Tensor(ctx, std::get<0>(atOuts), grad_input);
+        impl::aten::updateATen2Tensor(ctx, std::get<1>(atOuts), grad_weight);
+        impl::aten::updateATen2Tensor(ctx, std::get<2>(atOuts), grad_bias);
+    }
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
