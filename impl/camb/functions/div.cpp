@@ -32,46 +32,46 @@ DIOPI_API diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 
     switch (roundingMode) {
         case RoundModeFloor:
-            DIOPI_CALLCNNL(cnnlGetFloorDivWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outDesc.get(), &workspaceSize));
+            DIOPI_CALL_CNNL(cnnlGetFloorDivWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outDesc.get(), &workspaceSize));
             workspace = requiresBuffer(ctx, workspaceSize).data();
-            DIOPI_CALLCNNL(cnnlFloorDiv_v2(handle,
-                                           preferFloor,
-                                           inputDesc.get(),
-                                           inputTensor.data(),
-                                           otherDesc.get(),
-                                           otherTensor.data(),
-                                           outDesc.get(),
-                                           outTensorTemp.data(),
-                                           workspace,
-                                           workspaceSize));
+            DIOPI_CALL_CNNL(cnnlFloorDiv_v2(handle,
+                                            preferFloor,
+                                            inputDesc.get(),
+                                            inputTensor.data(),
+                                            otherDesc.get(),
+                                            otherTensor.data(),
+                                            outDesc.get(),
+                                            outTensorTemp.data(),
+                                            workspace,
+                                            workspaceSize));
             break;
         case RoundModeTrunc:
-            DIOPI_CALLCNNL(cnnlGetFloorDivTruncWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outDesc.get(), &workspaceSize));
+            DIOPI_CALL_CNNL(cnnlGetFloorDivTruncWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outDesc.get(), &workspaceSize));
             workspace = requiresBuffer(ctx, workspaceSize).data();
-            DIOPI_CALLCNNL(cnnlFloorDivTrunc(handle,
-                                             prefer,
-                                             inputDesc.get(),
-                                             inputTensor.data(),
-                                             otherDesc.get(),
-                                             otherTensor.data(),
-                                             outDesc.get(),
-                                             outTensorTemp.data(),
-                                             workspace,
-                                             workspaceSize));
+            DIOPI_CALL_CNNL(cnnlFloorDivTrunc(handle,
+                                              prefer,
+                                              inputDesc.get(),
+                                              inputTensor.data(),
+                                              otherDesc.get(),
+                                              otherTensor.data(),
+                                              outDesc.get(),
+                                              outTensorTemp.data(),
+                                              workspace,
+                                              workspaceSize));
             break;
         case RoundModeNone:
-            DIOPI_CALLCNNL(cnnlGetDivWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outDesc.get(), &workspaceSize));
+            DIOPI_CALL_CNNL(cnnlGetDivWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outDesc.get(), &workspaceSize));
             workspace = requiresBuffer(ctx, workspaceSize).data();
-            DIOPI_CALLCNNL(cnnlDiv_v2(handle,
-                                      prefer,
-                                      inputDesc.get(),
-                                      inputTensor.data(),
-                                      otherDesc.get(),
-                                      otherTensor.data(),
-                                      workspace,
-                                      workspaceSize,
-                                      outDesc.get(),
-                                      outTensorTemp.data()));
+            DIOPI_CALL_CNNL(cnnlDiv_v2(handle,
+                                       prefer,
+                                       inputDesc.get(),
+                                       inputTensor.data(),
+                                       otherDesc.get(),
+                                       otherTensor.data(),
+                                       workspace,
+                                       workspaceSize,
+                                       outDesc.get(),
+                                       outTensorTemp.data()));
 
             break;
         default:

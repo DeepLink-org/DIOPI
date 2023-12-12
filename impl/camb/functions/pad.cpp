@@ -108,7 +108,7 @@ DIOPI_API diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t ou
             }
         }
         if (allPadsIsZero) {
-            DIOPI_CALLCNNL(cnnlCopy(handle, inputDesc.get(), inputTensorTmp.data(), outDesc.get(), outTensorTmp.data()));
+            DIOPI_CALL_CNNL(cnnlCopy(handle, inputDesc.get(), inputTensorTmp.data(), outDesc.get(), outTensorTmp.data()));
         }
 
         auto inputSizes = inputTensor.shape();
@@ -133,7 +133,7 @@ DIOPI_API diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t ou
         }
 
         void* valuePtr = getTypedValuePtr(inputTensorTmp.dtype(), value);
-        DIOPI_CALLCNNL(
+        DIOPI_CALL_CNNL(
             cnnlPad(handle, inputDesc.get(), inputTensorTmp.data(), newPad, (value == nullptr) ? nullptr : valuePtr, outDesc.get(), outTensorTmp.data()));
     } else if (padMode == "reflect") {
         std::vector<int> inputDim = getDim(inputTensorTmp);
@@ -153,7 +153,7 @@ DIOPI_API diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t ou
         } else {
             DIOPI_CHECK(false, "Only supports 2D padding for reflection padding mode now.");
         }
-        DIOPI_CALLCNNL(cnnlReflectionPad2d(handle, inputDesc.get(), inputTensorTmp.data(), padTmp, outDesc.get(), outTensorTmp.data()));
+        DIOPI_CALL_CNNL(cnnlReflectionPad2d(handle, inputDesc.get(), inputTensorTmp.data(), padTmp, outDesc.get(), outTensorTmp.data()));
     } else if (padMode == "replicate") {
         std::vector<int> inputDim = getDim(inputTensorTmp);
         std::vector<int> outDim = getDim(outTensorTmp);
@@ -172,7 +172,7 @@ DIOPI_API diopiError_t diopiPad(diopiContextHandle_t ctx, diopiTensorHandle_t ou
         } else {
             DIOPI_CHECK(false, "Only supports 2D padding for replicate padding mode now.");
         }
-        DIOPI_CALLCNNL(cnnlReplicationPad2d(handle, inputDesc.get(), inputTensorTmp.data(), padTmp, outDesc.get(), outTensorTmp.data()));
+        DIOPI_CALL_CNNL(cnnlReplicationPad2d(handle, inputDesc.get(), inputTensorTmp.data(), padTmp, outDesc.get(), outTensorTmp.data()));
     } else if (padMode == "circular") {
         inputDesc.set(inputTensorTmp, CNNL_LAYOUT_ARRAY);
         outDesc.set(outTensorTmp, CNNL_LAYOUT_ARRAY);

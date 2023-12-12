@@ -100,7 +100,7 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
         }
     }
 
-    DIOPI_CALLCNNL(cnnlFill_v3(handle, CNNL_POINTER_MODE_HOST, valuePtr, inputTensorDesc.get(), inputTensorTemp.data()));
+    DIOPI_CALL_CNNL(cnnlFill_v3(handle, CNNL_POINTER_MODE_HOST, valuePtr, inputTensorDesc.get(), inputTensorTemp.data()));
 
     if (inputTensorTemp.dtype() != inputTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, inputTensor, inputTensorTemp));

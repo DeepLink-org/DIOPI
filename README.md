@@ -9,9 +9,9 @@ DIOPI-设备无关算子接口（Device-Independent Operator Interface, DIOPI）
 基于这套契约训练框架和人工智能芯片可以独立开发，并将下层芯片适配的工作复用到不同的训练框架适配中去，可降低芯片+框架的适配成本，保障算子实现正确性。
 
 其主要的核心功能如下：
-1. **提供200+个标准算子接口，包含LLaMa大模型算子接口**。涵盖了大模型、分类、检测、分割及姿态估计等多个领域深度学习模型所需训练算子。
+1. **提供300+个标准算子接口，包含LLaMa大模型算子接口**。涵盖了大模型、分类、检测、分割及姿态估计等多个领域深度学习模型所需训练算子。
 2. **提供统一的标准算子接口，接入7款硬件芯片**。是训练框架和硬件芯片的“桥梁”，降低训练框架和硬件芯片之间的适配成本，创造更好的国产训练生态。
-3. **提供标准测试套件，支持5000+个常见算子测例**，为硬件芯片实现的算子库提供调试验证功能。
+3. **提供标准测试套件，支持11000+个常见算子测例**，为硬件芯片实现的算子库提供调试验证功能。
 
 
 ## 结构说明
@@ -75,30 +75,39 @@ DIOPI主要包含以下几个组件：
 ## 校验算子
 1. 将数据拷贝到芯片机器上，执行以下命令验证算子：
     ```
-    python main.py --mode run_test
+    python main.py --mode gen_case  # 生成pytest测例
+    python main.py --mode run_test  # 执行测试
     ```
-    如需指定模型：
+    如需指定模型，以resnet50为例：
     ```
-    python main.py --mode run_test --model_name xxx
+    python main.py --mode gen_case --model_name resnet50 --case_output_dir gencases/resnet50_case
+    python main.py --mode run_test --test_cases_path gencases/resnet50_case
     ```
     如需指定某个算子， 以add为例：
     ```
-    python main.py --mode run_test --fname add
+    python main.py --mode gen_case --fname add
+    python main.py --mode run_test --test_cases_path gencases/diopi_case
     ```
     如需过滤不支持的数据类型以及部分测试使用nhwc格式张量(如跳过float64以及int64测例)：
     ```
-    python main.py --mode run_test --filter_dtype float64 int64 --nhwc
+    python main.py --mode gen_case --nhwc
+    python main.py --mode run_test --filter_dtype float64 int64
     ```
     可以查看[diopi_test Readme](https://github.com/DeepLink-org/DIOPI/tree/main/diopi_test#readme) 了解更详细的设置
 
 
 2. 验证结果分析
+    
+    ```
+    collecting ... collected 1 items
 
-### 测例通过
-测例通过的输出形式如下：
-```
-2022-09-29 16:40:40,550 - DIOPI-Test - INFO - Run diopi_functions.relu succeed
-```
+    gencases/diopi_case/test_diopi_add_add.py::TestMdiopiSaddFadd::test_add_0 PASSED [100%]
+    ```
+    如需输出HTML格式报告：
+    ```
+    pip install pytest-testreport
+    python main.py --mode run_test --html_report
+    ```
 
 ## Learn More
 组件介绍

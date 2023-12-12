@@ -57,26 +57,26 @@ diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
     }
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetMaskedWorkspaceSize(
+    DIOPI_CALL_CNNL(cnnlGetMaskedWorkspaceSize(
         handle, CNNL_MASKED_FILL, inputDesc.get(), maskDesc.get(), valueCast ? valueCastDesc.get() : valueDesc.get(), outDesc.get(), &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlMasked_v3(handle,
-                                 CNNL_MASKED_FILL,
-                                 inputDesc.get(),
-                                 inputTensorTmp.data(),
-                                 maskDesc.get(),
-                                 maskTensorTmp.data(),
-                                 valueCast ? valueCastDesc.get() : valueDesc.get(),
-                                 valueCast ? valueCastTensor.data() : valueTensorTmp.data(),
-                                 workspace,
-                                 workspaceSize,
-                                 outDesc.get(),
-                                 outTensorTmp.data(),
-                                 nullptr));
+    DIOPI_CALL_CNNL(cnnlMasked_v3(handle,
+                                  CNNL_MASKED_FILL,
+                                  inputDesc.get(),
+                                  inputTensorTmp.data(),
+                                  maskDesc.get(),
+                                  maskTensorTmp.data(),
+                                  valueCast ? valueCastDesc.get() : valueDesc.get(),
+                                  valueCast ? valueCastTensor.data() : valueTensorTmp.data(),
+                                  workspace,
+                                  workspaceSize,
+                                  outDesc.get(),
+                                  outTensorTmp.data(),
+                                  nullptr));
 
     DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
     return diopiSuccess;

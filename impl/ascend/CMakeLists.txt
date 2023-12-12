@@ -19,8 +19,7 @@ else()
     message(FATAL_ERROR "No ascend-toolkit found.")
 endif()
 
-
-file(GLOB_RECURSE IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions/*.cpp common/*.cpp)
+file(GLOB_RECURSE IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions/*.cpp functions_mmcv/*.cpp common/*.cpp)
 list(APPEND IMPL_SRC ascend_tensor.cpp)
 
 # adaptor

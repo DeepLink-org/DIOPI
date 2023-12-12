@@ -128,6 +128,9 @@ core.*
 # project saved file
 *.pth
 *.cfg
+diopi_test/python/gencases
+diopi_test/python/cache
+diopi_test/python/reports
 
 # report
 *.csv

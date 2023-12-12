@@ -33,7 +33,7 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
  * @brief Apply Root Mean Square (RMS) Normalization to the input tensor.
  * @param[in] ctx The diopi context.
  * @param[out] out the output tensor containing the normalized values. type = [float32, float16, float64].
- * @param[in] inv_rms The tensor containing the inverse of root mean square. type = [float32, float16, float64].
+ * @param[out] inv_rms The tensor containing the inverse of root mean square. type = [float32, float16, float64].
  * @param[in] input The input tensor to be normalized. type = [float32, float16, float64].
  * @param[in] normalized_shape The shape of the partial input which is needed to be normalized. type = [int32, int64].
  * @param[in] weight The gain parameter used to re-scale the standardized summed inputs type = [float32, float16, float64].
@@ -49,7 +49,7 @@ DIOPI_API diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_
  * @param[out] grad_input The gradient of the input tensor. type = [float32, float16, float64].
  * @param[out] grad_weight The gradient of the weight parameter. type = [float32, float16, float64].
  * @param[out] grad_bias The gradient of the bias parameter. type = [float32, float16, float64].
- * @param[in] grgrad_output The gradient of the output from the forward pass. type = [float32, float16, float64].
+ * @param[in] grad_output The gradient of the output from the forward pass. type = [float32, float16, float64].
  * @param[in] input The input tensor used in the forward pass. type = [float32, float16, float64].
  * @param[in] weight The weight parameter used in the forward pass. type = [float32, float16, float64].
  * @param[in] bias The bias used in the forward pass. type = [float32, float16, float64].
@@ -58,7 +58,7 @@ DIOPI_API diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_
  * @param[in] eps A small value used in the computation to avoid division by zero. type = [float64].
  */
 DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
-                                            diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grgrad_output, diopiConstTensorHandle_t input,
+                                            diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
                                             diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiConstTensorHandle_t inv_rms,
                                             diopiSize_t normalized_shape, double eps);
 
@@ -66,8 +66,14 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
  * @brief Compute the forward pass for MultiheadAttention.
  * @param[in] ctx The diopi context.
  * @param[in] q Query tensor. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [float32, float16, float64].
+ *        - For the implementation of flash-attention in CUDA, it is necessary to pad for 'q' to ensure that the 'head_dim' of the output from 'q' is
+ * divisible by 8. Therefore, it is required to perform in-place modifications on 'q' by setting its data type to 'diopiTensorHandle_t'.
  * @param[in] k Key tensor. shape = [batch_size, k_seq_len, head_num, head_dim]. type = [float32, float16, float64].
+ *        - For the implementation of flash-attention in CUDA, it is necessary to pad for 'k' to ensure that the 'head_dim' of the output from 'k' is
+ * divisible by 8. Therefore, it is required to perform in-place modifications on 'k' by setting its data type to 'diopiTensorHandle_t'.
  * @param[in] v Value tensor. shape = [batch_size, v_seq_len, head_num, head_dim]. type = [float32, float16, float64].
+ *        - For the implementation of flash-attention in CUDA, it is necessary to pad for 'v' to ensure that the 'head_dim' of the output from 'v' is
+ * divisible by 8. Therefore, it is required to perform in-place modifications on 'v' by setting its data type to 'diopiTensorHandle_t'.
  * @param[in] dropout_p Dropout probability. type = [float32, float16, float64].
  * @param[in] is_causal Flag to determine if the attention should be causal, masking future tokens. type = [bool]
  * @param[in] return_debug_mask Flag indicating if the attention debug mask should be returned. type = [bool].
@@ -80,9 +86,9 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
  * @param[out] debug_attn_mask Debugging tensor for the attention mask (returned if return_debug_mask is true). shape = [batch_size, num_heads, q_seq_len,
  * k_seq_len]. type = [bool].
  */
-DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                               double dropout_p, bool is_causal, bool return_debug_mask, double scale, diopiTensorHandle_t out,
-                                               diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask);
+DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiTensorHandle_t q, diopiTensorHandle_t k, diopiTensorHandle_t v, double dropout_p,
+                                               bool is_causal, bool return_debug_mask, double scale, diopiTensorHandle_t out, diopiTensorHandle_t softmax_lse,
+                                               diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask);
 
 /**
  * @brief Compute the forward pass for MultiheadAttention.
@@ -111,8 +117,14 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx,
  * @brief Compute the forward pass for MultiheadAttentionVarLen.
  * @param[in] ctx The diopi context.
  * @param[in] q Query tensor. shape = [q_nums, head_num, head_dim]. type = [float32, float16, float64].
+ *        - For the implementation of flash-attention in CUDA, it is necessary to pad for 'q' to ensure that the 'head_dim' of the output from 'q' is
+ * divisible by 8. Therefore, it is required to perform in-place modifications on 'q' by setting its data type to 'diopiTensorHandle_t'.
  * @param[in] k Key tensor. shape = [k_nums, head_num, head_dim]. type = [float32, float16, float64].
+ *        - For the implementation of flash-attention in CUDA, it is necessary to pad for 'k' to ensure that the 'head_dim' of the output from 'k' is
+ * divisible by 8. Therefore, it is required to perform in-place modifications on 'k' by setting its data type to 'diopiTensorHandle_t'.
  * @param[in] v Value tensor. shape = [v_nums, head_num, head_dim]. type = [float32, float16, float64].
+ *        - For the implementation of flash-attention in CUDA, it is necessary to pad for 'v' to ensure that the 'head_dim' of the output from 'v' is
+ * divisible by 8. Therefore, it is required to perform in-place modifications on 'v' by setting its data type to 'diopiTensorHandle_t'.
  * @param[in] cum_seq_q Cumulative sequence length for the query. shape = [batch_size+1, ]. type = [int64, int32].
  * @param[in] cum_seq_k Cumulative sequence length for the key. shape = [batch_size+1, ]. type = [int64, int32].
  * @param[in] max_q Maximum sequence length for the query. type = [int64, int32].
@@ -127,11 +139,10 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx,
  * @param[out] debug_attn_mask Debugging tensor for the attention mask (returned if return_debug_mask is true). shape = [batch_size, num_heads, max_q, max_k].
  * type = [bool].
  */
-DIOPI_API diopiError_t diopiMultiHeadAttentionVarLen(diopiContextHandle_t ctx, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                                     diopiConstTensorHandle_t v, diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k,
-                                                     int64_t max_q, int64_t max_k, double dropout_p, bool is_causal, bool return_debug_mask, double scale,
-                                                     diopiTensorHandle_t out, diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen,
-                                                     diopiTensorHandle_t debug_attn_mask);
+DIOPI_API diopiError_t diopiMultiHeadAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t q, diopiTensorHandle_t k, diopiTensorHandle_t v,
+                                                     diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k, int64_t max_q, int64_t max_k,
+                                                     double dropout_p, bool is_causal, bool return_debug_mask, double scale, diopiTensorHandle_t out,
+                                                     diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask);
 
 /**
  * @brief Compute the forward pass for MultiheadAttentionVarLen.

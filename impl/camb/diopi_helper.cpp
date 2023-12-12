@@ -9,6 +9,7 @@
 namespace impl {
 namespace camb {
 
+/********************************* utils begin ****************************/
 void getFuncName(const char* expr, char* name) {
     for (int i = 0; i < strlen(expr); ++i) {
         if (expr[i] == '(') {
@@ -19,6 +20,8 @@ void getFuncName(const char* expr, char* name) {
     }
     return;
 }
+
+/********************************* utils end****************************/
 
 // DiopiDataType
 
@@ -173,6 +176,12 @@ bool DiopiTensor::isContiguous(diopiMemoryFormat_t format) const {
     if (!defined()) {
         return true;
     }
+
+    // Treat a tensors with any dimension of zero as contiguous
+    if (0 == numel()) {
+        return true;
+    }
+
     int64_t stride = 1;
     int64_t dim = this->dim();
     auto strides = this->stride();

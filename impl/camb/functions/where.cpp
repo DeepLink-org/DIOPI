@@ -32,21 +32,21 @@ diopiError_t diopiWhere(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     CnnlTensorDesc outDesc(outTensorTemp, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetSelectV2WorkspaceSize(handle, condDesc.get(), inputDesc.get(), otherDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetSelectV2WorkspaceSize(handle, condDesc.get(), inputDesc.get(), otherDesc.get(), &workspaceSize));
     void* workspace = nullptr;
     workspace = requiresBuffer(ctx, workspaceSize).data();
 
-    DIOPI_CALLCNNL(cnnlSelectV2(handle,
-                                condDesc.get(),
-                                condTensor.data(),
-                                inputDesc.get(),
-                                inputTensor.data(),
-                                otherDesc.get(),
-                                otherTensor.data(),
-                                workspace,
-                                workspaceSize,
-                                outDesc.get(),
-                                outTensorTemp.data()));
+    DIOPI_CALL_CNNL(cnnlSelectV2(handle,
+                                 condDesc.get(),
+                                 condTensor.data(),
+                                 inputDesc.get(),
+                                 inputTensor.data(),
+                                 otherDesc.get(),
+                                 otherTensor.data(),
+                                 workspace,
+                                 workspaceSize,
+                                 outDesc.get(),
+                                 outTensorTemp.data()));
 
     if (outTensorTemp.dtype() != outTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTemp));

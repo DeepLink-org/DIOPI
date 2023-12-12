@@ -52,6 +52,8 @@ typedef enum {
     diopi_device = 1,
 } diopiDevice_t;
 
+typedef int8_t diopiDeviceIndex_t;
+
 // In order to meet the requirements of common dtype inference in diopi_test, all members in this enumeration should be assigned values in the order of
 // increasing dtype precision
 typedef enum {
@@ -125,6 +127,10 @@ extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorDevice(diopiConst
 
 extern DIOPI_RT_API diopiError_t diopiGetTensorNumel(diopiConstTensorHandle_t th, int64_t* numel);
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorElemSize(diopiConstTensorHandle_t th, int64_t* itemsize);
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorStoragePtr(diopiConstTensorHandle_t th, void** pStoragePtr);
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorStorageOffset(diopiConstTensorHandle_t th, int64_t* pOffset);
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorStorageNbytes(diopiConstTensorHandle_t th, size_t* pNbytes);
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorDeviceIndex(diopiConstTensorHandle_t th, diopiDeviceIndex_t* pDevIndex);
 
 /**
  * operations to require Stream and Tensor instances from a Context handle

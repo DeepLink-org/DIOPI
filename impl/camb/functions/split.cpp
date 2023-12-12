@@ -30,14 +30,14 @@ diopiError_t diopiSplitWithSizes(diopiContextHandle_t ctx, diopiTensorHandle_t* 
     }
 
     size_t worksapceSize;
-    DIOPI_CALLCNNL(cnnlGetSplitWorkspaceSize(handle, numOuts, &worksapceSize));
+    DIOPI_CALL_CNNL(cnnlGetSplitWorkspaceSize(handle, numOuts, &worksapceSize));
 
     void* worksapce = nullptr;
     if (worksapceSize != 0) {
         worksapce = requiresBuffer(ctx, worksapceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlSplit(handle, numOuts, dim, inputDesc.get(), inputTensor.data(), worksapce, worksapceSize, descPtrs.data(), dataPtrs.data()));
+    DIOPI_CALL_CNNL(cnnlSplit(handle, numOuts, dim, inputDesc.get(), inputTensor.data(), worksapce, worksapceSize, descPtrs.data(), dataPtrs.data()));
     return diopiSuccess;
 }
 }  // namespace camb

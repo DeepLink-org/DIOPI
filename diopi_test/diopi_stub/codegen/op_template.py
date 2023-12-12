@@ -15,6 +15,7 @@ class OpTemplate(object):
 #include "litert.hpp"
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
+#include <diopi/functions_ext.h>
 
 namespace py = pybind11;
 

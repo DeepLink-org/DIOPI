@@ -29,7 +29,7 @@ diopiError_t diopiLayerNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     CnnlTensorDesc saveMeanDesc(saveMeanTensor, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize(0);
-    DIOPI_CALLCNNL(cnnlGetLayerNormOpWorkspaceSize(handle, normalizedShape.len, inputDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetLayerNormOpWorkspaceSize(handle, normalizedShape.len, inputDesc.get(), &workspaceSize));
     void *workspace = nullptr;
     if (workspaceSize > 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
@@ -53,21 +53,21 @@ diopiError_t diopiLayerNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     }
 
     int axis = inputTensor.dim() - normalizedShape.len;
-    DIOPI_CALLCNNL(cnnlLayerNormForward(handle,
-                                        inputDesc.get(),
-                                        inputTensor.data(),
-                                        axis,
-                                        weightBiasDescTmp,
-                                        weightPtr,
-                                        biasPtr,
-                                        eps,
-                                        workspace,
-                                        workspaceSize,
-                                        outDesc.get(),
-                                        outTensor.data(),
-                                        saveMeanDesc.get(),
-                                        saveMeanTensor.data(),
-                                        saveInvstdTensor.data()));
+    DIOPI_CALL_CNNL(cnnlLayerNormForward(handle,
+                                         inputDesc.get(),
+                                         inputTensor.data(),
+                                         axis,
+                                         weightBiasDescTmp,
+                                         weightPtr,
+                                         biasPtr,
+                                         eps,
+                                         workspace,
+                                         workspaceSize,
+                                         outDesc.get(),
+                                         outTensor.data(),
+                                         saveMeanDesc.get(),
+                                         saveMeanTensor.data(),
+                                         saveInvstdTensor.data()));
 
     if (outDtype != diopi_dtype_float32 && outDtype != diopi_dtype_float16) {
         DiopiTensor outTensorTmp(out);
@@ -145,29 +145,29 @@ diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     int axis = inputTensor.dim() - normalizedShape.len;
 
     size_t workspaceSize(0);
-    DIOPI_CALLCNNL(cnnlGetLayerNormBackwardWorkspaceSize(handle, inputDesc.get(), axis, &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetLayerNormBackwardWorkspaceSize(handle, inputDesc.get(), axis, &workspaceSize));
     void *workspace = nullptr;
     if (workspaceSize > 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlLayerNormBackward_v2(handle,
-                                            inputDesc.get(),
-                                            inputTensor.data(),
-                                            axis,
-                                            gradOutputDesc.get(),
-                                            gradOutputTensor.data(),
-                                            weightBiasDescTmp,
-                                            weightPtr,
-                                            meanDesc.get(),
-                                            meanTensor.data(),
-                                            rstdTensor.data(),
-                                            workspace,
-                                            workspaceSize,
-                                            gradInputDesc.get(),
-                                            gradInputTensor.data(),
-                                            gradWeightPtr,
-                                            gradBiasPtr));
+    DIOPI_CALL_CNNL(cnnlLayerNormBackward_v2(handle,
+                                             inputDesc.get(),
+                                             inputTensor.data(),
+                                             axis,
+                                             gradOutputDesc.get(),
+                                             gradOutputTensor.data(),
+                                             weightBiasDescTmp,
+                                             weightPtr,
+                                             meanDesc.get(),
+                                             meanTensor.data(),
+                                             rstdTensor.data(),
+                                             workspace,
+                                             workspaceSize,
+                                             gradInputDesc.get(),
+                                             gradInputTensor.data(),
+                                             gradWeightPtr,
+                                             gradBiasPtr));
     if (outDtype != diopi_dtype_float16 && outDtype != diopi_dtype_float32) {
         DiopiTensor gradInputTensorTmp(gradInput);
         DIOPI_CALL(dataTypeCast(ctx, gradInputTensorTmp, gradInputTensor));

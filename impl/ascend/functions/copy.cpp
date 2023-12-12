@@ -15,24 +15,18 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     if (0 == numel) {
         return diopiSuccess;
     }
+
+    AscendTensor inputAt(src), outAt(dest);
     if (src != dest) {
-        diopiDtype_t dstType, srcType;
-        diopiGetTensorDtype(dest, &dstType);
-        diopiGetTensorDtype(src, &srcType);
-        if (dstType == srcType) {
-            diopiSize_t dstSize, srcSize, dstStride, srcStride;
-            diopiGetTensorShape(dest, &dstSize);
-            diopiGetTensorShape(src, &srcSize);
-            diopiGetTensorStride(dest, &dstStride);
-            diopiGetTensorStride(src, &srcStride);
+        if (inputAt.dtype() == outAt.dtype() && 1 != numel) {
             AclOpRunner<8, 1>("ViewCopy", ctx)
                 .addInputWithoutContiguous(dest)
-                .addConstInput(dstSize)
-                .addConstInput(dstStride)
+                .addConstInput(outAt.shape())
+                .addConstInput(outAt.stride())
                 .addConstInput(0, diopi_dtype_int64)
                 .addInputWithoutContiguous(src)
-                .addConstInput(srcSize)
-                .addConstInput(srcStride)
+                .addConstInput(inputAt.shape())
+                .addConstInput(inputAt.stride())
                 .addConstInput(0, diopi_dtype_int64)
                 .addOutputWithoutContiguous(dest)
                 .run();

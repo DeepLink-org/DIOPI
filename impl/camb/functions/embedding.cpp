@@ -41,16 +41,16 @@ diopiError_t diopiEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     CnnlTensorDesc weightDesc(weightTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc indicesDesc(indicesTensor, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CALLCNNL(cnnlEmbeddingForward_v2(handle,
-                                           weightDesc.get(),
-                                           weightTensor.data(),
-                                           indicesDesc.get(),
-                                           static_cast<const int *>(indicesTensor.data()),
-                                           paddingIdxCasted,
-                                           nullptr,
-                                           nullptr,
-                                           outDesc.get(),
-                                           outTensorTmp.data()));
+    DIOPI_CALL_CNNL(cnnlEmbeddingForward_v2(handle,
+                                            weightDesc.get(),
+                                            weightTensor.data(),
+                                            indicesDesc.get(),
+                                            static_cast<const int *>(indicesTensor.data()),
+                                            paddingIdxCasted,
+                                            nullptr,
+                                            nullptr,
+                                            outDesc.get(),
+                                            outTensorTmp.data()));
     if (outTensorTmp.dtype() != outTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
     }
@@ -97,24 +97,24 @@ diopiError_t diopiEmbeddingBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 
     size_t workspaceSize = 0;
 
-    DIOPI_CALLCNNL(cnnlGetEmbeddingBackwardWorkspaceSize(handle, gradDesc.get(), outDesc.get(), scaleGradByfreq, &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetEmbeddingBackwardWorkspaceSize(handle, gradDesc.get(), outDesc.get(), scaleGradByfreq, &workspaceSize));
 
     void *workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlEmbeddingBackward(handle,
-                                         paddingIdxCasted,
-                                         scaleGradByfreq,
-                                         indicesDesc.get(),
-                                         indicesTensor.data(),
-                                         gradDesc.get(),
-                                         gradTensor.data(),
-                                         workspace,
-                                         workspaceSize,
-                                         outDesc.get(),
-                                         outTensorTmp.data()));
+    DIOPI_CALL_CNNL(cnnlEmbeddingBackward(handle,
+                                          paddingIdxCasted,
+                                          scaleGradByfreq,
+                                          indicesDesc.get(),
+                                          indicesTensor.data(),
+                                          gradDesc.get(),
+                                          gradTensor.data(),
+                                          workspace,
+                                          workspaceSize,
+                                          outDesc.get(),
+                                          outTensorTmp.data()));
     if (outTensorTmp.dtype() != outTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
     }

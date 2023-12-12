@@ -35,19 +35,19 @@ static diopiError_t transposeInternal(diopiContextHandle_t ctx, DiopiTensor outT
     CnnlResourceGuard<cnnlTransposeDescriptor_t, cnnlCreateTransposeDescriptor, cnnlDestroyTransposeDescriptor> cnnlTransposeDesc;
     cnnlTransposeDescriptor_t transposeDesc = cnnlTransposeDesc.get();
     std::vector<int> perms = getPerm(input, dim0, dim1);
-    DIOPI_CALLCNNL(cnnlSetTransposeDescriptor(transposeDesc, perms.size(), perms.data()));
+    DIOPI_CALL_CNNL(cnnlSetTransposeDescriptor(transposeDesc, perms.size(), perms.data()));
 
     CnnlTensorDesc inputDesc(input, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetTransposeWorkspaceSize(handle, inputDesc.get(), transposeDesc, &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetTransposeWorkspaceSize(handle, inputDesc.get(), transposeDesc, &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlTranspose_v2(handle, transposeDesc, inputDesc.get(), input.data(), outDesc.get(), outTensor.data(), workspace, workspaceSize));
+    DIOPI_CALL_CNNL(cnnlTranspose_v2(handle, transposeDesc, inputDesc.get(), input.data(), outDesc.get(), outTensor.data(), workspace, workspaceSize));
     return diopiSuccess;
 }
 
@@ -89,20 +89,20 @@ diopiError_t diopiCol2Im(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     cnnlTensorDescriptor_t wDesc = weightDesc.get();
     std::vector<int> weightSizes = {1, 1, kernelSizeHeight, kernelSizeWidth};
     std::vector<int> weightStrides = {1, 1, 1, 1};
-    DIOPI_CALLCNNL(cnnlSetTensorDescriptorEx(wDesc, CNNL_LAYOUT_NCHW, dtype, weightSizes.size(), weightSizes.data(), weightStrides.data()));
+    DIOPI_CALL_CNNL(cnnlSetTensorDescriptorEx(wDesc, CNNL_LAYOUT_NCHW, dtype, weightSizes.size(), weightSizes.data(), weightStrides.data()));
 
     CnnlResourceGuard<cnnlConvolutionDescriptor_t, cnnlCreateConvolutionDescriptor, cnnlDestroyConvolutionDescriptor> cnnlConvDesc;
     cnnlConvolutionDescriptor_t convDesc = cnnlConvDesc.get();
-    DIOPI_CALLCNNL(cnnlSetConvolutionDescriptor(convDesc, 4, vPadding.data(), vStride.data(), vDilation.data(), 1, dtype));
+    DIOPI_CALL_CNNL(cnnlSetConvolutionDescriptor(convDesc, 4, vPadding.data(), vStride.data(), vDilation.data(), 1, dtype));
 
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetCol2ImWorkspaceSize(handle, inputColDesc.get(), wDesc, outDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetCol2ImWorkspaceSize(handle, inputColDesc.get(), wDesc, outDesc.get(), &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlCol2Im(handle, inputColDesc.get(), inputCol.data(), wDesc, convDesc, workspace, workspaceSize, outDesc.get(), outTensor.data()));
+    DIOPI_CALL_CNNL(cnnlCol2Im(handle, inputColDesc.get(), inputCol.data(), wDesc, convDesc, workspace, workspaceSize, outDesc.get(), outTensor.data()));
 
     return diopiSuccess;
 }

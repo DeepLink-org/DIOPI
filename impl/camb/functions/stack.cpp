@@ -23,17 +23,17 @@ diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
         inputsData[i] = tempTensor.data();
         inputsDesc[i].set(tempTensor, CNNL_LAYOUT_ARRAY);
         inputsDescTmp[i] = inputsDesc[i].get();
-        DIOPI_CALLCNNL(cnnlSetTensorDescriptor(inputsDescTmp[i], CNNL_LAYOUT_ARRAY, dtype, catDimNb, catShape.data()));
+        DIOPI_CALL_CNNL(cnnlSetTensorDescriptor(inputsDescTmp[i], CNNL_LAYOUT_ARRAY, dtype, catDimNb, catShape.data()));
     }
     size_t workspaceSize(0);
-    DIOPI_CALLCNNL(cnnlGetConcatWorkspaceSize(handle, numTensors, &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetConcatWorkspaceSize(handle, numTensors, &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
     DiopiTensor outTensor(out);
     CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlConcat(handle, numTensors, dim, inputsDescTmp.data(), inputsData.data(), workspace, workspaceSize, outDesc.get(), outTensor.data()));
+    DIOPI_CALL_CNNL(cnnlConcat(handle, numTensors, dim, inputsDescTmp.data(), inputsData.data(), workspace, workspaceSize, outDesc.get(), outTensor.data()));
     return diopiSuccess;
 }
 }  // namespace camb

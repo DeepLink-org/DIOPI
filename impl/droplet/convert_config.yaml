@@ -1,0 +1,27 @@
+- common_config:
+    dtype: (float64)->float32
+    layout: NCHW
+
+- diopiUpsampleNearest:
+    layout: NHWC, NDHWC
+
+- diopiUpsampleNearestBackward:
+    layout: NHWC, NDHWC
+
+- diopiUpsampleLinear:
+    layout: NLC, NHWC, NDHWC
+
+- diopiUpsampleLinearBackward:
+    layout: NLC, NHWC, NDHWC
+
+- diopiConvolution2d:
+    layout: NHWC
+
+- diopiConvolution2dBackward:
+    layout: NHWC
+
+- diopiConvTranspose2d:
+    layout: NHWC
+
+- diopiConvTranspose2dBackward:
+    layout: NHWC

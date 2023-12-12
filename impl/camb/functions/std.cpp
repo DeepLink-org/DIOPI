@@ -77,28 +77,28 @@ DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 
     CnnlResourceGuard<cnnlStdVarMeanDescriptor_t, cnnlCreateStdVarMeanDescriptor, cnnlDestroyStdVarMeanDescriptor> stdVarMeanObj;
     cnnlStdVarMeanDescriptor_t stdVarMeanDesc = stdVarMeanObj.get();
-    DIOPI_CALLCNNL(cnnlSetStdVarMeanDescriptor(stdVarMeanDesc, CNNL_STD, axisNum, axis, unbiased));
+    DIOPI_CALL_CNNL(cnnlSetStdVarMeanDescriptor(stdVarMeanDesc, CNNL_STD, axisNum, axis, unbiased));
     delete[] axis;
 
     size_t workspaceSize = 0;
     void *workspace = nullptr;
-    DIOPI_CALLCNNL(cnnlGetStdVarMeanWorkspaceSize(handle, stdVarMeanDesc, inputDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetStdVarMeanWorkspaceSize(handle, stdVarMeanDesc, inputDesc.get(), &workspaceSize));
     if (workspaceSize > 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlStdVarMean(handle,
-                                  stdVarMeanDesc,
-                                  inputDesc.get(),
-                                  inputTensor.data(),
-                                  workspace,
-                                  workspaceSize,
-                                  outDesc.get(),
-                                  outTensor.data(),
-                                  nullptr,
-                                  nullptr,
-                                  nullptr,
-                                  nullptr));
+    DIOPI_CALL_CNNL(cnnlStdVarMean(handle,
+                                   stdVarMeanDesc,
+                                   inputDesc.get(),
+                                   inputTensor.data(),
+                                   workspace,
+                                   workspaceSize,
+                                   outDesc.get(),
+                                   outTensor.data(),
+                                   nullptr,
+                                   nullptr,
+                                   nullptr,
+                                   nullptr));
     if (outTensor.dtype() != outDtype) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outDtype));
     }

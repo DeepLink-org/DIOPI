@@ -25,13 +25,13 @@ DIOPI_API diopiError_t diopiPolar(diopiContextHandle_t ctx, diopiTensorHandle_t 
     CnnlTensorDesc angleDesc(angleTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
     size_t workspaceSize = 0;
-    DIOPI_CALLCNNL(cnnlGetPolarWorkspaceSize(handle, absDesc.get(), angleDesc.get(), outDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetPolarWorkspaceSize(handle, absDesc.get(), angleDesc.get(), outDesc.get(), &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(
+    DIOPI_CALL_CNNL(
         cnnlPolar(handle, absDesc.get(), absTensor.data(), angleDesc.get(), angleTensor.data(), outDesc.get(), outTensor.data(), workspace, workspaceSize));
     return diopiSuccess;
 }

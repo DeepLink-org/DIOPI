@@ -21,6 +21,7 @@ new_content.append('/**\n\
  */\n\
 #include <diopi/functions.h>\n\
 #include <diopi/functions_mmcv.h>\n\
+#include <diopi/functions_ext.h>\n\
 #include <stdio.h>\n\
 #include <dlfcn.h>\n\
 \n\
@@ -129,6 +130,10 @@ if __name__ == '__main__':
         content_mmcv = f.readlines()
     print("generate for functions_mmcv.h")
     gen_wrapper_func(content_mmcv)
+    with open(os.path.join(_cur_dir, '../proto/include/diopi/functions_ext.h'), 'r') as f:
+        content_ext = f.readlines()
+    print("generate for functions_ext.h")
+    gen_wrapper_func(content_ext)
     os.system("rm -f wrap_func.cpp")
     print("generate wrap_func.cpp")
     with open('wrap_func.cpp', 'w') as f:

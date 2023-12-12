@@ -8,14 +8,22 @@
 
 namespace impl {
 namespace ascend {
-
 diopiError_t diopiThreshold(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* threshold,
                             const diopiScalar_t* value) {
-    diopiTensorHandle_t thresholdTensor;
-    diopiTensorHandle_t valueTensor;
-    makeTensorFromScalar(ctx, threshold, &thresholdTensor);
-    makeTensorFromScalar(ctx, value, &valueTensor);
-    AclOpRunner<3, 1>("ThresholdV2", ctx).addInput(input).addConstInput(thresholdTensor).addConstInput(valueTensor).addOutput(out).run();
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(input, &dtype);
+    float inputThreshold = getValue<float>(threshold);
+    float inputValue = getValue<float>(value);
+
+    if (dtype == diopi_dtype_uint8) {
+        // Converting a float type directly to uint is undefined behavior, so it is necessary to first convert it to an int type.
+        inputThreshold = static_cast<float>(static_cast<uint8_t>(static_cast<int>(inputThreshold)));
+        inputValue = static_cast<float>(static_cast<uint8_t>(static_cast<int>(inputValue)));
+    } else if (isIntegralType(dtype)) {
+        inputThreshold = static_cast<float>(getValue<int>(threshold));
+        inputValue = static_cast<float>(getValue<int>(value));
+    }
+    AclOpRunner<1, 1>("ThresholdV2D", ctx).addInput(input).setAttr("threshold", inputThreshold).setAttr("value", inputValue).addOutput(out).run();
     return diopiSuccess;
 }
 

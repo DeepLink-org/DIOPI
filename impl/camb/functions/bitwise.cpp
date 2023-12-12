@@ -42,13 +42,13 @@ diopiError_t bitwiseCommon(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     }
 
     size_t workspaceSize(0);
-    DIOPI_CALLCNNL(cnnlGetBitComputeWorkspaceSize(handle, input1Desc.get(), input2DescTmp, outDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetBitComputeWorkspaceSize(handle, input1Desc.get(), input2DescTmp, outDesc.get(), &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
 
-    DIOPI_CALLCNNL(cnnlBitCompute_v2(
+    DIOPI_CALL_CNNL(cnnlBitCompute_v2(
         handle, optype, input1Desc.get(), input1Tensor.data(), input2DescTmp, input2Ptr, outDesc.get(), out32Tensor.data(), workspace, workspaceSize));
     if (outTensor.dtype() != out32Tensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, out32Tensor));

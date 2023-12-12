@@ -196,6 +196,7 @@ public:
                 delete it;
             }
             setTensors_.clear();
+            device_synchronize_stream(stream_);
         }
     }
 };

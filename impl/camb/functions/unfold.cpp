@@ -55,7 +55,7 @@ DIOPI_API diopiError_t diopiUnfold(diopiContextHandle_t ctx, diopiTensorHandle_t
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
 
-    DIOPI_CHECKCNNL(cnnlUnfold(
+    DIOPI_CHECK_CNNL(cnnlUnfold(
         handle, static_cast<int>(dim), static_cast<int>(size), static_cast<int>(step), inputDesc.get(), inputTensor.data(), outDesc.get(), outTensor.data()));
     return diopiSuccess;
 }
@@ -79,7 +79,7 @@ DIOPI_API diopiError_t diopiUnfoldBackward(diopiContextHandle_t ctx, diopiTensor
     CnnlTensorDesc gradInputDesc(gradInputTensorTmp, CNNL_LAYOUT_ARRAY);
 
     uint32_t workspaceSize = 0;
-    DIOPI_CHECKCNNL(cnnlGetAsStridedBackwardWorkspaceSize(handle, gradInputDesc.get(), &workspaceSize));
+    DIOPI_CHECK_CNNL(cnnlGetAsStridedBackwardWorkspaceSize(handle, gradInputDesc.get(), &workspaceSize));
     void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
@@ -87,7 +87,7 @@ DIOPI_API diopiError_t diopiUnfoldBackward(diopiContextHandle_t ctx, diopiTensor
 
     auto strides = getStride(dim, inputSizes.len, step, inputSizes.data);
 
-    DIOPI_CHECKCNNL(cnnlAsStridedBackward(
+    DIOPI_CHECK_CNNL(cnnlAsStridedBackward(
         handle, gradOutputDesc.get(), gradOutputTensorTmp.data(), gradInputDesc.get(), gradInputTensorTmp.data(), strides.data(), 0, workspace, workspaceSize));
     DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTensorTmp));
 

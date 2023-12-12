@@ -41,7 +41,7 @@ diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
         descOut.set(trOutTmp, CNNL_LAYOUT_ARRAY);
     }
 
-    DIOPI_CALLCNNL(cnnlExpand(handle, descInput.get(), trInput.data(), descOut.get(), trOutTmp.data()));
+    DIOPI_CALL_CNNL(cnnlExpand(handle, descInput.get(), trInput.data(), descOut.get(), trOutTmp.data()));
     if (trOutTmp.dtype() != trOut.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, trOut, trOutTmp));
     }

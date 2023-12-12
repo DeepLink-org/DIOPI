@@ -22,6 +22,7 @@ bool isComplexDtype(diopiDtype_t dtype) { return (dtype == diopi_dtype_complex32
 
 inline bool canCastByInt32(uint64_t castType) {
     // special convert (cnnl doesn't support)
+    constexpr uint64_t boolInt8 = MAKE_KEY(diopi_dtype_bool, diopi_dtype_int8);
     constexpr uint64_t boolInt64 = MAKE_KEY(diopi_dtype_bool, diopi_dtype_int64);
     constexpr uint64_t int16Int64 = MAKE_KEY(diopi_dtype_int16, diopi_dtype_int64);
     constexpr uint64_t uint8Bool = MAKE_KEY(diopi_dtype_uint8, diopi_dtype_bool);
@@ -32,7 +33,7 @@ inline bool canCastByInt32(uint64_t castType) {
     constexpr uint64_t int64Int8 = MAKE_KEY(diopi_dtype_int64, diopi_dtype_int8);
 
     return boolInt64 == castType || int16Int64 == castType || uint8Bool == castType || int16Bool == castType || int64Bool == castType || int8Bool == castType ||
-           int8Int64 == castType || int64Int8 == castType;
+           int8Int64 == castType || int64Int8 == castType || boolInt8 == castType;
 }
 
 inline bool canCastByFloat32(uint64_t castType) {
@@ -116,7 +117,7 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const Dio
         CnnlTensorDesc srcTmpDesc(srcTmp, CNNL_LAYOUT_ARRAY);
         CnnlTensorDesc destTmpDesc(destTmp, CNNL_LAYOUT_ARRAY);
         cnnlCastDataType_t castType = it->second;
-        DIOPI_CALLCNNL(cnnlCastDataType(handle, srcTmpDesc.get(), srcTmp.data(), castType, destTmpDesc.get(), destTmp.data()));
+        DIOPI_CALL_CNNL(cnnlCastDataType(handle, srcTmpDesc.get(), srcTmp.data(), castType, destTmpDesc.get(), destTmp.data()));
     } else {
         DIOPI_CALL(dataTypeCastTwice(ctx, dest, src));
     }

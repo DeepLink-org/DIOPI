@@ -17,13 +17,13 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
         int32_t val = static_cast<int32_t>(scalar->ival);
         out = requiresTensor(ctx, sSize, diopi_dtype_int32);
         CnnlTensorDesc descOut(out, CNNL_LAYOUT_ARRAY);
-        DIOPI_CALLCNNL(cnnlFill_v3(handle, CNNL_POINTER_MODE_HOST, &val, descOut.get(), out.data()));
+        DIOPI_CALL_CNNL(cnnlFill_v3(handle, CNNL_POINTER_MODE_HOST, &val, descOut.get(), out.data()));
         return diopiSuccess;
     } else if (scalar->stype == diopi_dtype_float64) {
         float val = static_cast<float>(scalar->fval);
         out = requiresTensor(ctx, sSize, diopi_dtype_float32);
         CnnlTensorDesc descOut(out, CNNL_LAYOUT_ARRAY);
-        DIOPI_CALLCNNL(cnnlFill_v3(handle, CNNL_POINTER_MODE_HOST, &val, descOut.get(), out.data()));
+        DIOPI_CALL_CNNL(cnnlFill_v3(handle, CNNL_POINTER_MODE_HOST, &val, descOut.get(), out.data()));
         return diopiSuccess;
     } else {
         setLastErrorString("%s", "salar dtype is not float64 or int64");

@@ -19,7 +19,7 @@ DIOPI_API diopiError_t diopiBernoulli(diopiContextHandle_t ctx, diopiTensorHandl
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, inputTensor.dtype()));
 
     cnnlRandGenerator_t cnnlGenerator = nullptr;
-    DIOPI_CALLCNNL(cnnlRandCreateGenerator(&cnnlGenerator, CNNL_RAND_RNG_MTGP32));
+    DIOPI_CALL_CNNL(cnnlRandCreateGenerator(&cnnlGenerator, CNNL_RAND_RNG_MTGP32));
 
     diopiTensorHandle_t stateHandle = nullptr;
     DIOPI_CALL(diopiGeneratorGetState(ctx, generator, &stateHandle));
@@ -28,17 +28,17 @@ DIOPI_API diopiError_t diopiBernoulli(diopiContextHandle_t ctx, diopiTensorHandl
 
     if (outputTensor.dtype() != inputTensor.dtype()) {
         DiopiTensor outTemp = requiresTensor(ctx, inputTensor.shape(), inputTensor.dtype());
-        DIOPI_CALLCNNL(cnnlRandGenerateUniform(handle, cnnlGenerator, dtype, statePtr, inputTensor.numel(), 0, 1, outTemp.data()));
+        DIOPI_CALL_CNNL(cnnlRandGenerateUniform(handle, cnnlGenerator, dtype, statePtr, inputTensor.numel(), 0, 1, outTemp.data()));
         DIOPI_CALL(diopiGeneratorSetState(generator, stateHandle));
         DIOPI_CALL(diopiLtInp(ctx, diopiTensorHandle_t(outTemp), input));
         DIOPI_CALL(dataTypeCast(ctx, outputTensor, outTemp));
     } else {
-        DIOPI_CALLCNNL(cnnlRandGenerateUniform(handle, cnnlGenerator, dtype, statePtr, inputTensor.numel(), 0, 1, outputTensor.data()));
+        DIOPI_CALL_CNNL(cnnlRandGenerateUniform(handle, cnnlGenerator, dtype, statePtr, inputTensor.numel(), 0, 1, outputTensor.data()));
         DIOPI_CALL(diopiGeneratorSetState(generator, stateHandle));
         DIOPI_CALL(diopiLtInp(ctx, out, input));
     }
 
-    DIOPI_CALLCNNL(cnnlRandDestroyGenerator(cnnlGenerator));
+    DIOPI_CALL_CNNL(cnnlRandDestroyGenerator(cnnlGenerator));
     return diopiSuccess;
 }
 
@@ -51,17 +51,17 @@ DIOPI_API diopiError_t diopiBernoulliInp(diopiContextHandle_t ctx, diopiTensorHa
     DiopiTensor outTemp = requiresTensor(ctx, inputTensor.shape(), inputTensor.dtype());
 
     cnnlRandGenerator_t cnnlGenerator = nullptr;
-    DIOPI_CALLCNNL(cnnlRandCreateGenerator(&cnnlGenerator, CNNL_RAND_RNG_MTGP32));
+    DIOPI_CALL_CNNL(cnnlRandCreateGenerator(&cnnlGenerator, CNNL_RAND_RNG_MTGP32));
 
     diopiTensorHandle_t stateHandle = nullptr;
     DIOPI_CALL(diopiGeneratorGetState(ctx, generator, &stateHandle));
     void* statePtr = nullptr;
     DIOPI_CALL(diopiGetTensorData(stateHandle, &statePtr));
-    DIOPI_CALLCNNL(cnnlRandGenerateUniform(handle, cnnlGenerator, dtype, statePtr, inputTensor.numel(), 0, 1, outTemp.data()));
+    DIOPI_CALL_CNNL(cnnlRandGenerateUniform(handle, cnnlGenerator, dtype, statePtr, inputTensor.numel(), 0, 1, outTemp.data()));
     DIOPI_CALL(diopiGeneratorSetState(generator, stateHandle));
     DIOPI_CALL(diopiLt(ctx, inout, diopiTensorHandle_t(outTemp), inout));
 
-    DIOPI_CALLCNNL(cnnlRandDestroyGenerator(cnnlGenerator));
+    DIOPI_CALL_CNNL(cnnlRandDestroyGenerator(cnnlGenerator));
     return diopiSuccess;
 }
 
@@ -73,19 +73,19 @@ DIOPI_API diopiError_t diopiBernoulliScalar(diopiContextHandle_t ctx, diopiTenso
     DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, outTensor.dtype()));
 
     cnnlRandGenerator_t cnnlGenerator = nullptr;
-    DIOPI_CALLCNNL(cnnlRandCreateGenerator(&cnnlGenerator, CNNL_RAND_RNG_MTGP32));
+    DIOPI_CALL_CNNL(cnnlRandCreateGenerator(&cnnlGenerator, CNNL_RAND_RNG_MTGP32));
 
     diopiTensorHandle_t stateHandle = nullptr;
     DIOPI_CALL(diopiGeneratorGetState(ctx, generator, &stateHandle));
     void* statePtr = nullptr;
     DIOPI_CALL(diopiGetTensorData(stateHandle, &statePtr));
-    DIOPI_CALLCNNL(cnnlRandGenerateUniform(handle, cnnlGenerator, dtype, statePtr, outTensor.numel(), 0, 1, outTensor.data()));
+    DIOPI_CALL_CNNL(cnnlRandGenerateUniform(handle, cnnlGenerator, dtype, statePtr, outTensor.numel(), 0, 1, outTensor.data()));
     DIOPI_CALL(diopiGeneratorSetState(generator, stateHandle));
 
     diopiScalar_t scalar = constructDiopiScalarT(outTensor.dtype(), p);
     DIOPI_CALL(diopiLtInpScalar(ctx, out, &scalar));
 
-    DIOPI_CALLCNNL(cnnlRandDestroyGenerator(cnnlGenerator));
+    DIOPI_CALL_CNNL(cnnlRandDestroyGenerator(cnnlGenerator));
     return diopiSuccess;
 }
 

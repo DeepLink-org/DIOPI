@@ -23,7 +23,7 @@ diopiError_t diopiNeg(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
     CnnlTensorDesc inputDesc(inputTensorTmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outTensorTmp, CNNL_LAYOUT_ARRAY);
-    DIOPI_CALLCNNL(cnnlNegTensor(handle, inputDesc.get(), inputTensorTmp.data(), outDesc.get(), outTensorTmp.data()));
+    DIOPI_CALL_CNNL(cnnlNegTensor(handle, inputDesc.get(), inputTensorTmp.data(), outDesc.get(), outTensorTmp.data()));
     DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTmp));
     return diopiSuccess;
 }
