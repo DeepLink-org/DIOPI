@@ -194,6 +194,7 @@ ascend:
 - diopiLogicalOr
 - diopiMaxPool2dWithIndices
 - diopiLinspace
+- diopiSplitWithSizes
 ascend_npu:
 - diopiRemainderTensor
 - diopiRemainderScalar
