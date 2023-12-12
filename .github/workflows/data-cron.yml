@@ -1,0 +1,91 @@
+name: diopi gen data
+on:
+  workflow_dispatch:
+#  schedule:
+#    - cron: '01 02 * * *'
+
+env:
+  CLUSTER_1988: SH1988
+  CLUSTER_CAMB: CAMB
+  CLUSTER_ASCEND_910B: ASCEND-910B
+  CLUSTER_TOPSRIDER: TOPSRIDER
+  CLUSTER_SUPA: SUPA
+  DEEPLINK_PATH: '/mnt/cache/share/deeplinkci/github/${{ github.repository }}'
+  #  HASH_FILE: 'diopi_test/python/cache/diopi_case_items.cfg'
+  HASH_FILE: 'diopi_test/python/main.py'
+  DATA_DIR: '/mnt/cache/share/deeplinkci/gen-data/'
+  ENV_PATH: '/mnt/cache/share/platform/env'
+  GEN_DATA: 'diopi_test/python/cache'
+
+jobs:
+  Clone:
+    name: checkout code
+    runs-on: tps-diopi-ci
+    steps:
+      - name: clone repo
+        run: |
+          set -e
+          cd ${GITHUB_WORKSPACE} && rm -rf source
+          git clone ${{ github.event.repository.clone_url }} source
+          cd source && git submodule update --init --recursive
+      - name: Rsync to Server
+        run: |
+          ssh ${CLUSTER_1988} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
+          && rsync -a --delete ${GITHUB_WORKSPACE}/source/ ${CLUSTER_1988}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to sh1988"
+
+  Gen-Data:
+    name: Gen-Data
+    runs-on: tps-diopi-ci
+    if: ${{ contains( needs.Clone.outputs.output, 'true' ) }}
+    needs: [Clone]
+    steps:
+      - name: gen-test-data
+        run: |
+          ssh ${CLUSTER_1988} """
+          set -e
+          source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'python main.py --mode gen_data' \
+          || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+          """
+  Check:
+    name: check hash file
+    runs-on: tps-diopi-ci
+    output: ${{ steps.get_gen_data.outputs.to_gen_data }}
+    needs: Gen-Data
+    steps:
+      - name: check hash file
+        id: get_gen_data
+        run: |
+          ssh ${CLUSTER_1988} """
+          set -e
+          if [[ -f ${DATA_DIR}/pre_hash_file ]]; then
+            sha1sum ${DATA_DIR}/${{ github.event.repository.name }}/${HASH_FILE} > ${DATA_DIR}/new_hash_file
+            diff_output=$(diff -q --ignore-all-space  "${DATA_DIR}/new_hash_file" "${DATA_DIR}/pre_hash_file" ) && export to_gen_data=false || export to_gen_data=true
+            echo "to_gen_data=$to_gen_data" >> "$GITHUB_OUTPUT"
+          else
+            echo "to_gen_data=true" >> "$GITHUB_OUTPUT"
+          fi
+          if [[ $to_gen_data == "true" ]]; then
+            cd ${DATA_DIR} && mv new_hash_file pre_hash_file
+          fi
+          """
+
+  Rsync-Data:
+    name: rsyns data to other machine
+    runs-on: tps-diopi-ci
+    if: ${{ contains( needs.Clone.outputs.output, 'true' ) }}
+    needs: Check
+    steps:
+      - name: rsync
+        run: |
+          set -e
+          ssh ${CLUSTER_CAMB} """
+          rsync -a ${CLUSTER_1988}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DATA_DIR}
+          """
+          ssh ${CLUSTER_ASCEND_910B} """
+          rsync -a ${CLUSTER_1988}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DATA_DIR}
+          """
+          ssh ${CLUSTER_SUPA} """
+          rsync -a ${CLUSTER_1988}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DATA_DIR}
+          """
