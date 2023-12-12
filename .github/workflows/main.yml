@@ -444,8 +444,6 @@ jobs:
     runs-on: tps-diopi-ci
     needs: [Gen-Data, Build-Supa]
     if: ${{ contains( needs.Rsync.outputs.output, 'SUPA' ) }}
-    env:
-      run_test: "python"
     steps:
       - name: test
         run: |
