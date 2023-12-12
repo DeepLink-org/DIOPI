@@ -1,5 +1,6 @@
 #include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
+#include <ATen/EmptyTensor.h>
 #include <ATen/native/CPUFallback.h>
 #include <ATen/record_function.h>
 #include <diopi/diopirt.h>
@@ -589,8 +590,7 @@ void copy_d2d_by_memcpy(at::Tensor& dst, const at::Tensor& src, int64_t exceptSi
 at::Tensor NpuUtils::format_contiguous_add_copy_optimize(const at::Tensor& src) {
     // case1:tensor src is not contiguous
     if (!src.is_contiguous()) {
-        INTERFACE_NOT_IMPL
-        return src;
+        return src.contiguous();
     }
 #if 0
   // case2:meta data not match, sizes or strides of presentation
@@ -2516,10 +2516,36 @@ at::Tensor wrapper__as_strided(const at::Tensor& self, at::IntArrayRef size, at:
     return at_npu::native::NPUNativeFunctions::as_strided(self, size, stride, storage_offset);
 }
 
+const at::Tensor& wrapper__resize_(const at::Tensor& self, at::IntArrayRef size, c10::optional<at::MemoryFormat> memory_format) {
+    DEBUG_ARGS(self);
+    DEBUG_ARGS(size);
+    if (self.numel() >= c10::multiply_integers(size)) {
+        auto out = impl::aten::view(self, size);
+        self.set_(out.storage());
+    } else {
+        auto out = at_npu::native::empty_npu(size, self.options());
+        self.set_(out.storage());
+    }
+    return self;
+}
+
 void ascend_diopi_fallback(const c10::OperatorHandle& op, at::DispatchKeySet dispatch_keys, torch::jit::Stack* stack) {
     const auto name = c10::toString(op.operator_name());
     std::cout << __FUNCTION__ << ": op " << name << " fallbacked, must be processed!!!" << std::endl;
     at::native::cpu_fallback(op, stack);
+}
+
+at::Tensor wrapper__contiguous(const at::Tensor& self, at::MemoryFormat memory_format) {
+    return at_npu::native::NPUNativeFunctions::contiguous(self, memory_format);
+}
+
+at::Tensor wrapper__empty_strided(c10::SymIntArrayRef size, c10::SymIntArrayRef stride, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
+                                  c10::optional<at::Device> device, c10::optional<bool> pin_memory) {
+    at::TensorOptions options(dtype.value());
+    int64_t nbytes = at::detail::computeStorageNbytes(size, stride, options.dtype().itemsize()).as_int_unchecked();
+    int64_t numel = nbytes / options.dtype().itemsize();
+    auto out = at_npu::native::empty_npu({numel}, options);
+    return impl::aten::view(out, c10::asIntArrayRefUnchecked(size), c10::asIntArrayRefUnchecked(stride));
 }
 
 }  // namespace
@@ -2531,6 +2557,9 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("reshape", TORCH_FN(wrapper__view));
     m.impl("view", TORCH_FN(wrapper__view));
     m.impl("as_strided", TORCH_FN(wrapper__as_strided));
+    m.impl("resize_", TORCH_FN(wrapper__resize_));
+    m.impl("contiguous", TORCH_FN(wrapper__contiguous));
+    m.impl("empty_strided", TORCH_FN(wrapper__empty_strided));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }

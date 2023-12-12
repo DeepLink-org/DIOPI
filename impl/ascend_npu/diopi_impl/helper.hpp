@@ -45,11 +45,14 @@ inline int debugLevel() {
     return level;
 }
 
-#define BUILD_ATEN_ARGS_BODY(x)                                                                                  \
-    auto CREATE_VAR_NAME(x) = impl::aten::buildATen(x);                                                          \
-    if (debugLevel()) {                                                                                          \
-        std::cout << __FUNCTION__ << ": " << #x << ":" << impl::aten::dumpArgs(CREATE_VAR_NAME(x)) << std::endl; \
+#define DEBUG_ARGS(x)                                                                           \
+    if (debugLevel()) {                                                                         \
+        std::cout << __FUNCTION__ << ": " << #x << ":" << impl::aten::dumpArgs(x) << std::endl; \
     }
+
+#define BUILD_ATEN_ARGS_BODY(x)                         \
+    auto CREATE_VAR_NAME(x) = impl::aten::buildATen(x); \
+    DEBUG_ARGS(x##At)
 
 #define BUILD_ATEN_ARG2(x, y) \
     BUILD_ATEN_ARGS_BODY(x);  \
@@ -310,6 +313,17 @@ template <>
 inline std::string dumpArgs(const at::Scalar& t) {
     std::stringstream stream;
     stream << t;
+    return stream.str();
+}
+
+template <>
+inline std::string dumpArgs(const at::IntArrayRef& t) {
+    std::stringstream stream;
+    stream << "[";
+    for (size_t i = 0; i < t.size(); i++) {
+        stream << i << ",";
+    }
+    stream << "]";
     return stream.str();
 }
 

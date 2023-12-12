@@ -1356,7 +1356,7 @@ struct NPUNativeFunctions {
     static ::std::tuple<at::Tensor, at::Tensor> triangular_solve(const at::Tensor& self, const at::Tensor& A, bool upper, bool transpose, bool unitriangular) {
         OP_NOT_IMPL
     }
-    static at::Tensor contiguous(const at::Tensor& self, at::MemoryFormat memory_format) { OP_NOT_IMPL }
+    static at::Tensor contiguous(const at::Tensor& self, at::MemoryFormat memory_format);
     static at::Tensor& rsqrt_(at::Tensor& self) { OP_NOT_IMPL }
     static void _foreach_addcmul_(at::TensorList self, at::TensorList tensor1, at::TensorList tensor2, const at::Scalar& value) { OP_NOT_IMPL }
     static bool _amp_foreach_non_finite_check(at::TensorList scaled_grads) { OP_NOT_IMPL }

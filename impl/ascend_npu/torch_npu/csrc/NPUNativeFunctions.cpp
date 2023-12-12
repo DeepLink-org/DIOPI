@@ -6,7 +6,15 @@ namespace at_npu::native {
 
 #define CUSTOM_OP_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
 
-at::Tensor& NPUNativeFunctions::npu_format_cast_(at::Tensor& self, const at::Tensor& src) { CUSTOM_OP_NOT_IMPL }
+at::Tensor& NPUNativeFunctions::npu_format_cast_(at::Tensor& self, const at::Tensor& src){CUSTOM_OP_NOT_IMPL}
+
+at::Tensor NPUNativeFunctions::contiguous(const at::Tensor& self, at::MemoryFormat memory_format) {
+    if (self.is_contiguous(memory_format)) {
+        return self;
+    }
+    TORCH_CHECK(memory_format == c10::MemoryFormat::Contiguous, "NPU contiguous operator only supportted contiguous memory format.");
+    return self.clone();
+}
 
 namespace custom_ops {
 
@@ -29,6 +37,7 @@ at::Tensor empty_with_format(at::IntArrayRef size, c10::optional<at::DimnameList
 }
 at::Tensor& copy_memory_(at::Tensor& self, const at::Tensor& src, bool non_blocking) { CUSTOM_OP_NOT_IMPL; }
 at::Tensor format_contiguous(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
+
 bool check_match(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
 void check_memory_overlaps(at::TensorList inputs, at::TensorList outputs) { CUSTOM_OP_NOT_IMPL; }
 int64_t get_storage_size(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }

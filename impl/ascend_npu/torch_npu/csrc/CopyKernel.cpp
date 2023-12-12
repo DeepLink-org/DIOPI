@@ -40,6 +40,7 @@ bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Tensor& sr
     // Some Ops support inputs with 5HD/NZ format, Transdata is redundant
     // Record:
     // Op:Reshape; SliceD || Supportformat: 5HD/NZ
+    return false;  // todo: optimize performance
     return TransContiguous::ContiguousOptimizeWithAnyFormat(self, src);
 }
 
@@ -47,6 +48,8 @@ bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Tensor& sr
 // the dst and src are base format now
 // the dst and src maybe non-contiguous
 void copy_d2d_last_method(at::Tensor& self, const at::Tensor& src, bool same_type, bool non_blocking) {
+    DEBUG_ARGS(self);
+    DEBUG_ARGS(src);
     // general copy method but Low performance
     RECORD_FUNCTION("contiguous_d_ViewCopy", std::vector<c10::IValue>({src}));
     custom_ops::npu_view_copy(self, src, non_blocking);
@@ -226,6 +229,8 @@ bool can_use_memcpy(at::Tensor& dst, const at::Tensor& src) {
 
 // the dst and src are same dtype now
 void copy_d2d_dtype(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
+    DEBUG_ARGS(self);
+    DEBUG_ARGS(src);
     if (!is_same_format(self, src)) {
         at::Tensor src_4D = FormatCastHelper::ApplyBaseFormatTensorBy(src);
         // ApplyBaseFormatTensorBy is redundant for self tensor with base format.
@@ -245,6 +250,8 @@ void copy_d2d_dtype(at::Tensor& self, const at::Tensor& src, bool non_blocking) 
 // the dst and src are base format now
 // the dst and src maybe non-contiguous
 void copy_d2d_dtype_baseformat(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
+    DEBUG_ARGS(self);
+    DEBUG_ARGS(src);
     if (!self.is_contiguous()) {
         // Contiguous/discontiguous source tensor copy to discontiguous self tensor
         return copy_d2d_last_method(self, src, true, non_blocking);
@@ -282,6 +289,8 @@ bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Tensor& sr
 }
 
 at::Tensor& NPUNativeFunctions::copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
+    DEBUG_ARGS(self);
+    DEBUG_ARGS(src);
     if (self.numel() == 0) {
         return self;
     }
