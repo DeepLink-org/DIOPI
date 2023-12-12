@@ -5148,6 +5148,7 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
     check_returncode(ret)
     return out
 
+multihead_attention_softmax_lse = None
 
 def multihead_attention(
     q, k, v, dropout_p, is_causal, return_debug_mask, scale
@@ -5156,7 +5157,9 @@ def multihead_attention(
     func = check_function(call)
     q_size = list(q.size().data)
     out = Tensor(q_size, q.get_dtype())
-    softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], q.get_dtype())
+    softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], dtype=Dtype.float32)
+    global multihead_attention_softmax_lse
+    multihead_attention_softmax_lse = softmax_lse
     gen = None
     debug_attn_mask = Tensor([0], q.get_dtype())
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
@@ -5187,7 +5190,8 @@ def multihead_attention_backward(
     grad_k = raw_like(k)
     grad_v = raw_like(v)
     q_size = list(q.size().data)
-    softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], q.get_dtype())
+    global multihead_attention_softmax_lse
+    softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], q.get_dtype()) if multihead_attention_softmax_lse is None else multihead_attention_softmax_lse
     gen = None
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
     ret = func(
