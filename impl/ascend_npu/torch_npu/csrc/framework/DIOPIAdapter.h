@@ -7,6 +7,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -159,7 +160,8 @@ static void warn_(const ::c10::Warning& warning) { INTERFACE_NOT_IMPL; }
         return true;                                                                  \
     }()
 
-#define RECORD_FUNCTION(...) ;
+#define RECORD_FUNCTION(...) \
+    {}
 
 namespace at_npu {
 namespace key {
@@ -350,7 +352,7 @@ static void recordStream(const c10::DataPtr& ptr, c10_npu::NPUStream stream) { I
 /// NPUGuard for when you can use this.
 struct OptionalNPUGuard {
     /// Create an uninitialized OptionalNPUGuard.
-    explicit OptionalNPUGuard() {}
+    OptionalNPUGuard() {}
 
     /// Set the current NPU device to the passed Device, if it is not nullopt.
     explicit OptionalNPUGuard(c10::optional<c10::Device> device_opt) {}
