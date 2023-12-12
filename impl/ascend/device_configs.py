@@ -393,18 +393,6 @@ device_configs = {
         ),
     ),
 
-    'pointwise_op_mask': dict(
-        name=['bitwise_not'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
-                },
-            ]
-        ),
-    ),
-
     'pointwise_op_bool': dict(
         name=['erf', 'asin', 'atan'],
         tensor_para=dict(
@@ -640,66 +628,6 @@ device_configs = {
                 {
                     "ins": ['exponent'],
                     "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_op': dict(
-        name=['bitwise_and'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input', 'other'],
-                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_op_diff_dtype': dict(
-        name=['bitwise_and'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_op_broadcast': dict(
-        name=['bitwise_and'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_op_scalar': dict(
-        name=['bitwise_and'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),Skip((0,)),Skip((0, 4)),Skip((4, 0, 5)),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_op_scalar_bool': dict(
-        name=['bitwise_and'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),Skip((0,)),],
                 },
             ]
         ),
@@ -960,29 +888,6 @@ device_configs = {
         ),
     ),
 
-    'sort': dict(
-        name=['sort'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((11400,)),Skip((12, 8)),Skip((8, 12, 9)),Skip((4, 4, 16, 20)),Skip((4, 4, 16, 2, 20)),Skip((24180,)),Skip((0,)),Skip((12, 0)),Skip((4, 0, 5)),],
-                },
-            ]
-        ),
-    ),
-
-    'sort_same_value': dict(
-        name=['sort'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((11400,)),Skip((4, 4, 16, 20)),Skip((4, 4, 16, 2, 20)),],
-                },
-            ]
-        ),
-    ),
 
     'transpose': dict(
         name=['transpose'],
@@ -991,42 +896,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip(()),Skip((32,)),Skip((2, 1536, 950)),Skip((16, 8)),Skip((660, 6, 49, 32)),Skip((0,)),Skip((0, 8)),Skip((16, 0, 8)),],
-                },
-            ]
-        ),
-    ),
-
-    'where': dict(
-        name=['where'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['condition'],
-                    "dtype": [Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'where_broadcast': dict(
-        name=['where'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['condition'],
-                    "dtype": [Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'where_same_value': dict(
-        name=['where'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['condition'],
-                    "dtype": [Skip(np.bool_),],
                 },
             ]
         ),
@@ -1195,30 +1064,6 @@ device_configs = {
                 {
                     "ins": ['x1'],
                     "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_not_uint8': dict(
-        name=['bitwise_not'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.uint8),],
-                },
-            ]
-        ),
-    ),
-
-    'bitwise_not_int': dict(
-        name=['bitwise_not'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.bool_),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),],
                 },
             ]
         ),
@@ -1425,15 +1270,6 @@ device_configs = {
                     "dtype": [Skip(np.float32),Skip(np.bool_),Skip(np.float16),Skip(np.float64),Skip(np.int64),Skip(np.int32),Skip(np.int16),Skip(np.int8),Skip(np.uint8),],
                 },
             ]
-        ),
-    ),
-
-    'linspace': dict(
-        name=['linspace'],
-        para=dict(
-            start=[Skip(0),Skip(1.4),Skip(-10),Skip(False),Skip(True),Skip(2),Skip(-2.5),Skip(-10),Skip(0.0001),Skip(0),Skip(5),],
-            end=[Skip(0.5),Skip(-2.4),Skip(True),Skip(100.232),Skip(False),Skip(2),Skip(-2.5),Skip(10),Skip(0.001),Skip(10),Skip(-2),],
-            steps=[Skip(24),Skip(23),Skip(152),Skip(100),Skip(76),Skip(50),Skip(38),Skip(25),Skip(5),Skip(0),Skip(1),],
         ),
     ),
 
