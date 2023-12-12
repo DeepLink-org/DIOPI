@@ -195,10 +195,13 @@ ascend:
 - diopiLogicalAnd
 - diopiLogicalOr
 - diopiMaxPool2dWithIndices
+- diopiScatter
+- diopiScatterInp
+- diopiScatterScalar
+- diopiScatterInpScalar
 ascend_npu:
 - diopiRemainderTensor
 - diopiRemainderScalar
 - diopiRemainder
 - diopiRepeat
 - diopiStack
-

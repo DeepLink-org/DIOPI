@@ -871,6 +871,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/logic.cpp
     ${OLD_IMPL_DIR}/functions/linear.cpp
     ${OLD_IMPL_DIR}/functions/error.cpp
+    ${OLD_IMPL_DIR}/functions/scatter.cpp
     ${OLD_IMPL_DIR}/functions/sgn.cpp
     ${OLD_IMPL_DIR}/functions/cast.cpp
     ${OLD_IMPL_DIR}/functions/sin.cpp

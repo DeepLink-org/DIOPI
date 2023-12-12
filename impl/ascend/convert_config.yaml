@@ -223,3 +223,15 @@
 
 - diopiDropoutInp:
     dtype: (float64)->float32
+
+- diopiScatter:
+    dtype: (uint8,int8)->int32
+
+- diopiScatterInp:
+    dtype: (uint8,int8)->int32
+
+- diopiScatterScalar:
+    dtype: (uint8,int8)->int32
+
+- diopiScatterInpScalar:
+    dtype: (uint8,int8)->int32
