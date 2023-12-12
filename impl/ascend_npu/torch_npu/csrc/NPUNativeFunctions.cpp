@@ -6,7 +6,7 @@ namespace at_npu::native {
 
 #define CUSTOM_OP_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
 
-at::Tensor& NPUNativeFunctions::npu_format_cast_(at::Tensor& self, const at::Tensor& src){CUSTOM_OP_NOT_IMPL}
+at::Tensor& NPUNativeFunctions::npu_format_cast_(at::Tensor& self, const at::Tensor& src) { CUSTOM_OP_NOT_IMPL; }
 
 at::Tensor NPUNativeFunctions::contiguous(const at::Tensor& self, at::MemoryFormat memory_format) {
     if (self.is_contiguous(memory_format)) {
@@ -56,6 +56,9 @@ at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
     at::Tensor source = src;
     if (src.sizes() != self.sizes()) {
         source = npu_broadcast(src, self.sizes());
+    }
+    if (self.strides() != source.strides()) {
+        source = source.contiguous();
     }
     return acl_op::npu_dtype_cast_(self, source);
 }
@@ -143,9 +146,11 @@ at::Tensor& npu_indexing_out(const at::Tensor& self, at::IntArrayRef begin, at::
 }
 at::Tensor npu_softmax_cross_entropy_with_logits_backward(const at::Tensor& grad, const at::Tensor& self, const at::Tensor& labels) { CUSTOM_OP_NOT_IMPL; }
 at::Tensor npu_stride_copy(const at::Tensor& self, at::IntArrayRef shape, at::IntArrayRef stride, const at::Scalar& storage_offset) { CUSTOM_OP_NOT_IMPL; }
+
 at::Tensor& npu_stride_copy_out(const at::Tensor& self, at::IntArrayRef shape, at::IntArrayRef stride, const at::Scalar& storage_offset, at::Tensor& out) {
-    CUSTOM_OP_NOT_IMPL;
+    acl_op::npu_stride_copy_out(self, shape, stride, storage_offset, out);
 }
+
 at::Tensor npu_roi_align(const at::Tensor& self, const at::Tensor& rois, double spatial_scale, int64_t pooled_height, int64_t pooled_width, int64_t sample_num,
                          int64_t roi_end_mode) {
     CUSTOM_OP_NOT_IMPL;

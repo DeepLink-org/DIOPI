@@ -302,7 +302,7 @@ template <>
 inline std::string dumpArgs(const at::Tensor& t) {
     std::stringstream stream;
     if (t.defined()) {
-        stream << " shape:" << t.sizes() << ", numel:" << t.numel() << ", t.strides:" << t.strides() << t.options() << ",ptr:" << t.data_ptr();
+        stream << " shape:" << t.sizes() << ", numel:" << t.numel() << ", strides:" << t.strides() << " " << t.options() << ",ptr:" << t.data_ptr();
     } else {
         stream << " undefined" << std::endl;
     }

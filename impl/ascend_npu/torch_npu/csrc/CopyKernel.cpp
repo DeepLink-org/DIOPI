@@ -57,10 +57,12 @@ void copy_d2d_last_method(at::Tensor& self, const at::Tensor& src, bool same_typ
 
 // the dst and src are same format now
 void copy_d2d_dtype_format(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
-    // Note: Src & Self have the same format.
+// Note: Src & Self have the same format.
+#if 0
     if (try_to_optimize_copy_with_any_format(self, src)) {
         return;
     }
+#endif
 
     if (!FormatHelper::IsBaseFormatType(self)) {  // 必须要非NCHW的才行？
         if (can_use_memcpy(self, src)) {
@@ -81,7 +83,7 @@ void copy_d2d_dtype_format(at::Tensor& self, const at::Tensor& src, bool non_blo
 
 void copy_d2d(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
     if (self.dtype() != src.dtype()) {
-        custom_ops::npu_dtype_cast_(self, src);  // npu_dtype_cast_ will call copy function.
+        custom_ops::npu_dtype_cast_(self, src.contiguous());  // npu_dtype_cast_ will call copy function.
         return;
     }
     copy_d2d_dtype(self, src, non_blocking);
@@ -259,7 +261,7 @@ void copy_d2d_dtype_baseformat(at::Tensor& self, const at::Tensor& src, bool non
 
     if (!src.is_contiguous()) {
         // Discontiguous source tensor copy to contiguous self tensor
-        if (TransContiguous::ContiguousOptimizeWithBaseFormat(self, src)) {
+        if (0 && TransContiguous::ContiguousOptimizeWithBaseFormat(self, src)) {
             // Optimized trans-contiguous method
             return;
         } else {
