@@ -64,7 +64,7 @@ target_link_libraries(${DIOPIRT_PYBIND} PRIVATE ${DIOPIRT})
 set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/diopi_stub/csrc")
 set(TEST_GEN_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/diopi_stub/codegen")
 add_custom_target(test_code_gen COMMAND python3 ${TEST_GEN_PATH}/gen.py
-    --device=torch)
+    --device=supa)
 add_custom_target(functions_copy ALL
     COMMAND ln -f ${FUNCTION_SAVE_PATH}/export_functions.cpp ${PROJECT_SOURCE_DIR}/test
     DEPENDS test_code_gen)
@@ -75,7 +75,7 @@ set(FUNCTIONS_EXPORT_SRC
 )
 
 pybind11_add_module(${DIOPIFUNCTIONS_PYBIND} SHARED ${FUNCTIONS_EXPORT_SRC})
-target_link_libraries(${DIOPIFUNCTIONS_PYBIND} PRIVATE ${DIOPIRT})
+target_link_libraries(${DIOPIFUNCTIONS_PYBIND} PRIVATE ${DIOPIRT} )
 add_dependencies(${DIOPIFUNCTIONS_PYBIND} functions_copy)
 
 # copy pybind library into test folder.

@@ -1,13 +1,21 @@
 #include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
+#include <ATen/native/CPUFallback.h>
 #include <ATen/record_function.h>
 #include <diopi/diopirt.h>
+#include <torch/library.h>
 
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
 namespace {
 constexpr float EPSILON = 1e-6;
+
+int current_device() {
+    int devId_ = 0;
+    ::aclrtGetDevice(&devId_);
+    return devId_;
+}
 
 // check all at::ScalarType is not negative
 #define ENUM_PAIR_FUNC(_1, n) static_assert(static_cast<int64_t>(at::ScalarType::n) >= 0, #n " is negative");
@@ -70,13 +78,15 @@ namespace native {
 
 UnifiedResult OpPreparation::binary_op_check(at::Tensor& out, const at::Tensor& a, const at::Tensor& b, bool check_mem_overlap) {
     UnifiedResult unified_result;
-    TORCH_CHECK(a.dtype() == b.dtype());
+    unified_result.common_type = out.scalar_type();
+    unified_result.common_shape = out.sizes();
     return unified_result;
 }
 
 UnifiedResult OpPreparation::binary_op_check(at::Tensor& out, const at::Tensor& a, const c10::Scalar b, bool check_mem_overlap) {
     UnifiedResult unified_result;
-    TORCH_CHECK(a.dtype() == b.type());
+    unified_result.common_type = out.scalar_type();
+    unified_result.common_shape = out.sizes();
     return unified_result;
 }
 
@@ -1136,6 +1146,7 @@ std::tuple<aclTensorDesc*, aclDataBuffer*> CovertTensorToAclInput(const at::Tens
     // const auto &npuDesc = torch_npu::NPUBridge::GetNpuStorageImplDesc(tensor);
 
     AclTensorDescMaker desc;
+
     auto aclDesc = desc.Create(aclDataType, tensor.sizes(), static_cast<aclFormat>(format)).SetName(descName).Get();
 
     // if aclDataType != ACL_STRING, we use storageDims to calculate nums and use
@@ -1461,6 +1472,19 @@ void npu_fast_reshape_(at::Tensor& tensor) {
 
 }  // namespace native
 
+std::pair<uint64_t, uint64_t> NPUGeneratorImpl::philox_engine_inputs(uint64_t increment) {
+    diopiTensorHandle_t stateHandle = nullptr;
+    auto gen = reinterpret_cast<diopiGeneratorHandle_t>(generator_);
+    diopiGeneratorGetState(context, gen, &stateHandle);
+    void* statePtr = nullptr;
+    diopiGetTensorData(stateHandle, &statePtr);
+    PhiloxNpuState* state = reinterpret_cast<PhiloxNpuState*>(statePtr);
+    auto ret = std::make_pair(state->seed_, state->offset_.val);
+    state->offset_.val += increment;
+    diopiGeneratorSetState(gen, stateHandle);
+    return ret;
+}
+
 namespace detail {
 
 const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) { INTERFACE_NOT_IMPL }
@@ -1491,12 +1515,6 @@ const char* AclGetErrMsg() {
 
 }  // namespace acl
 
-int current_device() {
-    int devId_ = 0;
-    ::aclrtGetDevice(&devId_);
-    return devId_;
-}
-
 NPUStream getCurrentNPUStream(c10::DeviceIndex device_index) {
     if (device_index == -1) {
         device_index = current_device();
@@ -1505,7 +1523,7 @@ NPUStream getCurrentNPUStream(c10::DeviceIndex device_index) {
     diopiStreamHandle_t stream_handle = nullptr;
     diopiGetStream(context, &stream_handle);
     TORCH_CHECK(stream_handle);
-    c10::Device device(c10::DeviceType::XPU, device_index);
+    c10::Device device(c10::DeviceType::XLA, device_index);
     c10::Stream atStream(c10::Stream::Default::DEFAULT, device);
     aclrtStream aclStream = reinterpret_cast<aclrtStream>(stream_handle);
     TORCH_CHECK(aclStream);
@@ -1568,10 +1586,10 @@ at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef s
 
     size_t nbytes = at::detail::computeStorageNbytes(sizes, strides, options.dtype().itemsize());
 
-    c10::intrusive_ptr<c10::StorageImpl> storage_impl = c10::make_intrusive<c10::StorageImpl>(
+    c10::intrusive_ptr<c10::StorageImpl> storage_impl = c10::make_intrusive<torch_npu::NPUStorageImpl>(
         at::StorageImpl::use_byte_size_t(), nbytes, c10::InefficientStdFunctionContext::makeDataPtr(data, c10::detail::deleteNothing, device), nullptr, false);
     auto dtype = options.dtype();
-    c10::DispatchKeySet ks{c10::DispatchKey::XPU};
+    c10::DispatchKeySet ks{c10::DispatchKey::XLA};
     auto tensor = at::detail::make_tensor<at::TensorImpl>(std::move(storage_impl), ks, dtype);
     if (strides.size() > 0) {
         tensor.unsafeGetTensorImpl()->set_sizes_and_strides(sizes, strides);
@@ -1627,7 +1645,15 @@ inline const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     if (tensor == nullptr) return at::Tensor();
     return *reinterpret_cast<const at::Tensor*>(tensor);
 }
+
 #endif
+
+at::Generator buildATen(diopiGeneratorHandle_t generator) {
+    auto gen = at::make_generator<at_npu::NPUGeneratorImpl>(current_device());
+    auto impl = static_cast<at_npu::NPUGeneratorImpl*>(gen.unsafeGetGeneratorImpl());
+    impl->generator_ = generator;
+    return gen;
+}
 
 at::Tensor view(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides) {
     TORCH_CHECK(c10::multiply_integers(sizes) == input.numel());
@@ -1660,3 +1686,36 @@ void unsetCurCtx() {
 }  // namespace aten
 
 }  // namespace impl
+
+namespace {
+
+at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
+    return at_npu::native::NPUNativeFunctions::copy_memory_(self, src, non_blocking);
+}
+
+at::Tensor wrapper__view(const at::Tensor& self, at::IntArrayRef size) { return impl::aten::view(self, size); }
+
+at::Tensor wrapper__as_strided(const at::Tensor& self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset) {
+    return at_npu::native::NPUNativeFunctions::as_strided(self, size, stride, storage_offset);
+}
+
+void ascend_diopi_fallback(const c10::OperatorHandle& op, at::DispatchKeySet dispatch_keys, torch::jit::Stack* stack) {
+    const auto name = c10::toString(op.operator_name());
+    std::cout << __FUNCTION__ << ": op " << name << " fallbacked, must be processed!!!" << std::endl;
+    at::native::cpu_fallback(op, stack);
+}
+
+}  // namespace
+
+namespace at {
+
+TORCH_LIBRARY_IMPL(aten, XLA, m) {
+    m.impl("copy_", TORCH_FN(wrapper__copy_));
+    m.impl("reshape", TORCH_FN(wrapper__view));
+    m.impl("view", TORCH_FN(wrapper__view));
+    m.impl("as_strided", TORCH_FN(wrapper__as_strided));
+};
+
+TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
+
+}  // namespace at
