@@ -50,16 +50,6 @@ jobs:
     steps:
       - name: clone repo
         run: |
-<<<<<<< HEAD
-          cd ${GITHUB_WORKSPACE} && rm -rf DIOPI
-          if [ -n "${{ github.event.pull_request.head.repo.full_name }}" ] && [[ ! "${{ github.event.pull_request.head.repo.full_name }}" == *DeepLink-org* ]]; then
-            git clone ${{ github.event.pull_request.head.repo.ssh_url }}
-            cd ${GITHUB_WORKSPACE}/${{ github.event.repository.name }} && git checkout ${{ github.event.pull_request.head.sha }}
-            git remote add mainrepo git@github.com:${GITHUB_REPOSITORY}.git
-            git fetch  mainrepo && git merge --no-edit mainrepo/${{ github.base_ref }}
-          else
-            git clone https://github.com/DeepLink-org/DIOPI.git && cd DIOPI
-=======
           cd ${GITHUB_WORKSPACE} && rm -rf DIOPI* source
           if [ -n "${{ github.event.pull_request.head.repo.full_name }}" ] && [[ ! "${{ github.event.pull_request.head.repo.full_name }}" == "${{ github.repository }}"  ]]; then
             git clone ${{ github.event.pull_request.head.repo.ssh_url }} source
@@ -68,7 +58,6 @@ jobs:
             git fetch  mainrepo && git merge --no-edit mainrepo/${{ github.base_ref }}
           else
             git clone https://github.com/DeepLink-org/DIOPI.git source && cd source
->>>>>>> main
             if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
             git checkout ${{ github.event.pull_request.head.sha }} && git merge --no-edit ${{ github.base_ref }}
             else
@@ -375,30 +364,10 @@ jobs:
         run: |
           set -e
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-<<<<<<< HEAD
-          export CI=true
-          source scripts/pick_card.sh ascend
-=======
->>>>>>> main
           rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
           cd diopi_test/python && python main.py --mode gen_case --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/ascend/ && ${run_test} main.py --mode run_test \
           && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
 
-<<<<<<< HEAD
-  Rt-Test-Ascend:
-    name: Rt-Test-Ascend
-    runs-on: tps-ascend-ci
-    needs: Build-Ascend
-    if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
-    steps:
-      - name: test
-        run: |
-          set -e
-          export CI=true
-          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          source scripts/pick_card.sh ascend
-          cd diopi_test/python && python main.py --mode utest
-=======
   # Rt-Test-Ascend-910b:
   #   name: Rt-Test-Ascend-910b
   #   runs-on: tps-ascend-ci-910b
@@ -410,7 +379,6 @@ jobs:
   #         set -e
   #         cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
   #         cd diopi_test/python && python main.py --mode utest
->>>>>>> main
 
   Build-Topsrider:
     name: Build-Topsrider
