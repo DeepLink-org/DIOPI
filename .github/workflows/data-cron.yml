@@ -39,7 +39,6 @@ jobs:
   Gen-Data:
     name: Gen-Data
     runs-on: tps-diopi-ci
-    if: ${{ contains( needs.Clone.outputs.output, 'true' ) }}
     needs: [Clone]
     steps:
       - name: gen-test-data
