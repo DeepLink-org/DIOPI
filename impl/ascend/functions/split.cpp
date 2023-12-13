@@ -8,7 +8,7 @@
 
 namespace impl {
 namespace ascend {
-diopiError_t diopiSplitWithSizes(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, int64_t num_outs, diopiConstTensorHandle_t input,
+diopiError_t diopiSplitWithSizes(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, int64_t numOuts, diopiConstTensorHandle_t input,
                                  const diopiSize_t splitSizes, int64_t dim) {
     AscendTensor inputTensor(input);
 
@@ -19,9 +19,8 @@ diopiError_t diopiSplitWithSizes(diopiContextHandle_t ctx, diopiTensorHandle_t* 
     // build the dynamicOutput vector
     std::vector<diopiTensorHandle_t> dynamicOutput;
 
-    for (int64_t i = 0; i < num_outs; i++) {
+    for (int64_t i = 0; i < numOuts; i++) {
         AscendTensor outputTensorI(outs[i]);
-        printContiguousTensor(ctx, outputTensorI, "output before split");
         dynamicOutput.push_back(const_cast<diopiTensorHandle_t>(outs[i]));
     }
 
@@ -29,7 +28,7 @@ diopiError_t diopiSplitWithSizes(diopiContextHandle_t ctx, diopiTensorHandle_t* 
         .addInput(input)
         .addConstInput(splitSizes)
         .addConstInput(dim, diopi_dtype_int64)
-        .setAttr("num_split", num_outs)
+        .setAttr("num_split", numOuts)
         .addDynamicOutput(dynamicOutput, inputTensor.dtype())
         .run();
 
