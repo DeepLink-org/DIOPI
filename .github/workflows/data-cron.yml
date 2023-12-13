@@ -60,22 +60,28 @@ jobs:
     name: check and rsync
     runs-on: tps-diopi-ci
 #    needs: Gen-Data
+    outputs:
+      output: ${{ steps.get_gen_data.outputs.to_gen_data }}
     steps:
       - name: check
+        id: get_gen_data
         run: |
           ssh ${CLUSTER_1988} """
           set -e
           if [[ -f "${DATA_DIR}/pre_hash" ]]; then
-            sha1sum ${DATA_DIR}/source/${GEN_DATA}/${HASH_FILE} > ${DATA_DIR}/new_hash_file
-            diff_output=$(diff -q --ignore-all-space  "${DATA_DIR}/new_hash" "${DATA_DIR}/pre_hash" ) && export to_gen_data=false || export to_gen_data=true
-            echo "to_gen_data=$to_gen_data" >> "$GITHUB_ENV"
+            sha1sum ${DATA_DIR}/source/${GEN_DATA}/${HASH_FILE} > ${DATA_DIR}/hash_file
+            diff_output=$(diff -q --ignore-all-space  "${DATA_DIR}/new_hash" "${DATA_DIR}/pre_hash" ) && echo "false" > ${DATA_DIR}/to_gen_data  || echo "true" > ${DATA_DIR}/to_gen_data
           else
-            echo "to_gen_data=true" >> "$GITHUB_ENV"
-          fi
-          if [[ "$to_gen_data" == "true" ]]; then
-            cd ${DATA_DIR} && mv new_hash pre_hash
+            echo "true" > ${DATA_DIR}/to_gen_data
           fi
           """
+          export file_path="/home/autolink/rsync/sourcecode"
+          rsync -a --delete ${CLUSTER_1988}:${DATA_DIR}/to_gen_data ${file_path}/
+          if grep -q "true" "${file_path}/to_gen_data"; then
+            echo "to_gen_data=true" >> "$GITHUB_ENV"
+          else
+            echo "to_gen_data=false" >> "$GITHUB_ENV"
+          fi
       - name: rsync
         if: ${{ env.to_gen_data == 'true' }}
         run: |
