@@ -54,7 +54,8 @@ jobs:
   Check:
     name: check hash file
     runs-on: tps-diopi-ci
-    output: ${{ steps.get_gen_data.outputs.to_gen_data }}
+    outputs:
+      output: ${{ steps.get_gen_data.outputs.to_gen_data }}
     needs: Gen-Data
     steps:
       - name: check hash file
