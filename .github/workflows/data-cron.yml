@@ -66,8 +66,8 @@ jobs:
           ssh ${CLUSTER_1988} """
           set -e
           if [[ -f "${DATA_DIR}/pre_hash" ]]; then
-            sha1sum ${DATA_DIR}/${{ github.event.repository.name }}/${HASH_FILE} > ${DATA_DIR}/new_hash_file
-            diff_output=$(diff -q --ignore-all-space  "${DATA_DIR}/new_hash_file" "${DATA_DIR}/pre_hash_file" ) && export to_gen_data=false || export to_gen_data=true
+            sha1sum ${DATA_DIR}/source/${GEN_DATA}/${HASH_FILE} > ${DATA_DIR}/new_hash_file
+            diff_output=$(diff -q --ignore-all-space  "${DATA_DIR}/new_hash" "${DATA_DIR}/pre_hash" ) && export to_gen_data=false || export to_gen_data=true
             echo "to_gen_data=$to_gen_data" >> "$GITHUB_ENV"
           else
             echo "to_gen_data=true" >> "$GITHUB_ENV"
