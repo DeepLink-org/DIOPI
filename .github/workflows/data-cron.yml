@@ -19,6 +19,7 @@ env:
   DATA_DIR: '/mnt/cache/share/deeplinkci/gen-data/'
   ENV_PATH: '/mnt/cache/share/platform/env'
   GEN_DATA: 'diopi_test/python/cache'
+  ENV_NAME: 'pt2.0_diopi'
 
 jobs:
   Clone:
@@ -45,9 +46,9 @@ jobs:
         run: |
           ssh ${CLUSTER_1988} """
           set -e
-          source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
+          source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${DATA_DIR}/source/diopi_test/python
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'python main.py --mode gen_data' \
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:1 bash -c 'python main.py --mode gen_data' \
           || ( cd ${DATA_DIR}/source/ && git clean -xdf ${GEN_DATA} && exit 1 )
           """
   Check:
