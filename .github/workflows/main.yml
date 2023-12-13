@@ -201,13 +201,18 @@ jobs:
     steps:
       - name: gen-test-data
         run: |
-          ssh ${CLUSTER_1988} """
-          set -e
-          source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
-          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd diopi_test/python && ls &&
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'python main.py --mode gen_data' \
-          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
-          """
+          if [[ ${{ needs.Rsync.outputs.output }} == *"GENDATA"* ]];then
+            ssh ${CLUSTER_1988} """
+            set -e
+            source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
+            cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd diopi_test/python && ls &&
+            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'python main.py --mode gen_data' \
+            || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+            """
+          else
+            echo "no need to gen data"
+          fi
+
 
   Gen-Data-Op-Test-A100:
     name: Gen-Data-Op-Test-A100
@@ -302,8 +307,12 @@ jobs:
           ssh ${CLUSTER_CAMB} """
           set -e
           export USE_COVERAGE=ON
-          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && ls
-          rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
+          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}
+          if [[ ${{ needs.Rsync.outputs.output }} == *"GENDATA"* ]];then
+            rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
+          else
+            ln -s /mnt/cache/share/deeplinkci/gen-data/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
+          fi
           source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=20 --gres=mlu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode gen_case --impl_folder ${NFS_PATH_LUSTRE}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/camb/ && \
           ${run_test} main.py --mode run_test' && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
@@ -364,7 +373,11 @@ jobs:
         run: |
           set -e
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
+          if [[ ${{ needs.Rsync.outputs.output }} == *"GENDATA"* ]];then
+            rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
+          else
+            ln -s /mnt/cache/share/deeplinkci/gen-data/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
+          fi
           cd diopi_test/python && python main.py --mode gen_case --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/ascend/ && ${run_test} main.py --mode run_test \
           && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
 
