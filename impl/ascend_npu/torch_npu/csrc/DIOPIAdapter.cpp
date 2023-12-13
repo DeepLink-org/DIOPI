@@ -1776,7 +1776,7 @@ private:
     aclError InnerRun(const string& name, AclExecParam& params, bool sync, c10::SmallVector<int64_t, N>& sync_index,
                       c10::SmallVector<at::Tensor, N>& outputTensor);
 
-    void SetDeterministic() { OP_NOT_IMPL }
+    void SetDeterministic();
 
 private:
     string opName;
@@ -2010,6 +2010,17 @@ private:
 static std::unordered_map<std::thread::id, OpCommandImpls> opcommand_impls_map;
 static std::mutex map_mutex;
 static bool deterministicaclnn_oldstatus = false;
+
+void OpCommandImpl::SetDeterministic() {
+    auto deterministicAlgorithmsStatus = at::globalContext().deterministicAlgorithms();
+    if (deterministicaclnn_oldstatus != deterministicAlgorithmsStatus) {
+        NPU_CHECK_ERROR(AclSetCompileopt(aclCompileOpt::ACL_OP_DETERMINISTIC, deterministicAlgorithmsStatus ? "1" : "0"));
+        NPU_CHECK_ERROR(AclrtCtxSetSysParamOpt(aclSysParamOpt::ACL_OPT_DETERMINISTIC, deterministicAlgorithmsStatus ? 1 : 0));
+        // HcclConfigValue configValue = {deterministicAlgorithmsStatus ? 1 : 0};
+        // HCCL_CHECK_ERROR(hccl::HcclSetConfig(HcclConfig::HCCL_DETERMINISTIC, configValue));
+        deterministicaclnn_oldstatus = deterministicAlgorithmsStatus;
+    }
+}
 
 OpCommandImpls* OpCommandImpls::GetInstanceByTid(std::thread::id tid) {
     if (opcommand_impls_map.find(tid) == opcommand_impls_map.end()) {
