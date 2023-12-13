@@ -729,7 +729,6 @@ def gen_autogen_operators(
     if impl_plugin:
         impl_plugin_dir = os.path.join(impl_base_dir, "../ascend_npu/diopi_impl")
         impl_npu_functions = obtain_impl_func(impl_plugin_dir)
-        impl_functions.update(impl_npu_functions)
 
         #check config items all implemented
         not_impled = []
@@ -755,23 +754,12 @@ def gen_autogen_operators(
     # get config information
     op_configs = analysis_configs(configs, funcs_info)
 
-    # generate adaptor implementation codes
-    adaptors_code = autogen_op_adaptor(
-        op_configs, device, funcs_info, impl_funcs, impl_plugin, ascend_impl_configs
-    )
-
     # get the function declarations
     funcs_decl = get_impl_funcs_declaration(
         funcs_decl_raw, funcs_info, impl_funcs, impl_plugin
     )
     composite_funcs_decl = get_composite_funcs_declaration(
         funcs_decl_raw, funcs_info, impl_funcs, op_configs
-    )
-
-    adaptor_fm.write(
-        "diopi_adaptor.cpp",
-        OT.operators_template,
-        dict(adaptors=adaptors_code, cast_strategy=autogen_cast_strategy()),
     )
 
     impl_functions_content = [OT.impl_declaration_content_template.substitute(dict(
@@ -799,6 +787,20 @@ def gen_autogen_operators(
         dict(
             impl_declaration_content=impl_functions_content,
         ),
+    )
+
+    if impl_plugin:
+        impl_funcs = {*impl_funcs, *impl_npu_functions.keys()}
+
+    # generate adaptor implementation codes
+    adaptors_code = autogen_op_adaptor(
+        op_configs, device, funcs_info, impl_funcs, impl_plugin, ascend_impl_configs
+    )
+
+    adaptor_fm.write(
+        "diopi_adaptor.cpp",
+        OT.operators_template,
+        dict(adaptors=adaptors_code, cast_strategy=autogen_cast_strategy()),
     )
 
 
