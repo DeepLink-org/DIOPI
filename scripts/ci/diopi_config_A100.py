@@ -40,4 +40,40 @@ diopi_configs = {
             ],
         ),
     ),
+
+    'varlen_multihead_attention_forward': dict(
+        name=['varlen_multihead_attention_forward'],
+        interface=['CustomizedTest'],
+        dtype=[np.float16],
+        atol=1e-3,
+        rtol=1e-4,
+        para=dict(
+            cu_seqlens=[[0, 13, 66, 153, 256], [0, 256, 300, 425, 512]],
+            max_seqlen=[103, 256],
+            dropout_p=[0, 0],
+            is_causal=[False, True],
+            return_debug_mask=[False, False],
+            scale=[None, 1.00056]
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((256, 16, 32), (512, 16, 128)),
+                    "dtype": [np.float16],
+                },
+                {
+                    "ins": ['k'],
+                    "shape": ((256, 16, 32), (512, 16, 128)),
+                    "dtype": [np.float16],
+                },
+                {
+                    "ins": ['v'],
+                    "shape": ((256, 16, 32), (512, 16, 128)),
+                    "dtype": [np.float16],
+                },
+            ],
+        ),
+    ),
 }

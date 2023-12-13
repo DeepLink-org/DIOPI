@@ -5238,6 +5238,21 @@ def multihead_attention_backward(
     return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
 
+def varlen_multihead_attention_forward(q, k, v, cu_seqlens, max_seqlen, dropout_p, is_causal, return_debug_mask, scale):
+    call = "diopiMultiHeadAttentionVarLen"
+    func = check_function(call)
+    q_size = list(q.size().data)
+    out = Tensor(q_size, q.get_dtype())
+    softmax_lse = Tensor([len(cu_seqlens) - 1, q_size[1], max_seqlen], q.get_dtype())
+    cu_seqlens = Tensor.from_numpy(np.array(cu_seqlens, dtype=np.int32))
+    gen = None
+    debug_attn_mask = Tensor([0], q.get_dtype())
+    softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
+    ret = func(q.context(), q, k, v, cu_seqlens, cu_seqlens, max_seqlen, max_seqlen, dropout_p, is_causal, return_debug_mask, softmax_scale, out, softmax_lse, gen, debug_attn_mask)
+    check_returncode(ret)
+    return out
+
+
 def apply_penalty(
     logits,
     presence_penalty,
