@@ -9,6 +9,7 @@ def get_run_result(pr_number):
         'ASCEND': False,
         'TOPSRIDER': False,
         'SUPA': False,
+        'GENDATA': False,
     }
 
     repository = os.environ.get("GITHUB_REPOSITORY")
@@ -39,6 +40,8 @@ def get_run_result(pr_number):
                     run_result['SUPA'] = True
                 elif "impl/droplet" in filenames:
                     run_result['droplet'] = True
+                elif "diopi_configs.py" in filenames:
+                    run_result['GENDATA'] = True
                 elif any(subpath in filenames for subpath in norunpaths):
                     continue
                 else:
