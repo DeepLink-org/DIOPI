@@ -69,9 +69,10 @@ jobs:
           ssh ${CLUSTER_1988} """
           set -e
           ls -al ${DATA_DIR}/
-          if [ -f ${DATA_DIR}/pre_hash ]; then
+          if [[ -f ${DATA_DIR}/pre_hash ]]; then
             echo "New Hash File: ${DATA_DIR}/new_hash"
             echo "Pre Hash File: ${DATA_DIR}/pre_hash"
+            echo "test12"
             echo "to_gen_data=true" >> "$GITHUB_OUTPUT"
             echo "1"
           else
@@ -80,7 +81,7 @@ jobs:
             echo "2"
           fi
           echo "3"
-          if [ $to_gen_data == "true" ]; then
+          if [[ $to_gen_data == "true" ]]; then
             echo "4"
             cd ${DATA_DIR} && mv new_hash pre_hash
           fi
