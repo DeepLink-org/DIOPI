@@ -774,24 +774,11 @@ device_configs = {
             args=[
                 {
                     "ins": ['tensor'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),],
+                    "dtype": [Skip(np.float64)],
                 },
             ]
         ),
     ),
-
-    'split_bool': dict(
-        name=['split'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensor'],
-                    "dtype": [Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
 
     'transpose': dict(
         name=['transpose'],

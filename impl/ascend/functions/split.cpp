@@ -18,7 +18,10 @@ diopiError_t diopiSplitWithSizes(diopiContextHandle_t ctx, diopiTensorHandle_t* 
 
     // build the dynamicOutput vector
     std::vector<diopiTensorHandle_t> dynamicOutput;
+
     for (int64_t i = 0; i < num_outs; i++) {
+        AscendTensor outputTensorI(outs[i]);
+        printContiguousTensor(ctx, outputTensorI, "output before split");
         dynamicOutput.push_back(const_cast<diopiTensorHandle_t>(outs[i]));
     }
 
@@ -27,7 +30,8 @@ diopiError_t diopiSplitWithSizes(diopiContextHandle_t ctx, diopiTensorHandle_t* 
         .addConstInput(splitSizes)
         .addConstInput(dim, diopi_dtype_int64)
         .setAttr("num_split", num_outs)
-        .addDynamicOutput(dynamicOutput, inputTensor.dtype());
+        .addDynamicOutput(dynamicOutput, inputTensor.dtype())
+        .run();
 
     return diopiSuccess;
 }
