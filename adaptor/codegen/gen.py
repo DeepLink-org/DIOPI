@@ -220,10 +220,11 @@ def get_func_info(content: list) -> Tuple[list, list, list, dict]:
 
 
 def get_functions_support(source_dir: str) -> Tuple[dict, dict]:
-    with open(
-        os.path.join(source_dir, "functions.h"), "r", encoding="utf8"
-    ) as f:
-        content = f.readlines()
+    files = ["functions.h", "functions_ext.h"]
+    content = []
+    for h in files:
+        with open(os.path.join(source_dir, h), "r", encoding="utf8") as f:
+            content.extend(f.readlines())
     funcs_info = {}
     func_dtypes = []
     param_dtypes = {}
