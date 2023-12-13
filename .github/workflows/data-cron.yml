@@ -71,7 +71,7 @@ jobs:
           cd ${DATA_DIR}
           if [[ -f "pre_hash" ]]; then
             sha1sum source/${GEN_DATA}/${HASH_FILE} > new_hash
-            diff_output=$(diff -q --ignore-all-space "new_hash" "pre_hash" ) && echo "false" > ${DATA_DIR}/to_gen_data  || echo "true" > to_gen_data
+            diff_output=\$(diff -q --ignore-all-space "new_hash" "pre_hash" ) && echo "false" > to_gen_data  || echo "true" > to_gen_data
           else
             echo "true" > to_gen_data
           fi
