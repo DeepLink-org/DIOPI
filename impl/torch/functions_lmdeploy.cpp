@@ -13,7 +13,6 @@
 #include <cassert>
 #include <iostream>
 #include <vector>
-#include <cuda_fp16.h>
 
 #include "context.h"
 #include "helper.hpp"
@@ -39,7 +38,7 @@ extern "C" {
         }                                                            \
     } while (false);
 
-diopiError_t makeTensorLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input) {
+diopiError_t makeTensorLike(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t input) {
     diopiDtype_t dtype;
     DIOPI_CHECK(diopiGetTensorDtype(input, &dtype));
     diopiSize_t shape;
@@ -51,76 +50,15 @@ diopiError_t makeTensorLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, 
     return diopiSuccess;
 }
 
-class int_ptr_wrapper {
-public:
-    int_ptr_wrapper(char* ptr) : _ptr(ptr) {};
-    int_ptr_wrapper(const char* ptr) : _ptr(const_cast<char*>(ptr)) {};
-    int_ptr_wrapper(char* ptr, int64_t _elem_size) : _ptr(ptr), _elem_size(_elem_size) {};
-    int_ptr_wrapper(const char* ptr, int64_t _elem_size) : _ptr(const_cast<char*>(ptr)), _elem_size(_elem_size) {};
-
-    char* _ptr;
-    int64_t _elem_size = 4;
-
-    char* operator+(int64_t offset) {
-        return _ptr + offset * _elem_size;
-    }
-
-    char* operator-(int64_t offset) {
-        return _ptr - offset * _elem_size;
-    }
-
-    char* operator+=(int64_t offset) {
-        _ptr += offset * _elem_size;
-        return _ptr;
-    }
-
-    char* operator-=(int64_t offset) {
-        _ptr -= offset * _elem_size;
-        return _ptr;
-    }
-
-    char* operator++() {
-        _ptr += _elem_size;
-        return _ptr;
-    }
-
-    char* operator--() {
-        _ptr -= _elem_size;
-        return _ptr;
-    }
-
-    char* operator++(int) {
-        char* tmp = _ptr;
-        _ptr += _elem_size;
-        return tmp;
-    }
-
-    char* operator--(int) {
-        char* tmp = _ptr;
-        _ptr -= _elem_size;
-        return tmp;
-    }
-
-    int64_t operator[](int64_t offset) {
-        if (_elem_size == 4) {
-            return static_cast<int64_t>(*reinterpret_cast<int32_t*>(_ptr + offset * _elem_size));
-        } else if (_elem_size == 8) {
-            return *reinterpret_cast<int64_t*>(_ptr + offset * _elem_size);
-        } else {
-            assert(false);
-        }
-    }
-};
-
-int64_t* getDataOffsetPtr(diopiTensorHandle_t tensor, int64_t offset) {
-    char* ptr = nullptr; 
-    diopiGetTensorData(tensor, reinterpret_cast<void**>(&ptr));
+int64_t *getDataOffsetPtr(diopiTensorHandle_t tensor, int64_t offset) {
+    char *ptr = nullptr;
+    diopiGetTensorData(tensor, reinterpret_cast<void **>(&ptr));
     if (offset == 0) {
-        return reinterpret_cast<int64_t*>(ptr);
+        return reinterpret_cast<int64_t *>(ptr);
     }
     int64_t elem_size;
     diopiGetTensorElemSize(tensor, &elem_size);
-    return reinterpret_cast<int64_t*>(ptr + offset * elem_size);
+    return reinterpret_cast<int64_t *>(ptr + offset * elem_size);
 }
 
 /**
@@ -262,7 +200,6 @@ DIOPI_API diopiError_t diopiLengthCriterion(diopiContextHandle_t ctx, diopiTenso
     return diopiSuccess;
 }
 
-
 /**
  * @brief EmbeddingLookupPosEncoding. Find id in embedding_table and get [hidden], only this step
  * @param[in] ctx The diopi context.
@@ -339,6 +276,7 @@ DIOPI_API diopiError_t diopiInputIdsEmbeddingLookupPosEncoding(diopiContextHandl
  */
 DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiConstTensorHandle_t output_ids, diopiConstTensorHandle_t stop_words,
                                                diopiTensorHandle_t finished, int64_t id_offset, int64_t stop_words_len, int64_t batch_size, int64_t step) {
+    std::cout << "LXZ LOG" << std::endl;
     // always id_offset = 0
     if (output_ids == nullptr || stop_words == nullptr || finished == nullptr) {
         return diopiErrorOccurred;
@@ -357,8 +295,8 @@ DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiCo
     diopiCopyD2H(ctx, stop_words_host, stop_words, false);
 
     const int32_t *stop_words_ptr;
-    int32_t* stop_words_host_ptr;
-    
+    int32_t *stop_words_host_ptr;
+
     int64_t finished_elem_size;
     diopiGetTensorElemSize(finished, &finished_elem_size);
     diopiDtype_t finished_type;
@@ -373,19 +311,19 @@ DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiCo
     if (ids_type != diopi_dtype_int32) {
         return diopiErrorOccurred;
     }
-    
-    for(int64_t batch_idx = 0; batch_idx < batch_size; ++batch_idx) {
-        const int32_t* base_stop_words_host = stop_words_host_ptr + batch_idx * 2 * stop_words_len;
-        const int32_t* base_offsets_host    = base_stop_words_host + stop_words_len;
-        const int32_t* base_stop_word = stop_words_ptr + batch_idx * 2 * stop_words_len;       
+
+    for (int64_t batch_idx = 0; batch_idx < batch_size; ++batch_idx) {
+        const int32_t *base_stop_words_host = stop_words_host_ptr + batch_idx * 2 * stop_words_len;
+        const int32_t *base_offsets_host = base_stop_words_host + stop_words_len;
+        const int32_t *base_stop_word = stop_words_ptr + batch_idx * 2 * stop_words_len;
 
         for (int64_t stop_word_idx = 0; stop_word_idx < stop_words_len; ++stop_word_idx) {
             if (base_stop_words_host[stop_word_idx] < 0) {
                 continue;
             }
             const int32_t stop_word_start_idx = (stop_word_idx > 0) ? base_offsets_host[stop_word_idx - 1] : 0;
-            const int32_t stop_word_end_idx   = base_offsets_host[stop_word_idx] - 1;
-            const int64_t stop_word_len  = stop_word_end_idx - stop_word_start_idx + 1;
+            const int32_t stop_word_end_idx = base_offsets_host[stop_word_idx] - 1;
+            const int64_t stop_word_len = stop_word_end_idx - stop_word_start_idx + 1;
 
             if (step + 1 < stop_word_len) {
                 continue;
@@ -411,7 +349,6 @@ DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiCo
             diopiRequireTensor(ctx, &output_ids_col, &output_ids_col_shape, nullptr, ids_type, diopi_device);
             diopiSelect(ctx, output_ids_col, output_ids, 1, batch_idx);
 
-            
             diopiTensorHandle_t output_ids_to_compare;
             char *output_ids_to_compare_data;
             diopiGetTensorData(output_ids_col, reinterpret_cast<void **>(&output_ids_to_compare_data));
@@ -425,7 +362,7 @@ DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiCo
             diopiTensorHandle_t cmp_res;
             diopiRequireTensor(ctx, &cmp_res, &stop_word_shape, nullptr, diopi_dtype_bool, stop_word_device);
             diopiEq(ctx, cmp_res, output_ids_to_compare, stop_word_tensor);
-            
+
             diopiTensorHandle_t cmp_res_sum;
             diopiSize_t cmp_res_sum_shape;
             cmp_res_sum_shape.len = 1;
@@ -434,13 +371,13 @@ DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiCo
             diopiRequireTensor(ctx, &cmp_res_sum, &cmp_res_sum_shape, nullptr, diopi_dtype_bool, stop_word_device);
             int64_t tmp_zero = 0;
             diopiAll(ctx, cmp_res_sum, cmp_res, &tmp_zero);
-            
+
             diopiTensorHandle_t cmp_res_sum_host;
             diopiRequireTensor(ctx, &cmp_res_sum_host, &cmp_res_sum_shape, nullptr, diopi_dtype_bool, diopi_host);
             diopiCopyD2H(ctx, cmp_res_sum_host, cmp_res_sum, false);
-            bool* cmp_res_sum_host_data;
+            bool *cmp_res_sum_host_data;
             diopiGetTensorData(cmp_res_sum_host, reinterpret_cast<void **>(&cmp_res_sum_host_data));
-            
+
             if (cmp_res_sum_host_data[0]) {
                 // diopiTensorHandle_t batch_idx_tensor;
                 // diopiSize_t batch_idx_shape;
@@ -461,18 +398,17 @@ DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiCo
                 diopiSize_t finished_to_modify_stride;
                 finished_to_modify_stride.len = -1;
                 finished_to_modify_stride.data = getDataOffsetPtr(finished, batch_idx);
-                
+
                 diopiRequireTensor(ctx, &finished_to_modify, &cmp_res_sum_shape, &finished_to_modify_stride, diopi_dtype_bool, diopi_device);
-                
+
                 diopiFill(ctx, finished_to_modify, &true_scalar);
 
                 break;
             }
-        }   
+        }
     }
     return diopiSuccess;
 }
-
 
 /**
  * @brief BanBadWords.
@@ -500,7 +436,7 @@ DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensor
     if (logits == nullptr || output_ids == nullptr || bad_words == nullptr) {
         return diopiErrorOccurred;
     }
-    
+
     diopiTensorHandle_t bad_words_host;
     diopiSize_t bad_words_shape, bad_words_stride;
     diopiGetTensorShape(bad_words, &bad_words_shape);
@@ -509,7 +445,7 @@ DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensor
     diopiCopyD2H(ctx, bad_words_host, bad_words, false);
 
     const int32_t *bad_words_ptr;
-    int32_t* bad_words_host_ptr;
+    int32_t *bad_words_host_ptr;
 
     diopiGetTensorDataConst(bad_words, reinterpret_cast<const void **>(&bad_words_ptr));
     diopiGetTensorData(bad_words_host, reinterpret_cast<void **>(&bad_words_host_ptr));
@@ -519,27 +455,25 @@ DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensor
     if (ids_type != diopi_dtype_int32) {
         return diopiErrorOccurred;
     }
-    
-    for(int64_t batch_idx = 0; batch_idx < batch_size; ++batch_idx) {
-        const int32_t* base_bad_words_host = share_words ? bad_words_host_ptr : bad_words_host_ptr + batch_idx * 2 * bad_words_len;
-        const int32_t* base_offsets_host    = base_bad_words_host + bad_words_len;
-        const int32_t* base_bad_word = share_words ? bad_words_ptr : bad_words_ptr + batch_idx * 2 * bad_words_len;       
+
+    for (int64_t batch_idx = 0; batch_idx < batch_size; ++batch_idx) {
+        const int32_t *base_bad_words_host = share_words ? bad_words_host_ptr : bad_words_host_ptr + batch_idx * 2 * bad_words_len;
+        const int32_t *base_offsets_host = base_bad_words_host + bad_words_len;
+        const int32_t *base_bad_word = share_words ? bad_words_ptr : bad_words_ptr + batch_idx * 2 * bad_words_len;
 
         for (int64_t bad_word_idx = 0; bad_word_idx < bad_words_len; ++bad_word_idx) {
             if (base_bad_words_host[bad_word_idx] < 0) {
                 continue;
             }
             const int32_t bad_word_start_idx = (bad_word_idx > 0) ? base_offsets_host[bad_word_idx - 1] : 0;
-            const int32_t bad_word_end_idx   = base_offsets_host[bad_word_idx] - 1;
-            const int64_t bad_word_len  = bad_word_end_idx - bad_word_start_idx + 1;
-
-            
+            const int32_t bad_word_end_idx = base_offsets_host[bad_word_idx] - 1;
+            const int64_t bad_word_len = bad_word_end_idx - bad_word_start_idx + 1;
 
             if (step + 1 < bad_word_len) {
                 continue;
             }
 
-            bool* cmp_res_sum_host_data = nullptr;
+            bool *cmp_res_sum_host_data = nullptr;
             if (bad_word_len != 1) {
                 diopiTensorHandle_t bad_word_tensor;
                 diopiSize_t bad_word_shape;
@@ -574,7 +508,7 @@ DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensor
                 diopiTensorHandle_t cmp_res;
                 diopiRequireTensor(ctx, &cmp_res, &bad_word_shape, nullptr, diopi_dtype_bool, bad_word_device);
                 diopiEq(ctx, cmp_res, output_ids_to_compare, bad_word_tensor);
-                
+
                 diopiTensorHandle_t cmp_res_sum;
                 diopiSize_t cmp_res_sum_shape;
                 cmp_res_sum_shape.len = 1;
@@ -583,11 +517,11 @@ DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensor
                 diopiRequireTensor(ctx, &cmp_res_sum, &cmp_res_sum_shape, nullptr, diopi_dtype_bool, bad_word_device);
                 int64_t tmp_zero = 0;
                 diopiAll(ctx, cmp_res_sum, cmp_res, &tmp_zero);
-                
+
                 diopiTensorHandle_t cmp_res_sum_host;
                 diopiRequireTensor(ctx, &cmp_res_sum_host, &cmp_res_sum_shape, nullptr, diopi_dtype_bool, diopi_host);
                 diopiCopyD2H(ctx, cmp_res_sum_host, cmp_res_sum, false);
-                
+
                 diopiGetTensorData(cmp_res_sum_host, reinterpret_cast<void **>(&cmp_res_sum_host_data));
             }
 
@@ -603,7 +537,7 @@ DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensor
                     stride.len = -1;
                     stride.data = reinterpret_cast<const int64_t *>(base_bad_word + bad_word_end_idx);
                     diopiRequireTensor(ctx, &banned_token_tensor, &banned_token_shape, &stride, ids_type, diopi_device);
-                    
+
                     diopiTensorHandle_t logit_to_modify;
                     diopiDtype_t logits_type;
                     diopiGetTensorDtype(logits, &logits_type);
@@ -611,14 +545,14 @@ DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensor
                     logit_to_modify_shape.len = 1;
                     logit_to_modify_shape.data = &tmp_one;
                     logit_to_modify_stride.len = -1;
-                    char* logit_to_modify_data;
+                    char *logit_to_modify_data;
                     diopiGetTensorData(logits, reinterpret_cast<void **>(&logit_to_modify_data));
                     int64_t elem_size;
                     diopiGetTensorElemSize(logits, &elem_size);
-                    logit_to_modify_data += (batch_idx * vocab_size + banned_token) * elem_size; 
+                    logit_to_modify_data += (batch_idx * vocab_size + banned_token) * elem_size;
                     logit_to_modify_stride.data = reinterpret_cast<const int64_t *>(logit_to_modify_data);
                     diopiRequireTensor(ctx, &logit_to_modify, &logit_to_modify_shape, &logit_to_modify_stride, logits_type, diopi_device);
-                    
+
                     diopiScalar_t minus_inf;
                     minus_inf.stype = logits_type;
                     minus_inf.fval = -INFINITY;
@@ -626,11 +560,10 @@ DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensor
                 }
                 continue;
             }
-        }   
+        }
     }
     return diopiSuccess;
 }
-
 
 DIOPI_API diopiError_t diopiCopyD2D(diopiContextHandle_t ctx, diopiTensorHandle_t dst, diopiConstTensorHandle_t src, bool async) {
     impl::aten::setCurCtx(ctx);
@@ -675,13 +608,11 @@ DIOPI_API diopiError_t diopiGatherOutput(diopiContextHandle_t ctx, diopiTensorHa
     diopiGetTensorShape(context_length, &context_length_shape);
     diopiRequireTensor(ctx, &context_length_host, &context_length_shape, nullptr, context_length_type, diopi_host);
     diopiCopyD2H(ctx, context_length_host, context_length, false);
-    
-    
 
     int32_t *context_length_host_data;
     diopiGetTensorData(context_length_host, reinterpret_cast<void **>(&context_length_host_data));
     // std::cout << "LXZ LOG diopigatheroutput 0.2" <<std::endl;
-    
+
     // diopiTensorHandle_t ids_transpoese;
     // diopiSize_t ids_transpoese_shape;
     // ids_transpoese_shape.len = 2;
@@ -690,7 +621,7 @@ DIOPI_API diopiError_t diopiGatherOutput(diopiContextHandle_t ctx, diopiTensorHa
     // diopiRequireTensor(ctx, &ids_transpoese, &ids_transpoese_shape, nullptr, ids_type, diopi_device);
     // diopiTranspose(ctx, ids_transpoese, ids, 1, 0);
 
-    for(int64_t batch_idx = 0; batch_idx < batch_size; ++batch_idx) {
+    for (int64_t batch_idx = 0; batch_idx < batch_size; ++batch_idx) {
         // std::cout << "LXZ LOG diopigatheroutput 1" <<std::endl;
         diopiTensorHandle_t src_col;
         diopiSize_t src_col_shape;
@@ -703,10 +634,10 @@ DIOPI_API diopiError_t diopiGatherOutput(diopiContextHandle_t ctx, diopiTensorHa
         // diopiGetTensorData(ids_transpoese, reinterpret_cast<void **>(&src_col_data));
         // src_col_data += (batch_idx * max_output_len * ids_elem_size);
         // src_col_stride.data = reinterpret_cast<const int64_t *>(src_col_data);
-        
+
         // diopiRequireTensor(ctx, &src_col, &src_col_shape, &src_col_stride, ids_type, diopi_device);
-        
-        // test start 
+
+        // test start
         // diopiTensorHandle_t src_col_host;
         // diopiRequireTensor(ctx, &src_col_host, &src_col_shape, nullptr, ids_type, diopi_host);
         // diopiCopyD2H(ctx, src_col_host, src_col, false);
@@ -720,7 +651,7 @@ DIOPI_API diopiError_t diopiGatherOutput(diopiContextHandle_t ctx, diopiTensorHa
         diopiRequireTensor(ctx, &src_col, &src_col_shape, nullptr, ids_type, diopi_device);
         // std::cout << "LXZ LOG GATHEROUTPUT 1.1" <<std::endl;
         diopiSelect(ctx, src_col, ids, 1, batch_idx);
-        
+
         // std::cout << "LXZ LOG GATHEROUTPUT 2" <<std::endl;
         diopiTensorHandle_t src_col_front;
         diopiSize_t src_col_front_shape, src_col_front_stride;
@@ -737,7 +668,7 @@ DIOPI_API diopiError_t diopiGatherOutput(diopiContextHandle_t ctx, diopiTensorHa
         diopiTensorHandle_t dst_row_front;
         diopiSize_t dst_row_front_stride;
         dst_row_front_stride.len = -1;
-        char* dst_row_front_data;
+        char *dst_row_front_data;
         diopiGetTensorData(output_ids, reinterpret_cast<void **>(&dst_row_front_data));
         dst_row_front_data += (batch_idx * max_output_len * ids_elem_size);
         dst_row_front_stride.data = reinterpret_cast<const int64_t *>(dst_row_front_data);
@@ -746,7 +677,7 @@ DIOPI_API diopiError_t diopiGatherOutput(diopiContextHandle_t ctx, diopiTensorHa
         // std::cout << "LXZ LOG diopigatheroutput 4" <<std::endl;
         diopiCopyD2D(ctx, dst_row_front, src_col_front, false);
         // std::cout << "LXZ LOG diopigatheroutput 5" <<std::endl;
-        if(max_context_len < max_gen_step) {
+        if (max_context_len < max_gen_step) {
             // std::cout << "LXZ LOG diopigatheroutput 6" <<std::endl;
             diopiTensorHandle_t src_col_back;
             diopiSize_t src_col_back_shape, src_col_back_stride;
@@ -765,7 +696,7 @@ DIOPI_API diopiError_t diopiGatherOutput(diopiContextHandle_t ctx, diopiTensorHa
             diopiTensorHandle_t dst_row_back;
             diopiSize_t dst_row_back_stride;
             dst_row_back_stride.len = -1;
-            char* dst_row_back_data;
+            char *dst_row_back_data;
             diopiGetTensorData(output_ids, reinterpret_cast<void **>(&dst_row_back_data));
             dst_row_back_data += ((batch_idx * max_output_len + context_len) * ids_elem_size);
             dst_row_back_stride.data = reinterpret_cast<const int64_t *>(dst_row_back_data);
@@ -797,18 +728,17 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
                                                            diopiConstTensorHandle_t output_ids, const int64_t batch_size, const int64_t vocab_size,
                                                            diopiConstTensorHandle_t input_lengths, const int64_t max_input_length, const int64_t step,
                                                            const int64_t penalty_type) {
-
     if (logits == nullptr || penalties == nullptr || output_ids == nullptr || input_lengths == nullptr) {
         return diopiErrorOccurred;
     }
-    
+
     if (penalty_type != 0 && penalty_type != 1 && penalty_type != 2) {
         return diopiErrorOccurred;
     }
 
     if (penalty_type == 0) {
         return diopiSuccess;
-    } 
+    }
 
     diopiDtype_t logits_type, penalties_type, input_lengths_type, output_ids_type;
     diopiGetTensorDtype(logits, &logits_type);
@@ -832,13 +762,13 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
         diopiSize_t input_lengths_shape;
         diopiGetTensorShape(input_lengths, &input_lengths_shape);
         diopiRequireTensor(ctx, &input_lengths_host, &input_lengths_shape, nullptr, input_lengths_type, diopi_host);
-        
+
         diopiCopyD2H(ctx, input_lengths_host, input_lengths, false);
         diopiGetTensorData(input_lengths_host, reinterpret_cast<void **>(&input_lengths_host_data));
     }
-    
+
     // std::cout << "LXZ LOG diopiBatchApplyRepetitionPenaltyInp 0" <<std::endl;
-    for(int64_t batch_idx = 0; batch_idx < batch_size; ++batch_idx) {
+    for (int64_t batch_idx = 0; batch_idx < batch_size; ++batch_idx) {
         diopiTensorHandle_t output_ids_col;
         diopiSize_t output_ids_col_shape;
         output_ids_col_shape.len = 1;
@@ -862,11 +792,11 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
         // std::cout << " LXZ LOG diopiBatchApplyRepetitionPenaltyInp 1" <<std::endl;
         diopiTensorHandle_t output_ids_col_front;
         diopiSize_t output_ids_col_front_shape, output_ids_col_front_stride;
-        
+
         output_ids_col_front_shape.len = 1;
         int64_t input_len = input_lengths_host_data == nullptr ? max_input_length : static_cast<int64_t>(input_lengths_host_data[batch_idx]);
         output_ids_col_front_shape.data = &input_len;
-        
+
         output_ids_col_front_stride.len = -1;
         char *output_ids_col_front_data;
         diopiGetTensorData(output_ids_col, reinterpret_cast<void **>(&output_ids_col_front_data));
@@ -875,7 +805,7 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
         diopiRequireTensor(ctx, &output_ids_col_front, &output_ids_col_front_shape, &output_ids_col_front_stride, output_ids_type, diopi_device);
         diopiTensorHandle_t valid_output_ids_col = output_ids_col_front;
         int64_t vaild_output_ids_col_len = input_len;
-        
+
         // test
         // diopiTensorHandle_t output_ids_col_front_host;
         // diopiRequireTensor(ctx, &output_ids_col_front_host, &output_ids_col_front_shape, nullptr, output_ids_type, diopi_host);
@@ -909,7 +839,7 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
             diopiCat(ctx, valid_output_ids_col, to_cat, 2, 0);
             // std::cout << "LXZ LOG diopiBatchApplyRepetitionPenaltyInp 3" <<std::endl;
         }
-        
+
         diopiTensorHandle_t logits_this_batch;
         diopiSize_t logits_this_batch_shape, logits_this_batch_stride;
         logits_this_batch_shape.len = 1;
@@ -928,7 +858,7 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
         diopiRequireTensor(ctx, &logits_to_penalize, &logits_to_penalize_shape, nullptr, logits_type, diopi_device);
         // std::cout << "LXZ LOG diopiBatchApplyRepetitionPenaltyInp 4" <<std::endl;
         diopiIndexSelect(ctx, logits_to_penalize, logits_this_batch, 0, valid_output_ids_col);
-        
+
         diopiTensorHandle_t penalties_this_batch;
         diopiSize_t penalties_this_batch_shape, penalties_this_batch_stride;
         penalties_this_batch_shape.len = 1;
@@ -941,7 +871,7 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
         penalties_this_batch_data += (batch_idx * penalties_elem_size);
         penalties_this_batch_stride.data = reinterpret_cast<const int64_t *>(penalties_this_batch_data);
         diopiRequireTensor(ctx, &penalties_this_batch, &penalties_this_batch_shape, &penalties_this_batch_stride, penalties_type, diopi_device);
-        
+
         diopiTensorHandle_t penalties_this_batch_expand;
         diopiSize_t penalties_this_batch_expand_shape;
         penalties_this_batch_expand_shape.len = 1;
@@ -952,9 +882,9 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
         diopiScalar_t one_scalar;
         one_scalar.stype = diopi_dtype_int64;
         one_scalar.ival = 1;
-    
+
         if (penalty_type == 1) {
-            diopiSubInp(ctx, logits_to_penalize, penalties_this_batch_expand, &one_scalar);    
+            diopiSubInp(ctx, logits_to_penalize, penalties_this_batch_expand, &one_scalar);
         } else {
             diopiTensorHandle_t ge_zero_mask, lt_zero_mask;
             diopiSize_t ge_than_zero_mask_shape;
@@ -975,7 +905,6 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
             diopiMulInp(ctx, mul_penalty, penalties_this_batch_expand);
             diopiDivInp(ctx, div_penalty, penalties_this_batch_expand, RoundModeNone);
             diopiAdd(ctx, logits_to_penalize, mul_penalty, div_penalty, &one_scalar);
-            
         }
         // std::cout << "LXZ LOG diopiBatchApplyRepetitionPenaltyInp 6" <<std::endl;
         char reduce[0];
@@ -987,7 +916,7 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
             diopiRequireTensor(ctx, &scatter_index, &scatter_index_shape, nullptr, diopi_dtype_int64, diopi_device);
             diopiCastDtype(ctx, scatter_index, valid_output_ids_col);
         }
-        
+
         diopiScatterInp(ctx, logits_this_batch, 0, logits_to_penalize, scatter_index, reduce);
     }
 
@@ -1022,8 +951,8 @@ diopiError_t diopiBatchApplyTemperaturePenaltyInp(diopiContextHandle_t ctx, diop
     std::vector<int64_t> lhs_shape_vec = {batch_size, vocab_size};
     // std::cout << lhs_shape_vec.size() << lhs_shape_vec[0] << " " << lhs_shape_vec[1] << std::endl;
     diopiSize_t lhs_shape{lhs_shape_vec.data(), 2};
-    // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 2"<< "batch_size: "<< batch_size << "vocab_size: "<< vocab_size << "size: "<< batch_size * vocab_size <<std::endl;
-    // std::cout << lhs_shape.len << " " << lhs_shape.data[0] << " " << lhs_shape.data[1] << std::endl;
+    // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 2"<< "batch_size: "<< batch_size << "vocab_size: "<< vocab_size << "size: "<< batch_size *
+    // vocab_size <<std::endl; std::cout << lhs_shape.len << " " << lhs_shape.data[0] << " " << lhs_shape.data[1] << std::endl;
     DIOPI_CHECK(diopiRequireTensor(ctx, &lhs, &lhs_shape, nullptr, logits_dtype, diopi_device));
     // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 3" <<std::endl;
     DIOPI_CHECK(diopiSlice(ctx, lhs, logits, 1, 0, vocab_size, 1));
@@ -1048,6 +977,9 @@ diopiError_t diopiBatchApplyTemperaturePenaltyInp(diopiContextHandle_t ctx, diop
     DIOPI_CHECK(makeTensorLike(ctx, &new_temperatures, temperatures));
     diopiDtype_t temperatures_dtype;
     DIOPI_CHECK(diopiGetTensorDtype(temperatures, &temperatures_dtype));
+
+    assert(temperatures_dtype == diopi_dtype_float32);
+
     diopiScalar_t eps_scalar;
     eps_scalar.stype = temperatures_dtype;
     eps_scalar.fval = 1e-6;
@@ -1067,38 +999,34 @@ diopiError_t diopiBatchApplyTemperaturePenaltyInp(diopiContextHandle_t ctx, diop
     }
     // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 8" <<std::endl;
     // std::cout << "batch size: " << batch_size << " vocab size: " << vocab_size << std::endl;
-    
+
     // diopiTensorHandle_t new_temperatures_expand, new_temperatures_expand_transpose;
     // diopiSize_t new_temperatures_expand_transpose_shape;
     // new_temperatures_expand_transpose_shape.len = 2;
     // int64_t new_temperatures_expand_transpose_shape_data[2] = {vocab_size, batch_size};
     // new_temperatures_expand_transpose_shape.data = new_temperatures_expand_transpose_shape_data;
 
-    // DIOPI_CHECK(diopiRequireTensor(ctx, &new_temperatures_expand_transpose, &new_temperatures_expand_transpose_shape, nullptr, temperatures_dtype, diopi_device));
-    // DIOPI_CHECK(diopiExpand(ctx, new_temperatures_expand_transpose, new_temperatures));
-    
+    // DIOPI_CHECK(diopiRequireTensor(ctx, &new_temperatures_expand_transpose, &new_temperatures_expand_transpose_shape, nullptr, temperatures_dtype,
+    // diopi_device)); DIOPI_CHECK(diopiExpand(ctx, new_temperatures_expand_transpose, new_temperatures));
+
     // DIOPI_CHECK(diopiRequireTensor(ctx, &new_temperatures_expand, &lhs_shape, nullptr, temperatures_dtype, diopi_device));
     // DIOPI_CHECK(diopiTranspose(ctx, new_temperatures_expand, new_temperatures_expand_transpose, 1, 0));
     // DIOPI_CHECK(diopiDivInp(ctx, lhs, new_temperatures_expand, RoundModeNone));
     // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 9" <<std::endl;
-    
+
     diopiSize_t new_temperatures_shape;
     DIOPI_CHECK(diopiGetTensorShape(new_temperatures, &new_temperatures_shape));
     diopiTensorHandle_t new_temperatures_host;
     DIOPI_CHECK(diopiRequireTensor(ctx, &new_temperatures_host, &new_temperatures_shape, nullptr, temperatures_dtype, diopi_host));
     DIOPI_CHECK(diopiCopyD2H(ctx, new_temperatures_host, new_temperatures, false));
     char *new_temperatures_host_data;
-    
+
     DIOPI_CHECK(diopiGetTensorData(new_temperatures_host, reinterpret_cast<void **>(&new_temperatures_host_data)));
     for (int64_t i = 0; i < batch_size; ++i) {
         diopiScalar_t temperature_scalar;
-        if (logits_dtype == diopi_dtype_float16) {
-            temperature_scalar.stype = diopi_dtype_float16;
-            temperature_scalar.fval = __half2float(reinterpret_cast<half *>(new_temperatures_host_data)[i]);
-        } else {
-            temperature_scalar.stype = diopi_dtype_float32;
-            temperature_scalar.fval = reinterpret_cast<float *>(new_temperatures_host_data)[i];
-        }
+        temperature_scalar.stype = diopi_dtype_float32;
+        temperature_scalar.fval = reinterpret_cast<float *>(new_temperatures_host_data)[i];
+
         diopiTensorHandle_t logits_row;
         diopiSize_t logits_row_shape, logits_row_stride;
         logits_row_shape.len = 1;
