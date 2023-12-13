@@ -212,6 +212,18 @@
 - diopiExp:
     dtype: (bool, uint8, int8, int16, int32, int64)->float32
 
+- diopiPow:
+    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+
+- diopiPowInp:
+    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+
+- diopiPowTensor:
+    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+
+- diopiPowInpTensor:
+    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+
 - diopiNorm:
     dtype: (bool, uint8, int8, int16, int32, int64, float16, float64)->float32
 
@@ -229,6 +241,9 @@
 
 - diopiDropoutInp:
     dtype: (float64)->float32
+
+- diopiExpand:
+    dtype: (uint8, int16)->int32, (float64)->float32
     
 - diopiSort:
     dtype: (float64)->float32
