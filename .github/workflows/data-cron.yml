@@ -14,8 +14,7 @@ env:
   CLUSTER_TOPSRIDER: TOPSRIDER
   CLUSTER_SUPA: SUPA
   DEEPLINK_PATH: '/mnt/cache/share/deeplinkci/github/${{ github.repository }}'
-  #  HASH_FILE: 'diopi_test/python/cache/diopi_case_items.cfg'
-  HASH_FILE: 'diopi_test/python/main.py'
+  HASH_FILE: 'diopi_test/python/cache/diopi_case_items.cfg'
   DATA_DIR: '/mnt/cache/share/deeplinkci/gen-data/'
   ENV_PATH: '/mnt/cache/share/platform/env'
   GEN_DATA: 'diopi_test/python/cache'
@@ -64,15 +63,15 @@ jobs:
         run: |
           ssh ${CLUSTER_1988} """
           set -e
-          if [[ -f ${DATA_DIR}/pre_hash_file ]]; then
-            sha1sum ${DATA_DIR}/${{ github.event.repository.name }}/${HASH_FILE} > ${DATA_DIR}/new_hash_file
-            diff_output=$(diff -q --ignore-all-space  "${DATA_DIR}/new_hash_file" "${DATA_DIR}/pre_hash_file" ) && export to_gen_data=false || export to_gen_data=true
+          if [[ -f ${DATA_DIR}/pre_hash ]]; then
+            sha1sum ${DATA_DIR}/source/${GEN_DATA}/${HASH_FILE} > ${DATA_DIR}/new_hash
+            diff_output=$(diff -q --ignore-all-space  "${DATA_DIR}/new_hash" "${DATA_DIR}/pre_hash" ) && export to_gen_data=false || export to_gen_data=true
             echo "to_gen_data=$to_gen_data" >> "$GITHUB_OUTPUT"
           else
             echo "to_gen_data=true" >> "$GITHUB_OUTPUT"
           fi
           if [[ $to_gen_data == "true" ]]; then
-            cd ${DATA_DIR} && mv new_hash_file pre_hash_file
+            cd ${DATA_DIR} && mv new_hash pre_hash
           fi
           """
 
