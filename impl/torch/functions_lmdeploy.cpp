@@ -61,13 +61,6 @@ int64_t *getDataOffsetPtr(diopiTensorHandle_t tensor, int64_t offset) {
     return reinterpret_cast<int64_t *>(ptr + offset * elem_size);
 }
 
-/**
- * @brief PlusScalar. if 0 < index < size, add val.
- * @param[in] ctx The diopi context.
- * @param[inout] inoutput : Output tensor.shape=[len].type = [int64, int32]
- * @param[in] val : Val for add.type = [int64, int32]
- * @param[in] size : Size or maxindex.type = [int64, int32]
- */
 DIOPI_API diopiError_t diopiPlusScalarInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, const int64_t val, const int64_t size) {
     diopiSize_t in_shape;
     diopiGetTensorShape(inoutput, &in_shape);
@@ -104,14 +97,6 @@ DIOPI_API diopiError_t diopiPlusScalarInp(diopiContextHandle_t ctx, diopiTensorH
     return diopiSuccess;
 }
 
-/**
- * @brief Total_padding_count.Padding_count = maxinputlen - inputlen for each batch.
- * @param[in] ctx The diopi context.
- * @param[out] total_padding_count : Total padding_count.shape=[batch_size].type = [int64, int32]
- * @param[in] input_lengths : Input length.shape=[batch_size].type = [int64, int32]
- * @param[in] max_input_length : Max input length.type = [int64, int32]
- * @param[in] batch_size : Batch size.type = [int64, int32]
- */
 DIOPI_API diopiError_t diopiUpdatePaddingCount(diopiContextHandle_t ctx, diopiTensorHandle_t total_padding_count, diopiConstTensorHandle_t input_lengths,
                                                int64_t max_input_length, int64_t batch_size) {
     if (input_lengths == nullptr) {
@@ -143,16 +128,6 @@ DIOPI_API diopiError_t diopiUpdatePaddingCount(diopiContextHandle_t ctx, diopiTe
     return diopiSuccess;
 }
 
-/**
- * @brief LengthCriterion. Judging and counting the end situation based on length.If all fin then should_stop.
- * @param[in] ctx The diopi context.
- * @param[inout] finished : Finished.shape = [batch_size].type = [bool]
- * @param[out] should_stop : If all fin then should_stop.shape = [1].type = [bool]
- * @param[out] finished_sum : Total finished.shape = [1].type = [int64, int32]
- * @param[in] sequence_limit_length : Sequence limit length tensor.shape = [batch_size].type = [int64, int32]
- * @param[in] batch_size : Input tensor.type = [int64, int32]
- * @param[in] step : Step.type = [int64, int32]
- */
 DIOPI_API diopiError_t diopiLengthCriterion(diopiContextHandle_t ctx, diopiTensorHandle_t finished, diopiTensorHandle_t should_stop,
                                             diopiTensorHandle_t finished_sum, diopiConstTensorHandle_t sequence_limit_length, int64_t batch_size,
                                             int64_t step) {
@@ -200,16 +175,6 @@ DIOPI_API diopiError_t diopiLengthCriterion(diopiContextHandle_t ctx, diopiTenso
     return diopiSuccess;
 }
 
-/**
- * @brief EmbeddingLookupPosEncoding. Find id in embedding_table and get [hidden], only this step
- * @param[in] ctx The diopi context.
- * @param[out] from_tensor : Output ids.shape = [batch_size, hidden].type = [float32, float16]
- * @param[in] embedding_table : Embedding table.shape=[vocab, hidden].type = [float32, float16]
- * @param[in] all_ids : Input ids.shape=[batch_size, sessionlen].type = [int64, int32]
- * @param[in] batch_size : Batch size.type = [int64, int32]
- * @param[in] hidden_units : Hidden units.type = [int64, int32]
- * @param[in] step : Step.type = [int64, int32]
- */
 DIOPI_API diopiError_t diopiEmbeddingLookupPosEncoding(diopiContextHandle_t ctx, diopiTensorHandle_t from_tensor, diopiConstTensorHandle_t embedding_table,
                                                        diopiConstTensorHandle_t all_ids, const int64_t batch_size, const int64_t hidden_units,
                                                        const int64_t step) {
@@ -238,15 +203,6 @@ DIOPI_API diopiError_t diopiEmbeddingLookupPosEncoding(diopiContextHandle_t ctx,
     return diopiSuccess;
 }
 
-/**
- * @brief InputIdsEmbeddingLookupPosEncoding. Find id in embedding_table and get [hidden].
- * @param[in] ctx The diopi context.
- * @param[out] from_tensor : Output ids.shape = [input_lengths, hidden].type = [float32, float16]
- * @param[in] input_ids : Input ids.shape=[input_lengths].type = [int64, int32]
- * @param[in] embedding_table : Embedding table.shape=[vocab, hidden].type = [float32, float16]
- * @param[in] input_lengths : Input lengths.type = [int64, int32]
- * @param[in] hidden_units : Hidden units.type = [int64, int32]
- */
 DIOPI_API diopiError_t diopiInputIdsEmbeddingLookupPosEncoding(diopiContextHandle_t ctx, diopiTensorHandle_t from_tensor, diopiConstTensorHandle_t input_ids,
                                                                diopiConstTensorHandle_t embedding_table, const int64_t input_lengths,
                                                                const int64_t hidden_units) {
@@ -257,23 +213,7 @@ DIOPI_API diopiError_t diopiInputIdsEmbeddingLookupPosEncoding(diopiContextHandl
     diopiIndexSelect(ctx, from_tensor, embedding_table, 0, input_ids);
     return diopiSuccess;
 }
-/**
- * @brief StopWordsCriterion. Judging the end situation based on stopword.
- * get base_stop_words and base_offsets from stop_words for each batch.
- * every item in base_offsets means item-end, and they also the item-start of the next item, for the first item item-start is 0.
- * If time-size = end - start < step+1, then check item.
- * for (int token_idx = item_size - 1; token_idx >= 0; token_idx--) {const int previous_token = output_ids[(step - (item_size - 1) + token_idx) * batch_size +
- * id_offset + batch_idx];if (previous_token != base_stop_words[item_start + token_idx]) {should_stop = false; break;}} if one batch is should_stop, then it is
- * finished.
- * @param[in] ctx The diopi context.
- * @param[in] output_ids : Output ids.shape = [step + 1, batch_size].type = [int64, int32]
- * @param[in] stop_words : Stop words list.shape = [batch_size, 2, stop_words_len].type = [int64, int32]
- * @param[inout] finished : Finished.shape = [batch_size].type = [bool]
- * @param[in] id_offset : Offset of output_ids.type = [int64, int32]
- * @param[in] stop_words_len : Stop words len tensor.type = [int64, int32]
- * @param[in] batch_size : batch_size.type = [int64, int32]
- * @param[in] step : Step.type = [int64, int32]
- */
+
 DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiConstTensorHandle_t output_ids, diopiConstTensorHandle_t stop_words,
                                                diopiTensorHandle_t finished, int64_t id_offset, int64_t stop_words_len, int64_t batch_size, int64_t step) {
     std::cout << "LXZ LOG" << std::endl;
@@ -379,17 +319,6 @@ DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiCo
             diopiGetTensorData(cmp_res_sum_host, reinterpret_cast<void **>(&cmp_res_sum_host_data));
 
             if (cmp_res_sum_host_data[0]) {
-                // diopiTensorHandle_t batch_idx_tensor;
-                // diopiSize_t batch_idx_shape;
-                // batch_idx_shape.len = 1;
-                // batch_idx_shape.data = &tmp_one;
-                // diopiRequireTensor(ctx, &batch_idx_tensor, &batch_idx_shape, nullptr, diopi_dtype_int32, stop_word_device);
-
-                // diopiScalar_t batch_idx_scalar;
-                // batch_idx_scalar.stype = diopi_dtype_int64;
-                // batch_idx_scalar.ival = batch_idx;
-                // diopiFill(ctx, batch_idx_tensor, &batch_idx_scalar);
-                // diopiIndexFillInp(ctx, finished, 0, batch_idx_tensor, cmp_res_sum);
                 diopiScalar_t true_scalar;
                 true_scalar.stype = diopi_dtype_bool;
                 true_scalar.ival = 1;
@@ -410,25 +339,6 @@ DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiCo
     return diopiSuccess;
 }
 
-/**
- * @brief BanBadWords.
- * get base_bad_words and base_offsets from stop_words for each batch.
- * every item in base_offsets means item-end, and they also the item-start of the next item, for the first item item-start is 0.
- * If time-size = end - start < step+1, then check item.
- * for (int token_idx = item_size - 1; token_idx >= 0; token_idx--) {const int previous_token = output_ids[(step - (item_size - 1) + token_idx) * batch_size +
- * id_offset + batch_idx];if (previous_token != base_stop_words[item_start + token_idx]) {should_ban = false; break;}} if this tiem should_ban, then get banid =
- * base_bad_words[item-end - 1]. if 0 < banid < vocab_size then logits ban id in this batch is set to -INFINITY
- * @param[in] ctx The diopi context.
- * @param[inout] logits : Output logits.shape = [batch_size, vocab_size].type = [float32, float16]
- * @param[in] output_ids : Output ids.shape = [step, batch].type = [int64, int32]
- * @param[in] bad_words : Stop words list.shape = [batch_size, 2, stop_words_len] or [2, stop_words_len] for share.type = [int64, int32]
- * @param[in] id_offset : Offset of output_ids.type = [int64, int32]
- * @param[in] bad_words_len : Stop words len.type = [int64, int32]
- * @param[in] share_words : Stop words is shared or not.type = [bool]
- * @param[in] batch_size : Batch size.type = [int64, int32]
- * @param[in] vocab_size : Vocab size.type = [int64, int32]
- * @param[in] step : Step.type = [int64, int32]
- */
 DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t output_ids,
                                            diopiConstTensorHandle_t bad_words, int64_t id_offset, int64_t bad_words_len, bool share_words, int64_t batch_size,
                                            int64_t vocab_size, int64_t step) {
@@ -565,31 +475,6 @@ DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensor
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiCopyD2D(diopiContextHandle_t ctx, diopiTensorHandle_t dst, diopiConstTensorHandle_t src, bool async) {
-    impl::aten::setCurCtx(ctx);
-    at::Tensor atDest = impl::aten::buildATen(dst);
-    at::Tensor atSrc = impl::aten::buildATen(src);
-    // Set non_blocking true to avoid stream sync thus improving performance.
-    // The data is not ready when diopiCopyInp returns.
-    // If you need to use it immediately, please call cudaStreamSynchronize first.
-    at::native::copy_(atDest, atSrc, async);
-    impl::aten::unsetCurCtx();
-    return diopiSuccess;
-}
-
-/**
- * @brief GatherOutput. [s,b] -> [b,s] and skip padding in [context_len, max_context_len)
- * src skip padding in [context_len, max_context_len) and src len <= max_gen_step
- * when src in [max_context_len, ...), dst_idx = src_idx - (max_context_len - context_len)
- * @param[in] ctx The diopi context.
- * @param[out] output_ids : Output ids.shape = [batch_size, max_output_len].type = [int64, int32]
- * @param[in] ids : Ids.shape = [session, batch_size].type = [int64, int32]
- * @param[in] context_lengths : Contextlengths.shape = [batch_size].type = [int64, int32]
- * @param[in] max_context_len : Max context len.type = [int64, int32]
- * @param[in] max_gen_step : Max gen step.type = [int64, int32]
- * @param[in] max_output_len : Max output len.type = [int64, int32]
- * @param[in] batch_size : Batch size.type = [int64, int32]
- */
 DIOPI_API diopiError_t diopiGatherOutput(diopiContextHandle_t ctx, diopiTensorHandle_t output_ids, diopiConstTensorHandle_t ids,
                                          diopiConstTensorHandle_t context_length, int64_t max_context_len, int64_t max_gen_step, int64_t max_output_len,
                                          int64_t batch_size) {
@@ -611,48 +496,16 @@ DIOPI_API diopiError_t diopiGatherOutput(diopiContextHandle_t ctx, diopiTensorHa
 
     int32_t *context_length_host_data;
     diopiGetTensorData(context_length_host, reinterpret_cast<void **>(&context_length_host_data));
-    // std::cout << "LXZ LOG diopigatheroutput 0.2" <<std::endl;
-
-    // diopiTensorHandle_t ids_transpoese;
-    // diopiSize_t ids_transpoese_shape;
-    // ids_transpoese_shape.len = 2;
-    // int64_t new_shape[2] = {batch_size, max_output_len};
-    // ids_transpoese_shape.data = new_shape;
-    // diopiRequireTensor(ctx, &ids_transpoese, &ids_transpoese_shape, nullptr, ids_type, diopi_device);
-    // diopiTranspose(ctx, ids_transpoese, ids, 1, 0);
 
     for (int64_t batch_idx = 0; batch_idx < batch_size; ++batch_idx) {
-        // std::cout << "LXZ LOG diopigatheroutput 1" <<std::endl;
         diopiTensorHandle_t src_col;
         diopiSize_t src_col_shape;
         src_col_shape.len = 1;
         src_col_shape.data = &max_output_len;
-        // std::cout << "max_gen_step: " << max_gen_step << " max_output_len " << max_output_len << std::endl;
-        // diopiSize_t src_col_stride;
-        // src_col_stride.len = -1;
-        // char *src_col_data;
-        // diopiGetTensorData(ids_transpoese, reinterpret_cast<void **>(&src_col_data));
-        // src_col_data += (batch_idx * max_output_len * ids_elem_size);
-        // src_col_stride.data = reinterpret_cast<const int64_t *>(src_col_data);
-
-        // diopiRequireTensor(ctx, &src_col, &src_col_shape, &src_col_stride, ids_type, diopi_device);
-
-        // test start
-        // diopiTensorHandle_t src_col_host;
-        // diopiRequireTensor(ctx, &src_col_host, &src_col_shape, nullptr, ids_type, diopi_host);
-        // diopiCopyD2H(ctx, src_col_host, src_col, false);
-        // int64_t *src_col_host_data;
-        // diopiGetTensorData(src_col_host, reinterpret_cast<void **>(&src_col_host_data));
-        // for (int i = 0; i < max_gen_step; i++) {
-        //     std::cout << "src_col_host_data[" << i <<"]: "<< src_col_host_data[i] << std::endl;
-        // }
-        // // test end
 
         diopiRequireTensor(ctx, &src_col, &src_col_shape, nullptr, ids_type, diopi_device);
-        // std::cout << "LXZ LOG GATHEROUTPUT 1.1" <<std::endl;
         diopiSelect(ctx, src_col, ids, 1, batch_idx);
 
-        // std::cout << "LXZ LOG GATHEROUTPUT 2" <<std::endl;
         diopiTensorHandle_t src_col_front;
         diopiSize_t src_col_front_shape, src_col_front_stride;
         int64_t context_len = static_cast<int64_t>(context_length_host_data[batch_idx]);
@@ -664,7 +517,6 @@ DIOPI_API diopiError_t diopiGatherOutput(diopiContextHandle_t ctx, diopiTensorHa
         src_col_front_stride.data = reinterpret_cast<const int64_t *>(src_col_front_data);
         diopiRequireTensor(ctx, &src_col_front, &src_col_front_shape, &src_col_front_stride, ids_type, diopi_device);
 
-        // std::cout << "LXZ LOG GATHEROUTPUT 3" <<std::endl;
         diopiTensorHandle_t dst_row_front;
         diopiSize_t dst_row_front_stride;
         dst_row_front_stride.len = -1;
@@ -674,11 +526,8 @@ DIOPI_API diopiError_t diopiGatherOutput(diopiContextHandle_t ctx, diopiTensorHa
         dst_row_front_stride.data = reinterpret_cast<const int64_t *>(dst_row_front_data);
         diopiRequireTensor(ctx, &dst_row_front, &src_col_front_shape, &dst_row_front_stride, ids_type, diopi_device);
 
-        // std::cout << "LXZ LOG diopigatheroutput 4" <<std::endl;
         diopiCopyD2D(ctx, dst_row_front, src_col_front, false);
-        // std::cout << "LXZ LOG diopigatheroutput 5" <<std::endl;
         if (max_context_len < max_gen_step) {
-            // std::cout << "LXZ LOG diopigatheroutput 6" <<std::endl;
             diopiTensorHandle_t src_col_back;
             diopiSize_t src_col_back_shape, src_col_back_stride;
             src_col_back_shape.len = 1;
@@ -686,13 +535,10 @@ DIOPI_API diopiError_t diopiGatherOutput(diopiContextHandle_t ctx, diopiTensorHa
             src_col_back_shape.data = &back_len;
             src_col_back_stride.len = -1;
             char *src_col_back_data;
-            // std::cout << "LXZ LOG diopigatheroutput 6.0" <<std::endl;
             diopiGetTensorData(src_col, reinterpret_cast<void **>(&src_col_back_data));
             src_col_back_data += (max_context_len * ids_elem_size);
             src_col_back_stride.data = reinterpret_cast<const int64_t *>(src_col_back_data);
-            // std::cout << "LXZ LOG diopigatheroutput 6.1" <<std::endl;
             diopiRequireTensor(ctx, &src_col_back, &src_col_back_shape, &src_col_back_stride, ids_type, diopi_device);
-            // std::cout << "LXZ LOG diopigatheroutput 7" <<std::endl;
             diopiTensorHandle_t dst_row_back;
             diopiSize_t dst_row_back_stride;
             dst_row_back_stride.len = -1;
@@ -701,29 +547,12 @@ DIOPI_API diopiError_t diopiGatherOutput(diopiContextHandle_t ctx, diopiTensorHa
             dst_row_back_data += ((batch_idx * max_output_len + context_len) * ids_elem_size);
             dst_row_back_stride.data = reinterpret_cast<const int64_t *>(dst_row_back_data);
             diopiRequireTensor(ctx, &dst_row_back, &src_col_back_shape, &dst_row_back_stride, ids_type, diopi_device);
-            // std::cout << "LXZ LOG diopigatheroutput 8" <<std::endl;
             diopiCopyD2D(ctx, dst_row_back, src_col_back, false);
-            // std::cout << "LXZ LOG diopigatheroutput 9" <<std::endl;
         }
     }
     return diopiSuccess;
 }
 
-/**
- * @brief Apply repetitionPenalty.If 0 <= index < step with (if index >= input_length && index < max_input_length then continue), save every index and fixed
- * logit in penalty_logits and penalty_indices with shape [step].Then update logits with penalty_logits and penalty_indices.
- * @param[in] ctx The diopi context.
- * @param[inout] logits : nput tensor logits.shape = [batch_size, vocab_size].type = [float32, float16]
- * @param[in] penalties : Penalties tensor.shape = [batch_size].type = [float32]
- * @param[in] output_ids : The bias tensor.shape = [max_seq_len or step, batch_size].type = [int64, int32].
- * @param[in] batch_size : Batch size.type = [int64, int32]
- * @param[in] vocab_size : Vocab size.shape = [batch_size].type = [int64, int32]
- * @param[in] input_lengths : Input lengths tensor.shape = [batch_size].type = [int64, int32]
- * @param[in] max_input_length : Max input length.type = [int64, int32]
- * @param[in] step : Step.type = [int64, int32]
- * @param[in] penalty_type : Penalty type.0 == None;1 == Additive means logit - penalty;2 == Multiplicative means logit < 0.0f ? logit * penalty : logit /
- * penalty.type = [int64, int32]
- */
 DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t penalties,
                                                            diopiConstTensorHandle_t output_ids, const int64_t batch_size, const int64_t vocab_size,
                                                            diopiConstTensorHandle_t input_lengths, const int64_t max_input_length, const int64_t step,
@@ -767,7 +596,6 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
         diopiGetTensorData(input_lengths_host, reinterpret_cast<void **>(&input_lengths_host_data));
     }
 
-    // std::cout << "LXZ LOG diopiBatchApplyRepetitionPenaltyInp 0" <<std::endl;
     for (int64_t batch_idx = 0; batch_idx < batch_size; ++batch_idx) {
         diopiTensorHandle_t output_ids_col;
         diopiSize_t output_ids_col_shape;
@@ -777,19 +605,6 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
 
         diopiSelect(ctx, output_ids_col, output_ids, 1, batch_idx);
 
-        // test
-        // diopiTensorHandle_t output_ids_col_host;
-        // diopiSize_t output_ids_col_host_shape;
-        // diopiGetTensorShape(output_ids_col, &output_ids_col_host_shape);
-        // diopiRequireTensor(ctx, &output_ids_col_host, &output_ids_col_host_shape, nullptr, output_ids_type, diopi_host);
-        // diopiCopyD2H(ctx, output_ids_col_host, output_ids_col, false);
-        // int32_t *output_ids_col_host_data;
-        // diopiGetTensorData(output_ids_col_host, reinterpret_cast<void **>(&output_ids_col_host_data));
-        // for (int i = 0; i < output_ids_col_host_shape.data[0]; ++i) {
-        //     std::cout << "output_ids_col_host_data[" << i <<"]: "<< output_ids_col_host_data[i] << std::endl;
-        // }
-
-        // std::cout << " LXZ LOG diopiBatchApplyRepetitionPenaltyInp 1" <<std::endl;
         diopiTensorHandle_t output_ids_col_front;
         diopiSize_t output_ids_col_front_shape, output_ids_col_front_stride;
 
@@ -805,16 +620,6 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
         diopiRequireTensor(ctx, &output_ids_col_front, &output_ids_col_front_shape, &output_ids_col_front_stride, output_ids_type, diopi_device);
         diopiTensorHandle_t valid_output_ids_col = output_ids_col_front;
         int64_t vaild_output_ids_col_len = input_len;
-
-        // test
-        // diopiTensorHandle_t output_ids_col_front_host;
-        // diopiRequireTensor(ctx, &output_ids_col_front_host, &output_ids_col_front_shape, nullptr, output_ids_type, diopi_host);
-        // diopiCopyD2H(ctx, output_ids_col_front_host, output_ids_col_front, false);
-        // int32_t *output_ids_col_front_host_data;
-        // diopiGetTensorData(output_ids_col_front_host, reinterpret_cast<void **>(&output_ids_col_front_host_data));
-        // for (int i = 0; i < output_ids_col_front_shape.data[0]; ++i) {
-        //     std::cout << "output_ids_col_host_data[" << i <<"]: "<< output_ids_col_front_host_data[i] << std::endl;
-        // }
 
         if (max_input_length < step) {
             diopiTensorHandle_t output_ids_col_back;
@@ -834,10 +639,8 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
             valid_output_ids_col_shape.len = 1;
             valid_output_ids_col_shape.data = &vaild_output_ids_col_len;
             diopiRequireTensor(ctx, &valid_output_ids_col, &valid_output_ids_col_shape, nullptr, output_ids_type, diopi_device);
-            // std::cout << "LXZ LOG diopiBatchApplyRepetitionPenaltyInp 2" <<std::endl;
             diopiConstTensorHandle_t to_cat[2] = {output_ids_col_front, output_ids_col_back};
             diopiCat(ctx, valid_output_ids_col, to_cat, 2, 0);
-            // std::cout << "LXZ LOG diopiBatchApplyRepetitionPenaltyInp 3" <<std::endl;
         }
 
         diopiTensorHandle_t logits_this_batch;
@@ -856,7 +659,6 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
         logits_to_penalize_shape.len = 1;
         logits_to_penalize_shape.data = &vaild_output_ids_col_len;
         diopiRequireTensor(ctx, &logits_to_penalize, &logits_to_penalize_shape, nullptr, logits_type, diopi_device);
-        // std::cout << "LXZ LOG diopiBatchApplyRepetitionPenaltyInp 4" <<std::endl;
         diopiIndexSelect(ctx, logits_to_penalize, logits_this_batch, 0, valid_output_ids_col);
 
         diopiTensorHandle_t penalties_this_batch;
@@ -877,7 +679,6 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
         penalties_this_batch_expand_shape.len = 1;
         penalties_this_batch_expand_shape.data = &vaild_output_ids_col_len;
         diopiRequireTensor(ctx, &penalties_this_batch_expand, &penalties_this_batch_expand_shape, nullptr, penalties_type, diopi_device);
-        // std::cout << "LXZ LOG diopiBatchApplyRepetitionPenaltyInp 5" <<std::endl;
         diopiExpand(ctx, penalties_this_batch_expand, penalties_this_batch);
         diopiScalar_t one_scalar;
         one_scalar.stype = diopi_dtype_int64;
@@ -906,7 +707,6 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
             diopiDivInp(ctx, div_penalty, penalties_this_batch_expand, RoundModeNone);
             diopiAdd(ctx, logits_to_penalize, mul_penalty, div_penalty, &one_scalar);
         }
-        // std::cout << "LXZ LOG diopiBatchApplyRepetitionPenaltyInp 6" <<std::endl;
         char reduce[0];
         diopiTensorHandle_t scatter_index = valid_output_ids_col;
 
@@ -923,56 +723,35 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
     return diopiSuccess;
 }
 
-/**
- * @brief Apply temperaturePenalty with bias. bias_val = bias[index in vocab_size_padd] and if index in vocab_size then logits = (logits +
- * bias_val)*(1.0f/(temperature + 1e-6f)) else logits = -FLT_MAX
- * @param[in] ctx The diopi context.
- * @param[inout] logits : Output tensor logits.shape = [batch_size, vocab_size_padded].type = [float32, float16]
- * @param[in] bias : Input tensor bias.shape = [vocab_size_padded].type = [float32, float16]
- * @param[in] temperatures : Temperatures.shape = [batch_size].type = [float32].
- * @param[in] batch_size : Batch size.type = [int64, int32].
- * @param[in] vocab_size : Vocab size.type = [int64, int32].
- * @param[in] vocab_size_padd : Vocab padd size.type = [int64, int32].
- */
 diopiError_t diopiBatchApplyTemperaturePenaltyInp(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t bias,
                                                   diopiConstTensorHandle_t temperatures, const int64_t batch_size, const int64_t vocab_size,
                                                   const int64_t vocab_size_padd) {
     assert(vocab_size_padd >= vocab_size);
     assert(logits != nullptr);
     assert(temperatures != nullptr);
-    // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 0" <<std::endl;
     diopiDtype_t logits_dtype;
     DIOPI_CHECK(diopiGetTensorDtype(logits, &logits_dtype));
     diopiSize_t logits_shape;
     DIOPI_CHECK(diopiGetTensorShape(logits, &logits_shape));
     assert(logits_shape.len == 2 && logits_shape.data[0] == batch_size && logits_shape[1] == vocab_size_padded);
-    // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 1" <<std::endl;
     diopiTensorHandle_t lhs;
     std::vector<int64_t> lhs_shape_vec = {batch_size, vocab_size};
-    // std::cout << lhs_shape_vec.size() << lhs_shape_vec[0] << " " << lhs_shape_vec[1] << std::endl;
     diopiSize_t lhs_shape{lhs_shape_vec.data(), 2};
-    // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 2"<< "batch_size: "<< batch_size << "vocab_size: "<< vocab_size << "size: "<< batch_size *
-    // vocab_size <<std::endl; std::cout << lhs_shape.len << " " << lhs_shape.data[0] << " " << lhs_shape.data[1] << std::endl;
     DIOPI_CHECK(diopiRequireTensor(ctx, &lhs, &lhs_shape, nullptr, logits_dtype, diopi_device));
-    // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 3" <<std::endl;
     DIOPI_CHECK(diopiSlice(ctx, lhs, logits, 1, 0, vocab_size, 1));
 
     diopiTensorHandle_t rhs = nullptr;
     if (vocab_size_padd > vocab_size) {
         std::vector<int64_t> rhs_shape_vec = {batch_size, vocab_size_padd - vocab_size};
         diopiSize_t rhs_shape{rhs_shape_vec.data(), 2};
-        // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 3.1" <<std::endl;
         DIOPI_CHECK(diopiRequireTensor(ctx, &rhs, &rhs_shape, nullptr, logits_dtype, diopi_device));
-        // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 3.2" <<std::endl;
         DIOPI_CHECK(diopiSlice(ctx, rhs, logits, 1, vocab_size, vocab_size_padd, 1));
         double MAX_T_VAL = (logits_dtype == diopiDtype_t::diopi_dtype_float16 ? 65504.F : FLT_MAX);
         diopiScalar_t scalar_val;
         scalar_val.stype = logits_dtype;
         scalar_val.fval = -MAX_T_VAL;
-        // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 3.3" <<std::endl;
         DIOPI_CHECK(diopiFill(ctx, rhs, &scalar_val));
     }
-    // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 4" <<std::endl;
     diopiTensorHandle_t new_temperatures = nullptr;
     DIOPI_CHECK(makeTensorLike(ctx, &new_temperatures, temperatures));
     diopiDtype_t temperatures_dtype;
@@ -986,33 +765,14 @@ diopiError_t diopiBatchApplyTemperaturePenaltyInp(diopiContextHandle_t ctx, diop
     diopiScalar_t one_scalar;
     one_scalar.stype = temperatures_dtype;
     one_scalar.fval = 1.0;
-    // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 5" <<std::endl;
     DIOPI_CHECK(diopiAddScalar(ctx, new_temperatures, temperatures, &eps_scalar, &one_scalar));
 
     if (bias != nullptr) {
         diopiScalar_t t;
         t.stype = logits_dtype;
         t.fval = 1.0;
-        // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 6" <<std::endl;
         DIOPI_CHECK(diopiAddInp(ctx, lhs, bias, &t));
-        // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 7" <<std::endl;
     }
-    // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 8" <<std::endl;
-    // std::cout << "batch size: " << batch_size << " vocab size: " << vocab_size << std::endl;
-
-    // diopiTensorHandle_t new_temperatures_expand, new_temperatures_expand_transpose;
-    // diopiSize_t new_temperatures_expand_transpose_shape;
-    // new_temperatures_expand_transpose_shape.len = 2;
-    // int64_t new_temperatures_expand_transpose_shape_data[2] = {vocab_size, batch_size};
-    // new_temperatures_expand_transpose_shape.data = new_temperatures_expand_transpose_shape_data;
-
-    // DIOPI_CHECK(diopiRequireTensor(ctx, &new_temperatures_expand_transpose, &new_temperatures_expand_transpose_shape, nullptr, temperatures_dtype,
-    // diopi_device)); DIOPI_CHECK(diopiExpand(ctx, new_temperatures_expand_transpose, new_temperatures));
-
-    // DIOPI_CHECK(diopiRequireTensor(ctx, &new_temperatures_expand, &lhs_shape, nullptr, temperatures_dtype, diopi_device));
-    // DIOPI_CHECK(diopiTranspose(ctx, new_temperatures_expand, new_temperatures_expand_transpose, 1, 0));
-    // DIOPI_CHECK(diopiDivInp(ctx, lhs, new_temperatures_expand, RoundModeNone));
-    // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 9" <<std::endl;
 
     diopiSize_t new_temperatures_shape;
     DIOPI_CHECK(diopiGetTensorShape(new_temperatures, &new_temperatures_shape));
@@ -1039,12 +799,9 @@ diopiError_t diopiBatchApplyTemperaturePenaltyInp(diopiContextHandle_t ctx, diop
     }
 
     if (rhs == nullptr) {
-        // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 10" <<std::endl;
         DIOPI_CHECK(diopiCopyInp(ctx, lhs, logits));
-        // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 11" <<std::endl;
     } else {
         std::array<diopiConstTensorHandle_t, 2> tensors = {lhs, rhs};
-        // std::cout << "LXZ LOG diopiBatchApplyTemperaturePenaltyInp 12" <<std::endl;
         DIOPI_CHECK(diopiCat(ctx, logits, tensors.data(), tensors.size(), 1));
     }
     return diopiSuccess;
