@@ -68,13 +68,14 @@ jobs:
         run: |
           ssh ${CLUSTER_1988} """
           set -e
-          ls -al
+          ls -al ${DATA_DIR}/
           if [[ -f ${DATA_DIR}/pre_hash ]]; then
             echo "New Hash File: ${DATA_DIR}/new_hash"
             echo "Pre Hash File: ${DATA_DIR}/pre_hash"
             sha1sum ${DATA_DIR}/source/${GEN_DATA}/${HASH_FILE} > ${DATA_DIR}/new_hash
-            diff_output=$(diff -q --ignore-all-space  "${DATA_DIR}/new_hash" "${DATA_DIR}/pre_hash" ) && export to_gen_data=false || export to_gen_data=true
-            echo "to_gen_data=$to_gen_data" >> "$GITHUB_OUTPUT"
+#            diff_output=$(diff -q --ignore-all-space  "${DATA_DIR}/new_hash" "${DATA_DIR}/pre_hash" ) && export to_gen_data=false || export to_gen_data=true
+#            echo "to_gen_data=$to_gen_data" >> "$GITHUB_OUTPUT"
+            echo ""to_gen_data=true" >> "$GITHUB_OUTPUT""
           else
             echo "to_gen_data=true"
             echo "to_gen_data=true" >> "$GITHUB_OUTPUT"
