@@ -205,4 +205,4 @@ ascend_npu:
 - diopiNormal
 - diopiNormalInp
 - diopiNorm
-
+- diopiMaxPool2dWithIndices
