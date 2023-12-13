@@ -33,7 +33,7 @@ jobs:
           cd source && git submodule update --init --recursive
       - name: Rsync to Server
         run: |
-          ssh ${CLUSTER_1988} "cd ${DATA_DIR} && rm -rf source && mkdir source" \
+          ssh ${CLUSTER_1988} "mkdir -p ${DATA_DIR} && cd ${DATA_DIR} && rm -rf source && mkdir source \
           && rsync -a --delete ${GITHUB_WORKSPACE}/source/ ${CLUSTER_1988}:${DATA_DIR}/source/ "
 
   Gen-Data:
