@@ -7,6 +7,10 @@ on:
 #  schedule:
 #    - cron: '01 02 * * *'
 
+concurrency:
+  group: data-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 env:
   CLUSTER_1988: SH1988
   CLUSTER_CAMB: CAMB
@@ -14,8 +18,8 @@ env:
   CLUSTER_TOPSRIDER: TOPSRIDER
   CLUSTER_SUPA: SUPA
   DEEPLINK_PATH: '/mnt/cache/share/deeplinkci/github/${{ github.repository }}'
-  HASH_FILE: 'diopi_test/python/cache/diopi_case_items.cfg'
-  DATA_DIR: '/mnt/cache/share/deeplinkci/gen-data/'
+  HASH_FILE: 'diopi/diopi_case_items.cfg'
+  DATA_DIR: '/mnt/cache/share/deeplinkci/gen-data'
   ENV_PATH: '/mnt/cache/share/platform/env'
   GEN_DATA: 'diopi_test/python/cache'
   ENV_NAME: 'pt2.0_diopi'
@@ -51,7 +55,7 @@ jobs:
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:1 bash -c 'python main.py --mode gen_data' \
           || ( cd ${DATA_DIR}/source/ && git clean -xdf ${GEN_DATA} && exit 1 )
           """
-  Check:
+  CheckFile:
     name: check hash file
     runs-on: tps-diopi-ci
     outputs:
@@ -75,18 +79,19 @@ jobs:
           fi
           """
 
-#  Rsync-Data:
-#    name: rsyns data to other machine
-#    runs-on: tps-diopi-ci
-#    if: ${{ contains( needs.Clone.outputs.output, 'true' ) }}
-#    needs: Check
-#    steps:
-#      - name: rsync
-#        run: |
-#          set -e
-#          ssh ${CLUSTER_CAMB} """
-#          rsync -a ${CLUSTER_1988}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DATA_DIR}
-#          """
+  Rsync-Data:
+    name: rsyns data to other machine
+    runs-on: tps-diopi-ci
+    needs: CheckFile
+    if: ${{ contains( needs.CheckFile.outputs.output, 'true' ) }}
+    steps:
+      - name: rsync
+        run: |
+          set -e
+          ssh ${CLUSTER_CAMB} """
+          mkdir -p ${DATA_DIR}/source
+          rsync -a ${CLUSTER_1988}:${DATA_DIR}/source/${GEN_DATA} ${DATA_DIR}/source/
+          """
 #          ssh ${CLUSTER_ASCEND_910B} """
 #          rsync -a ${CLUSTER_1988}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DATA_DIR}
 #          """
