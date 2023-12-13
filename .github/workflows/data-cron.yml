@@ -73,11 +73,15 @@ jobs:
             echo "New Hash File: ${DATA_DIR}/new_hash"
             echo "Pre Hash File: ${DATA_DIR}/pre_hash"
             echo "to_gen_data=true" >> "$GITHUB_OUTPUT"
+            echo "1"
           else
             echo "to_gen_data=true"
             echo "to_gen_data=true" >> "$GITHUB_OUTPUT"
+            echo "2"
           fi
+          echo "3"
           if [[ $to_gen_data == "true" ]]; then
+            echo "4"
             cd ${DATA_DIR} && mv new_hash pre_hash
           fi
           """
