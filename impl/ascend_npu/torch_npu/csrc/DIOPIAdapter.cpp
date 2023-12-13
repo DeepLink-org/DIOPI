@@ -895,9 +895,8 @@ const char* markedOutputsErrorInfo =
 thread_local std::deque<at::Tensor> markedOutputs;
 void OpPreparation::markAsOutputForApplyTensor(at::Tensor& src) { markedOutputs.push_back(src); }
 
-at::Tensor empty_npu(at::IntArrayRef size, c10::optional<at::ScalarType> dtype_opt, c10::optional<at::Layout> layout_opt = c10::nullopt,
-                     c10::optional<at::Device> device_opt = c10::nullopt, c10::optional<bool> pin_memory_opt = c10::nullopt,
-                     c10::optional<at::MemoryFormat> memory_format_opt = c10::nullopt) {
+at::Tensor empty_npu(at::IntArrayRef size, c10::optional<at::ScalarType> dtype_opt, c10::optional<at::Layout> layout_opt, c10::optional<at::Device> device_opt,
+                     c10::optional<bool> pin_memory_opt, c10::optional<at::MemoryFormat> memory_format_opt) {
     TORCH_CHECK(dtype_opt.has_value());
     diopiSize_t sizeDiopi{size.data(), size.size()};
     diopiDtype_t dtypeDiopi = impl::aten::getDIOPITensorType(dtype_opt.value());
@@ -911,6 +910,15 @@ at::Tensor empty_npu(at::IntArrayRef size, c10::optional<at::ScalarType> dtype_o
 
 at::Tensor empty_npu(at::IntArrayRef size, const at::TensorOptions& options) {
     return empty_npu(size, c10::make_optional(c10::typeMetaToScalarType(options.dtype())));
+}
+
+at::Tensor empty_strided_npu(c10::SymIntArrayRef size, c10::SymIntArrayRef stride, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
+                             c10::optional<at::Device> device, c10::optional<bool> pin_memory) {
+    at::TensorOptions options(dtype.value());
+    int64_t nbytes = at::detail::computeStorageNbytes(size, stride, options.dtype().itemsize()).as_int_unchecked();
+    int64_t numel = nbytes / options.dtype().itemsize();
+    auto out = at_npu::native::empty_npu({numel}, options);
+    return impl::aten::view(out, c10::asIntArrayRefUnchecked(size), c10::asIntArrayRefUnchecked(stride));
 }
 
 // used to apply output tensor
@@ -2541,11 +2549,7 @@ at::Tensor wrapper__contiguous(const at::Tensor& self, at::MemoryFormat memory_f
 
 at::Tensor wrapper__empty_strided(c10::SymIntArrayRef size, c10::SymIntArrayRef stride, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
                                   c10::optional<at::Device> device, c10::optional<bool> pin_memory) {
-    at::TensorOptions options(dtype.value());
-    int64_t nbytes = at::detail::computeStorageNbytes(size, stride, options.dtype().itemsize()).as_int_unchecked();
-    int64_t numel = nbytes / options.dtype().itemsize();
-    auto out = at_npu::native::empty_npu({numel}, options);
-    return impl::aten::view(out, c10::asIntArrayRefUnchecked(size), c10::asIntArrayRefUnchecked(stride));
+    return at_npu::native::empty_strided_npu(size, stride, dtype, layout, device, pin_memory);
 }
 
 }  // namespace

@@ -81,7 +81,7 @@ void copy_d2d_dtype_format(at::Tensor& self, const at::Tensor& src, bool non_blo
 
 void copy_d2d(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
     if (self.dtype() != src.dtype()) {
-        custom_ops::npu_dtype_cast_(self, src.contiguous());  // npu_dtype_cast_ will call copy function.
+        custom_ops::npu_dtype_cast_(self, src.contiguous(at::MemoryFormat::Contiguous));  // npu_dtype_cast_ will call copy function.
         return;
     }
     copy_d2d_dtype(self, src, non_blocking);

@@ -973,6 +973,16 @@ static bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Ten
 static at::Tensor matmul_by_bmmV2(const at::Tensor& tensor1, const at::Tensor& tensor2) { INTERFACE_NOT_IMPL; }
 void npu_fast_reshape_(at::Tensor& tensor);
 
+at::Tensor empty_npu(at::IntArrayRef size, c10::optional<at::ScalarType> dtype_opt, c10::optional<at::Layout> layout_opt = c10::nullopt,
+                     c10::optional<at::Device> device_opt = c10::nullopt, c10::optional<bool> pin_memory_opt = c10::nullopt,
+                     c10::optional<at::MemoryFormat> memory_format_opt = c10::nullopt);
+
+at::Tensor empty_npu(at::IntArrayRef size, const at::TensorOptions& options);
+
+at::Tensor empty_strided_npu(c10::SymIntArrayRef size, c10::SymIntArrayRef stride, c10::optional<at::ScalarType> dtype,
+                             c10::optional<at::Layout> layout = c10::nullopt, c10::optional<at::Device> device = c10::nullopt,
+                             c10::optional<bool> pin_memory = c10::nullopt);
+
 }  // namespace native
 }  // namespace at_npu
 
