@@ -101,9 +101,11 @@ inline int debugLevel() {
 
 #define BUILD_ATEN_ARGS(...) PRIVATE_CONCAT_STR(BUILD_ATEN_ARG, COUNT_MACRO_VARR(__VA_ARGS__))(__VA_ARGS__)
 
-#define BEGIN_CALL_ACL_OP(...)                                                     \
-    std::cout << __FILE__ << ":" << __LINE__ << " :" << __FUNCTION__ << std::endl; \
-    impl::aten::setCurCtx(ctx);                                                    \
+#define BEGIN_CALL_ACL_OP(...)                                                         \
+    if (debugLevel()) {                                                                \
+        std::cout << __FILE__ << ":" << __LINE__ << " :" << __FUNCTION__ << std::endl; \
+    }                                                                                  \
+    impl::aten::setCurCtx(ctx);                                                        \
     BUILD_ATEN_ARGS(__VA_ARGS__)
 
 #define END_CALL_ACL_OP()      \

@@ -53,8 +53,6 @@ at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size) { return 
 at::Tensor& npu_broadcast_out(const at::Tensor& self, at::IntArrayRef size, at::Tensor& out) { return acl_op::npu_broadcast_out(self, size, out); }
 
 at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
-    std::cout << __FUNCTION__ << " self:" << self.sizes() << " " << self.strides() << " " << self.options() << self.is_contiguous() << std::endl;
-    std::cout << __FUNCTION__ << " src:" << src.sizes() << " " << src.strides() << " " << src.options() << src.is_contiguous() << std::endl;
     at::Tensor source = src;
     if (src.sizes() != self.sizes()) {
         source = npu_broadcast(src, self.sizes());
@@ -64,7 +62,6 @@ at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
     } else {
         at::Tensor sourceTemp = at_npu::native::empty_npu(source.sizes(), source.options());
         sourceTemp.copy_(source);
-        std::cout << __FUNCTION__ << " source:" << source.sizes() << " " << source.strides() << " " << source.options() << source.is_contiguous() << std::endl;
         acl_op::npu_dtype_cast_(self, sourceTemp);
     }
     return self;
