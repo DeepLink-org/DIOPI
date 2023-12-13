@@ -66,15 +66,14 @@ jobs:
       - name: check
         id: get_gen_data
         run: |
-          echo """diff_output=$(diff -q --ignore-all-space  "${DATA_DIR}/new_hash" "${DATA_DIR}/pre_hash" ) && echo "false" > ${DATA_DIR}/to_gen_data  || echo "true" > ${DATA_DIR}/to_gen_data """
           ssh ${CLUSTER_1988} """
           set -e
-          if [[ -f "${DATA_DIR}/pre_hash" ]]; then
-            sha1sum ${DATA_DIR}/source/${GEN_DATA}/${HASH_FILE} > ${DATA_DIR}/hash_file
-
-            diff_output=$(diff -q --ignore-all-space  "${DATA_DIR}/new_hash" "${DATA_DIR}/pre_hash" ) && echo "false" > ${DATA_DIR}/to_gen_data  || echo "true" > ${DATA_DIR}/to_gen_data
+          cd ${DATA_DIR}
+          if [[ -f "pre_hash" ]]; then
+            sha1sum source/${GEN_DATA}/${HASH_FILE} > new_hash
+            diff_output=$(diff -q --ignore-all-space "new_hash" "pre_hash" ) && echo "false" > ${DATA_DIR}/to_gen_data  || echo "true" > to_gen_data
           else
-            echo "true" > ${DATA_DIR}/to_gen_data
+            echo "true" > to_gen_data
           fi
           """
           export file_path="/home/autolink/rsync/sourcecode"
