@@ -56,50 +56,56 @@ jobs:
 #          || ( cd ${DATA_DIR}/source/ && git clean -xdf ${GEN_DATA} && exit 1 )
 #          """
 
-  CheckFile:
-    name: check hash file
+  CheckAndRsync:
+    name: check and rsync
     runs-on: tps-diopi-ci
-    outputs:
-      output: ${{ steps.get_gen_data.outputs.to_gen_data }}
 #    needs: Gen-Data
     steps:
-      - name: check hash file
-        id: get_gen_data
+      - name: check
         run: |
           ssh ${CLUSTER_1988} """
           set -e
-          ls -al ${DATA_DIR}/
           if [[ -f "${DATA_DIR}/pre_hash" ]]; then
-            echo "New Hash File: ${DATA_DIR}/new_hash"
-            echo "Pre Hash File: ${DATA_DIR}/pre_hash"
-            echo "test12"
-            echo "to_gen_data=true" >> "$GITHUB_OUTPUT"
-            echo "1"
+            sha1sum ${DATA_DIR}/${{ github.event.repository.name }}/${HASH_FILE} > ${DATA_DIR}/new_hash_file
+            diff_output=$(diff -q --ignore-all-space  "${DATA_DIR}/new_hash_file" "${DATA_DIR}/pre_hash_file" ) && export to_gen_data=false || export to_gen_data=true
+            echo "to_gen_data=$to_gen_data" >> "$GITHUB_ENV"
           else
-            echo "to_gen_data=true"
-            echo "to_gen_data=true" >> "$GITHUB_OUTPUT"
-            echo "2"
+            echo "to_gen_data=true" >> "$GITHUB_ENV"
           fi
-          echo "3"
           if [[ "$to_gen_data" == "true" ]]; then
-            echo "4"
             cd ${DATA_DIR} && mv new_hash pre_hash
           fi
           """
-
-  Rsync-Data:
-    name: rsyns data to other machine
-    runs-on: tps-diopi-ci
-    needs: CheckFile
-    if: ${{ contains( needs.CheckFile.outputs.output, 'true' ) }}
-    steps:
       - name: rsync
+        if: ${{ env.to_gen_data == 'true' }}
         run: |
           set -e
           ssh ${CLUSTER_CAMB} """
           mkdir -p ${DATA_DIR}/source
           rsync -a ${CLUSTER_1988}:${DATA_DIR}/source/${GEN_DATA} ${DATA_DIR}/source/
           """
+#          ssh ${CLUSTER_ASCEND_910B} """
+#          rsync -a ${CLUSTER_1988}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DATA_DIR}
+#          """
+#          ssh ${CLUSTER_SUPA} """
+#          rsync -a ${CLUSTER_1988}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DATA_DIR}
+#          """
+
+
+
+#  Rsync-Data:
+#    name: rsyns data to other machine
+#    runs-on: tps-diopi-ci
+#    needs: CheckFile
+#    if: ${{ contains( needs.CheckFile.outputs.output, 'true' ) }}
+#    steps:
+#      - name: rsync
+#        run: |
+#          set -e
+#          ssh ${CLUSTER_CAMB} """
+#          mkdir -p ${DATA_DIR}/source
+#          rsync -a ${CLUSTER_1988}:${DATA_DIR}/source/${GEN_DATA} ${DATA_DIR}/source/
+#          """
 #          ssh ${CLUSTER_ASCEND_910B} """
 #          rsync -a ${CLUSTER_1988}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DATA_DIR}
 #          """
