@@ -7,8 +7,8 @@ import numpy as np
 ops_with_states = {}
 
 diopi_configs = {
-    'multihead_attention_forward': dict(
-        name=['multihead_attention_forward'],
+    'multihead_attention': dict(
+        name=['multihead_attention'],
         interface=['CustomizedTest'],
         dtype=[np.float16],
         atol=1e-3,
