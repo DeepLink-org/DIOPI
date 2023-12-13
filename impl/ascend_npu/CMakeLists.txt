@@ -629,6 +629,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/uniform.cpp
     ${OLD_IMPL_DIR}/functions/batch_norm.cpp
     ${OLD_IMPL_DIR}/functions/minmax.cpp
+    ${OLD_IMPL_DIR}/functions/token_attention.cpp
     ${OLD_IMPL_DIR}/functions/norm.cpp
     ${OLD_IMPL_DIR}/functions/reduce.cpp
     ${OLD_IMPL_DIR}/functions/where.cpp
