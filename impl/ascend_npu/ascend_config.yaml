@@ -193,6 +193,7 @@ ascend:
 - diopiLogicalAnd
 - diopiLogicalOr
 - diopiMaxPool2dWithIndices
+- diopiExpand
 - diopiLinspace
 - diopiSplitWithSizes
 ascend_npu:
