@@ -1328,12 +1328,19 @@ diopiError_t diopiLeInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, dio
 }
 
 diopiError_t diopiLeScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
+    std::cout << "LXZ: in diopiLeScalar 1" << std::endl;
     impl::aten::setCurCtx(ctx);
+    std::cout << "LXZ: in diopiLeScalar 2" << std::endl;
     at::Tensor atInput = impl::aten::buildATen(input);
+    std::cout << "LXZ: in diopiLeScalar 3" << std::endl;
     at::Scalar atOther = impl::aten::buildAtScalar(other);
+    std::cout << "LXZ: in diopiLeScalar 4" << std::endl;
     at::Tensor atOut = impl::aten::buildATen(out);
+    std::cout << "LXZ: in diopiLeScalar 5" << std::endl;
     at::le_out(atOut, atInput, atOther);
+    std::cout << "LXZ: in diopiLeScalar 6" << std::endl;
     impl::aten::unsetCurCtx();
+    std::cout << "LXZ: in diopiLeScalar 7" << std::endl;
     return diopiSuccess;
 }
 

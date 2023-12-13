@@ -27,27 +27,16 @@ if (DYLOAD)
     set(IMPL_SRC wrap_func.cpp)
 endif()
 
-file(GLOB REAL_IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions/functions_mmcv/*.cu functions/functions_ext/*.cu functions/*.cpp helper.cpp)
-
-# adaptor
-set(USE_ADAPTOR ON)
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
-    message(FATAL_ERROR "convert_config.yaml doesn't exist.")
-endif()
-
-if(USE_ADAPTOR)
-    # dependency
-    file(GLOB ADAPTOR_TEMPLATE_CODE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${ADAPTOR_DIR}/codegen/*.py)
-    add_custom_target(adaptor_gen_dependency DEPENDS ${ADAPTOR_TEMPLATE_CODE})
-
-    set(ADAPTOR_CSRC_PATH "${ADAPTOR_DIR}/csrc")
-    set(GEN_FILES ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp ${ADAPTOR_CSRC_PATH}/impl_functions.hpp)
-    add_custom_target(adaptor_code_gen
-        COMMAND python3 ${ADAPTOR_DIR}/codegen/gen.py --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH} --config_device=torch
-        BYPRODUCTS ${GEN_FILES}
-        DEPENDS adaptor_gen_dependency)
-    list(APPEND REAL_IMPL_SRC ${ADAPTOR_CSRC_PATH}/convert.cpp ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp ${ADAPTOR_CSRC_PATH}/composite_ops.cpp)
-endif()
+file(GLOB REAL_IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions_mmcv/*.cu functions_ext/*.cu)
+set(REAL_IMPL_SRC ${REAL_IMPL_SRC}
+                  nms_kernel.cu
+                  roi_align_kernel.cu
+                  functions.cpp
+                  functions_mmcv.cpp
+                  functions_ext.cpp
+                  functions_lightllm.cpp
+                  functions_lmdeploy.cpp
+                  error.cpp)
 
 if(HIP)
     include(../cmake/LoadHIP.cmake)
