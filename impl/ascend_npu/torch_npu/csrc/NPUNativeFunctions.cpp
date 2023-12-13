@@ -57,18 +57,8 @@ at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
     if (src.sizes() != self.sizes()) {
         source = npu_broadcast(src, self.sizes());
     }
-    if (!source.is_contiguous()) {
-        source = source.contiguous();
-    }
 
-    at::Tensor selfTemp;
-    if (!self.is_contiguous()) {
-        selfTemp = self.contiguous();
-    }
-    acl_op::npu_dtype_cast_(selfTemp.defined() ? selfTemp : self, source);
-    if (selfTemp.defined()) {
-        self.copy_(selfTemp);
-    }
+    acl_op::npu_dtype_cast_(self, source);
     return self;
 }
 
