@@ -72,6 +72,7 @@ jobs:
           if [[ -f ${DATA_DIR}/pre_hash ]]; then
             echo "New Hash File: ${DATA_DIR}/new_hash"
             echo "Pre Hash File: ${DATA_DIR}/pre_hash"
+            echo "to_gen_data=true" >> "$GITHUB_OUTPUT"
           else
             echo "to_gen_data=true"
             echo "to_gen_data=true" >> "$GITHUB_OUTPUT"
