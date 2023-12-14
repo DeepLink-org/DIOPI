@@ -1,6 +1,7 @@
 # Copyright (c) 2023, DeepLink.
 import numpy as np
 
+
 ops_with_states = {"batch_norm": {"running_mean", "running_var"},
                    "sgd": {"buf", "param"},
                    "fill_": {"input"},
