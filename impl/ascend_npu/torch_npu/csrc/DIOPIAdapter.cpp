@@ -499,6 +499,7 @@ public:
     TORCH_NPU_API static void Set(aclopAttr* attr, const string& name, int64_t value);
     TORCH_NPU_API static void Set(aclopAttr* attr, const string& name, float value);
     TORCH_NPU_API static void Set(aclopAttr* attr, const string& name, string value);
+    TORCH_NPU_API static void Set(aclopAttr* attr, const string& name, const char* value);
     TORCH_NPU_API static void Set(aclopAttr* attr, const string& name, c10::IntArrayRef value);
     TORCH_NPU_API static void Set(aclopAttr* attr, const string& name, at::ArrayRef<float> value);
     TORCH_NPU_API static void Set(aclopAttr* attr, const string& name, at::ArrayRef<uint8_t> value);
@@ -514,6 +515,8 @@ void OpAttrMaker::Set(aclopAttr* attr, const string& name, int64_t value) { aclo
 void OpAttrMaker::Set(aclopAttr* attr, const string& name, float value) { aclopSetAttrFloat(attr, name.c_str(), value); }
 
 void OpAttrMaker::Set(aclopAttr* attr, const string& name, string value) { aclopSetAttrString(attr, name.c_str(), value.c_str()); }
+
+void OpAttrMaker::Set(aclopAttr* attr, const string& name, const char* value) { aclopSetAttrString(attr, name.c_str(), value); }
 
 void OpAttrMaker::Set(aclopAttr* attr, const string& name, c10::IntArrayRef value) { aclopSetAttrListInt(attr, name.c_str(), value.size(), value.data()); }
 
@@ -1396,7 +1399,7 @@ OpCommand& OpCommand::Attr(const string& name, dataType value) {
 }
 
 template OpCommand& OpCommand::OpCommand::Attr<string>(const string& name, string value);
-template OpCommand& OpCommand::OpCommand::Attr<char const*>(const string& name, char const* value);
+template OpCommand& OpCommand::OpCommand::Attr<const char*>(const string& name, const char* value);
 template OpCommand& OpCommand::OpCommand::Attr<bool>(const string& name, bool value);
 template OpCommand& OpCommand::OpCommand::Attr<float>(const string& name, float value);
 template OpCommand& OpCommand::OpCommand::Attr<int64_t>(const string& name, int64_t value);
