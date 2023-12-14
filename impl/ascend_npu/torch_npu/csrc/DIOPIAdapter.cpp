@@ -2187,7 +2187,7 @@ OpCommand& OpCommand::Input(const c10::Scalar& input, const at::ScalarType type,
         ScalarIsInLimits(input, scalar_type) ? at::detail::scalar_tensor_static(input, scalar_type, at::kCPU) : at::scalar_to_tensor(input).to(scalar_type);
     std::tuple<aclTensorDesc*, aclDataBuffer*> res = CovertHostTensorToAclInput(tensor, tensor.scalar_type(), compileType, "", "");
     aclCmd->AddInput(std::get<0>(res), std::get<1>(res), tensor);
-    return *thisun
+    return *this;
 }
 
 // Tensor Input which no need contiguous
