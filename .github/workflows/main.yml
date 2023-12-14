@@ -198,14 +198,12 @@ jobs:
     name: Gen-Data
     runs-on: tps-diopi-ci
     needs: [Build-Nvidia]
-    env:
-      OUTPUT: ${{needs.Rsync.outputs.output}}
     steps:
       - name: gen-test-data
         run: |
           ssh ${CLUSTER_1988} """
           set -e
-          if [[ $OUTPUT == *"GENDATA"* ]];then
+          if [[ "${{ needs.Rsync.outputs.output }}" == *GENDATA* ]];then
             source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
             cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd diopi_test/python && ls &&
             srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'python main.py --mode gen_data' \
@@ -308,7 +306,7 @@ jobs:
           set -e
           export USE_COVERAGE=ON
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}
-          if [[ $OUTPUT == *"GENDATA"* ]];then
+          if [[ "${{ needs.Rsync.outputs.output }}" == *GENDATA* ]];then
             rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
           else
             ln -s /mnt/cache/share/deeplinkci/gen-data/${GEN_DATA}/diopi ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/
@@ -373,7 +371,7 @@ jobs:
         run: |
           set -e
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          if [[ $OUTPUT == *"GENDATA"* ]];then
+          if [[ "${{ needs.Rsync.outputs.output }}" == *GENDATA* ]];then
             rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA}/diopi ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/
           else
             ln -s /mnt/cache/share/deeplinkci/gen-data/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
