@@ -1949,4 +1949,12 @@ device_configs = {
             k=[Skip(1)],
         ),
     ),
+
+    # FIXME 特定参数组合报错
+    'embedding': dict(
+        name=["embedding"],
+        para=dict(
+            padding_idx=[Skip(92)],
+        ),
+    ),
 }
