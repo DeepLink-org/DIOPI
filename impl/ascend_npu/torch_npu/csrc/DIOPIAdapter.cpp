@@ -2499,11 +2499,11 @@ at::Tensor view(const at::Tensor input, const c10::IntArrayRef sizes, const c10:
         std::copy(strides.begin(), strides.end(), stridesVec.begin());
     } else {
         int st = 1;
-        for (auto k : {3, 2, 1, 0}) {
-            stridesVec[k] = st;
-            if (sizes[k] == 0) continue;
-            if (sizes[k] == -1) st = -1;
-            if (st != -1) st *= sizes[k];
+        for (int64_t i = sizes.size(); i > 0; --i) {
+            stridesVec[i - 1] = st;
+            if (sizes[i - 1] == 0) continue;
+            if (sizes[i - 1] == -1) st = -1;
+            if (st != -1) st *= sizes[i - 1];
         }
     }
     return fromPreAllocated(input.data_ptr(), sizes, stridesVec, input.options());
