@@ -1920,5 +1920,30 @@ device_configs = {
                 },
             ],
         ),
+    ),
+    
+    'embedding': dict(
+        name=["embedding"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.int64), Skip(np.int64), Skip(np.int16)],
+                },
+            ]
+        ),  
+    ),
+    
+    'embedding_forward': dict(
+        name=["embedding"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.int64), Skip(np.int64), Skip(np.int16)],
+                },
+            ]
+        ),
+        
     )
 }
