@@ -99,7 +99,6 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
             .run();
     }
 
-
     AscendTensor reshapedGradOutputCopy;
     makeTensorLike(ctx, reshapedGradOutputCopy, gradOutputCopy, gradOutputCopy.dtype());
     reshape(ctx, gradOutputCopy, reshapedGradOutputCopy, gradOutputCopy.shape());
