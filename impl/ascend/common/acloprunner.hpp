@@ -1,6 +1,7 @@
 #ifndef IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_
 #define IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_
 
+#include <diopi/diopirt.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -388,8 +389,12 @@ public:
         auto& buffer = inputBuffers_[inputIndex_];
 
         std::vector<int64_t> dims = at.getAclMemShape();
-        desc = aclCreateTensorDesc(dtypeCastStrategy(at.dtype()), dims.size(), dims.data(), format);
+        std::vector<int64_t> storageDims = at.storageDims();
+        aclFormat baseFormat = FormatHelper::getAclBaseFormat(format);
+        desc = aclCreateTensorDesc(dtypeCastStrategy(at.dtype()), dims.size(), dims.data(), baseFormat);
         ASCEND_CHECK_ABORT(desc != nullptr, "aclTensorDesc should not be nullptr.");
+        aclSetTensorFormat(desc, format);
+        aclSetTensorShape(desc, storageDims.size(), storageDims.data());
         buffer = aclCreateDataBuffer(const_cast<void*>(at.data()), at.getAclMemBufferSize());
         inputIndex_++;
         return *this;
@@ -505,9 +510,12 @@ public:
         auto& buffer = outputBuffers_[outputIndex_];
 
         std::vector<int64_t> dims = at.getAclMemShape();
-        desc = aclCreateTensorDesc(dtypeCastStrategy(at.dtype()), dims.size(), dims.data(), format);
+        const std::vector<int64_t>& storageDims = at.storageDims();
+        aclFormat baseFormat = FormatHelper::getAclBaseFormat(format);
+        desc = aclCreateTensorDesc(dtypeCastStrategy(at.dtype()), dims.size(), dims.data(), baseFormat);
         ASCEND_CHECK_ABORT(desc != nullptr, "aclTensorDesc should not be nullptr.");
-        // change const void* to void*
+        aclSetTensorFormat(desc, format);
+        aclSetTensorShape(desc, storageDims.size(), storageDims.data());
         buffer = aclCreateDataBuffer(const_cast<void*>(at.data()), at.getAclMemBufferSize());
         outputIndex_++;
         return *this;
