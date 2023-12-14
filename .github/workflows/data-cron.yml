@@ -1,11 +1,8 @@
 name: diopi gen data
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - "wgs/**"
-#  schedule:
-#    - cron: '01 02 * * *'
+  schedule:
+    - cron: '01 02 * * *'
 
 concurrency:
   group: data-${{ github.head_ref || github.ref }}

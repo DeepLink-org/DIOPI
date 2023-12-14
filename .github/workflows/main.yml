@@ -203,18 +203,17 @@ jobs:
     steps:
       - name: gen-test-data
         run: |
+          ssh ${CLUSTER_1988} """
+          set -e
           if [[ "${OUTPUT}" == *"GENDATA"* ]];then
-            ssh ${CLUSTER_1988} """
-            set -e
             source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
             cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd diopi_test/python && ls &&
             srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'python main.py --mode gen_data' \
             || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
-            """
           else
             ln -s /mnt/cache/share/deeplinkci/gen-data/${GEN_DATA}/diopi ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/
           fi
-
+          """
 
   Gen-Data-Op-Test-A100:
     name: Gen-Data-Op-Test-A100
