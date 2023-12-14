@@ -192,7 +192,6 @@ ascend:
 - diopiConvolution2dBackward
 - diopiLogicalAnd
 - diopiLogicalOr
-- diopiMaxPool2dWithIndices
 - diopiTokenAttentionInference
 - diopiExpand
 - diopiLinspace
