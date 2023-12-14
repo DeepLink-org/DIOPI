@@ -3,6 +3,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "torch_npu/csrc/framework/DIOPIAdapter.h"
+
 namespace c10_npu::acl {
 
 class AclErrorCode {

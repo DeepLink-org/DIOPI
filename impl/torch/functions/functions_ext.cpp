@@ -34,6 +34,8 @@ c10::optional<at::Generator> buildGeneratorForMha(diopiContextHandle_t ctx, diop
 
 }  // namespace
 
+namespace impl {
+namespace cuda {
 diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t x, diopiConstTensorHandle_t cos,
                                   diopiConstTensorHandle_t sin, const bool conj, const bool interleaved) {
     impl::aten::setCurCtx(ctx);
@@ -247,3 +249,5 @@ diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_t ctx, dio
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
+}  // namespace cuda
+}  // namespace impl
