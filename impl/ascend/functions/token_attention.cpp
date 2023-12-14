@@ -4,10 +4,9 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "../common/acloprunner.hpp"
-
-#include <ATen/ops/values_ops.h>
 #include <cmath>
+
+#include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
@@ -26,7 +25,6 @@ diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorH
     qTmpAt = AscendTensor(qout);
     auto step = constructDiopiScalarT(diopi_dtype_int32, 1);
     diopiTensorHandle_t indices, kLoc, indexOut, iTensor;
-
 
     for (int i = 0; i < batch; ++i) {
         auto iScalar = constructDiopiScalarT(diopi_dtype_int32, i);
@@ -81,8 +79,9 @@ diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorH
         diopiStack(ctx, indexOut2, &firstTensor, firstDim, 1);
         diopiIndexPutInp(ctx, attentionOut, valuesAt.tensorHandle(), indexOut2, outLocAt.shape(1), true);
 
-        return diopiSuccess;
     }
+
+    return diopiSuccess;
 }
 
 }  // namespace ascend
