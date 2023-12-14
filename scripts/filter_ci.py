@@ -24,6 +24,8 @@ def get_run_result(pr_number):
         for file in pr_files:
             filenames = file["filename"]
             filename = filenames.split("/")[-1]
+            if "diopi_configs.py" in filenames:
+                run_result['GENDATA'] = True
             if filename.endswith('.md') or '.github/ISSUE_TEMPLATE/' in filenames or filenames.endswith('.img') or filename.endswith('.git') \
                     or filename.endswith('.txt') or filename == 'CODEOWNERS' or filename == 'LICENSE' or filename == '.pre-commit-config.yaml':
                 continue
@@ -40,8 +42,6 @@ def get_run_result(pr_number):
                     run_result['SUPA'] = True
                 elif "impl/droplet" in filenames:
                     run_result['droplet'] = True
-                elif "diopi_configs.py" in filenames:
-                    run_result['GENDATA'] = True
                 elif any(subpath in filenames for subpath in norunpaths):
                     continue
                 else:

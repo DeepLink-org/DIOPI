@@ -85,12 +85,12 @@ jobs:
         run: |
           set -e
           ssh ${CLUSTER_CAMB} """
-          mkdir -p ${DATA_DIR}/source
-          rsync -a --delete ${CLUSTER_1988}:${DATA_DIR}/source/${GEN_DATA} ${DATA_DIR}/source/
+          mkdir -p ${DATA_DIR}/source/${GEN_DATA}
+          rsync -a --delete ${CLUSTER_1988}:${DATA_DIR}/source/${GEN_DATA}/ ${DATA_DIR}/source/${GEN_DATA}/
           """
           ssh ${CLUSTER_ASCEND_910B} """
-          mkdir -p ${DATA_DIR}/source
-          rsync -a --delete ${CLUSTER_1988}:${DATA_DIR}/source/${GEN_DATA} ${DATA_DIR}/source/
+          mkdir -p ${DATA_DIR}/source/${GEN_DATA}
+          rsync -a --delete ${CLUSTER_1988}:${DATA_DIR}/source/${GEN_DATA}/ ${DATA_DIR}/source/${GEN_DATA}/
           """
 #          ssh ${CLUSTER_SUPA} """
 #          rsync -a ${CLUSTER_1988}:${DATA_DIR}/source/${GEN_DATA} ${DATA_DIR}/source/
