@@ -18,6 +18,8 @@ int current_device() {
     return devId_;
 }
 
+inline bool enableDumpArgs() { return std::getenv("DIOPI_DEBUG_OP") != nullptr; }
+
 // check all at::ScalarType is not negative
 #define ENUM_PAIR_FUNC(_1, n) static_assert(static_cast<int64_t>(at::ScalarType::n) >= 0, #n " is negative");
 AT_FORALL_SCALAR_TYPES_WITH_COMPLEX_AND_QINTS(ENUM_PAIR_FUNC)
@@ -903,6 +905,9 @@ at::Tensor empty_npu(at::IntArrayRef size, c10::optional<at::ScalarType> dtype_o
     diopiDevice_t deviceDiopi = diopi_device;
 
     diopiTensorHandle_t tensorDiopi = nullptr;
+    if (enableDumpArgs()) {
+        std::cout << __FUNCTION__ << "diopiRequireTensor shape: " << size << ", dtype:" << dtype_opt.value() << std::endl;
+    }
     auto ret = diopiRequireTensor(context, &tensorDiopi, &sizeDiopi, nullptr, dtypeDiopi, deviceDiopi);
     TORCH_CHECK(diopiSuccess == ret);
     return impl::aten::buildATen(tensorDiopi);
@@ -1919,8 +1924,6 @@ aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool 
     return ret;
 }
 
-inline bool enableDumpArgs() { return std::getenv("DIOPI_DEBUG_OP") != nullptr; }
-
 std::tuple<aclTensorDesc*, aclDataBuffer*> CovertNPUTensorWithZeroDimToAclInput(const at::Tensor& tensor, const string& descName) {
     aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(tensor.scalar_type());
     AclTensorDescMaker desc;
@@ -2184,7 +2187,7 @@ OpCommand& OpCommand::Input(const c10::Scalar& input, const at::ScalarType type,
         ScalarIsInLimits(input, scalar_type) ? at::detail::scalar_tensor_static(input, scalar_type, at::kCPU) : at::scalar_to_tensor(input).to(scalar_type);
     std::tuple<aclTensorDesc*, aclDataBuffer*> res = CovertHostTensorToAclInput(tensor, tensor.scalar_type(), compileType, "", "");
     aclCmd->AddInput(std::get<0>(res), std::get<1>(res), tensor);
-    return *this;
+    return *thisun
 }
 
 // Tensor Input which no need contiguous
@@ -2201,7 +2204,7 @@ OpCommand& OpCommand::InputWithoutContiguous(const at::Tensor& input, const stri
 // Output Tensor
 OpCommand& OpCommand::Output(at::Tensor& output, const string& descName, const c10::optional<aclFormat>& sensitive_format, const string& realType) {
     if (enableDumpArgs()) {
-        std::cout << aclCmd->GetName() << ":descName:" << descName << ",output:" << output.sizes() << "," << output.options() << std::endl;
+        std::cout << aclCmd->GetName() << ":descName:" << descName << ",output:" << impl::aten::dumpArgs(output) << std::endl;
     }
     if (resultTypeDefined == false && commonType.has_value() && commonType.value() != output.scalar_type()) {
         output = acl_op::npu_dtype_cast(output, commonType.value());
