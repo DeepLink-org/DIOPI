@@ -22,14 +22,13 @@ aclDataType dtypeConvertor(diopiDtype_t type) {
 
 void dropoutTrainCore(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p,
                       diopiGeneratorHandle_t generator) {
+    AscendTensor inputAt(input);
     diopiTensorHandle_t maskTempTensor;
-
-    int64_t numels;
-    diopiGetTensorNumel(input, &numels);
-    uint32_t length = (numels + 128 - 1) / 128 * 128;
+    uint32_t length = (inputAt.numel() + 128 - 1) / 128 * 128;
     int64_t maskTempShape[1] = {length / 8};
     diopiSize_t maskTempSize = arrayToDiopiSize(maskTempShape, 1);
     diopiRequireTensor(ctx, &maskTempTensor, &maskTempSize, nullptr, diopi_dtype_bool, diopi_device);
+
     diopiSize_t inputSize;
     diopiGetTensorShape(input, &inputSize);
 
@@ -40,18 +39,13 @@ void dropoutTrainCore(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTe
     float prob = 1. - p;
     AclOpRunner<5, 1, dtypeConvertor>("StatelessDropOutGenMask", ctx)
         .addConstInput(inputSize)
-        .addConstInput(prob, diopi_dtype_float32)
+        .addConstInput(prob, inputAt.dtype())
         .addConstInput(pair.first, diopi_dtype_int32)
         .addConstInput(0, diopi_dtype_int32)
         .addConstInput(offset)
         .addOutput(maskTempTensor)
         .run();
-    AclOpRunner<3, 1, dtypeConvertor>("DropOutDoMask", ctx)
-        .addInput(input)
-        .addInput(maskTempTensor)
-        .addConstInput(1., diopi_dtype_float32)
-        .addOutput(out)
-        .run();
+    AclOpRunner<3, 1, dtypeConvertor>("DropOutDoMask", ctx).addInput(input).addInput(maskTempTensor).addConstInput(1., inputAt.dtype()).addOutput(out).run();
     diopiEq(ctx, mask, input, out);
     diopiScalar_t probScalar = constructDiopiScalarT(diopi_dtype_float64, 1. / prob);
     diopiMulInpScalar(ctx, out, &probScalar);
