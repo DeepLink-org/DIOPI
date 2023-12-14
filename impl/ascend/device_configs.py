@@ -806,6 +806,20 @@ device_configs = {
         ),
     ),
 
+    'relu_no_contiguous': dict(
+        name=["relu"],
+        is_inplace=True,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float32), Skip(np.float64)],
+                },
+            ],
+        ),
+    ),
+
+
     'leaky_relu': dict(
         name=['leaky_relu'],
         tensor_para=dict(
