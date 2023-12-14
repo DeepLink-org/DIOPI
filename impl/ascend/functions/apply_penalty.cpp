@@ -106,19 +106,10 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
         // atLogits.index_put_({at::tensor(i), curTokenIds}, curLogits); #todo 需要index_put算子
         // 将惩罚后的当前批次的Logit重新写入
         diopiSubInp(ctx, const_cast<diopiTensorHandle_t>(asLogits.tensorHandle()), const_cast<diopiTensorHandle_t>(asLogits.tensorHandle()), &alpha);
-        std::cout << "ready to call Inplace IndexAdd" << std::endl;
-        auto logitsShape = asLogits.shape();
-        std::cout << "asLogits.shape() = ";
-        for (int i = 0; i < logitsShape.size(); i++) {
-            std::cout << logitsShape[i] << " ";
-        }
-        std::cout << std::endl;
+        // std::cout << "ready to call Inplace IndexAdd" << std::endl;
+        AclOpRunner<3, 1>("InplaceIndexAdd", ctx).addInput(asLogits).addInput(curTokenIds).addInput(curLogits).setAttr("axis", i).run();
+        
 
-        std::cout << "curLogits.shape() = ";
-        for (int i = 0; i < curLogitsShape.size(); i++) {
-            std::cout << curLogitsShape.size() << " ";
-        }
-        AclOpRunner<3, 1>("InplaceIndexAdd", ctx).addInput(asLogits).addInput(curTokenIds).addInput(curLogits).setAttr("axis", 0).run();
     }
 
     return diopiSuccess;
