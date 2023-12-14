@@ -197,9 +197,6 @@
 - diopiMaxAll:
     dtype: (float64)->float32, (int16, int8)->int32, (bool)->uint8
 
-- diopiDropout:
-    dtype: (float16)->float32
-
 - diopiSilu:
     dtype: (float64)->float32
 
@@ -240,6 +237,9 @@
     dtype: (float64)->float32
 
 - diopiDropout:
+    dtype: (float64)->float32
+
+- diopiDropoutInp:
     dtype: (float64)->float32
 
 - diopiExpand:
