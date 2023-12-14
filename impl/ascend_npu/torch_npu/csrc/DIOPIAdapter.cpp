@@ -906,7 +906,7 @@ at::Tensor empty_npu(at::IntArrayRef size, c10::optional<at::ScalarType> dtype_o
 
     diopiTensorHandle_t tensorDiopi = nullptr;
     if (enableDumpArgs()) {
-        std::cout << __FUNCTION__ << "diopiRequireTensor shape: " << size << ", dtype:" << dtype_opt.value() << std::endl;
+        std::cout << __FUNCTION__ << ": diopiRequireTensor shape: " << size << ", dtype:" << dtype_opt.value() << std::endl;
     }
     auto ret = diopiRequireTensor(context, &tensorDiopi, &sizeDiopi, nullptr, dtypeDiopi, deviceDiopi);
     TORCH_CHECK(diopiSuccess == ret);
@@ -2246,7 +2246,8 @@ void OpCommand::Run() {
     bool sync = true;
     c10::SmallVector<int64_t, N> sync_index;
     aclCmd->Run(sync, sync_index, outputTensor);
-    if (sync) {
+    // todo: optimize performance here
+    if (sync || 1) {
         Sync();
     }
     aclCmd->releaseSource();
@@ -2260,8 +2261,7 @@ OpCommand& OpCommand::Sync(c10::SmallVector<int64_t, N>& index) {
 }
 
 OpCommand& OpCommand::Sync() {
-    auto stream = c10_npu::getCurrentNPUStream();
-    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
+    c10_npu::getCurrentNPUStream().synchronize();
     return *this;
 }
 
@@ -2357,6 +2357,11 @@ NPUStream getCurrentNPUStream(c10::DeviceIndex device_index) {
 }
 
 NPUStream getCurrentSecondaryStream(c10::DeviceIndex device_index) { return getCurrentNPUStream(device_index); }
+
+void NPUStream::synchronize() const {
+    NPU_CHECK_ERROR(aclrtSynchronizeStream(aclStream_));
+    NPU_CHECK_ERROR(aclrtSynchronizeDevice());
+}
 
 }  // namespace c10_npu
 
@@ -2517,10 +2522,7 @@ void setCurCtx(diopiContextHandle_t ctx) {
     at_npu::native::markedOutputs.clear();
 }
 
-void unsetCurCtx() {
-    context = nullptr;
-    at_npu::native::markedOutputs.clear();
-}
+void unsetCurCtx() { context = nullptr; }
 
 }  // namespace aten
 
@@ -2535,7 +2537,7 @@ at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blo
 at::Tensor wrapper__view(const at::Tensor& self, at::IntArrayRef size) { return impl::aten::view(self, size); }
 
 at::Tensor wrapper__as_strided(const at::Tensor& self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset) {
-    return at_npu::native::NPUNativeFunctions::as_strided(self, size, stride, storage_offset);
+    return at_npu::native::NPUNativeFunctions::as_strided(self, size, stride, storage_offset.value_or(0));
 }
 
 const at::Tensor& wrapper__resize_(const at::Tensor& self, at::IntArrayRef size, c10::optional<at::MemoryFormat> memory_format) {

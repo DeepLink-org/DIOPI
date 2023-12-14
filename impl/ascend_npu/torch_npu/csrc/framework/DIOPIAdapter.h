@@ -288,7 +288,7 @@ public:
 
     bool query() const { INTERFACE_NOT_IMPL; }
 
-    void synchronize() const { INTERFACE_NOT_IMPL; }
+    void synchronize() const;
 
     /// Explicit conversion to rtStream_t.
     C10_NPU_API aclrtStream stream() const { return aclStream_; }
