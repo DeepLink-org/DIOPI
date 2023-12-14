@@ -1,5 +1,6 @@
 #include "torch_npu/csrc/aten/NPUNativeFunctions.h"
 
+#include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
 namespace at_npu::native {
@@ -14,6 +15,10 @@ at::Tensor NPUNativeFunctions::contiguous(const at::Tensor& self, at::MemoryForm
     }
     TORCH_CHECK(memory_format == c10::MemoryFormat::Contiguous, "NPU contiguous operator only supportted contiguous memory format.");
     return self.clone();
+}
+
+at::Tensor NPUNativeFunctions::as_strided(const at::Tensor& self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset) {
+    return acl_op::npu_stride_copy(self, size, stride, storage_offset.value_or(0));
 }
 
 namespace custom_ops {
@@ -51,6 +56,33 @@ at::Tensor& npu_transpose_out(const at::Tensor& self, at::IntArrayRef perm, bool
 at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size) { return acl_op::npu_broadcast(self, size); }
 
 at::Tensor& npu_broadcast_out(const at::Tensor& self, at::IntArrayRef size, at::Tensor& out) { return acl_op::npu_broadcast_out(self, size, out); }
+
+#if 0
+at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
+    DEBUG_ARGS(self);
+    std::cout << self.cpu() << std::endl;
+    DEBUG_ARGS(src);
+    std::cout << src.cpu() << std::endl;
+    at::Tensor source = src;
+    if (src.sizes() != self.sizes()) {
+        source = npu_broadcast(src, self.sizes());
+        DEBUG_ARGS(source);
+        std::cout << source.cpu() << std::endl;
+    }
+    if (source.strides() == self.strides()) {
+        acl_op::npu_dtype_cast_(self, source);
+        DEBUG_ARGS(source);
+        std::cout << source.cpu() << std::endl;
+    } else {
+        at::Tensor sourceTemp = at_npu::native::empty_npu(source.sizes(), source.options());
+        sourceTemp.copy_(source);
+        DEBUG_ARGS(sourceTemp);
+        std::cout << sourceTemp.cpu() << std::endl;
+        acl_op::npu_dtype_cast_(self, sourceTemp);
+    }
+    return self;
+}
+#endif
 
 at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
     at::Tensor source = src;

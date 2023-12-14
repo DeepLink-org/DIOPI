@@ -1167,7 +1167,7 @@ struct NPUNativeFunctions {
     static at::Tensor& erfc_(at::Tensor& self) { OP_NOT_IMPL }
     __attribute__((__visibility__("default"))) static at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) { OP_NOT_IMPL }
     static at::Tensor asinh(const at::Tensor& self) { OP_NOT_IMPL }
-    static at::Tensor as_strided(const at::Tensor& self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset) { OP_NOT_IMPL }
+    static at::Tensor as_strided(const at::Tensor& self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset);
     static at::Tensor& sum_out(const at::Tensor& self, at::OptionalIntArrayRef dim, bool keepdim, c10::optional<at::ScalarType> dtype, at::Tensor& out) {
         OP_NOT_IMPL
     }

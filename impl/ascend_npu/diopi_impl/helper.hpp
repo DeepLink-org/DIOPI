@@ -45,9 +45,9 @@ inline int debugLevel() {
     return level;
 }
 
-#define DEBUG_ARGS(x)                                                                           \
-    if (debugLevel()) {                                                                         \
-        std::cout << __FUNCTION__ << ": " << #x << ":" << impl::aten::dumpArgs(x) << std::endl; \
+#define DEBUG_ARGS(x)                                                                                              \
+    if (debugLevel()) {                                                                                            \
+        std::cout << __FUNCTION__ << ": " << __LINE__ << ":" << #x << ":" << impl::aten::dumpArgs(x) << std::endl; \
     }
 
 #define BUILD_ATEN_ARGS_BODY(x)                         \
