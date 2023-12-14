@@ -461,7 +461,7 @@ public:
             } else {
                 addOutput(tensors[i]);
             }
-                }
+        }
         return *this;
     }
 
