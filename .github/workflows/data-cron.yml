@@ -1,6 +1,9 @@
 name: diopi gen data
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - "wgs/*"
   schedule:
     - cron: '01 02 * * *'
 
