@@ -203,7 +203,7 @@ jobs:
     steps:
       - name: gen-test-data
         run: |
-          if [[ ${OUTPUT} == *"GENDATA"* ]];then
+          if [[ "${OUTPUT}" == *"GENDATA"* ]];then
             ssh ${CLUSTER_1988} """
             set -e
             source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
@@ -212,7 +212,7 @@ jobs:
             || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
             """
           else
-            echo "no need to gen data"
+            ln -s /mnt/cache/share/deeplinkci/gen-data/${GEN_DATA}/diopi ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/diopi
           fi
 
 
@@ -264,7 +264,6 @@ jobs:
         run: |
           ssh ${CLUSTER_1988} """
           set -e
-
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/lib
           echo \$LD_LIBRARY_PATH
@@ -310,10 +309,10 @@ jobs:
           set -e
           export USE_COVERAGE=ON
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}
-          if [[ ${OUTPUT} == *"GENDATA"* ]];then
+          if [[ "${OUTPUT}" == *"GENDATA"* ]];then
             rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
           else
-            ln -s /mnt/cache/share/deeplinkci/gen-data/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
+            ln -s /mnt/cache/share/deeplinkci/gen-data/${GEN_DATA}/diopi ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/diopi
           fi
           source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=20 --gres=mlu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode gen_case --impl_folder ${NFS_PATH_LUSTRE}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/camb/ && \
@@ -375,8 +374,8 @@ jobs:
         run: |
           set -e
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          if [[ ${OUTPUT} == *"GENDATA"* ]];then
-            rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
+          if [[ "${OUTPUT}" == *"GENDATA"* ]];then
+            rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA}/diopi ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/diopi
           else
             ln -s /mnt/cache/share/deeplinkci/gen-data/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
           fi
