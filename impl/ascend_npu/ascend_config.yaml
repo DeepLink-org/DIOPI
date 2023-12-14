@@ -194,6 +194,7 @@ ascend:
 - diopiLogicalOr
 - diopiExpand
 - diopiLinspace
+- diopiSplitWithSizes
 - diopiScatter
 - diopiScatterInp
 - diopiScatterScalar
