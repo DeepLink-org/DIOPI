@@ -16,37 +16,6 @@
 #include "acl/acl_op_compiler.h"
 #include "acl/acl_rt.h"
 #include "ge/ge_api.h"
-
-namespace at::ascend_npu {
-
-class TensorWrapper : public at::Tensor {
-public:
-    // fix:  no matching function for call to 'at::ascend_npu::TensorWrapper::TensorWrapper()
-    // using at::Tensor::Tensor;
-    TensorWrapper() : at::Tensor::Tensor() {}
-
-    // fix: invalid initialization of reference of type 'const at::ascend_npu::TensorWrapper&' from expression of type 'const at::Tensor'
-    explicit TensorWrapper(const at::Tensor& other) : at::Tensor::Tensor(other) {}
-
-    // fix: have different types 'const at::ascend_npu::TensorWrapper' and 'at::Tensor'
-    operator at::Tensor() const { return static_cast<at::Tensor>(*this); }
-
-    // fix: no match for 'operator=' (operand types are 'at::ascend_npu::TensorWrapper' and 'at::Tensor')
-    TensorWrapper operator=(at::Tensor other) {
-        at::Tensor::operator=(other);
-        return *this;
-    }
-
-    TensorWrapper contiguous(c10::MemoryFormat memory_format) const;
-};  // class TensorWrapper
-
-using TensorWrapperList = c10::ArrayRef<TensorWrapper>;
-
-};  //  namespace at::ascend_npu
-
-// #define Tensor ascend_npu::TensorWrapper
-// #define TensorList ascend_npu::TensorWrapperList
-
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpConstants.h"
 #include "torch_npu/csrc/aten/NPUNativeFunctions.h"
@@ -256,7 +225,7 @@ struct NPUGeneratorImpl : public c10::GeneratorImpl {
     // Temporarily accommodates call sites that use philox_engine_inputs.
     // Allows incremental refactor of call sites to use philox_npu_state.
     std::pair<uint64_t, uint64_t> philox_engine_inputs(uint64_t increment);
-    static c10::DeviceType device_type() { return c10::DeviceType::XPU; }
+    static c10::DeviceType device_type() { return c10::DeviceType::XLA; }
     void* generator_ = nullptr;
 };
 
