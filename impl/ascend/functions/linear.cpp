@@ -86,15 +86,18 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
     }
 
     if (inputCopy.shape().size() > 2) transTensorTo2D(ctx, inputCopy);
-    if (gradWeightCopy.shape().size() > 2) transTensorTo2D(ctx, gradWeightCopy);
 
-    AclOpRunner<2, 1>("MatMul", ctx)
-        .addInput(gradOutputCopy)
-        .addInput(inputCopy)
-        .setAttr<uint8_t>("transpose_x1", true)
-        .setAttr<uint8_t>("transpose_x2", false)
-        .addOutput(gradWeightCopy)
-        .run();
+    if (nullptr != gradWeight) {
+        if (gradWeightCopy.shape().size() > 2) transTensorTo2D(ctx, gradWeightCopy);
+
+        AclOpRunner<2, 1>("MatMul", ctx)
+            .addInput(gradOutputCopy)
+            .addInput(inputCopy)
+            .setAttr<uint8_t>("transpose_x1", true)
+            .setAttr<uint8_t>("transpose_x2", false)
+            .addOutput(gradWeightCopy)
+            .run();
+    }
 
     AscendTensor reshapedGradOutputCopy;
     makeTensorLike(ctx, reshapedGradOutputCopy, gradOutputCopy, gradOutputCopy.dtype());
