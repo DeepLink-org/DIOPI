@@ -23,8 +23,18 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
     for (int64_t i = 0; i < batch; ++i) {
         // int curBatchStartIndex = atPCumsumSeqLen[i].item<int>();
         // int curBatchEndIndex = atPCumsumSeqLen[i + 1].item<int>();
-
         void *PCumsumSeqLenCPU;  // 需要进行copy操作，将数据从GPU拷贝到CPU
+        diopiStreamHandle_t stream;
+        diopiGetStream(ctx, &stream);
+        CALL_ACLRT(aclrtMallocHost(&PCumsumSeqLenCPU, asPcumsumSeqLen.numel() * asPcumsumSeqLen.elemsize()));
+        CALL_ACLRT(aclrtMemcpyAsync(PCumsumSeqLenCPU,
+                                    asPcumsumSeqLen.numel() * asPcumsumSeqLen.elemsize(),
+                                    asPcumsumSeqLen.data(),
+                                    asPcumsumSeqLen.numel() * asPcumsumSeqLen.elemsize(),
+                                    ACL_MEMCPY_DEVICE_TO_HOST,
+                                    reinterpret_cast<aclrtStream>(stream)));
+        CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));
+
         // 根据PCumsumSeqLenCPU获取每个batch的起始和终止索引
         int32_t curBatchStartIndex = *(reinterpret_cast<int32_t *>(PCumsumSeqLenCPU) + i);
         int32_t curBatchEndIndex = *(reinterpret_cast<int32_t *>(PCumsumSeqLenCPU) + i + 1);
@@ -32,7 +42,9 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
         // at::Tensor curTokenIds = atPTokenIds.slice(0, curBatchStartIndex, curBatchEndIndex);
         // 根据起始和终止索引，在PTokenIds中提取当前batch的TokenId序列
         AscendTensor curTokenIds;
-        std::vector<int64_t> curTokenIdsShape{curBatchEndIndex - curBatchStartIndex, };
+        std::vector<int64_t> curTokenIdsShape{
+            curBatchEndIndex - curBatchStartIndex,
+        };
         makeTensor(ctx, curTokenIds, curTokenIdsShape, asPTokenIds.dtype());
         diopiSlice(ctx, const_cast<diopiTensorHandle_t>(curTokenIds.tensorHandle()), asPTokenIds.tensorHandle(), 0, curBatchStartIndex, curBatchEndIndex, 1);
 
@@ -57,13 +69,17 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
         diopiIndexSelect(ctx, const_cast<diopiTensorHandle_t>(ithLogits.tensorHandle()), logits, 0, tensorI.tensorHandle());
 
         // at::Tensor curLogits = atLogits[i].index_select(0, curTokenIds);
-        std::vector<int64_t> curLogitsShape{curTokenIds.numel(), };  // 不确定curLogitsShape是否计算正确
+        std::vector<int64_t> curLogitsShape{
+            curTokenIds.numel(),
+        };  // 不确定curLogitsShape是否计算正确
         AscendTensor curLogits;
         makeTensor(ctx, curLogits, curLogitsShape, asLogits.dtype());
         diopiIndexSelect(ctx, const_cast<diopiTensorHandle_t>(curLogits.tensorHandle()), ithLogits.tensorHandle(), 0, curTokenIds.tensorHandle());
 
         // atFrequencyPenalty[i]
-        std::vector<int64_t> tempShape{1, };  // 不确定tempShape是否计算正确
+        std::vector<int64_t> tempShape{
+            1,
+        };  // 不确定tempShape是否计算正确
         AscendTensor ithFrequencyPenalty;
         makeTensor(ctx, ithFrequencyPenalty, tempShape, asFrequencyPenalty.dtype());
         diopiIndexSelect(
@@ -85,7 +101,6 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
 
         // atLogits.index_put_({at::tensor(i), curTokenIds}, curLogits); #todo 需要index_put算子
         // 将惩罚后的当前批次的Logit重新写入
-        
     }
 
     return diopiSuccess;

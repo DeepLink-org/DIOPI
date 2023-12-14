@@ -2,10 +2,12 @@
 
 import os
 import sys
+import shutil
 from .utils import logger
 from .model_list import model_op_list
 from .config_parser import ConfigParser
 from .collect_case import DeviceConfig, CollectCase
+from configs import model_config
 
 sys.path.append("../python/configs")
 
@@ -14,6 +16,7 @@ def gen_case(cache_path=".", cur_dir="", model_name="", fname="", impl_folder=""
              diopi_case_item_file="diopi_case_items.cfg", device_case_item_file="%s_case_items.cfg"):
 
     if model_name != "":
+        model_name = model_name.lower()
         logger.info(
             f"the op list of {model_name}: {model_op_list[model_name]}"
         )
@@ -24,15 +27,22 @@ def gen_case(cache_path=".", cur_dir="", model_name="", fname="", impl_folder=""
         # set a prefix for dat save path like: data/diopi/inputs
         model_name = "diopi"
         from diopi_configs import diopi_configs
-    diopi_case_item_path = os.path.join(cache_path, diopi_case_item_file)
-    device_case_item_path = os.path.join(cache_path, device_case_item_file)
+
+    diopi_case_item_path = os.path.join(cache_path, model_name, diopi_case_item_file)
+    case_output_dir = os.path.join(case_output_dir, model_name + '_case')
+    device_case_item_path = os.path.join(case_output_dir, device_case_item_file)
 
     cfg_parse = ConfigParser(diopi_case_item_path)
     cfg_parse.parser(diopi_configs, fname)
     cfg_path = diopi_case_item_path
 
+    if os.path.exists(case_output_dir):
+        shutil.rmtree(case_output_dir)
+    os.makedirs(case_output_dir)
+
     if impl_folder != "":
         cfg_path = device_case_item_path % os.path.basename(impl_folder)
+
         device_config_path = os.path.join(impl_folder, "device_configs.py")
         dst_path = os.path.join(cur_dir, "device_configs.py")
 

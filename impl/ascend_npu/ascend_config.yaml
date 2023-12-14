@@ -32,7 +32,6 @@ ascend:
 - diopiClampMinScalar
 - diopiClampScalar
 - diopiContiguous
-- diopiCopyInp
 - diopiCos
 - diopiCosInp
 - diopiCrossEntropyLoss
@@ -194,6 +193,8 @@ ascend:
 - diopiLogicalOr
 - diopiMaxPool2dWithIndices
 - diopiApplyPenalty
+- diopiExpand
+- diopiLinspace
 ascend_npu:
 - diopiRemainderTensor
 - diopiRemainderScalar
@@ -203,4 +204,5 @@ ascend_npu:
 - diopiNormal
 - diopiNormalInp
 - diopiNorm
-
+- diopiMaxPool2dWithIndices
+- diopiCopyInp

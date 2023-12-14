@@ -568,6 +568,7 @@ set(IMPL_SRC
   torch_npu/csrc/NpuVariables.cpp
   torch_npu/csrc/AdvancedIndex.cpp
   torch_npu/csrc/NPUNativeFunctions.cpp
+  torch_npu/csrc/CopyKernel.cpp
 )
 
 set(OLD_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ascend/)
@@ -635,6 +636,8 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/multinomial.cpp
     ${OLD_IMPL_DIR}/functions/addmm.cpp
     ${OLD_IMPL_DIR}/functions/apply_penalty.cpp
+    ${OLD_IMPL_DIR}/functions/expand.cpp    
+    ${OLD_IMPL_DIR}/functions/linspace.cpp
     #${OLD_IMPL_DIR}/test/export_functions.cpp
     #${OLD_IMPL_DIR}/test/conform_test.cpp
     ${OLD_IMPL_DIR}/common/utils.cpp

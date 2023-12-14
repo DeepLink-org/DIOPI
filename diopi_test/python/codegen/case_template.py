@@ -16,7 +16,7 @@ from conformance.diopi_functions import ones_like, FunctionNotImplementedError, 
 from conformance.check_result import CheckResult
 ${test_diopi_head_import}
 
-data_path = './cache/data'
+data_path = './cache'
 
 # @pytest.fixture(scope='class', autouse=True)
 # def process_cls():

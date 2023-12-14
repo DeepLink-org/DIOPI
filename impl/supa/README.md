@@ -11,9 +11,9 @@ BR Fullstask must be installed in order to support SUPA device.
 3. install fullstack, e.g.
 
     ```
-    tar -xzf full-stack_ubuntu-18.04_master_1112_20230918.tar.gz
+    tar -xzf full-stack_ubuntu-20.04_master_1112_20230918.tar.gz
     cd full-stack
-    sudo -E ./install.sh -p base
+    sudo ./install.sh -p base
     source /etc/profile.d/biren.sh
     ```
 
@@ -32,11 +32,15 @@ BR Fullstask must be installed in order to support SUPA device.
     sh scripts/build_impl.sh clean
     sh scripts/build_impl.sh supa
 
-    sh template_build_sh builddl supa supa
-    sh template_build_sh builddp
+    # follow procedure of https://deeplink.readthedocs.io/zh-cn/latest/doc/DIPU/quick_start.html#dipu
+    cd dipu
+    export DIPU_DEVICE=supa
+    pip install .
     ```
 6. run DIOPI / DIPU
     ```
     export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${DIOPI_SUPA_DIR}/lib
-    export DIPU_DEVICE_MEMCACHING_ALGORITHM="RAW"
+    export DIPU_DEVICE_MEMCACHING_ALGORITHM=RAW
+    export BRTB_DIOPI_SWAP_STORAGE=1
+    export BRTB_ADDR_MODE=1
     ```
