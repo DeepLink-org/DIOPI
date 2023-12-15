@@ -57,33 +57,6 @@ at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size) { return 
 
 at::Tensor& npu_broadcast_out(const at::Tensor& self, at::IntArrayRef size, at::Tensor& out) { return acl_op::npu_broadcast_out(self, size, out); }
 
-#if 0
-at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
-    DEBUG_ARGS(self);
-    std::cout << self.cpu() << std::endl;
-    DEBUG_ARGS(src);
-    std::cout << src.cpu() << std::endl;
-    at::Tensor source = src;
-    if (src.sizes() != self.sizes()) {
-        source = npu_broadcast(src, self.sizes());
-        DEBUG_ARGS(source);
-        std::cout << source.cpu() << std::endl;
-    }
-    if (source.strides() == self.strides()) {
-        acl_op::npu_dtype_cast_(self, source);
-        DEBUG_ARGS(source);
-        std::cout << source.cpu() << std::endl;
-    } else {
-        at::Tensor sourceTemp = at_npu::native::empty_npu(source.sizes(), source.options());
-        sourceTemp.copy_(source);
-        DEBUG_ARGS(sourceTemp);
-        std::cout << sourceTemp.cpu() << std::endl;
-        acl_op::npu_dtype_cast_(self, sourceTemp);
-    }
-    return self;
-}
-#endif
-
 at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
     at::Tensor source = src;
     if (src.sizes() != self.sizes()) {
