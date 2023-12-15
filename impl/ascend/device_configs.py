@@ -719,6 +719,18 @@ device_configs = {
         rtol = 1e-1,
     ),
 
+    'embedding': dict(
+        name=["embedding"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["weight"],
+                    # Wrong weight gradient. torch_npu failed in exactly the same way.
+                    "shape": (Skip((93, 512)),),
+                },
+            ],
+        ),
+    ),
 
     'clip_grad_norm': dict(
         name=['clip_grad_norm_'],
@@ -774,24 +786,11 @@ device_configs = {
             args=[
                 {
                     "ins": ['tensor'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),],
+                    "dtype": [Skip(np.float64)],
                 },
             ]
         ),
     ),
-
-    'split_bool': dict(
-        name=['split'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensor'],
-                    "dtype": [Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
 
     'transpose': dict(
         name=['transpose'],
@@ -1433,51 +1432,14 @@ device_configs = {
         ),
     ),
 
-    'scatter_specific': dict(
-        name=['scatter'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),],
-                },
-            ]
-        ),
-    ),
-
-    'scatter_reduce': dict(
-        name=['scatter'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
     'scatter_scalar': dict(
         name=['scatter'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'scatter_reduce_scalar': dict(
-        name=['scatter'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
+        para=dict(
+            # In this case, for float32 (but not float64), no matter what the value parameter is,
+            # the shape and dim parameters will result in wrong output for unknown reasons.
+            # Specificially, the rows of elements that shouldn't get impacted by scatter,
+            # will be filled with seemingly random or zero values.
+            value=[Skip(1e-4),],
         ),
     ),
 
@@ -1921,5 +1883,5 @@ device_configs = {
                 },
             ],
         ),
-    )
+    ),
 }
