@@ -209,3 +209,8 @@ ascend_npu:
 - diopiNormalInp
 - diopiNorm
 - diopiMaxPool2dWithIndices
+- diopiIndexPut
+- diopiIndexPutInp
+- diopiIndex
+- diopiIndexBackward
+- diopiDestIndexCopyKV
