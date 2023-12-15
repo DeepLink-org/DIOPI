@@ -7306,21 +7306,59 @@ diopi_configs = {
     'copy': dict(
         name=["copy_"],
         interface=['torch.Tensor'],
-        dtype=[np.float32, np.float64, np.float16, np.bool_,
-               np.int64, np.int32, np.int16, np.int8, np.uint8],
         tensor_para=dict(
             gen_fn='Genfunc.randn',
             args=[
                 {
                     "ins": ["input"],
-                    "shape": ((), (8,), (12,), (192, 147), (1, 1, 384), (2, 1, 38, 45),
-                              (0,), (0, 12,), (12, 0, 9)),
+                    "shape": ((), (8,), (12,), (192, 147), (1, 1, 384), (1, 192, 147, 2),
+                              (0,), (12, 0, 9), (0, 2)),
+                    "dtype": [np.float32, np.float64, np.float16, np.float32, np.float64,
+                              np.float32, np.int32, np.int64, np.uint8, np.int16,
+                              np.int32, np.int64, np.uint8, np.uint8, np.int8,
+                              np.uint8, np.int32, np.uint8, np.bool_, np.complex128,
+                              np.complex64, np.complex128, np.complex128]
+                },
+                {
+                    "ins": ["other"],
+                    "shape": ((), (), (12,), (192, 147), (1, 1, 384), (147, 1),
+                              (0,), (1, 9), (1,)),
+                    "dtype": [np.float64, np.float16, np.uint8, np.int64, np.int32,
+                              np.complex128, np.float16, np.float32, np.float64, np.uint8,
+                              np.int64, np.int32, np.int16, np.int8, np.uint8,
+                              np.bool_, np.complex128, np.complex128, np.uint8, np.float16,
+                              np.uint8, np.int64, np.complex128]
+                },
+            ]
+        )
+    ),
+
+    'copy_input_no_contiguous': dict(
+        name=["copy_"],
+        interface=['torch.Tensor'],
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((12, 2), (12, 1, 12), (2, 38, 45, 2)),
+                    "dtype": [np.float16, np.float64, np.float16, np.float32, np.float64,
+                              np.float64, np.float64, np.float32, np.int16, np.int64,
+                              np.uint8, np.int8, np.int16, np.int32, np.int64,
+                              np.int64, np.uint8, np.int8, np.int64, np.int32,
+                              np.uint8, np.bool_, np.bool_, np.complex64, np.complex64,
+                              np.complex128, np.complex128],
                     "no_contiguous": [True],
                 },
                 {
                     "ins": ["other"],
-                    "shape": ((), (), (12,), (147, 1), (384, 1, 1), (45, 38, 1, 2),
-                              (0,), (12, 0), (9, 0, 12)),
+                    "shape": ((12,), (12, 1, 12), (45, 38, 1)),
+                    "dtype": [np.float32, np.float64, np.int64, np.int32, np.int16,
+                              np.int8, np.bool_, np.complex64, np.float64, np.float16,
+                              np.float32, np.float64, np.int64, np.int32, np.int16,
+                              np.int8, np.uint8, np.int64, np.bool_, np.complex64,
+                              np.complex64, np.float64, np.int64, np.float64, np.int64,
+                              np.int32, np.complex64]
                 },
             ]
         )
@@ -7329,26 +7367,37 @@ diopi_configs = {
     'copy_other_no_contiguous': dict(
         name=["copy_"],
         interface=['torch.Tensor'],
-        dtype=[np.float32, np.float16],
         tensor_para=dict(
             gen_fn='Genfunc.randn',
             args=[
                 {
                     "ins": ["input"],
-                    "shape": ((), (8,), (12,), (192, 147), (1, 1, 384), (2, 1, 38, 45),
-                              (0,), (0, 12,), (12, 0, 9)),
+                    "shape": ((6, 5, 384), (2, 4, 38, 45)),
+                    "dtype": [np.float16, np.float32, np.float16, np.float32, np.float32,
+                              np.float64, np.float32, np.float16, np.float64, np.int16,
+                              np.int32, np.uint8, np.int8, np.int16, np.int32,
+                              np.int32, np.int64, np.uint8, np.int8, np.int32,
+                              np.int16, np.int64, np.int8, np.bool_, np.bool_,
+                              np.bool_, np.complex64, np.complex128, np.complex64, np.complex128,
+                              np.complex128, np.complex128, np.complex64]
                 },
                 {
                     "ins": ["other"],
-                    "shape": ((), (), (12,), (147, 1), (384, 1, 1), (45, 38, 1, 2),
-                              (0,), (12, 0), (9, 0, 12)),
+                    "shape": ((384, 1, 6), (45, 38, 4)),
+                    "dtype":[np.float16, np.float32, np.int32, np.int16, np.int8,
+                             np.uint8, np.bool_, np.complex128, np.complex128, np.float32,
+                             np.float64, np.float16, np.float32, np.int32, np.int16,
+                             np.int8, np.uint8, np.int64, np.int32, np.bool_,
+                             np.complex128, np.complex128, np.complex128, np.float32, np.int32,
+                             np.complex128, np.float32, np.float64, np.int32, np.int16,
+                             np.int8, np.bool_, np.complex128],
                     "no_contiguous": [True],
                 },
             ]
         )
     ),
 
-    'copy_different_dtype': dict(
+    'copy_all_no_contiguous': dict(
         name=["copy_"],
         interface=['torch.Tensor'],
         tensor_para=dict(
@@ -7356,38 +7405,28 @@ diopi_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": ((192, 147), (1, 1, 384), (2, 1, 38, 45), (100, 100)),
-                    "dtype": [np.float32, np.float64, np.float16, np.bool_,
-                              np.int64, np.int32, np.int16, np.int8, np.uint8],
+                    "shape": ((192, 147), (192, 147, 2), (2, 12, 38, 45, 3)),
+                    "dtype":[np.float16, np.float32, np.float64, np.float16, np.float16,
+                             np.float32, np.float64, np.float16, np.float16, np.float64,
+                             np.int16, np.int32, np.int64, np.int8, np.int16,
+                             np.int16, np.int32, np.int64, np.uint8, np.int8,
+                             np.int8, np.int16, np.int8, np.int16, np.int64,
+                             np.int8, np.bool_, np.bool_, np.bool_, np.bool_,
+                             np.bool_, np.complex64, np.complex128, np.complex64, np.complex64,
+                             np.complex128, np.complex64, np.complex64],
                     "no_contiguous": [True],
                 },
                 {
                     "ins": ["other"],
-                    "dtype": [np.float64, np.int64, np.float16, np.float16,
-                              np.int32, np.float32, np.uint8, np.uint8, np.uint8],
-                    "shape": ((147, 1), (384, 1, 1), (45, 38, 1, 2), (1, 100)),
-                },
-            ]
-        )
-    ),
-
-    'copy_broadcast': dict(
-        name=["copy_"],
-        interface=['torch.Tensor'],
-        dtype=[np.float32, np.float64],
-        tensor_para=dict(
-            gen_fn='Genfunc.randn',
-            args=[
-                {
-                    "ins": ["input"],
-                    "shape": ((8,), (12, 2), (192, 147, 2), (6, 5, 384), (2, 12, 38, 45, 3),
-                              (0, 2), (0, 12,), (12, 0, 9, 2)),
-                    "no_contiguous": [True],
-                },
-                {
-                    "ins": ["other"],
-                    "shape": ((1,), (12,), (1, 147), (6, 1, 384), (2, 1, 38, 45),
-                              (1,), (0, 1,), (12, 0, 1)),
+                    "shape": ((192, 147), (1, 147, 2), (2, 1, 38, 45)),
+                    "dtype": [np.float64, np.float16, np.float32, np.int16, np.int8,
+                              np.uint8, np.int64, np.bool_, np.complex64, np.complex64,
+                              np.float16, np.float32, np.float64, np.float16, np.int16,
+                              np.int8, np.uint8, np.int64, np.int32, np.int16,
+                              np.int8, np.bool_, np.bool_, np.complex64, np.complex64,
+                              np.complex64, np.float16, np.int16, np.int8, np.bool_,
+                              np.complex64, np.float16, np.float32, np.int16, np.int8,
+                              np.uint8, np.bool_, np.complex64],
                     "no_contiguous": [True],
                 },
             ]
