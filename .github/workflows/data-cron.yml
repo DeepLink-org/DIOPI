@@ -29,6 +29,7 @@ jobs:
   Clone:
     name: checkout code
     runs-on: tps-diopi-ci
+    if: ${{ github.event.repository.name == 'DIOPI' }}
     steps:
       - name: clone repo
         run: |
@@ -44,6 +45,7 @@ jobs:
   Gen-Data:
     name: Gen-Data
     runs-on: tps-diopi-ci
+    if: ${{ github.event.repository.name == 'DIOPI' }}
     needs: [Clone]
     steps:
       - name: gen-test-data
@@ -59,6 +61,7 @@ jobs:
   CheckAndRsync:
     name: check and rsync
     runs-on: tps-diopi-ci
+    if: ${{ github.event.repository.name == 'DIOPI' }}
     needs: Gen-Data
     outputs:
       output: ${{ steps.get_gen_data.outputs.to_gen_data }}
