@@ -110,6 +110,9 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
 
+    if not os.path.exists(cache_path):
+        os.makedirs(cache_path)
+
     glob_vars.use_db = args.use_db
     from conformance.db_operation import db_conn, BenchMarkCase, DeviceCase
 
