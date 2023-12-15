@@ -194,6 +194,11 @@ ascend:
 - diopiLogicalOr
 - diopiExpand
 - diopiLinspace
+- diopiSplitWithSizes
+- diopiScatter
+- diopiScatterInp
+- diopiScatterScalar
+- diopiScatterInpScalar
 ascend_npu:
 - diopiRemainderTensor
 - diopiRemainderScalar
