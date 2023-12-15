@@ -35,7 +35,7 @@ diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t ou
         .setAttr("strides", strideTemp)
         .setAttr("pads", paddingTemp)
         .setAttr("dilations", dilationsTemp)
-        .setAttr<int64_t>("groups", 1)
+        .setAttr<int64_t>("groups", groups)
         .setAttr("data_format", dataFormat)
         .addOutput(out);
     if (bias) {
@@ -98,7 +98,7 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
             .setAttr("strides", strideTemp)
             .setAttr("pads", paddingTemp)
             .setAttr("dilations", dilationsTemp)
-            .setAttr<int64_t>("groups", 1)
+            .setAttr<int64_t>("groups", groups)
             .setAttr("data_format", dataFormat)
             .run();
     } else {
@@ -117,7 +117,7 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
             .setAttr("pads", paddingTemp)
             .setAttr("dilations", dilationsTemp)
             .setAttr("data_format", dataFormat)
-            .setAttr<int64_t>("groups", 1)
+            .setAttr<int64_t>("groups", groups)
             .run();
     }
 

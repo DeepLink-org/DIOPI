@@ -3,12 +3,31 @@ import numpy as np
 import os
 import sys
 import torch
+import torch.nn.functional as F
+import math
 import torchvision
-from . import triton_kernels
 
 from gen_input import GenPolicy
 from conformance.utils import logger, get_data_from_file
 from conformance.db_operation import db_conn
+
+
+def _torch_context_attention(xq, xk, xv, bs, seqlen, num_head, head_dim):
+    xq = xq.view(bs, seqlen, num_head, head_dim)
+    xk = xk.view(bs, seqlen, num_head, head_dim)
+    xv = xv.view(bs, seqlen, num_head, head_dim)
+    mask = torch.tril(torch.ones(seqlen, seqlen), diagonal=0).unsqueeze(0).unsqueeze(0).cuda()
+    mask[mask == 0.] = -100000000.0
+    mask = mask.repeat(bs, num_head, 1, 1)
+    keys = xk
+    values = xv
+    xq = xq.transpose(1, 2)
+    keys = keys.transpose(1, 2)
+    values = values.transpose(1, 2)
+    scores = torch.matmul(xq, keys.transpose(2, 3)) / math.sqrt(head_dim)
+    scores = F.softmax(scores.float() + mask, dim=-1).type_as(xq)
+    output = torch.matmul(scores, values).transpose(1, 2).contiguous().reshape(-1, num_head, head_dim)
+    return output
 
 
 class CustomizedTest(object):
@@ -229,24 +248,45 @@ class CustomizedTest(object):
         return output
 
     def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch):
-        triton_kernels.apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch)
+        batch = logits.shape[0]
+        for i in range(batch):
+            cur_batch_start_index = p_cumsum_seq_len[i]
+            cur_batch_end_index = p_cumsum_seq_len[i + 1]
+            cur_logits = logits[i, p_token_ids[cur_batch_start_index:cur_batch_end_index]]
+            cur_logits = cur_logits - p_token_counts[cur_batch_start_index:cur_batch_end_index] * frequency_penalty[i] - presence_penalty[i]
+            logits[i, p_token_ids[cur_batch_start_index:cur_batch_end_index]] = cur_logits
         return logits
 
     def destindex_copy_kv(k, dest_loc, out):
-        triton_kernels.destindex_copy_kv(k, dest_loc, out)
+        out[dest_loc] = k
         return out
 
     def token_attention(q, k, out, b_loc, b_start_loc, b_seq_len, max_input_len):
-        triton_kernels.token_attention_fwd(q, k, out, b_loc, b_start_loc, b_seq_len, max_input_len)
+        batch, head, dim = b_loc.shape[0], q.shape[1], q.shape[2]
+        q_device = q.device
+        xq = q.view(batch, 1, head, dim).transpose(1, 2)
+        for i in range(batch):
+            k_loc = b_loc[i][max_input_len - b_seq_len[i] + torch.arange(0, b_seq_len[i], device=q_device)]
+            key = k[k_loc, :].view(1, b_seq_len[i], head, dim).transpose(1, 2)
+            out_loc = b_start_loc[i] + torch.arange(0, b_seq_len[i], device=q_device)
+            out[:, out_loc] = (torch.matmul(xq[i, :], key.transpose(2, 3)) / math.sqrt(dim)).reshape(head, b_seq_len[i])
         return out
 
     def token_softmax_reducev(logics, v, out, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index):
-        triton_kernels.token_softmax_reducev_fwd(logics, v, out, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index)
+        batch, head, dim = b_loc.shape[0], v.shape[1], v.shape[2]
+        for i in range(batch):
+            v_loc = b_loc[i][max_input_len - b_seq_len[i] + torch.arange(0, b_seq_len[i], device=logics.device)]
+            P = logics[:, b_start_loc[i]:b_start_loc[i] + b_seq_len[i]].softmax(-1).reshape(head, 1, 1, b_seq_len[i]).transpose(0, 1)
+            V = v[v_loc, :].view(1, b_seq_len[i], head, dim).transpose(1, 2)
+            out[i, :] = torch.matmul(P, V).view(1, head, dim)
         return out
 
     def context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len):
-        # triton_kernels.context_attention_fwd(q, k, v, out, b_start_loc, b_seq_len, max_input_len)
-        triton_kernels.context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len)
+        batch, head, dim = b_start_loc.shape[0], q.shape[1], q.shape[2]
+        for i in range(batch):
+            start = b_start_loc[i]
+            end = start + b_seq_len[i]
+            out[start:end, :] = _torch_context_attention(q[start:end], k[start:end], v[start:end], 1, int(b_seq_len[i]), head, dim)
         return out
 
 

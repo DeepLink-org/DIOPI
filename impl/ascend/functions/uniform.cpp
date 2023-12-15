@@ -13,15 +13,15 @@ diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout
     auto pair = getSeedAndOffset(ctx, generator, 10);
     diopiScalar_t seedScalar = constructDiopiScalarT(diopi_dtype_int64, pair.first);
     diopiTensorHandle_t seedTh;
-    makeTensorFromScalar(ctx, &seedScalar, &seedTh, diopi_dtype_uint64);
+    makeTensorFromScalar(ctx, &seedScalar, &seedTh);
     diopiScalar_t offsetScalar = constructDiopiScalarT(diopi_dtype_int64, pair.second);
     diopiTensorHandle_t offsetTh;
-    makeTensorFromScalar(ctx, &offsetScalar, &offsetTh, diopi_dtype_uint64);
+    makeTensorFromScalar(ctx, &offsetScalar, &offsetTh);
     diopiScalar_t alg = constructDiopiScalarT(diopi_dtype_int64, 1);
     AclOpRunner<4, 1>("StatelessRandomUniformV2", ctx)
         .addConstInput(AscendTensor(inout).shape())
-        .addConstInput(seedTh, false)
-        .addConstInput(offsetTh, false)
+        .addConstInput(seedTh, false, ACL_UINT64)
+        .addConstInput(offsetTh, false, ACL_UINT64)
         .addConstInput(alg, diopi_dtype_int32)
         .setAttr("dtype", getAclDataType(inout))
         .addOutput(inout)

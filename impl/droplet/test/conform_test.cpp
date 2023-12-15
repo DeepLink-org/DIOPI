@@ -56,18 +56,27 @@ diopiError_t device_synchronize_stream(diopiStreamHandle_t stream_handle) {
 }
 
 diopiError_t device_memcpy_h2d_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
+    if (bytes == 0) {
+        return diopiSuccess;
+    }
     tangStream_t phStream = (tangStream_t)stream_handle;
     CALL_DROPLET(tangMemcpyAsync(dst, src, bytes, tangMemcpyHostToDevice, phStream));
     return diopiSuccess;
 }
 
 diopiError_t device_memcpy_d2h_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
+    if (bytes == 0) {
+        return diopiSuccess;
+    }
     tangStream_t phStream = (tangStream_t)stream_handle;
     CALL_DROPLET(tangMemcpyAsync(dst, src, bytes, tangMemcpyDeviceToHost, phStream));
     return diopiSuccess;
 }
 
 diopiError_t device_memcpy_d2d_async(diopiStreamHandle_t stream_handle, void* dst, const void* src, uint64_t bytes) {
+    if (bytes == 0) {
+        return diopiSuccess;
+    }
     tangStream_t phStream = (tangStream_t)stream_handle;
     CALL_DROPLET(tangMemcpyAsync(dst, src, bytes, tangMemcpyDeviceToDevice, phStream));
     return diopiSuccess;

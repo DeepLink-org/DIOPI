@@ -2,6 +2,7 @@
 Checks: '
   -*,
   clang-diagnostic-*,
+  -clang-diagnostic-ignored-optimization-argument,
   bugprone-*,
   -bugprone-easily-swappable-parameters,
   -bugprone-forward-declaration-namespace,
@@ -33,7 +34,6 @@ Checks: '
   readability-container-size-empty,
   '
 
-
 # NOTE there must be no spaces before the '-', so put the comma last.
 CheckOptions:
   - key:             readability-identifier-naming.ClassCase
@@ -63,6 +63,6 @@ CheckOptions:
 
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false
-WarningsAsErrors: '*'
+WarningsAsErrors: '*,-clang-diagnostic-ignored-optimization-argument'
 UseColor: true
 ...
