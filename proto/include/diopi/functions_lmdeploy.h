@@ -271,7 +271,7 @@ DIOPI_API diopiError_t diopiSetupToppRuntimeArgsInp(diopiContextHandle_t ctx, di
  * eps = 1e-6f.
  * 4.if skip is not null and is true, skip the batch.
  * 5.get p_threshold form top_ps, if one >= p_threshold, and id is the smallest in those passed, then it is the one else find the one with
- * newp_threshold = each batch own state random * p_threshold which sum >= newp_threshold with all less then it but without it the sum is < newp_threshold.
+ * newp_threshold = each batch own state random * p_threshold which sum >= (1-newp_threshold) with all less then it but without it the sum is < newp_threshold.
  * 6.ids[step*bs+bsid] =
  * the one's index. And if cum_log_probs is not null, cum_log_probs[batch_id] += logf(logit);if output_log_probs is not null, output_log_probs[batch_id] =
  * logf(logit).

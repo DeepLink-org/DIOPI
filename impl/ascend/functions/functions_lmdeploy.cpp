@@ -3,27 +3,17 @@
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  */
-#include <cuda_runtime_api.h>
-#include <cudnn.h>
 #include <diopi/functions.h>
 #include <diopi/functions_lmdeploy.h>
 #include <math.h>
-#include <torch/nn.h>
-#include <torch/optim.h>
-#include <torch/torch.h>
 
+#include <cassert>
 #include <cstring>
 
-#ifdef USE_HIP
-#include <miopen/version.h>
-#endif
+#include "../common/acloprunner.hpp"
 
 #define FLT_MIN __FLT_MIN__
 #define FLT_MAX __FLT_MAX__
-
-#include "../context.h"
-#include "../helper.hpp"
-#include "../vision_kernel.h"
 
 extern "C" {
 
