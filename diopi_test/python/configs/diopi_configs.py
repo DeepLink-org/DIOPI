@@ -6641,7 +6641,6 @@ diopi_configs = {
         ),
     ),
 
-    # FIXME scatter输入指定shape，结果不一致
     'scatter': dict(
         name=['scatter'],
         interface=['torch'],
@@ -7384,13 +7383,13 @@ diopi_configs = {
                 {
                     "ins": ["other"],
                     "shape": ((384, 1, 6), (45, 38, 4)),
-                    "dtype":[np.float16, np.float32, np.int32, np.int16, np.int8,
-                             np.uint8, np.bool_, np.complex128, np.complex128, np.float32,
-                             np.float64, np.float16, np.float32, np.int32, np.int16,
-                             np.int8, np.uint8, np.int64, np.int32, np.bool_,
-                             np.complex128, np.complex128, np.complex128, np.float32, np.int32,
-                             np.complex128, np.float32, np.float64, np.int32, np.int16,
-                             np.int8, np.bool_, np.complex128],
+                    "dtype": [np.float16, np.float32, np.int32, np.int16, np.int8,
+                              np.uint8, np.bool_, np.complex128, np.complex128, np.float32,
+                              np.float64, np.float16, np.float32, np.int32, np.int16,
+                              np.int8, np.uint8, np.int64, np.int32, np.bool_,
+                              np.complex128, np.complex128, np.complex128, np.float32, np.int32,
+                              np.complex128, np.float32, np.float64, np.int32, np.int16,
+                              np.int8, np.bool_, np.complex128],
                     "no_contiguous": [True],
                 },
             ]
@@ -7406,14 +7405,14 @@ diopi_configs = {
                 {
                     "ins": ["input"],
                     "shape": ((192, 147), (192, 147, 2), (2, 12, 38, 45, 3)),
-                    "dtype":[np.float16, np.float32, np.float64, np.float16, np.float16,
-                             np.float32, np.float64, np.float16, np.float16, np.float64,
-                             np.int16, np.int32, np.int64, np.int8, np.int16,
-                             np.int16, np.int32, np.int64, np.uint8, np.int8,
-                             np.int8, np.int16, np.int8, np.int16, np.int64,
-                             np.int8, np.bool_, np.bool_, np.bool_, np.bool_,
-                             np.bool_, np.complex64, np.complex128, np.complex64, np.complex64,
-                             np.complex128, np.complex64, np.complex64],
+                    "dtype": [np.float16, np.float32, np.float64, np.float16, np.float16,
+                              np.float32, np.float64, np.float16, np.float16, np.float64,
+                              np.int16, np.int32, np.int64, np.int8, np.int16,
+                              np.int16, np.int32, np.int64, np.uint8, np.int8,
+                              np.int8, np.int16, np.int8, np.int16, np.int64,
+                              np.int8, np.bool_, np.bool_, np.bool_, np.bool_,
+                              np.bool_, np.complex64, np.complex128, np.complex64, np.complex64,
+                              np.complex128, np.complex64, np.complex64],
                     "no_contiguous": [True],
                 },
                 {
