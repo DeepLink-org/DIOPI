@@ -1289,18 +1289,6 @@ device_configs = {
         ),
     ),
 
-    'prod': dict(
-        name=['prod'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
     'ctc_loss': dict(
         name=['ctc_loss'],
         tensor_para=dict(

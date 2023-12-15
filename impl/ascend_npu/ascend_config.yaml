@@ -195,6 +195,7 @@ ascend:
 - diopiMaxPool2dWithIndices
 - diopiExpand
 - diopiLinspace
+- diopiProd
 ascend_npu:
 - diopiRemainderTensor
 - diopiRemainderScalar
