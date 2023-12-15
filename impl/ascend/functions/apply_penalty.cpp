@@ -12,12 +12,12 @@ namespace ascend {
 diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t presencePenalty,
                                diopiConstTensorHandle_t frequencyPenalty, diopiConstTensorHandle_t pTokenIds, diopiConstTensorHandle_t pTokenCounts,
                                diopiConstTensorHandle_t pCumsumSeqLen, int pMaxLenInBatch) {
-    AscendTensor asLogits(logits);                       // shape: [batch_size, pMaxLenInBatch]
+    AscendTensor asLogits(logits);                      // shape: [batch_size, pMaxLenInBatch]
     AscendTensor asPresencePenalty(presencePenalty);    // shape: [batch_size, ]
     AscendTensor asFrequencyPenalty(frequencyPenalty);  // shape: [batch_size, ]
-    AscendTensor asPTokenIds(pTokenIds);               // shape: [generated_tokens_num, ]
-    AscendTensor asPTokenCounts(pTokenCounts);         // shape: [generated_tokens_num, ]
-    AscendTensor asPcumsumSeqLen(pCumsumSeqLen);      // shape: [batch_size+1,]
+    AscendTensor asPTokenIds(pTokenIds);                // shape: [generated_tokens_num, ]
+    AscendTensor asPTokenCounts(pTokenCounts);          // shape: [generated_tokens_num, ]
+    AscendTensor asPcumsumSeqLen(pCumsumSeqLen);        // shape: [batch_size+1,]
 
     void *pCumsumSeqLenCpu;  // 需要进行copy操作，将数据从GPU拷贝到CPU
     diopiStreamHandle_t stream;
