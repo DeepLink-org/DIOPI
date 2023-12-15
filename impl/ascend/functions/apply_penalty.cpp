@@ -18,22 +18,23 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
     AscendTensor asPTokenIds(p_token_ids);               // shape: [generated_tokens_num, ]
     AscendTensor asPTokenCounts(p_token_counts);         // shape: [generated_tokens_num, ]
     AscendTensor asPcumsumSeqLen(p_cumsum_seq_len);      // shape: [batch_size+1,]
+
+    void *PCumsumSeqLenCPU;  // 需要进行copy操作，将数据从GPU拷贝到CPU
+    diopiStreamHandle_t stream;
+    diopiGetStream(ctx, &stream);
+    CALL_ACLRT(aclrtMallocHost(&PCumsumSeqLenCPU, asPcumsumSeqLen.numel() * asPcumsumSeqLen.elemsize()));
+    CALL_ACLRT(aclrtMemcpyAsync(PCumsumSeqLenCPU,
+                                asPcumsumSeqLen.numel() * asPcumsumSeqLen.elemsize(),
+                                asPcumsumSeqLen.data(),
+                                asPcumsumSeqLen.numel() * asPcumsumSeqLen.elemsize(),
+                                ACL_MEMCPY_DEVICE_TO_HOST,
+                                reinterpret_cast<aclrtStream>(stream)));
+    CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));
+
     int64_t batch = asLogits.shape(0);
     for (int64_t i = 0; i < batch; ++i) {
         // int curBatchStartIndex = atPCumsumSeqLen[i].item<int>();
         // int curBatchEndIndex = atPCumsumSeqLen[i + 1].item<int>();
-        void *PCumsumSeqLenCPU;  // 需要进行copy操作，将数据从GPU拷贝到CPU
-        diopiStreamHandle_t stream;
-        diopiGetStream(ctx, &stream);
-        CALL_ACLRT(aclrtMallocHost(&PCumsumSeqLenCPU, asPcumsumSeqLen.numel() * asPcumsumSeqLen.elemsize()));
-        CALL_ACLRT(aclrtMemcpyAsync(PCumsumSeqLenCPU,
-                                    asPcumsumSeqLen.numel() * asPcumsumSeqLen.elemsize(),
-                                    asPcumsumSeqLen.data(),
-                                    asPcumsumSeqLen.numel() * asPcumsumSeqLen.elemsize(),
-                                    ACL_MEMCPY_DEVICE_TO_HOST,
-                                    reinterpret_cast<aclrtStream>(stream)));
-        CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));
-
         // 根据PCumsumSeqLenCPU获取每个batch的起始和终止索引
         int32_t curBatchStartIndex = *(reinterpret_cast<int32_t *>(PCumsumSeqLenCPU) + i);
         int32_t curBatchEndIndex = *(reinterpret_cast<int32_t *>(PCumsumSeqLenCPU) + i + 1);
@@ -55,15 +56,13 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
             ctx, const_cast<diopiTensorHandle_t>(curTokenCounts.tensorHandle()), asPTokenCounts.tensorHandle(), 0, curBatchStartIndex, curBatchEndIndex, 1);
 
         //  atLogits[i]
-        std::vector<int64_t> ithLogitsShape{asLogits.shape().begin() + 1, asLogits.shape().end()};
+        // std::vector<int64_t> ithLogitsShape{asLogits.shape().begin() + 1, asLogits.shape().end()};
+        std::vector<int64_t> ithLogitsShape{asLogits.shape(1)};
         AscendTensor ithLogits;
         makeTensor(ctx, ithLogits, ithLogitsShape, asLogits.dtype());
         diopiScalar_t scalarI;
         scalarI.stype = diopi_dtype_int32;
         scalarI.ival = i;
-        // AscendTensor tensorI;
-        // auto tempHandle = const_cast<diopiTensorHandle_t>(tensorI.tensorHandle());
-        // makeTensorFromScalar(ctx, &scalarI, &(tempHandle), diopi_dtype_int32, diopiDevice_t::diopi_device);
 
         diopiTensorHandle_t tensorIHandle;
         makeTensorFromScalar(ctx, &scalarI, &tensorIHandle, diopi_dtype_int32, diopiDevice_t::diopi_device);
@@ -74,7 +73,7 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
         // at::Tensor curLogits = atLogits[i].index_select(0, curTokenIds);
         std::vector<int64_t> curLogitsShape{
             curTokenIds.numel(),
-        };  // 不确定curLogitsShape是否计算正确
+        };
 
         AscendTensor curLogits;
         makeTensor(ctx, curLogits, curLogitsShape, asLogits.dtype());
@@ -83,35 +82,47 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
         // atFrequencyPenalty[i]
         std::vector<int64_t> tempShape{
             1,
-        };  // 不确定tempShape是否计算正确
+        };
         AscendTensor ithFrequencyPenalty;
         makeTensor(ctx, ithFrequencyPenalty, tempShape, asFrequencyPenalty.dtype());
         diopiIndexSelect(
             ctx, const_cast<diopiTensorHandle_t>(ithFrequencyPenalty.tensorHandle()), asFrequencyPenalty.tensorHandle(), 0, tensorI.tensorHandle());
 
-        // atPresencePenalty[i]
+        // atPresencePenalty[i]clear
+
         AscendTensor ithPresencePenalty;
         makeTensor(ctx, ithPresencePenalty, tempShape, asPresencePenalty.dtype());
         diopiIndexSelect(ctx, const_cast<diopiTensorHandle_t>(ithPresencePenalty.tensorHandle()), asPresencePenalty.tensorHandle(), 0, tensorI.tensorHandle());
 
         // curLogits = curLogits - curTokenCounts * atFrequencyPenalty[i] - atPresencePenalty[i];
         // 基于Frequency和TokenCounts对当前batch的Logits进行惩罚
-        diopiMulInp(ctx, const_cast<diopiTensorHandle_t>(curTokenCounts.tensorHandle()), ithFrequencyPenalty.tensorHandle());
+        AscendTensor FrequencyPenalty;
+        makeTensor(ctx, FrequencyPenalty, {curTokenCounts.shape()}, asLogits.dtype());
+        diopiMul(ctx,
+                 const_cast<diopiTensorHandle_t>(FrequencyPenalty.tensorHandle()),
+                 const_cast<diopiTensorHandle_t>(curTokenCounts.tensorHandle()),
+                 ithFrequencyPenalty.tensorHandle());
         diopiScalar_t alpha;
         alpha.stype = diopi_dtype_int32;
         alpha.ival = 1;
-        diopiSubInp(ctx, const_cast<diopiTensorHandle_t>(curLogits.tensorHandle()), curTokenCounts.tensorHandle(), &alpha);
+        diopiSubInp(ctx, const_cast<diopiTensorHandle_t>(curLogits.tensorHandle()), FrequencyPenalty.tensorHandle(), &alpha);
         diopiSubInp(ctx, const_cast<diopiTensorHandle_t>(curLogits.tensorHandle()), ithPresencePenalty.tensorHandle(), &alpha);
-
-        // atLogits.index_put_({at::tensor(i), curTokenIds}, curLogits); #todo 需要index_put算子
-        // 将惩罚后的当前批次的Logit重新写入
-        diopiSubInp(ctx, const_cast<diopiTensorHandle_t>(asLogits.tensorHandle()), const_cast<diopiTensorHandle_t>(asLogits.tensorHandle()), &alpha);
-        // std::cout << "ready to call Inplace IndexAdd" << std::endl;
-        AclOpRunner<3, 1>("InplaceIndexAdd", ctx).addInput(asLogits).addInput(curTokenIds).addInput(curLogits).setAttr("axis", i).run();
-        
-
+        // atLogits.index_put_({at::tensor(i), curTokenIds}, curLogits); #todo 需要index_put算子实现后进行重构
+        // 将惩罚后的当前批次的Logit重新写入全局的Logits
+        AscendTensor indexedNegLogits;
+        makeTensor(ctx, indexedNegLogits, curTokenIds.shape(), asLogits.dtype());
+        diopiIndexSelect(ctx, const_cast<diopiTensorHandle_t>(indexedNegLogits.tensorHandle()), ithLogits.tensorHandle(), 0, curTokenIds.tensorHandle());
+        AclOpRunner<1, 1>("Neg", ctx).addInput(indexedNegLogits).addOutput(indexedNegLogits).run();
+        AclOpRunner<3, 1>("InplaceIndexAdd", ctx)
+            .addInput(ithLogits)
+            .addInput(curTokenIds)
+            .addInput(indexedNegLogits)
+            .setAttr("axis", 0)
+            .addOutput(ithLogits)
+            .run();
+        AclOpRunner<3, 1>("InplaceIndexAdd", ctx).addInput(ithLogits).addInput(curTokenIds).addInput(curLogits).setAttr("axis", 0).addOutput(ithLogits).run();
+        AclOpRunner<3, 1>("InplaceUpdate", ctx).addInput(asLogits).addConstInput({i}).addInput(ithLogits).addOutput(asLogits).run();
     }
-
     return diopiSuccess;
 }
 
