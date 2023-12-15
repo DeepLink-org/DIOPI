@@ -9,21 +9,21 @@
 namespace impl {
 namespace ascend {
 
-diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t presence_penalty,
-                               diopiConstTensorHandle_t frequency_penalty, diopiConstTensorHandle_t p_token_ids, diopiConstTensorHandle_t p_token_counts,
-                               diopiConstTensorHandle_t p_cumsum_seq_len, int p_max_len_in_batch) {
-    AscendTensor asLogits(logits);                       // shape: [batch_size, p_max_len_in_batch]
-    AscendTensor asPresencePenalty(presence_penalty);    // shape: [batch_size, ]
-    AscendTensor asFrequencyPenalty(frequency_penalty);  // shape: [batch_size, ]
-    AscendTensor asPTokenIds(p_token_ids);               // shape: [generated_tokens_num, ]
-    AscendTensor asPTokenCounts(p_token_counts);         // shape: [generated_tokens_num, ]
-    AscendTensor asPcumsumSeqLen(p_cumsum_seq_len);      // shape: [batch_size+1,]
+diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t presencePenalty,
+                               diopiConstTensorHandle_t frequencyPenalty, diopiConstTensorHandle_t pTokenIds, diopiConstTensorHandle_t pTokenCounts,
+                               diopiConstTensorHandle_t pCumsumSeqLen, int pMaxLenInBatch) {
+    AscendTensor asLogits(logits);                       // shape: [batch_size, pMaxLenInBatch]
+    AscendTensor asPresencePenalty(presencePenalty);    // shape: [batch_size, ]
+    AscendTensor asFrequencyPenalty(frequencyPenalty);  // shape: [batch_size, ]
+    AscendTensor asPTokenIds(pTokenIds);               // shape: [generated_tokens_num, ]
+    AscendTensor asPTokenCounts(pTokenCounts);         // shape: [generated_tokens_num, ]
+    AscendTensor asPcumsumSeqLen(pCumsumSeqLen);      // shape: [batch_size+1,]
 
-    void *PCumsumSeqLenCPU;  // 需要进行copy操作，将数据从GPU拷贝到CPU
+    void *pCumsumSeqLenCpu;  // 需要进行copy操作，将数据从GPU拷贝到CPU
     diopiStreamHandle_t stream;
     diopiGetStream(ctx, &stream);
-    CALL_ACLRT(aclrtMallocHost(&PCumsumSeqLenCPU, asPcumsumSeqLen.numel() * asPcumsumSeqLen.elemsize()));
-    CALL_ACLRT(aclrtMemcpyAsync(PCumsumSeqLenCPU,
+    CALL_ACLRT(aclrtMallocHost(&pCumsumSeqLenCpu, asPcumsumSeqLen.numel() * asPcumsumSeqLen.elemsize()));
+    CALL_ACLRT(aclrtMemcpyAsync(pCumsumSeqLenCpu,
                                 asPcumsumSeqLen.numel() * asPcumsumSeqLen.elemsize(),
                                 asPcumsumSeqLen.data(),
                                 asPcumsumSeqLen.numel() * asPcumsumSeqLen.elemsize(),
@@ -35,9 +35,9 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
     for (int64_t i = 0; i < batch; ++i) {
         // int curBatchStartIndex = atPCumsumSeqLen[i].item<int>();
         // int curBatchEndIndex = atPCumsumSeqLen[i + 1].item<int>();
-        // 根据PCumsumSeqLenCPU获取每个batch的起始和终止索引
-        int32_t curBatchStartIndex = *(reinterpret_cast<int32_t *>(PCumsumSeqLenCPU) + i);
-        int32_t curBatchEndIndex = *(reinterpret_cast<int32_t *>(PCumsumSeqLenCPU) + i + 1);
+        // 根据pCumsumSeqLenCpu获取每个batch的起始和终止索引
+        int32_t curBatchStartIndex = *(reinterpret_cast<int32_t *>(pCumsumSeqLenCpu) + i);
+        int32_t curBatchEndIndex = *(reinterpret_cast<int32_t *>(pCumsumSeqLenCpu) + i + 1);
 
         // at::Tensor curTokenIds = atPTokenIds.slice(0, curBatchStartIndex, curBatchEndIndex);
         // 根据起始和终止索引，在PTokenIds中提取当前batch的TokenId序列
@@ -96,16 +96,16 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
 
         // curLogits = curLogits - curTokenCounts * atFrequencyPenalty[i] - atPresencePenalty[i];
         // 基于Frequency和TokenCounts对当前batch的Logits进行惩罚
-        AscendTensor FrequencyPenalty;
-        makeTensor(ctx, FrequencyPenalty, {curTokenCounts.shape()}, asLogits.dtype());
+        AscendTensor asFrequencyPenalty;
+        makeTensor(ctx, asFrequencyPenalty, {curTokenCounts.shape()}, asLogits.dtype());
         diopiMul(ctx,
-                 const_cast<diopiTensorHandle_t>(FrequencyPenalty.tensorHandle()),
+                 const_cast<diopiTensorHandle_t>(asFrequencyPenalty.tensorHandle()),
                  const_cast<diopiTensorHandle_t>(curTokenCounts.tensorHandle()),
                  ithFrequencyPenalty.tensorHandle());
         diopiScalar_t alpha;
         alpha.stype = diopi_dtype_int32;
         alpha.ival = 1;
-        diopiSubInp(ctx, const_cast<diopiTensorHandle_t>(curLogits.tensorHandle()), FrequencyPenalty.tensorHandle(), &alpha);
+        diopiSubInp(ctx, const_cast<diopiTensorHandle_t>(curLogits.tensorHandle()), asFrequencyPenalty.tensorHandle(), &alpha);
         diopiSubInp(ctx, const_cast<diopiTensorHandle_t>(curLogits.tensorHandle()), ithPresencePenalty.tensorHandle(), &alpha);
         // atLogits.index_put_({at::tensor(i), curTokenIds}, curLogits); #todo 需要index_put算子实现后进行重构
         // 将惩罚后的当前批次的Logit重新写入全局的Logits
