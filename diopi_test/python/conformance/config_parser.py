@@ -56,7 +56,17 @@ class ConfigParser(object):
         path = path if path != "" else self._ofile
         with open(path, "wb") as f:
             pickle.dump(self._items, f)
-
+    
+    # load config from self._ofile
+    def load(self, fname):
+        if not os.path.exists(self._ofile):
+            raise FileExistsError("Config file does not exist!")
+        with open(self._ofile, "rb") as f:
+            configs = pickle.load(f)
+        for k, v in configs.items():
+            if fname != "all_ops" and fname not in v["name"]:
+                continue
+            self._items.update({k : v})
 
 # *********************************************************************************
 # internal helper function
