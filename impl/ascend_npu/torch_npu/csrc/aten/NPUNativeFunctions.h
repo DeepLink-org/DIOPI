@@ -1167,7 +1167,7 @@ struct NPUNativeFunctions {
     static at::Tensor& erfc_(at::Tensor& self) { OP_NOT_IMPL }
     __attribute__((__visibility__("default"))) static at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) { OP_NOT_IMPL }
     static at::Tensor asinh(const at::Tensor& self) { OP_NOT_IMPL }
-    static at::Tensor as_strided(const at::Tensor& self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset) { OP_NOT_IMPL }
+    static at::Tensor as_strided(const at::Tensor& self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset);
     static at::Tensor& sum_out(const at::Tensor& self, at::OptionalIntArrayRef dim, bool keepdim, c10::optional<at::ScalarType> dtype, at::Tensor& out) {
         OP_NOT_IMPL
     }
@@ -1356,7 +1356,7 @@ struct NPUNativeFunctions {
     static ::std::tuple<at::Tensor, at::Tensor> triangular_solve(const at::Tensor& self, const at::Tensor& A, bool upper, bool transpose, bool unitriangular) {
         OP_NOT_IMPL
     }
-    static at::Tensor contiguous(const at::Tensor& self, at::MemoryFormat memory_format) { OP_NOT_IMPL }
+    static at::Tensor contiguous(const at::Tensor& self, at::MemoryFormat memory_format);
     static at::Tensor& rsqrt_(at::Tensor& self) { OP_NOT_IMPL }
     static void _foreach_addcmul_(at::TensorList self, at::TensorList tensor1, at::TensorList tensor2, const at::Scalar& value) { OP_NOT_IMPL }
     static bool _amp_foreach_non_finite_check(at::TensorList scaled_grads) { OP_NOT_IMPL }
@@ -1876,7 +1876,7 @@ struct NPUNativeFunctions {
     }
     static at::Tensor& mean_out(const at::Tensor& self, at::DimnameList dim, bool keepdim, c10::optional<at::ScalarType> dtype, at::Tensor& out) { OP_NOT_IMPL }
     static at::Tensor& argmin_out(const at::Tensor& self, c10::optional<int64_t> dim, bool keepdim, at::Tensor& out) { OP_NOT_IMPL }
-    static at::Tensor& copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) { OP_NOT_IMPL }
+    static at::Tensor& copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking);
     static at::Tensor count_nonzero(const at::Tensor& self, at::IntArrayRef dim) { OP_NOT_IMPL }
     static at::Tensor& randperm_out(int64_t n, at::Tensor& out) { OP_NOT_IMPL }
     static at::Tensor randperm(int64_t n, c10::optional<at::Generator> generator, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
