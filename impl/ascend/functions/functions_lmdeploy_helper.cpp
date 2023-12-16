@@ -10,18 +10,24 @@
 #include <diopi/functions_lmdeploy.h>
 #include <math.h>
 
+#include <array>
 #include <cassert>
-
-#include "../common/acloprunner.hpp"
-// #include <torch/nn.h>
-// #include <torch/optim.h>
-// #include <torch/torch.h>
 #include <cstring>
+#include <vector>
 
 #define FLT_MIN __FLT_MIN__
 #define FLT_MAX __FLT_MAX__
 
-extern "C" {
+namespace impl {
+namespace ascend {
+
+#define TRACK_ACL(x)                                                    \
+    do {                                                                \
+        static bool enable = std::getenv("DIOPI_TRACK_ACL") != nullptr; \
+        if (enable) {                                                   \
+            printf("[%s: %d]:%s\n", __FILE__, __LINE__, x);             \
+        }                                                               \
+    } while (0);
 
 #define CALL_ACLRT(Expr)                                                                          \
     do {                                                                                          \
@@ -50,10 +56,17 @@ DIOPI_API diopiError_t diopiLmdeployCopyH2D(diopiContextHandle_t ctx, diopiTenso
     if (nullptr == dst || nullptr == src) {
         return diopiErrorOccurred;
     }
+    void* dst_ptr{nullptr};
+    const void* src_ptr{nullptr};
+    diopiGetTensorData(dst, &dst_ptr);
+    diopiGetTensorDataConst(src, &src_ptr);
+    if (nullptr == dst_ptr || nullptr == src_ptr) {
+        return diopiErrorOccurred;
+    }
     if (async) {
-        CALL_ACLRT(::aclrtMemcpyAsync(dst, numel * esize, src, numel * esize, ACL_MEMCPY_HOST_TO_DEVICE, stream));
+        CALL_ACLRT(::aclrtMemcpyAsync(dst_ptr, numel * esize, src_ptr, numel * esize, ACL_MEMCPY_HOST_TO_DEVICE, stream));
     } else {
-        CALL_ACLRT(::aclrtMemcpy(dst, numel * esize, src, numel * esize, ACL_MEMCPY_HOST_TO_DEVICE));
+        CALL_ACLRT(::aclrtMemcpy(dst_ptr, numel * esize, src_ptr, numel * esize, ACL_MEMCPY_HOST_TO_DEVICE));
     }
     return diopiSuccess;
 }
@@ -76,10 +89,17 @@ DIOPI_API diopiError_t diopiLmdeployCopyD2H(diopiContextHandle_t ctx, diopiTenso
     if (nullptr == dst || nullptr == src) {
         return diopiErrorOccurred;
     }
+    void* dst_ptr{nullptr};
+    const void* src_ptr{nullptr};
+    diopiGetTensorData(dst, &dst_ptr);
+    diopiGetTensorDataConst(src, &src_ptr);
+    if (nullptr == dst_ptr || nullptr == src_ptr) {
+        return diopiErrorOccurred;
+    }
     if (async) {
-        CALL_ACLRT(::aclrtMemcpyAsync(dst, numel * esize, src, numel * esize, ACL_MEMCPY_DEVICE_TO_HOST, stream));
+        CALL_ACLRT(::aclrtMemcpyAsync(dst_ptr, numel * esize, src_ptr, numel * esize, ACL_MEMCPY_DEVICE_TO_HOST, stream));
     } else {
-        CALL_ACLRT(::aclrtMemcpy(dst, numel * esize, src, numel * esize, ACL_MEMCPY_DEVICE_TO_HOST));
+        CALL_ACLRT(::aclrtMemcpy(dst_ptr, numel * esize, src_ptr, numel * esize, ACL_MEMCPY_DEVICE_TO_HOST));
     }
     return diopiSuccess;
 }
@@ -102,12 +122,20 @@ DIOPI_API diopiError_t diopiLmdeployCopyD2D(diopiContextHandle_t ctx, diopiTenso
     if (nullptr == dst || nullptr == src) {
         return diopiErrorOccurred;
     }
+    void* dst_ptr{nullptr};
+    const void* src_ptr{nullptr};
+    diopiGetTensorData(dst, &dst_ptr);
+    diopiGetTensorDataConst(src, &src_ptr);
+    if (nullptr == dst_ptr || nullptr == src_ptr) {
+        return diopiErrorOccurred;
+    }
     if (async) {
-        CALL_ACLRT(::aclrtMemcpyAsync(dst, numel * esize, src, numel * esize, ACL_MEMCPY_DEVICE_TO_DEVICE, stream));
+        CALL_ACLRT(::aclrtMemcpyAsync(dst_ptr, numel * esize, src_ptr, numel * esize, ACL_MEMCPY_DEVICE_TO_DEVICE, stream));
     } else {
-        CALL_ACLRT(::aclrtMemcpy(dst, numel * esize, src, numel * esize, ACL_MEMCPY_DEVICE_TO_DEVICE));
+        CALL_ACLRT(::aclrtMemcpy(dst_ptr, numel * esize, src_ptr, numel * esize, ACL_MEMCPY_DEVICE_TO_DEVICE));
     }
     return diopiSuccess;
 }
 
-}  // extern "C"
+}  // namespace ascend
+}  // namespace impl

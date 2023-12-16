@@ -7,15 +7,16 @@
 #include <diopi/functions_lmdeploy.h>
 #include <math.h>
 
+#include <array>
 #include <cassert>
 #include <cstring>
-
-#include "../common/acloprunner.hpp"
+#include <vector>
 
 #define FLT_MIN __FLT_MIN__
 #define FLT_MAX __FLT_MAX__
 
-extern "C" {
+namespace impl {
+namespace ascend {
 
 #define DIOPI_CHECK(expr)                                           \
     do {                                                            \
@@ -1952,7 +1953,7 @@ DIOPI_API diopiError_t diopiTopKSampling(diopiContextHandle_t ctx, diopiTensorHa
                 }
                 int64_t h_end_ids_i = diopiDtype_t::diopi_dtype_int32 == intdtype ? *(reinterpret_cast<int32_t*>(h_end_ids_data) + i)
                                                                                   : *(reinterpret_cast<int64_t*>(h_end_ids_data) + i);
-                h_finished_data[i] = scalar_iid.ival == h_end_ids_i;
+                h_finished_data[i] = int64_t(scalar_did.fval) == h_end_ids_i;
             }
         }
         if (sequence_lengths != nullptr && finished != nullptr) {
@@ -3082,4 +3083,5 @@ diopiError_t diopiBatchApplyTemperaturePenaltyInp(diopiContextHandle_t ctx, diop
     return diopiSuccess;
 }
 
-}  // extern "C"
+}  // namespace ascend
+}  // namespace impl

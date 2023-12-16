@@ -1962,7 +1962,7 @@ DIOPI_API diopiError_t diopiTopKSampling(diopiContextHandle_t ctx, diopiTensorHa
                 }
                 int64_t h_end_ids_i = diopiDtype_t::diopi_dtype_int32 == intdtype ? *(reinterpret_cast<int32_t*>(h_end_ids_data) + i)
                                                                                   : *(reinterpret_cast<int64_t*>(h_end_ids_data) + i);
-                h_finished_data[i] = scalar_iid.ival == h_end_ids_i;
+                h_finished_data[i] = int64_t(scalar_did.fval) == h_end_ids_i;
             }
         }
         if (sequence_lengths != nullptr && finished != nullptr) {
