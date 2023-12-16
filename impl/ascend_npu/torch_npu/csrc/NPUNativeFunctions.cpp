@@ -21,6 +21,32 @@ at::Tensor NPUNativeFunctions::as_strided(const at::Tensor& self, at::IntArrayRe
     return acl_op::npu_stride_copy(self, size, stride, storage_offset.value_or(0));
 }
 
+at::Tensor NPUNativeFunctions::empty_with_format(c10::IntArrayRef size, c10::optional<c10::ScalarType> dtype_opt, c10::optional<c10::Layout> layout_opt,
+                                                 c10::optional<c10::Device> device_opt, c10::optional<bool> pin_memory_opt, int64_t dst_format) {
+    return at_npu::native::empty_with_format(size, dtype_opt, layout_opt, device_opt, pin_memory_opt, dst_format);
+}
+
+at::Tensor NPUNativeFunctions::empty_with_format(at::IntArrayRef size, c10::optional<at::DimnameList> names, c10::optional<at::ScalarType> dtype,
+                                                 c10::optional<at::Layout> layout, c10::optional<at::Device> device, c10::optional<bool> pin_memory,
+                                                 int64_t acl_format) {
+    OP_NOT_IMPL;
+}
+
+at::Tensor NPUNativeFunctions::unsafe_empty_with_format(at::IntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
+                                                        c10::optional<at::Device> device, c10::optional<bool> pin_memory, int64_t acl_format,
+                                                        bool keep_format) {
+    // This is a special interface that can adjust the memory application results. Check before use.
+
+    // Some ops cannot operate directly based on ND format, such as MatMul, BatchMatMul, MaxPoolWithArgmaxV1.
+    // For these ops, specify the parameter keep_format to ensure that
+    // the specified internal format is preserved.
+    if ((!keep_format) && at_npu::native::env::CheckForbidInternalFormat()) {
+        acl_format = static_cast<int64_t>(FormatHelper::GetBaseFormat(static_cast<aclFormat>(acl_format)));
+    }
+
+    return NPUNativeFunctions::empty_with_format(size, dtype, layout, device, pin_memory, acl_format);
+}
+
 namespace custom_ops {
 
 int64_t npu_change_data_ptr(const at::Tensor& dst, const at::Tensor& src, int64_t index) { CUSTOM_OP_NOT_IMPL; }

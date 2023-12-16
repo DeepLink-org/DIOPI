@@ -19,6 +19,7 @@
 #include "ge/ge_api.h"
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpConstants.h"
+#include "torch_npu/csrc/aten/CustomFunctions.h"
 #include "torch_npu/csrc/aten/NPUNativeFunctions.h"
 #include "torch_npu/csrc/core/npu/NPUErrorCodes.h"
 #include "torch_npu/csrc/core/npu/NpuVariables.h"
@@ -676,12 +677,16 @@ public:
     static bool check_match(const at::Tensor* tensor);
     TORCH_NPU_API static at::Tensor format_contiguous(const at::Tensor& src);
     static at::Tensor format_contiguous_add_copy_optimize(const at::Tensor& src);
-    static void RefreshFormat(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
-    static void format_fresh_view(at::Tensor& x, const at::Tensor& y) { x.copy_(y); }
+    static void RefreshFormat(const at::Tensor& tensor);
+    static void format_fresh_view(at::Tensor& x, const at::Tensor& y);
 
-    static bool check_5d_5d_match(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
+    static bool check_5d_5d_match(const at::Tensor& tensor);
     static bool IsOomError(aclError ret, int index);
-    static void check_1d(const at::Tensor& t, const char* arg, const char* fn) { INTERFACE_NOT_IMPL; }
+    static void check_1d(const at::Tensor& t, const char* arg, const char* fn);
+    static void ProfReportMarkData(const std::string& msg);
+    static void ProfReportMarkDataToNpuProfiler(uint32_t category, const std::string& data, uint64_t correlation_id = 0);
+    static void ProfReportMarkDataToNpuProfiler(uint32_t category, void* data, size_t offset);
+
 };  // class NpuUtils
 
 inline const std::string AclDateTypeToString(aclDataType descDType) { INTERFACE_NOT_IMPL; }
@@ -982,6 +987,9 @@ at::Tensor empty_npu(at::IntArrayRef size, const at::TensorOptions& options);
 at::Tensor empty_strided_npu(c10::SymIntArrayRef size, c10::SymIntArrayRef stride, c10::optional<at::ScalarType> dtype,
                              c10::optional<at::Layout> layout = c10::nullopt, c10::optional<at::Device> device = c10::nullopt,
                              c10::optional<bool> pin_memory = c10::nullopt);
+
+at::Tensor empty_with_format(at::IntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout, c10::optional<at::Device> device,
+                             c10::optional<bool> pin_memory, int64_t acl_format);
 
 }  // namespace native
 }  // namespace at_npu
