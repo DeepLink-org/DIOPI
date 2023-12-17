@@ -307,9 +307,10 @@ DIOPI_API diopiError_t diopiTopPSampling(diopiContextHandle_t ctx, diopiTensorHa
                                          diopiTensorHandle_t persistent_workspace, int64_t* persistent_workspace_size, diopiTensorHandle_t workspace,
                                          int64_t* workspace_size, int64_t fusion_level, diopiConstTensorHandle_t end_ids, diopiTensorHandle_t finished,
                                          diopiTensorHandle_t sequence_lengths, int64_t step, int64_t batch_size, int64_t vocab_size_padded,
-                                         diopiTensorHandle_t runtime_top_p, diopiConstTensorHandle_t runtime_initial_top_p, diopiConstTensorHandle_t top_p_decay_buf,
-                                         diopiConstTensorHandle_t top_p_min_buf, diopiConstTensorHandle_t top_p_reset_ids_buf, diopiConstTensorHandle_t skip_decode,
-                                         diopiTensorHandle_t cum_log_probs, diopiTensorHandle_t output_log_probs, diopiGeneratorHandle_t* generators);
+                                         diopiTensorHandle_t runtime_top_p, diopiConstTensorHandle_t runtime_initial_top_p,
+                                         diopiConstTensorHandle_t top_p_decay_buf, diopiConstTensorHandle_t top_p_min_buf,
+                                         diopiConstTensorHandle_t top_p_reset_ids_buf, diopiConstTensorHandle_t skip_decode, diopiTensorHandle_t cum_log_probs,
+                                         diopiTensorHandle_t output_log_probs, diopiGeneratorHandle_t* generators);
 
 /**
  * @brief GatherOutput. [s,b] -> [b,s] and skip padding in [context_len, max_context_len)
@@ -365,7 +366,7 @@ DIOPI_API diopiError_t diopiTransposeAxis01(diopiContextHandle_t ctx, diopiTenso
  * @param[in] ctx The diopi context.
  * @param[out] from_tensor : Output ids.shape = [batch_size, hidden].type = [float32, float16]
  * @param[in] embedding_table : Embedding table.shape=[vocab, hidden].type = [float32, float16]
- * @param[in] all_ids : Input ids.shape=[batch_size, sessionlen].type = [int64, int32]
+ * @param[in] all_ids : Input ids.shape=[sessionlen, batch_size].type = [int64, int32]
  * @param[in] batch_size : Batch size.type = [int64, int32]
  * @param[in] hidden_units : Hidden units.type = [int64, int32]
  * @param[in] step : Step.type = [int64, int32]
