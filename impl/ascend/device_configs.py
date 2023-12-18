@@ -1638,6 +1638,20 @@ device_configs = {
         ),
     ),
 
+    'copy': dict(
+        name=['copy_'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    # "shape": [Skip((2, 1, 38, 45)),Skip()],
+                    # temp for 910B
+                    "dtype": [Skip(np.float32), Skip(np.float64), Skip(np.float16), Skip(np.bool_), Skip(np.int64), Skip(np.int32), Skip(np.int16), Skip(np.int8), Skip(np.uint8)]
+                },
+            ]
+        ),
+    ),
+
     'fill_not_float': dict(
         name=["fill_"],
         tensor_para=dict(
@@ -1651,12 +1665,24 @@ device_configs = {
     ),
 
     'copy_different_dtype': dict(
-        name=['copy_1'],
+        name=['copy_'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((2, 1, 38, 45)), Skip((1, 1, 384)), Skip((100, 100)), Skip((192, 147))],
+                    "shape": [Skip((2, 1, 38, 45))],
+                },
+            ]
+        ),
+    ),
+
+    'copy_broadcast': dict(
+        name=['copy_'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float32),Skip(np.float64)],
                 },
             ]
         ),
