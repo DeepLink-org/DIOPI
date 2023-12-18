@@ -602,6 +602,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/logic.cpp
     ${OLD_IMPL_DIR}/functions/linear.cpp
     ${OLD_IMPL_DIR}/functions/error.cpp
+    ${OLD_IMPL_DIR}/functions/scatter.cpp
     ${OLD_IMPL_DIR}/functions/sgn.cpp
     ${OLD_IMPL_DIR}/functions/cast.cpp
     ${OLD_IMPL_DIR}/functions/sin.cpp
@@ -622,7 +623,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/arange.cpp
     ${OLD_IMPL_DIR}/functions/gather.cpp
     ${OLD_IMPL_DIR}/functions/layer_norm.cpp
-    ${OLD_IMPL_DIR}/functions/index.cpp
+    # ${OLD_IMPL_DIR}/functions/index.cpp
     ${OLD_IMPL_DIR}/functions/repeat.cpp
     ${OLD_IMPL_DIR}/functions/group_norm.cpp
     ${OLD_IMPL_DIR}/functions/flip.cpp
@@ -638,6 +639,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/addmm.cpp
     ${OLD_IMPL_DIR}/functions/expand.cpp    
     ${OLD_IMPL_DIR}/functions/linspace.cpp
+    ${OLD_IMPL_DIR}/functions/split.cpp
     #${OLD_IMPL_DIR}/test/export_functions.cpp
     #${OLD_IMPL_DIR}/test/conform_test.cpp
     ${OLD_IMPL_DIR}/common/utils.cpp

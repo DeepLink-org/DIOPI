@@ -64,15 +64,23 @@ diopiError_t diopiTokenAttentionInference(
     at::Tensor arangeTensor = acl_op::arange(
         at::Scalar(maxInputLen - curSeqLen), at::Scalar(maxInputLen),
         at::Scalar(1), at::ScalarType::Long);
+    std::cout << "get arangeTensor=" << arangeTensor << std::endl;
     at::Tensor kLoc = acl_op::index_select(bLocAt[i], 0, arangeTensor);
     std::cout << "finish kLoc" << std::endl;
-    // kLoc = kLoc.to(at::kLong);
-    // DEBUG_ARGS(kLoc);
+    // at::Tensor kLoc1 = kLoc.to(arangeTensor.dtype());
+    // DEBUG_ARGS(kLoc1);
     // std::cout << "========Tensor kLoc=" << kLoc << std::endl;
-    // DEBUG_ARGS(kAt);
+    DEBUG_ARGS(kAt);
     // std::cout << "========Tensor kAt=" << kAt << std::endl;
-    std::cout << "index_select======" << std::endl;
-    at::Tensor key = acl_op::index(kAt, {kLoc});
+    std::cout << "[Now come to here.] index_select======" << std::endl;
+    std::cout << "arangeTensor.dtype()=" << arangeTensor.dtype() << std::endl;
+    std::cout << "kLoc.dtype()=" << kLoc.dtype() << std::endl;
+    auto kLoc1 = kLoc.to(arangeTensor.dtype());
+    std::cout << "kLoc1.dtype()=" << kLoc1.dtype() << std::endl;
+    std::cout << "kLoc1=" << kLoc1 << std::endl;
+    torch::List<c10::optional<at::Tensor>> indicesAtList;
+    indicesAtList.push_back(kLoc1);
+    at::Tensor key = acl_op::index(kAt, indicesAtList);
     std::cout << "=========Tensor key=" << std::endl;
     key = impl::aten::view(key, {1, curSeqLen, head, dim});
     std::cout << "=========Tensor after view key=" << std::endl;
@@ -87,10 +95,12 @@ diopiError_t diopiTokenAttentionInference(
         (acl_op::matmul(qAt.index({i}), keyTrans) / std::sqrt(dim));
     // .view({head, curSeqLen});
     at::Tensor values = impl::aten::view(valuesTmp, {head, curSeqLen});
-
+    std::cout << "vlaues=" << values << std::endl;
     // attentionOutAt.index_put_({torch::indexing::Slice(), outLoc}, values);
+    /*
     at::Tensor attentionSlice = custom_slice(attentionOutAt, outLoc);
     attentionSlice.copy_(values.view({-1}));
+    */
   }
   END_CALL_ACL_OP();
   return diopiSuccess;

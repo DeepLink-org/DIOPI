@@ -193,6 +193,11 @@ ascend:
 - diopiLogicalOr
 - diopiExpand
 - diopiLinspace
+- diopiSplitWithSizes
+- diopiScatter
+- diopiScatterInp
+- diopiScatterScalar
+- diopiScatterInpScalar
 ascend_npu:
 - diopiRemainderTensor
 - diopiRemainderScalar
@@ -205,3 +210,8 @@ ascend_npu:
 - diopiTokenAttentionInference
 - diopiMaxPool2dWithIndices
 - diopiCopyInp
+- diopiIndexPut
+- diopiIndexPutInp
+- diopiIndex
+- diopiIndexBackward
+- diopiDestIndexCopyKV

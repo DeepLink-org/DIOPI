@@ -34,6 +34,7 @@ env:
   BUILD_TEST2: build_test_dy
   BUILD_TEST3: build_mmcv_ext
   GEN_DATA: diopi_test/python/cache
+  GEN_DATA_PATH: "/mnt/cache/share/deeplinkci/gen-data/source"
   ALL_COVERAGE: ${{ (contains( github.ref, 'main') || startsWith(github.ref, 'refs/heads/v') || startsWith(github.ref, 'refs/heads/dev')) && 'ON' || 'OFF' }}
   REQUIRE_COVERAGE: ${{ vars.REQUIRE_COVERAGE != '' && vars.REQUIRE_COVERAGE || '40' }}
 
@@ -197,16 +198,20 @@ jobs:
   Gen-Data:
     name: Gen-Data
     runs-on: tps-diopi-ci
-    needs: [Build-Nvidia]
+    needs: [Rsync,Build-Nvidia]
     steps:
       - name: gen-test-data
         run: |
           ssh ${CLUSTER_1988} """
           set -e
-          source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
-          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd diopi_test/python && ls &&
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'python main.py --mode gen_data' \
-          || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+          if [[ \"${{ needs.Rsync.outputs.output }}\" == *GENDATA* ]];then
+            source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
+            cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd diopi_test/python && ls &&
+            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'python main.py --mode gen_data' \
+            || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+          else
+            ln -s ${GEN_DATA_PATH}/${GEN_DATA}/diopi ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/
+          fi
           """
 
   Gen-Data-Op-Test-A100:
@@ -257,7 +262,6 @@ jobs:
         run: |
           ssh ${CLUSTER_1988} """
           set -e
-
           source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/lib
           echo \$LD_LIBRARY_PATH
@@ -292,7 +296,7 @@ jobs:
   Op-Test-Camb:
     name: Op-Test-Camb
     runs-on: tps-diopi-ci
-    needs: [Gen-Data, Build-Camb]
+    needs: [Rsync, Gen-Data, Build-Camb]
     if: ${{ contains( needs.Rsync.outputs.output, 'CAMB' ) }}
     env:
       run_test: "coverage run -p"
@@ -302,8 +306,12 @@ jobs:
           ssh ${CLUSTER_CAMB} """
           set -e
           export USE_COVERAGE=ON
-          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && ls
-          rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
+          cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}
+          if [[ \"${{ needs.Rsync.outputs.output }}\" == *GENDATA* ]];then
+            rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
+          else
+            ln -s ${GEN_DATA_PATH}/${GEN_DATA}/diopi ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/
+          fi
           source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_CAMB} --time=20 --gres=mlu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode gen_case --impl_folder ${NFS_PATH_LUSTRE}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/camb/ && \
           ${run_test} main.py --mode run_test' && cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
@@ -355,7 +363,7 @@ jobs:
   Op-Test-Ascend-910b:
     name: Op-Test-Ascend-910b
     runs-on: tps-ascend-ci-910b
-    needs: [Gen-Data, Build-Ascend-910b]
+    needs: [Rsync, Gen-Data, Build-Ascend-910b]
     if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
     env:
       run_test: "python"
@@ -364,7 +372,11 @@ jobs:
         run: |
           set -e
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
-          rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA} ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/
+          if [[ \"${{ needs.Rsync.outputs.output }}\" == *GENDATA* ]];then
+            rsync -a ${CLUSTER_1988}:${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA}/diopi ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/
+          else
+            ln -s ${GEN_DATA_PATH}/${GEN_DATA}/diopi ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/
+          fi
           cd diopi_test/python && python main.py --mode gen_case --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/ascend/ && ${run_test} main.py --mode run_test \
           && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
 
