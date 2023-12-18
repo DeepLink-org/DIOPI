@@ -686,7 +686,6 @@ public:
     static void ProfReportMarkData(const std::string& msg);
     static void ProfReportMarkDataToNpuProfiler(uint32_t category, const std::string& data, uint64_t correlation_id = 0);
     static void ProfReportMarkDataToNpuProfiler(uint32_t category, void* data, size_t offset);
-
 };  // class NpuUtils
 
 inline const std::string AclDateTypeToString(aclDataType descDType) { INTERFACE_NOT_IMPL; }
