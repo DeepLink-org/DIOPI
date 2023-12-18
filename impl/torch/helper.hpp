@@ -13,7 +13,6 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 
-#include <iostream>
 #include <mutex>
 #include <utility>
 #include <vector>
@@ -29,25 +28,8 @@
 #define TORCH_1_11_MM_VERSION 1110
 #define TORCH_1_12_MM_VERSION 1120
 
-#define LOG_LINE_INFO() std::cerr << __FILE__ << ":" << __LINE__ << ": ";
-
-inline void logError() { std::cerr << std::endl; }
-
-template <typename First, typename... Rest>
-void logError(First&& first, Rest&&... rest) {
-    std::cerr << std::forward<First>(first);
-    logError(std::forward<Rest>(rest)...);
-}
-
-template <typename... Types>
-void set_last_error_string(const char* szFmt, Types&&... args) {
-    char szBuf[4096] = {0};
-    sprintf(szBuf, szFmt, std::forward<Types>(args)...);
-    _set_last_error_string(szBuf);
-}
-
 #define ATEN_NOT_IMPLEMENT()                                                                                         \
-    LOG_LINE_INFO()                                                                                                  \
+    std::cerr << __FILE__ << ":" << __LINE__ << ": ";                                                                \
     logError("NotImplementError: function ", __FUNCTION__, " is not implemented for torch version ", TORCH_VERSION); \
     set_last_error_string("NotImplementError: function %s is not implemented for torch version %d" __FUNCTION__, TORCH_VERSION);
 
@@ -66,7 +48,9 @@ void set_last_error_string(const char* szFmt, Types&&... args) {
     }
 
 using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
+
 extern thread_local diopiContextHandle_t context;
+
 namespace c10 {
 
 namespace cuda {
@@ -229,6 +213,12 @@ at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& a
 
 at::Tensor crossEntropyLossLabelSmoothingBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, diopiConstTensorHandle_t weight,
                                                   int64_t reduction, int64_t ignore_index, double label_smoothing);
+
+inline std::vector<int64_t> getSequence(int dim) {
+    std::vector<int64_t> seq(dim);
+    std::iota(seq.begin(), seq.end(), 0);
+    return seq;
+}
 
 }  // namespace aten
 

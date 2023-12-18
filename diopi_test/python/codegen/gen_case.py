@@ -1,6 +1,5 @@
 # Copyright (c) 2023, DeepLink.
 import os
-import shutil
 import re
 import pickle
 
@@ -56,9 +55,6 @@ class GenConfigTestCase(object):
         return dict(self.__function_set)
 
     def gen_test_cases(self, fname="all_ops"):
-        if os.path.exists(self._tests_path):
-            shutil.rmtree(self._tests_path)
-        os.makedirs(self._tests_path)
         for tk, tv in self.__function_set.items():
             gc = GenTestCase(self._module, tk, tv, module_path=self._tests_path)
             gc.gen_test_module(fname)

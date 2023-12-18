@@ -27,7 +27,7 @@ from .diopi_runtime import (
 from .diopi_runtime import raw_like, int_types, float_types, get_last_error
 from .utils import logger
 from conformance.global_settings import glob_vars
-from typing import List, Optional
+from typing import List, Optional, Union
 
 
 GLOBAL_STATE = {}
@@ -133,7 +133,7 @@ def reduce_op_process(input, dim=None, keepdim=False, dtype=None):
     return dim_list, out
 
 
-def get_dtype(input) -> Dtype:
+def get_dtype(input: Union[Tensor, int, float]) -> Dtype:
     if isinstance(input, Tensor):
         return input.get_dtype()
     elif isinstance(input, int):
@@ -144,7 +144,9 @@ def get_dtype(input) -> Dtype:
         assert 0, "not supported type of input"
 
 
-def infer_tensor_scalar_common_dtype(input: Tensor, other) -> Dtype:
+def infer_tensor_scalar_common_dtype(
+    input: Tensor, other: Union[float, int]
+) -> Dtype:
     dtype1, dtype2 = get_dtype(input), get_dtype(other)
     if dtype1 in float_types:
         return dtype1
@@ -197,7 +199,9 @@ def pow_dtype(input, other) -> Dtype:
     return dtype1
 
 
-def remainder_dtype(input, other) -> Dtype:
+def remainder_dtype(
+    input: Union[Tensor, float, int], other: Union[Tensor, float, int]
+) -> Dtype:
     dtype1, dtype2 = get_dtype(input), get_dtype(other)
     if dtype1 == Dtype.int8 and dtype2 == Dtype.uint8:
         return Dtype.int16
@@ -1347,7 +1351,7 @@ def linear(input, weight, bias=None) -> Tensor:
 
     sizeI = input.size().data
     sizeW = weight.size().data
-    sizeI[-1] = sizeW[-2] if len(sizeW) == 2 else 1
+    sizeI[-1] = sizeW[0]
     out = Tensor(sizeI, input.get_dtype())
     func = check_function("diopiLinear")
     ret = func(input.context(), out, input, weight, bias)
@@ -1722,8 +1726,14 @@ def batch_norm(
 
 def batch_norm_stats(input, eps):
     func = check_function("diopiBatchNormStats")
-    mean = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
-    invstd = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
+    # cuda accumulate dtype mapping
+    dtype = (
+        Dtype.float32
+        if input.get_dtype() == Dtype.float16
+        else input.get_dtype()
+    )
+    mean = Tensor(Sizes(list([input.size().data[1]])), dtype)
+    invstd = Tensor(Sizes(list([input.size().data[1]])), dtype)
     ret = func(input.context(), mean, invstd, input, eps)
     check_returncode(ret)
     out = (mean, invstd)
@@ -2956,7 +2966,11 @@ def batch_norm_backward(
 
 def arange(end, start=0, step=1, dtype=None) -> Tensor:
     if dtype is None:
-        if isinstance(start, float) or isinstance(end, float) or isinstance(step, float):
+        if (
+            isinstance(start, float)
+            or isinstance(end, float)
+            or isinstance(step, float)
+        ):
             dtype = Dtype.float32
         else:
             dtype = from_numpy_dtype(glob_vars.int_type)
@@ -4232,6 +4246,8 @@ def remainder(other, input=None, self=None):
         context = other.context()
         if isinstance(input, int):
             out_dtype = get_dtype(other)
+            if out_dtype == Dtype.bool:
+                out_dtype = Dtype.int64
         else:
             out_dtype = remainder_dtype(input, other)
         out = Tensor(other.size().data, out_dtype)

@@ -501,42 +501,6 @@ device_configs = {
         ),
     ),
 
-    'pow': dict(
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'pow_int': dict(
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),],
-                },
-            ]
-        ),
-    ),
-
-    'pow_bool': dict(
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
     'pow_tensor': dict(
         name=['pow'],
         tensor_para=dict(
@@ -561,42 +525,6 @@ device_configs = {
         ),
     ),
 
-    'pow_broadcast': dict(
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((2, 1, 128)),Skip((2, 64, 1, 128)),Skip((2, 32, 130, 130)),Skip((0,)),Skip((8, 16, 1)),],
-                },
-            ]
-        ),
-    ),
-
-    'pow_broadcast_inplace': dict(
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((64,)),Skip((2, 1024)),Skip((2, 384, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 16, 128)),Skip((5, 2, 32, 130, 130)),Skip((16, 0)),Skip((8, 16, 0)),Skip((32, 0, 16)),],
-                },
-            ]
-        ),
-    ),
-
-    'pow_diff_dtype_cast': dict(
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int64),Skip(np.int32),Skip(np.int16),Skip(np.bool_),Skip(np.bool_),Skip(np.bool_),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
     'pow_diff_dtype': dict(
         name=['pow'],
         tensor_para=dict(
@@ -604,30 +532,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(np.float64),Skip(np.float32),Skip(np.float16),Skip(np.int32),Skip(np.float64),Skip(np.float32),Skip(np.float32),Skip(np.int16),Skip(np.int64),],
-                },
-            ]
-        ),
-    ),
-
-    'pow_input_scalar': dict(
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['exponent'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'pow_input_scalar_bool': dict(
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['exponent'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),],
                 },
             ]
         ),
@@ -815,6 +719,18 @@ device_configs = {
         rtol = 1e-1,
     ),
 
+    'embedding': dict(
+        name=["embedding"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["weight"],
+                    # Wrong weight gradient. torch_npu failed in exactly the same way.
+                    "shape": (Skip((93, 512)),),
+                },
+            ],
+        ),
+    ),
 
     'clip_grad_norm': dict(
         name=['clip_grad_norm_'],
@@ -870,24 +786,11 @@ device_configs = {
             args=[
                 {
                     "ins": ['tensor'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),],
+                    "dtype": [Skip(np.float64)],
                 },
             ]
         ),
     ),
-
-    'split_bool': dict(
-        name=['split'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensor'],
-                    "dtype": [Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
 
     'transpose': dict(
         name=['transpose'],
@@ -1261,18 +1164,6 @@ device_configs = {
         ),
     ),
 
-    'expand': dict(
-        name=['expand'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.bool_),Skip(np.float16),Skip(np.float64),Skip(np.int64),Skip(np.int32),Skip(np.int16),Skip(np.int8),Skip(np.uint8),],
-                },
-            ]
-        ),
-    ),
-
     'permute': dict(
         name=['permute'],
         tensor_para=dict(
@@ -1553,51 +1444,14 @@ device_configs = {
         ),
     ),
 
-    'scatter_specific': dict(
-        name=['scatter'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),],
-                },
-            ]
-        ),
-    ),
-
-    'scatter_reduce': dict(
-        name=['scatter'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
     'scatter_scalar': dict(
         name=['scatter'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'scatter_reduce_scalar': dict(
-        name=['scatter'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
+        para=dict(
+            # In this case, for float32 (but not float64), no matter what the value parameter is,
+            # the shape and dim parameters will result in wrong output for unknown reasons.
+            # Specificially, the rows of elements that shouldn't get impacted by scatter,
+            # will be filled with seemingly random or zero values.
+            value=[Skip(1e-4),],
         ),
     ),
 
@@ -2041,5 +1895,5 @@ device_configs = {
                 },
             ],
         ),
-    )
+    ),
 }

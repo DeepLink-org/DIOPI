@@ -25,3 +25,5 @@ void _set_last_error_string(const char* err) {
     std::lock_guard<std::mutex> lock(mtxLastError);
     sprintf(strLastErrorOther, "%s", err);
 }
+
+extern "C" const char* diopiGetLastErrorString() { return cuda_get_last_error_string(); }
