@@ -3084,7 +3084,7 @@ diopiError_t diopiConvolution3dBackward(diopiContextHandle_t ctx, diopiTensorHan
                                      atStride,
                                      atPadding,
                                      atDilation,
-                                     true,
+                                     false,
                                      atOutputPadding,
                                      groups,
                                      {true, true, true});
