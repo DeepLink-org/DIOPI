@@ -39,7 +39,7 @@ class ConfigParser(object):
 
     def _config_dict_parse(self, config, fname):
         for key, value in config.items():
-            if fname != "all_ops" and fname != value["name"]:
+            if fname != "all_ops" and fname not in value["name"]:
                 continue
             cfg_item = ConfigItem(key, value)
             cfg_item.generate_items()
@@ -56,7 +56,7 @@ class ConfigParser(object):
         path = path if path != "" else self._ofile
         with open(path, "wb") as f:
             pickle.dump(self._items, f)
-    
+
     # load config from self._ofile
     def load(self, fname):
         if not os.path.exists(self._ofile):
@@ -66,7 +66,7 @@ class ConfigParser(object):
         for k, v in configs.items():
             if fname != "all_ops" and fname != v["name"]:
                 continue
-            self._items.update({k : v})
+            self._items.update({k:v})
 
 # *********************************************************************************
 # internal helper function
