@@ -279,9 +279,7 @@ struct NPUNativeFunctions {
     }
     static at::Tensor _adaptive_avg_pool2d(const at::Tensor& self, at::IntArrayRef output_size) { OP_NOT_IMPL }
     static at::Tensor unsafe_empty_with_format(at::IntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
-                                               c10::optional<at::Device> device, c10::optional<bool> pin_memory, int64_t acl_format, bool keep_format) {
-        OP_NOT_IMPL
-    }
+                                               c10::optional<at::Device> device, c10::optional<bool> pin_memory, int64_t acl_format, bool keep_format);
     static ::std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_backward(
         const c10::optional<at::Tensor>& grady, const c10::optional<at::Tensor>& gradh, const c10::optional<at::Tensor>& gradc, const at::Tensor& input,
         const at::Tensor& weight, const at::Tensor& bias, const at::Tensor& hx, const at::Tensor& cx, const at::Tensor& y_output, const at::Tensor& h_output,
@@ -365,10 +363,7 @@ struct NPUNativeFunctions {
     static at::Tensor npu_scatter(const at::Tensor& self, const at::Tensor& indices, const at::Tensor& updates, int64_t dim) { OP_NOT_IMPL }
     static at::Tensor& bitwise_not_out(const at::Tensor& self, at::Tensor& out) { OP_NOT_IMPL }
     static at::Tensor empty_with_format(at::IntArrayRef size, c10::optional<at::DimnameList> names, c10::optional<at::ScalarType> dtype,
-                                        c10::optional<at::Layout> layout, c10::optional<at::Device> device, c10::optional<bool> pin_memory,
-                                        int64_t acl_format) {
-        OP_NOT_IMPL
-    }
+                                        c10::optional<at::Layout> layout, c10::optional<at::Device> device, c10::optional<bool> pin_memory, int64_t acl_format);
     static at::Tensor& reciprocal_(at::Tensor& self) { OP_NOT_IMPL }
     static at::Tensor soft_margin_loss_backward(const at::Tensor& grad_output, const at::Tensor& self, const at::Tensor& target, int64_t reduction) {
         OP_NOT_IMPL
@@ -937,10 +932,8 @@ struct NPUNativeFunctions {
         OP_NOT_IMPL
     }
     static at::Tensor empty_with_format(at::IntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
-                                        c10::optional<at::Device> device, c10::optional<bool> pin_memory, int64_t acl_format) {
-        OP_NOT_IMPL
-    }
-    static at::Tensor& eye_out(int64_t n, int64_t m, at::Tensor& out) { OP_NOT_IMPL }
+                                        c10::optional<at::Device> device, c10::optional<bool> pin_memory, int64_t acl_format);
+    static at::Tensor& eye_out(int64_t n, int64_t m, at::Tensor& out);
     static at::Tensor searchsorted(const at::Tensor& sorted_sequence, const at::Tensor& self, bool out_int32, bool right, c10::optional<c10::string_view> side,
                                    const c10::optional<at::Tensor>& sorter) {
         OP_NOT_IMPL
@@ -1167,7 +1160,7 @@ struct NPUNativeFunctions {
     static at::Tensor& erfc_(at::Tensor& self) { OP_NOT_IMPL }
     __attribute__((__visibility__("default"))) static at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) { OP_NOT_IMPL }
     static at::Tensor asinh(const at::Tensor& self) { OP_NOT_IMPL }
-    static at::Tensor as_strided(const at::Tensor& self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset) { OP_NOT_IMPL }
+    static at::Tensor as_strided(const at::Tensor& self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset);
     static at::Tensor& sum_out(const at::Tensor& self, at::OptionalIntArrayRef dim, bool keepdim, c10::optional<at::ScalarType> dtype, at::Tensor& out) {
         OP_NOT_IMPL
     }
@@ -1356,7 +1349,7 @@ struct NPUNativeFunctions {
     static ::std::tuple<at::Tensor, at::Tensor> triangular_solve(const at::Tensor& self, const at::Tensor& A, bool upper, bool transpose, bool unitriangular) {
         OP_NOT_IMPL
     }
-    static at::Tensor contiguous(const at::Tensor& self, at::MemoryFormat memory_format) { OP_NOT_IMPL }
+    static at::Tensor contiguous(const at::Tensor& self, at::MemoryFormat memory_format);
     static at::Tensor& rsqrt_(at::Tensor& self) { OP_NOT_IMPL }
     static void _foreach_addcmul_(at::TensorList self, at::TensorList tensor1, at::TensorList tensor2, const at::Scalar& value) { OP_NOT_IMPL }
     static bool _amp_foreach_non_finite_check(at::TensorList scaled_grads) { OP_NOT_IMPL }
@@ -1876,7 +1869,7 @@ struct NPUNativeFunctions {
     }
     static at::Tensor& mean_out(const at::Tensor& self, at::DimnameList dim, bool keepdim, c10::optional<at::ScalarType> dtype, at::Tensor& out) { OP_NOT_IMPL }
     static at::Tensor& argmin_out(const at::Tensor& self, c10::optional<int64_t> dim, bool keepdim, at::Tensor& out) { OP_NOT_IMPL }
-    static at::Tensor& copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) { OP_NOT_IMPL }
+    static at::Tensor& copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking);
     static at::Tensor count_nonzero(const at::Tensor& self, at::IntArrayRef dim) { OP_NOT_IMPL }
     static at::Tensor& randperm_out(int64_t n, at::Tensor& out) { OP_NOT_IMPL }
     static at::Tensor randperm(int64_t n, c10::optional<at::Generator> generator, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,

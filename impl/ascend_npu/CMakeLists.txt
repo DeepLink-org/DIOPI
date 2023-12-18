@@ -568,6 +568,7 @@ set(IMPL_SRC
   torch_npu/csrc/NpuVariables.cpp
   torch_npu/csrc/AdvancedIndex.cpp
   torch_npu/csrc/NPUNativeFunctions.cpp
+  torch_npu/csrc/CopyKernel.cpp
 )
 
 set(OLD_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ascend/)
