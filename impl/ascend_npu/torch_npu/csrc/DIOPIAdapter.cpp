@@ -2644,13 +2644,21 @@ at::Tensor wrapper__as_strided(const at::Tensor& self, at::IntArrayRef size, at:
 const at::Tensor& wrapper__resize_(const at::Tensor& self, at::IntArrayRef size, c10::optional<at::MemoryFormat> memory_format) {
     DEBUG_ARGS(self);
     DEBUG_ARGS(size);
+    auto* selfImpl = self.unsafeGetTensorImpl();
+    const auto itemsize = self.dtype().itemsize();
+    const auto storage_offset = self.storage_offset();
+
+    int64_t new_storage_size = at::detail::computeStorageNbytesContiguous(size, itemsize, storage_offset);
+
     if (self.numel() >= c10::multiply_integers(size)) {
         auto out = impl::aten::viewStorage(self, size);
-        self.set_(out.storage());
     } else {
         auto out = at_npu::native::empty_npu(size, self.options());
-        self.set_(out.storage());
+        auto storage = selfImpl->unsafe_storage();
+        auto storageImpl = storage.unsafeGetStorageImpl();
+        storageImpl->set_data_ptr_noswap(std::move(c10::InefficientStdFunctionContext::makeDataPtr(out.data_ptr(), c10::detail::deleteNothing, self.device())));
     }
+    selfImpl->set_sizes_contiguous(size);
     return self;
 }
 
