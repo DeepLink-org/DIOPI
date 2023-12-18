@@ -18,7 +18,7 @@ at::Tensor NPUNativeFunctions::contiguous(const at::Tensor& self, at::MemoryForm
 }
 
 at::Tensor NPUNativeFunctions::as_strided(const at::Tensor& self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset) {
-    return acl_op::npu_stride_copy(self, size, stride, storage_offset.value_or(0));
+    return impl::aten::viewStorage(self, size, stride, storage_offset.value_or(0));
 }
 
 at::Tensor NPUNativeFunctions::empty_with_format(c10::IntArrayRef size, c10::optional<c10::ScalarType> dtype_opt, c10::optional<c10::Layout> layout_opt,

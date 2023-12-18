@@ -2600,7 +2600,7 @@ at::Generator buildATen(diopiGeneratorHandle_t generator) {
     return gen;
 }
 
-at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides) {
+at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides, const int64_t storageOffset) {
     TORCH_CHECK(c10::multiply_integers(sizes) <= input.numel());
     TORCH_CHECK(!input.is_cpu());
     std::vector<int64_t> stridesVec(sizes.size(), 1);
@@ -2615,7 +2615,7 @@ at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, con
             if (st != -1) st *= sizes[i - 1];
         }
     }
-    return fromPreAllocated(input.data_ptr(), sizes, stridesVec, input.options());
+    return fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizes, stridesVec, input.options());
 }
 
 void setCurCtx(diopiContextHandle_t ctx) {
