@@ -19,7 +19,7 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
     AscendTensor asPTokenCounts(pTokenCounts);          // shape: [generated_tokens_num, ]
     AscendTensor asPcumsumSeqLen(pCumsumSeqLen);        // shape: [batch_size+1,]
 
-    void *pCumsumSeqLenCpu;  // 需要进行copy操作，将数据从GPU拷贝到CPU
+    void *pCumsumSeqLenCpu = nullptr;  // 需要进行copy操作，将数据从GPU拷贝到CPU
     diopiStreamHandle_t stream;
     diopiGetStream(ctx, &stream);
     CALL_ACLRT(aclrtMallocHost(&pCumsumSeqLenCpu, asPcumsumSeqLen.numel() * asPcumsumSeqLen.elemsize()));
@@ -123,6 +123,7 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
         AclOpRunner<3, 1>("InplaceIndexAdd", ctx).addInput(ithLogits).addInput(curTokenIds).addInput(curLogits).setAttr("axis", 0).addOutput(ithLogits).run();
         AclOpRunner<3, 1>("InplaceUpdate", ctx).addInput(asLogits).addConstInput({i}).addInput(ithLogits).addOutput(asLogits).run();
     }
+    CALL_ACLRT(aclrtFreeHost(pCumsumSeqLenCpu));
     return diopiSuccess;
 }
 
