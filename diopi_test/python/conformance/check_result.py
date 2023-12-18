@@ -7,7 +7,7 @@ from conformance.global_settings import glob_vars
 
 class CheckResult(object):
     @staticmethod
-    def compare_input(input1: dict, input2: dict, ignore_paras_for_input_check: list, input_mismatch_ratio_threshold=1e-3):
+    def compare_input(input1: dict, input2: dict, ignore_paras_for_input_check: list):
         input1 = {key: value for key, value in input1.items() if key not in ignore_paras_for_input_check}
         input2 = {key: value for key, value in input2.items() if key not in ignore_paras_for_input_check}
         if input1.keys() != input2.keys():
@@ -17,7 +17,7 @@ class CheckResult(object):
         for name, value in input1.items():
             matched = np.isclose(value, input2[name], equal_nan=True)
             mismatched_num = matched.size - np.sum(matched)
-            passed = mismatched_num <= input_mismatch_ratio_threshold * matched.size
+            passed = mismatched_num <= glob_vars.input_mismatch_ratio_threshold * matched.size
             glob_vars.func_status[glob_vars.cur_test_func] = 'passed'
             if not passed:
                 glob_vars.func_status[glob_vars.cur_test_func] = 'failed'

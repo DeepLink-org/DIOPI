@@ -5,6 +5,7 @@ import pickle
 import itertools
 import numpy as np
 from enum import Enum
+from conformance.global_settings import glob_vars
 
 
 def diopi_config_parse(case_item_path="./cache/diopi_case_items.cfg"):
@@ -482,17 +483,7 @@ class ConfigItem(object):
 # a case item
 class CaseItem(object):
     def __init__(self, item: dict = {}) -> None:
-        self._item = {
-            "atol": 1e-5,
-            "rtol": 1e-5,
-            "atol_half": 1e-2,
-            "rtol_half": 5e-2,
-            "mismatch_ratio_threshold": 1e-3,
-            "memory_format": "NCHW",
-            "fp16_exact_match": False,
-            "train": True,
-            "gen_policy": "dafault",
-        }
+        self._item = glob_vars.case_item
         for key, val in item.items():
             self._item[key] = val
 
