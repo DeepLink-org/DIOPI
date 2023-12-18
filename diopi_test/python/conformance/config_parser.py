@@ -66,11 +66,12 @@ class ConfigParser(object):
         for k, v in configs.items():
             if fname != "all_ops" and fname != v["name"]:
                 continue
-            self._items.update({k:v})
+            self._items.update({k: v})
 
 # *********************************************************************************
 # internal helper function
 # *********************************************************************************
+
 def _assert_exist(cfg_name, cfg_dict, keys):
     err = f"key %s not in {cfg_name}"
     for key in keys:
