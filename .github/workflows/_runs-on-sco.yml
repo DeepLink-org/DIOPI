@@ -15,10 +15,12 @@ on:
         default: "tps-sco-ci"
       work_path:
         description: ci work home
+        type: string
         required: false
         default: '/mnt/cache/share/deeplinkci/github/${{ github.repository }}/${{ github.run_number }}'
       env_path:
         description: ci env path
+        type: string
         required: false
         default: '/mnt/cache/share/platform/env'
 
