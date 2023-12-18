@@ -1640,7 +1640,6 @@ device_configs = {
 
     'copy': dict(
         name=["copy_"],
-        interface=['torch.Tensor'],
         tensor_para=dict(
             # FIXME data type DT_COMPLEX128 of input [dst] is not supported
             args=[
@@ -1654,7 +1653,6 @@ device_configs = {
 
     'copy_input_no_contiguous': dict(
         name=["copy_"],
-        interface=['torch.Tensor'],
         tensor_para=dict(
             # FIXME not supported complex
             args=[
@@ -1673,7 +1671,6 @@ device_configs = {
 
     'copy_other_no_contiguous': dict(
         name=["copy_"],
-        interface=['torch.Tensor'],
         tensor_para=dict(
             # FIXME data type DT_COMPLEX64 of input [dst] is not supported
             # FIXME data type DT_COMPLEX128 of input [dst] is not supported
@@ -1693,7 +1690,6 @@ device_configs = {
 
     'copy_all_no_contiguous': dict(
         name=["copy_"],
-        interface=['torch.Tensor'],
         tensor_para=dict(
             # FIXME data type DT_COMPLEX64 of input [dst] is not supported
             args=[

@@ -1943,7 +1943,6 @@ device_configs = {
 
     'copy': dict(
         name=["copy_"],
-        interface=['torch.Tensor'],
         tensor_para=dict(
             # FIXME not supported complex
             # FIXME Can not cast from diopi_dtype_bool to diopi_dtype_uint8
@@ -1964,7 +1963,6 @@ device_configs = {
 
     'copy_input_no_contiguous': dict(
         name=["copy_"],
-        interface=['torch.Tensor'],
         tensor_para=dict(
             # FIXME not supported complex
             # FIXME Can not cast from diopi_dtype_float64 to diopi_dtype_bool
@@ -1987,7 +1985,6 @@ device_configs = {
 
     'copy_other_no_contiguous': dict(
         name=["copy_"],
-        interface=['torch.Tensor'],
         tensor_para=dict(
             # FIXME not supported complex
             # FIXME Can not cast from diopi_dtype_float64 to diopi_dtype_int32
@@ -2007,7 +2004,6 @@ device_configs = {
 
     'copy_all_no_contiguous': dict(
         name=["copy_"],
-        interface=['torch.Tensor'],
         tensor_para=dict(
             # FIXME not supported complex
             # FIXME Can not cast from diopi_dtype_bool to diopi_dtype_int16
