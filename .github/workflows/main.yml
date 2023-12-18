@@ -487,4 +487,4 @@ jobs:
     name: runs on sco
     needs: Rsync
 #    if: ${{ contains( needs.check.outputs.output, 'CAMB' ) }}
-    uses: ./.github/workflows/_runs-on-sco.yml
+    uses: ./.github/workflows/_runs-on-sco.yml@wgs/run_on_sco

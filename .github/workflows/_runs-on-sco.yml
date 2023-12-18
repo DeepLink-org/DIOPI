@@ -64,7 +64,7 @@ jobs:
 
   op_test:
     runs-on: ${{ inputs.runner }}
-    needs: build
+    needs: [build, gen_data]
     steps:
       - name: NHWC-32bit-test
         uses: DeepLink-org/DIOPI.dev/.github/actions/code-build-test@wgs/run_on_sco
