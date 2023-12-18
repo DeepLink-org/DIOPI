@@ -85,15 +85,20 @@ at::Tensor& npu_broadcast_out(const at::Tensor& self, at::IntArrayRef size, at::
 
 at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
     at::Tensor source = src;
+    if (!source.is_contiguous()) {
+        at::Tensor sourceTemp = at_npu::native::empty_npu(source.sizes(), source.options());
+        sourceTemp.copy_(source);
+        source = sourceTemp;
+    }
     if (src.sizes() != self.sizes()) {
-        source = npu_broadcast(src, self.sizes());
+        source = npu_broadcast(source, self.sizes());
     }
     if (source.strides() == self.strides()) {
         acl_op::npu_dtype_cast_(self, source);
     } else {
-        at::Tensor sourceTemp = at_npu::native::empty_npu(source.sizes(), source.options());
-        sourceTemp.copy_(source);
-        acl_op::npu_dtype_cast_(self, sourceTemp);
+        at::Tensor selfTemp = at_npu::native::empty_npu(source.sizes(), self.options());
+        acl_op::npu_dtype_cast_(selfTemp, source);
+        self.copy_(selfTemp);
     }
     return self;
 }
