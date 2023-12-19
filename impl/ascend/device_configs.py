@@ -1644,8 +1644,12 @@ device_configs = {
             # FIXME data type DT_COMPLEX128 of input [dst] is not supported
             args=[
                 {
+                    "ins": ["input"],
+                    "shape": [Skip((12, 0, 0)), Skip((8,))],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
+                },
+                {
                     "ins": ["other"],
-                    "shape": [Skip((1, 9)),],
                     "dtype": [Skip(np.complex128)]
                 },
             ]
