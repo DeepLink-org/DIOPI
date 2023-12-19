@@ -2577,6 +2577,13 @@ const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     return fromPreAllocated(data, atDims, atStrides, options);
 }
 
+at::Tensor toDevice(at::Tensor tensor) {
+    int devId_ = 0;
+    ::aclrtGetDevice(&devId_);
+    auto options = at::TensorOptions(c10::Device(at::DeviceType::XLA, devId_)).dtype(tensor.dtype());
+    return fromPreAllocated(tensor.data_ptr(), tensor.dim(), tensor.strides(), options);
+}
+
 at::Tensor buildATen(diopiTensorHandle_t tensor) { return buildATen(static_cast<diopiConstTensorHandle_t>(tensor)); }
 
 #else

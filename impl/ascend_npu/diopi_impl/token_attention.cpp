@@ -10,8 +10,15 @@
 // #include <torch/csrc/autograd/generated/variable_type.h>
 // #include <torch/csrc/autograd/generated/variable_type.h>
 #include <torch/torch.h>
+#include <acl/acl.h>
 
 namespace OP_IMPL_NS {
+// at::Tensor toDevice(at::Tensor tensor) {
+//     int devId_ = 0;
+//     ::aclrtGetDevice(&devId_);
+//     auto options = at::TensorOptions(c10::Device(at::DeviceType::XLA, devId_)).dtype(tensor.dtype());
+//     return fromPreAllocated(tensor.data_ptr(), tensor.dim(), tensor.strides(), options);
+// }
 
 diopiError_t diopiTokenAttentionInference(
     diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut,
@@ -34,7 +41,7 @@ diopiError_t diopiTokenAttentionInference(
   std::cout << "atBSeqLen=" << atBSeqLen << std::endl;
 
   atQ = atQ.reshape({batch, 1, head, dim}).transpose(1, 2);
-  std::cout << "atQ=" << atQ << std::endl;
+  // std::cout << "atQ=" << atQ << std::endl;
   for (int i = 0; i < batch; ++i) {
     std::cout << "i=" << i << std::endl;
     int curSeqLen = atBSeqLen.cpu()[i].item<int>();
@@ -46,16 +53,23 @@ diopiError_t diopiTokenAttentionInference(
     // std::cout << "kLoc0=" << kLoc0 << std::endl;
     // std::cout << "atQ.device()=" << atQ.device() << std::endl;
     // at::Tensor kLoc = kLoc0.to(atQ.device());
-    std::cout << "kLoc=" << kLoc << std::endl;
+    std::cout << "kLoc=" << "kLoc value is too more." << std::endl;
     // at::Tensor key = atK.index({kLoc}).view({1, curSeqLen, head,
     // dim}).transpose(1, 2);
     torch::List<c10::optional<at::Tensor>> indicesAtList;
     auto kLoc1 = kLoc.to(at::ScalarType::Long);
-    indicesAtList.push_back(kLoc1);
+    auto kLoc2 = kLoc1.to(atBSeqLen.device());
+    auto kLoc3 = aten::toDevice(kLoc1);
+    std::cout << "atBSeqLen.device()=" << atBSeqLen.device() << ", kLoc2.device()=" << kLoc2.device() << ", kLoc1.device()=" << kLoc1.device() << ", kLoc3.device()=" << kLoc3.device() << std::endl;
+    // auto kLoc3 = kLoc1.to(at::Device(at::DeviceType::XLA, 0));
+    // auto kLoc2 = kLoc1.to();
+    indicesAtList.push_back(kLoc3);
     for (auto item : indicesAtList) {
       std::cout << "item=";
       std::cout << item.get() << std::endl;
     }
+    std::cout << "atK.device()=" << atK.device() << ", kLoc1.device()=" << kLoc1.device() << std::endl;
+    auto cpu = atK.cpu();
     at::Tensor key = acl_op::index(atK, indicesAtList);
     std::cout << "key=" << key << std::endl;
     at::Tensor outLoc = at::arange(curSeqStartLoc, curSeqStartLoc + curSeqLen);
