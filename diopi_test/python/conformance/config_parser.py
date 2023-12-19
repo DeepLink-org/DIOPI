@@ -72,6 +72,7 @@ class ConfigParser(object):
 # internal helper function
 # *********************************************************************************
 
+
 def _assert_exist(cfg_name, cfg_dict, keys):
     err = f"key %s not in {cfg_name}"
     for key in keys:
