@@ -5,7 +5,7 @@ import pickle
 import itertools
 import numpy as np
 from enum import Enum
-from conformance.global_settings import glob_vars
+from conformance.global_settings import default_cfg_dict
 
 
 def diopi_config_parse(case_item_path="./cache/diopi_case_items.cfg"):
@@ -483,7 +483,7 @@ class ConfigItem(object):
 # a case item
 class CaseItem(object):
     def __init__(self, item: dict = {}) -> None:
-        self._item = glob_vars.case_item.copy()
+        self._item = dict(default_cfg_dict["default_option"])
         for key, val in item.items():
             self._item[key] = val
 

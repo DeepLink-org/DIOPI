@@ -2,7 +2,7 @@ import numpy as np
 
 from conformance.diopi_runtime import Tensor
 from conformance.exception import InputChangedException, OutputCheckFailedException
-from conformance.global_settings import glob_vars
+from conformance.global_settings import glob_vars, default_cfg_dict
 
 
 class CheckResult(object):
@@ -17,7 +17,7 @@ class CheckResult(object):
         for name, value in input1.items():
             matched = np.isclose(value, input2[name], equal_nan=True)
             mismatched_num = matched.size - np.sum(matched)
-            passed = mismatched_num <= glob_vars.input_mismatch_ratio_threshold * matched.size
+            passed = mismatched_num <= default_cfg_dict["default_option"]["mismatch_ratio_threshold"] * matched.size
             glob_vars.func_status[glob_vars.cur_test_func] = 'passed'
             if not passed:
                 glob_vars.func_status[glob_vars.cur_test_func] = 'failed'

@@ -5,13 +5,10 @@ import numpy as np
 import csv
 import pickle
 import ctypes
+from global_settings import default_cfg_dict
 
 cfg_file_name = '../cache/diopi_case_items.cfg'
 
-default_cfg_dict = dict(
-    # set log_level = "DEBUG" for debug infos
-    log_level="INFO"  # NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICA
-)
 np.set_printoptions(precision=5,
                     threshold=100,
                     edgeitems=3,

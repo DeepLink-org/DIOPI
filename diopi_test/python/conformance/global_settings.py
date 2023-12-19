@@ -1,6 +1,21 @@
 # Copyright (c) 2023, DeepLink.
 import numpy as np
 
+default_cfg_dict = dict(
+    default_option=dict(
+        atol=1e-5,
+        rtol=1e-5,
+        atol_half=1e-2,
+        rtol_half=5e-2,
+        mismatch_ratio_threshold=1e-3,
+        memory_format="NCHW",
+        fp16_exact_match=False,
+        train=True,
+        gen_policy="dafault",
+    ),
+    # set log_level = "DEBUG" for debug infos
+    log_level="INFO"  # NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICA
+)
 
 class glob_var(object):
     def __init__(self, nhwc=False, nhwc_min_dim=3, four_bytes=False):
@@ -14,17 +29,6 @@ class glob_var(object):
         self._func_status = {}
         self._debug_level = 0
         self._use_db = None
-        self.case_item = {
-            "atol": 1e-5,
-            "rtol": 1e-5,
-            "atol_half": 1e-2,
-            "rtol_half": 5e-2,
-            "mismatch_ratio_threshold": 1e-3,
-            "memory_format": "NCHW",
-            "fp16_exact_match": False,
-            "train": True,
-            "gen_policy": "dafault",
-        }
 
     def set_nhwc(self):
         self.nhwc = True
