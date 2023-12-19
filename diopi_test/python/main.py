@@ -11,11 +11,18 @@ from conformance.utils import is_ci, error_counter, write_report
 from conformance.utils import logger
 from conformance.global_settings import glob_vars
 from conformance.model_list import model_list, model_op_list
+from configs import model_config
+from conformance.config_parser import ConfigParser
+from conformance.collect_case import DeviceConfig, CollectCase
 sys.path.append("../python/configs")
 
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 cache_path = os.path.join(cur_dir, "cache")
+
+
+if not os.path.exists(cache_path):
+    os.makedirs(cache_path)
 
 
 def parse_args():
@@ -83,7 +90,7 @@ def parse_args():
     gen_case_args.add_argument(
         "--case_output_dir",
         type=str,
-        default="./gencases",
+        default="./gencases/diopi_case",
         help="pytest case save dir",
     )
 
@@ -91,7 +98,7 @@ def parse_args():
     run_test_args.add_argument(
         "--test_cases_path",
         type=str,
-        default="",
+        default="./gencases/diopi_case",
         help="pytest case file or dir",
     )
     run_test_args.add_argument(
@@ -158,12 +165,7 @@ if __name__ == "__main__":
         db_case_items = gen_case(cache_path, cur_dir, args.model_name, args.fname, args.impl_folder, args.case_output_dir)
         db_conn.insert_device_case(db_case_items)
     elif args.mode == "run_test":
-        if args.test_cases_path == "":
-            model_name = args.model_name if args.model_name else "diopi"
-            test_cases_path = os.path.join(args.case_output_dir, model_name + "_case")
-        else:
-            test_cases_path = args.test_cases_path
-        pytest_args = [test_cases_path]
+        pytest_args = [args.test_cases_path]
         if args.filter_dtype:
             filter_dtype_str = " and ".join(
                 [f"not {dtype}" for dtype in args.filter_dtype]

@@ -14,6 +14,33 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * @brief CopyH2D, contiguous only with same shape and stride and dtype.
+ * @param[in] ctx The diopi context.
+ * @param[out] dst : Output tensor device only.type = [float32, float16, int64 ,int32, bool]
+ * @param[in] src : Input tensor host only.type = [float32, float16, int64 ,int32, bool]
+ * @param[in] async : Async or sync.type = [bool]
+ */
+DIOPI_API diopiError_t diopiLmdeployCopyH2D(diopiContextHandle_t ctx, diopiTensorHandle_t dst, diopiConstTensorHandle_t src, bool async);
+
+/**
+ * @brief CopyH2D, contiguous only with same shape and stride and dtype.
+ * @param[in] ctx The diopi context.
+ * @param[out] dst : Output tensor host only.type = [float32, float16, int64 ,int32, bool]
+ * @param[in] src : Input tensor device only.type = [float32, float16, int64 ,int32, bool]
+ * @param[in] async : Async or sync.type = [bool]
+ */
+DIOPI_API diopiError_t diopiLmdeployCopyD2H(diopiContextHandle_t ctx, diopiTensorHandle_t dst, diopiConstTensorHandle_t src, bool async);
+
+/**
+ * @brief CopyH2D, contiguous only with same shape and stride and dtype.
+ * @param[in] ctx The diopi context.
+ * @param[out] dst : Output tensor device only.type = [float32, float16, int64 ,int32, bool]
+ * @param[in] src : Input tensor device only.type = [float32, float16, int64 ,int32, bool]
+ * @param[in] async : Async or sync.type = [bool]
+ */
+DIOPI_API diopiError_t diopiLmdeployCopyD2D(diopiContextHandle_t ctx, diopiTensorHandle_t dst, diopiConstTensorHandle_t src, bool async);
+
+/**
  * @brief Fused Silu FFN layer.(Silu(x * W1) dot (x * W3)) * W2.
  * @param[in] ctx diopi context.
  * @param[inout] inoutput : Output tensor.shape = [token_num, hidden_units].type = [float32, float16]
@@ -52,34 +79,34 @@ DIOPI_API diopiError_t diopiFusedAddRootMeanSquareNormInp(diopiContextHandle_t c
 /**
  * @brief FusedContextAttention.
  * 1.If pre_work like attention_mask and padding_offset and cu_seqlens is needed, get prepared result.Or only do the pre work.Or get size only.
- * attention_mask : Attention mask.shape = [batch_size, 1, max_query_len, max_key_len].type = [float32, float16]
- * padding_offset : Padding offset.shape = [token_num].type = [int64, int32]
+ * attention_mask : Attention mask, k<=q + context - input.shape = [batch_size, 1, max_query_len, max_key_len].type = [float32, float16]
+ * padding_offset : Padding offset.shape = [batch_size * max_query_len] but infact [token_num].type = [int64, int32]
  * cu_seqlens : Cuseqlens.shape = [batch_size + 1].type = [int64, int32]
  * 2.get QKV.
  * 3.qkv add bias & apply rotary embedding with his & rebuild padding & transpose.qkv [B, max_q_len, H + 2kvH, D] -> (q [B, H, max_q_len, D], k [B, kvH,
  * max_q_len, D], v [B, kvH, max_q_len, D])
  * 4.insert the k/v computed from inputs into k/v cache, k/v [B, kvH, s, D] -> k/v_cache [B, kvH, S[t:t+s], D].For
  * faster, [B, kvH, S[t:t+s], D/x, x] like is also ok, but shape mast same in decoder attn.
- * 5.copy kv from k/v cache back with extend for GQA/MQA.[B, kvH, S[:t+s], D/x, x] -> [B, qH, t+s, D]
- * 6.softmax(QK)*V batch gemm -> [B, H, S, D]. In softmax eps = 1e-6f and qk_val = qk_scale * qk_val - qk_bias with qu_bias
+ * 5.copy kv from k/v cache back with extend for GQA/MQA.[B, kvH, S[:t+s], D/x, x] -> [B, qH, t+s, D].t+s dim length = max_kv_len
+ * 6.softmax(QK)*V batch gemm -> [B, H, S, D]. In softmax eps = 1e-6f and qk_val = qk_scale * qk_val - qk_bias.Now without qk_bias.
  * if masked  -10000.0f else 0, and with qk_scale = static_cast<T>(1.f / sqrtf(size_per_head_ * 1.f).
- * 7.transpose back and move padding -> [token_num,
- * hidden_units] 8.use_logn_attn use_dynamic_ntk will append future attention_mask: create a [batch_size, 1, max_query_len, max_key_len] tensor, while is_valid
+ * 7.transpose back and move padding -> [token_num,hidden_units]
+ * 8.use_logn_attn use_dynamic_ntk will append future attention_mask: create a [batch_size, 1, max_query_len, max_key_len] tensor, while is_valid
  * = q < input_length && k < context_lengths && k <= q + (context_lengths - input_length) cu_seqlens: accumulated input_lengths, from 0 to all, with batch_size
  * + 1 numbers. padding_offset: cal padding offset, which means the total pad number before the token, when every seq is padded to same length with filling in
  * spaces after input.
  * @param[in] ctx diopi context.
  * @param[inout] inoutput : Inoutput tensor.shape = [token_num, hidden_units].type = [float32, float16]
  * @param[in] qkv_weight : QKV_weight tensor.shape = [hidden_units, (local_head_num+local_kv_head_num*2)*size_per_head].type = [float32, float16]
- * @param[in] qkv_bias : QKV_bias tensor.shape = [1, (local_head_num+local_kv_head_num*2)*size_per_head].type = [float32, float16]
+ * @param[in] qkv_bias : QKV_bias tensor.shape = [1, (local_head_num+local_kv_head_num*2)*size_per_head] or none.type = [float32, float16]
  * @param[inout] pre_work : Pre work like attention_mask and padding_offset and cu_seqlens for lmdeploy.shape = [pre_work_size].type = [float32, float16]
  * @param[inout] pre_work_size : Pre workspace size, if pre_work_size < 0 then only cal pre_work_size.type = [int64*, int32*]
  * @param[in] is_prepared : All pre work is prepared or not.type = [bool]
  * @param[inout] workspace : Workspace or buffer.shape = [workspace_size].type = [float32, float16]
  * @param[inout] workspace_size : Workspace size, if workspace_size < 0 then only cal workspace_size.type = [int64*, int32*]
  * @param[in] fusion_level : Fusion level, 0 represents no fusion, and the higher the numerical value, the higher the degree of fusion.type = [int64, int32]
- * @param[inout] key_cache : Key cache.shape = [num_layer, batch, local_head_num, max_seq_len, size_per_head].type = [float32, float16]
- * @param[inout] value_cache : Value cache.shape = [num_layer, batch, local_head_num, max_seq_len, size_per_head].type = [float32, float16]
+ * @param[inout] key_cache : Key cache.shape = [batch], membershape = [num_layer, local_kv_head_num, max_seq_len, size_per_head].type = [float32, float16]
+ * @param[inout] value_cache : Value cache.shape = [batch], membershape = [num_layer, local_kv_head_num, max_seq_len, size_per_head].type = [float32, float16]
  * @param[in] input_lengths : Input lengths.shape = [batch_size].type = [int64, int32]
  * @param[in] history_lengths : History lengths.shape = [batch_size].type = [int64, int32]
  * @param[in] context_lengths : Contextlengths.shape = [batch_size].type = [int64, int32]
@@ -96,9 +123,10 @@ DIOPI_API diopiError_t diopiFusedAddRootMeanSquareNormInp(diopiContextHandle_t c
 DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t qkv_weight,
                                                      diopiConstTensorHandle_t qkv_bias, diopiTensorHandle_t pre_work, int64_t* pre_work_size, bool is_prepared,
                                                      diopiTensorHandle_t workspace, int64_t* workspace_size, int64_t fusion_level,
-                                                     diopiTensorHandle_t key_cache, diopiTensorHandle_t value_cache, int64_t layer_id, int64_t local_head_num,
-                                                     int64_t local_kv_head_num, int64_t size_per_head, int64_t max_seq_len, int64_t max_q_len,
-                                                     int64_t max_kv_len, int64_t rotary_embedding, float rope_theta);
+                                                     diopiTensorHandle_t* key_cache, diopiTensorHandle_t* value_cache, diopiConstTensorHandle_t input_lengths,
+                                                     diopiConstTensorHandle_t history_lengths, diopiConstTensorHandle_t context_lengths, int64_t layer_id,
+                                                     int64_t local_head_num, int64_t local_kv_head_num, int64_t size_per_head, int64_t max_seq_len,
+                                                     int64_t max_q_len, int64_t max_kv_len, int64_t rotary_embedding, float rope_theta);
 
 /**
  * @brief FusedDecoderAttention.
@@ -109,12 +137,12 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
  * @param[in] ctx diopi context.
  * @param[inout] inoutput : Inoutput tensor.shape = [batch_size, hidden_units].type = [float32, float16]
  * @param[in] qkv_weight : QKV_weight tensor.shape = [hidden_units, (local_head_num+local_kv_head_num*2)*size_per_head].type = [float32, float16]
- * @param[in] qkv_bias : QKV_bias tensor.shape = [1, (local_head_num+local_kv_head_num*2)*size_per_head].type = [float32, float16]
+ * @param[in] qkv_bias : QKV_bias tensor.shape = [1, (local_head_num+local_kv_head_num*2)*size_per_head] or none.type = [float32, float16]
  * @param[inout] workspace : Workspace or buffer.shape = [workspace_size].type = [float32, float16]
  * @param[inout] workspace_size : Workspace size, if workspace_size < 0 then only cal workspace_size.type = [int64*, int32*]
  * @param[in] fusion_level : Fusion level, 0 represents no fusion, and the higher the numerical value, the higher the degree of fusion.type = [int64, int32]
- * @param[inout] key_cache : Key cache.shape = [num_layer, batch, local_head_num, max_seq_len, size_per_head].type = [float32, float16]
- * @param[inout] value_cache : Value cache.shape = [num_layer, batch, local_head_num, max_seq_len, size_per_head].type = [float32, float16]
+ * @param[inout] key_cache : Key cache.shape = [batch], membershape = [num_layer, local_kv_head_num, max_seq_len, size_per_head].type = [float32, float16]
+ * @param[inout] value_cache : Value cache.shape = [batch], membershape = [num_layer, local_kv_head_num, max_seq_len, size_per_head].type = [float32, float16]
  * @param[in] finished : Finished batch.shape = [batch_size].type = [bool]
  * @param[in] total_padding_tokens : Total padding tokens.shape = [batch_size].type = [int64, int32]
  * @param[in] sequence_lengths : Sequence lengths.shape = [batch_size].type = [int64, int32]
@@ -129,7 +157,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
  */
 DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t qkv_weight,
                                                      diopiConstTensorHandle_t qkv_bias, diopiTensorHandle_t workspace, int64_t* workspace_size,
-                                                     int64_t fusion_level, diopiTensorHandle_t key_cache, diopiTensorHandle_t value_cache,
+                                                     int64_t fusion_level, diopiTensorHandle_t* key_cache, diopiTensorHandle_t* value_cache,
                                                      diopiConstTensorHandle_t finished, diopiConstTensorHandle_t total_padding_tokens,
                                                      diopiConstTensorHandle_t sequence_lengths, int64_t step, int64_t layer_id, int64_t local_head_num,
                                                      int64_t local_kv_head_num, int64_t size_per_head, int64_t max_seq_len, int64_t rotary_embedding,
@@ -188,8 +216,8 @@ DIOPI_API diopiError_t diopiSetupTopkRuntimeArgsInp(diopiContextHandle_t ctx, di
  * @param[in] runtime_top_k : TopKs tensor.shape = [batch_size].type = [int64, int32]
  * @param[in] runtime_top_p : TopPs tensor.shape = [batch_size].type = [float32]
  * @param[in] skip_decode : Need skip or not.shape = [batch_size].type = [bool]
- * @param[inout] cum_log_probs : Cum log probs.shape = [batch_size].type = [float32]
- * @param[inout] output_log_probs : Output log probs.shape = [batch_size].type = [float32]
+ * @param[inout] cum_log_probs : Cum log probs or none.shape = [batch_size].type = [float32]
+ * @param[inout] output_log_probs : Output log probs or none.shape = [batch_size].type = [float32]
  * @param[in] generators : pseudorandom number generators for sampling.shape = [batch_size]
  */
 DIOPI_API diopiError_t diopiTopKSampling(diopiContextHandle_t ctx, diopiTensorHandle_t output_ids, diopiTensorHandle_t logits, diopiTensorHandle_t workspace,
@@ -219,17 +247,17 @@ DIOPI_API diopiError_t diopiTopKSampling(diopiContextHandle_t ctx, diopiTensorHa
  * @param[in] top_ps_size : Topps size.type = [int64, int32]
  * @param[out] initial_top_p_buf : Initial_top_p_buf.shape = [batch_size].Topp.type = [float32]
  * @param[out] top_p_decay_buf : Topp decay buf.shape = [batch_size].type = [float32]
- * @param[in] top_p_decay : Topp decay.shape = [batch_size].type = [float32]
+ * @param[in] top_p_decay : Topp decay or none.shape = [batch_size].type = [float32]
  * @param[out] top_p_min_buf : Topp min buf.shape = [batch_size].type = [float32]
- * @param[in] top_p_min : Topp min.shape = [batch_size].type = [float32]
+ * @param[in] top_p_min : Topp min or none.shape = [batch_size].type = [float32]
  * @param[out] top_p_reset_ids_buf : Topp reset buf.shape = [batch_size].type = [int64, int32]
- * @param[in] top_p_reset_ids : Topp reset.shape = [batch_size].type = [int64, int32]
+ * @param[in] top_p_reset_ids : Topp reset or none.shape = [batch_size].type = [int64, int32]
  */
 DIOPI_API diopiError_t diopiSetupToppRuntimeArgsInp(diopiContextHandle_t ctx, diopiTensorHandle_t top_ks, diopiTensorHandle_t top_ps,
                                                     diopiTensorHandle_t skip_decode, int64_t batch_size, int64_t top_k, int64_t top_ks_size, float top_p,
                                                     int64_t top_ps_size, diopiTensorHandle_t initial_top_p_buf, diopiTensorHandle_t top_p_decay_buf,
-                                                    float top_p_decay, diopiTensorHandle_t top_p_min_buf, float top_p_min,
-                                                    diopiTensorHandle_t top_p_reset_ids_buf, int64_t top_p_reset_ids);
+                                                    diopiConstTensorHandle_t top_p_decay, diopiTensorHandle_t top_p_min_buf, diopiConstTensorHandle_t top_p_min,
+                                                    diopiTensorHandle_t top_p_reset_ids_buf, diopiConstTensorHandle_t top_p_reset_ids);
 
 /**
  * @brief TopPSampling. Get the new id by topp sampling.
@@ -241,14 +269,15 @@ DIOPI_API diopiError_t diopiSetupToppRuntimeArgsInp(diopiContextHandle_t ctx, di
  * index%vocab_size_padded.
  * 3.If index >= vocab_size, then -FLT_MAX else if finished logit set to -FLT_MAX default or FLT_MAX when == end_id, then softmax with
  * eps = 1e-6f.
- * 4.get p_threshold form top_ps, if one >= p_threshold, and id is the smallest in those passed, then it is the one else find the one with
- * newp_threshold = each batch own state random * p_threshold which sum >= newp_threshold with all less then it but without it the sum is < newp_threshold.
- * 5.ids[step*bs+bsid] =
- * the one's index. And if cum_log_probs is not null, cum_log_probs[batch_id] += logf(new_logit);if output_log_probs is not null, output_log_probs[batch_id] =
- * logf(new_logit) - logf(sum of all k new logits).
- * 6.if (sequence_length != nullptr && finished != nullptr), if not finished then sequence_length += 1.Then
+ * 4.if skip is not null and is true, skip the batch.
+ * 5.get p_threshold form top_ps, if one >= p_threshold, and id is the smallest in those passed, then it is the one else find the one with
+ * newp_threshold = each batch own state random * p_threshold which sum >= (1-newp_threshold) with all less then it but without it the sum is < newp_threshold.
+ * 6.ids[step*bs+bsid] =
+ * the one's index. And if cum_log_probs is not null, cum_log_probs[batch_id] += logf(logit);if output_log_probs is not null, output_log_probs[batch_id] =
+ * logf(logit).
+ * 7.if (sequence_length != nullptr && finished != nullptr), if not finished then sequence_length += 1.Then
  * update finished by check the got ids == endid.
- * 7.if the one == top_p_reset_ids, runtime_top_p = runtime_initial_top_p else = max(runtime_top_p * top_p_decay,
+ * 8.if the one == top_p_reset_ids, runtime_top_p = runtime_initial_top_p else = max(runtime_top_p * top_p_decay,
  * top_p_min)
  * @param[in] ctx The diopi context.
  * @param[inout] output_ids : Output ids tensor.shape = [max_seq_len, batch_size].type = [int64, int32]
@@ -265,16 +294,22 @@ DIOPI_API diopiError_t diopiSetupToppRuntimeArgsInp(diopiContextHandle_t ctx, di
  * @param[in] batch_size : Batch size.type = [int64, int32]
  * @param[in] vocab_size_padded : Padded vocab size.type = [int64, int32]
  * @param[inout] runtime_top_p : TopPs tensor.shape = [batch_size].type = [float32]
+ * @param[in] runtime_initial_top_p : init topPs tensor.shape = [batch_size].type = [float32]
+ * @param[in] top_p_decay_buf : Topp decay buf.shape = [batch_size].type = [float32]
+ * @param[in] top_p_min_buf : Topp min buf.shape = [batch_size].type = [float32]
+ * @param[in] top_p_reset_ids_buf : Topp reset buf.shape = [batch_size].type = [int64, int32]
  * @param[in] skip_decode : Need skip or not.shape = [batch_size].type = [bool]
- * @param[inout] cum_log_probs : Cum log probs.shape = [batch_size].type = [float32]
- * @param[inout] output_log_probs : Output log probs.shape = [batch_size].type = [float32]
+ * @param[inout] cum_log_probs : Cum log probs or none.shape = [batch_size].type = [float32]
+ * @param[inout] output_log_probs : Output log probs or none.shape = [batch_size].type = [float32]
  * @param[in] generators : pseudorandom number generators for sampling.shape = [batch_size]
  */
 DIOPI_API diopiError_t diopiTopPSampling(diopiContextHandle_t ctx, diopiTensorHandle_t output_ids, diopiTensorHandle_t logits,
                                          diopiTensorHandle_t persistent_workspace, int64_t* persistent_workspace_size, diopiTensorHandle_t workspace,
                                          int64_t* workspace_size, int64_t fusion_level, diopiConstTensorHandle_t end_ids, diopiTensorHandle_t finished,
                                          diopiTensorHandle_t sequence_lengths, int64_t step, int64_t batch_size, int64_t vocab_size_padded,
-                                         diopiTensorHandle_t runtime_top_p, diopiConstTensorHandle_t skip_decode, diopiTensorHandle_t cum_log_probs,
+                                         diopiTensorHandle_t runtime_top_p, diopiConstTensorHandle_t runtime_initial_top_p,
+                                         diopiConstTensorHandle_t top_p_decay_buf, diopiConstTensorHandle_t top_p_min_buf,
+                                         diopiConstTensorHandle_t top_p_reset_ids_buf, diopiConstTensorHandle_t skip_decode, diopiTensorHandle_t cum_log_probs,
                                          diopiTensorHandle_t output_log_probs, diopiGeneratorHandle_t* generators);
 
 /**
@@ -331,7 +366,7 @@ DIOPI_API diopiError_t diopiTransposeAxis01(diopiContextHandle_t ctx, diopiTenso
  * @param[in] ctx The diopi context.
  * @param[out] from_tensor : Output ids.shape = [batch_size, hidden].type = [float32, float16]
  * @param[in] embedding_table : Embedding table.shape=[vocab, hidden].type = [float32, float16]
- * @param[in] all_ids : Input ids.shape=[batch_size, sessionlen].type = [int64, int32]
+ * @param[in] all_ids : Input ids.shape=[sessionlen, batch_size].type = [int64, int32]
  * @param[in] batch_size : Batch size.type = [int64, int32]
  * @param[in] hidden_units : Hidden units.type = [int64, int32]
  * @param[in] step : Step.type = [int64, int32]
@@ -413,7 +448,7 @@ DIOPI_API diopiError_t diopiLengthCriterion(diopiContextHandle_t ctx, diopiTenso
  * @brief Apply repetitionPenalty.If 0 <= index < step with (if index >= input_length && index < max_input_length then continue), save every index and fixed
  * logit in penalty_logits and penalty_indices with shape [step].Then update logits with penalty_logits and penalty_indices.
  * @param[in] ctx The diopi context.
- * @param[inout] logits : nput tensor logits.shape = [batch_size, vocab_size].type = [float32, float16]
+ * @param[inout] logits : input tensor logits.shape = [batch_size, vocab_size].type = [float32, float16]
  * @param[in] penalties : Penalties tensor.shape = [batch_size].type = [float32]
  * @param[in] output_ids : The bias tensor.shape = [max_seq_len or step, batch_size].type = [int64, int32].
  * @param[in] batch_size : Batch size.type = [int64, int32]
@@ -434,7 +469,7 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
  * bias_val)*(1.0f/(temperature + 1e-6f)) else logits = -FLT_MAX
  * @param[in] ctx The diopi context.
  * @param[inout] logits : Output tensor logits.shape = [batch_size, vocab_size_padded].type = [float32, float16]
- * @param[in] bias : Input tensor bias.shape = [vocab_size_padded].type = [float32, float16]
+ * @param[in] bias : Input tensor bias or none.shape = [vocab_size_padded].type = [float32, float16]
  * @param[in] temperatures : Temperatures.shape = [batch_size].type = [float32].
  * @param[in] batch_size : Batch size.type = [int64, int32].
  * @param[in] vocab_size : Vocab size.type = [int64, int32].
