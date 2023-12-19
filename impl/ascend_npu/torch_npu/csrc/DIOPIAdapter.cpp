@@ -1795,8 +1795,8 @@ public:
         size_t outputDataBuffArrLen = outputNum * sizeof(uintptr_t);
 
         size_t totalMemLen = inputTensorDescArrLen + inputDataBuffArrLen + outputTensorDescArrLen + outputDataBuffArrLen;
-
-        char* basePtr = static_cast<char*>(malloc(totalMemLen));
+        std::unique_ptr<char, void (*)(void*)> basePtrUnique((char*)malloc(totalMemLen), free);
+        char* basePtr = basePtrUnique.get();
         AT_ASSERT(basePtr != nullptr);
         const aclTensorDesc** aclTensorInputDescArr = reinterpret_cast<const aclTensorDesc**>(basePtr);
         basePtr += inputTensorDescArrLen;
