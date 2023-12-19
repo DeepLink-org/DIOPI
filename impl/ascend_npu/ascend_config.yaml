@@ -200,6 +200,7 @@ ascend:
 - diopiScatterInp
 - diopiScatterScalar
 - diopiScatterInpScalar
+- diopiApplyPenalty
 ascend_npu:
 - diopiRemainderTensor
 - diopiRemainderScalar
