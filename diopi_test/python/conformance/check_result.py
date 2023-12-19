@@ -2,7 +2,7 @@ import numpy as np
 
 from conformance.diopi_runtime import Tensor
 from conformance.exception import InputChangedException, OutputCheckFailedException
-from utils import default_cfg_dict
+from conformance.utils import default_cfg_dict
 from conformance.global_settings import glob_vars
 
 
