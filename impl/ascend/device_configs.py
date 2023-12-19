@@ -1645,6 +1645,7 @@ device_configs = {
             args=[
                 {
                     "ins": ["other"],
+                    "shape": [Skip((1, 9)),],
                     "dtype": [Skip(np.complex128)]
                 },
             ]
