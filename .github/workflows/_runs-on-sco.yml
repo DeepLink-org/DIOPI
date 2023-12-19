@@ -1,90 +1,77 @@
 name: runs on sco
 
 on:
-  workflow_call:
-    inputs:
-      machine:
-        description: If set to other value, the job need ssh
-        type: string
-        required: false
-        default: "local"
-      runner:
-        description: Set up the build environment
-        type: string
-        required: false
-        default: "tps-sco-ci"
-      work_path:
-        description: ci work home
-        type: string
-        required: false
-        default: '/mnt/cache/share/deeplinkci/github/${{ github.repository }}/${{ github.run_number }}'
-      env_path:
-        description: ci env path
-        type: string
-        required: false
-        default: '/mnt/cache/share/platform/env'
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - wgs/**
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".git*"
+      - "CODE_OF_CONDUCT**"
+
+
+env:
+  DEEPLINK_PATH: '/mnt/cache/share/deeplinkci/github/${{ github.repository }}'
+  ENV_PATH: '/mnt/cache/share/platform/env'
+  BUILD_TEST1: build_test
+  GEN_DATA: diopi_test/python/cache
+  ALL_COVERAGE: ${{ (contains( github.ref, 'main') || startsWith(github.ref, 'refs/heads/v') || startsWith(github.ref, 'refs/heads/dev')) && 'ON' || 'OFF' }}
+  REQUIRE_COVERAGE: ${{ vars.REQUIRE_COVERAGE != '' && vars.REQUIRE_COVERAGE || '40' }}
 
 jobs:
   checkout_code:
     name: checkout code
-    runs-on: ${{ inputs.runner }}
+    runs-on: tps-sco-ci
     steps:
       - name: Checkout Code
         uses: DeepLink-org/DIOPI.dev/.github/actions/checkout-code@wgs/run_on_sco
 
-  build:
-    runs-on: ${{ inputs.runner }}
-    needs: checkout_code
+  Build-Nvidia:
+    name: Build-Nvidia
+    runs-on: tps-sco-ci
+    needs: [checkout_code]
     steps:
       - name: build
-        uses: DeepLink-org/DIOPI.dev/.github/actions/code-build-test@wgs/run_on_sco
-        with:
-          build_shell: """
-          srun --job-name=${GITHUB_JOB} bash -c \"export USE_COVERAGE=ON && cd ${work_path}/build_test \
-          && source ${env_path}/pt2.0_diopi_nodeps \
-          && cd impl && bash scripts/build_impl.sh torch\"
-          """
-          job_name: "build_test"
-          cover_job: "0"
-          cleaner: "clean_all_if_error"
+        run: |
+          set -e
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
+          srun --job-name=${GITHUB_JOB} bash -c "export USE_COVERAGE=ON && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} \
+          && source ${ENV_PATH}/pt2.0_diopi_nodeps \
+          && cd impl && bash scripts/build_impl.sh torch" || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
 
-  gen_data:
-    runs-on: ${{ inputs.runner }}
-    needs: build
+  Gen-Data:
+    name: Gen-Data
+    runs-on: tps-sco-ci
+    needs: [Build-Nvidia]
     steps:
-      - name: gen data
-        uses: DeepLink-org/DIOPI.dev/.github/actions/code-build-test@wgs/run_on_sco
-        with:
-          build_shell: """
-          srun --job-name=${GITHUB_JOB} bash -c \"cd ${work_path}/build_test/diopi_test/python \
-          && source ${env_path}/pt2.0_diopi_cuda11.8 \
-          && python main.py --mode gen_data\"
-          """
-          job_name: "build_test"
-          cover_job: "1"
-          cleaner: "clean_all_if_error"
+      - name: gen-test-data
+        run: |
+          set -e
+          srun --job-name=${GITHUB_JOB} bash -c "cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python \
+          && source ${ENV_PATH}/pt2.0_diopi_nodeps \
+          && python main.py --mode gen_data" \
+          || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
 
-  op_test:
-    runs-on: ${{ inputs.runner }}
-    needs: [build, gen_data]
+  Op-Test-Nvidia:
+    name: Op-Test-Nvidia
+    runs-on: tps-sco-ci
+    needs: Gen-Data
+    env:
+      run_test: "coverage run -p"
     steps:
       - name: NHWC-32bit-test
-        uses: DeepLink-org/DIOPI.dev/.github/actions/code-build-test@wgs/run_on_sco
-        with:
-          build_shell: """
-          srun --job-name=${GITHUB_JOB} bash -c \"export USE_COVERAGE=ON && cd ${work_path}/build_test \
-          && source ${env_path}/pt2.0_diopi_cuda11.8 && cd diopi_test/python && python main.py --mode gen_case --fname batch_norm --nhwc &&
-          python main.py --mode gen_case --fname index_select --four_bytes && python main.py --mode gen_case --fname arange --four_bytes && ${run_test} main.py --mode run_test\"
-          """
-          job_name: "build_test"
-          cover_job: "1"
+        run: |
+          set -e
+          srun --job-name=${GITHUB_JOB} bash -c "export USE_COVERAGE=ON && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} \
+          && source ${ENV_PATH}/0_diopi_nodeps && cd diopi_test/python && python main.py --mode gen_case --fname batch_norm --nhwc &&
+          python main.py --mode gen_case --fname index_select --four_bytes && python main.py --mode gen_case --fname arange --four_bytes && ${run_test} main.py --mode run_test"
       - name: test
-        uses: DeepLink-org/DIOPI.dev/.github/actions/code-build-test@wgs/run_on_sco
-        with:
-          build_shell: """
-          srun --job-name=${GITHUB_JOB} bash -c \"export CI=true && export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${work_path}/build_test/impl/lib \
-          && source ${env_path}/pt2.0_diopi_cuda11.8 && cd ${work_path}/build_test \
-          && cd diopi_test/python && python main.py --mode gen_case && python main.py --mode run_test\"
-          """
-          job_name: "build_test"
-          cover_job: "1"
+        run: |
+          set -e
+          srun --job-name=${GITHUB_JOB} bash -c "export CI=true && export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/lib \
+          && source ${ENV_PATH}/0_diopi_nodeps && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} \
+          && cd diopi_test/python && python main.py --mode gen_case && python main.py --mode run_test"
