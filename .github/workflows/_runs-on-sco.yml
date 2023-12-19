@@ -66,11 +66,11 @@ jobs:
         run: |
           set -e
           srun --job-name=${GITHUB_JOB} bash -c "export USE_COVERAGE=ON && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} \
-          && source ${ENV_PATH}/0_diopi_nodeps && cd diopi_test/python && python main.py --mode gen_case --fname batch_norm --nhwc &&
+          && source ${ENV_PATH}/pt2.0_diopi_nodeps && cd diopi_test/python && python main.py --mode gen_case --fname batch_norm --nhwc &&
           python main.py --mode gen_case --fname index_select --four_bytes && python main.py --mode gen_case --fname arange --four_bytes && ${run_test} main.py --mode run_test"
       - name: test
         run: |
           set -e
           srun --job-name=${GITHUB_JOB} bash -c "export CI=true && export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/lib \
-          && source ${ENV_PATH}/0_diopi_nodeps && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} \
+          && source ${ENV_PATH}/pt2.0_diopi_nodeps && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} \
           && cd diopi_test/python && python main.py --mode gen_case && python main.py --mode run_test"
