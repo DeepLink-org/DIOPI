@@ -7,7 +7,7 @@ on:
         description: If set to other value, the job need ssh
         type: string
         required: false
-        default: "SCO"
+        default: "local"
       runner:
         description: Set up the build environment
         type: string
@@ -39,11 +39,11 @@ jobs:
       - name: build
         uses: DeepLink-org/DIOPI.dev/.github/actions/code-build-test@wgs/run_on_sco
         with:
-          build_shell: '''
-          srun --job-name=${GITHUB_JOB} bash -c "export USE_COVERAGE=ON && cd ${work_path}/build_test \
+          build_shell: """
+          srun --job-name=${GITHUB_JOB} bash -c \"export USE_COVERAGE=ON && cd ${work_path}/build_test \
           && source ${env_path}/pt2.0_diopi_nodeps \
-          && cd impl && bash scripts/build_impl.sh torch"
-          '''
+          && cd impl && bash scripts/build_impl.sh torch\"
+          """
           job_name: "build_test"
           cover_job: "0"
           cleaner: "clean_all_if_error"
@@ -55,11 +55,11 @@ jobs:
       - name: gen data
         uses: DeepLink-org/DIOPI.dev/.github/actions/code-build-test@wgs/run_on_sco
         with:
-          build_shell: '''
-          srun --job-name=${GITHUB_JOB} bash -c "cd ${work_path}/build_test/diopi_test/python \
+          build_shell: """
+          srun --job-name=${GITHUB_JOB} bash -c \"cd ${work_path}/build_test/diopi_test/python \
           && source ${env_path}/pt2.0_diopi_cuda11.8 \
-          && python main.py --mode gen_data"
-          '''
+          && python main.py --mode gen_data\"
+          """
           job_name: "build_test"
           cover_job: "1"
           cleaner: "clean_all_if_error"
@@ -71,20 +71,20 @@ jobs:
       - name: NHWC-32bit-test
         uses: DeepLink-org/DIOPI.dev/.github/actions/code-build-test@wgs/run_on_sco
         with:
-          build_shell: '''
-          srun --job-name=${GITHUB_JOB} bash -c "export USE_COVERAGE=ON && cd ${work_path}/build_test \
+          build_shell: """
+          srun --job-name=${GITHUB_JOB} bash -c \"export USE_COVERAGE=ON && cd ${work_path}/build_test \
           && source ${env_path}/pt2.0_diopi_cuda11.8 && cd diopi_test/python && python main.py --mode gen_case --fname batch_norm --nhwc &&
-          python main.py --mode gen_case --fname index_select --four_bytes && python main.py --mode gen_case --fname arange --four_bytes && ${run_test} main.py --mode run_test"
-          '''
+          python main.py --mode gen_case --fname index_select --four_bytes && python main.py --mode gen_case --fname arange --four_bytes && ${run_test} main.py --mode run_test\"
+          """
           job_name: "build_test"
           cover_job: "1"
       - name: test
         uses: DeepLink-org/DIOPI.dev/.github/actions/code-build-test@wgs/run_on_sco
         with:
-          build_shell: '''
-          srun --job-name=${GITHUB_JOB} bash -c "export CI=true && export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${work_path}/build_test/impl/lib \
+          build_shell: """
+          srun --job-name=${GITHUB_JOB} bash -c \"export CI=true && export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${work_path}/build_test/impl/lib \
           && source ${env_path}/pt2.0_diopi_cuda11.8 && cd ${work_path}/build_test \
-          && cd diopi_test/python && python main.py --mode gen_case && python main.py --mode run_test"
-          '''
+          && cd diopi_test/python && python main.py --mode gen_case && python main.py --mode run_test\"
+          """
           job_name: "build_test"
           cover_job: "1"
