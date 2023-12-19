@@ -41,5 +41,5 @@ runs:
         if [ ${MACHINE} != "local" ];then
           ssh ${MACHINE} " $(typeset -f checkout_code); checkout_code "
         else
-          checkout_code
+          $(typeset -f checkout_code); checkout_code
         fi
