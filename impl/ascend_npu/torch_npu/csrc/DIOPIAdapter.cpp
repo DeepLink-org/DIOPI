@@ -1972,35 +1972,21 @@ aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool 
           }
         }
 #endif
-        if (!sync) {
-            ret = aclopCompileAndExecute(name.c_str(),
-                                         inputSize,
-                                         params.inDesc.data(),
-                                         params.inBuffer.data(),
-                                         outputSize,
-                                         params.outDesc.data(),
-                                         params.outBuffer.data(),
-                                         params.attr,
-                                         ACL_ENGINE_SYS,
-                                         ACL_COMPILE_SYS,
-                                         NULL,
-                                         stream);
-            NPU_CHECK_ERROR(ret);
-        } else {
+        ret = AclopCompileAndExecuteV2(name.c_str(),
+                                       inputSize,
+                                       const_cast<aclTensorDesc**>(params.inDesc.data()),
+                                       const_cast<aclDataBuffer**>(params.inBuffer.data()),
+                                       outputSize,
+                                       const_cast<aclTensorDesc**>(params.outDesc.data()),
+                                       params.outBuffer.data(),
+                                       params.attr,
+                                       ACL_ENGINE_SYS,
+                                       ACL_COMPILE_SYS,
+                                       NULL,
+                                       stream);
+        NPU_CHECK_ERROR(ret);
+        if (sync) {
             int64_t dimSize;
-            ret = AclopCompileAndExecuteV2(name.c_str(),
-                                           inputSize,
-                                           const_cast<aclTensorDesc**>(params.inDesc.data()),
-                                           const_cast<aclDataBuffer**>(params.inBuffer.data()),
-                                           outputSize,
-                                           const_cast<aclTensorDesc**>(params.outDesc.data()),
-                                           params.outBuffer.data(),
-                                           params.attr,
-                                           ACL_ENGINE_SYS,
-                                           ACL_COMPILE_SYS,
-                                           NULL,
-                                           stream);
-            NPU_CHECK_ERROR(ret);
             for (size_t i = 0; i < sync_index.size(); i++) {
                 c10::SmallVector<int64_t, N> real_shape;
                 for (int64_t j = 0; j < outputTensor[sync_index[i]].dim(); j++) {
@@ -2337,11 +2323,8 @@ template OpCommand& OpCommand::OpCommand::Attr<c10::Scalar>(const string& name, 
 void OpCommand::Run() {
     aclCmd->SetEnginePriority();
     const string& op_name = aclCmd->GetName();
-    bool sync = true;
-    c10::SmallVector<int64_t, N> sync_index;
     aclCmd->Run(sync, sync_index, outputTensor);
-    // todo: optimize performance here
-    if (sync || 1) {
+    if (sync) {
         Sync();
     }
     aclCmd->releaseSource();
@@ -2349,7 +2332,10 @@ void OpCommand::Run() {
 }
 
 OpCommand& OpCommand::Sync(c10::SmallVector<int64_t, N>& index) {
-    INTERFACE_NOT_IMPL
+    sync_index = index;
+    if (!index.empty()) {
+        sync = true;
+    }
     Sync();
     return *this;
 }
