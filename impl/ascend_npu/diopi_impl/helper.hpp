@@ -34,9 +34,25 @@
 
 #define BUILD_ATEN_ARG1(x) auto CREATE_VAR_NAME(x) = impl::aten::buildATen(x);
 
+inline int debugLevel() {
+    static int level = []() {
+        const char* env = std::getenv("DIOPI_DEBUG_OP");
+        if (env != nullptr) {
+            return std::atoi(env);
+        }
+        return 0;
+    }();
+    return level;
+}
+
+#define DEBUG_ARGS(x)                                                                                              \
+    if (debugLevel()) {                                                                                            \
+        std::cout << __FUNCTION__ << ": " << __LINE__ << ":" << #x << ":" << impl::aten::dumpArgs(x) << std::endl; \
+    }
+
 #define BUILD_ATEN_ARGS_BODY(x)                         \
     auto CREATE_VAR_NAME(x) = impl::aten::buildATen(x); \
-    std::cout << __FUNCTION__ << ": " << #x << ":" << impl::aten::dumpArgs(CREATE_VAR_NAME(x)) << std::endl;
+    DEBUG_ARGS(x##At)
 
 #define BUILD_ATEN_ARG2(x, y) \
     BUILD_ATEN_ARGS_BODY(x);  \
@@ -85,9 +101,11 @@
 
 #define BUILD_ATEN_ARGS(...) PRIVATE_CONCAT_STR(BUILD_ATEN_ARG, COUNT_MACRO_VARR(__VA_ARGS__))(__VA_ARGS__)
 
-#define BEGIN_CALL_ACL_OP(...)                                                     \
-    std::cout << __FILE__ << ":" << __LINE__ << " :" << __FUNCTION__ << std::endl; \
-    impl::aten::setCurCtx(ctx);                                                    \
+#define BEGIN_CALL_ACL_OP(...)                                                         \
+    if (debugLevel()) {                                                                \
+        std::cout << __FILE__ << ":" << __LINE__ << " :" << __FUNCTION__ << std::endl; \
+    }                                                                                  \
+    impl::aten::setCurCtx(ctx);                                                        \
     BUILD_ATEN_ARGS(__VA_ARGS__)
 
 #define END_CALL_ACL_OP()      \
@@ -247,7 +265,7 @@ inline c10::DeviceType getATenDevice(diopiDevice_t device) {
     if (device == diopi_host) {
         return c10::DeviceType::CPU;
     }
-    return c10::DeviceType::XPU;
+    return c10::DeviceType::XLA;
 }
 
 inline bool isInt(const diopiScalar_t* scalar) { return scalar->stype <= 7; }
@@ -268,7 +286,9 @@ inline at::Scalar buildATen(const diopiScalar_t* scalar) {
     }
 }
 
-at::Tensor view(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides = {});
+at::Generator buildATen(diopiGeneratorHandle_t generator);
+
+at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides = {}, const int64_t storageOffset = 0);
 
 const at::Tensor buildATen(diopiConstTensorHandle_t tensor);
 
@@ -284,9 +304,10 @@ template <>
 inline std::string dumpArgs(const at::Tensor& t) {
     std::stringstream stream;
     if (t.defined()) {
-        stream << " shape:" << t.sizes() << ", t.strides:" << t.strides() << t.options() << ",ptr:" << t.data_ptr();
+        stream << " shape:" << t.sizes() << ", numel:" << t.numel() << ", strides:" << t.strides() << " " << t.options() << ", ptr:" << t.data_ptr()
+               << ", nbytes:" << t.storage().nbytes() << ", is_contiguous:" << t.is_contiguous();
     } else {
-        stream << "undefined" << std::endl;
+        stream << " undefined" << std::endl;
     }
     return stream.str();
 }
@@ -295,6 +316,17 @@ template <>
 inline std::string dumpArgs(const at::Scalar& t) {
     std::stringstream stream;
     stream << t;
+    return stream.str();
+}
+
+template <>
+inline std::string dumpArgs(const at::IntArrayRef& t) {
+    std::stringstream stream;
+    stream << "[";
+    for (size_t i = 0; i < t.size(); i++) {
+        stream << i << ",";
+    }
+    stream << "]";
     return stream.str();
 }
 

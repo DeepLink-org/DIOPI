@@ -128,9 +128,6 @@ ascend:
 - diopiNeg
 - diopiNegInp
 - diopiNonzero
-- diopiNorm
-- diopiNormal
-- diopiNormalInp
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
@@ -198,10 +195,21 @@ ascend:
 - diopiMaxPool2dWithIndices
 - diopiRMSNorm
 - diopiRMSNormBackward
+- diopiExpand
+- diopiLinspace
+- diopiProd
+- diopiSplitWithSizes
+- diopiScatter
+- diopiScatterInp
+- diopiScatterScalar
+- diopiScatterInpScalar
 ascend_npu:
 - diopiRemainderTensor
 - diopiRemainderScalar
 - diopiRemainder
 - diopiRepeat
 - diopiStack
-
+- diopiNormal
+- diopiNormalInp
+- diopiNorm
+- diopiMaxPool2dWithIndices

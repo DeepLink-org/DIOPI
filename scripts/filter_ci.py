@@ -9,6 +9,7 @@ def get_run_result(pr_number):
         'ASCEND': False,
         'TOPSRIDER': False,
         'SUPA': False,
+        'GENDATA': False,
     }
 
     repository = os.environ.get("GITHUB_REPOSITORY")
@@ -19,6 +20,8 @@ def get_run_result(pr_number):
     response = requests.get(api_url, headers=headers)
     if response.status_code == 200:
         pr_files = response.json()
+        if "diopi_configs.py" in str(pr_files):
+            run_result['GENDATA'] = True
         norunpaths = ["impl/camb_pytorch","impl/cuda"]
         for file in pr_files:
             filenames = file["filename"]
