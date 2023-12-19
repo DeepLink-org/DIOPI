@@ -3,7 +3,6 @@
 #include <ATen/EmptyTensor.h>
 #include <ATen/native/CPUFallback.h>
 #include <ATen/record_function.h>
-#include <Python.h>
 #include <diopi/diopirt.h>
 #include <torch/library.h>
 
@@ -1921,13 +1920,7 @@ private:
 void OpCommandImpl::Run(bool sync, c10::SmallVector<int64_t, N>& sync_index, c10::SmallVector<at::Tensor, N>& outputTensor) {
     NPU_LOGD("Op %s start run.", opName.c_str());
     // RECORD_FUNCTION(opName, std::vector<c10::IValue>({}));
-    if (PyGILState_Check()) {
-        // we need to release GIL for NPU to compile op.
-        Py_BEGIN_ALLOW_THREADS ACL_REQUIRE_OK_OP(InnerRun(opName, execParam, sync, sync_index, outputTensor), opName.c_str());
-        Py_END_ALLOW_THREADS
-    } else {
-        ACL_REQUIRE_OK_OP(InnerRun(opName, execParam, sync, sync_index, outputTensor), opName.c_str());
-    }
+    ACL_REQUIRE_OK_OP(InnerRun(opName, execParam, sync, sync_index, outputTensor), opName.c_str());
     NPU_LOGD("Op %s run over.", opName.c_str());
 }
 
