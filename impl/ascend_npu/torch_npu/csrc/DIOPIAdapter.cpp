@@ -2330,11 +2330,8 @@ template OpCommand& OpCommand::OpCommand::Attr<c10::Scalar>(const string& name, 
 void OpCommand::Run() {
     aclCmd->SetEnginePriority();
     const string& op_name = aclCmd->GetName();
-    bool sync = true;
-    c10::SmallVector<int64_t, N> sync_index;
     aclCmd->Run(sync, sync_index, outputTensor);
-    // todo: optimize performance here
-    if (sync || 1) {
+    if (sync) {
         Sync();
     }
     aclCmd->releaseSource();
@@ -2342,7 +2339,10 @@ void OpCommand::Run() {
 }
 
 OpCommand& OpCommand::Sync(c10::SmallVector<int64_t, N>& index) {
-    INTERFACE_NOT_IMPL
+    sync_index = index;
+    if (!index.empty()) {
+        sync = true;
+    }
     Sync();
     return *this;
 }
