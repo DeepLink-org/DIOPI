@@ -5178,14 +5178,13 @@ def rms_norm_backward(input, grad_outputs, normalized_shape, weight, bias, eps):
 
 
 def multihead_attention(
-    q, k, v, dropout_p, is_causal, return_debug_mask, scale
+    q, k, v, dropout_p, is_causal, return_debug_mask, scale, generator=None
 ):
     call = "diopiMultiHeadAttention"
     func = check_function(call)
     q_size = list(q.size().data)
     out = Tensor(q_size, q.get_dtype())
-    softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], q.get_dtype())
-    gen = None
+    softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], dtype=Dtype.float32)
     debug_attn_mask = Tensor([0], q.get_dtype())
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
     ret = func(
@@ -5199,11 +5198,12 @@ def multihead_attention(
         softmax_scale,
         out,
         softmax_lse,
-        gen,
+        generator,
         debug_attn_mask,
     )
     check_returncode(ret)
     GLOBAL_STATE["multihead_attention_softmax_lse"] = softmax_lse
+    GLOBAL_STATE["multihead_attention_generator"] = generator
     return out
 
 
@@ -5216,7 +5216,7 @@ def multihead_attention_backward(
     grad_k = raw_like(k)
     grad_v = raw_like(v)
     softmax_lse = GLOBAL_STATE.pop('multihead_attention_softmax_lse')
-    gen = None
+    generator = GLOBAL_STATE.pop('multihead_attention_generator')
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
     ret = func(
         q.context(),
@@ -5228,7 +5228,7 @@ def multihead_attention_backward(
         softmax_lse,
         dropout_p,
         is_causal,
-        gen,
+        generator,
         softmax_scale,
         grad_q,
         grad_k,
@@ -5238,19 +5238,56 @@ def multihead_attention_backward(
     return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
 
-def varlen_multihead_attention_forward(q, k, v, cu_seqlens, max_seqlen, dropout_p, is_causal, return_debug_mask, scale):
+def multihead_attention_varlen(q, k, v, cu_seqlens, max_seqlen, dropout_p, is_causal, return_debug_mask, scale, generator=None):
     call = "diopiMultiHeadAttentionVarLen"
     func = check_function(call)
     q_size = list(q.size().data)
     out = Tensor(q_size, q.get_dtype())
-    softmax_lse = Tensor([len(cu_seqlens) - 1, q_size[1], max_seqlen], q.get_dtype())
+    softmax_lse = Tensor([len(cu_seqlens) - 1, q_size[1], max_seqlen], dtype=Dtype.float32)
     cu_seqlens = Tensor.from_numpy(np.array(cu_seqlens, dtype=np.int32))
-    gen = None
     debug_attn_mask = Tensor([0], q.get_dtype())
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
-    ret = func(q.context(), q, k, v, cu_seqlens, cu_seqlens, max_seqlen, max_seqlen, dropout_p, is_causal, return_debug_mask, softmax_scale, out, softmax_lse, gen, debug_attn_mask)
+    ret = func(q.context(), q, k, v, cu_seqlens, cu_seqlens, max_seqlen, max_seqlen, dropout_p, is_causal, return_debug_mask, softmax_scale, out, softmax_lse, generator, debug_attn_mask)
     check_returncode(ret)
+    GLOBAL_STATE["multihead_attention_varlen_softmax_lse"] = softmax_lse
+    GLOBAL_STATE["multihead_attention_varlen_generator"] = generator
     return out
+
+
+def multihead_attention_varlen_backward(
+    q, k, v, cu_seqlens, max_seqlen, out, grad_outputs, dropout_p, is_causal, scale, **kwargs
+):
+    call = "diopiMultiHeadAttentionVarLenBackward"
+    func = check_function(call)
+    grad_q = raw_like(q)
+    grad_k = raw_like(k)
+    grad_v = raw_like(v)
+    softmax_lse = GLOBAL_STATE.pop('multihead_attention_varlen_softmax_lse')
+    cu_seqlens = Tensor.from_numpy(np.array(cu_seqlens, dtype=np.int32))
+    generator = GLOBAL_STATE.pop('multihead_attention_varlen_generator')
+    softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
+    ret = func(
+        q.context(),
+        grad_outputs[0],
+        q,
+        k,
+        v,
+        out,
+        softmax_lse,
+        cu_seqlens,
+        cu_seqlens,
+        max_seqlen,
+        max_seqlen,
+        dropout_p,
+        is_causal,
+        generator,
+        softmax_scale,
+        grad_q,
+        grad_k,
+        grad_v
+    )
+    check_returncode(ret)
+    return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
 
 def apply_penalty(

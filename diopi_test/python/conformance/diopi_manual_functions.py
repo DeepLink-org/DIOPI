@@ -155,3 +155,17 @@ class ManualTest(object):
             assert has_duplicates is False, "failed to execute multinomial"
         out_numpy = out_numpy.flatten()
         assert len(out_numpy) % num_samples == 0, "failed to execute multinomial"
+
+    def test_multihead_attention(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
+        state = build_generator_state(q.context())
+        generator = Generator(state)
+        out = F.multihead_attention(q, k, v, dropout_p, is_causal, return_debug_mask, scale, generator)
+        # print(out.numpy())
+        # TODO check the output
+
+    def test_multihead_attention_varlen(q, k, v, cu_seqlens, max_seqlen, dropout_p, is_causal, return_debug_mask, scale):
+        state = build_generator_state(q.context())
+        generator = Generator(state)
+        out = F.multihead_attention_varlen(q, k, v, cu_seqlens, max_seqlen, dropout_p, is_causal, return_debug_mask, scale, generator)
+        # print(out.numpy())
+        # TODO check the output

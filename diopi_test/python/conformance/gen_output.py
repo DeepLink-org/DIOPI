@@ -259,7 +259,7 @@ class CustomizedTest(object):
         output = multihead_attention_inside(q, k, v, scale, is_causal)
         return output
 
-    def varlen_multihead_attention_forward(q, k, v, cu_seqlens, max_seqlen, dropout_p, is_causal, return_debug_mask, scale):
+    def multihead_attention_varlen(q, k, v, cu_seqlens, max_seqlen, dropout_p, is_causal, return_debug_mask, scale):
         # 为了保证精度，因此在test的时候不使用dropout
         from einops import rearrange
         import math
