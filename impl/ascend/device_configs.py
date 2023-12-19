@@ -1443,65 +1443,65 @@ device_configs = {
         ),
     ),
 
-    'index_put_acc_three_indices': dict(
-        name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
+    # 'index_put_acc_three_indices': dict(
+    #     name=['index_put'],
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
+    #             },
+    #         ]
+    #     ),
+    # ),
 
-    'index_put_acc_two_indices': dict(
-        name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
+    # 'index_put_acc_two_indices': dict(
+    #     name=['index_put'],
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "dtype": [Skip(np.float32),Skip(np.float64),],
+    #             },
+    #         ]
+    #     ),
+    # ),
 
-    'index_put_acc_one_indices': dict(
-        name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
+    # 'index_put_acc_one_indices': dict(
+    #     name=['index_put'],
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "dtype": [Skip(np.float32),Skip(np.float64),],
+    #             },
+    #         ]
+    #     ),
+    # ),
 
-    'index_put_acc_bool_indices_zeros': dict(
-        name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.int64),],
-                },
-            ]
-        ),
-    ),
+    # 'index_put_acc_bool_indices_zeros': dict(
+    #     name=['index_put'],
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "dtype": [Skip(np.float32),Skip(np.int64),],
+    #             },
+    #         ]
+    #     ),
+    # ),
 
-    'index_put_one_indices': dict(
-        name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
+    # 'index_put_one_indices': dict(
+    #     name=['index_put'],
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
+    #             },
+    #         ]
+    #     ),
+    # ),
 
     'index_put_bool_indices_value': dict(
         name=['index_put'],
@@ -1509,7 +1509,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
+                    "shape": [Skip((3, 2, 2, 20)),],
                 },
             ]
         ),
