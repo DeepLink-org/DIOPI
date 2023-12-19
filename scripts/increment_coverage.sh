@@ -10,39 +10,25 @@ cd $ROOT_DIR && rm -rf coverage && mkdir coverage
 echo "entering "$ROOT_DIR
 require_coverage=$1
 
-lcov -c -d . --include "*/${ROOT_DIR#/mnt/*/}/${include}/*" -o coverage/coverage.info
+gcovr --csv > coverage/coverage.csv
+sed -i '1d' coverage/coverage.csv
 newcommit=$(git rev-parse HEAD~1)
 oldcommit=$(git merge-base ${newcommit} main)
 if [ -z $oldcommit ]; then echo "is not Pull request" && exit 0; fi
 git diff $oldcommit $newcommit --name-only | xargs -I {} realpath {} >coverage/gitdiff.txt 2>/dev/null || echo "error can be ignored"
-for dir in $(cat coverage/gitdiff.txt); do
-  skip=1
-  buffer=""
-  while IFS= read -r line; do
-    if [[ $line == "TN:"* ]]; then
-      buffer=$line
-      skip=1
-    elif [[ $line == *"SF:$dir" ]]; then
-      skip=0
-      echo "$buffer" >>"coverage/increment.info"
-      echo "$line" >>"coverage/increment.info"
-    elif [[ $skip -eq 0 ]]; then
-      echo "$line" >>"coverage/increment.info"
-    fi
-    if [[ $line == "end_of_record" ]]; then
-      skip=1
-    fi
-  done <"coverage/coverage.info"
-done
-cd $ROOT_DIR
-echo "export IS_cover=True" >coverage/IS_cover.txt
-if [ -f coverage/increment.info ]; then
-  lcov --list coverage/increment.info
-  lcov --list coverage/increment.info >coverage/increment.txt
-  genhtml coverage/increment.info -o coverage/html
-else
-  echo "No C/C++ in incremental code"
+
+cat coverage/gitdiff.txt |egrep '\.(cpp|hpp|h)$'|grep "/$include/" >coverage/gitdiff_screen.txt || true
+if [ ! -s coverage/gitdiff_screen.txt ]; then echo "No C/C++ in incremental code" && exit 0;fi
+sed -i "s#$ROOT_DIR/##g" coverage/gitdiff_screen.txt
+if [[ $ROOT_DIR == */lustre/* ]]; then
+  sed -i "s#${ROOT_DIR//\/lustre\//\/cache\/}/##g" coverage/gitdiff_screen.txt
+elif [[ $ROOT_DIR == */cache/* ]]; then
+  sed -i "s#${ROOT_DIR//\/cache\//\/lustre\/}/##g" coverage/gitdiff_screen.txt
 fi
+
+echo "export IS_cover=True" >coverage/IS_cover.txt
+mkdir coverage/html
+gcovr -r . --html --html-details -o coverage/html/index.html
 python scripts/increment_coverage.py $ROOT_DIR/coverage/ $require_coverage
 source coverage/IS_cover.txt
 if [ $IS_cover == 'True' ]; then
