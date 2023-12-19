@@ -17,6 +17,7 @@ default_cfg_dict = dict(
     log_level="INFO"  # NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICA
 )
 
+
 class glob_var(object):
     def __init__(self, nhwc=False, nhwc_min_dim=3, four_bytes=False):
         self.nhwc = nhwc
