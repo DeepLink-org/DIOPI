@@ -25,7 +25,8 @@
 #include "../helper.hpp"
 #include "../vision_kernel.h"
 
-extern "C" {
+namespace impl {
+namespace cuda {
 
 #define DIOPI_CHECK(expr)                                           \
     do {                                                            \
@@ -3092,4 +3093,5 @@ diopiError_t diopiBatchApplyTemperaturePenaltyInp(diopiContextHandle_t ctx, diop
     return diopiSuccess;
 }
 
-}  // extern "C"
+}  // namespace cuda
+}  // namespace impl

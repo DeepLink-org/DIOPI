@@ -25,7 +25,8 @@
 #include "../helper.hpp"
 #include "../vision_kernel.h"
 
-extern "C" {
+namespace impl {
+namespace cuda {
 
 DIOPI_API diopiError_t diopiLmdeployCopyH2D(diopiContextHandle_t ctx, diopiTensorHandle_t dst, diopiConstTensorHandle_t src, bool async) {
     diopiDevice_t dst_dev;
@@ -87,4 +88,5 @@ DIOPI_API diopiError_t diopiLmdeployCopyD2D(diopiContextHandle_t ctx, diopiTenso
     return diopiSuccess;
 }
 
-}  // extern "C"
+}  // namespace cuda
+}  // namespace impl
