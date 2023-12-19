@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - main
-      - wgs/**
   pull_request:
     paths-ignore:
       - "**.md"

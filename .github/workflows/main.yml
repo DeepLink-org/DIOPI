@@ -482,9 +482,3 @@ jobs:
   #         source /mnt/cache/share/platform/env/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
   #         echo "test and clean, you can refer to the CAMB"
   #         """
-
-  runs-on-sco:
-    name: runs on sco
-    needs: Rsync
-#    if: ${{ contains( needs.check.outputs.output, 'CAMB' ) }}
-    uses: DeepLink-org/DIOPI.dev/.github/workflows/_runs-on-sco.yml@wgs/run_on_sco
