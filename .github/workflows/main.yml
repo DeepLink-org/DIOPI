@@ -408,6 +408,8 @@ jobs:
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
           cd diopi_test/python && mkdir -p cache/diopi
           ln -sf /mnt/cache/share/deeplinkci/data ./cache/diopi
+          find /mnt/cache/share/deeplinkci/data -maxdepth 1
+          find ./cache/diopi -maxdepth 1
           python main.py --mode gen_case --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/topsrider/
           python main.py --mode run_test
 
