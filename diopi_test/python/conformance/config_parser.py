@@ -483,7 +483,7 @@ class ConfigItem(object):
 # a case item
 class CaseItem(object):
     def __init__(self, item: dict = {}) -> None:
-        self._item = glob_vars.case_item
+        self._item = glob_vars.case_item.copy()
         for key, val in item.items():
             self._item[key] = val
 
