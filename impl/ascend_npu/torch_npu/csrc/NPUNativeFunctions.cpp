@@ -17,6 +17,16 @@ at::Tensor NPUNativeFunctions::contiguous(const at::Tensor& self, at::MemoryForm
     return self.clone();
 }
 
+at::Tensor NPUNativeFunctions::empty(c10::SymIntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
+                                     c10::optional<at::Device> device, c10::optional<bool> pin_memory, c10::optional<at::MemoryFormat> memory_format) {
+    return at_npu::native::empty_npu(c10::asIntArrayRefUnchecked(size), dtype, layout, device, pin_memory, memory_format);
+}
+
+at::Tensor NPUNativeFunctions::empty_strided(c10::SymIntArrayRef size, c10::SymIntArrayRef stride, c10::optional<at::ScalarType> dtype,
+                                             c10::optional<at::Layout> layout, c10::optional<at::Device> device, c10::optional<bool> pin_memory) {
+    return at_npu::native::empty_strided_npu(size, stride, dtype, layout, device, pin_memory);
+}
+
 at::Tensor NPUNativeFunctions::as_strided(const at::Tensor& self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset) {
     return impl::aten::viewStorage(self, size, stride, storage_offset.value_or(0));
 }

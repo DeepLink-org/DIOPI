@@ -1177,9 +1177,7 @@ struct NPUNativeFunctions {
     static at::Tensor xlogy(const at::Tensor& self, const at::Tensor& other) { OP_NOT_IMPL }
     static at::Tensor& exp2_(at::Tensor& self) { OP_NOT_IMPL }
     static at::Tensor empty(c10::SymIntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout, c10::optional<at::Device> device,
-                            c10::optional<bool> pin_memory, c10::optional<at::MemoryFormat> memory_format) {
-        OP_NOT_IMPL
-    }
+                            c10::optional<bool> pin_memory, c10::optional<at::MemoryFormat> memory_format);
     static at::Tensor diag_embed(const at::Tensor& self, int64_t offset, int64_t dim1, int64_t dim2) { OP_NOT_IMPL }
     static at::Tensor& scatter_(at::Tensor& self, int64_t dim, const at::Tensor& index, const at::Scalar& value) { OP_NOT_IMPL }
     static at::Tensor max_pool3d_with_indices_backward(const at::Tensor& grad_output, const at::Tensor& self, at::IntArrayRef kernel_size,
@@ -1469,9 +1467,7 @@ struct NPUNativeFunctions {
     static at::Tensor& sign_out(const at::Tensor& self, at::Tensor& out) { OP_NOT_IMPL }
     static at::Tensor& matmul_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& out) { OP_NOT_IMPL }
     static at::Tensor empty_strided(c10::SymIntArrayRef size, c10::SymIntArrayRef stride, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
-                                    c10::optional<at::Device> device, c10::optional<bool> pin_memory) {
-        OP_NOT_IMPL
-    }
+                                    c10::optional<at::Device> device, c10::optional<bool> pin_memory);
     static at::Tensor& hardshrink_backward_out(const at::Tensor& grad_out, const at::Tensor& self, const at::Scalar& lambd, at::Tensor& grad_input) {
         OP_NOT_IMPL
     }

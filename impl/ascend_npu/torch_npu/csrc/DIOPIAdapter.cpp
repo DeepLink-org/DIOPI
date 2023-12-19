@@ -2674,7 +2674,12 @@ at::Tensor wrapper__contiguous(const at::Tensor& self, at::MemoryFormat memory_f
 
 at::Tensor wrapper__empty_strided(c10::SymIntArrayRef size, c10::SymIntArrayRef stride, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
                                   c10::optional<at::Device> device, c10::optional<bool> pin_memory) {
-    return at_npu::native::empty_strided_npu(size, stride, dtype, layout, device, pin_memory);
+    return at_npu::native::NPUNativeFunctions::empty_strided(size, stride, dtype, layout, device, pin_memory);
+}
+
+at::Tensor wrapper_memory_format_empty(c10::SymIntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
+                                       c10::optional<at::Device> device, c10::optional<bool> pin_memory, c10::optional<at::MemoryFormat> memory_format) {
+    return at_npu::native::NPUNativeFunctions::empty(size, dtype, layout, device, pin_memory, memory_format);
 }
 
 }  // namespace
@@ -2689,6 +2694,7 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("resize_", TORCH_FN(wrapper__resize_));
     m.impl("contiguous", TORCH_FN(wrapper__contiguous));
     m.impl("empty_strided", TORCH_FN(wrapper__empty_strided));
+    m.impl("empty.memory_format", TORCH_FN(wrapper_memory_format_empty));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
