@@ -73,7 +73,7 @@ case $1 in
   kunlunxin)
     mkdir -p build && cd build
     XPURT_TOOLKIT_ROOT=${CURRENT_DIR}/../../xpu_toolchain/xpurt XDNN_TOOLKIT_ROOT=${CURRENT_DIR}/../../xpu_toolchain/xdnn XDNNTORCH_TOOLKIT_ROOT=${CURRENT_DIR}/../../xpu_toolchain/xdnn_pytorch cmake ..  \
-    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=kunlunxin -DTEST=${DIOPI_BUILD_TESTRT} -DDEBUG=ON
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=kunlunxin -DCMAKE_BUILD_TYPE=Release -DTEST=ON
     make -j32
     ;;
   *)

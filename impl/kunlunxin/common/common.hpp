@@ -250,9 +250,9 @@ xdnn_pytorch::Tensor build_xtorch_tensor(T tensor) {
 
 template <typename T>
 decltype(auto) build_xtorch_tensorlist(T* tensors, int64_t numTensors) {
-    std::vector<xdnn_pytorch::Tensor> vecAtTensor;
+    std::vector<xdnn_pytorch::Tensor> vecAtTensor(numTensors);
     for (size_t i = 0; i < numTensors; ++i) {
-        vecAtTensor.emplace_back(build_xtorch_tensor(tensors[i]));
+        vecAtTensor[i] = build_xtorch_tensor(tensors[i]);
     }
     return vecAtTensor;
 }
