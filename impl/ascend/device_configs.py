@@ -1872,16 +1872,4 @@ device_configs = {
             ]
         ),
     ),
-
-    'rms_norm': dict(
-        name=["rms_norm"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32)],
-                },
-            ],
-        ),
-    ),
 }
