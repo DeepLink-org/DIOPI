@@ -255,7 +255,7 @@ diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryF
 }
 
 // inplace contiguous
-diopiError_t contiguousOut(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor& dest, bool destMemoryFormat) {
+diopiError_t contiguousOut(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor& dest) {
     DIOPI_CHECK(src.shape() == dest.shape(), "src's shape should be the same as dest's");
     int64_t dim = src.dim();
     DIOPI_CHECK(dim <= 8, "only support less than 8d tensor currently");
@@ -276,7 +276,7 @@ diopiError_t contiguousOut(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTens
     std::vector<int64_t> olderSrcStride = src.stride();
     std::vector<int64_t> olderSrcShape = src.shape();
     // if (destMemoryFormat != diopiMemoryFormat_t::Contiguous) {
-    if (!destMemoryFormat) {
+    if (src.isContiguous()) {
         DIOPI_CALL(permuteTensor(dest, order));
     } else {
         DIOPI_CALL(permuteTensor(src, reverseOrder));
@@ -284,7 +284,7 @@ diopiError_t contiguousOut(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTens
     DIOPI_CALL(transpose(ctx, src, dest, srcLayout, destLayout, order));
     // recovery the shape and strides
     // if (destMemoryFormat != diopiMemoryFormat_t::Contiguous) {
-    if (!destMemoryFormat) {
+    if (src.isContiguous()) {
         dest.asStrided(olderDestShape, olderDestStride);
     } else {
         src.asStrided(olderSrcShape, olderSrcStride);
