@@ -2574,7 +2574,7 @@ at::Generator buildATen(diopiGeneratorHandle_t generator) {
 }
 
 at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides, const int64_t storageOffset) {
-    TORCH_CHECK(c10::multiply_integers(sizes) <= input.numel());
+    // TORCH_CHECK(c10::multiply_integers(sizes) <= input.numel());
     TORCH_CHECK(!input.is_cpu());
     std::vector<int64_t> stridesVec(sizes.size(), 1);
     if (strides.size() > 0) {
