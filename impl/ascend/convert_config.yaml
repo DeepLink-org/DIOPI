@@ -259,6 +259,3 @@
 
 - diopiScatterInpScalar:
     dtype: (uint8,int8)->int32
-
-- diopiDestIndexCopyKV:
-    dtype: (int32)->int64
