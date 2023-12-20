@@ -29,7 +29,7 @@ void printTensorHelper0(const AscendTensor& at, void* ptrHost) {
             printf("item[0]: %d\n", reinterpret_cast<bool*>(ptrHost)[0]);
             break;
         default:
-            printf("unsupport dtype %s", diopiDtypeToStr(at.dtype()));
+            printf("unsupport dtype %s\n", diopiDtypeToStr(at.dtype()));
             break;
     }
 }
@@ -68,7 +68,7 @@ void printTensorHelper1(const AscendTensor& at, void* ptrHost) {
             return;
         }
         default:
-            printf("unsupport dtype %s", diopiDtypeToStr(at.dtype()));
+            printf("unsupport dtype %s\n", diopiDtypeToStr(at.dtype()));
             return;
     }
 }
@@ -98,6 +98,8 @@ void printContiguousTensor(diopiContextHandle_t ctx, const AscendTensor& at, cha
         CALL_ACLRT(aclrtMemcpyAsync(
             ptrHost, at.numel() * at.elemsize(), at.data(), at.numel() * at.elemsize(), ACL_MEMCPY_DEVICE_TO_HOST, reinterpret_cast<aclrtStream>(stream)));
         CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));
+        CALL_ACLRT(aclrtFreeHost(ptrHost));
+
     } else {
         const void* ptrHostCopy;
         diopiGetTensorDataConst(at.tensorHandle(), &ptrHostCopy);

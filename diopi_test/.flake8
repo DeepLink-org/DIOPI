@@ -1,0 +1,6 @@
+[flake8]
+ignore = E501,F841,F401,W503,
+max-line-length = 160
+exclude = 
+    scripts/cpplint.py
+    
