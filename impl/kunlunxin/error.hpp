@@ -1,5 +1,5 @@
-#ifndef IMPL_KLX_PYTORCH_ERROR_HPP_
-#define IMPL_KLX_PYTORCH_ERROR_HPP_
+#ifndef IMPL_KUNLUNXIN_ERROR_HPP_
+#define IMPL_KUNLUNXIN_ERROR_HPP_
 
 #include <mutex>
 #include <utility>
@@ -22,4 +22,4 @@ const char* klx_get_last_error_string();
 }  // namespace kunlunxin
 }  // namespace impl
 
-#endif  // IMPL_KLX_PYTORCH_ERROR_HPP_
+#endif  // IMPL_KUNLUNXIN_ERROR_HPP_

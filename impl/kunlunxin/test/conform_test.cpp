@@ -5,7 +5,6 @@
 
 #include "../common/common.hpp"
 #include "../error.hpp"
-
 #include "litert.hpp"
 
 namespace impl {
