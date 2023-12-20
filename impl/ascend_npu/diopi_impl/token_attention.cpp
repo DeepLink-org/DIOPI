@@ -6,6 +6,7 @@
 
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include <c10/core/ScalarType.h>
 #include <c10/core/TensorImpl.h>
 // #include <torch/csrc/autograd/generated/variable_type.h>
 // #include <torch/csrc/autograd/generated/variable_type.h>
@@ -22,6 +23,12 @@ namespace OP_IMPL_NS {
 //     options);
 // }
 
+void printTensor(at::Tensor& b) {
+      std::cout << "b.device()=" << b.device() << std::endl;
+    std::cout << "b.sizes()=" << b.sizes() << std::endl;
+    std::cout << "b.dtype()=" << b.dtype() << std::endl;
+}
+
 diopiError_t diopiTokenAttentionInference(
     diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut,
     diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
@@ -34,6 +41,8 @@ diopiError_t diopiTokenAttentionInference(
   at::Tensor atBStartLoc = impl::aten::buildATen(bStartLoc);
   at::Tensor atBSeqLen = impl::aten::buildATen(bSeqLen);
   at::Tensor atAttentionOut = impl::aten::buildATen(attentionOut);
+
+  auto x = atAttentionOut.cpu();
 
   int batch = atBLoc.size(0);
   int head = atQ.size(1);
@@ -79,7 +88,8 @@ diopiError_t diopiTokenAttentionInference(
     // std::cout << "======kLoc3=" << kLoc3 << std::endl;
     // at::Tensor key = acl_op::index(cpu, indicesAtList);
     at::Tensor key = at::index(cpu, indicesAtList);
-    std::cout << "======key=" << "key is too more." << std::endl;
+    std::cout << "======key="
+              << "key is too more." << std::endl;
     at::Tensor key1 = key.view({1, curSeqLen, head, dim}).transpose(1, 2);
     at::Tensor outLoc = at::arange(curSeqStartLoc, curSeqStartLoc + curSeqLen);
     std::cout << "outLoc=" << outLoc << std::endl;
@@ -87,17 +97,50 @@ diopiError_t diopiTokenAttentionInference(
 
     auto a = atQ.cpu().index({i});
     std::cout << "a.device()=" << a.device() << std::endl;
-    a = aten::toDevice(a);
-    std::cout << "========a.device()=" << a.device() << std::endl;
-    auto b = aten::toDevice(key1.transpose(2, 3));
+    std::cout << "a.sizes()=" << a.sizes() << std::endl;
+    std::cout << "a.dtype()=" << a.dtype() << std::endl;
+    a = a.to(at::ScalarType::Float);
+    if (a.dtype() != x.dtype()) {
+      x = x.to(a.dtype());
+    }
+    auto aa = aten::toDevice(a);
+    std::cout << "========aa.device()=" << aa.device() << std::endl;
+    // auto b = aten::toDevice(key1.transpose(2, 3));
+    auto b = key1.transpose(2, 3).cpu();
     std::cout << "========b.device()=" << b.device() << std::endl;
+
+    aa = aa.to(at::ScalarType::Float);
+    std::cout << "finish change type0" << std::endl;
+
+    std::cout << "b.device()=" << b.device() << std::endl;
+    std::cout << "b.sizes()=" << b.sizes() << std::endl;
+    std::cout << "b.dtype()=" << b.dtype() << std::endl;
+    b = b.to(at::ScalarType::Float);
+    std::cout << "finish change type1" << std::endl;
+    std::cout << "b.dtype()=" << b.dtype() << std::endl;
+
+    auto v1 = at::matmul(a, b);
+    std::cout << "v1=" << v1.sizes() << std::endl;
+
+    auto v2 = v1 / std::sqrt(dim);
+    std::cout << "v2=" << v2.sizes() << std::endl;
+
+    auto v3 = v2.view({head, curSeqLen});
+    std::cout << "v3=" << v3.sizes() << std::endl;
+
     at::Tensor values =
-        (at::matmul(a, b) / std::sqrt(dim))
-            .view({head, curSeqLen});
-    std::cout << "values=" << values << std::endl;
-    atAttentionOut.index_put_({torch::indexing::Slice(), outLoc.cpu()}, values);
+        // (acl_op::matmul(aa, b) / std::sqrt(dim))
+        (at::matmul(aa, b) / std::sqrt(dim)).view({head, curSeqLen});
+    // std::cout << "values=" << values << std::endl;
+    printTensor(values);
+    x.index_put_({torch::indexing::Slice(), outLoc.cpu()}, values);
     std::cout << "finish i=" << i << std::endl;
   }
+  std::cout << "out for loop" << std::endl;
+
+  atAttentionOut = aten::toDevice(x).to(atQ.dtype());
+
+  std::cout << "finish all." << std::endl;
   impl::aten::unsetCurCtx();
   return diopiSuccess;
 }
