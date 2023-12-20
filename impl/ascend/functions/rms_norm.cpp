@@ -18,14 +18,7 @@ diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
 diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight, diopiTensorHandle_t gradBias,
                                   diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                   diopiConstTensorHandle_t bias, diopiConstTensorHandle_t invRms, diopiSize_t normalizedShape, double eps) {
-    AclOpRunner<4, 2>("RmsNorm", ctx)
-        .addInput(gradOutput)
-        .addInput(input)
-        .addInput(invRms)
-        .addInput(weight)
-        .addOutput(gradInput)
-        .addOutput(gradWeight)
-        .run();
+    AclOpRunner<4, 2>("RmsNorm", ctx).addInput(gradOutput).addInput(input).addInput(invRms).addInput(weight).addOutput(gradInput).addOutput(gradWeight).run();
     return diopiSuccess;
 }
 
