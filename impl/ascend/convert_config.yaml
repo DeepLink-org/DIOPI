@@ -259,3 +259,6 @@
 
 - diopiScatterInpScalar:
     dtype: (uint8,int8)->int32
+
+- diopiRotaryEmbedding:
+    dtype: (float64)->float32

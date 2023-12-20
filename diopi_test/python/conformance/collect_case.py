@@ -46,7 +46,7 @@ class DeviceConfig(object):
         cfg_name = key
         self._device_rules[cfg_name] = dict()
 
-        tols = ["atol", "rtol", "atol_half", "rtol_half"]
+        tols = ["atol", "rtol", "atol_half", "rtol_half", "mismatch_ratio_threshold"]
         for tol in tols:
             if tol in value.keys():
                 if "tol" not in self._device_rules[cfg_name].keys():

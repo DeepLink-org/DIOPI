@@ -211,6 +211,7 @@ ascend_npu:
 - diopiNormalInp
 - diopiNorm
 - diopiMaxPool2dWithIndices
+- diopiRotaryEmbedding
 - diopiIndexPut
 - diopiIndexPutInp
 - diopiIndex

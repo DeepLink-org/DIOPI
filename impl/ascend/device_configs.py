@@ -1786,18 +1786,6 @@ device_configs = {
         ),
     ),
 
-    'rotary_emb': dict(
-        name=["rotary_emb"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
-                },
-            ],
-        ),
-    ),
-
     # temp for 910B
     'normal_': dict(
         name=["normal_"],

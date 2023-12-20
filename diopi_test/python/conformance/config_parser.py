@@ -5,6 +5,7 @@ import pickle
 import itertools
 import numpy as np
 from enum import Enum
+from conformance.global_settings import default_cfg_dict
 
 
 def diopi_config_parse(case_item_path="./cache/diopi_case_items.cfg"):
@@ -57,10 +58,22 @@ class ConfigParser(object):
         with open(path, "wb") as f:
             pickle.dump(self._items, f)
 
+    # load config from self._ofile
+    def load(self, fname):
+        if not os.path.exists(self._ofile):
+            raise FileExistsError("Config file does not exist!")
+        with open(self._ofile, "rb") as f:
+            configs = pickle.load(f)
+        for k, v in configs.items():
+            if fname != "all_ops" and fname != v["name"]:
+                continue
+            self._items.update({k: v})
 
 # *********************************************************************************
 # internal helper function
 # *********************************************************************************
+
+
 def _assert_exist(cfg_name, cfg_dict, keys):
     err = f"key %s not in {cfg_name}"
     for key in keys:
@@ -482,17 +495,7 @@ class ConfigItem(object):
 # a case item
 class CaseItem(object):
     def __init__(self, item: dict = {}) -> None:
-        self._item = {
-            "atol": 1e-5,
-            "rtol": 1e-5,
-            "atol_half": 1e-2,
-            "rtol_half": 5e-2,
-            "mismatch_ratio_threshold": 1e-3,
-            "memory_format": "NCHW",
-            "fp16_exact_match": False,
-            "train": True,
-            "gen_policy": "dafault",
-        }
+        self._item = dict(default_cfg_dict["default_option"])
         for key, val in item.items():
             self._item[key] = val
 
