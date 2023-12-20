@@ -9,22 +9,22 @@
 namespace impl {
 namespace ascend {
 
-diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t inv_rms, diopiConstTensorHandle_t input,
-                          diopiSize_t normalized_shape, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, double eps) {
-    AclOpRunner<2, 2>("RmsNorm", ctx).addInput(input).addInput(weight).addOutput(out).addOutput(inv_rms).setAttr("epsilon", static_cast<float>(eps)).run();
+diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t invRms, diopiConstTensorHandle_t input,
+                          diopiSize_t normalizedShape, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, double eps) {
+    AclOpRunner<2, 2>("RmsNorm", ctx).addInput(input).addInput(weight).addOutput(out).addOutput(invRms).setAttr("epsilon", static_cast<float>(eps)).run();
     return diopiSuccess;
 }
 
-diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight, diopiTensorHandle_t grad_bias,
-                                  diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
-                                  diopiConstTensorHandle_t bias, diopiConstTensorHandle_t inv_rms, diopiSize_t normalized_shape, double eps) {
+diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight, diopiTensorHandle_t gradBias,
+                                  diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
+                                  diopiConstTensorHandle_t bias, diopiConstTensorHandle_t invRms, diopiSize_t normalizedShape, double eps) {
     AclOpRunner<4, 2>("RmsNorm", ctx)
-        .addInput(grad_output)
+        .addInput(gradOutput)
         .addInput(input)
-        .addInput(inv_rms)
+        .addInput(invRms)
         .addInput(weight)
-        .addOutput(grad_input)
-        .addOutput(grad_weight)
+        .addOutput(gradInput)
+        .addOutput(gradWeight)
         .run();
     return diopiSuccess;
 }
