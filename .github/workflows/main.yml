@@ -419,8 +419,8 @@ jobs:
           set -e
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
           cd diopi_test/python && mkdir -p cache/diopi
+          ln -sf /mnt/cache/share/deeplinkci/data/inputs ./cache/diopi && ln -sf /mnt/cache/share/deeplinkci/data/outputs ./cache/diopi && ln -sf /mnt/cache/share/deeplinkci/data/diopi_case_items.cfg ./cache/diopi
           python main.py --mode gen_case --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/topsrider/
-          ln -sf /mnt/cache/share/deeplinkci/data/inputs ./cache/diopi && ln -sf /mnt/cache/share/deeplinkci/data/outputs ./cache/diopi
           python main.py --mode run_test
 
   # Rt-Test-Topsrider:
