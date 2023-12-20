@@ -160,7 +160,7 @@ if __name__ == "__main__":
         db_conn.insert_device_case(db_case_items)
     elif args.mode == "run_test":
         if args.test_cases_path == "":
-            model_name = args.model_name if args.model_name else "diopi"
+            model_name = args.model_name.lower() if args.model_name else "diopi"
             test_cases_path = os.path.join(args.case_output_dir, model_name + "_case")
         else:
             test_cases_path = args.test_cases_path

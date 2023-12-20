@@ -8,7 +8,6 @@
 
 namespace impl {
 namespace camb {
-
 diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiTensor& outTensor, diopiMemoryFormat_t memoryFormat) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     if (memoryFormat == diopiMemoryFormat_t::Preserve) {
@@ -19,6 +18,11 @@ diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiT
         outTensor = requiresTensor(ctx, inTensor.shape(), inTensor.stride(), inTensor.dtype());
     } else {
         outTensor = requiresTensor(ctx, inTensor.shape(), inTensor.dtype(), memoryFormat);
+    }
+    if (inTensor.shape() == outTensor.shape() && inTensor.dim() != 0 && inTensor.dtype() != diopi_dtype_float64 && inTensor.dtype() == outTensor.dtype() &&
+        denseCheck(inTensor) && denseCheck(outTensor) && (outTensor.isContiguous() || inTensor.isContiguous())) {
+        DIOPI_CALL(contiguousOut(ctx, const_cast<DiopiTensor&>(inTensor), outTensor));
+        return diopiSuccess;
     }
     CnnlTensorDesc inTensorDesc(inTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outTensorDesc(outTensor, CNNL_LAYOUT_ARRAY);

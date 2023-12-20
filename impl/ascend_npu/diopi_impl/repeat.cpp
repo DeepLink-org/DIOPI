@@ -17,7 +17,7 @@ diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
             inputShape.insert(inputShape.begin(), 1);
         }
 
-        inputAt = impl::aten::view(inputAt, inputShape);
+        inputAt = impl::aten::viewStorage(inputAt, inputShape);
     }
 
     at_npu::native::OpPreparation::markAsOutputForApplyTensor(outAt);
