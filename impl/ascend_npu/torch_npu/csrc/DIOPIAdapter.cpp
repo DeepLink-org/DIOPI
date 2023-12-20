@@ -2547,12 +2547,6 @@ const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     at::IntArrayRef atStrides(stride.data, stride.len);
 
     auto options = at::TensorOptions(c10::Device(atDevice, devId_)).dtype(atType);
-    int64_t numel = 0;
-    diopiGetTensorNumel(tensor, &numel);
-    if (numel <= 0) {
-        return at::Tensor();
-    }
-
     return fromPreAllocated(data, atDims, atStrides, options);
 }
 
@@ -2587,7 +2581,7 @@ at::Generator buildATen(diopiGeneratorHandle_t generator) {
 }
 
 at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides, const int64_t storageOffset) {
-    TORCH_CHECK(c10::multiply_integers(sizes) <= input.numel());
+    // TORCH_CHECK(c10::multiply_integers(sizes) <= input.numel());
     TORCH_CHECK(!input.is_cpu());
     std::vector<int64_t> stridesVec(sizes.size(), 1);
     if (strides.size() > 0) {
@@ -2602,6 +2596,19 @@ at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, con
         }
     }
     return fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizes, stridesVec, input.options());
+}
+
+c10::List<c10::optional<at::Tensor>> castIntIndicesToLongIndices(const c10::List<c10::optional<at::Tensor>>& indices) {
+    c10::List<c10::optional<at::Tensor>> result;
+    for (c10::optional<at::Tensor> indexOpt : indices) {
+        if (!indexOpt.has_value()) {
+            result.emplace_back();
+        } else {
+            at::Tensor index = std::move(*indexOpt);
+            result.emplace_back(index.scalar_type() == at::kInt ? index.toType(at::kLong) : index);
+        }
+    }
+    return result;
 }
 
 void setCurCtx(diopiContextHandle_t ctx) {
@@ -2663,6 +2670,27 @@ at::Tensor wrapper__empty_strided(c10::SymIntArrayRef size, c10::SymIntArrayRef 
     return at_npu::native::empty_strided_npu(size, stride, dtype, layout, device, pin_memory);
 }
 
+at::Tensor wrapper_memory_format_empty(c10::SymIntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
+                                       c10::optional<at::Device> device, c10::optional<bool> pin_memory, c10::optional<at::MemoryFormat> memory_format) {
+    return at_npu::native::empty_npu(c10::asIntArrayRefUnchecked(size), dtype, layout, device, pin_memory, memory_format);
+}
+
+at::Tensor& wrapper__index_put_(at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices, const at::Tensor& values, bool accumulate) {
+    auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
+    return acl_op::_index_put_impl_(self, indicesCast, values, accumulate, false);
+}
+
+at::Tensor& wrapper___index_put_impl_(at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices, const at::Tensor& values, bool accumulate,
+                                      bool unsafe) {
+    auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
+    return acl_op::_index_put_impl_(self, indicesCast, values, accumulate, unsafe);
+}
+
+at::Tensor wrapper_Tensor_index(const at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices) {
+    auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
+    return acl_op::index(self, indicesCast);
+}
+
 }  // namespace
 
 namespace at {
@@ -2675,6 +2703,10 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("resize_", TORCH_FN(wrapper__resize_));
     m.impl("contiguous", TORCH_FN(wrapper__contiguous));
     m.impl("empty_strided", TORCH_FN(wrapper__empty_strided));
+    m.impl("empty.memory_format", TORCH_FN(wrapper_memory_format_empty));
+    m.impl("index_put_", TORCH_FN(wrapper__index_put_));
+    m.impl("_index_put_impl_", TORCH_FN(wrapper___index_put_impl_));
+    m.impl("index.Tensor", TORCH_FN(wrapper_Tensor_index));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
