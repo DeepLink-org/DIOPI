@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "../ascend_tensor.hpp"
+#include "float16.hpp"
 
 namespace impl {
 namespace ascend {
