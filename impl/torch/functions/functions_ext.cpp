@@ -49,7 +49,7 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto out1 = chunksOut[0];
     auto out2 = chunksOut[1];
     ext::ops::apply_rotary_cuda(x1, x2, atCos, atSin, out1, out2, conj);
-    
+
     return diopiSuccess;
 }
 
@@ -63,7 +63,7 @@ diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     auto atWeight = impl::aten::buildATen(weight);
     auto atBias = impl::aten::buildATen(bias);  // bias在这里实际上没有使用
     ext::ops::rms_norm_forward(atInput, atNormalizedShape, atWeight, eps, atOut, atInvRMS);
-    
+
     return diopiSuccess;
 }
 
@@ -81,7 +81,7 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto atWeight = impl::aten::buildATen(weight);
     auto atBias = impl::aten::buildATen(bias);  // bias在这里实际上没有使用
     ext::ops::rms_norm_backward(atGradOutput, atInvRMS, atInput, atNormalizedShape, atWeight, eps, atGradInput, atGradWeight);
-    
+
     return diopiSuccess;
 }
 
@@ -120,7 +120,6 @@ diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiTensorHandle
         impl::aten::updateATen2Tensor(ctx, atDebugAttnMask, debug_attn_mask);
     }
 
-    
     return diopiSuccess;
 }
 
@@ -149,7 +148,6 @@ diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiCons
     impl::aten::updateATen2Tensor(ctx, atGradK, grad_k);
     impl::aten::updateATen2Tensor(ctx, atGradV, grad_v);
 
-    
     return diopiSuccess;
 }
 
@@ -192,7 +190,6 @@ diopiError_t diopiMultiHeadAttentionVarLen(diopiContextHandle_t ctx, diopiTensor
         impl::aten::updateATen2Tensor(ctx, atDebugAttnMask, debug_attn_mask);
     }
 
-    
     return diopiSuccess;
 }
 
@@ -244,7 +241,6 @@ diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_t ctx, dio
     impl::aten::updateATen2Tensor(ctx, atGradK, grad_k);
     impl::aten::updateATen2Tensor(ctx, atGradV, grad_v);
 
-    
     return diopiSuccess;
 }
 }  // namespace cuda

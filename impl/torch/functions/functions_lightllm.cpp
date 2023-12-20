@@ -21,7 +21,7 @@ diopiError_t diopiDestIndexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t 
     at::Tensor atK = impl::aten::buildATen(k);
     at::Tensor atDestLoc = impl::aten::buildATen(destLoc);
     atOut.index_put_({atDestLoc}, atK);
-    
+
     return diopiSuccess;
 }
 
@@ -46,7 +46,7 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
         curLogits = curLogits - curTokenCounts * atFrequencyPenalty[i] - atPresencePenalty[i];
         atLogits.index_put_({at::tensor(i), curTokenIds}, curLogits);
     }
-    
+
     return diopiSuccess;
 }
 
@@ -75,7 +75,7 @@ diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorH
         at::Tensor values = (at::matmul(atQ.index({i}), key.transpose(2, 3)) / std::sqrt(dim)).view({head, curSeqLen});
         atAttentionOut.index_put_({torch::indexing::Slice(), outLoc}, values);
     }
-    
+
     return diopiSuccess;
 }
 
@@ -102,7 +102,7 @@ diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ctx, diopiTe
         at::Tensor V = atV.index({vLoc}).view({1, curSeqLen, head, dim}).transpose(1, 2);
         atOut[i] = at::matmul(P, V).view({head, dim});
     }
-    
+
     return diopiSuccess;
 }
 
