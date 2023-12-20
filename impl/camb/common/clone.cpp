@@ -19,7 +19,6 @@ diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiT
     } else {
         outTensor = requiresTensor(ctx, inTensor.shape(), inTensor.dtype(), memoryFormat);
     }
-    diopiMemoryFormat_t destMemoryFormat = 
     if (inTensor.shape() == outTensor.shape() && inTensor.dim() != 0 && inTensor.dtype() != diopi_dtype_float64 && inTensor.dtype() == outTensor.dtype() &&
         denseCheck(inTensor) && denseCheck(outTensor) && (outTensor.isContiguous() || inTensor.isContiguous())) {
         DIOPI_CALL(contiguousOut(ctx, const_cast<DiopiTensor&>(inTensor), outTensor));
