@@ -199,7 +199,9 @@ ascend:
 - diopiScatterInp
 - diopiScatterScalar
 - diopiScatterInpScalar
+- diopiApplyPenalty
 ascend_npu:
+- diopiCopyInp
 - diopiRemainderTensor
 - diopiRemainderScalar
 - diopiRemainder
@@ -209,4 +211,4 @@ ascend_npu:
 - diopiNormalInp
 - diopiNorm
 - diopiMaxPool2dWithIndices
-- diopiCopyInp
+- diopiRotaryEmbedding
