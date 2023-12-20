@@ -365,6 +365,12 @@ struct OptionalNPUGuard {
     void set_device(c10::Device device) {}
 };
 
+namespace queue {
+
+aclError LaunchAsyncCopyTask(void* dst, size_t dstLen, void* src, size_t srcLen, aclrtMemcpyKind kind);
+
+}  // namespace queue
+
 }  // namespace c10_npu
 
 using std::string;
@@ -555,6 +561,9 @@ public:
     static at::Tensor apply_tensor_with_format(const at::Tensor& src, c10::IntArrayRef sizes, int64_t format, bool keep_format = false);
     static at::Tensor apply_tensor_with_format(c10::IntArrayRef sizes, const c10::TensorOptions& options, int64_t format, bool keep_format = false);
     static at::Tensor apply_tensor_with_sizes(c10::IntArrayRef sizes, const c10::TensorOptions& options);
+    static at::Tensor apply_tensor_without_format(const at::Tensor& src) { INTERFACE_NOT_IMPL; }
+    static at::Tensor apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes) { INTERFACE_NOT_IMPL; }
+    static at::Tensor apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) { INTERFACE_NOT_IMPL; }
 
     // DEPRECATED: CheckOut will be deprecated, please use check_tensor to check output tensor instead.
     static void CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst);
@@ -564,19 +573,23 @@ public:
     static at::Tensor CastBackToOriFormat(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
     static at::Tensor& CastBackToOriFormat(at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
     // DEPRECATED: ApplyTensor will be deprecated, please use apply_tensor instead.
-    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src) { INTERFACE_NOT_IMPL; }
-    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src, c10::IntArrayRef sizes) { INTERFACE_NOT_IMPL; }
-    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src, const c10::TensorOptions& options) { INTERFACE_NOT_IMPL; }
-    TORCH_NPU_API static at::Tensor ApplyTensor(c10::IntArrayRef sizes, const c10::TensorOptions& options, const at::Tensor& src) { INTERFACE_NOT_IMPL }
-    // DEPRECATED: ApplyTensorWithFormat will be deprecated, please use apply_tensor_with_format instead.
-    static at::Tensor ApplyTensorWithFormat(const at::Tensor& src, int64_t format, bool keep_format = false) { INTERFACE_NOT_IMPL; }
-    static at::Tensor ApplyTensorWithFormat(const at::Tensor& src, c10::IntArrayRef sizes, int64_t format, bool keep_format = false) { INTERFACE_NOT_IMPL; }
-    static at::Tensor ApplyTensorWithFormat(c10::IntArrayRef sizes, const c10::TensorOptions& options, int64_t format, bool keep_format = false) {
-        INTERFACE_NOT_IMPL
+    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src) { return apply_tensor(src); }
+    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src, c10::IntArrayRef sizes) { return apply_tensor(src, sizes); }
+    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src, const c10::TensorOptions& options) { return apply_tensor(src, options); }
+    TORCH_NPU_API static at::Tensor ApplyTensor(c10::IntArrayRef sizes, const c10::TensorOptions& options, const at::Tensor& src) {
+        return apply_tensor(sizes, options, src);
     }
-    static at::Tensor apply_tensor_without_format(const at::Tensor& src) { INTERFACE_NOT_IMPL; }
-    static at::Tensor apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes) { INTERFACE_NOT_IMPL; }
-    static at::Tensor apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) { INTERFACE_NOT_IMPL; }
+    // DEPRECATED: ApplyTensorWithFormat will be deprecated, please use apply_tensor_with_format instead.
+    static at::Tensor ApplyTensorWithFormat(const at::Tensor& src, int64_t format, bool keep_format = false) {
+        return apply_tensor_with_format(src, format, keep_format);
+    }
+    static at::Tensor ApplyTensorWithFormat(const at::Tensor& src, c10::IntArrayRef sizes, int64_t format, bool keep_format = false) {
+        return apply_tensor_with_format(src, sizes, format, keep_format);
+    }
+    static at::Tensor ApplyTensorWithFormat(c10::IntArrayRef sizes, const c10::TensorOptions& options, int64_t format, bool keep_format = false) {
+        return apply_tensor_with_format(sizes, options, format, keep_format);
+    }
+
     static at::Tensor unsafe_empty_workspace(uint64_t size) { INTERFACE_NOT_IMPL; }
     // DEPRECATED: ApplyTensorWithSizes will be deprecated, please use apply_tensor_with_sizes instead.
     static at::Tensor ApplyTensorWithSizes(c10::IntArrayRef sizes, const c10::TensorOptions& options) { return apply_tensor_with_sizes(sizes, options); }
@@ -656,6 +669,61 @@ private:
     static OptimizationCases optCasesDefault;
     static OptimizationCases optCasesAnyFormat;
 };
+
+class ContiguousOpt {
+public:
+    ContiguousOpt() {}
+    virtual ~ContiguousOpt() = default;
+    virtual bool Optimizer(at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc) = 0;
+    virtual bool CanOptimizer(const ContiguousTensorDesc& src_desc) { return false; }
+};
+
+namespace register_opt {
+class CopyOptRegister {
+public:
+    ~CopyOptRegister() = default;
+    static CopyOptRegister* GetInstance() {
+        static CopyOptRegister instance;
+        return &instance;
+    }
+    void Register(std::string& name, ::std::unique_ptr<ContiguousOpt>& ptr) {
+        std::lock_guard<std::mutex> lock(mu_);
+        registry.emplace(name, std::move(ptr));
+    }
+
+    bool CanOptimize(std::string& name, const ContiguousTensorDesc& src_desc) {
+        auto itr = registry.find(name);
+        if (itr != registry.end()) {
+            return itr->second->CanOptimizer(src_desc);
+        }
+        return false;
+    }
+
+    bool Run(const std::string& name, at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc) {
+        auto itr = registry.find(name);
+        if (itr != registry.end()) {
+            return itr->second->Optimizer(self, src, src_desc);
+        }
+        return false;
+    }
+
+private:
+    CopyOptRegister() {}
+    mutable std::mutex mu_;
+    mutable std::map<std::string, ::std::unique_ptr<ContiguousOpt>> registry;
+};  // class CopyOptRegister
+
+class CopyOptBuilder {
+public:
+    CopyOptBuilder(std::string name, ::std::unique_ptr<ContiguousOpt>& ptr) { CopyOptRegister::GetInstance()->Register(name, ptr); }
+    ~CopyOptBuilder() = default;
+};  // class CopyOptBuilder
+}  // namespace register_opt
+
+#define REGISTER_COPY_OPT(name, optimization) REGISTER_COPY_OPT_UNIQ(name, name, optimization)
+#define REGISTER_COPY_OPT_UNIQ(id, name, optimization)                         \
+    auto copy_opt_##id = ::std::unique_ptr<ContiguousOpt>(new optimization()); \
+    static register_opt::CopyOptBuilder register_copy_opt##id(#name, copy_opt_##id);
 
 class FormatCastHelper {
 public:
@@ -968,12 +1036,11 @@ private:
     static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides, aclFormat format);
 };  // class StorageDescHelper
 
-static bool can_use_memcpy(at::Tensor& dst, const at::Tensor& src);
+bool can_use_memcpy(at::Tensor& dst, const at::Tensor& src);
 void copy_d2d_by_memcpy(at::Tensor& dst, const at::Tensor& src, int64_t exceptSize = 0);
-// static void copy_d2d_by_memcpy(at::Tensor&, at::Tensor const&, long) {INTERFACE_NOT_IMPL;}
-static void copy_d2d_dtype(at::Tensor& self, const at::Tensor& src, bool non_blocking);
-static void copy_d2d_dtype_baseformat(at::Tensor& self, const at::Tensor& src, bool non_blocking);
-static bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Tensor& src);
+void copy_d2d_dtype(at::Tensor& self, const at::Tensor& src, bool non_blocking);
+void copy_d2d_dtype_baseformat(at::Tensor& self, const at::Tensor& src, bool non_blocking);
+bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Tensor& src);
 static at::Tensor matmul_by_bmmV2(const at::Tensor& tensor1, const at::Tensor& tensor2) { INTERFACE_NOT_IMPL; }
 void npu_fast_reshape_(at::Tensor& tensor);
 
@@ -990,7 +1057,10 @@ at::Tensor empty_strided_npu(c10::SymIntArrayRef size, c10::SymIntArrayRef strid
 at::Tensor empty_with_format(at::IntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout, c10::optional<at::Device> device,
                              c10::optional<bool> pin_memory, int64_t acl_format);
 
+at::Tensor clone(const at::Tensor& self, c10::optional<at::MemoryFormat> memory_format);
+
 }  // namespace native
+
 }  // namespace at_npu
 
 inline aclError THNPUCachingHostAllocator_recordEvent(void* ptr, c10_npu::NPUStream stream) { return ACL_SUCCESS; }

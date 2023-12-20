@@ -17,6 +17,10 @@ at::Tensor NPUNativeFunctions::contiguous(const at::Tensor& self, at::MemoryForm
     return self.clone();
 }
 
+at::Tensor NPUNativeFunctions::clone(const at::Tensor& self, c10::optional<at::MemoryFormat> memory_format) {
+    return at_npu::native::clone(self, memory_format);
+}
+
 at::Tensor NPUNativeFunctions::empty(c10::SymIntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
                                      c10::optional<at::Device> device, c10::optional<bool> pin_memory, c10::optional<at::MemoryFormat> memory_format) {
     return at_npu::native::empty_npu(c10::asIntArrayRefUnchecked(size), dtype, layout, device, pin_memory, memory_format);
@@ -237,9 +241,9 @@ at::Tensor& npu_conv3d_out(const at::Tensor& input, const at::Tensor& weight, co
 at::Tensor npu_stride_add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& offset1, const at::Scalar& offset2, const at::Scalar& c1_len) {
     CUSTOM_OP_NOT_IMPL;
 }
-at::Tensor npu_slice(const at::Tensor& self, at::IntArrayRef offsets, at::IntArrayRef size) { CUSTOM_OP_NOT_IMPL; }
-__attribute__((__visibility__("default"))) at::Tensor& npu_slice_out(const at::Tensor& self, at::IntArrayRef offsets, at::IntArrayRef size, at::Tensor& out) {
-    CUSTOM_OP_NOT_IMPL;
+at::Tensor npu_slice(const at::Tensor& self, at::IntArrayRef offsets, at::IntArrayRef size) { return acl_op::npu_slice(self, offsets, size); }
+at::Tensor& npu_slice_out(const at::Tensor& self, at::IntArrayRef offsets, at::IntArrayRef size, at::Tensor& out) {
+    return acl_op::npu_slice_out(self, offsets, size, out);
 }
 at::Tensor npu_indexing(const at::Tensor& self, at::IntArrayRef begin, at::IntArrayRef end, at::IntArrayRef strides, int64_t begin_mask, int64_t end_mask,
                         int64_t ellipsis_mask, int64_t new_axis_mask, int64_t shrink_axis_mask) {
@@ -305,8 +309,13 @@ at::Tensor npu_rotated_iou(const at::Tensor& self, const at::Tensor& query_boxes
     CUSTOM_OP_NOT_IMPL;
 }
 at::Tensor npu_mish_backward(const at::Tensor& grad, const at::Tensor& input) { CUSTOM_OP_NOT_IMPL; }
-at::Tensor npu_reshape(const at::Tensor& self, at::IntArrayRef shape, bool can_refresh) { CUSTOM_OP_NOT_IMPL; }
-at::Tensor& npu_reshape_out(const at::Tensor& self, at::IntArrayRef shape, bool can_refresh, at::Tensor& out) { CUSTOM_OP_NOT_IMPL; }
+
+at::Tensor npu_reshape(const at::Tensor& self, at::IntArrayRef shape, bool can_refresh) { return acl_op::npu_reshape(self, shape, can_refresh); }
+
+at::Tensor& npu_reshape_out(const at::Tensor& self, at::IntArrayRef shape, bool can_refresh, at::Tensor& out) {
+    return acl_op::npu_reshape_out(self, shape, can_refresh, out);
+}
+
 ::std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_batch_nms(const at::Tensor& self, const at::Tensor& scores, double score_threshold,
                                                                            double iou_threshold, int64_t max_size_per_class, int64_t max_total_size,
                                                                            bool change_coordinate_frame, bool transpose_box) {

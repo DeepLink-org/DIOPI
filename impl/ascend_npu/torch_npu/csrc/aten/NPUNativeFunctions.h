@@ -58,7 +58,7 @@ struct NPUNativeFunctions {
                                       double spatial_scale, int64_t sample_num, c10::optional<int64_t> roi_end_mode) {
         OP_NOT_IMPL
     }
-    static at::Tensor clone(const at::Tensor& self, c10::optional<at::MemoryFormat> memory_format) { OP_NOT_IMPL }
+    static at::Tensor clone(const at::Tensor& self, c10::optional<at::MemoryFormat> memory_format);
     static at::Tensor& clamp_out(const at::Tensor& self, const c10::optional<at::Scalar>& min, const c10::optional<at::Scalar>& max, at::Tensor& out) {
         OP_NOT_IMPL
     }
