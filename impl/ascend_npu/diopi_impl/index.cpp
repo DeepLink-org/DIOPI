@@ -31,7 +31,7 @@ diopiError_t diopiIndexBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gr
     }
     gradInputAt.copy_(zerosLikeInputAt);
     acl_op::_index_put_impl_(gradInputAt, indicesAtList, gradOutputAt, true, false);
-    return diopiSuccess;
+    END_CALL_ACL_OP();
 }
 
 }  // namespace OP_IMPL_NS

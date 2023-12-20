@@ -2547,12 +2547,6 @@ const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     at::IntArrayRef atStrides(stride.data, stride.len);
 
     auto options = at::TensorOptions(c10::Device(atDevice, devId_)).dtype(atType);
-    int64_t numel = 0;
-    diopiGetTensorNumel(tensor, &numel);
-    if (numel <= 0) {
-        return at::Tensor();
-    }
-
     return fromPreAllocated(data, atDims, atStrides, options);
 }
 
