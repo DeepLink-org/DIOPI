@@ -11,6 +11,7 @@ namespace OP_IMPL_NS {
 
 DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t x, diopiConstTensorHandle_t cos,
                                             diopiConstTensorHandle_t sin, const bool conj, const bool interleaved) {
+    TORCH_CHECK(false == interleaved, "interleaved=true is currently not supported for Ascend");
     BEGIN_CALL_ACL_OP(out, x, cos, sin);
     at::Tensor cosRepeated = acl_op::repeat(cosAt, {1, 1, 1, 2});
     at::Tensor sinRepeated = acl_op::repeat(sinAt, {1, 1, 1, 2});
