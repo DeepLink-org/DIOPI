@@ -10,57 +10,57 @@
 namespace impl {
 namespace camb {
 
-static bool denseCheck(const DiopiTensor& src) {
-    int dim = src.dim();
-    std::vector<int> stride(dim, 1);
-    std::vector<int> shape(dim, 1);
+// static bool denseCheck(const DiopiTensor& src) {
+//     int dim = src.dim();
+//     std::vector<int> stride(dim, 1);
+//     std::vector<int> shape(dim, 1);
 
-    for (int i = 0; i < dim; i++) {
-        stride[i] = src.stride()[i];
-        shape[i] = src.shape()[i];
+//     for (int i = 0; i < dim; i++) {
+//         stride[i] = src.stride()[i];
+//         shape[i] = src.shape()[i];
 
-        if (src.stride()[i] == 0 || src.shape()[i] == 0) {
-            return false;
-        }
-    }
+//         if (src.stride()[i] == 0 || src.shape()[i] == 0) {
+//             return false;
+//         }
+//     }
 
-    std::sort(stride.begin(), stride.end());
+//     std::sort(stride.begin(), stride.end());
 
-    // e.g. shape = 2,3,4,5,stride = 1,3,12,60
-    if (stride[0] != 1) {
-        return false;
-    }
-    int cur = 1;
-    for (int i = 1; i < dim; i++) {
-        cur = stride[i] / stride[i - 1];
-        if (std::find(shape.begin(), shape.end(), cur) != shape.end()) {
-            continue;
-        } else {
-            return false;
-        }
-    }
-    return true;
-}
+//     // e.g. shape = 2,3,4,5,stride = 1,3,12,60
+//     if (stride[0] != 1) {
+//         return false;
+//     }
+//     int cur = 1;
+//     for (int i = 1; i < dim; i++) {
+//         cur = stride[i] / stride[i - 1];
+//         if (std::find(shape.begin(), shape.end(), cur) != shape.end()) {
+//             continue;
+//         } else {
+//             return false;
+//         }
+//     }
+//     return true;
+// }
 
-static bool probableMemoryFormat(const DiopiTensor& src, diopiMemoryFormat_t* outMemoryFormat) {
-    if (!outMemoryFormat) {
-        return src.isContiguous(diopiMemoryFormat_t::Contiguous) || src.isContiguous(diopiMemoryFormat_t::ChannelsLast1d) ||
-               src.isContiguous(diopiMemoryFormat_t::ChannelsLast) || src.isContiguous(diopiMemoryFormat_t::ChannelsLast3d);
-    }
-    if (src.isContiguous(diopiMemoryFormat_t::Contiguous)) {
-        *outMemoryFormat = diopiMemoryFormat_t::Contiguous;
-    } else if (src.isContiguous(diopiMemoryFormat_t::ChannelsLast1d)) {
-        *outMemoryFormat = diopiMemoryFormat_t::ChannelsLast1d;
-    } else if (src.isContiguous(diopiMemoryFormat_t::ChannelsLast)) {
-        *outMemoryFormat = diopiMemoryFormat_t::ChannelsLast;
-    } else if (src.isContiguous(diopiMemoryFormat_t::ChannelsLast3d)) {
-        *outMemoryFormat = diopiMemoryFormat_t::ChannelsLast3d;
-    } else {
-        // memory format not supported.
-        return false;
-    }
-    return true;
-}
+// static bool probableMemoryFormat(const DiopiTensor& src, diopiMemoryFormat_t* outMemoryFormat) {
+//     if (!outMemoryFormat) {
+//         return src.isContiguous(diopiMemoryFormat_t::Contiguous) || src.isContiguous(diopiMemoryFormat_t::ChannelsLast1d) ||
+//                src.isContiguous(diopiMemoryFormat_t::ChannelsLast) || src.isContiguous(diopiMemoryFormat_t::ChannelsLast3d);
+//     }
+//     if (src.isContiguous(diopiMemoryFormat_t::Contiguous)) {
+//         *outMemoryFormat = diopiMemoryFormat_t::Contiguous;
+//     } else if (src.isContiguous(diopiMemoryFormat_t::ChannelsLast1d)) {
+//         *outMemoryFormat = diopiMemoryFormat_t::ChannelsLast1d;
+//     } else if (src.isContiguous(diopiMemoryFormat_t::ChannelsLast)) {
+//         *outMemoryFormat = diopiMemoryFormat_t::ChannelsLast;
+//     } else if (src.isContiguous(diopiMemoryFormat_t::ChannelsLast3d)) {
+//         *outMemoryFormat = diopiMemoryFormat_t::ChannelsLast3d;
+//     } else {
+//         // memory format not supported.
+//         return false;
+//     }
+//     return true;
+// }
 
 void removeTheFrontOneInShape(DiopiTensor& src, const std::vector<int64_t>& destShape) {
     int64_t srcDim = src.dim();
@@ -101,16 +101,16 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     }
 
     // memory format convert if memory format is matched.
-    diopiMemoryFormat_t destMemoryFormat;
+    // diopiMemoryFormat_t destMemoryFormat;
     // cnnTranspose doesn't support float64 and scalar and contiguousOut only support convertion between the contiguous tensor and the no-contiguous tensor.
     if (srcTr.shape() == destTr.shape() && srcTr.dim() != 0 && srcTr.dtype() != diopi_dtype_float64 && denseCheck(srcTr) && denseCheck(destTr) &&
         (destTr.isContiguous() || srcTr.isContiguous())) {
         DiopiTensor destTmpTr = destTr;
-        probableMemoryFormat(destTr, &destMemoryFormat);
+        // probableMemoryFormat(destTr, &destMemoryFormat);
         if (destTmpTr.dtype() != srcTr.dtype()) {
             destTmpTr = requiresTensor(ctx, destTr.shape(), srcTr.dtype());
         }
-        DIOPI_CALL(contiguousOut(ctx, srcTr, destTmpTr, destMemoryFormat));
+        DIOPI_CALL(contiguousOut(ctx, srcTr, destTmpTr, destTr.isContiguous()));
         if (destTmpTr.dtype() != destTr.dtype()) {
             DIOPI_CALL(dataTypeCast(ctx, destTr, destTmpTr));
         }

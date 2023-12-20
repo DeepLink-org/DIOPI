@@ -53,6 +53,8 @@ diopiError_t transpose(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTen
 
 diopiError_t transpose(diopiContextHandle_t ctx, const DiopiTensor& inputTensor, DiopiTensor& outTensor, std::vector<int32_t> perms);
 
+bool denseCheck(const DiopiTensor& src);
+
 }  // namespace camb
 }  // namespace impl
 
