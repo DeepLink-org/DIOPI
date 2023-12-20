@@ -16,7 +16,8 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diop
     for (int i = 0; i < nums; ++i) {
         indicesAtList.emplace_back(impl::aten::buildATen(indices[i]));
     }
-    auto outAt = acl_op::index(inputAt, indicesAtList);
+
+    at::Tensor outAt = at::index(inputAt, indicesAtList);
     impl::aten::buildDiopiTensor(ctx, outAt, out);
     END_CALL_ACL_OP();
 }
@@ -29,8 +30,9 @@ diopiError_t diopiIndexBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gr
     for (int i = 0; i < nums; ++i) {
         indicesAtList.emplace_back(impl::aten::buildATen(indices[i]));
     }
+
+    at::index_put_(zerosLikeInputAt, indicesAtList, gradOutputAt, true);
     gradInputAt.copy_(zerosLikeInputAt);
-    acl_op::_index_put_impl_(gradInputAt, indicesAtList, gradOutputAt, true, false);
     END_CALL_ACL_OP();
 }
 
