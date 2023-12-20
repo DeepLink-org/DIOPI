@@ -252,7 +252,7 @@ void copy_d2d_dtype_baseformat(at::Tensor &self, const at::Tensor &src, bool non
 
     if (!src.is_contiguous()) {
         // Discontiguous source tensor copy to contiguous self tensor
-        if (0 && TransContiguous::ContiguousOptimizeWithBaseFormat(self, src)) {
+        if (TransContiguous::ContiguousOptimizeWithBaseFormat(self, src)) {
             // Optimized trans-contiguous method
             return;
         } else {

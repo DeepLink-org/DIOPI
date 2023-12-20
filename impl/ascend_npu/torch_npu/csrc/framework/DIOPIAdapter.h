@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -644,10 +645,10 @@ struct ContiguousTensorDesc {
     int64_t base_offset_;
     aclFormat npu_format_;
     OptimizationCases opt_cases_;
-    void refresh_contiguous_using_size_and_stride() { INTERFACE_NOT_IMPL; }
-    void reset_optimization_cases(const OptimizationCases& opt_cases) { INTERFACE_NOT_IMPL; }
-    void add_optimization_case(const std::string& opt_case) { INTERFACE_NOT_IMPL; }
-    void find_match_optimization_cases() { INTERFACE_NOT_IMPL; }
+    void refresh_contiguous_using_size_and_stride();
+    void reset_optimization_cases(const OptimizationCases& opt_cases);
+    void add_optimization_case(const std::string& opt_case);
+    void find_match_optimization_cases();
 };
 
 class TransContiguous {

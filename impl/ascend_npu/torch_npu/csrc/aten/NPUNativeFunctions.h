@@ -2100,7 +2100,9 @@ struct NPUNativeFunctions {
                                               c10::optional<double> scales_h, c10::optional<double> scales_w, at::Tensor& out) {
         OP_NOT_IMPL
     }
-    static int64_t get_storage_size(const at::Tensor& self) { OP_NOT_IMPL }
+
+    static int64_t get_storage_size(const at::Tensor& self);
+
     static ::std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_fused_attention_score_fwd(const at::Tensor& query_layer, const at::Tensor& key_layer,
                                                                                           const at::Tensor& value_layer, const at::Tensor& attention_mask,
                                                                                           const at::Scalar& scale, double keep_prob, bool query_transpose,
