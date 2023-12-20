@@ -8,36 +8,23 @@
 
 #include <diopi/diopirt.h>
 
+#include <memory>
 #include <string>
 
 namespace impl {
 namespace ascend {
-namespace {
-Shape inferShapeLessTo4(const Shape& dims);
-Shape inferShape4To5(const Shape& dims);
-Shape inferShapeofNhwc(const Shape& dims);
-Shape inferShape5To4(const Shape& dims);
-Shape inferShapeNdToNz(const Shape& dims);
-Shape inferShapeNdToZ(const Shape& dims);
-Shape inferShapeOfNdhwc(const Shape& dims);
-Shape inferShapeOfNcdhw(const Shape& dims);
-Shape inferShapeOfNdC1HwC0(const Shape& dims);
-Shape inferShapeOfFZ3D(const Shape& dims);
-Shape inferShapeofNchw(const Shape& dims);
-Shape inferShapeofNd(const Shape& dims);
-}  // namespace
 
-std::unordered_map<aclFormat, FormatInfo> FormatHelper::info = {
-    {ACL_FORMAT_NC1HWC0, (FormatInfo){diopiMemoryFormat_t::NC1HWC0, ACL_FORMAT_NC1HWC0, ACL_FORMAT_NCHW, inferShape4To5, "NC1HWC0", true}},
-    {ACL_FORMAT_ND, (FormatInfo){diopiMemoryFormat_t::ND, ACL_FORMAT_ND, ACL_FORMAT_ND, inferShapeofNd, "ND", false}},
-    {ACL_FORMAT_NCHW, (FormatInfo){diopiMemoryFormat_t::NCHW, ACL_FORMAT_NCHW, ACL_FORMAT_NCHW, inferShapeofNchw, "NCHW", false}},
-    {ACL_FORMAT_NHWC, (FormatInfo){diopiMemoryFormat_t::ChannelsLast, ACL_FORMAT_NHWC, ACL_FORMAT_NHWC, inferShapeofNhwc, "NHWC", false}},
-    {ACL_FORMAT_FRACTAL_NZ, (FormatInfo){diopiMemoryFormat_t::FRACTAL_NZ, ACL_FORMAT_FRACTAL_NZ, ACL_FORMAT_ND, inferShapeNdToNz, "FRACTAL_NZ", true}},
-    {ACL_FORMAT_FRACTAL_Z, (FormatInfo){diopiMemoryFormat_t::FRACTAL_Z, ACL_FORMAT_FRACTAL_Z, ACL_FORMAT_NCHW, inferShapeNdToZ, "FRACTAL_Z", true}},
-    {ACL_FORMAT_NDHWC, (FormatInfo){diopiMemoryFormat_t::NDHWC, ACL_FORMAT_NDHWC, ACL_FORMAT_NCDHW, inferShapeOfNdhwc, "NDHWC", false}},
-    {ACL_FORMAT_NCDHW, (FormatInfo){diopiMemoryFormat_t::NCDHW, ACL_FORMAT_NCDHW, ACL_FORMAT_NCDHW, inferShapeOfNcdhw, "NCDHW", false}},
-    {ACL_FORMAT_NDC1HWC0, (FormatInfo){diopiMemoryFormat_t::NDC1HWC0, ACL_FORMAT_NDC1HWC0, ACL_FORMAT_NCDHW, inferShapeOfNdC1HwC0, "NDC1HWC0", true}},
-    {ACL_FRACTAL_Z_3D, (FormatInfo){diopiMemoryFormat_t::FRACTAL_Z_3D, ACL_FRACTAL_Z_3D, ACL_FORMAT_NCDHW, inferShapeOfFZ3D, "FRACTAL_Z_3D", true}},
+std::unordered_map<aclFormat, std::shared_ptr<FormatInfo>> FormatHelper::info = {
+    {ACL_FORMAT_NC1HWC0, std::make_shared<NC1HWC0FormatInfo>()},
+    {ACL_FORMAT_ND, std::make_shared<NdFormatInfo>()},
+    {ACL_FORMAT_NCHW, std::make_shared<NCHWFormatInfo>()},
+    {ACL_FORMAT_NHWC, std::make_shared<NHWCFormatInfo>()},
+    {ACL_FORMAT_FRACTAL_NZ, std::make_shared<NzFormatInfo>()},
+    {ACL_FORMAT_FRACTAL_Z, std::make_shared<ZFormatInfo>()},
+    {ACL_FORMAT_NDHWC, std::make_shared<NDHWCFormatInfo>()},
+    {ACL_FORMAT_NCDHW, std::make_shared<NCDHWFormatInfo>()},
+    {ACL_FORMAT_NDC1HWC0, std::make_shared<NDC1HWC0FormatInfo>()},
+    {ACL_FRACTAL_Z_3D, std::make_shared<Z3DFormatInfo>()},
 };
 
 std::string FormatHelper::getFormatName(aclFormat format) {
@@ -46,7 +33,7 @@ std::string FormatHelper::getFormatName(aclFormat format) {
     }
     const auto& itr = info.find(format);
     ASCEND_CHECK_ABORT(itr != info.end(), "not ascend format:%d", format);
-    return itr->second.formatName_;
+    return itr->second->formatName();
 }
 
 std::string FormatHelper::getFormatName(diopiMemoryFormat_t format) { return getFormatName(getAclFormat(format)); }
@@ -58,14 +45,14 @@ bool FormatHelper::isBaseFormat(diopiMemoryFormat_t format) { return getDiopiBas
 aclFormat FormatHelper::getAclBaseFormat(aclFormat format) {
     const auto& iter = info.find(format);
     ASCEND_CHECK_ABORT(iter != info.end(), "not ascend format:%s", getFormatName(format).c_str());
-    return iter->second.baseFormat_;
+    return iter->second->baseFormat();
 }
 
 diopiMemoryFormat_t FormatHelper::getDiopiBaseFormat(diopiMemoryFormat_t format) {
     aclFormat base = getAclBaseFormat(getAclFormat(format));
     const auto& iter = info.find(base);
     ASCEND_CHECK_ABORT(iter != info.end(), "not ascend format:%s", getFormatName(format).c_str());
-    return iter->second.diopiFormat_;
+    return iter->second->diopiFormat();
 }
 
 aclFormat FormatHelper::getAclFormat(diopiMemoryFormat_t memoryFormat) {
@@ -105,16 +92,13 @@ aclFormat FormatHelper::getAclFormat(diopiMemoryFormat_t memoryFormat) {
 Shape FormatHelper::getStorageSizes(diopiMemoryFormat_t format, const Shape& dims) {
     const auto& itr = info.find(getAclFormat(format));
     if (itr != info.end()) {
-        if (itr->second.func_) {
-            return itr->second.func_(dims);
-        }
+        return itr->second->inferShape(dims);
     }
     ASCEND_CHECK_ABORT(false, "acl not support format:%s", getFormatName(format).c_str());
     return {};
 }
 
-namespace {
-Shape inferShapeLessTo4(const Shape& dims) {
+Shape FormatInfo::inferShapeLessTo4(const Shape& dims) {
     Shape res;
     res.resize(4);
     ASCEND_CHECK_ABORT(dims.size() <= 4, "check failed in InferShapeLessTo4, input dim > 4");
@@ -155,10 +139,10 @@ Shape inferShapeLessTo4(const Shape& dims) {
     return res;
 }
 
-Shape inferShape4To5(const Shape& dims) {
+Shape NC1HWC0FormatInfo::inferShape(const Shape& dims) {
     Shape res;
     res.resize(5);
-    ASCEND_CHECK_ABORT(dims.size() == 4, "infershape4to5 but input dim != 4");
+    ASCEND_CHECK_ABORT(dims.size() == 4, "NC1HWC0FormatInfo::inferShape but input dim != 4");
     res[0] = dims[0];
     res[1] = (dims[1] + 15) / 16;
     res[2] = dims[2];
@@ -167,22 +151,12 @@ Shape inferShape4To5(const Shape& dims) {
     return res;
 }
 
-Shape inferShapeofNhwc(const Shape& dims) {
+Shape NHWCFormatInfo::inferShape(const Shape& dims) {
     ASCEND_CHECK_ABORT(dims.size() == 4, "input dim should be equal to 4 when InferShapeofNHWC");
     return dims;
 }
 
-Shape inferShape5To4(const Shape& dims) {
-    ASCEND_CHECK_ABORT(dims.size() >= 4, "input dim must >= 4 in function InferShape5To4");
-    Shape res;
-    res.emplace_back(dims[0]);
-    res.emplace_back(((dims[1] + 15) / 16) * 16);
-    res.emplace_back(dims[2]);
-    res.emplace_back(dims[3]);
-    return res;
-}
-
-Shape inferShapeNdToNz(const Shape& dims) {
+Shape NzFormatInfo::inferShape(const Shape& dims) {
     Shape res;
     // sum(keepdim = false) may make tensor dim = 0
     Shape dim;
@@ -207,9 +181,9 @@ Shape inferShapeNdToNz(const Shape& dims) {
     return res;
 }
 
-Shape inferShapeNdToZ(const Shape& dims) {
+Shape ZFormatInfo::inferShape(const Shape& dims) {
     if (dims.size() < 4) {
-        return inferShapeNdToZ(inferShapeLessTo4(dims));
+        return inferShape(inferShapeLessTo4(dims));
     }
     Shape res;
     res.emplace_back((dims[1] + 15) / blocksize * dims[2] * dims[3]);
@@ -220,7 +194,7 @@ Shape inferShapeNdToZ(const Shape& dims) {
 }
 
 // NCDHW -> NDHWC
-Shape inferShapeOfNdhwc(const Shape& dims) {
+Shape NDHWCFormatInfo::inferShape(const Shape& dims) {
     ASCEND_CHECK_ABORT(dims.size() == 5, "cannot convert to NDHWC");
     Shape res;
     res.resize(5);
@@ -233,13 +207,13 @@ Shape inferShapeOfNdhwc(const Shape& dims) {
 }
 
 // NCDHW to NCDHW
-Shape inferShapeOfNcdhw(const Shape& dims) {
+Shape NCDHWFormatInfo::inferShape(const Shape& dims) {
     ASCEND_CHECK_ABORT(dims.size() == 5, "cannot convert to NCDHW");
     return dims;
 }
 
 // NCDHW to NDC1HWC0
-Shape inferShapeOfNdC1HwC0(const Shape& dims) {
+Shape NDC1HWC0FormatInfo::inferShape(const Shape& dims) {
     ASCEND_CHECK_ABORT(dims.size() == 5, "cannot convert to NDC1HWC0");
     Shape res;
     res.resize(6);
@@ -253,7 +227,7 @@ Shape inferShapeOfNdC1HwC0(const Shape& dims) {
 }
 
 // NCDHW to FZ_3D
-Shape inferShapeOfFZ3D(const Shape& dims) {
+Shape Z3DFormatInfo::inferShape(const Shape& dims) {
     ASCEND_CHECK_ABORT(dims.size() == 5, "cannot convert to FZ_3D");
     int64_t d1 = dims[2];
     int64_t d2 = (dims[1] + blocksize - 1) / blocksize;
@@ -273,15 +247,14 @@ Shape inferShapeOfFZ3D(const Shape& dims) {
     return res;
 }
 
-Shape inferShapeofNchw(const Shape& dims) {
+Shape NCHWFormatInfo::inferShape(const Shape& dims) {
     if (dims.size() < 5) {
         return inferShapeLessTo4(dims);
     }
-    return inferShapeofNd(dims);
+    return dims;
 }
 
-Shape inferShapeofNd(const Shape& dims) { return dims; }
-}  // namespace
+Shape NdFormatInfo::inferShape(const Shape& dims) { return dims; }
 
 }  // namespace ascend
 }  // namespace impl

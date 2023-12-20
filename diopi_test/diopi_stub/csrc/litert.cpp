@@ -149,6 +149,7 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
     } else {
         storage_ = std::make_shared<Storage>(device_malloc, device_free, nbytes);
     }
+    storage_->initDesc(shape_);
     if (src != nullptr) {
         diopiTensorCopyFromBuffer(context, src, this);
     }
@@ -170,6 +171,7 @@ diopiTensor& diopiTensor::operator=(const diopiTensor& other) {
     } else {
         storage_ = std::make_shared<Storage>(device_malloc, device_free, other.nbytes());
     }
+    storage_->initDesc(shape_);
 
     const void* src = other.data();
     if (src == nullptr) {
@@ -207,6 +209,7 @@ bool diopiTensor::resetShape(const diopiSize_t* size) {
         stride_[i] = strideTemp;
         strideTemp *= size->data[i];
     }
+    storage_->initDesc(shape_);
     return true;
 }
 

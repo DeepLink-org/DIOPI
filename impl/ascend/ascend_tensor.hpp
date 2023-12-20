@@ -176,19 +176,19 @@ public:
         return numel_;
     }
 
-    const std::vector<int64_t>& storageDims() const {
+    std::vector<int64_t> storageDims() const {
         ASCEND_CHECK_NULLPTR_ABORT(tensor_);
-        if (device_ == diopiDevice_t::diopi_device) {
+        if (device_ == diopiDevice_t::diopi_device && isContiguous() && dim() > 0) {
             return this->storageDims_;
         }
-        return shape();
+        return getAclMemShape();
     }
 
     diopiMemoryFormat_t storageFormat() const { return this->storageFormat_; }
 
     int64_t storageNumel() const {
         ASCEND_CHECK_NULLPTR_ABORT(tensor_);
-        if (device_ == diopiDevice_t::diopi_device) {
+        if (device_ == diopiDevice_t::diopi_device && isContiguous() && dim() > 0) {
             return storageNumel_;
         }
         return numel();

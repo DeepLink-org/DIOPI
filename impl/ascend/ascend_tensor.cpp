@@ -146,7 +146,7 @@ std::vector<int64_t> AscendTensor::getAclMemShape() const {
 }
 
 int64_t AscendTensor::getAclMemBufferSize() const {
-    if (this->isContiguous() || device_ == diopiDevice_t::diopi_device) {
+    if (this->isContiguous()) {
         if (dim() > 0) {
             return this->storageNumel() * this->elemsize();
         } else {
