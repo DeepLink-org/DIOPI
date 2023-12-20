@@ -276,7 +276,7 @@ diopiError_t contiguousOut(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTens
     std::vector<int64_t> olderSrcStride = src.stride();
     std::vector<int64_t> olderSrcShape = src.shape();
     // if (destMemoryFormat != diopiMemoryFormat_t::Contiguous) {
-    if (!destMemoryFormat) {    
+    if (!destMemoryFormat) {
         DIOPI_CALL(permuteTensor(dest, order));
     } else {
         DIOPI_CALL(permuteTensor(src, reverseOrder));
@@ -284,7 +284,7 @@ diopiError_t contiguousOut(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTens
     DIOPI_CALL(transpose(ctx, src, dest, srcLayout, destLayout, order));
     // recovery the shape and strides
     // if (destMemoryFormat != diopiMemoryFormat_t::Contiguous) {
-    if (!destMemoryFormat) {    
+    if (!destMemoryFormat) {
         dest.asStrided(olderDestShape, olderDestStride);
     } else {
         src.asStrided(olderSrcShape, olderSrcStride);

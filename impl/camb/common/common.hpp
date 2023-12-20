@@ -34,7 +34,7 @@ bool broadcast(DiopiTensor inputTensor, const std::vector<int64_t>& targetShape,
 
 diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryFormat_t memoryFormat = diopiMemoryFormat_t::Contiguous);
 
-diopiError_t contiguousOut(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor& dest, diopiMemoryFormat_t destMemoryFormat);
+diopiError_t contiguousOut(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor& dest, bool destMemoryFormat);
 
 diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryFormat_t memoryFormat, cnnlTensorLayout_t layoutIn,
                         cnnlTensorLayout_t layoutOut);
