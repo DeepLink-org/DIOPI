@@ -74,7 +74,8 @@ diopiError_t diopiTokenAttentionInference(
     diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
     diopiConstTensorHandle_t bLoc, diopiConstTensorHandle_t bStartLoc,
     diopiConstTensorHandle_t bSeqLen, int maxInputLen) {
-  impl::aten::setCurCtx(ctx);
+  BEGIN_CALL_ACL_OP(attentionOut);
+  // impl::aten::setCurCtx(ctx);
   at::Tensor atQ = impl::aten::buildATen(q);
   at::Tensor atK = impl::aten::buildATen(k);
   at::Tensor atBLoc = impl::aten::buildATen(bLoc);
@@ -100,26 +101,37 @@ diopiError_t diopiTokenAttentionInference(
     int curSeqLen = atBSeqLen[i].item<int>();
     int curSeqStartLoc = atBStartLoc[i].item<int>();
     at::Tensor kLoc = atBLoc[i].index_select(
-        0, at::arange(maxInputLen - curSeqLen, maxInputLen, atQ.device()));
+        0, at::arange(maxInputLen - curSeqLen, maxInputLen));
     at::Tensor key =
         atK.index({kLoc}).view({1, curSeqLen, head, dim}).transpose(1, 2);
     at::Tensor outLoc = at::arange(curSeqStartLoc, curSeqStartLoc + curSeqLen);
     // at::Tensor values = (at::matmul(atQ.index({i}).to(at::ScalarType::Float),
     // key.transpose(2, 3).to(at::ScalarType::Float)) /
     // std::sqrt(dim)).view({head, curSeqLen});
+    // at::Tensor values =
+    //     (at::matmul(atQ.index({i}), key.transpose(2, 3)) / std::sqrt(dim))
+    //         .view({head, curSeqLen});
     at::Tensor values =
-        (at::matmul(atQ.index({i}), key.transpose(2, 3)) / std::sqrt(dim))
+        (at::matmul(atQ.index({i}).to(at::ScalarType::Float),
+                    key.transpose(2, 3).to(at::ScalarType::Float)) /
+         std::sqrt(dim))
             .view({head, curSeqLen});
     atAttentionOut.index_put_({torch::indexing::Slice(), outLoc}, values);
   }
   std::cout << "finish loop" << std::endl;
+  std::cout << "atAttentionOut=" << atAttentionOut << std::endl;
 
   atAttentionOut = impl::aten::toDevice(atAttentionOut).to(dtype);
   std::cout << "change dtype" << std::endl;
 
+  std::cout << "atAttentionOut new=" << atAttentionOut << std::endl;
+
+
   // impl::aten::buildDiopiTensor(ctx, atAttentionOut, &attentionOut);
-  impl::aten::unsetCurCtx();
-  return diopiSuccess;
+  attentionOutAt.copy_(atAttentionOut);
+  END_CALL_ACL_OP();
+  // impl::aten::unsetCurCtx();
+  // return diopiSuccess;
 }
 
 } // namespace OP_IMPL_NS
