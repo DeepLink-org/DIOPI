@@ -721,8 +721,8 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
             diopiTensorHandle_t qk_buffer;
             newshape.len = 3;
             shape[0] = batch_size * local_head_num;
-            shape[2] = max_q_len;
-            shape[3] = max_kv_len;
+            shape[1] = max_q_len;
+            shape[2] = max_kv_len;
             diopiRequireTensor(ctx, &qk_buffer, &newshape, nullptr, dtype, device);
             diopiBmm(ctx, qk_buffer, q_cache_buf_, k_cache_buf_);
             diopiScalar_t qk_scale{dtype, double(1.f / sqrtf(size_per_head * 1.f))};
