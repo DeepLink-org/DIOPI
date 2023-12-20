@@ -80,13 +80,13 @@ diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorH
     at::Tensor atBSeqLen = impl::aten::buildATen(bSeqLen);
     at::Tensor atAttentionOut = impl::aten::buildATen(attentionOut);
 
-    atQ = atQ.cpu();
-    atK = atK.cpu();
-    atBLoc = atBLoc.cpu();
-    atBStartLoc = atBStartLoc.cpu();
-    atBSeqLen = atBSeqLen.cpu();
-    caffe2::TypeMeta dtype = atAttentionOut.dtype();
-    atAttentionOut = atAttentionOut.cpu().to(at::ScalarType::Float);
+    // atQ = atQ.cpu();
+    // atK = atK.cpu();
+    // atBLoc = atBLoc.cpu();
+    // atBStartLoc = atBStartLoc.cpu();
+    // atBSeqLen = atBSeqLen.cpu();
+    // caffe2::TypeMeta dtype = atAttentionOut.dtype();
+    // atAttentionOut = atAttentionOut.cpu().to(at::ScalarType::Float);
 
     int batch = atBLoc.size(0);
     int head = atQ.size(1);
@@ -100,12 +100,14 @@ diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorH
         at::Tensor kLoc = atBLoc[i].index_select(0, at::arange(maxInputLen - curSeqLen, maxInputLen, atQ.device()));
         at::Tensor key = atK.index({kLoc}).view({1, curSeqLen, head, dim}).transpose(1, 2);
         at::Tensor outLoc = at::arange(curSeqStartLoc, curSeqStartLoc + curSeqLen);
-        at::Tensor values = (at::matmul(atQ.index({i}).to(at::ScalarType::Float), key.transpose(2, 3).to(at::ScalarType::Float)) / std::sqrt(dim)).view({head, curSeqLen});
+        // at::Tensor values = (at::matmul(atQ.index({i}).to(at::ScalarType::Float), key.transpose(2, 3).to(at::ScalarType::Float)) / std::sqrt(dim)).view({head, curSeqLen});
+        at::Tensor values = (at::matmul(atQ.index({i}), key.transpose(2, 3)) / std::sqrt(dim)).view({head, curSeqLen});
         atAttentionOut.index_put_({torch::indexing::Slice(), outLoc}, values);
     }
     std::cout << "finish loop" << std::endl;
 
-    atAttentionOut = impl::aten::toDevice(atAttentionOut).to(dtype);
+    // atAttentionOut = impl::aten::toDevice(atAttentionOut);
+    // atAttentionOut = impl::aten::toDevice(atAttentionOut).to(dtype);
     std::cout << "change dtype" << std::endl;
 
     // impl::aten::buildDiopiTensor(ctx, atAttentionOut, &attentionOut);
