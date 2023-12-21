@@ -2707,7 +2707,7 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("index_put_", TORCH_FN(wrapper__index_put_));
     m.impl("_index_put_impl_", TORCH_FN(wrapper___index_put_impl_));
     m.impl("index.Tensor", TORCH_FN(wrapper_Tensor_index));
-    m.impl("bmm", TORCH_FN(wrapper__bmm));
+    // m.impl("bmm", TORCH_FN(wrapper__bmm));
     m.impl("div.Tensor", TORCH_FN(wrapper_Tensor_div));
     m.impl("index_select", TORCH_FN(wrapper__index_select));
     m.impl("_softmax", TORCH_FN(wrapper___softmax));
