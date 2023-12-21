@@ -37,8 +37,8 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 
     std::vector<int64_t> inputDim = inputTr.shape();
     std::vector<int64_t> outDim = outTmpTr.shape();
-    CnnlTensorDesc inputDesc(inputTr, CNNL_LAYOUT_NCHW);
-    CnnlTensorDesc outDesc(outTmpTr, CNNL_LAYOUT_NCHW);
+    CnnlTensorDesc inputDesc(inputTr, CNNL_LAYOUT_NHWC);
+    CnnlTensorDesc outDesc(outTmpTr, CNNL_LAYOUT_NHWC);
 
     const int64_t kernelH = kernelSize.data[0];
     const int64_t kernelW = kernelSize.len == 1 ? kernelH : kernelSize.data[1];
@@ -120,9 +120,9 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
 
     std::vector<int64_t> inputDim = inputTr.shape();
     std::vector<int64_t> outDim = outTmpTr.shape();
-    CnnlTensorDesc inputDesc(inputTr, CNNL_LAYOUT_NCHW);
-    CnnlTensorDesc indicesDesc(indicesTmpTr, CNNL_LAYOUT_NCHW);
-    CnnlTensorDesc outDesc(outTmpTr, CNNL_LAYOUT_NCHW);
+    CnnlTensorDesc inputDesc(inputTr, CNNL_LAYOUT_NHWC);
+    CnnlTensorDesc indicesDesc(indicesTmpTr, CNNL_LAYOUT_NHWC);
+    CnnlTensorDesc outDesc(outTmpTr, CNNL_LAYOUT_NHWC);
 
     const int64_t kernelH = kernelSize.data[0];
     const int64_t kernelW = kernelSize.len == 1 ? kernelH : kernelSize.data[1];
