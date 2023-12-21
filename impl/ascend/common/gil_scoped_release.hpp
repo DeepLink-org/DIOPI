@@ -11,7 +11,7 @@ private:
     PyThreadState* state = nullptr;
 
 public:
-    explicit gil_scoped_release() {
+    gil_scoped_release() {
         if (PyGILState_Check()) {
             state = PyEval_SaveThread();
         }
