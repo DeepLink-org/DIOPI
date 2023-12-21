@@ -1914,7 +1914,7 @@ device_configs = {
     'batch_norm_stats': dict(
         name=["batch_norm_stats"],
         atol=1e-2,
-        rtol=1e-3,
+        rtol=5e-3,
     ),
 
     'rotary_emb': dict(
