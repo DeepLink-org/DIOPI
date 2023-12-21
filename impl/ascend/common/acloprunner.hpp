@@ -282,7 +282,7 @@ public:
             stream << " ,shape:";
             std::for_each(dims.data(), dims.data() + dims.size(), [&stream](int64_t v) { stream << v << " "; });
             stream << ")";
-            if(isDebugAclOpRunnerOn()){
+            if (isDebugAclOpRunnerOn()) {
                 info(__FILE__, __LINE__, __FUNCTION__, "%s output[%d]: %s", opname_.c_str(), outputIndex_, stream.str().c_str());
             }
         }
@@ -358,7 +358,7 @@ public:
             stream << " ,shape:";
             std::for_each(dims.data(), dims.data() + dims.size(), [&stream](int64_t v) { stream << v << " "; });
             stream << ")";
-            if(isDebugAclOpRunnerOn()){
+            if (isDebugAclOpRunnerOn()) {
                 info(__FILE__, __LINE__, __FUNCTION__, "%s input[%d]: %s", opname_.c_str(), inputIndex_, stream.str().c_str());
             }
         }
@@ -378,8 +378,8 @@ public:
     AclOpRunner& addInput(const AscendTensor& at, const aclFormat& format) {
         ASCEND_CHECK_ABORT(at.defined(), "input should not be nullptr");
 
-        if(isDebugAclOpRunnerOn()){
-            info(__FILE__, __LINE__, __FUNCTION__,"%s input[%d]:%s", opname_.c_str(), inputIndex_, dumpTensor(at).c_str());
+        if (isDebugAclOpRunnerOn()) {
+            info(__FILE__, __LINE__, __FUNCTION__, "%s input[%d]:%s", opname_.c_str(), inputIndex_, dumpTensor(at).c_str());
         }
 
         ASCEND_CHECK_ABORT(inputIndex_ >= 0 && inputIndex_ < inputSize(), "check 0<=inputIndex<inputSize() failed");

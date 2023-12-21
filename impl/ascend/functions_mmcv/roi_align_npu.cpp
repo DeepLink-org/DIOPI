@@ -3,8 +3,9 @@
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  */
-#include "../common/acloprunner.hpp"
 #include <mutex>
+
+#include "../common/acloprunner.hpp"
 
 using namespace impl::ascend;
 

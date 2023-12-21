@@ -7,8 +7,8 @@
 #include "ascend_tensor.hpp"
 
 #include <array>
-#include <utility>
 #include <mutex>
+#include <utility>
 
 #include "common/debug.hpp"
 

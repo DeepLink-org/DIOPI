@@ -4,12 +4,11 @@
 #include <acl/acl.h>
 #include <diopi/diopirt.h>
 
+#include <cstdarg>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include <cstdarg>
 
 namespace impl {
 namespace ascend {
@@ -76,7 +75,6 @@ inline void info(const char* file, int lineNum, const char* funcName, const char
     vprintf(format, args);
     printf("\n");
 }
-
 
 class AscendTensor final {
 public:
