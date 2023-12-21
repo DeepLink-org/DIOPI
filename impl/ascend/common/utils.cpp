@@ -291,7 +291,7 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
         }
         *out = outCopy;
     } else if (device == diopi_device) {
-        diopiTensorHandle_t outCopyDev;
+        diopiTensorHandle_t outCopyDev = nullptr;
         void *src, *dst;
         if (isFloatingType(dtype)) {
             diopiRequireTensor(ctx, &outCopy, &sSize, nullptr, diopi_dtype_float64, diopi_host);
