@@ -194,7 +194,8 @@ aclFormat AscendTensor::getAclDataFormat() const {
         if (thStride == ndhwcStride) {
             return ACL_FORMAT_NDHWC;
         }
-        error(__FILE__, __LINE__, __FUNCTION__, "Acl only support NCDHW or NDHWC format! but get %s", dumpTensor(tensor_).c_str());
+        std::call_once(
+            warningFlag, warning, __FILE__, __LINE__, __FUNCTION__, "Acl only support NCDHW or NDHWC format! but get %s", dumpTensor(tensor_).c_str());
     } else if (dim() == 4) {
         std::array<int64_t, 4> thStride{stride(0), stride(1), stride(2), stride(3)};
         {

@@ -316,7 +316,7 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
         CALL_ACLRT(aclrtSynchronizeStream(stream));
         diopiCastDtype(ctx, *out, outCopyDev);
     } else {
-        error(__FILE__, __LINE__, __FUNCTION__, "dtype %s not supported on device", diopiDtypeToStr(dtype));
+        error(__FILE__, __LINE__, __FUNCTION__, "device[%s] not supported", deviceType2Str(device));
     }
     return diopiSuccess;
 }
