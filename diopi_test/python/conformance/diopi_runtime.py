@@ -310,22 +310,13 @@ class Tensor(diopiTensor):
         return tr
 
     def numpy(self) -> np.ndarray:
+        if all(x == 0 for x in self.size().data):
+            return np.empty(self.size().data, to_numpy_dtype(self.get_dtype()))
         data = np.empty((1,), to_numpy_dtype(self.get_dtype()))
         element_size = data.itemsize
-        sumsize = int(
-            sum(
-                [
-                    (s - 1) * st
-                    for s, st in zip(
-                        list(self.size().data),
-                        [
-                            int(stride * element_size)
-                            for stride in self.get_stride().data
-                        ],
-                    )
-                ]
-            ) / element_size + 1
-        )
+        stride_scaled = [int(stride * element_size) for stride in self.get_stride().data]
+        sum_of_products = sum((s - 1) * st for s, st in zip(self.size().data, stride_scaled))
+        sumsize = int(sum_of_products / element_size) + 1
         darray = np.empty(sumsize, to_numpy_dtype(self.get_dtype()))
         PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
         PyCapsule_New = ctypes.pythonapi.PyCapsule_New
