@@ -51,3 +51,18 @@
 
 - diopiBatchNormStats:
     layout: NLC, NHWC, NDHWC
+
+- diopiMaxPool2dWithIndices:
+    layout: NLC, NHWC, NDHWC
+
+- diopiMaxPool2d:
+    layout: NLC, NHWC, NDHWC
+
+- diopiMaxPool2dBackward:
+    layout: NLC, NHWC, NDHWC
+
+- diopiReluInp:
+    layout: NLC, NHWC, NDHWC
+
+- diopiThresholdBackward:
+    layout: NLC, NHWC, NDHWC
