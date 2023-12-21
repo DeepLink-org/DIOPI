@@ -2691,6 +2691,17 @@ at::Tensor wrapper_Tensor_index(const at::Tensor& self, const c10::List<c10::opt
     return acl_op::index(self, indicesCast);
 }
 
+at::Tensor wrapper__bmm(const at::Tensor & self, const at::Tensor & mat2) {
+  return acl_op::bmm(self, mat2);
+}
+
+at::Tensor wrapper_Tensor_div(const at::Tensor & self, const at::Tensor & other) {
+  return acl_op::div(self, other);
+}
+
+at::Tensor wrapper__index_select(const at::Tensor & self, int64_t dim, const at::Tensor & index) {
+  return acl_op::index_select(self, dim, index);
+}
 }  // namespace
 
 namespace at {
@@ -2707,6 +2718,9 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("index_put_", TORCH_FN(wrapper__index_put_));
     m.impl("_index_put_impl_", TORCH_FN(wrapper___index_put_impl_));
     m.impl("index.Tensor", TORCH_FN(wrapper_Tensor_index));
+    m.impl("bmm", TORCH_FN(wrapper__bmm));
+    m.impl("div.Tensor", TORCH_FN(wrapper_Tensor_div));
+    m.impl("index_select", TORCH_FN(wrapper__index_select));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
