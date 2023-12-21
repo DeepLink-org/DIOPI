@@ -52,6 +52,8 @@
 - diopiBatchNormStats:
     layout: NLC, NHWC, NDHWC
 
+# Ops below are not neccesary to convert format
+# next version will be changed,it is better to do nothing in adaptor
 - diopiMaxPool2dWithIndices:
     layout: NLC, NHWC, NDHWC
 
