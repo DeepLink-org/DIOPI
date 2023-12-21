@@ -27,7 +27,7 @@ namespace {
 // needs to ensure that the parameters are correct.
 
 // the caller should ensure the tensor.is_npu == true
-bool is_same_format(const at::Tensor &a, const at::Tensor &b) {
+bool is_same_format(const at::Tensor& a, const at::Tensor& b) {
     bool isSameFormat = FormatHelper::GetFormat(a) == FormatHelper::GetFormat(b);
     if (!isSameFormat) {
         bool isBaseFormat = FormatHelper::IsBaseFormatType(a) && FormatHelper::IsBaseFormatType(b);
@@ -36,7 +36,7 @@ bool is_same_format(const at::Tensor &a, const at::Tensor &b) {
     return true;
 }
 
-bool try_to_optimize_copy_with_any_format(at::Tensor &self, const at::Tensor &src) {
+bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Tensor& src) {
     // Some Ops support inputs with 5HD/NZ format, Transdata is redundant
     // Record:
     // Op:Reshape; SliceD || Supportformat: 5HD/NZ
@@ -46,14 +46,14 @@ bool try_to_optimize_copy_with_any_format(at::Tensor &self, const at::Tensor &sr
 // the dst and src are same format now
 // the dst and src are base format now
 // the dst and src maybe non-contiguous
-void copy_d2d_last_method(at::Tensor &self, const at::Tensor &src, bool same_type, bool non_blocking) {
+void copy_d2d_last_method(at::Tensor& self, const at::Tensor& src, bool same_type, bool non_blocking) {
     // general copy method but Low performance
     RECORD_FUNCTION("contiguous_d_ViewCopy", std::vector<c10::IValue>({src}));
     custom_ops::npu_view_copy(self, src, non_blocking);
 }
 
 // the dst and src are same format now
-void copy_d2d_dtype_format(at::Tensor &self, const at::Tensor &src, bool non_blocking) {
+void copy_d2d_dtype_format(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
     // Note: Src & Self have the same format.
     if (try_to_optimize_copy_with_any_format(self, src)) {
         return;
@@ -76,7 +76,7 @@ void copy_d2d_dtype_format(at::Tensor &self, const at::Tensor &src, bool non_blo
     copy_d2d_dtype_baseformat(self, src, non_blocking);
 }
 
-void copy_d2d(at::Tensor &self, const at::Tensor &src, bool non_blocking) {
+void copy_d2d(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
     if (self.dtype() != src.dtype()) {
         custom_ops::npu_dtype_cast_(self, src.contiguous(at::MemoryFormat::Contiguous));  // npu_dtype_cast_ will call copy function.
         return;
@@ -87,7 +87,7 @@ void copy_d2d(at::Tensor &self, const at::Tensor &src, bool non_blocking) {
 // the format of dst and src is base format now
 // the dtype of dst and src is same
 // and src and dst are contiguous
-void copy_between_host_and_device(at::Tensor &dst, const at::Tensor &src, aclrtMemcpyKind kind, bool non_blocking) {
+void copy_between_host_and_device(at::Tensor& dst, const at::Tensor& src, aclrtMemcpyKind kind, bool non_blocking) {
     int64_t nbytes = dst.numel() * dst.element_size();
     c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
 
@@ -95,7 +95,7 @@ void copy_between_host_and_device(at::Tensor &dst, const at::Tensor &src, aclrtM
         auto ret = CalcuOpUtil::LaunchAsyncCopyTaskWithModeSwitch(dst, nbytes, src, nbytes, kind);
         NPU_CHECK_ERROR(ret);
         NPU_LOGD("non_blocking copy without StreamSynchronize.");
-        void *ptr = at_npu::key::isDeviceTensor(dst) ? src.data_ptr() : dst.data_ptr();
+        void* ptr = at_npu::key::isDeviceTensor(dst) ? src.data_ptr() : dst.data_ptr();
         NPU_CHECK_ERROR(THNPUCachingHostAllocator_recordEvent(ptr, stream));
     } else {
         aclError error = c10_npu::acl::AclrtSynchronizeStreamWithTimeout(stream);
@@ -115,7 +115,7 @@ void copy_between_host_and_device(at::Tensor &dst, const at::Tensor &src, aclrtM
 // the format of dst and src is base format now
 // the dtype of dst and src is same
 // and src and dst are contiguous
-void copy_h2d_baseformat_dtype_contigous(at::Tensor &dst, const at::Tensor &src, bool non_blocking) {
+void copy_h2d_baseformat_dtype_contigous(at::Tensor& dst, const at::Tensor& src, bool non_blocking) {
     c10_npu::OptionalNPUGuard device_guard;
     device_guard.set_device(dst.device());
     aclrtMemcpyKind kind = aclrtMemcpyKind::ACL_MEMCPY_HOST_TO_DEVICE;
@@ -125,7 +125,7 @@ void copy_h2d_baseformat_dtype_contigous(at::Tensor &dst, const at::Tensor &src,
 // the format of dst and src is baseformat now
 // the dtype of dst and src is same
 // and src and dst are contiguous
-void copy_d2h_baseformat_dtype_contigous(at::Tensor &dst, const at::Tensor &src, bool non_blocking) {
+void copy_d2h_baseformat_dtype_contigous(at::Tensor& dst, const at::Tensor& src, bool non_blocking) {
     c10_npu::OptionalNPUGuard device_guard;
     device_guard.set_device(src.device());
     aclrtMemcpyKind kind = aclrtMemcpyKind::ACL_MEMCPY_DEVICE_TO_HOST;
@@ -133,7 +133,7 @@ void copy_d2h_baseformat_dtype_contigous(at::Tensor &dst, const at::Tensor &src,
 }
 
 // the format of dst and src is baseformat now
-void copy_h2d_baseformat(at::Tensor &dst, const at::Tensor &src, bool non_blocking, bool dst_must_be_contiguous = false) {
+void copy_h2d_baseformat(at::Tensor& dst, const at::Tensor& src, bool non_blocking, bool dst_must_be_contiguous = false) {
     bool same_type = (src.dtype() == dst.dtype());
     bool dst_is_contiguous = dst_must_be_contiguous ? true : dst.is_contiguous();
     if (same_type && dst_is_contiguous && src.is_contiguous()) {
@@ -160,7 +160,7 @@ void copy_h2d_baseformat(at::Tensor &dst, const at::Tensor &src, bool non_blocki
 }
 
 // the format of dst and src is baseformat now
-void copy_d2h_baseformat(at::Tensor &dst, const at::Tensor &src, bool non_blocking) {
+void copy_d2h_baseformat(at::Tensor& dst, const at::Tensor& src, bool non_blocking) {
     bool same_type = (src.dtype() == dst.dtype());
     bool dst_is_contiguous = dst.is_contiguous();
     if (same_type && dst_is_contiguous && src.is_contiguous()) {
@@ -180,7 +180,7 @@ void copy_d2h_baseformat(at::Tensor &dst, const at::Tensor &src, bool non_blocki
     }
 }
 
-void copy_h2d(at::Tensor &self, const at::Tensor &src, bool non_blocking) {
+void copy_h2d(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
     if (!FormatHelper::IsBaseFormatType(self)) {
         at::Tensor dst = OpPreparation::ApplyTensorWithSizes(self.sizes(), self.options());
         copy_h2d_baseformat(dst, src, non_blocking, true);
@@ -190,7 +190,7 @@ void copy_h2d(at::Tensor &self, const at::Tensor &src, bool non_blocking) {
     copy_h2d_baseformat(self, src, non_blocking);
 }
 
-void copy_d2h(at::Tensor &self, const at::Tensor &src, bool non_blocking) {
+void copy_d2h(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
     if (!FormatHelper::IsBaseFormatType(src)) {
         at::Tensor src_4D = FormatCastHelper::ApplyBaseFormatTensorBy(src);
         copy_d2h_baseformat(self, src_4D, non_blocking);
@@ -201,7 +201,7 @@ void copy_d2h(at::Tensor &self, const at::Tensor &src, bool non_blocking) {
 }  // namespace
 
 // the caller should guarantee that the format and dtype are same
-bool can_use_memcpy(at::Tensor &dst, const at::Tensor &src) {
+bool can_use_memcpy(at::Tensor& dst, const at::Tensor& src) {
     if (StorageDescHelper::IsSameDesc(dst, src)) {
         // Make sure that the metadata are same.
         if (!dst.sizes().equals(src.sizes())) {
@@ -225,7 +225,7 @@ bool can_use_memcpy(at::Tensor &dst, const at::Tensor &src) {
 }
 
 // the dst and src are same dtype now
-void copy_d2d_dtype(at::Tensor &self, const at::Tensor &src, bool non_blocking) {
+void copy_d2d_dtype(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
     if (!is_same_format(self, src)) {
         at::Tensor src_4D = FormatCastHelper::ApplyBaseFormatTensorBy(src);
         // ApplyBaseFormatTensorBy is redundant for self tensor with base format.
@@ -244,7 +244,7 @@ void copy_d2d_dtype(at::Tensor &self, const at::Tensor &src, bool non_blocking) 
 // the dst and src are same format now
 // the dst and src are base format now
 // the dst and src maybe non-contiguous
-void copy_d2d_dtype_baseformat(at::Tensor &self, const at::Tensor &src, bool non_blocking) {
+void copy_d2d_dtype_baseformat(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
     if (!self.is_contiguous()) {
         // Contiguous/discontiguous source tensor copy to discontiguous self tensor
         return copy_d2d_last_method(self, src, true, non_blocking);
@@ -274,14 +274,14 @@ void copy_d2d_dtype_baseformat(at::Tensor &self, const at::Tensor &src, bool non
     copy_d2d_last_method(self, src, true, non_blocking);
 }
 
-bool try_to_optimize_copy_with_any_format(at::Tensor &self, const at::Tensor &src) {
+bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Tensor& src) {
     // Some Ops support inputs with 5HD/NZ format, Transdata is redundant
     // Record:
     // Op:Reshape; SliceD || Supportformat: 5HD/NZ
     return TransContiguous::ContiguousOptimizeWithAnyFormat(self, src);
 }
 
-at::Tensor &NPUNativeFunctions::copy_(at::Tensor &self, const at::Tensor &src, bool non_blocking) {
+at::Tensor& NPUNativeFunctions::copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
     if (self.numel() == 0) {
         return self;
     }
@@ -311,7 +311,7 @@ at::Tensor &NPUNativeFunctions::copy_(at::Tensor &self, const at::Tensor &src, b
 
 class BroadcastContiguousOpt : public ContiguousOpt {
 public:
-    bool Optimizer(at::Tensor &self, const at::Tensor &src, const ContiguousTensorDesc &src_desc) override {
+    bool Optimizer(at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc) override {
         if (self.dim() != src.dim()) {
             return false;
         }
@@ -325,13 +325,13 @@ public:
     }
 
 private:
-    bool can_use_broadcast(const ContiguousTensorDesc &src_desc) {
+    bool can_use_broadcast(const ContiguousTensorDesc& src_desc) {
         // Reshape is used to process dimension addition cases for expand/expand_as.
         // Here, dimension expansion cases of expand/expand_as are processed.
-        const auto &base_sizes = src_desc.base_sizes_;
-        const auto &base_strides = src_desc.base_strides_;
-        const auto &view_sizes = src_desc.sizes_;
-        const auto &view_strides = src_desc.strides_;
+        const auto& base_sizes = src_desc.base_sizes_;
+        const auto& base_strides = src_desc.base_strides_;
+        const auto& view_sizes = src_desc.sizes_;
+        const auto& view_strides = src_desc.strides_;
 
         // The new ones will be appended at the front.
         // Any dimension of size 1 can be expanded to an arbitrary value.
@@ -365,7 +365,7 @@ private:
         return has_zero_in_stride;
     }
 
-    bool broadcast_to_contiguous(at::Tensor &self, const at::Tensor &src, const ContiguousTensorDesc &src_desc) {
+    bool broadcast_to_contiguous(at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc) {
         std::vector<int64_t> src_size(src.dim());
         for (const auto i : c10::irange(src_desc.sizes_.size())) {
             if (src_desc.strides_[i] == 0) {
@@ -408,7 +408,7 @@ using OffsetStack = c10::SmallVector<int64_t, MaxCombinedCasesNum>;
 class CombinedContiguousOpt : public ContiguousOpt {
 public:
     // Combined tensor == discontiguous tensor caused by combined view operators.
-    bool Optimizer(at::Tensor &self, const at::Tensor &src, const ContiguousTensorDesc &src_desc) override {
+    bool Optimizer(at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc) override {
         // Maximum combined operators suggested: combined_cases_num = 2
         // NOTE: n-cmobined(n>2) can also be supported
         int combined_cases_num = MaxCombinedCasesNum;
@@ -435,7 +435,7 @@ public:
     }
 
 private:
-    bool cases_avoid(const ContiguousTensorDesc &tensor_desc) {
+    bool cases_avoid(const ContiguousTensorDesc& tensor_desc) {
         for (const auto i : c10::irange(tensor_desc.sizes_.size())) {
             // expand+x,x+expand
             if (tensor_desc.strides_[i] == 0) {
@@ -446,7 +446,7 @@ private:
     }
 
     // Unmatched tensor ==refresh(no copy)==> macthed tensor
-    bool reshape_without_copy_match(at::Tensor &tensor) {
+    bool reshape_without_copy_match(at::Tensor& tensor) {
         if (!tensor.is_contiguous()) {
             return false;
         }
@@ -461,20 +461,20 @@ private:
     }
 
     // Whether tensor can be optimized(no optimization).
-    bool can_be_optimize_from_default_cases(ContiguousTensorDesc &tensor_desc) {
+    bool can_be_optimize_from_default_cases(ContiguousTensorDesc& tensor_desc) {
         OptimizationCases opt_cases{"reshape", "slice", "select"};
         tensor_desc.reset_optimization_cases(opt_cases);
         return TransContiguous::CanOptimize(tensor_desc);
     }
 
     // Conduct trans-contiguous for given optimization cases.
-    bool copy_optimize_contiguous_by_given_cases(at::Tensor &self, const at::Tensor &tensor, OptimizationCases &optimizations) {
+    bool copy_optimize_contiguous_by_given_cases(at::Tensor& self, const at::Tensor& tensor, OptimizationCases& optimizations) {
         // Set "OpenCombined = false" to avoid recursion.
         return TransContiguous::ContiguousOptimizeWithBaseFormat(self, tensor, optimizations, false);
     }
 
     // Weak constrains for transpose cases
-    bool maybe_permute(const ContiguousTensorDesc &tensor_desc) {
+    bool maybe_permute(const ContiguousTensorDesc& tensor_desc) {
         // tensors with nonmonotonic strides will be taken into consideration
         // (Ascend): 对于特殊stride的情况例如：[*,*,1,1]这种，需要进一步分析影响
         for (const auto i : c10::irange(tensor_desc.sizes_.size() - 1)) {
@@ -486,7 +486,7 @@ private:
     }
 
     // Weak constrains for select cases
-    bool maybe_select(const ContiguousTensorDesc &tensor_desc) {
+    bool maybe_select(const ContiguousTensorDesc& tensor_desc) {
         for (auto i = tensor_desc.sizes_.size() - 1; i > 0; i--) {
             if (tensor_desc.strides_[i - 1] % (tensor_desc.sizes_[i] * tensor_desc.strides_[i]) != 0) {
                 return false;
@@ -505,7 +505,7 @@ private:
     }
 
     // Weak constrains for slice cases
-    bool maybe_slice(const ContiguousTensorDesc &tensor_desc) {
+    bool maybe_slice(const ContiguousTensorDesc& tensor_desc) {
         // tensors with reduced numel will be taken into consideration.
         if (c10::multiply_integers(tensor_desc.sizes_) < c10::multiply_integers(tensor_desc.base_sizes_)) {
             for (const auto i : c10::irange(tensor_desc.sizes_.size() - 2)) {
@@ -523,13 +523,13 @@ private:
   Key inferred infos: infer_size,infer_stride and infer_offset,
   Inference order: permute, select, slice.
   */
-    bool can_infer_view_tensor(ContiguousTensorDesc &tensor_desc, FormatShape &infer_size, FormatShape &infer_stride, int64_t &infer_offset) {
-        const auto &view_sizes = tensor_desc.sizes_;
-        const auto &view_strides = tensor_desc.strides_;
+    bool can_infer_view_tensor(ContiguousTensorDesc& tensor_desc, FormatShape& infer_size, FormatShape& infer_stride, int64_t& infer_offset) {
+        const auto& view_sizes = tensor_desc.sizes_;
+        const auto& view_strides = tensor_desc.strides_;
 
         if (maybe_permute(tensor_desc)) {
-            FormatShape &permute_size_sorted = infer_size;
-            FormatShape &permute_stride_sorted = infer_stride;
+            FormatShape& permute_size_sorted = infer_size;
+            FormatShape& permute_stride_sorted = infer_stride;
             permute_size_sorted = view_sizes;
             permute_stride_sorted = view_strides;
 
@@ -569,8 +569,8 @@ private:
         }
 
         if (maybe_select(tensor_desc)) {
-            FormatShape &select_size = infer_size;
-            FormatShape &select_stride = infer_stride;
+            FormatShape& select_size = infer_size;
+            FormatShape& select_stride = infer_stride;
             // Infer base shape according to view shape and stride
             select_stride = view_strides;
             select_size = view_sizes;
@@ -614,8 +614,8 @@ private:
         }
 
         if (maybe_slice(tensor_desc)) {
-            FormatShape &slice_size = infer_size;
-            FormatShape &slice_stride = infer_stride;
+            FormatShape& slice_size = infer_size;
+            FormatShape& slice_stride = infer_stride;
 
             slice_stride = view_strides;
             slice_size = view_sizes;
@@ -639,8 +639,8 @@ private:
         return false;
     }
 
-    bool stack_infer_info(ShapeStrideStack &shape_stride_stacks, OffsetStack &offset_stacks, int64_t infer_offset, int64_t combined_cases_num,
-                          ContiguousTensorDesc &tensor_desc) {
+    bool stack_infer_info(ShapeStrideStack& shape_stride_stacks, OffsetStack& offset_stacks, int64_t infer_offset, int64_t combined_cases_num,
+                          ContiguousTensorDesc& tensor_desc) {
         // Only combined_cases_num-combined Ops cases are taken into consideration
         if (static_cast<int16_t>(shape_stride_stacks.size()) == combined_cases_num) {
             return false;
@@ -656,7 +656,7 @@ private:
     }
 
     // Conduct inferring
-    bool can_use_combined(ShapeStrideStack &shape_stride_stacks, OffsetStack &offset_stacks, const ContiguousTensorDesc &src_desc, int64_t combined_cases_num) {
+    bool can_use_combined(ShapeStrideStack& shape_stride_stacks, OffsetStack& offset_stacks, const ContiguousTensorDesc& src_desc, int64_t combined_cases_num) {
         // combined tensor should be discontiguous
         if (src_desc.is_contiguous_ || cases_avoid(src_desc)) {
             return false;
@@ -701,7 +701,7 @@ private:
     }
 
     // Reconstructing discontiguous tensor at trans-contiguous procedure.
-    bool reconstruct_tensor(at::Tensor &src, ShapeStrideStack &shape_stride_stacks, OffsetStack &offset_stacks) {
+    bool reconstruct_tensor(at::Tensor& src, ShapeStrideStack& shape_stride_stacks, OffsetStack& offset_stacks) {
         auto stack_shape_stride = shape_stride_stacks.pop_back_val();
         auto stack_offset = offset_stacks.pop_back_val();
         // Set view info to make discontiguous tensor.
@@ -735,7 +735,7 @@ private:
     }
 
     // Conduct trans-contiguous under strict constrains
-    bool combined_to_contiguous(at::Tensor &self, at::Tensor &src, ShapeStrideStack &shape_stride_stacks, OffsetStack &offset_stacks) {
+    bool combined_to_contiguous(at::Tensor& self, at::Tensor& src, ShapeStrideStack& shape_stride_stacks, OffsetStack& offset_stacks) {
         // Base case: the last tensor to be processed.
         if (shape_stride_stacks.size() == 1) {
             if (reconstruct_tensor(src, shape_stride_stacks, offset_stacks)) {
@@ -771,7 +771,7 @@ REGISTER_COPY_OPT(combined, CombinedContiguousOpt)
 
 class IndexingContiguousOpt : public ContiguousOpt {
 public:
-    bool Optimizer(at::Tensor &self, const at::Tensor &src, const ContiguousTensorDesc &src_desc) override {
+    bool Optimizer(at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc) override {
         c10::SmallVector<int64_t, MAX_DIM> start;
         c10::SmallVector<int64_t, MAX_DIM> end;
         c10::SmallVector<int64_t, MAX_DIM> step;
@@ -785,8 +785,8 @@ public:
     }
 
 private:
-    bool can_use_indexing(const ContiguousTensorDesc &src_desc, c10::SmallVector<int64_t, MAX_DIM> &start, c10::SmallVector<int64_t, MAX_DIM> &end,
-                          c10::SmallVector<int64_t, MAX_DIM> &step) {
+    bool can_use_indexing(const ContiguousTensorDesc& src_desc, c10::SmallVector<int64_t, MAX_DIM>& start, c10::SmallVector<int64_t, MAX_DIM>& end,
+                          c10::SmallVector<int64_t, MAX_DIM>& step) {
         if (c10::multiply_integers(src_desc.sizes_) >= c10::multiply_integers(src_desc.base_sizes_)) {
             return false;
         }
@@ -798,10 +798,10 @@ private:
             return false;
         }
 
-        const auto &base_size = src_desc.base_sizes_;
-        const auto &base_stride = src_desc.base_strides_;
-        const auto &indexing_size = src_desc.sizes_;
-        const auto &indexing_stride = src_desc.strides_;
+        const auto& base_size = src_desc.base_sizes_;
+        const auto& base_stride = src_desc.base_strides_;
+        const auto& indexing_size = src_desc.sizes_;
+        const auto& indexing_stride = src_desc.strides_;
 
         for (const auto i : c10::irange(indexing_size.size())) {
             // base_stride should not be 0.
@@ -867,9 +867,9 @@ private:
         return true;
     }
 
-    void indexing_to_contiguous(at::Tensor &self, const at::Tensor &src, c10::SmallVector<int64_t, MAX_DIM> &start, c10::SmallVector<int64_t, MAX_DIM> &end,
-                                c10::SmallVector<int64_t, MAX_DIM> &step, const ContiguousTensorDesc &src_desc) {
-        const auto &base_size = src_desc.base_sizes_;
+    void indexing_to_contiguous(at::Tensor& self, const at::Tensor& src, c10::SmallVector<int64_t, MAX_DIM>& start, c10::SmallVector<int64_t, MAX_DIM>& end,
+                                c10::SmallVector<int64_t, MAX_DIM>& step, const ContiguousTensorDesc& src_desc) {
+        const auto& base_size = src_desc.base_sizes_;
         // recover contiguous base tensor
         at::Tensor temp_src = at::empty(src_desc.base_sizes_, src.options());
         temp_src.set_(src.storage(), temp_src.storage_offset(), temp_src.sizes(), temp_src.strides());
@@ -885,7 +885,7 @@ REGISTER_COPY_OPT(indexing, IndexingContiguousOpt)
 
 class PermuteContiguousOpt : public ContiguousOpt {
 public:
-    bool Optimizer(at::Tensor &self, const at::Tensor &src, const ContiguousTensorDesc &src_desc) override {
+    bool Optimizer(at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc) override {
         // pattern permute
         c10::SmallVector<int64_t, MAX_DIM> perm;
         c10::SmallVector<int64_t, 5> sizes;
@@ -893,7 +893,7 @@ public:
             RECORD_FUNCTION("contiguous_d_Transpose", std::vector<c10::IValue>({src}));
             // Refresh src Tensor to match output self Tensor
             auto src_desc_stored = torch_npu::NPUBridge::GetNpuStorageImpl(src)->get_npu_desc();
-            auto &src_desc = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_;
+            auto& src_desc = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_;
             src_desc.base_sizes_ = sizes;
             src_desc.base_strides_ = StorageDescHelper::ComputeStrideFromShape(static_cast<FormatShape>(sizes));
             src_desc.storage_sizes_ = sizes;
@@ -905,16 +905,16 @@ public:
         return false;
     }
 
-    bool CanOptimizer(const ContiguousTensorDesc &src_desc) override {
+    bool CanOptimizer(const ContiguousTensorDesc& src_desc) override {
         c10::SmallVector<int64_t, MAX_DIM> perm;
         c10::SmallVector<int64_t, 5> sizes;
         return can_use_permute(src_desc, perm, sizes);
     }
 
 private:
-    bool can_use_permute(const ContiguousTensorDesc &src_desc, c10::SmallVector<int64_t, MAX_DIM> &perm, c10::SmallVector<int64_t, 5> &sizes) {
-        const auto &base_sizes = src_desc.base_sizes_;
-        const auto &base_strides = src_desc.base_strides_;
+    bool can_use_permute(const ContiguousTensorDesc& src_desc, c10::SmallVector<int64_t, MAX_DIM>& perm, c10::SmallVector<int64_t, 5>& sizes) {
+        const auto& base_sizes = src_desc.base_sizes_;
+        const auto& base_strides = src_desc.base_strides_;
         auto view_sizes = src_desc.sizes_;
         auto view_strides = src_desc.strides_;
 
@@ -971,7 +971,7 @@ private:
         return true;
     }
 
-    void optimize_permute(c10::SmallVector<int64_t, MAX_DIM> &perm, c10::SmallVector<int64_t, 5> &sizes) {
+    void optimize_permute(c10::SmallVector<int64_t, MAX_DIM>& perm, c10::SmallVector<int64_t, 5>& sizes) {
         c10::SmallVector<int64_t, MAX_DIM> optimized_perm;
         c10::SmallVector<int64_t, 5> optimized_sizes;
         if (perm.size() != sizes.size()) {
@@ -1029,7 +1029,7 @@ private:
     }
 
     template <typename T>
-    void squeeze_shape_and_stride(T &shape, T &stride) {
+    void squeeze_shape_and_stride(T& shape, T& stride) {
         int64_t shape_size = static_cast<int64_t>(shape.size());
         for (int64_t i = 0; i < shape_size; i++) {
             if (shape[i] == 1) {
@@ -1043,7 +1043,7 @@ private:
 
 REGISTER_COPY_OPT(permute, PermuteContiguousOpt)
 
-bool can_use_memecpy_for_NZ_format(const ContiguousTensorDesc &tensor_desc) {
+bool can_use_memecpy_for_NZ_format(const ContiguousTensorDesc& tensor_desc) {
     int64_t tensor_shape_size = static_cast<int64_t>(tensor_desc.sizes_.size());
     int64_t base_shape_size = static_cast<int64_t>(tensor_desc.base_sizes_.size());
     // No padding&&offset!=0 at the same time. e.g. x(3, 15, 16)[1:]
@@ -1058,7 +1058,7 @@ bool can_use_memecpy_for_NZ_format(const ContiguousTensorDesc &tensor_desc) {
     return true;
 }
 
-bool can_use_memcpy_for_other_format(const ContiguousTensorDesc &tensor_desc) {
+bool can_use_memcpy_for_other_format(const ContiguousTensorDesc& tensor_desc) {
     // torch.flatten(x) case should be removed
     if (tensor_desc.sizes_.size() < 2) {
         return false;
@@ -1082,7 +1082,7 @@ bool can_use_memcpy_for_other_format(const ContiguousTensorDesc &tensor_desc) {
     }
 }
 
-bool check_reshape_match(const ContiguousTensorDesc &tensor_desc) {
+bool check_reshape_match(const ContiguousTensorDesc& tensor_desc) {
     // (case 1) Reshape tensor should be contiguous
     if (!tensor_desc.is_contiguous_) {
         return false;
@@ -1094,7 +1094,7 @@ bool check_reshape_match(const ContiguousTensorDesc &tensor_desc) {
     return true;
 }
 
-bool check_reshape_match(const ContiguousTensorDesc &self_desc, const ContiguousTensorDesc &src_desc) {
+bool check_reshape_match(const ContiguousTensorDesc& self_desc, const ContiguousTensorDesc& src_desc) {
     // For all format, both src and self are taken into consideration
     if (check_reshape_match(src_desc) && check_reshape_match(self_desc)) {
         // tensor numels eqs for self and src tensor. i.e. make sure that storage
@@ -1108,14 +1108,14 @@ bool check_reshape_match(const ContiguousTensorDesc &self_desc, const Contiguous
     return false;
 }
 
-bool CanUseMemcpyForOtherFormat(const at::Tensor &tensor) {
+bool CanUseMemcpyForOtherFormat(const at::Tensor& tensor) {
     ContiguousTensorDesc tensor_desc = TransContiguous::GetTensorDescInfo(tensor);
     return can_use_memcpy_for_other_format(tensor_desc);
 }
 
 class ReshapeContiguousOpt : public ContiguousOpt {
 public:
-    bool Optimizer(at::Tensor &result, const at::Tensor &src, const ContiguousTensorDesc &src_desc) override {
+    bool Optimizer(at::Tensor& result, const at::Tensor& src, const ContiguousTensorDesc& src_desc) override {
         ContiguousTensorDesc result_desc = TransContiguous::GetTensorDescInfo(result);
         if (check_reshape_match(result_desc, src_desc)) {
             RECORD_FUNCTION("contiguous_d_Reshape", std::vector<c10::IValue>({src}));
@@ -1125,14 +1125,14 @@ public:
         return false;
     }
 
-    bool CanOptimizer(const ContiguousTensorDesc &src_desc) override { return check_reshape_match(src_desc); }
+    bool CanOptimizer(const ContiguousTensorDesc& src_desc) override { return check_reshape_match(src_desc); }
 };  // class ReshapeContiguousOpt
 
 REGISTER_COPY_OPT(reshape, ReshapeContiguousOpt)
 
 class ReshapeV2ContiguousOpt : public ContiguousOpt {
 public:
-    bool Optimizer(at::Tensor &result, const at::Tensor &src, const ContiguousTensorDesc &src_desc) override {
+    bool Optimizer(at::Tensor& result, const at::Tensor& src, const ContiguousTensorDesc& src_desc) override {
         ContiguousTensorDesc result_desc = TransContiguous::GetTensorDescInfo(result);
         if (check_reshape_match(result_desc, src_desc)) {
             if (can_use_memory_repoint(src_desc) && reshape_match_by_memory_repoint(src, result)) {
@@ -1145,42 +1145,42 @@ public:
         return false;
     }
 
-    bool CanOptimizer(const ContiguousTensorDesc &src_desc) override { return check_reshape_match(src_desc); }
+    bool CanOptimizer(const ContiguousTensorDesc& src_desc) override { return check_reshape_match(src_desc); }
 
 private:
     template <typename dataDtype>
-    void ResetDataPtr(const at::Tensor &src, at::Tensor &self, dataDtype *value) {
-        dataDtype *src_data_ptr = value + src.storage_offset();
+    void ResetDataPtr(const at::Tensor& src, at::Tensor& self, dataDtype* value) {
+        dataDtype* src_data_ptr = value + src.storage_offset();
         at::DataPtr self_data_ptr = at::DataPtr(src_data_ptr, self.storage().device());
         self.storage().set_data_ptr(std::move(self_data_ptr));
     }
 
-    bool reshape_match_by_memory_repoint(const at::Tensor &src, at::Tensor &self) {
+    bool reshape_match_by_memory_repoint(const at::Tensor& src, at::Tensor& self) {
         RECORD_FUNCTION("contiguous_h_memRepoint", std::vector<c10::IValue>({src}));
         switch (src.scalar_type()) {
             case at::ScalarType::Half:
-                ResetDataPtr(src, self, static_cast<at::Half *>(src.storage().data_ptr().get()));
+                ResetDataPtr(src, self, static_cast<at::Half*>(src.storage().data_ptr().get()));
                 return true;
             case at::ScalarType::BFloat16:
-                ResetDataPtr(src, self, static_cast<at::BFloat16 *>(src.storage().data_ptr().get()));
+                ResetDataPtr(src, self, static_cast<at::BFloat16*>(src.storage().data_ptr().get()));
                 return true;
             case at::ScalarType::Float:
-                ResetDataPtr(src, self, static_cast<float *>(src.storage().data_ptr().get()));
+                ResetDataPtr(src, self, static_cast<float*>(src.storage().data_ptr().get()));
                 return true;
             case at::ScalarType::Byte:
-                ResetDataPtr(src, self, static_cast<uint8_t *>(src.storage().data_ptr().get()));
+                ResetDataPtr(src, self, static_cast<uint8_t*>(src.storage().data_ptr().get()));
                 return true;
             case at::ScalarType::Char:
-                ResetDataPtr(src, self, static_cast<int8_t *>(src.storage().data_ptr().get()));
+                ResetDataPtr(src, self, static_cast<int8_t*>(src.storage().data_ptr().get()));
                 return true;
             case at::ScalarType::Short:
-                ResetDataPtr(src, self, static_cast<int16_t *>(src.storage().data_ptr().get()));
+                ResetDataPtr(src, self, static_cast<int16_t*>(src.storage().data_ptr().get()));
                 return true;
             case at::ScalarType::Int:
-                ResetDataPtr(src, self, static_cast<int *>(src.storage().data_ptr().get()));
+                ResetDataPtr(src, self, static_cast<int*>(src.storage().data_ptr().get()));
                 return true;
             case at::ScalarType::Long:
-                ResetDataPtr(src, self, static_cast<int64_t *>(src.storage().data_ptr().get()));
+                ResetDataPtr(src, self, static_cast<int64_t*>(src.storage().data_ptr().get()));
                 return true;
             default:
                 // Turn to conducting d2dCopyAsync for other dtypes.
@@ -1188,7 +1188,7 @@ private:
         }
     }
 
-    bool can_use_memory_repoint(const ContiguousTensorDesc &src_desc) {
+    bool can_use_memory_repoint(const ContiguousTensorDesc& src_desc) {
         if (FormatHelper::IsBaseFormatType(src_desc.npu_format_)) {
             return true;
         }
@@ -1208,7 +1208,7 @@ REGISTER_COPY_OPT(reshapeV2, ReshapeV2ContiguousOpt)
 
 class SelectContiguousOpt : public ContiguousOpt {
 public:
-    bool Optimizer(at::Tensor &self, const at::Tensor &src, const ContiguousTensorDesc &src_desc) override {
+    bool Optimizer(at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc) override {
         // select(dim, start), length[dim] == 1
         c10::SmallVector<int64_t, MAX_DIM> start;
         c10::SmallVector<int64_t, MAX_DIM> length;
@@ -1221,19 +1221,19 @@ public:
         return false;
     }
 
-    bool CanOptimizer(const ContiguousTensorDesc &src_desc) override {
+    bool CanOptimizer(const ContiguousTensorDesc& src_desc) override {
         c10::SmallVector<int64_t, MAX_DIM> start;
         c10::SmallVector<int64_t, MAX_DIM> length;
         return can_use_select(src_desc, start, length);
     }
 
 private:
-    bool can_use_select(const ContiguousTensorDesc &src_desc, c10::SmallVector<int64_t, MAX_DIM> &start, c10::SmallVector<int64_t, MAX_DIM> &length) {
+    bool can_use_select(const ContiguousTensorDesc& src_desc, c10::SmallVector<int64_t, MAX_DIM>& start, c10::SmallVector<int64_t, MAX_DIM>& length) {
         // base info and src info
-        const auto &base_size = src_desc.base_sizes_;
-        const auto &base_stride = src_desc.base_strides_;
-        const auto &select_size = src_desc.sizes_;
-        const auto &select_stride = src_desc.strides_;
+        const auto& base_size = src_desc.base_sizes_;
+        const auto& base_stride = src_desc.base_strides_;
+        const auto& select_size = src_desc.sizes_;
+        const auto& select_stride = src_desc.strides_;
 
         // len(base_size) - len(select_size) == 1  && len(base_stride) -
         // len(select_stride) == 1
@@ -1291,9 +1291,9 @@ private:
         return true;
     }
 
-    void select_to_contiguous(at::Tensor &self, const at::Tensor &src, c10::SmallVector<int64_t, MAX_DIM> &start, c10::SmallVector<int64_t, MAX_DIM> &length,
-                              const ContiguousTensorDesc &src_desc) {
-        const auto &base_size = src_desc.base_sizes_;
+    void select_to_contiguous(at::Tensor& self, const at::Tensor& src, c10::SmallVector<int64_t, MAX_DIM>& start, c10::SmallVector<int64_t, MAX_DIM>& length,
+                              const ContiguousTensorDesc& src_desc) {
+        const auto& base_size = src_desc.base_sizes_;
         // Recover base tensor(necessary) a = b.select(1, 1)
         at::Tensor temp_src = at::empty(base_size, src.options());
         temp_src.set_(src.storage(), temp_src.storage_offset(), temp_src.sizes(), temp_src.strides());
@@ -1320,7 +1320,7 @@ REGISTER_COPY_OPT(select, SelectContiguousOpt)
 
 class SliceContiguousOpt : public ContiguousOpt {
 public:
-    bool Optimizer(at::Tensor &self, const at::Tensor &src, const ContiguousTensorDesc &src_desc) override {
+    bool Optimizer(at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc) override {
         // Pattern slice.
         // Current pattern does not directly depend on other patterns.
         // The relative sequence of this pattern and other patterns is not
@@ -1335,7 +1335,7 @@ public:
         return false;
     }
 
-    bool CanOptimizer(const ContiguousTensorDesc &src_desc) override {
+    bool CanOptimizer(const ContiguousTensorDesc& src_desc) override {
         c10::SmallVector<int64_t, MAX_DIM> offsets;
         c10::SmallVector<int64_t, MAX_DIM> size;
         return can_use_slice(src_desc, offsets, size);
@@ -1345,9 +1345,9 @@ private:
     // npu-slice pattern cover several view ops, including chunk, split, narrow
     // and part of index. Judgment logic is based on the implement of view ops in
     // adapter layer.
-    bool can_use_slice(const ContiguousTensorDesc &src_desc, c10::SmallVector<int64_t, MAX_DIM> &offsets, c10::SmallVector<int64_t, MAX_DIM> &size) {
-        const auto &base_sizes = src_desc.base_sizes_;
-        const auto &base_strides = src_desc.base_strides_;
+    bool can_use_slice(const ContiguousTensorDesc& src_desc, c10::SmallVector<int64_t, MAX_DIM>& offsets, c10::SmallVector<int64_t, MAX_DIM>& size) {
+        const auto& base_sizes = src_desc.base_sizes_;
+        const auto& base_strides = src_desc.base_strides_;
         auto view_sizes = src_desc.sizes_;
         auto view_strides = src_desc.strides_;
 
@@ -1409,10 +1409,10 @@ private:
         return true;
     }
 
-    void slice_to_contiguous(at::Tensor &self, const at::Tensor &src, const c10::SmallVector<int64_t, MAX_DIM> &offsets,
-                             const c10::SmallVector<int64_t, MAX_DIM> &size, const ContiguousTensorDesc &src_desc) {
+    void slice_to_contiguous(at::Tensor& self, const at::Tensor& src, const c10::SmallVector<int64_t, MAX_DIM>& offsets,
+                             const c10::SmallVector<int64_t, MAX_DIM>& size, const ContiguousTensorDesc& src_desc) {
         // create contiguous tensor for npu slice
-        const auto &temp_tensor_size = src_desc.base_sizes_;
+        const auto& temp_tensor_size = src_desc.base_sizes_;
         at::Tensor temp_src = at::empty(temp_tensor_size, src.options());
         temp_src.set_(src.storage(), temp_src.storage_offset(), temp_src.sizes(), temp_src.strides());
 
