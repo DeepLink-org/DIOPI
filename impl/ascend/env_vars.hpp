@@ -9,4 +9,4 @@
 
 bool isDebugAclOpRunnerOn();
 
-#endif  // IMPL_CAMB_ENV_VARS_HPP_
+#endif  // IMPL_ASCEND_ENV_VARS_HPP_
