@@ -12,19 +12,19 @@ require_coverage=$1
 
 gcovr --csv > coverage/coverage.csv
 sed -i '1d' coverage/coverage.csv
-newcommit=$(git rev-parse HEAD~1)
-oldcommit=$(git merge-base ${newcommit} main)
+newcommit=$(git rev-parse HEAD)
+oldcommit=$(git rev-parse main)
 if [ -z $oldcommit ]; then echo "is not Pull request" && exit 0; fi
-git diff $oldcommit $newcommit --name-only | xargs -I {} realpath {} >coverage/gitdiff.txt 2>/dev/null || echo "error can be ignored"
+git diff $oldcommit $newcommit --name-only  >coverage/gitdiff.txt 2>/dev/null || echo "error can be ignored"
 
 cat coverage/gitdiff.txt |egrep '\.(cpp|hpp|h)$'|grep "/$include/" >coverage/gitdiff_screen.txt || true
 if [ ! -s coverage/gitdiff_screen.txt ]; then echo "No C/C++ in incremental code" && exit 0;fi
-sed -i "s#$ROOT_DIR/##g" coverage/gitdiff_screen.txt
-if [[ $ROOT_DIR == */lustre/* ]]; then
-  sed -i "s#${ROOT_DIR//\/lustre\//\/cache\/}/##g" coverage/gitdiff_screen.txt
-elif [[ $ROOT_DIR == */cache/* ]]; then
-  sed -i "s#${ROOT_DIR//\/cache\//\/lustre\/}/##g" coverage/gitdiff_screen.txt
-fi
+rm -rf coverage/gitdiff.txt
+while IFS= read -r line; do
+  if [ -f "$line" ]; then
+    echo "$line" >> "coverage/gitdiff.txt"
+  fi
+done < "coverage/gitdiff_screen.txt"
 
 echo "export IS_cover=True" >coverage/IS_cover.txt
 mkdir coverage/html

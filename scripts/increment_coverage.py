@@ -30,4 +30,4 @@ def check_coverage(gitdiff_file,coverage_data,require_coverage):
 if __name__ == '__main__':
     coveragedir, require_coverage = sys.argv[1:3]
     coverage_data = get_coverage_data(coveragedir + "/coverage.csv")
-    check_coverage(coveragedir + "/gitdiff_screen.txt", coverage_data, require_coverage)
+    check_coverage(coveragedir + "/gitdiff.txt", coverage_data, require_coverage)
