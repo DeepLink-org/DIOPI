@@ -218,4 +218,3 @@ ascend_npu:
 - diopiIndexBackward
 - diopiDestIndexCopyKV
 - diopiTokenAttentionInference
-- diopiTokenSoftmaxReduceVInference
