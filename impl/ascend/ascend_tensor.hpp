@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include <cstdarg>
+
 namespace impl {
 namespace ascend {
 
@@ -50,21 +52,31 @@ namespace ascend {
 
 #define ASCEND_CHECK_NULLPTR_ABORT(ptr) ASCEND_CHECK_ABORT(ptr, "Variable is nullptr, pls check.")
 
-#define error(...)                               \
-    printf("[%s:%d]: ", __FUNCTION__, __LINE__); \
-    printf(__VA_ARGS__);                         \
-    printf("\n");                                \
-    std::abort();
-
-#define warning(...)                             \
-    printf("[%s:%d]: ", __FUNCTION__, __LINE__); \
-    printf(__VA_ARGS__);                         \
+inline void error(const char* file, int lineNum, const char* funcName, const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+    printf("ERROR:[%s:%d in func:%s] : ", __FILE__, __LINE__, __FUNCTION__);
+    vprintf(format, args);
     printf("\n");
+    throw std::runtime_error("error occuers");
+}
 
-#define info(...)                                \
-    printf("[%s:%d]: ", __FUNCTION__, __LINE__); \
-    printf(__VA_ARGS__);                         \
+inline void warning(const char* file, int lineNum, const char* funcName, const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+    printf("WARNING:[%s:%d in func:%s]: ", __FILE__, __LINE__, __FUNCTION__);
+    vprintf(format, args);
     printf("\n");
+}
+
+inline void info(const char* file, int lineNum, const char* funcName, const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+    printf("INFO:[%s:%d in func:%s]: ", __FILE__, __LINE__, __FUNCTION__);
+    vprintf(format, args);
+    printf("\n");
+}
+
 
 class AscendTensor final {
 public:

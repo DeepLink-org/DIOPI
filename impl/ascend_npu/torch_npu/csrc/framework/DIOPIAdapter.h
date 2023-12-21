@@ -43,12 +43,10 @@
 #define NPU_LOGW(fmt, ...) printf("[WARN]%s,%s:%u:" #fmt "\n", __FUNCTION__, __FILENAME__, __LINE__, ##__VA_ARGS__)
 #define NPU_LOGI(fmt, ...) printf("[INFO]:" #fmt "\n", ##__VA_ARGS__)
 
-#define USE_NPU_LOG
-
-#ifdef USE_NPU_LOG
-#define NPU_LOGD(fmt, ...) printf("[INFO]%s,%s:%u:" #fmt "\n", __FUNCTION__, __FILENAME__, __LINE__, ##__VA_ARGS__)
-#else
+#if defined(NDEBUG)
 #define NPU_LOGD(fmt, ...)
+#else
+#define NPU_LOGD(fmt, ...) printf("[INFO]%s,%s:%u:" #fmt "\n", __FUNCTION__, __FILENAME__, __LINE__, ##__VA_ARGS__)
 #endif
 
 #ifdef _WIN32
@@ -149,7 +147,8 @@
         }                                                                                                                                              \
     } while (0)
 
-#define INTERFACE_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
+ #define INTERFACE_NOT_IMPL
+// #define INTERFACE_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
 
 static void warn_(const ::c10::Warning& warning) { INTERFACE_NOT_IMPL; }
 

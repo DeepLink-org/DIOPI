@@ -636,7 +636,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/where.cpp
     ${OLD_IMPL_DIR}/functions/multinomial.cpp
     ${OLD_IMPL_DIR}/functions/addmm.cpp
-    ${OLD_IMPL_DIR}/functions/expand.cpp    
+    ${OLD_IMPL_DIR}/functions/expand.cpp
     ${OLD_IMPL_DIR}/functions/linspace.cpp
     ${OLD_IMPL_DIR}/functions/apply_penalty.cpp
     ${OLD_IMPL_DIR}/functions/split.cpp
@@ -645,6 +645,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/common/utils.cpp
     ${OLD_IMPL_DIR}/common/debug.cpp
     ${OLD_IMPL_DIR}/common/generator_helper.cpp
+    ${OLD_IMPL_DIR}/env_vars.cpp
 )
 
 list(APPEND IMPL_SRC ${OP_PLUGIN_UTILS_SRC} ${OP_PLUGIN_SRC} ${OP_PLUGIN_API_SRC} ${ASCEND_IMPL_SRC} ${DIOPI_IMPL_SRC} ${OLD_IMPL_SRC})

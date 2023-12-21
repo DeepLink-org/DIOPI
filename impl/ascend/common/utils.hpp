@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "../ascend_tensor.hpp"
+#include "../env_vars.hpp"
 
 namespace impl {
 namespace ascend {
