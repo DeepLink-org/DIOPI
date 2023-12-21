@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "../ascend_tensor.hpp"
+#include "../env_vars.hpp"
 
 namespace impl {
 namespace ascend {
@@ -18,6 +19,10 @@ inline bool isIntegralType(const diopiDtype_t& type) { return type < 8; }
 inline bool isIntegralTypeWithBool(const diopiDtype_t& type) { return type < 8 || type == 11; }
 
 inline bool isFloatingType(const diopiDtype_t& type) { return (type <= 10 && type >= 8) || type == 12 || type == 13; }
+
+inline bool isOnDevice(diopiDevice_t dev) { return dev == diopiDevice_t::diopi_device; }
+
+inline const char* deviceType2Str(diopiDevice_t dev) { return dev == diopiDevice_t::diopi_device ? "devce" : "host"; }
 
 template <typename T>
 diopiScalar_t constructDiopiScalarT(diopiDtype_t dtype, T val) {
