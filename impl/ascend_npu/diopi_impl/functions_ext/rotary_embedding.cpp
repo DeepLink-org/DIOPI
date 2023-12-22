@@ -19,7 +19,7 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
         acl_op::neg_(sinRepeated);
     }
     if (xAt.sizes()[3] % 64 != 0) {
-        // TODO: The following two lines should be combined into one line in the future by overloading "="
+        // TODO(jfxu-st): The following two lines should be combined into one line in the future by overloading "="
         at::Tensor result = acl_op::npu_rotary_mul(xAt, cosRepeated, sinRepeated);
         outAt.copy_(result);
     } else {
