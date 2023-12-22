@@ -242,9 +242,8 @@ public:
             dims.push_back(1);
         }
 
-        static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (aclDebugFlag > 0) {
-            info("%s input[%d]:%s", opname_.c_str(), inputIndex_, dumpTensor(at).c_str());
+        if (isDebugAclOpRunnerOn()) {
+            info(__FILE__, __LINE__, __FUNCTION__, "%s input[%d]:%s", opname_.c_str(), inputIndex_, dumpTensor(at).c_str());
         }
 
         ASCEND_CHECK_ABORT(inputIndex_ >= 0 && inputIndex_ < InputSize, "check 0<=inputIndex<InputSize failed");
@@ -284,7 +283,9 @@ public:
             stream << " ,shape:";
             std::for_each(dims.data(), dims.data() + dims.size(), [&stream](int64_t v) { stream << v << " "; });
             stream << ")";
-            info("%s output[%d]: %s", opname_.c_str(), outputIndex_, stream.str().c_str());
+            if (isDebugAclOpRunnerOn()) {
+                info(__FILE__, __LINE__, __FUNCTION__, "%s output[%d]: %s", opname_.c_str(), outputIndex_, stream.str().c_str());
+            }
         }
 
         ASCEND_CHECK_ABORT(inputIndex_ >= 0 && inputIndex_ < InputSize, "check 0<=inputIndex_<InputSize failed");
@@ -358,7 +359,9 @@ public:
             stream << " ,shape:";
             std::for_each(dims.data(), dims.data() + dims.size(), [&stream](int64_t v) { stream << v << " "; });
             stream << ")";
-            info("%s input[%d]: %s", opname_.c_str(), inputIndex_, stream.str().c_str());
+            if (isDebugAclOpRunnerOn()) {
+                info(__FILE__, __LINE__, __FUNCTION__, "%s input[%d]: %s", opname_.c_str(), inputIndex_, stream.str().c_str());
+            }
         }
 
         ASCEND_CHECK_ABORT(inputIndex_ >= 0 && inputIndex_ < InputSize, "check 0<=inputIndex<InputSize failed");
@@ -376,9 +379,8 @@ public:
     AclOpRunner& addInput(const AscendTensor& at, const aclFormat& format) {
         ASCEND_CHECK_ABORT(at.defined(), "input should not be nullptr");
 
-        static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (aclDebugFlag > 0) {
-            info("%s input[%d]:%s", opname_.c_str(), inputIndex_, dumpTensor(at).c_str());
+        if (isDebugAclOpRunnerOn()) {
+            info(__FILE__, __LINE__, __FUNCTION__, "%s input[%d]:%s", opname_.c_str(), inputIndex_, dumpTensor(at).c_str());
         }
 
         ASCEND_CHECK_ABORT(inputIndex_ >= 0 && inputIndex_ < inputSize(), "check 0<=inputIndex<inputSize() failed");
@@ -476,7 +478,9 @@ public:
             stream << " ,shape:";
             std::for_each(dims.data(), dims.data() + dims.size(), [&stream](int64_t v) { stream << v << " "; });
             stream << ")";
-            info("%s output[%d]: %s", opname_.c_str(), outputIndex_, stream.str().c_str());
+            if (isDebugAclOpRunnerOn()) {
+                info(__FILE__, __LINE__, __FUNCTION__, "%s output[%d]: %s", opname_.c_str(), outputIndex_, stream.str().c_str());
+            }
         }
 
         ASCEND_CHECK_ABORT(outputIndex_ >= 0 && outputIndex_ < OutputSize, "check 0<=outputIndex<OutputSize failed");
@@ -492,10 +496,10 @@ public:
     AclOpRunner& addOutput(const AscendTensor& at, const aclFormat format) {
         ASCEND_CHECK_ABORT(at.defined(), "output should not be nullptr");
 
-        static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (aclDebugFlag > 0) {
-            info("%s output[%d]:%s", opname_.c_str(), outputIndex_, dumpTensor(at).c_str());
+        if (isDebugAclOpRunnerOn()) {
+            info(__FILE__, __LINE__, __FUNCTION__, "%s output[%d]:%s", opname_.c_str(), outputIndex_, dumpTensor(at).c_str());
         }
+
         ASCEND_CHECK_ABORT(outputIndex_ >= 0 && outputIndex_ < outputSize(), "check 0<=outputIndex<outputSize() failed");
 
         auto& desc = outputDescs_[outputIndex_];
@@ -579,15 +583,14 @@ public:
 
     template <typename T>
     AclOpRunner& setAttr(const std::string& attrName, const typename std::vector<T>& value) {
-        static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (aclDebugFlag > 0) {
+        if (isDebugAclOpRunnerOn()) {
             std::stringstream stream;
             stream << "attrName=" << attrName;
             stream << ",dtype=" << typeid(T).name();
             stream << ", Attr:(";
             std::for_each(value.data(), value.data() + value.size(), [&stream](int64_t v) { stream << v << " "; });
             stream << ")";
-            info("%s attr: %s", opname_.c_str(), stream.str().c_str());
+            info(__FILE__, __LINE__, __FUNCTION__, "%s attr: %s", opname_.c_str(), stream.str().c_str());
         }
         std::vector<int64_t> vec(value.begin(), value.end());
         CALL_ACLRT(aclopSetAttrListInt(attr_, attrName.data(), vec.size(), vec.data()));
@@ -679,11 +682,9 @@ public:
         }
         CALL_ACLRT(aclrtSynchronizeStream(stream));
         // Get environment variables once when run is called for the first time
-        static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-        if (aclDebugFlag > 0) {
-            info("%s", dumpRunnerInfo().c_str());
+        if (isDebugAclOpRunnerOn()) {
+            info(__FILE__, __LINE__, __FUNCTION__, "%s", dumpRunnerInfo().c_str());
         }
-
         return *this;
     }
 };
