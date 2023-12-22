@@ -748,6 +748,33 @@ at::Tensor& FormatHelper::unsafe_format_cast(at::Tensor& self, int64_t self_form
 }
 
 void copy_d2d_by_memcpy(at::Tensor& dst, const at::Tensor& src, int64_t exceptSize) {
+    int64_t size = exceptSize;
+    auto dst_mem_size = StorageDescHelper::GetMemorySize(dst);
+    if (exceptSize == 0) {
+        size = dst_mem_size;
+    }
+
+    if (!dst.data_ptr()) {
+        TORCH_WARN("copy_d2d_by_memcpy, dst.data_ptr() is null.");
+        return;
+    }
+
+    if (!src.data_ptr()) {
+        TORCH_WARN("copy_d2d_by_memcpy, src.data_ptr() is null.");
+        return;
+    }
+
+    if (dst.data_ptr() == src.data_ptr() && dst.element_size() == src.element_size()) {
+        return;
+    }
+
+    // The current logic is only used in single op mode.
+    aclError error =
+        c10_npu::queue::LaunchAsyncCopyTask(dst.data_ptr(), size * dst.element_size(), src.data_ptr(), size * dst.element_size(), ACL_MEMCPY_DEVICE_TO_DEVICE);
+    if (error != ACL_ERROR_NONE) {
+        AT_ERROR("async copy device to device error.");
+        return;
+    }
     c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
     NPU_CHECK_ERROR(aclrtMemcpyAsync(dst.data_ptr(), dst.nbytes(), src.data_ptr(), src.nbytes(), ACL_MEMCPY_DEVICE_TO_DEVICE, stream));
 }
@@ -913,6 +940,52 @@ aclError CalcuOpUtil::LaunchAsyncCopyTaskWithModeSwitch(const at::Tensor& dst, s
     NPU_CHECK_ERROR(aclrtMemcpyAsync(dst.data_ptr(), dst.nbytes(), src.data_ptr(), src.nbytes(), kind, stream));
 }
 
+void ContiguousTensorDesc::refresh_contiguous_using_size_and_stride() {
+    if (c10::multiply_integers(sizes_) == 0) {
+        is_contiguous_ = true;
+    }
+    int64_t infer_axis_size = 1;
+    for (int64_t dim = static_cast<int64_t>(sizes_.size()) - 1; dim >= 0; dim--) {
+        if (sizes_[dim] != 1) {
+            if (strides_[dim] == infer_axis_size) {
+                infer_axis_size *= sizes_[dim];
+            } else {
+                is_contiguous_ = false;
+                return;
+            }
+        }
+    }
+    is_contiguous_ = true;
+}
+
+void ContiguousTensorDesc::reset_optimization_cases(const OptimizationCases& opt_cases) { opt_cases_ = opt_cases; }
+
+void ContiguousTensorDesc::add_optimization_case(const std::string& opt_case) { opt_cases_.emplace_back(opt_case); }
+
+void ContiguousTensorDesc::find_match_optimization_cases() {
+    for (const auto i : c10::irange(sizes_.size())) {
+        if (strides_[i] == 0) {
+            opt_cases_.emplace_back("broadcast");
+            return;
+        }
+    }
+
+    for (const auto i : c10::irange(strides_.size() - 1)) {
+        if (strides_[i] < strides_[i + 1]) {
+            opt_cases_.emplace_back("permute");
+            return;
+        }
+    }
+
+    // Considering combined-cases, we cannot split slice cases any further.
+    if (c10::multiply_integers(sizes_) < c10::multiply_integers(base_sizes_)) {
+        opt_cases_.emplace_back("slice");
+        opt_cases_.emplace_back("select");
+        opt_cases_.emplace_back("indexing");
+        return;
+    }
+}
+
 OptimizationCases TransContiguous::optCasesDefault = {};
 OptimizationCases TransContiguous::optCasesAnyFormat = {"reshape", "slice"};
 
@@ -960,9 +1033,7 @@ bool TransContiguous::CheckClone(const at::Tensor& src, at::Tensor& self) {
 
 bool TransContiguous::can_optimize_(ContiguousTensorDesc& tensor_desc) {
     for (auto opt_case : tensor_desc.opt_cases_) {
-        // bool res = register_opt::CopyOptRegister::GetInstance()->CanOptimize(
-        //    opt_case, tensor_desc);
-        bool res = false;
+        bool res = register_opt::CopyOptRegister::GetInstance()->CanOptimize(opt_case, tensor_desc);
         if (res) {
             // refresh patterns to only keep optimized pattern
             tensor_desc.opt_cases_.clear();
@@ -985,10 +1056,7 @@ bool TransContiguous::contiguous_optimize_with_anyformat_(at::Tensor& self, cons
         return false;
     }
     for (auto& opt_case : src_desc.opt_cases_) {
-        // bool res = register_opt::CopyOptRegister::GetInstance()->Run(opt_case, self,
-        //                                                             src, src_desc);
-        INTERFACE_NOT_IMPL;
-        bool res = false;
+        bool res = register_opt::CopyOptRegister::GetInstance()->Run(opt_case, self, src, src_desc);
         if (res) {
             return true;
         }
@@ -1086,6 +1154,24 @@ at::Tensor empty_with_format(at::IntArrayRef size, c10::optional<at::ScalarType>
     tensor.unsafeGetTensorImpl()->empty_tensor_restride(c10::MemoryFormat::Contiguous);
     StorageDescHelper::SetDesc(tensor, size, tensor.strides(), format);
     return tensor;
+}
+
+at::Tensor clone(const at::Tensor& src, c10::optional<at::MemoryFormat> memory_format) {
+    OptimizationCases opt_cases{"reshape", "slice", "reshapeV2"};
+    if (TransContiguous::CanOptimize(src, opt_cases)) {
+        // clone with any npu formats
+        auto formatTempTensor = TransContiguous::ContiguousOptimizeWithAnyFormat(src, opt_cases);
+        return formatTempTensor.value();
+    } else {
+        // clone with base formats
+        auto baseSelf = OpPreparation::ApplyTensorWithSizes(src.sizes(), src.options());
+        at::Tensor baseSrc = src;
+        if (!FormatHelper::IsBaseFormatType(src)) {
+            baseSrc = FormatCastHelper::ApplyBaseFormatTensorBy(src);
+        }
+        copy_d2d_dtype_baseformat(baseSelf, baseSrc, false);
+        return baseSelf;
+    }
 }
 
 at::Tensor OpPreparation::apply_tensor(const at::Tensor& src) { return apply_tensor(src, src.sizes()); }
@@ -2442,6 +2528,11 @@ void NPUStream::synchronize() const {
     NPU_CHECK_ERROR(aclrtSynchronizeDevice());
 }
 
+aclError queue::LaunchAsyncCopyTask(void* dst, size_t dstLen, void* src, size_t srcLen, aclrtMemcpyKind kind) {
+    c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
+    return aclrtMemcpyAsync(dst, dstLen, src, srcLen, kind, stream);
+}
+
 }  // namespace c10_npu
 
 namespace torch_npu {
@@ -2652,7 +2743,40 @@ at::Tensor wrapper__contiguous(const at::Tensor& self, at::MemoryFormat memory_f
 
 at::Tensor wrapper__empty_strided(c10::SymIntArrayRef size, c10::SymIntArrayRef stride, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
                                   c10::optional<at::Device> device, c10::optional<bool> pin_memory) {
-    return at_npu::native::empty_strided_npu(size, stride, dtype, layout, device, pin_memory);
+    return at_npu::native::NPUNativeFunctions::empty_strided(size, stride, dtype, layout, device, pin_memory);
+}
+
+at::Tensor wrapper_memory_format_empty(c10::SymIntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
+                                       c10::optional<at::Device> device, c10::optional<bool> pin_memory, c10::optional<at::MemoryFormat> memory_format) {
+    return at_npu::native::NPUNativeFunctions::empty(size, dtype, layout, device, pin_memory, memory_format);
+}
+
+at::Tensor wrapper__clone(const at::Tensor& self, c10::optional<at::MemoryFormat> memory_format) {
+    return at_npu::native::NPUNativeFunctions::clone(self, memory_format);
+}
+
+at::Tensor& wrapper_source_Storage_set_(at::Tensor& self, at::Storage src) {
+    auto* selfImpl = self.unsafeGetTensorImpl();
+    auto storage = selfImpl->unsafe_storage();
+    auto storageImpl = storage.unsafeGetStorageImpl();
+    storageImpl->set_data_ptr(std::move(src.data_ptr()));
+    return self;
+}
+
+at::Tensor& wrapper_source_Storage_storage_offset_set_(at::Tensor& self, at::Storage source, int64_t storage_offset, at::IntArrayRef size,
+                                                       at::IntArrayRef stride) {
+    auto* selfImpl = self.unsafeGetTensorImpl();
+    auto storage = selfImpl->unsafe_storage();
+    auto storageImpl = storage.unsafeGetStorageImpl();
+    storageImpl->set_data_ptr(std::move(source.data_ptr()));
+    selfImpl->set_storage_offset(storage_offset);
+    if (stride.size() > 0) {
+        selfImpl->set_sizes_and_strides(size, stride);
+    } else {
+        selfImpl->set_sizes_contiguous(size);
+    }
+
+    return self;
 }
 
 }  // namespace
@@ -2667,6 +2791,10 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("resize_", TORCH_FN(wrapper__resize_));
     m.impl("contiguous", TORCH_FN(wrapper__contiguous));
     m.impl("empty_strided", TORCH_FN(wrapper__empty_strided));
+    m.impl("empty.memory_format", TORCH_FN(wrapper_memory_format_empty));
+    m.impl("clone", TORCH_FN(wrapper__clone));
+    m.impl("set_.source_Storage", TORCH_FN(wrapper_source_Storage_set_));
+    m.impl("set_.source_Storage_storage_offset", TORCH_FN(wrapper_source_Storage_storage_offset_set_));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
