@@ -8,19 +8,19 @@ namespace diopi {
 
 class GilScopedRelease {
 private:
-    PyThreadState* state = nullptr;
+    PyThreadState* state_ = nullptr;
 
 public:
     GilScopedRelease() {
         if (PyGILState_Check()) {
-            state = PyEval_SaveThread();
+            state_ = PyEval_SaveThread();
         }
     }
 
     ~GilScopedRelease() {
-        if (state != nullptr) {
-            PyEval_RestoreThread(state);
-            state = nullptr;
+        if (state_ != nullptr) {
+            PyEval_RestoreThread(state_);
+            state_ = nullptr;
         }
     }
 };
