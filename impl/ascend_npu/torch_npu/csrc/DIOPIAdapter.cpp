@@ -2716,7 +2716,8 @@ at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blo
 at::Tensor wrapper__view(const at::Tensor& self, at::IntArrayRef size) { return impl::aten::viewStorage(self, size); }
 
 at::Tensor wrapper__as_strided(const at::Tensor& self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset) {
-    return at_npu::native::NPUNativeFunctions::as_strided(self, size, stride, storage_offset.value_or(0));
+    // return at_npu::native::NPUNativeFunctions::as_strided(self, size, stride, storage_offset.value_or(0));
+    return impl::aten::viewStorage(self, size, stride, storage_offset.value_or(0));
 }
 
 const at::Tensor& wrapper__resize_(const at::Tensor& self, at::IntArrayRef size, c10::optional<at::MemoryFormat> memory_format) {
@@ -2788,18 +2789,7 @@ at::Tensor& wrapper_source_Storage_storage_offset_set_(at::Tensor& self, at::Sto
     return self;
 }
 
-at::Tensor wrapper_Tensor_mul(const at::Tensor& self, const at::Tensor& other) { return acl_op::mul(self, other); }
-
-at::Tensor wrapper_Scalar_mul(const at::Tensor& self, const at::Scalar& other) { return acl_op::mul(self, other); }
-
-at::Tensor wrapper_Tensor_add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::add(self, other, alpha); }
-
 at::Tensor wrapper__cat(const at::ITensorListRef& tensors, int64_t dim) { return acl_op::cat(tensors, dim); }
-
-at::Tensor wrapper_memory_format_empty(c10::SymIntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
-                                       c10::optional<at::Device> device, c10::optional<bool> pin_memory, c10::optional<at::MemoryFormat> memory_format) {
-    return at_npu::native::empty_npu(c10::asIntArrayRefUnchecked(size), dtype, layout, device, pin_memory, memory_format);
-}
 
 at::Tensor& wrapper__index_put_(at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices, const at::Tensor& values, bool accumulate) {
     auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
@@ -2822,6 +2812,8 @@ at::Tensor wrapper__bmm(const at::Tensor& self, const at::Tensor& mat2) { return
 at::Tensor wrapper_Tensor_div(const at::Tensor& self, const at::Tensor& other) { return acl_op::div(self, other); }
 
 at::Tensor wrapper_Tensor_mul(const at::Tensor& self, const at::Tensor& other) { return acl_op::mul(self, other); }
+
+at::Tensor wrapper_Scalar_mul(const at::Tensor& self, const at::Scalar& other) { return acl_op::mul(self, other); }
 
 at::Tensor wrapper_Tensor_add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::add(self, other, alpha); }
 
@@ -2850,20 +2842,17 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("contiguous", TORCH_FN(wrapper__contiguous));
     m.impl("empty_strided", TORCH_FN(wrapper__empty_strided));
     m.impl("empty.memory_format", TORCH_FN(wrapper_memory_format_empty));
-    m.impl("clone", TORCH_FN(wrapper__clone));
-    m.impl("set_.source_Storage", TORCH_FN(wrapper_source_Storage_set_));
-    m.impl("set_.source_Storage_storage_offset", TORCH_FN(wrapper_source_Storage_storage_offset_set_));
-    m.impl("mul.Tensor", TORCH_FN(wrapper_Tensor_mul));
-    m.impl("mul.Scalar", TORCH_FN(wrapper_Scalar_mul));
-    m.impl("add.Tensor", TORCH_FN(wrapper_Tensor_add));
+    // m.impl("clone", TORCH_FN(wrapper__clone));
+    // m.impl("set_.source_Storage", TORCH_FN(wrapper_source_Storage_set_));
+    // m.impl("set_.source_Storage_storage_offset", TORCH_FN(wrapper_source_Storage_storage_offset_set_));
     m.impl("cat", TORCH_FN(wrapper__cat));
-    m.impl("empty.memory_format", TORCH_FN(wrapper_memory_format_empty));
     m.impl("index_put_", TORCH_FN(wrapper__index_put_));
     m.impl("_index_put_impl_", TORCH_FN(wrapper___index_put_impl_));
     m.impl("index.Tensor", TORCH_FN(wrapper_Tensor_index));
     m.impl("bmm", TORCH_FN(wrapper__bmm));
     m.impl("div.Tensor", TORCH_FN(wrapper_Tensor_div));
     m.impl("mul.Tensor", TORCH_FN(wrapper_Tensor_mul));
+    m.impl("mul.Scalar", TORCH_FN(wrapper_Scalar_mul));
     m.impl("add.Tensor", TORCH_FN(wrapper_Tensor_add));
     m.impl("sub.Tensor", TORCH_FN(wrapper_Tensor_sub));
     m.impl("index_select", TORCH_FN(wrapper__index_select));
