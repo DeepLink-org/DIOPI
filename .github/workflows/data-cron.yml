@@ -5,7 +5,7 @@ on:
 #    branches:
 #      - "wgs/*"
   schedule:
-    - cron: '01 02 * * *'
+    - cron: '01 22 * * *'
 
 concurrency:
   group: data-${{ github.head_ref || github.ref }}
@@ -75,6 +75,7 @@ jobs:
           else
             echo "true" > to_gen_data
           fi
+          cp new_hash pre_hash
           """
           export file_path="/home/autolink/rsync/sourcecode"
           rsync -a --delete ${CLUSTER_1988}:${DATA_DIR}/to_gen_data ${file_path}/
