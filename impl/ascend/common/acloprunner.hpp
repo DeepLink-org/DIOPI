@@ -21,6 +21,7 @@
 #include "acl/acl_op.h"
 #include "acl/acl_op_compiler.h"
 #include "debug.hpp"
+#include "gil_scoped_release.hpp"
 #include "impl_functions.hpp"
 #include "utils.hpp"
 
@@ -619,6 +620,7 @@ public:
     AclOpRunner& run() {
         diopiStreamHandle_t stream;
         diopiGetStream(context_, &stream);
+        diopi::GilScopedRelease gilReleaeGuard;
         if (sync_) {
             CALL_ACLRT(aclopCompileAndExecuteV2(opname_.data(),
                                                 inputIndex_,

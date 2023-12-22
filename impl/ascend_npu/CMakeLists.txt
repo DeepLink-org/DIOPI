@@ -21,6 +21,14 @@ add_custom_target(op_plugin_gen
 add_subdirectory(third_party/acl)
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
 
+if(NOT DEFINED PYTHON_INCLUDE_DIR)
+execute_process(
+  COMMAND sh -c "dirname $(find  $(dirname $(which python))/../ -name Python.h)"
+  OUTPUT_VARIABLE PYTHON_INCLUDE_DIR)
+endif()
+include_directories(SYSTEM ${PYTHON_INCLUDE_DIR})
+message(STATUS "PYTHON_INCLUDE_DIR: " ${PYTHON_INCLUDE_DIR})
+
 if(NOT DEFINED PYTORCH_DIR)
   execute_process(
     COMMAND sh -c "dirname $(python -c 'import torch;print(torch.__path__[0])')"
@@ -640,6 +648,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/linspace.cpp
     ${OLD_IMPL_DIR}/functions/apply_penalty.cpp
     ${OLD_IMPL_DIR}/functions/split.cpp
+    ${OLD_IMPL_DIR}/functions_ext/rms_norm.cpp
     #${OLD_IMPL_DIR}/test/export_functions.cpp
     #${OLD_IMPL_DIR}/test/conform_test.cpp
     ${OLD_IMPL_DIR}/common/utils.cpp

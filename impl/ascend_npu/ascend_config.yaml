@@ -191,6 +191,8 @@ ascend:
 - diopiConvolution2dBackward
 - diopiLogicalAnd
 - diopiLogicalOr
+- diopiRMSNorm
+- diopiRMSNormBackward
 - diopiExpand
 - diopiLinspace
 - diopiProd

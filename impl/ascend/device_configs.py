@@ -1860,39 +1860,4 @@ device_configs = {
             ]
         ),
     ),
-
-    'rms_norm': dict(
-        name=["rms_norm"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32)],
-                },
-            ],
-        ),
-    ),
-
-    'topk_nonzero': dict(
-        name=['topk'],
-        para=dict(
-            k=[Skip(1)],
-        ),
-    ),
-
-    'topk_zero': dict(
-        name=['topk'],
-        interface=['torch'],
-        para=dict(
-            k=[Skip(1)],
-        ),
-    ),
-
-    # FIXME 特定参数组合报错
-    'embedding': dict(
-        name=["embedding"],
-        para=dict(
-            padding_idx=[Skip(92)],
-        ),
-    ),
 }

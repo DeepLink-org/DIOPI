@@ -6,6 +6,7 @@
 #include <diopi/diopirt.h>
 #include <torch/library.h>
 
+#include "../../../ascend/common/gil_scoped_release.hpp"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
@@ -2005,6 +2006,7 @@ private:
 void OpCommandImpl::Run(bool sync, c10::SmallVector<int64_t, N>& sync_index, c10::SmallVector<at::Tensor, N>& outputTensor) {
     NPU_LOGD("Op %s start run.", opName.c_str());
     // RECORD_FUNCTION(opName, std::vector<c10::IValue>({}));
+    diopi::GilScopedRelease gilReleaeGuard;
     ACL_REQUIRE_OK_OP(InnerRun(opName, execParam, sync, sync_index, outputTensor), opName.c_str());
     NPU_LOGD("Op %s run over.", opName.c_str());
 }
@@ -2779,6 +2781,14 @@ at::Tensor& wrapper_source_Storage_storage_offset_set_(at::Tensor& self, at::Sto
     return self;
 }
 
+at::Tensor wrapper_Tensor_mul(const at::Tensor& self, const at::Tensor& other) { return acl_op::mul(self, other); }
+
+at::Tensor wrapper_Scalar_mul(const at::Tensor& self, const at::Scalar& other) { return acl_op::mul(self, other); }
+
+at::Tensor wrapper_Tensor_add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::add(self, other, alpha); }
+
+at::Tensor wrapper__cat(const at::ITensorListRef& tensors, int64_t dim) { return acl_op::cat(tensors, dim); }
+
 }  // namespace
 
 namespace at {
@@ -2795,6 +2805,10 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("clone", TORCH_FN(wrapper__clone));
     m.impl("set_.source_Storage", TORCH_FN(wrapper_source_Storage_set_));
     m.impl("set_.source_Storage_storage_offset", TORCH_FN(wrapper_source_Storage_storage_offset_set_));
+    m.impl("mul.Tensor", TORCH_FN(wrapper_Tensor_mul));
+    m.impl("mul.Scalar", TORCH_FN(wrapper_Scalar_mul));
+    m.impl("add.Tensor", TORCH_FN(wrapper_Tensor_add));
+    m.impl("cat", TORCH_FN(wrapper__cat));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
