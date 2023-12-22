@@ -9,7 +9,6 @@
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
-#include "../common/debug.hpp"
 
 namespace impl {
 namespace camb {
@@ -25,6 +24,7 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     std::vector<DiopiTensor*> pTensors{&inputTr};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_float16, diopi_dtype_float32}));
 
+    int inDim = inputTr.dim();
     if (inputTr.dim() == 3) {
         inputTr.unsqueeze(0);
         outTr.unsqueeze(0);
@@ -38,7 +38,7 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     std::vector<int64_t> outDim = outTmpTr.shape();
 
     cnnlTensorLayout_t layout = CNNL_LAYOUT_NHWC;
-    if (inputTr.dim() == 3) {
+    if (inDim == 3) {
         layout = CNNL_LAYOUT_NCHW;
     }
     CnnlTensorDesc inputDesc(inputTr, layout);
@@ -105,6 +105,7 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     std::vector<DiopiTensor*> pTensors{&inputTr};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_float16, diopi_dtype_float32}));
 
+    int inDim = inputTr.dim();
     if (inputTr.dim() == 3) {
         inputTr.unsqueeze(0);
         indicesTr.unsqueeze(0);
@@ -125,7 +126,7 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     std::vector<int64_t> outDim = outTmpTr.shape();
 
     cnnlTensorLayout_t layout = CNNL_LAYOUT_NHWC;
-    if (inputTr.dim() == 3) {
+    if (inDim == 3) {
         layout = CNNL_LAYOUT_NCHW;
     }
     CnnlTensorDesc inputDesc(inputTr, layout);
