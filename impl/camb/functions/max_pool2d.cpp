@@ -9,6 +9,7 @@
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
+#include "../common/debug.hpp"
 
 namespace impl {
 namespace camb {
@@ -19,6 +20,8 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 
     DiopiTensor inputTr(input);
     DiopiTensor outTr(out);
+    printDevData(ctx, inputTr);
+    printDevData(ctx, outTr);
 
     DIOPI_CHECK(inputTr.dim() == 3 || inputTr.dim() == 4, "non-empty 3D or 4D (batch mode) tensor expected for input");
 
@@ -34,7 +37,6 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     if (inputTr.dtype() != outTr.dtype()) {
         outTmpTr = requiresTensor(ctx, outTr.shape(), inputTr.dtype());
     }
-
     std::vector<int64_t> inputDim = inputTr.shape();
     std::vector<int64_t> outDim = outTmpTr.shape();
     CnnlTensorDesc inputDesc(inputTr, CNNL_LAYOUT_NHWC);
@@ -51,6 +53,7 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
         strideH = stride.data[0];
         strideW = stride.len == 1 ? strideH : stride.data[1];
     }
+
     const int64_t padH = padding.data[0];
     const int64_t padW = padding.len == 1 ? padH : padding.data[1];
     const int64_t dilation0 = dilation.data[0];
@@ -76,7 +79,7 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
         poolDesc, CNNL_POOLING_MAX, CNNL_PROPAGATE_NAN, kernelH, kernelW, padUp, padDown, padLeft, padRight, strideH, strideW, dilation0, dilation1, ceilMode));
 
     size_t workspaceSize = 0;
-    DIOPI_CALL_CNNL(cnnlGetPoolingWorkspaceSize(handle, CNNL_POOLING_MAX, outTr.shape()[3], inputTr.shape()[2], &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetPoolingWorkspaceSize(handle, CNNL_POOLING_MAX, inputTr.shape()[3], inputTr.shape()[2], &workspaceSize));
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
     DIOPI_CALL_CNNL(cnnlPoolingForward_v2(
@@ -86,6 +89,8 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
         DIOPI_CALL(dataTypeCast(ctx, outTr, outTmpTr));
     }
 
+    printDevData(ctx, inputTr);
+    printDevData(ctx, outTr);
     return diopiSuccess;
 }
 
@@ -96,6 +101,7 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     DiopiTensor inputTr(input);
     DiopiTensor outTr(out);
     DiopiTensor indicesTr(indices);
+    std::cout << "why i am here index" << std::endl;
 
     DIOPI_CHECK(inputTr.dim() == 3 || inputTr.dim() == 4, "non-empty 3D or 4D (batch mode) tensor expected for input");
 
@@ -298,6 +304,7 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                                         nullptr,
                                         gradInputDesc.get(),
                                         gradInputTmpTr.data()));
+    // gradInputTr.data()));
 
     // Channels last -> contiguous
     DIOPI_CALL(contiguous(ctx, gradInputTmpTr, diopiMemoryFormat_t::Contiguous));
