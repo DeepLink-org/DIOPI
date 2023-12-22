@@ -617,7 +617,7 @@ public:
     AclOpRunner& run() {
         diopiStreamHandle_t stream;
         diopiGetStream(context_, &stream);
-        diopi::gil_scoped_release gilReleaeGuard;
+        diopi::GilScopedRelease gilReleaeGuard;
         if (sync_) {
             CALL_ACLRT(aclopCompileAndExecuteV2(opname_.data(),
                                                 inputIndex_,

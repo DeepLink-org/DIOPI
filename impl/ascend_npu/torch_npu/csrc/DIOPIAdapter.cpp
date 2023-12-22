@@ -1920,7 +1920,7 @@ private:
 void OpCommandImpl::Run(bool sync, c10::SmallVector<int64_t, N>& sync_index, c10::SmallVector<at::Tensor, N>& outputTensor) {
     NPU_LOGD("Op %s start run.", opName.c_str());
     // RECORD_FUNCTION(opName, std::vector<c10::IValue>({}));
-    diopi::gil_scoped_release gilReleaeGuard;
+    diopi::GilScopedRelease gilReleaeGuard;
     ACL_REQUIRE_OK_OP(InnerRun(opName, execParam, sync, sync_index, outputTensor), opName.c_str());
     NPU_LOGD("Op %s run over.", opName.c_str());
 }

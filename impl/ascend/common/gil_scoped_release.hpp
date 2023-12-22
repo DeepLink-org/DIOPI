@@ -6,18 +6,18 @@ namespace diopi {
 
 // https://docs.python.org/zh-cn/3/c-api/init.html?highlight=pygilstate_check
 
-class gil_scoped_release {
+class GilScopedRelease {
 private:
     PyThreadState* state = nullptr;
 
 public:
-    gil_scoped_release() {
+    GilScopedRelease() {
         if (PyGILState_Check()) {
             state = PyEval_SaveThread();
         }
     }
 
-    ~gil_scoped_release() {
+    ~GilScopedRelease() {
         if (state != nullptr) {
             PyEval_RestoreThread(state);
             state = nullptr;
