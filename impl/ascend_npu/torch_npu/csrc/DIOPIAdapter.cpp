@@ -2689,11 +2689,19 @@ at::Tensor wrapper_Tensor_div(const at::Tensor& self, const at::Tensor& other) {
 
 at::Tensor wrapper_Tensor_mul(const at::Tensor& self, const at::Tensor& other) { return acl_op::mul(self, other); }
 
+at::Tensor wrapper_Tensor_add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::add(self, other, alpha); }
+
 at::Tensor wrapper_Tensor_sub(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::sub(self, other, alpha); }
 
 at::Tensor wrapper__index_select(const at::Tensor& self, int64_t dim, const at::Tensor& index) { return acl_op::index_select(self, dim, index); }
 
 at::Tensor wrapper___softmax(const at::Tensor& self, int64_t dim, bool half_to_float) { return acl_op::_softmax(self, dim, half_to_float); }
+
+at::Tensor wrapper_Scalar_eq(const at::Tensor& self, const at::Scalar& other) { return acl_op::eq(self, other); }
+
+at::Tensor& wrapper_Scalar_masked_fill_(at::Tensor& self, const at::Tensor& mask, const at::Scalar& value) { return acl_op::masked_fill_(self, mask, value); }
+
+at::Tensor wrapper__repeat(const at::Tensor& self, at::IntArrayRef repeats) { return acl_op::repeat(self, repeats); }
 
 }  // namespace
 
@@ -2714,9 +2722,13 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("bmm", TORCH_FN(wrapper__bmm));
     m.impl("div.Tensor", TORCH_FN(wrapper_Tensor_div));
     m.impl("mul.Tensor", TORCH_FN(wrapper_Tensor_mul));
+    m.impl("add.Tensor", TORCH_FN(wrapper_Tensor_add));
     m.impl("sub.Tensor", TORCH_FN(wrapper_Tensor_sub));
     m.impl("index_select", TORCH_FN(wrapper__index_select));
     m.impl("_softmax", TORCH_FN(wrapper___softmax));
+    // m.impl("eq.Scalar", TORCH_FN(wrapper_Scalar_eq));
+    m.impl("masked_fill_.Scalar", TORCH_FN(wrapper_Scalar_masked_fill_));
+    m.impl("repeat", TORCH_FN(wrapper__repeat));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }

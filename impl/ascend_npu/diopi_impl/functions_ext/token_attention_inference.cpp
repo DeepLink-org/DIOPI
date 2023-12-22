@@ -19,6 +19,7 @@ diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorH
     int head = qAt.size(1);
     int dim = qAt.size(2);
     qAt = qAt.reshape({batch, 1, head, dim}).transpose(1, 2);
+    c10::ScalarType dtype = qAt.scalar_type();
     c10::Device device = qAt.device();
     c10::Layout layout = qAt.layout();
     for (int i = 0; i < batch; ++i) {
@@ -30,7 +31,7 @@ diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorH
         at::Tensor values =
             (at::matmul(at::index(qAt, {torch::scalar_to_tensor(i)}).toType(at::kFloat), key.transpose(2, 3).toType(at::kFloat)) / std::sqrt(dim))
                 .view({head, curSeqLen})
-                .toType(at::kHalf);
+                .toType(dtype);
         at::index_put_(attentionOutAt, {at::Tensor(), outLoc}, values);
     }
     END_CALL_ACL_OP();

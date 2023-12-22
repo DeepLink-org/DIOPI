@@ -219,3 +219,4 @@ ascend_npu:
 - diopiTokenAttentionInference
 - diopiTokenSoftmaxReduceVInference
 - diopiApplyPenalty
+- diopiContextAttentionInference

@@ -18,6 +18,7 @@ diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ctx, diopiTe
     int batch = bLocAt.size(0);
     int head = vAt.size(1);
     int dim = vAt.size(2);
+    c10::ScalarType dtype = logicsAt.scalar_type();
     c10::Device device = logicsAt.device();
     c10::Layout layout = logicsAt.layout();
     for (int i = 0; i < batch; ++i) {
@@ -29,7 +30,7 @@ diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ctx, diopiTe
                            .transpose(0, 1);
         at::Tensor vLoc = bLocAt[i].index_select(0, acl_op::arange(maxInputLen - curSeqLen, maxInputLen, at::kLong, layout, device));
         at::Tensor V = at::index(vAt, {vLoc}).view({1, curSeqLen, head, dim}).transpose(1, 2);
-        at::Tensor values = at::matmul(P.toType(at::kFloat), V.toType(at::kFloat)).view({head, dim}).toType(at::kHalf);
+        at::Tensor values = at::matmul(P.toType(at::kFloat), V.toType(at::kFloat)).view({head, dim}).toType(dtype);
         at::index_put_(outAt, {torch::scalar_to_tensor(i)}, values);
     }
     END_CALL_ACL_OP();
