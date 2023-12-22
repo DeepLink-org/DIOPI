@@ -25,7 +25,7 @@ diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         }
         tensorsAt.push_back(tensorAt.to(outTempAt.scalar_type()));
     }
-    if (tensorsAt.size() > 0) {
+    if (!tensorsAt.empty()) {
         acl_op::cat_out(tensorsAt, dim, outTempAt);
     }
     if (outAt.scalar_type() != outTempAt.scalar_type()) {
