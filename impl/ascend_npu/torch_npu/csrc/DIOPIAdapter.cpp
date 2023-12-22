@@ -2801,7 +2801,7 @@ at::Tensor wrapper_Tensor_mul(const at::Tensor& self, const at::Tensor& other) {
 
 at::Tensor wrapper_Scalar_mul(const at::Tensor& self, const at::Scalar& other) { return acl_op::mul(self, other); }
 
-at::Tensor wrapper__mm(const at::Tensor& self, const at::Tensor& mat2) { return acl_op::mm(self, mat2); }
+at::Tensor& wrapper_out_mm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::mm_out(self, mat2, out); }
 
 at::Tensor wrapper_Tensor_add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::add(self, other, alpha); }
 
@@ -2827,7 +2827,7 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("mul.Scalar", TORCH_FN(wrapper_Scalar_mul));
     m.impl("add.Tensor", TORCH_FN(wrapper_Tensor_add));
     m.impl("cat", TORCH_FN(wrapper__cat));
-    m.impl("mm.out", TORCH_FN(wrapper__mm));
+    m.impl("mm.out", TORCH_FN(wrapper_out_mm_out));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
