@@ -4,7 +4,7 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "helper.hpp"
+#include "../helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
 namespace OP_IMPL_NS {
