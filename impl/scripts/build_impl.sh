@@ -70,6 +70,12 @@ case $1 in
     cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=supa -DCMAKE_BUILD_TYPE=Release -DTEST=ON
     make -j8
     ;;
+  kunlunxin)
+    mkdir -p build && cd build
+    XPURT_TOOLKIT_ROOT=${CURRENT_DIR}/../../xpu_toolchain/xpurt XDNN_TOOLKIT_ROOT=${CURRENT_DIR}/../../xpu_toolchain/xdnn XDNNTORCH_TOOLKIT_ROOT=${CURRENT_DIR}/../../xpu_toolchain/xdnn_pytorch cmake ..  \
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=kunlunxin -DCMAKE_BUILD_TYPE=Release -DTEST=ON
+    make -j32
+    ;;
   *)
     echo -e "[ERROR] Incorrect compilation option:" $1 || exit 1
     ;;

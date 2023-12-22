@@ -1,0 +1,101 @@
+name: diopi gen data
+on:
+  workflow_dispatch:
+#  push:
+#    branches:
+#      - "wgs/*"
+  schedule:
+    - cron: '01 22 * * *'
+
+concurrency:
+  group: data-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CLUSTER_1988: SH1988
+  CLUSTER_CAMB: CAMB
+  CLUSTER_ASCEND_910B: ASCEND-910B
+  CLUSTER_TOPSRIDER: TOPSRIDER
+  CLUSTER_SUPA: SUPA
+  DEEPLINK_PATH: '/mnt/cache/share/deeplinkci/github/${{ github.repository }}'
+  HASH_FILE: 'diopi/diopi_case_items.cfg'
+  DATA_DIR: '/mnt/cache/share/deeplinkci/gen-data'
+  ENV_PATH: '/mnt/cache/share/platform/env'
+  GEN_DATA: 'diopi_test/python/cache'
+  ENV_NAME: 'pt2.0_diopi'
+  SLURM_PAR_SH1988: ${{ vars.SLURM_PAR_SH1984 != '' && vars.SLURM_PAR_SH1984 || 'pat_rd -x SH-IDC1-10-198-8-58,SH-IDC1-10-198-8-87' }}
+
+jobs:
+  Clone:
+    name: checkout code
+    runs-on: tps-diopi-ci
+    steps:
+      - name: clone repo
+        run: |
+          set -e
+          cd ${GITHUB_WORKSPACE} && rm -rf source
+          git clone ${{ github.event.repository.clone_url }} source
+          cd source && git submodule update --init --recursive
+      - name: Rsync to Server
+        run: |
+          ssh ${CLUSTER_1988} "mkdir -p ${DATA_DIR} && cd ${DATA_DIR} && rm -rf source && mkdir source" \
+          && rsync -a --delete ${GITHUB_WORKSPACE}/source/ ${CLUSTER_1988}:${DATA_DIR}/source/
+
+  Gen-Data:
+    name: Gen-Data
+    runs-on: tps-diopi-ci
+    needs: [Clone]
+    steps:
+      - name: gen-test-data
+        run: |
+          ssh ${CLUSTER_1988} """
+          set -e
+          source /mnt/cache/share/platform/env/${ENV_NAME}
+          cd ${DATA_DIR}/source/diopi_test/python
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:1 bash -c 'python main.py --mode gen_data' \
+          || ( cd ${DATA_DIR}/source/ && git clean -xdf ${GEN_DATA} && exit 1 )
+          """
+
+  CheckAndRsync:
+    name: check and rsync
+    runs-on: tps-diopi-ci
+    needs: Gen-Data
+    outputs:
+      output: ${{ steps.get_gen_data.outputs.to_gen_data }}
+    steps:
+      - name: check
+        id: get_gen_data
+        run: |
+          ssh ${CLUSTER_1988} """
+          set -e
+          cd ${DATA_DIR}
+          if [[ -f "pre_hash" ]]; then
+            sha1sum source/${GEN_DATA}/${HASH_FILE} > new_hash
+            diff_output=\$(diff -q --ignore-all-space "new_hash" "pre_hash" ) && echo "false" > to_gen_data  || echo "true" > to_gen_data
+          else
+            echo "true" > to_gen_data
+          fi
+          cp new_hash pre_hash
+          """
+          export file_path="/home/autolink/rsync/sourcecode"
+          rsync -a --delete ${CLUSTER_1988}:${DATA_DIR}/to_gen_data ${file_path}/
+          if grep -q "true" "${file_path}/to_gen_data"; then
+            echo "to_gen_data=true" >> "$GITHUB_ENV"
+          else
+            echo "to_gen_data=false" >> "$GITHUB_ENV"
+          fi
+      - name: rsync
+        if: ${{ env.to_gen_data == 'true' }}
+        run: |
+          set -e
+          ssh ${CLUSTER_CAMB} """
+          mkdir -p ${DATA_DIR}/source/${GEN_DATA}
+          rsync -a --delete ${CLUSTER_1988}:${DATA_DIR}/source/${GEN_DATA}/ ${DATA_DIR}/source/${GEN_DATA}/
+          """
+          ssh ${CLUSTER_ASCEND_910B} """
+          mkdir -p ${DATA_DIR}/source/${GEN_DATA}
+          rsync -a --delete ${CLUSTER_1988}:${DATA_DIR}/source/${GEN_DATA}/ ${DATA_DIR}/source/${GEN_DATA}/
+          """
+#          ssh ${CLUSTER_SUPA} """
+#          rsync -a ${CLUSTER_1988}:${DATA_DIR}/source/${GEN_DATA} ${DATA_DIR}/source/
+#          """

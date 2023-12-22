@@ -1,12 +1,130 @@
 #include "torch_npu/csrc/aten/NPUNativeFunctions.h"
 
+#include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
 namespace at_npu::native {
 
 #define CUSTOM_OP_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
 
-at::Tensor& NPUNativeFunctions::npu_format_cast_(at::Tensor& self, const at::Tensor& src) { CUSTOM_OP_NOT_IMPL }
+at::Tensor& NPUNativeFunctions::npu_format_cast_(at::Tensor& self, const at::Tensor& src) { CUSTOM_OP_NOT_IMPL; }
+
+at::Tensor NPUNativeFunctions::contiguous(const at::Tensor& self, at::MemoryFormat memory_format) {
+    if (self.is_contiguous(memory_format)) {
+        return self;
+    }
+    TORCH_CHECK(memory_format == c10::MemoryFormat::Contiguous, "NPU contiguous operator only supportted contiguous memory format.");
+    return self.clone();
+}
+
+int64_t NPUNativeFunctions::get_storage_size(const at::Tensor& self) {
+    torch_npu::utils::torch_check_npu(self);
+    auto sizes = torch_npu::NPUBridge::GetNpuStorageImpl(self)->npu_desc_.storage_sizes_;
+    int64_t n = 1;
+    for (auto s : sizes) {
+        n *= s;
+    }
+    return n;
+}
+
+at::Tensor NPUNativeFunctions::clone(const at::Tensor& self, c10::optional<at::MemoryFormat> memory_format) {
+    return at_npu::native::clone(self, memory_format);
+}
+
+at::Tensor NPUNativeFunctions::empty(c10::SymIntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
+                                     c10::optional<at::Device> device, c10::optional<bool> pin_memory, c10::optional<at::MemoryFormat> memory_format) {
+    return at_npu::native::empty_npu(c10::asIntArrayRefUnchecked(size), dtype, layout, device, pin_memory, memory_format);
+}
+
+at::Tensor NPUNativeFunctions::empty_strided(c10::SymIntArrayRef size, c10::SymIntArrayRef stride, c10::optional<at::ScalarType> dtype,
+                                             c10::optional<at::Layout> layout, c10::optional<at::Device> device, c10::optional<bool> pin_memory) {
+    return at_npu::native::empty_strided_npu(size, stride, dtype, layout, device, pin_memory);
+}
+
+static inline void checkInBoundsForStorage(c10::IntArrayRef size, c10::IntArrayRef stride, int64_t storage_offset, const caffe2::TypeMeta data_type,
+                                           const c10::Storage& new_storage) {
+    int64_t storage_size_bytes = static_cast<int64_t>(at::detail::computeStorageNbytes(size, stride, data_type.itemsize()));
+    int64_t storage_offset_bytes = storage_offset * static_cast<int64_t>(data_type.itemsize());
+    if (storage_size_bytes == 0) {
+        // NB: (a tensor with arbitrary 0 dims)'s storage can have any numel.
+        return;
+    }
+
+    int64_t new_storage_size_bytes = static_cast<int64_t>(new_storage.nbytes());
+    TORCH_CHECK(storage_size_bytes + storage_offset_bytes <= new_storage_size_bytes,
+                "setStorage: sizes ",
+                size,
+                ", strides ",
+                stride,
+                ","
+                " storage offset ",
+                storage_offset,
+                ", and itemsize ",
+                data_type.itemsize(),
+                " requiring a storage size of ",
+                storage_size_bytes,
+                " are out of bounds for storage of size ",
+                new_storage_size_bytes);
+}
+
+inline void setStrided(const at::Tensor& self, c10::IntArrayRef size, c10::IntArrayRef stride, int64_t storage_offset) {
+    TORCH_CHECK(size.size() == stride.size(), "mismatch in length of strides and shape");
+    auto* self_ = self.unsafeGetTensorImpl();
+    checkInBoundsForStorage(size, stride, storage_offset, self_->dtype(), self_->storage());
+
+    /* storage offset */
+    TORCH_CHECK(storage_offset >= 0, "Tensor: invalid storage offset ", storage_offset);
+    self_->set_storage_offset(storage_offset);
+
+    /* size and stride */
+    if (self_->sizes() == size && self_->strides() == stride) {
+        return;
+    }
+    for (auto val : stride) {
+        TORCH_CHECK(val >= 0,
+                    "as_strided: Negative strides are not supported at the moment, "
+                    "got strides: ",
+                    stride);
+    }
+    self_->set_sizes_and_strides(size, stride);
+}
+
+at::Tensor NPUNativeFunctions::as_strided(const at::Tensor& self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset) {
+    auto dst = self;
+    if (InferFormat::IsDefiniteTensorWhenMetaDataChanges(dst, size)) {
+        dst = FormatCastHelper::ApplyBaseFormatTensorBy(dst);
+    }
+    auto storage_offset_new = storage_offset.value_or(dst.storage_offset());
+    auto result = at::detail::make_tensor<at::TensorImpl>(c10::TensorImpl::VIEW, c10::Storage(dst.storage()), dst.key_set(), dst.dtype());
+    setStrided(result, size, stride, storage_offset_new);
+    return result;
+}
+
+at::Tensor NPUNativeFunctions::empty_with_format(c10::IntArrayRef size, c10::optional<c10::ScalarType> dtype_opt, c10::optional<c10::Layout> layout_opt,
+                                                 c10::optional<c10::Device> device_opt, c10::optional<bool> pin_memory_opt, int64_t dst_format) {
+    return at_npu::native::empty_with_format(size, dtype_opt, layout_opt, device_opt, pin_memory_opt, dst_format);
+}
+
+at::Tensor NPUNativeFunctions::empty_with_format(at::IntArrayRef size, c10::optional<at::DimnameList> names, c10::optional<at::ScalarType> dtype,
+                                                 c10::optional<at::Layout> layout, c10::optional<at::Device> device, c10::optional<bool> pin_memory,
+                                                 int64_t acl_format) {
+    OP_NOT_IMPL;
+}
+
+at::Tensor NPUNativeFunctions::unsafe_empty_with_format(at::IntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
+                                                        c10::optional<at::Device> device, c10::optional<bool> pin_memory, int64_t acl_format,
+                                                        bool keep_format) {
+    // This is a special interface that can adjust the memory application results. Check before use.
+
+    // Some ops cannot operate directly based on ND format, such as MatMul, BatchMatMul, MaxPoolWithArgmaxV1.
+    // For these ops, specify the parameter keep_format to ensure that
+    // the specified internal format is preserved.
+    if ((!keep_format) && at_npu::native::env::CheckForbidInternalFormat()) {
+        acl_format = static_cast<int64_t>(FormatHelper::GetBaseFormat(static_cast<aclFormat>(acl_format)));
+    }
+
+    return NPUNativeFunctions::empty_with_format(size, dtype, layout, device, pin_memory, acl_format);
+}
 
 namespace custom_ops {
 
@@ -29,18 +147,40 @@ at::Tensor empty_with_format(at::IntArrayRef size, c10::optional<at::DimnameList
 }
 at::Tensor& copy_memory_(at::Tensor& self, const at::Tensor& src, bool non_blocking) { CUSTOM_OP_NOT_IMPL; }
 at::Tensor format_contiguous(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
+
 bool check_match(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
 void check_memory_overlaps(at::TensorList inputs, at::TensorList outputs) { CUSTOM_OP_NOT_IMPL; }
 int64_t get_storage_size(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
 __attribute__((__visibility__("default"))) at::Tensor npu_format_cast(const at::Tensor& self, int64_t acl_format) { CUSTOM_OP_NOT_IMPL; }
 at::Tensor _npu_format_cast(const at::Tensor& self, int64_t acl_format) { CUSTOM_OP_NOT_IMPL; }
-at::Tensor& npu_view_copy(at::Tensor& self, const at::Tensor& other, bool non_blocking) { CUSTOM_OP_NOT_IMPL; }
-at::Tensor npu_transpose(const at::Tensor& self, at::IntArrayRef perm, bool require_contiguous) { CUSTOM_OP_NOT_IMPL; }
-at::Tensor& npu_transpose_out(const at::Tensor& self, at::IntArrayRef perm, bool require_contiguous, at::Tensor& out) { CUSTOM_OP_NOT_IMPL; }
-at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size) { CUSTOM_OP_NOT_IMPL; }
-at::Tensor& npu_broadcast_out(const at::Tensor& self, at::IntArrayRef size, at::Tensor& out) { CUSTOM_OP_NOT_IMPL; }
 
-at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) { return acl_op::npu_dtype_cast_(self, src); }
+at::Tensor& npu_view_copy(at::Tensor& self, const at::Tensor& other, bool non_blocking) { acl_op::npu_view_copy(self, other, non_blocking); }
+at::Tensor npu_transpose(const at::Tensor& self, at::IntArrayRef perm, bool require_contiguous) { CUSTOM_OP_NOT_IMPL; }
+
+at::Tensor& npu_transpose_out(const at::Tensor& self, at::IntArrayRef perm, bool require_contiguous, at::Tensor& out) { CUSTOM_OP_NOT_IMPL; }
+at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size) { return acl_op::npu_broadcast(self, size); }
+
+at::Tensor& npu_broadcast_out(const at::Tensor& self, at::IntArrayRef size, at::Tensor& out) { return acl_op::npu_broadcast_out(self, size, out); }
+
+at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
+    at::Tensor source = src;
+    if (!source.is_contiguous()) {
+        at::Tensor sourceTemp = at_npu::native::empty_npu(source.sizes(), source.options());
+        sourceTemp.copy_(source);
+        source = sourceTemp;
+    }
+    if (src.sizes() != self.sizes()) {
+        source = npu_broadcast(source, self.sizes());
+    }
+    if (source.strides() == self.strides()) {
+        acl_op::npu_dtype_cast_(self, source);
+    } else {
+        at::Tensor selfTemp = at_npu::native::empty_npu(source.sizes(), self.options());
+        acl_op::npu_dtype_cast_(selfTemp, source);
+        self.copy_(selfTemp);
+    }
+    return self;
+}
 
 at::Tensor npu_alloc_float_status(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
 at::Tensor npu_get_float_status(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
@@ -111,9 +251,9 @@ at::Tensor& npu_conv3d_out(const at::Tensor& input, const at::Tensor& weight, co
 at::Tensor npu_stride_add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& offset1, const at::Scalar& offset2, const at::Scalar& c1_len) {
     CUSTOM_OP_NOT_IMPL;
 }
-at::Tensor npu_slice(const at::Tensor& self, at::IntArrayRef offsets, at::IntArrayRef size) { CUSTOM_OP_NOT_IMPL; }
-__attribute__((__visibility__("default"))) at::Tensor& npu_slice_out(const at::Tensor& self, at::IntArrayRef offsets, at::IntArrayRef size, at::Tensor& out) {
-    CUSTOM_OP_NOT_IMPL;
+at::Tensor npu_slice(const at::Tensor& self, at::IntArrayRef offsets, at::IntArrayRef size) { return acl_op::npu_slice(self, offsets, size); }
+at::Tensor& npu_slice_out(const at::Tensor& self, at::IntArrayRef offsets, at::IntArrayRef size, at::Tensor& out) {
+    return acl_op::npu_slice_out(self, offsets, size, out);
 }
 at::Tensor npu_indexing(const at::Tensor& self, at::IntArrayRef begin, at::IntArrayRef end, at::IntArrayRef strides, int64_t begin_mask, int64_t end_mask,
                         int64_t ellipsis_mask, int64_t new_axis_mask, int64_t shrink_axis_mask) {
@@ -125,9 +265,11 @@ at::Tensor& npu_indexing_out(const at::Tensor& self, at::IntArrayRef begin, at::
 }
 at::Tensor npu_softmax_cross_entropy_with_logits_backward(const at::Tensor& grad, const at::Tensor& self, const at::Tensor& labels) { CUSTOM_OP_NOT_IMPL; }
 at::Tensor npu_stride_copy(const at::Tensor& self, at::IntArrayRef shape, at::IntArrayRef stride, const at::Scalar& storage_offset) { CUSTOM_OP_NOT_IMPL; }
+
 at::Tensor& npu_stride_copy_out(const at::Tensor& self, at::IntArrayRef shape, at::IntArrayRef stride, const at::Scalar& storage_offset, at::Tensor& out) {
-    CUSTOM_OP_NOT_IMPL;
+    acl_op::npu_stride_copy_out(self, shape, stride, storage_offset, out);
 }
+
 at::Tensor npu_roi_align(const at::Tensor& self, const at::Tensor& rois, double spatial_scale, int64_t pooled_height, int64_t pooled_width, int64_t sample_num,
                          int64_t roi_end_mode) {
     CUSTOM_OP_NOT_IMPL;
@@ -177,8 +319,13 @@ at::Tensor npu_rotated_iou(const at::Tensor& self, const at::Tensor& query_boxes
     CUSTOM_OP_NOT_IMPL;
 }
 at::Tensor npu_mish_backward(const at::Tensor& grad, const at::Tensor& input) { CUSTOM_OP_NOT_IMPL; }
-at::Tensor npu_reshape(const at::Tensor& self, at::IntArrayRef shape, bool can_refresh) { CUSTOM_OP_NOT_IMPL; }
-at::Tensor& npu_reshape_out(const at::Tensor& self, at::IntArrayRef shape, bool can_refresh, at::Tensor& out) { CUSTOM_OP_NOT_IMPL; }
+
+at::Tensor npu_reshape(const at::Tensor& self, at::IntArrayRef shape, bool can_refresh) { return acl_op::npu_reshape(self, shape, can_refresh); }
+
+at::Tensor& npu_reshape_out(const at::Tensor& self, at::IntArrayRef shape, bool can_refresh, at::Tensor& out) {
+    return acl_op::npu_reshape_out(self, shape, can_refresh, out);
+}
+
 ::std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_batch_nms(const at::Tensor& self, const at::Tensor& scores, double score_threshold,
                                                                            double iou_threshold, int64_t max_size_per_class, int64_t max_total_size,
                                                                            bool change_coordinate_frame, bool transpose_box) {

@@ -15,8 +15,6 @@
 
 #include <cstdint>
 
-// TODO(lljbash): the dependency on context.h makes no sense, check and refactor
-#include "../context.h"  // IWYU pragma: keep
 #include "../ext_kernel.h"
 #include "../helper.hpp"
 
@@ -34,9 +32,11 @@ c10::optional<at::Generator> buildGeneratorForMha(diopiContextHandle_t ctx, diop
 
 }  // namespace
 
+namespace impl {
+namespace cuda {
 diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t x, diopiConstTensorHandle_t cos,
                                   diopiConstTensorHandle_t sin, const bool conj, const bool interleaved) {
-    impl::aten::setCurCtx(ctx);
+    impl::aten::setCurStream(ctx);
     auto atX = impl::aten::buildATen(x);
     auto atCos = impl::aten::buildATen(cos);
     auto atSin = impl::aten::buildATen(sin);
@@ -49,13 +49,13 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto out1 = chunksOut[0];
     auto out2 = chunksOut[1];
     ext::ops::apply_rotary_cuda(x1, x2, atCos, atSin, out1, out2, conj);
-    impl::aten::unsetCurCtx();
+
     return diopiSuccess;
 }
 
 diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t invRMS, diopiConstTensorHandle_t input,
                           diopiSize_t normalized_shape, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, double eps) {
-    impl::aten::setCurCtx(ctx);
+    impl::aten::setCurStream(ctx);
     auto atOut = impl::aten::buildATen(out);
     auto atInvRMS = impl::aten::buildATen(invRMS);
     auto atInput = impl::aten::buildATen(input);
@@ -63,14 +63,14 @@ diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     auto atWeight = impl::aten::buildATen(weight);
     auto atBias = impl::aten::buildATen(bias);  // bias在这里实际上没有使用
     ext::ops::rms_norm_forward(atInput, atNormalizedShape, atWeight, eps, atOut, atInvRMS);
-    impl::aten::unsetCurCtx();
+
     return diopiSuccess;
 }
 
 diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight, diopiTensorHandle_t gradBias,
                                   diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                   diopiConstTensorHandle_t bias, diopiConstTensorHandle_t invRMS, diopiSize_t normalized_shape, double eps) {
-    impl::aten::setCurCtx(ctx);
+    impl::aten::setCurStream(ctx);
     auto atGradInput = impl::aten::buildATen(gradInput);
     auto atGradWeight = impl::aten::buildATen(gradWeight);
     auto atGradBias = impl::aten::buildATen(gradBias);
@@ -81,14 +81,14 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto atWeight = impl::aten::buildATen(weight);
     auto atBias = impl::aten::buildATen(bias);  // bias在这里实际上没有使用
     ext::ops::rms_norm_backward(atGradOutput, atInvRMS, atInput, atNormalizedShape, atWeight, eps, atGradInput, atGradWeight);
-    impl::aten::unsetCurCtx();
+
     return diopiSuccess;
 }
 
 diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiTensorHandle_t q, diopiTensorHandle_t k, diopiTensorHandle_t v, double dropout_p,
                                      bool is_causal, bool return_debug_mask, double scale, diopiTensorHandle_t out, diopiTensorHandle_t softmax_lse,
                                      diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask) {
-    impl::aten::setCurCtx(ctx);
+    impl::aten::setCurStream(ctx);
 
     auto atQ = impl::aten::buildATen(q).contiguous();
     auto atK = impl::aten::buildATen(k).contiguous();
@@ -120,7 +120,6 @@ diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiTensorHandle
         impl::aten::updateATen2Tensor(ctx, atDebugAttnMask, debug_attn_mask);
     }
 
-    impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
 
@@ -128,7 +127,7 @@ diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiCons
                                              diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t out,
                                              diopiConstTensorHandle_t softmax_lse, double dropout_p, bool is_causal, diopiGeneratorHandle_t gen, double scale,
                                              diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v) {
-    impl::aten::setCurCtx(ctx);
+    impl::aten::setCurStream(ctx);
 
     auto atQ = impl::aten::buildATen(q).contiguous();
     auto atK = impl::aten::buildATen(k).contiguous();
@@ -149,7 +148,6 @@ diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiCons
     impl::aten::updateATen2Tensor(ctx, atGradK, grad_k);
     impl::aten::updateATen2Tensor(ctx, atGradV, grad_v);
 
-    impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
 
@@ -157,7 +155,7 @@ diopiError_t diopiMultiHeadAttentionVarLen(diopiContextHandle_t ctx, diopiTensor
                                            diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k, int64_t max_q, int64_t max_k,
                                            double dropout_p, bool is_causal, bool return_debug_mask, double scale, diopiTensorHandle_t out,
                                            diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask) {
-    impl::aten::setCurCtx(ctx);
+    impl::aten::setCurStream(ctx);
 
     auto atQ = impl::aten::buildATen(q).clone();
     auto atK = impl::aten::buildATen(k).clone();
@@ -192,7 +190,6 @@ diopiError_t diopiMultiHeadAttentionVarLen(diopiContextHandle_t ctx, diopiTensor
         impl::aten::updateATen2Tensor(ctx, atDebugAttnMask, debug_attn_mask);
     }
 
-    impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
 
@@ -201,7 +198,7 @@ diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_t ctx, dio
                                                    diopiConstTensorHandle_t softmax_lse, diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k,
                                                    int64_t max_q, int64_t max_k, double dropout_p, bool is_causal, diopiGeneratorHandle_t gen, double scale,
                                                    diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v) {
-    impl::aten::setCurCtx(ctx);
+    impl::aten::setCurStream(ctx);
 
     auto atQ = impl::aten::buildATen(q).contiguous();
     auto atK = impl::aten::buildATen(k).contiguous();
@@ -244,6 +241,7 @@ diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_t ctx, dio
     impl::aten::updateATen2Tensor(ctx, atGradK, grad_k);
     impl::aten::updateATen2Tensor(ctx, atGradV, grad_v);
 
-    impl::aten::unsetCurCtx();
     return diopiSuccess;
 }
+}  // namespace cuda
+}  // namespace impl

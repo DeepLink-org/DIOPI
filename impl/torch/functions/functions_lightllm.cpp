@@ -10,23 +10,25 @@
 #include <torch/nn.h>
 #include <torch/optim.h>
 
-#include "../context.h"
 #include "../helper.hpp"
 
+namespace impl {
+namespace cuda {
+
 diopiError_t diopiDestIndexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t k, diopiConstTensorHandle_t destLoc) {
-    impl::aten::setCurCtx(ctx);
+    impl::aten::setCurStream(ctx);
     at::Tensor atOut = impl::aten::buildATen(out);
     at::Tensor atK = impl::aten::buildATen(k);
     at::Tensor atDestLoc = impl::aten::buildATen(destLoc);
     atOut.index_put_({atDestLoc}, atK);
-    impl::aten::unsetCurCtx();
+
     return diopiSuccess;
 }
 
 diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t presencePenalty,
                                diopiConstTensorHandle_t frequencyPenalty, diopiConstTensorHandle_t pTokenIds, diopiConstTensorHandle_t pTokenCounts,
                                diopiConstTensorHandle_t pCumsumSeqLen, int pMaxLenInBatch) {
-    impl::aten::setCurCtx(ctx);
+    impl::aten::setCurStream(ctx);
     at::Tensor atLogits = impl::aten::buildATen(logits);
     at::Tensor atPresencePenalty = impl::aten::buildATen(presencePenalty);
     at::Tensor atFrequencyPenalty = impl::aten::buildATen(frequencyPenalty);
@@ -44,14 +46,14 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
         curLogits = curLogits - curTokenCounts * atFrequencyPenalty[i] - atPresencePenalty[i];
         atLogits.index_put_({at::tensor(i), curTokenIds}, curLogits);
     }
-    impl::aten::unsetCurCtx();
+
     return diopiSuccess;
 }
 
 diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
                                           diopiConstTensorHandle_t bLoc, diopiConstTensorHandle_t bStartLoc, diopiConstTensorHandle_t bSeqLen,
                                           int maxInputLen) {
-    impl::aten::setCurCtx(ctx);
+    impl::aten::setCurStream(ctx);
     at::Tensor atQ = impl::aten::buildATen(q);
     at::Tensor atK = impl::aten::buildATen(k);
     at::Tensor atBLoc = impl::aten::buildATen(bLoc);
@@ -73,14 +75,14 @@ diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorH
         at::Tensor values = (at::matmul(atQ.index({i}), key.transpose(2, 3)) / std::sqrt(dim)).view({head, curSeqLen});
         atAttentionOut.index_put_({torch::indexing::Slice(), outLoc}, values);
     }
-    impl::aten::unsetCurCtx();
+
     return diopiSuccess;
 }
 
 diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t logics, diopiConstTensorHandle_t v,
                                                diopiConstTensorHandle_t bLoc, diopiConstTensorHandle_t bStartLoc, diopiConstTensorHandle_t bSeqLen,
                                                int maxInputLen, int otherKVIndex) {
-    impl::aten::setCurCtx(ctx);
+    impl::aten::setCurStream(ctx);
     at::Tensor atOut = impl::aten::buildATen(out);
     at::Tensor atV = impl::aten::buildATen(v);
     at::Tensor atLogics = impl::aten::buildATen(logics);
@@ -100,7 +102,7 @@ diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ctx, diopiTe
         at::Tensor V = atV.index({vLoc}).view({1, curSeqLen, head, dim}).transpose(1, 2);
         atOut[i] = at::matmul(P, V).view({head, dim});
     }
-    impl::aten::unsetCurCtx();
+
     return diopiSuccess;
 }
 
@@ -124,7 +126,7 @@ at::Tensor torchContextAttention(at::Tensor xq, at::Tensor xk, at::Tensor xv, in
 
 diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
                                             diopiConstTensorHandle_t v, diopiConstTensorHandle_t bStartLoc, diopiConstTensorHandle_t bSeqLen, int maxInputLen) {
-    impl::aten::setCurCtx(ctx);
+    impl::aten::setCurStream(ctx);
     at::Tensor atOut = impl::aten::buildATen(out);
     at::Tensor atQ = impl::aten::buildATen(q);
     at::Tensor atK = impl::aten::buildATen(k);
@@ -143,3 +145,5 @@ diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTenso
     }
     return diopiSuccess;
 }
+}  // namespace cuda
+}  // namespace impl

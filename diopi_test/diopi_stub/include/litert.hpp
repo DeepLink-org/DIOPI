@@ -52,7 +52,9 @@ public:
     Storage(malloc_func_t mallocFn, free_func_t freeFn, int64_t nbytes) : mallocFn_(mallocFn), freeFn_(freeFn), nbytes_(nbytes) {
         assert(freeFn_);
         assert(mallocFn_);
-        ptr_ = mallocFn_(nbytes);
+        const int64_t MALLOC_BYTES_ALIGN = 1024;
+        const int64_t realNbytes = ((nbytes + MALLOC_BYTES_ALIGN - 1) / MALLOC_BYTES_ALIGN) * MALLOC_BYTES_ALIGN;
+        ptr_ = mallocFn_(realNbytes);
     }
 
     ~Storage() {

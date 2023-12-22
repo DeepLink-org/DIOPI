@@ -555,7 +555,7 @@ set(OP_PLUGIN_API_SRC
 )
 
 set(DIOPI_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/diopi_impl/)
-file(GLOB DIOPI_IMPL_SRC "${DIOPI_IMPL_DIR}/*.cpp")
+file(GLOB DIOPI_IMPL_SRC "${DIOPI_IMPL_DIR}/*.cpp" "${DIOPI_IMPL_DIR}/functions_ext/*.cpp")
 
 add_definitions(-DBUILD_LIBTORCH)
 
@@ -568,6 +568,7 @@ set(IMPL_SRC
   torch_npu/csrc/NpuVariables.cpp
   torch_npu/csrc/AdvancedIndex.cpp
   torch_npu/csrc/NPUNativeFunctions.cpp
+  torch_npu/csrc/CopyKernel.cpp
 )
 
 set(OLD_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ascend/)
@@ -601,6 +602,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/logic.cpp
     ${OLD_IMPL_DIR}/functions/linear.cpp
     ${OLD_IMPL_DIR}/functions/error.cpp
+    ${OLD_IMPL_DIR}/functions/scatter.cpp
     ${OLD_IMPL_DIR}/functions/sgn.cpp
     ${OLD_IMPL_DIR}/functions/cast.cpp
     ${OLD_IMPL_DIR}/functions/sin.cpp
@@ -634,13 +636,16 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/where.cpp
     ${OLD_IMPL_DIR}/functions/multinomial.cpp
     ${OLD_IMPL_DIR}/functions/addmm.cpp
-    ${OLD_IMPL_DIR}/functions/expand.cpp    
+    ${OLD_IMPL_DIR}/functions/expand.cpp
     ${OLD_IMPL_DIR}/functions/linspace.cpp
+    ${OLD_IMPL_DIR}/functions/apply_penalty.cpp
+    ${OLD_IMPL_DIR}/functions/split.cpp
     #${OLD_IMPL_DIR}/test/export_functions.cpp
     #${OLD_IMPL_DIR}/test/conform_test.cpp
     ${OLD_IMPL_DIR}/common/utils.cpp
     ${OLD_IMPL_DIR}/common/debug.cpp
     ${OLD_IMPL_DIR}/common/generator_helper.cpp
+    ${OLD_IMPL_DIR}/env_vars.cpp
 )
 
 list(APPEND IMPL_SRC ${OP_PLUGIN_UTILS_SRC} ${OP_PLUGIN_SRC} ${OP_PLUGIN_API_SRC} ${ASCEND_IMPL_SRC} ${DIOPI_IMPL_SRC} ${OLD_IMPL_SRC})

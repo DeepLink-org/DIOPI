@@ -5,8 +5,10 @@
 #include <stdio.h>
 
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -18,6 +20,7 @@
 #include "ge/ge_api.h"
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpConstants.h"
+#include "torch_npu/csrc/aten/CustomFunctions.h"
 #include "torch_npu/csrc/aten/NPUNativeFunctions.h"
 #include "torch_npu/csrc/core/npu/NPUErrorCodes.h"
 #include "torch_npu/csrc/core/npu/NpuVariables.h"
@@ -41,12 +44,10 @@
 #define NPU_LOGW(fmt, ...) printf("[WARN]%s,%s:%u:" #fmt "\n", __FUNCTION__, __FILENAME__, __LINE__, ##__VA_ARGS__)
 #define NPU_LOGI(fmt, ...) printf("[INFO]:" #fmt "\n", ##__VA_ARGS__)
 
-#define USE_NPU_LOG
-
-#ifdef USE_NPU_LOG
-#define NPU_LOGD(fmt, ...) printf("[INFO]%s,%s:%u:" #fmt "\n", __FUNCTION__, __FILENAME__, __LINE__, ##__VA_ARGS__)
-#else
+#if defined(NDEBUG)
 #define NPU_LOGD(fmt, ...)
+#else
+#define NPU_LOGD(fmt, ...) printf("[INFO]%s,%s:%u:" #fmt "\n", __FUNCTION__, __FILENAME__, __LINE__, ##__VA_ARGS__)
 #endif
 
 #ifdef _WIN32
@@ -147,7 +148,8 @@
         }                                                                                                                                              \
     } while (0)
 
-#define INTERFACE_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
+#define INTERFACE_NOT_IMPL
+// #define INTERFACE_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
 
 static void warn_(const ::c10::Warning& warning) { INTERFACE_NOT_IMPL; }
 
@@ -158,6 +160,9 @@ static void warn_(const ::c10::Warning& warning) { INTERFACE_NOT_IMPL; }
         TORCH_NPU_WARN(__VA_ARGS__);                                                  \
         return true;                                                                  \
     }()
+
+#define RECORD_FUNCTION(...) \
+    {}
 
 namespace at_npu {
 namespace key {
@@ -242,6 +247,7 @@ namespace c10_npu {
 namespace acl {
 
 const char* AclGetErrMsg();
+static aclError AclrtSynchronizeStreamWithTimeout(aclrtStream stream) { NPU_CHECK_ERROR(aclrtSynchronizeStream(stream)); }
 
 }  // namespace acl
 
@@ -283,7 +289,7 @@ public:
 
     bool query() const { INTERFACE_NOT_IMPL; }
 
-    void synchronize() const { INTERFACE_NOT_IMPL; }
+    void synchronize() const;
 
     /// Explicit conversion to rtStream_t.
     C10_NPU_API aclrtStream stream() const { return aclStream_; }
@@ -342,6 +348,28 @@ namespace NPUCachingAllocator {
 static void recordStream(const c10::DataPtr& ptr, c10_npu::NPUStream stream) { INTERFACE_NOT_IMPL; }
 
 }  // namespace NPUCachingAllocator
+
+/// A variant of OptionalDeviceGuard that is specialized for NPU.  See
+/// NPUGuard for when you can use this.
+struct OptionalNPUGuard {
+    /// Create an uninitialized OptionalNPUGuard.
+    OptionalNPUGuard() {}
+
+    /// Set the current NPU device to the passed Device, if it is not nullopt.
+    explicit OptionalNPUGuard(c10::optional<c10::Device> device_opt) {}
+
+    /// Set the current NPU device to the passed device index, if it is not
+    /// nullopt
+    explicit OptionalNPUGuard(c10::optional<c10::DeviceIndex> device_index_opt) {}
+
+    void set_device(c10::Device device) {}
+};
+
+namespace queue {
+
+aclError LaunchAsyncCopyTask(void* dst, size_t dstLen, void* src, size_t srcLen, aclrtMemcpyKind kind);
+
+}  // namespace queue
 
 }  // namespace c10_npu
 
@@ -409,19 +437,19 @@ public:
 class NPUBridge {
 public:
     // at::tensor to NPUStorageImpl
-    static NPUStorageImpl* GetNpuStorageImpl(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
+    static NPUStorageImpl* GetNpuStorageImpl(const at::Tensor& tensor);
 
     // c10::StorageImpl to NPUStorageImpl
-    static NPUStorageImpl* GetNpuStorageImpl(c10::StorageImpl* storageImpl) { INTERFACE_NOT_IMPL; }
+    static NPUStorageImpl* GetNpuStorageImpl(c10::StorageImpl* storageImpl);
 
     // c10::Storage to NPUStorageImpl
-    static NPUStorageImpl* GetNpuStorageImpl(c10::Storage&& storage) { INTERFACE_NOT_IMPL; }
+    static NPUStorageImpl* GetNpuStorageImpl(c10::Storage&& storage);
 
     // tensor to NPUStorageDesc
-    static NPUStorageDesc& GetNpuStorageImplDesc(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
+    static NPUStorageDesc& GetNpuStorageImplDesc(const at::Tensor& tensor);
 
     // tensor to NPUTensorImpl
-    static NPUTensorImpl* GetNpuTensorImpl(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
+    static NPUTensorImpl* GetNpuTensorImpl(const at::Tensor& tensor);
 };  // class NPUBridge
 
 namespace utils {
@@ -533,6 +561,9 @@ public:
     static at::Tensor apply_tensor_with_format(const at::Tensor& src, c10::IntArrayRef sizes, int64_t format, bool keep_format = false);
     static at::Tensor apply_tensor_with_format(c10::IntArrayRef sizes, const c10::TensorOptions& options, int64_t format, bool keep_format = false);
     static at::Tensor apply_tensor_with_sizes(c10::IntArrayRef sizes, const c10::TensorOptions& options);
+    static at::Tensor apply_tensor_without_format(const at::Tensor& src) { INTERFACE_NOT_IMPL; }
+    static at::Tensor apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes) { INTERFACE_NOT_IMPL; }
+    static at::Tensor apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) { INTERFACE_NOT_IMPL; }
 
     // DEPRECATED: CheckOut will be deprecated, please use check_tensor to check output tensor instead.
     static void CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst);
@@ -542,19 +573,23 @@ public:
     static at::Tensor CastBackToOriFormat(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
     static at::Tensor& CastBackToOriFormat(at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
     // DEPRECATED: ApplyTensor will be deprecated, please use apply_tensor instead.
-    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src) { INTERFACE_NOT_IMPL; }
-    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src, c10::IntArrayRef sizes) { INTERFACE_NOT_IMPL; }
-    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src, const c10::TensorOptions& options) { INTERFACE_NOT_IMPL; }
-    TORCH_NPU_API static at::Tensor ApplyTensor(c10::IntArrayRef sizes, const c10::TensorOptions& options, const at::Tensor& src) { INTERFACE_NOT_IMPL }
-    // DEPRECATED: ApplyTensorWithFormat will be deprecated, please use apply_tensor_with_format instead.
-    static at::Tensor ApplyTensorWithFormat(const at::Tensor& src, int64_t format, bool keep_format = false) { INTERFACE_NOT_IMPL; }
-    static at::Tensor ApplyTensorWithFormat(const at::Tensor& src, c10::IntArrayRef sizes, int64_t format, bool keep_format = false) { INTERFACE_NOT_IMPL; }
-    static at::Tensor ApplyTensorWithFormat(c10::IntArrayRef sizes, const c10::TensorOptions& options, int64_t format, bool keep_format = false) {
-        INTERFACE_NOT_IMPL
+    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src) { return apply_tensor(src); }
+    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src, c10::IntArrayRef sizes) { return apply_tensor(src, sizes); }
+    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src, const c10::TensorOptions& options) { return apply_tensor(src, options); }
+    TORCH_NPU_API static at::Tensor ApplyTensor(c10::IntArrayRef sizes, const c10::TensorOptions& options, const at::Tensor& src) {
+        return apply_tensor(sizes, options, src);
     }
-    static at::Tensor apply_tensor_without_format(const at::Tensor& src) { INTERFACE_NOT_IMPL; }
-    static at::Tensor apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes) { INTERFACE_NOT_IMPL; }
-    static at::Tensor apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) { INTERFACE_NOT_IMPL; }
+    // DEPRECATED: ApplyTensorWithFormat will be deprecated, please use apply_tensor_with_format instead.
+    static at::Tensor ApplyTensorWithFormat(const at::Tensor& src, int64_t format, bool keep_format = false) {
+        return apply_tensor_with_format(src, format, keep_format);
+    }
+    static at::Tensor ApplyTensorWithFormat(const at::Tensor& src, c10::IntArrayRef sizes, int64_t format, bool keep_format = false) {
+        return apply_tensor_with_format(src, sizes, format, keep_format);
+    }
+    static at::Tensor ApplyTensorWithFormat(c10::IntArrayRef sizes, const c10::TensorOptions& options, int64_t format, bool keep_format = false) {
+        return apply_tensor_with_format(sizes, options, format, keep_format);
+    }
+
     static at::Tensor unsafe_empty_workspace(uint64_t size) { INTERFACE_NOT_IMPL; }
     // DEPRECATED: ApplyTensorWithSizes will be deprecated, please use apply_tensor_with_sizes instead.
     static at::Tensor ApplyTensorWithSizes(c10::IntArrayRef sizes, const c10::TensorOptions& options) { return apply_tensor_with_sizes(sizes, options); }
@@ -563,6 +598,7 @@ public:
     static bool IsCPUScalar(const at::Tensor& tensor) { return tensor.is_cpu() && tensor.numel() == 1; }
 };  // namespace OpPreparation
 
+using StorageAndOffsetMemSizePair = std::pair<const c10::StorageImpl*, int64_t>;
 class CalcuOpUtil {
 public:
     static aclDataType ConvertToAclDataType(const at::ScalarType& data_type);
@@ -571,54 +607,153 @@ public:
     static at::Tensor CopyScalarToDevice(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type);
     static at::Tensor CopyTensorHostToDevice(const at::Tensor& cpu_tensor);
     static NPUStatus AclrtMemcpyAsync(const std::pair<at::Tensor, int64_t>& dst, size_t dst_size, const std::pair<at::Tensor, int64_t>& src, size_t src_size,
-                                      aclrtMemcpyKind kind) {
-        INTERFACE_NOT_IMPL
-    }
-#if 0
-  // Add some public interfaces for aclrtmemcpy process,
-  // to launch graph in graph mode automatically.
-  static aclError
-  AclrtMemcpyWithModeSwitch(const StorageAndOffsetMemSizePair &dst,
-                            size_t dstMax,
-                            const StorageAndOffsetMemSizePair &src,
-                            size_t count, aclrtMemcpyKind kind);
-  static aclError
-  AclrtMemcpyWithModeSwitch(const StorageAndOffsetMemSizePair &dst,
-                            size_t dstMax, const void *src, size_t count,
-                            aclrtMemcpyKind kind);
-  static aclError
-  AclrtMemcpyWithModeSwitch(void *dst, size_t dstMax,
-                            const StorageAndOffsetMemSizePair &src,
-                            size_t count, aclrtMemcpyKind kind);
-  static aclError LaunchAsyncCopyTaskWithModeSwitch(const at::Tensor &dst,
-                                                    size_t dstMax,
-                                                    const at::Tensor &src,
-                                                    size_t count,
-                                                    aclrtMemcpyKind kind);
-  static aclError LaunchAsyncCopyTaskWithModeSwitch(const c10::StorageImpl &dst,
-                                                    size_t dstMax, void *src,
-                                                    size_t count,
-                                                    aclrtMemcpyKind kind);
-#endif
+                                      aclrtMemcpyKind kind);
+    // Add some public interfaces for aclrtmemcpy process,
+    // to launch graph in graph mode automatically.
+    static aclError AclrtMemcpyWithModeSwitch(const StorageAndOffsetMemSizePair& dst, size_t dstMax, const StorageAndOffsetMemSizePair& src, size_t count,
+                                              aclrtMemcpyKind kind);
+    static aclError AclrtMemcpyWithModeSwitch(const StorageAndOffsetMemSizePair& dst, size_t dstMax, const void* src, size_t count, aclrtMemcpyKind kind);
+    static aclError AclrtMemcpyWithModeSwitch(void* dst, size_t dstMax, const StorageAndOffsetMemSizePair& src, size_t count, aclrtMemcpyKind kind);
+
+    static aclError LaunchAsyncCopyTaskWithModeSwitch(const c10::StorageImpl& dst, size_t dstMax, void* src, size_t count, aclrtMemcpyKind kind);
+    static aclError LaunchAsyncCopyTaskWithModeSwitch(const at::Tensor& dst, size_t dstMax, const at::Tensor& src, size_t count, aclrtMemcpyKind kind);
     static void CheckMemoryOverLaps(c10::ArrayRef<at::Tensor> inputs, c10::ArrayRef<at::Tensor> outputs);
     static bool IsScalarWrappedToTensor(const at::Tensor& tensor) { return tensor.is_cpu() && tensor.numel() == 1; }
     static float GetScalarFloatValue(const c10::Scalar& scalar);
     static int64_t GetTensorNpuFormat(const at::Tensor& tensor);
-    static c10::SmallVector<int64_t, SHAPE_SIZE> ConvertIntArrayRefToSmallVector(c10::IntArrayRef intArray) { INTERFACE_NOT_IMPL; }
-    static int8_t GetCubeMathType(bool allowHf32) { INTERFACE_NOT_IMPL; }
+    static c10::SmallVector<int64_t, SHAPE_SIZE> ConvertIntArrayRefToSmallVector(c10::IntArrayRef intArray);
+    static int8_t GetCubeMathType(bool allowHf32);
 };  // class CalcuOpUtil
+
+// Max size of discontiguous cases vector
+constexpr int MAX_CASES = 8;
+// Max size of shape size
+constexpr int MAX_DIM = 5;
+
+// Define the discontiguous cases vector to be optimized
+using OptimizationCases = c10::SmallVector<std::string, MAX_CASES>;
+
+struct ContiguousTensorDesc {
+    bool is_contiguous_;
+    c10::SmallVector<int64_t, MAX_DIM> sizes_;
+    c10::SmallVector<int64_t, MAX_DIM> strides_;
+    int64_t offset_;
+    c10::SmallVector<int64_t, MAX_DIM> base_sizes_;
+    c10::SmallVector<int64_t, MAX_DIM> base_strides_;
+    c10::SmallVector<int64_t, MAX_DIM> storage_sizes_;
+    int64_t base_offset_;
+    aclFormat npu_format_;
+    OptimizationCases opt_cases_;
+    void refresh_contiguous_using_size_and_stride();
+    void reset_optimization_cases(const OptimizationCases& opt_cases);
+    void add_optimization_case(const std::string& opt_case);
+    void find_match_optimization_cases();
+};
+
+class TransContiguous {
+public:
+    TransContiguous() {}
+    virtual ~TransContiguous() {}
+    static bool CheckClone(const at::Tensor& src, at::Tensor& self);
+    static ContiguousTensorDesc GetTensorDescInfo(const at::Tensor& src, const OptimizationCases& opt_cases = optCasesDefault);
+    static bool can_optimize_(ContiguousTensorDesc& tensor_desc);
+    static bool CanOptimize(ContiguousTensorDesc& tensor_desc);
+    static bool CanOptimize(const at::Tensor& tensor, const OptimizationCases& opt_cases);
+    static bool contiguous_optimize_with_anyformat_(at::Tensor& self, const at::Tensor& src, ContiguousTensorDesc& src_desc);
+    static bool ContiguousOptimizeWithAnyFormat(at::Tensor& self, const at::Tensor& src, const OptimizationCases& opt_cases = optCasesAnyFormat);
+    static c10::optional<at::Tensor> ContiguousOptimizeWithAnyFormat(const at::Tensor& src, const OptimizationCases& opt_cases = optCasesAnyFormat);
+    static bool ContiguousOptimizeWithBaseFormat(at::Tensor& self, const at::Tensor& src, const OptimizationCases& opt_cases = optCasesDefault,
+                                                 bool OpenCombined = true);
+
+private:
+    static OptimizationCases optCasesDefault;
+    static OptimizationCases optCasesAnyFormat;
+};
+
+class ContiguousOpt {
+public:
+    ContiguousOpt() {}
+    virtual ~ContiguousOpt() = default;
+    virtual bool Optimizer(at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc) = 0;
+    virtual bool CanOptimizer(const ContiguousTensorDesc& src_desc) { return false; }
+};
+
+namespace register_opt {
+class CopyOptRegister {
+public:
+    ~CopyOptRegister() = default;
+    static CopyOptRegister* GetInstance() {
+        static CopyOptRegister instance;
+        return &instance;
+    }
+    void Register(std::string& name, ::std::unique_ptr<ContiguousOpt>& ptr) {
+        std::lock_guard<std::mutex> lock(mu_);
+        registry.emplace(name, std::move(ptr));
+    }
+
+    bool CanOptimize(std::string& name, const ContiguousTensorDesc& src_desc) {
+        auto itr = registry.find(name);
+        if (itr != registry.end()) {
+            return itr->second->CanOptimizer(src_desc);
+        }
+        return false;
+    }
+
+    bool Run(const std::string& name, at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc) {
+        auto itr = registry.find(name);
+        if (itr != registry.end()) {
+            return itr->second->Optimizer(self, src, src_desc);
+        }
+        return false;
+    }
+
+private:
+    CopyOptRegister() {}
+    mutable std::mutex mu_;
+    mutable std::map<std::string, ::std::unique_ptr<ContiguousOpt>> registry;
+};  // class CopyOptRegister
+
+class CopyOptBuilder {
+public:
+    CopyOptBuilder(std::string name, ::std::unique_ptr<ContiguousOpt>& ptr) { CopyOptRegister::GetInstance()->Register(name, ptr); }
+    ~CopyOptBuilder() = default;
+};  // class CopyOptBuilder
+}  // namespace register_opt
+
+#define REGISTER_COPY_OPT(name, optimization) REGISTER_COPY_OPT_UNIQ(name, name, optimization)
+#define REGISTER_COPY_OPT_UNIQ(id, name, optimization)                         \
+    auto copy_opt_##id = ::std::unique_ptr<ContiguousOpt>(new optimization()); \
+    static register_opt::CopyOptBuilder register_copy_opt##id(#name, copy_opt_##id);
+
+class FormatCastHelper {
+public:
+    static bool IsSameGroupType(const at::Tensor& src, const at::Tensor& dst) { INTERFACE_NOT_IMPL; }
+    static void format_cast_as_base_format(const at::Tensor& src, aclFormat format) { INTERFACE_NOT_IMPL; }
+    using FormatCastFunc = std::function<at::Tensor(at::Tensor&, const at::Tensor&)>;
+    static bool format_cast_between_group(at::Tensor& dst, const at::Tensor& src, FormatCastFunc format_cast_inside_group) { INTERFACE_NOT_IMPL; }
+    // this interface is similar to CastBackToOriFormat, but CastBackToOriFormat may have overload problem.
+    static at::Tensor ApplyBaseFormatTensorBy(const at::Tensor& src) { INTERFACE_NOT_IMPL; }
+    static at::Tensor& CovertSelfToBaseFormat(at::Tensor& src) { INTERFACE_NOT_IMPL; }
+
+private:
+    // help function of format_cast_between_group
+    static void base_format_cast_nocheck(at::Tensor& dst, const at::Tensor& src) { INTERFACE_NOT_IMPL; }
+};  // class FormatCastHelper
 
 class NpuUtils {
 public:
     static bool check_match(const at::Tensor* tensor);
     TORCH_NPU_API static at::Tensor format_contiguous(const at::Tensor& src);
     static at::Tensor format_contiguous_add_copy_optimize(const at::Tensor& src);
-    static void RefreshFormat(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
-    static void format_fresh_view(at::Tensor& x, const at::Tensor& y) { INTERFACE_NOT_IMPL; }
+    static void RefreshFormat(const at::Tensor& tensor);
+    static void format_fresh_view(at::Tensor& x, const at::Tensor& y);
 
-    static bool check_5d_5d_match(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
+    static bool check_5d_5d_match(const at::Tensor& tensor);
     static bool IsOomError(aclError ret, int index);
-    static void check_1d(const at::Tensor& t, const char* arg, const char* fn) { INTERFACE_NOT_IMPL; }
+    static void check_1d(const at::Tensor& t, const char* arg, const char* fn);
+    static void ProfReportMarkData(const std::string& msg);
+    static void ProfReportMarkDataToNpuProfiler(uint32_t category, const std::string& data, uint64_t correlation_id = 0);
+    static void ProfReportMarkDataToNpuProfiler(uint32_t category, void* data, size_t offset);
 };  // class NpuUtils
 
 inline const std::string AclDateTypeToString(aclDataType descDType) { INTERFACE_NOT_IMPL; }
@@ -718,15 +853,42 @@ namespace env {
 /**
   check if the autotuen is enabled, return true or false.
   */
-inline bool AutoTuneEnabled() { INTERFACE_NOT_IMPL; }
-inline bool CheckBmmV2Enable() { INTERFACE_NOT_IMPL; }
-inline bool CheckJitDisable() { INTERFACE_NOT_IMPL; }
-inline bool CheckProfilingEnable() { INTERFACE_NOT_IMPL; }
-inline bool CheckMmBmmNDDisable() { INTERFACE_NOT_IMPL; }
-inline bool CheckForbidInternalFormat() { INTERFACE_NOT_IMPL; }
-inline bool IsAllowFP32ToFP16() { INTERFACE_NOT_IMPL; }
-inline bool IsAllowConvHF32() { INTERFACE_NOT_IMPL; }
-inline bool IsAllowMatmulHF32() { INTERFACE_NOT_IMPL; }
+inline bool AutoTuneEnabled() {
+    INTERFACE_NOT_IMPL;
+    return false;
+}
+inline bool CheckBmmV2Enable() {
+    INTERFACE_NOT_IMPL;
+    return false;
+}
+inline bool CheckJitDisable() {
+    INTERFACE_NOT_IMPL;
+    return true;
+}
+inline bool CheckProfilingEnable() {
+    INTERFACE_NOT_IMPL;
+    return false;
+}
+inline bool CheckMmBmmNDDisable() {
+    INTERFACE_NOT_IMPL;
+    return true;
+}
+inline bool CheckForbidInternalFormat() {
+    INTERFACE_NOT_IMPL;
+    return true;
+}
+inline bool IsAllowFP32ToFP16() {
+    INTERFACE_NOT_IMPL;
+    return false;
+}
+inline bool IsAllowConvHF32() {
+    INTERFACE_NOT_IMPL;
+    return false;
+}
+inline bool IsAllowMatmulHF32() {
+    INTERFACE_NOT_IMPL;
+    return false;
+}
 
 }  // namespace env
 
@@ -790,69 +952,115 @@ FormatShape FormatHelper::GetStorageSizes(aclFormat format, sizeType ori_size) {
     return {};
 }
 
+// Format is the property of tensor storage. Format is the way to tell an
+// operator how the result should be organized in memory and nothing more.
+// Storage format collect the helper functions of npu's format. It tell the
+// relationship between format and storage.
+//
+class InferFormat {
+public:
+    // Feature: The function is used to guess base format
+    // The base formats are NCHW, NCDHW, ND, who is not padding.
+    // The format transform between other formats should be based
+    // on these base formats.(their should convert to base format first.)
+    // This function will be called at new, reset, set and so on.
+    static std::tuple<aclFormat, aclFormat> GuessFormatUnit(const c10::IntArrayRef& size, aclFormat format);
+    // GuessBaseFormat is the base of the format assumption
+    // this function is called when apply the new tensor
+    static aclFormat GuessBaseFormat(const c10::IntArrayRef& size);
+    // this function used to fix format when format and size is not match
+    static aclFormat GuessStorageFormat(const c10::IntArrayRef& size, aclFormat format);
+    // Features: guess the format of tensor after it called format_contiguous().
+    // According to the law of continuity, the output format is same as input format,
+    // this function is called to guess the input format, so it also the output format.
+    // NOTE: The caller should make sure that the tensor is non-contigous
+    static aclFormat GuessFormatWhenContiguous(const at::Tensor& tensor);
+    // This api is used to infer storage size when called transdata
+    // fix: ND->NZ when dim < 2
+    // not effect the storage data.
+    static FormatShape GuessStorageSizeWhenConvertFormat(const at::Tensor& tensor);
+    // This api is used to judge if tensor is reasonable when size changes.
+    // solution: tranform to base format to fix it.
+    // fix: NCHW | 5HD -> NCDHW | NCDHW or ND | ND
+    // unsqueeze/squeeze/select/flatten/view will change meta data, they will call
+    // as_strided and view
+    static bool IsDefiniteTensorWhenMetaDataChanges(const at::Tensor& tensor, const c10::IntArrayRef& size);
+};  // class InferFormat
+
 class StorageDescHelper {
 public:
     // Get Part
     // sizes, strides in StorageDesc are same as those in MetaData
-    static bool MetaDataAreMatch(const at::Tensor* tensor) { INTERFACE_NOT_IMPL; }
+    static bool MetaDataAreMatch(const at::Tensor* tensor);
     // storage offset are match, the npu only support offset == 0
     static inline bool OffsetAreMatch(const at::Tensor* tensor) { return tensor->storage_offset() == 0; }
 
     // helper function of transdata op.
-    static bool IsSameDesc(const torch_npu::NPUStorageDesc& a, const torch_npu::NPUStorageDesc& b) { INTERFACE_NOT_IMPL; }
-    static bool IsSameDesc(const at::Tensor& a, const at::Tensor& b) { INTERFACE_NOT_IMPL; }
+    static bool IsSameDesc(const torch_npu::NPUStorageDesc& a, const torch_npu::NPUStorageDesc& b);
+    static bool IsSameDesc(const at::Tensor& a, const at::Tensor& b);
 
     // calculate storage size need by npu memory
-    static int64_t GetMemorySize(const at::Tensor& dst) { INTERFACE_NOT_IMPL; }
-    static int64_t GetMemorySize(const c10::IntArrayRef& size, aclFormat format) { INTERFACE_NOT_IMPL; }
+    static int64_t GetMemorySize(const at::Tensor& dst);
+    static int64_t GetMemorySize(const c10::IntArrayRef& size, aclFormat format);
     // Calculate the valid memory size of the tensor, because of view operator and so on.
-    static int64_t GetValidMemorySize(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
+    static int64_t GetValidMemorySize(const at::Tensor& tensor);
 
     // Set Part
     // StorageDesc Init/Set
-    static void SetDesc(at::Tensor& dst) { INTERFACE_NOT_IMPL; }
-    static void SetDesc(at::Tensor& dst, const c10::IntArrayRef& size, const c10::IntArrayRef& strides) { INTERFACE_NOT_IMPL; }
-    static void SetDesc(at::Tensor& dst, const c10::IntArrayRef& size, const c10::IntArrayRef& strides, aclFormat format) { INTERFACE_NOT_IMPL; }
-    static bool CheckDescInit(const c10::Storage& storage) { INTERFACE_NOT_IMPL; }
+    static void SetDesc(at::Tensor& dst);
+    static void SetDesc(at::Tensor& dst, const c10::IntArrayRef& size, const c10::IntArrayRef& strides);
+    static void SetDesc(at::Tensor& dst, const c10::IntArrayRef& size, const c10::IntArrayRef& strides, aclFormat format);
+    static bool CheckDescInit(const c10::Storage& storage);
 
     // For Serialization to Get and Set NpuStorageDesc
-    static void GetDescForSerialization(const at::Tensor& dst, std::unordered_map<std::string, bool>& desc_map) { INTERFACE_NOT_IMPL; }
-    static void SetDescForSerialization(const at::Tensor& dst, std::unordered_map<std::string, bool>& desc_map) { INTERFACE_NOT_IMPL; }
+    static void GetDescForSerialization(const at::Tensor& dst, std::unordered_map<std::string, bool>& desc_map);
+    static void SetDescForSerialization(const at::Tensor& dst, std::unordered_map<std::string, bool>& desc_map);
 
-    static void CopyDesc(at::Tensor& dst, const at::Tensor& src) { INTERFACE_NOT_IMPL; }
-    static void CopyDesc(at::Tensor& dst, const c10::Storage& src) { INTERFACE_NOT_IMPL; }
-    static void CopyDesc(const at::Tensor& dst, const torch_npu::NPUStorageDesc& src_desc) { INTERFACE_NOT_IMPL; }
+    static void CopyDesc(at::Tensor& dst, const at::Tensor& src);
+    static void CopyDesc(at::Tensor& dst, const c10::Storage& src);
+    static void CopyDesc(const at::Tensor& dst, const torch_npu::NPUStorageDesc& src_desc);
 
-    static void UpdateDesc(torch_npu::NPUStorageDesc& npuDesc, const c10::IntArrayRef& new_data_sizes, const c10::IntArrayRef& new_shape_sizes) {
-        INTERFACE_NOT_IMPL
-    }
-
-    static FormatShape ComputeStrideFromShape(const FormatShape& shape) { INTERFACE_NOT_IMPL; }
+    static void UpdateDesc(torch_npu::NPUStorageDesc& npuDesc, const c10::IntArrayRef& new_data_sizes, const c10::IntArrayRef& new_shape_sizes);
+    static FormatShape ComputeStrideFromShape(const FormatShape& shape);
 
     // need to remove later
-    static void ReflushDescBySelf(const at::Tensor& src) { INTERFACE_NOT_IMPL; }
+    static void ReflushDescBySelf(const at::Tensor& src);
 
 private:
     // Get Part
-    static bool IsSameSize(const c10::SmallVector<int64_t, 5>& a, const c10::IntArrayRef& b) { INTERFACE_NOT_IMPL; }
-    static int64_t GetMemorySize(const torch_npu::NPUStorageDesc& dst) { INTERFACE_NOT_IMPL; }
+    static bool IsSameSize(const c10::SmallVector<int64_t, 5>& a, const c10::IntArrayRef& b);
+    static int64_t GetMemorySize(const torch_npu::NPUStorageDesc& dst);
     // Set Part
-    static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype) { INTERFACE_NOT_IMPL; }
-    static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides) {
-        INTERFACE_NOT_IMPL
-    }
-    static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides, aclFormat format) {
-        INTERFACE_NOT_IMPL
-    }
+    static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype);
+    static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides);
+    static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides, aclFormat format);
 };  // class StorageDescHelper
 
-static bool can_use_memcpy(at::Tensor& dst, const at::Tensor& src) { INTERFACE_NOT_IMPL; }
-static void copy_d2d_by_memcpy(at::Tensor& dst, const at::Tensor& src, int64_t exceptSize = 0) { INTERFACE_NOT_IMPL; }
-static void copy_d2d_dtype(at::Tensor& self, const at::Tensor& src, bool non_blocking) {}
-static void copy_d2d_dtype_baseformat(at::Tensor& self, const at::Tensor& src, bool non_blocking) { INTERFACE_NOT_IMPL; }
-static bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Tensor& src) { INTERFACE_NOT_IMPL; }
+bool can_use_memcpy(at::Tensor& dst, const at::Tensor& src);
+void copy_d2d_by_memcpy(at::Tensor& dst, const at::Tensor& src, int64_t exceptSize = 0);
+void copy_d2d_dtype(at::Tensor& self, const at::Tensor& src, bool non_blocking);
+void copy_d2d_dtype_baseformat(at::Tensor& self, const at::Tensor& src, bool non_blocking);
+bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Tensor& src);
 static at::Tensor matmul_by_bmmV2(const at::Tensor& tensor1, const at::Tensor& tensor2) { INTERFACE_NOT_IMPL; }
 void npu_fast_reshape_(at::Tensor& tensor);
 
+at::Tensor empty_npu(at::IntArrayRef size, c10::optional<at::ScalarType> dtype_opt, c10::optional<at::Layout> layout_opt = c10::nullopt,
+                     c10::optional<at::Device> device_opt = c10::nullopt, c10::optional<bool> pin_memory_opt = c10::nullopt,
+                     c10::optional<at::MemoryFormat> memory_format_opt = c10::nullopt);
+
+at::Tensor empty_npu(at::IntArrayRef size, const at::TensorOptions& options);
+
+at::Tensor empty_strided_npu(c10::SymIntArrayRef size, c10::SymIntArrayRef stride, c10::optional<at::ScalarType> dtype,
+                             c10::optional<at::Layout> layout = c10::nullopt, c10::optional<at::Device> device = c10::nullopt,
+                             c10::optional<bool> pin_memory = c10::nullopt);
+
+at::Tensor empty_with_format(at::IntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout, c10::optional<at::Device> device,
+                             c10::optional<bool> pin_memory, int64_t acl_format);
+
+at::Tensor clone(const at::Tensor& self, c10::optional<at::MemoryFormat> memory_format);
+
 }  // namespace native
+
 }  // namespace at_npu
+
+inline aclError THNPUCachingHostAllocator_recordEvent(void* ptr, c10_npu::NPUStream stream) { return ACL_SUCCESS; }

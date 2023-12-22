@@ -4447,7 +4447,7 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((2, 4096), (32, 49, 256), (2, 16, 64, 64), (1, 2304, 1, 1, 1)),
-                    "dtype": [np.float32, np.float64],
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.positive',
                 },
             ],
@@ -4467,7 +4467,7 @@ diopi_configs = {
                     "ins": ['input'],
                     "shape": ((2, 4096), (32, 49, 256), (2, 16, 64, 64),
                               (1, 2304, 1, 1, 1)),
-                    "dtype": [np.float32, np.float64],
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.positive',
                 },
             ],
@@ -4512,7 +4512,7 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((32, 49, 256), (32, 49, 64, 64)),
-                    "dtype": [np.float32, np.float64],
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.positive',
                 },
             ],
@@ -6645,6 +6645,7 @@ diopi_configs = {
         name=['scatter'],
         interface=['torch'],
         is_inplace=True,
+        mismatch_ratio_threshold=0,
         para=dict(
             dim=[0, -1, 1, -2, 2, 1, -1],
         ),
@@ -6678,6 +6679,7 @@ diopi_configs = {
         name=['scatter'],
         interface=['torch'],
         is_inplace=True,
+        mismatch_ratio_threshold=0,
         para=dict(
             dim=[0, -1, 1, 2],
         ),
@@ -6710,6 +6712,7 @@ diopi_configs = {
         name=['scatter'],
         interface=['torch'],
         is_inplace=True,
+        mismatch_ratio_threshold=0,
         para=dict(
             dim=[2, 1],
             reduce=['add', 'multiply']
@@ -6741,6 +6744,7 @@ diopi_configs = {
         name=['scatter'],
         interface=['torch'],
         is_inplace=True,
+        mismatch_ratio_threshold=0,
         para=dict(
             dim=[0, -1, 1, -2, 2, 1, -1],
             value=[True, 0.25, -100, 0, 2.34, 20, 1e-4],
@@ -6768,6 +6772,7 @@ diopi_configs = {
         name=['scatter'],
         interface=['torch'],
         is_inplace=True,
+        mismatch_ratio_threshold=0,
         para=dict(
             dim=[2, 1],
             value=[-2.31, float("-inf")],

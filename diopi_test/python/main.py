@@ -104,6 +104,12 @@ def parse_args():
         nargs="*",
         help="The dtype in filter_dtype will not be processed",
     )
+    run_test_args.add_argument(
+        "--test_result_path",
+        type=str,
+        default="report.xlsx",
+        help="excel report save path",
+    )
 
     args = parser.parse_args()
     return args
@@ -159,7 +165,7 @@ if __name__ == "__main__":
         db_conn.insert_device_case(db_case_items)
     elif args.mode == "run_test":
         if args.test_cases_path == "":
-            model_name = args.model_name if args.model_name else "diopi"
+            model_name = args.model_name.lower() if args.model_name else "diopi"
             test_cases_path = os.path.join(args.case_output_dir, model_name + "_case")
         else:
             test_cases_path = args.test_cases_path
@@ -173,6 +179,8 @@ if __name__ == "__main__":
             pytest_args.extend(
                 ["--report=report.html", "--title=DIOPI Test", "--template=2"]
             )
+        if args.test_result_path:
+            pytest_args.append(f"--test_result_path={args.test_result_path}")
         if args.pytest_args is not None:
             pytest_args.extend(args.pytest_args.split())
         pytest_args = ['--cache-clear', '--disable-warnings'] + pytest_args
