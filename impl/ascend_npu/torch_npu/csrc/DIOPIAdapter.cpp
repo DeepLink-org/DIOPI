@@ -2687,6 +2687,10 @@ at::Tensor wrapper__bmm(const at::Tensor& self, const at::Tensor& mat2) { return
 
 at::Tensor wrapper_Tensor_div(const at::Tensor& self, const at::Tensor& other) { return acl_op::div(self, other); }
 
+at::Tensor wrapper_Tensor_mul(const at::Tensor& self, const at::Tensor& other) { return acl_op::mul(self, other); }
+
+at::Tensor wrapper_Tensor_sub(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::sub(self, other, alpha); }
+
 at::Tensor wrapper__index_select(const at::Tensor& self, int64_t dim, const at::Tensor& index) { return acl_op::index_select(self, dim, index); }
 
 at::Tensor wrapper___softmax(const at::Tensor& self, int64_t dim, bool half_to_float) { return acl_op::_softmax(self, dim, half_to_float); }
@@ -2707,8 +2711,10 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("index_put_", TORCH_FN(wrapper__index_put_));
     m.impl("_index_put_impl_", TORCH_FN(wrapper___index_put_impl_));
     m.impl("index.Tensor", TORCH_FN(wrapper_Tensor_index));
-    // m.impl("bmm", TORCH_FN(wrapper__bmm));
+    m.impl("bmm", TORCH_FN(wrapper__bmm));
     m.impl("div.Tensor", TORCH_FN(wrapper_Tensor_div));
+    m.impl("mul.Tensor", TORCH_FN(wrapper_Tensor_mul));
+    m.impl("sub.Tensor", TORCH_FN(wrapper_Tensor_sub));
     m.impl("index_select", TORCH_FN(wrapper__index_select));
     m.impl("_softmax", TORCH_FN(wrapper___softmax));
 };

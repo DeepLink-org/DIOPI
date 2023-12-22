@@ -638,7 +638,6 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/addmm.cpp
     ${OLD_IMPL_DIR}/functions/expand.cpp    
     ${OLD_IMPL_DIR}/functions/linspace.cpp
-    ${OLD_IMPL_DIR}/functions/apply_penalty.cpp
     ${OLD_IMPL_DIR}/functions/split.cpp
     #${OLD_IMPL_DIR}/test/export_functions.cpp
     #${OLD_IMPL_DIR}/test/conform_test.cpp
