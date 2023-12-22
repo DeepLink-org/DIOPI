@@ -14,6 +14,8 @@ diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     at::Tensor outTempAt = outAt;
     if (outAt.scalar_type() == at::kDouble) {
         outTempAt = outAt.to(at::kFloat);
+    } else if (outAt.scalar_type() == at::kLong) {
+        outTempAt = outAt.to(at::kInt);
     }
 
     std::vector<at::Tensor> tensorsAt;
