@@ -18,8 +18,14 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
     if (conj) {
         acl_op::neg_(sinRepeated);
     }
-    at_npu::native::OpCommand cmd;
-    cmd.Name("RotaryMul").Input(xAt).Input(cosRepeated).Input(sinRepeated).Output(outAt).Run();
+    if (xAt.sizes()[3] % 64 != 0) {
+        // TODO: The following two lines should be combined into one line in the future by overloading "="
+        at::Tensor result = acl_op::npu_rotary_mul(xAt, cosRepeated, sinRepeated);
+        outAt.copy_(result);
+    } else {
+        at_npu::native::OpCommand cmd;
+        cmd.Name("RotaryMul").Input(xAt).Input(cosRepeated).Input(sinRepeated).Output(outAt).Run();
+    }
     END_CALL_ACL_OP();
 }
 
