@@ -98,6 +98,8 @@ void printContiguousTensor(diopiContextHandle_t ctx, const AscendTensor& at, cha
         CALL_ACLRT(aclrtMemcpyAsync(
             ptrHost, at.numel() * at.elemsize(), at.data(), at.numel() * at.elemsize(), ACL_MEMCPY_DEVICE_TO_HOST, reinterpret_cast<aclrtStream>(stream)));
         CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));
+        CALL_ACLRT(aclrtFreeHost(ptrHost));
+
     } else {
         const void* ptrHostCopy;
         diopiGetTensorDataConst(at.tensorHandle(), &ptrHostCopy);

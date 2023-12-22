@@ -287,11 +287,11 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
                 *reinterpret_cast<uint16_t*>(ptr) = getValue<uint16_t>(scalar);
                 break;
             default:
-                error("dtype %d not supported on host", dtype);
+                error(__FILE__, __LINE__, __FUNCTION__, "dtype %s not supported on host", diopiDtypeToStr(dtype));
         }
         *out = outCopy;
     } else if (device == diopi_device) {
-        diopiTensorHandle_t outCopyDev;
+        diopiTensorHandle_t outCopyDev = nullptr;
         void *src, *dst;
         if (isFloatingType(dtype)) {
             diopiRequireTensor(ctx, &outCopy, &sSize, nullptr, diopi_dtype_float64, diopi_host);
@@ -304,7 +304,7 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
             diopiGetTensorData(outCopy, &src);
             reinterpret_cast<int64_t*>(src)[0] = getValue<int64_t>(scalar);
         } else {
-            error("dtype %d not supported on device", dtype);
+            error(__FILE__, __LINE__, __FUNCTION__, "dtype %s not supported on device", diopiDtypeToStr(dtype));
         }
         int64_t elemsize;
         diopiStreamHandle_t stream;
@@ -316,7 +316,7 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
         CALL_ACLRT(aclrtSynchronizeStream(stream));
         diopiCastDtype(ctx, *out, outCopyDev);
     } else {
-        error("device %d not supported", device);
+        error(__FILE__, __LINE__, __FUNCTION__, "device(%s) not supported", deviceType2Str(device));
     }
     return diopiSuccess;
 }

@@ -555,7 +555,7 @@ set(OP_PLUGIN_API_SRC
 )
 
 set(DIOPI_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/diopi_impl/)
-file(GLOB DIOPI_IMPL_SRC "${DIOPI_IMPL_DIR}/*.cpp")
+file(GLOB DIOPI_IMPL_SRC "${DIOPI_IMPL_DIR}/*.cpp" "${DIOPI_IMPL_DIR}/functions_ext/*.cpp")
 
 add_definitions(-DBUILD_LIBTORCH)
 
@@ -636,8 +636,9 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/where.cpp
     ${OLD_IMPL_DIR}/functions/multinomial.cpp
     ${OLD_IMPL_DIR}/functions/addmm.cpp
-    ${OLD_IMPL_DIR}/functions/expand.cpp    
+    ${OLD_IMPL_DIR}/functions/expand.cpp
     ${OLD_IMPL_DIR}/functions/linspace.cpp
+    ${OLD_IMPL_DIR}/functions/apply_penalty.cpp
     ${OLD_IMPL_DIR}/functions/split.cpp
     ${OLD_IMPL_DIR}/functions_ext/rms_norm.cpp
     #${OLD_IMPL_DIR}/test/export_functions.cpp
@@ -645,6 +646,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/common/utils.cpp
     ${OLD_IMPL_DIR}/common/debug.cpp
     ${OLD_IMPL_DIR}/common/generator_helper.cpp
+    ${OLD_IMPL_DIR}/env_vars.cpp
 )
 
 list(APPEND IMPL_SRC ${OP_PLUGIN_UTILS_SRC} ${OP_PLUGIN_SRC} ${OP_PLUGIN_API_SRC} ${ASCEND_IMPL_SRC} ${DIOPI_IMPL_SRC} ${OLD_IMPL_SRC})

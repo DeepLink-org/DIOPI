@@ -9,27 +9,6 @@
 
 namespace impl {
 namespace camb {
-
-static bool probableMemoryFormat(const DiopiTensor& src, diopiMemoryFormat_t* outMemoryFormat) {
-    if (!outMemoryFormat) {
-        return src.isContiguous(diopiMemoryFormat_t::Contiguous) || src.isContiguous(diopiMemoryFormat_t::ChannelsLast1d) ||
-               src.isContiguous(diopiMemoryFormat_t::ChannelsLast) || src.isContiguous(diopiMemoryFormat_t::ChannelsLast3d);
-    }
-    if (src.isContiguous(diopiMemoryFormat_t::Contiguous)) {
-        *outMemoryFormat = diopiMemoryFormat_t::Contiguous;
-    } else if (src.isContiguous(diopiMemoryFormat_t::ChannelsLast1d)) {
-        *outMemoryFormat = diopiMemoryFormat_t::ChannelsLast1d;
-    } else if (src.isContiguous(diopiMemoryFormat_t::ChannelsLast)) {
-        *outMemoryFormat = diopiMemoryFormat_t::ChannelsLast;
-    } else if (src.isContiguous(diopiMemoryFormat_t::ChannelsLast3d)) {
-        *outMemoryFormat = diopiMemoryFormat_t::ChannelsLast3d;
-    } else {
-        // memory format not supported.
-        return false;
-    }
-    return true;
-}
-
 void removeTheFrontOneInShape(DiopiTensor& src, const std::vector<int64_t>& destShape) {
     int64_t srcDim = src.dim();
     int64_t destDim = destShape.size();
@@ -69,15 +48,14 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     }
 
     // memory format convert if memory format is matched.
-    diopiMemoryFormat_t destMemoryFormat;
     // cnnTranspose doesn't support float64 and scalar and contiguousOut only support convertion between the contiguous tensor and the no-contiguous tensor.
-    if (srcTr.shape() == destTr.shape() && srcTr.dim() != 0 && srcTr.dtype() != diopi_dtype_float64 && probableMemoryFormat(destTr, &destMemoryFormat) &&
-        probableMemoryFormat(srcTr, nullptr) && (srcTr.isContiguous() || destTr.isContiguous())) {
+    if (srcTr.shape() == destTr.shape() && srcTr.dim() != 0 && srcTr.dtype() != diopi_dtype_float64 && denseCheck(srcTr) && denseCheck(destTr) &&
+        (destTr.isContiguous() || srcTr.isContiguous())) {
         DiopiTensor destTmpTr = destTr;
         if (destTmpTr.dtype() != srcTr.dtype()) {
             destTmpTr = requiresTensor(ctx, destTr.shape(), srcTr.dtype());
         }
-        DIOPI_CALL(contiguousOut(ctx, srcTr, destTmpTr, destMemoryFormat));
+        DIOPI_CALL(contiguousOut(ctx, srcTr, destTmpTr));
         if (destTmpTr.dtype() != destTr.dtype()) {
             DIOPI_CALL(dataTypeCast(ctx, destTr, destTmpTr));
         }

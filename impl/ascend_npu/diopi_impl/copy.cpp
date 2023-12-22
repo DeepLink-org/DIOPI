@@ -35,7 +35,7 @@ diopiError_t diopiContiguous(diopiContextHandle_t ctx, diopiTensorHandle_t* out,
     diopiSize_t stride;
     diopiGetTensorStride(input, &stride);
 
-    auto ret = diopiRequireTensor(ctx, &result, &shape, &stride, dtype, device);
+    auto ret = diopiRequireTensor(ctx, &result, &shape, nullptr, dtype, device);
     TORCH_CHECK(diopiSuccess == ret);
     *out = result;
 
