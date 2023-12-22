@@ -310,7 +310,7 @@ class Tensor(diopiTensor):
         return tr
 
     def numpy(self) -> np.ndarray:
-        if all(x == 0 for x in self.size().data) and self.numel == 0:
+        if all(x == 0 for x in self.size().data) and self.numel() == 0:
             # cases when shape all 0, but not include the scalar tensor
             return np.empty(self.size().data, to_numpy_dtype(self.get_dtype()))
         data = np.empty((1,), to_numpy_dtype(self.get_dtype()))
