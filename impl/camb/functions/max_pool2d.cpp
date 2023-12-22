@@ -100,8 +100,6 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     DiopiTensor inputTr(input);
     DiopiTensor outTr(out);
     DiopiTensor indicesTr(indices);
-    std::cout << "why i am here index" << std::endl;
-
     DIOPI_CHECK(inputTr.dim() == 3 || inputTr.dim() == 4, "non-empty 3D or 4D (batch mode) tensor expected for input");
 
     std::vector<DiopiTensor*> pTensors{&inputTr};
