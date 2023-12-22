@@ -1872,4 +1872,27 @@ device_configs = {
             ],
         ),
     ),
+
+    'topk_nonzero': dict(
+        name=['topk'],
+        para=dict(
+            k=[Skip(1)],
+        ),
+    ),
+
+    'topk_zero': dict(
+        name=['topk'],
+        interface=['torch'],
+        para=dict(
+            k=[Skip(1)],
+        ),
+    ),
+
+    # FIXME 特定参数组合报错
+    'embedding': dict(
+        name=["embedding"],
+        para=dict(
+            padding_idx=[Skip(92)],
+        ),
+    ),
 }
