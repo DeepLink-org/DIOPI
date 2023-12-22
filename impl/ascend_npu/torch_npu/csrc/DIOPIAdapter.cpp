@@ -2506,6 +2506,7 @@ at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef s
     auto device = options.device();
     TORCH_CHECK(options.device().has_index());
 
+    std::cout << "fromPreAllocated size=" << sizes << ", strides=" << strides << std::endl;
     size_t nbytes = at::detail::computeStorageNbytes(sizes, strides, options.dtype().itemsize());
 
     c10::intrusive_ptr<c10::StorageImpl> storage_impl = c10::make_intrusive<torch_npu::NPUStorageImpl>(
@@ -2587,7 +2588,23 @@ at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, con
             if (st != -1) st *= sizes[i - 1];
         }
     }
-    return fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizes, stridesVec, input.options());
+
+    std::vector<int64_t> sizeVec(sizes.size(), 1);
+    std::copy(sizes.begin(), sizes.end(), sizeVec.begin());
+    if (!sizes.empty() && sizes[0] == -1) {
+        bool flag = true;
+        for (auto i : sizes) {
+            if (!flag && i < 0) {
+                std::cout << "more than one -1, sizes=" << sizes << std::endl;
+            }
+            if (i < 0) {
+                flag = false;
+            }
+        }
+        int count = std::accumulate(sizeVec.begin() + 1, sizeVec.end(), 1, std::multiplies<int>());
+        sizeVec[0] = input.numel() / count;
+    }
+    return fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizeVec, stridesVec, input.options());
 }
 
 c10::List<c10::optional<at::Tensor>> castIntIndicesToLongIndices(const c10::List<c10::optional<at::Tensor>>& indices) {
