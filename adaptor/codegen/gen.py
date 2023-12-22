@@ -724,7 +724,10 @@ def gen_autogen_operators(
     # get the implemented functions
     impl_base_dir = os.path.dirname(config_file_path)
     impl_func_dir = os.path.join(impl_base_dir, "functions")
+    impl_func_ext_dir = os.path.join(impl_base_dir, "functions_ext")
     impl_functions = obtain_impl_func(impl_func_dir)
+    impl_functions_ext = obtain_impl_func(impl_func_ext_dir)
+    impl_functions.update(impl_functions_ext)
 
     if impl_plugin:
         impl_plugin_dir = os.path.join(impl_base_dir, "../ascend_npu/diopi_impl")
