@@ -164,9 +164,11 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
         impl::cuda::diopiLmdeployCopyD2H(ctx, context_lengths_host, context_lengths, false);
         // attention_mask_ and padding_offset_ and cu_seqlens_
         diopiTensorHandle_t attention_mask_;
+        newshape.len = 4;
         shape[0] = batch_size;
-        shape[1] = max_q_len;
-        shape[2] = max_kv_len;
+        shape[1] = 1;
+        shape[2] = max_q_len;
+        shape[3] = max_kv_len;
         diopiSize_t attention_mask_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(prework_ptr)), -1};
         diopiRequireTensor(ctx, &attention_mask_, &newshape, &attention_mask_stride, dtype, device);
         diopiTensorHandle_t padding_offset_;
@@ -480,7 +482,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                 // k
                 diopiTensorHandle_t k_buffer_forsplit;
                 newshape.len = 4;
-                shape[0] = token_num;
+                shape[0] = input_length;
                 shape[1] = local_kv_head_num;
                 shape[2] = size_per_head / 2;
                 shape[3] = 2;
@@ -737,7 +739,18 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
             impl::cuda::diopiBmm(ctx, qk_buffer, q_cache_buf_, k_cache_buf_);
             diopiScalar_t qk_scale{dtype, double(1.f / sqrtf(size_per_head * 1.f))};
             impl::cuda::diopiMulInpScalar(ctx, qk_buffer, &qk_scale);
-            impl::cuda::diopiAddInp(ctx, qk_buffer, attention_mask_, &scalar_done);
+
+            diopiTensorHandle_t qk_buffer_formask;
+            newshape.len = 4;
+            shape[0] = batch_size;
+            shape[1] = local_head_num;
+            shape[2] = max_q_len;
+            shape[3] = max_kv_len;
+            void* qk_buffer_ptr;
+            diopiGetTensorData(qk_buffer, &qk_buffer_ptr);
+            diopiSize_t qk_buffer_formask_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(qk_buffer_ptr)), -1};
+            diopiRequireTensor(ctx, &qk_buffer_formask, &newshape, &qk_buffer_formask_stride, dtype, device);
+            impl::cuda::diopiAddInp(ctx, qk_buffer_formask, attention_mask_, &scalar_done);
             // diopiSoftmax() with eps and -max
             diopiTensorHandle_t qk_softmax;
             newshape.len = 3;
@@ -1986,12 +1999,11 @@ DIOPI_API diopiError_t diopiTopPSampling(diopiContextHandle_t ctx, diopiTensorHa
         // workspace_size
         diopiSize_t shapeinfo;
         diopiGetTensorShape(logits, &shapeinfo);
-        int64_t batch_size = shapeinfo.data[0];
         int64_t intitemsize = -1;
         diopiGetTensorElemSize(output_ids, &intitemsize);
         int64_t itemsize = -1;
         diopiGetTensorElemSize(logits, &itemsize);
-        if (*workspace_size < 0 || persistent_workspace_size < 0) {
+        if (*workspace_size < 0 || *persistent_workspace_size < 0) {
             *workspace_size = itemsize * batch_size * vocab_size_padded +  // logits_forsample
                               vocab_size_padded * sizeof(bool) +           // check
                               vocab_size_padded * itemsize * 2 +           // sort and cumsum
