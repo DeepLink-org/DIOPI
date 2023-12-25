@@ -99,8 +99,7 @@ Shape FormatHelper::getStorageSizes(diopiMemoryFormat_t format, const Shape& dim
 }
 
 Shape FormatInfo::inferShapeLessTo4(const Shape& dims) {
-    Shape res;
-    res.resize(4);
+    Shape res(4);
     ASCEND_CHECK_ABORT(dims.size() <= 4, "check failed in InferShapeLessTo4, input dim > 4");
     switch (dims.size()) {
         case 0:
@@ -140,8 +139,7 @@ Shape FormatInfo::inferShapeLessTo4(const Shape& dims) {
 }
 
 Shape NC1HWC0FormatInfo::inferShape(const Shape& dims) {
-    Shape res;
-    res.resize(5);
+    Shape res(5);
     ASCEND_CHECK_ABORT(dims.size() == 4, "NC1HWC0FormatInfo::inferShape but input dim != 4");
     res[0] = dims[0];
     res[1] = (dims[1] + 15) / 16;
@@ -185,19 +183,18 @@ Shape ZFormatInfo::inferShape(const Shape& dims) {
     if (dims.size() < 4) {
         return inferShape(inferShapeLessTo4(dims));
     }
-    Shape res;
-    res.emplace_back((dims[1] + 15) / blocksize * dims[2] * dims[3]);
-    res.emplace_back((dims[0] + 15) / blocksize);
-    res.emplace_back(blocksize);
-    res.emplace_back(blocksize);
+    Shape res(4);
+    res[0] = (dims[1] + 15) / blocksize * dims[2] * dims[3];
+    res[1] = (dims[0] + 15) / blocksize;
+    res[2] = blocksize;
+    res[3] = blocksize;
     return res;
 }
 
 // NCDHW -> NDHWC
 Shape NDHWCFormatInfo::inferShape(const Shape& dims) {
     ASCEND_CHECK_ABORT(dims.size() == 5, "cannot convert to NDHWC");
-    Shape res;
-    res.resize(5);
+    Shape res(5);
     res[0] = dims[0];
     res[1] = dims[2];
     res[2] = dims[3];
@@ -215,8 +212,7 @@ Shape NCDHWFormatInfo::inferShape(const Shape& dims) {
 // NCDHW to NDC1HWC0
 Shape NDC1HWC0FormatInfo::inferShape(const Shape& dims) {
     ASCEND_CHECK_ABORT(dims.size() == 5, "cannot convert to NDC1HWC0");
-    Shape res;
-    res.resize(6);
+    Shape res(6);
     res[0] = dims[0];
     res[1] = dims[2];
     res[2] = (dims[1] + blocksize - 1) / blocksize;
@@ -238,8 +234,7 @@ Shape Z3DFormatInfo::inferShape(const Shape& dims) {
     int64_t d7 = blocksize;
     // The shape of FZ3D is 7D, but the CANN only accept 4D
     // so we should merge 1st, 2nd, 3rd, 4th dimension.
-    Shape res;
-    res.resize(4);
+    Shape res(4);
     res[0] = d1 * d2 * d3 * d4;
     res[1] = d5;
     res[2] = d6;

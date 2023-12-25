@@ -111,7 +111,7 @@ public:
                 storageFormat_ = desc.format;
                 std::vector<int64_t> tmp(desc.sizes.data, desc.sizes.data + desc.sizes.len);
                 storageDims_ = std::move(tmp);
-                storageNumel_ = std::accumulate(storageDims_.begin(), storageDims_.end(), static_cast<int64_t>(1), std::multiplies<>());
+                storageNumel_ = std::accumulate(storageDims_.begin(), storageDims_.end(), 1LL, std::multiplies<>());
             }
         }
     }
@@ -178,7 +178,7 @@ public:
 
     std::vector<int64_t> storageDims() const {
         ASCEND_CHECK_NULLPTR_ABORT(tensor_);
-        if (device_ == diopiDevice_t::diopi_device && isContiguous() && dim() > 0) {
+        if (device_ == diopiDevice_t::diopi_device) {
             return this->storageDims_;
         }
         return getAclMemShape();
@@ -188,7 +188,7 @@ public:
 
     int64_t storageNumel() const {
         ASCEND_CHECK_NULLPTR_ABORT(tensor_);
-        if (device_ == diopiDevice_t::diopi_device && isContiguous() && dim() > 0) {
+        if (device_ == diopiDevice_t::diopi_device) {
             return storageNumel_;
         }
         return numel();

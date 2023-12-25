@@ -68,13 +68,7 @@ public:
 
     void initDesc(const std::vector<int64_t>& shape) {
         storageSizes_ = shape;
-        if (shape.size() == 5) {
-            format_ = diopiMemoryFormat_t::NCDHW;
-        } else if (shape.size() == 4) {
-            format_ = diopiMemoryFormat_t::NCHW;
-        } else {
-            format_ = diopiMemoryFormat_t::Contiguous;
-        }
+        format_ = diopiMemoryFormat_t::Contiguous;
     }
 
     void getDesc(diopiStorageDesc_t* desc) const {
