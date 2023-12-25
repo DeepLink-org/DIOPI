@@ -2829,6 +2829,17 @@ at::Tensor& wrapper_Scalar_masked_fill_(at::Tensor& self, const at::Tensor& mask
 
 at::Tensor wrapper__repeat(const at::Tensor& self, at::IntArrayRef repeats) { return acl_op::repeat(self, repeats); }
 
+at::Tensor wrapper__transpose(const at::Tensor& self, int64_t dim0, int64_t dim1) {
+    int64_t inputSize = self.dim();
+    if (dim0 < 0) dim0 = dim0 + inputSize;
+    if (dim1 < 0) dim1 = dim1 + inputSize;
+    std::vector<int64_t> perms(inputSize);
+    std::iota(perms.begin(), perms.end(), 0);
+    perms[dim0] = dim1;
+    perms[dim1] = dim0;
+    return acl_op::npu_transpose(self, perms);
+}
+
 }  // namespace
 
 namespace at {
@@ -2842,9 +2853,9 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("contiguous", TORCH_FN(wrapper__contiguous));
     m.impl("empty_strided", TORCH_FN(wrapper__empty_strided));
     m.impl("empty.memory_format", TORCH_FN(wrapper_memory_format_empty));
-    // m.impl("clone", TORCH_FN(wrapper__clone));
-    // m.impl("set_.source_Storage", TORCH_FN(wrapper_source_Storage_set_));
-    // m.impl("set_.source_Storage_storage_offset", TORCH_FN(wrapper_source_Storage_storage_offset_set_));
+    m.impl("clone", TORCH_FN(wrapper__clone));
+    m.impl("set_.source_Storage", TORCH_FN(wrapper_source_Storage_set_));
+    m.impl("set_.source_Storage_storage_offset", TORCH_FN(wrapper_source_Storage_storage_offset_set_));
     m.impl("cat", TORCH_FN(wrapper__cat));
     m.impl("index_put_", TORCH_FN(wrapper__index_put_));
     m.impl("_index_put_impl_", TORCH_FN(wrapper___index_put_impl_));
@@ -2860,6 +2871,7 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     // m.impl("eq.Scalar", TORCH_FN(wrapper_Scalar_eq));
     m.impl("masked_fill_.Scalar", TORCH_FN(wrapper_Scalar_masked_fill_));
     m.impl("repeat", TORCH_FN(wrapper__repeat));
+    m.impl("transpose.int", TORCH_FN(wrapper__transpose));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
