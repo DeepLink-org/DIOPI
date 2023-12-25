@@ -10,10 +10,12 @@ cd $ROOT_DIR && rm -rf coverage && mkdir coverage
 echo "entering "$ROOT_DIR
 require_coverage=$1
 
+remote_count=$(git remote | wc -l)
+if [ "$remote_count" -eq 1 ]; then echo "Not from dev repository" && exit 0 ;fi
 gcovr --csv > coverage/coverage.csv
 sed -i '1d' coverage/coverage.csv
 newcommit=$(git rev-parse HEAD)
-oldcommit=$(git rev-parse main)
+oldcommit=$(git merge-base ${newcommit} main)
 if [ -z $oldcommit ]; then echo "is not Pull request" && exit 0; fi
 git diff $oldcommit $newcommit --name-only  >coverage/gitdiff.txt 2>/dev/null || echo "error can be ignored"
 
