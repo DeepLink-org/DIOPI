@@ -18,23 +18,23 @@
 namespace impl {
 namespace ascend {
 
-#define DIOPI_CHECK(expr)                                           \
-    do {                                                            \
-        diopiError_t ret = expr;                                    \
-        if (ret != diopiSuccess) {                                  \
-            printf(#expr " error at %s:%d.\n", __FILE__, __LINE__); \
-            return ret;                                             \
-        }                                                           \
-    } while (false);
+// #define DIOPI_CHECK(expr)                                           \
+//     do {                                                            \
+//         diopiError_t ret = expr;                                    \
+//         if (ret != diopiSuccess) {                                  \
+//             printf(#expr " error at %s:%d.\n", __FILE__, __LINE__); \
+//             return ret;                                             \
+//         }                                                           \
+//     } while (false);
 
-#define DIOPI_CHECK_FMT(expr, fmt, args...)                          \
-    do {                                                             \
-        diopiError_t ret = expr;                                     \
-        if (ret != diopiSuccess) {                                   \
-            printf(#fmt " at %s:%d.\n", ##args, __FILE__, __LINE__); \
-            return ret;                                              \
-        }                                                            \
-    } while (false);
+// #define DIOPI_CHECK_FMT(expr, fmt, args...)                          \
+//     do {                                                             \
+//         diopiError_t ret = expr;                                     \
+//         if (ret != diopiSuccess) {                                   \
+//             printf(#fmt " at %s:%d.\n", ##args, __FILE__, __LINE__); \
+//             return ret;                                              \
+//         }                                                            \
+//     } while (false);
 
 int64_t* getDataOffsetPtr(diopiTensorHandle_t tensor, int64_t offset) {
     char* ptr = nullptr;
@@ -45,6 +45,86 @@ int64_t* getDataOffsetPtr(diopiTensorHandle_t tensor, int64_t offset) {
     int64_t elem_size;
     diopiGetTensorElemSize(tensor, &elem_size);
     return reinterpret_cast<int64_t*>(ptr + offset * elem_size);
+}
+
+diopiError_t sliceAsSelect(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim, int64_t index) {
+    return diopiSlice(ctx, out, input, dim, index, index + 1, 1);
+}
+
+diopiError_t combAsCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t* tensors, int64_t numInputs, int64_t dim) {
+    void* dataptr;
+    diopiGetTensorData(out, &dataptr);
+    int64_t itemsize;
+    diopiGetTensorElemSize(out, &itemsize);
+    diopiDevice_t device;
+    diopiGetTensorDevice(out, &device);
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(out, &dtype);
+    diopiSize_t shapeinfo;
+    diopiGetTensorShape(out, &shapeinfo);
+
+    diopiTensorHandle_t forout;
+    std::vector<int64_t> shape(shapeinfo.len);
+    diopiSize_t newshape{shape.data(), shapeinfo.len};
+    std::vector<int64_t> permuteshape(shapeinfo.len);
+    diopiSize_t permutedims{permuteshape.data(), shapeinfo.len};
+    int64_t offset = 1;
+    for (int64_t i = 0; i < shapeinfo.len; i++) {
+        if (i == dim) {
+            shape[i] = shape[0];
+            shape[0] = shapeinfo.data[i];
+            permuteshape[0] = i;
+            permuteshape[i] = 0;
+        } else {
+            shape[i] = shapeinfo.data[i];
+            permuteshape[i] = i;
+            offset *= shape[i];
+        }
+    }
+
+    if (dim == 0) {
+        int64_t totaldim0 = 0;
+        for (int64_t i = 0; i < numInputs; i++) {
+            diopiSize_t ishape;
+            diopiGetTensorShape(tensors[i], &ishape);
+            diopiDtype_t idtype;
+            diopiGetTensorDtype(tensors[i], &idtype);
+            if (idtype != dtype) {
+                std::cout << "diff dtype in combAsCat" << std::endl;
+                exit(-1);
+            }
+            diopiSize_t outi_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(reinterpret_cast<char*>(dataptr) + itemsize * totaldim0 * offset)),
+                                    -1};
+            diopiTensorHandle_t outi;
+            shape[0] = ishape.data[0];
+            diopiRequireTensor(ctx, &outi, &newshape, &outi_stride, dtype, device);
+            diopiCopyInp(ctx, tensors[i], outi);
+            totaldim0 += ishape.data[0];
+        }
+    } else {
+        int64_t totaldimn = 0;
+        diopiRequireTensor(ctx, &forout, &newshape, nullptr, dtype, device);
+        for (int64_t i = 0; i < numInputs; i++) {
+            diopiSize_t ishape;
+            diopiGetTensorShape(tensors[i], &ishape);
+            diopiDtype_t idtype;
+            diopiGetTensorDtype(tensors[i], &idtype);
+            if (idtype != dtype) {
+                std::cout << "diff dtype in combAsCat" << std::endl;
+                exit(-1);
+            }
+            diopiGetTensorData(forout, &dataptr);
+            diopiSize_t outi_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(reinterpret_cast<char*>(dataptr) + itemsize * totaldimn * offset)),
+                                    -1};
+            diopiTensorHandle_t outi;
+            shape[0] = ishape.data[dim];
+            diopiRequireTensor(ctx, &outi, &newshape, &outi_stride, dtype, device);
+            diopiPermute(ctx, outi, tensors[i], permutedims);
+            totaldimn += ishape.data[dim];
+        }
+        diopiPermute(ctx, out, forout, permutedims);
+    }
+    return diopiSuccess;
 }
 
 DIOPI_API diopiError_t diopiFusedSiluFfnInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t weight1,
@@ -79,11 +159,11 @@ DIOPI_API diopiError_t diopiFusedSiluFfnInp(diopiContextHandle_t ctx, diopiTenso
         diopiRequireTensor(ctx, &matmulW1, &newshape, &strideW1, dtype, device);
         diopiRequireTensor(ctx, &matmulW3, &newshape, &strideW3, dtype, device);
 
-        DIOPI_CHECK(diopiMm(ctx, matmulW1, inoutput, weight1));
-        DIOPI_CHECK(diopiMm(ctx, matmulW3, inoutput, weight3));
-        DIOPI_CHECK(diopiSiluInp(ctx, matmulW1));
-        DIOPI_CHECK(diopiMulInp(ctx, matmulW1, matmulW3));
-        DIOPI_CHECK(diopiMm(ctx, inoutput, matmulW1, weight2));
+        diopiMm(ctx, matmulW1, inoutput, weight1);
+        diopiMm(ctx, matmulW3, inoutput, weight3);
+        diopiSiluInp(ctx, matmulW1);
+        diopiMulInp(ctx, matmulW1, matmulW3);
+        diopiMm(ctx, inoutput, matmulW1, weight2);
         return diopiSuccess;
     }
     return diopiErrorOccurred;
@@ -154,9 +234,11 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
         diopiLmdeployCopyD2H(ctx, context_lengths_host, context_lengths, false);
         // attention_mask_ and padding_offset_ and cu_seqlens_
         diopiTensorHandle_t attention_mask_;
+        newshape.len = 4;
         shape[0] = batch_size;
-        shape[1] = max_q_len;
-        shape[2] = max_kv_len;
+        shape[1] = 1;
+        shape[2] = max_q_len;
+        shape[3] = max_kv_len;
         diopiSize_t attention_mask_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(prework_ptr)), -1};
         diopiRequireTensor(ctx, &attention_mask_, &newshape, &attention_mask_stride, dtype, device);
         diopiTensorHandle_t padding_offset_;
@@ -225,7 +307,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                     attention_mask_members_length += 1;
                 }
                 // cat
-                diopiCat(ctx, attention_mask_i, attention_mask_members, attention_mask_members_length, 1);
+                combAsCat(ctx, attention_mask_i, attention_mask_members, attention_mask_members_length, 1);
             }
             return diopiSuccess;
         }
@@ -466,11 +548,11 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                 diopiMulInp(ctx, split1_buffer, timestep_buff);
                 diopiAdd(ctx, cat1_buffer, split0_buffer, split1_buffer, &scalar_done);
                 // cat
-                diopiCat(ctx, q_buffer_forsplit, cat_buffer, 2, 3);
+                combAsCat(ctx, q_buffer_forsplit, cat_buffer, 2, 3);
                 // k
                 diopiTensorHandle_t k_buffer_forsplit;
                 newshape.len = 4;
-                shape[0] = token_num;
+                shape[0] = input_length;
                 shape[1] = local_kv_head_num;
                 shape[2] = size_per_head / 2;
                 shape[3] = 2;
@@ -488,7 +570,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                 diopiMulInp(ctx, split1_buffer, timestep_buff);
                 diopiAdd(ctx, cat1_buffer, split0_buffer, split1_buffer, &scalar_done);
                 // cat
-                diopiCat(ctx, k_buffer_forsplit, cat_buffer, 2, 3);
+                combAsCat(ctx, k_buffer_forsplit, cat_buffer, 2, 3);
                 // cache begin
                 // q
                 diopiTensorHandle_t q_cal;  // q buffer with cache for attn
@@ -519,7 +601,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                 shape[2] = size_per_head;
                 diopiRequireTensor(ctx, &qcal102, &newshape, nullptr, dtype, device);
                 diopiConstTensorHandle_t cat2qcal[2] = {prepared_q_buffer, zeros_q};
-                diopiCat(ctx, qcal102, cat2qcal, 2, 0);
+                combAsCat(ctx, qcal102, cat2qcal, 2, 0);
                 diopiPermute(ctx, q_cal, qcal102, trans102);
                 // k
                 diopiTensorHandle_t k_cal;  // k buffer with cache for attn
@@ -551,7 +633,8 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                 shape[1] = local_kv_head_num;
                 shape[2] = size_per_head;
                 diopiSize_t v_buffer_forsplit_stride{
-                    static_cast<const int64_t*>(reinterpret_cast<int64_t*>(v_buffer_ptr) + itemsize * total_input_length * local_kv_head_num * size_per_head),
+                    static_cast<const int64_t*>(
+                        reinterpret_cast<int64_t*>(reinterpret_cast<char*>(v_buffer_ptr) + itemsize * total_input_length * local_kv_head_num * size_per_head)),
                     -1};
                 diopiRequireTensor(ctx, &prepared_v_buffer, &newshape, &v_buffer_forsplit_stride, dtype, device);
                 // k cache
@@ -594,11 +677,11 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                         shape[2] = size_per_head;
                         diopiRequireTensor(ctx, &kvcal, &newshape, nullptr, dtype, device);
                         diopiConstTensorHandle_t cat2kcal[2] = {prepared_k_buffer, zeros_kv};
-                        diopiCat(ctx, kvcal, cat2kcal, 2, 0);
+                        combAsCat(ctx, kvcal, cat2kcal, 2, 0);
                         diopiPermute(ctx, k_cal, kvcal, trans120);
                         // v for cal
                         diopiConstTensorHandle_t cat2vcal[2] = {prepared_v_buffer, zeros_kv};
-                        diopiCat(ctx, kvcal, cat2vcal, 2, 0);
+                        combAsCat(ctx, kvcal, cat2vcal, 2, 0);
                         diopiPermute(ctx, v_cal, kvcal, trans102);
                     } else {
                         diopiPermute(ctx, k_cal, prepared_k_buffer, trans120);
@@ -620,10 +703,10 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                         shape[2] = size_per_head;
                         diopiRequireTensor(ctx, &kvcache102, &newshape, nullptr, dtype, device);
                         diopiConstTensorHandle_t cat2kcache[2] = {prepared_k_buffer, zeros_kv_all};
-                        diopiCat(ctx, kvcache102, cat2kcache, 2, 0);
+                        combAsCat(ctx, kvcache102, cat2kcache, 2, 0);
                         diopiPermute(ctx, k_cache, kvcache102, trans102);
                         diopiConstTensorHandle_t cat2vcache[2] = {prepared_v_buffer, zeros_kv_all};
-                        diopiCat(ctx, kvcache102, cat2vcache, 2, 0);
+                        combAsCat(ctx, kvcache102, cat2vcache, 2, 0);
                         diopiPermute(ctx, v_cache, kvcache102, trans102);
                     } else {
                         diopiPermute(ctx, k_cache, prepared_k_buffer, trans102);
@@ -670,19 +753,19 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                         diopiSize_t zeros_kv_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(zeros_ptr)), -1};
                         diopiRequireTensor(ctx, &zeros_kv, &newshape, &zeros_kv_stride, dtype, device);
                         diopiConstTensorHandle_t cat2kcal[3] = {his_k102, prepared_k_buffer, zeros_kv};
-                        diopiCat(ctx, kvcal, cat2kcal, 3, 0);
+                        combAsCat(ctx, kvcal, cat2kcal, 3, 0);
                         diopiPermute(ctx, k_cal, kvcal, trans120);
                         // v for cal
                         diopiConstTensorHandle_t cat2vcal[3] = {his_v102, prepared_v_buffer, zeros_kv};
-                        diopiCat(ctx, kvcal, cat2vcal, 3, 0);
+                        combAsCat(ctx, kvcal, cat2vcal, 3, 0);
                         diopiPermute(ctx, v_cal, kvcal, trans102);
                     } else {
                         diopiConstTensorHandle_t cat2kcal[2] = {his_k102, prepared_k_buffer};
-                        diopiCat(ctx, kvcal, cat2kcal, 2, 0);
+                        combAsCat(ctx, kvcal, cat2kcal, 2, 0);
                         diopiPermute(ctx, k_cal, kvcal, trans120);
                         // v for cal
                         diopiConstTensorHandle_t cat2vcal[2] = {his_v102, prepared_v_buffer};
-                        diopiCat(ctx, kvcal, cat2vcal, 2, 0);
+                        combAsCat(ctx, kvcal, cat2vcal, 2, 0);
                         diopiPermute(ctx, v_cal, kvcal, trans102);
                     }
 
@@ -701,17 +784,17 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                         diopiSize_t zeros_kv_all_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(zeros_ptr)), -1};
                         diopiRequireTensor(ctx, &zeros_kv_all, &newshape, &zeros_kv_all_stride, dtype, device);
                         diopiConstTensorHandle_t cat2kcache[3] = {his_k102, prepared_k_buffer, zeros_kv_all};
-                        diopiCat(ctx, kvcache102, cat2kcache, 3, 0);
+                        combAsCat(ctx, kvcache102, cat2kcache, 3, 0);
                         diopiPermute(ctx, k_cache, kvcache102, trans102);
                         diopiConstTensorHandle_t cat2vcache[3] = {his_v102, prepared_v_buffer, zeros_kv_all};
-                        diopiCat(ctx, kvcache102, cat2vcache, 3, 0);
+                        combAsCat(ctx, kvcache102, cat2vcache, 3, 0);
                         diopiPermute(ctx, v_cache, kvcache102, trans102);
                     } else {
                         diopiConstTensorHandle_t cat2kcache[2] = {his_k102, prepared_k_buffer};
-                        diopiCat(ctx, kvcache102, cat2kcache, 2, 0);
+                        combAsCat(ctx, kvcache102, cat2kcache, 2, 0);
                         diopiPermute(ctx, k_cache, kvcache102, trans102);
                         diopiConstTensorHandle_t cat2vcache[2] = {his_v102, prepared_v_buffer};
-                        diopiCat(ctx, kvcache102, cat2vcache, 2, 0);
+                        combAsCat(ctx, kvcache102, cat2vcache, 2, 0);
                         diopiPermute(ctx, v_cache, kvcache102, trans102);
                     }
                 }
@@ -727,7 +810,18 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
             diopiBmm(ctx, qk_buffer, q_cache_buf_, k_cache_buf_);
             diopiScalar_t qk_scale{dtype, double(1.f / sqrtf(size_per_head * 1.f))};
             diopiMulInpScalar(ctx, qk_buffer, &qk_scale);
-            diopiAddInp(ctx, qk_buffer, attention_mask_, &scalar_done);
+
+            diopiTensorHandle_t qk_buffer_formask;
+            newshape.len = 4;
+            shape[0] = batch_size;
+            shape[1] = local_head_num;
+            shape[2] = max_q_len;
+            shape[3] = max_kv_len;
+            void* qk_buffer_ptr;
+            diopiGetTensorData(qk_buffer, &qk_buffer_ptr);
+            diopiSize_t qk_buffer_formask_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(qk_buffer_ptr)), -1};
+            diopiRequireTensor(ctx, &qk_buffer_formask, &newshape, &qk_buffer_formask_stride, dtype, device);
+            diopiAddInp(ctx, qk_buffer_formask, attention_mask_, &scalar_done);
             // diopiSoftmax() with eps and -max
             diopiTensorHandle_t qk_softmax;
             newshape.len = 3;
@@ -1059,7 +1153,7 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
             diopiMulInp(ctx, split1_buffer, timesteps_buff);
             diopiAdd(ctx, cat1_buffer, split0_buffer, split1_buffer, &scalar_done);
             // cat
-            diopiCat(ctx, q_buffer_forsplit, cat_buffer, 2, 3);
+            combAsCat(ctx, q_buffer_forsplit, cat_buffer, 2, 3);
             if (local_kv_head_num == local_head_num) {
                 // k
                 diopiTensorHandle_t k_buffer_forsplit;
@@ -1080,7 +1174,7 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                 diopiMulInp(ctx, split1_buffer, timesteps_buff);
                 diopiAdd(ctx, cat1_buffer, split0_buffer, split1_buffer, &scalar_done);
                 // cat
-                diopiCat(ctx, k_buffer_forsplit, cat_buffer, 2, 3);
+                combAsCat(ctx, k_buffer_forsplit, cat_buffer, 2, 3);
             } else {
                 return diopiErrorOccurred;
             }
@@ -1144,7 +1238,7 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                             shape[1] = tlength_circ;
                             shape[2] = size_per_head;
                             diopiRequireTensor(ctx, &ki_cache_beg, &newshape, nullptr, dtype, device);
-                            DIOPI_CHECK(diopiSlice(ctx, ki_cache_beg, k_cache, 1, 0, tlength_circ, 1));
+                            diopiSlice(ctx, ki_cache_beg, k_cache, 1, 0, tlength_circ, 1);
                             cat_kcache[0] = ki_cache_beg;
                             cat_kcache[1] = ki_buffer1;
                             cat_kcache_length += 1;
@@ -1157,11 +1251,11 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                             shape[1] = max_seq_len - tlength_circ - 1;
                             shape[2] = size_per_head;
                             diopiRequireTensor(ctx, &ki_cache_end, &newshape, nullptr, dtype, device);
-                            DIOPI_CHECK(diopiSlice(ctx, ki_cache_end, k_cache, 1, tlength_circ + 1, max_seq_len, 1));
+                            diopiSlice(ctx, ki_cache_end, k_cache, 1, tlength_circ + 1, max_seq_len, 1);
                             cat_kcache[cat_kcache_length] = ki_cache_end;
                             cat_kcache_length += 1;
                         }
-                        DIOPI_CHECK(diopiCat(ctx, k_cache, cat_kcache, cat_kcache_length, 1));
+                        combAsCat(ctx, k_cache, cat_kcache, cat_kcache_length, 1);
                         // ki for cal
                         diopiTensorHandle_t ki_cal;
                         newshape.len = 3;
@@ -1182,13 +1276,13 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                             shape[1] = max_seq_len - kvi_end;
                             shape[2] = size_per_head;
                             diopiRequireTensor(ctx, &catki_cache_beg, &newshape, nullptr, dtype, device);
-                            DIOPI_CHECK(diopiSlice(ctx, catki_cache_beg, k_cache, 1, kvi_end, max_seq_len, 1));
+                            diopiSlice(ctx, catki_cache_beg, k_cache, 1, kvi_end, max_seq_len, 1);
                             diopiTensorHandle_t catki_cache_end;
                             shape[0] = local_kv_head_num;
                             shape[1] = kvi_end;
                             shape[2] = size_per_head;
                             diopiRequireTensor(ctx, &catki_cache_end, &newshape, nullptr, dtype, device);
-                            DIOPI_CHECK(diopiSlice(ctx, catki_cache_end, k_cache, 1, 0, kvi_end, 1));
+                            diopiSlice(ctx, catki_cache_end, k_cache, 1, 0, kvi_end, 1);
                             while (n_maxseqlen > 0) {
                                 cat_kcal.emplace_back(catki_cache_beg);
                                 cat_kcal.emplace_back(catki_cache_end);
@@ -1201,7 +1295,7 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                             shape[1] = max_seq_len - kvi_beg;
                             shape[2] = size_per_head;
                             diopiRequireTensor(ctx, &catki_cache_beg_gt, &newshape, nullptr, dtype, device);
-                            DIOPI_CHECK(diopiSlice(ctx, catki_cache_beg_gt, k_cache, 1, kvi_beg, max_seq_len, 1));
+                            diopiSlice(ctx, catki_cache_beg_gt, k_cache, 1, kvi_beg, max_seq_len, 1);
                             cat_kcal.emplace_back(catki_cache_beg_gt);
                             if (kvi_end > 0) {
                                 diopiTensorHandle_t catki_cache_end_gt;
@@ -1209,7 +1303,7 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                                 shape[1] = kvi_end;
                                 shape[2] = size_per_head;
                                 diopiRequireTensor(ctx, &catki_cache_end_gt, &newshape, nullptr, dtype, device);
-                                DIOPI_CHECK(diopiSlice(ctx, catki_cache_end_gt, k_cache, 1, 0, kvi_end, 1));
+                                diopiSlice(ctx, catki_cache_end_gt, k_cache, 1, 0, kvi_end, 1);
                                 cat_kcal.emplace_back(catki_cache_end_gt);
                             }
                         } else if (kvi_beg < kvi_end) {
@@ -1218,7 +1312,7 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                             shape[1] = kvi_end - kvi_beg;
                             shape[2] = size_per_head;
                             diopiRequireTensor(ctx, &catki_cache_end_lt, &newshape, nullptr, dtype, device);
-                            DIOPI_CHECK(diopiSlice(ctx, catki_cache_end_lt, k_cache, 1, kvi_beg, kvi_end, 1));
+                            diopiSlice(ctx, catki_cache_end_lt, k_cache, 1, kvi_beg, kvi_end, 1);
                             cat_kcal.emplace_back(catki_cache_end_lt);
                         }
                         cat_kcal.emplace_back(ki_buffer1);
@@ -1228,8 +1322,8 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         shape[1] = tlength - first_step + 1;
                         shape[2] = size_per_head;
                         diopiRequireTensor(ctx, &ki_cal021, &newshape, nullptr, dtype, device);
-                        DIOPI_CHECK(diopiCat(ctx, ki_cal021, cat_kcal.data(), cat_kcal.size(), 1));
-                        DIOPI_CHECK(diopiPermute(ctx, ki_cal, ki_cal021, trans021));
+                        combAsCat(ctx, ki_cal021, cat_kcal.data(), cat_kcal.size(), 1);
+                        diopiPermute(ctx, ki_cal, ki_cal021, trans021);
                         // qk_cal
                         diopiTensorHandle_t qki_cal;
                         newshape.len = 3;
@@ -1237,14 +1331,14 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         shape[1] = 1;
                         shape[2] = sequence_lengths + 1;
                         diopiRequireTensor(ctx, &qki_cal, &newshape, nullptr, dtype, device);
-                        DIOPI_CHECK(diopiBmm(ctx, qki_cal, qi_cal, ki_cal));
-                        DIOPI_CHECK(diopiMulInpScalar(ctx, qki_cal, &inv_sqrt_dh));
+                        diopiBmm(ctx, qki_cal, qi_cal, ki_cal);
+                        diopiMulInpScalar(ctx, qki_cal, &inv_sqrt_dh);
                         // qk softmax, using ki_cal as buffer
                         diopiTensorHandle_t qki_softmax;
                         char* qki_softmax_ptr = reinterpret_cast<char*>(ki_cal_ptr);
                         diopiSize_t qki_softmax_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(qki_softmax_ptr)), -1};
                         diopiRequireTensor(ctx, &qki_softmax, &newshape, &qki_softmax_stride, dtype, device);
-                        DIOPI_CHECK(diopiSoftmax(ctx, qki_softmax, qki_cal, 2));
+                        diopiSoftmax(ctx, qki_softmax, qki_cal, 2);
                         // vi_buffer
                         diopiTensorHandle_t vi_buffer;
                         newshape.len = 3;
@@ -1274,7 +1368,7 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                             shape[1] = tlength_circ;
                             shape[2] = size_per_head;
                             diopiRequireTensor(ctx, &vi_cache_beg, &newshape, nullptr, dtype, device);
-                            DIOPI_CHECK(diopiSlice(ctx, vi_cache_beg, v_cache, 1, 0, tlength_circ, 1));
+                            diopiSlice(ctx, vi_cache_beg, v_cache, 1, 0, tlength_circ, 1);
                             cat_vcache[0] = vi_cache_beg;
                             cat_vcache[1] = vi_buffer;
                             cat_vcache_length += 1;
@@ -1287,11 +1381,11 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                             shape[1] = max_seq_len - tlength_circ - 1;
                             shape[2] = size_per_head;
                             diopiRequireTensor(ctx, &vi_cache_end, &newshape, nullptr, dtype, device);
-                            DIOPI_CHECK(diopiSlice(ctx, vi_cache_end, v_cache, 1, tlength_circ + 1, max_seq_len, 1));
+                            diopiSlice(ctx, vi_cache_end, v_cache, 1, tlength_circ + 1, max_seq_len, 1);
                             cat_vcache[cat_vcache_length] = vi_cache_end;
                             cat_vcache_length += 1;
                         }
-                        DIOPI_CHECK(diopiCat(ctx, v_cache, cat_vcache, cat_vcache_length, 1));
+                        combAsCat(ctx, v_cache, cat_vcache, cat_vcache_length, 1);
                         // vi for cal
                         diopiTensorHandle_t vi_cal;
                         newshape.len = 3;
@@ -1307,13 +1401,13 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                             shape[1] = max_seq_len - kvi_end;
                             shape[2] = size_per_head;
                             diopiRequireTensor(ctx, &catvi_cache_beg, &newshape, nullptr, dtype, device);
-                            DIOPI_CHECK(diopiSlice(ctx, catvi_cache_beg, v_cache, 1, kvi_beg, max_seq_len, 1));
+                            diopiSlice(ctx, catvi_cache_beg, v_cache, 1, kvi_beg, max_seq_len, 1);
                             diopiTensorHandle_t catvi_cache_end;
                             shape[0] = local_kv_head_num;
                             shape[1] = kvi_end;
                             shape[2] = size_per_head;
                             diopiRequireTensor(ctx, &catvi_cache_end, &newshape, nullptr, dtype, device);
-                            DIOPI_CHECK(diopiSlice(ctx, catvi_cache_end, v_cache, 1, 0, kvi_beg, 1));
+                            diopiSlice(ctx, catvi_cache_end, v_cache, 1, 0, kvi_beg, 1);
                             while (n_maxseqlen > 0) {
                                 cat_vcal.emplace_back(catvi_cache_beg);
                                 cat_vcal.emplace_back(catvi_cache_end);
@@ -1326,7 +1420,7 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                             shape[1] = max_seq_len - kvi_beg;
                             shape[2] = size_per_head;
                             diopiRequireTensor(ctx, &catvi_cache_beg_gt, &newshape, nullptr, dtype, device);
-                            DIOPI_CHECK(diopiSlice(ctx, catvi_cache_beg_gt, v_cache, 1, kvi_beg, max_seq_len, 1));
+                            diopiSlice(ctx, catvi_cache_beg_gt, v_cache, 1, kvi_beg, max_seq_len, 1);
                             cat_kcal.emplace_back(catvi_cache_beg_gt);
                             if (kvi_end > 0) {
                                 diopiTensorHandle_t catvi_cache_end_gt;
@@ -1334,7 +1428,7 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                                 shape[1] = kvi_end;
                                 shape[2] = size_per_head;
                                 diopiRequireTensor(ctx, &catvi_cache_end_gt, &newshape, nullptr, dtype, device);
-                                DIOPI_CHECK(diopiSlice(ctx, catvi_cache_end_gt, v_cache, 1, 0, kvi_end, 1));
+                                diopiSlice(ctx, catvi_cache_end_gt, v_cache, 1, 0, kvi_end, 1);
                                 cat_vcal.emplace_back(catvi_cache_end_gt);
                             }
                         } else if (kvi_beg < kvi_end) {
@@ -1343,11 +1437,11 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                             shape[1] = kvi_end - kvi_beg;
                             shape[2] = size_per_head;
                             diopiRequireTensor(ctx, &catvi_cache_end_lt, &newshape, nullptr, dtype, device);
-                            DIOPI_CHECK(diopiSlice(ctx, catvi_cache_end_lt, v_cache, 1, kvi_beg, kvi_end, 1));
+                            diopiSlice(ctx, catvi_cache_end_lt, v_cache, 1, kvi_beg, kvi_end, 1);
                             cat_vcal.emplace_back(catvi_cache_end_lt);
                         }
                         cat_vcal.emplace_back(vi_buffer);
-                        DIOPI_CHECK(diopiCat(ctx, vi_cal, cat_vcal.data(), cat_vcal.size(), 1));
+                        combAsCat(ctx, vi_cal, cat_vcal.data(), cat_vcal.size(), 1);
                         // * v
                         diopiTensorHandle_t inouti;
                         shape[0] = local_head_num;
@@ -1357,7 +1451,7 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         char* inouti_ptr = reinterpret_cast<char*>(inout_ptr) + i * itemsize * local_head_num * size_per_head;
                         diopiSize_t inouti_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(inouti_ptr)), -1};
                         diopiRequireTensor(ctx, &inouti, &newshape, &inouti_stride, dtype, device);
-                        DIOPI_CHECK(diopiBmm(ctx, inouti, qki_softmax, vi_cal));
+                        diopiBmm(ctx, inouti, qki_softmax, vi_cal);
                     } else if (same) {
                         diopiTensorHandle_t q_buffer_back_one;
                         shape[0] = local_head_num;
@@ -1410,7 +1504,7 @@ DIOPI_API diopiError_t diopiSetupTopkRuntimeArgsInp(diopiContextHandle_t ctx, di
     void* h_top_ks_data;
     diopiRequireTensor(ctx, &h_top_ks, &newshape, nullptr, intdtype, diopiDevice_t::diopi_host);
     diopiLmdeployCopyD2H(ctx, h_top_ks, top_ks, false);
-    diopiGetTensorData(h_top_ks, reinterpret_cast<void**>(&h_top_ks_data));
+    diopiGetTensorData(h_top_ks, &h_top_ks_data);
     diopiTensorHandle_t forcast = nullptr;
     diopiTensorHandle_t h_top_ps;
     float h_top_ps_data[batch_size];
@@ -1425,7 +1519,7 @@ DIOPI_API diopiError_t diopiSetupTopkRuntimeArgsInp(diopiContextHandle_t ctx, di
     }
     diopiTensorHandle_t h_skip_decode;
     bool h_skip_decode_data[batch_size];
-    diopiSize_t h_skip_decode_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_top_ps_data)), -1};
+    diopiSize_t h_skip_decode_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_skip_decode_data)), -1};
     diopiRequireTensor(ctx, &h_skip_decode, &newshape, &h_skip_decode_stride, diopiDtype_t::diopi_dtype_bool, diopiDevice_t::diopi_host);
     diopiLmdeployCopyD2H(ctx, h_skip_decode, skip_decode, false);
 
@@ -1507,7 +1601,7 @@ DIOPI_API diopiError_t diopiSetupToppRuntimeArgsInp(diopiContextHandle_t ctx, di
     void* h_top_ks_data;
     diopiRequireTensor(ctx, &h_top_ks, &newshape, nullptr, intdtype, diopiDevice_t::diopi_host);
     diopiLmdeployCopyD2H(ctx, h_top_ks, top_ks, false);
-    diopiGetTensorData(h_top_ks, reinterpret_cast<void**>(&h_top_ks_data));
+    diopiGetTensorData(h_top_ks, &h_top_ks_data);
     diopiTensorHandle_t forcast = nullptr;
     diopiTensorHandle_t h_top_ps;
     float h_top_ps_data[batch_size];
@@ -1522,19 +1616,19 @@ DIOPI_API diopiError_t diopiSetupToppRuntimeArgsInp(diopiContextHandle_t ctx, di
     }
     diopiTensorHandle_t h_skip_decode;
     bool h_skip_decode_data[batch_size];
-    diopiSize_t h_skip_decode_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_top_ps_data)), -1};
+    diopiSize_t h_skip_decode_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_skip_decode_data)), -1};
     diopiRequireTensor(ctx, &h_skip_decode, &newshape, &h_skip_decode_stride, diopiDtype_t::diopi_dtype_bool, diopiDevice_t::diopi_host);
     diopiLmdeployCopyD2H(ctx, h_skip_decode, skip_decode, false);
     diopiTensorHandle_t h_top_p_decay_buf;
     float h_top_p_decay_buf_data[batch_size];
     if (top_p_decay == nullptr) {
         diopiScalar_t scalar_done{dtype, double(1)};
-        DIOPI_CHECK(diopiFill(ctx, top_p_decay_buf, &scalar_done));
+        diopiFill(ctx, top_p_decay_buf, &scalar_done);
     } else {
         diopiSize_t h_top_p_decay_buf_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_top_p_decay_buf_data)), -1};
         diopiRequireTensor(ctx, &h_top_p_decay_buf, &newshape, &h_top_p_decay_buf_stride, diopiDtype_t::diopi_dtype_float32, diopiDevice_t::diopi_host);
         if (dtype != diopiDtype_t::diopi_dtype_float32) {
-            DIOPI_CHECK(diopiCastDtype(ctx, forcast, top_p_decay));
+            diopiCastDtype(ctx, forcast, top_p_decay);
             diopiLmdeployCopyD2H(ctx, h_top_p_decay_buf, forcast, false);
         } else {
             diopiLmdeployCopyD2H(ctx, h_top_p_decay_buf, top_p_decay, false);
@@ -1544,12 +1638,12 @@ DIOPI_API diopiError_t diopiSetupToppRuntimeArgsInp(diopiContextHandle_t ctx, di
     float h_top_p_min_buf_data[batch_size];
     if (top_p_min == nullptr) {
         diopiScalar_t scalar_d001{dtype, double(1e-6)};
-        DIOPI_CHECK(diopiFill(ctx, top_p_min_buf, &scalar_d001));
+        diopiFill(ctx, top_p_min_buf, &scalar_d001);
     } else {
         diopiSize_t h_top_p_min_buf_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_top_p_min_buf_data)), -1};
         diopiRequireTensor(ctx, &h_top_p_min_buf, &newshape, &h_top_p_min_buf_stride, diopiDtype_t::diopi_dtype_float32, diopiDevice_t::diopi_host);
         if (dtype != diopiDtype_t::diopi_dtype_float32) {
-            DIOPI_CHECK(diopiCastDtype(ctx, forcast, top_p_min));
+            diopiCastDtype(ctx, forcast, top_p_min);
             diopiLmdeployCopyD2H(ctx, h_top_p_min_buf, forcast, false);
         } else {
             diopiLmdeployCopyD2H(ctx, h_top_p_min_buf, top_p_min, false);
@@ -1614,14 +1708,14 @@ DIOPI_API diopiError_t diopiSetupToppRuntimeArgsInp(diopiContextHandle_t ctx, di
     diopiLmdeployCopyH2D(ctx, top_ks, h_top_ks, false);
     if (dtype != diopiDtype_t::diopi_dtype_float32) {
         diopiLmdeployCopyH2D(ctx, forcast, h_top_ps, false);
-        DIOPI_CHECK(diopiCastDtype(ctx, top_ps, forcast));
+        diopiCastDtype(ctx, top_ps, forcast);
         if (top_p_decay != nullptr) {
             diopiLmdeployCopyH2D(ctx, forcast, h_top_p_decay_buf, false);
-            DIOPI_CHECK(diopiCastDtype(ctx, top_p_decay_buf, forcast));
+            diopiCastDtype(ctx, top_p_decay_buf, forcast);
         }
         if (top_p_min != nullptr) {
             diopiLmdeployCopyH2D(ctx, forcast, h_top_p_min_buf, false);
-            DIOPI_CHECK(diopiCastDtype(ctx, top_p_min_buf, forcast));
+            diopiCastDtype(ctx, top_p_min_buf, forcast);
         }
     } else {
         diopiLmdeployCopyH2D(ctx, top_ps, h_top_ps, false);
@@ -1976,12 +2070,11 @@ DIOPI_API diopiError_t diopiTopPSampling(diopiContextHandle_t ctx, diopiTensorHa
         // workspace_size
         diopiSize_t shapeinfo;
         diopiGetTensorShape(logits, &shapeinfo);
-        int64_t batch_size = shapeinfo.data[0];
         int64_t intitemsize = -1;
         diopiGetTensorElemSize(output_ids, &intitemsize);
         int64_t itemsize = -1;
         diopiGetTensorElemSize(logits, &itemsize);
-        if (*workspace_size < 0 || persistent_workspace_size < 0) {
+        if (*workspace_size < 0 || *persistent_workspace_size < 0) {
             *workspace_size = itemsize * batch_size * vocab_size_padded +  // logits_forsample
                               vocab_size_padded * sizeof(bool) +           // check
                               vocab_size_padded * itemsize * 2 +           // sort and cumsum
@@ -2473,7 +2566,7 @@ DIOPI_API diopiError_t diopiEmbeddingLookupPosEncoding(diopiContextHandle_t ctx,
 
     diopiRequireTensor(ctx, &this_step_ids, &this_step_ids_shape, nullptr, in_type, in_device);
 
-    diopiSelect(ctx, this_step_ids, all_ids, 0, step);
+    sliceAsSelect(ctx, this_step_ids, all_ids, 0, step);
     diopiIndexSelect(ctx, from_tensor, embedding_table, 0, this_step_ids);
     return diopiSuccess;
 }
@@ -2561,7 +2654,7 @@ DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiCo
             int64_t output_ids_col_shape_tmp = step + 1;
             output_ids_col_shape.data = &output_ids_col_shape_tmp;
             diopiRequireTensor(ctx, &output_ids_col, &output_ids_col_shape, nullptr, ids_type, diopi_device);
-            diopiSelect(ctx, output_ids_col, output_ids, 1, batch_idx);
+            sliceAsSelect(ctx, output_ids_col, output_ids, 1, batch_idx);
 
             diopiTensorHandle_t output_ids_to_compare;
             char* output_ids_to_compare_data;
@@ -2676,7 +2769,7 @@ DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensor
                 output_ids_col_shape.len = 1;
                 output_ids_col_shape.data = &step;
                 diopiRequireTensor(ctx, &output_ids_col, &output_ids_col_shape, nullptr, ids_type, diopi_device);
-                diopiSelect(ctx, output_ids_col, output_ids, 1, batch_idx);
+                sliceAsSelect(ctx, output_ids_col, output_ids, 1, batch_idx);
 
                 char* output_ids_col_data;
                 diopiGetTensorData(output_ids_col, reinterpret_cast<void**>(&output_ids_col_data));
@@ -2778,7 +2871,7 @@ DIOPI_API diopiError_t diopiGatherOutput(diopiContextHandle_t ctx, diopiTensorHa
         src_col_shape.data = &max_output_len;
 
         diopiRequireTensor(ctx, &src_col, &src_col_shape, nullptr, ids_type, diopi_device);
-        diopiSelect(ctx, src_col, ids, 1, batch_idx);
+        sliceAsSelect(ctx, src_col, ids, 1, batch_idx);
 
         diopiTensorHandle_t src_col_front;
         diopiSize_t src_col_front_shape, src_col_front_stride;
@@ -2877,7 +2970,7 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
         output_ids_col_shape.data = &step;
         diopiRequireTensor(ctx, &output_ids_col, &output_ids_col_shape, nullptr, output_ids_type, diopi_device);
 
-        diopiSelect(ctx, output_ids_col, output_ids, 1, batch_idx);
+        sliceAsSelect(ctx, output_ids_col, output_ids, 1, batch_idx);
 
         diopiTensorHandle_t output_ids_col_front;
         diopiSize_t output_ids_col_front_shape, output_ids_col_front_stride;
@@ -2914,7 +3007,7 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
             valid_output_ids_col_shape.data = &vaild_output_ids_col_len;
             diopiRequireTensor(ctx, &valid_output_ids_col, &valid_output_ids_col_shape, nullptr, output_ids_type, diopi_device);
             diopiConstTensorHandle_t to_cat[2] = {output_ids_col_front, output_ids_col_back};
-            diopiCat(ctx, valid_output_ids_col, to_cat, 2, 0);
+            combAsCat(ctx, valid_output_ids_col, to_cat, 2, 0);
         }
 
         diopiTensorHandle_t logits_this_batch;
@@ -3004,34 +3097,34 @@ diopiError_t diopiBatchApplyTemperaturePenaltyInp(diopiContextHandle_t ctx, diop
     assert(logits != nullptr);
     assert(temperatures != nullptr);
     diopiDtype_t logits_dtype;
-    DIOPI_CHECK(diopiGetTensorDtype(logits, &logits_dtype));
+    diopiGetTensorDtype(logits, &logits_dtype);
     diopiSize_t logits_shape;
-    DIOPI_CHECK(diopiGetTensorShape(logits, &logits_shape));
+    diopiGetTensorShape(logits, &logits_shape);
     assert(logits_shape.len == 2 && logits_shape.data[0] == batch_size && logits_shape.data[1] == vocab_size_padd);
     diopiTensorHandle_t lhs;
     std::vector<int64_t> lhs_shape_vec = {batch_size, vocab_size};
     diopiSize_t lhs_shape{lhs_shape_vec.data(), 2};
-    DIOPI_CHECK(diopiRequireTensor(ctx, &lhs, &lhs_shape, nullptr, logits_dtype, diopi_device));
-    DIOPI_CHECK(diopiSlice(ctx, lhs, logits, 1, 0, vocab_size, 1));
+    diopiRequireTensor(ctx, &lhs, &lhs_shape, nullptr, logits_dtype, diopi_device);
+    diopiSlice(ctx, lhs, logits, 1, 0, vocab_size, 1);
 
     diopiTensorHandle_t rhs = nullptr;
     if (vocab_size_padd > vocab_size) {
         std::vector<int64_t> rhs_shape_vec = {batch_size, vocab_size_padd - vocab_size};
         diopiSize_t rhs_shape{rhs_shape_vec.data(), 2};
-        DIOPI_CHECK(diopiRequireTensor(ctx, &rhs, &rhs_shape, nullptr, logits_dtype, diopi_device));
-        DIOPI_CHECK(diopiSlice(ctx, rhs, logits, 1, vocab_size, vocab_size_padd, 1));
+        diopiRequireTensor(ctx, &rhs, &rhs_shape, nullptr, logits_dtype, diopi_device);
+        diopiSlice(ctx, rhs, logits, 1, vocab_size, vocab_size_padd, 1);
         double MAX_T_VAL = (logits_dtype == diopiDtype_t::diopi_dtype_float16 ? 65504.F : FLT_MAX);
         diopiScalar_t scalar_val;
         scalar_val.stype = logits_dtype;
         scalar_val.fval = -MAX_T_VAL;
-        DIOPI_CHECK(diopiFill(ctx, rhs, &scalar_val));
+        diopiFill(ctx, rhs, &scalar_val);
     }
     diopiDtype_t temperatures_dtype;
-    DIOPI_CHECK(diopiGetTensorDtype(temperatures, &temperatures_dtype));
+    diopiGetTensorDtype(temperatures, &temperatures_dtype);
     diopiTensorHandle_t new_temperatures = nullptr;
     diopiSize_t temperatures_shape;
-    DIOPI_CHECK(diopiGetTensorShape(temperatures, &temperatures_shape));
-    DIOPI_CHECK(diopiRequireTensor(ctx, &new_temperatures, &temperatures_shape, nullptr, temperatures_dtype, diopi_device));
+    diopiGetTensorShape(temperatures, &temperatures_shape);
+    diopiRequireTensor(ctx, &new_temperatures, &temperatures_shape, nullptr, temperatures_dtype, diopi_device);
 
     assert(temperatures_dtype == diopi_dtype_float32);
 
@@ -3041,23 +3134,23 @@ diopiError_t diopiBatchApplyTemperaturePenaltyInp(diopiContextHandle_t ctx, diop
     diopiScalar_t one_scalar;
     one_scalar.stype = temperatures_dtype;
     one_scalar.fval = 1.0;
-    DIOPI_CHECK(diopiAddScalar(ctx, new_temperatures, temperatures, &eps_scalar, &one_scalar));
+    diopiAddScalar(ctx, new_temperatures, temperatures, &eps_scalar, &one_scalar);
 
     if (bias != nullptr) {
         diopiScalar_t t;
         t.stype = logits_dtype;
         t.fval = 1.0;
-        DIOPI_CHECK(diopiAddInp(ctx, lhs, bias, &t));
+        diopiAddInp(ctx, lhs, bias, &t);
     }
 
     diopiSize_t new_temperatures_shape;
-    DIOPI_CHECK(diopiGetTensorShape(new_temperatures, &new_temperatures_shape));
+    diopiGetTensorShape(new_temperatures, &new_temperatures_shape);
     diopiTensorHandle_t new_temperatures_host;
-    DIOPI_CHECK(diopiRequireTensor(ctx, &new_temperatures_host, &new_temperatures_shape, nullptr, temperatures_dtype, diopi_host));
-    DIOPI_CHECK(diopiLmdeployCopyD2H(ctx, new_temperatures_host, new_temperatures, false));
+    diopiRequireTensor(ctx, &new_temperatures_host, &new_temperatures_shape, nullptr, temperatures_dtype, diopi_host);
+    diopiLmdeployCopyD2H(ctx, new_temperatures_host, new_temperatures, false);
     char* new_temperatures_host_data;
 
-    DIOPI_CHECK(diopiGetTensorData(new_temperatures_host, reinterpret_cast<void**>(&new_temperatures_host_data)));
+    diopiGetTensorData(new_temperatures_host, reinterpret_cast<void**>(&new_temperatures_host_data));
     for (int64_t i = 0; i < batch_size; ++i) {
         diopiScalar_t temperature_scalar;
         temperature_scalar.stype = diopi_dtype_float32;
@@ -3070,15 +3163,15 @@ diopiError_t diopiBatchApplyTemperaturePenaltyInp(diopiContextHandle_t ctx, diop
 
         logits_row_stride.len = -1;
         logits_row_stride.data = getDataOffsetPtr(logits, i * vocab_size);
-        DIOPI_CHECK(diopiRequireTensor(ctx, &logits_row, &logits_row_shape, &logits_row_stride, logits_dtype, diopi_device));
-        DIOPI_CHECK(diopiDivInpScalar(ctx, logits_row, &temperature_scalar, RoundModeNone));
+        diopiRequireTensor(ctx, &logits_row, &logits_row_shape, &logits_row_stride, logits_dtype, diopi_device);
+        diopiDivInpScalar(ctx, logits_row, &temperature_scalar, RoundModeNone);
     }
 
     if (rhs == nullptr) {
-        DIOPI_CHECK(diopiCopyInp(ctx, lhs, logits));
+        diopiCopyInp(ctx, lhs, logits);
     } else {
         std::array<diopiConstTensorHandle_t, 2> tensors = {lhs, rhs};
-        DIOPI_CHECK(diopiCat(ctx, logits, tensors.data(), tensors.size(), 1));
+        combAsCat(ctx, logits, tensors.data(), tensors.size(), 1);
     }
     return diopiSuccess;
 }

@@ -563,7 +563,8 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                 shape[1] = local_kv_head_num;
                 shape[2] = size_per_head;
                 diopiSize_t v_buffer_forsplit_stride{
-                    static_cast<const int64_t*>(reinterpret_cast<int64_t*>(v_buffer_ptr) + itemsize * total_input_length * local_kv_head_num * size_per_head),
+                    static_cast<const int64_t*>(
+                        reinterpret_cast<int64_t*>(reinterpret_cast<char*>(v_buffer_ptr) + itemsize * total_input_length * local_kv_head_num * size_per_head)),
                     -1};
                 diopiRequireTensor(ctx, &prepared_v_buffer, &newshape, &v_buffer_forsplit_stride, dtype, device);
                 // k cache
