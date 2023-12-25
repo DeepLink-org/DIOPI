@@ -24,7 +24,7 @@ def check_coverage(gitdiff_file,coverage_data,require_coverage):
             else:
                 if coverage_data[file_path] < float(require_coverage):
                     with open(os.path.join(coveragedir, 'IS_cover.txt'), 'a') as cover_file:
-                        print(f"Error Code coverage is {coverage_data[file_path]} below requirements {require_coverage} :{file_path}")
+                        print(f"Error Code coverage is {coverage_data[file_path]} below requirement {require_coverage} :{file_path}")
                         cover_file.write(CONTENT)
 
 if __name__ == '__main__':

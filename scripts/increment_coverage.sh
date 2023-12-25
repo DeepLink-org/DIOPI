@@ -19,7 +19,7 @@ oldcommit=$(git merge-base ${newcommit} main)
 if [ -z $oldcommit ]; then echo "is not Pull request" && exit 0; fi
 git diff $oldcommit $newcommit --name-only  >coverage/gitdiff.txt 2>/dev/null || echo "error can be ignored"
 
-cat coverage/gitdiff.txt |egrep '\.(cpp|hpp|h)$'|grep "/$include/" >coverage/gitdiff_screen.txt || true
+cat coverage/gitdiff.txt |egrep '\.(cpp|hpp|h)$'|grep "$include/" >coverage/gitdiff_screen.txt || true
 if [ ! -s coverage/gitdiff_screen.txt ]; then echo "No C/C++ in incremental code" && exit 0;fi
 rm -rf coverage/gitdiff.txt
 while IFS= read -r line; do
