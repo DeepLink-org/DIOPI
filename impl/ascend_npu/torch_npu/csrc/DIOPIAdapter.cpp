@@ -2803,9 +2803,10 @@ at::Tensor wrapper_Scalar_mul(const at::Tensor& self, const at::Scalar& other) {
 
 at::Tensor& wrapper_out_mm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::mm_out(self, mat2, out); }
 
-at::Tensor & wrapper_source_Tensor_set_(at::Tensor & self, const at::Tensor & source) {
-  return at_npu::native::NPUNativeFunctions::set_(self, source);
-}
+at::Tensor& wrapper_source_Tensor_set_(at::Tensor& self, const at::Tensor& source) { return at_npu::native::NPUNativeFunctions::set_(self, source); }
+at::Tensor& wrapper_Tensor_fill_(at::Tensor& self, const at::Tensor& value) { return acl_op::fill_(self, value); }
+at::Tensor& wrapper_out_bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::bmm_out(self, mat2, out); }
+at::Tensor wrapper__dot(const at::Tensor& self, const at::Tensor& tensor) { return acl_op::dot(self, tensor); }
 
 at::Tensor wrapper_Tensor_add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::add(self, other, alpha); }
 
@@ -2833,6 +2834,9 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("cat", TORCH_FN(wrapper__cat));
     m.impl("mm.out", TORCH_FN(wrapper_out_mm_out));
     m.impl("set_.source_Tensor", TORCH_FN(wrapper_source_Tensor_set_));
+    m.impl("dot", TORCH_FN(wrapper__dot));
+    m.impl("fill_.Tensor", TORCH_FN(wrapper_Tensor_fill_));
+    m.impl("bmm.out", TORCH_FN(wrapper_out_bmm_out));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
