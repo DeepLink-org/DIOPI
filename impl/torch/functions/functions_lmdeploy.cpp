@@ -1433,7 +1433,7 @@ DIOPI_API diopiError_t diopiSetupTopkRuntimeArgsInp(diopiContextHandle_t ctx, di
     void* h_top_ks_data;
     diopiRequireTensor(ctx, &h_top_ks, &newshape, nullptr, intdtype, diopiDevice_t::diopi_host);
     impl::cuda::diopiLmdeployCopyD2H(ctx, h_top_ks, top_ks, false);
-    diopiGetTensorData(h_top_ks, reinterpret_cast<void**>(&h_top_ks_data));
+    diopiGetTensorData(h_top_ks, &h_top_ks_data);
     diopiTensorHandle_t forcast = nullptr;
     diopiTensorHandle_t h_top_ps;
     float h_top_ps_data[batch_size];
@@ -1448,7 +1448,7 @@ DIOPI_API diopiError_t diopiSetupTopkRuntimeArgsInp(diopiContextHandle_t ctx, di
     }
     diopiTensorHandle_t h_skip_decode;
     bool h_skip_decode_data[batch_size];
-    diopiSize_t h_skip_decode_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_top_ps_data)), -1};
+    diopiSize_t h_skip_decode_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_skip_decode_data)), -1};
     diopiRequireTensor(ctx, &h_skip_decode, &newshape, &h_skip_decode_stride, diopiDtype_t::diopi_dtype_bool, diopiDevice_t::diopi_host);
     impl::cuda::diopiLmdeployCopyD2H(ctx, h_skip_decode, skip_decode, false);
 
@@ -1530,7 +1530,7 @@ DIOPI_API diopiError_t diopiSetupToppRuntimeArgsInp(diopiContextHandle_t ctx, di
     void* h_top_ks_data;
     diopiRequireTensor(ctx, &h_top_ks, &newshape, nullptr, intdtype, diopiDevice_t::diopi_host);
     impl::cuda::diopiLmdeployCopyD2H(ctx, h_top_ks, top_ks, false);
-    diopiGetTensorData(h_top_ks, reinterpret_cast<void**>(&h_top_ks_data));
+    diopiGetTensorData(h_top_ks, &h_top_ks_data);
     diopiTensorHandle_t forcast = nullptr;
     diopiTensorHandle_t h_top_ps;
     float h_top_ps_data[batch_size];
@@ -1545,7 +1545,7 @@ DIOPI_API diopiError_t diopiSetupToppRuntimeArgsInp(diopiContextHandle_t ctx, di
     }
     diopiTensorHandle_t h_skip_decode;
     bool h_skip_decode_data[batch_size];
-    diopiSize_t h_skip_decode_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_top_ps_data)), -1};
+    diopiSize_t h_skip_decode_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_skip_decode_data)), -1};
     diopiRequireTensor(ctx, &h_skip_decode, &newshape, &h_skip_decode_stride, diopiDtype_t::diopi_dtype_bool, diopiDevice_t::diopi_host);
     impl::cuda::diopiLmdeployCopyD2H(ctx, h_skip_decode, skip_decode, false);
     diopiTensorHandle_t h_top_p_decay_buf;
