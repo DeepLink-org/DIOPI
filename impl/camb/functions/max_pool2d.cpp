@@ -19,10 +19,13 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 
     DiopiTensor inputTr(input);
     DiopiTensor outTr(out);
+
     DIOPI_CHECK(inputTr.dim() == 3 || inputTr.dim() == 4, "non-empty 3D or 4D (batch mode) tensor expected for input");
 
     std::vector<DiopiTensor*> pTensors{&inputTr};
-    DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_float16, diopi_dtype_float32}));
+    if (inputTr.dtype() != diopi_dtype_float16 || inputTr.dtype() != diopi_dtype_float32) {
+        DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_float16, diopi_dtype_float32}));
+    }
 
     int inDim = inputTr.dim();
     if (inputTr.dim() == 3) {
@@ -100,11 +103,13 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     DiopiTensor inputTr(input);
     DiopiTensor outTr(out);
     DiopiTensor indicesTr(indices);
+
     DIOPI_CHECK(inputTr.dim() == 3 || inputTr.dim() == 4, "non-empty 3D or 4D (batch mode) tensor expected for input");
 
     std::vector<DiopiTensor*> pTensors{&inputTr};
-    DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_float16, diopi_dtype_float32}));
-
+    if (inputTr.dtype() != diopi_dtype_float16 || inputTr.dtype() != diopi_dtype_float32) {
+        DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_float16, diopi_dtype_float32}));
+    }
     int inDim = inputTr.dim();
     if (inputTr.dim() == 3) {
         inputTr.unsqueeze(0);
@@ -237,18 +242,21 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     }
 
     std::vector<DiopiTensor*> pTensors{&inputTr, &gradOutputTr};
-    DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_float16, diopi_dtype_float32}));
+    if (inputTr.dtype() != gradOutputTr.dtype() || inputTr.dtype() != diopi_dtype_float16 || inputTr.dtype() != diopi_dtype_float32) {
+        DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_float16, diopi_dtype_float32}));
+    }
 
     if (inputTr.dtype() == diopi_dtype_float16) {
         DIOPI_CALL(dataTypeCast(ctx, indicesTr, diopi_dtype_int16));
     } else {
         DIOPI_CALL(dataTypeCast(ctx, indicesTr, diopi_dtype_int32));
     }
-
     diopiMemoryFormat_t memoryFormat = diopiMemoryFormat_t::ChannelsLast;
-    DIOPI_CALL(contiguous(ctx, inputTr, memoryFormat));
-    DIOPI_CALL(contiguous(ctx, gradOutputTr, memoryFormat));
-    DIOPI_CALL(contiguous(ctx, indicesTr, memoryFormat));
+    if (inputTr.isContiguous(diopiMemoryFormat_t::Contiguous)) {
+        DIOPI_CALL(contiguous(ctx, inputTr, memoryFormat));
+        DIOPI_CALL(contiguous(ctx, gradOutputTr, memoryFormat));
+        DIOPI_CALL(contiguous(ctx, indicesTr, memoryFormat));
+    }
     DiopiTensor gradInputTmpTr = requiresTensor(ctx, gradInputTr.shape(), inputTr.dtype(), memoryFormat);
 
     std::vector<int64_t> inputDim = inputTr.shape();
