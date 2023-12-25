@@ -2687,13 +2687,14 @@ at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, con
         }
     }
 
+    // when shape[0]=-1, fill data
     std::vector<int64_t> sizeVec(sizes.size(), 1);
     std::copy(sizes.begin(), sizes.end(), sizeVec.begin());
     if (!sizes.empty() && sizes[0] == -1) {
         bool flag = true;
         for (auto i : sizes) {
             if (!flag && i < 0) {
-                std::cout << "more than one -1, sizes=" << sizes << std::endl;
+                TORCH_CHECK(false, "more than one -1, sizes=", sizes);
             }
             if (i < 0) {
                 flag = false;
