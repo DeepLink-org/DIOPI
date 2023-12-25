@@ -543,18 +543,6 @@ device_configs = {
         rtol=3e-2,
     ),
 
-    'matmul': dict(
-        name=['matmul'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 1, 3136, 3136)),Skip((2, 16, 8, 64)),],
-                },
-            ]
-        ),
-    ),
-
     'reduce_op': dict(
         name=['sum'],
         atol=1e-3,
