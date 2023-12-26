@@ -13,7 +13,7 @@
 
 namespace impl {
 namespace ascend {
-
+constexpr int blocksize = 16;
 std::unordered_map<aclFormat, std::shared_ptr<FormatInfo>> FormatHelper::info = {
     {ACL_FORMAT_NC1HWC0, std::make_shared<NC1HWC0FormatInfo>()},
     {ACL_FORMAT_ND, std::make_shared<NdFormatInfo>()},
@@ -142,7 +142,7 @@ Shape NC1HWC0FormatInfo::inferShape(const Shape& dims) {
     Shape res(5);
     ASCEND_CHECK_ABORT(dims.size() == 4, "NC1HWC0FormatInfo::inferShape but input dim != 4");
     res[0] = dims[0];
-    res[1] = (dims[1] + 15) / 16;
+    res[1] = (dims[1] + blocksize - 1) / blocksize;
     res[2] = dims[2];
     res[3] = dims[3];
     res[4] = blocksize;
@@ -172,8 +172,8 @@ Shape NzFormatInfo::inferShape(const Shape& dims) {
     for (; i < dim.size() - 2; i++) {
         res.emplace_back(dim[i]);
     }
-    res.emplace_back((dim[i + 1] + 15) / blocksize);
-    res.emplace_back((dim[i] + 15) / blocksize);
+    res.emplace_back((dim[i + 1] + blocksize - 1) / blocksize);
+    res.emplace_back((dim[i] + blocksize - 1) / blocksize);
     res.emplace_back(blocksize);
     res.emplace_back(blocksize);
     return res;
@@ -184,8 +184,8 @@ Shape ZFormatInfo::inferShape(const Shape& dims) {
         return inferShape(inferShapeLessTo4(dims));
     }
     Shape res(4);
-    res[0] = (dims[1] + 15) / blocksize * dims[2] * dims[3];
-    res[1] = (dims[0] + 15) / blocksize;
+    res[0] = (dims[1] + blocksize - 1) / blocksize * dims[2] * dims[3];
+    res[1] = (dims[0] + blocksize - 1) / blocksize;
     res[2] = blocksize;
     res[3] = blocksize;
     return res;

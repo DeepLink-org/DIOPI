@@ -153,6 +153,7 @@ extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorElemSize(diopiCon
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorStoragePtr(diopiConstTensorHandle_t th, void** pStoragePtr);
 extern DIOPI_RT_API diopiError_t diopiGetTensorStorageDesc(diopiConstTensorHandle_t pth, diopiStorageDesc_t* desc);
 extern DIOPI_RT_API diopiError_t diopiSetTensorStorageDesc(diopiTensorHandle_t pth, const diopiStorageDesc_t& desc);
+// copy tensor meta data, dst_tensor->set_(dst_tensor->storage(), src->storage_offset(), src->sizes(), src->strides());
 extern DIOPI_RT_API diopiError_t diopiCopyTensorMetaData(diopiTensorHandle_t dst_pth, diopiConstTensorHandle_t src_pth);
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorStorageOffset(diopiConstTensorHandle_t th, int64_t* pOffset);
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorStorageNbytes(diopiConstTensorHandle_t th, size_t* pNbytes);

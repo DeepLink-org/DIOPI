@@ -23,7 +23,6 @@ namespace impl {
 namespace ascend {
 
 using Shape = std::vector<int64_t>;
-constexpr int blocksize = 16;
 class FormatInfo {
 public:
     FormatInfo(diopiMemoryFormat_t diopiFormat, aclFormat format, aclFormat baseFormat, std::string formatName, bool isPadded)

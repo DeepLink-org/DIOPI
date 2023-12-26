@@ -192,6 +192,7 @@ diopiTensor& diopiTensor::operator=(const diopiTensor& other) {
 void diopiTensor::copyMetaData(const diopiTensor& other) {
     shape_ = other.shape_;
     stride_ = other.stride_;
+    numel_ = other.numel_;
 }
 
 bool diopiTensor::resetShape(const diopiSize_t* size) {
