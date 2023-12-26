@@ -23,7 +23,7 @@ at::Tensor torchContextAttention(at::Tensor xq, at::Tensor xk, at::Tensor xv, in
     mask = mask.repeat({batchSize, head, 1, 1});
     at::Tensor scores = at::matmul(xq.to(at::kFloat), xk.transpose(2, 3).to(at::kFloat)) / std::sqrt(dim);
     at::Tensor output = at::matmul((scores + mask).softmax(-1), xv.to(at::kFloat)).transpose(1, 2).to(dtype);
-    output = output.view({output.numel() / (head * dim), head, dim});
+    output = output.view({output.numel() / static_cast<int64_t>(head * dim), head, dim});
     return output;
 }
 

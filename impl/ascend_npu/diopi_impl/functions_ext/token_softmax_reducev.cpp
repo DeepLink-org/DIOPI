@@ -24,13 +24,13 @@ diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ctx, diopiTe
     for (int i = 0; i < batch; ++i) {
         int curSeqLen = bSeqLenAt[i].item<int>();
         int curSeqStartLoc = bStartLocAt[i].item<int>();
-        at::Tensor P = at::index(logicsAt, {at::Tensor(), acl_op::arange(curSeqStartLoc, curSeqStartLoc + curSeqLen, at::kLong, layout, device)})
+        at::Tensor p = at::index(logicsAt, {at::Tensor(), acl_op::arange(curSeqStartLoc, curSeqStartLoc + curSeqLen, at::kLong, layout, device)})
                            .softmax(-1)
                            .reshape({head, 1, 1, curSeqLen})
                            .transpose(0, 1);
         at::Tensor vLoc = bLocAt[i].index_select(0, acl_op::arange(maxInputLen - curSeqLen, maxInputLen, at::kLong, layout, device));
-        at::Tensor V = at::index(vAt, {vLoc}).view({1, curSeqLen, head, dim}).transpose(1, 2);
-        at::Tensor values = at::matmul(P.toType(at::kFloat), V.toType(at::kFloat)).view({head, dim}).toType(dtype);
+        at::Tensor v = at::index(vAt, {vLoc}).view({1, curSeqLen, head, dim}).transpose(1, 2);
+        at::Tensor values = at::matmul(p.toType(at::kFloat), v.toType(at::kFloat)).view({head, dim}).toType(dtype);
         at::index_put_(outAt, {torch::scalar_to_tensor(i)}, values);
     }
     END_CALL_ACL_OP();
