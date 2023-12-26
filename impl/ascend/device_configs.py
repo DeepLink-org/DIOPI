@@ -219,9 +219,28 @@ device_configs = {
     ),
 
     'conv_2d_no_contiguous': dict(
-        name=['conv2d'],
-        atol=1e-1,
-        rtol=1e-2,
+        name=["conv2d"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "dtype": [Skip(np.float32), Skip(np.float16), Skip(np.float64)],
+                },
+            ]
+        ),
+    ),
+
+    'relu_no_contiguous': dict(
+        name=["relu"],
+        is_inplace=True,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float32), Skip(np.float64)],
+                },
+            ],
+        ),
     ),
 
     'hardswish': dict(
