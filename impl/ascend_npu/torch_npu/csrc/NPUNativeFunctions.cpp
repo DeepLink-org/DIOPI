@@ -163,12 +163,6 @@ at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size) { return 
 at::Tensor& npu_broadcast_out(const at::Tensor& self, at::IntArrayRef size, at::Tensor& out) { return acl_op::npu_broadcast_out(self, size, out); }
 
 at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
-    // todo: optimize performance
-    if (self.scalar_type() == at::kDouble || src.scalar_type() == at::kDouble || self.scalar_type() == at::kLong || src.scalar_type() == at::kLong) {
-        self.copy_(src.cpu().to(self.scalar_type()));
-        return self;
-    }
-
     at::Tensor source = src;
     if (!source.is_contiguous()) {
         at::Tensor sourceTemp = at_npu::native::empty_npu(source.sizes(), source.options());
