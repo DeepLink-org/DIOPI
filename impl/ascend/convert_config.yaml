@@ -262,3 +262,7 @@
 
 - diopiRotaryEmbedding:
     dtype: (float64)->float32
+
+- diopiCol2Im:
+    # data type float64 of input [x] is not supported
+    dtype: (float64)->float32
