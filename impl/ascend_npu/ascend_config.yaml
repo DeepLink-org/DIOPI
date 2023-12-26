@@ -17,6 +17,7 @@ ascend:
 - diopiBitwiseAnd
 - diopiBitwiseNot
 - diopiBmm
+- diopiCastDtype
 - diopiClamp
 - diopiClampInp
 - diopiClampInpScalar
@@ -213,4 +214,3 @@ ascend_npu:
 - diopiMaxPool2dWithIndices
 - diopiRotaryEmbedding
 - diopiCat
-- diopiCastDtype
