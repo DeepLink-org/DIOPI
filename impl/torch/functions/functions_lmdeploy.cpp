@@ -171,18 +171,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
         shape[3] = max_kv_len;
         diopiSize_t attention_mask_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(prework_ptr)), -1};
         diopiRequireTensor(ctx, &attention_mask_, &newshape, &attention_mask_stride, dtype, device);
-        diopiTensorHandle_t padding_offset_;
-        newshape.len = 2;
-        char* padding_offset_ptr = reinterpret_cast<char*>(prework_ptr) + itemsize * batch_size * max_q_len * max_kv_len;
-        diopiSize_t padding_offset_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(padding_offset_ptr)), -1};
-        diopiRequireTensor(ctx, &padding_offset_, &newshape, &padding_offset_stride, intdtype, device);
-        diopiTensorHandle_t cu_seqlens_;
-        shape[0] = batch_size + 1;
-        newshape.len = 1;
-        char* cu_seqlens_ptr = padding_offset_ptr + intitemsize * batch_size * max_q_len;
-        diopiSize_t cu_seqlens_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(cu_seqlens_ptr)), -1};
-        diopiRequireTensor(ctx, &cu_seqlens_, &newshape, &cu_seqlens_stride, intdtype, device);
-        // prepared attention_mask_ and padding_offset_ and cu_seqlens_
+        // prepared attention_mask_ and none padding_offset_ and none cu_seqlens_
         if (!is_prepared) {
             diopiScalar_t mask_value{dtype, double(-1.0f)};
             for (int64_t i = 0; i < batch_size; i++) {
