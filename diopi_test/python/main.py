@@ -5,9 +5,7 @@ import os
 import sys
 import pytest
 
-from conformance.global_op_list import nhwc_op
-from conformance.global_op_list import dtype_op, dtype_out_op
-from conformance.utils import is_ci, error_counter, write_report
+from conformance.global_op_list import nhwc_op, dtype_op, dtype_out_op
 from conformance.utils import logger
 from conformance.global_settings import glob_vars
 from conformance.model_list import model_list, model_op_list
@@ -117,6 +115,9 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
+
+    if not os.path.exists(cache_path):
+        os.makedirs(cache_path)
 
     glob_vars.use_db = args.use_db
     from conformance.db_operation import db_conn, BenchMarkCase, DeviceCase
