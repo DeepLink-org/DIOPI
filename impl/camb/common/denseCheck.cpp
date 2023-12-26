@@ -27,12 +27,12 @@ bool denseCheck(const DiopiTensor& src) {
     // e.g. shape = 2,3,4,5, stride = 1,2,6,12 should not pass
     int cur = 1;
     for (int i = 0; i < dim; i++) {
-        if (stridesSizes[i].first != cur){
+        if (stridesSizes[i].first != cur) {
             return false;
         }
         cur *= stridesSizes[i].second;
     }
-    
+
     return true;
 }
 
