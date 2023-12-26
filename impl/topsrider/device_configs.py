@@ -3024,39 +3024,52 @@ device_configs = {
     ),
 
     'copy': dict(
-        name=['copy_'],
+        name=["copy_"],
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((8,)),Skip((12,)),Skip((192, 147)),Skip((1, 1, 384)),Skip((2, 1, 38, 45)),Skip((0,)),Skip((0, 12)),Skip((12, 0, 9)),],
+                    "ins": ["input"],
+                    "shape": [Skip(()), Skip((8,)), Skip((12,)), Skip((192, 147)), Skip((1, 1, 384)), Skip((1, 192, 147, 2)),
+                              Skip((0,)), Skip((12, 0, 9)), Skip((0, 2))],
                 },
             ]
-        ),
+        )
     ),
 
-    'copy_different_dtype': dict(
-        name=['copy_'],
+    'copy_input_no_contiguous': dict(
+        name=["copy_"],
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.bool_),Skip(np.int64),Skip(np.int32),Skip(np.int16),Skip(np.int8),Skip(np.uint8),],
-                },
+                    "ins": ["input"],
+                    "shape": (Skip((12, 2)), Skip((12, 1, 12)), Skip((2, 38, 45, 2))),
+                }
             ]
-        ),
+        )
     ),
 
-    'copy_broadcast': dict(
-        name=['copy_'],
+    'copy_other_no_contiguous': dict(
+        name=["copy_"],
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['input'],
-                    "shape": [Skip((8,)),Skip((12, 2)),Skip((192, 147, 2)),Skip((6, 5, 384)),Skip((2, 12, 38, 45, 3)),Skip((0, 2)),Skip((0, 12)),Skip((12, 0, 9, 2)),],
+                    "ins": ["input"],
+                    "shape": (Skip((6, 5, 384)), Skip((2, 4, 38, 45)))
+                }
+            ]
+        )
+    ),
+
+    'copy_all_no_contiguous': dict(
+        name=["copy_"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [Skip((192, 147)), Skip((192, 147, 2)), Skip((2, 12, 38, 45, 3))],
                 },
             ]
-        ),
+        )
     ),
 
     'interpolate': dict(
