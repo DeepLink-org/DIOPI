@@ -1684,18 +1684,6 @@ device_configs = {
         ),
     ),
 
-    'col2im': dict(
-        name=['col2im'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
     'im2col': dict(
         name=['im2col'],
         tensor_para=dict(
