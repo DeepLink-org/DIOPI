@@ -173,10 +173,12 @@ at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
         source = npu_broadcast(source, self.sizes());
     }
     if (source.strides() == self.strides()) {
-        acl_op::npu_dtype_cast_(self, source);
+        // acl_op::npu_dtype_cast_(self, source);
+        self.copy_(source.cpu().to(self.scalar_type()));
     } else {
         at::Tensor selfTemp = at_npu::native::empty_npu(source.sizes(), self.options());
-        acl_op::npu_dtype_cast_(selfTemp, source);
+        // acl_op::npu_dtype_cast_(selfTemp, source);
+        selfTemp.copy_(source.cpu().to(self.scalar_type()));
         self.copy_(selfTemp);
     }
     return self;
