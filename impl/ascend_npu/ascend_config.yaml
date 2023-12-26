@@ -211,6 +211,10 @@ ascend_npu:
 - diopiNorm
 - diopiMaxPool2dWithIndices
 - diopiRotaryEmbedding
+<<<<<<< HEAD
 - diopiCat
 - diopiCastDtype
 - diopiCopyInp
+=======
+- diopiCol2Im
+>>>>>>> origin/main

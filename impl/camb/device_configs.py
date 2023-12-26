@@ -1984,6 +1984,87 @@ device_configs = {
         ),
     ),
 
+    'copy': dict(
+        name=["copy_"],
+        tensor_para=dict(
+            # FIXME not supported complex
+            # FIXME Can not cast from diopi_dtype_bool to diopi_dtype_uint8
+            # FIXME Can not cast from diopi_dtype_int32 to diopi_dtype_float64
+            # FIXME Can not cast from diopi_dtype_float16 to diopi_dtype_float64
+            args=[
+                {
+                    "ins": ["input"],
+                    "dtype": [Skip(np.complex64), Skip(np.complex128), Skip(np.float64)]
+                },
+                {
+                    "ins": ["other"],
+                    "dtype": [Skip(np.complex128), Skip(np.bool_)]
+                },
+            ]
+        )
+    ),
+
+    'copy_input_no_contiguous': dict(
+        name=["copy_"],
+        tensor_para=dict(
+            # FIXME not supported complex
+            # FIXME Can not cast from diopi_dtype_float64 to diopi_dtype_bool
+            # FIXME Can not cast from diopi_dtype_float64 to diopi_dtype_int16
+            # FIXME Can not cast from diopi_dtype_int64 to diopi_dtype_int16
+            # FIXME Can not cast from diopi_dtype_bool to diopi_dtype_float64
+            # FIXME Can not cast from diopi_dtype_int16 to diopi_dtype_float64
+            args=[
+                {
+                    "ins": ["input"],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64), Skip(np.int16), Skip(np.bool_)],
+                },
+                {
+                    "ins": ["other"],
+                    "dtype": [Skip(np.complex64), Skip(np.int16), Skip(np.bool_)]
+                },
+            ]
+        )
+    ),
+
+    'copy_other_no_contiguous': dict(
+        name=["copy_"],
+        tensor_para=dict(
+            # FIXME not supported complex
+            # FIXME Can not cast from diopi_dtype_float64 to diopi_dtype_int32
+            # FIXME Can not cast from diopi_dtype_int64 to diopi_dtype_uint8
+            args=[
+                {
+                    "ins": ["input"],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
+                },
+                {
+                    "ins": ["other"],
+                    "dtype": [Skip(np.complex128), Skip(np.float64), Skip(np.int64)],
+                },
+            ]
+        )
+    ),
+
+    'copy_all_no_contiguous': dict(
+        name=["copy_"],
+        tensor_para=dict(
+            # FIXME not supported complex
+            # FIXME Can not cast from diopi_dtype_bool to diopi_dtype_int16
+            # FIXME Can not cast from diopi_dtype_int16 to diopi_dtype_int8
+            # FIXME Can not cast from diopi_dtype_float64 to diopi_dtype_float16
+            args=[
+                {
+                    "ins": ["input"],
+                    "dtype": [Skip(np.complex64), Skip(np.complex128), Skip(np.int16)],
+                },
+                {
+                    "ins": ["other"],
+                    "dtype": [Skip(np.complex64), Skip(np.int16), Skip(np.float64)],
+                },
+            ]
+        )
+    ),
+
     # FIXME input不为int，other为float时，精度异常
     'ge': dict(
         name=["ge"],

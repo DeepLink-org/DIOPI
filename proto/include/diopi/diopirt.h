@@ -85,11 +85,34 @@ typedef struct {
     };
 } diopiScalar_t;
 
-typedef enum { Contiguous = 0, ChannelsLast = 1, ChannelsLast3d = 2, Preserve = 3, ChannelsLast1d = 4 } diopiMemoryFormat_t;
+typedef enum {
+    Undefined = -1,
+    Contiguous = 0,
+    ChannelsLast = 1,
+    ChannelsLast3d = 2,
+    Preserve = 3,
+    ChannelsLast1d = 4,
+    NCHW = 5,
+    ND = 6,
+    NC1HWC0 = 7,
+    FRACTAL_Z = 8,
+    NC1HWC0_C04 = 9,
+    HWCN = 10,
+    NDHWC = 11,
+    FRACTAL_NZ = 12,
+    NCDHW = 13,
+    NDC1HWC0 = 14,
+    FRACTAL_Z_3D = 15
+} diopiMemoryFormat_t;
 
 typedef enum { ReductionNone, ReductionMean, ReductionSum, ReductionEND } diopiReduction_t;
 
 typedef enum { RoundModeNone, RoundModeTrunc, RoundModeFloor, RoundModeEND } diopiRoundMode_t;
+
+typedef struct {
+    diopiSize_t sizes;
+    diopiMemoryFormat_t format;
+} diopiStorageDesc_t;
 
 /**
  * Opaque structure holding Context and Tensor
@@ -128,6 +151,10 @@ extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorDevice(diopiConst
 extern DIOPI_RT_API diopiError_t diopiGetTensorNumel(diopiConstTensorHandle_t th, int64_t* numel);
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorElemSize(diopiConstTensorHandle_t th, int64_t* itemsize);
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorStoragePtr(diopiConstTensorHandle_t th, void** pStoragePtr);
+extern DIOPI_RT_API diopiError_t diopiGetTensorStorageDesc(diopiConstTensorHandle_t pth, diopiStorageDesc_t* desc);
+extern DIOPI_RT_API diopiError_t diopiSetTensorStorageDesc(diopiTensorHandle_t pth, const diopiStorageDesc_t& desc);
+// copy tensor meta data, dst_tensor->set_(dst_tensor->storage(), src->storage_offset(), src->sizes(), src->strides());
+extern DIOPI_RT_API diopiError_t diopiCopyTensorMetaData(diopiTensorHandle_t dst_pth, diopiConstTensorHandle_t src_pth);
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorStorageOffset(diopiConstTensorHandle_t th, int64_t* pOffset);
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorStorageNbytes(diopiConstTensorHandle_t th, size_t* pNbytes);
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorDeviceIndex(diopiConstTensorHandle_t th, diopiDeviceIndex_t* pDevIndex);

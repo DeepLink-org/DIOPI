@@ -10,6 +10,7 @@
 
 #include "../ascend_tensor.hpp"
 #include "../env_vars.hpp"
+#include "float16.hpp"
 
 namespace impl {
 namespace ascend {

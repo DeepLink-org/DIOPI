@@ -652,6 +652,7 @@ set(OLD_IMPL_SRC
     #${OLD_IMPL_DIR}/test/export_functions.cpp
     #${OLD_IMPL_DIR}/test/conform_test.cpp
     ${OLD_IMPL_DIR}/common/utils.cpp
+    ${OLD_IMPL_DIR}/common/format_helper.cpp
     ${OLD_IMPL_DIR}/common/debug.cpp
     ${OLD_IMPL_DIR}/common/generator_helper.cpp
     ${OLD_IMPL_DIR}/env_vars.cpp
@@ -694,9 +695,14 @@ else()
     message(FATAL_ERROR "No ascend-toolkit found.")
 endif()
 
+
+# third_party include
+set(THIRD_PARTY_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/half/include)
+
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 add_dependencies(${DEVICEIMPL} op_plugin_gen)
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
+target_include_directories(${DEVICEIMPL} SYSTEM PUBLIC ${THIRD_PARTY_INCLUDE_DIRS})
 target_link_libraries(${DEVICEIMPL} ascendcl acl_op_compiler graph c10 torch_cpu)
 
 if(USE_ADAPTOR)

@@ -14,6 +14,7 @@
 
 #include "../ascend_tensor.hpp"
 #include "acloprunner.hpp"
+
 namespace impl {
 namespace ascend {
 
@@ -285,6 +286,9 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
                 break;
             case diopiDtype_t::diopi_dtype_uint16:
                 *reinterpret_cast<uint16_t*>(ptr) = getValue<uint16_t>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_float16:
+                *reinterpret_cast<half_float::half*>(ptr) = getValue<half_float::half>(scalar);
                 break;
             default:
                 error(__FILE__, __LINE__, __FUNCTION__, "dtype %s not supported on host", diopiDtypeToStr(dtype));
