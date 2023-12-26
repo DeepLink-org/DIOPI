@@ -282,7 +282,7 @@ bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Tensor& sr
 }
 
 at::Tensor& NPUNativeFunctions::copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
-    if (self.numel() == 0) {
+    if (!self.defined() || self.numel() == 0) {
         return self;
     }
     // save tensor dim name
