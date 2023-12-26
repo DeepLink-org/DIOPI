@@ -151,7 +151,7 @@ at::Tensor format_contiguous(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
 bool check_match(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
 void check_memory_overlaps(at::TensorList inputs, at::TensorList outputs) { CUSTOM_OP_NOT_IMPL; }
 int64_t get_storage_size(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
-__attribute__((__visibility__("default"))) at::Tensor npu_format_cast(const at::Tensor& self, int64_t acl_format) { return self; }
+__attribute__((__visibility__("default"))) at::Tensor npu_format_cast(const at::Tensor& self, int64_t acl_format) { CUSTOM_OP_NOT_IMPL; }
 at::Tensor _npu_format_cast(const at::Tensor& self, int64_t acl_format) { CUSTOM_OP_NOT_IMPL; }
 
 at::Tensor& npu_view_copy(at::Tensor& self, const at::Tensor& other, bool non_blocking) { acl_op::npu_view_copy(self, other, non_blocking); }
