@@ -23,7 +23,7 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     DIOPI_CHECK(inputTr.dim() == 3 || inputTr.dim() == 4, "non-empty 3D or 4D (batch mode) tensor expected for input");
 
     std::vector<DiopiTensor*> pTensors{&inputTr};
-    if (inputTr.dtype() != diopi_dtype_float16 || inputTr.dtype() != diopi_dtype_float32) {
+    if (inputTr.dtype() != diopi_dtype_float16 && inputTr.dtype() != diopi_dtype_float32) {
         DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_float16, diopi_dtype_float32}));
     }
 
@@ -107,7 +107,7 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     DIOPI_CHECK(inputTr.dim() == 3 || inputTr.dim() == 4, "non-empty 3D or 4D (batch mode) tensor expected for input");
 
     std::vector<DiopiTensor*> pTensors{&inputTr};
-    if (inputTr.dtype() != diopi_dtype_float16 || inputTr.dtype() != diopi_dtype_float32) {
+    if (inputTr.dtype() != diopi_dtype_float16 && inputTr.dtype() != diopi_dtype_float32) {
         DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_float16, diopi_dtype_float32}));
     }
     int inDim = inputTr.dim();
@@ -242,7 +242,7 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     }
 
     std::vector<DiopiTensor*> pTensors{&inputTr, &gradOutputTr};
-    if (inputTr.dtype() != gradOutputTr.dtype() || inputTr.dtype() != diopi_dtype_float16 || inputTr.dtype() != diopi_dtype_float32) {
+    if (inputTr.dtype() != gradOutputTr.dtype() || (inputTr.dtype() != diopi_dtype_float16 && inputTr.dtype() != diopi_dtype_float32)) {
         DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_float16, diopi_dtype_float32}));
     }
 
@@ -316,8 +316,6 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                                         gradInputDesc.get(),
                                         gradInputTmpTr.data()));
 
-    // Channels last -> contiguous
-    DIOPI_CALL(contiguous(ctx, gradInputTmpTr, diopiMemoryFormat_t::Contiguous));
     DIOPI_CALL(diopiCopyInp(ctx, gradInputTmpTr.tensorHandle(), gradInputTr.tensorHandle()));
 
     return diopiSuccess;
