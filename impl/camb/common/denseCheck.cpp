@@ -32,6 +32,7 @@ bool denseCheck(const DiopiTensor& src) {
         }
         cur *= stridesSizes[i].second;
     }
+    
     return true;
 }
 
