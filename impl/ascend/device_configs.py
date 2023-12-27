@@ -29,18 +29,6 @@ device_configs = {
         ),
     ),
 
-    'cat_diff_size': dict(
-        name=['cat'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensors'],
-                    "dtype": [Skip(np.float64),],
-                },
-            ],
-        ),
-    ),
-
     # temp for 910B
     'topk_nonzero': dict(
         name=['topk'],
