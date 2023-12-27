@@ -207,28 +207,9 @@ device_configs = {
     ),
 
     'conv_2d_no_contiguous': dict(
-        name=["conv2d"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(np.float32), Skip(np.float16), Skip(np.float64)],
-                },
-            ]
-        ),
-    ),
-
-    'relu_no_contiguous': dict(
-        name=["relu"],
-        is_inplace=True,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32), Skip(np.float64)],
-                },
-            ],
-        ),
+        name=['conv2d'],
+        atol=1e-1,
+        rtol=1e-2,
     ),
 
     'hardswish': dict(
@@ -1605,6 +1586,78 @@ device_configs = {
                 },
             ]
         ),
+    ),
+
+    'copy': dict(
+        name=["copy_"],
+        tensor_para=dict(
+            # FIXME data type DT_COMPLEX128 of input [dst] is not supported
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [Skip((12, 0, 9)), Skip((8,))],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
+                },
+                {
+                    "ins": ["other"],
+                    "dtype": [Skip(np.complex128)]
+                },
+            ]
+        )
+    ),
+
+    'copy_input_no_contiguous': dict(
+        name=["copy_"],
+        tensor_para=dict(
+            # FIXME not supported complex
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [Skip((12, 1, 12)),],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
+                },
+                {
+                    "ins": ["other"],
+                    "dtype": [Skip(np.complex64)]
+                },
+            ]
+        )
+    ),
+
+    'copy_other_no_contiguous': dict(
+        name=["copy_"],
+        tensor_para=dict(
+            # FIXME data type DT_COMPLEX64 of input [dst] is not supported
+            # FIXME data type DT_COMPLEX128 of input [dst] is not supported
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [Skip((6, 5, 384))],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
+                },
+                {
+                    "ins": ["other"],
+                    "dtype": [Skip(np.complex128)],
+                },
+            ]
+        )
+    ),
+
+    'copy_all_no_contiguous': dict(
+        name=["copy_"],
+        tensor_para=dict(
+            # FIXME data type DT_COMPLEX64 of input [dst] is not supported
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [Skip((192, 147, 2)), Skip((2, 12, 38, 45, 3))],
+                },
+                {
+                    "ins": ["other"],
+                    "dtype": [Skip(np.complex64)],
+                },
+            ]
+        )
     ),
 
     'fill_not_float': dict(

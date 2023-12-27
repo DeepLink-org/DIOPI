@@ -7,14 +7,8 @@
 #include "../common/acloprunner.hpp"
 
 namespace impl {
-
-// TODO(zhaoguochun): fix me
-namespace ascend_npu {
-extern diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
-}
-
 namespace ascend {
-#if 0
+
 diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     int64_t numel = 0;
     diopiGetTensorNumel(input, &numel);
@@ -62,11 +56,6 @@ diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     }
 
     return diopiSuccess;
-}
-#endif
-
-diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    return ascend_npu::diopiCastDtype(ctx, out, input);
 }
 
 }  // namespace ascend
