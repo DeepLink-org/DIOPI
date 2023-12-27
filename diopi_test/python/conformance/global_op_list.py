@@ -73,5 +73,7 @@ ops_with_states = {"batch_norm": {"running_mean", "running_var"},
                    "token_attention": {"out"},
                    "token_softmax_reducev": {"out"},
                    "random": {"input"},
-                   "uniform": {"input"}
+                   "uniform": {"input"},
+                   "normal_": {"input"},
+                   "bernoulli": {"input"},
                    }

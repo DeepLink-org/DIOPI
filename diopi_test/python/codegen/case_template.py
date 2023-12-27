@@ -248,6 +248,7 @@ try:
     CheckResult.compare_input_dict(function_kwargs, np_inputs_orign, ignore_paras_for_input_check, **tol)
     CheckResult.compare_output(dev_foward_out, ref_foward_out, **tol)
 except Exception as e:
+    default_context.clear_tensors()
     assert False, f'Test {function_config["name"]}: {function_config} traceback: {e}'
 """
     )
@@ -267,6 +268,7 @@ try:
     CheckResult.compare_input_dict(function_kwargs, np_inputs_orign, ignore_paras_for_input_check, **tol)
     CheckResult.compare_output(dev_inp_forward_out, ref_foward_out, **tol)
 except Exception as e:
+    default_context.clear_tensors()
     assert False, f'Test {function_config["name"]}  inplace: {function_config} traceback: {e}'
 """
     )
@@ -332,6 +334,7 @@ try:
     CheckResult.compare_input_list(backward_para_compare, backward_para_origin, **tol)
     CheckResult.compare_output(dev_bp_out, ref_bp_out, **tol)
 except Exception as e:
+    default_context.clear_tensors()
     assert False, f'Test {function_config["name"]} backward: {function_config} traceback: {e}'
 """
     )
