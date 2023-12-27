@@ -2195,10 +2195,7 @@ OpCommand::OpCommand() {
     aclCmd->SetCustomHandler(nullptr);
 }
 
-OpCommand::~OpCommand() {
-    OpCommandImpl* impl = static_cast<OpCommandImpl*>(aclCmd);
-    delete impl;
-}
+OpCommand::~OpCommand() { delete aclCmd; }
 
 OpCommand& OpCommand::Name(const string& name) {
     aclCmd->SetName(name);
