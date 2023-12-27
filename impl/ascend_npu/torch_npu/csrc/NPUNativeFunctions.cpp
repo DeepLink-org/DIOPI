@@ -173,10 +173,14 @@ at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
         source = npu_broadcast(source, self.sizes());
     }
     if (source.strides() == self.strides()) {
-        acl_op::npu_dtype_cast_(self, source);
+        // TODO(zhaoguochun): This must be repaired
+        // acl_op::npu_dtype_cast_(self, source);
+        self.copy_(source.cpu().to(self.scalar_type()));
     } else {
         at::Tensor selfTemp = at_npu::native::empty_npu(source.sizes(), self.options());
-        acl_op::npu_dtype_cast_(selfTemp, source);
+        // TODO(zhaoguochun): This must be repaired
+        // acl_op::npu_dtype_cast_(selfTemp, source);
+        selfTemp.copy_(source.cpu().to(self.scalar_type()));
         self.copy_(selfTemp);
     }
     return self;
@@ -531,7 +535,11 @@ at::Tensor npu_softmax_cross_entropy_with_logits(const at::Tensor& self, const a
 ::std::tuple<at::Tensor, at::Tensor> npu_max(const at::Tensor& self, at::Dimname dim, bool keepdim) { CUSTOM_OP_NOT_IMPL; }
 at::Tensor npu_bmmV2(const at::Tensor& self, const at::Tensor& mat2, at::IntArrayRef output_sizes) { CUSTOM_OP_NOT_IMPL; }
 
-at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) { return acl_op::npu_dtype_cast(self, dtype); }
+at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) {
+    // TODO(zhaoguochun): This must be repaired
+    // return acl_op::npu_dtype_cast(self, dtype);
+    return self.cpu().to(dtype).to(self.device());
+}
 
 at::Tensor npu_silu(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
 at::Tensor& npu_silu_(at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }

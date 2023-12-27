@@ -770,7 +770,6 @@ using DynamicInputRegFunc = std::function<ge::OperatorPtr(DyNumAndIndex, std::st
 using baseFormatConverter = std::function<FormatShape(c10::IntArrayRef storage_dims, c10::IntArrayRef base_dims)>;
 
 class OpCommand {
-    class OpCommandImpls* aclCmds = nullptr;
     class OpCommandImpl* aclCmd = nullptr;
     c10::SmallVector<at::Tensor, N> storage;
     c10::optional<at::ScalarType> commonType = c10::nullopt;
