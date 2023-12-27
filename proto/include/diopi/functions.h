@@ -33,7 +33,7 @@ DIOPI_RT_API DIOPI_ATTR_WEEK const char* diopiGetLastErrorString();
  * @param[in] groups number of groups for grouped convolution. type = [int64].
  * @param[out] out the result tensor. type = [float32, float16, float64].
  */
-DIOPI_API diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
+DIOPI_API diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                           diopiConstTensorHandle_t bias, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, int64_t groups);
 
 /**

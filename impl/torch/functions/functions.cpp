@@ -185,7 +185,7 @@ diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
     return diopiSuccess;
 }
 
-diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
+diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                 diopiConstTensorHandle_t bias, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, int64_t groups) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
@@ -194,18 +194,20 @@ diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     auto atStride = impl::aten::buildAtIntArray(stride);
     auto atPadding = impl::aten::buildAtIntArray(padding);
     auto atDilation = impl::aten::buildAtIntArray(dilation);
-    auto atOut = impl::aten::buildATen(out);
     if (torch::cuda::cudnn_is_available()) {
         DIOPI_CHECK(atInput.options().type_equal(atWeight.options()), "Input type and weight type should be the same");
         DIOPI_CHECK(!atBias.defined() || (atInput.options().type_equal(atBias.options())), "Input type and bias type should be the same");
-        at::cudnn_convolution_out(atOut, atInput, atWeight, atPadding, atStride, atDilation, groups, false, false, true);
-        if (atBias.defined()) {
-            std::vector<int64_t> shape(atInput.dim(), 1);
-            shape[1] = -1;
-            atOut.add_(atBias.reshape(shape));
-        }
+        *out = impl::aten::callAtenRetOpLeaked([&]() {
+            auto atOut = at::cudnn_convolution(atInput, atWeight, atPadding, atStride, atDilation, groups, false, false, true);
+            if (atBias.defined()) {
+                std::vector<int64_t> shape(atInput.dim(), 1);
+                shape[1] = -1;
+                atOut.add_(atBias.reshape(shape));
+            }
+            return atOut;
+        });
     } else {
-        at::convolution_out(atOut, atInput, atWeight, atBias, atStride, atPadding, atDilation, false, at::IntArrayRef(0), groups);
+        impl::aten::callAtenRetOpLeaked(at::convolution, atInput, atWeight, atBias, atStride, atPadding, atDilation, false, at::IntArrayRef(0), groups);
     }
     impl::aten::unsetCurCtx();
     return diopiSuccess;
