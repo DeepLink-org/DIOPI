@@ -6,12 +6,12 @@ from conformance.global_settings import glob_vars, default_cfg_dict
 
 
 class CheckResult(object):
-    
+
     @staticmethod
     def compare_input_list(input: list, input_reference: list, **kwargs):
         input = [t.numpy() if isinstance(t, Tensor) else t for t in input]
         if len(input) != len(input_reference):
-            raise InputChangedException(f"")
+            raise InputChangedException(f"expect input list len {len(input_reference)} but {input}")
 
         passed = True
         mismatch_ratio_threshold = kwargs.get('mismatch_ratio_threshold', 1e-3)
@@ -26,9 +26,9 @@ class CheckResult(object):
                 if debug_level > 1:
                     error_info += (f"\n\texpect input: \n\t\t{input_reference[i]}\n\tbut got input reference \n\t\t{input[i]}")
                 raise InputChangedException(error_info)
-        
+
     @staticmethod
-    def compare_input_dict(input: dict, input_reference: dict, ignore_paras_for_input_check: list, **kwargs):    
+    def compare_input_dict(input: dict, input_reference: dict, ignore_paras_for_input_check: list, **kwargs):
         input = {key: value.numpy() for key, value in input.items() if key not in ignore_paras_for_input_check and isinstance(value, Tensor)}
         input_reference = {key: value for key, value in input_reference.items() if key not in ignore_paras_for_input_check and isinstance(value, np.ndarray)}
         if input.keys() != input_reference.keys():
