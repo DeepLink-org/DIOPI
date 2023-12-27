@@ -304,7 +304,14 @@ at::Tensor npu_softmax_cross_entropy_with_logits_backward(const at::Tensor& grad
 at::Tensor npu_stride_copy(const at::Tensor& self, at::IntArrayRef shape, at::IntArrayRef stride, const at::Scalar& storage_offset) { CUSTOM_OP_NOT_IMPL; }
 
 at::Tensor& npu_stride_copy_out(const at::Tensor& self, at::IntArrayRef shape, at::IntArrayRef stride, const at::Scalar& storage_offset, at::Tensor& out) {
-    acl_op::npu_stride_copy_out(self, shape, stride, storage_offset, out);
+    if (out.scalar_type() == at::kDouble) {
+        auto selfTemp = self.to(at::kFloat);
+        auto outTemp = out.to(at::kFloat);
+        acl_op::npu_stride_copy_out(selfTemp, shape, stride, storage_offset, outTemp);
+        out.copy_(outTemp);
+    } else {
+        return acl_op::npu_stride_copy_out(self, shape, stride, storage_offset, out);
+    }
 }
 
 at::Tensor npu_roi_align(const at::Tensor& self, const at::Tensor& rois, double spatial_scale, int64_t pooled_height, int64_t pooled_width, int64_t sample_num,
