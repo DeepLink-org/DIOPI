@@ -17,6 +17,8 @@ ascend:
 - diopiBitwiseAnd
 - diopiBitwiseNot
 - diopiBmm
+- diopiCastDtype
+- diopiCat
 - diopiClamp
 - diopiClampInp
 - diopiClampInpScalar
@@ -30,6 +32,7 @@ ascend:
 - diopiClampMinScalar
 - diopiClampScalar
 - diopiContiguous
+- diopiCopyInp
 - diopiCos
 - diopiCosInp
 - diopiCrossEntropyLoss
@@ -201,9 +204,6 @@ ascend:
 - diopiScatterInpScalar
 - diopiApplyPenalty
 ascend_npu:
-- diopiCastDtype
-- diopiCopyInp
-- diopiCat
 - diopiRemainderTensor
 - diopiRemainderScalar
 - diopiRemainder

@@ -108,11 +108,8 @@ inline int debugLevel() {
     impl::aten::setCurCtx(ctx);                                                        \
     BUILD_ATEN_ARGS(__VA_ARGS__)
 
-#define END_CALL_ACL_OP()                                                                         \
-    impl::aten::unsetCurCtx();                                                                    \
-    if (debugLevel()) {                                                                           \
-        std::cout << __FILE__ << ":" << __LINE__ << " :" << __FUNCTION__ << " over" << std::endl; \
-    }                                                                                             \
+#define END_CALL_ACL_OP()      \
+    impl::aten::unsetCurCtx(); \
     return diopiSuccess;
 
 inline void logError() { std::cerr << std::endl; }
