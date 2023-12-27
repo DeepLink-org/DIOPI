@@ -9,18 +9,28 @@
 #include <ATen/ATen.h>
 #include <ATen/core/ATen_fwd.h>
 #include <ATen/cuda/CUDAGeneratorImpl.h>
+#include <ATen/ops/empty.h>
 #include <c10/core/Device.h>
+#include <c10/core/DeviceType.h>
+#include <c10/cuda/CUDAFunctions.h>
 #include <c10/cuda/CUDAStream.h>
+#include <c10/util/Optional.h>
+#include <c10/util/string_view.h>
+#include <c10/util/typeid.h>
 #include <cuda_runtime.h>
+#include <cuda_runtime_api.h>
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
+#include <driver_types.h>
 
+#include <cstdint>
 #include <mutex>
+#include <numeric>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
 #include "error.hpp"
-#include "impl_functions.hpp"
 #include "utils/from_blob.h"
 
 #define TORCH_MM_VERSION (TORCH_VERSION_MAJOR * 1000 + TORCH_VERSION_MINOR * 10)
@@ -148,6 +158,15 @@ at::Tensor buildATen(T tensor, c10::optional<c10::DeviceType> atDeviceType = c10
     } else {
         return at::empty(atDims, options);
     }
+}
+
+// NOTE: experimental, with memory leak
+template <class ReturnOp, class... Args>
+inline diopiTensorHandle_t callAtenRetOpLeaked(ReturnOp&& op, Args&&... args) {
+    static_assert(std::is_same<std::result_of_t<ReturnOp(Args...)>, at::Tensor>::value, "error: op(args) must return at::Tensor");
+    auto leadedAtOutCuda = new at::Tensor(op(std::forward<Args>(args)...));
+    auto leakedAtOutXpu = new at::Tensor(impl::aten::buildATen(reinterpret_cast<diopiTensorHandle_t>(leadedAtOutCuda), c10::DeviceType::XPU));
+    return reinterpret_cast<diopiTensorHandle_t>(leakedAtOutXpu);
 }
 
 inline bool isInt(const diopiScalar_t* scalar) { return scalar->stype <= 7; }

@@ -2981,9 +2981,7 @@ diopiError_t diopiMm(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiCo
         auto atOut = impl::aten::buildATen(outRef);
         at::mm_out(atOut, atInput, atMat2);
     } else {
-        auto leadedAtOutCuda = new at::Tensor(at::mm(atInput, atMat2));
-        auto leakedAtOutXpu = new at::Tensor(impl::aten::buildATen(reinterpret_cast<diopiTensorHandle_t>(leadedAtOutCuda), c10::DeviceType::XPU));
-        outRef = reinterpret_cast<diopiTensorHandle_t>(leakedAtOutXpu);
+        outRef = impl::aten::callAtenRetOpLeaked(at::mm, atInput, atMat2);
     }
     impl::aten::unsetCurCtx();
     return diopiSuccess;
