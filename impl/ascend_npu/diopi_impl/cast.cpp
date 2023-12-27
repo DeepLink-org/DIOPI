@@ -14,9 +14,7 @@ diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     if (out == nullptr || input == nullptr || !inputAt.defined() || !outAt.defined() || inputAt.numel() <= 0 || outAt.numel() <= 0) {
         return diopiSuccess;
     }
-    // TODO(zhaoguochun): This must be repaired
-    // outAt.copy_(inputAt);
-    outAt.copy_(inputAt.cpu().to(outAt.scalar_type()));
+    outAt.copy_(inputAt);
     END_CALL_ACL_OP();
 }
 
