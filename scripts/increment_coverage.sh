@@ -12,7 +12,7 @@ require_coverage=$1
 
 remote_count=$(git remote | wc -l)
 if [ "$remote_count" -eq 1 ]; then echo "Not from dev repository" && exit 0 ;fi
-gcovr --csv > coverage/coverage.csv
+gcovr --csv --gcov-ignore-errors=no_working_dir_found > coverage/coverage.csv
 sed -i '1d' coverage/coverage.csv
 newcommit=$(git rev-parse HEAD)
 oldcommit=$(git merge-base ${newcommit} main)
@@ -30,7 +30,7 @@ done < "coverage/gitdiff_screen.txt"
 
 echo "export IS_cover=True" >coverage/IS_cover.txt
 mkdir coverage/html
-gcovr -r . --html --html-details -o coverage/html/index.html
+gcovr -r . --html --html-details --gcov-ignore-errors=no_working_dir_found -o coverage/html/index.html
 python scripts/increment_coverage.py $ROOT_DIR/coverage/ $require_coverage
 source coverage/IS_cover.txt
 if [ $IS_cover == 'True' ]; then
