@@ -2682,7 +2682,7 @@ DIOPI_API diopiError_t diopiMinimum(diopiContextHandle_t ctx, diopiTensorHandle_
  * @param[in] mat2 the second matrix to be matrix multiplied.
  * @param[out] out the output tensor.
  */
-DIOPI_API diopiError_t diopiMm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mat2);
+DIOPI_API diopiError_t diopiMm(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mat2);
 
 /**
  * \brief Fills the elements of the input tensor with value by selecting the indices in the order given in index.

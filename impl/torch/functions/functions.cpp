@@ -3,6 +3,8 @@
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  */
+#include <ATen/core/TensorBody.h>
+#include <c10/core/DeviceType.h>
 #include <cuda_runtime_api.h>
 #include <cudnn.h>
 #include <diopi/functions.h>
@@ -2970,12 +2972,19 @@ diopiError_t diopiMinimum(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     return diopiSuccess;
 }
 
-diopiError_t diopiMm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mat2) {
+diopiError_t diopiMm(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mat2) {
     impl::aten::setCurCtx(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atMat2 = impl::aten::buildATen(mat2);
-    auto atOut = impl::aten::buildATen(out);
-    at::mm_out(atOut, atInput, atMat2);
+    auto& outRef = *out;
+    if (outRef != nullptr) {
+        auto atOut = impl::aten::buildATen(outRef);
+        at::mm_out(atOut, atInput, atMat2);
+    } else {
+        auto leadedAtOutCuda = new at::Tensor(at::mm(atInput, atMat2));
+        auto leakedAtOutXpu = new at::Tensor(impl::aten::buildATen(reinterpret_cast<diopiTensorHandle_t>(leadedAtOutCuda), c10::DeviceType::XPU));
+        outRef = reinterpret_cast<diopiTensorHandle_t>(leakedAtOutXpu);
+    }
     impl::aten::unsetCurCtx();
     return diopiSuccess;
 }

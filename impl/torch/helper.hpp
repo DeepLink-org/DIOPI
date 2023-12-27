@@ -7,7 +7,9 @@
 #ifndef IMPL_TORCH_HELPER_HPP_
 #define IMPL_TORCH_HELPER_HPP_
 #include <ATen/ATen.h>
+#include <ATen/core/ATen_fwd.h>
 #include <ATen/cuda/CUDAGeneratorImpl.h>
+#include <c10/core/Device.h>
 #include <c10/cuda/CUDAStream.h>
 #include <cuda_runtime.h>
 #include <diopi/diopirt.h>
@@ -19,6 +21,7 @@
 
 #include "error.hpp"
 #include "impl_functions.hpp"
+#include "utils/from_blob.h"
 
 #define TORCH_MM_VERSION (TORCH_VERSION_MAJOR * 1000 + TORCH_VERSION_MINOR * 10)
 #define TORCH_1_7_MM_VERSION 1070
@@ -114,7 +117,38 @@ inline c10::DeviceType getATenDevice(diopiDevice_t device) {
 }
 
 template <typename T>
-at::Tensor buildATen(T tensor);
+at::Tensor buildATen(T tensor, c10::optional<c10::DeviceType> atDeviceType = c10::nullopt) {
+    if (tensor == nullptr) return at::Tensor();
+
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(tensor, &dtype);
+    caffe2::TypeMeta atType = getATenType(dtype);
+
+    if (!atDeviceType.has_value()) {
+        diopiDevice_t device;
+        diopiGetTensorDevice(tensor, &device);
+        atDeviceType = getATenDevice(device);
+    }
+
+    void* data = nullptr;
+    diopiGetTensorData(const_cast<diopiTensorHandle_t>(tensor), &data);
+
+    diopiSize_t shape;
+    diopiGetTensorShape(tensor, &shape);
+    at::IntArrayRef atDims(shape.data, shape.len);
+
+    diopiSize_t stride;
+    diopiGetTensorStride(tensor, &stride);
+    at::IntArrayRef atStrides(stride.data, stride.len);
+
+    auto options = at::TensorOptions(atDeviceType.value()).dtype(atType);
+    if (data != nullptr) {
+        // return at::from_blob(data, atDims, atStrides, options);
+        return utils::from_blob_xpu_compat(data, atDims, atStrides, options);
+    } else {
+        return at::empty(atDims, options);
+    }
+}
 
 inline bool isInt(const diopiScalar_t* scalar) { return scalar->stype <= 7; }
 

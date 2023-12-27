@@ -5,6 +5,9 @@
  */
 #include "helper.hpp"
 
+#include <c10/core/DeviceType.h>
+#include <c10/util/Optional.h>
+
 namespace impl {
 
 namespace aten {
@@ -72,35 +75,6 @@ diopiDtype_t getDIOPITensorType(at::Tensor& input) {
         default:
             NOT_SUPPORTED("aten dtype");
             return diopi_dtype_unsupported;
-    }
-}
-
-template <typename T>
-at::Tensor buildATen(T tensor) {
-    if (tensor == nullptr) return at::Tensor();
-
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(tensor, &dtype);
-    caffe2::TypeMeta atType = getATenType(dtype);
-    diopiDevice_t device;
-    diopiGetTensorDevice(tensor, &device);
-    c10::DeviceType atDevice = getATenDevice(device);
-    void* data = nullptr;
-    diopiGetTensorData(const_cast<diopiTensorHandle_t>(tensor), &data);
-
-    diopiSize_t shape;
-    diopiGetTensorShape(tensor, &shape);
-    at::IntArrayRef atDims(shape.data, shape.len);
-
-    diopiSize_t stride;
-    diopiGetTensorStride(tensor, &stride);
-    at::IntArrayRef atStrides(stride.data, stride.len);
-
-    auto options = at::TensorOptions(atDevice).dtype(atType);
-    if (data != nullptr) {
-        return at::from_blob(data, atDims, atStrides, options);
-    } else {
-        return at::empty(atDims, options);
     }
 }
 
