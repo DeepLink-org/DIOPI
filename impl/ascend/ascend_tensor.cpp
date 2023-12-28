@@ -7,9 +7,11 @@
 #include "ascend_tensor.hpp"
 
 #include <array>
+#include <mutex>
 #include <utility>
 
 #include "common/debug.hpp"
+#include "common/format_helper.h"
 
 namespace impl {
 namespace ascend {
@@ -146,7 +148,7 @@ std::vector<int64_t> AscendTensor::getAclMemShape() const {
 int64_t AscendTensor::getAclMemBufferSize() const {
     if (this->isContiguous()) {
         if (dim() > 0) {
-            return this->numel() * this->elemsize();
+            return this->storageNumel() * this->elemsize();
         } else {
             return this->elemsize();
         }
@@ -167,9 +169,9 @@ int64_t AscendTensor::getAclMemBufferSize() const {
 }
 
 aclFormat AscendTensor::getAclDataFormat() const {
+    static std::once_flag warningFlag;
     if (dim() == 5) {
         std::array<int64_t, 5> thStride{stride(0), stride(1), stride(2), stride(3), stride(4)};
-
         int st = 1;
         std::array<int64_t, 5> ncdhwStride;
         for (auto k : {4, 3, 2, 1, 0}) {
@@ -193,8 +195,8 @@ aclFormat AscendTensor::getAclDataFormat() const {
         if (thStride == ndhwcStride) {
             return ACL_FORMAT_NDHWC;
         }
-
-        warning("getAclDataFormat warning. Acl only support NCDHW or NDHWC format! but get %s", dumpTensor(tensor_).c_str());
+        std::call_once(
+            warningFlag, warning, __FILE__, __LINE__, __FUNCTION__, "Acl only support NCDHW or NDHWC format! but get %s", dumpTensor(tensor_).c_str());
     } else if (dim() == 4) {
         std::array<int64_t, 4> thStride{stride(0), stride(1), stride(2), stride(3)};
         {
@@ -221,7 +223,7 @@ aclFormat AscendTensor::getAclDataFormat() const {
         if (thStride == nhwcStride) {
             return ACL_FORMAT_NHWC;
         }
-        warning("getAclDataFormat warning. Acl only support NCHW or NHWC format! but get %s", dumpTensor(tensor_).c_str());
+        std::call_once(warningFlag, warning, __FILE__, __LINE__, __FUNCTION__, "Acl only support NCHW or NHWC format! but get %s", dumpTensor(tensor_).c_str());
     }
     return ACL_FORMAT_ND;
 }

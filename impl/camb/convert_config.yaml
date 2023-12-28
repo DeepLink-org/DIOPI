@@ -51,3 +51,21 @@
 
 - diopiBatchNormStats:
     layout: NLC, NHWC, NDHWC
+
+#* Ops below are not neccesary to convert format *#
+# next version will be changed,it is better to do nothing in adaptor
+- diopiMaxPool2dWithIndices:
+    layout: NHWC
+
+- diopiMaxPool2d:
+    layout: NHWC
+
+- diopiMaxPool2dBackward:
+    layout: NHWC
+
+- diopiReluInp:
+    layout: NLC, NHWC, NDHWC
+
+- diopiThresholdBackward:
+    layout: NLC, NHWC, NDHWC
+#* Ops above are not neccesary to convert format *#

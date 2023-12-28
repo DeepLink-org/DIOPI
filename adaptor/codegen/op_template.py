@@ -23,22 +23,41 @@ ${adaptors}
 
     adaptor_template = CodeTemplate("""\
 extern "C" diopiError_t diopi${op_name}(${attrs}) {
-    TimeElapsed adaptorTimeElapsed("${op_name}_adaptor");
     ${new_input}
     {
-        TimeElapsed castInputTimeElapsed("${op_name}_cast_input");
         ${cast_input}
     }
 
     ${cast_output}
     diopiError_t ret;
     {
-        TimeElapsed opTimeElapsed("${op_name}");
         ret = ::impl::${device}::${call_func};
     }
     return ret;
 }
 
+""")
+
+    adaptor_with_plugin_template = CodeTemplate("""\
+extern "C" diopiError_t diopi${op_name}(${attrs}) {
+    ${new_input}
+    {
+        ${cast_input}
+    }
+
+    ${cast_output}
+    diopiError_t ret;
+    {
+        if (::impl::${device}::diopi${op_name}) {
+            ret = ::impl::${device}::${call_func};
+        } else if (::impl::${device}_npu::diopi${op_name}) {
+            ret = ::impl::${device}_npu::${call_func};
+        } else {
+            ret = diopiNoImplement;
+        }
+    }
+    return ret;
+}
 """)
 
     cast_strategy_template = CodeTemplate("""\
@@ -55,8 +74,7 @@ public:
     }
 };
 """)
-
-    impl_declaration_template = CodeTemplate("""\
+    impl_declaration_head_template = CodeTemplate("""\
 /**
  * @file
  * @author OpenComputeLab
@@ -70,20 +88,16 @@ public:
 
 // NOLINTBEGIN
 namespace impl {
+${impl_declaration_content}
+} // namespace impl
+// NOLINTEND
+#endif  // IMPL_FUNCTIONS_HPP_
+""")
+
+    impl_declaration_content_template = CodeTemplate("""\
 namespace ${device} {
 
 ${impl_declaration}
 
 }  // namespace ${device}
-
-namespace composite {
-    
-${composite_funcs_decl}
-
-}  // namespace composite
-}  // namespace impl
-
-// NOLINTEND
-#endif  // IMPL_FUNCTIONS_HPP_
-
 """)

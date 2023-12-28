@@ -3138,6 +3138,7 @@ DIOPI_API diopiError_t diopiNormalTensor(diopiContextHandle_t ctx, diopiTensorHa
  * @param[in] std the tensor of per-element standard deviations.
  * @param[in] inout the input and output tensor.
  * @param[in] generator a pseudorandom number generator for sampling
+ * todo: 和diopiNormal功能重复
  */
 DIOPI_API diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std, diopiGeneratorHandle_t generator);
 
@@ -3431,6 +3432,8 @@ DIOPI_API diopiError_t diopiAmpForeachNonFiniteCheckAndUnscaleInp(diopiContextHa
 DIOPI_API diopiError_t diopiAmpUpdateScaleInp(diopiContextHandle_t ctx, diopiTensorHandle_t current_scale, diopiTensorHandle_t growth_tracker,
                                               diopiConstTensorHandle_t found_inf, double scale_growth_factor, double scale_backoff_factor,
                                               int32_t growth_interval);
+
+DIOPI_API diopiError_t diopiFormatCast(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiTensorHandle_t in, diopiMemoryFormat_t memoryFormat);
 
 #if defined(__cplusplus)
 }

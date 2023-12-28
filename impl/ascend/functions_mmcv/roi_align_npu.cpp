@@ -3,6 +3,8 @@
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  */
+#include <mutex>
+
 #include "../common/acloprunner.hpp"
 
 using namespace impl::ascend;
@@ -12,9 +14,10 @@ extern "C" {
 DIOPI_API diopiError_t diopiRoiAlignMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t output, diopiTensorHandle_t argmaxY, diopiTensorHandle_t argmaxX,
                                          diopiConstTensorHandle_t input, diopiConstTensorHandle_t rois, int64_t alignedHeight, int64_t alignedWidth,
                                          int64_t samplingRatio, int64_t poolMode, float spatialScale, bool aligned) {
+    static std::once_flag warningAlignedFlag;
     int64_t roiEndMode = 2;
     if (!aligned) {
-        warning("The [aligned] attr in roi_align op is false");
+        std::call_once(warningAlignedFlag, warning, __FILE__, __LINE__, __FUNCTION__, "The [aligned] attr in roi_align op is false");
         roiEndMode = 0;
     }
 
@@ -48,9 +51,11 @@ DIOPI_API diopiError_t diopiRoiAlignMmcv(diopiContextHandle_t ctx, diopiTensorHa
 diopiError_t diopiRoiAlignBackwardMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                        diopiConstTensorHandle_t rois, diopiConstTensorHandle_t argmaxY, diopiConstTensorHandle_t argmaxX, int64_t alignedHeight,
                                        int64_t alignedWidth, int64_t samplingRatio, int64_t poolMode, float spatialScale, bool aligned) {
+    static std::once_flag warningAlignedFlag;
     int64_t roiEndMode = 2;
+
     if (!aligned) {
-        warning("The [aligned] attr in roi_align_grad op is false");
+        std::call_once(warningAlignedFlag, warning, __FILE__, __LINE__, __FUNCTION__, "The [aligned] attr in roi_align_grad op is false");
         roiEndMode = 0;
     }
     diopiSize_t xdiffShape;

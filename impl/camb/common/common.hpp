@@ -34,7 +34,7 @@ bool broadcast(DiopiTensor inputTensor, const std::vector<int64_t>& targetShape,
 
 diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryFormat_t memoryFormat = diopiMemoryFormat_t::Contiguous);
 
-diopiError_t contiguousOut(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor& dest, diopiMemoryFormat_t destMemoryFormat);
+diopiError_t contiguousOut(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor& dest);
 
 diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryFormat_t memoryFormat, cnnlTensorLayout_t layoutIn,
                         cnnlTensorLayout_t layoutOut);
@@ -52,6 +52,8 @@ diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiT
 diopiError_t transpose(diopiContextHandle_t ctx, DiopiTensor outTensor, DiopiTensor input, int64_t dim0, int64_t dim1);
 
 diopiError_t transpose(diopiContextHandle_t ctx, const DiopiTensor& inputTensor, DiopiTensor& outTensor, std::vector<int32_t> perms);
+
+bool denseCheck(const DiopiTensor& src);
 
 }  // namespace camb
 }  // namespace impl

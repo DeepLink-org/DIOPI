@@ -2,6 +2,7 @@
 
 import os
 import sys
+import shutil
 from .utils import logger
 from configs import model_config
 from .model_list import model_op_list
@@ -23,13 +24,16 @@ def gen_data(model_name: str = "", cache_path=".", fname="", diopi_case_item_fil
         # set a prefix for dat save path like: data/diopi/inputs
         model_name = "diopi"
         from diopi_configs import diopi_configs
-
-    diopi_case_item_path = os.path.join(cache_path, diopi_case_item_file)
+    data_path = os.path.join(cache_path, model_name)
+    if os.path.exists(data_path):
+        shutil.rmtree(data_path)
+    os.makedirs(data_path)
+    diopi_case_item_path = os.path.join(data_path, diopi_case_item_file)
     cfg_parse = ConfigParser(diopi_case_item_path)
     cfg_parse.parser(diopi_configs, fname)
     cfg_parse.save()
-    inputs_dir = os.path.join(cache_path, "data/" + model_name + "/inputs")
-    outputs_dir = os.path.join(cache_path, "data/" + model_name + "/outputs")
+    inputs_dir = os.path.join(data_path + "/inputs")
+    outputs_dir = os.path.join(data_path + "/outputs")
 
     GenInputData.run(diopi_case_item_path, inputs_dir, fname, model_name)
     GenOutputData.run(diopi_case_item_path, inputs_dir, outputs_dir, fname,

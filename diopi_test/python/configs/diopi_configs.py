@@ -1,24 +1,6 @@
 # Copyright (c) 2023, DeepLink.
 import numpy as np
 
-ops_with_states = {"batch_norm": {"running_mean", "running_var"},
-                   "sgd": {"buf", "param"},
-                   "fill_": {"input"},
-                   "embedding": {"weight"},
-                   "adam": {"param", "exp_avg", "exp_avg_sq", "max_exp_avg_sq"},
-                   "adamw": {"param", "exp_avg", "exp_avg_sq", "max_exp_avg_sq"},
-                   "adadelta": {"param", "square_avg", "acc_delta"},
-                   "rmsprop": {"param", "square_avg", "grad_avg", "momentum_buffer"},
-                   "copy_": {"input"},
-                   "cast_dtype": {"out"},
-                   "batch_norm_gather_stats_with_counts": {"running_mean", "running_var"},
-                   "apply_penalty": {"logits"},
-                   "context_attention": {"out"},
-                   "destindex_copy_kv": {"out"},
-                   "token_attention": {"out"},
-                   "token_softmax_reducev": {"out"}
-                   }
-
 
 diopi_configs = {
     # FIXME batch_norm输入0size的张量报错
@@ -129,14 +111,14 @@ diopi_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "stride":((2000000, 230400, 7200, 120, 2), (1, 2048, 2, 64), (1, 56, 2), (20, 1)),
+                    "stride": ((2000000, 230400, 7200, 120, 2), (1, 2048, 2, 64), (1, 56, 2), (20, 1)),
                     "shape": ((2, 8, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (32, 16)),
                     "requires_grad": [True],
                     "gen_fn": 'Genfunc.randn',
                 },
                 {
                     "ins": ["running_mean"],
-                    "stride":((4, ), None, None, None),
+                    "stride": ((4, ), None, None, None),
                     "shape": ((8, ), (64, ), None, (16, )),
                     "gen_fn": 'Genfunc.zeros',
                 },
@@ -544,7 +526,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "stride":((1, 3), (900, 30, 1),),
+                    "stride": ((1, 3), (900, 30, 1),),
                     "shape": ((3, 3), (64, 28, 28),
                               (32, 64, 112, 112), (64, 3, 7, 28, 28)),
                     "dtype": [np.float32, np.float64],
@@ -1547,14 +1529,14 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((1024, ),),
-                    "dtype":[np.int64, np.int32, np.int16,
-                             np.bool_, np.bool_, np.bool_, np.bool_],
+                    "dtype": [np.int64, np.int32, np.int16,
+                              np.bool_, np.bool_, np.bool_, np.bool_],
                 },
                 {
                     "ins": ['exponent'],
                     "shape": ((1024, ),),
-                    "dtype":[np.float32, np.float64, np.float16,
-                             np.int32, np.float32, np.int8, np.uint8],
+                    "dtype": [np.float32, np.float64, np.float16,
+                              np.int32, np.float32, np.int8, np.uint8],
                 },
             ],
         ),
@@ -1574,9 +1556,9 @@ diopi_configs = {
                     # "dtype":[np.float64, np.float32, np.float16,
                     #          np.int32, np.float64, np.float64,
                     #          np.int8, np.float32, np.uint8],
-                    "dtype":[np.float64, np.float32, np.float16,
-                             np.int32, np.float64, np.float32,
-                             np.float32, np.int16, np.int64],
+                    "dtype": [np.float64, np.float32, np.float16,
+                              np.int32, np.float64, np.float32,
+                              np.float32, np.int16, np.int64],
                 },
                 {
                     "ins": ['exponent'],
@@ -1584,9 +1566,9 @@ diopi_configs = {
                     # "dtype":[np.int32, np.uint8, np.bool_,
                     #          np.int64, np.float16, np.float32,
                     #          np.uint8, np.bool_, np.int8],
-                    "dtype":[np.int32, np.uint8, np.bool_,
-                             np.int64, np.float16, np.float64,
-                             np.bool_, np.uint8, np.bool_],
+                    "dtype": [np.int32, np.uint8, np.bool_,
+                              np.int64, np.float16, np.float64,
+                              np.bool_, np.uint8, np.bool_],
                 },
             ],
         ),
@@ -1720,16 +1702,16 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((1024, ),),
-                    "dtype":[np.float64, np.float32, np.float16,
-                             np.int64, np.int32, np.int16,
-                             np.int8, np.uint8, np.bool_],
+                    "dtype": [np.float64, np.float32, np.float16,
+                              np.int64, np.int32, np.int16,
+                              np.int8, np.uint8, np.bool_],
                 },
                 {
                     "ins": ['other'],
                     "shape": ((1024, ),),
-                    "dtype":[np.int32, np.uint8, np.bool_,
-                             np.int64, np.float64, np.float32,
-                             np.int16, np.float16, np.int8],
+                    "dtype": [np.int32, np.uint8, np.bool_,
+                              np.int64, np.float64, np.float32,
+                              np.int16, np.float16, np.int8],
                 },
             ],
         ),
@@ -1749,16 +1731,16 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((1024, ),),
-                    "dtype":[np.float64, np.float32, np.float16,
-                             np.int32, np.float64, np.float64,
-                             np.int8, np.float32, np.int8],
+                    "dtype": [np.float64, np.float32, np.float16,
+                              np.int32, np.float64, np.float64,
+                              np.int8, np.float32, np.int8],
                 },
                 {
                     "ins": ['other'],
                     "shape": ((1024, ),),
-                    "dtype":[np.int32, np.uint8, np.bool_,
-                             np.int64, np.float16, np.float32,
-                             np.int16, np.bool_, np.uint8],
+                    "dtype": [np.int32, np.uint8, np.bool_,
+                              np.int64, np.float16, np.float32,
+                              np.int16, np.bool_, np.uint8],
                 },
             ],
         ),
@@ -1775,16 +1757,16 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((1024, ),),
-                    "dtype":[np.float64, np.float32, np.float16,
-                             np.int32, np.int32, np.int16,
-                             np.int8, np.uint8, np.float32],
+                    "dtype": [np.float64, np.float32, np.float16,
+                              np.int32, np.int32, np.int16,
+                              np.int8, np.uint8, np.float32],
                 },
                 {
                     "ins": ['other'],
                     "shape": ((1024, ),),
-                    "dtype":[np.int32, np.uint8, np.int32,
-                             np.int64, np.float64, np.float32,
-                             np.uint8, np.float16, np.int8],
+                    "dtype": [np.int32, np.uint8, np.int32,
+                              np.int64, np.float64, np.float32,
+                              np.uint8, np.float16, np.int8],
                 },
             ],
         ),
@@ -2044,12 +2026,12 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((1024, ),),
-                    "dtype":[np.float64, np.float32, np.float16],
+                    "dtype": [np.float64, np.float32, np.float16],
                 },
                 {
                     "ins": ['other'],
                     "shape": ((1024, ),),
-                    "dtype":[np.float32, np.float16, np.float64],
+                    "dtype": [np.float32, np.float16, np.float64],
                 },
             ],
         ),
@@ -4447,7 +4429,7 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((2, 4096), (32, 49, 256), (2, 16, 64, 64), (1, 2304, 1, 1, 1)),
-                    "dtype": [np.float32, np.float64],
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.positive',
                 },
             ],
@@ -4467,7 +4449,7 @@ diopi_configs = {
                     "ins": ['input'],
                     "shape": ((2, 4096), (32, 49, 256), (2, 16, 64, 64),
                               (1, 2304, 1, 1, 1)),
-                    "dtype": [np.float32, np.float64],
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.positive',
                 },
             ],
@@ -4512,7 +4494,7 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((32, 49, 256), (32, 49, 64, 64)),
-                    "dtype": [np.float32, np.float64],
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.positive',
                 },
             ],
@@ -6641,11 +6623,11 @@ diopi_configs = {
         ),
     ),
 
-    # FIXME scatter输入指定shape，结果不一致
     'scatter': dict(
         name=['scatter'],
         interface=['torch'],
         is_inplace=True,
+        mismatch_ratio_threshold=0,
         para=dict(
             dim=[0, -1, 1, -2, 2, 1, -1],
         ),
@@ -6660,14 +6642,14 @@ diopi_configs = {
                 },
                 {
                     "ins": ['index'],
-                    # "shape": ((), (6,), (2, 7), (4, 8, 10), (16, 4, 4), (2, 8, 1, 1), (2, 8, 1, 1)),
-                    "shape": ((), (6,), (2, 7), (4, 8, 5), (16, 4, 4), (2, 8, 1, 1), (2, 8, 1, 1)),
+                    "shape": ((), (6,), (2, 7), (4, 8, 10), (16, 4, 4), (2, 8, 1, 1), (2, 8, 1, 1)),
                     "dtype": [np.int64],
                     "gen_fn": dict(fn='Genfunc.randint', low=0, high=4),
                 },
                 {
                     "ins": ['src'],
                     "shape": ((), (7,), (4, 9), (8, 12, 20), (16, 4, 4), (2, 8, 4, 4), (2, 8, 4, 4)),
+                    "gen_fn": 'Genfunc.ones',
                     "dtype": [np.float32, np.float64, np.float16, np.int16,
                               np.int32, np.int64, np.uint8, np.int8, np.bool_],
                 },
@@ -6679,6 +6661,7 @@ diopi_configs = {
         name=['scatter'],
         interface=['torch'],
         is_inplace=True,
+        mismatch_ratio_threshold=0,
         para=dict(
             dim=[0, -1, 1, 2],
         ),
@@ -6711,6 +6694,7 @@ diopi_configs = {
         name=['scatter'],
         interface=['torch'],
         is_inplace=True,
+        mismatch_ratio_threshold=0,
         para=dict(
             dim=[2, 1],
             reduce=['add', 'multiply']
@@ -6742,6 +6726,7 @@ diopi_configs = {
         name=['scatter'],
         interface=['torch'],
         is_inplace=True,
+        mismatch_ratio_threshold=0,
         para=dict(
             dim=[0, -1, 1, -2, 2, 1, -1],
             value=[True, 0.25, -100, 0, 2.34, 20, 1e-4],
@@ -6769,6 +6754,7 @@ diopi_configs = {
         name=['scatter'],
         interface=['torch'],
         is_inplace=True,
+        mismatch_ratio_threshold=0,
         para=dict(
             dim=[2, 1],
             value=[-2.31, float("-inf")],
@@ -7306,27 +7292,34 @@ diopi_configs = {
     'copy': dict(
         name=["copy_"],
         interface=['torch.Tensor'],
-        dtype=[np.float32, np.float64, np.float16, np.bool_,
-               np.int64, np.int32, np.int16, np.int8, np.uint8],
         tensor_para=dict(
             gen_fn='Genfunc.randn',
             args=[
                 {
                     "ins": ["input"],
-                    "shape": ((), (8,), (12,), (192, 147), (1, 1, 384), (2, 1, 38, 45),
-                              (0,), (0, 12,), (12, 0, 9)),
-                    "no_contiguous": [True],
+                    "shape": ((), (8,), (12,), (192, 147), (1, 1, 384), (1, 192, 147, 2),
+                              (0,), (12, 0, 9), (0, 2)),
+                    "dtype": [np.float32, np.float64, np.float16, np.float32, np.float64,
+                              np.float32, np.int32, np.int64, np.uint8, np.int16,
+                              np.int32, np.int64, np.uint8, np.uint8, np.int8,
+                              np.uint8, np.int32, np.uint8, np.bool_, np.complex128,
+                              np.complex64, np.complex128, np.complex128]
                 },
                 {
                     "ins": ["other"],
-                    "shape": ((), (), (12,), (147, 1), (384, 1, 1), (45, 38, 1, 2),
-                              (0,), (12, 0), (9, 0, 12)),
+                    "shape": ((), (), (12,), (192, 147), (1, 1, 384), (147, 1),
+                              (0,), (1, 9), (1,)),
+                    "dtype": [np.float64, np.float16, np.uint8, np.int64, np.int32,
+                              np.complex128, np.float16, np.float32, np.float64, np.uint8,
+                              np.int64, np.int32, np.int16, np.int8, np.uint8,
+                              np.bool_, np.complex128, np.complex128, np.uint8, np.float16,
+                              np.uint8, np.int64, np.complex128]
                 },
             ]
         )
     ),
 
-    'copy_different_dtype': dict(
+    'copy_input_no_contiguous': dict(
         name=["copy_"],
         interface=['torch.Tensor'],
         tensor_para=dict(
@@ -7334,38 +7327,92 @@ diopi_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": ((192, 147), (1, 1, 384), (2, 1, 38, 45), (100, 100)),
-                    "dtype": [np.float32, np.float64, np.float16, np.bool_,
-                              np.int64, np.int32, np.int16, np.int8, np.uint8],
+                    "shape": ((12, 2), (12, 1, 12), (2, 38, 45, 2)),
+                    "dtype": [np.float16, np.float64, np.float16, np.float32, np.float64,
+                              np.float64, np.float64, np.float32, np.int16, np.int64,
+                              np.uint8, np.int8, np.int16, np.int32, np.int64,
+                              np.int64, np.uint8, np.int8, np.int64, np.int32,
+                              np.uint8, np.bool_, np.bool_, np.complex64, np.complex64,
+                              np.complex128, np.complex128],
                     "no_contiguous": [True],
                 },
                 {
                     "ins": ["other"],
-                    "dtype": [np.float64, np.int64, np.float16, np.float16,
-                              np.int32, np.float32, np.uint8, np.uint8, np.uint8],
-                    "shape": ((147, 1), (384, 1, 1), (45, 38, 1, 2), (1, 100)),
+                    "shape": ((12,), (12, 1, 12), (45, 38, 1)),
+                    "dtype": [np.float32, np.float64, np.int64, np.int32, np.int16,
+                              np.int8, np.bool_, np.complex64, np.float64, np.float16,
+                              np.float32, np.float64, np.int64, np.int32, np.int16,
+                              np.int8, np.uint8, np.int64, np.bool_, np.complex64,
+                              np.complex64, np.float64, np.int64, np.float64, np.int64,
+                              np.int32, np.complex64]
                 },
             ]
         )
     ),
 
-    'copy_broadcast': dict(
+    'copy_other_no_contiguous': dict(
         name=["copy_"],
         interface=['torch.Tensor'],
-        dtype=[np.float32, np.float64],
         tensor_para=dict(
             gen_fn='Genfunc.randn',
             args=[
                 {
                     "ins": ["input"],
-                    "shape": ((8,), (12, 2), (192, 147, 2), (6, 5, 384), (2, 12, 38, 45, 3),
-                              (0, 2), (0, 12,), (12, 0, 9, 2)),
+                    "shape": ((6, 5, 384), (2, 4, 38, 45)),
+                    "dtype": [np.float16, np.float32, np.float16, np.float32, np.float32,
+                              np.float64, np.float32, np.float16, np.float64, np.int16,
+                              np.int32, np.uint8, np.int8, np.int16, np.int32,
+                              np.int32, np.int64, np.uint8, np.int8, np.int32,
+                              np.int16, np.int64, np.int8, np.bool_, np.bool_,
+                              np.bool_, np.complex64, np.complex128, np.complex64, np.complex128,
+                              np.complex128, np.complex128, np.complex64]
+                },
+                {
+                    "ins": ["other"],
+                    "shape": ((384, 1, 6), (45, 38, 4)),
+                    "dtype": [np.float16, np.float32, np.int32, np.int16, np.int8,
+                              np.uint8, np.bool_, np.complex128, np.complex128, np.float32,
+                              np.float64, np.float16, np.float32, np.int32, np.int16,
+                              np.int8, np.uint8, np.int64, np.int32, np.bool_,
+                              np.complex128, np.complex128, np.complex128, np.float32, np.int32,
+                              np.complex128, np.float32, np.float64, np.int32, np.int16,
+                              np.int8, np.bool_, np.complex128],
+                    "no_contiguous": [True],
+                },
+            ]
+        )
+    ),
+
+    'copy_all_no_contiguous': dict(
+        name=["copy_"],
+        interface=['torch.Tensor'],
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((192, 147), (192, 147, 2), (2, 12, 38, 45, 3)),
+                    "dtype": [np.float16, np.float32, np.float64, np.float16, np.float16,
+                              np.float32, np.float64, np.float16, np.float16, np.float64,
+                              np.int16, np.int32, np.int64, np.int8, np.int16,
+                              np.int16, np.int32, np.int64, np.uint8, np.int8,
+                              np.int8, np.int16, np.int8, np.int16, np.int64,
+                              np.int8, np.bool_, np.bool_, np.bool_, np.bool_,
+                              np.bool_, np.complex64, np.complex128, np.complex64, np.complex64,
+                              np.complex128, np.complex64, np.complex64],
                     "no_contiguous": [True],
                 },
                 {
                     "ins": ["other"],
-                    "shape": ((1,), (12,), (1, 147), (6, 1, 384), (2, 1, 38, 45),
-                              (1,), (0, 1,), (12, 0, 1)),
+                    "shape": ((192, 147), (1, 147, 2), (2, 1, 38, 45)),
+                    "dtype": [np.float64, np.float16, np.float32, np.int16, np.int8,
+                              np.uint8, np.int64, np.bool_, np.complex64, np.complex64,
+                              np.float16, np.float32, np.float64, np.float16, np.int16,
+                              np.int8, np.uint8, np.int64, np.int32, np.int16,
+                              np.int8, np.bool_, np.bool_, np.complex64, np.complex64,
+                              np.complex64, np.float16, np.int16, np.int8, np.bool_,
+                              np.complex64, np.float16, np.float32, np.int16, np.int8,
+                              np.uint8, np.bool_, np.complex64],
                     "no_contiguous": [True],
                 },
             ]
@@ -7758,19 +7805,19 @@ diopi_configs = {
                     "ins": ['input'],
                     "shape": [(32, 64,), (128, 24, 32), (16, 8,), (24, 12,), (),
                               (0,), (4, 0), (5, 0, 7)],
-                    "dtype":[np.float64, np.float32, np.float16,
-                             np.int64, np.int32, np.int16,
-                             np.int8, np.uint8, np.bool_,
-                             np.uint8, np.int8, np.int8],
+                    "dtype": [np.float64, np.float32, np.float16,
+                              np.int64, np.int32, np.int16,
+                              np.int8, np.uint8, np.bool_,
+                              np.uint8, np.int8, np.int8],
                 },
                 {
                     "ins": ['out'],
                     "shape": [(32, 64,), (128, 24, 32), (16, 8,), (24, 12,), (),
                               (0,), (4, 0), (5, 0, 7)],
-                    "dtype":[np.int32, np.uint8, np.bool_,
-                             np.float32, np.float64, np.float32,
-                             np.int16, np.float16, np.int8,
-                             np.int8, np.uint8, np.bool_],
+                    "dtype": [np.int32, np.uint8, np.bool_,
+                              np.float32, np.float64, np.float32,
+                              np.int16, np.float16, np.int8,
+                              np.int8, np.uint8, np.bool_],
                 }
             ]
         ),

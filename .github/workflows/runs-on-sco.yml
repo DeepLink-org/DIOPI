@@ -1,0 +1,79 @@
+name: runs on sco
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".git*"
+      - "CODE_OF_CONDUCT**"
+
+concurrency:
+  group: sco-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  DEEPLINK_PATH: '/mnt/cache/share/deeplinkci/github/${{ github.repository }}'
+  ENV_PATH: '/mnt/cache/share/platform/env'
+  BUILD_TEST1: build_test
+  GEN_DATA: diopi_test/python/cache
+  ALL_COVERAGE: ${{ (contains( github.ref, 'main') || startsWith(github.ref, 'refs/heads/v') || startsWith(github.ref, 'refs/heads/dev')) && 'ON' || 'OFF' }}
+  REQUIRE_COVERAGE: ${{ vars.REQUIRE_COVERAGE != '' && vars.REQUIRE_COVERAGE || '40' }}
+
+jobs:
+  checkout_code:
+    name: checkout code
+    runs-on: tps-sco-ci
+    steps:
+      - name: Checkout Code
+        uses: DeepLink-org/DIOPI.dev/.github/actions/checkout-code@wgs/run_on_sco
+
+  Build-Nvidia:
+    name: Build-Nvidia
+    runs-on: tps-sco-ci
+    needs: [checkout_code]
+    steps:
+      - name: build
+        run: |
+          set -e
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
+          srun --job-name=${GITHUB_JOB} bash -c "export USE_COVERAGE=ON && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} \
+          && source ${ENV_PATH}/pt2.0_diopi_nodeps \
+          && cd impl && bash scripts/build_impl.sh torch" || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
+
+  Gen-Data:
+    name: Gen-Data
+    runs-on: tps-sco-ci
+    needs: [Build-Nvidia]
+    steps:
+      - name: gen-test-data
+        run: |
+          set -e
+          srun --job-name=${GITHUB_JOB} bash -c "cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python \
+          && source ${ENV_PATH}/pt2.0_diopi_nodeps \
+          && python main.py --mode gen_data" \
+          || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+
+  Op-Test-Nvidia:
+    name: Op-Test-Nvidia
+    runs-on: tps-sco-ci
+    needs: Gen-Data
+    env:
+      run_test: "coverage run -p"
+    steps:
+      - name: NHWC-32bit-test
+        run: |
+          set -e
+          srun --job-name=${GITHUB_JOB} bash -c "export USE_COVERAGE=ON && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} \
+          && source ${ENV_PATH}/pt2.0_diopi_nodeps && cd diopi_test/python && python main.py --mode gen_case --fname batch_norm --nhwc &&
+          python main.py --mode gen_case --fname index_select --four_bytes && python main.py --mode gen_case --fname arange --four_bytes && ${run_test} main.py --mode run_test"
+      - name: test
+        run: |
+          set -e
+          srun --job-name=${GITHUB_JOB} bash -c "export CI=true && export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/lib \
+          && source ${ENV_PATH}/pt2.0_diopi_nodeps && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} \
+          && cd diopi_test/python && python main.py --mode gen_case && python main.py --mode run_test"

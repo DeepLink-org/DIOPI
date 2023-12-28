@@ -1,4 +1,4 @@
-# This file is used by clang-format to autoformat ConformanceTest-DIOPI source code
+# This file is used by clang-format to autoformat DIOPI source code
 #
 # The clang-format is part of llvm toolchain.
 # It need to install llvm and clang to format source code style.
@@ -25,6 +25,11 @@ AllowAllParametersOfDeclarationOnNextLine: true
 BinPackParameters: true
 BinPackArguments: false
 ColumnLimit: 160
+DerivePointerAlignment: false
+PointerAlignment: Left
+ReferenceAlignment: Left
+InsertNewlineAtEOF: true
+SpacesBeforeTrailingComments: 2
 IncludeIsMainSourceRegex: (\.cu)$
 IncludeCategories:
   - Regex:           '^<.*\.h(pp)?>'

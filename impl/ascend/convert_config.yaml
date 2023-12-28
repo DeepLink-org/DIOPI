@@ -162,7 +162,7 @@
 
 - diopiTopk:
     dtype: (float32)->float64
-    
+
 - diopiGroupNorm:
     dtype: (float64)->float32
 
@@ -196,3 +196,82 @@
 
 - diopiMaxAll:
     dtype: (float64)->float32, (int16, int8)->int32, (bool)->uint8
+
+- diopiSilu:
+    dtype: (float64)->float32
+
+- diopiSiluInp:
+    dtype: (float64)->float32
+
+- diopiSiluBackward:
+    dtype: (float64)->float32
+
+- diopiUniformInp:
+    dtype: (float64)->float32
+
+- diopiExp:
+    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+
+- diopiPow:
+    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+
+- diopiPowInp:
+    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+
+- diopiPowTensor:
+    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+
+- diopiPowInpTensor:
+    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+
+- diopiNorm:
+    dtype: (bool, uint8, int8, int16, int32, int64, float16, float64)->float32
+
+- diopiRsqrt:
+    dtype: (int8, uint8, int16, int32, int64, bool)->float32
+
+- diopiAddmm:
+    dtype: (float16, float32)->float64
+
+- diopiEmbeddingBackward:
+    dtype: (float64)->float32
+
+- diopiDropout:
+    dtype: (float64)->float32
+
+- diopiDropoutInp:
+    dtype: (float64)->float32
+
+- diopiExpand:
+    dtype: (uint8, int16)->int32, (float64)->float32
+
+- diopiSort:
+    dtype: (float64)->float32
+
+- diopiScatter:
+    dtype: (uint8,int8)->int32
+
+- diopiScatterInp:
+    dtype: (uint8,int8)->int32
+
+- diopiScatterScalar:
+    dtype: (uint8,int8)->int32
+
+- diopiScatterInpScalar:
+    dtype: (uint8,int8)->int32
+
+- diopiRotaryEmbedding:
+    dtype: (float64)->float32
+
+- diopiCol2Im:
+    # data type float64 of input [x] is not supported
+    dtype: (float64)->float32
+
+- diopiRemainderTensor:
+    dtype: (bool, uint8, int8, int16, uint16)->int32, (float64)->float32
+
+- diopiRemainderScalar:
+    dtype: (bool, uint8, int8, int16, uint16)->int32, (float64)->float32
+
+- diopiRemainder:
+    dtype: (bool, uint8, int8, int16, uint16)->int32, (float64)->float32

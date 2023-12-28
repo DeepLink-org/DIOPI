@@ -10,7 +10,7 @@ from codegen.case_template import CaseTemplate
 from conformance.db_operation import db_conn
 from conformance.utils import gen_pytest_case_nodeid
 from conformance.global_settings import glob_vars
-from conformance.global_op_list import dtype_op, dtype_out_op, nhwc_op
+from conformance.global_op_list import dtype_op, dtype_out_op, nhwc_op, ops_with_states
 
 
 class GenConfigTestCase(object):
@@ -100,7 +100,7 @@ class GenTestCase(object):
             output_data_path = ck
 
             # get tol
-            test_compare_tol = dict(atol=cv["atol"], rtol=cv["rtol"])
+            test_compare_tol = dict(atol=cv["atol"], rtol=cv["rtol"], mismatch_ratio_threshold=cv["mismatch_ratio_threshold"])
             for tensor in cv["tensor_para"]["args"]:
                 if tensor["dtype"] in [
                     np.int16,
@@ -190,6 +190,9 @@ class GenTestCase(object):
                 )
             )
 
+            # compare_input
+            ignore_paras_for_input_check = ops_with_states.get(self._func_name, set())
+
             forward = CaseTemplate.test_function_body_forward.substitute(
                 env=dict(
                     test_module_name=self._module,
@@ -197,6 +200,7 @@ class GenTestCase(object):
                     # output_data_path = output_data_path,
                     test_function_ref_data_path=test_function_ref_data_path,
                     test_function_forward_call=test_function_forward_call,
+                    ignore_paras_for_input_check=ignore_paras_for_input_check,
                     preprocess_parameters=test_preprocess_parameters,
                 )
             )

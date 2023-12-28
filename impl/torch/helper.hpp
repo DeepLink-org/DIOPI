@@ -13,7 +13,6 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 
-#include <iostream>
 #include <mutex>
 #include <utility>
 #include <vector>
@@ -29,25 +28,8 @@
 #define TORCH_1_11_MM_VERSION 1110
 #define TORCH_1_12_MM_VERSION 1120
 
-#define LOG_LINE_INFO() std::cerr << __FILE__ << ":" << __LINE__ << ": ";
-
-inline void logError() { std::cerr << std::endl; }
-
-template <typename First, typename... Rest>
-void logError(First&& first, Rest&&... rest) {
-    std::cerr << std::forward<First>(first);
-    logError(std::forward<Rest>(rest)...);
-}
-
-template <typename... Types>
-void set_last_error_string(const char* szFmt, Types&&... args) {
-    char szBuf[4096] = {0};
-    sprintf(szBuf, szFmt, std::forward<Types>(args)...);
-    _set_last_error_string(szBuf);
-}
-
 #define ATEN_NOT_IMPLEMENT()                                                                                         \
-    LOG_LINE_INFO()                                                                                                  \
+    std::cerr << __FILE__ << ":" << __LINE__ << ": ";                                                                \
     logError("NotImplementError: function ", __FUNCTION__, " is not implemented for torch version ", TORCH_VERSION); \
     set_last_error_string("NotImplementError: function %s is not implemented for torch version %d" __FUNCTION__, TORCH_VERSION);
 
@@ -66,44 +48,17 @@ void set_last_error_string(const char* szFmt, Types&&... args) {
     }
 
 using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
-extern thread_local diopiContextHandle_t context;
-namespace c10 {
-
-namespace cuda {
-
-// Note: this is a overloaded aten function to get the stream from context.
-// For original functions, please refer to https://github.com/pytorch/pytorch/blob/v1.10.0/c10/cuda/CUDAStream.cpp.
-inline CUDAStream getCurrentCUDAStream(DeviceIndex device_index) {
-    if (device_index == -1) {
-        device_index = current_device();
-    }
-    if (context) {
-        diopiStreamHandle_t stream_handle;
-        diopiGetStream(context, &stream_handle);
-        return getStreamFromExternal(static_cast<cudaStream_t>(stream_handle), device_index);
-    } else {
-        return getDefaultCUDAStream(device_index);
-    }
-}
-
-}  // namespace cuda
-}  // namespace c10
 
 namespace impl {
 
 namespace aten {
 
-inline void setCurCtx(diopiContextHandle_t ctx) {
-    context = ctx;
+inline void setCurStream(diopiContextHandle_t ctx) {
     diopiStreamHandle_t stream_handle;
     diopiGetStream(ctx, &stream_handle);
     c10::cuda::CUDAStream cur_stream = c10::cuda::getStreamFromExternal(static_cast<cudaStream_t>(stream_handle), c10::cuda::current_device());
     c10::cuda::setCurrentCUDAStream(cur_stream);
-    // Here, we set the current stream of cuda to the stream of diopi, but when the context is unloaded, it is not restored.
-    // The main reason is that the current stream of cuda is not used. However, there may be hidden bugs, which will be optimized later.
 }
-
-inline void unsetCurCtx() { context = nullptr; }
 
 inline void sync(diopiContextHandle_t ctx) {
     diopiStreamHandle_t stream_handle;
@@ -128,9 +83,6 @@ inline c10::DeviceType getATenDevice(diopiDevice_t device) {
     }
     return c10::DeviceType::CUDA;
 }
-
-at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef strides, const std::function<void(void*)>& deleter, at::Allocator* allocator,
-                            const at::TensorOptions& options);
 
 template <typename T>
 at::Tensor buildATen(T tensor);
@@ -232,6 +184,12 @@ at::Tensor crossEntropyLossProbTargetBackward(at::Tensor& atInput, at::Tensor& a
 
 at::Tensor crossEntropyLossLabelSmoothingBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, diopiConstTensorHandle_t weight,
                                                   int64_t reduction, int64_t ignore_index, double label_smoothing);
+
+inline std::vector<int64_t> getSequence(int dim) {
+    std::vector<int64_t> seq(dim);
+    std::iota(seq.begin(), seq.end(), 0);
+    return seq;
+}
 
 }  // namespace aten
 

@@ -166,11 +166,7 @@ def gen_functions(options, functions_fm):
     with open(os.path.join(_cur_dir, options.get('source_dir'), 'functions.h'), 'r', encoding='utf8')as f:
         content = f.readlines()
     exports = []
-    device = options.get('device')
-    if device == 'ascend':
-        ft = OT.function_ascend_template
-    else:
-        ft = OT.function_template
+    ft = OT.function_template
     exports = get_export(content, ft, exports)
     with open(os.path.join(_cur_dir, options.get('source_dir'), 'functions_ext.h'), 'r', encoding='utf8')as f:
         content_ext = f.readlines()

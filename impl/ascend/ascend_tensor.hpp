@@ -4,10 +4,14 @@
 #include <acl/acl.h>
 #include <diopi/diopirt.h>
 
+#include <cstdarg>
+#include <functional>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "common/format_helper.h"
 
 namespace impl {
 namespace ascend {
@@ -50,21 +54,30 @@ namespace ascend {
 
 #define ASCEND_CHECK_NULLPTR_ABORT(ptr) ASCEND_CHECK_ABORT(ptr, "Variable is nullptr, pls check.")
 
-#define error(...)                               \
-    printf("[%s:%d]: ", __FUNCTION__, __LINE__); \
-    printf(__VA_ARGS__);                         \
-    printf("\n");                                \
-    std::abort();
-
-#define warning(...)                             \
-    printf("[%s:%d]: ", __FUNCTION__, __LINE__); \
-    printf(__VA_ARGS__);                         \
+inline void error(const char* file, int lineNum, const char* funcName, const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+    printf("ERROR:[%s:%d in func:%s] : ", __FILE__, __LINE__, __FUNCTION__);
+    vprintf(format, args);
     printf("\n");
+    throw std::runtime_error("error occuers");
+}
 
-#define info(...)                                \
-    printf("[%s:%d]: ", __FUNCTION__, __LINE__); \
-    printf(__VA_ARGS__);                         \
+inline void warning(const char* file, int lineNum, const char* funcName, const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+    printf("WARNING:[%s:%d in func:%s]: ", __FILE__, __LINE__, __FUNCTION__);
+    vprintf(format, args);
     printf("\n");
+}
+
+inline void info(const char* file, int lineNum, const char* funcName, const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+    printf("INFO:[%s:%d in func:%s]: ", __FILE__, __LINE__, __FUNCTION__);
+    vprintf(format, args);
+    printf("\n");
+}
 
 class AscendTensor final {
 public:
@@ -91,6 +104,15 @@ public:
 
             diopiGetTensorNumel(tensor_, &numel_);
             diopiGetTensorElemSize(tensor_, &elemsize_);
+
+            if (device == diopiDevice_t::diopi_device) {
+                diopiStorageDesc_t desc;
+                diopiGetTensorStorageDesc(tensor_, &desc);
+                storageFormat_ = desc.format;
+                std::vector<int64_t> tmp(desc.sizes.data, desc.sizes.data + desc.sizes.len);
+                storageDims_ = std::move(tmp);
+                storageNumel_ = std::accumulate(storageDims_.begin(), storageDims_.end(), 1LL, std::multiplies<>());
+            }
         }
     }
 
@@ -154,6 +176,24 @@ public:
         return numel_;
     }
 
+    std::vector<int64_t> storageDims() const {
+        ASCEND_CHECK_NULLPTR_ABORT(tensor_);
+        if (device_ == diopiDevice_t::diopi_device) {
+            return this->storageDims_;
+        }
+        return getAclMemShape();
+    }
+
+    diopiMemoryFormat_t storageFormat() const { return this->storageFormat_; }
+
+    int64_t storageNumel() const {
+        ASCEND_CHECK_NULLPTR_ABORT(tensor_);
+        if (device_ == diopiDevice_t::diopi_device) {
+            return storageNumel_;
+        }
+        return numel();
+    }
+
     int64_t elemsize() const {
         ASCEND_CHECK_NULLPTR_ABORT(tensor_);
         return elemsize_;
@@ -189,6 +229,9 @@ private:
     diopiDevice_t device_ = diopiDevice_t::diopi_device;
     int64_t numel_{0};
     int64_t elemsize_{0};
+    std::vector<int64_t> storageDims_{};
+    int64_t storageNumel_{0};
+    diopiMemoryFormat_t storageFormat_ = diopiMemoryFormat_t::Undefined;
 };
 
 }  // namespace ascend

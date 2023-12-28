@@ -43,20 +43,6 @@ m.def("${func_name}", [](${attrs}) {
 });
 """)
 
-    function_ascend_template = CodeTemplate("""\
-m.def("${func_name}", [](${attrs}) {
-    if (${func_name}) {
-        ${convert}
-        py::gil_scoped_release no_gil;
-        diopiError_t ret = ${call_func};
-        ${out_copy}
-        return ret;
-    } else {
-        return diopiError_t::diopiNoImplement;
-    }
-});
-""")
-
     vector_template = CodeTemplate("""\
 std::vector<${handle_type}> ${param}V(${param_num});
 for (int i = 0; i < ${param_num}; ++i)
