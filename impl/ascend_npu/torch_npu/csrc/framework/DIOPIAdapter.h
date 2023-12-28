@@ -727,17 +727,17 @@ public:
 
 class FormatCastHelper {
 public:
-    static bool IsSameGroupType(const at::Tensor& src, const at::Tensor& dst) { INTERFACE_NOT_IMPL; }
-    static void format_cast_as_base_format(const at::Tensor& src, aclFormat format) { INTERFACE_NOT_IMPL; }
+    static bool IsSameGroupType(const at::Tensor& src, const at::Tensor& dst);
+    static void format_cast_as_base_format(const at::Tensor& src, aclFormat format);
     using FormatCastFunc = std::function<at::Tensor(at::Tensor&, const at::Tensor&)>;
-    static bool format_cast_between_group(at::Tensor& dst, const at::Tensor& src, FormatCastFunc format_cast_inside_group) { INTERFACE_NOT_IMPL; }
+    static bool format_cast_between_group(at::Tensor& dst, const at::Tensor& src, FormatCastFunc format_cast_inside_group);
     // this interface is similar to CastBackToOriFormat, but CastBackToOriFormat may have overload problem.
-    static at::Tensor ApplyBaseFormatTensorBy(const at::Tensor& src) { INTERFACE_NOT_IMPL; }
-    static at::Tensor& CovertSelfToBaseFormat(at::Tensor& src) { INTERFACE_NOT_IMPL; }
+    static at::Tensor ApplyBaseFormatTensorBy(const at::Tensor& src);
+    static at::Tensor& CovertSelfToBaseFormat(at::Tensor& src);
 
 private:
     // help function of format_cast_between_group
-    static void base_format_cast_nocheck(at::Tensor& dst, const at::Tensor& src) { INTERFACE_NOT_IMPL; }
+    static void base_format_cast_nocheck(at::Tensor& dst, const at::Tensor& src);
 };  // class FormatCastHelper
 
 class NpuUtils {
