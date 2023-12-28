@@ -12,60 +12,60 @@
 namespace impl {
 namespace ascend {
 void formatCastInsideGroup(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t in) {
-    AscendTensor tensor_in(in);
-    AscendTensor tensor_out(out);
-    AclOpRunner<1, 1>("Identity", ctx).addInput(tensor_in).addOutput(tensor_out).run();
+    AscendTensor tensorIn(in);
+    AscendTensor tensorOut(out);
+    AclOpRunner<1, 1>("Identity", ctx).addInput(tensorIn).addOutput(tensorOut).run();
 }
 void formatCastBetweenGroup(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t in) {
-    diopiStorageDesc_t desc_in;
-    diopiGetTensorStorageDesc(in, &desc_in);
-    diopiStorageDesc_t desc_out;
-    diopiGetTensorStorageDesc(out, &desc_out);
-    bool isInputBaseFormat = FormatHelper::isBaseFormat(desc_in.format);
-    bool isOutputBaseFormat = FormatHelper::isBaseFormat(desc_out.format);
+    diopiStorageDesc_t descIn;
+    diopiGetTensorStorageDesc(in, &descIn);
+    diopiStorageDesc_t descOut;
+    diopiGetTensorStorageDesc(out, &descOut);
+    bool isInputBaseFormat = FormatHelper::isBaseFormat(descIn.format);
+    bool isOutputBaseFormat = FormatHelper::isBaseFormat(descOut.format);
     if (isInputBaseFormat && !isOutputBaseFormat) {
-        diopiMemoryFormat_t input_format_tmp = desc_in.format;
-        desc_in.format = FormatHelper::getDiopiBaseFormat(desc_out.format);
-        diopiSetTensorStorageDesc(in, desc_in);
+        diopiMemoryFormat_t inputFormatTmp = descIn.format;
+        descIn.format = FormatHelper::getDiopiBaseFormat(descOut.format);
+        diopiSetTensorStorageDesc(in, descIn);
         formatCastInsideGroup(ctx, out, in);
-        desc_in.format = input_format_tmp;
-        diopiSetTensorStorageDesc(in, desc_in);
+        descIn.format = inputFormatTmp;
+        diopiSetTensorStorageDesc(in, descIn);
     } else if (!isInputBaseFormat && isOutputBaseFormat) {
-        diopiMemoryFormat_t out_format_tmp = desc_out.format;
-        desc_out.format = FormatHelper::getDiopiBaseFormat(desc_in.format);
-        diopiSetTensorStorageDesc(out, desc_out);
+        diopiMemoryFormat_t outFormatTmp = descOut.format;
+        descOut.format = FormatHelper::getDiopiBaseFormat(descIn.format);
+        diopiSetTensorStorageDesc(out, descOut);
         formatCastInsideGroup(ctx, out, in);
-        desc_out.format = out_format_tmp;
-        diopiSetTensorStorageDesc(out, desc_out);
+        descOut.format = outFormatTmp;
+        diopiSetTensorStorageDesc(out, descOut);
     } else {
         ASCEND_CHECK_ABORT(false, "format cast not support");
     }
 }
 
-diopiError_t diopiFormatCast(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiTensorHandle_t in, diopiMemoryFormat_t target_format) {
-    AscendTensor tensor_in(in);
-    if (tensor_in.storageFormat() == target_format) {
+diopiError_t diopiFormatCast(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiTensorHandle_t in, diopiMemoryFormat_t targetFormat) {
+    AscendTensor tensorIn(in);
+    if (tensorIn.storageFormat() == targetFormat) {
         *out = in;
         return diopiSuccess;
     }
-    if (FormatHelper::isBaseFormat(tensor_in.storageFormat()) && FormatHelper::isBaseFormat(target_format)) {
+    if (FormatHelper::isBaseFormat(tensorIn.storageFormat()) && FormatHelper::isBaseFormat(targetFormat)) {
         diopiStorageDesc_t desc;
         diopiGetTensorStorageDesc(in, &desc);
-        desc.format = target_format;
+        desc.format = targetFormat;
         *out = in;
         diopiSetTensorStorageDesc(*out, desc);
         return diopiSuccess;
     }
-    std::vector<int64_t> storage_sizes_out = FormatHelper::getStorageSizes(target_format, tensor_in.shape());
-    diopiStorageDesc_t desc_out;
-    desc_out.sizes.data = storage_sizes_out.data();
-    desc_out.sizes.len = storage_sizes_out.size();
-    desc_out.format = target_format;
-    diopiRequireTensor(ctx, out, &desc_out.sizes, nullptr, tensor_in.dtype(), tensor_in.device());
-    diopiSetTensorStorageDesc(*out, desc_out);
+    std::vector<int64_t> storageSizesOut = FormatHelper::getStorageSizes(targetFormat, tensorIn.shape());
+    diopiStorageDesc_t descOut;
+    descOut.sizes.data = storageSizesOut.data();
+    descOut.sizes.len = storageSizesOut.size();
+    descOut.format = targetFormat;
+    diopiRequireTensor(ctx, out, &descOut.sizes, nullptr, tensorIn.dtype(), tensorIn.device());
+    diopiSetTensorStorageDesc(*out, descOut);
     // set tensor metadata
     diopiCopyTensorMetaData(*out, in);
-    if (FormatHelper::getDiopiBaseFormat(target_format) != FormatHelper::getDiopiBaseFormat(tensor_in.storageFormat())) {
+    if (FormatHelper::getDiopiBaseFormat(targetFormat) != FormatHelper::getDiopiBaseFormat(tensorIn.storageFormat())) {
         formatCastBetweenGroup(ctx, *out, in);
     } else {
         formatCastInsideGroup(ctx, *out, in);
