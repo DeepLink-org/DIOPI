@@ -2873,6 +2873,8 @@ at::Tensor wrapper__transpose(const at::Tensor& self, int64_t dim0, int64_t dim1
     return acl_op::npu_transpose(self, perms);
 }
 
+at::Scalar wrapper___local_scalar_dense(const at::Tensor& self) { return at_npu::native::NPUNativeFunctions::_local_scalar_dense(self); }
+
 }  // namespace
 
 namespace at {
@@ -2905,6 +2907,7 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("masked_fill_.Scalar", TORCH_FN(wrapper_Scalar_masked_fill_));
     m.impl("repeat", TORCH_FN(wrapper__repeat));
     m.impl("transpose.int", TORCH_FN(wrapper__transpose));
+    m.impl("_local_scalar_dense", TORCH_FN(wrapper___local_scalar_dense));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }

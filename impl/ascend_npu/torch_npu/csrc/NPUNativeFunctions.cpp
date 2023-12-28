@@ -7,6 +7,34 @@ namespace at_npu::native {
 
 #define CUSTOM_OP_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
 
+c10::Scalar NPUNativeFunctions::_local_scalar_dense(const at::Tensor& self) {
+    c10::Scalar r;
+    AT_DISPATCH_ALL_TYPES_AND3(at::ScalarType::Half, at::ScalarType::Bool, at::ScalarType::BFloat16, self.scalar_type(), "_local_scalar_dense_npu", [&] {
+        scalar_t value = 0;
+        c10_npu::NPUStream copy_stream = c10_npu::getCurrentNPUStream();
+        // Synchronous copy after stream synchronization
+        aclError error = c10_npu::acl::AclrtSynchronizeStreamWithTimeout(copy_stream);
+        if (error != ACL_ERROR_NONE) {
+            C10_NPU_SHOW_ERR_MSG();
+            AT_ERROR("ACL stream synchronize failed.");
+            return;
+        }
+
+        error = CalcuOpUtil::AclrtMemcpyWithModeSwitch(&value,
+                                                       sizeof(scalar_t),
+                                                       std::make_pair(self.storage().unsafeGetStorageImpl(), self.storage_offset() * self.itemsize()),
+                                                       sizeof(scalar_t),
+                                                       ACL_MEMCPY_DEVICE_TO_HOST);
+        if (error != ACL_ERROR_NONE) {
+            C10_NPU_SHOW_ERR_MSG();
+            AT_ERROR("aclrtMemcpy device to host error.");
+            return;
+        }
+        r = c10::Scalar(value);
+    });
+    return r;
+}
+
 at::Tensor format_cast_impl_out_npu(at::Tensor& dst, const at::Tensor& src) {
     string srcFormat = FormatHelper::GetFormatName(src);
     string dstFormat = FormatHelper::GetFormatName(dst);
