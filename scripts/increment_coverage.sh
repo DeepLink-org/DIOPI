@@ -3,8 +3,10 @@ export LANG=en_US.UTF-8
 ROOT_DIR=$(dirname "$(cd "$(dirname ${BASH_SOURCE[0]})" && pwd)")
 repo_name='deeplink.framework'
 include='impl'
+cp_exclude=''
 if [[ $ROOT_DIR == *$repo_name* ]]; then
   include='dipu/torch_dipu/csrc_dipu'
+  cp_exclude='mmlab_pack'
 fi
 cd $ROOT_DIR && rm -rf coverage && mkdir coverage
 echo "entering "$ROOT_DIR
@@ -16,7 +18,7 @@ if [ "$remote_count" -eq 1 ]; then echo "Not from dev repository" && exit 0 ;fi
 commit_hash=$(git rev-parse HEAD)
 parent_count=$(git log --pretty=%P -n 1 $commit_hash | wc -w)
 if [ $parent_count -eq 1 ]; then echo "is not Pull request" && exit 0; fi
-rsync -a ${ROOT_DIR}/../source coverage/ || (echo "cannot find the source dir" && exit 1)
+rsync -a --exclude=$cp_exclude ${ROOT_DIR}/../source coverage/ || (echo "cannot find the source dir" && exit 1)
 cd coverage/source && git log main --pretty=format:"%H" -n 100 >../commit_main.txt
 git reset --hard HEAD~1 &&newcommit=$(git rev-parse HEAD) &&git log  --pretty=format:"%H" -n 100 >../commit_merge.txt
 while read -r commit; do
