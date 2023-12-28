@@ -2,6 +2,7 @@
 
 import os
 import sys
+import shutil
 from .utils import logger
 from configs import model_config
 from .model_list import model_op_list
@@ -24,8 +25,9 @@ def gen_data(model_name: str = "", cache_path=".", fname="", diopi_case_item_fil
         model_name = "diopi"
         from diopi_configs import diopi_configs
     data_path = os.path.join(cache_path, model_name)
-    if not os.path.exists(data_path):
-        os.makedirs(data_path)
+    if os.path.exists(data_path):
+        shutil.rmtree(data_path)
+    os.makedirs(data_path)
     diopi_case_item_path = os.path.join(data_path, diopi_case_item_file)
     cfg_parse = ConfigParser(diopi_case_item_path)
     cfg_parse.parser(diopi_configs, fname)
