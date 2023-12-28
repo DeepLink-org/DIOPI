@@ -1572,16 +1572,26 @@ public:
             dims = storageDesc.base_sizes_;
         }
         auto format = storageDesc.origin_format_;
+        if (debugLevel()) {
+            std::cout << __FUNCTION__ << ":" << dataType << "," << dims << "," << format << std::endl;
+        }
+
         desc = aclCreateTensorDesc(dataType, dims.size(), dims.data(), format);
         return *this;
     }
 
     inline AclTensorDescMaker& Create(aclDataType dataType, c10::IntArrayRef dims, aclFormat format) {
+        if (debugLevel()) {
+            std::cout << __FUNCTION__ << ":" << dataType << "," << dims << "," << format << std::endl;
+        }
         desc = aclCreateTensorDesc(dataType, dims.size(), dims.data(), format);
         return *this;
     }
 
     inline AclTensorDescMaker& Create(aclDataType dataType, aclFormat format) {
+        if (debugLevel()) {
+            std::cout << __FUNCTION__ << ":" << dataType << "," << format << std::endl;
+        }
         desc = aclCreateTensorDesc(dataType, 0, nullptr, format);
         return *this;
     }
@@ -2166,19 +2176,7 @@ std::tuple<aclTensorDesc*, aclDataBuffer*> CovertToAclOutput(const at::Tensor& t
 // This class maintain the position of the current
 // OpCommandImpl object in vector, the resources in
 // the object is
-class OpCommandImpls {
-public:
-    TORCH_NPU_API static OpCommandImpls* GetInstanceByTid(std::thread::id tid);
-    TORCH_NPU_API void Push(OpCommandImpl*& ptr);
-    TORCH_NPU_API void Pop();
 
-private:
-    int32_t offset = -1;
-    c10::SmallVector<OpCommandImpl, N> objs;
-};  // class OpCommandImpls
-
-static std::unordered_map<std::thread::id, OpCommandImpls> opcommand_impls_map;
-static std::mutex map_mutex;
 static bool deterministicaclnn_oldstatus = false;
 
 void OpCommandImpl::SetDeterministic() {
@@ -2192,38 +2190,12 @@ void OpCommandImpl::SetDeterministic() {
     }
 }
 
-OpCommandImpls* OpCommandImpls::GetInstanceByTid(std::thread::id tid) {
-    if (opcommand_impls_map.find(tid) == opcommand_impls_map.end()) {
-        OpCommandImpls impl;
-        std::lock_guard<std::mutex> lock(map_mutex);
-        opcommand_impls_map[tid] = std::move(impl);
-    }
-    return &opcommand_impls_map[tid];
-}
-
-void OpCommandImpls::Push(OpCommandImpl*& ptr) {
-    ++offset;
-    if (static_cast<int32_t>(objs.size()) <= offset) {
-        OpCommandImpl impl;
-        objs.emplace_back(std::move(impl));
-    }
-    TORCH_CHECK(objs.size() > offset, "OpCommand size (", objs.size(), ") is smaller than offset (", offset, ")");
-    ptr = &objs[offset];
-}
-
-void OpCommandImpls::Pop() {
-    TORCH_CHECK(offset >= 0, "OpCommand current offset should not be less than ", offset);
-    offset -= 1;
-}
-
 OpCommand::OpCommand() {
-    aclCmds = OpCommandImpls::GetInstanceByTid(std::this_thread::get_id());
-
-    aclCmds->Push(aclCmd);
+    aclCmd = new OpCommandImpl();
     aclCmd->SetCustomHandler(nullptr);
 }
 
-OpCommand::~OpCommand() {}
+OpCommand::~OpCommand() { delete aclCmd; }
 
 OpCommand& OpCommand::Name(const string& name) {
     aclCmd->SetName(name);
@@ -2415,7 +2387,6 @@ void OpCommand::Run() {
         Sync();
     }
     aclCmd->releaseSource();
-    aclCmds->Pop();
 }
 
 OpCommand& OpCommand::Sync(c10::SmallVector<int64_t, N>& index) {

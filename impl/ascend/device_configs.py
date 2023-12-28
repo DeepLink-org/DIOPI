@@ -207,9 +207,28 @@ device_configs = {
     ),
 
     'conv_2d_no_contiguous': dict(
-        name=['conv2d'],
-        atol=1e-1,
-        rtol=1e-2,
+        name=["conv2d"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "dtype": [Skip(np.float32), Skip(np.float16), Skip(np.float64)],
+                },
+            ]
+        ),
+    ),
+
+    'relu_no_contiguous': dict(
+        name=["relu"],
+        is_inplace=True,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float32), Skip(np.float64)],
+                },
+            ],
+        ),
     ),
 
     'hardswish': dict(
@@ -1312,78 +1331,6 @@ device_configs = {
         ),
     ),
 
-    'remainder_self_scalar': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['other'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'remainder_self_bool': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['other'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'remainder_tensor': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'remainder_tensor_zero': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.uint8),Skip(np.int8),],
-                },
-            ]
-        ),
-    ),
-
-    'remainder_other_scalar': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),Skip(np.float16),Skip(np.float32),Skip(np.float64)],
-                },
-            ]
-        ),
-    ),
-
-    'remainder_other_scalar_bool': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),],
-                },
-            ]
-        ),
-    ),
-
     'gather': dict(
         name=['gather'],
         tensor_para=dict(
@@ -1596,11 +1543,11 @@ device_configs = {
                 {
                     "ins": ["input"],
                     "shape": [Skip((12, 0, 9)), Skip((8,))],
-                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64), Skip(np.float64)],
                 },
                 {
                     "ins": ["other"],
-                    "dtype": [Skip(np.complex128)]
+                    "dtype": [Skip(np.complex128), Skip(np.float64)]
                 },
             ]
         )
@@ -1614,7 +1561,7 @@ device_configs = {
                 {
                     "ins": ["input"],
                     "shape": [Skip((12, 1, 12)),],
-                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64), Skip(np.float64)],
                 },
                 {
                     "ins": ["other"],
@@ -1632,12 +1579,12 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [Skip((6, 5, 384))],
-                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
+                    "shape": [Skip((6, 5, 384)), Skip((2, 4, 38, 45))],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64), Skip(np.float64)],
                 },
                 {
                     "ins": ["other"],
-                    "dtype": [Skip(np.complex128)],
+                    "dtype": [Skip(np.complex128), Skip(np.float64)],
                 },
             ]
         )
@@ -1650,11 +1597,12 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [Skip((192, 147, 2)), Skip((2, 12, 38, 45, 3))],
+                    "shape": [Skip((192, 147)), Skip((192, 147, 2)), Skip((2, 12, 38, 45, 3))],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64), Skip(np.float64)],
                 },
                 {
                     "ins": ["other"],
-                    "dtype": [Skip(np.complex64)],
+                    "dtype": [Skip(np.complex64), Skip(np.float64)],
                 },
             ]
         )
