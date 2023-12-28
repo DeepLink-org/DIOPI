@@ -1684,18 +1684,6 @@ device_configs = {
         ),
     ),
 
-    'im2col': dict(
-        name=['im2col'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
     'flip': dict(
         name=['flip'],
         tensor_para=dict(
