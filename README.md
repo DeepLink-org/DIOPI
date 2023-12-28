@@ -60,7 +60,7 @@ DIOPI主要包含以下几个组件：
     ```
     如需指定模型：
     ```
-    python main.py --mode gen_data --model_name xxx
+    python main.py --mode gen_data --model_name resnet50
     ```
     其中支持的模型名和对应的算子可以通过如下命令获得：
     ```
@@ -80,13 +80,13 @@ DIOPI主要包含以下几个组件：
     ```
     如需指定模型，以resnet50为例：
     ```
-    python main.py --mode gen_case --model_name resnet50 --case_output_dir gencases/resnet50_case
-    python main.py --mode run_test --test_cases_path gencases/resnet50_case
+    python main.py --mode gen_case --model_name resnet50
+    python main.py --mode run_test --model_name resnet50
     ```
     如需指定某个算子， 以add为例：
     ```
     python main.py --mode gen_case --fname add
-    python main.py --mode run_test --test_cases_path gencases/diopi_case
+    python main.py --mode run_test --fname add
     ```
     如需过滤不支持的数据类型以及部分测试使用nhwc格式张量(如跳过float64以及int64测例)：
     ```
