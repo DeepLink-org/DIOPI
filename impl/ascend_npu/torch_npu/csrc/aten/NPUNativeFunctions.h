@@ -2089,7 +2089,7 @@ struct NPUNativeFunctions {
     static const at::Tensor& as_strided_(const at::Tensor& self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset) {
         OP_NOT_IMPL
     }
-    static at::Scalar _local_scalar_dense(const at::Tensor& self) { OP_NOT_IMPL }
+    static at::Scalar _local_scalar_dense(const at::Tensor& self);
     static at::Tensor arange(const at::Scalar& start, const at::Scalar& end, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
                              c10::optional<at::Device> device, c10::optional<bool> pin_memory) {
         OP_NOT_IMPL
