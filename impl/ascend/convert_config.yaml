@@ -232,7 +232,7 @@
 
 - diopiAddmm:
     dtype: (float16, float32)->float64
-    
+
 - diopiEmbeddingBackward:
     dtype: (float64)->float32
 
@@ -244,7 +244,7 @@
 
 - diopiExpand:
     dtype: (uint8, int16)->int32, (float64)->float32
-    
+
 - diopiSort:
     dtype: (float64)->float32
 
@@ -266,3 +266,12 @@
 - diopiCol2Im:
     # data type float64 of input [x] is not supported
     dtype: (float64)->float32
+
+- diopiRemainderTensor:
+    dtype: (bool, uint8, int8, int16, uint16)->int32, (float64)->float32
+
+- diopiRemainderScalar:
+    dtype: (bool, uint8, int8, int16, uint16)->int32, (float64)->float32
+
+- diopiRemainder:
+    dtype: (bool, uint8, int8, int16, uint16)->int32, (float64)->float32
