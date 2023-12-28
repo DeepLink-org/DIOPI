@@ -298,8 +298,10 @@ at::Tensor& npu_broadcast_out(const at::Tensor& self, at::IntArrayRef size, at::
 
 at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) {
     // TODO(zhaoguochun): This must be repaired
-    // return acl_op::npu_dtype_cast(self, dtype);
-    return self.cpu().to(dtype).to(self.device());
+    if (dtype == at::ScalarType::Double) {
+        dtype = at::ScalarType::Float;
+    }
+    return acl_op::npu_dtype_cast(self, dtype);
 }
 
 #if 1
