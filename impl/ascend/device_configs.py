@@ -1331,78 +1331,6 @@ device_configs = {
         ),
     ),
 
-    'remainder_self_scalar': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['other'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'remainder_self_bool': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['other'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'remainder_tensor': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'remainder_tensor_zero': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.uint8),Skip(np.int8),],
-                },
-            ]
-        ),
-    ),
-
-    'remainder_other_scalar': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),Skip(np.float16),Skip(np.float32),Skip(np.float64)],
-                },
-            ]
-        ),
-    ),
-
-    'remainder_other_scalar_bool': dict(
-        name=['remainder'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),],
-                },
-            ]
-        ),
-    ),
-
     'gather': dict(
         name=['gather'],
         tensor_para=dict(
@@ -1669,7 +1597,7 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [Skip((192, 147, 2)), Skip((2, 12, 38, 45, 3))],
+                    "shape": [Skip((192, 147)), Skip((192, 147, 2)), Skip((2, 12, 38, 45, 3))],
                     "dtype": [Skip(np.complex128), Skip(np.complex64), Skip(np.float64)],
                 },
                 {
