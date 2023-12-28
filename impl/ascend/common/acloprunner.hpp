@@ -24,6 +24,7 @@
 #include "debug.hpp"
 #include "gil_scoped_release.hpp"
 #include "impl_functions.hpp"
+#include "stream_lock.hpp"
 #include "utils.hpp"
 
 namespace impl {
@@ -630,6 +631,7 @@ public:
         diopiGetStream(context_, &stream);
         diopi::GilScopedRelease gilReleaeGuard;
         if (sync_) {
+            diopi::StreamLockGuard streamLockGuard(stream);
             CALL_ACLRT(aclopCompileAndExecuteV2(opname_.data(),
                                                 inputIndex_,
                                                 inputDescs_.data(),
@@ -643,6 +645,7 @@ public:
                                                 nullptr,
                                                 stream));
         } else {
+            diopi::StreamLockGuard streamLockGuard(stream);
             CALL_ACLRT(aclopCompileAndExecute(opname_.data(),
                                               inputIndex_,
                                               inputDescs_.data(),

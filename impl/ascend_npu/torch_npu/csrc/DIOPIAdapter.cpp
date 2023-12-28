@@ -7,6 +7,7 @@
 #include <torch/library.h>
 
 #include "../../../ascend/common/gil_scoped_release.hpp"
+#include "../../../ascend/common/stream_lock.hpp"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
@@ -2132,18 +2133,21 @@ aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool 
           }
         }
 #endif
-        ret = AclopCompileAndExecuteV2(name.c_str(),
-                                       inputSize,
-                                       const_cast<aclTensorDesc**>(params.inDesc.data()),
-                                       const_cast<aclDataBuffer**>(params.inBuffer.data()),
-                                       outputSize,
-                                       const_cast<aclTensorDesc**>(params.outDesc.data()),
-                                       params.outBuffer.data(),
-                                       params.attr,
-                                       ACL_ENGINE_SYS,
-                                       ACL_COMPILE_SYS,
-                                       NULL,
-                                       stream);
+        {
+            diopi::StreamLockGuard streamLockGuard(stream.stream());
+            ret = AclopCompileAndExecuteV2(name.c_str(),
+                                           inputSize,
+                                           const_cast<aclTensorDesc**>(params.inDesc.data()),
+                                           const_cast<aclDataBuffer**>(params.inBuffer.data()),
+                                           outputSize,
+                                           const_cast<aclTensorDesc**>(params.outDesc.data()),
+                                           params.outBuffer.data(),
+                                           params.attr,
+                                           ACL_ENGINE_SYS,
+                                           ACL_COMPILE_SYS,
+                                           NULL,
+                                           stream);
+        }
         NPU_CHECK_ERROR(ret);
         if (sync) {
             int64_t dimSize;
