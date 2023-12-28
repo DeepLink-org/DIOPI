@@ -2,6 +2,7 @@ import os
 import sys
 import pytest
 
+
 def run_test(test_cases_path="", case_output_dir="", model_name="", fname="all_ops",
              test_result_path='report.xlsx', filter_dtype=None, html_report=False, pytest_args=""):
     if test_cases_path == "":
