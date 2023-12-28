@@ -7,7 +7,7 @@ option(DYLOAD "Whether to load so in runtime by dlopen" OFF)
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/proto/include")
 include_directories("${PROJECT_SOURCE_DIR}/../adaptor/csrc")
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 set (ADAPTOR_DIR "${CMAKE_SOURCE_DIR}/../adaptor")
 set (DIOPI_TEST_DIR "${CMAKE_SOURCE_DIR}/../diopi_test")
