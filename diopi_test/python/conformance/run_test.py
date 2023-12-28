@@ -12,7 +12,7 @@ def run_test(test_cases_path="", case_output_dir="", model_name="", fname="all_o
         test_cases_path = test_cases_path
     args = [test_cases_path]
     if fname and fname != 'all_ops':
-        args.append(f'-k {fname}')
+        args.append(f'-k _{fname}_')
     if filter_dtype:
         filter_dtype_str = " and ".join(
             [f"not {dtype}" for dtype in filter_dtype]
