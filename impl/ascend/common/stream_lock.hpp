@@ -7,7 +7,7 @@ private:
     void* mutex_ = nullptr;
 
 public:
-    StreamLockGuard(void* aclrtStreamHandle);
+    explicit StreamLockGuard(void* aclrtStreamHandle);
     ~StreamLockGuard();
 };
 
