@@ -2700,7 +2700,7 @@ at::Generator buildATen(diopiGeneratorHandle_t generator) {
 }
 
 at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides, const int64_t storageOffset) {
-    // TORCH_CHECK(c10::multiply_integers(sizes) <= input.numel());
+    TORCH_CHECK(c10::multiply_integers(sizes) <= input.numel());
     TORCH_CHECK(!input.is_cpu());
     std::vector<int64_t> stridesVec(sizes.size(), 1);
     if (strides.size() > 0) {
@@ -2750,8 +2750,7 @@ at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blo
 at::Tensor wrapper__view(const at::Tensor& self, at::IntArrayRef size) { return impl::aten::viewStorage(self, size); }
 
 at::Tensor wrapper__as_strided(const at::Tensor& self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset) {
-    // return at_npu::native::NPUNativeFunctions::as_strided(self, size, stride, storage_offset.value_or(0));
-    return impl::aten::viewStorage(self, size, stride, storage_offset.value_or(0));
+    return at_npu::native::NPUNativeFunctions::as_strided(self, size, stride, storage_offset.value_or(0));
 }
 
 const at::Tensor& wrapper__resize_(const at::Tensor& self, at::IntArrayRef size, c10::optional<at::MemoryFormat> memory_format) {

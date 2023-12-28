@@ -285,8 +285,10 @@ at::Tensor format_contiguous(const at::Tensor& self) { return NpuUtils::format_c
 bool check_match(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
 void check_memory_overlaps(at::TensorList inputs, at::TensorList outputs) { CUSTOM_OP_NOT_IMPL; }
 int64_t get_storage_size(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
-__attribute__((__visibility__("default"))) at::Tensor npu_format_cast(const at::Tensor& self, int64_t acl_format) { CUSTOM_OP_NOT_IMPL; }
-at::Tensor _npu_format_cast(const at::Tensor& self, int64_t acl_format) { CUSTOM_OP_NOT_IMPL; }
+__attribute__((__visibility__("default"))) at::Tensor npu_format_cast(const at::Tensor& self, int64_t acl_format) {
+    return npu_format_cast_impl(self, acl_format);
+}
+at::Tensor _npu_format_cast(const at::Tensor& self, int64_t acl_format) { return npu_format_cast_impl(self, acl_format); }
 
 at::Tensor& npu_view_copy(at::Tensor& self, const at::Tensor& other, bool non_blocking) { acl_op::npu_view_copy(self, other, non_blocking); }
 at::Tensor npu_transpose(const at::Tensor& self, at::IntArrayRef perm, bool require_contiguous) { CUSTOM_OP_NOT_IMPL; }
