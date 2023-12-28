@@ -370,7 +370,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
             int64_t total_input_length = 0;
             diopiTensorHandle_t zeros;
             newshape.len = 1;
-            shape[0] = itemsize * max_seq_len * local_head_num * size_per_head;
+            shape[0] = max_seq_len * local_head_num * size_per_head;
             diopiRequireTensor(ctx, &zeros, &newshape, nullptr, dtype, device);
             impl::cuda::diopiFill(ctx, zeros, &scalar_dzero);
             void* zeros_ptr;
@@ -2526,7 +2526,7 @@ DIOPI_API diopiError_t diopiStopWordsCriterion(diopiContextHandle_t ctx, diopiCo
         const int32_t* base_stop_word = stop_words_ptr + batch_idx * 2 * stop_words_len;
 
         for (int64_t stop_word_idx = 0; stop_word_idx < stop_words_len; ++stop_word_idx) {
-            if (base_stop_words_host[stop_word_idx] < 0) {
+            if (base_offsets_host[stop_word_idx] < 0) {
                 continue;
             }
             const int32_t stop_word_start_idx = (stop_word_idx > 0) ? base_offsets_host[stop_word_idx - 1] : 0;
@@ -2640,7 +2640,7 @@ DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensor
         const int32_t* base_bad_word = share_words ? bad_words_ptr : bad_words_ptr + batch_idx * 2 * bad_words_len;
 
         for (int64_t bad_word_idx = 0; bad_word_idx < bad_words_len; ++bad_word_idx) {
-            if (base_bad_words_host[bad_word_idx] < 0) {
+            if (base_offsets_host[bad_word_idx] < 0) {
                 continue;
             }
             const int32_t bad_word_start_idx = (bad_word_idx > 0) ? base_offsets_host[bad_word_idx - 1] : 0;
