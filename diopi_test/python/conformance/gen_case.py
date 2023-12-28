@@ -38,19 +38,7 @@ def gen_case(cache_path=".", cur_dir="", model_name="", fname="", impl_folder=""
 
     if impl_folder != "":
         cfg_path = device_case_item_path % os.path.basename(impl_folder)
-
-        device_config_path = os.path.join(impl_folder, "device_configs.py")
-        dst_path = os.path.join(cur_dir, "device_configs.py")
-
-        def unlink_device():
-            if os.path.islink(dst_path):
-                os.unlink(dst_path)
-
-        unlink_device()
-        os.symlink(device_config_path, dst_path)
-        import atexit
-
-        atexit.register(unlink_device)
+        sys.path.append(impl_folder)
 
         from device_configs import device_configs
 

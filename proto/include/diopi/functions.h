@@ -3433,6 +3433,8 @@ DIOPI_API diopiError_t diopiAmpUpdateScaleInp(diopiContextHandle_t ctx, diopiTen
                                               diopiConstTensorHandle_t found_inf, double scale_growth_factor, double scale_backoff_factor,
                                               int32_t growth_interval);
 
+DIOPI_API diopiError_t diopiFormatCast(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiTensorHandle_t in, diopiMemoryFormat_t memoryFormat);
+
 #if defined(__cplusplus)
 }
 #endif  // __cplusplus

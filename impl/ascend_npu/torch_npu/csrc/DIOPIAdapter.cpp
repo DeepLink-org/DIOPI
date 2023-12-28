@@ -80,6 +80,69 @@ aclError AclrtMemcpyParamCheck(void* dst, size_t destMax, const void* src, size_
 namespace at_npu {
 namespace native {
 
+bool FormatCastHelper::IsSameGroupType(const at::Tensor& src, const at::Tensor& dst) {
+    auto src_format = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_.npu_format_;
+    auto dst_format = torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_.npu_format_;
+    return FormatHelper::GetBaseFormat(src_format) == FormatHelper::GetBaseFormat(dst_format);
+}
+
+void FormatCastHelper::base_format_cast_nocheck(at::Tensor& dst, const at::Tensor& src) {
+    dst.set_(dst.storage(), src.storage_offset(), src.sizes(), src.strides());
+    NPUNativeFunctions::copy_memory_(dst, src, true);
+}
+
+void FormatCastHelper::format_cast_as_base_format(const at::Tensor& src, aclFormat format) {
+    AT_ASSERT(FormatHelper::IsBaseFormatType(format), "dst format must be base format");
+    AT_ASSERT(FormatHelper::IsBaseFormatType(src), "src format must be base format");
+
+    auto& src_desc = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_;
+    // due to CANN principle : if the ori format of a tensor is the
+    // same as the npu format, then its base shape must be same as storage shape
+    // so we should not change the storage shape when format cast between base format
+    src_desc.origin_format_ = format;
+    src_desc.npu_format_ = format;
+    return;
+}
+
+bool FormatCastHelper::format_cast_between_group(at::Tensor& dst, const at::Tensor& src, FormatCastHelper::FormatCastFunc format_cast_inside_group) {
+    if (FormatHelper::IsBaseFormatType(src)) {
+        if (FormatHelper::IsBaseFormatType(dst)) {
+            // src base format (src format) -> dst base format
+            base_format_cast_nocheck(dst, src);  // only need to copy memory
+            return true;
+        } else {
+            // src base format (src format) -> dst base format
+            // dst base format -> dst format
+            auto src_base_format = FormatHelper::GetBaseFormat(src);
+            format_cast_as_base_format(src, FormatHelper::GetBaseFormat(dst));  // prepare: covert src to dst base format
+            format_cast_inside_group(dst, src);                                 // src base format (src format) -> dst base format
+            format_cast_as_base_format(src, src_base_format);                   // recover: dst base format -> dst format
+            return true;
+        }
+    } else {
+        if (FormatHelper::IsBaseFormatType(dst)) {
+            // src format -> src base format
+            // src base format -> dst base format (dst format)
+            auto dst_base_format = FormatHelper::GetBaseFormat(dst);
+            format_cast_as_base_format(dst, FormatHelper::GetBaseFormat(src));  // prepare: cover dst to src base format
+            format_cast_inside_group(dst, src);                                 // src format -> src base format
+            format_cast_as_base_format(dst, dst_base_format);                   // recover: src base format -> dst format
+            return true;
+        }
+    }
+    return false;
+}
+
+at::Tensor FormatCastHelper::ApplyBaseFormatTensorBy(const at::Tensor& src) {
+    auto format = FormatHelper::GetBaseFormat(src);
+    return custom_ops::npu_format_cast(src, format);
+}
+
+at::Tensor& FormatCastHelper::CovertSelfToBaseFormat(at::Tensor& src) {
+    auto format = FormatHelper::GetBaseFormat(src);
+    return custom_ops::npu_format_cast_(src, format);
+}
+
 UnifiedResult OpPreparation::binary_op_check(at::Tensor& out, const at::Tensor& a, const at::Tensor& b, bool check_mem_overlap) {
     UnifiedResult unified_result;
     unified_result.common_type = out.scalar_type();
@@ -1572,16 +1635,26 @@ public:
             dims = storageDesc.base_sizes_;
         }
         auto format = storageDesc.origin_format_;
+        if (debugLevel()) {
+            std::cout << __FUNCTION__ << ":" << dataType << "," << dims << "," << format << std::endl;
+        }
+
         desc = aclCreateTensorDesc(dataType, dims.size(), dims.data(), format);
         return *this;
     }
 
     inline AclTensorDescMaker& Create(aclDataType dataType, c10::IntArrayRef dims, aclFormat format) {
+        if (debugLevel()) {
+            std::cout << __FUNCTION__ << ":" << dataType << "," << dims << "," << format << std::endl;
+        }
         desc = aclCreateTensorDesc(dataType, dims.size(), dims.data(), format);
         return *this;
     }
 
     inline AclTensorDescMaker& Create(aclDataType dataType, aclFormat format) {
+        if (debugLevel()) {
+            std::cout << __FUNCTION__ << ":" << dataType << "," << format << std::endl;
+        }
         desc = aclCreateTensorDesc(dataType, 0, nullptr, format);
         return *this;
     }
@@ -2166,19 +2239,7 @@ std::tuple<aclTensorDesc*, aclDataBuffer*> CovertToAclOutput(const at::Tensor& t
 // This class maintain the position of the current
 // OpCommandImpl object in vector, the resources in
 // the object is
-class OpCommandImpls {
-public:
-    TORCH_NPU_API static OpCommandImpls* GetInstanceByTid(std::thread::id tid);
-    TORCH_NPU_API void Push(OpCommandImpl*& ptr);
-    TORCH_NPU_API void Pop();
 
-private:
-    int32_t offset = -1;
-    c10::SmallVector<OpCommandImpl, N> objs;
-};  // class OpCommandImpls
-
-static std::unordered_map<std::thread::id, OpCommandImpls> opcommand_impls_map;
-static std::mutex map_mutex;
 static bool deterministicaclnn_oldstatus = false;
 
 void OpCommandImpl::SetDeterministic() {
@@ -2192,38 +2253,12 @@ void OpCommandImpl::SetDeterministic() {
     }
 }
 
-OpCommandImpls* OpCommandImpls::GetInstanceByTid(std::thread::id tid) {
-    if (opcommand_impls_map.find(tid) == opcommand_impls_map.end()) {
-        OpCommandImpls impl;
-        std::lock_guard<std::mutex> lock(map_mutex);
-        opcommand_impls_map[tid] = std::move(impl);
-    }
-    return &opcommand_impls_map[tid];
-}
-
-void OpCommandImpls::Push(OpCommandImpl*& ptr) {
-    ++offset;
-    if (static_cast<int32_t>(objs.size()) <= offset) {
-        OpCommandImpl impl;
-        objs.emplace_back(std::move(impl));
-    }
-    TORCH_CHECK(objs.size() > offset, "OpCommand size (", objs.size(), ") is smaller than offset (", offset, ")");
-    ptr = &objs[offset];
-}
-
-void OpCommandImpls::Pop() {
-    TORCH_CHECK(offset >= 0, "OpCommand current offset should not be less than ", offset);
-    offset -= 1;
-}
-
 OpCommand::OpCommand() {
-    aclCmds = OpCommandImpls::GetInstanceByTid(std::this_thread::get_id());
-
-    aclCmds->Push(aclCmd);
+    aclCmd = new OpCommandImpl();
     aclCmd->SetCustomHandler(nullptr);
 }
 
-OpCommand::~OpCommand() {}
+OpCommand::~OpCommand() { delete aclCmd; }
 
 OpCommand& OpCommand::Name(const string& name) {
     aclCmd->SetName(name);
@@ -2415,7 +2450,6 @@ void OpCommand::Run() {
         Sync();
     }
     aclCmd->releaseSource();
-    aclCmds->Pop();
 }
 
 OpCommand& OpCommand::Sync(c10::SmallVector<int64_t, N>& index) {

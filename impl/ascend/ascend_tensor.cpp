@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "common/debug.hpp"
+#include "common/format_helper.h"
 
 namespace impl {
 namespace ascend {
@@ -147,7 +148,7 @@ std::vector<int64_t> AscendTensor::getAclMemShape() const {
 int64_t AscendTensor::getAclMemBufferSize() const {
     if (this->isContiguous()) {
         if (dim() > 0) {
-            return this->numel() * this->elemsize();
+            return this->storageNumel() * this->elemsize();
         } else {
             return this->elemsize();
         }

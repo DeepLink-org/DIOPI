@@ -149,6 +149,7 @@ diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, di
     } else {
         storage_ = std::make_shared<Storage>(device_malloc, device_free, nbytes);
     }
+    storage_->initDesc(shape_);
     if (src != nullptr) {
         diopiTensorCopyFromBuffer(context, src, this);
     }
@@ -170,6 +171,7 @@ diopiTensor& diopiTensor::operator=(const diopiTensor& other) {
     } else {
         storage_ = std::make_shared<Storage>(device_malloc, device_free, other.nbytes());
     }
+    storage_->initDesc(shape_);
 
     const void* src = other.data();
     if (src == nullptr) {
@@ -187,6 +189,12 @@ diopiTensor& diopiTensor::operator=(const diopiTensor& other) {
     return *this;
 }
 
+void diopiTensor::copyMetaData(const diopiTensor& other) {
+    shape_ = other.shape_;
+    stride_ = other.stride_;
+    numel_ = other.numel_;
+}
+
 bool diopiTensor::resetShape(const diopiSize_t* size) {
     int64_t numel = 1;
     for (int64_t i = 0; i < size->len; ++i) {
@@ -202,6 +210,7 @@ bool diopiTensor::resetShape(const diopiSize_t* size) {
         stride_[i] = strideTemp;
         strideTemp *= size->data[i];
     }
+    storage_->initDesc(shape_);
     return true;
 }
 
@@ -247,6 +256,21 @@ DIOPI_RT_API diopiError_t diopiGetTensorElemSize(diopiConstTensorHandle_t th, in
 
 DIOPI_RT_API diopiError_t diopiGetTensorStoragePtr(diopiConstTensorHandle_t th, void** pStoragePtr) {
     *pStoragePtr = const_cast<void*>(th->data());
+    return diopiSuccess;
+}
+
+DIOPI_RT_API diopiError_t diopiGetTensorStorageDesc(diopiConstTensorHandle_t pth, diopiStorageDesc_t* desc) {
+    pth->getStorageDesc(desc);
+    return diopiSuccess;
+}
+
+DIOPI_RT_API diopiError_t diopiSetTensorStorageDesc(diopiTensorHandle_t pth, const diopiStorageDesc_t& desc) {
+    pth->setStorageDesc(desc);
+    return diopiSuccess;
+}
+
+DIOPI_RT_API diopiError_t diopiCopyTensorMetaData(diopiTensorHandle_t dstPth, diopiConstTensorHandle_t srcPth) {
+    dstPth->copyMetaData(*srcPth);
     return diopiSuccess;
 }
 

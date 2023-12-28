@@ -7,7 +7,64 @@ namespace at_npu::native {
 
 #define CUSTOM_OP_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
 
-at::Tensor& NPUNativeFunctions::npu_format_cast_(at::Tensor& self, const at::Tensor& src) { CUSTOM_OP_NOT_IMPL; }
+at::Tensor format_cast_impl_out_npu(at::Tensor& dst, const at::Tensor& src) {
+    string srcFormat = FormatHelper::GetFormatName(src);
+    string dstFormat = FormatHelper::GetFormatName(dst);
+
+    if (!FormatCastHelper::IsSameGroupType(src, dst)) {
+        bool res = FormatCastHelper::format_cast_between_group(dst, src, format_cast_impl_out_npu);
+        if (!res) {
+            AT_ERROR("unsupport cast from ", srcFormat, " to ", dstFormat);
+        }
+        return dst;
+    }
+
+    // NpuStorageOffsetGuard guard_input(const_cast<at::Tensor &>(src));
+    // NpuStorageOffsetGuard guard_output(dst);
+    OpCommand cmd;
+    cmd.Name("Identity").InputWithoutContiguous(src).Output(dst).Run();
+    return dst;
+}
+
+// conver self to acl_format, write the result into new result tensor
+at::Tensor npu_format_cast_impl(const at::Tensor& src, int64_t acl_format) {
+    auto src_desc = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_;
+    if (src_desc.npu_format_ == acl_format) {
+        NPU_LOGD("no need to do format cast");
+        return src;
+    }
+    if (FormatHelper::IsBaseFormatType(src) && FormatHelper::IsBaseFormatType(static_cast<aclFormat>(acl_format))) {
+        FormatCastHelper::format_cast_as_base_format(src, static_cast<aclFormat>(acl_format));
+        return src;
+    }
+
+    at::Tensor dst = OpPreparation::ApplyTensorWithFormat(src_desc.base_sizes_, src.options(), acl_format);
+
+    // calculate the output result of the NPU
+    format_cast_impl_out_npu(dst, src);
+
+    // format cast only change physical layout of base tensor and view tensor's
+    // metadata remain unchanged
+    dst.set_(dst.storage(), src.storage_offset(), src.sizes(), src.strides());
+    return dst;
+}
+
+// convert src from src_format to dst_format, write the result into dst
+at::Tensor& NPUNativeFunctions::npu_format_cast_(at::Tensor& dst, const at::Tensor& src) {
+    torch_npu::utils::torch_check_npu(dst);
+    torch_npu::utils::torch_check_npu(src);
+    auto src_desc = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_;
+    auto dst_desc = torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_;
+    if (src_desc.npu_format_ == dst_desc.npu_format_) {
+        dst.copy_(src);
+        return dst;
+    }
+
+    // calculate the output result of the NPU
+    format_cast_impl_out_npu(dst, src);
+
+    return dst;
+}
 
 at::Tensor NPUNativeFunctions::contiguous(const at::Tensor& self, at::MemoryFormat memory_format) {
     if (self.is_contiguous(memory_format)) {
@@ -130,9 +187,44 @@ namespace custom_ops {
 
 int64_t npu_change_data_ptr(const at::Tensor& dst, const at::Tensor& src, int64_t index) { CUSTOM_OP_NOT_IMPL; }
 int64_t get_npu_format(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
-__attribute__((__visibility__("default"))) at::Tensor npu_format_cast(const at::Tensor& self, const at::Tensor& dst) { CUSTOM_OP_NOT_IMPL; }
-at::Tensor& npu_format_cast_(at::Tensor& self, int64_t acl_format) { CUSTOM_OP_NOT_IMPL; }
-at::Tensor& npu_format_cast_(at::Tensor& self, const at::Tensor& src) { CUSTOM_OP_NOT_IMPL; }
+
+at::Tensor npu_format_cast(const at::Tensor& self, const at::Tensor& dst) {
+    torch_npu::utils::torch_check_npu(dst);
+    auto dst_desc = torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_;
+    int64_t dst_format = dst_desc.npu_format_;
+    return npu_format_cast_impl(self, dst_format);
+}
+
+at::Tensor& npu_format_cast_(at::Tensor& src, int64_t acl_format) {
+    torch_npu::utils::torch_check_npu(src);
+    auto src_desc = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_;
+    if (src_desc.npu_format_ == acl_format) {
+        return src;
+    }
+    if (FormatHelper::IsBaseFormatType(src) && FormatHelper::IsBaseFormatType(static_cast<aclFormat>(acl_format))) {
+        FormatCastHelper::format_cast_as_base_format(src, static_cast<aclFormat>(acl_format));
+        return src;
+    }
+
+    at::Tensor dst = OpPreparation::ApplyTensorWithFormat(src_desc.base_sizes_, src.options(), acl_format);
+
+    // calculate the output result of the NPU
+    format_cast_impl_out_npu(dst, src);
+
+    // format cast only change physical layout of base tensor and view tensor's
+    // metadata remain unchanged
+    src.set_(dst.storage(), src.storage_offset(), src.sizes(), src.strides());
+
+    return src;
+}
+
+at::Tensor& npu_format_cast_(at::Tensor& self, const at::Tensor& src) {
+    torch_npu::utils::torch_check_npu(src);
+    auto dst_desc = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_;
+    int64_t dst_format = dst_desc.npu_format_;
+    return npu_format_cast_(self, dst_format);
+}
+
 at::Tensor empty_with_format(at::IntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout, c10::optional<at::Device> device,
                              c10::optional<bool> pin_memory, int64_t acl_format) {
     CUSTOM_OP_NOT_IMPL;
@@ -145,8 +237,50 @@ at::Tensor empty_with_format(at::IntArrayRef size, c10::optional<at::DimnameList
                              c10::optional<at::Device> device, c10::optional<bool> pin_memory, int64_t acl_format) {
     CUSTOM_OP_NOT_IMPL;
 }
-at::Tensor& copy_memory_(at::Tensor& self, const at::Tensor& src, bool non_blocking) { CUSTOM_OP_NOT_IMPL; }
-at::Tensor format_contiguous(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
+at::Tensor& copy_memory_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
+    AT_ASSERT(at_npu::key::isDeviceTensor(src), "copy_memory_ only support npu tensor");
+    AT_ASSERT(src.dtype() == self.dtype(), "input tensors of copy_memory_ should have same dtype");
+    // AT_ASSERT(
+    //     src.is_contiguous() && self.is_contiguous(),
+    //     "input tensors of copy_memory_ should be contiguous");
+    AT_ASSERT(src.device().index() == self.device().index(), "input tensors of copy_memory_ should have same device index");
+    auto dst_desc = torch_npu::NPUBridge::GetNpuStorageImpl(self)->npu_desc_;
+    auto src_desc = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_;
+
+    int dst_size = 0;
+    int src_size = 0;
+
+    if (FormatHelper::IsPadded(&self)) {
+        AT_ASSERT(self.storage_offset() == 0);
+        dst_size = c10::multiply_integers(dst_desc.storage_sizes_);
+    } else {
+        auto dst_element = c10::multiply_integers(self.sizes());
+        auto dst_storage = c10::multiply_integers(dst_desc.storage_sizes_);
+        dst_size = (dst_element > dst_storage) ? dst_storage : dst_element;
+    }
+
+    if (FormatHelper::IsPadded(&src)) {
+        AT_ASSERT(src.storage_offset() == 0);
+        src_size = c10::multiply_integers(src_desc.storage_sizes_);
+    } else {
+        auto src_element = c10::multiply_integers(src.sizes());
+        auto src_storage = c10::multiply_integers(src_desc.storage_sizes_);
+        src_size = (src_element > src_storage) ? src_storage : src_element;
+    }
+
+    // Designed for the gather of tensors, ignoring npu_format_ and
+    // copying continuous memory between npu tensors.
+    auto ret = CalcuOpUtil::LaunchAsyncCopyTaskWithModeSwitch(self, dst_size * self.itemsize(), src, dst_size * self.itemsize(), ACL_MEMCPY_DEVICE_TO_DEVICE);
+    NPU_CHECK_ERROR(ret);
+
+    if (!non_blocking) {
+        c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
+        NPU_CHECK_ERROR(c10_npu::acl::AclrtSynchronizeStreamWithTimeout(stream));
+    }
+    return self;
+}
+
+at::Tensor format_contiguous(const at::Tensor& self) { return NpuUtils::format_contiguous(self); }
 
 bool check_match(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
 void check_memory_overlaps(at::TensorList inputs, at::TensorList outputs) { CUSTOM_OP_NOT_IMPL; }
@@ -162,25 +296,68 @@ at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size) { return 
 
 at::Tensor& npu_broadcast_out(const at::Tensor& self, at::IntArrayRef size, at::Tensor& out) { return acl_op::npu_broadcast_out(self, size, out); }
 
+at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) {
+    // TODO(zhaoguochun): This must be repaired
+    // return acl_op::npu_dtype_cast(self, dtype);
+    return self.cpu().to(dtype).to(self.device());
+}
+
+#if 1
 at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
-    at::Tensor source = src;
-    if (!source.is_contiguous()) {
-        at::Tensor sourceTemp = at_npu::native::empty_npu(source.sizes(), source.options());
-        sourceTemp.copy_(source);
-        source = sourceTemp;
-    }
+    at::Tensor source = src.contiguous();
+
     if (src.sizes() != self.sizes()) {
         source = npu_broadcast(source, self.sizes());
     }
-    if (source.strides() == self.strides()) {
-        acl_op::npu_dtype_cast_(self, source);
+    if (source.strides() == self.strides() && self.is_contiguous()) {
+        // TODO(zhaoguochun): This must be repaired
+        // acl_op::npu_dtype_cast_(self, source);
+        self.copy_(source.cpu().to(self.scalar_type()));
     } else {
         at::Tensor selfTemp = at_npu::native::empty_npu(source.sizes(), self.options());
-        acl_op::npu_dtype_cast_(selfTemp, source);
+        // TODO(zhaoguochun): This must be repaired
+        // acl_op::npu_dtype_cast_(selfTemp, source);
+        selfTemp.copy_(source.cpu().to(self.scalar_type()));
         self.copy_(selfTemp);
     }
     return self;
 }
+#else
+
+at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
+    DEBUG_ARGS(self)
+    DEBUG_ARGS(src)
+    if (self.sizes() == src.sizes() && self.strides() == src.strides()) {
+        acl_op::npu_dtype_cast_(self, src);
+        return self;
+    }
+
+    if (self.sizes() == src.sizes() && self.strides() != src.strides()) {
+        at::Tensor srcContiguous;
+        if (src.is_contiguous()) {
+            srcContiguous = src;
+        } else {
+            srcContiguous = at_npu::native::empty_npu(src.sizes(), src.options());
+            srcContiguous.copy_(src);
+        }
+        if (self.is_contiguous()) {
+            return npu_dtype_cast_(self, srcContiguous);
+        } else {
+            auto selfContiguous = at_npu::native::empty_npu(self.sizes(), self.options());
+            npu_dtype_cast_(selfContiguous, srcContiguous);
+            self.copy_(selfContiguous);
+            return self;
+        }
+    }
+    if (self.sizes() != src.sizes()) {
+        auto srcBroaded = npu_broadcast(src.contiguous(), self.sizes());
+        return npu_dtype_cast_(self, srcBroaded);
+    }
+
+    TORCH_CHECK(false, "unhandled situation");
+    return self;
+}
+#endif
 
 at::Tensor npu_alloc_float_status(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
 at::Tensor npu_get_float_status(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
@@ -267,7 +444,7 @@ at::Tensor npu_softmax_cross_entropy_with_logits_backward(const at::Tensor& grad
 at::Tensor npu_stride_copy(const at::Tensor& self, at::IntArrayRef shape, at::IntArrayRef stride, const at::Scalar& storage_offset) { CUSTOM_OP_NOT_IMPL; }
 
 at::Tensor& npu_stride_copy_out(const at::Tensor& self, at::IntArrayRef shape, at::IntArrayRef stride, const at::Scalar& storage_offset, at::Tensor& out) {
-    acl_op::npu_stride_copy_out(self, shape, stride, storage_offset, out);
+    return acl_op::npu_stride_copy_out(self, shape, stride, storage_offset, out);
 }
 
 at::Tensor npu_roi_align(const at::Tensor& self, const at::Tensor& rois, double spatial_scale, int64_t pooled_height, int64_t pooled_width, int64_t sample_num,
@@ -530,8 +707,6 @@ at::Tensor npu_softmax_cross_entropy_with_logits(const at::Tensor& self, const a
 ::std::tuple<at::Tensor, at::Tensor> npu_max(const at::Tensor& self, int64_t dim, bool keepdim) { CUSTOM_OP_NOT_IMPL; }
 ::std::tuple<at::Tensor, at::Tensor> npu_max(const at::Tensor& self, at::Dimname dim, bool keepdim) { CUSTOM_OP_NOT_IMPL; }
 at::Tensor npu_bmmV2(const at::Tensor& self, const at::Tensor& mat2, at::IntArrayRef output_sizes) { CUSTOM_OP_NOT_IMPL; }
-
-at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) { return acl_op::npu_dtype_cast(self, dtype); }
 
 at::Tensor npu_silu(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
 at::Tensor& npu_silu_(at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
