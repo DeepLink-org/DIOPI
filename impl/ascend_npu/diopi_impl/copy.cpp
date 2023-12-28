@@ -12,7 +12,7 @@ namespace OP_IMPL_NS {
 
 diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiTensorHandle_t dest) {
     BEGIN_CALL_ACL_OP(src, dest);
-    if (!srcAt.defined() || !destAt.defined()) {
+    if (src == nullptr || dest == nullptr || !srcAt.defined() || !destAt.defined() || srcAt.numel() <= 0 || destAt.numel() <= 0) {
         return diopiSuccess;
     }
     at_npu::native::NPUNativeFunctions::copy_(destAt, srcAt, false);
