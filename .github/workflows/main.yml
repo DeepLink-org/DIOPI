@@ -146,7 +146,7 @@ jobs:
         run: |
           ssh ${CLUSTER_CAMB} """
           set -e
-          export USE_COVERAGE=ON  # Here is a bug if USE_COVERAGE=ON when using gcc10.2 that the results of copy_ operator is not correct, but right in gcc5.4.
+          export USE_COVERAGE=ON
           cd ${NFS_PATH}/ && ls -al && find ${NFS_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
           source /mnt/cache/share/platform/env/${ENV_NAME}
           cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
