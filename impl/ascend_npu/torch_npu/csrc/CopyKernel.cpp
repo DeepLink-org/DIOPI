@@ -395,7 +395,7 @@ private:
     }
 };  // class BroadcastContiguousOpt
 
-// REGISTER_COPY_OPT(broadcast, BroadcastContiguousOpt)
+REGISTER_COPY_OPT(broadcast, BroadcastContiguousOpt)
 
 constexpr int MaxCombinedCasesNum = 2;
 constexpr int ViewAndBaseInfoStackNum = 2;
@@ -767,7 +767,7 @@ private:
     }
 };  // class combinedContiguousOpt
 
-// REGISTER_COPY_OPT(combined, CombinedContiguousOpt)
+REGISTER_COPY_OPT(combined, CombinedContiguousOpt)
 
 class IndexingContiguousOpt : public ContiguousOpt {
 public:
@@ -881,7 +881,7 @@ private:
     }
 };  // class IndexingContiguousOpt
 
-// REGISTER_COPY_OPT(indexing, IndexingContiguousOpt)
+REGISTER_COPY_OPT(indexing, IndexingContiguousOpt)
 
 class PermuteContiguousOpt : public ContiguousOpt {
 public:
@@ -1041,7 +1041,7 @@ private:
     }
 };  // class PermuteContiguousOpt
 
-// REGISTER_COPY_OPT(permute, PermuteContiguousOpt)
+REGISTER_COPY_OPT(permute, PermuteContiguousOpt)
 
 bool can_use_memecpy_for_NZ_format(const ContiguousTensorDesc& tensor_desc) {
     int64_t tensor_shape_size = static_cast<int64_t>(tensor_desc.sizes_.size());
@@ -1128,7 +1128,7 @@ public:
     bool CanOptimizer(const ContiguousTensorDesc& src_desc) override { return check_reshape_match(src_desc); }
 };  // class ReshapeContiguousOpt
 
-// REGISTER_COPY_OPT(reshape, ReshapeContiguousOpt)
+REGISTER_COPY_OPT(reshape, ReshapeContiguousOpt)
 
 class ReshapeV2ContiguousOpt : public ContiguousOpt {
 public:
@@ -1204,7 +1204,7 @@ private:
     }
 };  // class ReshapeV2ContiguousOpt
 
-// REGISTER_COPY_OPT(reshapeV2, ReshapeV2ContiguousOpt)
+REGISTER_COPY_OPT(reshapeV2, ReshapeV2ContiguousOpt)
 
 class SelectContiguousOpt : public ContiguousOpt {
 public:
@@ -1316,7 +1316,7 @@ private:
     }
 };  // class SelectContiguousOpt
 
-// REGISTER_COPY_OPT(select, SelectContiguousOpt)
+REGISTER_COPY_OPT(select, SelectContiguousOpt)
 
 class SliceContiguousOpt : public ContiguousOpt {
 public:
@@ -1421,7 +1421,7 @@ private:
     }
 };  // class SliceContiguousOpt
 
-// REGISTER_COPY_OPT(slice, SliceContiguousOpt)
+REGISTER_COPY_OPT(slice, SliceContiguousOpt)
 
 }  // namespace native
 }  // namespace at_npu
