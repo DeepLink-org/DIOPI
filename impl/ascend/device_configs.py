@@ -1780,12 +1780,12 @@ device_configs = {
         ),
     ),
 
-    'token_attention': dict(
-        name=['token_attention'],
+    'token_softmax_reducev': dict(
+        name=['token_softmax_reducev'],
         tensor_para=dict(
             args=[
                 {
-                    "ins": ["k"],
+                    "ins": ["v"],
                     "shape": (Skip((0, 15, 32)),),
                 },
             ]
