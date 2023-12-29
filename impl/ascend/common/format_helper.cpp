@@ -60,7 +60,6 @@ aclFormat FormatHelper::getAclFormat(diopiMemoryFormat_t memoryFormat) {
         case diopiMemoryFormat_t::Undefined:
             return aclFormat::ACL_FORMAT_UNDEFINED;
         case diopiMemoryFormat_t::Contiguous:
-        case diopiMemoryFormat_t::ND:
             return aclFormat::ACL_FORMAT_ND;
         case diopiMemoryFormat_t::NCHW:
             return aclFormat::ACL_FORMAT_NCHW;
