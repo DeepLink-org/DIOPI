@@ -16,6 +16,7 @@ def compute_nhwc_stride_2d(sizes, itemsize=1):
         strides[0] = strides[2] * sizes[2]
     return strides
 
+
 def compute_nhwc_stride_3d(sizes, itemsize=1):
     dim = len(sizes)
     strides = [itemsize for i in range(dim)]
@@ -32,6 +33,7 @@ def compute_nhwc_stride_3d(sizes, itemsize=1):
         strides[2] = strides[3] * sizes[3]
         strides[0] = strides[2] * sizes[2]
     return strides
+
 
 def compute_nhwc_stride(size, itemsize=1, name=None):
     if name == '2d':
