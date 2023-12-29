@@ -326,11 +326,7 @@ at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size) { return 
 
 at::Tensor& npu_broadcast_out(const at::Tensor& self, at::IntArrayRef size, at::Tensor& out) { return acl_op::npu_broadcast_out(self, size, out); }
 
-at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) {
-    // TODO(zhaoguochun): This must be repaired
-    // return acl_op::npu_dtype_cast(self, dtype);
-    return self.cpu().to(dtype).to(self.device());
-}
+at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) { return acl_op::npu_dtype_cast(self, dtype); }
 
 #if 1
 at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
@@ -340,14 +336,10 @@ at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
         source = npu_broadcast(source, self.sizes());
     }
     if (source.strides() == self.strides() && self.is_contiguous()) {
-        // TODO(zhaoguochun): This must be repaired
-        // acl_op::npu_dtype_cast_(self, source);
-        self.copy_(source.cpu().to(self.scalar_type()));
+        acl_op::npu_dtype_cast_(self, source);
     } else {
         at::Tensor selfTemp = at_npu::native::empty_npu(source.sizes(), self.options());
-        // TODO(zhaoguochun): This must be repaired
-        // acl_op::npu_dtype_cast_(selfTemp, source);
-        selfTemp.copy_(source.cpu().to(self.scalar_type()));
+        acl_op::npu_dtype_cast_(selfTemp, source);
         self.copy_(selfTemp);
     }
     return self;

@@ -6,18 +6,40 @@ from conformance.global_settings import glob_vars, default_cfg_dict
 
 
 class CheckResult(object):
+
     @staticmethod
-    def compare_input(input: dict, input_reference: dict, ignore_paras_for_input_check: list):
+    def compare_input_list(input: list, input_reference: list, **kwargs):
+        input = [t.numpy() if isinstance(t, Tensor) else t for t in input]
+        if len(input) != len(input_reference):
+            raise InputChangedException(f"expect input list len {len(input_reference)} but {input}")
+
+        passed = True
+        mismatch_ratio_threshold = kwargs.get('mismatch_ratio_threshold', 1e-3)
+        for i in range(len(input)):
+            matched = np.isclose(input_reference[i], input[i], equal_nan=True)
+            mismatched_num = matched.size - np.sum(matched)
+            passed = mismatched_num <= mismatch_ratio_threshold * matched.size
+            if not passed:
+                glob_vars.func_status[glob_vars.cur_test_func] = 'failed'
+                debug_level = glob_vars.debug_level
+                error_info = f'Run {glob_vars.cur_test_func} failed, because of input of backward changed'
+                if debug_level > 1:
+                    error_info += (f"\n\texpect input: \n\t\t{input_reference[i]}\n\tbut got input reference \n\t\t{input[i]}")
+                raise InputChangedException(error_info)
+
+    @staticmethod
+    def compare_input_dict(input: dict, input_reference: dict, ignore_paras_for_input_check: list, **kwargs):
         input = {key: value.numpy() for key, value in input.items() if key not in ignore_paras_for_input_check and isinstance(value, Tensor)}
         input_reference = {key: value for key, value in input_reference.items() if key not in ignore_paras_for_input_check and isinstance(value, np.ndarray)}
         if input.keys() != input_reference.keys():
             raise InputChangedException(f"input's keys {list(input.keys())} is not equal to input_reference's keys {list(input_reference.keys())}.")
 
+        mismatch_ratio_threshold = kwargs.get('mismatch_ratio_threshold', 1e-3)
         passed = True
         for name, value in input.items():
             matched = np.isclose(input_reference[name], value, equal_nan=True)
             mismatched_num = matched.size - np.sum(matched)
-            passed = mismatched_num <= default_cfg_dict['default_option']['mismatch_ratio_threshold'] * matched.size
+            passed = mismatched_num <= mismatch_ratio_threshold * matched.size
             if not passed:
                 glob_vars.func_status[glob_vars.cur_test_func] = 'failed'
                 debug_level = glob_vars.debug_level

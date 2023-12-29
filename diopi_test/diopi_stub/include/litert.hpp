@@ -19,7 +19,6 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace py = pybind11;
@@ -48,8 +47,6 @@ private:
     free_func_t freeFn_;
     int64_t nbytes_;
     void* ptr_;
-    std::vector<int64_t> storageSizes_;
-    diopiMemoryFormat_t format_;
 
 public:
     Storage(malloc_func_t mallocFn, free_func_t freeFn, int64_t nbytes) : mallocFn_(mallocFn), freeFn_(freeFn), nbytes_(nbytes) {
@@ -64,22 +61,6 @@ public:
         freeFn_(ptr_);
         ptr_ = nullptr;
         nbytes_ = 0;
-    }
-
-    void initDesc(const std::vector<int64_t>& shape) {
-        storageSizes_ = shape;
-        format_ = diopiMemoryFormat_t::Contiguous;
-    }
-
-    void getDesc(diopiStorageDesc_t* desc) const {
-        desc->sizes.data = storageSizes_.data();
-        desc->sizes.len = storageSizes_.size();
-        desc->format = format_;
-    }
-
-    void setDesc(const diopiStorageDesc_t& desc) {
-        storageSizes_ = std::move(std::vector<int64_t>(desc.sizes.data, desc.sizes.data + desc.sizes.len));
-        format_ = desc.format;
     }
 
     void* data() { return ptr_; }
@@ -113,18 +94,6 @@ public:
         return stride;
     }
 
-    void getStorageDesc(diopiStorageDesc_t* desc) const {
-        if (storage_ != nullptr) {
-            storage_->getDesc(desc);
-        }
-    }
-
-    void setStorageDesc(const diopiStorageDesc_t& desc) {
-        if (storage_ != nullptr) {
-            storage_->setDesc(desc);
-        }
-    }
-    void copyMetaData(const diopiTensor& other);
     bool resetShape(const diopiSize_t* size);
 
     diopiDtype_t dtype() const { return dtype_; }
