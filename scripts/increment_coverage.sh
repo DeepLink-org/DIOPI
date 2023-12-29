@@ -19,18 +19,16 @@ commit_hash=$(git rev-parse HEAD)
 parent_count=$(git log --pretty=%P -n 1 $commit_hash | wc -w)
 if [ $parent_count -eq 1 ]; then echo "is not Pull request" && exit 0; fi
 rsync -a --exclude=$cp_exclude ${ROOT_DIR}/../source coverage/ || (echo "cannot find the source dir" && exit 1)
-cd coverage/source && git log main --pretty=format:"%H" -n 100 >../commit_main.txt
-git reset --hard HEAD~1 &&newcommit=$(git rev-parse HEAD) &&git log  --pretty=format:"%H" -n 100 >../commit_merge.txt
-while read -r commit; do
-    if grep -Fxq "$commit" ../commit_main.txt; then
-        echo $commit
-        oldcommit=$commit
+cd coverage/source && git reset --hard HEAD~1 &&newcommit=$(git rev-parse HEAD) &&git log  --pretty=format:"%H" -n 200 >../commit_merge.txt
+cd ../../
+while read oldcommit; do
+    if git log main --pretty=format:"%H" | grep -q "$oldcommit"; then
+        echo "Found merge-base commit: $oldcommit"
         break
     fi
-done < ../commit_merge.txt
+done < coverage/commit_merge.txt
 if [ -z $oldcommit ]; then echo "The Pull request opening time is too long" && exit 0; fi
-git diff $oldcommit $newcommit --name-only  > ../gitdiff.txt 2>/dev/null || echo "error can be ignored"
-cd $ROOT_DIR
+git diff $oldcommit $newcommit --name-only  > coverage/gitdiff.txt 2>/dev/null || echo "error can be ignored"
 cat coverage/gitdiff.txt |egrep '\.(cpp|hpp|h)$'|grep "$include/" >coverage/gitdiff_screen.txt || true
 if [ ! -s coverage/gitdiff_screen.txt ]; then echo "No C/C++ in incremental code" && exit 0;fi
 rm -rf coverage/gitdiff.txt
