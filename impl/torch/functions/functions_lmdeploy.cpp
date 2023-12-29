@@ -1178,7 +1178,7 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         newshape.len = 3;
                         shape[0] = local_head_num;
                         shape[1] = size_per_head;
-                        shape[2] = tlength - first_step + 1;
+                        shape[2] = tlength + 1;
                         diopiRequireTensor(ctx, &ki_cal, &newshape, nullptr, dtype, device);
                         void* ki_cal_ptr;
                         diopiGetTensorData(ki_cal, &ki_cal_ptr);
@@ -1236,7 +1236,7 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         diopiTensorHandle_t ki_cal021;
                         newshape.len = 3;
                         shape[0] = local_head_num;
-                        shape[1] = tlength - first_step + 1;
+                        shape[1] = tlength + 1;
                         shape[2] = size_per_head;
                         diopiRequireTensor(ctx, &ki_cal021, &newshape, nullptr, dtype, device);
                         impl::cuda::diopiCat(ctx, ki_cal021, cat_kcal.data(), cat_kcal.size(), 1);
@@ -1307,7 +1307,7 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         diopiTensorHandle_t vi_cal;
                         newshape.len = 3;
                         shape[0] = local_head_num;
-                        shape[1] = tlength - first_step + 1;
+                        shape[1] = tlength + 1;
                         shape[2] = size_per_head;
                         diopiRequireTensor(ctx, &vi_cal, &newshape, nullptr, dtype, device);
                         n_maxseqlen = kvi_length / max_seq_len;
@@ -2644,10 +2644,10 @@ DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensor
                 continue;
             }
             const int32_t bad_word_start_idx = (bad_word_idx > 0) ? base_offsets_host[bad_word_idx - 1] : 0;
-            const int32_t bad_word_end_idx = base_offsets_host[bad_word_idx] - 1;
-            const int64_t bad_word_len = bad_word_end_idx - bad_word_start_idx + 1;
+            const int32_t bad_word_end_idx = base_offsets_host[bad_word_idx];
+            const int64_t bad_word_len = bad_word_end_idx - bad_word_start_idx;
 
-            if (step + 1 < bad_word_len) {
+            if (step + 1 < bad_word_len || bad_word_len < 1) {
                 continue;
             }
 
@@ -2656,7 +2656,7 @@ DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensor
                 diopiTensorHandle_t bad_word_tensor;
                 diopiSize_t bad_word_shape;
                 bad_word_shape.len = 1;
-                bad_word_shape.data = &bad_word_len;
+                bad_word_shape.data = &bad_word_len - 1;
                 diopiDevice_t bad_word_device;
                 diopiGetTensorDevice(bad_words, &bad_word_device);
                 diopiSize_t stride;
@@ -2676,7 +2676,7 @@ DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensor
                 diopiGetTensorData(output_ids_col, reinterpret_cast<void**>(&output_ids_col_data));
                 int64_t elem_size;
                 diopiGetTensorElemSize(output_ids_col, &elem_size);
-                output_ids_col_data += (step - bad_word_len) * elem_size;
+                output_ids_col_data += (step - bad_word_len + 1) * elem_size;
 
                 stride.len = -1;
                 stride.data = reinterpret_cast<const int64_t*>(reinterpret_cast<int64_t*>(output_ids_col_data));
@@ -2704,18 +2704,9 @@ DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensor
             }
 
             if (bad_word_len == 1 || (cmp_res_sum_host_data != nullptr && cmp_res_sum_host_data[0])) {
-                int32_t banned_token = base_bad_words_host[bad_word_end_idx];
+                int32_t banned_token = base_bad_words_host[bad_word_end_idx - 1];
                 if (0 < banned_token && banned_token < vocab_size) {
-                    diopiTensorHandle_t banned_token_tensor;
-                    diopiSize_t banned_token_shape;
-                    banned_token_shape.len = 1;
                     int64_t tmp_one = 1;
-                    banned_token_shape.data = &tmp_one;
-                    diopiSize_t stride;
-                    stride.len = -1;
-                    stride.data = reinterpret_cast<const int64_t*>(base_bad_word + bad_word_end_idx);
-                    diopiRequireTensor(ctx, &banned_token_tensor, &banned_token_shape, &stride, ids_type, diopi_device);
-
                     diopiTensorHandle_t logit_to_modify;
                     diopiDtype_t logits_type;
                     diopiGetTensorDtype(logits, &logits_type);
