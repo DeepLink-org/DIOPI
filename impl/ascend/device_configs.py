@@ -1780,6 +1780,19 @@ device_configs = {
         ),
     ),
 
+    'rms_norm': dict(
+        name=['rms_norm'],
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                },
+            ],
+        ),
+    ),
+
     'token_softmax_reducev': dict(
         name=['token_softmax_reducev'],
         tensor_para=dict(
