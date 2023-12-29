@@ -1543,11 +1543,11 @@ device_configs = {
                 {
                     "ins": ["input"],
                     "shape": [Skip((12, 0, 9)), Skip((8,))],
-                    "dtype": [Skip(np.complex128), Skip(np.complex64), Skip(np.float64)],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
                 },
                 {
                     "ins": ["other"],
-                    "dtype": [Skip(np.complex128), Skip(np.float64)]
+                    "dtype": [Skip(np.complex128)]
                 },
             ]
         )
@@ -1561,7 +1561,7 @@ device_configs = {
                 {
                     "ins": ["input"],
                     "shape": [Skip((12, 1, 12)),],
-                    "dtype": [Skip(np.complex128), Skip(np.complex64), Skip(np.float64)],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
                 },
                 {
                     "ins": ["other"],
@@ -1580,11 +1580,11 @@ device_configs = {
                 {
                     "ins": ["input"],
                     "shape": [Skip((6, 5, 384)), Skip((2, 4, 38, 45))],
-                    "dtype": [Skip(np.complex128), Skip(np.complex64), Skip(np.float64)],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
                 },
                 {
                     "ins": ["other"],
-                    "dtype": [Skip(np.complex128), Skip(np.float64)],
+                    "dtype": [Skip(np.complex128)],
                 },
             ]
         )
@@ -1598,11 +1598,11 @@ device_configs = {
                 {
                     "ins": ["input"],
                     "shape": [Skip((192, 147)), Skip((192, 147, 2)), Skip((2, 12, 38, 45, 3))],
-                    "dtype": [Skip(np.complex128), Skip(np.complex64), Skip(np.float64)],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
                 },
                 {
                     "ins": ["other"],
-                    "dtype": [Skip(np.complex64), Skip(np.float64)],
+                    "dtype": [Skip(np.complex64)],
                 },
             ]
         )
