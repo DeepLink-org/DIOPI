@@ -8237,7 +8237,7 @@ diopi_configs = {
                                [4, 5]],
                               [[0.0, 0.5, 0.0, -0.4, 0.0]],
                               [],
-                              [[],[],[]]),
+                              [[], [], []]),
                     "dtype": [np.float16, np.float32, np.float64],
                     "gen_policy": "gen_tensor_by_value"
                 },

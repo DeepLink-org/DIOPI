@@ -1780,6 +1780,18 @@ device_configs = {
         ),
     ),
 
+    'token_attention': dict(
+        name=['token_attention'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["k"],
+                    "shape": (Skip((0, 15, 32)),),
+                },
+            ]
+        )
+    ),
+
     # temp for 910B
     'normal_': dict(
         name=["normal_"],
