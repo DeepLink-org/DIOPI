@@ -199,7 +199,6 @@ ascend:
 - diopiScatterInp
 - diopiScatterScalar
 - diopiScatterInpScalar
-- diopiApplyPenalty
 ascend_npu:
 - diopiCastDtype
 - diopiCopyInp
