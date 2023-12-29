@@ -81,4 +81,4 @@ class glob_var(object):
         self._use_db = use_db
 
 
-glob_vars = glob_var()
+glob_vars = glob_var(1)

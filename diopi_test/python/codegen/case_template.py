@@ -60,7 +60,7 @@ from conformance.diopi_manual_functions import ManualTest
 
     test_diopi_nhwc_import = CodeTemplate(
         r"""
-from conformance.diopi_nhwc_test import compute_nhwc_stride
+from conformance.diopi_set_nhwc import set_nhwc
 """
     )
 
@@ -124,25 +124,10 @@ for para_key, para_val in function_kwargs.items():
         r"""
 for para_key, para_val in function_kwargs.items():
     if isinstance(para_val, np.ndarray) and para_key in ${nhwc_list}:
-        ndim = para_val.ndim
-        if ndim < ${nhwc_min_dim} or ndim > 5:
+        if para_val.ndim < ${nhwc_min_dim} or para_val.ndim > 5:
             default_context.clear_tensors()
-            pytest.xfail(f"Skipped: {ndim}-dim Tensor skipped for nhwc test")
-        para_val_nchw = para_val
-        ndim = para_val_nchw.ndim
-        if ndim == 3:
-            axis = (1, 2, 0)
-        elif ndim == 4 and '3d' in ${nhwc_list}:
-            axis = (1, 2, 3, 0)
-        elif ndim == 4:
-            axis = (0, 2, 3, 1)
-        elif ndim == 5:
-            axis = (0, 2, 3, 4, 1)
-        para_val_nhwc = np.transpose(para_val_nchw, axis).copy()
-        para_val_nhwc.shape = para_val_nchw.shape
-        para_val_nhwc.strides = compute_nhwc_stride(para_val_nchw.shape, para_val_nchw.itemsize, ${nhwc_list}[0])
-        para_val = para_val_nhwc
-        function_kwargs[para_key] = para_val
+            pytest.xfail(f"Skipped: {para_val.ndim}-dim Tensor skipped for nhwc test")
+        function_kwargs[para_key] = set_nhwc(para_val, ${nhwc_list}[0])
 """
     )
 
