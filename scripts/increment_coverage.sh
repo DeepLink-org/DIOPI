@@ -17,18 +17,28 @@ if [ "$remote_count" -eq 1 ]; then echo "Not from dev repository" && exit 0 ;fi
 
 commit_hash=$(git rev-parse HEAD)
 parent_count=$(git log --pretty=%P -n 1 $commit_hash | wc -w)
-if [ $parent_count -eq 1 ]; then echo "is not Pull request" && exit 0; fi
-rsync -a --exclude=$cp_exclude ${ROOT_DIR}/../source coverage/ || (echo "cannot find the source dir" && exit 1)
-cd coverage/source && git reset --hard HEAD~1 &&newcommit=$(git rev-parse HEAD) &&git log  --pretty=format:"%H" -n 200 >../commit_merge.txt
-cd ../../
-while read oldcommit; do
-    if git log main --pretty=format:"%H" | grep -q "$oldcommit"; then
-        echo "Found merge-base commit: $oldcommit"
-        break
-    fi
-done < coverage/commit_merge.txt
-if [ -z $oldcommit ]; then echo "The Pull request opening time is too long" && exit 0; fi
-git diff $oldcommit $newcommit --name-only  > coverage/gitdiff.txt 2>/dev/null || echo "error can be ignored"
+if [ $parent_count -eq 1 ]; then    #no new commits in main branch
+  newcommit=$commit_hash
+  oldcommit=$(git merge-base ${newcommit} main)
+  if [ -z $oldcommit ]; then echo "Cannot find merge-base commit" && exit 1; fi
+  echo "Found merge-base commit: $oldcommit"
+  git diff $oldcommit $newcommit --name-only  > $ROOT_DIR/coverage/gitdiff.txt 2>/dev/null || echo "error can be ignored"
+else  #has new commits in main branch
+  rsync -a --exclude=$cp_exclude ${ROOT_DIR}/../source coverage/ || (echo "cannot find the source dir" && exit 1)
+  cd coverage/source && git reset --hard HEAD~1 &&newcommit=$(git rev-parse HEAD) &&git log  --pretty=format:"%H" -n 200 >../commit_merge.txt
+  cd $ROOT_DIR
+  while read oldcommit; do
+      if git log main --pretty=format:"%H" | grep -q "$oldcommit"; then
+          echo "Found merge-base commit: $oldcommit"
+          break
+      fi
+  done < coverage/commit_merge.txt
+  if [ -z $oldcommit ]; then echo "Cannot find merge-base commit" && exit 1; fi
+  cd coverage/source
+  git diff $oldcommit $newcommit --name-only  > $ROOT_DIR/coverage/gitdiff.txt 2>/dev/null || echo "error can be ignored"
+fi
+
+cd $ROOT_DIR
 cat coverage/gitdiff.txt |egrep '\.(cpp|hpp|h)$'|grep "$include/" >coverage/gitdiff_screen.txt || true
 if [ ! -s coverage/gitdiff_screen.txt ]; then echo "No C/C++ in incremental code" && exit 0;fi
 rm -rf coverage/gitdiff.txt
@@ -48,7 +58,6 @@ source coverage/IS_cover.txt
 if [ $IS_cover == 'True' ]; then
   exit 0
 else
-  echo "coverage does not exceed $require_coverage"
   echo "HTML: ${ROOT_DIR}/coverage/html"
   exit 1
 fi
