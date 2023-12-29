@@ -482,12 +482,11 @@ jobs:
     steps:
       - name: Build
         run: |
-          ssh ${CLUSTER_KLX} """
           set -e
           cd ${DEEPLINK_PATH}/ && ls -al && find ${DEEPLINK_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           echo "no partitions, just execute the script directly on the machine"
-          """
+
 
   Op-Test-Kunlunxin:
     name: Op-Test-Kunlunxin
@@ -497,9 +496,7 @@ jobs:
     steps:
       - name: test
         run: |
-          ssh ${CLUSTER_KLX} """
           set -e
-          export USE_COVERAGE=ON
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}
           echo "data is /mnt/cache/share/deeplinkci/data/"
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
