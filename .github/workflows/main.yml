@@ -30,6 +30,7 @@ env:
   CLUSTER_ASCEND_910B: ASCEND-910B
   CLUSTER_TOPSRIDER: TOPSRIDER
   CLUSTER_SUPA: SUPA
+  CLUSTER_KLX: KUNLUNXIN
   BUILD_TEST1: build_test
   BUILD_TEST2: build_test_dy
   BUILD_TEST3: build_mmcv_ext
@@ -86,6 +87,8 @@ jobs:
           && rsync -a --delete ${GITHUB_WORKSPACE}/source/ ${CLUSTER_1424}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to sh1424"
           ssh ${CLUSTER_ASCEND_910B} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
           && rsync -a --delete ${GITHUB_WORKSPACE}/source/ ${CLUSTER_ASCEND_910B}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to ascend 910b"
+          ssh ${CLUSTER_KLX} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
+          && rsync -a --delete ${GITHUB_WORKSPACE}/source/ ${CLUSTER_KLX}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to kunlunxin"
 
   lint:
     name: lint
@@ -470,16 +473,34 @@ jobs:
           echo "test and clean, you can refer to the CAMB"
           """
 
-  # Rt-Test-Supa:
-  #   name: Rt-Test-Supa
-  #   runs-on: tps-diopi-ci
-  #   needs: Build-Supa
-  #   if: ${{ contains( needs.Rsync.outputs.output, 'SUPA' ) }}
-  #   steps:
-  #     - name: test
-  #       run: |
-  #         ssh ${CLUSTER_SUPA} """
-  #         set -e
-  #         source /mnt/cache/share/platform/env/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-  #         echo "test and clean, you can refer to the CAMB"
-  #         """
+
+  Build-Kunlunxin:
+    name: Build-Kunlunxin
+    runs-on: tps-klx-ci
+    needs: Rsync
+    if: ${{ contains( needs.Rsync.outputs.output, 'KUNLUNXIN' ) }}
+    steps:
+      - name: Build
+        run: |
+          ssh ${CLUSTER_KLX} """
+          set -e
+          cd ${DEEPLINK_PATH}/ && ls -al && find ${DEEPLINK_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
+          echo "no partitions, just execute the script directly on the machine"
+          """
+
+  Op-Test-Kunlunxin:
+    name: Op-Test-Kunlunxin
+    runs-on: tps-klx-ci
+    needs: Build-Kunlunxin
+    if: ${{ contains( needs.Rsync.outputs.output, 'KUNLUNXIN' ) }}
+    steps:
+      - name: test
+        run: |
+          ssh ${CLUSTER_KLX} """
+          set -e
+          export USE_COVERAGE=ON
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}
+          echo "data is /mnt/cache/share/deeplinkci/data/"
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+          echo "test and clean, you can refer to the Topsrider"
