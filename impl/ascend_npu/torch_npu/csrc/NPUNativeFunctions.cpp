@@ -297,30 +297,45 @@ at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size) { return 
 at::Tensor& npu_broadcast_out(const at::Tensor& self, at::IntArrayRef size, at::Tensor& out) { return acl_op::npu_broadcast_out(self, size, out); }
 
 at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) {
+    std::cout << "come into at::Tensor npu_dtype_cast" << std::endl;
     // TODO(zhaoguochun): This must be repaired
     if (dtype == at::ScalarType::Double) {
         dtype = at::ScalarType::Float;
     }
     return acl_op::npu_dtype_cast(self, dtype);
+    // return self.cpu().to(dtype).to(self.device());
+
 }
 
 #if 1
 at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
+    std::cout << "come into at::Tensor npu_dtype_cast_" << std::endl;
+        std::cout << "before=" << src << std::endl;
     at::Tensor source = src.contiguous();
 
     if (src.sizes() != self.sizes()) {
+        std::cout << "come into broadcast" << std::endl;
         source = npu_broadcast(source, self.sizes());
     }
     if (source.strides() == self.strides() && self.is_contiguous()) {
+        std::cout << "come into source.strides() == self.strides() && self.is_contiguous()" << std::endl;
         // TODO(zhaoguochun): This must be repaired
-        // acl_op::npu_dtype_cast_(self, source);
-        self.copy_(source.cpu().to(self.scalar_type()));
+        self = acl_op::npu_dtype_cast_(self, source);
+        std::cout << "after=" << self << std::endl;
+        DEBUG_ARGS(source);
+        auto cpu = source.cpu().to(self.scalar_type());
+        std::cout << "cpu=" << cpu << std::endl;
+        DEBUG_ARGS(cpu);
+
+        // self.copy_(source.cpu().to(self.scalar_type()));
     } else {
+        std::cout << "come into at_npu::native::empty_npu" << std::endl;
         at::Tensor selfTemp = at_npu::native::empty_npu(source.sizes(), self.options());
         // TODO(zhaoguochun): This must be repaired
-        // acl_op::npu_dtype_cast_(selfTemp, source);
-        selfTemp.copy_(source.cpu().to(self.scalar_type()));
-        self.copy_(selfTemp);
+        self = acl_op::npu_dtype_cast_(selfTemp, source);
+
+        // selfTemp.copy_(source.cpu().to(self.scalar_type()));
+        // self.copy_(selfTemp);
     }
     return self;
 }

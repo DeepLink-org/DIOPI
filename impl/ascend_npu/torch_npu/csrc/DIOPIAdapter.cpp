@@ -1636,7 +1636,7 @@ public:
         }
         auto format = storageDesc.origin_format_;
         if (debugLevel()) {
-            std::cout << __FUNCTION__ << ":" << dataType << "," << dims << "," << format << std::endl;
+            std::cout << __FUNCTION__ << ":dataType:" << dataType << ",dims=" << dims << ",format=" << format << std::endl;
         }
 
         desc = aclCreateTensorDesc(dataType, dims.size(), dims.data(), format);
@@ -1645,7 +1645,7 @@ public:
 
     inline AclTensorDescMaker& Create(aclDataType dataType, c10::IntArrayRef dims, aclFormat format) {
         if (debugLevel()) {
-            std::cout << __FUNCTION__ << ":" << dataType << "," << dims << "," << format << std::endl;
+            std::cout << __FUNCTION__ << ",dataType:" << dataType << ",dims=" << dims << ",format=" << format << std::endl;
         }
         desc = aclCreateTensorDesc(dataType, dims.size(), dims.data(), format);
         return *this;
@@ -1653,7 +1653,7 @@ public:
 
     inline AclTensorDescMaker& Create(aclDataType dataType, aclFormat format) {
         if (debugLevel()) {
-            std::cout << __FUNCTION__ << ":" << dataType << "," << format << std::endl;
+            std::cout << __FUNCTION__ << ",dataType:" << dataType << ",format=" << format << std::endl;
         }
         desc = aclCreateTensorDesc(dataType, 0, nullptr, format);
         return *this;
@@ -2222,14 +2222,16 @@ std::tuple<aclTensorDesc*, aclDataBuffer*> CovertHostTensorToAclInput(const at::
 }
 
 std::tuple<aclTensorDesc*, aclDataBuffer*> CovertToAclOutput(const at::Tensor& tensor, const string& forceDataType) {
+    std::cout << "CovertToAclOutput tensor=" << tensor << ", dtype=" << tensor.dtype() << ",tensor.scalar_type()=" << tensor.scalar_type() << std::endl;
     aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(tensor.scalar_type(), forceDataType);
+    std::cout <<"aclDataType=" << aclDataType << std::endl;
     auto format = CalcuOpUtil::GetTensorNpuFormat(tensor);
     AclTensorDescMaker desc;
     aclTensorDesc* aclDesc = nullptr;
     if (tensor.sizes().size() > 0 && tensor.numel() == 0) {
         aclDesc = desc.Create(aclDataType, tensor.sizes(), static_cast<aclFormat>(format)).Get();
     } else {
-        aclDesc = desc.Create(aclDataType, ACL_FORMAT_ND).Get();
+        aclDesc = desc.Create(aclDataType, static_cast<aclFormat>(format)).Get();
     }
     AclTensorBufferMaker aclBuffer(tensor, tensor.numel());
     auto aclBuff = aclBuffer.Get();
@@ -2405,14 +2407,18 @@ OpCommand& OpCommand::InputWithoutContiguous(const at::Tensor& input, const stri
 
 // Output Tensor
 OpCommand& OpCommand::Output(at::Tensor& output, const string& descName, const c10::optional<aclFormat>& sensitive_format, const string& realType) {
+    std::cout << "output=" << output << std::endl;
     if (enableDumpArgs()) {
         std::cout << aclCmd->GetName() << ":descName:" << descName << ",output:" << impl::aten::dumpArgs(output) << std::endl;
     }
     if (resultTypeDefined == false && commonType.has_value() && commonType.value() != output.scalar_type()) {
+        std::cout << "resultTypeDefined == false" << std::endl;
         output = acl_op::npu_dtype_cast(output, commonType.value());
     }
+    std::cout << "output realType = " << realType << std::endl;
     auto res = CovertToAclOutput(output, realType);
     aclCmd->AddOutput(std::get<0>(res), std::get<1>(res));
+    std::cout << "Output=" << output << std::endl;
     outputTensor.emplace_back(output);
     return *this;
 }
