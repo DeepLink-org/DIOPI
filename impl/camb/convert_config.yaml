@@ -3,12 +3,16 @@
     layout: NCHW
 
 - diopiAdd:
-    dtype: (int64)->int32, (float64)->float32
-    layout: NCHW
+    layout: NCL, NLC, NCHW, NHWC
 
 - diopiAddScalar:
-    dtype: (int64)->int32, (float64)->float32
-    layout: NCHW
+    layout: NCL, NLC, NCHW, NHWC
+
+- diopiAddInpScalar:
+    layout: NCL, NLC, NCHW, NHWC
+
+- diopiAddInp:
+    layout: NCL, NLC, NCHW, NHWC
 
 - diopiUpsampleNearest:
     layout: NHWC, NDHWC
@@ -69,9 +73,3 @@
 - diopiThresholdBackward:
     layout: NLC, NHWC, NDHWC
 #* Ops above are not neccesary to convert format *#
-
-- diopiAddInpScalar:
-    layout: NCL, NLC, NCHW, NHWC
-
-- diopiAddInp:
-    layout: NCL, NLC, NCHW, NHWC
