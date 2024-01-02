@@ -2706,7 +2706,7 @@ at::Generator buildATen(diopiGeneratorHandle_t generator) {
 }
 
 at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides, const int64_t storageOffset) {
-    TORCH_CHECK(c10::multiply_integers(sizes) <= input.numel());
+    // TORCH_CHECK(c10::multiply_integers(sizes) <= input.numel());
     TORCH_CHECK(!input.is_cpu());
     std::vector<int64_t> stridesVec(sizes.size(), 1);
     if (strides.size() > 0) {
@@ -2720,7 +2720,24 @@ at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, con
             if (st != -1) st *= sizes[i - 1];
         }
     }
-    return fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizes, stridesVec, input.options());
+    // return fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizes, stridesVec, input.options());
+    // when shape[0]=-1, fill data
+    std::vector<int64_t> sizeVec(sizes.size(), 1);
+    std::copy(sizes.begin(), sizes.end(), sizeVec.begin());
+    if (!sizes.empty() && sizes[0] == -1) {
+        bool flag = true;
+        for (auto i : sizes) {
+            if (!flag && i < 0) {
+                TORCH_CHECK(false, "more than one -1, sizes=", sizes);
+            }
+            if (i < 0) {
+                flag = false;
+            }
+        }
+        int count = std::accumulate(sizeVec.begin() + 1, sizeVec.end(), 1, std::multiplies<int>());
+        sizeVec[0] = input.numel() / count;
+    }
+    return fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizeVec, stridesVec, input.options());
 }
 
 void setCurCtx(diopiContextHandle_t ctx) {
@@ -2823,6 +2840,13 @@ at::Tensor wrapper_Tensor_add(const at::Tensor& self, const at::Tensor& other, c
 
 at::Tensor wrapper__cat(const at::ITensorListRef& tensors, int64_t dim) { return acl_op::cat(tensors, dim); }
 
+at::Tensor& wrapper_out_mm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::mm_out(self, mat2, out); }
+
+at::Tensor& wrapper_source_Tensor_set_(at::Tensor& self, const at::Tensor& source) { return at_npu::native::NPUNativeFunctions::set_(self, source); }
+at::Tensor& wrapper_Tensor_fill_(at::Tensor& self, const at::Tensor& value) { return acl_op::fill_(self, value); }
+at::Tensor& wrapper_out_bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::bmm_out(self, mat2, out); }
+at::Tensor wrapper__dot(const at::Tensor& self, const at::Tensor& tensor) { return acl_op::dot(self, tensor); }
+
 }  // namespace
 
 namespace at {
@@ -2843,6 +2867,11 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("mul.Scalar", TORCH_FN(wrapper_Scalar_mul));
     m.impl("add.Tensor", TORCH_FN(wrapper_Tensor_add));
     m.impl("cat", TORCH_FN(wrapper__cat));
+    m.impl("mm.out", TORCH_FN(wrapper_out_mm_out));
+    m.impl("set_.source_Tensor", TORCH_FN(wrapper_source_Tensor_set_));
+    m.impl("dot", TORCH_FN(wrapper__dot));
+    m.impl("fill_.Tensor", TORCH_FN(wrapper_Tensor_fill_));
+    m.impl("bmm.out", TORCH_FN(wrapper_out_bmm_out));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
