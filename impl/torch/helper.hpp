@@ -107,10 +107,11 @@ inline decltype(auto) buildATenList(T* tensors, int64_t numTensors) {
 }
 
 inline void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiTensorHandle_t out) {
-    // TODO(fengsibo): add device and nbytes check
     if (out != nullptr) {
         at::Tensor atOutput = buildATen(out);
-        atOutput.reshape_as(atOut).copy_(atOut, true);
+        // Set non_blocking true to avoid stream sync thus improving performance.
+        // The data is not ready when this function returns.
+        at::native::copy_(atOutput, atOut, true);
     }
 }
 
