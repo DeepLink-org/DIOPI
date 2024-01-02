@@ -25,14 +25,13 @@ diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
     DiopiTensor otherTensor(other);
     bool inputContiguous = inputTensor.isContiguous();
     bool otherContiguous = otherTensor.isContiguous();
-    if (inputContiguous && (!otherContiguous))
-    {
-        DIOPI_CALL(contiguous(ctx,otherTensor,diopiMemoryFormat_t::Contiguous));
-    }else if((!inputContiguous) && otherContiguous){
-        if(inputTensor.dim()==4){
-            DIOPI_CALL(contiguous(ctx,otherTensor,diopiMemoryFormat_t::ChannelsLast));
-        }else{
-            DIOPI_CALL(contiguous(ctx,otherTensor,diopiMemoryFormat_t::ChannelsLast1d));
+    if (inputContiguous && (!otherContiguous)) {
+        DIOPI_CALL(contiguous(ctx, otherTensor, diopiMemoryFormat_t::Contiguous));
+    } else if ((!inputContiguous) && otherContiguous) {
+        if (inputTensor.dim() == 4) {
+            DIOPI_CALL(contiguous(ctx, otherTensor, diopiMemoryFormat_t::ChannelsLast));
+        } else {
+            DIOPI_CALL(contiguous(ctx, otherTensor, diopiMemoryFormat_t::ChannelsLast1d));
         }
     }
     DiopiTensor outputTensor(input);
@@ -82,7 +81,6 @@ diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
     }
     return diopiSuccess;
 }
-
 
 }  // namespace camb
 }  // namespace impl
