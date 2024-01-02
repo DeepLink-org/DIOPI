@@ -69,3 +69,9 @@
 - diopiThresholdBackward:
     layout: NLC, NHWC, NDHWC
 #* Ops above are not neccesary to convert format *#
+
+- diopiAddInpScalar:
+    layout: NCL, NLC, NCHW, NHWC
+
+- diopiAddInp:
+    layout: NCL, NLC, NCHW, NHWC
