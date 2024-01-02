@@ -3090,7 +3090,7 @@ diopiError_t diopiBatchApplyTemperaturePenaltyInp(diopiContextHandle_t ctx, diop
         logits_row_shape.data = &vocab_size;
 
         logits_row_stride.len = -1;
-        logits_row_stride.data = getDataOffsetPtr(logits, i * vocab_size);
+        logits_row_stride.data = getDataOffsetPtr(lhs, i * vocab_size);
         diopiRequireTensor(ctx, &logits_row, &logits_row_shape, &logits_row_stride, logits_dtype, diopi_device);
         impl::cuda::diopiDivInpScalar(ctx, logits_row, &temperature_scalar, RoundModeNone);
     }
