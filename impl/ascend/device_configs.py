@@ -1933,4 +1933,15 @@ device_configs = {
             ],
         ),
     ),
+
+    'apply_penalty': dict(
+        name=['apply_penalty'],
+        tensor_para=dict(
+            args=[
+                {
+                    "dtype": [Skip(np.float64)],
+                },
+            ]
+        )
+    ),
 }
