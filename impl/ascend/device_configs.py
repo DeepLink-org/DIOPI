@@ -1926,7 +1926,6 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((6, ), (4, 1)),
                     "dtype": [Skip(np.int16), Skip(np.int32), Skip(np.int64),
                               Skip(np.int8), Skip(np.uint8)],
                 },
@@ -1939,6 +1938,7 @@ device_configs = {
         tensor_para=dict(
             args=[
                 {
+                    "ins": ['logits'],
                     "dtype": [Skip(np.float64)],
                 },
             ]
