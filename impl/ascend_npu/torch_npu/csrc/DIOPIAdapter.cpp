@@ -2706,6 +2706,7 @@ at::Generator buildATen(diopiGeneratorHandle_t generator) {
 }
 
 at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides, const int64_t storageOffset) {
+    TORCH_CHECK(c10::multiply_integers(sizes) <= input.numel());
     TORCH_CHECK(!input.is_cpu());
     std::vector<int64_t> stridesVec(sizes.size(), 1);
     if (strides.size() > 0) {
@@ -2719,27 +2720,7 @@ at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, con
             if (st != -1) st *= sizes[i - 1];
         }
     }
-
-    // When shape[0] is set to -1, fill with the correct data
-    std::vector<int64_t> sizeVec(sizes.size(), 1);
-    std::copy(sizes.begin(), sizes.end(), sizeVec.begin());
-    if (!sizes.empty() && sizes[0] == -1) {
-        bool flag = true;
-        for (auto i : sizes) {
-            if (!flag && i < 0) {
-                TORCH_CHECK(false, "more than one -1, sizes=", sizes);
-            }
-            if (i < 0) {
-                flag = false;
-            }
-        }
-        int count = std::accumulate(sizeVec.begin() + 1, sizeVec.end(), 1, std::multiplies<int>());
-        sizeVec[0] = input.numel() / count;
-    }
-
-    // check size.
-    TORCH_CHECK(c10::multiply_integers(sizeVec) <= input.numel());
-    return fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizeVec, stridesVec, input.options());
+    return fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizes, stridesVec, input.options());
 }
 
 void setCurCtx(diopiContextHandle_t ctx) {
