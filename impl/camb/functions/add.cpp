@@ -46,7 +46,6 @@ diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
             DIOPI_CALL(contiguous(ctx, otherTensor, diopiMemoryFormat_t::ChannelsLast1d));
         }
     }
-
     DIOPI_CALL(cnnlOpTensor(
         ctx, inputTensor, otherTensor, outputTensor, CNNL_OP_TENSOR_ADD, 1.0, DiopiDataType::isFloatPoint(alpha->stype) ? alpha->fval : alpha->ival));
     return diopiSuccess;
