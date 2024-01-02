@@ -108,8 +108,8 @@ inline decltype(auto) buildATenList(T* tensors, int64_t numTensors) {
 
 inline void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiTensorHandle_t out) {
     if (out != nullptr) {
-        at::Tensor atOutput = buildATen(out);
-        // Set non_blocking true to avoid stream sync thus improving performance.
+        at::Tensor atOutput = buildATen(out).reshape_as(atOut);
+        // Set non_blocking=true to improve performance.
         // The data is not ready when this function returns.
         at::native::copy_(atOutput, atOut, true);
     }
