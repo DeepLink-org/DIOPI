@@ -1052,7 +1052,7 @@ void ContiguousTensorDesc::find_match_optimization_cases() {
 }
 
 OptimizationCases TransContiguous::optCasesDefault = {};
-OptimizationCases TransContiguous::optCasesAnyFormat = {"reshape", "slice"};
+OptimizationCases TransContiguous::optCasesAnyFormat = {"permute", "reshape", "slice"};
 
 ContiguousTensorDesc TransContiguous::GetTensorDescInfo(const at::Tensor& src, const OptimizationCases& opt_cases) {
     auto src_base_info = torch_npu::NPUBridge::GetNpuStorageImpl(src)->get_npu_desc();
@@ -1222,7 +1222,7 @@ at::Tensor empty_with_format(at::IntArrayRef size, c10::optional<at::ScalarType>
 }
 
 at::Tensor clone(const at::Tensor& src, c10::optional<at::MemoryFormat> memory_format) {
-    OptimizationCases opt_cases{"reshape", "slice", "reshapeV2"};
+    OptimizationCases opt_cases{"permute", "reshape", "slice", "reshapeV2"};
     if (TransContiguous::CanOptimize(src, opt_cases)) {
         // clone with any npu formats
         auto formatTempTensor = TransContiguous::ContiguousOptimizeWithAnyFormat(src, opt_cases);
