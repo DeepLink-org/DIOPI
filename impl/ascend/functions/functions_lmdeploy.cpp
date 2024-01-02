@@ -1284,7 +1284,7 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         newshape.len = 3;
                         shape[0] = local_head_num;
                         shape[1] = size_per_head;
-                        shape[2] = tlength + 1;
+                        shape[2] = tlength - first_step + 1;
                         diopiRequireTensor(ctx, &ki_cal, &newshape, nullptr, dtype, device);
                         void* ki_cal_ptr;
                         diopiGetTensorData(ki_cal, &ki_cal_ptr);
@@ -1342,7 +1342,7 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         diopiTensorHandle_t ki_cal021;
                         newshape.len = 3;
                         shape[0] = local_head_num;
-                        shape[1] = tlength + 1;
+                        shape[1] = tlength - first_step + 1;
                         shape[2] = size_per_head;
                         diopiRequireTensor(ctx, &ki_cal021, &newshape, nullptr, dtype, device);
                         combAsCat(ctx, ki_cal021, cat_kcal.data(), cat_kcal.size(), 1);
@@ -1352,7 +1352,7 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         newshape.len = 3;
                         shape[0] = local_head_num;
                         shape[1] = 1;
-                        shape[2] = sequence_lengths + 1;
+                        shape[2] = tlength - first_step + 1;
                         diopiRequireTensor(ctx, &qki_cal, &newshape, nullptr, dtype, device);
                         diopiBmm(ctx, qki_cal, qi_cal, ki_cal);
                         diopiMulInpScalar(ctx, qki_cal, &inv_sqrt_dh);
@@ -1413,7 +1413,7 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         diopiTensorHandle_t vi_cal;
                         newshape.len = 3;
                         shape[0] = local_head_num;
-                        shape[1] = tlength + 1;
+                        shape[1] = tlength - first_step + 1;
                         shape[2] = size_per_head;
                         diopiRequireTensor(ctx, &vi_cal, &newshape, nullptr, dtype, device);
                         n_maxseqlen = kvi_length / max_seq_len;
