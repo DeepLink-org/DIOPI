@@ -83,5 +83,6 @@ diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
     return diopiSuccess;
 }
 
+
 }  // namespace camb
 }  // namespace impl
