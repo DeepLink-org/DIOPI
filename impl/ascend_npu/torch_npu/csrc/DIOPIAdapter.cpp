@@ -2706,7 +2706,6 @@ at::Generator buildATen(diopiGeneratorHandle_t generator) {
 }
 
 at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides, const int64_t storageOffset) {
-    TORCH_CHECK(c10::multiply_integers(sizes) <= input.numel());
     TORCH_CHECK(!input.is_cpu());
     std::vector<int64_t> stridesVec(sizes.size(), 1);
     if (strides.size() > 0) {
@@ -2720,7 +2719,27 @@ at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, con
             if (st != -1) st *= sizes[i - 1];
         }
     }
-    return fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizes, stridesVec, input.options());
+
+    // When shape[0] is set to -1, fill with the correct data
+    std::vector<int64_t> sizeVec(sizes.size(), 1);
+    std::copy(sizes.begin(), sizes.end(), sizeVec.begin());
+    if (!sizes.empty() && sizes[0] == -1) {
+        bool flag = true;
+        for (auto i : sizes) {
+            if (!flag && i < 0) {
+                TORCH_CHECK(false, "more than one -1, sizes=", sizes);
+            }
+            if (i < 0) {
+                flag = false;
+            }
+        }
+        int count = std::accumulate(sizeVec.begin() + 1, sizeVec.end(), 1, std::multiplies<int>());
+        sizeVec[0] = input.numel() / count;
+    }
+
+    // check size.
+    TORCH_CHECK(c10::multiply_integers(sizeVec) <= input.numel());
+    return fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizeVec, stridesVec, input.options());
 }
 
 void setCurCtx(diopiContextHandle_t ctx) {
@@ -2735,6 +2754,8 @@ void unsetCurCtx() { context = nullptr; }
 }  // namespace impl
 
 namespace {
+
+at::Tensor& wrapper_Tensor_fill_(at::Tensor& self, const at::Tensor& value) { return acl_op::fill_(self, value); }
 
 at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
     return at_npu::native::NPUNativeFunctions::copy_(self, src, non_blocking);
@@ -2828,6 +2849,7 @@ at::Tensor wrapper__cat(const at::ITensorListRef& tensors, int64_t dim) { return
 namespace at {
 
 TORCH_LIBRARY_IMPL(aten, XLA, m) {
+    m.impl("fill_.Tensor", TORCH_FN(wrapper_Tensor_fill_));
     m.impl("copy_", TORCH_FN(wrapper__copy_));
     m.impl("reshape", TORCH_FN(wrapper__view));
     m.impl("view", TORCH_FN(wrapper__view));
