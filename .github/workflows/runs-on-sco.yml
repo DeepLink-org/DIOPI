@@ -55,9 +55,9 @@ jobs:
           set -e
           cd ${DEEPLINK_PATH}/ && ls -al && find ${DEEPLINK_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${GITHUB_JOB} && cp -R source ${GITHUB_JOB}  && cd ${GITHUB_JOB}
-          srun --job-name=${GITHUB_JOB} bash -c 'source ${ENV_PATH}/pt2.0_diopi_nodeps \
+          srun --job-name=${GITHUB_JOB} bash -c "source ${ENV_PATH}/pt2.0_diopi_nodeps \
           && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${GITHUB_JOB}/diopi_test && bash scripts/ci_script.sh py-lint \
-          && bash scripts/ci_script.sh cpp-lint && cd ../impl && bash scripts/ci_script.sh cpp-lint' \
+          && bash scripts/ci_script.sh cpp-lint && cd ../impl && bash scripts/ci_script.sh cpp-lint" \
           && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} \
           || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} && exit 1 )
 
