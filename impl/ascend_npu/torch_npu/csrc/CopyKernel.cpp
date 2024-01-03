@@ -898,7 +898,7 @@ public:
             src_desc.base_strides_ = StorageDescHelper::ComputeStrideFromShape(static_cast<FormatShape>(sizes));
             src_desc.storage_sizes_ = sizes;
 
-            custom_ops::npu_transpose_out(src, perm, false, self);
+            custom_ops::npu_transpose_out(impl::aten::viewStorage(src, src_desc.base_sizes_, src_desc.base_strides_), perm, false, self);
             src_desc = src_desc_stored;
             return true;
         }
