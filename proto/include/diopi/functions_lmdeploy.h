@@ -393,7 +393,7 @@ DIOPI_API diopiError_t diopiInputIdsEmbeddingLookupPosEncoding(diopiContextHandl
  * get base_bad_words and base_offsets from stop_words for each batch.
  * every item in base_offsets means item-end, and they also the item-start of the next item, for the first item item-start is 0.
  * If time-size = end - start < step+1, then check item.
- * for (int token_idx = item_size - 1; token_idx >= 0; token_idx--) {const int previous_token = output_ids[(step - (item_size - 1) + token_idx) * batch_size +
+ * for (int token_idx = item_size - 2; token_idx >= 0; token_idx--) {const int previous_token = output_ids[(step - (item_size - 1) + token_idx) * batch_size +
  * id_offset + batch_idx];if (previous_token != base_stop_words[item_start + token_idx]) {should_ban = false; break;}} if this tiem should_ban, then get banid =
  * base_bad_words[item-end - 1]. if 0 < banid < vocab_size then logits ban id in this batch is set to -INFINITY
  * @param[in] ctx The diopi context.
