@@ -4,7 +4,7 @@ from skip import Skip
 
 device_configs = {
     # temp for 910B
-    'join': dict(
+    'join': dict( #LLM used
         name=['stack'],
         tensor_para=dict(
             args=[
@@ -17,7 +17,7 @@ device_configs = {
     ),
 
     # temp for 910B
-    'join_int': dict(
+    'join_int': dict( #LLM used
         name=['stack'],
         tensor_para=dict(
             args=[
@@ -30,7 +30,7 @@ device_configs = {
     ),
 
     # temp for 910B
-    'topk_nonzero': dict(
+    'topk_nonzero': dict( #LLM used
         name=['topk'],
         tensor_para=dict(
             args=[
@@ -43,7 +43,7 @@ device_configs = {
     ),
 
     # temp for 910B
-    'topk_zero': dict(
+    'topk_zero': dict( #LLM used
         name=['topk'],
         tensor_para=dict(
             args=[
@@ -520,7 +520,7 @@ device_configs = {
         ),
     ),
 
-    'pow_tensor': dict(
+    'pow_tensor': dict( #LLM used
         name=['pow'],
         tensor_para=dict(
             args=[
@@ -532,7 +532,7 @@ device_configs = {
         ),
     ),
 
-    'pow_tensor_only_0_1': dict(
+    'pow_tensor_only_0_1': dict( #LLM used
         name=['pow'],
         tensor_para=dict(
             args=[
@@ -544,7 +544,7 @@ device_configs = {
         ),
     ),
 
-    'pow_diff_dtype': dict(
+    'pow_diff_dtype': dict( #LLM used
         name=['pow'],
         tensor_para=dict(
             args=[
@@ -556,7 +556,7 @@ device_configs = {
         ),
     ),
 
-    'bmm': dict(
+    'bmm': dict( #LLM used
         name=['bmm'],
         atol=3e-2,
         rtol=3e-2,
@@ -574,13 +574,13 @@ device_configs = {
         ),
     ),
 
-    'reduce_op': dict(
+    'reduce_op': dict( #LLM used
         name=['sum'],
         atol=1e-3,
         rtol=1e-3,
     ),
 
-    'reduce_partial_op': dict(
+    'reduce_partial_op': dict( #LLM used
         atol=1e-3,
         rtol=1e-3,
         name=['sum'],
@@ -610,7 +610,7 @@ device_configs = {
         ),
     ),
 
-    'nll_loss': dict(
+    'nll_loss': dict( #LLM used
         name=['nll_loss'],
         tensor_para=dict(
             args=[
@@ -696,7 +696,7 @@ device_configs = {
         ),
     ),
 
-    'index_select': dict(
+    'index_select': dict( #LLM used
         name=['index_select'],
         tensor_para=dict(
             args=[
@@ -708,7 +708,7 @@ device_configs = {
         ),
     ),
 
-    'index_select_not_float': dict(
+    'index_select_not_float': dict( #LLM used
         name=['index_select'],
         tensor_para=dict(
             args=[
@@ -799,7 +799,7 @@ device_configs = {
         ),
     ),
 
-    'split': dict(
+    'split': dict(  #LLM used
         name=['split'],
         tensor_para=dict(
             args=[
@@ -1087,13 +1087,13 @@ device_configs = {
         ),
     ),
 
-    'mm': dict(
+    'mm': dict( #LLM used
         name=['mm'],
         atol=2e-2,
         rtol=2e-2,
     ),
 
-    'mm_diff_dtype': dict(
+    'mm_diff_dtype': dict( #LLM used
         name=['mm'],
         atol=2e-2,
         rtol=2e-2,
@@ -1219,7 +1219,7 @@ device_configs = {
         ),
     ),
 
-    'norm': dict(
+    'norm': dict( #LLM used
         name=['norm'],
         tensor_para=dict(
             args=[
@@ -1295,7 +1295,7 @@ device_configs = {
         ),
     ),
 
-    'gather': dict(
+    'gather': dict( #LLM used
         name=['gather'],
         tensor_para=dict(
             args=[
@@ -1307,7 +1307,7 @@ device_configs = {
         ),
     ),
 
-    'gather_0dim': dict(
+    'gather_0dim': dict( #LLM used
         name=['gather'],
         tensor_para=dict(
             args=[
@@ -1319,7 +1319,7 @@ device_configs = {
         ),
     ),
 
-    'gather_not_float': dict(
+    'gather_not_float': dict( #LLM used
         name=['gather'],
         tensor_para=dict(
             args=[
@@ -1331,7 +1331,7 @@ device_configs = {
         ),
     ),
 
-    'scatter': dict(
+    'scatter': dict( #LLM used
         name=['scatter'],
         tensor_para=dict(
             args=[
@@ -1343,7 +1343,7 @@ device_configs = {
         ),
     ),
 
-    'scatter_scalar': dict(
+    'scatter_scalar': dict( #LLM used
         name=['scatter'],
         para=dict(
             # In this case, for float32 (but not float64), no matter what the value parameter is,
@@ -1354,7 +1354,7 @@ device_configs = {
         ),
     ),
 
-    'index_put_acc_three_indices': dict(
+    'index_put_acc_three_indices': dict( #LLM used
         name=['index_put'],
         tensor_para=dict(
             args=[
@@ -1366,7 +1366,7 @@ device_configs = {
         ),
     ),
 
-    'index_put_acc_two_indices': dict(
+    'index_put_acc_two_indices': dict( #LLM used
         name=['index_put'],
         tensor_para=dict(
             args=[
@@ -1378,7 +1378,7 @@ device_configs = {
         ),
     ),
 
-    'index_put_acc_one_indices': dict(
+    'index_put_acc_one_indices': dict( #LLM used
         name=['index_put'],
         tensor_para=dict(
             args=[
@@ -1390,7 +1390,7 @@ device_configs = {
         ),
     ),
 
-    'index_put_acc_bool_indices_zeros': dict(
+    'index_put_acc_bool_indices_zeros': dict( #LLM used
         name=['index_put'],
         tensor_para=dict(
             args=[
@@ -1402,7 +1402,7 @@ device_configs = {
         ),
     ),
 
-    'index_put_one_indices': dict(
+    'index_put_one_indices': dict( #LLM used
         name=['index_put'],
         tensor_para=dict(
             args=[
@@ -1414,7 +1414,7 @@ device_configs = {
         ),
     ),
 
-    'index_put_bool_indices_value': dict(
+    'index_put_bool_indices_value': dict(   #LLM used
         name=['index_put'],
         tensor_para=dict(
             args=[
@@ -1499,7 +1499,7 @@ device_configs = {
         ),
     ),
 
-    'copy': dict(
+    'copy': dict( #LLM used
         name=["copy_"],
         tensor_para=dict(
             # FIXME data type DT_COMPLEX128 of input [dst] is not supported
@@ -1517,7 +1517,7 @@ device_configs = {
         )
     ),
 
-    'copy_input_no_contiguous': dict(
+    'copy_input_no_contiguous': dict( #LLM used
         name=["copy_"],
         tensor_para=dict(
             # FIXME not supported complex
@@ -1535,7 +1535,7 @@ device_configs = {
         )
     ),
 
-    'copy_other_no_contiguous': dict(
+    'copy_other_no_contiguous': dict( #LLM used
         name=["copy_"],
         tensor_para=dict(
             # FIXME data type DT_COMPLEX64 of input [dst] is not supported
@@ -1554,7 +1554,7 @@ device_configs = {
         )
     ),
 
-    'copy_all_no_contiguous': dict(
+    'copy_all_no_contiguous': dict( #LLM used
         name=["copy_"],
         tensor_para=dict(
             # FIXME data type DT_COMPLEX64 of input [dst] is not supported
@@ -1572,7 +1572,7 @@ device_configs = {
         )
     ),
 
-    'fill_not_float': dict(
+    'fill_not_float': dict( #LLM used
         name=["fill_"],
         tensor_para=dict(
             args=[
@@ -1644,7 +1644,7 @@ device_configs = {
         ),
     ),
 
-    'repeat': dict(
+    'repeat': dict( #LLM used
         name=['repeat'],
         tensor_para=dict(
             args=[
@@ -1705,7 +1705,7 @@ device_configs = {
     ),
 
     'triu': dict(
-        name=['triu'],
+        name=['triu'],  #LLM used
         tensor_para=dict(
             args=[
                 {
@@ -1740,7 +1740,7 @@ device_configs = {
         ),
     ),
 
-    'reduce_partial_op_4': dict(
+    'reduce_partial_op_4': dict(    #LLM used
         name=['sum'],
         interface=['torch'],
         atol=1e-4,
@@ -1757,7 +1757,7 @@ device_configs = {
     ),
 
     # temp for 910B
-    'normal_': dict(
+    'normal_': dict(    #LLM used
         name=["normal_"],
         tensor_para=dict(
             args=[
