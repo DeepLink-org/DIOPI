@@ -87,6 +87,22 @@ typedef struct {
 
 typedef enum { Contiguous = 0, ChannelsLast = 1, ChannelsLast3d = 2, Preserve = 3, ChannelsLast1d = 4 } diopiMemoryFormat_t;
 
+typedef enum {
+    Undefined = -1,
+    NCHW = 0,
+    NHWC = 1,
+    ND = 2,
+    NC1HWC0 = 3,
+    FRACTAL_Z = 4,
+    NC1HWC0_C04 = 5,
+    HWCN = 6,
+    NDHWC = 7,
+    FRACTAL_NZ = 8,
+    NCDHW = 9,
+    NDC1HWC0 = 10,
+    FRACTAL_Z_3D = 11
+} diopiCustomFormat_t;
+
 typedef enum { ReductionNone, ReductionMean, ReductionSum, ReductionEND } diopiReduction_t;
 
 typedef enum { RoundModeNone, RoundModeTrunc, RoundModeFloor, RoundModeEND } diopiRoundMode_t;
