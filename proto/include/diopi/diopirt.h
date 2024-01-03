@@ -85,7 +85,25 @@ typedef struct {
     };
 } diopiScalar_t;
 
-typedef enum { Contiguous = 0, ChannelsLast = 1, ChannelsLast3d = 2, Preserve = 3, ChannelsLast1d = 4 } diopiMemoryFormat_t;
+typedef enum {
+    Undefined = -1,
+    Contiguous = 0,
+    ChannelsLast = 1,
+    ChannelsLast3d = 2,
+    Preserve = 3,
+    ChannelsLast1d = 4,
+    NCHW = 5,
+    ND = 6,
+    NC1HWC0 = 7,
+    FRACTAL_Z = 8,
+    NC1HWC0_C04 = 9,
+    HWCN = 10,
+    NDHWC = 11,
+    FRACTAL_NZ = 12,
+    NCDHW = 13,
+    NDC1HWC0 = 14,
+    FRACTAL_Z_3D = 15
+} diopiMemoryFormat_t;
 
 typedef enum { ReductionNone, ReductionMean, ReductionSum, ReductionEND } diopiReduction_t;
 

@@ -269,6 +269,9 @@ DIOPI_API diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, 
 
 // ============================================lightllm end========================================
 
+DIOPI_API diopiError_t diopiFormatCast(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t self, diopiMemoryFormat_t format);
+DIOPI_API diopiError_t diopiGetFormat(diopiContextHandle_t ctx, diopiConstTensorHandle_t input, diopiMemoryFormat_t* format);
+
 #if defined(__cplusplus)
 }
 #endif  // __cplusplus
