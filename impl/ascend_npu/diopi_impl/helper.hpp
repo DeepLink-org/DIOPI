@@ -327,7 +327,7 @@ inline std::string dumpArgs(const at::IntArrayRef& t) {
     std::stringstream stream;
     stream << "[";
     for (size_t i = 0; i < t.size(); i++) {
-        stream << i << ",";
+        stream << t[i] << ",";
     }
     stream << "]";
     return stream.str();

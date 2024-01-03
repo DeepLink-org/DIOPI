@@ -275,3 +275,9 @@
 
 - diopiRemainder:
     dtype: (bool, uint8, int8, int16, uint16)->int32, (float64)->float32
+
+- diopiAtan:
+    dtype: (uint8, int8, int32, int16, int64, bool)->float32
+
+- diopiAtanInp:
+    dtype: (uint8, int8, int32, int16, int64, bool)->float32

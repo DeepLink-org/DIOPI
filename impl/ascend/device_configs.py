@@ -377,7 +377,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erf', 'erfinv', 'asin', 'ceil', 'atan'],
+        name=['erf', 'erfinv', 'asin', 'ceil'],
         tensor_para=dict(
             args=[
                 {
@@ -389,7 +389,7 @@ device_configs = {
     ),
 
     'pointwise_op_int_without_inplace': dict(
-        name=['erf', 'asin', 'atan'],
+        name=['erf', 'asin'],
         tensor_para=dict(
             args=[
                 {
@@ -401,7 +401,7 @@ device_configs = {
     ),
 
     'pointwise_op_uint8': dict(
-        name=['erf', 'asin', 'atan'],
+        name=['erf', 'asin'],
         tensor_para=dict(
             args=[
                 {
@@ -413,7 +413,7 @@ device_configs = {
     ),
 
     'pointwise_op_bool': dict(
-        name=['erf', 'asin', 'atan'],
+        name=['erf', 'asin'],
         tensor_para=dict(
             args=[
                 {
