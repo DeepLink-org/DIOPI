@@ -7,6 +7,7 @@
 #include <torch/library.h>
 
 #include "../../../ascend/common/gil_scoped_release.hpp"
+#include "../../../ascend/common/stream_lock.hpp"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
@@ -2132,18 +2133,21 @@ aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool 
           }
         }
 #endif
-        ret = AclopCompileAndExecuteV2(name.c_str(),
-                                       inputSize,
-                                       const_cast<aclTensorDesc**>(params.inDesc.data()),
-                                       const_cast<aclDataBuffer**>(params.inBuffer.data()),
-                                       outputSize,
-                                       const_cast<aclTensorDesc**>(params.outDesc.data()),
-                                       params.outBuffer.data(),
-                                       params.attr,
-                                       ACL_ENGINE_SYS,
-                                       ACL_COMPILE_SYS,
-                                       NULL,
-                                       stream);
+        {
+            diopi::StreamLockGuard streamLockGuard(stream.stream());
+            ret = AclopCompileAndExecuteV2(name.c_str(),
+                                           inputSize,
+                                           const_cast<aclTensorDesc**>(params.inDesc.data()),
+                                           const_cast<aclDataBuffer**>(params.inBuffer.data()),
+                                           outputSize,
+                                           const_cast<aclTensorDesc**>(params.outDesc.data()),
+                                           params.outBuffer.data(),
+                                           params.attr,
+                                           ACL_ENGINE_SYS,
+                                           ACL_COMPILE_SYS,
+                                           NULL,
+                                           stream);
+        }
         NPU_CHECK_ERROR(ret);
         if (sync) {
             int64_t dimSize;
@@ -2673,12 +2677,6 @@ const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     at::IntArrayRef atStrides(stride.data, stride.len);
 
     auto options = at::TensorOptions(c10::Device(atDevice, devId_)).dtype(atType);
-    int64_t numel = 0;
-    diopiGetTensorNumel(tensor, &numel);
-    if (numel <= 0) {
-        return at::Tensor();
-    }
-
     return fromPreAllocated(data, atDims, atStrides, options);
 }
 
@@ -2738,6 +2736,19 @@ at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, con
         sizeVec[0] = input.numel() / count;
     }
     return fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizeVec, stridesVec, input.options());
+}
+
+c10::List<c10::optional<at::Tensor>> castIntIndicesToLongIndices(const c10::List<c10::optional<at::Tensor>>& indices) {
+    c10::List<c10::optional<at::Tensor>> result;
+    for (c10::optional<at::Tensor> indexOpt : indices) {
+        if (!indexOpt.has_value()) {
+            result.emplace_back();
+        } else {
+            at::Tensor index = std::move(*indexOpt);
+            result.emplace_back(index.scalar_type() == at::kInt ? index.toType(at::kLong) : index);
+        }
+    }
+    return result;
 }
 
 void setCurCtx(diopiContextHandle_t ctx) {
@@ -2832,13 +2843,58 @@ at::Tensor& wrapper_source_Storage_storage_offset_set_(at::Tensor& self, at::Sto
     return self;
 }
 
+at::Tensor wrapper__cat(const at::ITensorListRef& tensors, int64_t dim) { return acl_op::cat(tensors, dim); }
+
+at::Tensor& wrapper__index_put_(at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices, const at::Tensor& values, bool accumulate) {
+    auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
+    return acl_op::_index_put_impl_(self, indicesCast, values, accumulate, false);
+}
+
+at::Tensor& wrapper___index_put_impl_(at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices, const at::Tensor& values, bool accumulate,
+                                      bool unsafe) {
+    auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
+    return acl_op::_index_put_impl_(self, indicesCast, values, accumulate, unsafe);
+}
+
+at::Tensor wrapper_Tensor_index(const at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices) {
+    auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
+    return acl_op::index(self, indicesCast);
+}
+
+at::Tensor wrapper__bmm(const at::Tensor& self, const at::Tensor& mat2) { return acl_op::bmm(self, mat2); }
+
+at::Tensor wrapper_Tensor_div(const at::Tensor& self, const at::Tensor& other) { return acl_op::div(self, other); }
+
 at::Tensor wrapper_Tensor_mul(const at::Tensor& self, const at::Tensor& other) { return acl_op::mul(self, other); }
 
 at::Tensor wrapper_Scalar_mul(const at::Tensor& self, const at::Scalar& other) { return acl_op::mul(self, other); }
 
 at::Tensor wrapper_Tensor_add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::add(self, other, alpha); }
 
-at::Tensor wrapper__cat(const at::ITensorListRef& tensors, int64_t dim) { return acl_op::cat(tensors, dim); }
+at::Tensor wrapper_Tensor_sub(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::sub(self, other, alpha); }
+
+at::Tensor wrapper__index_select(const at::Tensor& self, int64_t dim, const at::Tensor& index) { return acl_op::index_select(self, dim, index); }
+
+at::Tensor wrapper___softmax(const at::Tensor& self, int64_t dim, bool half_to_float) { return acl_op::_softmax(self, dim, half_to_float); }
+
+at::Tensor wrapper_Scalar_eq(const at::Tensor& self, const at::Scalar& other) { return acl_op::eq(self, other); }
+
+at::Tensor& wrapper_Scalar_masked_fill_(at::Tensor& self, const at::Tensor& mask, const at::Scalar& value) { return acl_op::masked_fill_(self, mask, value); }
+
+at::Tensor wrapper__repeat(const at::Tensor& self, at::IntArrayRef repeats) { return acl_op::repeat(self, repeats); }
+
+at::Tensor wrapper__transpose(const at::Tensor& self, int64_t dim0, int64_t dim1) {
+    int64_t inputSize = self.dim();
+    if (dim0 < 0) dim0 = dim0 + inputSize;
+    if (dim1 < 0) dim1 = dim1 + inputSize;
+    std::vector<int64_t> perms(inputSize);
+    std::iota(perms.begin(), perms.end(), 0);
+    perms[dim0] = dim1;
+    perms[dim1] = dim0;
+    return acl_op::npu_transpose(self, perms);
+}
+
+at::Scalar wrapper___local_scalar_dense(const at::Tensor& self) { return at_npu::native::NPUNativeFunctions::_local_scalar_dense(self); }
 
 at::Tensor& wrapper_out_mm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::mm_out(self, mat2, out); }
 
@@ -2863,6 +2919,12 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("clone", TORCH_FN(wrapper__clone));
     m.impl("set_.source_Storage", TORCH_FN(wrapper_source_Storage_set_));
     m.impl("set_.source_Storage_storage_offset", TORCH_FN(wrapper_source_Storage_storage_offset_set_));
+    m.impl("cat", TORCH_FN(wrapper__cat));
+    m.impl("index_put_", TORCH_FN(wrapper__index_put_));
+    m.impl("_index_put_impl_", TORCH_FN(wrapper___index_put_impl_));
+    m.impl("index.Tensor", TORCH_FN(wrapper_Tensor_index));
+    m.impl("bmm", TORCH_FN(wrapper__bmm));
+    m.impl("div.Tensor", TORCH_FN(wrapper_Tensor_div));
     m.impl("mul.Tensor", TORCH_FN(wrapper_Tensor_mul));
     m.impl("mul.Scalar", TORCH_FN(wrapper_Scalar_mul));
     m.impl("add.Tensor", TORCH_FN(wrapper_Tensor_add));
@@ -2872,6 +2934,14 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("dot", TORCH_FN(wrapper__dot));
     m.impl("fill_.Tensor", TORCH_FN(wrapper_Tensor_fill_));
     m.impl("bmm.out", TORCH_FN(wrapper_out_bmm_out));
+    m.impl("sub.Tensor", TORCH_FN(wrapper_Tensor_sub));
+    m.impl("index_select", TORCH_FN(wrapper__index_select));
+    m.impl("_softmax", TORCH_FN(wrapper___softmax));
+    // m.impl("eq.Scalar", TORCH_FN(wrapper_Scalar_eq));
+    m.impl("masked_fill_.Scalar", TORCH_FN(wrapper_Scalar_masked_fill_));
+    m.impl("repeat", TORCH_FN(wrapper__repeat));
+    m.impl("transpose.int", TORCH_FN(wrapper__transpose));
+    m.impl("_local_scalar_dense", TORCH_FN(wrapper___local_scalar_dense));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
