@@ -87,6 +87,7 @@ jobs:
           srun --job-name=${GITHUB_JOB} bash -c "export USE_COVERAGE=ON && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} \
           && source ${ENV_PATH}/pt2.0_diopi_nodeps && cd diopi_test/python && python main.py --mode gen_case --fname batch_norm --nhwc &&
           python main.py --mode gen_case --fname index_select --four_bytes && python main.py --mode gen_case --fname arange --four_bytes && ${run_test} main.py --mode run_test"
+          export USE_COVERAGE=ON && source ${ENV_PATH}/pt2.0_diopi_nodeps
           bash /mnt/cache/share/platform/dep/sonar/coverage_DIOPI_nv.sh ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} ${GITHUB_RUN_NUMBER} || echo "get coverage fail"
       - name: test
         run: |
