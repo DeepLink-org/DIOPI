@@ -686,26 +686,11 @@ public:
         static CopyOptRegister instance;
         return &instance;
     }
-    void Register(std::string& name, ::std::unique_ptr<ContiguousOpt>& ptr) {
-        std::lock_guard<std::mutex> lock(mu_);
-        registry.emplace(name, std::move(ptr));
-    }
+    void Register(std::string& name, ::std::unique_ptr<ContiguousOpt>& ptr);
 
-    bool CanOptimize(std::string& name, const ContiguousTensorDesc& src_desc) {
-        auto itr = registry.find(name);
-        if (itr != registry.end()) {
-            return itr->second->CanOptimizer(src_desc);
-        }
-        return false;
-    }
+    bool CanOptimize(std::string& name, const ContiguousTensorDesc& src_desc);
 
-    bool Run(const std::string& name, at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc) {
-        auto itr = registry.find(name);
-        if (itr != registry.end()) {
-            return itr->second->Optimizer(self, src, src_desc);
-        }
-        return false;
-    }
+    bool Run(const std::string& name, at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc);
 
 private:
     CopyOptRegister() {}

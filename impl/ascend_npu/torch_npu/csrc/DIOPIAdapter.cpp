@@ -1052,8 +1052,7 @@ void ContiguousTensorDesc::find_match_optimization_cases() {
 }
 
 OptimizationCases TransContiguous::optCasesDefault = {};
-OptimizationCases TransContiguous::optCasesAnyFormat = {"permute", "reshape", "slice"};
-
+OptimizationCases TransContiguous::optCasesAnyFormat = {"reshape", "slice"};
 ContiguousTensorDesc TransContiguous::GetTensorDescInfo(const at::Tensor& src, const OptimizationCases& opt_cases) {
     auto src_base_info = torch_npu::NPUBridge::GetNpuStorageImpl(src)->get_npu_desc();
     c10::SmallVector<int64_t, MAX_DIM> src_size_inferred;
@@ -1122,6 +1121,7 @@ bool TransContiguous::contiguous_optimize_with_anyformat_(at::Tensor& self, cons
     }
     for (auto& opt_case : src_desc.opt_cases_) {
         bool res = register_opt::CopyOptRegister::GetInstance()->Run(opt_case, self, src, src_desc);
+        std::cout << __FUNCTION__ << ": " << opt_case << ":" << res << std::endl;
         if (res) {
             return true;
         }
@@ -1130,11 +1130,13 @@ bool TransContiguous::contiguous_optimize_with_anyformat_(at::Tensor& self, cons
 }
 
 bool TransContiguous::ContiguousOptimizeWithAnyFormat(at::Tensor& self, const at::Tensor& src, const OptimizationCases& opt_cases) {
+    std::cout << __FUNCTION__ << std::endl;
     ContiguousTensorDesc src_desc = GetTensorDescInfo(src, opt_cases);
     return contiguous_optimize_with_anyformat_(self, src, src_desc);
 }
 
 c10::optional<at::Tensor> TransContiguous::ContiguousOptimizeWithAnyFormat(const at::Tensor& src, const OptimizationCases& opt_cases) {
+    std::cout << __FUNCTION__ << std::endl;
     TORCH_CHECK(src.device().type() == at_npu::key::NativeDeviceType,
                 "Expected all tensors to be on the same device. "
                 "Expected NPU tensor, please check whether the input tensor device is correct.");
@@ -1147,6 +1149,7 @@ c10::optional<at::Tensor> TransContiguous::ContiguousOptimizeWithAnyFormat(const
 }
 
 bool TransContiguous::ContiguousOptimizeWithBaseFormat(at::Tensor& self, const at::Tensor& src, const OptimizationCases& opt_cases, bool OpenCombined) {
+    std::cout << __FUNCTION__ << std::endl;
     TORCH_CHECK(FormatHelper::IsBaseFormatType(src),
                 "ContiguousOptimizeWithBaseFormat func requires Input Tensor "
                 "with base format!");
@@ -1156,8 +1159,44 @@ bool TransContiguous::ContiguousOptimizeWithBaseFormat(at::Tensor& self, const a
     if (OpenCombined) {
         src_desc.add_optimization_case("combined");
     }
+    // return contiguous_optimize_with_anyformat_(self, src, src_desc);
     return contiguous_optimize_with_anyformat_(self, src, src_desc);
 }
+
+namespace register_opt {
+
+void CopyOptRegister::Register(std::string& name, ::std::unique_ptr<ContiguousOpt>& ptr) {
+    if (debugLevel()) {
+        std::cout << __FUNCTION__ << ": " << name << std::endl;
+    }
+    std::lock_guard<std::mutex> lock(mu_);
+    registry.emplace(name, std::move(ptr));
+}
+
+bool CopyOptRegister::CanOptimize(std::string& name, const ContiguousTensorDesc& src_desc) {
+    auto itr = registry.find(name);
+    if (debugLevel()) {
+        std::cout << __FUNCTION__ << ": " << name << std::endl;
+    }
+
+    if (itr != registry.end()) {
+        return itr->second->CanOptimizer(src_desc);
+    }
+    if (debugLevel()) {
+        std::cout << "can not optimize " << std::endl;
+    }
+    return false;
+}
+
+bool CopyOptRegister::Run(const std::string& name, at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc) {
+    auto itr = registry.find(name);
+    if (itr != registry.end()) {
+        return itr->second->Optimizer(self, src, src_desc);
+    }
+    return false;
+}
+
+}  // namespace register_opt
 
 // OpPreparation part
 
@@ -1222,7 +1261,8 @@ at::Tensor empty_with_format(at::IntArrayRef size, c10::optional<at::ScalarType>
 }
 
 at::Tensor clone(const at::Tensor& src, c10::optional<at::MemoryFormat> memory_format) {
-    OptimizationCases opt_cases{"permute", "reshape", "slice", "reshapeV2"};
+    std::cout << __FUNCTION__ << std::endl;
+    OptimizationCases opt_cases{"reshape", "slice", "reshapeV2"};
     if (TransContiguous::CanOptimize(src, opt_cases)) {
         // clone with any npu formats
         auto formatTempTensor = TransContiguous::ContiguousOptimizeWithAnyFormat(src, opt_cases);
