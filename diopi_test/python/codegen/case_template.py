@@ -60,7 +60,7 @@ from conformance.diopi_manual_functions import ManualTest
 
     test_diopi_nhwc_import = CodeTemplate(
         r"""
-from conformance.diopi_set_nhwc import set_nhwc
+from conformance.diopi_runtime import set_nhwc
 """
     )
 
