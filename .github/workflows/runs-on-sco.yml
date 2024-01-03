@@ -30,7 +30,7 @@ jobs:
     runs-on: tps-sco-ci
     steps:
       - name: Checkout Code
-        uses: .github/actions/checkout-code@main
+        uses: DeepLink-org/DIOPI/.github/actions/checkout-code@main
 
   Build-Nvidia:
     name: Build-Nvidia
