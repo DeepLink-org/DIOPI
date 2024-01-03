@@ -180,6 +180,7 @@ def compute_nhwc_stride(size, itemsize=1, name=None):
     else:
         return compute_nhwc_stride_3d(size, itemsize)
 
+
 def set_nhwc(tensor_nchw, name_2d_3d):
     ndim = tensor_nchw.ndim
     if ndim == 3:
@@ -194,6 +195,7 @@ def set_nhwc(tensor_nchw, name_2d_3d):
     nhwc_out.shape = tensor_nchw.shape
     nhwc_out.strides = compute_nhwc_stride(tensor_nchw.shape, tensor_nchw.itemsize, name_2d_3d)
     return nhwc_out
+
 
 def diopi_rt_init():
     init_library()
