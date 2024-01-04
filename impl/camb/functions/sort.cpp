@@ -58,7 +58,7 @@ diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
                                       dim,
                                       descending,
                                       true,
-                                      stable,
+                                      nullptr == stable ? false : *stable,
                                       workspace,
                                       workspaceSize,
                                       valuesDesc.get(),
