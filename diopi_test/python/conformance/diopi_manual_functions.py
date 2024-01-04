@@ -79,7 +79,7 @@ class ManualTest(object):
         input_origin = np.copy(input.numpy())
         out = F.bernoulli(input, inplace, p, generator)
         if inplace is False and p is None:
-            assert np.allclose(input_origin, input) is False, \
+            assert np.allclose(input_origin, input.numpy()) is True, \
                 "input changed"
         out_numpy = out.numpy()
 
