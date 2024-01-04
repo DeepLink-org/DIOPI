@@ -39,7 +39,7 @@ diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
             .addInput(inputT)
             .setAttr("axis", lastdim)
             .setAttr("descending", descending)
-            .setAttr("stable", *stable)
+            .setAttr("stable", nullptr == stable ? false : *stable)
             .addOutput(valuesT)
             .addOutput(indicesT)
             .run();
@@ -52,7 +52,7 @@ diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
             .addInput(input)
             .setAttr("axis", dim)
             .setAttr("descending", descending)
-            .setAttr("stable", *stable)
+            .setAttr("stable", nullptr == stable ? false : *stable)
             .addOutput(values)
             .addOutput(indices)
             .run();
