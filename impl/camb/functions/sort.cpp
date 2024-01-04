@@ -17,7 +17,17 @@ diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
     auto indicesTensor = DiopiTensor(indices);
     auto valuesTensor = DiopiTensor(values);
     DiopiTensor valuesTensorTemp = valuesTensor;
-
+    // handle scalar
+    if (inputTensor.dim() == 0 && inputTensor.numel() == 1) {
+        DIOPI_CALL(diopiCopyInp(ctx, input, values));
+        diopiScalar_t zero = constructDiopiScalarT(indicesTensor.dtype(), 0);
+        DIOPI_CALL(diopiFill(ctx, indices, &zero));
+        return diopiSuccess;
+    }
+    // handle empty tensor
+    if (inputTensor.numel() == 0) {
+        return diopiSuccess;
+    }
     // since input can be changed by cnnlTopKTensor_v3 when input_shape is (24180),
     // need to requires a temp Tensor to bypass this bug
     DiopiTensor inputTensorTemp = requiresTensor(ctx, inputTensor.shape(), inputTensor.dtype());
@@ -58,7 +68,7 @@ diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
                                       dim,
                                       descending,
                                       true,
-                                      stable,
+                                      nullptr == stable ? false : *stable,
                                       workspace,
                                       workspaceSize,
                                       valuesDesc.get(),
