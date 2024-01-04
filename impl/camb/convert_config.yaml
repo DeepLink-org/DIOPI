@@ -3,16 +3,16 @@
     layout: NCHW
 
 - diopiAdd:
-    layout: NCL, NLC, NCHW, NHWC
+    layout: NCL, NLC, NCHW, NHWC, NDHWC
 
 - diopiAddScalar:
-    layout: NCL, NLC, NCHW, NHWC
+    layout: NCL, NLC, NCHW, NHWC, NDHWC
 
 - diopiAddInpScalar:
-    layout: NCL, NLC, NCHW, NHWC
+    layout: NCL, NLC, NCHW, NHWC, NDHWC
 
 - diopiAddInp:
-    layout: NCL, NLC, NCHW, NHWC
+    layout: NCL, NLC, NCHW, NHWC, NDHWC
 
 - diopiUpsampleNearest:
     layout: NHWC, NDHWC
