@@ -1794,4 +1794,75 @@ device_configs = {
             ]
         ),
     ),
+    
+    'remainder_self_scalar': dict(
+        name=['remainder'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['other'],
+                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
+                },
+            ]
+        ),
+    ),
+
+    'remainder_self_bool': dict(
+        name=['remainder'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['other'],
+                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
+                },
+            ]
+        ),
+    ),
+
+    'remainder_tensor': dict(
+        name=['remainder'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
+                },
+            ]
+        ),
+    ),
+
+    'remainder_tensor_zero': dict(
+        name=['remainder'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.int16),Skip(np.uint8),Skip(np.int8),],
+                },
+            ]
+        ),
+    ),
+
+    'remainder_other_scalar': dict(
+        name=['remainder'],
+        para=dict(
+            other=[Skip(0),],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.uint8),],
+                },
+            ]
+        ),
+    ),
+
+    'remainder_other_scalar_bool': dict(
+        name=['remainder'],
+        para=dict(
+            other=[Skip(False),],
+        ),
+        
+    ),
 }
