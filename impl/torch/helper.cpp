@@ -5,6 +5,8 @@
  */
 #include "helper.hpp"
 
+#include <ATen/cuda/EmptyTensor.h>
+
 namespace impl {
 
 namespace aten {
@@ -43,11 +45,11 @@ caffe2::TypeMeta getATenType(diopiDtype_t dt) {
             return caffe2::TypeMeta::Make<c10::complex<double>>();
         default:
             NOT_SUPPORTED("diopi dytpe");
-            return caffe2::TypeMeta();
+            return {};
     }
 }
 
-diopiDtype_t getDIOPITensorType(at::Tensor& input) {
+diopiDtype_t getDIOPITensorType(const at::Tensor& input) {
     switch (input.scalar_type()) {
         case at::ScalarType::Bool:
             return diopi_dtype_bool;
@@ -75,33 +77,68 @@ diopiDtype_t getDIOPITensorType(at::Tensor& input) {
     }
 }
 
-template <typename T>
-at::Tensor buildATen(T tensor) {
-    if (tensor == nullptr) return at::Tensor();
+namespace {
 
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(tensor, &dtype);
-    caffe2::TypeMeta atType = getATenType(dtype);
-    diopiDevice_t device;
-    diopiGetTensorDevice(tensor, &device);
-    c10::DeviceType atDevice = getATenDevice(device);
-    void* data = nullptr;
-    diopiGetTensorData(const_cast<diopiTensorHandle_t>(tensor), &data);
+at::Tensor buildATenCUDA(diopiConstTensorHandle_t tensor) {
+    if (tensor == nullptr) {
+        return at::Tensor();
+    }
 
     diopiSize_t shape;
     diopiGetTensorShape(tensor, &shape);
-    at::IntArrayRef atDims(shape.data, shape.len);
+    at::IntArrayRef atSizes(shape.data, shape.len);
+
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(tensor, &dtype);
+    auto atTypeMeta = getATenType(dtype);
+    auto atDtype = atTypeMeta.toScalarType();
+
+    diopiDeviceIndex_t deviceIndex;
+    diopiGetTensorDeviceIndex(tensor, &deviceIndex);
+    at::Device atDevice(at::DeviceType::CUDA, deviceIndex);
+
+    // NOTE: storage offset has been handled in `diopiGetTensorData`
+    void* data = nullptr;
+    diopiGetTensorData(const_cast<diopiTensorHandle_t>(tensor), &data);
+
+    if (data == nullptr) {
+        return at::detail::empty_cuda(atSizes, atDtype, atDevice, /*memory_format_opt=*/c10::nullopt);
+    }
+
+    // NOTE: CUDA allocators may have not been initialized if we were using DIPU allocators
+    //       we have to do this explicitly for potential allocations in op workspaces
+    at::globalContext().lazyInitCUDA();
+
+    // PERF: it would be faster if we can obtain and reuse the storage from tensor
+    //       however we cannot assume diopiTensorHandle_t to be a wrapper of at::Tensor
+    //       so we have to create a new storage (offset = 0)
 
     diopiSize_t stride;
     diopiGetTensorStride(tensor, &stride);
     at::IntArrayRef atStrides(stride.data, stride.len);
 
-    auto options = at::TensorOptions(atDevice).dtype(atType);
-    if (data != nullptr) {
-        return at::from_blob(data, atDims, atStrides, options);
-    } else {
-        return at::empty(atDims, options);
-    }
+    auto storageNBytes = at::detail::computeStorageNbytes(atSizes, atStrides, atTypeMeta.itemsize());
+
+    // NOTE: in this way, data_ptr will have an empty destructor
+    at::Storage storage{at::Storage::use_byte_size_t{}, storageNBytes, /*data_ptr=*/{data, atDevice}};
+
+    auto dk = at::computeDispatchKey(atDtype, /*layout=*/c10::nullopt, atDevice);
+    at::Tensor atTensor = at::detail::make_tensor<at::TensorImpl>(std::move(storage), dk, atTypeMeta);
+    atTensor.unsafeGetTensorImpl()->set_sizes_and_strides(atSizes, atStrides);
+
+    return atTensor;
+}
+
+}  // namespace
+
+at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
+    // PERF: `buildATen` assumes tensor is on cuda device for better performance
+#ifndef NDEBUG
+    diopiDevice_t device;
+    diopiGetTensorDevice(tensor, &device);
+    TORCH_CHECK(device == diopiDevice_t::diopi_device, "only support cuda device");
+#endif
+    return buildATenCUDA(tensor);
 }
 
 at::Scalar buildAtScalar(const diopiScalar_t* scalar) {
