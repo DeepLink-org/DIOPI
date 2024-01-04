@@ -71,12 +71,16 @@ class ManualTest(object):
                 "failed to execute uniform"
 
     def test_bernoulli(input, inplace=False, p=None):
-        p_numpy = input.numpy()
-        if input.numel() > 0:
-            p = p_numpy.mean() if p is None else p
+        # p_numpy = input.numpy()
+        # if input.numel() > 0:
+        #     p = p_numpy.mean() if p is None else p
         state = build_generator_state(input.context())
         generator = Generator(state)
+        input_origin = np.copy(input.compy())
         out = F.bernoulli(input, inplace, p, generator)
+        if (inplace == False) and p == None:
+            assert np.allclose(input_origin, input) == False, \
+                "input changed"
         out_numpy = out.numpy()
 
         assert np.all((out_numpy == 0) | (out_numpy == 1)), "bernoulli output must be 0 or 1"
