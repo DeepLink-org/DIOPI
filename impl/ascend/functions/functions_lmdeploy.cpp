@@ -542,8 +542,8 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                 shape[1] = local_head_num;
                 shape[2] = size_per_head / 2;
                 shape[3] = 2;
-                diopiSize_t q_buffer_forsplit_stride{
-                    static_cast<const int64_t*>(reinterpret_cast<int64_t*>(q_buffer_ptr + itemsize * total_input_length * local_head_num * size_per_head)), -1};
+                char* q_buffer_forsplit_ptr = reinterpret_cast<char*>(q_buffer_ptr) + itemsize * total_input_length * local_head_num * size_per_head;
+                diopiSize_t q_buffer_forsplit_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(q_buffer_forsplit_ptr)), -1};
                 diopiRequireTensor(ctx, &q_buffer_forsplit, &newshape, &q_buffer_forsplit_stride, dtype, device);
                 diopiSplitWithSizes(ctx, splits_buffer, 2, q_buffer_forsplit, split_sizes, 3);
                 // 0
@@ -563,9 +563,8 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                 shape[1] = local_kv_head_num;
                 shape[2] = size_per_head / 2;
                 shape[3] = 2;
-                diopiSize_t k_buffer_forsplit_stride{
-                    static_cast<const int64_t*>(reinterpret_cast<int64_t*>(k_buffer_ptr) + itemsize * total_input_length * local_kv_head_num * size_per_head),
-                    -1};
+                char* k_buffer_forsplit_ptr = reinterpret_cast<char*>(k_buffer_ptr) + itemsize * total_input_length * local_kv_head_num * size_per_head;
+                diopiSize_t k_buffer_forsplit_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(k_buffer_forsplit_ptr)), -1};
                 diopiRequireTensor(ctx, &k_buffer_forsplit, &newshape, &k_buffer_forsplit_stride, dtype, device);
                 diopiSplitWithSizes(ctx, splits_buffer, 2, k_buffer_forsplit, split_sizes, 3);
                 // 0
