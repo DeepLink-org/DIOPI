@@ -42,19 +42,6 @@ device_configs = {
         ),
     ),
 
-    # temp for 910B
-    'normal_tensor': dict(
-        name=["normal"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['mean'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
     'batch_norm': dict(
         name=['batch_norm'],
         atol=1e-2,
@@ -1730,46 +1717,6 @@ device_configs = {
         ),
     ),
 
-    # temp for 910B
-    'normal_': dict(
-        name=["normal_"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
-                },
-            ]
-        ),
-    ),
-
-    # temp for 910B
-    'normal_std_tensor': dict(
-        name=["normal"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['std'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
-                },
-            ]
-        ),
-    ),
-
-    # temp for 910B
-    'normal_mean_tensor': dict(
-        name=["normal"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['mean'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
-                },
-            ]
-        ),
-    ),
-    
-    # in case for zero division
     'remainder_self_scalar': dict(
         name=['remainder'],
         tensor_para=dict(
@@ -1843,6 +1790,5 @@ device_configs = {
         para=dict(
             other=[Skip(False),],
         ),
-        
     ),
 }
