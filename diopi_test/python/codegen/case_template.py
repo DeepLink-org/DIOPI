@@ -47,6 +47,7 @@ class ${test_class_name}(object):
         r"""
 from conformance.diopi_functions import ${test_diopi_func_name}
 ${test_import_diopi_bp_func}
+${test_diopi_nhwc_import}
 """
     )
 
@@ -54,6 +55,12 @@ ${test_import_diopi_bp_func}
     test_diopi_manual_import = CodeTemplate(
         r"""
 from conformance.diopi_manual_functions import ManualTest
+"""
+    )
+
+    test_diopi_nhwc_import = CodeTemplate(
+        r"""
+from conformance.diopi_runtime import set_nhwc
 """
     )
 
@@ -115,72 +122,12 @@ for para_key, para_val in function_kwargs.items():
 
     test_set_nhwc = CodeTemplate(
         r"""
-# set nhwc
-def compute_nhwc_stride_2d(sizes, itemsize=1):
-    dim = len(sizes)
-    strides = [itemsize for i in range(dim)]
-    assert dim == 3 or dim == 4, "not supported dim"
-    if dim == 3:
-        strides[0] = itemsize
-        strides[2] = strides[0] * sizes[0]
-        strides[1] = strides[2] * sizes[2]
-    elif dim == 4:
-        strides[1] = itemsize
-        strides[3] = strides[0] * sizes[1]
-        strides[2] = strides[3] * sizes[3]
-        strides[0] = strides[2] * sizes[2]
-    return strides
-
-def compute_nhwc_stride_3d(sizes, itemsize=1):
-    dim = len(sizes)
-    strides = [itemsize for i in range(dim)]
-    assert dim == 4 or dim == 5, "not supported dim"
-    if dim == 4:
-        strides[0] = itemsize
-        strides[3] = strides[0] * sizes[0]
-        strides[2] = strides[3] * sizes[3]
-        strides[1] = strides[2] * sizes[2]
-    elif dim == 5:
-        strides[1] = itemsize
-        strides[4] = strides[0] * sizes[1]
-        strides[3] = strides[4] * sizes[4]
-        strides[2] = strides[3] * sizes[3]
-        strides[0] = strides[2] * sizes[2]
-    return strides
-
-def compute_nhwc_stride(size, itemsize=1, name=None):
-    if name == '2d':
-        return compute_nhwc_stride_2d(size, itemsize)
-    if name == '3d':
-        return compute_nhwc_stride_3d(size, itemsize)
-
-    dim = len(size)
-    if dim < 5:
-        return compute_nhwc_stride_2d(size, itemsize)
-    else:
-        return compute_nhwc_stride_3d(size, itemsize)
-
 for para_key, para_val in function_kwargs.items():
     if isinstance(para_val, np.ndarray) and para_key in ${nhwc_list}:
-        ndim = para_val.ndim
-        if ndim < ${nhwc_min_dim} or ndim > 5:
+        if para_val.ndim < ${nhwc_min_dim} or para_val.ndim > 5:
             default_context.clear_tensors()
-            pytest.xfail(f"Skipped: {ndim}-dim Tensor skipped for nhwc test")
-        para_val_nchw = para_val
-        ndim = para_val_nchw.ndim
-        if ndim == 3:
-            axis = (1, 2, 0)
-        elif ndim == 4 and '3d' in ${nhwc_list}:
-            axis = (1, 2, 3, 0)
-        elif ndim == 4:
-            axis = (0, 2, 3, 1)
-        elif ndim == 5:
-            axis = (0, 2, 3, 4, 1)
-        para_val_nhwc = np.transpose(para_val_nchw, axis).copy()
-        para_val_nhwc.shape = para_val_nchw.shape
-        para_val_nhwc.strides = compute_nhwc_stride(para_val_nchw.shape, para_val_nchw.itemsize, ${nhwc_list}[0])
-        para_val = para_val_nhwc
-        function_kwargs[para_key] = para_val
+            pytest.xfail(f"Skipped: {para_val.ndim}-dim Tensor skipped for nhwc test")
+        function_kwargs[para_key] = set_nhwc(para_val, ${nhwc_list}[0])
 """
     )
 
