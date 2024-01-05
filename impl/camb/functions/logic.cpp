@@ -21,8 +21,8 @@ diopiError_t logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConst
     DiopiTensor outTensor(out);
 
     DiopiTensor outTensorTemp = outTensor;
-    if (outTensor.dtype() != inputTensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, outTensorTemp, inputTensor.dtype()));
+    if (otherTensor.dtype() != inputTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, otherTensor, inputTensor.dtype()));
     }
 
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
@@ -66,8 +66,8 @@ diopiError_t logicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     DiopiTensor outTensor(out);
 
     DiopiTensor outTensorTemp = outTensor;
-    if (outTensor.dtype() != inputTensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, outTensorTemp, inputTensor.dtype()));
+    if (otherTensor.dtype() != inputTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, otherTensor, inputTensor.dtype()));
     }
 
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
