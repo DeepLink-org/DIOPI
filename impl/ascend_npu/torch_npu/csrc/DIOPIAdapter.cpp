@@ -8,7 +8,6 @@
 #include "../../../ascend/common/gil_scoped_release.hpp"
 #include "../../../ascend/common/stream_lock.hpp"
 #include "diopi_impl/helper.hpp"
-#include "framework/DIOPIAdapter.h"
 #include "op_plugin/AclOpsInterface.h"
 
 namespace {

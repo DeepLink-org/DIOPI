@@ -1,8 +1,9 @@
 #pragma once
 
+#include <ATen/ATen.h>
 #include <ATen/NamedTensorUtils.h>
-#include <diopi/diopirt.h>
 #include <stdio.h>
+
 #include <iostream>
 #include <map>
 #include <memory>

@@ -32,7 +32,7 @@ diopiError_t diopiCustomFormatCast(diopiContextHandle_t ctx, diopiTensorHandle_t
     return diopiSuccess;
 }
 
-diopiError_t diopiGetCustomFormat(diopiContextHandle_t ctx, diopiTensorHandle_t in, int64_t* result) {
+diopiError_t diopiGetCustomFormat(diopiContextHandle_t ctx, diopiConstTensorHandle_t in, int64_t* result) {
     BEGIN_CALL_ACL_OP(in);
     aclFormat format = aclFormat::ACL_FORMAT_UNDEFINED;
     const auto& dataItr = dataMap.find(inAt.data_ptr());

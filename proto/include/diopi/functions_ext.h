@@ -270,7 +270,7 @@ DIOPI_API diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, 
 // ============================================lightllm end========================================
 
 DIOPI_API diopiError_t diopiCustomFormatCast(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiTensorHandle_t in, int64_t format);
-DIOPI_API diopiError_t diopiGetCustomFormat(diopiContextHandle_t ctx, diopiTensorHandle_t input, int64_t* format);
+DIOPI_API diopiError_t diopiGetCustomFormat(diopiContextHandle_t ctx, diopiConstTensorHandle_t input, int64_t* format);
 DIOPI_API diopiError_t diopiTensorDestructionHook(diopiContextHandle_t ctx, void* ptr);
 
 #if defined(__cplusplus)
