@@ -127,13 +127,14 @@ at::Tensor buildATenImpl(diopiConstTensorHandle_t tensor) {
         return DeviceImpl::empty(atSizes, atDtype, atDevice);
     }
 
-    // NOTE: CUDA allocators may have not been initialized if we were using DIPU allocators
-    //       we have to do this explicitly for potential allocations in op workspaces
+    // NOTE: CUDA allocators may have not been initialized if we were using DIPU allocators.
+    //       We have to do this explicitly for potential allocations in op workspaces.
     DeviceImpl::lazyInitDevice();
 
-    // PERF: it would be faster if we can obtain and reuse the storage from tensor
-    //       however we cannot assume diopiTensorHandle_t to be a wrapper of at::Tensor
-    //       so we have to create a new storage (offset = 0)
+    // PERF: It would be faster if we can obtain and reuse the storage from tensor.
+    //       However we cannot assume diopiTensorHandle_t to be a wrapper of at::Tensor.
+    //       So we have to create a new storage (offset = 0) whose data_ptr points to
+    //       the same address but with an empty dtor (to avoid double-free).
 
     diopiSize_t stride;
     diopiGetTensorStride(tensor, &stride);
