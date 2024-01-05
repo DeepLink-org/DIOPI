@@ -20,9 +20,13 @@ diopiError_t logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConst
     DiopiTensor otherTensor(other);
     DiopiTensor outTensor(out);
 
+    std::vector<DiopiTensor*> pTensors{&inputTensor, &otherTensor};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
+
     DiopiTensor outTensorTemp = outTensor;
-    if (otherTensor.dtype() != inputTensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, otherTensor, inputTensor.dtype()));
+    if (outTensor.dtype() != inputTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensorTemp, inputTensor.dtype()));
     }
 
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
@@ -65,9 +69,13 @@ diopiError_t logicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     DIOPI_CALL(makeTensorFromScalar(ctx, other, otherTensor));
     DiopiTensor outTensor(out);
 
+    std::vector<DiopiTensor*> pTensors{&inputTensor, &otherTensor};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32};
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
+
     DiopiTensor outTensorTemp = outTensor;
-    if (otherTensor.dtype() != inputTensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, otherTensor, inputTensor.dtype()));
+    if (outTensor.dtype() != inputTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensorTemp, inputTensor.dtype()));
     }
 
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
