@@ -255,6 +255,49 @@ void NpuUtils::RefreshFormat(const at::Tensor& tensor) {
     }
 }
 
+const std::string AclDateTypeToString(aclDataType descDType) {
+    const static std::map<const aclDataType, const std::string> ACL_TYPE_TO_STRING_TYPE_MAP = {{ACL_DT_UNDEFINED, "ACL_DT_UNDEFINED"},
+                                                                                               {ACL_FLOAT, "ACL_FLOAT"},
+                                                                                               {ACL_FLOAT16, "ACL_FLOAT16"},
+                                                                                               {ACL_INT8, "ACL_INT8"},
+                                                                                               {ACL_INT32, "ACL_INT32"},
+                                                                                               {ACL_UINT8, "ACL_UINT8"},
+                                                                                               {ACL_INT16, "ACL_INT16"},
+                                                                                               {ACL_UINT16, "ACL_UINT16"},
+                                                                                               {ACL_UINT32, "ACL_UINT32"},
+                                                                                               {ACL_INT64, "ACL_INT64"},
+                                                                                               {ACL_UINT64, "ACL_UINT64"},
+                                                                                               {ACL_DOUBLE, "ACL_DOUBLE"},
+                                                                                               {ACL_BOOL, "ACL_BOOL"},
+                                                                                               {ACL_STRING, "ACL_STRING"},
+                                                                                               {ACL_COMPLEX32, "ACL_COMPLEX32"},
+                                                                                               {ACL_COMPLEX64, "ACL_COMPLEX64"},
+                                                                                               {ACL_COMPLEX128, "ACL_COMPLEX128"},
+                                                                                               {ACL_BF16, "ACL_BF16"}};
+
+    const auto iter = ACL_TYPE_TO_STRING_TYPE_MAP.find(descDType);
+    return iter != ACL_TYPE_TO_STRING_TYPE_MAP.end() ? iter->second : "DescDType not exists, descDType:" + std::to_string(descDType);
+}
+
+const std::string AclFormatToString(aclFormat descFormat) {
+    const static std::map<const aclFormat, const std::string> ACL_FORMAT_TO_STRING_TYPE_MAP = {{ACL_FORMAT_UNDEFINED, "ACL_FORMAT_UNDEFINED"},
+                                                                                               {ACL_FORMAT_NCHW, "ACL_FORMAT_NCHW"},
+                                                                                               {ACL_FORMAT_NHWC, "ACL_FORMAT_NHWC"},
+                                                                                               {ACL_FORMAT_ND, "ACL_FORMAT_ND"},
+                                                                                               {ACL_FORMAT_NC1HWC0, "ACL_FORMAT_NC1HWC0"},
+                                                                                               {ACL_FORMAT_FRACTAL_Z, "ACL_FORMAT_FRACTAL_Z"},
+                                                                                               {ACL_FORMAT_NC1HWC0_C04, "ACL_FORMAT_NC1HWC0_C04"},
+                                                                                               {ACL_FORMAT_HWCN, "ACL_FORMAT_HWCN"},
+                                                                                               {ACL_FORMAT_NDHWC, "ACL_FORMAT_NDHWC"},
+                                                                                               {ACL_FORMAT_FRACTAL_NZ, "ACL_FORMAT_FRACTAL_NZ"},
+                                                                                               {ACL_FORMAT_NCDHW, "ACL_FORMAT_NCDHW"},
+                                                                                               {ACL_FORMAT_NDC1HWC0, "ACL_FORMAT_NDC1HWC0"},
+                                                                                               {ACL_FRACTAL_Z_3D, "ACL_FRACTAL_Z_3D"}};
+
+    const auto iter = ACL_FORMAT_TO_STRING_TYPE_MAP.find(descFormat);
+    return iter != ACL_FORMAT_TO_STRING_TYPE_MAP.end() ? iter->second : "DescFormat not exists, descFormat:" + std::to_string(descFormat);
+}
+
 at::Tensor metadata_convert_match(const at::Tensor& src, bool numelEq) {
     // Only when a tensor monopolizes a storage can NpuStorageDesc be
     // refreshed. When the original format is not NCHW, the npu_format_cast to
@@ -1052,7 +1095,7 @@ void ContiguousTensorDesc::find_match_optimization_cases() {
 }
 
 OptimizationCases TransContiguous::optCasesDefault = {};
-OptimizationCases TransContiguous::optCasesAnyFormat = {"permute", "reshape", "slice"};
+OptimizationCases TransContiguous::optCasesAnyFormat = {"permute"};
 ContiguousTensorDesc TransContiguous::GetTensorDescInfo(const at::Tensor& src, const OptimizationCases& opt_cases) {
     auto src_base_info = torch_npu::NPUBridge::GetNpuStorageImpl(src)->get_npu_desc();
     c10::SmallVector<int64_t, MAX_DIM> src_size_inferred;
@@ -1121,7 +1164,7 @@ bool TransContiguous::contiguous_optimize_with_anyformat_(at::Tensor& self, cons
     }
     for (auto& opt_case : src_desc.opt_cases_) {
         bool res = register_opt::CopyOptRegister::GetInstance()->Run(opt_case, self, src, src_desc);
-        NPU_LOGD("%s: %d\n", opt_case, res);
+        NPU_LOGD("%s: %d", opt_case.c_str(), res);
         if (res) {
             return true;
         }
@@ -1163,14 +1206,14 @@ bool TransContiguous::ContiguousOptimizeWithBaseFormat(at::Tensor& self, const a
 namespace register_opt {
 
 void CopyOptRegister::Register(std::string& name, ::std::unique_ptr<ContiguousOpt>& ptr) {
-    NPU_LOGD(": %s\n", name.c_str());
+    NPU_LOGD(": %s", name.c_str());
     std::lock_guard<std::mutex> lock(mu_);
     registry.emplace(name, std::move(ptr));
 }
 
 bool CopyOptRegister::CanOptimize(std::string& name, const ContiguousTensorDesc& src_desc) {
     auto itr = registry.find(name);
-    NPU_LOGD(": %s\n", name.c_str());
+    NPU_LOGD(": %s", name.c_str());
     if (itr != registry.end()) {
         return itr->second->CanOptimizer(src_desc);
     }
@@ -1664,26 +1707,17 @@ public:
             dims = storageDesc.base_sizes_;
         }
         auto format = storageDesc.origin_format_;
-        if (debugLevel()) {
-            std::cout << __FUNCTION__ << ":" << dataType << "," << dims << "," << format << std::endl;
-        }
 
         desc = aclCreateTensorDesc(dataType, dims.size(), dims.data(), format);
         return *this;
     }
 
     inline AclTensorDescMaker& Create(aclDataType dataType, c10::IntArrayRef dims, aclFormat format) {
-        if (debugLevel()) {
-            std::cout << __FUNCTION__ << ":" << dataType << "," << dims << "," << format << std::endl;
-        }
         desc = aclCreateTensorDesc(dataType, dims.size(), dims.data(), format);
         return *this;
     }
 
     inline AclTensorDescMaker& Create(aclDataType dataType, aclFormat format) {
-        if (debugLevel()) {
-            std::cout << __FUNCTION__ << ":" << dataType << "," << format << std::endl;
-        }
         desc = aclCreateTensorDesc(dataType, 0, nullptr, format);
         return *this;
     }
@@ -2113,6 +2147,57 @@ void OpCommandImpl::Run(bool sync, c10::SmallVector<int64_t, N>& sync_index, c10
     NPU_LOGD("Op %s run over.", opName.c_str());
 }
 
+void printErrorLog(ExecuteParas* cur_paras) {
+    ASCEND_LOGE("---OpName---%s", cur_paras->opType);
+    for (int i = 0; i < cur_paras->paras.input_num; i++) {
+        const aclTensorDesc* tensorDesc = cur_paras->paras.input_desc[i];
+        aclDataType dataType = aclGetTensorDescType(tensorDesc);
+        aclFormat descformat = aclGetTensorDescFormat(tensorDesc);
+
+        int descNumDims = static_cast<int>(aclGetTensorDescNumDims(tensorDesc));
+        std::string descShape = "[";
+        for (int j = 0; j < descNumDims; j++) {
+            int64_t dimSize = 0;
+            aclGetTensorDescDimV2(tensorDesc, j, &dimSize);
+            descShape = descShape + std::to_string(dimSize);
+            if (j < descNumDims - 1) {
+                descShape += ", ";
+            }
+        }
+        descShape += "]";
+
+        ASCEND_LOGE("InputDesc[%d]: DescType = %s, DescFormat = %s, DescShape = %s",
+                    i,
+                    (AclDateTypeToString(dataType)).c_str(),
+                    (AclFormatToString(descformat)).c_str(),
+                    descShape.c_str());
+    }
+
+    for (int i = 0; i < cur_paras->paras.output_num; i++) {
+        const aclTensorDesc* tensorDesc = cur_paras->paras.output_desc[i];
+        aclDataType dataType = aclGetTensorDescType(tensorDesc);
+        aclFormat descformat = aclGetTensorDescFormat(tensorDesc);
+
+        int descNumDims = static_cast<int>(aclGetTensorDescNumDims(tensorDesc));
+        std::string descShape = "[";
+        for (int j = 0; j < descNumDims; j++) {
+            int64_t dimSize = 0;
+            aclGetTensorDescDimV2(tensorDesc, j, &dimSize);
+            descShape = descShape + std::to_string(dimSize);
+            if (j < descNumDims - 1) {
+                descShape += ", ";
+            }
+        }
+        descShape += "]";
+
+        ASCEND_LOGE("OutputDesc[%d]: DescType = %s, DescFormat = %s, DescShape = %s",
+                    i,
+                    (AclDateTypeToString(dataType)).c_str(),
+                    (AclFormatToString(descformat)).c_str(),
+                    descShape.c_str());
+    }
+}
+
 aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool sync, c10::SmallVector<int64_t, N>& sync_index,
                                  c10::SmallVector<at::Tensor, N>& outputTensor) {
     aclError ret;
@@ -2161,8 +2246,11 @@ aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool 
           }
         }
 #endif
-        {
-            diopi::StreamLockGuard streamLockGuard(stream.stream());
+        diopi::StreamLockGuard streamLockGuard(stream.stream());
+        ExecuteParas exeParams;
+        ExportParams(exeParams);
+        printErrorLog(&exeParams);
+        if (sync) {
             ret = AclopCompileAndExecuteV2(name.c_str(),
                                            inputSize,
                                            const_cast<aclTensorDesc**>(params.inDesc.data()),
@@ -2175,9 +2263,7 @@ aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool 
                                            ACL_COMPILE_SYS,
                                            NULL,
                                            stream);
-        }
-        NPU_CHECK_ERROR(ret);
-        if (sync) {
+            NPU_CHECK_ERROR(ret);
             int64_t dimSize;
             for (size_t i = 0; i < sync_index.size(); i++) {
                 c10::SmallVector<int64_t, N> real_shape;
@@ -2187,12 +2273,42 @@ aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool 
                 }
                 outputTensor[sync_index[i]].resize_(real_shape);
             }
+        } else {
+            if (0) {
+                ret = aclopCompileAndExecute(name.c_str(),
+                                             inputSize,
+                                             params.inDesc.data(),
+                                             params.inBuffer.data(),
+                                             outputSize,
+                                             params.outDesc.data(),
+                                             params.outBuffer.data(),
+                                             params.attr,
+                                             ACL_ENGINE_SYS,
+                                             ACL_COMPILE_SYS,
+                                             NULL,
+                                             stream);
+            } else {
+                ret = AclopCompileAndExecuteV2(name.c_str(),
+                                               inputSize,
+                                               const_cast<aclTensorDesc**>(params.inDesc.data()),
+                                               const_cast<aclDataBuffer**>(params.inBuffer.data()),
+                                               outputSize,
+                                               const_cast<aclTensorDesc**>(params.outDesc.data()),
+                                               params.outBuffer.data(),
+                                               params.attr,
+                                               ACL_ENGINE_SYS,
+                                               ACL_COMPILE_SYS,
+                                               NULL,
+                                               stream);
+            }
+            NPU_CHECK_ERROR(ret);
         }
         ++index;
     } while (NpuUtils::IsOomError(ret, index) && (index < NPU_MAX_OP_EXEC_TRY_NUM));
     if (reset_flag) {
         AclSetCompileopt(aclCompileOpt::ACL_OP_JIT_COMPILE, "disable");
     }
+    stream.synchronize();
     return ret;
 }
 
@@ -2253,12 +2369,13 @@ std::tuple<aclTensorDesc*, aclDataBuffer*> CovertHostTensorToAclInput(const at::
     return std::tie(aclDesc, aclBuff);
 }
 
+#if 0
 std::tuple<aclTensorDesc*, aclDataBuffer*> CovertToAclOutput(const at::Tensor& tensor, const string& forceDataType) {
     aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(tensor.scalar_type(), forceDataType);
     auto format = CalcuOpUtil::GetTensorNpuFormat(tensor);
     AclTensorDescMaker desc;
     aclTensorDesc* aclDesc = nullptr;
-    if (tensor.sizes().size() > 0 && tensor.numel() == 0) {
+    if (tensor.sizes().size() > 0) {
         aclDesc = desc.Create(aclDataType, tensor.sizes(), static_cast<aclFormat>(format)).Get();
     } else {
         aclDesc = desc.Create(aclDataType, ACL_FORMAT_ND).Get();
@@ -2268,6 +2385,20 @@ std::tuple<aclTensorDesc*, aclDataBuffer*> CovertToAclOutput(const at::Tensor& t
     return std::tie(aclDesc, aclBuff);
 }
 
+#else
+std::tuple<aclTensorDesc*, aclDataBuffer*> CovertToAclOutput(const at::Tensor& tensor, const string& forceDataType) {
+    aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(tensor.scalar_type(), forceDataType);
+    const auto& npuDesc = torch_npu::NPUBridge::GetNpuStorageImplDesc(tensor);
+    const auto& dims = tensor.sizes();
+    auto& storageDims = npuDesc.storage_sizes_;
+    AclTensorDescMaker desc;
+    auto aclDesc = desc.Create(aclDataType, dims, npuDesc.origin_format_).SetFormat(npuDesc.npu_format_).SetShape(storageDims).Get();
+    auto numel = c10::multiply_integers(storageDims);
+    AclTensorBufferMaker aclBuffer(tensor, numel);
+    auto aclBuff = aclBuffer.Get();
+    return std::tie(aclDesc, aclBuff);
+}
+#endif
 // This class maintain the position of the current
 // OpCommandImpl object in vector, the resources in
 // the object is
@@ -2732,7 +2863,7 @@ at::Generator buildATen(diopiGeneratorHandle_t generator) {
 }
 
 at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides, const int64_t storageOffset) {
-    TORCH_CHECK(c10::multiply_integers(sizes) <= input.numel());
+    // TORCH_CHECK(c10::multiply_integers(sizes) <= input.numel());
     TORCH_CHECK(!input.is_cpu());
     std::vector<int64_t> stridesVec(sizes.size(), 1);
     if (strides.size() > 0) {
