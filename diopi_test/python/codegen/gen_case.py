@@ -144,7 +144,7 @@ class GenTestCase(object):
                     env=dict(dtype_list=str(dtype_op[self._func_name]))
                 )
 
-            test_set_nhwc = ""
+            test_set_nhwc, test_diopi_nhwc_import = "", ""
             if glob_vars.nhwc and self._func_name in nhwc_op:
                 test_set_nhwc = CaseTemplate.test_set_nhwc.substitute(
                     env=dict(
@@ -152,6 +152,7 @@ class GenTestCase(object):
                         nhwc_min_dim=glob_vars.nhwc_min_dim,
                     )
                 )
+                test_diopi_nhwc_import = CaseTemplate.test_diopi_nhwc_import.substitute(env={})
             test_set_stride = ""
             has_stride = {
                 i["ins"] + "stride": i[i["ins"] + "stride"]
@@ -296,6 +297,7 @@ class GenTestCase(object):
                 env=dict(
                     test_diopi_func_name=test_diopi_func_name,
                     test_import_diopi_bp_func=test_import_diopi_bp_func,
+                    test_diopi_nhwc_import=test_diopi_nhwc_import
                 )
             )
 
