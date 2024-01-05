@@ -30,32 +30,6 @@ device_configs = {
     ),
 
     # temp for 910B
-    'topk_nonzero': dict(
-        name=['topk'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": (Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),),
-                },
-            ],
-        ),
-    ),
-
-    # temp for 910B
-    'topk_zero': dict(
-        name=['topk'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ],
-        ),
-    ),
-
-    # temp for 910B
     'uniform': dict(
         name=['uniform'],
         tensor_para=dict(
@@ -1795,6 +1769,7 @@ device_configs = {
         ),
     ),
     
+    # in case for zero division
     'remainder_self_scalar': dict(
         name=['remainder'],
         tensor_para=dict(
@@ -1807,6 +1782,7 @@ device_configs = {
         ),
     ),
 
+    # in case for zero division
     'remainder_self_bool': dict(
         name=['remainder'],
         tensor_para=dict(
@@ -1819,6 +1795,7 @@ device_configs = {
         ),
     ),
 
+    # in case for zero division
     'remainder_tensor': dict(
         name=['remainder'],
         tensor_para=dict(
@@ -1831,6 +1808,7 @@ device_configs = {
         ),
     ),
 
+    # in case for zero division
     'remainder_tensor_zero': dict(
         name=['remainder'],
         tensor_para=dict(
@@ -1843,6 +1821,7 @@ device_configs = {
         ),
     ),
 
+    # in case for zero division
     'remainder_other_scalar': dict(
         name=['remainder'],
         para=dict(
@@ -1858,6 +1837,7 @@ device_configs = {
         ),
     ),
 
+    # in case for zero division
     'remainder_other_scalar_bool': dict(
         name=['remainder'],
         para=dict(
