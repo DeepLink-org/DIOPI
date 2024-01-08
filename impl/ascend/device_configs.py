@@ -6,32 +6,6 @@ device_configs = {
     # topk llm used
     # normal llm used
     # temp for 910B
-    'join': dict(
-        name=['stack'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensors'],
-                    "shape": [Skip((0, 50, 76)), Skip((0,)), Skip((16, 0))],
-                },
-            ],
-        ),
-    ),
-
-    # temp for 910B
-    'join_int': dict(
-        name=['stack'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensors'],
-                    "shape": [Skip((0, 50, 76)), Skip((0,)), Skip((16, 0))],
-                },
-            ],
-        ),
-    ),
-
-    # temp for 910B
     'uniform': dict(
         name=['uniform'],
         tensor_para=dict(
