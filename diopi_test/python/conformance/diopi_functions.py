@@ -1456,7 +1456,7 @@ def stack(tensors, dim=0) -> Tensor:
     return out
 
 
-def sort(input, dim=-1, descending=False, stable=False):
+def sort(input, dim=-1, descending=False, stable=None):
     vals = raw_like(input)
     sizeI = input.size().data
     indices = Tensor(sizeI, from_numpy_dtype(glob_vars.int_type))

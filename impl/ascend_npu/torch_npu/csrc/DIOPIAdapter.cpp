@@ -2911,6 +2911,8 @@ void unsetCurCtx() { context = nullptr; }
 
 namespace {
 
+at::Tensor& wrapper_Tensor_fill_(at::Tensor& self, const at::Tensor& value) { return acl_op::fill_(self, value); }
+
 at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
     return at_npu::native::NPUNativeFunctions::copy_(self, src, non_blocking);
 }
@@ -3048,6 +3050,7 @@ at::Scalar wrapper___local_scalar_dense(const at::Tensor& self) { return at_npu:
 namespace at {
 
 TORCH_LIBRARY_IMPL(aten, XLA, m) {
+    m.impl("fill_.Tensor", TORCH_FN(wrapper_Tensor_fill_));
     m.impl("copy_", TORCH_FN(wrapper__copy_));
     m.impl("reshape", TORCH_FN(wrapper__view));
     m.impl("view", TORCH_FN(wrapper__view));
