@@ -256,7 +256,7 @@ void NpuUtils::RefreshFormat(const at::Tensor& tensor) {
 }
 
 const std::string AclDateTypeToString(aclDataType descDType) {
-    const static std::map<const aclDataType, const std::string> ACL_TYPE_TO_STRING_TYPE_MAP = {{ACL_DT_UNDEFINED, "ACL_DT_UNDEFINED"},
+    static const std::map<const aclDataType, const std::string> ACL_TYPE_TO_STRING_TYPE_MAP = {{ACL_DT_UNDEFINED, "ACL_DT_UNDEFINED"},
                                                                                                {ACL_FLOAT, "ACL_FLOAT"},
                                                                                                {ACL_FLOAT16, "ACL_FLOAT16"},
                                                                                                {ACL_INT8, "ACL_INT8"},
@@ -280,7 +280,7 @@ const std::string AclDateTypeToString(aclDataType descDType) {
 }
 
 const std::string AclFormatToString(aclFormat descFormat) {
-    const static std::map<const aclFormat, const std::string> ACL_FORMAT_TO_STRING_TYPE_MAP = {{ACL_FORMAT_UNDEFINED, "ACL_FORMAT_UNDEFINED"},
+    static const std::map<const aclFormat, const std::string> ACL_FORMAT_TO_STRING_TYPE_MAP = {{ACL_FORMAT_UNDEFINED, "ACL_FORMAT_UNDEFINED"},
                                                                                                {ACL_FORMAT_NCHW, "ACL_FORMAT_NCHW"},
                                                                                                {ACL_FORMAT_NHWC, "ACL_FORMAT_NHWC"},
                                                                                                {ACL_FORMAT_ND, "ACL_FORMAT_ND"},

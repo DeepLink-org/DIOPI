@@ -327,8 +327,8 @@ template <>
 inline std::string dumpArgs(const at::IntArrayRef& t) {
     std::stringstream stream;
     stream << "[";
-    for (size_t i = 0; i < t.size(); i++) {
-        stream << t[i] << ",";
+    for (const auto& i : t) {
+        stream << i << ",";
     }
     stream << "]";
     return stream.str();
@@ -339,9 +339,8 @@ inline std::string dumpArgs(const c10::OptionalArrayRef<long int>& t) {
     std::stringstream stream;
     stream << "[";
     if (t.has_value()) {
-        const auto& value = t.value();
-        for (size_t i = 0; i < value.size(); i++) {
-            stream << value[i] << ",";
+        for (const auto& i : t.value()) {
+            stream << i << ",";
         }
     }
     stream << "]";
