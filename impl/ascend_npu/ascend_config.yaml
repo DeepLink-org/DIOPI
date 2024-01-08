@@ -226,3 +226,5 @@ ascend_npu:
 - diopiCustomFormatCast
 - diopiGetCustomFormat
 - diopiTensorDestructionHook
+- diopiAtan
+- diopiAtanInp

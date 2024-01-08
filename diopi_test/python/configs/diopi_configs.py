@@ -4180,6 +4180,28 @@ diopi_configs = {
         ),
     ),
 
+    'sort_no_stable': dict(
+        name=["sort"],
+        interface=['torch'],
+        para=dict(
+            dim=[-1, 0, 1, -2, 3, -1, 0, -1, 0, 2],
+            descending=[False, True, False, False, True, False, True, True, False, False],
+        ),
+        dtype=[np.float16, np.float32, np.float64, np.int16,
+               np.int32, np.int64, np.uint8, np.int8],
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (11400, ), (12, 8), (8, 12, 9),
+                              (4, 4, 16, 20), (4, 4, 16, 2, 20), (24180,),
+                              (0,), (12, 0), (4, 0, 5)),
+                },
+            ],
+        ),
+    ),
+
     # FIXME topk输入0-d张量，且k为0时，结果精度不一致
     'topk_nonzero': dict(
         name=['topk'],

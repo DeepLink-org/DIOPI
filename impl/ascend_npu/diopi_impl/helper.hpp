@@ -326,7 +326,7 @@ template <>
 inline std::string dumpArgs(const at::IntArrayRef& t) {
     std::stringstream stream;
     stream << "[";
-    for (size_t i = 0; i < t.size(); i++) {
+    for (long i : t) {
         stream << i << ",";
     }
     stream << "]";

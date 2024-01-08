@@ -30,32 +30,6 @@ device_configs = {
     ),
 
     # temp for 910B
-    'topk_nonzero': dict(
-        name=['topk'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": (Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),),
-                },
-            ],
-        ),
-    ),
-
-    # temp for 910B
-    'topk_zero': dict(
-        name=['topk'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ],
-        ),
-    ),
-
-    # temp for 910B
     'uniform': dict(
         name=['uniform'],
         tensor_para=dict(
@@ -364,7 +338,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erf', 'erfinv', 'asin', 'ceil', 'atan'],
+        name=['erf', 'erfinv', 'asin', 'ceil'],
         tensor_para=dict(
             args=[
                 {
@@ -376,7 +350,7 @@ device_configs = {
     ),
 
     'pointwise_op_int_without_inplace': dict(
-        name=['erf', 'asin', 'atan'],
+        name=['erf', 'asin'],
         tensor_para=dict(
             args=[
                 {
@@ -388,7 +362,7 @@ device_configs = {
     ),
 
     'pointwise_op_uint8': dict(
-        name=['erf', 'asin', 'atan'],
+        name=['erf', 'asin'],
         tensor_para=dict(
             args=[
                 {
@@ -400,7 +374,7 @@ device_configs = {
     ),
 
     'pointwise_op_bool': dict(
-        name=['erf', 'asin', 'atan'],
+        name=['erf', 'asin'],
         tensor_para=dict(
             args=[
                 {
@@ -678,30 +652,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'index_select': dict(
-        name=['index_select'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'index_select_not_float': dict(
-        name=['index_select'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int32),Skip(np.int16),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
                 },
             ]
         ),
@@ -1755,6 +1705,7 @@ device_configs = {
         ),
     ),
 
+    # in case for zero division
     'remainder_self_bool': dict(
         name=['remainder'],
         tensor_para=dict(
@@ -1767,6 +1718,7 @@ device_configs = {
         ),
     ),
 
+    # in case for zero division
     'remainder_tensor': dict(
         name=['remainder'],
         tensor_para=dict(
@@ -1779,6 +1731,7 @@ device_configs = {
         ),
     ),
 
+    # in case for zero division
     'remainder_tensor_zero': dict(
         name=['remainder'],
         tensor_para=dict(
@@ -1791,6 +1744,7 @@ device_configs = {
         ),
     ),
 
+    # in case for zero division
     'remainder_other_scalar': dict(
         name=['remainder'],
         para=dict(
@@ -1806,6 +1760,7 @@ device_configs = {
         ),
     ),
 
+    # in case for zero division
     'remainder_other_scalar_bool': dict(
         name=['remainder'],
         para=dict(
