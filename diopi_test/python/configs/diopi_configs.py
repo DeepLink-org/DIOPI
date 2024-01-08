@@ -1435,7 +1435,7 @@ diopi_configs = {
                               (2, 128, 3072),
                               (2, 512, 38, 38),
                               (0,), (0, 4), (9, 0, 3)),
-                    "gen_fn": dict(fn='Genfunc.randn', low=1, high=4),
+                    "gen_fn": dict(fn='Genfunc.uniform', low=11, high=4),
                 },
                 {
                     "ins": ['exponent'],
@@ -1443,7 +1443,7 @@ diopi_configs = {
                               (2, 128, 3072),
                               (2, 512, 38, 38),
                               (0,), (0, 4), (9, 0, 3)),
-                    "gen_fn": dict(fn='Genfunc.randn', low=-4, high=4),
+                    "gen_fn": dict(fn='Genfunc.uniform', low=1-4, high=4),
                 },
             ],
         ),
@@ -1464,7 +1464,7 @@ diopi_configs = {
                               (2, 128, 3072),
                               (2, 512, 38, 38),
                               (0,), (0, 4), (9, 0, 3)),
-                    "gen_fn": dict(fn='Genfunc.randn', low=-4, high=-1),
+                    "gen_fn": dict(fn='Genfunc.uniform', low=1-4, high=-1),
                 },
                 {
                     "ins": ['exponent'],
@@ -1472,7 +1472,7 @@ diopi_configs = {
                               (2, 128, 3072),
                               (2, 512, 38, 38),
                               (0,), (0, 4), (9, 0, 3)),
-                    "gen_fn": dict(fn='Genfunc.randn', low=-4, high=4),
+                    "gen_fn": dict(fn='Genfunc.uniform', low=1-4, high=4),
                 },
             ],
         ),
@@ -1485,7 +1485,7 @@ diopi_configs = {
         dtype=[np.int16, np.int32, np.int64,
                np.int8, np.uint8],
         tensor_para=dict(
-            gen_fn=dict(fn='Genfunc.randn', low=0, high=2),
+            gen_fn=dict(fn='Genfunc.uniform', low=10, high=2),
             args=[
                 {
                     "ins": ['input'],
