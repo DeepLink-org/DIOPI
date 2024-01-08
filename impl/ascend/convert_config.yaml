@@ -282,6 +282,15 @@
 
 - diopiHardswishInp:
     dtype: (float64)->float32
-    
+
 - diopiHardswishBackward:
+    dtype: (float64)->float32
+
+- diopiNormalTensor:
+    dtype: (float64)->float32
+
+- diopiNormalScalarTensor:
+    dtype: (float64)->float32
+
+- diopiNormalTensorScalar:
     dtype: (float64)->float32
