@@ -226,3 +226,5 @@ ascend_npu:
 - diopiHardswish
 - diopiHardswishInp
 - diopiHardswishBackward
+- diopiAtan
+- diopiAtanInp
