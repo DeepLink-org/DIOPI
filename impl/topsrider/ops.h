@@ -185,7 +185,7 @@ DIOPI_API diopiError_t topsLayerNormBackward(diopiContextHandle_t ctx, diopiTens
 DIOPI_API diopiError_t topsStack(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t *tensors, int64_t numTensors, int64_t dim);
 
 DIOPI_API diopiError_t topsSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, diopiTensorHandle_t indices, diopiConstTensorHandle_t input, int64_t dim,
-                                bool descending, const bool *stable);
+                                bool descending, const bool *pStable);
 
 DIOPI_API diopiError_t topsHardtanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t *min_val,
                                     const diopiScalar_t *max_val);
