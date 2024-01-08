@@ -1420,7 +1420,7 @@ diopi_configs = {
         ),
     ),
 
-    'pow_tensor': dict(
+    'pow_tensor_positive_base': dict(
         name=['pow'],
         interface=['torch'],
         is_inplace=True,
@@ -1428,7 +1428,6 @@ diopi_configs = {
                np.int16, np.int32, np.int64,
                np.int8, np.uint8],
         tensor_para=dict(
-            gen_fn=dict(fn='Genfunc.randn_int', low=-4, high=4),
             args=[
                 {
                     "ins": ['input'],
@@ -1436,6 +1435,7 @@ diopi_configs = {
                               (2, 128, 3072),
                               (2, 512, 38, 38),
                               (0,), (0, 4), (9, 0, 3)),
+                    gen_fn=dict(fn='Genfunc.randn', low=1, high=4),
                 },
                 {
                     "ins": ['exponent'],
@@ -1443,6 +1443,36 @@ diopi_configs = {
                               (2, 128, 3072),
                               (2, 512, 38, 38),
                               (0,), (0, 4), (9, 0, 3)),
+                    gen_fn=dict(fn='Genfunc.randn', low=-4, high=4),
+                },
+            ],
+        ),
+    ),
+    
+    'pow_tensor_negative_base': dict(
+        name=['pow'],
+        interface=['torch'],
+        is_inplace=True,
+        dtype=[np.float16, np.float32, np.float64,
+               np.int16, np.int32, np.int64,
+               np.int8, np.uint8],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (1, ), (20267, 80),
+                              (2, 128, 3072),
+                              (2, 512, 38, 38),
+                              (0,), (0, 4), (9, 0, 3)),
+                    gen_fn=dict(fn='Genfunc.randn', low=-4, high=-1),
+                },
+                {
+                    "ins": ['exponent'],
+                    "shape": ((), (1, ), (20267, 80),
+                              (2, 128, 3072),
+                              (2, 512, 38, 38),
+                              (0,), (0, 4), (9, 0, 3)),
+                    gen_fn=dict(fn='Genfunc.randn', low=-4, high=4),
                 },
             ],
         ),
@@ -1455,7 +1485,7 @@ diopi_configs = {
         dtype=[np.int16, np.int32, np.int64,
                np.int8, np.uint8],
         tensor_para=dict(
-            gen_fn='Genfunc.randn',
+            gen_fn=dict(fn='Genfunc.randn', low=0, high=2),
             args=[
                 {
                     "ins": ['input'],
@@ -1524,19 +1554,21 @@ diopi_configs = {
         name=['pow'],
         interface=['torch'],
         tensor_para=dict(
-            gen_fn=dict(fn='Genfunc.randn_int', low=-4, high=4),
+            
             args=[
                 {
                     "ins": ['input'],
                     "shape": ((1024, ),),
                     "dtype": [np.int64, np.int32, np.int16,
                               np.bool_, np.bool_, np.bool_, np.bool_],
+                    gen_fn=dict(fn='Genfunc.randn_int', low=1, high=4),
                 },
                 {
                     "ins": ['exponent'],
                     "shape": ((1024, ),),
                     "dtype": [np.float32, np.float64, np.float16,
                               np.int32, np.float32, np.int8, np.uint8],
+                    gen_fn=dict(fn='Genfunc.randn_int', low=-4, high=4),
                 },
             ],
         ),
@@ -1548,7 +1580,6 @@ diopi_configs = {
         interface=['torch'],
         is_inplace=True,
         tensor_para=dict(
-            gen_fn=dict(fn='Genfunc.randn_int', low=-4, high=4),
             args=[
                 {
                     "ins": ['input'],
@@ -1559,6 +1590,7 @@ diopi_configs = {
                     "dtype": [np.float64, np.float32, np.float16,
                               np.int32, np.float64, np.float32,
                               np.float32, np.int16, np.int64],
+                    gen_fn=dict(fn='Genfunc.randn_int', low=1, high=4),
                 },
                 {
                     "ins": ['exponent'],
@@ -1569,12 +1601,13 @@ diopi_configs = {
                     "dtype": [np.int32, np.uint8, np.bool_,
                               np.int64, np.float16, np.float64,
                               np.bool_, np.uint8, np.bool_],
+                    gen_fn=dict(fn='Genfunc.randn_int', low=-4, high=4),
                 },
             ],
         ),
     ),
 
-    'pow_input_scalar': dict(
+    'pow_input_scalar_positive_exp': dict(
         name=['pow'],
         interface=['torch'],
         para=dict(
@@ -1590,7 +1623,29 @@ diopi_configs = {
                     "dtype": [np.float16, np.float32, np.float64,
                               np.int16, np.int32, np.int64,
                               np.int8, np.uint8, np.bool_],
-                    "gen_fn": dict(fn='Genfunc.randn_int', low=-4, high=4),
+                    "gen_fn": dict(fn='Genfunc.randn_int', low=1, high=4),
+                }
+            ],
+        ),
+    ),
+    
+    'pow_input_scalar_negative_exp': dict(
+        name=['pow'],
+        interface=['torch'],
+        para=dict(
+            self=[-2, -0.5, 0, 0.6, 2, 3, 4., 1.],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['exponent'],
+                    "shape": ((), (8,), (125, 1),
+                              (70, 1, 2), (4, 256, 16, 16),
+                              (0,), (0, 4), (9, 0, 6)),
+                    "dtype": [np.float16, np.float32, np.float64,
+                              np.int16, np.int32, np.int64,
+                              np.int8, np.uint8, np.bool_],
+                    "gen_fn": dict(fn='Genfunc.randn_int', low=-4, high=-1),
                 }
             ],
         ),
@@ -1610,7 +1665,7 @@ diopi_configs = {
                     "dtype": [np.float16, np.float32, np.float64,
                               np.int16, np.int32, np.int64,
                               np.int8, np.uint8],
-                    "gen_fn": dict(fn='Genfunc.randn_int', low=-4, high=4),
+                    "gen_fn": dict(fn='Genfunc.randn_int', low=1, high=4),
                 }
             ],
         ),
