@@ -507,40 +507,20 @@ device_configs = {
         ),
     ),
 
+    # Int Zero to negative integer powers are not allowed
     'pow_tensor': dict(
         name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),Skip((0,)),Skip((0, 4)),Skip((9, 0, 3)),],
-                },
-            ]
-        ),
+        dtype=[Skip((np.int16)), Skip((np.int32)), Skip((np.int64)), Skip((np.int8)), Skip((np.uint8))]
     ),
 
     'pow_tensor_only_0_1': dict(
         name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),Skip((0,)),Skip((0, 4)),Skip((9, 0, 3)),],
-                },
-            ]
-        ),
+        dtype=[Skip((np.int16)), Skip((np.int32)), Skip((np.int64)), Skip((np.int8)), Skip((np.uint8))]
     ),
 
     'pow_diff_dtype': dict(
         name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64),Skip(np.float32),Skip(np.float16),Skip(np.int32),Skip(np.float64),Skip(np.float32),Skip(np.float32),Skip(np.int16),Skip(np.int64),],
-                },
-            ]
-        ),
+        dtype=[Skip((np.int16)), Skip((np.int32)), Skip((np.int64)), Skip((np.int8)), Skip((np.uint8))]
     ),
 
     'bmm': dict(
