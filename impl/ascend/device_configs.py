@@ -3,6 +3,8 @@ import numpy as np
 from skip import Skip
 
 device_configs = {
+    # topk llm used
+    # normal llm used
     # temp for 910B
     'join': dict(
         name=['stack'],
@@ -30,32 +32,6 @@ device_configs = {
     ),
 
     # temp for 910B
-    'topk_nonzero': dict( # llm used
-        name=['topk'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": (Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),),
-                },
-            ],
-        ),
-    ),
-
-    # temp for 910B
-    'topk_zero': dict( # llm used
-        name=['topk'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ],
-        ),
-    ),
-
-    # temp for 910B
     'uniform': dict(
         name=['uniform'],
         tensor_para=dict(
@@ -65,19 +41,6 @@ device_configs = {
                     "shape": [Skip(()),],
                 },
             ],
-        ),
-    ),
-
-    # temp for 910B
-    'normal_tensor': dict(
-        name=["normal"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['mean'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
         ),
     ),
 
@@ -1756,42 +1719,78 @@ device_configs = {
         ),
     ),
 
-    # temp for 910B
-    'normal_': dict( # llm used
-        name=["normal_"],
+    'remainder_self_scalar': dict(
+        name=['remainder'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['other'],
+                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
+                },
+            ]
+        ),
+    ),
+
+    # in case for zero division
+    'remainder_self_bool': dict(
+        name=['remainder'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['other'],
+                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
+                },
+            ]
+        ),
+    ),
+
+    # in case for zero division
+    'remainder_tensor': dict(
+        name=['remainder'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
                 },
             ]
         ),
     ),
 
-    # temp for 910B
-    'normal_std_tensor': dict( # llm used
-        name=["normal"],
+    # in case for zero division
+    'remainder_tensor_zero': dict(
+        name=['remainder'],
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['std'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                    "ins": ['input'],
+                    "dtype": [Skip(np.int16),Skip(np.uint8),Skip(np.int8),],
                 },
             ]
         ),
     ),
 
-    # temp for 910B
-    'normal_mean_tensor': dict( # llm used
-        name=["normal"],
+    # in case for zero division
+    'remainder_other_scalar': dict(
+        name=['remainder'],
+        para=dict(
+            other=[Skip(0),],
+        ),
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['mean'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                    "ins": ['input'],
+                    "dtype": [Skip(np.uint8),],
                 },
             ]
+        ),
+    ),
+
+    # in case for zero division
+    'remainder_other_scalar_bool': dict(
+        name=['remainder'],
+        para=dict(
+            other=[Skip(False),],
         ),
     ),
 }

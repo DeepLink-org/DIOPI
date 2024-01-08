@@ -1286,18 +1286,6 @@ device_configs = {
         ),
     ),
 
-    'sort': dict(
-        name=["sort"],
-        interface=['torch'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": (Skip(()),),
-                },
-            ],
-        ),
-    ),
     # TODO: ctc_loss of camb could work correctly due to dipu and one_iter, need to fix diopi_test
     'ctc_loss': dict(
         name=["ctc_loss"],
