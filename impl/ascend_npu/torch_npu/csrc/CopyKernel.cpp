@@ -63,12 +63,6 @@ at::Tensor& npu_view_copy(at::Tensor& self, const at::Tensor& src, at::IntArrayR
     auto src_size = src.sizes();
     auto src_stride = src.strides();
 
-    DEBUG_ARGS(self_size);
-    DEBUG_ARGS(self_stride);
-    DEBUG_ARGS(src_size);
-    DEBUG_ARGS(src_stride);
-    DEBUG_ARGS(originShape);
-
     auto originSizeTensor = at_npu::native::empty_npu(originShape, self.options());
 
     at_npu::native::OpCommand cmd;
@@ -92,8 +86,6 @@ at::Tensor& npu_view_copy(at::Tensor& self, const at::Tensor& src, at::IntArrayR
 void copy_d2d_last_method(at::Tensor& self, const at::Tensor& src, bool same_type, bool non_blocking) {
     // general copy method but Low performance
     RECORD_FUNCTION("contiguous_d_ViewCopy", std::vector<c10::IValue>({src}));
-    DEBUG_ARGS(self);
-    DEBUG_ARGS(src);
     auto originShape = inferOriginShape(self.sizes(), self.strides());
     if (originShape != self.sizes()) {
         npu_view_copy(self, src, originShape, non_blocking);
