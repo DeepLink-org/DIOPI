@@ -20,10 +20,10 @@ env:
   ENV_NAME: 'pt2.0_diopi'
   ENV_NAME_MMCV: 'pt1.11v1'
   GPU_REQUESTS: 1
-  SLURM_PAR_SH1988: ${{ vars.SLURM_PAR_SH1984 != '' && vars.SLURM_PAR_SH1984 || 'pat_rd -x SH-IDC1-10-198-8-58,SH-IDC1-10-198-8-87' }}
+  SLURM_PAR_SH1988: ${{ vars.SLURM_PAR_SH1984 != '' && vars.SLURM_PAR_SH1984 || 'pat_dev' }}
   SLURM_PAR_SH1424: ${{ vars.SLURM_PAR_SH1424 != '' && vars.SLURM_PAR_SH1424 || 'pat_rd' }}
   SLURM_PAR_CAMB: ${{ vars.SLURM_PAR_CAMB != '' && vars.SLURM_PAR_CAMB || 'camb_mlu370_m8 --exclude HOST-10-142-11-120,HOST-10-142-11-126' }}
-  CLUSTER_1988: SH1988
+  CLUSTER_1988: SH1424
   CLUSTER_1424: SH1424
   CLUSTER_CAMB: CAMB
   CLUSTER_ASCEND: ASCEND
@@ -207,7 +207,7 @@ jobs:
         run: |
           ssh ${CLUSTER_1988} """
           set -e
-          if [[ \"${{ needs.Rsync.outputs.output }}\" == *GENDATA* ]];then
+          if [ \"${{ needs.Rsync.outputs.output }}\" == *GENDATA* ] && [ -d ${GEN_DATA_PATH}/${GEN_DATA}/diopi ];then
             source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
             cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd diopi_test/python && ls &&
             srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'python main.py --mode gen_data' \
