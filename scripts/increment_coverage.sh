@@ -19,7 +19,7 @@ commit_hash=$(git rev-parse HEAD)
 parent_count=$(git log --pretty=%P -n 1 $commit_hash | wc -w)
 if [ $parent_count -eq 1 ]; then    #no new commits in main branch
   newcommit=$commit_hash
-  oldcommit=$(git merge-base ${newcommit} main)
+  oldcommit=$(git merge-base ${newcommit} mainrepo/main)
   if [ -z $oldcommit ]; then echo "Cannot find merge-base commit" && exit 1; fi
   echo "Found merge-base commit: $oldcommit"
   git diff $oldcommit $newcommit --name-only  > $ROOT_DIR/coverage/gitdiff.txt 2>/dev/null || echo "error can be ignored"
@@ -39,7 +39,7 @@ else  #has new commits in main branch
 fi
 
 cd $ROOT_DIR
-cat coverage/gitdiff.txt |egrep '\.(cpp|hpp|h)$'|grep "$include/" >coverage/gitdiff_screen.txt || true
+cat coverage/gitdiff.txt |egrep '\.(cpp|hpp)$'|grep "$include/" >coverage/gitdiff_screen.txt || true
 if [ ! -s coverage/gitdiff_screen.txt ]; then echo "No C/C++ in incremental code" && exit 0;fi
 rm -rf coverage/gitdiff.txt
 while IFS= read -r line; do

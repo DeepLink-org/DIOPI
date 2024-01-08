@@ -11,7 +11,7 @@ namespace impl {
 namespace camb {
 
 diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, diopiTensorHandle_t indices, diopiConstTensorHandle_t input, int64_t dim,
-                       bool descending, const bool* stable) {
+                       bool descending, const bool* pStable) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     auto inputTensor = DiopiTensor(input);
     auto indicesTensor = DiopiTensor(indices);
@@ -68,7 +68,7 @@ diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
                                       dim,
                                       descending,
                                       true,
-                                      nullptr == stable ? false : *stable,
+                                      nullptr == pStable ? false : *pStable,
                                       workspace,
                                       workspaceSize,
                                       valuesDesc.get(),

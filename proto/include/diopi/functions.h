@@ -2190,13 +2190,13 @@ DIOPI_API diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t 
  * @param[in] input the intput tensor. type = [float16, float32, float64, int16, int32, int64, uint8, int8]
  * @param[in] dim the dimension to sort along. type = [int64].
  * @param[in] descending boolean, controls the sorting order (ascending or descending).
- * @param[in] stable a boolean pointer, selects a stable sorting algorithm to use,
+ * @param[in] pStable a boolean pointer, selects a stable sorting algorithm to use,
  * where stable sorting algorithms guarantee that the order of equal elements remains unchanged.
  * @param[out] values the sorted tensor. type = [float16, float32, float64, int16, int32, int64, uint8, int8].
  * @param[out] indices the index of corresponding element in the sorted tensor. type = [int32, int64].
  */
 DIOPI_API diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, diopiTensorHandle_t indices, diopiConstTensorHandle_t input, int64_t dim,
-                                 bool descending, const bool* stable);
+                                 bool descending, const bool* pStable);
 
 /**
  * @brief Returns the k largest elements of the given input tensor along a given dimension.
