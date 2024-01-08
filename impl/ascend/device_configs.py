@@ -2,9 +2,7 @@
 import numpy as np
 from skip import Skip
 
-# topk llm used
-# normal llm used
-# norm llm used
+# topk, normal, norm, nll_loss, pow llm used
 
 device_configs = {
     # temp for 910B
@@ -508,32 +506,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip(()),Skip((64,)),Skip((2, 11856, 2)),Skip((16, 2, 2964, 2)),Skip((2964, 32)),Skip((0,)),Skip((16, 0)),Skip((4, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
-    'nll_loss': dict( # llm used
-        name=['nll_loss'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    # TODO(someone): dtype float16 is not supported
-                    "dtype": [Skip(np.float16)],
-                },
-            ]
-        ),
-    ),
-
-    'nll_loss_empty_tensor': dict( # llm used
-        name=['nll_loss'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    # TODO(someone): dtype float16 is not supported
-                    "dtype": [Skip(np.float16)],
                 },
             ]
         ),
