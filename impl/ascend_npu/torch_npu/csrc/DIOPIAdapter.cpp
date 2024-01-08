@@ -2247,9 +2247,6 @@ aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool 
         }
 #endif
         diopi::StreamLockGuard streamLockGuard(stream.stream());
-        ExecuteParas exeParams;
-        ExportParams(exeParams);
-        printErrorLog(&exeParams);
         if (sync) {
             ret = AclopCompileAndExecuteV2(name.c_str(),
                                            inputSize,
@@ -2308,7 +2305,12 @@ aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool 
     if (reset_flag) {
         AclSetCompileopt(aclCompileOpt::ACL_OP_JIT_COMPILE, "disable");
     }
-    stream.synchronize();
+
+    if (enableDumpArgs()) {
+        ExecuteParas exeParams;
+        ExportParams(exeParams);
+        printErrorLog(&exeParams);
+    }
     return ret;
 }
 
@@ -2370,6 +2372,7 @@ std::tuple<aclTensorDesc*, aclDataBuffer*> CovertHostTensorToAclInput(const at::
 }
 
 #if 0
+
 std::tuple<aclTensorDesc*, aclDataBuffer*> CovertToAclOutput(const at::Tensor& tensor, const string& forceDataType) {
     aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(tensor.scalar_type(), forceDataType);
     auto format = CalcuOpUtil::GetTensorNpuFormat(tensor);
@@ -2386,6 +2389,7 @@ std::tuple<aclTensorDesc*, aclDataBuffer*> CovertToAclOutput(const at::Tensor& t
 }
 
 #else
+
 std::tuple<aclTensorDesc*, aclDataBuffer*> CovertToAclOutput(const at::Tensor& tensor, const string& forceDataType) {
     aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(tensor.scalar_type(), forceDataType);
     const auto& npuDesc = torch_npu::NPUBridge::GetNpuStorageImplDesc(tensor);
@@ -2398,6 +2402,7 @@ std::tuple<aclTensorDesc*, aclDataBuffer*> CovertToAclOutput(const at::Tensor& t
     auto aclBuff = aclBuffer.Get();
     return std::tie(aclDesc, aclBuff);
 }
+
 #endif
 // This class maintain the position of the current
 // OpCommandImpl object in vector, the resources in
