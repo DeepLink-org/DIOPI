@@ -68,19 +68,6 @@ device_configs = {
         ),
     ),
 
-    # temp for 910B
-    'normal_tensor': dict(
-        name=["normal"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['mean'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
     'batch_norm': dict(
         name=['batch_norm'],
         atol=1e-2,
@@ -1756,42 +1743,73 @@ device_configs = {
         ),
     ),
 
-    # temp for 910B
-    'normal_': dict(
-        name=["normal_"],
+    'remainder_self_scalar': dict(
+        name=['remainder'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['other'],
+                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
+                },
+            ]
+        ),
+    ),
+
+    'remainder_self_bool': dict(
+        name=['remainder'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['other'],
+                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
+                },
+            ]
+        ),
+    ),
+
+    'remainder_tensor': dict(
+        name=['remainder'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
                 },
             ]
         ),
     ),
 
-    # temp for 910B
-    'normal_std_tensor': dict(
-        name=["normal"],
+    'remainder_tensor_zero': dict(
+        name=['remainder'],
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['std'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                    "ins": ['input'],
+                    "dtype": [Skip(np.int16),Skip(np.uint8),Skip(np.int8),],
                 },
             ]
         ),
     ),
 
-    # temp for 910B
-    'normal_mean_tensor': dict(
-        name=["normal"],
+    'remainder_other_scalar': dict(
+        name=['remainder'],
+        para=dict(
+            other=[Skip(0),],
+        ),
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['mean'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                    "ins": ['input'],
+                    "dtype": [Skip(np.uint8),],
                 },
             ]
+        ),
+    ),
+
+    'remainder_other_scalar_bool': dict(
+        name=['remainder'],
+        para=dict(
+            other=[Skip(False),],
         ),
     ),
 }
