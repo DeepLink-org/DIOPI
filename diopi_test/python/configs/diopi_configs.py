@@ -1448,7 +1448,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'pow_tensor_negative_base': dict(
         name=['pow'],
         interface=['torch'],
@@ -1554,7 +1554,6 @@ diopi_configs = {
         name=['pow'],
         interface=['torch'],
         tensor_para=dict(
-            
             args=[
                 {
                     "ins": ['input'],
@@ -1628,7 +1627,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'pow_input_scalar_negative_exp': dict(
         name=['pow'],
         interface=['torch'],
