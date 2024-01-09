@@ -10,7 +10,7 @@ import torchvision
 from gen_input import GenPolicy
 from conformance.utils import logger, get_data_from_file
 from conformance.db_operation import db_conn
-
+from conformance.exception import GenDataFailedException
 
 def _torch_context_attention(xq, xk, xv, bs, seqlen, num_head, head_dim):
     xq = xq.view(bs, seqlen, num_head, head_dim)
@@ -331,11 +331,8 @@ class GenOutputData(object):
                 output, saved_grads = gen_tensor_obj.gen_data(input_)
                 item['result'] = 'passed'
             except Exception as err_msg:
-                logger.error(f'Generate output data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}')
-                item.update({'result': 'failed', 'err_msg': err_msg})
-                continue
-            finally:
-                GenOutputData.db_case_items[case_name] = item
+                raise GenDataFailedException(f'Generate output data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}')
+            GenOutputData.db_case_items[case_name] = item
             if output is not None:
                 with open(os.path.join(output_path, case_name), "wb") as f:
                     pickle.dump(GenOutputData.to_numpy(output), f, protocol=4)
