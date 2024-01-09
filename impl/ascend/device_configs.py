@@ -386,6 +386,13 @@ device_configs = {
         ),
     ),
 
+    'index_put_acc_three_indices': dict( # llm used
+        name=['index_put'],
+        para=dict(
+            accumulate=[Skip(False)]
+        ),
+    ),
+
     'index_put_acc_two_indices': dict( # llm used
         name=['index_put'],
         tensor_para=dict(
