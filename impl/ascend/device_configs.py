@@ -5,6 +5,10 @@ from skip import Skip
 # topk llm used
 # normal llm used
 # norm llm used
+# nll_loss llm used
+# gather llm used
+# fill_ llm used
+# triu llm used
 
 device_configs = {
     # temp for 910B
@@ -274,6 +278,19 @@ device_configs = {
         rtol = 1e-1,
     ),
 
+    'embedding': dict( # llm used
+        name=["embedding"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["weight"],
+                    # Wrong weight gradient. torch_npu failed in exactly the same way.
+                    "shape": (Skip((93, 512)),),
+                },
+            ],
+        ),
+    ),
+
     'one_hot': dict(
         name=['one_hot'],
         para=dict(
@@ -358,7 +375,7 @@ device_configs = {
         ),
     ),
 
-    'scatter_scalar': dict(
+    'scatter_scalar': dict( # llm used
         name=['scatter'],
         para=dict(
             # In this case, for float32 (but not float64), no matter what the value parameter is,
@@ -369,7 +386,7 @@ device_configs = {
         ),
     ),
 
-    'index_put_acc_two_indices': dict(
+    'index_put_acc_two_indices': dict( # llm used
         name=['index_put'],
         tensor_para=dict(
             args=[
@@ -508,7 +525,7 @@ device_configs = {
         ),
     ),
 
-    'repeat': dict(
+    'repeat': dict( # llm used
         name=['repeat'],
         tensor_para=dict(
             args=[
