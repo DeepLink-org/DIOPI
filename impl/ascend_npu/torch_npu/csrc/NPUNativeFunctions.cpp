@@ -94,6 +94,8 @@ at::Tensor& NPUNativeFunctions::npu_format_cast_(at::Tensor& dst, const at::Tens
     return dst;
 }
 
+at::Tensor& NPUNativeFunctions::npu_format_cast_(at::Tensor& dst, int64_t acl_format) { return custom_ops::npu_format_cast_(dst, acl_format); }
+
 at::Tensor NPUNativeFunctions::contiguous(const at::Tensor& self, at::MemoryFormat memory_format) {
     if (self.is_contiguous(memory_format)) {
         return self;
@@ -241,7 +243,8 @@ at::Tensor& npu_format_cast_(at::Tensor& src, int64_t acl_format) {
 
     // format cast only change physical layout of base tensor and view tensor's
     // metadata remain unchanged
-    src.set_(dst.storage(), src.storage_offset(), src.sizes(), src.strides());
+    // src.set_(dst.storage(), src.storage_offset(), src.sizes(), src.strides());
+    src.copy_(dst);
 
     return src;
 }

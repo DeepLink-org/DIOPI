@@ -141,7 +141,8 @@ struct NPUNativeFunctions {
                                int64_t blank, int64_t reduction, bool zero_infinity) {
         OP_NOT_IMPL
     }
-    static at::Tensor& npu_format_cast_(at::Tensor& self, int64_t acl_format) { OP_NOT_IMPL }
+    static at::Tensor& npu_format_cast_(at::Tensor& self, int64_t acl_format);
+    static at::Tensor& npu_format_cast_(at::Tensor& self, const at::Tensor& src);
     static at::Tensor index_copy(const at::Tensor& self, int64_t dim, const at::Tensor& index, const at::Tensor& source) { OP_NOT_IMPL }
     static at::Tensor unsqueeze(const at::Tensor& self, int64_t dim) { OP_NOT_IMPL }
     static at::Tensor& bernoulli_(at::Tensor& self, const at::Tensor& p, c10::optional<at::Generator> generator) { OP_NOT_IMPL }
@@ -2197,7 +2198,6 @@ struct NPUNativeFunctions {
     }
     static at::Tensor& index_add_(at::Tensor& self, int64_t dim, const at::Tensor& index, const at::Tensor& source, const at::Scalar& alpha) { OP_NOT_IMPL }
     static ::std::tuple<at::Tensor&, at::Tensor&> log_sigmoid_forward_out(const at::Tensor& self, at::Tensor& output, at::Tensor& buffer) { OP_NOT_IMPL }
-    static at::Tensor& npu_format_cast_(at::Tensor& self, const at::Tensor& src);
     static ::std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t> _batch_norm_impl_index(
         const at::Tensor& input, const c10::optional<at::Tensor>& weight, const c10::optional<at::Tensor>& bias, const c10::optional<at::Tensor>& running_mean,
         const c10::optional<at::Tensor>& running_var, bool training, double momentum, double eps, bool cudnn_enabled) {
