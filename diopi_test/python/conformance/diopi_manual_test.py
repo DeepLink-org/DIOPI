@@ -76,7 +76,11 @@ class ManualTest(object):
             p = p_numpy.mean() if p is None else p
         state = build_generator_state(input.context())
         generator = Generator(state)
+        input_origin = np.copy(input.numpy())
         out = F.bernoulli(input, inplace, p, generator)
+        if inplace is False and p is None:
+            assert np.allclose(input_origin, input.numpy()) is True, \
+                "input changed"
         out_numpy = out.numpy()
 
         assert np.all((out_numpy == 0) | (out_numpy == 1)), "bernoulli output must be 0 or 1"
