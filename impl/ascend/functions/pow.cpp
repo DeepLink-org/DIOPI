@@ -11,7 +11,7 @@ namespace ascend {
 
 diopiError_t diopiPowTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t exponent) {
     AscendTensor inputAt(input), expAt(exponent), outAt(out);
-    if (inputAt.numel() == 0 || expAt.numel() == 0){
+    if (inputAt.numel() == 0 || expAt.numel() == 0) {
         return diopiSuccess;
     }
     auto dtype = promoteTypes(inputAt.dtype(), expAt.dtype());
