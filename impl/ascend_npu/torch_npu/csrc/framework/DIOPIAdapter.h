@@ -148,8 +148,8 @@
         }                                                                                                                                              \
     } while (0)
 
-// #define INTERFACE_NOT_IMPL
-#define INTERFACE_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
+#define INTERFACE_NOT_IMPL
+// #define INTERFACE_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
 
 static void warn_(const ::c10::Warning& warning) { INTERFACE_NOT_IMPL; }
 
