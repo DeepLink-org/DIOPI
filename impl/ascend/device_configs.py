@@ -2,35 +2,11 @@
 import numpy as np
 from skip import Skip
 
+# topk llm used
+# normal llm used
+# norm llm used
+
 device_configs = {
-    # topk llm used
-    # normal llm used
-    # temp for 910B
-    'join': dict(
-        name=['stack'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensors'],
-                    "shape": [Skip((0, 50, 76)), Skip((0,)), Skip((16, 0))],
-                },
-            ],
-        ),
-    ),
-
-    # temp for 910B
-    'join_int': dict(
-        name=['stack'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensors'],
-                    "shape": [Skip((0, 50, 76)), Skip((0,)), Skip((16, 0))],
-                },
-            ],
-        ),
-    ),
-
     # temp for 910B
     'uniform': dict(
         name=['uniform'],
@@ -1153,18 +1129,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.bool_),Skip(np.int64),Skip(np.int32),Skip(np.int16),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'norm': dict( # llm used
-        name=['norm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64),],
                 },
             ]
         ),
